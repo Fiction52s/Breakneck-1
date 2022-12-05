@@ -31,6 +31,9 @@ struct FreeplayPlayerBox
 	sf::Text pressText;
 	int skinIndex;
 
+	sf::Vertex controllerIconQuad[4];
+	sf::Vertex portIconQuad[4];
+
 	ControllerDualStateQueue *controllerStates;
 
 	int action;
@@ -64,6 +67,9 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	int frame;
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
+
+	Tileset *ts_controllerIcons;
+	Tileset *ts_portIcons;
 
 	Panel *panel;
 

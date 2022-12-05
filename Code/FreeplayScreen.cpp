@@ -82,6 +82,15 @@ void FreeplayPlayerBox::SetTopLeft(sf::Vector2i &pos)
 
 	SetRectTopLeft(bgQuad, fps->playerBoxWidth, fps->playerBoxHeight, Vector2f(topLeft));
 
+	Vector2f controllerIconSize(fps->ts_controllerIcons->tileWidth, fps->ts_controllerIcons->tileHeight);
+	Vector2f portIconSize(fps->ts_portIcons->tileWidth, fps->ts_portIcons->tileHeight);
+
+	int border = 10;
+
+	SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(fps->playerBoxWidth - (controllerIconSize.x + border), border) + Vector2f(topLeft));
+	SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(fps->playerBoxWidth - (portIconSize.x + border), controllerIconSize.y) + Vector2f(topLeft));
+
+
 	//playerName->setPosition(Vector2f(pos + namePos));
 	//auto &bounds = playerName->getLocalBounds();
 	//playerName->setPosition(Vector2f(playerName->getPosition().x - (bounds.left + bounds.width / 2), playerName->getPosition().y));
@@ -94,6 +103,34 @@ void FreeplayPlayerBox::SetControllerStates(ControllerDualStateQueue *conStates)
 
 	controllerStates = conStates;
 	action = A_HAS_PLAYER;
+
+	int tileIndex = 0;
+	switch (controllerStates->GetControllerType())
+	{
+	case CTYPE_XBOX:
+	{
+		tileIndex = 1;
+		break;
+	}
+	case CTYPE_GAMECUBE:
+	{
+		tileIndex = 2;
+		break;
+	}
+	case CTYPE_PS5:
+	{
+		tileIndex = 0;
+		break;
+	}
+	case CTYPE_KEYBOARD:
+	{
+		tileIndex = 3;
+		break;
+	}
+	}
+
+	fps->ts_controllerIcons->SetQuadSubRect(controllerIconQuad, tileIndex);
+	fps->ts_portIcons->SetQuadSubRect(portIconQuad, controllerStates->GetIndex() );
 }
 
 void FreeplayPlayerBox::SetName(const std::string &name)
@@ -118,6 +155,13 @@ void FreeplayPlayerBox::Draw(sf::RenderTarget *target)
 	{
 		target->draw(playerNameText);
 		target->draw(numberText);
+
+		target->draw(controllerIconQuad, 4, sf::Quads, fps->ts_controllerIcons->texture);
+
+		if (controllerStates->GetControllerType() != CTYPE_KEYBOARD)
+		{
+			target->draw(portIconQuad, 4, sf::Quads, fps->ts_portIcons->texture);
+		}
 	}
 	else
 	{
@@ -138,6 +182,9 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 	assert(mapBrowserScreen != NULL);
 	//startButton = panel->AddButton("start", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "START");
 	//leaveButton = panel->AddButton("leave", Vector2i(20 + 200, panel->size.y - 100), Vector2f(100, 40), "LEAVE");
+
+	ts_controllerIcons = GetSizedTileset( "Menu/controllers_64x64.png" );
+	ts_portIcons = GetSizedTileset("Menu/slots_64x32.png");
 
 	//inviteButton = panel->AddButton("invite", Vector2i(20 + 200, panel->size.y - 200), Vector2f(270, 40), "INVITE FRIEND");
 
