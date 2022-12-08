@@ -39,6 +39,7 @@ struct EffectPool;
 
 struct MatchResultsScreen;
 struct FreeplayScreen;
+struct SinglePlayerControllerJoinScreen;
 
 struct ControlProfile;
 struct ControlProfileMenu;
@@ -547,6 +548,7 @@ struct MainMenu
 		NETPLAY_MATCH_RESULTS,
 		MATCH_RESULTS,
 		POST_MATCH_OPTIONS,
+		SINGLE_PLAYER_CONTROLLER_JOIN,
 		EXITING,
 	};
 
@@ -573,8 +575,9 @@ struct MainMenu
 	OnlineMenuScreen *onlineMenuScreen;
 	MatchResultsScreen *matchResultsScreen;
 	FreeplayScreen *freeplayScreen;
+	SinglePlayerControllerJoinScreen *singlePlayerControllerJoinScreen;
 
-	MatchParams *freeplayMatchParams;
+	MatchParams *menuMatchParams;
 
 	std::string editMapName;
 	Mode preFreeplayMode;

@@ -4594,6 +4594,10 @@ int GameSession::GetPlayerNormalSkin(int index)
 
 		return netplayManager->netplayPlayers[realIndex].skinIndex;
 	}
+	else
+	{
+		return matchParams.playerSkins[index];
+	}
 
 	return Actor::SKIN_NORMAL;
 }

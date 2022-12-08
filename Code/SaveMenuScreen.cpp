@@ -389,8 +389,8 @@ bool SaveMenuScreen::Update()
 				//action = TRANSITIONMOVIE;
 				if (startWithTutorial)
 				{
-					mainMenu->musicPlayer->FadeOutCurrentMusic(30);
-					mainMenu->LoadMode(MainMenu::ADVENTURETUTORIAL);
+					//mainMenu->musicPlayer->FadeOutCurrentMusic(30);
+					//mainMenu->LoadMode(MainMenu::ADVENTURETUTORIAL);
 					action = TRANSITIONTUTORIAL;
 				}
 				else

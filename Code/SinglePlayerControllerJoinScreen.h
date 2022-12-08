@@ -1,6 +1,5 @@
-#ifndef __FREEPLAY_SCREEN_H__
-#define __FREEPLAY_SCREEN_H__
-
+#ifndef __SINGLE_PLAYER_CONTROLLER_JOIN_SCREEN_H__
+#define __SINGLE_PLAYER_CONTROLLER_JOIN_SCREEN_H__
 
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
@@ -16,7 +15,7 @@ struct MapNode;
 struct MapOptionsPopup;
 struct PlayerSkinShader;
 
-struct FreeplayPlayerBox
+struct SinglePlayerBox
 {
 	enum Action
 	{
@@ -25,10 +24,9 @@ struct FreeplayPlayerBox
 	};
 
 	sf::Text playerNameText;
-	int index;
 	sf::Vector2i topLeft;
 	sf::Vertex bgQuad[4];
-	FreeplayScreen *fps;
+	SinglePlayerControllerJoinScreen *joinScreen;
 	sf::Text numberText;
 	sf::Text pressText;
 	sf::Text skinNumberText;
@@ -47,13 +45,13 @@ struct FreeplayPlayerBox
 
 	int action;
 
-	FreeplayPlayerBox(FreeplayScreen *p_fps, int index);
-	~FreeplayPlayerBox();
+	SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen);
+	~SinglePlayerBox();
 	void Update();
 	void SetSkin(int index);
 	void Draw(sf::RenderTarget *target);
 	void SetName(const std::string &name);
-	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex );
+	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex);
 	void Show();
 	void Hide();
 	void SetTopLeft(sf::Vector2i &pos);
@@ -63,16 +61,13 @@ private:
 	std::string playerNameStr;
 };
 
-struct FreeplayScreen : TilesetManager, GUIHandler
+struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 {
 	enum Action
 	{
-		A_WAITING_FOR_PLAYERS,
-		A_CHOOSE_MAP,
+		A_WAITING_FOR_PLAYER,
 		A_START,
 		A_BACK,
-		A_DOWNLOADING_WORKSHOP_MAP,
-		A_CHOOSE_MAP_OPTIONS,
 	};
 
 	int action;
@@ -92,38 +87,24 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 
 	MapNode *selectedMap;
 
-	FreeplayPlayerBox *playerBoxes[4];
+	SinglePlayerBox *playerBox;
 	MapOptionsPopup *mapOptionsPopup;
 
 	MatchParams currParams;
-	//int gccHeldStartFrames[4];
-	//int windowsHeldStartFrames[4];
-	//int joinHoldFrames;
 
-	MapBrowserScreen *mapBrowserScreen;
-
-	FreeplayScreen(MainMenu *mm);
-	~FreeplayScreen();
+	SinglePlayerControllerJoinScreen(MainMenu *mm);
+	~SinglePlayerControllerJoinScreen();
 
 	void Start();
 	void Quit();
 	bool HandleEvent(sf::Event ev);
 
-	int GetFirstAvailableSkinIndex();
-	bool IsSkinAvailable(int p_skinIndex);
-	void NextSkin(int playerBoxIndex);
-	void PrevSkin(int playerBoxIndex);
+	void NextSkin();
+	void PrevSkin();
 
 	void TryControllerJoin(ControllerDualStateQueue *conStates);
-	bool IsFull();
-	bool AlreadyJoined(ControllerDualStateQueue *conStates);
-	FreeplayPlayerBox *GetNextOpenBox();
-	void StartBrowsing();
-	void TryActivateOptionsPanel(MapNode *mp);
 
 	void DrawPopupBG(sf::RenderTarget *target);
-
-	int NumActivePlayers();
 
 	const MatchParams &GetMatchParams();
 	void SetFromMatchParams(MatchParams &mp);

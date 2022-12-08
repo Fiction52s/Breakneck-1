@@ -57,6 +57,7 @@
 #include "UIMouse.h"
 #include "UIController.h"
 #include "LobbyBrowser.h"
+#include "SinglePlayerControllerJoinScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -218,6 +219,15 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	{
+		if (singlePlayerControllerJoinScreen != NULL)
+		{
+			delete singlePlayerControllerJoinScreen;
+			singlePlayerControllerJoinScreen = NULL;
+		}
+		break;
+	}
 
 	}
 
@@ -268,11 +278,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case ADVENTURETUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
-		MatchParams mp;
-		mp.saveFile = currSaveFile;
-		mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
-
-		currTutorialSession = new GameSession(&mp);
+		currTutorialSession = new GameSession(menuMatchParams);
 		GameSession::sLoad(currTutorialSession);
 		break;
 	}
@@ -283,7 +289,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		//MatchParams mp = freeplayScreen->GetMatchParams();
 
-		currFreePlaySession = new GameSession(freeplayMatchParams);
+		currFreePlaySession = new GameSession(menuMatchParams);
 		GameSession::sLoad(currFreePlaySession);
 		break;
 	}
@@ -299,8 +305,15 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		else if (fromMode == RUN_FREEPLAY_MAP)
 		{
-			freeplayScreen->SetFromMatchParams(*freeplayMatchParams);
+			freeplayScreen->SetFromMatchParams(*menuMatchParams);
 		}
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	{
+		assert(singlePlayerControllerJoinScreen == NULL);
+		singlePlayerControllerJoinScreen = new SinglePlayerControllerJoinScreen(this);
+		singlePlayerControllerJoinScreen->Start();
+		break;
 	}
 	}
 }
@@ -351,7 +364,7 @@ MainMenu::MainMenu()
 	selectorAnimDuration = 21;
 	selectorAnimFactor = 3;
 	
-	freeplayMatchParams = new MatchParams;
+	menuMatchParams = new MatchParams;
 
 	globalFile = new GlobalSaveFile;
 	if (!globalFile->Load())
@@ -364,6 +377,7 @@ MainMenu::MainMenu()
 	currTutorialSession = NULL;
 	currFreePlaySession = NULL;
 	freeplayScreen = NULL;
+	singlePlayerControllerJoinScreen = NULL;
 
 	currSaveFile = NULL;
 
@@ -705,7 +719,7 @@ MainMenu::~MainMenu()
 
 	window->close();
 
-	delete freeplayMatchParams;
+	delete menuMatchParams;
 
 	delete customCursor;
 
@@ -2457,6 +2471,23 @@ void MainMenu::HandleMenuMode()
 			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(TITLEMENU);
 		}
+		else
+		{
+			if (saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
+			{
+				MatchParams mp;
+				mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
+				//mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
+				//fix this soon!
+				mp.randSeed = time(0);
+				mp.numPlayers = 1;
+				mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+				*menuMatchParams = mp;
+
+				musicPlayer->FadeOutCurrentMusic(30);
+				LoadMode(MainMenu::ADVENTURETUTORIAL);
+			}
+		}
 
 		break;
 	}
@@ -2961,8 +2992,8 @@ void MainMenu::HandleMenuMode()
 			if (selectedNode == NULL)
 				assert(0);
 
-			freeplayMatchParams->Clear();
-			freeplayMatchParams->mapPath = selectedNode->filePath.string();
+			menuMatchParams->Clear();
+			menuMatchParams->mapPath = selectedNode->filePath.string();
 			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			SetMode(LOADINGMENULOOP);
 		}
@@ -2980,10 +3011,38 @@ void MainMenu::HandleMenuMode()
 		{
 			//LoadMode(RUN_FREEPLAY_MAP);
 			//RunFreePlayMap(freeplayScreen->GetMatchParams().mapPath.string());
-			*freeplayMatchParams = freeplayScreen->GetMatchParams();
+			*menuMatchParams = freeplayScreen->GetMatchParams();
 			LoadMode(MainMenu::RUN_FREEPLAY_MAP);
 		}
 		else if (freeplayScreen->action == FreeplayScreen::A_BACK)
+		{
+			LoadMode(TITLEMENU);
+		}
+		break;
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	{
+		while (window->pollEvent(ev))
+		{
+			singlePlayerControllerJoinScreen->HandleEvent(ev);
+		}
+
+		singlePlayerControllerJoinScreen->Update();
+
+		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
+		{
+			MatchParams mp;
+			mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
+			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
+			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBox->skinIndex;
+			mp.randSeed = time(0);
+			mp.numPlayers = 1;
+			mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+			*menuMatchParams = mp;
+
+			LoadMode(TUTORIAL);
+		}
+		else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
 		{
 			LoadMode(TITLEMENU);
 		}
@@ -3436,7 +3495,8 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_TUTORIAL:
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
-			LoadMode(TUTORIAL);
+			//LoadMode(TUTORIAL);
+			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN);
 			break;
 		}
 		case M_CREDITS:
@@ -3772,6 +3832,11 @@ void MainMenu::DrawMode( Mode m )
 	case FREEPLAY:
 	{
 		freeplayScreen->Draw(preScreenTexture);
+		break;
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	{
+		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
 		break;
 	}
 	case DOWNLOAD_WORKSHOP_MAP_START:

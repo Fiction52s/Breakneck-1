@@ -19,6 +19,10 @@ void MatchParams::Clear()
 	controllerStateVec.resize(4);
 	playerSkins.clear();
 	playerSkins.resize(4);
+	for (int i = 0; i < 4; ++i)
+	{
+		playerSkins[i] = -1;
+	}
 }
 
 

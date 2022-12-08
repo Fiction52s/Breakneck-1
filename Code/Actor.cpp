@@ -21524,12 +21524,23 @@ void Actor::UpdateInHitlag()
 
  bool Actor::IsNormalSkin()
  {
-	 if (owner != NULL && owner->saveFile != NULL)
+	 if (owner != NULL )
 	 {
-		 int defaultSkin = owner->saveFile->defaultSkinIndex;
-		 if (currSkinIndex == defaultSkin)
+		 if (owner->saveFile != NULL)
 		 {
-			 return true;
+			 int defaultSkin = owner->saveFile->defaultSkinIndex;
+			 if (currSkinIndex == defaultSkin)
+			 {
+				 return true;
+			 }
+		 }
+		 else
+		 {
+			 int defaultSkin = owner->matchParams.playerSkins[actorIndex];
+			 if (currSkinIndex == defaultSkin)
+			 {
+				 return true;
+			 }
 		 }
 	 }
 	 else
