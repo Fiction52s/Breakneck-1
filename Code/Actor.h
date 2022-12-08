@@ -527,6 +527,7 @@ struct Actor : QuadTreeCollider,
 		EffectLayer layer;
 		EffectPool *pool;
 		bool pauseImmune;
+		bool usesPlayerSkinShader;
 		
 		//int startFrame;
 		//int duration;
@@ -536,7 +537,7 @@ struct Actor : QuadTreeCollider,
 		FXInfo();
 		~FXInfo();
 		void Set(Tileset *ts, int fxType, int maxEffects, EffectLayer effectLayer = EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-			bool p_pauseImmune = false);
+			bool p_pauseImmune = false, bool p_usesPlayerSkinShader = true );
 
 		/*void Set(Tileset *p_ts, int p_startFrame, int p_duration, int p_animFactor, int p_maxReps)
 		{
@@ -951,7 +952,6 @@ struct Actor : QuadTreeCollider,
 	MotionGhostEffect *motionGhostsEffects[3];
 	EffectPool *keyExplodePool;
 	KeyExplodeUpdater *keyExplodeUpdater;
-	Tileset *ts_keyExplode;
 	MovingGeoGroup *keyExplodeRingGroup;
 	MovingGeoGroup *enemyExplodeRingGroup;
 	MovingGeoGroup *enemiesClearedRingGroup;

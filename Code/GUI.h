@@ -953,17 +953,23 @@ struct ConfirmPopup : GUIHandler
 		DEFAULT,
 		SAVE_CURRENT,
 		SAVE_CURRENT_EXIT,
+		BACK_ALLOWED,
 	};
 
 	ConfirmType type;
 	Panel *panel;
 	EditSession *edit;
 
+	Button *yesButton;
+	Button *noButton;
+	Button *backButton;
+
 	enum Action
 	{
 		A_ACTIVE,
 		A_YES,
 		A_NO,
+		A_BACK,
 	};
 
 	int action;
@@ -976,6 +982,10 @@ struct ConfirmPopup : GUIHandler
 	void ButtonCallback(Button *b,
 		const std::string &e);
 	void CancelCallback(Panel *p);
+	//void ConfirmCallback(Panel *p);
+	void Update();
+	bool HandleEvent(sf::Event ev);
+	void Draw(sf::RenderTarget *target);
 };
 
 struct MessagePopup : GUIHandler

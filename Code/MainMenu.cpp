@@ -1036,7 +1036,15 @@ void MainMenu::SetMode(Mode m)
 		{
 			musicPlayer->PlayMusic(menuMusic);
 		}
-		saveMenu->SetSkin(GetCurrentProgress()->defaultSkinIndex);
+
+		if (GetCurrentProgress() == NULL)
+		{
+			saveMenu->SetSkin(0);
+		}
+		else
+		{
+			saveMenu->SetSkin(GetCurrentProgress()->defaultSkinIndex);
+		}
 	}
 	else if (menuMode == BROWSE_WORKSHOP)
 	{
@@ -2440,8 +2448,9 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-
+			saveMenu->HandleEvent(ev);
 		}
+
 		worldMap->Update(menuPrevInput, menuCurrInput);
 		if (!saveMenu->Update())
 		{
@@ -3388,6 +3397,7 @@ void MainMenu::TitleMenuModeUpdate()
 			//SetMode(MATCH_RESULTS);
 			//matchResultsScreen = netplayManager->CreateResultsScreen();
 			musicPlayer->FadeOutCurrentMusic(30);
+			//customCursor->SetMode(CustomCursor::M_SHIP);
 			LoadMode(SAVEMENU);
 			break;
 		}

@@ -296,6 +296,8 @@ struct WorldMap : TilesetManager
 	sf::Sprite colonySelectSpr;
 	sf::Sprite colonySelectSprZoomed;
 
+	float colonyRadius;
+
 	sf::Vector2f currCenter;
 	sf::Vector2f menuPos;
 
@@ -367,6 +369,7 @@ struct WorldMap : TilesetManager
 	MapSelector *CurrSelector();
 	void InitSelectors();
 	bool IsInAllUnlockedMode();
+	bool MouseIsOnSelectedColony();
 };
 
 #endif

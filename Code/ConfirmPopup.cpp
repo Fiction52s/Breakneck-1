@@ -13,8 +13,12 @@ ConfirmPopup::ConfirmPopup()
 
 	panel->AddLabel("question", Vector2i(10, 10), 28, "");
 
-	panel->SetConfirmButton(panel->AddButton("yes", Vector2i(10, 100), Vector2f(50, 30), "Yes"));
-	panel->SetCancelButton(panel->AddButton("no", Vector2i(70, 100), Vector2f(50, 30), "No"));
+	yesButton = panel->AddButton("yes", Vector2i(10, 100), Vector2f(50, 30), "Yes");
+	noButton = panel->AddButton("no", Vector2i(70, 100), Vector2f(50, 30), "No");
+	backButton = panel->AddButton("back", Vector2i(70 + 60, 100), Vector2f(50, 30), "Cancel");
+
+	//panel->SetConfirmButton(yesButton);
+	//panel->SetCancelButton(noButton);
 
 	action = A_ACTIVE;
 }
@@ -40,6 +44,8 @@ void ConfirmPopup::Pop(ConfirmType ct)
 
 	action = A_ACTIVE;
 
+	backButton->HideMember();
+
 	switch (type)
 	{
 	case SAVE_CURRENT:
@@ -52,13 +58,18 @@ void ConfirmPopup::Pop(ConfirmType ct)
 		//panel->labels["question"]->setString("Changes to current map have not been saved.\nSave before continuing?");
 		break;
 	}
+	case BACK_ALLOWED:
+	{
+		backButton->ShowMember();
+		break;
+	}
 	}
 }
 
 void ConfirmPopup::ButtonCallback(Button *b,
 	const std::string &e)
 {
-	if (b == panel->confirmButton)
+	if (b == yesButton)
 	{
 		action = A_YES;
 
@@ -85,7 +96,11 @@ void ConfirmPopup::ButtonCallback(Button *b,
 			edit->RemoveActivePanel(panel);
 		}
 	}
-	else if (b == panel->cancelButton)
+	else if (b == noButton )
+	{
+		action = A_NO;
+	}
+	else if (b == backButton)
 	{
 		CancelCallback(panel);
 	}
@@ -93,26 +108,48 @@ void ConfirmPopup::ButtonCallback(Button *b,
 
 void ConfirmPopup::CancelCallback(Panel *p)
 {
-	action = A_NO;
-
-	switch (type)
+	if (type == BACK_ALLOWED)
 	{
-	case SAVE_CURRENT:
-	{
-		edit->ReloadNew();
-		break;
+		action = A_BACK;
 	}
-	case SAVE_CURRENT_EXIT:
+	else
 	{
-		edit->quit = true;
-		edit->returnVal = 1;
-		break;
-	}
+		action = A_NO;
 
+		switch (type)
+		{
+		case SAVE_CURRENT:
+		{
+			edit->ReloadNew();
+			break;
+		}
+		case SAVE_CURRENT_EXIT:
+		{
+			edit->quit = true;
+			edit->returnVal = 1;
+			break;
+		}
+
+		}
 	}
 
 	if (edit != NULL)
 	{
 		edit->RemoveActivePanel(panel);
 	}
+}
+
+void ConfirmPopup::Update()
+{
+	panel->MouseUpdate();
+}
+
+bool ConfirmPopup::HandleEvent(sf::Event ev)
+{
+	return panel->HandleEvent(ev);
+}
+
+void ConfirmPopup::Draw(sf::RenderTarget *target)
+{
+	panel->Draw(target);
 }

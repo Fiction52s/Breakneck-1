@@ -5,16 +5,28 @@
 
 struct CustomCursor
 {
-	CustomCursor();
+	enum Mode
+	{
+		M_REGULAR,
+		M_SHIP,
+		M_Count
+	};
 
-	sf::Image normalImage;
-	sf::Image clickedImage;
+	CustomCursor();
+	~CustomCursor();
+
+	sf::Image normalImage[M_Count];
+	sf::Image clickedImage[M_Count];
+	sf::Vector2u hotspot[M_Count];
 	sf::Cursor cursor;
 	sf::RenderWindow *window;
 	bool clicked;
+	int mode;
+	
 
 	void SetClicked();
 	void SetNormal();
+	void SetMode(int m);
 	void Init(sf::RenderWindow *rw);
 };
 

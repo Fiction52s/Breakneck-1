@@ -11,6 +11,7 @@
 #include "Background.h"
 #include "KinBoostScreen.h"
 #include "LoadingBackpack.h"
+#include "UIMouse.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -19,7 +20,7 @@ using namespace std;
 WorldMap::WorldMap( MainMenu *p_mainMenu )
 	:font( mainMenu->arial ), mainMenu( p_mainMenu )
 {
-	allUnlocked = false;
+	allUnlocked = true;
 
 	
 	kinBoostScreen = new KinBoostScreen(mainMenu, this);
@@ -129,6 +130,8 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
 
 	}
+
+	colonyRadius = 192 / 2;
 
 	colonySelectSprZoomed.setScale(1.f / 8.f, 1.f / 8.f );
 	
@@ -540,6 +543,21 @@ void WorldMap::InitSelectors()
 	}
 }
 
+bool WorldMap::MouseIsOnSelectedColony()
+{
+	int tempSelected = -1;
+	Vector2f mousePos = MOUSE.GetFloatPos();
+	Vector2f colMiddle = colonySpr[selectedColony].getPosition() + Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
+		colonySpr[selectedColony].getGlobalBounds().height / 2);
+
+	if (length(mousePos - colMiddle) < colonyRadius)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 {
 	int trans = 20;
@@ -568,7 +586,8 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case PLANET:
 	{
-		if (currInput.A && !prevInput.A)
+		if ((MouseIsOnSelectedColony() && MOUSE.IsMouseLeftClicked())
+			|| CONTROLLERS.ButtonPressed_A() )//currInput.A && !prevInput.A)
 		{
 			state = PlANET_TO_COLONY;
 			frame = 0;
@@ -618,7 +637,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			
 			break;
 		}
-		else if (currInput.B && !prevInput.B)
+		else if (CONTROLLERS.ButtonPressed_B() )//currInput.B && !prevInput.B)
 		{
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
 			mainMenu->SetMode(MainMenu::SAVEMENU);
@@ -681,9 +700,23 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		bool down = currInput.LDown() && prevInput.IsLeftNeutral();//!prevInput.LDown();
 		bool right = currInput.LRight() && prevInput.IsLeftNeutral();//!prevInput.LRight();
 
-
 		int tempSelected = -1;
-		if (selectedColony == 0)
+		Vector2f mousePos = MOUSE.GetFloatPos();
+		Vector2f colMiddle;
+		for (int i = 0; i < numCompletedWorlds; ++i)
+		{
+			colMiddle = colonySpr[i].getPosition() + Vector2f(colonySpr[i].getGlobalBounds().width / 2,
+				colonySpr[i].getGlobalBounds().height / 2);
+			if (length(mousePos - colMiddle) < colonyRadius)
+			{
+				tempSelected = i;
+				break;
+			}
+		}
+
+
+	
+		/*if (selectedColony == 0)
 		{
 			if (left || up )
 			{
@@ -748,9 +781,9 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			{
 				tempSelected = 0;
 			}
-		}
+		}*/
 
-		if (tempSelected >= 0 && tempSelected <= numCompletedWorlds)
+		if (tempSelected >= 0 && tempSelected <= numCompletedWorlds && tempSelected != selectedColony )
 		{
 			selectedColony = tempSelected;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));

@@ -8,6 +8,7 @@
 #include "SkinMenu.h"
 #include "MusicPlayer.h"
 #include "MenuPopup.h"
+#include "UIMouse.h"
 
 using namespace sf;
 using namespace std;
@@ -36,8 +37,16 @@ void SaveFileDisplay::InitText( sf::Text &text)
 	text.setOutlineThickness(3);
 }
 
-void SaveFileDisplay::SetPosition(Vector2f &pos)
+bool SaveFileDisplay::Contains(sf::Vector2f &checkPos)
 {
+	//710 x 270
+	FloatRect fr(pos, Vector2f(710, 270));
+	return fr.contains(checkPos);
+}
+
+void SaveFileDisplay::SetPosition(Vector2f &p_pos)
+{
+	pos = p_pos;
 	Vector2f innerStart = pos + Vector2f(280, 30);
 
 
@@ -102,12 +111,10 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu),
 	playerSkinShader( "player" ),
-	maskPlayerSkinShader( "player" ),
-	confirmPopup( p_mainMenu ),
-	decisionPopup( p_mainMenu )
+	maskPlayerSkinShader( "player" )
 {
-	infoPopup = new MenuInfoPopup(p_mainMenu);
-
+	messagePopup = new MessagePopup;
+	confirmPopup = new ConfirmPopup;
 
 	menuOffset = Vector2f(0, 0);
 
@@ -119,7 +126,6 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	
 	frame = 0;
 	kinFaceTurnLength = 15;
-	selectedSaveIndex = 0;
 	cloudLoopLength = 8;
 	cloudLoopFactor = 5;
 
@@ -158,7 +164,6 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	}
 
 	
-
 	std::vector<string> saveNames = { "blue", "green", "yellow", "orange", "red", "magenta" };
 	for (int i = 0; i < 6; ++i)
 	{
@@ -174,6 +179,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	}
 
 	mainMenu->currSaveFile = files[selectedSaveIndex];
+
 	/*files[0] = new SaveFile("blue",af );
 	files[1] = new SaveFile("green", af);
 	files[2] = new SaveFile("yellow", af);
@@ -294,8 +300,6 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	selectSlot.setPosition(topLeftPos);
 	//kinFace.setPosition(topLeftPos + Vector2f( 50, 0 ));
-
-
 }
 
 SaveMenuScreen::~SaveMenuScreen()
@@ -310,7 +314,8 @@ SaveMenuScreen::~SaveMenuScreen()
 		delete fileDisplay[i];
 	}
 
-	delete infoPopup;
+	delete messagePopup;
+	delete confirmPopup;
 }
 
 void SaveMenuScreen::SaveSelectedFile()
@@ -329,6 +334,18 @@ void SaveMenuScreen::SaveCurrSkin()
 {
 	mainMenu->currSaveFile->defaultSkinIndex = currSkin;
 	SaveSelectedFile();
+}
+
+bool SaveMenuScreen::HandleEvent(sf::Event ev)
+{
+	switch (action)
+	{
+	case ASKTUTORIAL:
+	case CONFIRMDELETE:
+		return confirmPopup->HandleEvent(ev);
+	}
+
+	return true;
 }
 
 bool SaveMenuScreen::Update()
@@ -479,22 +496,17 @@ bool SaveMenuScreen::Update()
 	{
 		if( action == WAIT )
 		{
-			if (menuCurrInput.B && !menuPrevInput.B)
-			{
-				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
-				return false;
-				/*mainMenu->LoadMode(SAVEMENU);
-				mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
-				mainMenu->fader->CrossFade(30, 0, 30, Color::Black);*/
-			}
-			else if (menuCurrInput.A && !menuPrevInput.A)
+			UpdateSelectedIndex();
+
+			if ((MouseIsOverSelectedFile() && MOUSE.IsMouseLeftClicked()) )
 			{
 				if (defaultFiles[selectedSaveIndex])
 				{
 					action = ASKTUTORIAL;
 					frame = 0;
-					decisionPopup.SetText("You are starting a new file.\nDo you want a tutorial?");
-					decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_YES);
+					confirmPopup->Pop(ConfirmPopup::BACK_ALLOWED);
+					confirmPopup->SetQuestion("You are starting a new file.\nDo you want a tutorial?");
+					//decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_YES);
 				}
 				else
 				{
@@ -504,47 +516,64 @@ bool SaveMenuScreen::Update()
 					return true;
 				}
 			}
-			else if (menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder)
+			else if (CONTROLLERS.ButtonPressed_B())
 			{
-				action = SKINMENU;
-				frame = 0;
-				skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
-				changedToSkin = true; //so you dont exit the same frame you open
-				
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
+				return false;
 			}
-			else if (menuCurrInput.X && !menuPrevInput.X)
-			{
-				if (!defaultFiles[selectedSaveIndex])
-				{
-					action = CONFIRMDELETE;
-					confirmPopup.SetText("Are you sure you want\nto delete this save file?");
-					frame = 0;
-				}
-			}
-			else if (menuCurrInput.Y && !menuPrevInput.Y)
-			{
-				if (!defaultFiles[selectedSaveIndex])
-				{
-					action = COPY;
-					frame = 0;
-					copiedIndex = selectedSaveIndex;
-				}
-			}
-			else
-			{
-				ChangeIndex(down, up, left, right);
-			}
+
+			//if (menuCurrInput.B && !menuPrevInput.B)
+			//{
+			//	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
+			//	return false;
+			//}
+			//else if (menuCurrInput.A && !menuPrevInput.A)
+			//{
+			//	
+			//}
+			//else if (menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder)
+			//{
+			//	action = SKINMENU;
+			//	frame = 0;
+			//	skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+			//	changedToSkin = true; //so you dont exit the same frame you open
+			//	
+			//}
+			//else if (menuCurrInput.X && !menuPrevInput.X)
+			//{
+			//	if (!defaultFiles[selectedSaveIndex])
+			//	{
+			//		action = CONFIRMDELETE;
+			//		confirmPopup.SetText("Are you sure you want\nto delete this save file?");
+			//		frame = 0;
+			//	}
+			//}
+			//else if (menuCurrInput.Y && !menuPrevInput.Y)
+			//{
+			//	if (!defaultFiles[selectedSaveIndex])
+			//	{
+			//		action = COPY;
+			//		frame = 0;
+			//		copiedIndex = selectedSaveIndex;
+			//	}
+			//}
+			//else
+			//{
+
+			//	//ChangeIndex(down, up, left, right);
+			//}
 		}
 		else if (action == CONFIRMDELETE)
 		{
-			int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
-			if (res == SaveMenuConfirmPopup::OPTION_CONFIRM)
+			confirmPopup->Update();
+			if (confirmPopup->action == ConfirmPopup::A_YES )
 			{
 				action = CONFIRMDELETE2;
-				confirmPopup.SetText("Save file will be permanently\ndeleted. Continue?");
+				confirmPopup->Pop();
+				confirmPopup->SetQuestion("Save file will be permanently\ndeleted. Continue?");
 				frame = 0;
 			}
-			else if (res == SaveMenuConfirmPopup::OPTION_BACK)
+			else if (confirmPopup->action == ConfirmPopup::A_NO)
 			{
 				action = WAIT;
 				frame = 0;
@@ -552,19 +581,19 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == CONFIRMDELETE2)
 		{
-			int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
-			if ( res == SaveMenuConfirmPopup::OPTION_CONFIRM)
+			if (confirmPopup->action == ConfirmPopup::A_YES)
 			{
 				action = INFOPOP;
 				frame = 0;
-				infoPopup->SetText("Deleted save file");
+				messagePopup->Pop("Deleted save file");
+				//infoPopup->SetText("Deleted save file");
 
 				defaultFiles[selectedSaveIndex] = true;
 				files[selectedSaveIndex]->Delete();
 				fileDisplay[selectedSaveIndex]->SetValues(NULL, NULL);
 				
 			}
-			else if( res == SaveMenuConfirmPopup::OPTION_BACK)
+			else if (confirmPopup->action == ConfirmPopup::A_NO)
 			{
 				action = WAIT;
 				frame = 0;
@@ -572,8 +601,7 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == INFOPOP)
 		{
-			bool res = infoPopup->Update(menuCurrInput, menuPrevInput);
-			if (res)
+			if (messagePopup->action == MessagePopup::A_INACTIVE )
 			{
 				action = WAIT;
 				frame = 0;
@@ -581,22 +609,22 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == ASKTUTORIAL)
 		{
-			int res = decisionPopup.Update(menuCurrInput, menuPrevInput);
-			if (res == SaveMenuDecisionPopup::OPTION_YES)
+			confirmPopup->Update();
+			if (confirmPopup->action == ConfirmPopup::A_YES)
 			{
 				action = SELECT;
 				frame = 0;
 				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
 				startWithTutorial = true;
 			}
-			else if (res == SaveMenuDecisionPopup::OPTION_NO)
+			else if (confirmPopup->action == ConfirmPopup::A_NO)
 			{
 				action = SELECT;
 				frame = 0;
 				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
 				startWithTutorial = false;
 			}
-			else if (res == SaveMenuDecisionPopup::OPTION_BACK)
+			else if (confirmPopup->action == ConfirmPopup::A_BACK)
 			{
 				action = WAIT;
 				frame = 0;
@@ -604,34 +632,36 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == COPY)
 		{
-			if (menuCurrInput.A && !menuPrevInput.A)
-			{
-				if (defaultFiles[selectedSaveIndex])
-				{
-					action = CONFIRMCOPY;
-					frame = 0;
-					confirmPopup.SetText("Are you sure you want to\ncopy the save file here?");
-				}
-				else
-				{
-					action = INFOPOP;
-					frame = 0;
-					infoPopup->SetText("Cannot overwrite existing file");
-				}
-			}
-			else if (menuCurrInput.B && !menuPrevInput.B)
-			{
-				action = WAIT;
-				frame = 0;
-			}
-			else
-			{
-				ChangeIndex(down, up, left, right);
-			}
+			//UpdateSelectedIndex();
+
+			//if (menuCurrInput.A && !menuPrevInput.A)
+			//{
+			//	if (defaultFiles[selectedSaveIndex])
+			//	{
+			//		action = CONFIRMCOPY;
+			//		frame = 0;
+			//		confirmPopup.SetText("Are you sure you want to\ncopy the save file here?");
+			//	}
+			//	else
+			//	{
+			//		action = INFOPOP;
+			//		frame = 0;
+			//		infoPopup->SetText("Cannot overwrite existing file");
+			//	}
+			//}
+			//else if (menuCurrInput.B && !menuPrevInput.B)
+			//{
+			//	action = WAIT;
+			//	frame = 0;
+			//}
+			//else
+			//{
+			//	//ChangeIndex(down, up, left, right);
+			//}
 		}
 		else if (action == CONFIRMCOPY)
 		{
-			int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
+			/*int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
 			if (res == SaveMenuConfirmPopup::OPTION_CONFIRM)
 			{
 				action = INFOPOP;
@@ -647,7 +677,7 @@ bool SaveMenuScreen::Update()
 			{
 				action = WAIT;
 				frame = 0;
-			}
+			}*/
 		}
 	}
 
@@ -829,6 +859,36 @@ bool SaveMenuScreen::IsSkinUnlocked(int skinIndex)
 	return mainMenu->IsSkinUnlocked(skinIndex);
 }
 
+void SaveMenuScreen::UpdateSelectedIndex()
+{
+	Vector2f mousePos = MOUSE.GetFloatPos();
+
+	for (int i = 0; i < 6; ++i)
+	{
+		if (fileDisplay[i]->Contains(mousePos))
+		{
+			if (selectedSaveIndex != i)
+			{
+				selectedSaveIndex = i;
+				SelectedIndexChanged();
+			}
+			break;
+		}
+	}
+}
+
+bool SaveMenuScreen::MouseIsOverSelectedFile()
+{
+	Vector2f mousePos = MOUSE.GetFloatPos();
+
+	if (fileDisplay[selectedSaveIndex]->Contains(mousePos))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void SaveMenuScreen::ChangeIndex(bool down, bool up, bool left, bool right)
 {
 	if (down)
@@ -907,8 +967,12 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 		saveTexture->draw(kinJump, &playerSkinShader.pShader);
 	}
 	
-	saveTexture->draw(selectSlot);
-	saveTexture->draw(kinFace, &maskPlayerSkinShader.pShader);
+	if (selectedSaveIndex >= 0)
+	{
+		saveTexture->draw(selectSlot);
+		saveTexture->draw(kinFace, &maskPlayerSkinShader.pShader);
+	}
+	
 
 	for (int i = 0; i < 6; ++i)
 	{
@@ -936,15 +1000,16 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	}
 	else if (action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY)
 	{
-		confirmPopup.Draw(target);
+		confirmPopup->Draw(target);
 	}
 	else if (action == ASKTUTORIAL)
 	{
-		decisionPopup.Draw(target);
+		confirmPopup->Draw(target);
 	}
 	else if (action == INFOPOP)
 	{
-		infoPopup->Draw(target);
+		messagePopup->Draw(target);
+		//infoPopup->Draw(target);
 	}
 }
 

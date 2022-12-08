@@ -118,8 +118,15 @@ void Actor::Hitter::Set(void *hi)
 
 void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
 {
-	actor->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-		actor->ts_keyExplode, V2d(ei->pos), true, 0, 6, 3, true);
+	
+	EffectInstance params;
+	Transform tr = sf::Transform::Identity;
+
+	params.SetParams(ei->pos, tr, 6, 3, 0);
+
+	actor->ActivateEffect(Actor::PLAYERFX_KEY_EXPLODE, &params);
+	//actor->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	//	actor->ts_keyExplode, V2d(ei->pos), true, 0, 6, 3, true);
 }
 
 void Actor::CheckBirdCommands()
@@ -993,13 +1000,16 @@ void Actor::SetupFXTilesets()
 
 	effectPools[PLAYERFX_SMALL_LIGHTNING].Set(sess->GetSizedTileset(folder, "fx_elec_128x96.png"), EffectType::FX_RELATIVE, 20);
 
-	effectPools[PLAYERFX_GATE_BLACK].Set(sess->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2);
+	effectPools[PLAYERFX_GATE_BLACK].Set(sess->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2,
+		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
-	effectPools[PLAYERFX_KEY].Set(sess->GetSizedTileset("FX/key_128x128.png"), EffectType::FX_REGULAR, 32);
+	effectPools[PLAYERFX_KEY].Set(sess->GetSizedTileset("FX/key_128x128.png"), EffectType::FX_REGULAR, 32,
+		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false );
 	keyExplodeUpdater = new KeyExplodeUpdater(this);
 	effectPools[PLAYERFX_KEY].pool->SetUpdater(keyExplodeUpdater);
 
-	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->GetSizedTileset("FX/keyexplode_128x128.png"), EffectType::FX_REGULAR, 32);
+	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->GetSizedTileset("FX/keyexplode_128x128.png"), EffectType::FX_REGULAR, 32,EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+		true, false);
 
 	effectPools[PLAYERFX_DASH_BOOST].Set(sess->GetSizedTileset(folder, "fx_dash_boost_128x256.png"), EffectType::FX_REGULAR, 4);
 
@@ -1039,7 +1049,7 @@ void Actor::SetupFXTilesets()
 
 	for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
 	{
-		if ((*it).pool != NULL)
+		if ((*it).pool != NULL && (*it).usesPlayerSkinShader )
 		{
 			(*it).pool->effectShader = &(fxPaletteShader->pShader);
 		}
@@ -21585,6 +21595,7 @@ void Actor::UpdateInHitlag()
 	 pool = NULL;
 	 layer = EffectLayer::BETWEEN_PLAYER_AND_ENEMIES;
 	 pauseImmune = false;
+	 
 	 //startFrame = 0;
 	 //duration = 0;
 	 //animFactor = 0;
@@ -21598,13 +21609,16 @@ void Actor::UpdateInHitlag()
 	 }
  }
 
- void Actor::FXInfo::Set(Tileset *p_ts, int p_fxType, int p_maxEffects, EffectLayer p_effectLayer, bool p_pauseImmune )
+ void Actor::FXInfo::Set(Tileset *p_ts, int p_fxType, int p_maxEffects, EffectLayer p_effectLayer, bool p_pauseImmune, bool p_usesPlayerSkinShader)
  {
 	 if (p_ts == NULL)
 	 {
 		 cout << "missing tileset" << endl;
 		 assert(0);
 	 }
+
+	 usesPlayerSkinShader = p_usesPlayerSkinShader;
+
 	 pool = new EffectPool((EffectType)p_fxType, p_maxEffects);
 	 pool->ts = p_ts;
 
@@ -21619,8 +21633,12 @@ void Actor::UpdateInHitlag()
 	 {
 		 if( (*it).pool != NULL && (*it).layer == effectLayer)
 		 {
-			 fxPaletteShader->SetTileset((*it).pool->ts);
-			 (*it).pool->Draw(target);
+			if ((*it).usesPlayerSkinShader)
+			{
+				fxPaletteShader->SetTileset((*it).pool->ts);
+			}
+			(*it).pool->Draw(target);
+			 
 		 }
 	 }
  }

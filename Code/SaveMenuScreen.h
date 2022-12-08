@@ -12,15 +12,21 @@ struct WorldMap;
 struct SkinMenu;
 struct MenuInfoPopup;
 
+struct MessagePopup;
+struct ConfirmPopup;
+
 struct SaveFileDisplay
 {
 	SaveFileDisplay(sf::Font &f);
 	void SetPosition(sf::Vector2f &pos);
 	void InitText(sf::Text &text);
+	bool Contains(sf::Vector2f &pos);
 	sf::Text completedWorldsText;
 	sf::Text completeLevelsText;
 	sf::Text capturedShardsText;
 	sf::Text totalTime;
+
+	sf::Vector2f pos;
 	
 	sf::Text blankText;
 	
@@ -107,9 +113,12 @@ struct SaveMenuScreen : TilesetManager
 	};
 
 	int copiedIndex;
-	SaveMenuConfirmPopup confirmPopup;
-	MenuInfoPopup *infoPopup;
-	SaveMenuDecisionPopup decisionPopup;
+	//SaveMenuConfirmPopup confirmPopup;
+	//MenuInfoPopup *infoPopup;
+	//SaveMenuDecisionPopup decisionPopup;
+	MessagePopup *messagePopup;
+	ConfirmPopup *confirmPopup;
+
 	bool startWithTutorial;
 	int currSkin;
 	bool defaultFiles[6];
@@ -134,6 +143,9 @@ struct SaveMenuScreen : TilesetManager
 	void UnlockSkin(int skinIndex);
 	bool IsSkinUnlocked(int skinIndex);
 	void ChangeIndex(bool down, bool up, bool left, bool right);
+	void UpdateSelectedIndex();
+	bool MouseIsOverSelectedFile();
+	bool HandleEvent(sf::Event ev);
 
 	MainMenu *mainMenu;
 	sf::Vector2f menuOffset;
