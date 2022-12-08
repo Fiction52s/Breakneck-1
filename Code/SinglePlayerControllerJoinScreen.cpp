@@ -266,7 +266,7 @@ SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
 	playerBoxSpacing = 100;
 
 	Vector2i center(960, 540 + 100);//50);//150
-	playerBox->SetTopLeft(center + Vector2i( playerBoxWidth / 2, playerBoxHeight / 2));
+	playerBox->SetTopLeft(center - Vector2i( playerBoxWidth / 2, playerBoxHeight / 2));
 	
 	Start();
 }
@@ -346,6 +346,10 @@ void SinglePlayerControllerJoinScreen::Update()
 	{
 	case A_WAITING_FOR_PLAYER:
 	{
+		break;
+	}
+	case A_READY:
+	{
 		ControllerDualStateQueue *states = playerBox->controllerStates;
 
 		if (states != NULL)
@@ -392,6 +396,15 @@ void SinglePlayerControllerJoinScreen::Update()
 		{
 			TryControllerJoin(states);
 		}
+
+		SetRectColor(bgQuad, Color(100, 100, 100));
+		break;
+	}
+	case A_READY:
+	{
+		playerBox->Update();
+		panel->MouseUpdate();
+		SetRectColor(bgQuad, Color(83,102,188));
 		break;
 	}
 	case A_START:
@@ -407,6 +420,7 @@ void SinglePlayerControllerJoinScreen::TryControllerJoin(ControllerDualStateQueu
 	assert(playerBox->controllerStates == NULL);
 
 	playerBox->SetControllerStates(conStates, 0);
+	SetAction(A_READY);
 	//cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;
 }
 
@@ -425,6 +439,8 @@ void SinglePlayerControllerJoinScreen::Draw(sf::RenderTarget *target)
 	{
 	case A_BACK:
 	case A_WAITING_FOR_PLAYER:
+	case A_READY:
+	case A_START:
 	{
 		target->draw(bgQuad, 4, sf::Quads);
 

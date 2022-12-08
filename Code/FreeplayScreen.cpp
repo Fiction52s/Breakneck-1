@@ -198,7 +198,10 @@ void FreeplayPlayerBox::SetControllerStates(ControllerDualStateQueue *conStates,
 	fps->ts_controllerIcons->SetQuadSubRect(controllerIconQuad, tileIndex);
 	fps->ts_portIcons->SetQuadSubRect(portIconQuad, controllerStates->GetIndex() );
 
-	SetSkin(p_skinIndex);
+	if (skinIndex >= 0 )
+	{
+		SetSkin(p_skinIndex);
+	}
 }
 
 void FreeplayPlayerBox::SetName(const std::string &name)

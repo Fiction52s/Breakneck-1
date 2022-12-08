@@ -66,6 +66,7 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 	enum Action
 	{
 		A_WAITING_FOR_PLAYER,
+		A_READY,
 		A_START,
 		A_BACK,
 	};

@@ -116,7 +116,7 @@ void Goal::ResetEnemy()
 
 void Goal::ConfirmKill()
 {
-	dead = true;
+	//dead = true;
 	HandleNoHealth();
 }
 

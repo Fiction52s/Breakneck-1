@@ -804,6 +804,14 @@ GameSession::GameSession(MatchParams *mp )
 		}
 	}
 
+	for (int i = 0; i < 4; ++i)
+	{
+		if (matchParams.playerSkins[i] == -1)
+		{
+			matchParams.playerSkins[i] = i;
+		}
+	}
+
 	SeedRand(matchParams.randSeed);
 	saveFile = matchParams.saveFile;
 	netplayManager = matchParams.netplayManager;
