@@ -1,5 +1,6 @@
 #include "UIMouse.h"
 #include "Input.h"
+#include <iostream>
 
 using namespace sf;
 using namespace std;
@@ -71,6 +72,8 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 			float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
 			float maxSpeed = 20;
 			sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
+
+			//cout << "old mypos: " << myPos.x << ", " << myPos.y << endl;
 			myPos += movement;
 		}
 		else
@@ -94,7 +97,12 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 			}
 		}
 
-		sf::Mouse::setPosition(myPos);
+		Vector2f pos(myPos);
+		//turn back into screen coords
+		pos.x *= currWindow->getSize().x / 1920.f;
+		pos.y *= currWindow->getSize().y / 1080.f;
+
+		sf::Mouse::setPosition(Vector2i(pos), *currWindow);
 	}
 
 	consumed = false;
@@ -171,5 +179,5 @@ void UIMouse::SetPosition(sf::Vector2i &pos)
 {
 	mousePos = pos;
 	myPos = pos;
-	sf::Mouse::setPosition(myPos);
+	sf::Mouse::setPosition(myPos, *currWindow);
 }

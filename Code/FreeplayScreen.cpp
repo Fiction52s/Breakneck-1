@@ -713,8 +713,6 @@ void FreeplayScreen::DrawPopupBG(sf::RenderTarget *target)
 	target->draw(rect);
 }
 
-
-
 void FreeplayScreen::Draw(sf::RenderTarget *target)
 {
 	switch (action)

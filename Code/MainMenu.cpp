@@ -58,6 +58,7 @@
 #include "UIController.h"
 #include "LobbyBrowser.h"
 #include "SinglePlayerControllerJoinScreen.h"
+#include "GameSettingsScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -307,6 +308,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		{
 			freeplayScreen->SetFromMatchParams(*menuMatchParams);
 		}
+
+		break;
 	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN:
 	{
@@ -359,6 +362,9 @@ MainMenu::MainMenu()
 {
 	assert(currInstance == NULL);
 	currInstance = this;
+
+	customCursor = NULL;
+	window = NULL;
 
 	selectorAnimFrame = 0;
 	selectorAnimDuration = 21;
@@ -577,7 +583,7 @@ MainMenu::MainMenu()
 	mapSelectionMenu = NULL;
 	//mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 100));
 
-	optionsMenu = new OptionsMenuScreen(this);
+	gameSettingsScreen = new GameSettingsScreen(this);
 
 	creditsMenu = new CreditsMenuScreen(this);
 
@@ -594,10 +600,20 @@ MainMenu::MainMenu()
 
 void MainMenu::SetupWindow()
 {
-	window = NULL;
+	if (window != NULL)
+	{
+		window->close();
+		delete window;
+		window = NULL;
+	}
+	
+	windowWidth = config->GetData().resolutionX;
+	windowHeight = config->GetData().resolutionY;
+	style = config->GetData().windowStyle;
+
 	/*windowWidth = 960;
 	windowHeight = 540;*/
-	window = new RenderWindow(sf::VideoMode(windowWidth, windowHeight), "Breakneck",
+	window = new RenderWindow(sf::VideoMode(windowWidth, windowHeight), "Kinetic: Break All Limits",
 		config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
 	window->setKeyRepeatEnabled(false);
 
@@ -606,7 +622,11 @@ void MainMenu::SetupWindow()
 
 	CONTROLLERS.SetRenderWindow(window);
 
-	customCursor = new CustomCursor;
+	if (customCursor == NULL)
+	{
+		customCursor = new CustomCursor;
+	}
+	
 	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
 	customCursor->Init(window);
 
@@ -619,7 +639,7 @@ void MainMenu::SetupWindow()
 	assert(window != NULL);
 	window->setVerticalSyncEnabled(true);
 	//window->setFramerateLimit(120);
-	std::cout << "opened window" << endl;
+	//std::cout << "opened window" << endl;
 
 	window->setView(v);
 }
@@ -789,7 +809,7 @@ MainMenu::~MainMenu()
 		delete mapSelectionMenu;
 	}
 	
-	delete optionsMenu;
+	delete gameSettingsScreen;
 	delete creditsMenu;
 	delete mapBrowserScreen;
 	delete onlineMenuScreen;
@@ -1202,7 +1222,7 @@ void MainMenu::CustomMapsOption()
 
 		//window.setView( uiView );
 		Vector2f uiMouse = window->mapPixelToCoords( mousePos );
-		MOUSE.Update(GetPixelPos());
+		MOUSE.Update(mousePos);//GetPixelPos());
 		//MOUSE.Update( Mouse::isButtonPressed( Mouse::Left ), Mouse::isButtonPressed)
 		ls.MouseUpdate( uiMouse );
 		//Vector2f uiMouse = Vector2f( mousePos.x   window->getSize().x, mousePos.y ) * Vector2f(, window->getSize().y );
@@ -1648,7 +1668,7 @@ void MainMenu::Run()
 			{
 				UpdateMenuInput();
 
-				mousePixelPos = GetPixelPos();
+				mousePixelPos = GetPixelPos();//sf::Mouse::getPosition(*window);
 
 				MOUSE.Update(mousePixelPos);
 
@@ -1743,19 +1763,25 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	windowWidth = p_windowWidth;
 	windowHeight = p_windowHeight;
 
-	if (style != p_style)
-	{
-		//sf::ContextSettings contextSettings( 0, 0, 0, 0)
+	window->create(sf::VideoMode(windowWidth, windowHeight), "Breakneck",
+		config->GetData().windowStyle, sf::ContextSettings());
+	window->setPosition(Vector2i(0, 0));
+	style = p_style;
+	return;
 
-		window->create( sf::VideoMode(windowWidth, windowHeight), "Breakneck",
-			config->GetData().windowStyle, sf::ContextSettings());
-		style = p_style;
-	}
-	else
-	{
-		window->setSize(Vector2u(windowWidth, windowHeight));
-		window->setPosition(Vector2i(0, 0));
-	}
+	//if (style != p_style)
+	//{
+	//	//sf::ContextSettings contextSettings( 0, 0, 0, 0)
+
+	//	window->create( sf::VideoMode(windowWidth, windowHeight), "Breakneck",
+	//		config->GetData().windowStyle, sf::ContextSettings());
+	//	style = p_style;
+	//}
+	//else
+	//{
+	//	window->setSize(Vector2u(windowWidth, windowHeight));
+	//	window->setPosition(Vector2i(0, 0));
+	//}
 }
 
 void MainMenu::SetModeAdventureLoadingMap( int wIndex )
@@ -2642,17 +2668,16 @@ void MainMenu::HandleMenuMode()
 		SetMode(TITLEMENU);
 		break;
 	}
-	case TRANS_MAIN_TO_OPTIONS:
+	case TRANS_MAIN_TO_GAME_SETTINGS:
 	{
 		while (window->pollEvent(ev))
 		{
 
 		}
-		SetMode(OPTIONS);
+		SetMode(GAME_SETTINGS);
 		config->WaitForLoad();
 
-		optionsMenu->Load();
-		optionsMenu->Center(Vector2f(1920, 1080));
+		gameSettingsScreen->UpdateFromConfig();
 		/*if (slideCurrFrame > numSlideFrames)
 		{
 		menuMode = OPTIONS;
@@ -2666,23 +2691,19 @@ void MainMenu::HandleMenuMode()
 		}*/
 		break;
 	}
-	case OPTIONS:
+	case GAME_SETTINGS:
 	{
 		while (window->pollEvent(ev))
 		{
-
+			gameSettingsScreen->HandleEvent(ev);
 		}
 
-		optionsMenu->Update(menuCurrInput, menuPrevInput);
-		break;
-	}
-	case TRANS_OPTIONS_TO_MAIN:
-	{
-		while (window->pollEvent(ev))
+		gameSettingsScreen->Update();
+
+		if (gameSettingsScreen->action == GameSettingsScreen::A_CANCEL)
 		{
-
+			SetMode(TITLEMENU);
 		}
-		SetMode(TITLEMENU);
 		break;
 	}
 	case TRANS_MAIN_TO_CREDITS:
@@ -3488,8 +3509,13 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_OPTIONS:
 		{
 			//config->Load();
-			Config::CreateLoadThread(config);
-			SetMode(TRANS_MAIN_TO_OPTIONS);
+			config->Load();
+			//Config::CreateLoadThread(config);
+			//config->WaitForLoad();
+			
+			gameSettingsScreen->Start();
+			SetMode(GAME_SETTINGS);
+			//SetMode(TRANS_MAIN_TO_GAME_SETTINGS);
 			break;
 		}
 		case M_TUTORIAL:
@@ -3722,22 +3748,16 @@ void MainMenu::DrawMode( Mode m )
 		}
 		break;
 	}
-	case TRANS_OPTIONS_TO_MAIN:
+	case TRANS_MAIN_TO_GAME_SETTINGS:
 	{
 		preScreenTexture->setView(v);
-		optionsMenu->Draw(preScreenTexture);
+		gameSettingsScreen->Draw(preScreenTexture);
 		break;
 	}
-	case TRANS_MAIN_TO_OPTIONS:
+	case GAME_SETTINGS:
 	{
 		preScreenTexture->setView(v);
-		optionsMenu->Draw(preScreenTexture);
-		break;
-	}
-	case OPTIONS:
-	{
-		preScreenTexture->setView(v);
-		optionsMenu->Draw(preScreenTexture);
+		gameSettingsScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_CREDITS_TO_MAIN:

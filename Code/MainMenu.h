@@ -72,6 +72,8 @@ struct MenuInfoPopup;
 struct MapSelectionItem;
 struct LoadingMapProgressDisplay;
 
+struct GameSettingsScreen;
+
 #define ColorGL( c ) sf::Glsl::Vec4( c )// c.r, c.g, c.b, c.a )
 //#define _WIN32_WINNT 0x0601
 
@@ -172,40 +174,6 @@ struct MultiLoadingScreen
 
 	
 };
-
-
-
-struct OptionsMenuScreen : UIEventHandlerBase
-{
-	OptionsMenuScreen(MainMenu *p_mainMenu);
-	~OptionsMenuScreen();
-	UIWindow *optionsWindow;
-	void Update( 
-	ControllerState &curr,
-		ControllerState &prev);
-	void Draw(sf::RenderTarget *target);
-	MainMenu *mainMenu;
-	void Load();
-
-	bool ButtonEvent(UIEvent eType,
-		ButtonEventParams *param);
-	bool CheckboxEvent(UIEvent eType,
-		CheckboxEventParams *param);
-	bool SelectorEvent(UIEvent eType,
-		SelectorEventParams *param);
-
-	void Center( sf::Vector2f & windowSize);
-	UIHorizSelector<sf::Vector2i> *horizResolution;
-	UIHorizSelector<int> *horizWindowModes;
-	UIHorizSelector<int> *musicVolume;
-	UIHorizSelector<int> *soundVolume;
-	UIButton *defaultButton;
-	UIButton *applyButton;
-	UIButton *checkForControllerButton;
-	UIHorizSelector<int> *horizDefaultController;
-};
-
-
 
 struct MapCollection
 {
@@ -525,9 +493,8 @@ struct MainMenu
 		TRANS_MAIN_TO_MAPSELECT,
 		MAPSELECT,
 		TRANS_MAPSELECT_TO_MAIN,
-		TRANS_MAIN_TO_OPTIONS,
-		OPTIONS,
-		TRANS_OPTIONS_TO_MAIN,
+		TRANS_MAIN_TO_GAME_SETTINGS,
+		GAME_SETTINGS,
 		TRANS_MAIN_TO_CREDITS,
 		CREDITS,
 		TRANS_CREDITS_TO_MAIN,
@@ -637,7 +604,7 @@ struct MainMenu
 	ControlProfileManager *cpm;
 	SoundInfo *soundInfos[SoundType::S_Count];
 	MapSelectionMenu *mapSelectionMenu;
-	OptionsMenuScreen *optionsMenu;
+	GameSettingsScreen *gameSettingsScreen;
 	CreditsMenuScreen *creditsMenu;
 	SaveMenuScreen *saveMenu;
 	SingleAxisSelector *saSelector;

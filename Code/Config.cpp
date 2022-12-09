@@ -132,29 +132,6 @@ void Config::Load()
 			{
 				is >> data.defaultProfileName;
 			}
-			else if (settingName == "defaultinputformat")
-			{
-				is >> data.defaultInputFormat;
-				/*string defaultInputName;
-				is >> defaultInputName;
-
-				if (defaultInputName == "XBOX")
-				{
-					data.defaultInputFormat = ControllerType::CTYPE_XBOX;
-				}
-				else if (defaultInputName == "Gamecube")
-				{
-					data.defaultInputFormat = ControllerType::CTYPE_GAMECUBE;
-				}
-				else if (defaultInputName == "Keyboard")
-				{
-					data.defaultInputFormat = ControllerType::CTYPE_KEYBOARD;
-				}
-				else
-				{
-					assert(0);
-				}*/
-			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -166,10 +143,10 @@ void Config::Load()
 	is.close();
 }
 
-std::string ConfigData::GetWindowModeString()
+std::string ConfigData::GetWindowModeString( int mode )
 {
 	string s;
-	switch (windowStyle)
+	switch (mode)
 	{
 	case sf::Style::Fullscreen:
 		s = "Fullscreen";
@@ -186,6 +163,12 @@ std::string ConfigData::GetWindowModeString()
 	return s;
 }
 
+std::string ConfigData::GetResolutionString( int x, int y )
+{
+	string s = to_string(x) + " x " + to_string(y);
+	return s;
+}
+
 void Config::Save()
 {
 	cout << "config::save\n";
@@ -195,11 +178,11 @@ void Config::Save()
 	{
 		of << "ResolutionX " << data.resolutionX << "\n";
 		of << "ResolutionY " << data.resolutionY << "\n";
-		of << "WindowMode " << data.GetWindowModeString() << "\n";
+		of << "WindowMode " << data.GetWindowModeString(data.windowStyle) << "\n";
 		of << "MusicVolume " << data.musicVolume << "\n";
 		of << "SoundVolume " << data.soundVolume << "\n";
 		of << "DefaultProfile " << data.defaultProfileName << "\n";
-		of << "DefaultInputFormat " << data.defaultInputFormat;
+		//of << "DefaultInputFormat " << data.defaultInputFormat;
 		of.close();
 	}
 	else

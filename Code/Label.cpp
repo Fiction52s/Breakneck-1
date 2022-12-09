@@ -22,6 +22,21 @@ bool Label::MouseUpdate()
 	return true;
 }
 
+sf::Vector2i Label::GetTopRight()
+{
+	auto bounds = text.getGlobalBounds();
+	Vector2i labelRight(bounds.left + bounds.width, bounds.top);
+	return labelRight;
+}
+
+
+sf::Vector2i Label::GetBottomLeft()
+{
+	auto bounds = text.getGlobalBounds();
+	Vector2i labelBot(bounds.left, bounds.top + bounds.height);
+	return labelBot;
+}
+
 
 
 void Label::SetTopLeftPosition(sf::Vector2i &pos)

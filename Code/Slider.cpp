@@ -209,7 +209,37 @@ bool Slider::MouseUpdate()
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
 	bool mouseDown = MOUSE.IsMouseDownLeft();
-	if (mouseDown && (IsPointOnRect(point) || clickedDown))
+
+	bool onRect = IsPointOnRect(point);
+
+	if (onRect)
+	{
+		if (MOUSE.IsMouseLeftClicked() || (MOUSE.IsMouseDownLeft() && clickedDown))
+		{
+			clickedDown = true;
+			float currFactor = GetCurrFactor(mousePos);
+			SetToFactor(currFactor);
+			panel->SendEvent(this);
+		}
+	}
+	else
+	{
+		if (!mouseDown)
+		{
+			clickedDown = false;
+		}
+
+		if (clickedDown)
+		{
+			float currFactor = GetCurrFactor(mousePos);
+			SetToFactor(currFactor);
+			panel->SendEvent(this);
+		}
+		
+	}
+	
+
+	/*if (mouseDown && (IsPointOnRect(point) || clickedDown))
 	{
 		clickedDown = true;
 		float currFactor = GetCurrFactor(mousePos);
@@ -219,7 +249,7 @@ bool Slider::MouseUpdate()
 	else if (!mouseDown)
 	{
 		clickedDown = false;
-	}
+	}*/
 
 	return true;
 }

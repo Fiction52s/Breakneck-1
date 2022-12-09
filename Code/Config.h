@@ -8,7 +8,8 @@
 struct ConfigData
 {
 	ConfigData();
-	std::string GetWindowModeString();
+	static std::string GetWindowModeString( int mode );
+	static std::string GetResolutionString( int x, int y );
 	void SetToDefault();
 	int resolutionX;
 	int resolutionY;
@@ -16,7 +17,6 @@ struct ConfigData
 	int musicVolume;
 	int soundVolume;
 	std::string defaultProfileName;
-	int defaultInputFormat;
 };
 
 struct Config

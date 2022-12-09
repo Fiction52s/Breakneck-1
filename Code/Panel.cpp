@@ -909,19 +909,20 @@ CheckBox * Panel::AddLabeledCheckBox(
 }
 
 Slider * Panel::AddLabeledSlider(const std::string &name, sf::Vector2i pos,
-	const std::string &labelText, int width, int minValue, int maxValue, int defaultValue )
+	const std::string &labelText, int width, int minValue, int maxValue, int defaultValue,
+	int charHeight )
 {
-	int extraSpacing = 8;
+	int extraSpacing = 30;
 
 	Vector2i oldAutoStart = autoStart;
 	Vector2i labelStart = pos;
 
-	Label *lab = AddLabel(name + "label", labelStart, 24, labelText);
+	Label *lab = AddLabel(name + "label", labelStart, charHeight, labelText);
 
 	pos.x += lab->text.getLocalBounds().left + lab->text.getLocalBounds().width + extraSpacing;
 	autoStart = oldAutoStart;
 
-	labelStart.y += 6;
+	labelStart.y += charHeight / 4;
 
 	return AddSlider(name, pos, width, minValue, maxValue, defaultValue);
 }

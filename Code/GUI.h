@@ -125,6 +125,8 @@ struct Label : PanelMember
 	void SetCenterPosition(sf::Vector2i &pos);
 	void SetTopCenterPosition(sf::Vector2i &pos);
 	bool MouseUpdate();
+	sf::Vector2i GetTopRight();
+	sf::Vector2i GetBottomLeft();
 };
 
 struct ChooseRect : PanelMember
@@ -787,7 +789,7 @@ struct Panel
 	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
 	CheckBox * AddLabeledCheckBox(const std::string &name, sf::Vector2i pos, const std::string &labelText, bool startChecked = false);
 	Slider * AddLabeledSlider(const std::string &name, sf::Vector2i pos, const std::string &labelText, int width,
-		int minValue, int maxValue, int defaultValue);
+		int minValue, int maxValue, int defaultValue, int charHeight);
 	ScrollBar *AddScrollBar(const std::string &name, sf::Vector2i &pos, sf::Vector2i &size, int p_numRows, int p_numDisplayedRows);
 	
 	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int rows, int cols, int charHeight, int lengthLimit, 

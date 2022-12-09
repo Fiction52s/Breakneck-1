@@ -15,6 +15,7 @@
 #include "KinMenu.h"
 #include "LogMenu.h"
 #include "PaletteShader.h"
+#include "GameSettingsScreen.h"
 //#include "Actor.h"
 
 using namespace sf;
@@ -209,11 +210,11 @@ void OptionsMenu::Update( ControllerState &currInput,
 				csm->UpdateXboxButtonIcons();
 				break;
 			case SOUND:
-				mainMenu->optionsMenu->Load();
+				mainMenu->gameSettingsScreen->UpdateFromConfig();
 				break;
 			case VISUAL:
 				state = SOUND;
-				mainMenu->optionsMenu->Load();
+				mainMenu->gameSettingsScreen->UpdateFromConfig();
 				break;
 			case GAMEPLAY:
 				state = CHOOSESTATE;
@@ -249,7 +250,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 			break;
 		}
 		//config->WaitForLoad();
-		mainMenu->optionsMenu->Update( currInput, prevInput );
+		mainMenu->gameSettingsScreen->Update();// currInput, prevInput );
 		break;
 	}
 }
@@ -265,7 +266,7 @@ void OptionsMenu::Draw( sf::RenderTarget *target )
 		csm->Draw(target);
 		break;
 	case SOUND:
-		mainMenu->optionsMenu->Draw(target);
+		mainMenu->gameSettingsScreen->Draw(target);
 		break;
 	}
 }
@@ -549,7 +550,12 @@ void PauseMenu::SetTab( Tab t )
 		break;
 	case OPTIONS:
 		optionsMenu->state = OptionsMenu::CHOOSESTATE;
-		game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+
+		//removed for gamesettings changes
+		//game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+
+
+
 		//LoadControlOptions();
 		//UpdateButtonIcons();
 		break;

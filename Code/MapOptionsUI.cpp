@@ -61,7 +61,7 @@ MapOptionsUI::MapOptionsUI()
 	mapOptionsPanel->UnpauseAutoSpacing();
 	postDropdown = mapOptionsPanel->AddDropdown("post", Vector2i(300, 0), Vector2i(250, 28), specialTypeOptions, 0);
 
-	numPlayersSlider = mapOptionsPanel->AddLabeledSlider("numplayersslider", Vector2i(0, 40), "Num player spawns: ", 100, 1, 4, 1);
+	numPlayersSlider = mapOptionsPanel->AddLabeledSlider("numplayersslider", Vector2i(0, 40), "Num player spawns: ", 100, 1, 4, 1, 24);
 
 	
 
