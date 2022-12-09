@@ -105,27 +105,34 @@ struct KeyboardFilter
 	sf::Keyboard::Key keyFilter[sf::Keyboard::KeyCount];
 };
 
-struct KeyboardSettings
+struct ControllerSettings
 {
 	enum ButtonType
 	{
-		UP,
-		LEFT,
-		DOWN,
-		RIGHT,
-		JUMP,
-		ATTACK,
-		DASH,
-		SHIELD,
-		LEFTWIRE,
-		RIGHTWIRE,
-		MAP,
-		PAUSE,
-		Count
+		BUTTONTYPE_JUMP,
+		BUTTONTYPE_DASH,
+		BUTTONTYPE_ATTACK,
+		BUTTONTYPE_SHIELD,
+		BUTTONTYPE_LEFTWIRE,
+		BUTTONTYPE_RIGHTWIRE,
+		BUTTONTYPE_MAP,
+		BUTTONTYPE_PAUSE,
+		BUTTONTYPE_LLEFT,
+		BUTTONTYPE_LRIGHT,
+		BUTTONTYPE_LUP,
+		BUTTONTYPE_LDOWN,
+		BUTTONTYPE_RLEFT,
+		BUTTONTYPE_RRIGHT,
+		BUTTONTYPE_RUP,
+		BUTTONTYPE_RDOWN,
+		BUTTONTYPE_Count
 	};
+};
 
+struct KeyboardSettings
+{
 	KeyboardSettings();
-	sf::Keyboard::Key buttonMap[ButtonType::Count];
+	sf::Keyboard::Key buttonMap[ControllerSettings::BUTTONTYPE_Count];
 	void LoadFromFile( const std::string &fileName );
 	void SaveToFile( const std::string &fileName );
 
@@ -165,23 +172,7 @@ void SetFilterDefault( XBoxButton *filter);
 void SetFilterDefaultGCC(XBoxButton *filter);
 std::string GetXBoxButtonString( XBoxButton button );
 
-struct ControllerSettings
-{
-	enum ButtonType	
-	{
-		JUMP,
-		DASH,
-		ATTACK,
-		SHIELD,
-		LEFTWIRE,
-		RIGHTWIRE,
-		MAP,
-		PAUSE,
-		Count
-	};
 
-	
-};
 
 enum ControllerType
 {
@@ -245,7 +236,7 @@ public:
 	void UpdateLeftStickPad();
 	
 	ButtonStick keyboardStick;
-	XBoxButton filter[ControllerSettings::Count];
+	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
 	//ControllerState & GetKeyboardState(); //also updates
 	ControllerState m_state;
 	ControllerState m_unfilteredState;

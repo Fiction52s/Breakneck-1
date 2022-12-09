@@ -327,7 +327,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			state = S_EDIT_CONFIG;
 			currProfile->tempCType = tempCType;
 			XBoxButton *fil = currProfile->GetCurrFilter();
-			for (int i = 0; i < ControllerSettings::Count; ++i)
+			for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 			{
 				tempFilter[i] = fil[i];
 			}
@@ -478,7 +478,7 @@ bool ControlProfileMenu::SaveCurrConfig()
 {
 	bool different = false;
 	XBoxButton *fil = currProfile->GetCurrFilter();
-	for( int i = 0; i < ControllerSettings::Count; ++i )
+	for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
 	{
 		if(fil[i] != tempFilter[i] )
 		{
@@ -785,7 +785,7 @@ bool ControlProfileManager::LoadXBOXConfig( ControlProfile *profile )
 	XBoxButton b = GetButton( buttonStr );
 	ControllerSettings::ButtonType buttonType = GetButtonTypeFromAction( inputName );
 
-	assert( buttonType < ControllerSettings::Count );
+	assert( buttonType < ControllerSettings::BUTTONTYPE_Count );
 
 	profile->filter[buttonType] = b;
 
@@ -872,7 +872,7 @@ bool ControlProfileManager::LoadGamecubeConfig(ControlProfile *profile)
 		XBoxButton b = GetButton(buttonStr);
 		ControllerSettings::ButtonType buttonType = GetButtonTypeFromAction(inputName);
 
-		assert(buttonType < ControllerSettings::Count);
+		assert(buttonType < ControllerSettings::BUTTONTYPE_Count);
 
 		profile->gccFilter[buttonType] = b;
 	}
@@ -884,27 +884,27 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	ControllerSettings::ButtonType buttonType;
 	if( inputName == "JUMP" )
 	{
-		buttonType = ControllerSettings::JUMP;
+		buttonType = ControllerSettings::BUTTONTYPE_JUMP;
 	}
 	else if( inputName == "DASH" )
 	{
-		buttonType = ControllerSettings::DASH;
+		buttonType = ControllerSettings::BUTTONTYPE_DASH;
 	}
 	else if( inputName == "ATTACK" )
 	{
-		buttonType = ControllerSettings::ATTACK;
+		buttonType = ControllerSettings::BUTTONTYPE_ATTACK;
 	}
 	else if( inputName == "SHIELD" )
 	{
-		buttonType = ControllerSettings::SHIELD;
+		buttonType = ControllerSettings::BUTTONTYPE_SHIELD;
 	}
 	else if( inputName == "POWER6RIGHT" )
 	{
-		buttonType = ControllerSettings::RIGHTWIRE;
+		buttonType = ControllerSettings::BUTTONTYPE_RIGHTWIRE;
 	}
 	else if( inputName == "POWER6LEFT" )
 	{
-		buttonType = ControllerSettings::LEFTWIRE;
+		buttonType = ControllerSettings::BUTTONTYPE_LEFTWIRE;
 	}
 	else
 	{
@@ -1047,12 +1047,16 @@ XBoxButton *ControlProfile::GetCurrFilter()
 
 void ControlProfileManager::WriteFilter( ofstream &of, XBoxButton *filter)
 {
-	of << "JUMP=" << GetXBoxButtonString(filter[ControllerSettings::JUMP]) << "\n";
-	of << "DASH=" << GetXBoxButtonString(filter[ControllerSettings::DASH]) << "\n";
-	of << "ATTACK=" << GetXBoxButtonString(filter[ControllerSettings::ATTACK]) << "\n";
-	of << "SHIELD=" << GetXBoxButtonString(filter[ControllerSettings::SHIELD]) << "\n";
-	of << "POWER6LEFT=" << GetXBoxButtonString(filter[ControllerSettings::LEFTWIRE]) << "\n";
-	of << "POWER6RIGHT=" << GetXBoxButtonString(filter[ControllerSettings::RIGHTWIRE]) << "\n\n";
+	of << "JUMP=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
+	of << "DASH=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
+	of << "ATTACK=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
+	of << "SHIELD=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
+	of << "POWER6LEFT=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
+	of << "POWER6RIGHT=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+	of << "MAP=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_MAP]) << "\n";
+	of << "PAUSE=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_PAUSE]) << "\n";
+
+	of << "\n";
 }
 
 void ControlProfileManager::WriteInputType(ofstream &of, const std::string &inputType)
@@ -1466,7 +1470,7 @@ bool ProfileSelector::SaveCurrConfig()
 	bool different = false;
 	
 	XBoxButton *fil = currProfile->GetCurrFilter();
-	for (int i = 0; i < ControllerSettings::Count; ++i)
+	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 	{
 		if (oldFilter[i] != tempFilter[i])
 		{

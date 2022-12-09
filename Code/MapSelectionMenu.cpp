@@ -788,7 +788,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				mainMenu->gameRunType = MainMenu::GRT_FREEPLAY;
 				int res = gs->Run();
 
-				XBoxButton filter[ControllerSettings::Count];
+				XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
 				SetFilterDefault(filter);
 
 				for (int i = 0; i < 4; ++i)
@@ -1051,7 +1051,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 					mainMenu->gameRunType = MainMenu::GRT_FREEPLAY;
 					int res = gs->Run();
 
-					XBoxButton filter[ControllerSettings::Count];
+					XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
 					SetFilterDefault(filter);
 
 					for (int i = 0; i < 4; ++i)

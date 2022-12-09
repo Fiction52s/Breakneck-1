@@ -137,34 +137,23 @@ void TutorialBox::SetText(const std::string &str)
 
 		
 
-		ControllerType cType = sess->GetController(0)->GetCType();
+		int cType = sess->controllerStates[0]->GetControllerType();
 		int bIndex = 0;
 		switch (cType)
 		{
 		case CTYPE_XBOX:
 		{
-			bIndex = sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
-			/*switch (b)
-			{
-			case ControllerSettings::JUMP:
-				bIndex = 0;
-				break;
-			case ControllerSettings::DASH:
-				bIndex = 2;
-				break;
-			case ControllerSettings::ATTACK:
-				bIndex = 4;
-				break;
-			}
-
-			bIndex = sess->GetController(0).filter[bIndex];*/
-
+			bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;
 			break;
 		}
-			
 		case CTYPE_GAMECUBE:
-			bIndex = sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
+			bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
 			break;
+		case CTYPE_KEYBOARD:
+		{
+			bIndex = sess->controllerStates[0]->con->keySettings.buttonMap[buttonInfos[i].buttonType];//filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
+			break;
+		}
 		}
 		//dash = x
 		//jump = a
@@ -173,7 +162,7 @@ void TutorialBox::SetText(const std::string &str)
 		//rightwire = r2
 		//leftwire = l2
 
-		SetRectSubRect(buttonQuad + i * 4, sess->mainMenu->GetButtonIconTile(0, bIndex));
+		SetRectSubRect(buttonQuad + i * 4, sess->GetButtonIconTile(0, bIndex));
 	}
 	
 	
@@ -203,5 +192,5 @@ void TutorialBox::Draw(sf::RenderTarget *target)
 {
 	target->draw(quad, 4, sf::Quads);
 	target->draw(text);
-	target->draw(buttonQuad, 4 * MAX_BUTTONS, sf::Quads, sess->mainMenu->ts_buttonIcons->texture);
+	target->draw(buttonQuad, 4 * MAX_BUTTONS, sf::Quads, sess->GetButtonIconTileset( 0 )->texture);
 }

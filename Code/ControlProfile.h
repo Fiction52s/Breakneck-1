@@ -22,8 +22,8 @@ struct ControlProfile
 	std::string name;
 	ControllerType tempCType;
 	XBoxButton *GetCurrFilter();
-	XBoxButton filter[ControllerSettings::Count];
-	XBoxButton gccFilter[ControllerSettings::Count];
+	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
+	XBoxButton gccFilter[ControllerSettings::BUTTONTYPE_Count];
 };
 
 struct ControlProfileManager
@@ -96,8 +96,8 @@ struct ProfileSelector
 	bool SetCurrProfileByName(const std::string &name);
 	ControlProfileManager *cpm;
 	bool SaveCurrConfig();
-	XBoxButton tempFilter[ControllerSettings::Count];
-	XBoxButton oldFilter[ControllerSettings::Count];
+	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
+	XBoxButton oldFilter[ControllerSettings::BUTTONTYPE_Count];
 	
 	void Draw(sf::RenderTarget *target);
 	void SetupBoxes();
@@ -137,7 +137,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	int currReceiveFrame;
 	int maxReceiveFrames;
 	ControllerSettings::ButtonType editIndex;
-	XBoxButton tempFilter[ControllerSettings::Count];
+	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
 	ControllerType tempCType;
 
 	//TODO scrollbar to show how far in to the names you are

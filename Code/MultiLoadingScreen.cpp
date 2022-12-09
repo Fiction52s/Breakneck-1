@@ -162,7 +162,7 @@ void MultiLoadingScreen::Update()
 			int res = gs->Run();
 
 
-			XBoxButton filter[ControllerSettings::Count];
+			XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
 			SetFilterDefault(filter);
 
 			for (int i = 0; i < 4; ++i)

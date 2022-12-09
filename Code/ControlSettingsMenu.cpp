@@ -281,7 +281,7 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 
 				XBoxButton *fil = pSel->currProfile->GetCurrFilter();
 
-				for (int i = 0; i < ControllerSettings::Count; ++i)
+				for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 				{
 					pSel->oldFilter[i] = fil[i];
 					pSel->tempFilter[i] = fil[i];
@@ -371,7 +371,7 @@ void ControlSettingsMenu::UpdateXboxButtonIcons()
 {
 	ts_currentButtons = ts_xboxButtons;
 	XBoxButton *fil = pSel->currProfile->GetCurrFilter();
-	for (int i = 0; i < ControllerSettings::ButtonType::Count-2; ++i)
+	for (int i = 0; i < numActions; ++i )//ControllerSettings::ButtonType::BUTTONTYPE_LLEFT; ++i)
 	{
 		int ind = fil[i] - 1;
 		IntRect sub = ts_xboxButtons->GetSubRect(ind);
@@ -512,7 +512,7 @@ void ControlSettingsMenu::InitAssocSymbols()
 	//string possibleActions[ControllerSettings::Count] = { "jump", "dash", "attack", bounceSpecial,
 	//	grindSpecial, timeslowSpecial, wireLeftSpecial, wireRightSpecial,
 	//	"map", "pause" };
-	int count = ControllerSettings::Count;
+	int count = ControllerSettings::BUTTONTYPE_Count;
 	for (int i = 0; i < count; ++i)
 	{
 		if (i < count / 2)

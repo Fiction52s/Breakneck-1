@@ -267,12 +267,12 @@ void KinMenu::UpdateCommandButton()
 	int index = GetCurrIndex();
 	IntRect sub;
 	if (index == 0)
-		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::JUMP) - 1);
+		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_JUMP) - 1);
 	else if (index == 1)
-		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::ATTACK) - 1);
+		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_ATTACK) - 1);
 	else if (index == 3 || index == 9)
 	{
-		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::DASH) - 1);
+		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_DASH) - 1);
 	}
 
 	commandSpr.setTexture(*ts_currentButtons->texture);
