@@ -7678,28 +7678,33 @@ void Actor::HandleWaitingScoreDisplay()
 {
 	if (sess->scoreDisplay != NULL && sess->scoreDisplay->waiting)
 	{
-		
-		ControllerState &unfilteredCurr = sess->GetCurrInputUnfiltered(0);
+		/*ControllerState &unfilteredCurr = sess->GetCurrInputUnfiltered(0);
 		ControllerState &unfilteredPrev = sess->GetPrevInputUnfiltered(0);
 		bool a = unfilteredCurr.A && !unfilteredPrev.A;
 		bool x = unfilteredCurr.X && !unfilteredPrev.X;
 		bool b = unfilteredCurr.B && !unfilteredPrev.B;
 		bool y = unfilteredCurr.Y && !unfilteredPrev.Y;
-		bool r1 = unfilteredCurr.rightShoulder && !unfilteredPrev.rightShoulder;
+		bool r1 = unfilteredCurr.rightShoulder && !unfilteredPrev.rightShoulder;*/
+
+		bool jump = sess->controllerStates[actorIndex]->ButtonPressed_A();
+		bool dash = sess->controllerStates[actorIndex]->ButtonPressed_X();
+		bool shield = sess->controllerStates[actorIndex]->ButtonPressed_LeftShoulder();
+		bool attack = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
+		bool special = sess->controllerStates[actorIndex]->ButtonPressed_B();
 
 		if (!sess->scoreDisplay->madeRecord && (owner != NULL && !owner->bestReplayOn))
 		{
-			y = false;
-			r1 = false;
+			shield = false;
+			attack = false;
 		}
 
-		if (a || x)
+		if (jump || dash)
 		{
 			if (owner != NULL)
 			{
 				SaveFile *currFile = sess->mainMenu->GetCurrentProgress();
 				bool levValid = owner->level != NULL; 
-				if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
+				if (jump && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 				{
 					if (currFile->IsLevelLastInSector(owner->level))
 					{
@@ -7710,7 +7715,7 @@ void Actor::HandleWaitingScoreDisplay()
 						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 					}
 				}
-				else if (x)
+				else if (dash)
 				{
 					owner->resType = GameSession::GameResultType::GR_WIN;
 				}
@@ -7718,7 +7723,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 			sess->scoreDisplay->Deactivate();
 		}
-		else if (b)
+		else if (special)
 		{
 			if (owner != NULL)
 			{
@@ -7747,7 +7752,7 @@ void Actor::HandleWaitingScoreDisplay()
 			}
 			return;
 		}
-		else if (y)
+		else if (shield)
 		{
 			//turn on ghosts
 			if (owner != NULL)
@@ -7773,7 +7778,7 @@ void Actor::HandleWaitingScoreDisplay()
 				//owner->NextFrameRestartLevel();
 			}
 		}
-		else if (r1)
+		else if (attack)
 		{
 			if (owner != NULL)
 			{

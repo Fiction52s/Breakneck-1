@@ -725,7 +725,7 @@ bool GameController::UpdatePS5()
 	m_unfilteredState = m_state;
 
 	tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-	tempState.B = false;//Pressed(filter[ControllerSettings::DASH]);
+	tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
 	tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
 	tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
 	tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
@@ -888,7 +888,7 @@ bool GameController::UpdateGCC()
 	//m_unfilteredState.Y = tempX;
 
 	tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-	tempState.B = false;//Pressed(filter[ControllerSettings::DASH]);
+	tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
 	tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
 	tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
 	tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
@@ -1034,7 +1034,7 @@ bool GameController::UpdateXBOX()
 		m_unfilteredState = m_state;
 
 		tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-		tempState.B = false;//Pressed(filter[ControllerSettings::DASH]);
+		tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
 		tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
 		tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
 		tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
@@ -1064,25 +1064,21 @@ bool GameController::UpdateKeyboard()
 		using namespace sf;
 
 		//WORD b = state.Gamepad.wButtons;
-		m_state.start = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_PAUSE]);
-		m_state.back = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::MAP]);
-		m_state.leftShoulder = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_SHIELD]);
-		m_state.rightShoulder = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_ATTACK]);
+
 		m_state.A = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_JUMP]);
-		m_state.B = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_MAP]);//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::DASH]);
+		m_state.B = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_SPECIAL]);
+		m_state.rightShoulder = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_ATTACK]);
 		m_state.X = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_DASH]);
 		m_state.Y = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::GRIND]);
+		m_state.leftShoulder = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_SHIELD]);
+		m_state.leftTrigger = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
+		m_state.rightTrigger = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
+		m_state.back = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_MAP]);
+		m_state.start = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_PAUSE]);
+		
 		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
 		m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
 		m_state.pad = 0;//( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
-
-		m_state.leftTrigger = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
-		m_state.rightTrigger = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-
-		/*bool up = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::UP] );
-		bool down = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::DOWN] );
-		bool left = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFT] );
-		bool right = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHT] );*/
 
 		bool up = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LUP]);
 		bool down = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LDOWN]);
@@ -1487,6 +1483,7 @@ void SetFilterDefault( XBoxButton *filter)
 	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_L1;
 	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
 	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
+	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
 	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
 	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
 }
@@ -1499,6 +1496,7 @@ void SetFilterDefaultGCC(XBoxButton *filter)
 	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_R1;
 	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
 	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
+	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
 	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
 	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
 }

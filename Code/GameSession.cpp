@@ -1535,7 +1535,7 @@ bool GameSession::Load()
 	soundNodeList->SetSoundVolume(cd.soundVolume);
 	pauseSoundNodeList->SetSoundVolume(cd.soundVolume);
 
-	SetupScoreDisplay();
+	//SetupScoreDisplay();
 
 	SetupShaders();
 
@@ -1634,6 +1634,8 @@ bool GameSession::Load()
 	SetupPauseMenu();
 
 	SetupControlProfiles();
+
+	SetupScoreDisplay();
 
 	ReadFile();
 
@@ -2036,9 +2038,10 @@ bool GameSession::SetupControlProfiles()
 		//temporary
 		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
 		currProfile = pauseMenu->GetCurrSelectedProfile();
-		GameController *con = GetController(i);
-		currProfile->tempCType = con->GetCType();
-		con->SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
+		controllerStates[i]->con->SetFilter(currProfile->GetCurrFilter());
+		//GameController *con = GetController(i);
+		//currProfile->tempCType = con->GetCType();
+		//con->SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
 	}
 
 	return true;

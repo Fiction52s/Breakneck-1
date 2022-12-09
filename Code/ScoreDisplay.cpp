@@ -548,43 +548,55 @@ void SelectBar::Reset()
 
 	Session *sess = parent->sess;
 
-	int tileOffset = 0;
+	//int tileOffset = 0;
 
-	ControllerType ct = sess->GetController(0)->GetCType();
-	switch (ct)
-	{
-	case ControllerType::CTYPE_XBOX:
-		tileOffset = 0;
-		break;
-	case ControllerType::CTYPE_PS5:
-		tileOffset = 16 * 1;
-		break;
-	case ControllerType::CTYPE_GAMECUBE:
-		tileOffset = 16 * 2;
-		break;
-	}
+	int ct = sess->controllerStates[0]->GetControllerType();
 	
 	int buttonIndex = 0;
 
 	if (row == 0) //continue
 	{
-		buttonIndex = 0;
+		buttonIndex = ControllerSettings::BUTTONTYPE_JUMP;//0
 	}
 	else if (row == 1) //exit
 	{
-		buttonIndex = 2;
+		buttonIndex = ControllerSettings::BUTTONTYPE_DASH;//2;
 	}
 	else if (row == 2) //retry
 	{
-		buttonIndex = 1;
+		buttonIndex = ControllerSettings::BUTTONTYPE_SPECIAL;//1;
 	}
 	else if (row == 3)//watch
 	{
-		buttonIndex = 4;
+		buttonIndex = ControllerSettings::BUTTONTYPE_ATTACK;
 	}
 	else if (row == 4)//race ghost
 	{
-		buttonIndex = 3;
+		buttonIndex = ControllerSettings::BUTTONTYPE_SHIELD;
+	}
+
+
+	/*bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;
+	break;
+}
+		case CTYPE_GAMECUBE:
+			bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1; /*/
+	switch (ct)
+	{
+	case CTYPE_XBOX:
+	{
+		buttonIndex = sess->controllerStates[0]->con->filter[buttonIndex] - 1;
+		break;
+	}
+	case CTYPE_GAMECUBE:
+	{
+		buttonIndex = sess->controllerStates[0]->con->filter[buttonIndex] - 1;
+		break;
+	}
+	case CTYPE_KEYBOARD:
+	{
+		buttonIndex = sess->controllerStates[0]->con->keySettings.buttonMap[buttonIndex];
+	}
 	}
 
 	IntRect ir = parent->sess->GetButtonIconTile(0, buttonIndex);

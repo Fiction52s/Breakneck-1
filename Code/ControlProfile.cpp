@@ -1053,7 +1053,7 @@ void ControlProfileManager::WriteFilter( ofstream &of, XBoxButton *filter)
 	of << "SHIELD=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
 	of << "POWER6LEFT=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
 	of << "POWER6RIGHT=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
-	of << "MAP=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_MAP]) << "\n";
+	of << "SPECIAL=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
 	of << "PAUSE=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_PAUSE]) << "\n";
 
 	of << "\n";
