@@ -523,7 +523,8 @@ void Actor::GRINDBALL_UpdateSprite()
 		//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
 		Vector2f randPos(rand() % dist - dist / 2, rand() % dist - dist / 2);
 
-		params.SetParams(randPos, tr, 24, 1, 0, &spriteCenter);
+		//params.SetParams(randPos, tr, 24, 1, 0, &spriteCenter);
+		params.SetParams(randPos, tr, 8, 1, 0, &spriteCenter);
 
 		ActivateEffect(PLAYERFX_SPRINT_STAR, &params);
 	}

@@ -187,6 +187,8 @@ struct ChooseRect : PanelMember
 		I_POST_MATCH_REMATCH,
 		I_POST_MATCH_CHOOSE_MAP,
 		I_POST_MATCH_LEAVE,
+		I_EDITORMENU_NEW,
+		I_EDITORMENU_OPEN,
 	};
 
 	sf::Text nameText;

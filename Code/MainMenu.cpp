@@ -47,6 +47,7 @@
 
 #include "CustomMatchManager.h"
 #include "OnlineMenuScreen.h"
+#include "EditorMenuScreen.h"
 #include "MatchResultsScreen.h"
 #include "WorkshopMapPopup.h"
 #include "WorkshopBrowser.h"
@@ -593,6 +594,8 @@ MainMenu::MainMenu()
 
 	onlineMenuScreen = new OnlineMenuScreen(this);
 
+	editorMenuScreen = new EditorMenuScreen(this);
+
 	matchResultsScreen = NULL;
 
 	loadingBackpack = new LoadingBackpack(&tilesetManager);
@@ -813,6 +816,7 @@ MainMenu::~MainMenu()
 	delete creditsMenu;
 	delete mapBrowserScreen;
 	delete onlineMenuScreen;
+	delete editorMenuScreen;
 
 	if (workshopBrowser != NULL)
 	{
@@ -1055,6 +1059,10 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == ONLINE_MENU)
 	{
 		onlineMenuScreen->Start();
+	}
+	else if (menuMode == EDITOR_MENU)
+	{
+		editorMenuScreen->Start();
 	}
 	else if (menuMode == NETPLAY_MATCH_RESULTS)
 	{
@@ -2936,6 +2944,53 @@ void MainMenu::HandleMenuMode()
 		
 		break;
 	}
+	case EDITOR_MENU:
+	{
+		while (window->pollEvent(ev))
+		{
+			editorMenuScreen->HandleEvent(ev);
+		}
+		editorMenuScreen->Update();
+
+		switch (editorMenuScreen->action)
+		{
+		case EditorMenuScreen::A_NEW_MAP:
+
+			//mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+
+			//mapBrowserScreen->StartWorkshopBrowsing( MapBrowser::WORKSHOP );
+
+			/*assert(workshopBrowser == NULL);
+			workshopBrowser = new WorkshopBrowser;
+
+			workshopBrowser->Start();
+
+			SetMode(BROWSE_WORKSHOP);*/
+
+			RunEditor(TITLEMENU, "");
+
+			break;
+		case EditorMenuScreen::A_OPEN_MAP:
+			//netplayManager->FindQuickplayMatch();
+			//SetMode(QUICKPLAY_TEST);
+			RunEditor(TITLEMENU, "");
+			break;
+		//case OnlineMenuScreen::A_CREATE_LOBBY:
+		//	customMatchManager->CreateCustomLobby();
+		//	SetMode(CUSTOM_MATCH_SETUP);
+		//	break;
+		//case OnlineMenuScreen::A_JOIN_LOBBY:
+		//	customMatchManager->BrowseCustomLobbies();
+		//	SetMode(CUSTOM_MATCH_SETUP);
+		//	break;
+		//case OnlineMenuScreen::A_CANCELLED:
+		//	LoadMode(TITLEMENU);
+		//	//SetMode(TITLEMENU);
+		//	break;
+		}
+
+		break;
+	}
 	case CUSTOM_MATCH_SETUP:
 	{
 		while (window->pollEvent(ev))
@@ -3502,7 +3557,8 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_LEVEL_EDITOR:
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
-			RunEditor(TITLEMENU, "");
+			LoadMode(EDITOR_MENU);
+			//RunEditor(TITLEMENU, "");
 				//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
@@ -3836,6 +3892,12 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		onlineMenuScreen->Draw(preScreenTexture);
+		break;
+	}
+	case EDITOR_MENU:
+	{
+		preScreenTexture->setView(v);
+		editorMenuScreen->Draw(preScreenTexture);
 		break;
 	}
 	case CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER:

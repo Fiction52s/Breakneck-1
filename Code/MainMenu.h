@@ -445,6 +445,7 @@ std::string GetTimeStr(int numFrames);
 struct NetplayManager;
 struct CustomMatchManager;
 struct OnlineMenuScreen;
+struct EditorMenuScreen;
 
 struct CustomCursor;
 struct MatchParams;
@@ -512,6 +513,7 @@ struct MainMenu
 		CUSTOM_MATCH_SETUP,
 		CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER,
 		ONLINE_MENU,
+		EDITOR_MENU,
 		NETPLAY_MATCH_RESULTS,
 		MATCH_RESULTS,
 		POST_MATCH_OPTIONS,
@@ -540,6 +542,7 @@ struct MainMenu
 	NetplayManager *netplayManager;
 	CustomMatchManager *customMatchManager;
 	OnlineMenuScreen *onlineMenuScreen;
+	EditorMenuScreen *editorMenuScreen;
 	MatchResultsScreen *matchResultsScreen;
 	FreeplayScreen *freeplayScreen;
 	SinglePlayerControllerJoinScreen *singlePlayerControllerJoinScreen;
