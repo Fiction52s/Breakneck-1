@@ -6,7 +6,7 @@
 
 using namespace std;
 
-Planet::Planet(AdventureFile &adventureFile)
+AdventurePlanet::AdventurePlanet(AdventureFile &adventureFile)
 {
 	int numSectors;
 	int numLevels;
@@ -17,16 +17,16 @@ Planet::Planet(AdventureFile &adventureFile)
 	int levelCounter;
 	int levelIndex;
 	
-	numWorlds = adventureFile.GetNumActiveWorlds();
+	numWorlds = adventureFile.GetNumExistingWorlds();
 	if (numWorlds == 0)
 		assert(0);
 
 	worlds = new World[numWorlds];
 	int worldCounter = 0;
 
-	for (int w = 0; w < 8; ++w)
+	for (int w = 0; w < ADVENTURE_MAX_NUM_WORLDS; ++w)
 	{
-		numSectors = adventureFile.worlds[w].GetNumActiveSectors();
+		numSectors = adventureFile.worlds[w].GetNumExistingSectors();
 		if (numSectors == 0)
 		{
 			continue;
@@ -46,9 +46,9 @@ Planet::Planet(AdventureFile &adventureFile)
 
 		sw->sectors = new Sector[numSectors];
 		counter = 0;
-		for (int s = 0; s < 8; ++s)
+		for (int s = 0; s < ADVENTURE_MAX_NUM_SECTORS_PER_WORLD; ++s)
 		{
-			numLevels = adventureFile.GetSector(w, s).GetNumActiveMaps();
+			numLevels = adventureFile.GetSector(w, s).GetNumExistingMaps();
 			if (numLevels > 0)
 			{
 				ss = &(sw->sectors[counter]);
@@ -57,9 +57,9 @@ Planet::Planet(AdventureFile &adventureFile)
 				ss->levels = new Level[numLevels];
 				ss->index = counter;
 				levelCounter = 0;
-				for (int m = 0; m < 8; ++m)
+				for (int m = 0; m < ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR; ++m)
 				{
-					levelIndex = w * 64 + s * 8 + m;
+					levelIndex = w * (ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR * ADVENTURE_MAX_NUM_SECTORS_PER_WORLD) + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
 					if (adventureFile.GetMap(levelIndex).Exists())
 					{
 						sl = &(ss->levels[levelCounter]);
@@ -74,7 +74,7 @@ Planet::Planet(AdventureFile &adventureFile)
 	}
 }
 
-Planet::~Planet()
+AdventurePlanet::~AdventurePlanet()
 {
 	delete[] worlds;
 }
@@ -113,8 +113,6 @@ bool AdventureMap::LoadHeaderInfo()
 	{
 		is.open( "Resources\\" + path + "\\" + name + ".brknk");
 	}
-
-
 
 	if (is.is_open())
 	{
@@ -201,10 +199,10 @@ AdventureSector::AdventureSector()
 {
 }
 
-int AdventureSector::GetNumActiveMaps()
+int AdventureSector::GetNumExistingMaps()
 {
 	int activeCounter = 0;
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR; ++i)
 	{
 		if (maps[i].Exists())
 		{
@@ -226,7 +224,7 @@ void AdventureSector::Load(std::ifstream &is, int ver1, int ver2, int copyMode)
 	}
 	
 
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < AdventureFile::MAX_NUM_LEVELS_PER_SECTOR; ++i)
 	{
 		maps[i].Load(is, copyMode);
 	}
@@ -236,16 +234,16 @@ void AdventureSector::Save(std::ofstream &of, int ver1, int ver2, int copyMode)
 {
 	//of << requiredRunes << "\n";
 
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < AdventureFile::MAX_NUM_LEVELS_PER_SECTOR; ++i)
 	{
 		maps[i].Save(of, copyMode);
 	}
 }
 
-int AdventureWorld::GetNumActiveSectors()
+int AdventureWorld::GetNumExistingSectors()
 {
 	int activeCounter = 0;
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < AdventureFile::MAX_NUM_SECTORS_PER_WORLD; ++i)
 	{
 		if (sectors[i].GetNumActiveMaps() > 0)
 		{
@@ -259,7 +257,7 @@ int AdventureWorld::GetNumActiveSectors()
 void AdventureWorld::Load(std::ifstream &is, int ver1, int ver2, 
 	int copyMode)
 {
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < AdventureFile::MAX_NUM_SECTORS_PER_WORLD; ++i)
 	{
 		sectors[i].Load(is, ver1, ver2, copyMode);
 	}
@@ -268,16 +266,16 @@ void AdventureWorld::Load(std::ifstream &is, int ver1, int ver2,
 void AdventureWorld::Save(std::ofstream &of, int ver1, int ver2, 
 	int copyMode)
 {
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < AdventureFile::MAX_NUM_SECTORS_PER_WORLD; ++i)
 	{
 		sectors[i].Save(of, ver1, ver2, copyMode);
 	}
 }
 
-int AdventureFile::GetNumActiveWorlds()
+int AdventureFile::GetNumExistingWorlds()
 {
 	int activeCounter = 0;
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < MAX_NUM_WORLDS; ++i)
 	{
 		if (worlds[i].GetNumActiveSectors() > 0)
 		{
@@ -326,7 +324,7 @@ bool AdventureFile::Load(const std::string &p_path,
 
 		copyMode = (CopyMode)cMode;
 
-		for (int i = 0; i < 8; ++i)
+		for (int i = 0; i < MAX_NUM_WORLDS; ++i)
 		{
 			worlds[i].Load(is, ver1, ver2, copyMode);
 		}
@@ -358,7 +356,7 @@ void AdventureFile::Save(const std::string &p_path,
 
 	of << (int)cpy << "\n";
 
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < MAX_NUM_WORLDS; ++i)
 	{
 		worlds[i].Save(of, ver1, ver2, (int)cpy);
 	}
@@ -369,9 +367,10 @@ void AdventureFile::Save(const std::string &p_path,
 
 AdventureMap &AdventureFile::GetMap(int index)
 {
-	int w = index / 64;
-	int s = (index % 64) / 8;
-	int m = (index % 8);
+	int maxLevelsPerWorld = (MAX_NUM_SECTORS_PER_WORLD * MAX_NUM_LEVELS_PER_SECTOR);
+	int w = index / maxLevelsPerWorld;
+	int s = (index % maxLevelsPerWorld) / MAX_NUM_SECTORS_PER_WORLD;
+	int m = (index % MAX_NUM_LEVELS_PER_SECTOR);
 
 	return worlds[w].sectors[s].maps[m];
 }
@@ -398,11 +397,11 @@ AdventureWorld &AdventureFile::GetWorld(int w)
 
 bool AdventureFile::LoadMapHeaders()
 {
-	for (int w = 0; w < 8; ++w)
+	for (int w = 0; w < MAX_NUM_WORLDS; ++w)
 	{
-		for (int s = 0; s < 8; ++s)
+		for (int s = 0; s < MAX_NUM_SECTORS_PER_WORLD; ++s)
 		{
-			for (int m = 0; m < 8; ++m)
+			for (int m = 0; m < MAX_NUM_LEVELS_PER_SECTOR; ++m)
 			{
 				AdventureMap &am = worlds[w].sectors[s].maps[m];
 				if (am.Exists())

@@ -23,6 +23,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 {
 	allUnlocked = true;
 
+	LoadAdventure("tadventure");
 	
 	kinBoostScreen = new KinBoostScreen(mainMenu, this);
 
@@ -45,24 +46,16 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	shardsCapturedText.setFont(mainMenu->arial);
 	shardsCapturedText.setPosition(infoQuadPos + Vector2f(10, 10 + 60));
 
-	
-
 	worldNameText.setFillColor(Color::White);
 	worldNameText.setCharacterSize(40);
 	worldNameText.setFont(mainMenu->arial);
 	worldNameText.setPosition(infoQuadPos + Vector2f(256/2, 10) + Vector2f( 0, -64 ));
 	
-	
-
 	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
-
 	ts_colonyActive[0] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
 	ts_colonyActive[1] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
 	ts_colonyActiveZoomed[0] = GetTileset("WorldMap/map_w1_vein.png", 1920, 1080);
 	ts_colonyActiveZoomed[1] = GetTileset("WorldMap/map_w2_vein.png", 1920, 1080);
-	//ts_zoomedMapw1 = GetTileset("WorldMap/map_w1.png", 1920, 1080);
-
-	
 
 	ts_space = GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
 	spaceSpr.setTexture(*ts_space->texture);
@@ -72,7 +65,6 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	planetSpr.setOrigin(planetSpr.getLocalBounds().width / 2, planetSpr.getLocalBounds().height / 2);
 	planetSpr.setPosition(960, 540);
 	
-
 	ts_colony[0] = GetTileset("WorldMap/map_w1.png", 1920, 1080);
 	ts_colony[1] = GetTileset("WorldMap/map_w2.png", 1920, 1080);
 	ts_colony[2] = GetTileset("WorldMap/map_w3.png", 1920, 1080);
@@ -82,33 +74,12 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	ts_colony[6] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
 	ts_colony[7] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
 	
-	ts_asteroids[0] = GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
-	ts_asteroids[1] = GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
-	ts_asteroids[2] = GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
-	ts_asteroids[3] = GetTileset("WorldMap/asteroid_4_1920x1080.png", 1920, 1080);
-
-	for (int i = 0; i < 4; ++i)
-	{
-		IntRect ir = ts_asteroids[i]->GetSubRect(0);
-		ir.width *= 3;
-		SetRectSubRect(asteroidQuads + i * 4, ir);
-		SetRectCenter(asteroidQuads + i * 4, ir.width, ir.height, Vector2f(960, 540));
-		//SetRectColor(asteroidQuads + i * 4, Color(Color::Red));
-	}
-
-	if (!asteroidShader.loadFromFile("Resources/Shader/menuasteroid.frag", sf::Shader::Fragment))
-	{
-		cout << "asteroid SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0);
-	}
-	asteroidShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+	SetupAsteroids();
 
 	zoomView.setCenter(960, 540);
 	zoomView.setSize(1920, 1080);
 
-	
 	colonySpr[0].setPosition(1087, 331);
-	//colonySpr[0].setPosition(841, 473);
 	colonySpr[1].setPosition(1087, 614);
 	colonySpr[2].setPosition(842, 756);
 	colonySpr[3].setPosition(595, 614);
@@ -120,12 +91,12 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	for (int i = 0; i < 2; ++i)
 	{
 		SetRectSubRect(worldActiveQuads + i * 4, ts_colonyActive[i]->GetSubRect(0));
-		SetRectCenter(worldActiveQuads + i * 4, 1920, 1080, Vector2f(960, 540));//Vector2f(colonySpr[i].getPosition() + Vector2f( 960, 540 )));
+		SetRectCenter(worldActiveQuads + i * 4, 1920, 1080, Vector2f(960, 540));
 		SetRectSubRect(worldActiveQuadsZoomed + i * 4, ts_colonyActiveZoomed[i]->GetSubRect(0));
 		SetRectCenter(worldActiveQuadsZoomed + i * 4, 1920 / 8.f, 1080 / 8.f, Vector2f(colonySpr[i].getPosition() + Vector2f(960/8.f, 540/8.f)));
 	}
 
-	for (int i = 0; i < MAX_NUM_WORLDS; ++i)
+	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
 	{
 		colonySpr[i].setTexture(*ts_colony[i]->texture);
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
@@ -136,13 +107,6 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	colonySelectSprZoomed.setScale(1.f / 8.f, 1.f / 8.f );
 	
-
-	//ts_colonySelectZoomed[0]->texture->setSmooth(true);
-
-	//colonySelectSpr.setTexture( *ts_colonySelect[0]->texture );
-	//colonySelectSpr.setScale(5.f, 5.f);
-	
-	//if (!zoomShader.loadFromFile( "zoomblur_shader.vert", "zoomblur_shader.frag" ) )
 	if (!zoomShader.loadFromFile("Resources/Shader/zoomblur_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "zoom blur SHADER NOT LOADING CORRECTLY" << endl;
@@ -154,24 +118,9 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	zoomShader.setUniform("radial_origin", Vector2f( .5, .5 ) );
 	zoomShader.setUniform("radial_size", Vector2f( 1.f / 1920, 1.f / 1080 ));
 
-
-	int width = 1920;//1920 - w->getSize().x;
-	int height = 1080; //1080 - w->getSize().y;
+	int width = 1920;
+	int height = 1080;
 	uiView = View(sf::Vector2f(width / 2, height / 2), sf::Vector2f(width, height));
-
-	//for( int i = 0; i < 6; ++i )
-	//{
-	//	stringstream ss;
-	//	ss << "WorldMap/map_z3_" << (i+1) << ".png";
-	//	ts_section[i] = GetTileset( ss.str(), 1920, 1080 );
-
-	//	ss.clear();
-	//	ss.str( "" );
-	//	ss << "WorldMap/map_w" << (i+1) << ".png";
-	//	//colonyTex[i] = new Texture;
-	//	//colonyTex[i]->loadFromFile( ss.str() );
-	//	ts_colony[i] = GetTileset( ss.str(), 1920, 1080 );
-	//}
 
 	fontHeight = 24;
 	menuPos = Vector2f( 300, 300 );
@@ -181,7 +130,6 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	dirNode = NULL;
 	localPaths = NULL;
 	leftBorder = 20;
-	//numTotalEntries = 0;
 
 	currLevelTimeText.setFillColor(Color::White);
 	currLevelTimeText.setCharacterSize(40);
@@ -192,48 +140,60 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	Reset(NULL);
 
-	adventureFile.Load("Resources/Adventure", "tadventure");
-	adventureFile.LoadMapHeaders();
-	planet = new Planet(adventureFile);
-
-	int numWorlds = planet->numWorlds;
+	int numWorlds = adventurePlanet->numWorlds;
 	selectors = new MapSelector*[numWorlds];
 
 	for (int i = 0; i < numWorlds; ++i)
 	{
-		selectors[i] = new MapSelector(this, &(planet->worlds[i]),
+		selectors[i] = new MapSelector(this, &(adventurePlanet->worlds[i]),
 			mainMenu, Vector2f(960, 540));
 	}
-	/*for (int i = 0; i < 8; ++i)
-	{
-		selectors[i] = new MapSelector( planet->worlds[mainMenu, Vector2f(960, 540), i);
-	}*/
 }
 
 WorldMap::~WorldMap()
 {
-	//delete planetAndSpaceTex;
-	//delete planetTex;
-
 	delete worldSelector;
-	for (int i = 0; i < planet->numWorlds; ++i)
+	for (int i = 0; i < adventurePlanet->numWorlds; ++i)
 	{
 		delete selectors[i];
 	}
 	delete[] selectors;
 
-	delete planet;
-	//for( int i = 0; i < 6; ++i )
-	//{
-	//delete sectionTex[i];
-	//delete colonyTex[i];
-	//}
+	delete adventurePlanet;
 
 	delete kinBoostScreen;
 
 	ClearEntries();
-	//delete [] text;
-	//delete [] localPaths;
+}
+
+void WorldMap::SetupAsteroids()
+{
+	ts_asteroids[0] = GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
+	ts_asteroids[1] = GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
+	ts_asteroids[2] = GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
+	ts_asteroids[3] = GetTileset("WorldMap/asteroid_4_1920x1080.png", 1920, 1080);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		IntRect ir = ts_asteroids[i]->GetSubRect(0);
+		ir.width *= 3;
+		SetRectSubRect(asteroidQuads + i * 4, ir);
+		SetRectCenter(asteroidQuads + i * 4, ir.width, ir.height, Vector2f(960, 540));
+	}
+
+	if (!asteroidShader.loadFromFile("Resources/Shader/menuasteroid.frag", sf::Shader::Fragment))
+	{
+		cout << "asteroid SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0);
+	}
+	asteroidShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+}
+
+void WorldMap::LoadAdventure(const std::string &adventureName)
+{
+	adventureFile.Load("Resources/Adventure", adventureName);
+	adventureFile.LoadMapHeaders();
+	adventurePlanet = new AdventurePlanet(adventureFile);
 }
 
 void WorldMap::UpdateWorldStats()
@@ -250,8 +210,7 @@ void WorldMap::UpdateWorldStats()
 
 	AdventureWorld &aw = adventureFile.GetWorld(selectedColony);
 
-
-	World &world = planet->worlds[selectedColony];
+	World &world = adventurePlanet->worlds[selectedColony];
 	int numTotalSectors = world.numSectors;
 	int numCompletedSectors = 0;
 	for (int i = 0; i < numTotalSectors; ++i)
@@ -328,22 +287,12 @@ void WorldMap::RunSelectedMap()
 void WorldMap::Reset( SaveFile *sf )
 {
 	fontHeight = 24;
-	state = SPACE;
+	state = PLANET;
 	frame = 0;
 	asteroidFrame = 0;
-
-	selectedColony = 0;
+	selectedColony = -1;
 	selectedLevel = 0;
-	/*if( sf != NULL )
-	{
-		
-	}
-	else
-	{
-		selectedColony = 0;
-		selectedLevel = 0;
-	}*/
-	
+
 	ClearEntries();
 	moveDown = false;
 	moveUp = false;
@@ -532,7 +481,7 @@ void WorldMap::UpdateMapList()
 
 void WorldMap::SetDefaultSelections()
 {
-	selectedColony = 0;
+	selectedColony = -1;
 }
 
 void WorldMap::InitSelectors()
@@ -544,19 +493,24 @@ void WorldMap::InitSelectors()
 	}
 }
 
-bool WorldMap::MouseIsOnSelectedColony()
+void WorldMap::UpdateSelectedColony()
 {
-	int tempSelected = -1;
 	Vector2f mousePos = MOUSE.GetFloatPos();
-	Vector2f colMiddle = colonySpr[selectedColony].getPosition() + Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
-		colonySpr[selectedColony].getGlobalBounds().height / 2);
+	Vector2f colMiddle;
 
-	if (length(mousePos - colMiddle) < colonyRadius)
+	for (int i = 0; i < totalWorlds; ++i)
 	{
-		return true;
-	}
+		colMiddle = colonySprVec[i].getPosition() + Vector2f(colonySprVec[i].getGlobalBounds().width / 2,
+			colonySprVec[i].getGlobalBounds().height / 2);
 
-	return false;
+		if (length(mousePos - colMiddle) < colonyRadius)
+		{
+			selectedColony = i;
+			return;
+		}
+	}
+	
+	selectedColony = -1;
 }
 
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
@@ -564,27 +518,6 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	int trans = 20;
 	switch( state )
 	{
-	case SPACE:
-		{
-			
-			/*if( frame == trans )
-			{
-				state = SPACE_TO_PLANET;
-				frame = 0;
-			}*/
-		}
-		break;
-	case SPACE_TO_PLANET:
-		if( frame == trans )
-		{
-			state = PLANET;
-			frame = 0;
-		}
-		else
-		{
-
-		}
-		break;
 	case PLANET:
 	{
 		if ((MouseIsOnSelectedColony() && MOUSE.IsMouseLeftClicked())
@@ -647,7 +580,8 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			mainMenu->saveMenu->transparency = 1.f;
 			//mainMenu->saveMenu->kinFace.setTextureRect(mainMenu->saveMenu->ts_kinFace->GetSubRect(0));
 			//mainMenu->saveMenu->kinJump.setTextureRect(mainMenu->saveMenu->ts_kinJump1->GetSubRect(0));
-			state = SPACE;
+
+			//action = SPACE;
 			//transition back up later instead of just turning off
 			frame = 0;
 			break;
@@ -1028,32 +962,6 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 
 	switch( state )
 	{
-	case SPACE:
-		{
-			if( frame == 0 )
-			{
-				//back.setTexture( *planetAndSpaceTex );
-			//	back.setTexture( *ts_planetAndSpace->texture );
-			//	back.setColor( Color( 255, 255, 255, 255 ) );
-			}
-			break;
-		}
-	case SPACE_TO_PLANET:
-		{
-			if( frame == 0 )
-			{
-				//front.setTexture( *planetTex );
-				//front.setTexture( *ts_planet->texture );
-				//front.setColor( Color( 255, 255, 255, 255 ) );
-			}
-
-			float z = (float)frame / trans;
-			int c = floor( z * 255.0 + .5 );
-			int c0 = 255 - c;
-			//back.setColor( Color( 255, 255, 255, c0 ) );
-			//front.setColor( Color( 255, 255, 255, c ) );
-			break;
-		}
 	case PLANET:
 		{
 			worldSelector->SetAlpha(1.f);//need every frame?

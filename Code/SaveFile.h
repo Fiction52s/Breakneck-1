@@ -12,6 +12,10 @@
 struct Actor;
 struct AdventureFile;
 
+const static int ADVENTURE_MAX_NUM_WORLDS = 8;
+const static int ADVENTURE_MAX_NUM_SECTORS_PER_WORLD = 8;
+const static int ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR = 8;
+
 struct Level
 {
 	int index;
@@ -50,10 +54,10 @@ struct World
 	}
 };
 
-struct Planet
+struct AdventurePlanet
 {
-	Planet(AdventureFile &af);
-	~Planet();
+	AdventurePlanet(AdventureFile &af);
+	~AdventurePlanet();
 	int numWorlds;
 	World *worlds;	
 };
@@ -90,16 +94,16 @@ struct AdventureSector
 {	
 	AdventureSector();
 	BitField hasShardField;
-	AdventureMap maps[8];
+	AdventureMap maps[ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR];
 	void Load(std::ifstream &is, int ver1, int ver2, int copyMode );
 	void Save(std::ofstream &of, int ver1, int ver2, int copyMode );
-	int GetNumActiveMaps();
+	int GetNumExistingMaps();
 };
 
 struct AdventureWorld
 {
 	BitField hasShardField;
-	AdventureSector sectors[8];
+	AdventureSector sectors[ADVENTURE_MAX_NUM_SECTORS_PER_WORLD];
 
 	AdventureWorld()
 		:hasShardField(ShardInfo::MAX_SHARDS)
@@ -111,7 +115,7 @@ struct AdventureWorld
 		int ver2, int copyMode );
 	void Save(std::ofstream &of, int ver1,
 		int ver2, int copyMode );
-	int GetNumActiveSectors();
+	int GetNumExistingSectors();
 };
 
 struct AdventureFile
@@ -122,9 +126,11 @@ struct AdventureFile
 		COPY,
 	};
 
+
+
 	CopyMode copyMode;
 	BitField hasShardField;
-	AdventureWorld worlds[8];
+	AdventureWorld worlds[ADVENTURE_MAX_NUM_WORLDS];
 	int ver1;
 	int ver2;
 
@@ -143,7 +149,7 @@ struct AdventureFile
 	AdventureWorld &GetWorld(int w);
 	
 	
-	int GetNumActiveWorlds();
+	int GetNumExistingWorlds();
 	bool LoadMapHeaders();
 };
 
