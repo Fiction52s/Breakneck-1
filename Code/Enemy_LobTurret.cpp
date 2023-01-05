@@ -240,7 +240,7 @@ void LobTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 
 void LobTurret::ProcessState()
 {
-	cout << "lob: " << data.lobTypeCounter << endl;
+	//cout << "lob: " << data.lobTypeCounter << endl;
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
 	switch (action)

@@ -62,6 +62,7 @@
 #include "ConnectionManager.h"
 #include "UIMouse.h"
 #include "UIController.h"
+#include "CustomCursor.h"
 
 //#define GGPO_ON
 
@@ -3713,9 +3714,6 @@ void EditSession::Init()
 	playerZoomIcon.setTexture(*ts_playerZoomIcon->texture);
 	playerZoomIcon.setOrigin(playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2);
 
-	mainMenu->SetMouseGrabbed(true);
-	mainMenu->SetMouseVisible(true);
-
 	ts_mapBGThumbnails = GetSizedTileset("Backgrounds/BGInfo/bg_thumbnails_240x135.png");
 
 	playerType = NULL;
@@ -3977,8 +3975,6 @@ int EditSession::EditRun()
 	complexPaste = NULL;
 
 	testGateInfo.edit = EditSession::GetSession();
-	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
-	bool oldMouseVis = mainMenu->GetMouseVisible();
 
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
 	sf::View oldWindowView = window->getView();
@@ -4324,9 +4320,6 @@ int EditSession::EditRun()
 
 	preScreenTex->setView(oldPreTexView);
 	window->setView(oldWindowView);
-
-	mainMenu->SetMouseGrabbed(oldMouseGrabbed);
-	mainMenu->SetMouseVisible(oldMouseVis);
 
 	return returnVal;
 }

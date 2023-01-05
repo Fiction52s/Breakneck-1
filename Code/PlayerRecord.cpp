@@ -594,7 +594,7 @@ void RecordGhostMenu::LoadDir(boost::filesystem::path &p, list<GhostEntry*> &ent
 
 void RecordGhostMenu::LoadFolders()
 {
-	path pFolder(current_path() / "/Recordings/Ghost/");
+	path pFolder(current_path() / "/Resources/Recordings/Ghost/");
 
 	ghostFolders.clear();
 	try
@@ -679,12 +679,12 @@ void RecordGhostMenu::LoadMapGhosts( bool save, const boost::filesystem::path &p
 	assert(gf != NULL);
 	if (save)
 	{
-		path pSave(current_path() / "/Recordings/Ghost/" / mapName / "/save/");
+		path pSave(current_path() / "/Resources/Recordings/Ghost/" / mapName / "/save/");
 		LoadDir(pSave, gf->saveGhosts);
 	}
 	else
 	{
-		path pAuto(current_path() / "/Recordings/Ghost/" / mapName / "/auto/");
+		path pAuto(current_path() / "/Resources/Recordings/Ghost/" / mapName / "/auto/");
 		LoadDir(pAuto, gf->autoGhosts);
 	}
 }

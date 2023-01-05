@@ -22,11 +22,17 @@ struct CustomCursor
 	sf::RenderWindow *window;
 	bool clicked;
 	int mode;
+	bool visible;
+	bool grabbed;
 	
 
 	void SetClicked();
 	void SetNormal();
 	void SetMode(int m);
+	void Hide();
+	void Show();
+	void Grab();
+	void Release();
 	void Init(sf::RenderWindow *rw);
 };
 

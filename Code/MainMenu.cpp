@@ -633,12 +633,6 @@ void MainMenu::SetupWindow()
 	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
 	customCursor->Init(window);
 
-	mouseGrabbed = true;//false;//true;
-	mouseVisible = true;//false;//true;//false;
-
-	SetMouseGrabbed(mouseGrabbed);
-	SetMouseVisible(mouseVisible);
-
 	assert(window != NULL);
 	window->setVerticalSyncEnabled(true);
 	//window->setFramerateLimit(120);
@@ -991,28 +985,6 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	}
 }
 
-void MainMenu::SetMouseGrabbed(bool grabbed)
-{
-	mouseGrabbed = grabbed;
-	window->setMouseCursorGrabbed(mouseGrabbed);
-}
-
-void MainMenu::SetMouseVisible(bool vis)
-{
-	mouseVisible = vis;
-	window->setMouseCursorVisible(mouseVisible);
-}
-
-bool MainMenu::GetMouseGrabbed()
-{
-	return mouseGrabbed;
-}
-
-bool MainMenu::GetMouseVisible()
-{
-	return mouseVisible;
-}
-
 void MainMenu::SetMode(Mode m)
 {
 	transFrame = 0;
@@ -1090,8 +1062,8 @@ void MainMenu::SetMode(Mode m)
 	}
 	else if (menuMode == BROWSE_WORKSHOP)
 	{
-		SetMouseGrabbed(true);
-		SetMouseVisible(true);
+		//SetMouseGrabbed(true);
+		//SetMouseVisible(true);
 	}
 
 	if (menuMode == WORLDMAP_COLONY)
@@ -1210,9 +1182,6 @@ void MainMenu::CustomMapsOption()
 
 	//empty map. fix this later
 	string empty = "5\n0 0\nmat\n5\n-209 78\n286 78\n286 132\n60 132\n-201 132\n0\n0\n0\n1\n-- 1\ngoal -air 0 0 76";
-
-	SetMouseGrabbed(true);
-	SetMouseVisible(true);
 
 	UIMouse::GetInstance();
 	UIController::GetInstance();
@@ -1388,15 +1357,8 @@ void MainMenu::CustomMapsOption()
 		
 		
 	}
-	//window->setView( v );
-
-	window->setMouseCursorVisible(false);
-	//window->setMouseCursorGrabbed(false);
 
 	window->setView(oldView);
-	SetMouseGrabbed(true);
-	//SetMouseVisible(false);
-	//preScreenTexture->setView(oldPreView);
 }
 
 void MainMenu::GGPOOption()
@@ -2425,7 +2387,6 @@ void MainMenu::HandleMenuMode()
 		int result = currEditSession->Run();
 
 		window->setView(oldView);
-		SetMouseVisible(false);
 
 		//LoadMode(TITLEMENU);
 		LoadMode(preEditMode);

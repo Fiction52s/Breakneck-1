@@ -12,6 +12,7 @@
 #include "KinBoostScreen.h"
 #include "LoadingBackpack.h"
 #include "UIMouse.h"
+#include "CustomCursor.h"
 
 using namespace boost::filesystem;
 using namespace sf;

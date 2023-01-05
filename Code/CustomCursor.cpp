@@ -15,6 +15,8 @@ CustomCursor::CustomCursor()
 	clickedImage[M_SHIP].loadFromFile("Resources/Menu/ship_mouse_icon_2_172x80.png");
 	hotspot[M_SHIP] = Vector2u(2, 2);
 	clicked = false;
+	visible = false;
+	grabbed = false;
 
 	mode = M_REGULAR;
 }
@@ -46,6 +48,8 @@ void CustomCursor::SetMode(int m)
 void CustomCursor::Init(sf::RenderWindow *rw)
 {
 	window = rw;
+	Show();
+	Grab();
 	clicked = true;
 	SetNormal();
 }
@@ -72,3 +76,27 @@ void CustomCursor::SetClicked()
 	}
 }
 
+void CustomCursor::Show()
+{
+	window->setMouseCursorVisible(true);
+	visible = true;
+}
+
+void CustomCursor::Hide()
+{
+	window->setMouseCursorVisible(false);
+	visible = false;
+}
+
+
+void CustomCursor::Grab()
+{
+	window->setMouseCursorGrabbed(true);
+	grabbed = true;
+}
+
+void CustomCursor::Release()
+{
+	window->setMouseCursorGrabbed(false);
+	grabbed = false;
+}

@@ -758,13 +758,6 @@ struct MainMenu
 
 	int style;
 
-	bool mouseGrabbed;
-	bool mouseVisible;
-	void SetMouseGrabbed(bool grabbed);
-	void SetMouseVisible(bool vis);
-	bool GetMouseGrabbed();
-	bool GetMouseVisible();
-
 	static int masterVolume;
 
 	//Tileset *ts_asteroid0;

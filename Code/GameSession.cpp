@@ -76,6 +76,7 @@
 #include "MatchResultsScreen.h"
 
 #include "MatchStats.h"
+#include "CustomCursor.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -3021,12 +3022,7 @@ int GameSession::Run()
 	{
 		matchPlacings[i] = -1;
 	}
-	
-	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
-	bool oldMouseVisible = mainMenu->GetMouseVisible();
 
-	mainMenu->SetMouseGrabbed(true);
-	mainMenu->SetMouseVisible(false);
 
 	View oldPreTexView = preScreenTex->getView();
 	View oldWindowView = window->getView();
@@ -3130,7 +3126,7 @@ int GameSession::Run()
 
 			stringstream fss;
 			string mName = filePath.filename().stem().string();
-			fss << "Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
+			fss << "Resources/Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
 				<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
 				<< now.tm_min << "_" << now.tm_sec << ".bghst";
 
@@ -3215,9 +3211,6 @@ int GameSession::Run()
 
 	preScreenTex->setView(oldPreTexView);
 	window->setView(oldWindowView);
-
-	mainMenu->SetMouseGrabbed(oldMouseGrabbed);
-	mainMenu->SetMouseVisible(oldMouseVisible);
 
 	return returnVal;
 }
