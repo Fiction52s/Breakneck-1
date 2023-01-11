@@ -1078,6 +1078,11 @@ void MainMenu::SetMode(Mode m)
 		worldMap->frame = 0;
 		worldMap->UpdateWorldStats();
 	}
+	if (menuMode == WORLDMAP && oldMode == SAVEMENU)
+	{
+		worldMap->state = WorldMap::PLANET_VISUAL_ONLY;
+		worldMap->frame = 0;
+	}
 
 	if (menuMode == THANKS_FOR_PLAYING)
 	{
@@ -1891,7 +1896,7 @@ void MainMenu::PlayIntroMovie()
 	MusicInfo *info = musicManager->songMap["w0_0_Film"];
 	musicPlayer->TransitionMusic(info, 60, sf::seconds( 60 ));
 	
-	Level *lev = &(worldMap->planet->worlds[0].sectors[0].levels[0]);
+	Level *lev = &(worldMap->adventurePlanet->worlds[0].sectors[0].levels[0]);
 	AdventureMap &am = worldMap->adventureFile.GetMap(lev->index);
 	string levelPath = am.GetMapPath();//lev->GetFullName();
 	//window->setActive(false);
@@ -1981,12 +1986,12 @@ void MainMenu::ReturnToWorldAfterLevel()
 
 	
 
-	int numWorlds = worldMap->planet->numWorlds;
+	int numWorlds = worldMap->adventurePlanet->numWorlds;
 	if (worldMap->selectedColony == numWorlds - 1)
 	{
 		if (sa->currIndex == numLevels - 1)
 		{
-			if (currSaveFile->GetNumCompleteWorlds(worldMap->planet) == numWorlds)
+			if (currSaveFile->GetNumCompleteWorlds(worldMap->adventurePlanet) == numWorlds)
 			{
 				SetMode(THANKS_FOR_PLAYING);
 				//return;

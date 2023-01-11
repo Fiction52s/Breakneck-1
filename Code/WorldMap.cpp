@@ -287,7 +287,7 @@ void WorldMap::RunSelectedMap()
 void WorldMap::Reset( SaveFile *sf )
 {
 	fontHeight = 24;
-	state = PLANET;
+	state = PLANET_VISUAL_ONLY;
 	frame = 0;
 	asteroidFrame = 0;
 	selectedColony = -1;
@@ -337,146 +337,9 @@ void WorldMap::ClearEntries()
 		
 }
 
-int WorldMap::Tex( int index, int level, TreeNode *entry )
-{
-	//Text &t0 = text[index];
-	//t0.setFont( font );
-	//t0.setCharacterSize( fontHeight );
-	//t0.setString( entry->name );
-	//t0.setColor( Color::Red );
-	//t0.setPosition( menuPos.x, menuPos.y + index * yspacing );
-	//localPaths[index] = entry->GetLocalPath();//entry->filePath;
-	//dirNode[index] = NULL;
-	//++index; //1 for me
-	//for( list<TreeNode*>::iterator it = entry->dirs.begin(); it != entry->dirs.end(); ++it )
-	//{
-	//	index = Tex( index, level + 1, (*it) );	//this does itself
-	//}
-
-	bgRect.setSize( Vector2f( 300, yspacing * numTotalEntries ) );
-	Color c( 0, 50, 0 );
-	bgRect.setFillColor( c );
-	bgRect.setPosition( menuPos );
-
-	
-	
-	
-	
-
-	for( list<path>::iterator it = entry->files.begin(); it != entry->files.end(); ++it )
-	{
-		Text &t = text[index];
-		t.setFont( font );
-		t.setCharacterSize( fontHeight );
-
-		string name = (*it).filename().string();
-		name = name.substr( 0, name.size() - 6 );
-
-
-		t.setString( name );
-		t.setFillColor( Color::White );
-		t.setPosition( menuPos.x + leftBorder, menuPos.y + index * yspacing );
-		localPaths[index] = ( entry->GetLocalPath() / (*it).filename()).string();
-		dirNode[index] = entry;
-
-		++index; //1 for each file
-	}
-
-	return index;
-}
-
-void WorldMap::UpdateMapList( TreeNode *parentNode, const std::string &relativePath )
-{
-	path p( current_path() / relativePath );
-	
-	vector<path> v;
-	try
-	{
-		if (exists(p))    // does p actually exist?
-		{
-			if (is_regular_file(p))        // is p a regular file?   
-			{
-				if( p.extension().string() == ".brknk" )
-				{
-					//string name = p.filename().string();
-					parentNode->files.push_back( p );//name.substr( 0, name.size() - 6 ) );
-					numTotalEntries++;
-				}
-			}
-			else if (is_directory(p) )      // is p a directory?
-			{
-				//cout << p << " is a directory containing:\n";
-
-				TreeNode *newDir = new TreeNode;
-				newDir->parent = parentNode;
-				newDir->next = NULL;
-				newDir->name = p.filename().string();
-				newDir->filePath = p;
-
-				copy(directory_iterator(p), directory_iterator(), back_inserter(v));
-
-				sort(v.begin(), v.end());             // sort, since directory iteration
-														// is not ordered on some file systems
-
-				if( parentNode == NULL )
-				{
-					entries = newDir;
-				}
-				else
-				{
-					parentNode->dirs.push_back( newDir );
-				}
-				//numTotalEntries++;
-			
-				
-				for (vector<path>::const_iterator it (v.begin()); it != v.end(); ++it)
-				{
-					UpdateMapList( newDir, relativePath + "/" + (*it).filename().string() );
-					cout << "   " << *it << '\n';
-				}
-			}
-			else
-			{
-				cout << p << " exists, but is neither a regular file nor a directory\n";
-				assert( false );
-			}
-		}
-		else
-			cout << p << " does not exist\n";
-	}
-	catch (const filesystem_error& ex)
-	{
-		cout << ex.what() << '\n';
-	}
-}
-
 MapSelector *WorldMap::CurrSelector()
 {
 	return selectors[selectedColony];
-}
-
-void WorldMap::UpdateMapList()
-{
-	ClearEntries();
-	
-	//std::string path = "test/";
-	//std::string file = "map_online.brknk";
- //  bool goodDownload = levelServer.DownloadFile( path, file );
-	stringstream ss;
-	ss << "Resources/Maps/W" << (selectedColony+1);
-	cout << "stuff: " << ss.str() << endl;
-	UpdateMapList( entries, ss.str() );
-
-	text = new Text[numTotalEntries];
-
-	localPaths = new string[numTotalEntries];
-
-	dirNode = new TreeNode*[numTotalEntries];
-
-	
-
-
-	Tex( 0, 0, entries );
 }
 
 void WorldMap::SetDefaultSelections()
@@ -486,7 +349,7 @@ void WorldMap::SetDefaultSelections()
 
 void WorldMap::InitSelectors()
 {
-	for (int i = 0; i < planet->numWorlds; ++i)
+	for (int i = 0; i < adventurePlanet->numWorlds; ++i)
 	{
 		selectors[i]->Init();
 		//selectors[i]->UpdateAllInfo(i);
@@ -498,10 +361,10 @@ void WorldMap::UpdateSelectedColony()
 	Vector2f mousePos = MOUSE.GetFloatPos();
 	Vector2f colMiddle;
 
-	for (int i = 0; i < totalWorlds; ++i)
+	for (int i = 0; i < adventurePlanet->numWorlds; ++i)
 	{
-		colMiddle = colonySprVec[i].getPosition() + Vector2f(colonySprVec[i].getGlobalBounds().width / 2,
-			colonySprVec[i].getGlobalBounds().height / 2);
+		colMiddle = colonySpr[i].getPosition() + Vector2f(colonySpr[i].getGlobalBounds().width / 2,
+			colonySpr[i].getGlobalBounds().height / 2);
 
 		if (length(mousePos - colMiddle) < colonyRadius)
 		{
@@ -518,26 +381,19 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	int trans = 20;
 	switch( state )
 	{
+	case PLANET_VISUAL_ONLY:
+		break;
 	case PLANET:
 	{
-		if ((MouseIsOnSelectedColony() && MOUSE.IsMouseLeftClicked())
+		UpdateColonySelect();
+
+		if (( selectedColony >= 0 && MOUSE.IsMouseLeftClicked())
 			|| CONTROLLERS.ButtonPressed_A() )//currInput.A && !prevInput.A)
 		{
 			state = PlANET_TO_COLONY;
 			frame = 0;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_in"));
 
-			//mainMenu->loadingBackpack->SetScale(.25f);
-			//mainMenu->loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
-
-
-			//bgLoadFinished = false;
-			
-
-			//state = PlANET_TO_COLONY;
-			//frame = 0;
-
-			//testSelector->UpdateAllInfo();
 			MapSelector *currSelector = CurrSelector();
 
 			int startSector = 0;
@@ -573,6 +429,9 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		else if (CONTROLLERS.ButtonPressed_B() )//currInput.B && !prevInput.B)
 		{
+			state = PLANET_VISUAL_ONLY;
+			frame = 0;
+
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
 			mainMenu->SetMode(MainMenu::SAVEMENU);
 			mainMenu->saveMenu->Reset();
@@ -583,19 +442,18 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 
 			//action = SPACE;
 			//transition back up later instead of just turning off
-			frame = 0;
 			break;
 		}
 
 		int numCompletedWorlds;
 		if (allUnlocked)
 		{
-			numCompletedWorlds = planet->numWorlds;
+			numCompletedWorlds = adventurePlanet->numWorlds;
 		}
 		else
 		{
 			SaveFile *saveFile = mainMenu->GetCurrentProgress();
-			numCompletedWorlds = saveFile->GetNumCompleteWorlds(planet);
+			numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventurePlanet);
 		}
 
 		/*int tempSelected = -1;
@@ -1013,13 +871,58 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	++asteroidFrame;
 }
 
+void WorldMap::DrawAsteroids(RenderTarget *target, bool back)
+{
+	int scrollSeconds[] = { 400, 300, 140, 120 };
+	float astFactor[] = { .1f, .3f, 1.5f, 2.f };
+
+	float z = zoomView.getSize().x / 1920.f;
+	View vvv = zoomView;
+
+	RenderStates rs;
+
+	rs.shader = &asteroidShader;
+
+	int startIndex = 0;
+	int endIndex = 2;
+
+	Vector2f viewSize(1920, 1080);
+
+	if (!back)
+	{
+		startIndex = 2;
+		endIndex = 4;
+	}
+
+	for (int i = startIndex; i < endIndex; ++i)
+	{
+		rs.texture = ts_asteroids[i]->texture;
+		float aZ = 1.f - z;
+		aZ *= astFactor[i];
+		aZ = 1.f - aZ;
+
+		assert(aZ <= 1.f);
+		if (aZ > 0)
+		{
+			float xDiff = zoomView.getCenter().x - 960;
+			float yDiff = zoomView.getCenter().y - 540;
+			xDiff *= 1.f - aZ;
+			yDiff *= 1.f - aZ;
+			vvv.setSize(aZ * 1920.f, aZ * 1080.f);
+			vvv.setCenter(960 + xDiff, 540 + yDiff);
+			target->setView(vvv);
+			asteroidShader.setUniform("quant", -(asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
+			target->draw(asteroidQuads + i * 4, 4, sf::Quads, rs);
+		}
+	}
+}
+
 void WorldMap::Draw( RenderTarget *target )
 {
 	sf::RenderTexture *rt = MainMenu::extraScreenTexture;
 	rt->clear(sf::Color::Transparent);
 	
 	rt->setView(uiView);
-
 
 	if (state == COLONY)
 	{
@@ -1048,42 +951,7 @@ void WorldMap::Draw( RenderTarget *target )
 
 	rt->draw(spaceSpr);
 
-	int scrollSeconds[] = { 400, 300, 140, 120 };
-	float astFactor[] = { .1f, .3f, 1.5f, 2.f };
-
-	//rt->draw(asteroidSpr[0]);
-	//rt->draw(asteroidSpr[1]);
-
-	float z = zoomView.getSize().x / 1920.f;
-	View vvv = zoomView;
-
-	RenderStates rs;
-
-	rs.shader = &asteroidShader;
-		
-
-	for (int i = 0; i < 2; ++i)
-	{
-		rs.texture = ts_asteroids[i]->texture;
-		float aZ = 1.f - z;
-		aZ *= astFactor[i];
-		aZ = 1.f - aZ;
-		//float aZ = z * astFactor[i];
-		assert(aZ <= 1.f);
-		if (aZ > 0)
-		{
-			float xDiff = zoomView.getCenter().x - 960;
-			float yDiff = zoomView.getCenter().y - 540;
-			xDiff *= 1.f - aZ;
-			yDiff *= 1.f - aZ;
-			vvv.setSize(aZ * 1920.f, aZ * 1080.f);
-			vvv.setCenter(960 + xDiff, 540 + yDiff);
-			rt->setView(vvv);
-			asteroidShader.setUniform("quant", -(asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
-			rt->draw(asteroidQuads + i * 4, 4, sf::Quads, rs);
-			//rt->draw(asteroidSpr[i], &asteroidShader);
-		}
-	}
+	DrawAsteroids(rt, true);
 
 	rt->setView(zoomView);
 
@@ -1093,10 +961,6 @@ void WorldMap::Draw( RenderTarget *target )
 	{
 		rt->draw(colonySpr[i]);
 	}
-
-
-
-	//int breatheTi
 
 	int energyBreathe = 240;
 	Color selectColor = Color::White;
@@ -1121,44 +985,16 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(worldActiveQuads + i * 4, 4, sf::Quads, ts_colonyActive[i]->texture);
 		rt->draw(worldActiveQuadsZoomed + i * 4, 4, sf::Quads, ts_colonyActiveZoomed[i]->texture);
 	}
-	//colonySelectSpr.setColor(selectColor);
-	//colonySelectSprZoomed.setColor(selectColor);
 
-	//rt->draw(colonySelectSpr);
-	//rt->draw(colonySelectSprZoomed);
 	if (state != COLONY )
 	{
 		worldSelector->Draw(rt);
 	}
-	
 
-	for (int i = 2; i < 4; ++i)
-	{
-		rs.texture = ts_asteroids[i]->texture;
-
-		float aZ = 1.f - z;
-		aZ *= astFactor[i];
-		aZ = 1.f - aZ;
-		assert(aZ <= 1.f);
-		if (aZ > 0)
-		{
-			float xDiff = zoomView.getCenter().x - 960;
-			float yDiff = zoomView.getCenter().y - 540;
-			xDiff *= 1.f - aZ;
-			yDiff *= 1.f - aZ;
-
-			vvv.setCenter(960 + xDiff, 540 + yDiff);
-			vvv.setSize(aZ * 1920.f, aZ * 1080.f);
-
-			rt->setView(vvv);
-			asteroidShader.setUniform("quant", (asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
-			rt->draw(asteroidQuads + i * 4, 4, sf::Quads, rs);
-			//rt->draw(asteroidSpr[i] , &asteroidShader);
-		}
-	}
+	DrawAsteroids(rt, false);
 
 	if (state != COLONY && state != PlANET_TO_COLONY
-		&& state != COLONY_TO_PLANET )
+		&& state != COLONY_TO_PLANET && selectedColony >= 0 )
 	{
 		rt->draw(infoQuadBG, 4, sf::Quads);
 		rt->draw(infoNameBG, 4, sf::Quads);
@@ -1227,7 +1063,7 @@ Sector & WorldMap::GetCurrSector()
 	//SaveFile * currFile = mainMenu->GetCurrentProgress();
 	//World & world = currFile->worlds[selectedColony];
 	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
-	return planet->worlds[selectedColony].sectors[secIndex];
+	return adventurePlanet->worlds[selectedColony].sectors[secIndex];
 	//return currFile->adventureFile.GetSector(selectedColony, secIndex);
 }
 

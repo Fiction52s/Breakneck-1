@@ -904,7 +904,7 @@ bool SaveFile::IsLevelLastInSector( Level *lev )
 	return true;
 }
 
-int SaveFile::GetNumCompleteWorlds( Planet *planet )
+int SaveFile::GetNumCompleteWorlds( AdventurePlanet *planet )
 {
 	int numComplete = 0;
 	for (int i = 0; i < planet->numWorlds; ++i)

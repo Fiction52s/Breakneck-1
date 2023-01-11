@@ -256,6 +256,7 @@ struct WorldMap : TilesetManager
 {
 	enum State
 	{
+		PLANET_VISUAL_ONLY,
 		PLANET,
 		PlANET_TO_COLONY,
 		COLONY,
@@ -357,13 +358,10 @@ struct WorldMap : TilesetManager
 	void CompleteCurrentMap( Level *level, int totalFrames);
 	Sector &GetCurrSector();
 	int GetCurrSectorNumLevels();
-	void UpdateMapList();
 	const std::string & GetSelected();
-	void UpdateMapList(TreeNode *parentNode, const std::string &relativePath);
 	void ClearEntries();
 	void UpdateColonySelect();
 	void UpdateWorldStats();
-	int Tex(int index, int level, TreeNode *entry);
 	void SetDefaultSelections();
 	MapSelector *CurrSelector();
 	void InitSelectors();
@@ -372,6 +370,7 @@ struct WorldMap : TilesetManager
 private:
 	void SetupAsteroids();
 	void LoadAdventure(const std::string &adventureName);
+	void DrawAsteroids(sf::RenderTarget *target, bool back);
 };
 
 #endif

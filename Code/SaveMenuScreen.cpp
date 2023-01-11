@@ -80,8 +80,8 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 	{
 		stringstream ss;
 
-		int totalWorlds = wm->planet->numWorlds;
-		int numCompleteWorlds = sf->GetNumCompleteWorlds(wm->planet);
+		int totalWorlds = wm->adventurePlanet->numWorlds;
+		int numCompleteWorlds = sf->GetNumCompleteWorlds(wm->adventurePlanet);
 
 		ss << numCompleteWorlds << " / " << totalWorlds << " Worlds completed";
 
@@ -413,7 +413,6 @@ bool SaveMenuScreen::Update()
 			break;
 		case TRANSITION:
 		{
-
 			mainMenu->SetMode(MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP);
 			mainMenu->transAlpha = 255;
 			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
@@ -863,17 +862,22 @@ void SaveMenuScreen::UpdateSelectedIndex()
 {
 	Vector2f mousePos = MOUSE.GetFloatPos();
 
+	bool isOnSomething = false;
+
+	int foundIndex = -1;
 	for (int i = 0; i < 6; ++i)
 	{
 		if (fileDisplay[i]->Contains(mousePos))
 		{
-			if (selectedSaveIndex != i)
-			{
-				selectedSaveIndex = i;
-				SelectedIndexChanged();
-			}
+			foundIndex = i;
 			break;
 		}
+	}
+
+	if (foundIndex != selectedSaveIndex)
+	{
+		selectedSaveIndex = foundIndex;
+		SelectedIndexChanged();
 	}
 }
 
