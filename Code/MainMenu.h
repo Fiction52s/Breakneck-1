@@ -617,6 +617,8 @@ struct MainMenu
 
 	sf::Vector2i mousePixelPos;
 	
+
+	SaveFile *currSaveFile;
 	void UpdateMenuOptionText();
 	void DrawMenuOptionText(sf::RenderTarget *target);
 	
