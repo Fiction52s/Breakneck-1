@@ -365,7 +365,7 @@ bool LogMenu::IsLogFound(int w, int li)
 {
 	return true; //testing
 
-	SaveFile *saveFile = sess->mainMenu->GetCurrentProgress();
+	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
 	if (saveFile == NULL)
 	{
 		return false;
@@ -385,7 +385,7 @@ bool LogMenu::IsCurrLogFound()
 void LogMenu::UpdateUnlockedLogs()
 {
 	int index = 0;
-	SaveFile *saveFile = sess->mainMenu->GetCurrentProgress();
+	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
 
 	if (saveFile == NULL)
 		return;

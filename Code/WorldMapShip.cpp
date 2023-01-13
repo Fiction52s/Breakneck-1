@@ -1,0 +1,87 @@
+#include "WorldMapShip.h"
+#include "WorldMap.h"
+#include "Tileset.h"
+#include "VectorMath.h"
+
+using namespace std;
+using namespace sf;
+
+WorldMapShip::WorldMapShip(WorldMap *wm)
+{
+	ts = wm->GetSizedTileset("Menu/ship_mouse_icon_1_172x80.png");
+}
+void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)
+{
+	ControllerState currState = controllerInput->GetCurrState();
+	if (currState.leftStickMagnitude > 0)
+	{
+		float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
+		float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
+		float maxSpeed = 20;
+		sf::Vector2f movement(round(x * maxSpeed), round(y * maxSpeed));
+
+		SetPosition(position + movement);
+	}
+	/*else
+	{
+		if (currState.LLeft())
+		{
+			myPos.x -= 10;
+		}
+		else if (currState.LRight())
+		{
+			myPos.x += 10;
+		}
+
+		if (currState.LUp())
+		{
+			myPos.y -= 10;
+		}
+		else if (currState.LDown())
+		{
+			myPos.y += 10;
+		}
+	}*/
+}
+
+void WorldMapShip::SetPosition(sf::Vector2f &pos)
+{
+	position = pos;
+
+	Vector2f limit(1920, 1080);
+
+	if (position.x < 0)
+	{
+		position.x = 0;
+	}
+	if (position.x > limit.x)
+	{
+		position.x = limit.x;
+	}
+	if (position.y < 0)
+	{
+		position.y = 0;
+	}
+	if (position.y > limit.y)
+	{
+		position.y = limit.y;
+	}
+
+	UpdateQuads();
+}
+
+sf::Vector2f WorldMapShip::GetPosition()
+{
+	return position;
+}
+
+void WorldMapShip::UpdateQuads()
+{
+	ts->SetQuadSubRect(shipQuad, 0);
+	SetRectCenter(shipQuad, ts->tileWidth, ts->tileHeight, position);
+}
+
+void WorldMapShip::Draw(sf::RenderTarget *target)
+{
+	target->draw(shipQuad, 4, sf::Quads, ts->texture);
+}

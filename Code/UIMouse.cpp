@@ -1,6 +1,7 @@
 #include "UIMouse.h"
 #include "Input.h"
 #include <iostream>
+#include "CustomCursor.h"
 
 using namespace sf;
 using namespace std;
@@ -8,8 +9,8 @@ using namespace std;
 UIMouse::UIMouse()
 {
 	currWindow = NULL;
+	customCursor = NULL;
 	ResetMouse();
-	
 }
 
 void UIMouse::Update(sf::Vector2i &p_mousePos)
@@ -22,13 +23,18 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 	bool mouseDownL = Mouse::isButtonPressed(Mouse::Left);
 	bool mouseDownR = Mouse::isButtonPressed(Mouse::Right);
 
-	if (CONTROLLERS.ButtonHeld_A())
+	bool cursorOn = customCursor == NULL || customCursor->visible;
+
+	if (cursorOn)
 	{
-		mouseDownL = true;
-	}
-	if (CONTROLLERS.ButtonHeld_X())
-	{
-		mouseDownR = true;
+		if (CONTROLLERS.ButtonHeld_A())
+		{
+			mouseDownL = true;
+		}
+		if (CONTROLLERS.ButtonHeld_X())
+		{
+			mouseDownR = true;
+		}
 	}
 
 	lastMouseDownLeft = isMouseDownLeft;
@@ -39,70 +45,76 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 
 	mousePos = p_mousePos;
 
-	ControllerDualStateQueue *nonNeutralStates = NULL;
-	ControllerDualStateQueue *currStates = NULL;
-	double mag = 0;
-	for (int i = 0; i < CTYPE_NONE; ++i)
+
+	if (cursorOn)
 	{
-		for (int j = 0; j < 4; ++j)
+
+
+		ControllerDualStateQueue *nonNeutralStates = NULL;
+		ControllerDualStateQueue *currStates = NULL;
+		double mag = 0;
+		for (int i = 0; i < CTYPE_NONE; ++i)
 		{
-			currStates = CONTROLLERS.GetStateQueue(i, j);
-			if (currStates != NULL)
+			for (int j = 0; j < 4; ++j)
 			{
-				mag = currStates->GetCurrState().leftStickMagnitude;
-				if (mag > 0)
+				currStates = CONTROLLERS.GetStateQueue(i, j);
+				if (currStates != NULL)
 				{
-					nonNeutralStates = currStates;
-					break;
+					mag = currStates->GetCurrState().leftStickMagnitude;
+					if (mag > 0)
+					{
+						nonNeutralStates = currStates;
+						break;
+					}
 				}
 			}
 		}
-	}
 
-	if (nonNeutralStates == NULL)
-	{
-		myPos = mousePos;
-	}
-	else
-	{
-		ControllerState currState = nonNeutralStates->GetCurrState();
-		if (currState.leftStickMagnitude > 0)
+		if (nonNeutralStates == NULL)
 		{
-			float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
-			float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
-			float maxSpeed = 20;
-			sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
-
-			//cout << "old mypos: " << myPos.x << ", " << myPos.y << endl;
-			myPos += movement;
+			myPos = mousePos;
 		}
 		else
 		{
-			if (currState.LLeft())
+			ControllerState currState = nonNeutralStates->GetCurrState();
+			if (currState.leftStickMagnitude > 0)
 			{
-				myPos.x -= 10;
+				float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
+				float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
+				float maxSpeed = 20;
+				sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
+
+				//cout << "old mypos: " << myPos.x << ", " << myPos.y << endl;
+				myPos += movement;
 			}
-			else if (currState.LRight())
+			else
 			{
-				myPos.x += 10;
+				if (currState.LLeft())
+				{
+					myPos.x -= 10;
+				}
+				else if (currState.LRight())
+				{
+					myPos.x += 10;
+				}
+
+				if (currState.LUp())
+				{
+					myPos.y -= 10;
+				}
+				else if (currState.LDown())
+				{
+					myPos.y += 10;
+				}
 			}
 
-			if (currState.LUp())
-			{
-				myPos.y -= 10;
-			}
-			else if (currState.LDown())
-			{
-				myPos.y += 10;
-			}
+			Vector2f pos(myPos);
+			//turn back into screen coords
+			pos.x *= currWindow->getSize().x / 1920.f;
+			pos.y *= currWindow->getSize().y / 1080.f;
+
+			sf::Mouse::setPosition(Vector2i(pos), *currWindow);
 		}
-
-		Vector2f pos(myPos);
-		//turn back into screen coords
-		pos.x *= currWindow->getSize().x / 1920.f;
-		pos.y *= currWindow->getSize().y / 1080.f;
-
-		sf::Mouse::setPosition(Vector2i(pos), *currWindow);
 	}
 
 	consumed = false;
@@ -154,12 +166,16 @@ void UIMouse::ResetMouse()
 	lastMouseDownLeft = false;
 	isMouseDownRight = false;
 	lastMouseDownRight = false;
-	controllerMode = false;
 }
 
 void UIMouse::SetRenderWindow(sf::RenderWindow *rw)
 {
 	currWindow = rw;
+}
+
+void UIMouse::SetCustomCursor(CustomCursor *cc)
+{
+	customCursor = cc;
 }
 
 bool UIMouse::IsWindowFocused()

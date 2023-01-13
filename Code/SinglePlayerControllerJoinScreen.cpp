@@ -17,6 +17,8 @@ SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen 
 {
 	joinScreen = p_joinScreen;
 
+	mode = MODE_DEFAULT;
+
 	Font &f = MainMenu::GetInstance()->arial;
 
 	skinIndex = -1;
@@ -114,16 +116,32 @@ void SinglePlayerBox::Update()
 {
 	if (controllerStates != NULL)
 	{
-		if (controllerStates->ButtonPressed_LeftShoulder())
+		if (mode != MODE_CONTROLLER_ONLY)
 		{
-			joinScreen->PrevSkin();
-		}
-		else if (controllerStates->ButtonPressed_RightShoulder())
-		{
-			joinScreen->NextSkin();
+			if (controllerStates->ButtonPressed_LeftShoulder())
+			{
+				joinScreen->PrevSkin();
+			}
+			else if (controllerStates->ButtonPressed_RightShoulder())
+			{
+				joinScreen->NextSkin();
+			}
 		}
 	}
 }
+
+void SinglePlayerBox::SetMode(int m)
+{
+	if (mode == m)
+	{
+		return;
+	}
+
+	mode = m;
+
+	SetTopLeft(topLeft);
+}
+
 
 void SinglePlayerBox::SetTopLeft(sf::Vector2i &pos)
 {
@@ -143,8 +161,29 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2i &pos)
 
 	int border = 10;
 
-	SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(joinScreen->playerBoxWidth - (controllerIconSize.x + border), border) + Vector2f(topLeft));
-	SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(joinScreen->playerBoxWidth - (portIconSize.x + border), controllerIconSize.y) + Vector2f(topLeft));
+	if (mode == MODE_CONTROLLER_ONLY)
+	{
+		border = 10;
+
+		float scaleFactor = 3;
+
+		controllerIconSize.x *= scaleFactor;
+		controllerIconSize.y *= scaleFactor;
+		portIconSize.x *= scaleFactor;
+		portIconSize.y *= scaleFactor;
+
+		SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(center.x - (controllerIconSize.x / 2), border + topLeft.y));
+		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(center.x - (portIconSize.x / 2), border + controllerIconSize.y + topLeft.y));
+	}
+	else
+	{
+		SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(joinScreen->playerBoxWidth - (controllerIconSize.x + border), border) + Vector2f(topLeft));
+		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(joinScreen->playerBoxWidth - (portIconSize.x + border), controllerIconSize.y) + Vector2f(topLeft));
+	}
+
+	
+
+	
 
 	SetRectCenter(kinQuad, joinScreen->ts_kin->tileWidth, joinScreen->ts_kin->tileHeight, Vector2f(center));
 
@@ -228,9 +267,13 @@ void SinglePlayerBox::Draw(sf::RenderTarget *target)
 		}
 
 		//target->draw(kinQuad, 4, sf::Quads, &(playerShader->pShader));
-		target->draw(kinSprite, &(playerShader->pShader));
 
-		target->draw(skinNumberText);
+		if (mode != MODE_CONTROLLER_ONLY)
+		{
+			target->draw(kinSprite, &(playerShader->pShader));
+
+			target->draw(skinNumberText);
+		}
 	}
 	else
 	{
@@ -299,6 +342,11 @@ bool SinglePlayerControllerJoinScreen::HandleEvent(sf::Event ev)
 	}
 
 	return false;
+}
+
+void SinglePlayerControllerJoinScreen::SetMode(int m)
+{
+	playerBox->SetMode(m);
 }
 
 const MatchParams &SinglePlayerControllerJoinScreen::GetMatchParams()

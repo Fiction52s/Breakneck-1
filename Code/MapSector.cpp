@@ -668,8 +668,7 @@ void MapSector::UpdateBG()
 	bg->Update(Vector2f(960, 540));
 }
 
-bool MapSector::Update(ControllerState &curr,
-	ControllerState &prev)
+bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 {
 	UpdateUnlockedLevelCount();
 
@@ -719,8 +718,8 @@ bool MapSector::Update(ControllerState &curr,
 	{
 		int old = GetSelectedIndex();
 
-		bool left = curr.LLeft();
-		bool right = curr.LRight();
+		bool left = controllerInput->GetCurrState().LLeft();
+		bool right = controllerInput->GetCurrState().LRight();
 
 		int changed = mapSASelector->UpdateIndex(left, right);
 
@@ -739,9 +738,9 @@ bool MapSector::Update(ControllerState &curr,
 			UpdateNodes();
 		}
 
-		bool aPress = (curr.A && !prev.A);
-		bool yPress = (curr.Y && !prev.Y) && ghostAndReplayOn;
-		bool r1Press = (curr.rightShoulder && !prev.rightShoulder) && ghostAndReplayOn;
+		bool aPress = controllerInput->ButtonPressed_A();
+		bool yPress = controllerInput->ButtonPressed_Y() && ghostAndReplayOn;
+		bool r1Press = controllerInput->ButtonPressed_RightShoulder() && ghostAndReplayOn;
 
 		if ( (aPress || yPress || r1Press) && saveFile->IsUnlockedSector( world, sec ))
 		{

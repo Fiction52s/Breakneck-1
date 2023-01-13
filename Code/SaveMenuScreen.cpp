@@ -9,6 +9,7 @@
 #include "MusicPlayer.h"
 #include "MenuPopup.h"
 #include "UIMouse.h"
+#include "CustomCursor.h"
 
 using namespace sf;
 using namespace std;
@@ -378,14 +379,12 @@ bool SaveMenuScreen::Update()
 				{
 					assert(0);
 				}*/
-
-
-
 				defaultFiles[selectedSaveIndex] = false;
 				int savedSkin = files[selectedSaveIndex]->defaultSkinIndex;
 				files[selectedSaveIndex]->SetAsDefault();
 				files[selectedSaveIndex]->defaultSkinIndex = savedSkin;
 				files[selectedSaveIndex]->Save();
+
 				//action = TRANSITIONMOVIE;
 				if (startWithTutorial)
 				{
@@ -402,6 +401,10 @@ bool SaveMenuScreen::Update()
 			}
 			else
 			{
+				//mainMenu->customCursor->Show();
+				//mainMenu->customCursor->SetMode(CustomCursor::M_SHIP);
+				//MOUSE.SetPosition(Vector2i(mainMenu->worldMap->worldSelector->position));
+
 				action = TRANSITION;
 			}
 
@@ -465,39 +468,20 @@ bool SaveMenuScreen::Update()
 		}
 	}
 
-
-
-	ControllerState &menuCurrInput = mainMenu->menuCurrInput;
-	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
-
-
-	bool moveDown = false;
-	bool moveUp = false;
-	bool moveLeft = false;
-	bool moveRight = false;
-
-
-	bool down = (menuCurrInput.LDown() && !menuPrevInput.LDown())
-		|| (menuCurrInput.PDown() && !menuPrevInput.PDown());
-	bool left = (menuCurrInput.LLeft() && !menuPrevInput.LLeft())
-		|| (menuCurrInput.PLeft() && !menuPrevInput.PLeft());
-	bool up = (menuCurrInput.LUp() && !menuPrevInput.LUp())
-		|| (menuCurrInput.PUp() && !menuPrevInput.PUp());
-	bool right = (menuCurrInput.LRight() && !menuPrevInput.LRight())
-		|| (menuCurrInput.PRight() && !menuPrevInput.PRight());
+	ControllerDualStateQueue *controllerInput = mainMenu->singlePlayerControllerStates;
 
 	int moveDelayFrames = 60;
 	int moveDelayFramesSmall = 40;
 
 	bool changedToSkin = false;
 
+	
+
 	if (mainMenu->menuMode == MainMenu::SAVEMENU )
 	{
 		if( action == WAIT )
 		{
-			UpdateSelectedIndex();
-
-			if ((MouseIsOverSelectedFile() && MOUSE.IsMouseLeftClicked()) )
+			if (controllerInput->ButtonPressed_A() )//(MouseIsOverSelectedFile() && MOUSE.IsMouseLeftClicked()) )
 			{
 				if (defaultFiles[selectedSaveIndex])
 				{
@@ -515,52 +499,40 @@ bool SaveMenuScreen::Update()
 					return true;
 				}
 			}
-			else if (CONTROLLERS.ButtonPressed_B())
+			else if (controllerInput->ButtonPressed_B())
 			{
 				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
 				return false;
 			}
-
-			//if (menuCurrInput.B && !menuPrevInput.B)
-			//{
-			//	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
-			//	return false;
-			//}
-			//else if (menuCurrInput.A && !menuPrevInput.A)
-			//{
-			//	
-			//}
-			//else if (menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder)
-			//{
-			//	action = SKINMENU;
-			//	frame = 0;
-			//	skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
-			//	changedToSkin = true; //so you dont exit the same frame you open
-			//	
-			//}
-			//else if (menuCurrInput.X && !menuPrevInput.X)
-			//{
-			//	if (!defaultFiles[selectedSaveIndex])
-			//	{
-			//		action = CONFIRMDELETE;
-			//		confirmPopup.SetText("Are you sure you want\nto delete this save file?");
-			//		frame = 0;
-			//	}
-			//}
-			//else if (menuCurrInput.Y && !menuPrevInput.Y)
-			//{
-			//	if (!defaultFiles[selectedSaveIndex])
-			//	{
-			//		action = COPY;
-			//		frame = 0;
-			//		copiedIndex = selectedSaveIndex;
-			//	}
-			//}
-			//else
-			//{
-
-			//	//ChangeIndex(down, up, left, right);
-			//}
+			else if (controllerInput->ButtonPressed_RightShoulder())
+			{
+				action = SKINMENU;
+				frame = 0;
+				skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+				changedToSkin = true; //so you dont exit the same frame you open
+			}
+			else if (controllerInput->ButtonPressed_X())
+			{
+				if (!defaultFiles[selectedSaveIndex])
+				{
+					action = CONFIRMDELETE;
+					confirmPopup->SetQuestion("Are you sure you want\nto delete this save file?");
+					frame = 0;
+				}
+			}
+			else if (controllerInput->ButtonPressed_Y())
+			{
+				if (!defaultFiles[selectedSaveIndex])
+				{
+					action = COPY;
+					frame = 0;
+					copiedIndex = selectedSaveIndex;
+				}
+			}
+			else
+			{
+				ChangeIndex(controllerInput->DirPressed_Down(), controllerInput->DirPressed_Up(), controllerInput->DirPressed_Left(), controllerInput->DirPressed_Right());
+			}
 		}
 		else if (action == CONFIRMDELETE)
 		{
@@ -631,56 +603,54 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == COPY)
 		{
-			//UpdateSelectedIndex();
-
-			//if (menuCurrInput.A && !menuPrevInput.A)
-			//{
-			//	if (defaultFiles[selectedSaveIndex])
-			//	{
-			//		action = CONFIRMCOPY;
-			//		frame = 0;
-			//		confirmPopup.SetText("Are you sure you want to\ncopy the save file here?");
-			//	}
-			//	else
-			//	{
-			//		action = INFOPOP;
-			//		frame = 0;
-			//		infoPopup->SetText("Cannot overwrite existing file");
-			//	}
-			//}
-			//else if (menuCurrInput.B && !menuPrevInput.B)
-			//{
-			//	action = WAIT;
-			//	frame = 0;
-			//}
-			//else
-			//{
-			//	//ChangeIndex(down, up, left, right);
-			//}
+			if (controllerInput->ButtonPressed_A())
+			{
+				if (defaultFiles[selectedSaveIndex])
+				{
+					action = CONFIRMCOPY;
+					frame = 0;
+					confirmPopup->SetQuestion("Are you sure you want to\ncopy the save file here?");
+				}
+				else
+				{
+					action = INFOPOP;
+					frame = 0;
+					messagePopup->Pop("Cannot overwrite existing file");
+				}
+			}
+			else if (controllerInput->ButtonPressed_B())
+			{
+				action = WAIT;
+				frame = 0;
+			}
+			else
+			{
+				//ChangeIndex(down, up, left, right);
+			}
 		}
 		else if (action == CONFIRMCOPY)
 		{
-			/*int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
-			if (res == SaveMenuConfirmPopup::OPTION_CONFIRM)
+			confirmPopup->Update();
+			if (confirmPopup->action == ConfirmPopup::A_YES)
 			{
 				action = INFOPOP;
 				frame = 0;
-				infoPopup->SetText("Copied save file successfully");
+				messagePopup->Pop("Copied save file successfully");
 
 				files[copiedIndex]->CopyTo(files[selectedSaveIndex]);
 				files[selectedSaveIndex]->Save();
 				defaultFiles[selectedSaveIndex] = false;
 				fileDisplay[selectedSaveIndex]->SetValues(files[selectedSaveIndex], mainMenu->worldMap);
 			}
-			else if (res == SaveMenuConfirmPopup::OPTION_BACK)
+			else if (confirmPopup->action == ConfirmPopup::A_NO || confirmPopup->action == ConfirmPopup::A_BACK )
 			{
 				action = WAIT;
 				frame = 0;
-			}*/
+			}
 		}
 	}
 
-	if (CONTROLLERS.ButtonHeld_RightShoulder())
+	if (controllerInput->ButtonHeld_RightShoulder())
 	{
 		ts_skinButton->SetSubRect(skinButtonSpr, 1);
 	}
@@ -741,7 +711,7 @@ bool SaveMenuScreen::Update()
 	{
 		if (!changedToSkin)
 		{
-			if (!skinMenu->Update(menuCurrInput, menuPrevInput))
+			if (!skinMenu->Update(controllerInput))
 			{
 				action = WAIT;
 				frame = 0;
@@ -752,13 +722,13 @@ bool SaveMenuScreen::Update()
 	}
 	}
 
-	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
-	//kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
+	//selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
+	////kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
 
-	Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
+	//Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
 
-	selectSlot.setPosition(topLeftPos);
-	kinFace.setPosition(topLeftPos + Vector2f( 15, -6 ));
+	//selectSlot.setPosition(topLeftPos);
+	//kinFace.setPosition(topLeftPos + Vector2f( 15, -6 ));
 
 	
 
@@ -826,7 +796,17 @@ bool SaveMenuScreen::Update()
 
 void SaveMenuScreen::SelectedIndexChanged()
 {
+	/*if (selectedSaveIndex == -1)
+	{
+		mainMenu->currSaveFile = NULL;
+		currColonyIndex = -1;
+	}
+	else
+	{
+		
+	}*/
 	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
+
 	mainMenu->currSaveFile = files[selectedSaveIndex];
 
 	if (action != COPY)
@@ -844,8 +824,15 @@ void SaveMenuScreen::SelectedIndexChanged()
 		currColonyIndex = mainMenu->currSaveFile->mostRecentWorldSelected;
 	}
 
-	mainMenu->worldMap->selectedColony = currColonyIndex;
-	mainMenu->worldMap->UpdateColonySelect();
+	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
+	//kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
+
+	Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
+
+	selectSlot.setPosition(topLeftPos);
+	kinFace.setPosition(topLeftPos + Vector2f(15, -6));
+
+	mainMenu->worldMap->SetShipToColony(currColonyIndex);
 }
 
 void SaveMenuScreen::UnlockSkin(int skinIndex)
@@ -963,21 +950,22 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveTexture->draw(kinClouds);
 	saveTexture->draw(kinWindow);
 
-	int endDraw = 12 * 3 + 24 * 2;
-	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN || action == SKINMENU 
-		|| action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY || action == COPY || action == INFOPOP 
-		|| action == ASKTUTORIAL || action == TRANSITIONTUTORIAL )
-	{
-		saveTexture->draw(kinJump, &playerSkinShader.pShader);
-	}
-	
+
 	if (selectedSaveIndex >= 0)
 	{
+		int endDraw = 12 * 3 + 24 * 2;
+		if (action == WAIT || (action == SELECT && frame < endDraw) || action == FADEIN || action == SKINMENU
+			|| action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY || action == COPY || action == INFOPOP
+			|| action == ASKTUTORIAL || action == TRANSITIONTUTORIAL)
+		{
+			saveTexture->draw(kinJump, &playerSkinShader.pShader);
+		}
+
 		saveTexture->draw(selectSlot);
 		saveTexture->draw(kinFace, &maskPlayerSkinShader.pShader);
 	}
 	
-
+	
 	for (int i = 0; i < 6; ++i)
 	{
 		fileDisplay[i]->Draw(saveTexture);

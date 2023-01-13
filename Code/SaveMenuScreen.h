@@ -119,6 +119,8 @@ struct SaveMenuScreen : TilesetManager
 	MessagePopup *messagePopup;
 	ConfirmPopup *confirmPopup;
 
+	ControllerDualStateQueue *controllerStates;
+
 	bool startWithTutorial;
 	int currSkin;
 	bool defaultFiles[6];

@@ -270,7 +270,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 {
 	//return true; //testing
 
-	SaveFile *saveFile = sess->mainMenu->GetCurrentProgress();
+	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
 	if (saveFile == NULL)
 	{
 		return false;
@@ -288,7 +288,7 @@ bool ShardMenu::IsCurrShardCaptured()
 void ShardMenu::UpdateUnlockedShards()
 {
 	int index = 0;
-	SaveFile *saveFile = sess->mainMenu->GetCurrentProgress();
+	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
 
 	if (saveFile == NULL)
 		return;

@@ -170,12 +170,12 @@ void ControllerState::SetFromCompressedState(int s)
 }
 
 
-bool ControllerState::IsLeftNeutral()
+bool ControllerState::IsLeftNeutral() const
 {
 	return leftStickPad == 0;
 }
 
-bool ControllerState::IsRightNeutral()
+bool ControllerState::IsRightNeutral() const
 {
 	return rightStickPad == 0;
 }
@@ -232,102 +232,102 @@ void ControllerState::SetLeftDirection()
 	}
 }
 
-bool ControllerState::PowerButtonDown()
+bool ControllerState::PowerButtonDown() const
 {
 	return leftShoulder;
 }
 
-bool ControllerState::JumpButtonDown()
+bool ControllerState::JumpButtonDown() const
 {
 	return A;
 }
 
-bool ControllerState::DashButtonDown()
+bool ControllerState::DashButtonDown() const
 {
 	return X;
 }
 
-bool ControllerState::AttackButtonDown()
+bool ControllerState::AttackButtonDown() const
 {
 	return rightShoulder;
 }
 
-bool ControllerState::PUp()
+bool ControllerState::PUp() const
 {
 	return pad & 1;
 }
 
-bool ControllerState::PDown()
+bool ControllerState::PDown() const
 {
 	return pad & 2;
 }
 
-bool ControllerState::PLeft()
+bool ControllerState::PLeft() const
 {
 	return pad & 4;
 }
 
-bool ControllerState::PRight()
+bool ControllerState::PRight() const
 {
 	return pad & 8;
 }
 
-bool ControllerState::LUp()
+bool ControllerState::LUp() const
 {
 	return leftStickPad & 1;
 }
 
-bool ControllerState::LDown()
+bool ControllerState::LDown() const
 {
 	return leftStickPad & 2;
 }
 
-bool ControllerState::LLeft()
+bool ControllerState::LLeft() const
 {
 	return leftStickPad & 4;
 }
 
-bool ControllerState::LRight()
+bool ControllerState::LRight() const
 {
 	return leftStickPad & 8;
 }
 
-bool ControllerState::LPress()
+bool ControllerState::LPress() const
 {
 	return leftPress;
 }
 
-bool ControllerState::RUp()
+bool ControllerState::RUp() const
 {
 	return rightStickPad & 1;
 }
 
-bool ControllerState::RDown()
+bool ControllerState::RDown() const
 {
 	return rightStickPad & 2;
 }
 
-bool ControllerState::RLeft()
+bool ControllerState::RLeft() const
 {
 	return rightStickPad & 4;
 }
 
-bool ControllerState::RRight()
+bool ControllerState::RRight() const
 {
 	return rightStickPad & 8;
 }
 
-bool ControllerState::RPress()
+bool ControllerState::RPress() const
 {
 	return rightPress;
 }
 
-bool ControllerState::RightTriggerPressed()
+bool ControllerState::RightTriggerPressed() const
 {
 	return rightTrigger >= triggerThresh;
 }
 
-bool ControllerState::LeftTriggerPressed()
+bool ControllerState::LeftTriggerPressed() const
 {
 	return leftTrigger >= triggerThresh;
 }
@@ -2069,6 +2069,26 @@ bool ControllerStateQueue::ButtonHeld_Any()
 bool ControllerStateQueue::ButtonPressed_Any()
 {
 	return ButtonPressed_A() || ButtonPressed_B() || ButtonPressed_X() || ButtonPressed_Y() || ButtonPressed_LeftShoulder() || ButtonPressed_RightShoulder();
+}
+
+bool ControllerStateQueue::DirPressed_Left()
+{
+	return states[0].LLeft() && !states[1].LLeft();
+}
+
+bool ControllerStateQueue::DirPressed_Right()
+{
+	return states[0].LRight() && !states[1].LRight();
+}
+
+bool ControllerStateQueue::DirPressed_Up()
+{
+	return states[0].LUp() && !states[1].LUp();
+}
+
+bool ControllerStateQueue::DirPressed_Down()
+{
+	return states[0].LDown() && !states[1].LDown();
 }
 
 int ControllerStateQueue::GetControllerType()

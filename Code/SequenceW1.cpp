@@ -924,7 +924,7 @@ void GetAirdashPowerScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->Fade(true, 60, Color::Black, true);
 			sess->hud->Show(60);
-			SaveFile *sf = sess->mainMenu->GetCurrentProgress();
+			SaveFile *sf = sess->mainMenu->GetCurrSaveFile();
 			if (sf != NULL)
 			{
 				sf->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);

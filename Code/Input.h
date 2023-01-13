@@ -32,8 +32,6 @@ struct ControllerState
 	double rightStickRadians;
 	BYTE leftTrigger;
 	BYTE rightTrigger;
-	bool LeftTriggerPressed();
-	bool RightTriggerPressed();
 	BYTE triggerThresh;
 	unsigned char leftStickDirection;
 	//bool leftTriggerPress;
@@ -55,36 +53,41 @@ struct ControllerState
 	ControllerState();
 	void Set(const ControllerState &state);
 	void SetLeftDirection();
-	bool IsLeftNeutral();
-	bool IsRightNeutral();
+	
 	sf::Vector2<double> GetLeft8Dir();
 	int GetCompressedState();
 	void SetFromCompressedState(int s);
 	void InvertLeftStick();
 	void Clear();
-	void AddState(ControllerState &state);
 
-	bool LUp();
-	bool LDown();
-	bool LLeft();
-	bool LRight();
-	bool LPress();
 
-	bool RUp();
-	bool RDown();
-	bool RLeft();
-	bool RRight();
-	bool RPress();
+	bool IsLeftNeutral() const;
+	bool IsRightNeutral() const;
 
-	bool PUp();
-	bool PDown();
-	bool PLeft();
-	bool PRight();
+	bool LeftTriggerPressed()  const;
+	bool RightTriggerPressed()  const;
 
-	bool PowerButtonDown();
-	bool JumpButtonDown();
-	bool DashButtonDown();
-	bool AttackButtonDown();
+	bool LUp() const;
+	bool LDown() const;
+	bool LLeft() const;
+	bool LRight() const;
+	bool LPress() const;
+
+	bool RUp() const;
+	bool RDown() const;
+	bool RLeft() const;
+	bool RRight() const;
+	bool RPress() const;
+
+	bool PUp()  const;
+	bool PDown() const;
+	bool PLeft() const;
+	bool PRight() const;
+
+	bool PowerButtonDown() const;
+	bool JumpButtonDown() const;
+	bool DashButtonDown() const;
+	bool AttackButtonDown() const;
 
 
 	//0x1 = up, 0x2 = down, 0x4 = left, 
@@ -290,6 +293,10 @@ struct ControllerStateQueue
 	bool ButtonPressed_Start();
 	bool ButtonHeld_Any();
 	bool ButtonPressed_Any();
+	bool DirPressed_Left();
+	bool DirPressed_Right();
+	bool DirPressed_Up();
+	bool DirPressed_Down();
 
 	int GetControllerType();
 	int GetIndex();

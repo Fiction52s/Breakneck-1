@@ -3777,7 +3777,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bool isCampaign = false;
 	if (owner != NULL)
 	{
-		SaveFile *currProgress = owner->GetCurrentProgress();
+		SaveFile *currProgress = owner->GetCurrSaveFile();
 		if (currProgress != NULL )
 		{
 			isCampaign = true;
@@ -7702,7 +7702,7 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				SaveFile *currFile = sess->mainMenu->GetCurrentProgress();
+				SaveFile *currFile = sess->mainMenu->GetCurrSaveFile();
 				bool levValid = owner->level != NULL; 
 				if (jump && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 				{
@@ -7729,7 +7729,7 @@ void Actor::HandleWaitingScoreDisplay()
 			{
 				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
-					SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+					SaveFile *currFile = owner->mainMenu->GetCurrSaveFile();
 					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 					currFile->Save();
 				}
@@ -7759,7 +7759,7 @@ void Actor::HandleWaitingScoreDisplay()
 			{
 				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
-					SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+					SaveFile *currFile = owner->mainMenu->GetCurrSaveFile();
 					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 					currFile->Save();
 				}
@@ -7784,7 +7784,7 @@ void Actor::HandleWaitingScoreDisplay()
 			{
 				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
-					SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+					SaveFile *currFile = owner->mainMenu->GetCurrSaveFile();
 					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 					currFile->Save();
 				}

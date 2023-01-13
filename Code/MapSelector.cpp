@@ -133,10 +133,10 @@ MapSelector::~MapSelector()
 
 void MapSelector::Init()
 {
-	playerSkinShader.SetSkin(mainMenu->GetCurrentProgress()->defaultSkinIndex);
+	playerSkinShader.SetSkin(mainMenu->GetCurrSaveFile()->defaultSkinIndex);
 	for (int i = 0; i < numSectors; ++i)
 	{
-		sectors[i]->Init(mainMenu->GetCurrentProgress());
+		sectors[i]->Init(mainMenu->GetCurrSaveFile());
 	}
 }
 
@@ -195,26 +195,22 @@ void MapSelector::DestroyBGs()
 	}
 }
 
-bool MapSelector::Update(ControllerState &curr,
-	ControllerState &prev)
+bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 {
 	ControllerState empty;
 	MapSector::State currSectorState = FocusedSector()->state;
-
-	bool left = curr.LLeft();
-	bool right = curr.LRight();
 
 	switch (state)
 	{
 	case S_SECTORSELECT:
 	{
-		if (curr.A && !prev.A)
+		if (controllerInput->ButtonPressed_A())
 		{
 			state = S_MAPSELECT;
 			FocusedSector()->UpdateMapPreview();
 			break;
 		}
-		else if (curr.B && !prev.B)
+		else if (controllerInput->ButtonPressed_B())
 		{
 			//FocusedSector()->DestroyMapPreview();
 			//FocusedSector()->DestroyBG();
@@ -222,7 +218,7 @@ bool MapSelector::Update(ControllerState &curr,
 		}
 
 		int oldIndex = sectorSASelector->currIndex;
-		int changed = sectorSASelector->UpdateIndex(curr.LLeft(), curr.LRight());
+		int changed = sectorSASelector->UpdateIndex(controllerInput->GetCurrState().LLeft(), controllerInput->GetCurrState().LRight());
 		int numCurrLevels = FocusedSector()->unlockedLevelCount;
 		if (changed != 0)
 		{
@@ -244,7 +240,7 @@ bool MapSelector::Update(ControllerState &curr,
 	{
 		if (kinState == K_STAND)
 		{
-			if (curr.B && !prev.B)
+			if (controllerInput->ButtonPressed_B())
 			{
 				if (world->numSectors == 1)
 				{
@@ -260,7 +256,7 @@ bool MapSelector::Update(ControllerState &curr,
 				break;
 			}
 
-			if (!FocusedSector()->Update(curr, prev))
+			if (!FocusedSector()->Update(controllerInput))
 			{
 				kinState = K_JUMP;
 				frame = 0;

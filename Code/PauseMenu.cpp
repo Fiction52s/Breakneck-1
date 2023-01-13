@@ -523,7 +523,7 @@ void PauseMenu::SetTab( Tab t )
 	case KIN:
 	{
 		kinMenu->UpdateCommandButton();
-		SaveFile *sf = game->GetCurrentProgress();
+		SaveFile *sf = game->GetCurrSaveFile();
 		int skinInd = 0;
 		if (sf != NULL)
 		{

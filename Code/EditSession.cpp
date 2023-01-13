@@ -1427,7 +1427,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	initialViewSet = false;
 
-	SaveFile *currFile = mainMenu->GetCurrentProgress();
+	SaveFile *currFile = mainMenu->GetCurrSaveFile();
 	if (currFile != NULL)
 	{
 		bool set = mainMenu->SetCurrProfileByName(currFile->controlProfileName);

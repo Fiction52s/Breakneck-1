@@ -23,6 +23,12 @@ struct SinglePlayerBox
 		A_HAS_PLAYER,
 	};
 
+	enum Mode
+	{
+		MODE_DEFAULT,
+		MODE_CONTROLLER_ONLY,
+	};
+
 	sf::Text playerNameText;
 	sf::Vector2i topLeft;
 	sf::Vertex bgQuad[4];
@@ -44,9 +50,12 @@ struct SinglePlayerBox
 	sf::Sprite kinSprite;
 
 	int action;
+	int mode;
 
 	SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen);
 	~SinglePlayerBox();
+
+	void SetMode(int m);
 	void Update();
 	void SetSkin(int index);
 	void Draw(sf::RenderTarget *target);
@@ -99,6 +108,8 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 	void Start();
 	void Quit();
 	bool HandleEvent(sf::Event ev);
+
+	void SetMode(int m);
 
 	void NextSkin();
 	void PrevSkin();

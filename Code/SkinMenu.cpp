@@ -77,9 +77,9 @@ void SkinMenu::SetGridTopLeft(sf::Vector2f &pos)
 	SetRectTopLeft(bgQuad, gridSpacing.x * 8, gridSpacing.y * 8, pos);
 }
 
-bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
+bool SkinMenu::Update(ControllerDualStateQueue *controllerInput)
 {
-	if (currInput.LUp() && !prevInput.LUp())
+	if (controllerInput->DirPressed_Up())
 	{
 		selectedPos.y--;
 		if (selectedPos.y == -1)
@@ -87,7 +87,7 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 			selectedPos.y = 7;
 		}
 	}
-	else if (currInput.LDown() && !prevInput.LDown())
+	else if (controllerInput->DirPressed_Down() )
 	{
 		selectedPos.y++;
 		if (selectedPos.y == 8)
@@ -96,7 +96,7 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		}
 	}
 
-	if (currInput.LLeft() && !prevInput.LLeft())
+	if (controllerInput->DirPressed_Left())
 	{
 		selectedPos.x--;
 		if (selectedPos.x == -1)
@@ -104,7 +104,7 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 			selectedPos.x = 7;
 		}
 	}
-	else if (currInput.LRight() && !prevInput.LRight())
+	else if (controllerInput->DirPressed_Right())
 	{
 		selectedPos.x++;
 		if (selectedPos.x == 8)
@@ -123,7 +123,7 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 	{
 		saveScreen->SetSkin(selectedIndex);
 
-		if (currInput.A && !prevInput.A)
+		if (controllerInput->ButtonPressed_A())
 		{
 			saveScreen->SaveCurrSkin();
 			return false;
@@ -131,8 +131,8 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		}
 	}
 	
-	if ((currInput.B && !prevInput.B)
-		||( currInput.rightShoulder && !prevInput.rightShoulder ) )
+	if ((controllerInput->ButtonPressed_B())
+		||( controllerInput->ButtonPressed_RightShoulder() ) )
 	{
 		return false;
 	}

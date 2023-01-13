@@ -490,7 +490,7 @@ struct GameSession : RayCastHandler, Session
 	void ResetInactiveEnemies();
 	void rResetPlants( QNode *node );
 	int CountActiveEnemies();
-	SaveFile *GetCurrentProgress();
+	SaveFile *GetCurrSaveFile();
 	
 	void SoftenGates(int gCat);
 	void ReformGates(int gCat );

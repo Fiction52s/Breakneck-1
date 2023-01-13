@@ -4,6 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include "Input.h"
 
+struct CustomCursor;
+
 struct UIMouse
 {
 	static UIMouse &GetInstance()
@@ -30,12 +32,10 @@ struct UIMouse
 	bool IsConsumed() { return consumed; }
 	void Consume() { consumed = true; }
 	void SetRenderWindow(sf::RenderWindow *rw);
+	void SetCustomCursor(CustomCursor *cc);
 	bool IsWindowFocused();
 	void SetPosition(sf::Vector2i &pos);
 private:
-
-	bool controllerMode;
-
 	UIMouse();
 
 	sf::Vector2i mousePos;
@@ -48,6 +48,7 @@ private:
 	bool consumed;
 
 	sf::RenderWindow *currWindow;
+	CustomCursor *customCursor;
 
 };
 

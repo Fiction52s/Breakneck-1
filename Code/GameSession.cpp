@@ -2023,7 +2023,7 @@ bool GameSession::SetupControlProfiles()
 		return true;
 
 	ControlProfile *currProfile;
-	SaveFile *currFile = saveFile;//mainMenu->GetCurrentProgress();
+	SaveFile *currFile = saveFile;//mainMenu->GetCurrSaveFile();
 	if (currFile != NULL)
 	{
 		bool set = pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
@@ -3710,12 +3710,12 @@ void GameSession::SetOriginalMusic()
 	}
 }
 
-SaveFile *GameSession::GetCurrentProgress()
+SaveFile *GameSession::GetCurrSaveFile()
 {
 	return saveFile;
 	/*if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 	{
-		return mainMenu->GetCurrentProgress();
+		return mainMenu->GetCurrSaveFile();
 	}
 	else
 	{

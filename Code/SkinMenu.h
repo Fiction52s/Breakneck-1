@@ -1,10 +1,12 @@
 #ifndef __SKINMENU_H__
 
-struct Tileset;
-struct SaveMenuScreen;
 
 #include "SFML/Graphics.hpp"
 #include "Input.h"
+
+struct Tileset;
+struct SaveMenuScreen;
+
 
 struct SkinMenu
 {
@@ -28,8 +30,7 @@ struct SkinMenu
 	void SetSelectedIndex(int index);
 	void Reset();
 	void SetGridTopLeft(sf::Vector2f &pos);
-	bool Update(ControllerState &currInput,
-		ControllerState &prevInput);
+	bool Update(ControllerDualStateQueue *controllerInput );
 	void Draw(sf::RenderTarget *target);
 
 

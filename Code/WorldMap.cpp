@@ -13,6 +13,7 @@
 #include "LoadingBackpack.h"
 #include "UIMouse.h"
 #include "CustomCursor.h"
+#include "WorldMapShip.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -26,6 +27,8 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	LoadAdventure("tadventure");
 	
 	kinBoostScreen = new KinBoostScreen(mainMenu, this);
+
+	ship = new WorldMapShip(this);
 
 	worldSelector = new WorldSelector(p_mainMenu);
 
@@ -163,6 +166,8 @@ WorldMap::~WorldMap()
 
 	delete kinBoostScreen;
 
+	delete ship;
+
 	ClearEntries();
 }
 
@@ -206,7 +211,7 @@ void WorldMap::UpdateWorldStats()
 	worldNameText.setOrigin(worldNameTextLocalBounds.width / 2
 		+ worldNameTextLocalBounds.left, 0);
 
-	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+	SaveFile *saveFile = mainMenu->GetCurrSaveFile();
 
 	AdventureWorld &aw = adventureFile.GetWorld(selectedColony);
 
@@ -267,7 +272,11 @@ void WorldMap::UpdateColonySelect()
 		colonySelectSpr.getLocalBounds().height / 2 );*/
 
 	//colonySelectSpr.setPosition(colonySpr[0].getPosition());
-	worldSelector->SetPosition(Vector2f(colonySpr[selectedColony].getPosition() + Vector2f(960 / 8.f, 540 / 8.f)));
+	if (selectedColony >= 0)
+	{
+		worldSelector->SetPosition(Vector2f(colonySpr[selectedColony].getPosition() + Vector2f(960 / 8.f, 540 / 8.f)));
+	}
+	
 	//colonySelectSprZoomed.setTexture(*ts_colonySelectZoomed[selectedColony]->texture);
 	//colonySelectSprZoomed.setPosition(colonySpr[selectedColony].getPosition());
 }
@@ -358,7 +367,7 @@ void WorldMap::InitSelectors()
 
 void WorldMap::UpdateSelectedColony()
 {
-	Vector2f mousePos = MOUSE.GetFloatPos();
+	Vector2f shipPos = ship->GetPosition();
 	Vector2f colMiddle;
 
 	for (int i = 0; i < adventurePlanet->numWorlds; ++i)
@@ -366,7 +375,7 @@ void WorldMap::UpdateSelectedColony()
 		colMiddle = colonySpr[i].getPosition() + Vector2f(colonySpr[i].getGlobalBounds().width / 2,
 			colonySpr[i].getGlobalBounds().height / 2);
 
-		if (length(mousePos - colMiddle) < colonyRadius)
+		if (length(shipPos - colMiddle) < colonyRadius)
 		{
 			selectedColony = i;
 			return;
@@ -376,8 +385,25 @@ void WorldMap::UpdateSelectedColony()
 	selectedColony = -1;
 }
 
-void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
+void WorldMap::SetShipToColony(int index)
 {
+	selectedColony = index;
+	UpdateColonySelect();
+
+	ship->SetPosition(GetColonyCenter(selectedColony));
+}
+
+sf::Vector2f WorldMap::GetColonyCenter(int index)
+{
+	return colonySpr[index].getPosition() + Vector2f(colonySpr[index].getGlobalBounds().width / 2,
+		colonySpr[index].getGlobalBounds().height / 2);
+}
+
+void WorldMap::Update()
+{
+	auto *controllerInput = mainMenu->singlePlayerControllerStates;
+	assert(controllerInput != NULL);
+
 	int trans = 20;
 	switch( state )
 	{
@@ -385,10 +411,13 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case PLANET:
 	{
+		UpdateSelectedColony();
+
 		UpdateColonySelect();
 
-		if (( selectedColony >= 0 && MOUSE.IsMouseLeftClicked())
-			|| CONTROLLERS.ButtonPressed_A() )//currInput.A && !prevInput.A)
+		ship->Update(controllerInput);
+
+		if ( selectedColony >= 0 && controllerInput->ButtonPressed_A() )//currInput.A && !prevInput.A)
 		{
 			state = PlANET_TO_COLONY;
 			frame = 0;
@@ -427,7 +456,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			
 			break;
 		}
-		else if (CONTROLLERS.ButtonPressed_B() )//currInput.B && !prevInput.B)
+		else if (controllerInput->ButtonPressed_B() )
 		{
 			state = PLANET_VISUAL_ONLY;
 			frame = 0;
@@ -437,6 +466,10 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			mainMenu->saveMenu->Reset();
 			mainMenu->saveMenu->action = SaveMenuScreen::FADEIN;
 			mainMenu->saveMenu->transparency = 1.f;
+
+			
+			//mainMenu->customCursor->SetMode(CustomCursor::M_REGULAR);
+			//mainMenu->customCursor->Hide();
 			//mainMenu->saveMenu->kinFace.setTextureRect(mainMenu->saveMenu->ts_kinFace->GetSubRect(0));
 			//mainMenu->saveMenu->kinJump.setTextureRect(mainMenu->saveMenu->ts_kinJump1->GetSubRect(0));
 
@@ -452,129 +485,21 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		else
 		{
-			SaveFile *saveFile = mainMenu->GetCurrentProgress();
+			SaveFile *saveFile = mainMenu->GetCurrSaveFile();
 			numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventurePlanet);
 		}
 
-		/*int tempSelected = -1;
-		if (currInput.LUp())
-		{
-			if (currInput.LLeft())
-			{
-				tempSelected = 4;
-			}
-			else if (currInput.LRight())
-			{
-				tempSelected = 0;
-			}
-			else
-			{
-				tempSelected = 5;
-			}
-		}
-		else if (currInput.LDown())
-		{
-			if (currInput.LLeft())
-			{
-				tempSelected = 3;
-			}
-			else if (currInput.LRight())
-			{
-				tempSelected = 1;
-			}
-			else
-			{
-				tempSelected = 2;
-			}
-		}*/
-
-		bool left = currInput.LLeft() && prevInput.IsLeftNeutral();//!prevInput.LLeft();
-		bool up = currInput.LUp() && prevInput.IsLeftNeutral();//!prevInput.LUp();
-		bool down = currInput.LDown() && prevInput.IsLeftNeutral();//!prevInput.LDown();
-		bool right = currInput.LRight() && prevInput.IsLeftNeutral();//!prevInput.LRight();
 
 		int tempSelected = -1;
-		Vector2f mousePos = MOUSE.GetFloatPos();
-		Vector2f colMiddle;
+		Vector2f shipPos = ship->GetPosition();
 		for (int i = 0; i < numCompletedWorlds; ++i)
 		{
-			colMiddle = colonySpr[i].getPosition() + Vector2f(colonySpr[i].getGlobalBounds().width / 2,
-				colonySpr[i].getGlobalBounds().height / 2);
-			if (length(mousePos - colMiddle) < colonyRadius)
+			if (length(shipPos - GetColonyCenter(i)) < colonyRadius)
 			{
 				tempSelected = i;
 				break;
 			}
 		}
-
-
-	
-		/*if (selectedColony == 0)
-		{
-			if (left || up )
-			{
-				tempSelected = 5;
-			}
-			else if (down)
-			{
-				tempSelected = 1;
-			}
-		}
-		else if (selectedColony == 1)
-		{
-			if (up)
-			{
-				tempSelected = 0;
-			}
-			else if (left || down )
-			{
-				tempSelected = 2;
-			}
-		}
-		else if (selectedColony == 2)
-		{
-			if (left)
-			{
-				tempSelected = 3;
-			}
-			else if (right)
-			{
-				tempSelected = 1;
-			}
-		}
-		else if (selectedColony == 3)
-		{
-			if (down || right )
-			{
-				tempSelected = 2;
-			}
-			else if (up)
-			{
-				tempSelected = 4;
-			}
-		}
-		else if (selectedColony == 4)
-		{
-			if (down)
-			{
-				tempSelected = 3;
-			}
-			else if (up || right )
-			{
-				tempSelected = 5;
-			}
-		}
-		else if (selectedColony == 5)
-		{
-			if (left)
-			{
-				tempSelected = 4;
-			}
-			else if (right)
-			{
-				tempSelected = 0;
-			}
-		}*/
 
 		if (tempSelected >= 0 && tempSelected <= numCompletedWorlds && tempSelected != selectedColony )
 		{
@@ -606,7 +531,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			}
 			else
 			{
-				SaveFile *saveFile = mainMenu->GetCurrentProgress();
+				SaveFile *saveFile = mainMenu->GetCurrSaveFile();
 				numCompletedWorlds = saveFile->GetNumCompleteWorlds(planet);
 			}
 
@@ -687,9 +612,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				zoomShader.setUniform("sampleStrength", 0.f);
 
 
-			Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
-				colonySpr[selectedColony].getGlobalBounds().height / 2);
-			Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
+			Vector2f endPos = GetColonyCenter(selectedColony);
 			float endScale = colonySpr[selectedColony].getScale().x * .2f;
 
 			Vector2f startPos(960, 540);
@@ -724,9 +647,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	case COLONY:
 	{
 		worldSelector->SetAlpha(0);
-		Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
-			colonySpr[selectedColony].getGlobalBounds().height / 2);
-		Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
+		Vector2f endPos = GetColonyCenter(selectedColony);
 		
 		zoomView.setCenter(endPos);
 		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[selectedColony].getScale().x * .2f);
@@ -781,10 +702,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			if (frame == 0)
 				zoomShader.setUniform("sampleStrength", 0.f);
 
-
-			Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
-				colonySpr[selectedColony].getGlobalBounds().height / 2);
-			Vector2f startPos = colonySpr[selectedColony].getPosition() + colMiddle;
+			Vector2f startPos = GetColonyCenter(selectedColony);
 			float startScale = colonySpr[selectedColony].getScale().x;//.2f;
 
 			Vector2f endPos(960, 540);
@@ -843,7 +761,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 	case COLONY:
 		{
-			if (!CurrSelector()->Update(currInput, prevInput))
+			if (!CurrSelector()->Update(controllerInput) )
 			{
 				mainMenu->LoadMode(MainMenu::WORLDMAP);
 				//mainMenu->SetMode(MainMenu::WORLDMAP);
@@ -986,10 +904,12 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(worldActiveQuadsZoomed + i * 4, 4, sf::Quads, ts_colonyActiveZoomed[i]->texture);
 	}
 
-	if (state != COLONY )
+	if (state != COLONY && selectedColony >= 0)
 	{
 		worldSelector->Draw(rt);
 	}
+
+	ship->Draw(rt);
 
 	DrawAsteroids(rt, false);
 
@@ -1060,7 +980,7 @@ void WorldMap::Draw( RenderTarget *target )
 
 Sector & WorldMap::GetCurrSector()
 {
-	//SaveFile * currFile = mainMenu->GetCurrentProgress();
+	//SaveFile * currFile = mainMenu->GetCurrSaveFile();
 	//World & world = currFile->worlds[selectedColony];
 	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
 	return adventurePlanet->worlds[selectedColony].sectors[secIndex];
@@ -1069,7 +989,7 @@ Sector & WorldMap::GetCurrSector()
 
 void WorldMap::CompleteCurrentMap( Level *lev, int totalFrames )
 {
-	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+	SaveFile *saveFile = mainMenu->GetCurrSaveFile();
 	//World & world = sf->worlds[selectedColony];
 	//int worldIndex = selectedColony;
 	//int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;

@@ -175,7 +175,7 @@ void ControlSettingsMenu::SetButtonAssoc()
 
 	con->SetFilter(pSel->currProfile->GetCurrFilter());
 
-	SaveFile *currFile = mainMenu->GetCurrentProgress();
+	SaveFile *currFile = mainMenu->GetCurrSaveFile();
 	if (currFile != NULL)
 	{
 		currFile->controlProfileName = pSel->currProfile->name;

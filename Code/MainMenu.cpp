@@ -175,7 +175,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case WORLDMAP:
 	{
-		SaveFile *saveFile = GetCurrentProgress();
+		SaveFile *saveFile = GetCurrSaveFile();
 		saveFile->mostRecentWorldSelected = worldMap->selectedColony;
 		saveFile->Save();
 		worldMap->CurrSelector()->CreateBGs();
@@ -221,7 +221,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
-	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	{
 		if (singlePlayerControllerJoinScreen != NULL)
 		{
@@ -312,11 +313,17 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		break;
 	}
-	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	{
 		assert(singlePlayerControllerJoinScreen == NULL);
 		singlePlayerControllerJoinScreen = new SinglePlayerControllerJoinScreen(this);
 		singlePlayerControllerJoinScreen->Start();
+
+		if (toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE)
+		{
+			singlePlayerControllerJoinScreen->SetMode(SinglePlayerBox::MODE_CONTROLLER_ONLY);
+		}
 		break;
 	}
 	}
@@ -366,6 +373,8 @@ MainMenu::MainMenu()
 
 	customCursor = NULL;
 	window = NULL;
+
+	singlePlayerControllerStates = NULL;
 
 	selectorAnimFrame = 0;
 	selectorAnimDuration = 21;
@@ -633,6 +642,10 @@ void MainMenu::SetupWindow()
 	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
 	customCursor->Init(window);
 
+	MOUSE.SetCustomCursor(customCursor);
+
+	//customCursor->Grab();
+
 	assert(window != NULL);
 	window->setVerticalSyncEnabled(true);
 	//window->setFramerateLimit(120);
@@ -716,7 +729,7 @@ void MainMenu::CreateRenderTextures()
 	}
 }
 
-SaveFile *MainMenu::GetCurrentProgress()
+SaveFile *MainMenu::GetCurrSaveFile()
 {
 	return currSaveFile;
 	/*if (saveMenu == NULL)
@@ -1026,6 +1039,9 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == TITLEMENU)
 	{
 		selectorAnimFrame = 0;
+		singlePlayerControllerStates = NULL;
+		customCursor->SetMode(CustomCursor::M_REGULAR);
+		customCursor->Show();
 	}
 
 	if (menuMode == ONLINE_MENU)
@@ -1051,13 +1067,13 @@ void MainMenu::SetMode(Mode m)
 			musicPlayer->PlayMusic(menuMusic);
 		}
 
-		if (GetCurrentProgress() == NULL)
+		if (GetCurrSaveFile() == NULL)
 		{
 			saveMenu->SetSkin(0);
 		}
 		else
 		{
-			saveMenu->SetSkin(GetCurrentProgress()->defaultSkinIndex);
+			saveMenu->SetSkin(GetCurrSaveFile()->defaultSkinIndex);
 		}
 	}
 	else if (menuMode == BROWSE_WORKSHOP)
@@ -1932,7 +1948,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 
 	
 
-	SaveFile *currFile = m->GetCurrentProgress();
+	SaveFile *currFile = m->GetCurrSaveFile();
 	currFile->Save();
 
 	//AdventureMap &am = worldMap->
@@ -2007,7 +2023,7 @@ void MainMenu::ReturnToWorldAfterLevel()
 		worldMap->CurrSelector()->FocusedSector()->UpdateStats();
 		worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 
-		worldMap->Update(menuPrevInput, menuCurrInput);
+		worldMap->Update();
 
 		musicPlayer->TransitionMusic(menuMusic, 60);
 	}
@@ -2098,7 +2114,7 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		worldMap->Update(menuPrevInput, menuCurrInput);
+		worldMap->Update();
 
 		break;
 	}
@@ -2265,7 +2281,7 @@ void MainMenu::HandleMenuMode()
 
 
 
-		SaveFile *currFile = GetCurrentProgress();
+		SaveFile *currFile = GetCurrSaveFile();
 		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 		{
 			worldMap->CompleteCurrentMap(currLevel->level, currLevel->totalFramesBeforeGoal);
@@ -2465,7 +2481,7 @@ void MainMenu::HandleMenuMode()
 			saveMenu->HandleEvent(ev);
 		}
 
-		worldMap->Update(menuPrevInput, menuCurrInput);
+		worldMap->Update();
 		if (!saveMenu->Update())
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
@@ -2516,7 +2532,7 @@ void MainMenu::HandleMenuMode()
 		else
 		{
 			saveMenu->Update();
-			worldMap->Update(menuPrevInput, menuCurrInput);
+			worldMap->Update();
 		}
 		++transFrame;
 		break;
@@ -2545,7 +2561,7 @@ void MainMenu::HandleMenuMode()
 		if (transFrame < transLength / 2)
 		{
 			saveMenu->Update();
-			worldMap->Update(menuPrevInput, menuCurrInput);
+			worldMap->Update();
 		}
 		else
 		{
@@ -2735,7 +2751,7 @@ void MainMenu::HandleMenuMode()
 		{
 			menuPrevInput = ControllerState();
 			menuCurrInput = ControllerState();
-			worldMap->Update(menuPrevInput, menuCurrInput);
+			worldMap->Update();
 		}
 		break;
 	}
@@ -3062,7 +3078,7 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
-	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	{
 		while (window->pollEvent(ev))
 		{
@@ -3083,6 +3099,26 @@ void MainMenu::HandleMenuMode()
 			*menuMatchParams = mp;
 
 			LoadMode(TUTORIAL);
+		}
+		else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
+		{
+			LoadMode(TITLEMENU);
+		}
+		break;
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
+	{
+		while (window->pollEvent(ev))
+		{
+			singlePlayerControllerJoinScreen->HandleEvent(ev);
+		}
+
+		singlePlayerControllerJoinScreen->Update();
+
+		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
+		{
+			singlePlayerControllerStates = singlePlayerControllerJoinScreen->playerBox->controllerStates;
+			LoadMode(SAVEMENU);
 		}
 		else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
 		{
@@ -3498,8 +3534,10 @@ void MainMenu::TitleMenuModeUpdate()
 			//SetMode(MATCH_RESULTS);
 			//matchResultsScreen = netplayManager->CreateResultsScreen();
 			musicPlayer->FadeOutCurrentMusic(30);
+			customCursor->Hide();
+			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
 			//customCursor->SetMode(CustomCursor::M_SHIP);
-			LoadMode(SAVEMENU);
+			
 			break;
 		}
 		case M_FREE_PLAY:
@@ -3544,7 +3582,9 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
 			//LoadMode(TUTORIAL);
-			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN);
+			//singlePlayerControllerJoinScreen->
+			customCursor->Hide();
+			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL);
 			break;
 		}
 		case M_CREDITS:
@@ -3882,7 +3922,12 @@ void MainMenu::DrawMode( Mode m )
 		freeplayScreen->Draw(preScreenTexture);
 		break;
 	}
-	case SINGLE_PLAYER_CONTROLLER_JOIN:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
+	{
+		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
+		break;
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	{
 		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
 		break;

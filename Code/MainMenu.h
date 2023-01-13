@@ -517,7 +517,8 @@ struct MainMenu
 		NETPLAY_MATCH_RESULTS,
 		MATCH_RESULTS,
 		POST_MATCH_OPTIONS,
-		SINGLE_PLAYER_CONTROLLER_JOIN,
+		SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL,
+		SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE,
 		EXITING,
 	};
 
@@ -536,6 +537,8 @@ struct MainMenu
 	};
 
 	//testing
+
+	ControllerDualStateQueue *singlePlayerControllerStates;
 
 	MenuInfoPopup *infoPopup;
 	CustomCursor *customCursor;
@@ -603,7 +606,8 @@ struct MainMenu
 	Fader *fader;
 	Swiper *swiper;
 	GameRunType gameRunType;
-	SaveFile *GetCurrentProgress();
+
+	SaveFile *GetCurrSaveFile();
 	ControlProfileManager *cpm;
 	SoundInfo *soundInfos[SoundType::S_Count];
 	MapSelectionMenu *mapSelectionMenu;

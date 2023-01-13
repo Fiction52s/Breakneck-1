@@ -18,6 +18,7 @@ struct MapSelector;
 struct MapSector;
 struct WorldMap;
 struct RecordGhostMenu;
+struct WorldMapShip;
 
 enum MapNodeState
 {
@@ -144,8 +145,7 @@ struct MapSector
 	void UpdateMapPreview();
 	void DestroyMapPreview();
 	void UpdateSelectorSprite();
-	bool Update(ControllerState &curr,
-		ControllerState &prev);
+	bool Update(ControllerDualStateQueue *controllerInput );
 	void UpdateBG();
 	void SetXCenter(float x);
 	void Draw(sf::RenderTarget *target);
@@ -230,8 +230,7 @@ struct MapSelector
 	~MapSelector();
 	MapSector *FocusedSector();
 	void UpdateSprites();
-	bool Update(ControllerState &curr,
-		ControllerState &prev);
+	bool Update(ControllerDualStateQueue *controllerInput);
 	void Draw(sf::RenderTarget *target);
 	void CreateBGs();
 	void DestroyBGs();
@@ -239,7 +238,7 @@ struct MapSelector
 
 struct WorldSelector
 {
-	WorldSelector::WorldSelector(MainMenu *mm);
+	WorldSelector(MainMenu *mm);
 	void Update();
 	void SetPosition(sf::Vector2f &pos);
 	void SetAlpha(float alpha);
@@ -250,6 +249,8 @@ struct WorldSelector
 	Tileset *ts;
 	sf::Vertex quads[4 * 4];
 };
+
+
 
 struct KinBoostScreen;
 struct WorldMap : TilesetManager
@@ -270,7 +271,6 @@ struct WorldMap : TilesetManager
 	//currently.
 	KinBoostScreen *kinBoostScreen;
 
-	
 	//int totalWorlds;
 
 	State state;
@@ -347,13 +347,13 @@ struct WorldMap : TilesetManager
 	bool moveUp;
 	bool allUnlocked;
 
+	WorldMapShip *ship;
+
 	WorldMap(MainMenu *mainMenu);
 	void RunSelectedMap();
 	void Reset(SaveFile *sf);
 	~WorldMap();
-	void Update(
-		ControllerState &prevInput,
-		ControllerState &currInput);
+	void Update();
 	void Draw(sf::RenderTarget *target);
 	void CompleteCurrentMap( Level *level, int totalFrames);
 	Sector &GetCurrSector();
@@ -367,6 +367,8 @@ struct WorldMap : TilesetManager
 	void InitSelectors();
 	bool IsInAllUnlockedMode();
 	void UpdateSelectedColony();
+	void SetShipToColony(int index);
+	sf::Vector2f GetColonyCenter(int index);
 private:
 	void SetupAsteroids();
 	void LoadAdventure(const std::string &adventureName);
