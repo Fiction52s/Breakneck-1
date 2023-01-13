@@ -17,7 +17,7 @@ struct WorldMapShip
 	void Draw(sf::RenderTarget *target);
 	void SetPosition(sf::Vector2f &pos);
 	sf::Vector2f GetPosition();
-
+	void SetAlpha(float alpha);
 private:
 	sf::Vector2f position;
 	void UpdateQuads();

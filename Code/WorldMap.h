@@ -288,6 +288,8 @@ struct WorldMap : TilesetManager
 	float oldZoomCurvePos;
 	float zoomCurvePos;
 
+	sf::Shader selectableRingShader;
+
 	sf::Sprite extraPassSpr;
 	sf::Sprite selectorExtraPass;
 	sf::Sprite colonySpr[ADVENTURE_MAX_NUM_WORLDS];
@@ -316,6 +318,7 @@ struct WorldMap : TilesetManager
 	sf::Vertex asteroidQuads[4 * 4];
 	sf::Vertex worldActiveQuads[ADVENTURE_MAX_NUM_WORLDS * 4];
 	sf::Vertex worldActiveQuadsZoomed[ADVENTURE_MAX_NUM_WORLDS * 4];
+	sf::Vertex worldSelectableQuads[ADVENTURE_MAX_NUM_WORLDS * 4];
 
 	int frame;
 	int asteroidFrame;
@@ -333,6 +336,9 @@ struct WorldMap : TilesetManager
 	Tileset * ts_colonyActive[ADVENTURE_MAX_NUM_WORLDS];
 	Tileset * ts_colony[ADVENTURE_MAX_NUM_WORLDS];
 	Tileset *ts_colonySelect;
+	Tileset *ts_selectableRing;
+
+	
 
 	sf::Text currLevelTimeText;
 	sf::Text * text;

@@ -117,10 +117,14 @@ std::string GetTimeStr(int numFrames)
 
 void MainMenu::LevelLoad(GameSession *gs)
 {
-	/*delete worldMap;
-	worldMap = NULL;
-	delete saveMenu;
-	saveMenu = NULL;*/
+	/*if (worldMap != NULL && saveMenu != NULL)
+	{
+		delete worldMap;
+		worldMap = NULL;
+		delete saveMenu;
+		saveMenu = NULL;
+	}*/
+	
 
 	GameSession::sLoad(gs);
 }
@@ -251,6 +255,19 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			worldMap->SetDefaultSelections();
 			worldMap->UpdateWorldStats();
 		}
+		else if (fromMode == RUN_ADVENTURE_MAP)
+		{
+			//assert(worldMap == NULL);
+			//assert(saveMenu == NULL);
+			//worldMap = new WorldMap(this);
+			//saveMenu = new SaveMenuScreen(this);
+			//saveMenu->Reset();
+			//worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
+			//worldMap->frame = 0;
+			//worldMap->InitSelectors();
+			//worldMap->SetDefaultSelections();
+			//worldMap->UpdateWorldStats();
+		}
 		break;
 	}
 	case SAVEMENU:
@@ -324,6 +341,17 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		{
 			singlePlayerControllerJoinScreen->SetMode(SinglePlayerBox::MODE_CONTROLLER_ONLY);
 		}
+		break;
+	}
+	case RUN_ADVENTURE_MAP:
+	{
+		assert(worldMap != NULL && saveMenu != NULL);
+
+		delete worldMap;
+		worldMap = NULL;
+
+		delete saveMenu;
+		saveMenu = NULL;
 		break;
 	}
 	}

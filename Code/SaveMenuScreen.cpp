@@ -122,7 +122,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	startWithTutorial = false;
 
 	//TilesetManager &tsMan = mainMenu->tilesetManager;
-	selectedSaveIndex = 0;
+	
 	skinMenu = new SkinMenu(this);
 	
 	frame = 0;
@@ -179,7 +179,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 		}*/
 	}
 
-	mainMenu->currSaveFile = files[selectedSaveIndex];
+	//mainMenu->currSaveFile = files[selectedSaveIndex];
 
 	/*files[0] = new SaveFile("blue",af );
 	files[1] = new SaveFile("green", af);
@@ -294,12 +294,14 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	//Reset();
 
-	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
+	//selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
 	//kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
 
-	Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
+	//Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
 
-	selectSlot.setPosition(topLeftPos);
+	//selectSlot.setPosition(topLeftPos);
+
+	SetSelectedIndex(0);
 	//kinFace.setPosition(topLeftPos + Vector2f( 50, 0 ));
 }
 
@@ -794,21 +796,10 @@ bool SaveMenuScreen::Update()
 	return true;
 }
 
-void SaveMenuScreen::SelectedIndexChanged()
+void SaveMenuScreen::SetSelectedIndex(int index)
 {
-	/*if (selectedSaveIndex == -1)
-	{
-		mainMenu->currSaveFile = NULL;
-		currColonyIndex = -1;
-	}
-	else
-	{
-		
-	}*/
-	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
-
+	selectedSaveIndex = index;
 	mainMenu->currSaveFile = files[selectedSaveIndex];
-
 	if (action != COPY)
 	{
 		SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
@@ -833,6 +824,22 @@ void SaveMenuScreen::SelectedIndexChanged()
 	kinFace.setPosition(topLeftPos + Vector2f(15, -6));
 
 	mainMenu->worldMap->SetShipToColony(currColonyIndex);
+}
+
+void SaveMenuScreen::SelectedIndexChanged()
+{
+	/*if (selectedSaveIndex == -1)
+	{
+		mainMenu->currSaveFile = NULL;
+		currColonyIndex = -1;
+	}
+	else
+	{
+		
+	}*/
+	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
+
+	SetSelectedIndex(selectedSaveIndex);
 }
 
 void SaveMenuScreen::UnlockSkin(int skinIndex)

@@ -9,6 +9,7 @@ using namespace sf;
 WorldMapShip::WorldMapShip(WorldMap *wm)
 {
 	ts = wm->GetSizedTileset("Menu/ship_mouse_icon_1_172x80.png");
+	SetAlpha(1.0);
 }
 void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)
 {
@@ -79,6 +80,16 @@ void WorldMapShip::UpdateQuads()
 {
 	ts->SetQuadSubRect(shipQuad, 0);
 	SetRectCenter(shipQuad, ts->tileWidth, ts->tileHeight, position);
+}
+
+void WorldMapShip::SetAlpha(float alpha)
+{
+	if (alpha < 0)
+		alpha = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		shipQuad[i].color.a = min(alpha * 255.f, 255.f);
+	}
 }
 
 void WorldMapShip::Draw(sf::RenderTarget *target)

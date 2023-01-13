@@ -168,6 +168,7 @@ void MapSelector::Draw(sf::RenderTarget *target)
 void MapSelector::ReturnFromMap()
 {
 	kinState = K_STAND;
+	kinFrame = 0;
 	frame = 0;
 }
 

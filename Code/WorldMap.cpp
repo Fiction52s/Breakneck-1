@@ -76,6 +76,8 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	ts_colony[5] = GetTileset("WorldMap/map_w6.png", 1920, 1080);
 	ts_colony[6] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
 	ts_colony[7] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
+
+	ts_selectableRing = GetSizedTileset("WorldMap/world_select_ring_192x192.png");
 	
 	SetupAsteroids();
 
@@ -97,6 +99,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		SetRectCenter(worldActiveQuads + i * 4, 1920, 1080, Vector2f(960, 540));
 		SetRectSubRect(worldActiveQuadsZoomed + i * 4, ts_colonyActiveZoomed[i]->GetSubRect(0));
 		SetRectCenter(worldActiveQuadsZoomed + i * 4, 1920 / 8.f, 1080 / 8.f, Vector2f(colonySpr[i].getPosition() + Vector2f(960/8.f, 540/8.f)));
+		
 	}
 
 	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
@@ -104,7 +107,13 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		colonySpr[i].setTexture(*ts_colony[i]->texture);
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
 
+		//SetRectCenter(worldSelectableQuads + i * 4, ts_selectableRing->tileWidth, ts_selectableRing->tileHeight, GetColonyCenter(i));
+		//ts_selectableRing->SetQuadSubRect(worldSelectableQuads + i * 4, 0);
+
+		SetRectSubRectGL(worldSelectableQuads + i * 4, ts_selectableRing->GetSubRect(0), Vector2f(ts_selectableRing->texture->getSize()));
 	}
+
+	//worldSelectableQuads[ADVENTURE_MAX_NUM_WORLDS * 4];
 
 	colonyRadius = 192 / 2;
 
@@ -120,6 +129,14 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	zoomShader.setUniform("radial_bright", .1f);
 	zoomShader.setUniform("radial_origin", Vector2f( .5, .5 ) );
 	zoomShader.setUniform("radial_size", Vector2f( 1.f / 1920, 1.f / 1080 ));
+
+	if (!selectableRingShader.loadFromFile("Resources/Shader/colonyselectable_shader.frag", sf::Shader::Fragment ))
+	{
+		cout << "selectable ring shader not loading correctly" << endl;
+		assert(0);
+	}
+	selectableRingShader.setUniform("u_texture", *ts_selectableRing->texture);
+	selectableRingShader.setUniform("prop", 0.f);
 
 	int width = 1920;
 	int height = 1080;
@@ -489,10 +506,23 @@ void WorldMap::Update()
 			numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventurePlanet);
 		}
 
+		int numUnlockedWorlds = max(1, numCompletedWorlds );
+
+		for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
+		{
+			if ( i < numUnlockedWorlds )
+			{
+				SetRectCenter(worldSelectableQuads + i * 4, ts_selectableRing->tileWidth, ts_selectableRing->tileHeight, GetColonyCenter(i));
+			}
+			else
+			{
+				SetRectCenter(worldSelectableQuads + i * 4, 0, 0, GetColonyCenter(i));
+			}
+		}
 
 		int tempSelected = -1;
 		Vector2f shipPos = ship->GetPosition();
-		for (int i = 0; i < numCompletedWorlds; ++i)
+		for (int i = 0; i < numUnlockedWorlds; ++i)
 		{
 			if (length(shipPos - GetColonyCenter(i)) < colonyRadius)
 			{
@@ -501,7 +531,8 @@ void WorldMap::Update()
 			}
 		}
 
-		if (tempSelected >= 0 && tempSelected <= numCompletedWorlds && tempSelected != selectedColony )
+		//if (tempSelected >= 0 && tempSelected <= numCompletedWorlds && tempSelected != selectedColony )
+		if (tempSelected >= 0 && tempSelected != selectedColony)
 		{
 			selectedColony = tempSelected;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
@@ -587,6 +618,7 @@ void WorldMap::Update()
 			float a = frame / (float)(limit - 1);
 
 			worldSelector->SetAlpha(1.f - a * 2);
+			ship->SetAlpha(1.f - a * 2);
 
 			int mLimit = 50 / 2;
 			int mFrame = min(frame, mLimit);
@@ -647,6 +679,7 @@ void WorldMap::Update()
 	case COLONY:
 	{
 		worldSelector->SetAlpha(0);
+		ship->SetAlpha(0);
 		Vector2f endPos = GetColonyCenter(selectedColony);
 		
 		zoomView.setCenter(endPos);
@@ -673,12 +706,14 @@ void WorldMap::Update()
 			zoomView.setSize(Vector2f(1920, 1080) * currScale);
 			zoomView.setCenter(960, 540);
 			worldSelector->SetAlpha(1.f);
+			ship->SetAlpha(1.f);
 		}
 		else
 		{
 			
 			float a = frame / (float)(limit - 1);
 			worldSelector->SetAlpha(a);
+			ship->SetAlpha(a);
 			int mLimit = 60;//16 / 2;
 			int mFrame = min(frame, mLimit);
 
@@ -741,6 +776,7 @@ void WorldMap::Update()
 	case PLANET:
 		{
 			worldSelector->SetAlpha(1.f);//need every frame?
+			ship->SetAlpha(1.f);
 			//if( frame == 0 )
 			{
 				//back.setTexture( *planetTex );
@@ -883,18 +919,21 @@ void WorldMap::Draw( RenderTarget *target )
 	int energyBreathe = 240;
 	Color selectColor = Color::White;
 	int ff = asteroidFrame % (energyBreathe);
+	float energyFactor = 0;
 	if (ff < energyBreathe / 2)
 	{
-		float factor = (float)ff / (energyBreathe / 2);
-		selectColor.a = 150 * factor;
+		energyFactor = (float)ff / (energyBreathe / 2);
+		selectColor.a = 150 * energyFactor;
 		//c.a = std::max(20.f, (float)c.a);
 	}
 	else
 	{
-		float factor = 1.f - (float)(ff - energyBreathe / 2) / (energyBreathe / 2);
-		selectColor.a = 150 * factor;
+		energyFactor = 1.f - (float)(ff - energyBreathe / 2) / (energyBreathe / 2);
+		selectColor.a = 150 * energyFactor;
 		//c.a = std::max(20.f, (float)c.a);
 	}
+
+	
 
 	for (int i = 0; i < 2; ++i)
 	{
@@ -903,6 +942,10 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(worldActiveQuads + i * 4, 4, sf::Quads, ts_colonyActive[i]->texture);
 		rt->draw(worldActiveQuadsZoomed + i * 4, 4, sf::Quads, ts_colonyActiveZoomed[i]->texture);
 	}
+
+	selectableRingShader.setUniform("prop", energyFactor);
+	rt->draw(worldSelectableQuads, 4 * ADVENTURE_MAX_NUM_WORLDS, sf::Quads, &selectableRingShader);
+	
 
 	if (state != COLONY && selectedColony >= 0)
 	{

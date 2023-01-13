@@ -148,6 +148,7 @@ struct SaveMenuScreen : TilesetManager
 	void UpdateSelectedIndex();
 	bool MouseIsOverSelectedFile();
 	bool HandleEvent(sf::Event ev);
+	void SetSelectedIndex(int index);
 
 	MainMenu *mainMenu;
 	sf::Vector2f menuOffset;
