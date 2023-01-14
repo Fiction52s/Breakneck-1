@@ -19,6 +19,7 @@ struct MapSector;
 struct WorldMap;
 struct RecordGhostMenu;
 struct WorldMapShip;
+struct AdventureManager;
 
 enum MapNodeState
 {
@@ -265,11 +266,7 @@ struct WorldMap : TilesetManager
 		PLANET_TO_SPACE,
 		START_LEVEL
 	};
-
-	//moved this here
-	//because its only needed in adventure 
-	//currently.
-	KinBoostScreen *kinBoostScreen;
+	
 
 	//int totalWorlds;
 
@@ -278,8 +275,7 @@ struct WorldMap : TilesetManager
 	MapSelector **selectors;
 	MainMenu *mainMenu;
 
-	AdventureFile adventureFile;
-	AdventurePlanet *adventurePlanet;
+	
 
 	sf::Shader zoomShader;
 	sf::Shader asteroidShader;
@@ -338,7 +334,7 @@ struct WorldMap : TilesetManager
 	Tileset *ts_colonySelect;
 	Tileset *ts_selectableRing;
 
-	
+	AdventureManager *adventureManager;
 
 	sf::Text currLevelTimeText;
 	sf::Text * text;
@@ -355,13 +351,12 @@ struct WorldMap : TilesetManager
 
 	WorldMapShip *ship;
 
-	WorldMap(MainMenu *mainMenu);
+	WorldMap();
 	void RunSelectedMap();
 	void Reset(SaveFile *sf);
 	~WorldMap();
 	void Update();
 	void Draw(sf::RenderTarget *target);
-	void CompleteCurrentMap( Level *level, int totalFrames);
 	Sector &GetCurrSector();
 	int GetCurrSectorNumLevels();
 	const std::string & GetSelected();
@@ -375,6 +370,7 @@ struct WorldMap : TilesetManager
 	void UpdateSelectedColony();
 	void SetShipToColony(int index);
 	sf::Vector2f GetColonyCenter(int index);
+	void SetToColonyMode(int selColony);
 private:
 	void SetupAsteroids();
 	void LoadAdventure(const std::string &adventureName);

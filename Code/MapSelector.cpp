@@ -3,6 +3,7 @@
 #include "Background.h"
 #include "VectorMath.h"
 #include "PlayerRecord.h"
+#include "AdventureManager.h"
 
 using namespace std;
 using namespace sf;
@@ -95,7 +96,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	
 	for (int i = 0; i < numSectors; ++i)
 	{
-		sectors[i] = new MapSector(worldMap->adventureFile,
+		sectors[i] = new MapSector(mainMenu->adventureManager->adventureFile,
 			&(world->sectors[i]), this, i);
 	}
 	
@@ -133,10 +134,10 @@ MapSelector::~MapSelector()
 
 void MapSelector::Init()
 {
-	playerSkinShader.SetSkin(mainMenu->GetCurrSaveFile()->defaultSkinIndex);
+	playerSkinShader.SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
 	for (int i = 0; i < numSectors; ++i)
 	{
-		sectors[i]->Init(mainMenu->GetCurrSaveFile());
+		sectors[i]->Init(mainMenu->adventureManager->currSaveFile);
 	}
 }
 

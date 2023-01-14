@@ -1514,8 +1514,6 @@ bool GameSession::Load()
 
 	SetupPauseMenu();*/
 
-	if (progressDisplay != NULL)
-		progressDisplay->SetProgressString("started loading!", 0);
 
 	if (!ShouldContinueLoading())
 	{
@@ -1623,8 +1621,6 @@ bool GameSession::Load()
 
 	cout << "about to open file" << endl;
 
-	if (progressDisplay != NULL)
-		progressDisplay->SetProgressString("opening map file!", 1);
 
 	matSet.clear();
 
@@ -1814,9 +1810,6 @@ bool GameSession::Load()
 	}*/
 
 	cout << "done loading" << endl;
-
-	if (progressDisplay != NULL)
-		progressDisplay->SetProgressString("done loading!", 0);
 
 
 	oneFrameMode = false;
@@ -3241,7 +3234,6 @@ void GameSession::Init()
 	inputVis = NULL;
 	
 	pauseMenu = NULL;
-	progressDisplay = NULL;
 	topClouds = NULL;
 	specterTree = NULL;
 	envPlantTree = NULL;

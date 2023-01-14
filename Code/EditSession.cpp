@@ -63,6 +63,7 @@
 #include "UIMouse.h"
 #include "UIController.h"
 #include "CustomCursor.h"
+#include "AdventureManager.h"
 
 //#define GGPO_ON
 
@@ -1427,7 +1428,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	initialViewSet = false;
 
-	SaveFile *currFile = mainMenu->GetCurrSaveFile();
+	SaveFile *currFile = mainMenu->adventureManager->currSaveFile;
 	if (currFile != NULL)
 	{
 		bool set = mainMenu->SetCurrProfileByName(currFile->controlProfileName);

@@ -135,7 +135,7 @@ bool VictoryScreen4Player::Update()
 		bool confirmComplete = false;
 		if (matchStats->netplay)
 		{
-			confirmComplete = mm->menuCurrInput.start;
+			confirmComplete = CONTROLLERS.ButtonPressed_Start();
 
 			if (frame >= 60 * 5)
 			{

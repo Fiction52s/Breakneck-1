@@ -74,6 +74,7 @@
 #include "MotionGhostEffect.h"
 #include "TimerHUD.h"
 #include "PaletteShader.h"
+#include "AdventureManager.h"
 
 using namespace sf;
 using namespace std;
@@ -3022,6 +3023,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	skinShader("player"), exitAuraShader( "boostplayer" )
 	{
+
+	adventureManager = MainMenu::GetInstance()->adventureManager;
 
 	pState = NULL;
 	preSimulationState = NULL;
@@ -7702,7 +7705,7 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				SaveFile *currFile = sess->mainMenu->GetCurrSaveFile();
+				SaveFile *currFile = adventureManager->currSaveFile;
 				bool levValid = owner->level != NULL; 
 				if (jump && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 				{
@@ -7729,9 +7732,7 @@ void Actor::HandleWaitingScoreDisplay()
 			{
 				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
-					SaveFile *currFile = owner->mainMenu->GetCurrSaveFile();
-					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-					currFile->Save();
+					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 				}
 
 
@@ -7759,9 +7760,7 @@ void Actor::HandleWaitingScoreDisplay()
 			{
 				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
-					SaveFile *currFile = owner->mainMenu->GetCurrSaveFile();
-					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-					currFile->Save();
+					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 				}
 
 				if (owner->repPlayer != NULL)
@@ -7784,9 +7783,7 @@ void Actor::HandleWaitingScoreDisplay()
 			{
 				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
-					SaveFile *currFile = owner->mainMenu->GetCurrSaveFile();
-					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-					currFile->Save();
+					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 				}
 
 				owner->CleanupGhosts();

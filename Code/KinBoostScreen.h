@@ -8,7 +8,7 @@
 
 struct MainMenu;
 struct Level;
-struct KinBoostScreen
+struct KinBoostScreen : TilesetManager
 {
 	enum State
 	{
@@ -22,8 +22,7 @@ struct KinBoostScreen
 	bool IsEnded();
 	int stateFrame;
 	State state;
-	KinBoostScreen( MainMenu *mm,
-		TilesetManager *tm );
+	KinBoostScreen();
 	void Draw(sf::RenderTarget *target);
 	void Reset();
 	bool IsBoosting();
@@ -33,7 +32,6 @@ struct KinBoostScreen
 	sf::Sprite lightSpr[2];
 	sf::Sprite kinAuraSpr;
 	bool showAura;
-	MainMenu *mainMenu;
 	Tileset *ts_stars[4];
 	Tileset *ts_light[2];
 	Tileset *ts_bg;

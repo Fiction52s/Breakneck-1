@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include "ControlProfile.h"
 #include "SaveFile.h"
+#include "AdventureManager.h"
 
 using namespace std;
 using namespace sf;
@@ -175,7 +176,7 @@ void ControlSettingsMenu::SetButtonAssoc()
 
 	con->SetFilter(pSel->currProfile->GetCurrFilter());
 
-	SaveFile *currFile = mainMenu->GetCurrSaveFile();
+	SaveFile *currFile = mainMenu->adventureManager->currSaveFile;
 	if (currFile != NULL)
 	{
 		currFile->controlProfileName = pSel->currProfile->name;

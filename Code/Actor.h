@@ -24,6 +24,8 @@
 #include "EnemyTracker.h"
 #include "PlayerSkinShader.h"
 
+struct AdventureManager;
+
 struct SoundInfo;
 struct PaletteShader;
 
@@ -617,7 +619,7 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
-	
+	AdventureManager *adventureManager;
 
 	const static int MAX_BUBBLES = 5;
 

@@ -35,12 +35,9 @@ const int ProfileSelector::BOX_SPACING = 10;
 //waitModeThresh[1] = 2;
 
 
-ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
-	int p_playerIndex, list<ControlProfile*> &p_profiles, Vector2f &p_topMid )
+ControlProfileMenu::ControlProfileMenu( int p_playerIndex, list<ControlProfile*> &p_profiles, Vector2f &p_topMid )
 	:profiles( p_profiles ), playerIndex( p_playerIndex ), 
-	font( p_section->parent->mainMenu->arial ),
-	topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), 
-	section( p_section ), topMid( p_topMid )
+	font( MainMenu::GetInstance()->arial ), topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), topMid( p_topMid )
 {
 	assert(!p_profiles.empty());
 	int waitFrames[3] = { 10, 5, 2 };
@@ -49,7 +46,7 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 
 	currProfile = p_profiles.front(); //KIN 
 
-	selectedProfileText.setFont(section->mainMenu->arial);
+	selectedProfileText.setFont(MainMenu::GetInstance()->arial);
 	selectedProfileText.setCharacterSize(30);
 	selectedProfileText.setFillColor(Color::Black);
 	
@@ -88,8 +85,8 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	{
 		for( int j = 0; j < 4; ++j )
 		{
-			currButton = new UIButton( NULL, this, &section->mainMenu->tilesetManager,
-				&section->mainMenu->arial, buttonTexts[i*4+j], 220, 80 );
+			currButton = new UIButton( NULL, this, &MainMenu::GetInstance()->tilesetManager,
+				&MainMenu::GetInstance()->arial, buttonTexts[i*4+j], 220, 80 );
 			currButton->bar->SetTextHeight( 20 );
 			currButton->bar->SetTextAlignment( UIBar::Alignment::MIDDLE, Vector2i( 0, 3 ) );
 			controls[i*4+j] = currButton;
@@ -311,14 +308,15 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		{
 		case S_SELECTED:
 			{
-				if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
+			//commented out for now because using mapselectionmenu
+				/*if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
 				{
 					if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
 						|| section->parent->multiSelectorState == MapSelectionMenu::MS_GHOST)
 					{
 						state = S_GHOST_SELECTOR;
 					}
-				}
+				}*/
 				break;
 			}
 		case S_SHOWING_OPTIONS:
@@ -347,7 +345,9 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		switch (state)
 		{
 		case S_SELECTED:
-			if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
+
+			//commented out for now because using mapselectionmenu
+			/*if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
 			{
 				if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
 					|| section->parent->multiSelectorState == MapSelectionMenu::MS_MUSIC )
@@ -358,7 +358,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			else
 			{
 
-			}
+			}*/
 			
 			break;
 		}
@@ -487,7 +487,8 @@ bool ControlProfileMenu::SaveCurrConfig()
 		}
 	}
 
-	if( different ) section->mainMenu->cpm->WriteProfiles();
+	//commented out for now because using mapselectionmenu or related stuff
+	//if( different ) section->mainMenu->cpm->WriteProfiles();
 
 
 	state = S_SELECTED;

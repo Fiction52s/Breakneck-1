@@ -12,7 +12,7 @@
 #include "SaveFile.h"
 #include "Session.h"
 #include "Actor.h"
-
+#include "AdventureManager.h"
 
 using namespace sf;
 using namespace std;
@@ -270,7 +270,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 {
 	//return true; //testing
 
-	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
+	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 	if (saveFile == NULL)
 	{
 		return false;
@@ -288,7 +288,7 @@ bool ShardMenu::IsCurrShardCaptured()
 void ShardMenu::UpdateUnlockedShards()
 {
 	int index = 0;
-	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
+	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 
 	if (saveFile == NULL)
 		return;

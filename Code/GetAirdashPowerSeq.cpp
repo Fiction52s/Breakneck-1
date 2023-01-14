@@ -27,6 +27,7 @@
 #include "MusicSelector.h"
 #include "MusicPlayer.h"
 #include "HUD.h"
+#include "AdventureManager.h"
 
 using namespace sf;
 using namespace std;
@@ -174,7 +175,7 @@ bool GetAirdashPowerSeq::Update()
 				sess->SetGameSessionState(GameSession::RUN);
 				sess->Fade(true, 60, Color::Black, true);
 				sess->hud->Show(60);
-				sess->mainMenu->GetCurrSaveFile()
+				sess->mainMenu->adventureManager->currSaveFile
 					->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
 			}
 		}

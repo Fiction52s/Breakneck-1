@@ -3,6 +3,7 @@
 #include "Background.h"
 #include "VectorMath.h"
 #include "Enemy_Shard.h"
+#include "AdventureManager.h"
 
 using namespace std;
 using namespace sf;
@@ -23,7 +24,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	WorldMap *worldMap = ms->worldMap;
 	bg = NULL;
 
-	world = &worldMap->adventurePlanet->worlds[sec->worldIndex];
+	world = &mainMenu->adventureManager->adventurePlanet->worlds[sec->worldIndex];
 
 	ms->ts_statIcons->SetSpriteTexture(mapShardIconSpr);
 	ms->ts_statIcons->SetSubRect(mapShardIconSpr, 14);

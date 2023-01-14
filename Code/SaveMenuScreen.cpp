@@ -7,7 +7,7 @@
 #include "Fader.h"
 #include "SkinMenu.h"
 #include "MusicPlayer.h"
-#include "MenuPopup.h"
+#include "AdventureManager.h"
 #include "UIMouse.h"
 #include "CustomCursor.h"
 
@@ -75,14 +75,14 @@ void SaveFileDisplay::Draw(sf::RenderTarget *target)
 	}
 }
 
-void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
+void SaveFileDisplay::SetValues(SaveFile *sf, AdventurePlanet *adventurePlanet)
 {
 	if (sf != NULL)
 	{
 		stringstream ss;
 
-		int totalWorlds = wm->adventurePlanet->numWorlds;
-		int numCompleteWorlds = sf->GetNumCompleteWorlds(wm->adventurePlanet);
+		int totalWorlds = adventurePlanet->numWorlds;
+		int numCompleteWorlds = sf->GetNumCompleteWorlds(adventurePlanet);
 
 		ss << numCompleteWorlds << " / " << totalWorlds << " Worlds completed";
 
@@ -109,11 +109,11 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 	}
 }
 
-SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
-	:mainMenu(p_mainMenu),
-	playerSkinShader( "player" ),
-	maskPlayerSkinShader( "player" )
+SaveMenuScreen::SaveMenuScreen()
+	:playerSkinShader( "player" ),maskPlayerSkinShader( "player" )
 {
+	mainMenu = MainMenu::GetInstance();
+
 	messagePopup = new MessagePopup;
 	confirmPopup = new ConfirmPopup;
 
@@ -150,45 +150,17 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	skinButtonSpr.setPosition(1542, 0);
 
 
-	
-
 	Vector2f buttonOffset(192, 2);
 
 	skinButtonIconSpr.setPosition(skinButtonSpr.getPosition() + buttonOffset);
 
-	AdventureFile *af = &mainMenu->worldMap->adventureFile;
+	AdventureFile *af = &mainMenu->adventureManager->adventureFile;
 
 	string currName;
-	if (mainMenu->currSaveFile != NULL)
+	if (mainMenu->adventureManager->currSaveFile != NULL)
 	{
-		currName = mainMenu->currSaveFile->name;
+		currName = mainMenu->adventureManager->currSaveFile->name;
 	}
-
-	
-	std::vector<string> saveNames = { "blue", "green", "yellow", "orange", "red", "magenta" };
-	for (int i = 0; i < 6; ++i)
-	{
-		files[i] = new SaveFile(saveNames[i], af);
-		/*if (saveNames[i] == currName)
-		{
-			files[i] = mainMenu->currSaveFile;
-		}
-		else
-		{
-			files[i] = new SaveFile(saveNames[i], af);
-		}*/
-	}
-
-	//mainMenu->currSaveFile = files[selectedSaveIndex];
-
-	/*files[0] = new SaveFile("blue",af );
-	files[1] = new SaveFile("green", af);
-	files[2] = new SaveFile("yellow", af);
-	files[3] = new SaveFile("orange", af);
-	files[4] = new SaveFile("red", af);
-	files[5] = new SaveFile("magenta", af);*/
-
-
 
 	for (int i = 0; i < 6; ++i)
 	{
@@ -199,20 +171,15 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	for (int i = 0; i < 6; ++i)
 	{
-		defaultFiles[i] = !(files[i]->Load());
-		/*if (i == 0 && defaultFiles[i] == true)
-		{
-			assert(0);
-		}*/
+		defaultFiles[i] = !(mainMenu->adventureManager->files[i]->Load());
+
 		if( !defaultFiles[i] )
-			fileDisplay[i]->SetValues(files[i], mainMenu->worldMap);
+			fileDisplay[i]->SetValues(mainMenu->adventureManager->files[i], mainMenu->adventureManager->adventurePlanet);
 		else
 		{
 			fileDisplay[i]->SetValues(NULL, NULL);
 		}
 	}
-
-	
 
 	background.setTexture(*ts_background->texture);
 	background.setPosition(menuOffset);
@@ -302,6 +269,8 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	//selectSlot.setPosition(topLeftPos);
 
 	SetSelectedIndex(0);
+
+	Reset();
 	//kinFace.setPosition(topLeftPos + Vector2f( 50, 0 ));
 }
 
@@ -310,10 +279,6 @@ SaveMenuScreen::~SaveMenuScreen()
 	delete skinMenu;
 	for (int i = 0; i < 6; ++i)
 	{
-		if (files[i] != mainMenu->currSaveFile)
-		{
-			delete files[i];
-		}
 		delete fileDisplay[i];
 	}
 
@@ -323,7 +288,7 @@ SaveMenuScreen::~SaveMenuScreen()
 
 void SaveMenuScreen::SaveSelectedFile()
 {
-	mainMenu->currSaveFile->Save();
+	mainMenu->adventureManager->currSaveFile->Save();
 }
 
 void SaveMenuScreen::SetSkin(int index)
@@ -335,7 +300,7 @@ void SaveMenuScreen::SetSkin(int index)
 
 void SaveMenuScreen::SaveCurrSkin()
 {
-	mainMenu->currSaveFile->defaultSkinIndex = currSkin;
+	mainMenu->adventureManager->currSaveFile->defaultSkinIndex = currSkin;
 	SaveSelectedFile();
 }
 
@@ -375,18 +340,10 @@ bool SaveMenuScreen::Update()
 			frame = 0;
 			break;
 		case SELECT:
-			if (defaultFiles[selectedSaveIndex])
+			if (defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 			{
-				/*if (selectedSaveIndex == 0)
-				{
-					assert(0);
-				}*/
-				defaultFiles[selectedSaveIndex] = false;
-				int savedSkin = files[selectedSaveIndex]->defaultSkinIndex;
-				files[selectedSaveIndex]->SetAsDefault();
-				files[selectedSaveIndex]->defaultSkinIndex = savedSkin;
-				files[selectedSaveIndex]->Save();
-
+				defaultFiles[mainMenu->adventureManager->currSaveFileIndex] = false;
+				mainMenu->adventureManager->StartDefaultSaveFile(mainMenu->adventureManager->currSaveFileIndex);
 				//action = TRANSITIONMOVIE;
 				if (startWithTutorial)
 				{
@@ -397,8 +354,8 @@ bool SaveMenuScreen::Update()
 				else
 				{
 					action = TRANSITION;
-					mainMenu->worldMap->InitSelectors();
-					mainMenu->worldMap->SetDefaultSelections();
+					mainMenu->adventureManager->worldMap->InitSelectors();
+					mainMenu->adventureManager->worldMap->SetDefaultSelections();
 				}
 			}
 			else
@@ -410,7 +367,7 @@ bool SaveMenuScreen::Update()
 				action = TRANSITION;
 			}
 
-			mainMenu->worldMap->UpdateWorldStats();
+			mainMenu->adventureManager->worldMap->UpdateWorldStats();
 
 			transparency = 0;
 			fadeOut = 0;
@@ -420,11 +377,11 @@ bool SaveMenuScreen::Update()
 		{
 			mainMenu->SetMode(MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP);
 			mainMenu->transAlpha = 255;
-			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
-			mainMenu->worldMap->frame = 0;
+			mainMenu->adventureManager->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
+			mainMenu->adventureManager->worldMap->frame = 0;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundInfos[MainMenu::S_SELECT]);
 
-			mainMenu->worldMap->InitSelectors();
+			mainMenu->adventureManager->worldMap->InitSelectors();
 			return true;
 			break;
 		}
@@ -470,7 +427,7 @@ bool SaveMenuScreen::Update()
 		}
 	}
 
-	ControllerDualStateQueue *controllerInput = mainMenu->singlePlayerControllerStates;
+	ControllerDualStateQueue *controllerInput = mainMenu->adventureManager->controllerInput;
 
 	int moveDelayFrames = 60;
 	int moveDelayFramesSmall = 40;
@@ -485,7 +442,7 @@ bool SaveMenuScreen::Update()
 		{
 			if (controllerInput->ButtonPressed_A() )//(MouseIsOverSelectedFile() && MOUSE.IsMouseLeftClicked()) )
 			{
-				if (defaultFiles[selectedSaveIndex])
+				if (defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 				{
 					action = ASKTUTORIAL;
 					frame = 0;
@@ -510,12 +467,12 @@ bool SaveMenuScreen::Update()
 			{
 				action = SKINMENU;
 				frame = 0;
-				skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+				skinMenu->SetSelectedIndex(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
 				changedToSkin = true; //so you dont exit the same frame you open
 			}
 			else if (controllerInput->ButtonPressed_X())
 			{
-				if (!defaultFiles[selectedSaveIndex])
+				if (!defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 				{
 					action = CONFIRMDELETE;
 					confirmPopup->SetQuestion("Are you sure you want\nto delete this save file?");
@@ -524,11 +481,11 @@ bool SaveMenuScreen::Update()
 			}
 			else if (controllerInput->ButtonPressed_Y())
 			{
-				if (!defaultFiles[selectedSaveIndex])
+				if (!defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 				{
 					action = COPY;
 					frame = 0;
-					copiedIndex = selectedSaveIndex;
+					copiedIndex = mainMenu->adventureManager->currSaveFileIndex;
 				}
 			}
 			else
@@ -561,9 +518,9 @@ bool SaveMenuScreen::Update()
 				messagePopup->Pop("Deleted save file");
 				//infoPopup->SetText("Deleted save file");
 
-				defaultFiles[selectedSaveIndex] = true;
-				files[selectedSaveIndex]->Delete();
-				fileDisplay[selectedSaveIndex]->SetValues(NULL, NULL);
+				defaultFiles[mainMenu->adventureManager->currSaveFileIndex] = true;
+				mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]->Delete();
+				fileDisplay[mainMenu->adventureManager->currSaveFileIndex]->SetValues(NULL, NULL);
 				
 			}
 			else if (confirmPopup->action == ConfirmPopup::A_NO)
@@ -607,7 +564,7 @@ bool SaveMenuScreen::Update()
 		{
 			if (controllerInput->ButtonPressed_A())
 			{
-				if (defaultFiles[selectedSaveIndex])
+				if (defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 				{
 					action = CONFIRMCOPY;
 					frame = 0;
@@ -639,10 +596,10 @@ bool SaveMenuScreen::Update()
 				frame = 0;
 				messagePopup->Pop("Copied save file successfully");
 
-				files[copiedIndex]->CopyTo(files[selectedSaveIndex]);
-				files[selectedSaveIndex]->Save();
-				defaultFiles[selectedSaveIndex] = false;
-				fileDisplay[selectedSaveIndex]->SetValues(files[selectedSaveIndex], mainMenu->worldMap);
+				mainMenu->adventureManager->files[copiedIndex]->CopyTo(mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]);
+				mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]->Save();
+				defaultFiles[mainMenu->adventureManager->currSaveFileIndex] = false;
+				fileDisplay[mainMenu->adventureManager->currSaveFileIndex]->SetValues(mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex], mainMenu->adventureManager->adventurePlanet);
 			}
 			else if (confirmPopup->action == ConfirmPopup::A_NO || confirmPopup->action == ConfirmPopup::A_BACK )
 			{
@@ -717,7 +674,7 @@ bool SaveMenuScreen::Update()
 			{
 				action = WAIT;
 				frame = 0;
-				SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+				SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
 			}
 		}
 		break;
@@ -798,48 +755,38 @@ bool SaveMenuScreen::Update()
 
 void SaveMenuScreen::SetSelectedIndex(int index)
 {
-	selectedSaveIndex = index;
-	mainMenu->currSaveFile = files[selectedSaveIndex];
+	mainMenu->adventureManager->SetCurrSaveFile(index);
 	if (action != COPY)
 	{
-		SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+		SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
 	}
 
 	int currColonyIndex = 0;
-	if (defaultFiles[selectedSaveIndex])
+	if (defaultFiles[index])
 	{
 		currColonyIndex = 0;
 	}
 	else
 	{
-		currColonyIndex = mainMenu->currSaveFile->mostRecentWorldSelected;
+		currColonyIndex = mainMenu->adventureManager->currSaveFile->mostRecentWorldSelected;
 	}
 
-	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
+	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(index));
 	//kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
 
-	Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
+	Vector2f topLeftPos = GetTopLeftSaveSlot(index);
 
 	selectSlot.setPosition(topLeftPos);
 	kinFace.setPosition(topLeftPos + Vector2f(15, -6));
 
-	mainMenu->worldMap->SetShipToColony(currColonyIndex);
+	mainMenu->adventureManager->worldMap->SetShipToColony(currColonyIndex);
 }
 
 void SaveMenuScreen::SelectedIndexChanged()
 {
-	/*if (selectedSaveIndex == -1)
-	{
-		mainMenu->currSaveFile = NULL;
-		currColonyIndex = -1;
-	}
-	else
-	{
-		
-	}*/
 	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 
-	SetSelectedIndex(selectedSaveIndex);
+	//SetSelectedIndex(mainMenu->adventureManager->currSaveFileIndex);
 }
 
 void SaveMenuScreen::UnlockSkin(int skinIndex)
@@ -868,66 +815,50 @@ void SaveMenuScreen::UpdateSelectedIndex()
 		}
 	}
 
-	if (foundIndex != selectedSaveIndex)
+	if (foundIndex != mainMenu->adventureManager->currSaveFileIndex)
 	{
-		selectedSaveIndex = foundIndex;
+		SetSelectedIndex(foundIndex);
 		SelectedIndexChanged();
 	}
-}
-
-bool SaveMenuScreen::MouseIsOverSelectedFile()
-{
-	Vector2f mousePos = MOUSE.GetFloatPos();
-
-	if (fileDisplay[selectedSaveIndex]->Contains(mousePos))
-	{
-		return true;
-	}
-
-	return false;
 }
 
 void SaveMenuScreen::ChangeIndex(bool down, bool up, bool left, bool right)
 {
+	int currInd = mainMenu->adventureManager->currSaveFileIndex;
+	int oldInd = currInd;
 	if (down)
 	{
-		selectedSaveIndex += 2;
-		//currentMenuSelect++;
-		if (selectedSaveIndex > 5)
-			selectedSaveIndex -= 6;
-	
-		//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
-		SelectedIndexChanged();
-
+		currInd += 2;
+		if (currInd > 5)
+			currInd -= 6;
 	}
 	else if (up)
 	{
-		selectedSaveIndex -= 2;
-		if (selectedSaveIndex < 0)
-			selectedSaveIndex += 6;
-		
-		//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
-		SelectedIndexChanged();
+		currInd -= 2;
+		if (currInd < 0)
+			currInd += 6;
 	}
 
 	if (right)
 	{
-		selectedSaveIndex++;
-		//currentMenuSelect++;
-		if (selectedSaveIndex % 2 == 0)
-			selectedSaveIndex -= 2;
-
-		SelectedIndexChanged();
+		currInd++;
+		if (currInd % 2 == 0)
+			currInd -= 2;
 	}
 	else if (left)
 	{
-		selectedSaveIndex--;
-		if (selectedSaveIndex % 2 == 1)
-			selectedSaveIndex += 2;
-		else if (selectedSaveIndex < 0)
+		currInd--;
+		if (currInd % 2 == 1)
+			currInd += 2;
+		else if (currInd < 0)
 		{
-			selectedSaveIndex += 2;
+			currInd += 2;
 		}
+	}
+
+	if (currInd != oldInd)
+	{
+		SetSelectedIndex(currInd);
 		SelectedIndexChanged();
 	}
 }
@@ -957,20 +888,16 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveTexture->draw(kinClouds);
 	saveTexture->draw(kinWindow);
 
-
-	if (selectedSaveIndex >= 0)
+	int endDraw = 12 * 3 + 24 * 2;
+	if (action == WAIT || (action == SELECT && frame < endDraw) || action == FADEIN || action == SKINMENU
+		|| action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY || action == COPY || action == INFOPOP
+		|| action == ASKTUTORIAL || action == TRANSITIONTUTORIAL)
 	{
-		int endDraw = 12 * 3 + 24 * 2;
-		if (action == WAIT || (action == SELECT && frame < endDraw) || action == FADEIN || action == SKINMENU
-			|| action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY || action == COPY || action == INFOPOP
-			|| action == ASKTUTORIAL || action == TRANSITIONTUTORIAL)
-		{
-			saveTexture->draw(kinJump, &playerSkinShader.pShader);
-		}
-
-		saveTexture->draw(selectSlot);
-		saveTexture->draw(kinFace, &maskPlayerSkinShader.pShader);
+		saveTexture->draw(kinJump, &playerSkinShader.pShader);
 	}
+
+	saveTexture->draw(selectSlot);
+	saveTexture->draw(kinFace, &maskPlayerSkinShader.pShader);
 	
 	
 	for (int i = 0; i < 6; ++i)
@@ -1025,7 +952,7 @@ void SaveMenuScreen::Reset()
 	{
 		if (!defaultFiles[i])
 		{
-			fileDisplay[i]->SetValues(files[i], mainMenu->worldMap);
+			fileDisplay[i]->SetValues(mainMenu->adventureManager->files[i], mainMenu->adventureManager->adventurePlanet);
 		}
 		else
 		{

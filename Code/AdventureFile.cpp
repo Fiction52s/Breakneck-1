@@ -375,6 +375,14 @@ AdventureMap &AdventureFile::GetMap(int index)
 	return worlds[w].sectors[s].maps[m];
 }
 
+void AdventureFile::GetMapIndexes( int index, int &w, int &s, int &m)
+{
+	int maxLevelsPerWorld = (ADVENTURE_MAX_NUM_SECTORS_PER_WORLD * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR);
+	w = index / maxLevelsPerWorld;
+	s = (index % maxLevelsPerWorld) / ADVENTURE_MAX_NUM_SECTORS_PER_WORLD;
+	m = (index % ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR);
+}
+
 AdventureMapHeaderInfo &AdventureFile::GetMapHeaderInfo(int index)
 {
 	return GetMap(index).headerInfo;

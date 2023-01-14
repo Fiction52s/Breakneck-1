@@ -51,8 +51,6 @@ struct TerrainDecorInfo;
 
 struct BasicBossScene;
 
-struct LoadingMapProgressDisplay;
-
 
 struct ImageText;
 struct TimerText;
@@ -261,7 +259,6 @@ struct GameSession : RayCastHandler, Session
 	std::list<PolyPtr> allPolygonsList;
 	bool continueLoading;
 	boost::mutex continueLoadingLock;
-	LoadingMapProgressDisplay *progressDisplay;
 	std::set<std::pair<int, int>> matSet;
 	//std::map<int, int> matIndices;
 	std::map<std::string, std::list<DecorInfo>> decorListMap;

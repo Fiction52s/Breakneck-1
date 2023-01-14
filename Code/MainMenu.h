@@ -17,13 +17,12 @@
 #include <boost/filesystem.hpp>
 #include "steam/steam_api.h"
 
+struct AdventureManager;
 struct MapHeader;
 
-struct WorldMap;
 struct Config;
 
 struct SaveFile;
-struct SaveMenuScreen;
 struct MapBrowserScreen;
 struct WorkshopBrowser;
 struct WorkshopManager;
@@ -43,12 +42,10 @@ struct SinglePlayerControllerJoinScreen;
 
 struct ControlProfile;
 struct ControlProfileMenu;
-struct MapSelectionMenu;
 struct ControlProfileManager;
 struct UIControlGrid;
 struct FillRing;
 
-struct KinBoostScreen;
 struct SingleAxisSelector;
 struct UIVerticalControlList;
 
@@ -68,9 +65,7 @@ struct Fader;
 struct Swiper;
 struct LoadingBackpack;
 
-struct MenuInfoPopup;
-struct MapSelectionItem;
-struct LoadingMapProgressDisplay;
+struct MessagePopup;
 
 struct GameSettingsScreen;
 
@@ -94,315 +89,6 @@ struct CustomMapsHandler : GUIHandler
 	void SliderCallback(Slider *slider);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 };
-
-
-
-struct MultiSelectionSection : UIEventHandlerBase
-{
-	
-	enum Team
-	{
-		T_NOT_CHOSEN,
-		T_RED,
-		T_BLUE,
-		T_Count
-	};
-
-	enum Skin
-	{
-		S_STANDARD,
-		S_ALT0,
-		S_Count
-	};
-
-	MultiSelectionSection( MainMenu *p_mainMenu,
-		MapSelectionMenu *parent,
-		int p_playerIndex,
-		sf::Vector2f &topMid );
-	~MultiSelectionSection();
-	bool ButtonEvent( UIEvent eType,
-		ButtonEventParams *param );
-	Team team;
-	int skinIndex;
-	void Update();
-	ControlProfile *profile;
-	ControlProfileMenu *profileSelect;
-	void Draw( sf::RenderTarget *target );
-
-	void SetTopMid( sf::Vector2f &tm );
-	sf::Sprite playerSprite;
-	bool active;
-	int playerIndex;
-	MapSelectionMenu *parent;
-	MainMenu *mainMenu;
-	//bool isReady;
-	bool IsReady();
-	bool ShouldGoBack();
-	bool holdingB;
-
-	int bHoldFrames;
-	int bHoldThresh;
-
-	sf::Vector2f topMid;
-	FillRing *backLoader;
-	sf::Vector2f backLoaderOffset;
-
-	sf::RectangleShape offRect;
-	sf::Sprite bgSprite;
-	//Tileset *ts_bg;
-};
-
-
-struct MultiLoadingScreen
-{
-	MultiLoadingScreen( MainMenu *p_mainMenu );
-	~MultiLoadingScreen();
-	void Reset(boost::filesystem::path path );
-	void Update();
-	void Draw( sf::RenderTarget *target );
-	MultiSelectionSection *playerSection[4];
-	boost::filesystem::path filePath;
-	sf::Sprite previewSprite;
-	bool AllPlayersReady();
-	int GetNumActivePlayers();
-	MainMenu *mainMenu;
-	
-	boost::thread *loadThread;
-	GameSession *gs;
-	sf::Vector2f menuOffset;
-	LoadingMapProgressDisplay *progressDisplay;
-
-	
-};
-
-struct MapCollection
-{
-	enum Tags
-	{
-		SINGLE = 1 << 0,
-		DOUBLE = 1 << 1,
-	};
-
-	int tags;
-
-	MapCollection();
-	~MapCollection();
-	//bool Load(boost::filesystem::path path);
-
-	std::string collectionName;
-	std::list<MapSelectionItem*> maps;
-	bool expanded;
-};
-
-struct MapSelectionItem
-{
-	MapSelectionItem(boost::filesystem::path p_path,
-		MapHeader *mh)
-		:path(p_path), headerInfo(mh)
-	{
-	}
-
-	~MapSelectionItem();
-
-	boost::filesystem::path path;
-	MapCollection *collection;
-	MapHeader *headerInfo;
-	Tileset *ts_preview;
-};
-
-struct LoadingMapProgressDisplay
-{
-
-	enum ProgressString
-	{
-
-	};
-
-	~LoadingMapProgressDisplay();
-
-	const static int NUM_LOAD_THREADS;
-	LoadingMapProgressDisplay(MainMenu *mainMenu,
-		sf::Vector2f &topLeft );
-	void SetProgressString(const std::string &str,
-		int threadIndex = 0);
-	void UpdateText();
-	void Draw(sf::RenderTarget *target);
-	void Reset();
-
-	sf::Text *text;
-	MainMenu *mainMenu;
-	boost::mutex stringLock;
-	std::string *currString;
-	//std::string *
-	int currStringThreadIndex;
-};
-
-
-
-struct MapIndexInfo
-{
-	MapCollection*coll;
-	MapSelectionItem *item;
-};
-
-
-
-struct MapSelectionMenu
-{
-	enum State
-	{
-		S_MAP_SELECTOR,
-		S_MAP_OPTIONS,
-		S_MUSIC_SELECTOR,
-		S_MUSIC_OPTIONS,
-		S_GHOST_SELECTOR,
-		S_GHOST_OPTIONS,
-		S_SELECTING_SKIN,
-		S_TO_MULTI_TRANS,
-		S_FROM_MULTI_TRANS,
-		S_LOADING,
-		S_MULTI_SCREEN
-	};
-
-	struct OptionWindow
-	{
-		sf::RectangleShape optionRect;
-		sf::Vector2f startPos; //top left
-		sf::Vector2f endPos;
-		CubicBezier slideInBez;
-		CubicBezier slideOutBez;
-	};
-
-	State state;
-	//TODO scrollbar to show how far in to the names you are
-	static const int NUM_BOXES = 24;
-	static const int BOX_WIDTH;
-	static const int BOX_HEIGHT;
-	static const int BOX_SPACING;
-
-	struct TInfo
-	{
-		GameSession *gsession;
-		boost::thread *loadThread;
-	};
-
-	MapSelectionMenu( MainMenu *p_mainMenu,
-		sf::Vector2f &p_pos );
-	~MapSelectionMenu();
-	MainMenu *mainMenu;
-	void SetupBoxes();
-	void LoadItems();
-
-	bool IsMultiMusicOn();
-	bool IsMultiGhostOn();
-	bool IsMusicSelectorVisible();
-	bool IsGhostSelectorVisible();
-	void Update(ControllerState &currInput,
-		ControllerState &prevInput);
-	void MoveUp();
-	void MoveDown();
-	void UpdateItemText();
-	void UpdateBoxesDebug();
-	void Draw(sf::RenderTarget *target);
-	static bool WriteMapHeader(std::ofstream &of, MapHeader *mh);
-	static bool ReplaceHeader(boost::filesystem::path &p,
-		MapHeader *mh);
-	void CleanupStopThreads();
-	bool AllPlayersReady();
-	int NumPlayersReady();
-	static void sStopLoadThread(MapSelectionMenu *mapMenu,
-		TInfo &ti );
-	void StopLoadThread( TInfo &ti );
-
-	LoadingMapProgressDisplay *progressDisplay;
-	UIVerticalControlList *filterOptions;
-
-	sf::Vertex boxes[NUM_BOXES * 4];
-	sf::Text itemName[NUM_BOXES];
-
-	void LoadMap();
-	boost::thread *loadThread;
-	
-	std::list<boost::thread*> stopThreads;
-
-	sf::Vector2f topMid;
-	GameSession *gs;
-
-	int oldCurrIndex;
-	int topIndex;
-	State oldState;
-
-	std::list<boost::filesystem::path> items;
-	std::list<MapCollection*> collections;
-	void LoadPath( boost::filesystem::path & p);
-	sf::Font &font;
-	SingleAxisSelector *saSelector;
-
-	MusicSelector *musicSelector;
-	void UpdateMultiInput();
-
-	Tileset *ts_buttonIcons;
-
-	int numTotalItems;
-	std::pair<std::string,MapIndexInfo> *allItems;
-	int GetPairIndex(int index);
-
-	sf::Sprite previewSprite;
-	bool previewBlank;
-	sf::RectangleShape blankTest;
-
-	sf::Text descriptionText;
-	
-	sf::Sprite bg;
-	Tileset *ts_bg;
-
-	//sf::Sprite previewSprite;
-	//sf::Texture previewTex;
-
-	//void SetPreview();
-	RecordGhostMenu *ghostSelector;
-
-	MultiSelectionSection *singleSection;
-
-	int multiTransFrame;
-	int toMultiTransLength;
-	int fromMultiTransLength;
-
-	
-
-	ControllerState multiMusicPrev;
-	ControllerState multiMusicCurr;
-	ControllerState multiGhostPrev;
-	ControllerState multiGhostCurr;
-
-	sf::Vector2f menuOffset;
-
-	MultiSelectionSection *multiPlayerSection[4];
-
-	enum MultiSelectorState
-	{
-		MS_NEUTRAL,
-		MS_MUSIC,
-		MS_GHOST,
-		MS_MUSIC_OPTIONS,
-		MS_GHOST_OPTIONS
-	};
-
-	MultiSelectorState multiSelectorState;
-	Tileset *ts_multiProfileRow;
-	sf::Sprite multiProfileRow;
-
-	Tileset *ts_multiSelect;
-	sf::Sprite multiSelect;
-
-	sf::Vector2f multiRowOnPos;
-	sf::Vector2f multiRowOffPos;
-
-	sf::Vector2f multiSelectOnPos;
-	sf::Vector2f multiSelectOffPos;
-	// more transition information later
-};
-
 
 
 struct CreditsMenuScreen
@@ -488,12 +174,6 @@ struct MainMenu
 		TRANS_SAVE_TO_MAIN,
 		TRANS_SAVE_TO_WORLDMAP,
 		WORLDMAP_COLONY,
-		MULTIPREVIEW,
-		TRANS_MAPSELECT_TO_MULTIPREVIEW,
-		TRANS_MULTIPREVIEW_TO_MAPSELECT,
-		TRANS_MAIN_TO_MAPSELECT,
-		MAPSELECT,
-		TRANS_MAPSELECT_TO_MAIN,
 		TRANS_MAIN_TO_GAME_SETTINGS,
 		GAME_SETTINGS,
 		TRANS_MAIN_TO_CREDITS,
@@ -538,9 +218,6 @@ struct MainMenu
 
 	//testing
 
-	ControllerDualStateQueue *singlePlayerControllerStates;
-
-	MenuInfoPopup *infoPopup;
 	CustomCursor *customCursor;
 	NetplayManager *netplayManager;
 	CustomMatchManager *customMatchManager;
@@ -606,13 +283,10 @@ struct MainMenu
 	Swiper *swiper;
 	GameRunType gameRunType;
 
-	SaveFile *GetCurrSaveFile();
 	ControlProfileManager *cpm;
 	SoundInfo *soundInfos[SoundType::S_Count];
-	MapSelectionMenu *mapSelectionMenu;
 	GameSettingsScreen *gameSettingsScreen;
 	CreditsMenuScreen *creditsMenu;
-	SaveMenuScreen *saveMenu;
 	SingleAxisSelector *saSelector;
 	MapBrowserScreen *mapBrowserScreen;
 	WorkshopBrowser *workshopBrowser;
@@ -620,13 +294,13 @@ struct MainMenu
 
 	sf::Vector2i mousePixelPos;
 	
-
-	SaveFile *currSaveFile;
 	void UpdateMenuOptionText();
 	void DrawMenuOptionText(sf::RenderTarget *target);
 	
 	MusicManager *musicManager;
 	FillRing *testRing;
+
+	AdventureManager *adventureManager;
 
 	
 	MainMenu();
@@ -673,7 +347,6 @@ struct MainMenu
 	SoundManager soundManager;
 	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;
-	MultiLoadingScreen *multiLoadingScreen;
 	
 	bool quit;
 	bool doneLoading;
@@ -707,7 +380,6 @@ struct MainMenu
 	void PlayIntroMovie();
 	Mode menuMode;
 	void AdventureLoadLevel(LevelLoadParams &loadParams);
-	void AdventureNextLevel(Level *lev);
 	boost::thread *loadThread;
 	boost::thread *deadThread;
 
@@ -737,7 +409,7 @@ struct MainMenu
 
 	LevelSelector *levelSelector; 
 	
-
+	MessagePopup *messagePopup;
 
 	int kinTitleSpriteFrame;
 	int kinTotalFrames;

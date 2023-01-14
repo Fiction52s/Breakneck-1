@@ -21,6 +21,7 @@
 #include "Actor.h"
 #include "EditorTerrain.h"
 #include "EditorRail.h"
+#include "AdventureManager.h"
 
 using namespace sf;
 using namespace std;
@@ -365,7 +366,7 @@ bool LogMenu::IsLogFound(int w, int li)
 {
 	return true; //testing
 
-	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
+	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 	if (saveFile == NULL)
 	{
 		return false;
@@ -385,7 +386,7 @@ bool LogMenu::IsCurrLogFound()
 void LogMenu::UpdateUnlockedLogs()
 {
 	int index = 0;
-	SaveFile *saveFile = sess->mainMenu->GetCurrSaveFile();
+	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 
 	if (saveFile == NULL)
 		return;

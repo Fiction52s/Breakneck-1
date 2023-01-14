@@ -4,29 +4,29 @@
 #include "VectorMath.h" 
 #include "WorldMap.h"
 #include "MusicPlayer.h"
+#include "AdventureManager.h"
 
 
 using namespace std;
 using namespace sf;
 
-KinBoostScreen::KinBoostScreen( MainMenu *mm, TilesetManager *tm )
-	:mainMenu( mm ), skinShader( "boostplayer")
+KinBoostScreen::KinBoostScreen()
+	:skinShader( "boostplayer")
 {
-	ts_bg = tm->GetTileset("KinBoost/kinboost_BG1.png", 1920, 1080);
-	ts_bgShape = tm->GetTileset("KinBoost/kinboost_BG1_shape.png", 1920, 1080);
+	ts_bg = GetTileset("KinBoost/kinboost_BG1.png", 1920, 1080);
+	ts_bgShape = GetTileset("KinBoost/kinboost_BG1_shape.png", 1920, 1080);
 
-	ts_light[0] = tm->GetTileset("KinBoost/kinboost_light_01a.png", 1920, 1080);
-	ts_light[1] = tm->GetTileset("KinBoost/kinboost_light_01b.png", 1920, 1080);
+	ts_light[0] = GetTileset("KinBoost/kinboost_light_01a.png", 1920, 1080);
+	ts_light[1] = GetTileset("KinBoost/kinboost_light_01b.png", 1920, 1080);
 
-	ts_stars[0] = tm->GetTileset("KinBoost/kinboost_stars_01a.png", 1920, 1080);
-	ts_stars[1] = tm->GetTileset("KinBoost/kinboost_stars_01b.png", 1920, 1080);
-	ts_stars[2] = tm->GetTileset("KinBoost/kinboost_stars_01c.png", 1920, 1080);
-	ts_stars[3] = tm->GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
+	ts_stars[0] = GetTileset("KinBoost/kinboost_stars_01a.png", 1920, 1080);
+	ts_stars[1] = GetTileset("KinBoost/kinboost_stars_01b.png", 1920, 1080);
+	ts_stars[2] = GetTileset("KinBoost/kinboost_stars_01c.png", 1920, 1080);
+	ts_stars[3] = GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
-	ts_kinBoost = tm->GetTileset("Kin/exitboost_96x128.png", 96, 128);
-	ts_kinAura = tm->GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
-	ts_enterFX = tm->GetSizedTileset("Kin/FX/enter_fx_320x320.png");
-	
+	ts_kinBoost = GetSizedTileset("Kin/exitboost_96x128.png");
+	ts_kinAura = GetSizedTileset("Kin/FX/exitaura_256x256.png");
+	ts_enterFX = GetSizedTileset("Kin/FX/enter_fx_320x320.png");
 
 	ts_enterFX->SetSpriteTexture(enterFXSpr);
 
@@ -41,8 +41,6 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm, TilesetManager *tm )
 	kinAuraSpr.setOrigin(kinAuraSpr.getLocalBounds().width / 2, kinAuraSpr.getLocalBounds().height / 2);
 	kinAuraSpr.setPosition(kinSpr.getPosition());
 	kinAuraSpr.setScale(kinSpr.getScale());
-	
-	
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -111,6 +109,8 @@ void KinBoostScreen::End()
 {
 	state = FINISHBOOST;
 	stateFrame = 0;
+
+	auto *mainMenu = MainMenu::GetInstance();
 	//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
 	mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
 	mainMenu->musicPlayer->FadeOutCurrentMusic(30);
@@ -124,7 +124,9 @@ void KinBoostScreen::Reset()
 	state = STARTING;
 	ended = false;
 
-	skinShader.SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+	auto *mainMenu = MainMenu::GetInstance();
+
+	skinShader.SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -164,6 +166,8 @@ void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 
 void KinBoostScreen::Update()
 {
+	auto *mainMenu = MainMenu::GetInstance();
+
 	showAura = true;
 	switch (state)
 	{

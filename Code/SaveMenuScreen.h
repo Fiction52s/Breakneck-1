@@ -10,10 +10,10 @@ struct MainMenu;
 struct SaveFile;
 struct WorldMap;
 struct SkinMenu;
-struct MenuInfoPopup;
 
 struct MessagePopup;
 struct ConfirmPopup;
+struct AdventurePlanet;
 
 struct SaveFileDisplay
 {
@@ -34,7 +34,7 @@ struct SaveFileDisplay
 	sf::Color fillColor;
 	sf::Color lineColor;
 	sf::Font &font;
-	void SetValues(SaveFile *sf, WorldMap *wm );
+	void SetValues(SaveFile *sf, AdventurePlanet *adventurePlanet );
 	void Draw(sf::RenderTarget *target);
 };
 
@@ -114,12 +114,9 @@ struct SaveMenuScreen : TilesetManager
 
 	int copiedIndex;
 	//SaveMenuConfirmPopup confirmPopup;
-	//MenuInfoPopup *infoPopup;
 	//SaveMenuDecisionPopup decisionPopup;
 	MessagePopup *messagePopup;
 	ConfirmPopup *confirmPopup;
-
-	ControllerDualStateQueue *controllerStates;
 
 	bool startWithTutorial;
 	int currSkin;
@@ -128,7 +125,7 @@ struct SaveMenuScreen : TilesetManager
 	int actionLength[Count];
 	int frame;
 	SkinMenu * skinMenu;
-	SaveMenuScreen(MainMenu *p_mainMenu);
+	SaveMenuScreen();
 	~SaveMenuScreen();
 	Tileset *ts_background;//ts_saveMenuBG;
 	Tileset *ts_selectSlot;//ts_saveMenuSelect;
@@ -146,7 +143,6 @@ struct SaveMenuScreen : TilesetManager
 	bool IsSkinUnlocked(int skinIndex);
 	void ChangeIndex(bool down, bool up, bool left, bool right);
 	void UpdateSelectedIndex();
-	bool MouseIsOverSelectedFile();
 	bool HandleEvent(sf::Event ev);
 	void SetSelectedIndex(int index);
 
@@ -157,7 +153,6 @@ struct SaveMenuScreen : TilesetManager
 	sf::Sprite kinFace;
 	PlayerSkinShader playerSkinShader;
 	PlayerSkinShader maskPlayerSkinShader;
-	int selectedSaveIndex;
 	float transparency;
 	float fadeOut;
 	sf::Vertex blackQuad[4];
@@ -204,7 +199,6 @@ struct SaveMenuScreen : TilesetManager
 	int saveJumpFactor;
 	int saveJumpLength;
 
-	SaveFile *files[6];
 	SaveFileDisplay *fileDisplay[6];
 };
 

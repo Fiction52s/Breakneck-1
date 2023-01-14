@@ -14,23 +14,24 @@
 #include "UIMouse.h"
 #include "CustomCursor.h"
 #include "WorldMapShip.h"
+#include "AdventureManager.h"
 
 using namespace boost::filesystem;
 using namespace sf;
 using namespace std;
 
-WorldMap::WorldMap( MainMenu *p_mainMenu )
-	:font( mainMenu->arial ), mainMenu( p_mainMenu )
+WorldMap::WorldMap()
+	:font( MainMenu::GetInstance()->arial )
 {
-	allUnlocked = true;
-
-	LoadAdventure("tadventure");
+	mainMenu = MainMenu::GetInstance();
+	adventureManager = mainMenu->adventureManager;
 	
-	kinBoostScreen = new KinBoostScreen(mainMenu, this);
+
+	allUnlocked = true;
 
 	ship = new WorldMapShip(this);
 
-	worldSelector = new WorldSelector(p_mainMenu);
+	worldSelector = new WorldSelector(mainMenu);
 
 	SetRectColor(infoQuadBG, Color(0, 0, 0, 100));
 	SetRectColor(infoNameBG, Color(0, 0, 0, 200));
@@ -99,7 +100,6 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		SetRectCenter(worldActiveQuads + i * 4, 1920, 1080, Vector2f(960, 540));
 		SetRectSubRect(worldActiveQuadsZoomed + i * 4, ts_colonyActiveZoomed[i]->GetSubRect(0));
 		SetRectCenter(worldActiveQuadsZoomed + i * 4, 1920 / 8.f, 1080 / 8.f, Vector2f(colonySpr[i].getPosition() + Vector2f(960/8.f, 540/8.f)));
-		
 	}
 
 	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
@@ -107,13 +107,8 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		colonySpr[i].setTexture(*ts_colony[i]->texture);
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
 
-		//SetRectCenter(worldSelectableQuads + i * 4, ts_selectableRing->tileWidth, ts_selectableRing->tileHeight, GetColonyCenter(i));
-		//ts_selectableRing->SetQuadSubRect(worldSelectableQuads + i * 4, 0);
-
 		SetRectSubRectGL(worldSelectableQuads + i * 4, ts_selectableRing->GetSubRect(0), Vector2f(ts_selectableRing->texture->getSize()));
 	}
-
-	//worldSelectableQuads[ADVENTURE_MAX_NUM_WORLDS * 4];
 
 	colonyRadius = 192 / 2;
 
@@ -160,12 +155,12 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	Reset(NULL);
 
-	int numWorlds = adventurePlanet->numWorlds;
+	int numWorlds = adventureManager->adventurePlanet->numWorlds;
 	selectors = new MapSelector*[numWorlds];
 
 	for (int i = 0; i < numWorlds; ++i)
 	{
-		selectors[i] = new MapSelector(this, &(adventurePlanet->worlds[i]),
+		selectors[i] = new MapSelector(this, &(adventureManager->adventurePlanet->worlds[i]),
 			mainMenu, Vector2f(960, 540));
 	}
 }
@@ -173,15 +168,11 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 WorldMap::~WorldMap()
 {
 	delete worldSelector;
-	for (int i = 0; i < adventurePlanet->numWorlds; ++i)
+	for (int i = 0; i < adventureManager->adventurePlanet->numWorlds; ++i)
 	{
 		delete selectors[i];
 	}
 	delete[] selectors;
-
-	delete adventurePlanet;
-
-	delete kinBoostScreen;
 
 	delete ship;
 
@@ -211,12 +202,7 @@ void WorldMap::SetupAsteroids()
 	asteroidShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 }
 
-void WorldMap::LoadAdventure(const std::string &adventureName)
-{
-	adventureFile.Load("Resources/Adventure", adventureName);
-	adventureFile.LoadMapHeaders();
-	adventurePlanet = new AdventurePlanet(adventureFile);
-}
+
 
 void WorldMap::UpdateWorldStats()
 {
@@ -228,11 +214,11 @@ void WorldMap::UpdateWorldStats()
 	worldNameText.setOrigin(worldNameTextLocalBounds.width / 2
 		+ worldNameTextLocalBounds.left, 0);
 
-	SaveFile *saveFile = mainMenu->GetCurrSaveFile();
+	SaveFile *saveFile = adventureManager->currSaveFile;
 
-	AdventureWorld &aw = adventureFile.GetWorld(selectedColony);
+	AdventureWorld &aw = adventureManager->adventureFile.GetWorld(selectedColony);
 
-	World &world = adventurePlanet->worlds[selectedColony];
+	World &world = adventureManager->adventurePlanet->worlds[selectedColony];
 	int numTotalSectors = world.numSectors;
 	int numCompletedSectors = 0;
 	for (int i = 0; i < numTotalSectors; ++i)
@@ -261,7 +247,7 @@ void WorldMap::UpdateWorldStats()
 		for (int j = 0; j < numLevels; ++j)
 		{
 			levIndex = world.sectors[i].GetLevelIndex(j);
-			AdventureMapHeaderInfo &amhi = adventureFile.GetMapHeaderInfo(levIndex);
+			AdventureMapHeaderInfo &amhi = adventureManager->adventureFile.GetMapHeaderInfo(levIndex);
 			numShardsInLevel = amhi.shardInfoVec.size();
 			numTotalShards += numShardsInLevel;
 			for (int k = 0; k < numShardsInLevel; ++k)
@@ -375,7 +361,7 @@ void WorldMap::SetDefaultSelections()
 
 void WorldMap::InitSelectors()
 {
-	for (int i = 0; i < adventurePlanet->numWorlds; ++i)
+	for (int i = 0; i < adventureManager->adventurePlanet->numWorlds; ++i)
 	{
 		selectors[i]->Init();
 		//selectors[i]->UpdateAllInfo(i);
@@ -387,7 +373,7 @@ void WorldMap::UpdateSelectedColony()
 	Vector2f shipPos = ship->GetPosition();
 	Vector2f colMiddle;
 
-	for (int i = 0; i < adventurePlanet->numWorlds; ++i)
+	for (int i = 0; i < adventureManager->adventurePlanet->numWorlds; ++i)
 	{
 		colMiddle = colonySpr[i].getPosition() + Vector2f(colonySpr[i].getGlobalBounds().width / 2,
 			colonySpr[i].getGlobalBounds().height / 2);
@@ -416,9 +402,16 @@ sf::Vector2f WorldMap::GetColonyCenter(int index)
 		colonySpr[index].getGlobalBounds().height / 2);
 }
 
+void WorldMap::SetToColonyMode(int selColony)
+{
+	state = WorldMap::COLONY;
+	selectedColony = selColony;
+	selectedLevel = 0;
+}
+
 void WorldMap::Update()
 {
-	auto *controllerInput = mainMenu->singlePlayerControllerStates;
+	auto *controllerInput = adventureManager->controllerInput;
 	assert(controllerInput != NULL);
 
 	int trans = 20;
@@ -479,10 +472,8 @@ void WorldMap::Update()
 			frame = 0;
 
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
-			mainMenu->SetMode(MainMenu::SAVEMENU);
-			mainMenu->saveMenu->Reset();
-			mainMenu->saveMenu->action = SaveMenuScreen::FADEIN;
-			mainMenu->saveMenu->transparency = 1.f;
+			mainMenu->adventureManager->FadeInSaveMenu();
+			
 
 			
 			//mainMenu->customCursor->SetMode(CustomCursor::M_REGULAR);
@@ -498,12 +489,12 @@ void WorldMap::Update()
 		int numCompletedWorlds;
 		if (allUnlocked)
 		{
-			numCompletedWorlds = adventurePlanet->numWorlds;
+			numCompletedWorlds = adventureManager->adventurePlanet->numWorlds;
 		}
 		else
 		{
-			SaveFile *saveFile = mainMenu->GetCurrSaveFile();
-			numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventurePlanet);
+			SaveFile *saveFile = adventureManager->currSaveFile;
+			numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventureManager->adventurePlanet);
 		}
 
 		int numUnlockedWorlds = max(1, numCompletedWorlds );
@@ -531,7 +522,6 @@ void WorldMap::Update()
 			}
 		}
 
-		//if (tempSelected >= 0 && tempSelected <= numCompletedWorlds && tempSelected != selectedColony )
 		if (tempSelected >= 0 && tempSelected != selectedColony)
 		{
 			selectedColony = tempSelected;
@@ -539,65 +529,10 @@ void WorldMap::Update()
 			UpdateWorldStats();
 		}
 
-		/*if ((currInput.LDown() || currInput.PDown()) && !moveDown)
-		{
-			
-
-
-			selectedColony++;
-			if (selectedColony > numCompletedWorlds
-				|| selectedColony >= planet->numWorlds )
-				selectedColony = 0;
-			
-			moveDown = true;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
-			UpdateWorldStats();
-		}
-		else if ((currInput.LUp() || currInput.PUp()) && !moveUp)
-		{
-			int numCompletedWorlds;
-			if (allUnlocked)
-			{
-				numCompletedWorlds = planet->numWorlds;
-			}
-			else
-			{
-				SaveFile *saveFile = mainMenu->GetCurrSaveFile();
-				numCompletedWorlds = saveFile->GetNumCompleteWorlds(planet);
-			}
-
-			selectedColony--;
-			if (selectedColony < 0)
-			{
-				if (numCompletedWorlds == planet->numWorlds)
-				{
-					selectedColony = planet->numWorlds - 1;
-				}
-				else
-				{
-					selectedColony = numCompletedWorlds;
-				}
-				
-			}
-				
-
-			moveUp = true;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
-			UpdateWorldStats();
-		}
-
-		if (!(currInput.LDown() || currInput.PDown()))
-		{
-			moveDown = false;
-		}
-		if (!(currInput.LUp() || currInput.PUp()))
-		{
-			moveUp = false;
-		}*/
-
 		UpdateColonySelect();
-	}
+
 		break;
+	}	
 	case PlANET_TO_COLONY:
 	{
 		int limit = 120 / 2;
@@ -674,8 +609,8 @@ void WorldMap::Update()
 				zoomShader.setUniform("sampleStrength", diff);
 			}
 		}
-	}
 		break;
+	}
 	case COLONY:
 	{
 		worldSelector->SetAlpha(0);
@@ -686,15 +621,6 @@ void WorldMap::Update()
 		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[selectedColony].getScale().x * .2f);
 		break;
 	}
-		
-		//if( currInput.A && !prevInput.A )
-		//{
-		//	state = OFF;
-		//	frame = 0;
-		//	return false; //start a map!
-		//}
-		//frame = 0;
-		
 	case COLONY_TO_PLANET:
 	{
 		int limit = 60;//120 / 2;
@@ -765,8 +691,9 @@ void WorldMap::Update()
 				//zoomShader.setUniform("sampleStrength", diff);
 			}
 		}
-	}
 		break;
+	}
+		
 	}
 
 	
@@ -966,42 +893,6 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(worldNameText);
 	}
 
-	/*if (state == LOAD_COLONY)
-	{
-		mainMenu->loadingBackpack->Draw(rt);
-	}*/
-
-	//rt->draw(asteroidSpr[2]);
-	//asteroidSpr[2].setScale(5.f, 5.f);
-	//asteroidSpr[3].setScale(5.f, 5.f);
-	
-	//float astFac0 = 1.5f;
-	//float astFac1 = 2.f;
-	//int scrollFrames0 = 60 * 60;
-	//int scrollFrames1 = 60 * 45;
-	//int scrollFrames2 = 60 * 60;
-	//int scrollFrames3 = 60 * 60;
-	//float z0 = zoomView.getSize().x / 1920.f;
-	//z = 1.f - z;
-	//z *= astFac0;
-	//z = 1.f - z;
-
-	//if (z > 0)
-	//{
-	//	
-
-	//	
-
-	//	vvv.setSize(z * 1920.f, z * 1080.f);
-
-	//	rt->setView(vvv);
-
-	//	asteroidShader.setUniform("quant", (asteroidFrame % scrollFrames1) / (float)scrollFrames1);
-	//	rt->draw(asteroidSpr[2], &asteroidShader);
-	//}
-	//z = 1.f - z;
-	
-
 	rt->display();
 	const sf::Texture &tex = rt->getTexture();
 	extraPassSpr.setTexture(tex);
@@ -1017,8 +908,6 @@ void WorldMap::Draw( RenderTarget *target )
 	{
 		target->draw(extraPassSpr);
 	}
-
-	
 }
 
 Sector & WorldMap::GetCurrSector()
@@ -1026,38 +915,8 @@ Sector & WorldMap::GetCurrSector()
 	//SaveFile * currFile = mainMenu->GetCurrSaveFile();
 	//World & world = currFile->worlds[selectedColony];
 	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
-	return adventurePlanet->worlds[selectedColony].sectors[secIndex];
+	return adventureManager->adventurePlanet->worlds[selectedColony].sectors[secIndex];
 	//return currFile->adventureFile.GetSector(selectedColony, secIndex);
-}
-
-void WorldMap::CompleteCurrentMap( Level *lev, int totalFrames )
-{
-	SaveFile *saveFile = mainMenu->GetCurrSaveFile();
-	//World & world = sf->worlds[selectedColony];
-	//int worldIndex = selectedColony;
-	//int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
-	//int levIndex = selectors[selectedColony]->FocusedSector()->mapSASelector->currIndex;
-	
-	//Level &lev = sec.levels[levIndex];
-
-	if ( !saveFile->IsCompleteLevel( lev ) )
-	{
-		saveFile->CompleteLevel(lev);
-
-		MapSector *mapSec = CurrSelector()->FocusedSector();
-		mapSec->UpdateUnlockedLevelCount();
-		mapSec->mapSASelector->SetTotalSize(mapSec->unlockedLevelCount);
-	}
-	else
-	{
-		//lev.justBeaten = false;
-	}
-
-	bool isRecordSet = saveFile->TrySetRecordTime(totalFrames, lev);
-	if (isRecordSet)
-	{
-		//create a flag so that you can get hype over this
-	}
 }
 
 int WorldMap::GetCurrSectorNumLevels()

@@ -119,7 +119,6 @@ struct ProfileSelector
 	int oldCurrIndex;
 };
 
-struct MultiSelectionSection;
 struct MainMenu;
 struct ControlProfileMenu : UIEventHandlerBase
 {
@@ -151,8 +150,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	bool SaveCurrConfig();
 	
 
-	ControlProfileMenu( MultiSelectionSection *section, 
-		int playerIndex,
+	ControlProfileMenu( int playerIndex,
 		std::list<ControlProfile*> &p_profiles,
 		sf::Vector2f &p_topMid );
 	~ControlProfileMenu();
@@ -177,7 +175,6 @@ struct ControlProfileMenu : UIEventHandlerBase
 
 	//int currIndex;
 	int oldCurrIndex;
-	MultiSelectionSection *section;
 	int topIndex;
 	
 	std::list<ControlProfile*> profiles;

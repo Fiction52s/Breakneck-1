@@ -143,6 +143,7 @@ struct AdventureFile
 		const std::string &adventureName, CopyMode cpy );
 	AdventureMap &GetMap(int index);
 	AdventureMapHeaderInfo &GetMapHeaderInfo(int index);
+	void GetMapIndexes( int mIndex, int &w, int &s, int &m);
 
 	AdventureSector &GetSector(int w, int s);
 	AdventureSector &GetAdventureSector(Sector *sec);

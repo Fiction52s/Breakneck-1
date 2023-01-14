@@ -13,7 +13,6 @@
 #include "PlayerRecord.h"
 #include "PowerOrbs.h"
 #include "Enemy_Shard.h"
-#include "SaveMenuScreen.h"
 #include "PauseMenu.h"
 #include "TitleScreen.h"
 #include "IntroMovie.h"
@@ -26,6 +25,7 @@
 #include "MapHeader.h"
 #include "ButtonHolder.h"
 #include "ControlSettingsMenu.h"
+#include "SaveMenuScreen.h"
 
 #include <Windows.h>
 #include "public.h"
@@ -43,7 +43,7 @@
 #include "NetplayManager.h"
 
 #include "CustomCursor.h"
-#include "MenuPopup.h"
+#include "AdventureManager.h"
 
 #include "CustomMatchManager.h"
 #include "OnlineMenuScreen.h"
@@ -67,9 +67,6 @@ using namespace boost::filesystem;
 
 #define TIMESTEP (1.0 / 60.0)
 
-
-const int LoadingMapProgressDisplay::NUM_LOAD_THREADS = 5;
-
 sf::RenderTexture *MainMenu::preScreenTexture = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture2 = NULL;
 sf::RenderTexture *MainMenu::minimapTexture = NULL;
@@ -82,10 +79,6 @@ sf::RenderTexture *MainMenu::extraScreenTexture = NULL;
 sf::RenderTexture *MainMenu::auraCheckTexture = NULL;
 
 MainMenu * MainMenu::currInstance = NULL;
-
-const int MapSelectionMenu::BOX_WIDTH = 580;
-const int MapSelectionMenu::BOX_HEIGHT = 40;
-const int MapSelectionMenu::BOX_SPACING = 0;
 
 sf::Font MainMenu::arial;
 sf::Font MainMenu::consolas;
@@ -137,17 +130,19 @@ void MainMenu::sLevelLoad(MainMenu *mm, GameSession *gs)
 
 void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
+	ControllerDualStateQueue *storedControllerStates = NULL;
+
 	switch (fromMode)
 	{
 	case SAVEMENU:
-		assert(worldMap != NULL);
+		/*assert(worldMap != NULL);
 		delete worldMap;
 		worldMap = NULL;
 
 		assert(saveMenu != NULL);
 		currSaveFile = NULL;
 		delete saveMenu;
-		saveMenu = NULL;
+		saveMenu = NULL;*/
 		break;
 	case TITLEMENU:
 	{
@@ -173,13 +168,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case WORLDMAP_COLONY:
 	{
-		worldMap->CurrSelector()->DestroyBGs();
-		worldMap->CurrSelector()->FocusedSector()->DestroyMapPreview();
+		adventureManager->worldMap->CurrSelector()->DestroyBGs();
+		adventureManager->worldMap->CurrSelector()->FocusedSector()->DestroyMapPreview();
 		break;
 	}
 	case WORLDMAP:
 	{
-		SaveFile *saveFile = GetCurrSaveFile();
+		/*SaveFile *saveFile = GetCurrSaveFile();
 		saveFile->mostRecentWorldSelected = worldMap->selectedColony;
 		saveFile->Save();
 		worldMap->CurrSelector()->CreateBGs();
@@ -188,23 +183,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		{
 			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 		
-		}
+		}*/
 		break;
 	}
 	case RUN_ADVENTURE_MAP:
 	{
-		if (worldMap != NULL)
-		{
-			delete worldMap;
-			worldMap = NULL;
-		}
-
-		if (saveMenu != NULL)
-		{
-			currSaveFile = NULL;
-			delete saveMenu;
-			saveMenu = NULL;
-		}
+		adventureManager->DestroySaveMenu();
+		adventureManager->DestroyWorldMap();
 		break;
 	}
 	case RUN_FREEPLAY_MAP:
@@ -230,6 +215,11 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	{
 		if (singlePlayerControllerJoinScreen != NULL)
 		{
+			if (toMode == SAVEMENU)
+			{
+				storedControllerStates = singlePlayerControllerJoinScreen->playerBox->controllerStates;
+			}
+
 			delete singlePlayerControllerJoinScreen;
 			singlePlayerControllerJoinScreen = NULL;
 		}
@@ -239,24 +229,25 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 
 	switch (toMode)
-	{
+	{	
 	case WORLDMAP:
 	{
 		if (fromMode == ADVENTURETUTORIAL)
 		{
-			assert(worldMap == NULL);
-			assert(saveMenu == NULL);
-			worldMap = new WorldMap(this);
-			saveMenu = new SaveMenuScreen(this);
-			saveMenu->Reset();
-			worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
-			worldMap->frame = 0;
-			worldMap->InitSelectors();
-			worldMap->SetDefaultSelections();
-			worldMap->UpdateWorldStats();
+			//assert(adventureManager->worldMap == NULL);
+			//assert(adventureManager->saveMenu == NULL);
+			//adventureManager->worldMap = new WorldMap(this);
+			//adventureManager->saveMenu = new SaveMenuScreen(this);
+			//adventureManager->saveMenu->Reset();
+			//adventureManager->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
+			//adventureManager->worldMap->frame = 0;
+			//adventureManager->worldMap->InitSelectors();
+			//adventureManager->worldMap->SetDefaultSelections();
+			//adventureManager->worldMap->UpdateWorldStats();
 		}
 		else if (fromMode == RUN_ADVENTURE_MAP)
 		{
+			adventureManager->CreateWorldMap();
 			//assert(worldMap == NULL);
 			//assert(saveMenu == NULL);
 			//worldMap = new WorldMap(this);
@@ -271,17 +262,35 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		break;
 	}
 	case SAVEMENU:
-		assert(worldMap == NULL);
-		assert(saveMenu == NULL);
-		worldMap = new WorldMap(this);
-		saveMenu = new SaveMenuScreen(this);
-		saveMenu->Reset();
+	{
+		if (fromMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE)
+		{
+			assert(adventureManager == NULL);
+			adventureManager = new AdventureManager;
+			adventureManager->controllerInput = storedControllerStates;//singlePlayerControllerJoinScreen->playerBox->controllerStates;
+			adventureManager->CreateWorldMap();
+			adventureManager->CreateSaveMenu();
+
+		}
 		break;
+	}	
 	case TITLEMENU:
+	{
+		if (fromMode == SAVEMENU)
+		{
+			assert(adventureManager != NULL);
+
+			delete adventureManager;
+
+			adventureManager = NULL;
+		}
+
 		assert(titleScreen == NULL);
 		titleScreen = new TitleScreen(this);
 		titleScreen->Reset();
 		break;
+	}
+	
 	case RUN_EDITOR_MAP:
 	{
 		if (fromMode == BROWSE_WORKSHOP)
@@ -345,13 +354,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case RUN_ADVENTURE_MAP:
 	{
-		assert(worldMap != NULL && saveMenu != NULL);
+		/*assert(worldMap != NULL && saveMenu != NULL);
 
 		delete worldMap;
 		worldMap = NULL;
 
 		delete saveMenu;
-		saveMenu = NULL;
+		saveMenu = NULL;*/
 		break;
 	}
 	}
@@ -402,8 +411,6 @@ MainMenu::MainMenu()
 	customCursor = NULL;
 	window = NULL;
 
-	singlePlayerControllerStates = NULL;
-
 	selectorAnimFrame = 0;
 	selectorAnimDuration = 21;
 	selectorAnimFactor = 3;
@@ -422,8 +429,6 @@ MainMenu::MainMenu()
 	currFreePlaySession = NULL;
 	freeplayScreen = NULL;
 	singlePlayerControllerJoinScreen = NULL;
-
-	currSaveFile = NULL;
 
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
@@ -445,13 +450,11 @@ MainMenu::MainMenu()
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
 
-	infoPopup = new MenuInfoPopup(this);
-
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();
 
-	
+	messagePopup = new MessagePopup;
 
 	controlSettingsMenu = new ControlSettingsMenu(this, &tilesetManager);
 
@@ -586,17 +589,12 @@ MainMenu::MainMenu()
 
 	titleScreen->Draw(preScreenTexture);
 
-	worldMap = NULL;
-	saveMenu = NULL;
+	adventureManager = NULL;
 	//worldMap = new WorldMap( this );
 
 	
 
 	levelSelector = new LevelSelector( this );
-
-	
-
-	kinTitleSprite.setPosition( 512, 1080 );
 	
 	kinTitleSpriteFrame = 0;
 	kinTotalFrames = 76 * 2 + 50;
@@ -615,11 +613,6 @@ MainMenu::MainMenu()
 	numSlideFrames = 60;
 
 	Init();
-
-	multiLoadingScreen = new MultiLoadingScreen( this );
-
-	mapSelectionMenu = NULL;
-	//mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 100));
 
 	gameSettingsScreen = new GameSettingsScreen(this);
 
@@ -757,19 +750,6 @@ void MainMenu::CreateRenderTextures()
 	}
 }
 
-SaveFile *MainMenu::GetCurrSaveFile()
-{
-	return currSaveFile;
-	/*if (saveMenu == NULL)
-	{
-		return NULL;
-	}
-	else
-	{
-		return saveMenu->files[saveMenu->selectedSaveIndex];
-	}*/
-}
-
 MainMenu::~MainMenu()
 {
 	assert(currInstance == this);
@@ -784,8 +764,6 @@ MainMenu::~MainMenu()
 	delete loadingBackpack;
 	delete cpm;
 	delete musicManager;
-
-	delete infoPopup;
 
 	delete controlSettingsMenu;
 
@@ -804,6 +782,13 @@ MainMenu::~MainMenu()
 	{
 		delete workshopManager;
 	}
+
+	if (adventureManager != NULL)
+	{
+		delete adventureManager;
+	}
+
+	delete messagePopup;
 
 	delete config;
 
@@ -824,28 +809,9 @@ MainMenu::~MainMenu()
 	delete auraCheckTexture;
 	delete brushPreviewTexture;
 
-
-	if (worldMap != NULL)
-	{
-		delete worldMap;
-	}
-
-	if (saveMenu != NULL)
-	{
-		currSaveFile = NULL;
-		delete saveMenu;
-	}
-
 	
 	delete levelSelector;
 	delete window;
-
-	delete multiLoadingScreen;
-
-	if (mapSelectionMenu != NULL)
-	{
-		delete mapSelectionMenu;
-	}
 	
 	delete gameSettingsScreen;
 	delete creditsMenu;
@@ -1046,7 +1012,7 @@ void MainMenu::SetMode(Mode m)
 	menuMode = m;
 	//only need this because the transition is seamless so inputs can
 	//get buffered
-	if (menuMode == TITLEMENU || menuMode == TRANS_MAIN_TO_SAVE || menuMode == TRANS_MAIN_TO_MAPSELECT)//|| menuMode == WORLDMAP)
+	if (menuMode == TITLEMENU || menuMode == TRANS_MAIN_TO_SAVE )//|| menuMode == WORLDMAP)
 	{
 		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
@@ -1061,13 +1027,12 @@ void MainMenu::SetMode(Mode m)
 
 	if (menuMode == KINBOOSTLOADINGMAP)
 	{
-		worldMap->kinBoostScreen->Reset();
+		adventureManager->kinBoostScreen->Reset();
 	}
 
 	if (menuMode == TITLEMENU)
 	{
 		selectorAnimFrame = 0;
-		singlePlayerControllerStates = NULL;
 		customCursor->SetMode(CustomCursor::M_REGULAR);
 		customCursor->Show();
 	}
@@ -1095,13 +1060,13 @@ void MainMenu::SetMode(Mode m)
 			musicPlayer->PlayMusic(menuMusic);
 		}
 
-		if (GetCurrSaveFile() == NULL)
+		if (adventureManager->currSaveFile == NULL)
 		{
-			saveMenu->SetSkin(0);
+			adventureManager->saveMenu->SetSkin(0);
 		}
 		else
 		{
-			saveMenu->SetSkin(GetCurrSaveFile()->defaultSkinIndex);
+			adventureManager->saveMenu->SetSkin(adventureManager->currSaveFile->defaultSkinIndex);
 		}
 	}
 	else if (menuMode == BROWSE_WORKSHOP)
@@ -1112,20 +1077,20 @@ void MainMenu::SetMode(Mode m)
 
 	if (menuMode == WORLDMAP_COLONY)
 	{
-		worldMap->state = WorldMap::COLONY;
-		worldMap->frame = 0;
+		adventureManager->worldMap->state = WorldMap::COLONY;
+		adventureManager->worldMap->frame = 0;
 	}
-	if (menuMode == WORLDMAP && worldMap->state == WorldMap::COLONY)
+	if (menuMode == WORLDMAP && adventureManager->worldMap->state == WorldMap::COLONY)
 	{
 		soundNodeList->ActivateSound(soundManager.GetSound("world_zoom_out"));
-		worldMap->state = WorldMap::COLONY_TO_PLANET;
-		worldMap->frame = 0;
-		worldMap->UpdateWorldStats();
+		adventureManager->worldMap->state = WorldMap::COLONY_TO_PLANET;
+		adventureManager->worldMap->frame = 0;
+		adventureManager->worldMap->UpdateWorldStats();
 	}
 	if (menuMode == WORLDMAP && oldMode == SAVEMENU)
 	{
-		worldMap->state = WorldMap::PLANET_VISUAL_ONLY;
-		worldMap->frame = 0;
+		adventureManager->worldMap->state = WorldMap::PLANET_VISUAL_ONLY;
+		adventureManager->worldMap->frame = 0;
 	}
 
 	if (menuMode == THANKS_FOR_PLAYING)
@@ -1576,7 +1541,6 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_OPTIONS);
 	//SetMode(TRANS_MAIN_TO_SAVE);
 	//SetMode(TRANS_MAIN_TO_CREDITS);
-	//SetMode(TRANS_MAIN_TO_MAPSELECT);
 	//SetMode(SPLASH);
 	menuMode = TITLEMENU;
 
@@ -1815,13 +1779,15 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	//sf::sleep(sf::milliseconds(5000));
 
 	MatchParams mp;
-	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
+	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->currSaveFile];
 	mp.mapPath = levelPath;
 
 	currLevel = new GameSession(&mp);
 	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
 	currLevel->bestReplayOn = loadParams.bestReplayOn;
 	currLevel->level = loadParams.level;
+
+	adventureManager->currLevel = currLevel;
 
 
 	loadThread = new boost::thread(MainMenu::sLevelLoad, this, currLevel);
@@ -1861,25 +1827,9 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	//loadThread = new boost::thread(GameSession::sLoad, currLevel);
 }
 
-void MainMenu::AdventureNextLevel(Level *lev)
-{
-	//window->setVerticalSyncEnabled(false);
-	//window->setFramerateLimit(60);
-	//string levelPath = lev->GetFullName();// name;
-										  //View oldView = window->getView();
-	worldMap->kinBoostScreen->level = lev;
-	SetModeKinBoostLoadingMap(0);
-	
-	//kinBoostScreen->levName = levelPath;
-
-	//deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, levelPath);
-}
-
 void MainMenu::PlayIntroMovie()
 {
-	worldMap->state = WorldMap::COLONY;
-	worldMap->selectedColony = 0;
-	worldMap->selectedLevel = 0;
+	adventureManager->worldMap->SetToColonyMode(0);
 	//worldMap->testSelector->UpdateAllInfo();
 
 	SetMode(INTROMOVIE);
@@ -1889,8 +1839,8 @@ void MainMenu::PlayIntroMovie()
 	MusicInfo *info = musicManager->songMap["w0_0_Film"];
 	musicPlayer->TransitionMusic(info, 60, sf::seconds( 60 ));
 	
-	Level *lev = &(worldMap->adventurePlanet->worlds[0].sectors[0].levels[0]);
-	AdventureMap &am = worldMap->adventureFile.GetMap(lev->index);
+	Level *lev = &(adventureManager->adventurePlanet->worlds[0].sectors[0].levels[0]);
+	AdventureMap &am = adventureManager->adventureFile.GetMap(lev->index);
 	string levelPath = am.GetMapPath();//lev->GetFullName();
 	//window->setActive(false);
 	doneLoading = false;
@@ -1901,7 +1851,7 @@ void MainMenu::PlayIntroMovie()
 
 
 	MatchParams mp;
-	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
+	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->curr];
 	mp.mapPath = levelPath;
 	currLevel = new GameSession(&mp);
 	currLevel->level = lev;
@@ -1925,8 +1875,8 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 
 	
 
-	SaveFile *currFile = m->GetCurrSaveFile();
-	currFile->Save();
+	//SaveFile *currFile = m->GetCurrSaveFile();
+	//currFile->Save();
 
 	//AdventureMap &am = worldMap->
 	string levName = am->GetMapPath();
@@ -1940,7 +1890,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 
 	
 	MatchParams mp;
-	mp.saveFile = m->saveMenu->files[m->saveMenu->selectedSaveIndex];
+	mp.saveFile = m->adventureManager->currSaveFile;// ->files[m->saveMenu->selectedSaveIndex];
 	mp.mapPath = levName;
 
 	m->currLevel = new GameSession(&mp);
@@ -1974,25 +1924,27 @@ void MainMenu::UpdateMenuMode()
 
 void MainMenu::ReturnToWorldAfterLevel()
 {
-	SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
-	int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+	//SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
+	//int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 
 	
+	musicPlayer->TransitionMusic(menuMusic, 60);
 
-	int numWorlds = worldMap->adventurePlanet->numWorlds;
-	if (worldMap->selectedColony == numWorlds - 1)
-	{
-		if (sa->currIndex == numLevels - 1)
-		{
-			if (currSaveFile->GetNumCompleteWorlds(worldMap->adventurePlanet) == numWorlds)
-			{
-				SetMode(THANKS_FOR_PLAYING);
-				//return;
-			}
-		}
-	}
+	LoadMode(WORLDMAP);
+	//int numWorlds = worldMap->adventurePlanet->numWorlds;
+	//if (worldMap->selectedColony == numWorlds - 1)
+	//{
+	//	if (sa->currIndex == numLevels - 1)
+	//	{
+	//		if (currSaveFile->GetNumCompleteWorlds(worldMap->adventurePlanet) == numWorlds)
+	//		{
+	//			SetMode(THANKS_FOR_PLAYING);
+	//			//return;
+	//		}
+	//	}
+	//}
 
-	if (menuMode != THANKS_FOR_PLAYING)
+	/*if (menuMode != THANKS_FOR_PLAYING)
 	{
 		worldMap->selectors[worldMap->selectedColony]->ReturnFromMap();
 		SetMode(WORLDMAP_COLONY);
@@ -2003,7 +1955,7 @@ void MainMenu::ReturnToWorldAfterLevel()
 		worldMap->Update();
 
 		musicPlayer->TransitionMusic(menuMusic, 60);
-	}
+	}*/
 	
 }
 
@@ -2060,7 +2012,8 @@ void MainMenu::HandleMenuMode()
 		}
 
 		titleScreen->Update();
-		if (infoPopup->Update(menuCurrInput, menuPrevInput))
+		messagePopup->Update();
+		if (messagePopup->action == MessagePopup::A_INACTIVE )
 		{
 			cout << "exited info popup" << endl;
 			//exited the info popup
@@ -2085,7 +2038,7 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		worldMap->Update();
+		adventureManager->worldMap->Update();
 
 		break;
 	}
@@ -2197,18 +2150,18 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		if (worldMap->kinBoostScreen->IsEnded())//swiper->IsPostWipe())
+		if (adventureManager->kinBoostScreen->IsEnded())//swiper->IsPostWipe())
 		{
 			//mainMenu->fader->Fade(true, 30, Color::Black, true);
 			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
 			gameRunType = GRT_ADVENTURE;
 			SetMode(RUN_ADVENTURE_MAP);
 		}
-		else if (worldMap->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && worldMap->kinBoostScreen->IsBoosting())
+		else if (adventureManager->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && adventureManager->kinBoostScreen->IsBoosting())
 		{
 			//gameRunType = GRT_ADVENTURE;
 			//SetMode(RUNNINGMAP);
-			worldMap->kinBoostScreen->End();
+			adventureManager->kinBoostScreen->End();
 
 			//gameRunType = GRT_ADVENTURE;
 			//SetMode(RUNNINGMAP);
@@ -2224,18 +2177,18 @@ void MainMenu::HandleMenuMode()
 		{
 			//kinBoostScreen->Update();
 
-			if (worldMap->kinBoostScreen->frame == 60 && worldMap->kinBoostScreen->IsBoosting())
+			if (adventureManager->kinBoostScreen->frame == 60 && adventureManager->kinBoostScreen->IsBoosting())
 			{
 				//window->setVerticalSyncEnabled(false);
 				//window->setFramerateLimit(60);
 				//string levelPath = kinBoostScreen->level->GetFullName();//kinBoostScreen->levName;
-				Level *lev = worldMap->kinBoostScreen->level;
-				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, &worldMap->adventureFile.GetMap(lev->index), lev);
-				worldMap->kinBoostScreen->level = NULL;
+				Level *lev = adventureManager->kinBoostScreen->level;
+				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, &adventureManager->adventureFile.GetMap(lev->index), lev);
+				adventureManager->kinBoostScreen->level = NULL;
 			}
 
 		}
-		worldMap->kinBoostScreen->Update();
+		adventureManager->kinBoostScreen->Update();
 		break;
 	}
 
@@ -2251,12 +2204,12 @@ void MainMenu::HandleMenuMode()
 			(GameSession::GameResultType)currLevel->Run();
 
 
-
-		SaveFile *currFile = GetCurrSaveFile();
 		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 		{
-			worldMap->CompleteCurrentMap(currLevel->level, currLevel->totalFramesBeforeGoal);
+			adventureManager->CompleteCurrentMap(currLevel->level, currLevel->totalFramesBeforeGoal);
 		}
+
+
 		switch (result)
 		{
 		case GameSession::GR_EXITLEVEL:
@@ -2278,11 +2231,12 @@ void MainMenu::HandleMenuMode()
 		//saveMenu->Reset();
 		//----ENDING JUST FOR TESTING
 
-		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
-		int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+		//SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
+		//int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+		
 		if (result == GameSession::GR_WIN)
 		{
-			currFile->Save();
+			//currFile->Save();
 
 			delete currLevel;
 			currLevel = NULL;
@@ -2292,35 +2246,51 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
 		{
-			if (sa->currIndex < numLevels - 1)
+			if (!adventureManager->TryToGoToNextLevel())
 			{
-				sa->currIndex++;
-
-				AdventureNextLevel(&(worldMap->GetCurrSector().levels[sa->currIndex]));
-			}
-			else
-			{
-				currFile->Save();
-
 				delete currLevel;
 				currLevel = NULL;
 
-				fader->Clear();
-
 				ReturnToWorldAfterLevel();
 			}
+			//int w = 0;
+			//int s = 0;
+			//int m = 0;
+			//adventureManager->adventureFile.GetMapIndexes(currLevel->level->index, w, s, m);
+
+			//adventureManager->adventurePlanet->worlds[w].sectors[s].numLevels;
+
+			//auto &sector = adventureManager->adventureFile.GetSector(w, s);
+
+			//if (m < sector.GetNumExistingMaps() - 1)
+			//{
+			//	++m;
+
+			//	AdventureNextLevel(sector.maps[m].//&(//worldMap->GetCurrSector().levels[sa->currIndex]));
+			//}
+			//else
+			//{
+			//	currFile->Save();
+
+			//	delete currLevel;
+			//	currLevel = NULL;
+
+			//	fader->Clear();
+
+			//	ReturnToWorldAfterLevel();
+			//}
 
 		}
 		else if (result == GameSession::GR_EXITTITLE)
 		{
-			Sector &sec = worldMap->GetCurrSector();
-			for (int i = 0; i < sec.numLevels; ++i)
-			{
-				currFile->SetLevelNotJustBeaten(&sec.levels[i]);
-			}
-			//fix this later for other options
+			//Sector &sec = worldMap->GetCurrSector();
+			//for (int i = 0; i < sec.numLevels; ++i)
+			//{
+			//	currFile->SetLevelNotJustBeaten(&sec.levels[i]);
+			//}
+			////fix this later for other options
 
-			currFile->Save();
+			//currFile->Save();
 
 			delete currLevel;
 			currLevel = NULL;
@@ -2329,14 +2299,14 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (result == GameSession::GR_EXITGAME)
 		{
-			Sector &sec = worldMap->GetCurrSector();
-			for (int i = 0; i < sec.numLevels; ++i)
-			{
-				currFile->SetLevelNotJustBeaten(&sec.levels[i]);
-			}
-			//fix this later for other options
+			//Sector &sec = worldMap->GetCurrSector();
+			//for (int i = 0; i < sec.numLevels; ++i)
+			//{
+			//	currFile->SetLevelNotJustBeaten(&sec.levels[i]);
+			//}
+			////fix this later for other options
 
-			currFile->Save();
+			//currFile->Save();
 
 			delete currLevel;
 			currLevel = NULL;
@@ -2348,14 +2318,14 @@ void MainMenu::HandleMenuMode()
 		}
 		else
 		{
-			Sector &sec = worldMap->GetCurrSector();
-			for (int i = 0; i < sec.numLevels; ++i)
-			{
-				currFile->SetLevelNotJustBeaten(&sec.levels[i]);
-			}
-			//fix this later for other options
+			//Sector &sec = worldMap->GetCurrSector();
+			//for (int i = 0; i < sec.numLevels; ++i)
+			//{
+			//	currFile->SetLevelNotJustBeaten(&sec.levels[i]);
+			//}
+			////fix this later for other options
 
-			currFile->Save();
+			//currFile->Save();
 
 			delete currLevel;
 			currLevel = NULL;
@@ -2449,18 +2419,18 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-			saveMenu->HandleEvent(ev);
+			adventureManager->saveMenu->HandleEvent(ev);
 		}
 
-		worldMap->Update();
-		if (!saveMenu->Update())
+		adventureManager->worldMap->Update();
+		if (!adventureManager->saveMenu->Update())
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(TITLEMENU);
 		}
 		else
 		{
-			if (saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
+			if (adventureManager->saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
 			{
 				MatchParams mp;
 				mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
@@ -2493,7 +2463,7 @@ void MainMenu::HandleMenuMode()
 
 		if (transFrame * 2 == transLength)
 		{
-			saveMenu->Reset();
+			adventureManager->saveMenu->Reset();
 		}
 
 		if (transFrame < transLength / 2)
@@ -2502,8 +2472,8 @@ void MainMenu::HandleMenuMode()
 		}
 		else
 		{
-			saveMenu->Update();
-			worldMap->Update();
+			adventureManager->saveMenu->Update();
+			adventureManager->worldMap->Update();
 		}
 		++transFrame;
 		break;
@@ -2526,13 +2496,13 @@ void MainMenu::HandleMenuMode()
 
 		if (transFrame * 2 == transLength)
 		{
-			saveMenu->Reset();
+			adventureManager->saveMenu->Reset();
 		}
 
 		if (transFrame < transLength / 2)
 		{
-			saveMenu->Update();
-			worldMap->Update();
+			adventureManager->saveMenu->Update();
+			adventureManager->worldMap->Update();
 		}
 		else
 		{
@@ -2549,84 +2519,6 @@ void MainMenu::HandleMenuMode()
 		}
 		SetMode(WORLDMAP);
 
-		break;
-	}
-	case MULTIPREVIEW:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-		multiLoadingScreen->Update();
-		break;
-	}
-	case TRANS_MAPSELECT_TO_MULTIPREVIEW:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-		SetMode(MULTIPREVIEW);
-		/*if (slideCurrFrame > numSlideFrames)
-		{
-		menuMode = MULTIPREVIEW;
-		}
-		else
-		{
-		Slide();
-		}*/
-		break;
-	}
-	case TRANS_MULTIPREVIEW_TO_MAPSELECT:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-		SetMode(MAPSELECT);
-		/*if (slideCurrFrame > numSlideFrames)
-		{
-		menuMode = MAPSELECT;
-		}
-		else
-		{
-		Slide();
-		}*/
-		break;
-	}
-	case TRANS_MAIN_TO_MAPSELECT:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-		SetMode(MAPSELECT);
-		/*if (slideCurrFrame > numSlideFrames)
-		{
-		menuMode = MAPSELECT;
-		}
-		else
-		{
-		Slide();
-		}*/
-		break;
-	}
-	case MAPSELECT:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-		mapSelectionMenu->Update(menuCurrInput, menuPrevInput);
-		break;
-	}
-	case TRANS_MAPSELECT_TO_MAIN:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-		SetMode(TITLEMENU);
 		break;
 	}
 	case TRANS_MAIN_TO_GAME_SETTINGS:
@@ -2716,13 +2608,11 @@ void MainMenu::HandleMenuMode()
 
 		if (modeFrame == 30)
 		{
-			worldMap->RunSelectedMap();
+			adventureManager->worldMap->RunSelectedMap();
 		}
 		else if (modeFrame < 30)
 		{
-			menuPrevInput = ControllerState();
-			menuCurrInput = ControllerState();
-			worldMap->Update();
+			adventureManager->worldMap->Update();
 		}
 		break;
 	}
@@ -2764,13 +2654,14 @@ void MainMenu::HandleMenuMode()
 
 		}
 
-		if (menuCurrInput.A)
+		if (CONTROLLERS.ButtonPressed_A())
 		{
-			worldMap->CurrSelector()->ReturnFromMap();
+			//this will break because worldmap doesnt exist at this point i think
+			adventureManager->worldMap->CurrSelector()->ReturnFromMap();
 			SetMode(WORLDMAP_COLONY);
-			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
-			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
-			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+			adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+			adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+			adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 
 			//menuCurrInput.Clear();
 			//worldMap->Update(menuPrevInput, menuCurrInput);
@@ -3088,7 +2979,6 @@ void MainMenu::HandleMenuMode()
 
 		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
 		{
-			singlePlayerControllerStates = singlePlayerControllerJoinScreen->playerBox->controllerStates;
 			LoadMode(SAVEMENU);
 		}
 		else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
@@ -3158,7 +3048,7 @@ void MainMenu::HandleMenuMode()
 				{
 					//fix this so when the opponent disconnects after the game has ended that everything is still fine.
 					cout << "EXITED ON DISCONNECT" << endl;
-					infoPopup->Pop("Opponent disconnected", 60);
+					messagePopup->Pop("Opponent disconnected");//, 60);
 					SetMode(TITLEMENU_INFOPOP);
 
 					netplayManager->CleanupMatch();
@@ -3378,21 +3268,6 @@ bool MainMenu::SetCurrProfileByName(const std::string &name)
 	return controlSettingsMenu->pSel->SetCurrProfileByName(name);
 }
 
-#include <fstream>
-MapCollection::MapCollection()
-{
-	expanded = false;
-	tags = 0;
-}
-
-MapCollection::~MapCollection()
-{
-	for (auto mit = maps.begin(); mit != maps.end(); ++mit)
-	{
-		delete (*mit);
-	}
-}
-
 
 void MainMenu::TitleMenuModeUpdate()
 {
@@ -3494,8 +3369,7 @@ void MainMenu::TitleMenuModeUpdate()
 	}
 	
 
-	if (isMouseClickedOnCurrentOption || menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X ||
-		menuCurrInput.rightShoulder || menuCurrInput.leftShoulder)
+	if (isMouseClickedOnCurrentOption )//|| CONTROLLERS.ButtonPressed_A() )
 	{
 		soundNodeList->ActivateSound(soundManager.GetSound("main_menu_select"));
 		switch (saSelector->currIndex)
@@ -3514,7 +3388,6 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_FREE_PLAY:
 		{
 			LoadMode(FREEPLAY);
-			//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
 		case M_LOCAL_MULTIPLAYER:
@@ -3526,7 +3399,7 @@ void MainMenu::TitleMenuModeUpdate()
 			//netplayManager->isSyncTest = true;
 			//netplayManager->FindQuickplayMatch();
 			//SetMode(QUICKPLAY_TEST);
-			//SetMode(TRANS_MAIN_TO_MAPSELECT);
+			
 			break;
 		}
 		case M_LEVEL_EDITOR:
@@ -3534,7 +3407,6 @@ void MainMenu::TitleMenuModeUpdate()
 			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(EDITOR_MENU);
 			//RunEditor(TITLEMENU, "");
-				//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
 		case M_OPTIONS:
@@ -3674,26 +3546,21 @@ void MainMenu::DrawMode( Mode m )
 	case TITLEMENU_INFOPOP:
 	{
 		titleScreen->Draw(preScreenTexture);
-		infoPopup->Draw(preScreenTexture);
+		messagePopup->Draw(preScreenTexture);
 		break;
 	}
 	case WORLDMAP:
 	case WORLDMAP_COLONY:
 	{
 		preScreenTexture->setView(v);
-		worldMap->Draw(preScreenTexture);
+		adventureManager->DrawWorldMap(preScreenTexture);
 	}
 	break;
 	case TRANS_SAVE_TO_WORLDMAP:
 	case SAVEMENU:
 	{
-		worldMap->Draw(preScreenTexture);
-		saveMenu->Draw(preScreenTexture);
-		break;
-	}
-	case MULTIPREVIEW:
-	{
-		multiLoadingScreen->Draw(preScreenTexture);
+		adventureManager->DrawWorldMap(preScreenTexture);
+		adventureManager->saveMenu->Draw(preScreenTexture);
 		break;
 	}
 	case LOAD_ADVENTURE_MAP:
@@ -3724,26 +3591,7 @@ void MainMenu::DrawMode( Mode m )
 	case KINBOOSTLOADINGMAP:
 	{
 		preScreenTexture->setView(v);
-		worldMap->kinBoostScreen->Draw(preScreenTexture);
-		break;
-	}
-
-	case TRANS_MAIN_TO_MAPSELECT:
-	{
-		preScreenTexture->setView(v);
-		mapSelectionMenu->Draw(preScreenTexture);
-		break;
-	}
-	case MAPSELECT:
-	{
-		preScreenTexture->setView(v);
-		mapSelectionMenu->Draw(preScreenTexture);
-		break;
-	}
-	case TRANS_MAPSELECT_TO_MAIN:
-	{
-		preScreenTexture->setView(v);
-		mapSelectionMenu->Draw(preScreenTexture);
+		adventureManager->kinBoostScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_MAIN_TO_SAVE:
@@ -3762,8 +3610,8 @@ void MainMenu::DrawMode( Mode m )
 		}
 		else
 		{
-			worldMap->Draw(preScreenTexture);
-			saveMenu->Draw(preScreenTexture);
+			adventureManager->DrawWorldMap(preScreenTexture);
+			adventureManager->saveMenu->Draw(preScreenTexture);
 		}
 		break;
 	}
@@ -3772,8 +3620,8 @@ void MainMenu::DrawMode( Mode m )
 		int tFrame = transFrame - 1;
 		if (tFrame < transLength / 2)
 		{
-			worldMap->Draw(preScreenTexture);
-			saveMenu->Draw(preScreenTexture);
+			adventureManager->DrawWorldMap(preScreenTexture);
+			adventureManager->saveMenu->Draw(preScreenTexture);
 		}
 		else
 		{
@@ -3812,25 +3660,11 @@ void MainMenu::DrawMode( Mode m )
 		creditsMenu->Draw(preScreenTexture);
 		break;
 	}
-	case TRANS_MAPSELECT_TO_MULTIPREVIEW:
-	{
-		preScreenTexture->setView(v);
-		mapSelectionMenu->Draw(preScreenTexture);
-		multiLoadingScreen->Draw(preScreenTexture);
-		break;
-	}
-	case TRANS_MULTIPREVIEW_TO_MAPSELECT:
-	{
-		preScreenTexture->setView(v);
-		mapSelectionMenu->Draw(preScreenTexture);
-		multiLoadingScreen->Draw(preScreenTexture);
-		break;
-	}
 	case TRANS_WORLDMAP_TO_LOADING:
 	{
 		if (modeFrame < 30)
 		{
-			worldMap->Draw(preScreenTexture);
+			adventureManager->DrawWorldMap(preScreenTexture);
 		}
 		break;
 	}
@@ -3954,7 +3788,7 @@ void MainMenu::DrawMode( Mode m )
 	if (menuMode == KINBOOSTLOADINGMAP)
 	{
 		preScreenTexture->setView(v);
-		worldMap->kinBoostScreen->DrawLateKin(preScreenTexture);
+		adventureManager->kinBoostScreen->DrawLateKin(preScreenTexture);
 	}
 }
 
