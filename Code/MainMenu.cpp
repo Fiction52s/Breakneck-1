@@ -174,16 +174,6 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case WORLDMAP:
 	{
-		/*SaveFile *saveFile = GetCurrSaveFile();
-		saveFile->mostRecentWorldSelected = worldMap->selectedColony;
-		saveFile->Save();
-		worldMap->CurrSelector()->CreateBGs();
-
-		if (worldMap->CurrSelector()->numSectors == 1)
-		{
-			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
-		
-		}*/
 		break;
 	}
 	case RUN_ADVENTURE_MAP:
@@ -260,6 +250,23 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			//worldMap->UpdateWorldStats();
 		}
 		break;
+	}
+	case WORLDMAP_COLONY:
+	{
+		if (fromMode == WORLDMAP)
+		{
+			//going to worldmap_colony
+			SaveFile *saveFile = adventureManager->currSaveFile;
+			saveFile->mostRecentWorldSelected = adventureManager->worldMap->selectedColony;
+			saveFile->Save();
+			adventureManager->worldMap->CurrSelector()->CreateBGs();
+
+			if (adventureManager->worldMap->CurrSelector()->numSectors == 1)
+			{
+				adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+			}
+		}
+		
 	}
 	case SAVEMENU:
 	{
