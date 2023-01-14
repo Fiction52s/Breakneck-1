@@ -122,15 +122,6 @@ void OnlineMenuScreen::CancelCallback(Panel *p)
 void OnlineMenuScreen::Update()
 {
 	panel->MouseUpdate();
-	/*ControllerState &menuCurrInput = mainMenu->menuCurrInput;
-	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
-
-	if (menuCurrInput.B && !menuPrevInput.B)
-	{
-	mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
-	}*/
-
-	
 }
 
 void OnlineMenuScreen::Draw(sf::RenderTarget *target)

@@ -572,7 +572,6 @@ struct MainMenu
 	void CreateRenderTextures();
 	void SetupWindow();
 	void UpdateMenuMode();
-	void UpdateMenuInput();
 	
 
 	//void RunFreePlayMap(const MatchParams *params);
@@ -693,10 +692,6 @@ struct MainMenu
 	static sf::RenderTexture *extraScreenTexture;
 	static sf::RenderTexture *auraCheckTexture;
 
-	sf::Texture worldMapTex;
-	sf::Sprite worldMapSpr;
-	Tileset *ts_worldMap;
-
 	ControlSettingsMenu *controlSettingsMenu;
 	
 	//Tileset *ts_kinTitle[7];
@@ -735,22 +730,13 @@ struct MainMenu
 	//singleton
 	static MainMenu *GetInstance();
 	static MainMenu *currInstance;
-
-	ControllerState menuPrevInput;
-	ControllerState menuCurrInput;
-	
-	
-	sf::Sprite titleBGSprite;
-	sf::Sprite breakneckTitleSprite;
-	sf::Sprite emergenceTitleSprite;
-	sf::Sprite kinTitleSprite;
 	
 	static sf::Font arial;
 	static sf::Font consolas;
 	sf::Clock gameClock;
 
 	LevelSelector *levelSelector; 
-	WorldMap *worldMap;
+	
 
 
 	int kinTitleSpriteFrame;

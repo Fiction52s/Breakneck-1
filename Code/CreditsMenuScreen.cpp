@@ -19,10 +19,7 @@ void CreditsMenuScreen::Draw(sf::RenderTarget *target)
 
 void CreditsMenuScreen::Update()
 {
-	ControllerState &menuCurrInput = mainMenu->menuCurrInput;
-	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
-
-	if (menuCurrInput.B && !menuPrevInput.B)
+	if (CONTROLLERS.ButtonPressed_B())
 	{
 		mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
 	}

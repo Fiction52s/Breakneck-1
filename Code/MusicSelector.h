@@ -36,7 +36,7 @@ struct MusicSelector
 	MainMenu *mainMenu;
 	int GetSelectorHeight();
 	void SetupBoxes();
-	void Update(ControllerState &curr, ControllerState &prev);
+	void Update(ControllerDualStateQueue *controllerInput);
 	void MoveUp();
 	void MoveDown();
 	void UpdateNames();

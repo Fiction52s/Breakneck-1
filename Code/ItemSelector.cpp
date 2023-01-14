@@ -496,12 +496,12 @@ SingleAxisSlider::~SingleAxisSlider()
 	delete saSelector;
 }
 
-int SingleAxisSlider::Update(ControllerState &currInput, ControllerState &prevInput)
+int SingleAxisSlider::Update(ControllerDualStateQueue *controllerInput)
 {
 	int currIndex = saSelector->currIndex;
 
-	bool left = currInput.LLeft();
-	bool right = currInput.LRight();
+	bool left = controllerInput->GetCurrState().LLeft();
+	bool right = controllerInput->GetCurrState().LRight();
 
 	int changed = saSelector->UpdateIndex(left, right);
 	int cIndex = saSelector->currIndex;

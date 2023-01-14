@@ -122,14 +122,6 @@ void PostMatchClientPopup::Update()
 
 	++framesWaiting;
 	
-	/*ControllerState &menuCurrInput = mainMenu->menuCurrInput;
-	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
-
-	if (menuCurrInput.B && !menuPrevInput.B)
-	{
-	mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
-	}*/
-
 
 }
 

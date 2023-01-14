@@ -1523,57 +1523,6 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 
 }
 
-void MainMenu::UpdateMenuInput()
-{
-	menuPrevInput = menuCurrInput;
-	menuCurrInput.Set(ControllerState());
-
-	//int upCount = 0;
-	//int downCount = 0;
-
-	CONTROLLERS.Update();
-
-
-	for (int i = 0; i < 4; ++i)
-	{
-		GameController *c = CONTROLLERS.GetWindowsController(i);//GetController(i);
-
-		ControllerStateQueue *states = CONTROLLERS.GetStateQueue(c);
-
-		if (c->IsConnected())
-		{
-			menuCurrInput.A |= states->ButtonPressed_A();
-			menuCurrInput.B |= states->ButtonPressed_B();
-			menuCurrInput.X |= states->ButtonPressed_X();
-			menuCurrInput.Y |= states->ButtonPressed_Y();
-			menuCurrInput.rightShoulder |= states->ButtonPressed_RightShoulder();
-			menuCurrInput.leftShoulder |= states->ButtonPressed_LeftShoulder();
-			menuCurrInput.start |= states->ButtonPressed_Start();
-			//menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
-			//menuCurrInput.rightTrigger = max(menuCurrInput.rightTrigger, currInput.rightTrigger);
-			//menuCurrInput.back |= (currInput.back && !prevInput.back);
-			menuCurrInput.leftStickPad |= states->GetCurrState().leftStickPad;
-
-			/*menuCurrInput.A |= currInput.A;
-			menuCurrInput.B |= currInput.B;
-			menuCurrInput.X |= currInput.X;
-			menuCurrInput.Y |= currInput.Y;
-			menuCurrInput.rightShoulder |= currInput.rightShoulder;
-			menuCurrInput.leftShoulder |= currInput.leftShoulder;
-			menuCurrInput.start |= currInput.start;
-			menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
-			menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
-			menuCurrInput.back |= currInput.back;
-			menuCurrInput.leftStickPad |= currInput.leftStickPad;*/
-		}
-		else
-		{
-			//currInput.Set(ControllerState());
-		}
-
-	}
-}
-
 
 #include <sfeMovie/Movie.hpp>
 
@@ -1685,7 +1634,7 @@ void MainMenu::Run()
 			//does it loop like this to fix some kind of drawing issue?
 			do
 			{
-				UpdateMenuInput();
+				CONTROLLERS.Update();
 
 				mousePixelPos = GetPixelPos();//sf::Mouse::getPosition(*window);
 
@@ -2079,14 +2028,8 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		bool A = menuCurrInput.A && !menuPrevInput.A;
-		bool B = menuCurrInput.B && !menuPrevInput.B;
-		bool X = menuCurrInput.X && !menuPrevInput.X;
-		bool Y = menuCurrInput.Y && !menuPrevInput.Y;
-		bool r = menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder;
-		bool l = menuCurrInput.leftShoulder && !menuPrevInput.leftShoulder;
-
-		if (A || B || X || Y || r || l)
+		
+		if (CONTROLLERS.ButtonPressed_Any() )
 		{
 			SetMode(SPLASH_TRANS);
 			changedMode = true;

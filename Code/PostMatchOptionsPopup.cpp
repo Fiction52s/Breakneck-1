@@ -106,15 +106,6 @@ void PostMatchOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 void PostMatchOptionsPopup::Update()
 {
 	panel->MouseUpdate();
-	/*ControllerState &menuCurrInput = mainMenu->menuCurrInput;
-	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
-
-	if (menuCurrInput.B && !menuPrevInput.B)
-	{
-	mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
-	}*/
-
-
 }
 
 void PostMatchOptionsPopup::Draw(sf::RenderTarget *target)

@@ -223,14 +223,11 @@ int MusicSelector::GetNumBoxes()
 	}
 }
 
-void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInput)
+void MusicSelector::Update(ControllerDualStateQueue *controllerInput)
 {
-	//ControllerState &currInput = mainMenu->menuCurrInput;
-	//ControllerState &prevInput = mainMenu->menuPrevInput;
-
 	MusicInfo *mi = songs[saSelector->currIndex];
 
-	if (currInput.A && !prevInput.A)
+	if (controllerInput->ButtonPressed_A() )
 	{
 		if ( previewSong != NULL )//mi->music != NULL && mi->music->getStatus() == sf::Music::Status::Playing)
 		{
@@ -272,20 +269,20 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 			musicPlayer->PlayMusic(mi);
 		}
 	}
-	else if (currInput.X && !prevInput.X)
+	else if (controllerInput->ButtonPressed_X())
 	{
 		if (mapMenu->gs != NULL)
 		{
 			mapMenu->gs->originalMusic = songs[saSelector->currIndex];
 		}
 	}
-	if (currInput.B && !prevInput.B)
+	if (controllerInput->ButtonPressed_B())
 	{
 		
 	}
 
-	bool up = currInput.LUp();
-	bool down = currInput.LDown();
+	bool up = controllerInput->GetCurrState().LUp();//currInput.LUp();
+	bool down = controllerInput->GetCurrState().LDown();
 
 	int changed = saSelector->UpdateIndex(up, down);
 	int cIndex = saSelector->currIndex;

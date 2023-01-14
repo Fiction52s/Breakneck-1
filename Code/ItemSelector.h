@@ -110,7 +110,7 @@ struct SingleAxisSlider
 		int numOptions, int startIndex,
 		int width, int height);
 	~SingleAxisSlider();
-	int Update(ControllerState &currInput, ControllerState &prevInput);
+	int Update(ControllerDualStateQueue *controllerInput);
 	void UpdateSliderPos();
 	void Draw(sf::RenderTarget *target);
 	SingleAxisSelector *saSelector;
