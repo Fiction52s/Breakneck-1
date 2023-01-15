@@ -43,19 +43,18 @@ struct SaveMenuConfirmPopup
 	enum Options
 	{
 		OPTION_NOTHING,
-		OPTION_CONFIRM,
-		OPTION_BACK
+		OPTION_OK,
+		OPTION_CANCEL,
 	};
 
-	SaveMenuConfirmPopup(MainMenu *mainMenu);
+	SaveMenuConfirmPopup();
 	sf::Vector2f size;
 	sf::Vertex popupBGQuad[4];
 	sf::Text confirmText;
 	sf::Vertex buttonQuads[4 * 2];
 	Tileset *ts_buttons;
 	sf::Vector2f position;
-	int Update(ControllerState &currInput,
-		ControllerState &prevInput);
+	int Update(ControllerDualStateQueue *controllerInput);
 	void SetText(const std::string &str);
 	void SetPos(sf::Vector2f &pos);
 	void Draw(sf::RenderTarget *target);
@@ -73,18 +72,20 @@ struct SaveMenuDecisionPopup
 
 	int currentlySelectedOption;
 
-	SaveMenuDecisionPopup(MainMenu *mainMenu);
+	SaveMenuDecisionPopup();
 	sf::Vector2f size;
 	sf::Vertex popupBGQuad[4];
 	sf::Text optionText;
 	sf::Vertex yesSelectedQuad[4];
 	sf::Vertex noSelectedQuad[4];
+	sf::Vertex backSelectedQuad[4];
+
 	sf::Text yesText;
 	sf::Text noText;
+	sf::Text backText;
 	sf::Vector2f position;
 	void SetOption(int op);
-	int Update(ControllerState &currInput,
-		ControllerState &prevInput);
+	int Update(ControllerDualStateQueue *controllerInput);
 	void SetText(const std::string &str);
 	void SetPos(sf::Vector2f &pos);
 	void Draw(sf::RenderTarget *target);
@@ -113,10 +114,10 @@ struct SaveMenuScreen : TilesetManager
 	};
 
 	int copiedIndex;
-	//SaveMenuConfirmPopup confirmPopup;
-	//SaveMenuDecisionPopup decisionPopup;
+	SaveMenuConfirmPopup confirmPopup;
+	SaveMenuDecisionPopup decisionPopup;
 	MessagePopup *messagePopup;
-	ConfirmPopup *confirmPopup;
+	//ConfirmPopup *confirmPopup;
 
 	bool startWithTutorial;
 	int currSkin;

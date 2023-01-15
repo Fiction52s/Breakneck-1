@@ -115,7 +115,7 @@ SaveMenuScreen::SaveMenuScreen()
 	mainMenu = MainMenu::GetInstance();
 
 	messagePopup = new MessagePopup;
-	confirmPopup = new ConfirmPopup;
+	//confirmPopup = new ConfirmPopup;
 
 	menuOffset = Vector2f(0, 0);
 
@@ -283,7 +283,7 @@ SaveMenuScreen::~SaveMenuScreen()
 	}
 
 	delete messagePopup;
-	delete confirmPopup;
+	//delete confirmPopup;
 }
 
 void SaveMenuScreen::SaveSelectedFile()
@@ -310,7 +310,8 @@ bool SaveMenuScreen::HandleEvent(sf::Event ev)
 	{
 	case ASKTUTORIAL:
 	case CONFIRMDELETE:
-		return confirmPopup->HandleEvent(ev);
+		break;
+		//return confirmPopup->HandleEvent(ev);
 	}
 
 	return true;
@@ -446,8 +447,10 @@ bool SaveMenuScreen::Update()
 				{
 					action = ASKTUTORIAL;
 					frame = 0;
-					confirmPopup->Pop(ConfirmPopup::BACK_ALLOWED);
-					confirmPopup->SetQuestion("You are starting a new file.\nDo you want a tutorial?");
+					decisionPopup.SetText("You are starting a new file.\nDo you want a tutorial?");
+					decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_YES);
+					//confirmPopup->Pop(ConfirmPopup::BACK_ALLOWED);
+					//confirmPopup->SetQuestion("You are starting a new file.\nDo you want a tutorial?");
 					//decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_YES);
 				}
 				else
@@ -475,7 +478,8 @@ bool SaveMenuScreen::Update()
 				if (!defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 				{
 					action = CONFIRMDELETE;
-					confirmPopup->SetQuestion("Are you sure you want\nto delete this save file?");
+					confirmPopup.SetText("Are you sure you want\nto delete this save file?");
+					//confirmPopup->SetQuestion("Are you sure you want\nto delete this save file?");
 					frame = 0;
 				}
 			}
@@ -495,23 +499,42 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == CONFIRMDELETE)
 		{
-			confirmPopup->Update();
-			if (confirmPopup->action == ConfirmPopup::A_YES )
-			{
-				action = CONFIRMDELETE2;
-				confirmPopup->Pop();
-				confirmPopup->SetQuestion("Save file will be permanently\ndeleted. Continue?");
-				frame = 0;
-			}
-			else if (confirmPopup->action == ConfirmPopup::A_NO)
+			
+			int res = confirmPopup.Update( mainMenu->adventureManager->controllerInput);
+
+			if (res == SaveMenuConfirmPopup::OPTION_CANCEL)
 			{
 				action = WAIT;
 				frame = 0;
 			}
+			else if (res == SaveMenuConfirmPopup::OPTION_OK)
+			{
+				action = CONFIRMDELETE2;
+				//confirmPopup->Pop();
+				//confirmPopup->SetQuestion("Save file will be permanently\ndeleted. Continue?");
+				confirmPopup.SetText("Save file will be permanently\ndeleted. Continue?");
+				frame = 0;
+			}
+
+			/*if (confirmPopup->action == ConfirmPopup::A_YES )
+			{
+				
+			}
+			else if (confirmPopup->action == ConfirmPopup::A_NO)
+			{
+				
+			}*/
 		}
 		else if (action == CONFIRMDELETE2)
 		{
-			if (confirmPopup->action == ConfirmPopup::A_YES)
+			int res = confirmPopup.Update(mainMenu->adventureManager->controllerInput);
+
+			if (res == SaveMenuConfirmPopup::OPTION_CANCEL)
+			{
+				action = WAIT;
+				frame = 0;
+			}
+			else if (res == SaveMenuConfirmPopup::OPTION_OK)
 			{
 				action = INFOPOP;
 				frame = 0;
@@ -521,12 +544,6 @@ bool SaveMenuScreen::Update()
 				defaultFiles[mainMenu->adventureManager->currSaveFileIndex] = true;
 				mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]->Delete();
 				fileDisplay[mainMenu->adventureManager->currSaveFileIndex]->SetValues(NULL, NULL);
-				
-			}
-			else if (confirmPopup->action == ConfirmPopup::A_NO)
-			{
-				action = WAIT;
-				frame = 0;
 			}
 		}
 		else if (action == INFOPOP)
@@ -539,7 +556,29 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == ASKTUTORIAL)
 		{
-			confirmPopup->Update();
+			int res = decisionPopup.Update(mainMenu->adventureManager->controllerInput);
+
+			if (res == SaveMenuDecisionPopup::OPTION_NO)
+			{
+				action = SELECT;
+				frame = 0;
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
+				startWithTutorial = false;
+			}
+			else if (res == SaveMenuDecisionPopup::OPTION_YES)
+			{
+				action = SELECT;
+				frame = 0;
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
+				startWithTutorial = true;
+			}
+			else if (res == SaveMenuDecisionPopup::OPTION_BACK)
+			{
+				action = WAIT;
+				frame = 0;
+			}
+
+			/*confirmPopup->Update();
 			if (confirmPopup->action == ConfirmPopup::A_YES)
 			{
 				action = SELECT;
@@ -549,16 +588,13 @@ bool SaveMenuScreen::Update()
 			}
 			else if (confirmPopup->action == ConfirmPopup::A_NO)
 			{
-				action = SELECT;
-				frame = 0;
-				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
-				startWithTutorial = false;
+				
 			}
 			else if (confirmPopup->action == ConfirmPopup::A_BACK)
 			{
 				action = WAIT;
 				frame = 0;
-			}
+			}*/
 		}
 		else if (action == COPY)
 		{
@@ -568,7 +604,8 @@ bool SaveMenuScreen::Update()
 				{
 					action = CONFIRMCOPY;
 					frame = 0;
-					confirmPopup->SetQuestion("Are you sure you want to\ncopy the save file here?");
+					//confirmPopup->SetQuestion("Are you sure you want to\ncopy the save file here?");
+					confirmPopup.SetText("Are you sure you want to\ncopy the save file here?");
 				}
 				else
 				{
@@ -589,7 +626,7 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == CONFIRMCOPY)
 		{
-			confirmPopup->Update();
+			/*confirmPopup->Update();
 			if (confirmPopup->action == ConfirmPopup::A_YES)
 			{
 				action = INFOPOP;
@@ -605,7 +642,7 @@ bool SaveMenuScreen::Update()
 			{
 				action = WAIT;
 				frame = 0;
-			}
+			}*/
 		}
 	}
 
@@ -926,11 +963,13 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	}
 	else if (action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY)
 	{
-		confirmPopup->Draw(target);
+		confirmPopup.Draw(target);
+		//confirmPopup->Draw(target);
 	}
 	else if (action == ASKTUTORIAL)
 	{
-		confirmPopup->Draw(target);
+		decisionPopup.Draw(target);
+		//confirmPopup->Draw(target);
 	}
 	else if (action == INFOPOP)
 	{
@@ -989,8 +1028,10 @@ void SaveMenuScreen::UpdateClouds()
 	cloudFrame++;
 }
 
-SaveMenuConfirmPopup::SaveMenuConfirmPopup( MainMenu *mainMenu )
+SaveMenuConfirmPopup::SaveMenuConfirmPopup( )
 {
+	MainMenu *mainMenu = MainMenu::GetInstance();
+
 	size = Vector2f(500, 300);
 	ts_buttons = mainMenu->tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
 	SetRectColor(popupBGQuad, Color::Black);
@@ -1015,16 +1056,15 @@ void SaveMenuConfirmPopup::SetPos(sf::Vector2f &pos)
 	confirmText.setPosition(Vector2f( pos.x, (pos.y - size.y / 2) + 10));
 }
 
-int SaveMenuConfirmPopup::Update(ControllerState &currInput,
-	ControllerState &prevInput)
+int SaveMenuConfirmPopup::Update(ControllerDualStateQueue *controllerInput)
 {
-	if (currInput.A && !prevInput.A)
+	if (controllerInput->ButtonPressed_A())
 	{
-		return OPTION_CONFIRM;
+		return OPTION_OK;
 	}
-	else if (currInput.B && !prevInput.B)
+	else if (controllerInput->ButtonPressed_B())
 	{
-		return OPTION_BACK;
+		return OPTION_CANCEL;
 	}
 
 	return OPTION_NOTHING;
@@ -1046,8 +1086,11 @@ void SaveMenuConfirmPopup::SetText(const std::string &str)
 	SetPos(position);
 }
 
-SaveMenuDecisionPopup::SaveMenuDecisionPopup(MainMenu *mainMenu)
+SaveMenuDecisionPopup::SaveMenuDecisionPopup()
 {
+	MainMenu *mainMenu = MainMenu::GetInstance();
+	
+	//size is set in setText
 	size = Vector2f(500, 300);
 	
 	SetRectColor(popupBGQuad, Color::Black);
@@ -1071,6 +1114,13 @@ SaveMenuDecisionPopup::SaveMenuDecisionPopup(MainMenu *mainMenu)
 	noText.setOrigin(noText.getLocalBounds().left + noText.getLocalBounds().width / 2,
 		noText.getLocalBounds().top + noText.getLocalBounds().height / 2);
 
+	backText.setFont(mainMenu->arial);
+	backText.setCharacterSize(40);
+	backText.setFillColor(Color::White);
+	backText.setString("BACK");
+	backText.setOrigin(backText.getLocalBounds().left + backText.getLocalBounds().width / 2,
+		backText.getLocalBounds().top + backText.getLocalBounds().height / 2);
+
 	SetOption(OPTION_YES);
 	//SetRectColor(yesSelectedQuad, Color::Red);
 	//SetRectColor(noSelectedQuad, Color::Blue);
@@ -1085,43 +1135,58 @@ void SaveMenuDecisionPopup::SetPos(sf::Vector2f &pos)
 	position = pos;
 	SetRectCenter(popupBGQuad, size.x, size.y, pos);
 
-	Vector2f yesOffset = Vector2f(-100, 50);
-	Vector2f noOffset = Vector2f(100, 50);
+	Vector2f yesOffset = Vector2f(-200, 50);
+	Vector2f noOffset = Vector2f(0, 50);
+	Vector2f backOffset = Vector2f(200, 50);
 
 	SetRectCenter(yesSelectedQuad, 128, 128, pos + yesOffset);
 	yesText.setPosition(pos + yesOffset);
-	SetRectCenter(noSelectedQuad, 128, 128, pos + Vector2f(100, 50));
+
+	SetRectCenter(noSelectedQuad, 128, 128, pos + noOffset);
 	noText.setPosition(pos + noOffset);
+
+	SetRectCenter(backSelectedQuad, 128, 128, pos + backOffset);
+	backText.setPosition(pos + backOffset);
 
 
 	optionText.setPosition(Vector2f(pos.x, (pos.y - size.y / 2) + 10));
 }
 
-int SaveMenuDecisionPopup::Update(ControllerState &currInput,
-	ControllerState &prevInput)
+int SaveMenuDecisionPopup::Update(ControllerDualStateQueue *controllerInput)
 {
-	if (currInput.LLeft())
+	int oldOption = currentlySelectedOption;
+	if (controllerInput->DirPressed_Left())
 	{
-		SetOption(OPTION_YES);
+		currentlySelectedOption--;
+		if (currentlySelectedOption < 0)
+		{
+			currentlySelectedOption = OPTION_BACK;
+		}
 	}
-	else if (currInput.LRight())
+	if (controllerInput->DirPressed_Right())
 	{
-		SetOption(OPTION_NO);
+		currentlySelectedOption++;
+		if (currentlySelectedOption == OPTION_NOTHING)
+		{
+			currentlySelectedOption = OPTION_YES;
+		}
 	}
 
-
-	if (currInput.A && !prevInput.A)
+	if (oldOption != currentlySelectedOption)
+	{
+		SetOption(currentlySelectedOption);
+	}
+	
+	if (controllerInput->ButtonPressed_A())
 	{
 		return currentlySelectedOption;
 	}
-	else if (currInput.B && !prevInput.B)
+	else if (controllerInput->ButtonPressed_B())
 	{
 		return OPTION_BACK;
 	}
 
 	
-	
-
 	return OPTION_NOTHING;
 }
 
@@ -1129,17 +1194,26 @@ void SaveMenuDecisionPopup::SetOption(int op)
 {
 	Color yesSelectedColor = Color( 29, 208, 9 );
 	Color noSelectedColor = Color::Red;
+	Color backSelectorColor = Color::Cyan;
 	Color unselectedColor = Color(93, 93, 93);//Color::Green;
 	currentlySelectedOption = op;
 	if (op == OPTION_YES)
 	{
 		SetRectColor( yesSelectedQuad, yesSelectedColor);
 		SetRectColor( noSelectedQuad, unselectedColor);
+		SetRectColor( backSelectedQuad, unselectedColor);
 	}
 	else if (op == OPTION_NO)
 	{
 		SetRectColor(yesSelectedQuad, unselectedColor);
 		SetRectColor(noSelectedQuad, noSelectedColor);
+		SetRectColor(backSelectedQuad, unselectedColor);
+	}
+	else if (op == OPTION_BACK)
+	{
+		SetRectColor(yesSelectedQuad, unselectedColor);
+		SetRectColor(noSelectedQuad, unselectedColor);
+		SetRectColor(backSelectedQuad, backSelectorColor);
 	}
 }
 
@@ -1150,8 +1224,10 @@ void SaveMenuDecisionPopup::Draw(sf::RenderTarget *target)
 
 	target->draw(yesSelectedQuad, 4, sf::Quads);
 	target->draw(noSelectedQuad, 4, sf::Quads);
+	target->draw(backSelectedQuad, 4, sf::Quads);
 	target->draw(yesText);
 	target->draw(noText);
+	target->draw(backText);
 	
 }
 
@@ -1160,6 +1236,6 @@ void SaveMenuDecisionPopup::SetText(const std::string &str)
 	optionText.setString(str);
 	optionText.setOrigin(optionText.getLocalBounds().left
 		+ optionText.getLocalBounds().width / 2, 0);
-	size = Vector2f(max(optionText.getGlobalBounds().width + 40.f, 500.f), 300);
+	size = Vector2f(max(optionText.getGlobalBounds().width + 40.f, 600.f), 300);
 	SetPos(position);
 }

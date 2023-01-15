@@ -27,7 +27,7 @@ WorldMap::WorldMap()
 	adventureManager = mainMenu->adventureManager;
 	
 
-	allUnlocked = true;
+	allUnlocked = false;
 
 	ship = new WorldMapShip(this);
 

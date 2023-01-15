@@ -448,6 +448,8 @@ MainMenu::MainMenu()
 	assert(currInstance == NULL);
 	currInstance = this;
 
+	adventureManager = NULL;
+
 	customCursor = NULL;
 	window = NULL;
 
@@ -833,7 +835,12 @@ MainMenu::~MainMenu()
 	delete config;
 
 	delete musicPlayer;
-	delete titleScreen;
+
+	if (titleScreen != NULL)
+	{
+		delete titleScreen;
+	}
+	
 	delete saSelector;
 	delete soundNodeList;
 
