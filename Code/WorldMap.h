@@ -370,7 +370,8 @@ struct WorldMap : TilesetManager
 	void UpdateSelectedColony();
 	void SetShipToColony(int index);
 	sf::Vector2f GetColonyCenter(int index);
-	void SetToColonyMode(int selColony);
+	void SetToColony(int selColony);
+	void SetToLevel(int selColony, int sec, int m);
 private:
 	void SetupAsteroids();
 	void LoadAdventure(const std::string &adventureName);

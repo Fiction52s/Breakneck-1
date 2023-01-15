@@ -135,6 +135,17 @@ void AdventureManager::CreateWorldMapOnLevel(int w, int s, int m)
 	assert(worldMap == NULL);
 	worldMap = new WorldMap;
 
+	worldMap->InitSelectors();
+	//worldMap->SetDefaultSelections();
+
+	worldMap->SetToLevel(w, s, m);
+
+	
+
+	if (worldMap->CurrSelector()->numSectors == 1)
+	{
+		worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+	}
 	//worldMap->selectors[worldMap->selectedColony]->ReturnFromMap();
 	//SetMode(WORLDMAP_COLONY);
 	//worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
@@ -143,6 +154,16 @@ void AdventureManager::CreateWorldMapOnLevel(int w, int s, int m)
 	//worldMap->Update();
 
 	//musicPlayer->TransitionMusic(menuMusic, 60);
+}
+
+void AdventureManager::CreateWorldMapOnCurrLevel()
+{
+	int w = 0;
+	int s = 0;
+	int m = 0;
+	adventureFile.GetMapIndexes(currLevel->level->index, w, s, m);
+
+	CreateWorldMapOnLevel(w, s, m);
 }
 
 void AdventureManager::DestroyWorldMap()

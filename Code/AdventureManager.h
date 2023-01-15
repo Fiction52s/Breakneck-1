@@ -36,6 +36,7 @@ struct AdventureManager
 	void DrawWorldMap(sf::RenderTarget *target);
 	void CreateWorldMap();
 	void CreateWorldMapOnLevel(int w, int s, int m);
+	void CreateWorldMapOnCurrLevel();
 	void DestroyWorldMap();
 	void CreateSaveMenu();
 	void DestroySaveMenu();

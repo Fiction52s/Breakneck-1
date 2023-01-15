@@ -402,11 +402,32 @@ sf::Vector2f WorldMap::GetColonyCenter(int index)
 		colonySpr[index].getGlobalBounds().height / 2);
 }
 
-void WorldMap::SetToColonyMode(int selColony)
+void WorldMap::SetToColony(int selColony)
 {
 	state = WorldMap::COLONY;
 	selectedColony = selColony;
 	selectedLevel = 0;
+}
+
+void WorldMap::SetToLevel(int selColony, int sec, int m)
+{
+	state = WorldMap::COLONY;
+	selectedColony = selColony;
+	CurrSelector()->sectorSASelector->currIndex = sec;
+	CurrSelector()->FocusedSector()->mapSASelector->currIndex = m;
+
+	CurrSelector()->CreateBGs();
+
+	CurrSelector()->FocusedSector()->UpdateLevelStats();
+	CurrSelector()->FocusedSector()->UpdateStats();
+	CurrSelector()->FocusedSector()->UpdateMapPreview();
+
+	CurrSelector()->state = MapSelector::S_MAPSELECT;
+	CurrSelector()->FocusedSector()->UpdateMapPreview();
+
+	Update();
+
+	//CurrSelector()->FocusedSector();
 }
 
 void WorldMap::Update()

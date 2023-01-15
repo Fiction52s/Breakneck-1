@@ -266,6 +266,30 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 				adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 			}
 		}
+		else if (fromMode == RUN_ADVENTURE_MAP)
+		{
+			
+			
+			adventureManager->CreateWorldMapOnCurrLevel();
+			//adventureManager->CreateWorldMap();
+			adventureManager->CreateSaveMenu();
+
+			delete currLevel;
+			currLevel = NULL;
+			adventureManager->currLevel = NULL;
+
+			//adventureManager->worldMap->SetToLevel( adventureManager->currLevel->)
+			//adventureManager->worldMap->SetToColonyMode(0);
+			/*worldMap->selectors[worldMap->selectedColony]->ReturnFromMap();
+			SetMode(WORLDMAP_COLONY);
+			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+
+			worldMap->Update();
+
+			musicPlayer->TransitionMusic(menuMusic, 60);*/
+		}
 		
 	}
 	case SAVEMENU:
@@ -290,6 +314,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete adventureManager;
 
 			adventureManager = NULL;
+		}
+		else if (fromMode == RUN_ADVENTURE_MAP)
+		{
+			delete currLevel;
+			currLevel = NULL;
+			adventureManager->currLevel = NULL;
 		}
 
 		assert(titleScreen == NULL);
@@ -1836,7 +1866,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 void MainMenu::PlayIntroMovie()
 {
-	adventureManager->worldMap->SetToColonyMode(0);
+	adventureManager->worldMap->SetToLevel(0, 0, 0 );
 	//worldMap->testSelector->UpdateAllInfo();
 
 	SetMode(INTROMOVIE);
@@ -1903,6 +1933,8 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 	m->currLevel = new GameSession(&mp);
 	m->currLevel->level = lev;
 	m->currLevel->boostEntrance = true;
+
+	m->adventureManager->currLevel = m->currLevel;
 	//
 	
 	//
@@ -1937,7 +1969,7 @@ void MainMenu::ReturnToWorldAfterLevel()
 	
 	musicPlayer->TransitionMusic(menuMusic, 60);
 
-	LoadMode(WORLDMAP);
+	LoadMode(WORLDMAP_COLONY);
 	//int numWorlds = worldMap->adventurePlanet->numWorlds;
 	//if (worldMap->selectedColony == numWorlds - 1)
 	//{
@@ -2245,8 +2277,8 @@ void MainMenu::HandleMenuMode()
 		{
 			//currFile->Save();
 
-			delete currLevel;
-			currLevel = NULL;
+			//delete currLevel;
+			//currLevel = NULL;
 			fader->Clear();
 
 			ReturnToWorldAfterLevel();
@@ -2255,8 +2287,7 @@ void MainMenu::HandleMenuMode()
 		{
 			if (!adventureManager->TryToGoToNextLevel())
 			{
-				delete currLevel;
-				currLevel = NULL;
+				
 
 				ReturnToWorldAfterLevel();
 			}
@@ -2299,8 +2330,7 @@ void MainMenu::HandleMenuMode()
 
 			//currFile->Save();
 
-			delete currLevel;
-			currLevel = NULL;
+			
 
 			LoadMode(TITLEMENU);
 		}
@@ -2334,8 +2364,9 @@ void MainMenu::HandleMenuMode()
 
 			//currFile->Save();
 
-			delete currLevel;
-			currLevel = NULL;
+			//might leak
+			//delete currLevel;
+			//currLevel = NULL;
 
 			ReturnToWorldAfterLevel();
 
