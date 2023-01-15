@@ -320,6 +320,9 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete currLevel;
 			currLevel = NULL;
 			adventureManager->currLevel = NULL;
+
+			delete adventureManager;
+			adventureManager = NULL;
 		}
 
 		assert(titleScreen == NULL);
