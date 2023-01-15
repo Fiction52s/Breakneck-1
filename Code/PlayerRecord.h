@@ -145,7 +145,7 @@ struct ReplayPlayer
 	~ReplayPlayer();
 	bool OpenReplay(const std::string &fileName);
 	void Reset();
-	void UpdateInput(ControllerState &state);
+	void UpdateInput(ControllerDualStateQueue *controllerInput);
 	int *inputBuffer;
 	Actor *player;
 	int frame;

@@ -446,18 +446,19 @@ void ReplayPlayer::Reset()
 	player->currPowerMode = header.startPowerMode;
 }
 
-void ReplayPlayer::UpdateInput(ControllerState &state)
+void ReplayPlayer::UpdateInput(ControllerDualStateQueue *controllerInput)
 {
 	if (!init || frame == numTotalFrames)
 		return;
 
-	bool start = state.start;
-	bool back = state.back;
+	bool start = controllerInput->GetCurrState().start;
+	bool back = controllerInput->GetCurrState().back;
 
-	state.SetFromCompressedState(inputBuffer[frame]);
+	controllerInput->states[0].SetFromCompressedState(inputBuffer[frame]);
+	//state.SetFromCompressedState(inputBuffer[frame]);
 
-	state.start = start;
-	state.back = back;
+	controllerInput->states[0].start = start;
+	controllerInput->states[0].back = back;
 
 	++frame;
 }

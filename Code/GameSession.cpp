@@ -4512,7 +4512,8 @@ void GameSession::RepPlayerUpdateInput()
 	if (repPlayer != NULL)
 	{
 		//currently only records 1 player replays. fix this later
-		repPlayer->UpdateInput(GetCurrInput(0));
+
+		repPlayer->UpdateInput(controllerStates[0]);
 	}
 }
 
