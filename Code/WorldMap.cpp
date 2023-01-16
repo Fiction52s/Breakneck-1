@@ -206,6 +206,8 @@ void WorldMap::SetupAsteroids()
 
 void WorldMap::UpdateWorldStats()
 {
+	assert(selectedColony >= 0);
+
 	int sel = selectedColony + 1;
 
 	worldNameText.setString("World " + to_string(sel));
@@ -373,7 +375,21 @@ void WorldMap::UpdateSelectedColony()
 	Vector2f shipPos = ship->GetPosition();
 	Vector2f colMiddle;
 
-	for (int i = 0; i < adventureManager->adventurePlanet->numWorlds; ++i)
+	int numCompletedWorlds;
+	if (allUnlocked)
+	{
+		numCompletedWorlds = adventureManager->adventurePlanet->numWorlds;
+	}
+	else
+	{
+		SaveFile *saveFile = adventureManager->currSaveFile;
+		numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventureManager->adventurePlanet);
+	}
+
+	int numUnlockedWorlds = max(1, numCompletedWorlds);
+
+	//for (int i = 0; i < adventureManager->adventurePlanet->numWorlds; ++i)
+	for (int i = 0; i < numUnlockedWorlds; ++i)
 	{
 		colMiddle = colonySpr[i].getPosition() + Vector2f(colonySpr[i].getGlobalBounds().width / 2,
 			colonySpr[i].getGlobalBounds().height / 2);
@@ -392,6 +408,7 @@ void WorldMap::SetShipToColony(int index)
 {
 	selectedColony = index;
 	UpdateColonySelect();
+	UpdateWorldStats();
 
 	ship->SetPosition(GetColonyCenter(selectedColony));
 }
@@ -891,7 +908,21 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(worldActiveQuadsZoomed + i * 4, 4, sf::Quads, ts_colonyActiveZoomed[i]->texture);
 	}
 
-	selectableRingShader.setUniform("prop", energyFactor);
+	int selectableBreathe = 120;
+	ff = asteroidFrame % (selectableBreathe);
+	float selectableFactor = 0;
+	if (ff < selectableBreathe / 2)
+	{
+		selectableFactor = (float)ff / (selectableBreathe / 2);
+		//c.a = std::max(20.f, (float)c.a);
+	}
+	else
+	{
+		selectableFactor = 1.f - (float)(ff - selectableBreathe / 2) / (selectableBreathe / 2);
+		//c.a = std::max(20.f, (float)c.a);
+	}
+
+	selectableRingShader.setUniform("prop", selectableFactor);
 	rt->draw(worldSelectableQuads, 4 * ADVENTURE_MAX_NUM_WORLDS, sf::Quads, &selectableRingShader);
 	
 

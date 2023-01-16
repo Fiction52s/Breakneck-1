@@ -3,6 +3,8 @@
 #include "ScoreDisplay.h"
 #include "HUD.h"
 #include "SoundTypes.h"
+#include "AdventureManager.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -23,6 +25,14 @@ void Actor::GOALKILL_End()
 	sess->scoreDisplay->Activate();
 	sess->hud->Hide(60);
 	ActivateSound(PlayerSounds::S_LEVEL_COMPLETE);
+
+	if (owner != NULL)
+	{
+		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+		{
+			adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
+		}
+	}
 }
 
 void Actor::GOALKILL_Change()

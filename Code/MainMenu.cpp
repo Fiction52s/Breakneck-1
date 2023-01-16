@@ -2253,10 +2253,10 @@ void MainMenu::HandleMenuMode()
 			(GameSession::GameResultType)currLevel->Run();
 
 
-		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
+		/*if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 		{
 			adventureManager->CompleteCurrentMap(currLevel->level, currLevel->totalFramesBeforeGoal);
-		}
+		}*/
 
 
 		switch (result)

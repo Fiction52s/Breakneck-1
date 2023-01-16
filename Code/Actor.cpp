@@ -7730,10 +7730,10 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+				/*if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
 					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-				}
+				}*/
 
 
 				if (owner->repPlayer != NULL)
@@ -7758,10 +7758,10 @@ void Actor::HandleWaitingScoreDisplay()
 			//turn on ghosts
 			if (owner != NULL)
 			{
-				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+				/*if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
 					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-				}
+				}*/
 
 				if (owner->repPlayer != NULL)
 				{
@@ -7781,10 +7781,10 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+				/*if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 				{
 					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-				}
+				}*/
 
 				owner->CleanupGhosts();
 
