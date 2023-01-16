@@ -332,6 +332,14 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete adventureManager;
 			adventureManager = NULL;
 		}
+		else if (fromMode == ADVENTURETUTORIAL)
+		{
+			assert(adventureManager != NULL);
+
+			delete adventureManager;
+
+			adventureManager = NULL;
+		}
 
 		assert(titleScreen == NULL);
 		titleScreen = new TitleScreen(this);
@@ -2466,6 +2474,12 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (result == GameSession::GR_EXITGAME)
 		{
+			delete currTutorialSession;
+			currTutorialSession = NULL;
+
+			//delete adventureManager;
+			//adventureManager = NULL;
+
 			SetMode(EXITING);
 			quit = true;
 		}
