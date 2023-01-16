@@ -326,8 +326,8 @@ struct MainMenu
 	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 
-	sf::IntRect GetButtonIconTile(int controllerIndex, int baseButtonIndex);
-	Tileset * GetButtonIconTileset(int controllerIndex);
+	sf::IntRect GetButtonIconTile(ControllerDualStateQueue *controllerInput, ControllerSettings::ButtonType button);
+	Tileset * GetButtonIconTileset(int controllerType);
 
 	sf::RenderWindow *window;
 	sf::View v;

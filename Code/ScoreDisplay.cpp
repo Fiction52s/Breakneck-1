@@ -547,59 +547,31 @@ void SelectBar::Reset()
 	frame = 0;
 
 	Session *sess = parent->sess;
-
-	//int tileOffset = 0;
-
-	int ct = sess->controllerStates[0]->GetControllerType();
 	
-	int buttonIndex = 0;
+	ControllerSettings::ButtonType button = ControllerSettings::BUTTONTYPE_Count;
 
 	if (row == 0) //continue
 	{
-		buttonIndex = ControllerSettings::BUTTONTYPE_JUMP;//0
+		button = ControllerSettings::BUTTONTYPE_JUMP;//0
 	}
 	else if (row == 1) //exit
 	{
-		buttonIndex = ControllerSettings::BUTTONTYPE_DASH;//2;
+		button = ControllerSettings::BUTTONTYPE_DASH;//2;
 	}
 	else if (row == 2) //retry
 	{
-		buttonIndex = ControllerSettings::BUTTONTYPE_SPECIAL;//1;
+		button = ControllerSettings::BUTTONTYPE_SPECIAL;//1;
 	}
 	else if (row == 3)//watch
 	{
-		buttonIndex = ControllerSettings::BUTTONTYPE_ATTACK;
+		button = ControllerSettings::BUTTONTYPE_ATTACK;
 	}
 	else if (row == 4)//race ghost
 	{
-		buttonIndex = ControllerSettings::BUTTONTYPE_SHIELD;
+		button = ControllerSettings::BUTTONTYPE_SHIELD;
 	}
 
-
-	/*bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;
-	break;
-}
-		case CTYPE_GAMECUBE:
-			bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1; /*/
-	switch (ct)
-	{
-	case CTYPE_XBOX:
-	{
-		buttonIndex = sess->controllerStates[0]->con->filter[buttonIndex] - 1;
-		break;
-	}
-	case CTYPE_GAMECUBE:
-	{
-		buttonIndex = sess->controllerStates[0]->con->filter[buttonIndex] - 1;
-		break;
-	}
-	case CTYPE_KEYBOARD:
-	{
-		buttonIndex = sess->controllerStates[0]->con->keySettings.buttonMap[buttonIndex];
-	}
-	}
-
-	IntRect ir = parent->sess->GetButtonIconTile(0, buttonIndex);
+	IntRect ir = sess->mainMenu->GetButtonIconTile(sess->controllerStates[0], button);
 	buttonIconSprite.setTextureRect(ir);
 
 	if (ir.width == 128)

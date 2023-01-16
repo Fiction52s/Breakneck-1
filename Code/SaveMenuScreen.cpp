@@ -258,6 +258,21 @@ SaveMenuScreen::SaveMenuScreen()
 	asteroidFrameBack = asteroidScrollFrames0 / 2;
 	asteroidFrameFront = asteroidScrollFrames1 / 2;
 
+	Vector2f start(100, 900);
+	for (int i = 0; i < 4; ++i)
+	{
+		SetRectCenter(actionButtonIcons + i * 4, 128, 128, start + Vector2f(200 * i, 0));
+	}
+
+	ControllerSettings::ButtonType button = ControllerSettings::BUTTONTYPE_JUMP;
+	IntRect ir = mainMenu->GetButtonIconTile(mainMenu->adventureManager->controllerInput, button);
+	SetRectSubRect(actionButtonIcons, ir);
+
+	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+	//button = ControllerSettings::BUTTONTYPE_SPECIAL;
+	//IntRect ir = mainMenu->GetButtonIconTile(mainMenu->adventureManager->controllerInput, button);
+	//SetRectSubRect(actionButtonIcons, ir);
+
 	//Reset();
 
 	//selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
@@ -969,6 +984,8 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	
 	saveTexture->draw(skinButtonSpr);
 	saveTexture->draw(skinButtonIconSpr);
+
+	saveTexture->draw(actionButtonIcons, 4 * 4, sf::Quads, ts_buttons->texture);
 
 	saveTexture->display();
 	const Texture &saveTex = saveTexture->getTexture();

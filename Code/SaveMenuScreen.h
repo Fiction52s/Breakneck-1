@@ -161,6 +161,9 @@ struct SaveMenuScreen : TilesetManager
 	float transparency;
 	float fadeOut;
 	sf::Vertex blackQuad[4];
+	sf::Vertex actionButtonIcons[4 * 4];
+
+	Tileset *ts_buttons;
 
 	Tileset *ts_kinJump[6];
 	Tileset *ts_kinClouds;

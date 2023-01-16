@@ -1458,10 +1458,8 @@ void MainMenu::GGPOOption()
 	delete edit;
 }
 
-sf::IntRect MainMenu::GetButtonIconTile(int controllerIndex, int baseButtonIndex)
+sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInput, ControllerSettings::ButtonType button)
 {
-	ControllerType controllerType = CONTROLLERS.GetWindowsController(controllerIndex)->GetCType();
-
 	/*CTYPE_XBOX,
 		CTYPE_GAMECUBE,
 		CTYPE_PS4,
@@ -1469,23 +1467,42 @@ sf::IntRect MainMenu::GetButtonIconTile(int controllerIndex, int baseButtonIndex
 		CTYPE_KEYBOARD,
 		CTYPE_NONE,*/
 
-	switch (controllerType)
+	int buttonIndex = 0;
+
+	int cType = controllerInput->GetControllerType();
+
+	switch (cType)
 	{
 	case CTYPE_XBOX:
-		return ts_buttonIcons->GetSubRect(baseButtonIndex);
-	case CTYPE_GAMECUBE:
-		return ts_buttonIcons->GetSubRect(baseButtonIndex + 16 * 2);
-	case CTYPE_PS5:
-	case CTYPE_PS4:
-		return ts_buttonIcons->GetSubRect(baseButtonIndex + 16);
-	case CTYPE_KEYBOARD:
-		return ts_keyboardIcons->GetSubRect(baseButtonIndex);
+	{
+		buttonIndex = (controllerInput->con->filter[button] - 1);
+		break;
 	}
+	case CTYPE_GAMECUBE:
+	{
+		buttonIndex = (controllerInput->con->filter[button] - 1) + 16 * 2;
+		break;
+	}
+	case CTYPE_PS4:
+	case CTYPE_PS5:
+	{
+		//buttonIndex + 16
+		break;
+	}
+	case CTYPE_KEYBOARD:
+	{
+		buttonIndex = controllerInput->con->keySettings.buttonMap[button];
+	}
+	}
+
+	Tileset *ts = GetButtonIconTileset(cType);
+
+	return ts->GetSubRect(buttonIndex);
 }
 
-Tileset * MainMenu::GetButtonIconTileset(int controllerIndex )
+Tileset * MainMenu::GetButtonIconTileset(int controllerType )
 {
-	ControllerType controllerType = CONTROLLERS.GetWindowsController(controllerIndex)->GetCType();//GetController(controllerIndex)->GetCType();
+	//ControllerType controllerType = CONTROLLERS.GetWindowsController(controllerIndex)->GetCType();//GetController(controllerIndex)->GetCType();
 
 	if (controllerType == CTYPE_KEYBOARD)
 	{
@@ -1857,6 +1874,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	MatchParams mp;
 	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->currSaveFile];
 	mp.mapPath = levelPath;
+	mp.controllerStateVec[0] = adventureManager->controllerInput;
 
 	currLevel = new GameSession(&mp);
 	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
@@ -2446,6 +2464,9 @@ void MainMenu::HandleMenuMode()
 
 		if (result == GameSession::GR_EXITGAME)
 		{
+			delete currTutorialSession;
+			currTutorialSession = NULL;
+
 			SetMode(EXITING);
 			quit = true;
 		}
