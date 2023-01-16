@@ -118,6 +118,9 @@ void MainMenu::LevelLoad(GameSession *gs)
 		saveMenu = NULL;
 	}*/
 	
+	adventureManager->DestroySaveMenu();
+	adventureManager->DestroyWorldMap();
+
 
 	GameSession::sLoad(gs);
 }
@@ -178,8 +181,6 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case RUN_ADVENTURE_MAP:
 	{
-		adventureManager->DestroySaveMenu();
-		adventureManager->DestroyWorldMap();
 		break;
 	}
 	case RUN_FREEPLAY_MAP:
@@ -224,6 +225,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	{
 		if (fromMode == ADVENTURETUTORIAL)
 		{
+			adventureManager->CreateWorldMap();
+			adventureManager->CreateSaveMenu();
+
+			adventureManager->worldMap->InitSelectors();
+			adventureManager->worldMap->SetShipToColony(0);
+			adventureManager->worldMap->state = WorldMap::PLANET;
 			//assert(adventureManager->worldMap == NULL);
 			//assert(adventureManager->saveMenu == NULL);
 			//adventureManager->worldMap = new WorldMap(this);
@@ -238,6 +245,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		else if (fromMode == RUN_ADVENTURE_MAP)
 		{
 			adventureManager->CreateWorldMap();
+			adventureManager->CreateSaveMenu();
 			//assert(worldMap == NULL);
 			//assert(saveMenu == NULL);
 			//worldMap = new WorldMap(this);
@@ -344,11 +352,20 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	
 	case TUTORIAL:
+	{
+		assert(currTutorialSession == NULL);
+		currTutorialSession = new GameSession(menuMatchParams);
+		GameSession::sLoad(currTutorialSession);
+		break;
+	}
 	case ADVENTURETUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
 		currTutorialSession = new GameSession(menuMatchParams);
 		GameSession::sLoad(currTutorialSession);
+
+		adventureManager->DestroyWorldMap();
+		adventureManager->DestroySaveMenu();
 		break;
 	}
 	case RUN_FREEPLAY_MAP:
@@ -394,6 +411,10 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case RUN_ADVENTURE_MAP:
 	{
+		//gets loaded with an adventure loading screen, so doesn't ever use transitionmode
+
+		//adventureManager->DestroySaveMenu();
+		//adventureManager->DestroyWorldMap();
 		/*assert(worldMap != NULL && saveMenu != NULL);
 
 		delete worldMap;
@@ -2490,7 +2511,7 @@ void MainMenu::HandleMenuMode()
 				*menuMatchParams = mp;
 
 				musicPlayer->FadeOutCurrentMusic(30);
-				LoadMode(MainMenu::ADVENTURETUTORIAL);
+				LoadMode(ADVENTURETUTORIAL);
 			}
 		}
 
@@ -2980,7 +3001,7 @@ void MainMenu::HandleMenuMode()
 			//LoadMode(RUN_FREEPLAY_MAP);
 			//RunFreePlayMap(freeplayScreen->GetMatchParams().mapPath.string());
 			*menuMatchParams = freeplayScreen->GetMatchParams();
-			LoadMode(MainMenu::RUN_FREEPLAY_MAP);
+			LoadMode(RUN_FREEPLAY_MAP);
 		}
 		else if (freeplayScreen->action == FreeplayScreen::A_BACK)
 		{
