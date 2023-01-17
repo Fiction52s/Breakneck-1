@@ -258,17 +258,34 @@ SaveMenuScreen::SaveMenuScreen()
 	asteroidFrameBack = asteroidScrollFrames0 / 2;
 	asteroidFrameFront = asteroidScrollFrames1 / 2;
 
-	Vector2f start(100, 900);
+	Vector2f start(177.5, 987);
+	//180, 535, 888, 1243
+	//355 each
+	//177.5
+	
 	for (int i = 0; i < 4; ++i)
 	{
-		SetRectCenter(actionButtonIcons + i * 4, 128, 128, start + Vector2f(200 * i, 0));
+		SetRectCenter(actionButtonIcons + i * 4, 128, 128, start + Vector2f(355 * i, 0));
 	}
 
+	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+
 	ControllerSettings::ButtonType button = ControllerSettings::BUTTONTYPE_JUMP;
-	IntRect ir = mainMenu->GetButtonIconTile(mainMenu->adventureManager->controllerInput, button);
+	IntRect ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
 	SetRectSubRect(actionButtonIcons, ir);
 
-	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+	button = ControllerSettings::BUTTONTYPE_SHIELD;
+	ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
+	SetRectSubRect(actionButtonIcons + 4 * 1, ir);
+
+	button = ControllerSettings::BUTTONTYPE_DASH;
+	ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
+	SetRectSubRect(actionButtonIcons + 4 * 2, ir);
+
+	button = ControllerSettings::BUTTONTYPE_SPECIAL;
+	ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
+	SetRectSubRect(actionButtonIcons + 4 * 3, ir);
+
 	//button = ControllerSettings::BUTTONTYPE_SPECIAL;
 	//IntRect ir = mainMenu->GetButtonIconTile(mainMenu->adventureManager->controllerInput, button);
 	//SetRectSubRect(actionButtonIcons, ir);
@@ -332,8 +349,7 @@ bool SaveMenuScreen::HandleEvent(sf::Event ev)
 
 bool SaveMenuScreen::Update()
 {
-	Tileset * ts_buttons = mainMenu->GetButtonIconTileset(0);
-	IntRect ir = mainMenu->GetButtonIconTile(0, 4);
+	IntRect ir = mainMenu->GetButtonIconTile( mainMenu->adventureManager->controllerInput, ControllerSettings::ButtonType::BUTTONTYPE_ATTACK);
 	ts_buttons->SetSpriteTexture(skinButtonIconSpr);
 	skinButtonIconSpr.setTextureRect(ir);
 

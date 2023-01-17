@@ -890,7 +890,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void RunGGPOModeUpdate();
 	void SetMatchPlacings(int p1Placing, int p2Placing = -1, int p3Placing = -1, int p4Placing = -1);
 	bool IsParallelSession() { return parallelSessionIndex >= 0; }
-	sf::IntRect GetButtonIconTile(int controllerIndex, int baseButtonIndex);
+	sf::IntRect GetButtonIconTile(int controllerIndex, ControllerSettings::ButtonType button);
 	Tileset * GetButtonIconTileset(int controllerIndex);
 };
 

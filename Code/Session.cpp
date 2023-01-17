@@ -8519,48 +8519,12 @@ void Session::SetMatchPlacings(int p1Placing, int p2Placing, int p3Placing, int 
 	matchPlacings[3] = p4Placing;
 }
 
-sf::IntRect Session::GetButtonIconTile(int controllerIndex, int baseButtonIndex)
+sf::IntRect Session::GetButtonIconTile(int cIndex, ControllerSettings::ButtonType button )
 {
-	int controllerType = controllerStates[controllerIndex]->GetControllerType();
-
-	switch (controllerType)
-	{
-	case CTYPE_XBOX:
-		return mainMenu->ts_buttonIcons->GetSubRect(baseButtonIndex);
-	case CTYPE_GAMECUBE:
-		return mainMenu->ts_buttonIcons->GetSubRect(baseButtonIndex + 16 * 2);
-	case CTYPE_PS5:
-	case CTYPE_PS4:
-		return mainMenu->ts_buttonIcons->GetSubRect(baseButtonIndex + 16);
-	case CTYPE_KEYBOARD:
-	{
-		if (baseButtonIndex < 12 * 6)
-		{
-			//clean this up more later when alex updates the image
-			return mainMenu->ts_keyboardIcons->GetSubRect(baseButtonIndex);
-		}
-		else
-		{
-			return mainMenu->ts_keyboardIcons->GetSubRect(0);
-		}
-	}
-		
-	}
-
-	assert(0);
-	return sf::IntRect();
+	return mainMenu->GetButtonIconTile(controllerStates[cIndex], button);
 }
 
-Tileset * Session::GetButtonIconTileset(int controllerIndex)
+Tileset * Session::GetButtonIconTileset(int cIndex)
 {
-	int controllerType = controllerStates[controllerIndex]->GetControllerType();
-
-	if (controllerType == CTYPE_KEYBOARD)
-	{
-		return mainMenu->ts_keyboardIcons;
-	}
-	else
-	{
-		return mainMenu->ts_buttonIcons;
-	}
+	return mainMenu->GetButtonIconTileset(controllerStates[cIndex]->GetControllerType());
 }

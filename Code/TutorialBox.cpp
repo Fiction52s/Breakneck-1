@@ -137,24 +137,24 @@ void TutorialBox::SetText(const std::string &str)
 
 		
 
-		int cType = sess->controllerStates[0]->GetControllerType();
-		int bIndex = 0;
-		switch (cType)
-		{
-		case CTYPE_XBOX:
-		{
-			bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;
-			break;
-		}
-		case CTYPE_GAMECUBE:
-			bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
-			break;
-		case CTYPE_KEYBOARD:
-		{
-			bIndex = sess->controllerStates[0]->con->keySettings.buttonMap[buttonInfos[i].buttonType];//filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
-			break;
-		}
-		}
+		//int cType = sess->controllerStates[0]->GetControllerType();
+		//int bIndex = 0;
+		//switch (cType)
+		//{
+		//case CTYPE_XBOX:
+		//{
+		//	bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;
+		//	break;
+		//}
+		//case CTYPE_GAMECUBE:
+		//	bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
+		//	break;
+		//case CTYPE_KEYBOARD:
+		//{
+		//	bIndex = sess->controllerStates[0]->con->keySettings.buttonMap[buttonInfos[i].buttonType];//filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
+		//	break;
+		//}
+		//}
 		//dash = x
 		//jump = a
 		//attack = rightshoulder
@@ -162,7 +162,8 @@ void TutorialBox::SetText(const std::string &str)
 		//rightwire = r2
 		//leftwire = l2
 
-		SetRectSubRect(buttonQuad + i * 4, sess->GetButtonIconTile(0, bIndex));
+		ControllerSettings::ButtonType bType = (ControllerSettings::ButtonType)buttonInfos[i].buttonType;
+		SetRectSubRect(buttonQuad + i * 4, sess->GetButtonIconTile(0, bType));
 	}
 	
 	

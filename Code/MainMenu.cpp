@@ -1467,6 +1467,8 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInpu
 		CTYPE_KEYBOARD,
 		CTYPE_NONE,*/
 
+	
+
 	int buttonIndex = 0;
 
 	int cType = controllerInput->GetControllerType();
@@ -1475,12 +1477,12 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInpu
 	{
 	case CTYPE_XBOX:
 	{
-		buttonIndex = (controllerInput->con->filter[button] - 1);
+		buttonIndex = (controllerInput->con->filter[button]);// -1);
 		break;
 	}
 	case CTYPE_GAMECUBE:
 	{
-		buttonIndex = (controllerInput->con->filter[button] - 1) + 16 * 2;
+		buttonIndex = (controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
 		break;
 	}
 	case CTYPE_PS4:
@@ -1492,6 +1494,72 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInpu
 	case CTYPE_KEYBOARD:
 	{
 		buttonIndex = controllerInput->con->keySettings.buttonMap[button];
+
+
+		//if (baseButtonIndex < 12 * 6)
+		//{
+		//	//clean this up more later when alex updates the image
+		//	return mainMenu->ts_keyboardIcons->GetSubRect(baseButtonIndex);
+		//}
+		//else
+		//{
+		//	return mainMenu->ts_keyboardIcons->GetSubRect(0);
+		//}
+	}
+	}
+
+	Tileset *ts = GetButtonIconTileset(cType);
+
+	return ts->GetSubRect(buttonIndex);
+}
+
+sf::IntRect MainMenu::GetButtonIconTileUnfiltered(ControllerDualStateQueue *controllerInput, ControllerSettings::ButtonType button)
+{
+	/*CTYPE_XBOX,
+	CTYPE_GAMECUBE,
+	CTYPE_PS4,
+	CTYPE_PS5,
+	CTYPE_KEYBOARD,
+	CTYPE_NONE,*/
+
+
+
+	int buttonIndex = 0;
+
+	int cType = controllerInput->GetControllerType();
+
+	switch (cType)
+	{
+	case CTYPE_XBOX:
+	{
+		buttonIndex = button;//(controllerInput->[button]);// -1);
+		break;
+	}
+	case CTYPE_GAMECUBE:
+	{
+		buttonIndex = button + 16 * 2;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
+		break;
+	}
+	case CTYPE_PS4:
+	case CTYPE_PS5:
+	{
+		//buttonIndex + 16
+		break;
+	}
+	case CTYPE_KEYBOARD:
+	{
+		buttonIndex = controllerInput->con->keySettings.buttonMap[button];
+
+
+		//if (baseButtonIndex < 12 * 6)
+		//{
+		//	//clean this up more later when alex updates the image
+		//	return mainMenu->ts_keyboardIcons->GetSubRect(baseButtonIndex);
+		//}
+		//else
+		//{
+		//	return mainMenu->ts_keyboardIcons->GetSubRect(0);
+		//}
 	}
 	}
 
