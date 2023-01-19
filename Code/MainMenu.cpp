@@ -1513,7 +1513,7 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInpu
 	return ts->GetSubRect(buttonIndex);
 }
 
-sf::IntRect MainMenu::GetButtonIconTileUnfiltered(ControllerDualStateQueue *controllerInput, ControllerSettings::ButtonType button)
+sf::IntRect MainMenu::GetButtonIconTileForMenu(ControllerDualStateQueue *controllerInput, XBoxButton button)
 {
 	/*CTYPE_XBOX,
 	CTYPE_GAMECUBE,
@@ -1548,7 +1548,25 @@ sf::IntRect MainMenu::GetButtonIconTileUnfiltered(ControllerDualStateQueue *cont
 	}
 	case CTYPE_KEYBOARD:
 	{
-		buttonIndex = controllerInput->con->keySettings.buttonMap[button];
+		switch (buttonIndex)
+		{
+		case XBOX_A:
+			buttonIndex = 25; //Z
+			break;
+		case XBOX_X:
+			buttonIndex = 25; //Z
+			break;
+		case XBOX_Y:
+			buttonIndex = 25; //Z
+			break;
+		case XBOX_B:
+			buttonIndex = 25; //Z
+			break;
+		default:
+			buttonIndex = 0;
+			break;
+		}
+		//buttonIndex = controllerInput->con->keySettings.buttonMap[button];
 
 
 		//if (baseButtonIndex < 12 * 6)

@@ -21,6 +21,9 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	
 
 	MainMenu *mainMenu = ms->mainMenu;
+
+	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+
 	WorldMap *worldMap = ms->worldMap;
 	bg = NULL;
 
@@ -51,7 +54,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
 	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
 	ts_mapSelectOptions = worldMap->GetSizedTileset("Menu/LevelSelect/map_select_options_384x80.png");
-	ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
+	//ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
 
 	ts_levelSelectNumbers = worldMap->GetSizedTileset("Menu/LevelSelect/level_select_number_32x32.png");
 
@@ -291,8 +294,9 @@ void MapSector::Draw(sf::RenderTarget *target)
 				{
 					numOptionsShown = 1;
 				}
+
 				target->draw(levelSelectOptionQuads, numOptionsShown * 4, sf::Quads, ts_mapSelectOptions->texture);
-				target->draw(levelSelectOptionButtonQuads, numOptionsShown * 4, sf::Quads, ts_mapOptionButtons->texture);
+				target->draw(levelSelectOptionButtonQuads, numOptionsShown * 4, sf::Quads, ts_buttons->texture);
 
 				target->draw(levelNumberQuads, numLevels * 4, sf::Quads, ts_levelSelectNumbers->texture);
 			}
@@ -1036,26 +1040,27 @@ void MapSector::UpdateSelectorSprite()
 
 void MapSector::UpdateOptionButtons()
 {
-	ControllerType ct = CONTROLLERS.GetWindowsController(0)->GetCType();//ms->mainMenu->GetController(0)->GetCType();
-	int tileOffset = 0;
-	switch (ct)
-	{
-	case ControllerType::CTYPE_XBOX:
-		tileOffset = 0;
-		break;
-	case ControllerType::CTYPE_PS5:
-		tileOffset = 16 * 1;
-		break;
-	case ControllerType::CTYPE_GAMECUBE:
-		tileOffset = 16 * 2;
-		break;
-	}
+	//ControllerType ct = CONTROLLERS.GetWindowsController(0)->GetCType();//ms->mainMenu->GetController(0)->GetCType();
+	//int tileOffset = 0;
+	//switch (ct)
+	//{
+	//case ControllerType::CTYPE_XBOX:
+	//	tileOffset = 0;
+	//	break;
+	//case ControllerType::CTYPE_PS5:
+	//	tileOffset = 16 * 1;
+	//	break;
+	//case ControllerType::CTYPE_GAMECUBE:
+	//	tileOffset = 16 * 2;
+	//	break;
+	//}
 
-	int buttonIndex = 0;
-
-	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads, tileOffset + 0);
-	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+4, tileOffset + 4);
-	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+8, tileOffset + 3);
+	auto button = XBOX_A;
+	ts_buttons->SetQuadSubRect(levelSelectOptionButtonQuads, button);
+	button = XBOX_R1;
+	ts_buttons->SetQuadSubRect(levelSelectOptionButtonQuads+4, button);
+	button = XBOX_Y;
+	ts_buttons->SetQuadSubRect(levelSelectOptionButtonQuads+8, button);
 
 	
 }

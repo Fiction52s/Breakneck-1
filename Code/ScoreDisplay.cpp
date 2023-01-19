@@ -5,6 +5,7 @@
 #include "GameSession.h"
 #include "SaveFile.h"
 #include "MapHeader.h"
+#include "AdventureManager.h"
 
 using namespace std;
 using namespace sf;
@@ -110,10 +111,10 @@ int ScoreDisplay::GetNumSelectBars()
 {
 	bool isReplaying = game != NULL && game->bestReplayOn;
 	int activeSelectBars = NUM_SELECT_BARS;
-	if (!madeRecord && !isReplaying)
-	{
-		activeSelectBars = 3;
-	}
+	//if (!madeRecord && !isReplaying)
+	//{
+	//	activeSelectBars = 3;
+	//}
 
 	return activeSelectBars;
 }
@@ -548,30 +549,30 @@ void SelectBar::Reset()
 
 	Session *sess = parent->sess;
 	
-	ControllerSettings::ButtonType button = ControllerSettings::BUTTONTYPE_Count;
+	auto button = XBOX_BLANK;
 
 	if (row == 0) //continue
 	{
-		button = ControllerSettings::BUTTONTYPE_JUMP;//0
+		button = XBOX_A;//ControllerSettings::BUTTONTYPE_JUMP;//0
 	}
 	else if (row == 1) //exit
 	{
-		button = ControllerSettings::BUTTONTYPE_DASH;//2;
+		button = XBOX_X;//ControllerSettings::BUTTONTYPE_DASH;//2;
 	}
 	else if (row == 2) //retry
 	{
-		button = ControllerSettings::BUTTONTYPE_SPECIAL;//1;
+		button = XBOX_B;//ControllerSettings::BUTTONTYPE_SPECIAL;//1;
 	}
 	else if (row == 3)//watch
 	{
-		button = ControllerSettings::BUTTONTYPE_ATTACK;
+		button = XBOX_R1;//ControllerSettings::BUTTONTYPE_ATTACK;
 	}
 	else if (row == 4)//race ghost
 	{
-		button = ControllerSettings::BUTTONTYPE_SHIELD;
+		button = XBOX_Y;//ControllerSettings::BUTTONTYPE_SHIELD;
 	}
 
-	IntRect ir = sess->GetButtonIconTile(0, button);
+	IntRect ir = sess->mainMenu->GetButtonIconTileForMenu(sess->mainMenu->adventureManager->controllerInput, button);
 	buttonIconSprite.setTextureRect(ir);
 
 	if (ir.width == 128)

@@ -247,6 +247,16 @@ bool ControllerState::DashButtonDown() const
 	return X;
 }
 
+bool ControllerState::ConfirmButtonDown() const
+{
+	return A;
+}
+
+bool ControllerState::BackButtonDown() const
+{
+	return B;
+}
+
 bool ControllerState::AttackButtonDown() const
 {
 	return rightShoulder;
@@ -514,7 +524,6 @@ sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, 
 
 	return stickVec;
 }
-
 
 
 int GameController::GetGCCLeftTrigger()
@@ -2090,6 +2099,66 @@ bool ControllerStateQueue::DirPressed_Down()
 {
 	return states[0].LDown() && !states[1].LDown();
 }
+
+bool ControllerStateQueue::Unfiltered_ButtonHeld_A()
+{
+	return states[0].A;
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonPressed_A()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonHeld_B()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonPressed_B()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonHeld_X()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonPressed_X()
+{
+
+}
+bool ControllerStateQueue::Unfiltered_ButtonHeld_Y()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonPressed_Y()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonHeld_LeftShoulder()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonPressed_LeftShoulder()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonHeld_RightShoulder()
+{
+
+}
+
+bool ControllerStateQueue::Unfiltered_ButtonPressed_RightShoulder()
+{
+
+}
+
 
 int ControllerStateQueue::GetControllerType()
 {

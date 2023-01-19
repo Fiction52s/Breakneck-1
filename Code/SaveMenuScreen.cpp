@@ -270,21 +270,34 @@ SaveMenuScreen::SaveMenuScreen()
 
 	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
 
-	ControllerSettings::ButtonType button = ControllerSettings::BUTTONTYPE_JUMP;
-	IntRect ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
+	auto button = XBoxButton::XBOX_A;
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
 	SetRectSubRect(actionButtonIcons, ir);
 
-	button = ControllerSettings::BUTTONTYPE_SHIELD;
-	ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
+	button = XBoxButton::XBOX_Y;
+	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
 	SetRectSubRect(actionButtonIcons + 4 * 1, ir);
 
-	button = ControllerSettings::BUTTONTYPE_DASH;
-	ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
+	button = XBoxButton::XBOX_X;
+	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
 	SetRectSubRect(actionButtonIcons + 4 * 2, ir);
 
-	button = ControllerSettings::BUTTONTYPE_SPECIAL;
-	ir = mainMenu->GetButtonIconTileUnfiltered(mainMenu->adventureManager->controllerInput, button);
+	button = XBoxButton::XBOX_B;
+	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
 	SetRectSubRect(actionButtonIcons + 4 * 3, ir);
+
+	button = XBoxButton::XBOX_R1;
+	ts_buttons->SetSpriteTexture(skinButtonIconSpr);
+	skinButtonIconSpr.setTextureRect(mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button));
+
+	if (ts_buttons == mainMenu->ts_buttonIcons)
+	{
+		skinButtonIconSpr.setScale(.5, .5);
+	}
+	else
+	{
+		skinButtonIconSpr.setScale(1.0, 1.0);
+	}
 
 	//button = ControllerSettings::BUTTONTYPE_SPECIAL;
 	//IntRect ir = mainMenu->GetButtonIconTile(mainMenu->adventureManager->controllerInput, button);
@@ -349,19 +362,6 @@ bool SaveMenuScreen::HandleEvent(sf::Event ev)
 
 bool SaveMenuScreen::Update()
 {
-	IntRect ir = mainMenu->GetButtonIconTile( mainMenu->adventureManager->controllerInput, ControllerSettings::ButtonType::BUTTONTYPE_ATTACK);
-	ts_buttons->SetSpriteTexture(skinButtonIconSpr);
-	skinButtonIconSpr.setTextureRect(ir);
-
-	if (ts_buttons == mainMenu->ts_buttonIcons)
-	{
-		skinButtonIconSpr.setScale(.5, .5);
-	}
-	else
-	{
-		skinButtonIconSpr.setScale(1.0, 1.0);
-	}
-
 	if (frame == actionLength[action])
 	{
 		switch (action)

@@ -89,6 +89,9 @@ struct ControllerState
 	bool DashButtonDown() const;
 	bool AttackButtonDown() const;
 
+	bool ConfirmButtonDown() const;
+	bool BackButtonDown() const;
+
 
 	//0x1 = up, 0x2 = down, 0x4 = left, 
 				 //0x8 = right
@@ -147,7 +150,6 @@ struct KeyboardSettings
 
 enum XBoxButton
 {
-	XBOX_BLANK,
 	XBOX_A,
 	XBOX_B,
 	XBOX_X,
@@ -170,6 +172,7 @@ enum XBoxButton
 	XBOX_RUP,
 	XBOX_RRIGHT,
 	XBOX_RDOWN,
+	XBOX_BLANK,
 	XBOX_Count
 };	
 void SetFilterDefault( XBoxButton *filter);
@@ -272,6 +275,7 @@ private:
 struct ControllerStateQueue
 {
 	std::vector<ControllerState> states;
+	std::vector<ControllerState> unfilteredStates;
 	GameController *con;
 
 	ControllerStateQueue(int size, GameController *con );
@@ -297,6 +301,19 @@ struct ControllerStateQueue
 	bool DirPressed_Right();
 	bool DirPressed_Up();
 	bool DirPressed_Down();
+
+	bool Unfiltered_ButtonHeld_A();
+	bool Unfiltered_ButtonPressed_A();
+	bool Unfiltered_ButtonHeld_B();
+	bool Unfiltered_ButtonPressed_B();
+	bool Unfiltered_ButtonHeld_X();
+	bool Unfiltered_ButtonPressed_X();
+	bool Unfiltered_ButtonHeld_Y();
+	bool Unfiltered_ButtonPressed_Y();
+	bool Unfiltered_ButtonHeld_LeftShoulder();
+	bool Unfiltered_ButtonPressed_LeftShoulder();
+	bool Unfiltered_ButtonHeld_RightShoulder();
+	bool Unfiltered_ButtonPressed_RightShoulder();
 
 	int GetControllerType();
 	int GetIndex();

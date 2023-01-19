@@ -100,7 +100,7 @@ struct MapSector
 	sf::Text numLevelsBeatenText;
 	sf::Text sectorShardsCollectedText;
 
-	Tileset *ts_mapOptionButtons;
+	Tileset *ts_buttons;
 	Tileset *ts_levelSelectNumbers;
 	Tileset *ts_mapSelectOptions;
 	Tileset *ts_energyCircle;

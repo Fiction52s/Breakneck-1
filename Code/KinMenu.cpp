@@ -241,42 +241,42 @@ void KinMenu::UpdatePowers(Actor *player)
 
 void KinMenu::UpdateCommandButton()
 {
-	GameController *con = game->GetController(0);
-	ts_currentButtons = NULL;
-	ControllerType cType = con->GetCType();
-	switch (cType)
-	{
-	case CTYPE_XBOX:
-		ts_currentButtons = ts_xboxButtons;
-		break;
-	case CTYPE_GAMECUBE:
-		ts_currentButtons = ts_xboxButtons;
-		break;
-	case CTYPE_PS4:
-		ts_currentButtons = ts_xboxButtons;
-		break;
-	case CTYPE_NONE:
-		ts_currentButtons = ts_xboxButtons;
-		//assert(0);
-		break;
-	default:
-		//assert(0);
-		ts_currentButtons = ts_xboxButtons;
-	}
+	//GameController *con = game->GetController(0);
+	//ts_currentButtons = NULL;
+	//ControllerType cType = con->GetCType();
+	//switch (cType)
+	//{
+	//case CTYPE_XBOX:
+	//	ts_currentButtons = ts_xboxButtons;
+	//	break;
+	//case CTYPE_GAMECUBE:
+	//	ts_currentButtons = ts_xboxButtons;
+	//	break;
+	//case CTYPE_PS4:
+	//	ts_currentButtons = ts_xboxButtons;
+	//	break;
+	//case CTYPE_NONE:
+	//	ts_currentButtons = ts_xboxButtons;
+	//	//assert(0);
+	//	break;
+	//default:
+	//	//assert(0);
+	//	ts_currentButtons = ts_xboxButtons;
+	//}
 
-	int index = GetCurrIndex();
-	IntRect sub;
-	if (index == 0)
-		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_JUMP) - 1);
-	else if (index == 1)
-		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_ATTACK) - 1);
-	else if (index == 3 || index == 9)
-	{
-		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_DASH) - 1);
-	}
+	//int index = GetCurrIndex();
+	//IntRect sub;
+	//if (index == 0)
+	//	sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_JUMP) - 1);
+	//else if (index == 1)
+	//	sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_ATTACK) - 1);
+	//else if (index == 3 || index == 9)
+	//{
+	//	sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::BUTTONTYPE_DASH) - 1);
+	//}
 
-	commandSpr.setTexture(*ts_currentButtons->texture);
-	commandSpr.setTextureRect(sub);
+	//commandSpr.setTexture(*ts_currentButtons->texture);
+	//commandSpr.setTextureRect(sub);
 }
 
 void KinMenu::Update(ControllerState &curr, ControllerState &prev)

@@ -374,7 +374,7 @@ void ControlSettingsMenu::UpdateXboxButtonIcons()
 	XBoxButton *fil = pSel->currProfile->GetCurrFilter();
 	for (int i = 0; i < numActions; ++i )//ControllerSettings::ButtonType::BUTTONTYPE_LLEFT; ++i)
 	{
-		int ind = fil[i] - 1;
+		int ind = fil[i];
 		IntRect sub = ts_xboxButtons->GetSubRect(ind);
 		SetRectSubRect(buttonQuads + i * 4, sub);
 	}
