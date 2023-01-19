@@ -2032,7 +2032,12 @@ bool GameSession::SetupControlProfiles()
 		//temporary
 		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
 		currProfile = pauseMenu->GetCurrSelectedProfile();
-		controllerStates[i]->con->SetFilter(currProfile->GetCurrFilter());
+
+
+		//controllerStates[i]->con->SetFilter(currProfile->GetCurrFilter());
+
+
+
 		//GameController *con = GetController(i);
 		//currProfile->tempCType = con->GetCType();
 		//con->SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
@@ -3178,8 +3183,8 @@ int GameSession::Run()
 		for (int i = 0; i < 4; ++i)
 		{
 			//fix this soon
-			if(GetController(i) != NULL )
-				SetFilterDefault(GetController(i)->filter);
+			//if(GetController(i) != NULL )
+			//	SetFilterDefault(GetController(i)->filter);
 		}
 	}
 

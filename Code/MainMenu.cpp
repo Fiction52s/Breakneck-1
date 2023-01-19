@@ -1477,12 +1477,12 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInpu
 	{
 	case CTYPE_XBOX:
 	{
-		buttonIndex = (controllerInput->con->filter[button]);// -1);
+		buttonIndex = 0;//(controllerInput->con->filter[button]);// -1);
 		break;
 	}
 	case CTYPE_GAMECUBE:
 	{
-		buttonIndex = (controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
+		buttonIndex = 0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
 		break;
 	}
 	case CTYPE_PS4:

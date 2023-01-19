@@ -174,7 +174,7 @@ void ControlSettingsMenu::SetButtonAssoc()
 	GameController *con = CONTROLLERS.GetWindowsController(0);//NULL;//mainMenu->GetController(0);
 	pSel->currProfile->tempCType = con->GetCType();
 
-	con->SetFilter(pSel->currProfile->GetCurrFilter());
+	//con->SetFilter(pSel->currProfile->GetCurrFilter());
 
 	SaveFile *currFile = mainMenu->adventureManager->currSaveFile;
 	if (currFile != NULL)

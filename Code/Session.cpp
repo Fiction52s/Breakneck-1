@@ -7634,7 +7634,7 @@ void Session::GGPORunFrame()
 		GameController *con = GetController(i);
 
 		GetCurrInput(i) = con->GetState();
-		GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
+		//GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
 	}
 
 	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);

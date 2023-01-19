@@ -730,21 +730,22 @@ bool GameController::UpdatePS5()
 		if (y < -stickThresh)
 			m_state.rightStickPad += 1 << 1;
 	}
-	tempState = m_state;
-	m_unfilteredState = m_state;
 
-	tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-	tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
-	tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
-	tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
-	tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
-	tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-	tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
-	tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-	tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
-	tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+	//m_unfilteredState = m_state;
+	//tempState = m_state;
 
-	m_state = tempState;
+	//tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	//tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
+	//tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
+	//tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
+	//tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
+	//tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	//tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
+	//tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
+	//tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
+	//tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+
+	//m_state = tempState;
 
 	m_state.SetLeftDirection();
 
@@ -887,27 +888,23 @@ bool GameController::UpdateGCC()
 		if (y < -stickThresh)
 			m_state.rightStickPad += 1 << 1;
 	}
-	tempState = m_state;
-	m_unfilteredState = m_state;
 
 
-	//this is for the menus
-	//bool tempX = m_unfilteredState.X;
-	//m_unfilteredState.X = m_unfilteredState.Y;
-	//m_unfilteredState.Y = tempX;
+	//m_unfilteredState = m_state;
+	//tempState = m_state;
 
-	tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-	tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
-	tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
-	tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
-	tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
-	tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-	tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
-	tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-	tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
-	tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+	//tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	//tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
+	//tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
+	//tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
+	//tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
+	//tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	//tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
+	//tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
+	//tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
+	//tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
 
-	m_state = tempState;
+	//m_state = tempState;
 
 	m_state.SetLeftDirection();
 
@@ -1039,21 +1036,23 @@ bool GameController::UpdateXBOX()
 			if (y < -stickThresh)
 				m_state.rightStickPad += 1 << 1;
 		}
-		tempState = m_state;
-		m_unfilteredState = m_state;
 
-		tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-		tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
-		tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
-		tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
-		tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
-		tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-		tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
-		tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-		tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
-		tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+		//m_unfilteredState = m_state;
+		//tempState = m_state;
+		//
 
-		m_state = tempState;
+		//tempState.A = Pressed(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+		//tempState.B = Pressed(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
+		//tempState.rightShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
+		//tempState.X = Pressed(filter[ControllerSettings::BUTTONTYPE_DASH]);
+		//tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
+		//tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+		//tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
+		//tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
+		//tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
+		//tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+
+		//m_state = tempState;
 
 		m_state.SetLeftDirection();
 
@@ -1144,7 +1143,7 @@ bool GameController::UpdateKeyboard()
 		m_state.rightStickMagnitude = 0;
 		m_state.rightStickPad = 0;
 
-		m_unfilteredState = m_state;
+		//m_unfilteredState = m_state;
 		//if( m_state.leftStickMagnitude > stickThresh )
 		//{
 		//	//cout << "left stick radians: " << currInput.leftStickRadians << endl;
@@ -1279,11 +1278,6 @@ ControllerState & GameController::GetState()
 	return m_state;
 }
 
-ControllerState & GameController::GetUnfilteredState()
-{
-	return m_unfilteredState;
-}
-
 ControllerType GameController::GetCType()
 {
 	return controllerType;
@@ -1309,13 +1303,13 @@ DWORD GameController::GetIndex()
 	return m_index;
 }
 
-void GameController::SetFilter( XBoxButton *buttons )
-{
-	for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
-	{
-		filter[i] = buttons[i];
-	}
-}
+//void GameController::SetFilter( XBoxButton *buttons )
+//{
+//	for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
+//	{
+//		filter[i] = buttons[i];
+//	}
+//}
 
 
 KeyboardFilter::KeyboardFilter()
@@ -1590,11 +1584,11 @@ void AllControllers::Update()
 	for (int i = 0; i < 4; ++i)
 	{
 		windowsControllers[i]->UpdateState();
-		windowsStatesVec[i]->AddInput(windowsControllers[i]->GetUnfilteredState());
+		windowsStatesVec[i]->AddInput(windowsControllers[i]->GetState());
 	}
 
 	keyboardController->UpdateState();
-	keyboardStates->AddInput(keyboardController->GetUnfilteredState());
+	keyboardStates->AddInput(keyboardController->GetState());
 }
 
 GameController * AllControllers::GetGCController(int index)
@@ -1649,7 +1643,7 @@ void AllControllers::GCCUpdate()
 	{
 		gcControllers[i]->gcController = rawGCControllers[i];
 		gcControllers[i]->UpdateState();
-		gccStatesVec[i]->AddInput(gcControllers[i]->GetUnfilteredState());
+		gccStatesVec[i]->AddInput(gcControllers[i]->GetState());
 	}
 }
 
@@ -2099,66 +2093,6 @@ bool ControllerStateQueue::DirPressed_Down()
 {
 	return states[0].LDown() && !states[1].LDown();
 }
-
-bool ControllerStateQueue::Unfiltered_ButtonHeld_A()
-{
-	return states[0].A;
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonPressed_A()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonHeld_B()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonPressed_B()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonHeld_X()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonPressed_X()
-{
-
-}
-bool ControllerStateQueue::Unfiltered_ButtonHeld_Y()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonPressed_Y()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonHeld_LeftShoulder()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonPressed_LeftShoulder()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonHeld_RightShoulder()
-{
-
-}
-
-bool ControllerStateQueue::Unfiltered_ButtonPressed_RightShoulder()
-{
-
-}
-
 
 int ControllerStateQueue::GetControllerType()
 {

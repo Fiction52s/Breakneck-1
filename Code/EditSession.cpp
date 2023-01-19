@@ -1450,7 +1450,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 		if (con->IsConnected())
 		{
 			currProfile->tempCType = con->GetCType();
-			con->SetFilter(currProfile->GetCurrFilter());
+			//con->SetFilter(currProfile->GetCurrFilter());
 		}
 	}
 

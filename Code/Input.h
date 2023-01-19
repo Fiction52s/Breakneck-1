@@ -235,18 +235,18 @@ public:
 	///Gets the state most recently queried from the
 	///controller. Used to update external ControllerStates
 	ControllerState & GetState();
-	ControllerState & GetUnfilteredState();
-	void SetFilter( XBoxButton *buttons );
+//	ControllerState & GetUnfilteredState();
+//	void SetFilter( XBoxButton *buttons );
+//	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
 	int Pressed( XBoxButton b );
 	int GetGCCLeftTrigger();
 	int GetGCCRightTrigger();
 	void UpdateLeftStickPad();
 	
 	ButtonStick keyboardStick;
-	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
-	//ControllerState & GetKeyboardState(); //also updates
+
 	ControllerState m_state;
-	ControllerState m_unfilteredState;
+
 	KeyboardSettings keySettings;
 	static float stickThresh;
 	GCC::GCController gcController;
@@ -301,19 +301,6 @@ struct ControllerStateQueue
 	bool DirPressed_Right();
 	bool DirPressed_Up();
 	bool DirPressed_Down();
-
-	bool Unfiltered_ButtonHeld_A();
-	bool Unfiltered_ButtonPressed_A();
-	bool Unfiltered_ButtonHeld_B();
-	bool Unfiltered_ButtonPressed_B();
-	bool Unfiltered_ButtonHeld_X();
-	bool Unfiltered_ButtonPressed_X();
-	bool Unfiltered_ButtonHeld_Y();
-	bool Unfiltered_ButtonPressed_Y();
-	bool Unfiltered_ButtonHeld_LeftShoulder();
-	bool Unfiltered_ButtonPressed_LeftShoulder();
-	bool Unfiltered_ButtonHeld_RightShoulder();
-	bool Unfiltered_ButtonPressed_RightShoulder();
 
 	int GetControllerType();
 	int GetIndex();
