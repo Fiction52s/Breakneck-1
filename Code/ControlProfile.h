@@ -14,16 +14,9 @@ struct MainMenu;
 
 struct ControlProfile
 {
-	//you must make a named profile to store
-	//controls
 	ControlProfile();
-	
-	
 	std::string name;
-	ControllerType tempCType;
-	XBoxButton *GetCurrFilter();
 	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
-	XBoxButton gccFilter[ControllerSettings::BUTTONTYPE_Count];
 };
 
 struct ControlProfileManager
@@ -88,32 +81,30 @@ struct ProfileSelector
 	};
 
 	State state;
-	ProfileSelector( MainMenu *p_mainMenu,
-		sf::Vector2f &topMid );
-	~ProfileSelector();
-	void UpdateNames();
-	void UpdateButtonIcons();
-	bool SetCurrProfileByName(const std::string &name);
 	ControlProfileManager *cpm;
-	bool SaveCurrConfig();
 	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
 	XBoxButton oldFilter[ControllerSettings::BUTTONTYPE_Count];
-	
-	void Draw(sf::RenderTarget *target);
-	void SetupBoxes();
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text profileNames[NUM_BOXES];
-	//std::list<ControlProfile*> profiles;
 	VertSlider vSlider;
 	sf::Vector2f topMid;
 	int topIndex;
 	MainMenu *mainMenu;
 	ControlProfile *currProfile;
 	SingleAxisSelector *saSelector;
+
+
+	ProfileSelector( MainMenu *p_mainMenu,
+		sf::Vector2f &topMid );
+	~ProfileSelector();
+	void UpdateNames();
+	bool SetCurrProfileByName(const std::string &name);
+	bool SaveCurrConfig();
+	void Draw(sf::RenderTarget *target);
+	void SetupBoxes();
 	void MoveUp();
 	void MoveDown();
-	void Update(ControllerState &currInput,
-		ControllerState &prevInput);
+	void Update(ControllerDualStateQueue *controllerInput);
 	void UpdateBoxColor();
 	sf::Text selectedProfileText;
 	int oldCurrIndex;
@@ -150,8 +141,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	bool SaveCurrConfig();
 	
 
-	ControlProfileMenu( int playerIndex,
-		std::list<ControlProfile*> &p_profiles,
+	ControlProfileMenu(std::list<ControlProfile*> &p_profiles,
 		sf::Vector2f &p_topMid );
 	~ControlProfileMenu();
 	void SetTopMid(sf::Vector2f &tm);
@@ -160,8 +150,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	bool ButtonEvent( UIEvent eType,
 		ButtonEventParams *param );
 	void SetupBoxes();
-	void Update( ControllerState &currInput,
-		ControllerState &prevInput );
+	void Update( ControllerDualStateQueue *controllerInput );
 	void MoveUp();
 	void MoveDown();
 	void UpdateNames();
@@ -178,7 +167,6 @@ struct ControlProfileMenu : UIEventHandlerBase
 	int topIndex;
 	
 	std::list<ControlProfile*> profiles;
-	int playerIndex;
 	sf::Font font;
 
 	VertSlider vSlider;

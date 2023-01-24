@@ -207,7 +207,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 			switch (state)
 			{
 			case CONTROL:
-				csm->UpdateXboxButtonIcons();
+				//csm->UpdateXboxButtonIcons();
 				break;
 			case SOUND:
 				mainMenu->gameSettingsScreen->UpdateFromConfig();
@@ -235,8 +235,8 @@ void OptionsMenu::Update( ControllerState &currInput,
 		}
 
 		csm->currCType = cType;
-		ControlSettingsMenu::UpdateState uState = csm->Update(currInput, prevInput);
-		if (uState == ControlSettingsMenu::CONFIRM)
+		//ControlSettingsMenu::UpdateState uState = csm->Update(currInput, prevInput);
+		//if (uState == ControlSettingsMenu::CONFIRM)
 		{
 			//GameSession *owner = mainMenu->pauseMenu->owner;
 			//owner->GetController(0).SetFilter(csm->pSel->currProfile->filter);

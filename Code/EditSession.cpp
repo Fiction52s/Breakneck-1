@@ -1449,7 +1449,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 		GameController *con = GetController(i);
 		if (con->IsConnected())
 		{
-			currProfile->tempCType = con->GetCType();
+			//currProfile->tempCType = con->GetCType();
 			//con->SetFilter(currProfile->GetCurrFilter());
 		}
 	}

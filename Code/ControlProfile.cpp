@@ -34,9 +34,13 @@ const int ProfileSelector::BOX_SPACING = 10;
 //waitModeThresh[0] = 2;
 //waitModeThresh[1] = 2;
 
+ControlProfile::ControlProfile()
+{
+	SetFilterDefault(filter);
+}
 
-ControlProfileMenu::ControlProfileMenu( int p_playerIndex, list<ControlProfile*> &p_profiles, Vector2f &p_topMid )
-	:profiles( p_profiles ), playerIndex( p_playerIndex ), 
+ControlProfileMenu::ControlProfileMenu( list<ControlProfile*> &p_profiles, Vector2f &p_topMid )
+	:profiles( p_profiles ),
 	font( MainMenu::GetInstance()->arial ), topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), topMid( p_topMid )
 {
 	assert(!p_profiles.empty());
@@ -257,10 +261,9 @@ void ControlProfileMenu::SetTopMid(Vector2f &tm)
 	selectedProfileText.setPosition(topMid.x, topMid.y + 90);
 }
 
-void ControlProfileMenu::Update( ControllerState &currInput,
-		ControllerState &prevInput )
+void ControlProfileMenu::Update( ControllerDualStateQueue *controllerInput )
 {	
-	if( currInput.A && !prevInput.A )
+	if(controllerInput->ButtonPressed_A())
 	{
 		switch( state )
 		{
@@ -302,7 +305,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			}
 		}
 	}
-	else if( currInput.rightShoulder && !prevInput.rightShoulder)
+	else if( controllerInput->ButtonPressed_RightShoulder())
 	{
 		switch( state )
 		{
@@ -323,12 +326,12 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		{
 			//state = S_SELECTED;
 			state = S_EDIT_CONFIG;
-			currProfile->tempCType = tempCType;
-			XBoxButton *fil = currProfile->GetCurrFilter();
+			
+			/*XBoxButton *fil = currProfile->GetCurrFilter();
 			for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 			{
 				tempFilter[i] = fil[i];
-			}
+			}*/
 			break;
 		}
 		case S_EDIT_CONFIG:
@@ -340,7 +343,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			}
 		}
 	}
-	else if (currInput.Y && !prevInput.Y)
+	else if (controllerInput->ButtonPressed_Y())
 	{
 		switch (state)
 		{
@@ -363,7 +366,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			break;
 		}
 	}
-	if( currInput.B && !prevInput.B )
+	if( controllerInput->ButtonPressed_B() )
 	{
 		switch (state)
 		{
@@ -392,8 +395,8 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 	if( state == S_SHOWING_OPTIONS )
 	{
 
-		bool up = currInput.LUp();
-		bool down = currInput.LDown();
+		bool up = controllerInput->GetCurrState().LUp();
+		bool down = controllerInput->GetCurrState().LDown();
 
 		int changed = saSelector->UpdateIndex(up, down);
 		int cIndex = saSelector->currIndex;
@@ -454,12 +457,12 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 	}
 	else if( state == S_EDIT_CONFIG )
 	{
-		editProfileGrid->Update( currInput, prevInput );
+		//editProfileGrid->Update( currInput, prevInput );
 	}
 	else if( state == S_RECEIVE_BUTTON )
 	{
-		XBoxButton but = ReceiveInput( currInput, prevInput );
-		if( but == XBoxButton::XBOX_BLANK )
+		//XBoxButton but = ReceiveInput( currInput, prevInput );
+		/*if( but == XBoxButton::XBOX_BLANK )
 		{
 			if( currReceiveFrame == maxReceiveFrames )
 			{
@@ -470,22 +473,22 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		{
 			tempFilter[editIndex] = but;
 			state = S_EDIT_CONFIG;
-		}
+		}*/
 	}
 }
 
 bool ControlProfileMenu::SaveCurrConfig()
 {
 	bool different = false;
-	XBoxButton *fil = currProfile->GetCurrFilter();
-	for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
+	//XBoxButton *fil = currProfile->GetCurrFilter();
+	/*for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
 	{
 		if(fil[i] != tempFilter[i] )
 		{
 			fil[i] = tempFilter[i];
 			different = true;
 		}
-	}
+	}*/
 
 	//commented out for now because using mapselectionmenu or related stuff
 	//if( different ) section->mainMenu->cpm->WriteProfiles();
@@ -632,7 +635,7 @@ bool ControlProfileManager::LoadProfiles()
 						res = LoadGamecubeConfig(newProfile);
 						if (!res)
 						{
-							SetFilterDefaultGCC(newProfile->gccFilter);
+							//SetFilterDefaultGCC(newProfile->gccFilter);
 							assert(0);
 							return false;
 						}
@@ -875,7 +878,7 @@ bool ControlProfileManager::LoadGamecubeConfig(ControlProfile *profile)
 
 		assert(buttonType < ControllerSettings::BUTTONTYPE_Count);
 
-		profile->gccFilter[buttonType] = b;
+		//profile->gccFilter[buttonType] = b;
 	}
 }
 
@@ -1022,29 +1025,7 @@ bool ControlProfileManager::MoveToNextSymbolText( char startSymbol, char endSymb
 	}
 }
 
-ControlProfile::ControlProfile()
-{
-	SetFilterDefault(filter);
-	SetFilterDefaultGCC(gccFilter);
-	tempCType = ControllerType::CTYPE_NONE;
-}
 
-XBoxButton *ControlProfile::GetCurrFilter()
-{
-	if (tempCType == CTYPE_GAMECUBE)
-	{
-		return gccFilter;
-	}
-	else if (tempCType != CTYPE_NONE)
-	{
-		return filter;
-	}
-	else
-	{
-		assert(0);
-		return filter;
-	}
-}
 
 void ControlProfileManager::WriteFilter( ofstream &of, XBoxButton *filter)
 {
@@ -1083,7 +1064,7 @@ void ControlProfileManager::WriteProfiles()
 
 		WriteInputType(of, INPUT_TYPE_GAMECUBE);
 
-		WriteFilter(of, (*it)->gccFilter);
+		//WriteFilter(of, (*it)->gccFilter);
 
 		of << "\n";
 	}
@@ -1131,11 +1112,6 @@ ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
 ProfileSelector::~ProfileSelector()
 {
 	delete saSelector;
-}
-
-void ProfileSelector::UpdateButtonIcons()
-{
-
 }
 
 bool ProfileSelector::SetCurrProfileByName(const string &name)
@@ -1273,20 +1249,23 @@ void ProfileSelector::SetupBoxes()
 }
 
 
-void ProfileSelector::Update(ControllerState &currInput,
-	ControllerState &prevInput)
+void ProfileSelector::Update(ControllerDualStateQueue *controllerInput)
 {
-	if (currInput.A && !prevInput.A)
+	switch (state)
 	{
-		switch (state)
+	case S_SELECTED:
+	{
+		if (controllerInput->ButtonPressed_A())
 		{
-		case S_SELECTED:
 			state = S_SHOWING_OPTIONS;
 			UpdateNames();
 			oldCurrIndex = saSelector->currIndex;
-
-			break;
-		case S_SHOWING_OPTIONS:
+		}
+		break;
+	}
+	case S_SHOWING_OPTIONS:
+	{
+		if (controllerInput->ButtonPressed_A())
 		{
 			int test = 0;
 			state = S_SELECTED;
@@ -1303,97 +1282,18 @@ void ProfileSelector::Update(ControllerState &currInput,
 			}
 
 			selectedProfileText.setString(currProfile->name);
-			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
-				0 );
-			break;
+			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left
+				+ selectedProfileText.getLocalBounds().width / 2, 0);
 		}
-		}
+
+		break;
 	}
-	//else if (currInput.rightShoulder && !prevInput.rightShoulder)
-	//{
-	//	switch (state)
-	//	{
-	//	case S_SELECTED:
-	//	{
-	//		if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
-	//		{
-	//			if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
-	//				|| section->parent->multiSelectorState == MapSelectionMenu::MS_GHOST)
-	//			{
-	//				state = S_GHOST_SELECTOR;
-	//			}
-	//		}
-	//		break;
-	//	}
-	//	case S_SHOWING_OPTIONS:
-	//		//state = S_SELECTED;
-	//		state = S_EDIT_CONFIG;
-	//		for (int i = 0; i < ControllerSettings::Count; ++i)
-	//		{
-	//			tempFilter[i] = currProfile->filter[i];
-	//		}
-	//		break;
-	//	case S_EDIT_CONFIG:
-	//	{
-	//		//save
-	//		bool res = SaveCurrConfig();
-	//		assert(res); //if failed, file write failed
-	//		break;
-	//	}
-	//	}
-	//}
-	//else if (currInput.Y && !prevInput.Y)
-	//{
-	//	switch (state)
-	//	{
-	//	case S_SELECTED:
-	//		if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
-	//		{
-	//			if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
-	//				|| section->parent->multiSelectorState == MapSelectionMenu::MS_MUSIC)
-	//			{
-	//				state = S_MUSIC_SELECTOR;
-	//			}
-	//		}
-	//		else
-	//		{
-
-	//		}
-
-	//		break;
-	//	}
-	//}
-	//if (currInput.B && !prevInput.B)
-	//{
-	//	switch (state)
-	//	{
-	//	case S_SHOWING_OPTIONS:
-	//	{
-	//		saSelector->currIndex = oldCurrIndex;
-	//		state = S_SELECTED;
-	//		break;
-	//	}
-	//	case S_MUSIC_SELECTOR:
-	//		state = S_SELECTED;
-	//		break;
-	//	case S_GHOST_SELECTOR:
-	//		state = S_SELECTED;
-	//		break;
-	//	}
-
-
-
-	
-
-	//tomorrow: set up the edit profile grid to draw in a separate state from a selected
-	//profile. then make a popup window where you input a button to change your controls.
-	//editProfileGrid->Update( currInput, prevInput );
+	}
 
 	if (state == S_SHOWING_OPTIONS)
 	{
-
-		bool up = currInput.LUp();
-		bool down = currInput.LDown();
+		bool up = controllerInput->GetCurrState().LUp();
+		bool down = controllerInput->GetCurrState().LDown();
 
 		int changed = saSelector->UpdateIndex(up, down);
 		int cIndex = saSelector->currIndex;
@@ -1435,16 +1335,10 @@ void ProfileSelector::Update(ControllerState &currInput,
 			}
 
 			UpdateNames();
-			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
-			//controls[oldIndex]->Unfocus();
-			//controls[focusedIndex]->Focus();
 
 			vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
-
 		}
 		UpdateBoxColor();
-		//UpdateBoxesDebug();
-
 	}
 }
 
@@ -1470,8 +1364,8 @@ bool ProfileSelector::SaveCurrConfig()
 {
 	bool different = false;
 	
-	XBoxButton *fil = currProfile->GetCurrFilter();
-	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
+	//XBoxButton *fil = currProfile->GetCurrFilter();
+	/*for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 	{
 		if (oldFilter[i] != tempFilter[i])
 		{
@@ -1482,7 +1376,7 @@ bool ProfileSelector::SaveCurrConfig()
 		{		
 			fil[i] = oldFilter[i];
 		}
-	}
+	}*/
 
 	if (different)
 	{

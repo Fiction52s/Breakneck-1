@@ -37,8 +37,7 @@ struct ControlSettingsMenu
 	~ControlSettingsMenu();
 	void InitAssocSymbols();
 	XBoxButton CheckXBoxInput(ControllerState &currInput);
-	UpdateState Update(ControllerState &currInput, 
-		ControllerState &prevInput);
+	UpdateState Update(ControllerDualStateQueue *controllerInput);
 	void UpdateControlIcons();
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
@@ -48,7 +47,6 @@ struct ControlSettingsMenu
 
 	void SetActionTile(int actionIndex, int actionType);
 	void Draw(sf::RenderTarget *target);
-	void UpdateXboxButtonIcons();
 	sf::Vertex *actionQuads;
 	sf::Vertex *buttonQuads;
 	sf::Vertex *selectQuads;

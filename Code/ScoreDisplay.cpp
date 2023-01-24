@@ -572,7 +572,7 @@ void SelectBar::Reset()
 		button = XBOX_Y;//ControllerSettings::BUTTONTYPE_SHIELD;
 	}
 
-	IntRect ir = sess->mainMenu->GetButtonIconTileForMenu(sess->mainMenu->adventureManager->controllerInput, button);
+	IntRect ir = sess->mainMenu->GetButtonIconTileForMenu(sess->controllerStates[0], button);//sess->mainMenu->adventureManager->controllerInput, button);
 	buttonIconSprite.setTextureRect(ir);
 
 	if (ir.width == 128)

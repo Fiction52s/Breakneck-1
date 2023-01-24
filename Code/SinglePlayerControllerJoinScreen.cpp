@@ -8,6 +8,8 @@
 #include "LobbyManager.h"
 #include "PlayerSkinShader.h"
 #include "Actor.h"
+
+#include "ControlProfile.h"
 //#include "Input.h"
 
 using namespace std;
@@ -16,6 +18,8 @@ using namespace sf;
 SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen )
 {
 	joinScreen = p_joinScreen;
+
+	controlMenu = new ControlProfileMenu(MainMenu::GetInstance()->cpm->profiles, Vector2f(400, 200));
 
 	mode = MODE_DEFAULT;
 
@@ -127,6 +131,8 @@ void SinglePlayerBox::Update()
 				joinScreen->NextSkin();
 			}
 		}
+
+		controlMenu->Update(controllerStates);
 	}
 }
 
@@ -279,6 +285,8 @@ void SinglePlayerBox::Draw(sf::RenderTarget *target)
 	{
 		target->draw(pressText);
 	}
+
+	controlMenu->Draw(target);
 
 }
 
@@ -450,6 +458,7 @@ void SinglePlayerControllerJoinScreen::Update()
 	}
 	case A_READY:
 	{
+
 		playerBox->Update();
 		panel->MouseUpdate();
 		SetRectColor(bgQuad, Color(83,102,188));

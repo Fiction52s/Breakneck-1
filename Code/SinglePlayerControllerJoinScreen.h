@@ -15,6 +15,8 @@ struct MapNode;
 struct MapOptionsPopup;
 struct PlayerSkinShader;
 
+struct ControlProfileMenu;
+
 struct SinglePlayerBox
 {
 	enum Action
@@ -46,6 +48,8 @@ struct SinglePlayerBox
 	PlayerSkinShader *playerShader;
 
 	ControllerDualStateQueue *controllerStates;
+
+	ControlProfileMenu *controlMenu;
 
 	sf::Sprite kinSprite;
 

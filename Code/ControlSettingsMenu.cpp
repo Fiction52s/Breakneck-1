@@ -91,8 +91,8 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm, TilesetManager *tm)
 		SetRectColor(labelQuads + i * 4, Color(Color::White));
 	}
 
-	pSel->currProfile->tempCType = CONTROLLERS.GetWindowsController(0)->GetCType();
-	UpdateXboxButtonIcons();
+	//pSel->currProfile->tempCType = CONTROLLERS.GetWindowsController(0)->GetCType();
+	//UpdateXboxButtonIcons();
 
 	UpdateSelectedQuad();
 
@@ -172,7 +172,7 @@ void ControlSettingsMenu::SetActionTile(int actionIndex, int actionType)
 void ControlSettingsMenu::SetButtonAssoc()
 {
 	GameController *con = CONTROLLERS.GetWindowsController(0);//NULL;//mainMenu->GetController(0);
-	pSel->currProfile->tempCType = con->GetCType();
+	//pSel->currProfile->tempCType = con->GetCType();
 
 	//con->SetFilter(pSel->currProfile->GetCurrFilter());
 
@@ -184,31 +184,26 @@ void ControlSettingsMenu::SetButtonAssoc()
 	}
 }
 
-ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )
+ControlSettingsMenu::UpdateState ControlSettingsMenu::Update(ControllerDualStateQueue *controllerInput)
 {
-	GameController *con = CONTROLLERS.GetWindowsController(0);//NULL;//mainMenu->GetController(0);
-	ControllerType cType = con->GetCType();
-
-
 	UpdateState uState = NORMAL;
 	int oldSel = pSel->saSelector->currIndex;
 	if( !editMode )
-		pSel->Update( currInput, prevInput);
+		pSel->Update( controllerInput);
 
 	
-	pSel->currProfile->tempCType = cType;
+	//pSel->currProfile->tempCType = cType;
 	if (oldSel != pSel->saSelector->currIndex)
 	{
-		UpdateXboxButtonIcons();
+		//UpdateXboxButtonIcons();
 	}
 
-	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && currInput.X && !prevInput.X && pSel->saSelector->currIndex > 0)
+	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && controllerInput->ButtonPressed_X() && pSel->saSelector->currIndex > 0)
 	{
 		editMode = true;
 		SetGreyActionTiles(!editMode);
-		UpdateXboxButtonIcons();
 	}
-	else if ( editMode && currButtonState != S_SELECTED && ((currInput.X && !prevInput.X) || (currInput.B && !prevInput.B)))
+	else if ( editMode && currButtonState != S_SELECTED && (controllerInput->ButtonPressed_X() || controllerInput->ButtonPressed_B()))
 	{
 		editMode = false;
 		SetGreyActionTiles(!editMode);
@@ -220,7 +215,7 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 
 	if (currButtonState == S_SELECTED && editMode)
 	{
-		XBoxButton b = CheckXBoxInput(currInput);
+		XBoxButton b = XBOX_A;//CheckXBoxInput(currInput);
 		if (b != XBoxButton::XBOX_BLANK)
 		{
 			int ind = xSelector->currIndex + ySelector->currIndex * 4;
@@ -238,7 +233,6 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 			pSel->SaveCurrConfig();
 			currButtonState = S_NEUTRAL;
 			UpdateSelectedQuad();
-			UpdateXboxButtonIcons();
 		}
 	}
 	else if (editMode && currButtonState != S_SELECTED)
@@ -247,8 +241,8 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 		int ychanged;
 
 
-		xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-		ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		xchanged = xSelector->UpdateIndex(controllerInput->GetCurrState().LLeft(), controllerInput->GetCurrState().LRight());
+		ychanged = ySelector->UpdateIndex(controllerInput->GetCurrState().LUp(), controllerInput->GetCurrState().LDown());
 
 
 		if (xchanged != 0 || ychanged != 0)
@@ -257,7 +251,7 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 			UpdateSelectedQuad();
 		}
 
-		bool A = currInput.A;
+		bool A = controllerInput->GetCurrState().A;
 		switch (currButtonState)
 		{
 		/*case S_WAITING:
@@ -268,7 +262,7 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 			}
 			break;*/
 		case S_NEUTRAL:
-			if ( A && !prevInput.A)
+			if (controllerInput->ButtonPressed_A())
 			{
 				currButtonState = S_PRESSED;
 			}
@@ -278,11 +272,11 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 			{
 				currButtonState = S_SELECTED;
 				UpdateSelectedQuad();
-				pSel->currProfile->tempCType = cType;
+				//pSel->currProfile->tempCType = cType;
 
-				XBoxButton *fil = pSel->currProfile->GetCurrFilter();
+				//XBoxButton *fil = pSel->currProfile->GetCurrFilter();
 
-				for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
+				/*for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 				{
 					pSel->oldFilter[i] = fil[i];
 					pSel->tempFilter[i] = fil[i];
@@ -295,7 +289,7 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 				else
 				{
 					SetFilterDefault(fil);
-				}
+				}*/
 
 				//mainMenu->GetController(0)->SetFilter(fil);
 				
@@ -349,7 +343,7 @@ void ControlSettingsMenu::Draw(sf::RenderTarget *target )
 XBoxButton ControlSettingsMenu::GetFilteredButton( ControllerType cType,
 	ControllerSettings::ButtonType b )
 {	
-	switch (cType)
+	/*switch (cType)
 	{
 	case CTYPE_XBOX:
 		return pSel->currProfile->filter[b];
@@ -363,21 +357,9 @@ XBoxButton ControlSettingsMenu::GetFilteredButton( ControllerType cType,
 	case CTYPE_NONE:
 		assert(0);
 		break;
-	}
+	}*/
 
 	return pSel->currProfile->filter[b];
-}
-
-void ControlSettingsMenu::UpdateXboxButtonIcons()
-{
-	ts_currentButtons = ts_xboxButtons;
-	XBoxButton *fil = pSel->currProfile->GetCurrFilter();
-	for (int i = 0; i < numActions; ++i )//ControllerSettings::ButtonType::BUTTONTYPE_LLEFT; ++i)
-	{
-		int ind = fil[i];
-		IntRect sub = ts_xboxButtons->GetSubRect(ind);
-		SetRectSubRect(buttonQuads + i * 4, sub);
-	}
 }
 
 XBoxButton ControlSettingsMenu::CheckXBoxInput(ControllerState &currInput)
