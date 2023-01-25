@@ -3144,6 +3144,7 @@ void MainMenu::HandleMenuMode()
 			mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
 			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
 			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBox->skinIndex;
+			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBox->controlMenu->currProfile;
 			mp.randSeed = time(0);
 			mp.numPlayers = 1;
 			mp.gameModeType = MatchParams::GAME_MODE_BASIC;

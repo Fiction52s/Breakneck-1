@@ -74,19 +74,21 @@ void ControlProfile::SetFilterDefault()
 
 void ControlProfile::FilterState(ControllerState &state)
 {
-	state.A = state.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-	state.B = state.Check(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
-	state.X = state.Check(filter[ControllerSettings::BUTTONTYPE_DASH]);
+	ControllerState origState = state;
+
+	state.A = origState.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	state.B = origState.Check(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
+	state.X = origState.Check(filter[ControllerSettings::BUTTONTYPE_DASH]);
 	state.Y = false;
 
-	state.leftShoulder = state.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-	state.rightShoulder = state.Check(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
+	state.leftShoulder = origState.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	state.rightShoulder = origState.Check(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
 	
-	state.leftTrigger = state.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-	state.rightTrigger = state.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	state.leftTrigger = origState.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	state.rightTrigger = origState.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
 
-	state.back = state.Check(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
-	state.start = state.Check(filter[ControllerSettings::BUTTONTYPE_MAP]);
+	state.back = origState.Check(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+	state.start = origState.Check(filter[ControllerSettings::BUTTONTYPE_MAP]);
 }
 
 XBoxButton ControlProfile::Filter(ControllerSettings::ButtonType b)

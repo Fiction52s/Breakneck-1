@@ -158,6 +158,7 @@ void SinglePlayerBox::Update()
 				if (controlMenu->action == ControlProfileMenu::A_SELECTED)
 				{
 					action = A_HAS_PLAYER;
+					currProfile = controlMenu->currProfile;
 				}
 				break;
 			}
