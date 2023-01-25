@@ -265,32 +265,28 @@ void RecordGhost::WriteToFile(const std::string &fileName)
 }
 
 ReplayHeader::ReplayHeader()
-	:ver1( 0 ), ver2( 0 ),
-	bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
+	:bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 {
-	SetVer(1, 0);
+	SetVer(1);
 }
 
 void ReplayHeader::Read(ifstream &is)
 {
-	is.read((char*)&ver1, sizeof(ver1)); //read in the basic vars
-	is.read((char*)&ver2, sizeof(ver2));
+	is.read((char*)&ver, sizeof(ver)); //read in the basic vars
 	is.read((char*)&startPowerMode, sizeof(startPowerMode));
 	bUpgradeField.LoadBinary(is);
 }
 
 void ReplayHeader::Write(ofstream &of)
 {
-	of.write((char*)&ver1, sizeof(ver1));
-	of.write((char*)&ver2, sizeof(ver2));
+	of.write((char*)&ver, sizeof(ver));
 	of.write((char*)&startPowerMode, sizeof(startPowerMode));
 	bUpgradeField.SaveBinary(of);
 }
 
-void ReplayHeader::SetVer(int v1, int v2)
+void ReplayHeader::SetVer(int v )
 {
-	ver1 = v1;
-	ver2 = v2;
+	ver = v;
 }
 
 
@@ -888,8 +884,6 @@ void RecordGhostMenu::Update(ControllerState &currInput, ControllerState &prevIn
 		if (changed != 0)
 		{
 			UpdateItemText();
-
-			
 		}
 	}
 
@@ -1260,9 +1254,9 @@ bool GhostFolder::IsAutoActive()
 }
 
 GhostHeader::GhostHeader()
-	:ver1(0),ver2(0), playerInfo(NULL), numberOfPlayers(0)
+	:playerInfo(NULL), numberOfPlayers(0)
 {
-	SetVer(1, 0);
+	SetVer(1);
 }
 
 GhostHeader::~GhostHeader()
@@ -1273,18 +1267,16 @@ GhostHeader::~GhostHeader()
 	}
 }
 
-void GhostHeader::SetVer(int v1, int v2)
+void GhostHeader::SetVer(int v )
 {
-	ver1 = v1;
-	ver2 = v2;
+	ver = v;
 }
 
 void GhostHeader::Read(std::ifstream &is)
 {
 	assert(playerInfo == NULL);
 
-	is.read((char*)&ver1, sizeof(ver1)); //read in the basic vars
-	is.read((char*)&ver2, sizeof(ver2));
+	is.read((char*)&ver, sizeof(ver)); //read in the basic vars
 	is.read((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 	assert(numberOfPlayers > 0 && numberOfPlayers < 5);
 	playerInfo = new PlayerInfo[numberOfPlayers];
@@ -1293,8 +1285,7 @@ void GhostHeader::Read(std::ifstream &is)
 
 void GhostHeader::Write(std::ofstream &of)
 {
-	of.write((char*)&ver1, sizeof(ver1));
-	of.write((char*)&ver2, sizeof(ver2));
+	of.write((char*)&ver, sizeof(ver));
 	of.write((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 	for (int i = 0; i < numberOfPlayers; ++i)
 	{

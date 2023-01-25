@@ -472,7 +472,7 @@ ControlProfile * PauseMenu::GetCurrSelectedProfile()
 
 bool PauseMenu::SetCurrProfileByName(const std::string &name)
 {
-	return game->mainMenu->SetCurrProfileByName(name);
+	return false;//game->mainMenu->SetCurrProfileByName(name);
 }
 
 void PauseMenu::TabLeft()

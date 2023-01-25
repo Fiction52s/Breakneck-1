@@ -44,7 +44,7 @@ struct GhostHeader
 
 	void Read(std::ifstream &is);
 	void Write(std::ofstream &of);
-	void SetVer(int v1, int v2);
+	void SetVer(int v);
 
 	struct PlayerInfo
 	{
@@ -54,8 +54,7 @@ struct GhostHeader
 	};
 	void Init(int numberOfPlayers);
 
-	int ver1;
-	int ver2;
+	int ver;
 	GhostType gType;
 	int numberOfPlayers;
 	PlayerInfo *playerInfo; //array 
@@ -106,8 +105,7 @@ struct ReplayGhost;
 
 struct ReplayHeader
 {
-	int ver1;
-	int ver2;
+	int ver;
 	int startPowerMode;
 	BitField bUpgradeField;
 
@@ -115,7 +113,7 @@ struct ReplayHeader
 	ReplayHeader();
 	void Read(std::ifstream &is);
 	void Write(std::ofstream &of);
-	void SetVer(int v1, int v2);
+	void SetVer(int v );
 };
 
 //record the player's inputs to create a full replay of a map

@@ -277,6 +277,10 @@ struct ControllerStateQueue
 	bool ButtonPressed_LeftShoulder();
 	bool ButtonHeld_RightShoulder();
 	bool ButtonPressed_RightShoulder();
+	bool ButtonHeld_LeftTrigger();
+	bool ButtonPressed_LeftTrigger();
+	bool ButtonHeld_RightTrigger();
+	bool ButtonPressed_RightTrigger();
 	bool ButtonHeld_Start();
 	bool ButtonPressed_Start();
 	bool ButtonHeld_Any();
@@ -285,6 +289,8 @@ struct ControllerStateQueue
 	bool DirPressed_Right();
 	bool DirPressed_Up();
 	bool DirPressed_Down();
+	
+
 
 	int GetControllerType();
 	int GetIndex();

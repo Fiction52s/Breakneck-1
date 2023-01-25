@@ -1467,7 +1467,6 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 		CTYPE_KEYBOARD,
 		CTYPE_NONE,*/
 
-
 	int buttonIndex = 0;
 
 	int cType = profile->GetControllerType();
@@ -1477,11 +1476,21 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 	case CTYPE_XBOX:
 	{
 		buttonIndex = profile->Filter(button);//0;//(controllerInput->con->filter[button]);// -1);
+
+		if (buttonIndex == XBOX_BLANK)
+		{
+			return IntRect(0, 0, 0, 0);
+		}
 		break;
 	}
 	case CTYPE_GAMECUBE:
 	{
 		buttonIndex = profile->Filter(button);//0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
+
+		if (buttonIndex == XBOX_BLANK)
+		{
+			return IntRect(0, 0, 0, 0);
+		}
 		break;
 	}
 	case CTYPE_PS4:
@@ -3450,14 +3459,6 @@ bool MainMenu::IsSkinUnlocked(int skinIndex)
 {
 	return globalFile->IsSkinUnlocked(skinIndex);
 }
-
-
-
-bool MainMenu::SetCurrProfileByName(const std::string &name)
-{
-	return controlSettingsMenu->pSel->SetCurrProfileByName(name);
-}
-
 
 void MainMenu::TitleMenuModeUpdate()
 {

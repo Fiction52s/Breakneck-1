@@ -2052,6 +2052,26 @@ bool ControllerStateQueue::ButtonPressed_RightShoulder()
 	return states[0].rightShoulder && !states[1].rightShoulder;
 }
 
+bool ControllerStateQueue::ButtonHeld_LeftTrigger()
+{
+	return states[0].LeftTriggerPressed();
+}
+
+bool ControllerStateQueue::ButtonPressed_LeftTrigger()
+{
+	return states[0].LeftTriggerPressed() && !states[1].LeftTriggerPressed();
+}
+
+bool ControllerStateQueue::ButtonHeld_RightTrigger()
+{
+	return states[0].RightTriggerPressed();
+}
+
+bool ControllerStateQueue::ButtonPressed_RightTrigger()
+{
+	return states[0].RightTriggerPressed() && !states[1].RightTriggerPressed();
+}
+
 bool ControllerStateQueue::ButtonHeld_Start()
 {
 	return states[0].start;

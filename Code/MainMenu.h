@@ -396,9 +396,6 @@ struct MainMenu
 		Level *lev);
 
 	ControlProfile *GetCurrSelectedProfile();
-	bool SetCurrProfileByName(const std::string &name);
-	
-	static MapHeader * ReadMapHeader(std::ifstream &is);
 
 	//singleton
 	static MainMenu *GetInstance();

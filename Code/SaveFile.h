@@ -95,8 +95,8 @@ struct AdventureSector
 	AdventureSector();
 	BitField hasShardField;
 	AdventureMap maps[ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR];
-	void Load(std::ifstream &is, int ver1, int ver2, int copyMode );
-	void Save(std::ofstream &of, int ver1, int ver2, int copyMode );
+	void Load(std::ifstream &is, int ver, int copyMode );
+	void Save(std::ofstream &of, int ver, int copyMode );
 	int GetNumExistingMaps();
 };
 
@@ -111,10 +111,8 @@ struct AdventureWorld
 
 	}
 	
-	void Load(std::ifstream &is, int ver1, 
-		int ver2, int copyMode );
-	void Save(std::ofstream &of, int ver1,
-		int ver2, int copyMode );
+	void Load(std::ifstream &is, int ver, int copyMode );
+	void Save(std::ofstream &of, int ver, int copyMode );
 	int GetNumExistingSectors();
 };
 
@@ -131,12 +129,11 @@ struct AdventureFile
 	CopyMode copyMode;
 	BitField hasShardField;
 	AdventureWorld worlds[ADVENTURE_MAX_NUM_WORLDS];
-	int ver1;
-	int ver2;
+	int ver;
 
 	AdventureFile();
 	~AdventureFile();
-	void SetVer(int v1, int v2);
+	void SetVer(int v);
 	bool Load(const std::string &p_path,
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
@@ -226,7 +223,7 @@ struct SaveFile
 
 	bool IsUnlockedLevel(Sector *sec, int index );
 	bool IsFullyCompleteLevel(Level *lev);
-	void SetVer(int v1, int v2);
+	void SetVer(int v);
 
 	const static int MAX_SECTORS = 8;
 	const static int MAX_LEVELS_PER_SECTOR = 8;
@@ -242,7 +239,6 @@ struct SaveFile
 
 	//state that gets saved out
 	
-	std::string controlProfileName;
 	BitField levelsBeatenField;
 	LevelScore levelScores[512];
 	BitField upgradeField;
@@ -252,8 +248,7 @@ struct SaveFile
 	BitField newShardField; //for unviewed shards
 	int defaultSkinIndex;
 
-	int ver1;
-	int ver2;
+	int ver;
 
 private:
 	void CalcProgress(int start, int end, float &totalMaps,
@@ -276,14 +271,13 @@ struct GlobalSaveFile
 	BitField skinField;
 	static std::string fileName;
 
-	int ver1;
-	int ver2;
+	int ver;
 
 	GlobalSaveFile();
 	void SetToDefaults();
 	void Save();
 	bool Load();
-	void SetVer(int v1, int v2);
+	void SetVer(int v);
 	bool IsSkinUnlocked(int skinIndex);
 	void UnlockSkin(int skinIndex);
 };

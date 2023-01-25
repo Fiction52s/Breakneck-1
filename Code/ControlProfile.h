@@ -171,7 +171,7 @@ struct ActionButtonGroup
 };
 
 struct MainMenu;
-struct ControlProfileMenu : UIEventHandlerBase
+struct ControlProfileMenu
 {
 	enum Action
 	{
@@ -210,6 +210,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 
 
 	sf::Text selectedProfileText;
+	sf::Text editingProfileText;
 
 
 	ActionButtonGroup *actionButtonGroup;
@@ -221,11 +222,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 
 	ControlProfileMenu(std::list<ControlProfile*> &p_profiles);
 	~ControlProfileMenu();
-	XBoxButton ReceiveInput( ControllerState &currInput, 
-	ControllerState &prevInput );
 	bool SaveCurrConfig();
-	bool ButtonEvent( UIEvent eType,
-		ButtonEventParams *param );
 	ControlProfile *GetProfileAtIndex(int ind);
 	void SetControllerInput(ControllerDualStateQueue *controllerInput);
 	void SetupBoxes();

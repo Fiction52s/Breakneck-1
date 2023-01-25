@@ -591,7 +591,7 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	defaultSkinIndex( 0 ),
 	mostRecentWorldSelected( 0 )
 {
-	SetVer(1, 0);
+	SetVer(1);
 
 	stringstream ss;
 	ss << "Resources/Data/" << name << ".kin";
@@ -1001,22 +1001,17 @@ bool SaveFile::ShardIsCaptured(int sType)
 //	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
 //}
 
-void SaveFile::SetVer(int v1, int v2)
+void SaveFile::SetVer(int v)
 {
-	ver1 = v1;
-	ver2 = v2;
+	ver = v;
 }
 
 bool SaveFile::LoadInfo(ifstream &is)
 {
 	if (is.is_open())
 	{
-		is >> ver1;
-		is >> ver2;
-
-		is.get();
-
-		getline(is, controlProfileName);
+		is >> ver;
+		
 		is >> defaultSkinIndex;
 		is >> mostRecentWorldSelected;
 
@@ -1118,9 +1113,7 @@ void SaveFile::Save()
 
 	if (of.is_open())
 	{
-		of << ver1 << " " << ver2 << endl;
-
-		of << controlProfileName << endl;
+		of << ver << endl;
 
 		of << defaultSkinIndex << endl;
 
@@ -1156,7 +1149,6 @@ void SaveFile::Delete()
 
 void SaveFile::CopyTo(SaveFile *saveFile)
 {
-	saveFile->controlProfileName = controlProfileName;
 	saveFile->levelsBeatenField.Set(saveFile->levelsBeatenField);
 
 	for (int i = 0; i < 512; ++i)
@@ -1173,7 +1165,6 @@ void SaveFile::CopyTo(SaveFile *saveFile)
 
 void SaveFile::SetAsDefault()
 {
-	controlProfileName = "KIN_Default";
 	levelsBeatenField.Reset();
 
 	mostRecentWorldSelected = 0;
@@ -1208,8 +1199,7 @@ bool GlobalSaveFile::Load()
 
 	if (is.is_open())
 	{
-		is >> ver1;
-		is >> ver2;
+		is >> ver;
 
 		skinField.Load(is);
 
@@ -1223,10 +1213,9 @@ bool GlobalSaveFile::Load()
 	}
 }
 
-void GlobalSaveFile::SetVer(int v1, int v2)
+void GlobalSaveFile::SetVer(int v )
 {
-	ver1 = v1;
-	ver2 = v2;
+	ver = v;
 }
 
 void GlobalSaveFile::Save()
@@ -1239,7 +1228,7 @@ void GlobalSaveFile::Save()
 
 	if (of.is_open())
 	{
-		of << ver1 << " " << ver2 << endl;
+		of << ver << endl;
 
 		skinField.Save(of);
 
@@ -1268,7 +1257,7 @@ bool GlobalSaveFile::IsSkinUnlocked(int skinIndex)
 
 void GlobalSaveFile::SetToDefaults()
 {
-	SetVer(1, 0);
+	SetVer(1);
 	skinField.Reset();
 	skinField.SetBit(0, true);
 }

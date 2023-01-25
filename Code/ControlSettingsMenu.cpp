@@ -176,12 +176,12 @@ void ControlSettingsMenu::SetButtonAssoc()
 
 	//con->SetFilter(pSel->currProfile->GetCurrFilter());
 
-	SaveFile *currFile = mainMenu->adventureManager->currSaveFile;
+	/*SaveFile *currFile = mainMenu->adventureManager->currSaveFile;
 	if (currFile != NULL)
 	{
 		currFile->controlProfileName = pSel->currProfile->name;
 		currFile->Save();
-	}
+	}*/
 }
 
 ControlSettingsMenu::UpdateState ControlSettingsMenu::Update(ControllerDualStateQueue *controllerInput)

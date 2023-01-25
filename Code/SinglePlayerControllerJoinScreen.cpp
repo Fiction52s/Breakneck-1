@@ -44,7 +44,7 @@ SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen 
 	pressText.setFillColor(Color::White);
 
 
-	skinNumberText.setCharacterSize(16);
+	skinNumberText.setCharacterSize(30);
 	skinNumberText.setFont(f);
 	skinNumberText.setFillColor(Color::White);
 
@@ -56,8 +56,6 @@ SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen 
 	joinScreen->ts_kin->SetSubRect(kinSprite, 0);
 	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, kinSprite.getLocalBounds().height / 2);
 	kinSprite.setScale(4, 4);
-
-	//joinScreen->ts_kin->SetQuadSubRect(kinQuad, 0);
 
 	playerShader = new PlayerSkinShader("player");
 
@@ -93,10 +91,14 @@ void SinglePlayerBox::SetSkin(int index)
 	if (skinIndex < 10)
 	{
 		skinNumberText.setString("S-KIN #0" + to_string(skinIndex));
+		auto lb = skinNumberText.getLocalBounds();
+		skinNumberText.setOrigin(lb.left + lb.width / 2, lb.top);
 	}
 	else
 	{
 		skinNumberText.setString("S-KIN #" + to_string(skinIndex));
+		auto lb = skinNumberText.getLocalBounds();
+		skinNumberText.setOrigin(lb.left + lb.width / 2, lb.top);
 	}
 
 }
@@ -223,11 +225,11 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2f &pos)
 
 	controlMenu->SetTopLeft(topLeft); //+ Vector2f(joinScreen->playerBoxWidth / 2, 0 ));
 
-	SetRectCenter(kinQuad, joinScreen->ts_kin->tileWidth, joinScreen->ts_kin->tileHeight, Vector2f(center));
-
 	kinSprite.setPosition(Vector2f(center));
 
-	skinNumberText.setPosition(topLeft + Vector2f(210, 250));
+	Vector2f kinBottomCenter = kinSprite.getPosition() + Vector2f(0, kinSprite.getGlobalBounds().height / 2);
+
+	skinNumberText.setPosition(kinBottomCenter + Vector2f(0, 30));
 
 
 	//playerName->setPosition(Vector2f(pos + namePos));
@@ -306,21 +308,23 @@ void SinglePlayerBox::Draw(sf::RenderTarget *target)
 			target->draw(portIconQuad, 4, sf::Quads, joinScreen->ts_portIcons->texture);
 		}
 
-		//target->draw(kinQuad, 4, sf::Quads, &(playerShader->pShader));
-
 		if (mode != MODE_CONTROLLER_ONLY)
 		{
 			target->draw(kinSprite, &(playerShader->pShader));
 
 			target->draw(skinNumberText);
 		}
+
+		controlMenu->Draw(target);
+	}
+	else if (action == A_CHANGING_CONTROLS)
+	{
+		controlMenu->Draw(target);
 	}
 	else if( action == A_WAITING_FOR_JOIN )
 	{
 		target->draw(pressText);
 	}
-
-	controlMenu->Draw(target);
 }
 
 SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)

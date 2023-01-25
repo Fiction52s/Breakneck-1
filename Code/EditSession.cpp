@@ -1428,31 +1428,31 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	initialViewSet = false;
 
-	SaveFile *currFile = mainMenu->adventureManager->currSaveFile;
-	if (currFile != NULL)
-	{
-		bool set = mainMenu->SetCurrProfileByName(currFile->controlProfileName);
-		if (!set)
-		{
-			//error. profile does not exist
-			currFile->controlProfileName = "KIN_Default";
-			currFile->Save();
-		}
-	}
+	//SaveFile *currFile = mainMenu->adventureManager->currSaveFile;
+	//if (currFile != NULL)
+	//{
+	//	bool set = mainMenu->SetCurrProfileByName(currFile->controlProfileName);
+	//	if (!set)
+	//	{
+	//		//error. profile does not exist
+	//		currFile->controlProfileName = "Default";
+	//		currFile->Save();
+	//	}
+	//}
 	//update this later
 
-	mainMenu->SetCurrProfileByName("KIN_Default");//"Custom 1");
-	ControlProfile *currProfile = mainMenu->GetCurrSelectedProfile();
-	for (int i = 0; i < 4; ++i)
-	{
-		
-		GameController *con = GetController(i);
-		if (con->IsConnected())
-		{
-			//currProfile->tempCType = con->GetCType();
-			//con->SetFilter(currProfile->GetCurrFilter());
-		}
-	}
+	//mainMenu->SetCurrProfileByName("Default");//"Custom 1");
+	//ControlProfile *currProfile = mainMenu->GetCurrSelectedProfile();
+	//for (int i = 0; i < 4; ++i)
+	//{
+	//	
+	//	GameController *con = GetController(i);
+	//	if (con->IsConnected())
+	//	{
+	//		//currProfile->tempCType = con->GetCType();
+	//		//con->SetFilter(currProfile->GetCurrFilter());
+	//	}
+	//}
 
 	inversePolygon = NULL;
 	

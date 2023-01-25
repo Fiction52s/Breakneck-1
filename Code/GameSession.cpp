@@ -77,6 +77,7 @@
 
 #include "MatchStats.h"
 #include "CustomCursor.h"
+#include "AdventureManager.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -2020,33 +2021,40 @@ bool GameSession::SetupControlProfiles()
 	if (parentGame != NULL)
 		return true;
 
-	ControlProfile *currProfile;
-	SaveFile *currFile = saveFile;//mainMenu->GetCurrSaveFile();
-	if (currFile != NULL)
-	{
-		bool set = pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
-		if (!set)
-		{
-			//error. profile does not exist
-			currFile->controlProfileName = "KIN_Default";
-			currFile->Save();
-		}
-	}
-	for (int i = 0; i < 1; ++i)
-	{
-		//temporary
-		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-		currProfile = pauseMenu->GetCurrSelectedProfile();
+	
 
 
-		//controllerStates[i]->con->SetFilter(currProfile->GetCurrFilter());
+	//ControlProfile *currProfile;
+	//SaveFile *currFile = saveFile;//mainMenu->GetCurrSaveFile();
+	//if (currFile != NULL)
+	//{
+	//	bool set = false;
+	//	if (mainMenu->adventureManager != NULL)
+	//	{
+	//		set = pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(mainMenu->adventureManager->currProfile);
+	//	}
+	//	if (!set)
+	//	{
+	//		//error. profile does not exist
+	//		currFile->controlProfileName = "Default";
+	//		currFile->Save();
+	//	}
+	//}
+	//for (int i = 0; i < 1; ++i)
+	//{
+	//	//temporary
+	//	//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+	//	currProfile = pauseMenu->GetCurrSelectedProfile();
+
+
+	//	//controllerStates[i]->con->SetFilter(currProfile->GetCurrFilter());
 
 
 
-		//GameController *con = GetController(i);
-		//currProfile->tempCType = con->GetCType();
-		//con->SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
-	}
+	//	//GameController *con = GetController(i);
+	//	//currProfile->tempCType = con->GetCType();
+	//	//con->SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
+	//}
 
 	return true;
 }

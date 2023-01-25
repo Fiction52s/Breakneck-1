@@ -213,24 +213,15 @@ int AdventureSector::GetNumExistingMaps()
 	return activeCounter;
 }
 
-void AdventureSector::Load(std::ifstream &is, int ver1, int ver2, int copyMode)
+void AdventureSector::Load(std::ifstream &is, int ver, int copyMode)
 {
-	if (ver1 < 1)
-	{
-		int oldRequiredRunes;
-		is >> oldRequiredRunes;
-
-		is.get();//goes to next line
-	}
-	
-
 	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR; ++i)
 	{
 		maps[i].Load(is, copyMode);
 	}
 }
 
-void AdventureSector::Save(std::ofstream &of, int ver1, int ver2, int copyMode)
+void AdventureSector::Save(std::ofstream &of, int ver, int copyMode)
 {
 	//of << requiredRunes << "\n";
 
@@ -254,21 +245,21 @@ int AdventureWorld::GetNumExistingSectors()
 	return activeCounter;
 }
 
-void AdventureWorld::Load(std::ifstream &is, int ver1, int ver2, 
+void AdventureWorld::Load(std::ifstream &is, int ver,
 	int copyMode)
 {
 	for (int i = 0; i < ADVENTURE_MAX_NUM_SECTORS_PER_WORLD; ++i)
 	{
-		sectors[i].Load(is, ver1, ver2, copyMode);
+		sectors[i].Load(is, ver, copyMode);
 	}
 }
 
-void AdventureWorld::Save(std::ofstream &of, int ver1, int ver2, 
+void AdventureWorld::Save(std::ofstream &of, int ver,
 	int copyMode)
 {
 	for (int i = 0; i < ADVENTURE_MAX_NUM_SECTORS_PER_WORLD; ++i)
 	{
-		sectors[i].Save(of, ver1, ver2, copyMode);
+		sectors[i].Save(of, ver, copyMode);
 	}
 }
 
@@ -289,17 +280,16 @@ int AdventureFile::GetNumExistingWorlds()
 AdventureFile::AdventureFile()
 	:hasShardField( 32 * 4 )
 {
-	SetVer(1, 0);
+	SetVer(1);
 }
 
 AdventureFile::~AdventureFile()
 {
 }
 
-void AdventureFile::SetVer(int v1, int v2)
+void AdventureFile::SetVer(int v )
 {
-	ver1 = v1;
-	ver2 = v2;
+	ver = v;
 }
 
 bool AdventureFile::Load(const std::string &p_path,
@@ -316,8 +306,7 @@ bool AdventureFile::Load(const std::string &p_path,
 	}
 	else
 	{
-		is >> ver1;
-		is >> ver2;
+		is >> ver;
 
 		int cMode;
 		is >> cMode;
@@ -326,7 +315,7 @@ bool AdventureFile::Load(const std::string &p_path,
 
 		for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
 		{
-			worlds[i].Load(is, ver1, ver2, copyMode);
+			worlds[i].Load(is, ver, copyMode);
 		}
 
 		is.close();
@@ -352,13 +341,13 @@ void AdventureFile::Save(const std::string &p_path,
 
 	assert(of.is_open());
 
-	of << ver1 << " " << ver2 << endl;
+	of << ver << endl;
 
 	of << (int)cpy << "\n";
 
 	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
 	{
-		worlds[i].Save(of, ver1, ver2, (int)cpy);
+		worlds[i].Save(of, ver, (int)cpy);
 	}
 
 	of.close();

@@ -32,7 +32,7 @@ void ConfigData::SetToDefault()
 	windowStyle = sf::Style::Fullscreen;
 	musicVolume = 100;
 	soundVolume = 100;
-	defaultProfileName = "KIN_Default";
+	defaultProfileName = "Default";
 }
 
 Config::Config()
