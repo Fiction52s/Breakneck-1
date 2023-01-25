@@ -418,6 +418,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool frameConfirmed;
 
 	std::vector<ControllerDualStateQueue*> controllerStates;
+	std::vector<ControlProfile*> controlProfiles;
 
 	static Session *GetSession();
 
@@ -623,8 +624,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	Actor *GetPlayer(int i);
 	ControllerState GetPrevInput(int index);
 	ControllerState GetCurrInput(int index);
-	ControllerState GetPrevInputUnfiltered(int index);
-	ControllerState GetCurrInputUnfiltered(int index);
+
+	ControllerState GetPrevInputFiltered(int index);
+	ControllerState GetCurrInputFiltered(int index);
 	GameController *GetController(int index);
 
 	

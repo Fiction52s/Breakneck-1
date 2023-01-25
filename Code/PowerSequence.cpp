@@ -111,7 +111,7 @@ void GetPowerSequence::UpdateState()
 		}
 		else if (frame > freezeFrame)
 		{
-			if (sess->GetCurrInputUnfiltered(0).A && !sess->GetPrevInputUnfiltered(0).A)
+			if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 			}

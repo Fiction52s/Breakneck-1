@@ -8,6 +8,7 @@
 
 struct NetplayManager;
 struct SaveFile;
+struct ControlProfile;
 
 struct MatchParams
 {
@@ -33,6 +34,7 @@ struct MatchParams
 
 	std::vector<int> playerSkins;
 	std::vector<ControllerDualStateQueue*> controllerStateVec;
+	std::vector<ControlProfile*> controlProfiles;
 
 	MatchParams();
 	void Clear();

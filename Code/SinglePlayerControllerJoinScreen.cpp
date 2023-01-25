@@ -19,7 +19,11 @@ SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen 
 {
 	joinScreen = p_joinScreen;
 
-	controlMenu = new ControlProfileMenu(MainMenu::GetInstance()->cpm->profiles, Vector2f(400, 200));
+	currProfile = NULL;
+	
+	controlMenu = new ControlProfileMenu(MainMenu::GetInstance()->cpm->profiles);
+
+	currProfile = MainMenu::GetInstance()->cpm->profiles.front();
 
 	mode = MODE_DEFAULT;
 
@@ -65,7 +69,9 @@ SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen 
 
 	SetRectColor(bgQuad, Color::Red);
 
-	SetTopLeft(Vector2i(0, 0));//Vector2i(100, 700) + Vector2i(index * (spacing + width), 0));
+	SetTopLeft(Vector2f(0, 0));//Vector2i(100, 700) + Vector2i(index * (spacing + width), 0));
+
+	
 
 	ClearInfo();
 
@@ -75,6 +81,8 @@ SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen 
 SinglePlayerBox::~SinglePlayerBox()
 {
 	delete playerShader;
+
+	delete controlMenu;
 }
 
 void SinglePlayerBox::SetSkin(int index)
@@ -120,19 +128,44 @@ void SinglePlayerBox::Update()
 {
 	if (controllerStates != NULL)
 	{
+		//S_EDIT_CONFIG
 		if (mode != MODE_CONTROLLER_ONLY)
 		{
-			if (controllerStates->ButtonPressed_LeftShoulder())
+			switch (action)
 			{
-				joinScreen->PrevSkin();
-			}
-			else if (controllerStates->ButtonPressed_RightShoulder())
+			case A_HAS_PLAYER:
 			{
-				joinScreen->NextSkin();
+				if (controllerStates->ButtonPressed_LeftShoulder())
+				{
+					joinScreen->PrevSkin();
+				}
+				else if (controllerStates->ButtonPressed_RightShoulder())
+				{
+					joinScreen->NextSkin();
+				}
+				else if( controllerStates->ButtonPressed_A() )
+				{
+					controlMenu->BeginSelectingProfile();
+					action = A_CHANGING_CONTROLS;
+					//controlMenu->Update();
+					//if( controlMenu->state)
+				}
+				break;
 			}
+			case A_CHANGING_CONTROLS:
+			{
+				controlMenu->Update();
+				if (controlMenu->action == ControlProfileMenu::A_SELECTED)
+				{
+					action = A_HAS_PLAYER;
+				}
+				break;
+			}
+			}
+			
 		}
 
-		controlMenu->Update(controllerStates);
+		
 	}
 }
 
@@ -149,7 +182,7 @@ void SinglePlayerBox::SetMode(int m)
 }
 
 
-void SinglePlayerBox::SetTopLeft(sf::Vector2i &pos)
+void SinglePlayerBox::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
 
@@ -187,15 +220,13 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2i &pos)
 		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(joinScreen->playerBoxWidth - (portIconSize.x + border), controllerIconSize.y) + Vector2f(topLeft));
 	}
 
-	
-
-	
+	controlMenu->SetTopLeft(topLeft); //+ Vector2f(joinScreen->playerBoxWidth / 2, 0 ));
 
 	SetRectCenter(kinQuad, joinScreen->ts_kin->tileWidth, joinScreen->ts_kin->tileHeight, Vector2f(center));
 
 	kinSprite.setPosition(Vector2f(center));
 
-	skinNumberText.setPosition(Vector2f(topLeft + Vector2i(210, 250)));
+	skinNumberText.setPosition(topLeft + Vector2f(210, 250));
 
 
 	//playerName->setPosition(Vector2f(pos + namePos));
@@ -210,6 +241,8 @@ void SinglePlayerBox::SetControllerStates(ControllerDualStateQueue *conStates, i
 
 	controllerStates = conStates;
 	action = A_HAS_PLAYER;
+
+	controlMenu->SetControllerInput(controllerStates);
 
 	int tileIndex = 0;
 	switch (controllerStates->GetControllerType())
@@ -281,13 +314,12 @@ void SinglePlayerBox::Draw(sf::RenderTarget *target)
 			target->draw(skinNumberText);
 		}
 	}
-	else
+	else if( action == A_WAITING_FOR_JOIN )
 	{
 		target->draw(pressText);
 	}
 
 	controlMenu->Draw(target);
-
 }
 
 SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
@@ -312,12 +344,12 @@ SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
 	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_FREEPLAY);
 
 	int numBoxes = 4;
-	playerBoxWidth = 300;
-	playerBoxHeight = 300;
+	playerBoxWidth = 400;//300
+	playerBoxHeight = 400;//300
 	playerBoxSpacing = 100;
 
-	Vector2i center(960, 540 + 100);//50);//150
-	playerBox->SetTopLeft(center - Vector2i( playerBoxWidth / 2, playerBoxHeight / 2));
+	Vector2f center(960, 540 + 100);//50);//150
+	playerBox->SetTopLeft(center - Vector2f( playerBoxWidth / 2, playerBoxHeight / 2));
 	
 	Start();
 }
@@ -418,6 +450,15 @@ void SinglePlayerControllerJoinScreen::Update()
 		}
 		break;
 	}
+	case A_CONTROL_PROFILE:
+	{
+		if (playerBox->action != SinglePlayerBox::A_CHANGING_CONTROLS)
+		{
+			SetAction(A_READY);
+			return;
+		}
+		break;
+	}
 	case A_START:
 		break;
 	case A_BACK:
@@ -458,12 +499,20 @@ void SinglePlayerControllerJoinScreen::Update()
 	}
 	case A_READY:
 	{
-
 		playerBox->Update();
-		panel->MouseUpdate();
-		SetRectColor(bgQuad, Color(83,102,188));
+		if (playerBox->action != SinglePlayerBox::A_CHANGING_CONTROLS)
+		{
+			panel->MouseUpdate();
+		}
+		else
+		{
+			SetAction(A_CONTROL_PROFILE);
+		}
 		break;
 	}
+	case A_CONTROL_PROFILE:
+		playerBox->Update();
+		break;
 	case A_START:
 		break;
 	case A_BACK:
@@ -478,6 +527,7 @@ void SinglePlayerControllerJoinScreen::TryControllerJoin(ControllerDualStateQueu
 
 	playerBox->SetControllerStates(conStates, 0);
 	SetAction(A_READY);
+	SetRectColor(bgQuad, Color(83, 102, 188));
 	//cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;
 }
 
@@ -497,6 +547,7 @@ void SinglePlayerControllerJoinScreen::Draw(sf::RenderTarget *target)
 	case A_BACK:
 	case A_WAITING_FOR_PLAYER:
 	case A_READY:
+	case A_CONTROL_PROFILE:
 	case A_START:
 	{
 		target->draw(bgQuad, 4, sf::Quads);
@@ -505,6 +556,12 @@ void SinglePlayerControllerJoinScreen::Draw(sf::RenderTarget *target)
 		panel->Draw(target);
 		break;
 	}
+	/*case A_CONTROL_PROFILE:
+	{
+		playerBox->Draw(target);
+		panel->Draw(target);
+		break;
+	}*/
 	}
 }
 

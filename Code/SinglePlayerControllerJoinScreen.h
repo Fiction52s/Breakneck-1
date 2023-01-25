@@ -23,6 +23,7 @@ struct SinglePlayerBox
 	{
 		A_WAITING_FOR_JOIN,
 		A_HAS_PLAYER,
+		A_CHANGING_CONTROLS,
 	};
 
 	enum Mode
@@ -32,7 +33,7 @@ struct SinglePlayerBox
 	};
 
 	sf::Text playerNameText;
-	sf::Vector2i topLeft;
+	sf::Vector2f topLeft;
 	sf::Vertex bgQuad[4];
 	SinglePlayerControllerJoinScreen *joinScreen;
 	sf::Text numberText;
@@ -51,6 +52,8 @@ struct SinglePlayerBox
 
 	ControlProfileMenu *controlMenu;
 
+	ControlProfile *currProfile;
+
 	sf::Sprite kinSprite;
 
 	int action;
@@ -67,7 +70,7 @@ struct SinglePlayerBox
 	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex);
 	void Show();
 	void Hide();
-	void SetTopLeft(sf::Vector2i &pos);
+	void SetTopLeft(sf::Vector2f &pos);
 	void ClearInfo();
 private:
 	bool show;
@@ -80,6 +83,7 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 	{
 		A_WAITING_FOR_PLAYER,
 		A_READY,
+		A_CONTROL_PROFILE,
 		A_START,
 		A_BACK,
 	};

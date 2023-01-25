@@ -21,6 +21,34 @@ For each button, its bool its true if the it is down
 (pressed) and false if it is up (not pressed).
 */
 
+enum XBoxButton
+{
+	XBOX_A,
+	XBOX_B,
+	XBOX_X,
+	XBOX_Y,
+	XBOX_R1,
+	XBOX_R2,
+	XBOX_L1,
+	XBOX_L2,
+	XBOX_START,
+	XBOX_BACK,
+	XBOX_PUP,
+	XBOX_PDOWN,
+	XBOX_PLEFT,
+	XBOX_PRIGHT,
+	XBOX_LUP,
+	XBOX_LLEFT,
+	XBOX_LRIGHT,
+	XBOX_LDOWN,
+	XBOX_RLEFT,
+	XBOX_RUP,
+	XBOX_RRIGHT,
+	XBOX_RDOWN,
+	XBOX_BLANK,
+	XBOX_Count
+};
+std::string GetXBoxButtonString(XBoxButton button);
 
 struct KeyboardState;
 struct ControllerState
@@ -59,6 +87,7 @@ struct ControllerState
 	void SetFromCompressedState(int s);
 	void InvertLeftStick();
 	void Clear();
+	int Check(XBoxButton b);
 
 
 	bool IsLeftNeutral() const;
@@ -117,11 +146,11 @@ struct ControllerSettings
 		BUTTONTYPE_DASH,
 		BUTTONTYPE_ATTACK,
 		BUTTONTYPE_SHIELD,
+		BUTTONTYPE_SPECIAL,
 		BUTTONTYPE_LEFTWIRE,
 		BUTTONTYPE_RIGHTWIRE,
-		BUTTONTYPE_SPECIAL,
-		BUTTONTYPE_MAP,
 		BUTTONTYPE_PAUSE,
+		BUTTONTYPE_MAP,
 		BUTTONTYPE_LLEFT,
 		BUTTONTYPE_LRIGHT,
 		BUTTONTYPE_LUP,
@@ -146,34 +175,7 @@ struct KeyboardSettings
 	bool toggleTimeSlow;
 };
 
-enum XBoxButton
-{
-	XBOX_A,
-	XBOX_B,
-	XBOX_X,
-	XBOX_Y,
-	XBOX_R1,
-	XBOX_R2,
-	XBOX_L1,
-	XBOX_L2,
-	XBOX_START,
-	XBOX_BACK,
-	XBOX_PUP,
-	XBOX_PDOWN,
-	XBOX_PLEFT,
-	XBOX_PRIGHT,
-	XBOX_LUP,
-	XBOX_LLEFT,
-	XBOX_LRIGHT,
-	XBOX_LDOWN,
-	XBOX_RLEFT,
-	XBOX_RUP,
-	XBOX_RRIGHT,
-	XBOX_RDOWN,
-	XBOX_BLANK,
-	XBOX_Count
-};	
-std::string GetXBoxButtonString( XBoxButton button );
+
 
 
 

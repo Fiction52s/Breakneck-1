@@ -71,6 +71,35 @@ void ControllerState::Set( const ControllerState &state )
 //	altPad = state.altPad;
 }
 
+int ControllerState::Check(XBoxButton b)
+{
+	switch (b)
+	{
+	case XBOX_A:
+		return A;
+	case XBOX_B:
+		return B;
+	case XBOX_X:
+		return X;
+	case XBOX_Y:
+		return Y;
+	case XBOX_R1:
+		return rightShoulder;
+	case XBOX_R2:
+		return rightTrigger;
+	case XBOX_L1:
+		return leftShoulder;
+	case XBOX_L2:
+		return leftTrigger;
+	case XBOX_START:
+		return start;
+	case XBOX_BACK:
+		return back;
+	}
+
+	return 0;
+}
+
 int ControllerState::GetCompressedState()
 {
 	int s = 0;

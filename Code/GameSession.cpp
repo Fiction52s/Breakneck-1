@@ -807,6 +807,11 @@ GameSession::GameSession(MatchParams *mp )
 
 	for (int i = 0; i < 4; ++i)
 	{
+		controlProfiles[i] = matchParams.controlProfiles[i];
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
 		if (matchParams.playerSkins[i] == -1)
 		{
 			matchParams.playerSkins[i] = i;
@@ -2668,8 +2673,8 @@ bool GameSession::RunMainLoopOnce()
 		{
 			UpdateControllers();
 
-			ControllerState &curr = GetCurrInputUnfiltered(0);
-			ControllerState &prev = GetPrevInputUnfiltered(0);
+			ControllerState &curr = GetCurrInput(0);
+			ControllerState &prev = GetPrevInput(0);
 
 			if (pauseMenu->currentTab == PauseMenu::PAUSE)
 			{

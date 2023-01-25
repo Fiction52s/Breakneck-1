@@ -18,7 +18,15 @@ struct ControlProfile
 	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
 
 	ControlProfile();
+
+	void FilterState(ControllerState &state);
+	XBoxButton Filter(ControllerSettings::ButtonType b);
+	int GetControllerType();
+	void CopyTo(ControlProfile *cp);
+
 	void SetFilterDefault();
+private:
+	int cType;
 };
 
 struct ControlProfileManager
@@ -57,29 +65,29 @@ struct ProfileSelector
 	static const int BOX_SPACING;
 
 
-	enum State
+	enum Action
 	{
-		S_SELECTED,
-		S_SHOWING_OPTIONS
+		A_SELECTED,
+		A_SHOWING_OPTIONS
 	};
 
-	State state;
+	int action;
 	ControlProfileManager *cpm;
 	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
 	XBoxButton oldFilter[ControllerSettings::BUTTONTYPE_Count];
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text profileNames[NUM_BOXES];
 	VertSlider vSlider;
-	sf::Vector2f topMid;
+	sf::Vector2f topLeft;
 	int topIndex;
 	MainMenu *mainMenu;
 	ControlProfile *currProfile;
 	SingleAxisSelector *saSelector;
 
 
-	ProfileSelector( MainMenu *p_mainMenu,
-		sf::Vector2f &topMid );
+	ProfileSelector();
 	~ProfileSelector();
+	void SetTopLeft(sf::Vector2f &topLeft);
 	void UpdateNames();
 	bool SetCurrProfileByName(const std::string &name);
 	bool SaveCurrConfig();
@@ -105,7 +113,8 @@ struct ActionButton
 
 	float buttonSize;
 	
-	ActionButton( sf::Vertex *quad, const std::string &name, sf::Vector2f &pos);
+	ActionButton(sf::Vertex *quad, const std::string &name);
+	void SetPosition(sf::Vector2f &pos);
 	void SetButtonSubRect( sf::IntRect &ir );
 	void Draw(sf::RenderTarget *target);
 };
@@ -119,14 +128,14 @@ struct ActionButtonGroup
 		A_MODIFY_BUTTON,
 	};
 
-	const static int NUM_BUTTONS = 9;
-	const static int COLS = 3;
-	const static int ROWS = 3;
+	//const static int NUM_BUTTONS = 9;
+	//const static int COLS = 3;
+	//const static int ROWS = 3;
 
-	sf::Vertex buttonQuads[NUM_BUTTONS * 4];
+	sf::Vertex *buttonQuads;
 	sf::Vertex highlightQuad[4];
 	
-	ActionButton *actionButtons[NUM_BUTTONS];
+	std::vector<ActionButton*> actionButtons;
 
 	ControlProfileMenu *controlMenu;
 
@@ -134,16 +143,28 @@ struct ActionButtonGroup
 
 	int action;
 
+	int numButtons;
+	int rows;
+	int cols;
+
 	sf::Vector2f topLeft;
 
-	ActionButtonGroup(ControlProfileMenu *p_controlMenu, sf::Vector2f &p_topLeft );
+	ActionButtonGroup(ControlProfileMenu *p_controlMenu);
 	~ActionButtonGroup();
 
 	void Reset();
 
+	void UpdateButtonIcons();
+
+	void SetTopLeft(sf::Vector2f &pos);
+
 	void SetSelectedIndex(int sel);
 
-	void Update(ControllerDualStateQueue *controllerInput);
+	void SetModifiedButton(XBoxButton button);
+
+	void ModifySelectedButton();
+
+	void Update();
 	
 
 	void Draw(sf::RenderTarget *target);
@@ -152,15 +173,13 @@ struct ActionButtonGroup
 struct MainMenu;
 struct ControlProfileMenu : UIEventHandlerBase
 {
-	enum State
+	enum Action
 	{
-		S_SELECTED,
-		S_SHOWING_OPTIONS,
-		S_EDIT_CONFIG,
-		S_RECEIVE_BUTTON,
-		S_MUSIC_SELECTOR,
-		S_GHOST_SELECTOR,
-		S_Count
+		A_SELECTED,
+		A_SHOWING_OPTIONS,
+		A_EDIT_PROFILE,
+		A_REPLACE_BUTTON,
+		A_Count
 	};
 
 	static const int NUM_BOXES = 7;
@@ -175,42 +194,48 @@ struct ControlProfileMenu : UIEventHandlerBase
 	ControllerType tempCType;
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text profileNames[NUM_BOXES];
-	State state;
-	sf::Vector2f topMid;
+	int action;
+	sf::Vector2f topLeft;
 	int oldCurrIndex;
 	int topIndex;
+	
 
 	std::list<ControlProfile*> profiles;
 	sf::Font font;
 
 	VertSlider vSlider;
 
-	ControlProfile *currProfile;
+
 	SingleAxisSelector *saSelector;
 
-	int currControllerType;
 
 	sf::Text selectedProfileText;
 
 
 	ActionButtonGroup *actionButtonGroup;
 
+	ControlProfile *currProfile;
+	ControlProfile *tempProfile;
+	ControllerDualStateQueue *controllerInput;
 
-	ControlProfileMenu(std::list<ControlProfile*> &p_profiles,
-		sf::Vector2f &p_topMid);
+
+	ControlProfileMenu(std::list<ControlProfile*> &p_profiles);
 	~ControlProfileMenu();
 	XBoxButton ReceiveInput( ControllerState &currInput, 
 	ControllerState &prevInput );
 	bool SaveCurrConfig();
-	void SetTopMid(sf::Vector2f &tm);
 	bool ButtonEvent( UIEvent eType,
 		ButtonEventParams *param );
+	ControlProfile *GetProfileAtIndex(int ind);
+	void SetControllerInput(ControllerDualStateQueue *controllerInput);
 	void SetupBoxes();
-	void Update( ControllerDualStateQueue *controllerInput );
+	void SetTopLeft(sf::Vector2f &p_topLeft);
+	void Update();
 	void MoveUp();
 	void MoveDown();
 	void UpdateNames();
 	void UpdateBoxesDebug();
+	void BeginSelectingProfile();
 	void Draw( sf::RenderTarget *target );
 };
 

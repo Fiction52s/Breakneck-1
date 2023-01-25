@@ -62,6 +62,7 @@
 
 #include "steam\steam_api.h"
 #include "ggpo\network\udp_msg.h"
+#include "ControlProfile.h"
 
 using namespace sf;
 using namespace std;
@@ -1559,6 +1560,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 {
 	matchPlacings.resize(4);
 	controllerStates.resize(4);
+	controlProfiles.resize(4);
 
 	parallelSessionIndex = -1;
 	randomState = 0;
@@ -1588,6 +1590,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	for (int i = 0; i < 4; ++i)
 	{
 		SetControllerStates(i, CONTROLLERS.GetStateQueue( CTYPE_XBOX, i ));//mainMenu->GetController(i)); //placeholder until things are cleaned up more
+		controlProfiles[i] = NULL;
 		//controllers[i] = NULL;
 	}
 
@@ -2683,11 +2686,16 @@ ControllerState Session::GetCurrInput(int index)
 	}
 }
 
-ControllerState Session::GetPrevInputUnfiltered(int index)
+ControllerState Session::GetPrevInputFiltered(int index)
 {
 	if (controllerStates[index] != NULL)
 	{
-		return controllerStates[index]->GetPrevState();
+		assert(controlProfiles[index] != NULL);
+
+		ControllerState prev = controllerStates[index]->GetPrevState();
+
+		controlProfiles[index]->FilterState(prev);
+		return prev;
 	}
 	else
 	{
@@ -2695,11 +2703,17 @@ ControllerState Session::GetPrevInputUnfiltered(int index)
 	}
 }
 
-ControllerState Session::GetCurrInputUnfiltered(int index)
+ControllerState Session::GetCurrInputFiltered(int index)
 {
 	if (controllerStates[index] != NULL)
 	{
-		return controllerStates[index]->GetCurrState();
+		assert(controlProfiles[index] != NULL);
+
+		ControllerState curr = controllerStates[index]->GetCurrState();
+
+		controlProfiles[index]->FilterState(curr);
+
+		return curr;
 	}
 	else
 	{
@@ -2796,8 +2810,8 @@ void Session::UpdatePlayerInput(int index)
 
 	ControllerState &pCurr = player->currInput;
 	GameController *controller = GetController(index);
-	ControllerState currSessInput = GetCurrInput(index);
-	ControllerState prevSessInput = GetPrevInput(index);
+	ControllerState currSessInput = GetCurrInputFiltered(index);
+	ControllerState prevSessInput = GetPrevInputFiltered(index);
 
 	bool alreadyBounce = pCurr.X;
 	bool alreadyGrind = pCurr.Y;
@@ -2811,6 +2825,8 @@ void Session::UpdatePlayerInput(int index)
 	{
 		player->prevInput = player->currInput;
 		player->currInput = currSessInput;
+
+		
 		//player->prevInput = prevInput;
 
 		if (controller->keySettings.toggleBounce)
@@ -8521,7 +8537,7 @@ void Session::SetMatchPlacings(int p1Placing, int p2Placing, int p3Placing, int 
 
 sf::IntRect Session::GetButtonIconTile(int cIndex, ControllerSettings::ButtonType button )
 {
-	return mainMenu->GetButtonIconTile(controllerStates[cIndex], button);
+	return mainMenu->GetButtonIconTile(button, controlProfiles[cIndex] );
 }
 
 Tileset * Session::GetButtonIconTileset(int cIndex)

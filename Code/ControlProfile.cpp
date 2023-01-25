@@ -20,8 +20,8 @@ using namespace std;
 
 //const int ControlProfileMenu::NUM_BOXES = 8;
 const int ControlProfileMenu::BOX_WIDTH = 300;
-const int ControlProfileMenu::BOX_HEIGHT = 40;
-const int ControlProfileMenu::BOX_SPACING = 10;
+const int ControlProfileMenu::BOX_HEIGHT = 40;//50; //40
+const int ControlProfileMenu::BOX_SPACING = 0;//10;
 
 const int ProfileSelector::BOX_WIDTH = 300;
 const int ProfileSelector::BOX_HEIGHT = 40;
@@ -41,6 +41,8 @@ ControlProfile::ControlProfile()
 
 void ControlProfile::SetFilterDefault()
 {
+	cType = CTYPE_XBOX;
+
 	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 	{
 		filter[i] = XBOX_BLANK;
@@ -50,11 +52,12 @@ void ControlProfile::SetFilterDefault()
 	filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
 	filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_R1;
 	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_L1;
+	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
 	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
 	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
-	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
-	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
+
 	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
+	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
 
 	//gamecube controller
 
@@ -69,11 +72,50 @@ void ControlProfile::SetFilterDefault()
 	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;*/
 }
 
-ControlProfileMenu::ControlProfileMenu( list<ControlProfile*> &p_profiles, Vector2f &p_topMid )
-	:profiles( p_profiles ),
-	font( MainMenu::GetInstance()->arial ), topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), topMid( p_topMid )
+void ControlProfile::FilterState(ControllerState &state)
 {
-	actionButtonGroup = new ActionButtonGroup(this, topMid);
+	state.A = state.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	state.B = state.Check(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
+	state.X = state.Check(filter[ControllerSettings::BUTTONTYPE_DASH]);
+	state.Y = false;
+
+	state.leftShoulder = state.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	state.rightShoulder = state.Check(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
+	
+	state.leftTrigger = state.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	state.rightTrigger = state.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+
+	state.back = state.Check(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+	state.start = state.Check(filter[ControllerSettings::BUTTONTYPE_MAP]);
+}
+
+XBoxButton ControlProfile::Filter(ControllerSettings::ButtonType b)
+{
+	return filter[b];
+}
+
+int ControlProfile::GetControllerType()
+{
+	return cType;
+}
+
+void ControlProfile::CopyTo(ControlProfile *cp)
+{
+	cp->cType = cType;
+	cp->name = name;
+	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
+	{
+		cp->filter[i] = filter[i];
+	}
+}
+
+ControlProfileMenu::ControlProfileMenu( std::list<ControlProfile*> &p_profiles)
+	:profiles( p_profiles ),
+	font( MainMenu::GetInstance()->arial ), topIndex( 0 ), action( A_SELECTED ), oldCurrIndex( 0 )
+{
+	actionButtonGroup = new ActionButtonGroup(this);
+
+	tempProfile = new ControlProfile;
 
 	assert(!p_profiles.empty());
 	int waitFrames[3] = { 10, 5, 2 };
@@ -82,22 +124,21 @@ ControlProfileMenu::ControlProfileMenu( list<ControlProfile*> &p_profiles, Vecto
 
 	currProfile = p_profiles.front(); //KIN 
 
+	int textSize = 30;
+
 	selectedProfileText.setFont(MainMenu::GetInstance()->arial);
-	selectedProfileText.setCharacterSize(30);
+	selectedProfileText.setCharacterSize(textSize);
 	selectedProfileText.setFillColor(Color::Black);
 	
 	selectedProfileText.setString(currProfile->name);
 
 	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
 		selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
-	selectedProfileText.setPosition(p_topMid.x, p_topMid.y + 90);
-
-	SetupBoxes();
-
+	
 	for( int i = 0; i < NUM_BOXES; ++i )
 	{
 		profileNames[i].setFont( font );
-		profileNames[i].setCharacterSize( 40 );
+		profileNames[i].setCharacterSize(textSize);
 		profileNames[i].setFillColor( Color::White );
 	}
 
@@ -112,34 +153,29 @@ ControlProfileMenu::ControlProfileMenu( list<ControlProfile*> &p_profiles, Vecto
 	flipCounterUp = 0;
 	flipCounterDown = 0;
 	framesWaiting = 0;*/
-
-	std::string buttonTexts[] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
-		"POWER5", "POWER6LEFT", "POWER6RIGHT" };
-	UIControl **controls = new UIControl*[2*4];
-	UIButton *currButton;
-	for( int i = 0; i < 2; ++i  )
-	{
-		for( int j = 0; j < 4; ++j )
-		{
-			currButton = new UIButton( NULL, this, &MainMenu::GetInstance()->tilesetManager,
-				&MainMenu::GetInstance()->arial, buttonTexts[i*4+j], 220, 80 );
-			currButton->bar->SetTextHeight( 20 );
-			currButton->bar->SetTextAlignment( UIBar::Alignment::MIDDLE, Vector2i( 0, 3 ) );
-			controls[i*4+j] = currButton;
-		}
-	}
 	
 	int quarter = 1920 / 4;
 	//editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 20, 20, true );
 	//editProfileGrid->SetTopLeft( topMid.x - quarter/2 + 10, topMid.y + 10 );
 
 	maxReceiveFrames = 240;
+
+	controllerInput = NULL;
 }
 
 ControlProfileMenu::~ControlProfileMenu()
 {
 	delete actionButtonGroup;
 	delete saSelector;
+	delete tempProfile;
+}
+
+void ControlProfileMenu::SetControllerInput(ControllerDualStateQueue *p_controllerInput)
+{
+	controllerInput = p_controllerInput;
+
+	currProfile->CopyTo(tempProfile);
+	actionButtonGroup->UpdateButtonIcons();
 }
 
 bool ControlProfileMenu::ButtonEvent( UIEvent eType,
@@ -148,13 +184,28 @@ bool ControlProfileMenu::ButtonEvent( UIEvent eType,
 	if( eType == UIEvent::E_BUTTON_PRESSED )
 	{
 		string s = param->button->bar->GetString();
-		state = S_RECEIVE_BUTTON;
+		action = A_REPLACE_BUTTON;
 		currReceiveFrame = 0;
 
 		editIndex = ControlProfileManager::GetButtonTypeFromAction( s );
 	}
 
 	return true;
+}
+
+ControlProfile *ControlProfileMenu::GetProfileAtIndex(int ind)
+{
+	int i = 0;
+	for (auto it = profiles.begin(); it != profiles.end(); ++it)
+	{
+		if (i == ind)
+		{
+			return (*it);
+		}
+		++i;
+	}
+
+	return NULL;
 }
 
 XBoxButton ControlProfileMenu::ReceiveInput( ControllerState &currInput, 
@@ -208,7 +259,7 @@ XBoxButton ControlProfileMenu::ReceiveInput( ControllerState &currInput,
 
 void ControlProfileMenu::Draw( sf::RenderTarget *target )
 {
-	if( state == S_SHOWING_OPTIONS )
+	if( action == A_SHOWING_OPTIONS )
 	{
 		target->draw( boxes, NUM_BOXES*4,sf::Quads );
 		for( int i = 0; i < NUM_BOXES; ++i )
@@ -218,12 +269,12 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 		}
 		vSlider.Draw(target);
 	}
-	else if( state == S_EDIT_CONFIG )
+	else if( action == A_EDIT_PROFILE || action == A_REPLACE_BUTTON )
 	{
 		actionButtonGroup->Draw(target);
 		//editProfileGrid->Draw( target );
 	}
-	else if (state == State::S_SELECTED)
+	else if (action == A_SELECTED)
 	{
 		target->draw(selectedProfileText);
 	}
@@ -239,7 +290,7 @@ void ControlProfileMenu::UpdateNames()
 	}
 
 
-	list<ControlProfile*>::iterator lit = profiles.begin();
+	auto lit = profiles.begin();
 	if( topIndex > profiles.size() )
 	{
 		topIndex = profiles.size() - 1;
@@ -249,6 +300,8 @@ void ControlProfileMenu::UpdateNames()
 	{
 		++lit;
 	}
+
+	Vector2f topMid = topLeft + Vector2f(BOX_WIDTH / 2, 0);
 
 	int trueI;
 	int i = 0;
@@ -269,10 +322,12 @@ void ControlProfileMenu::UpdateNames()
 			lit = profiles.begin();
 
 		profileNames[i].setString( (*lit)->name );
-		profileNames[i].setOrigin( profileNames[i].getLocalBounds().width / 2, 0 );
+
+		auto &lb = profileNames[i].getLocalBounds();
+		profileNames[i].setOrigin( lb.left + lb.width / 2, lb.top + lb.height / 2);
 			//profileNames[i].getLocalBounds().height / 2 );
 		//profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
-		profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
+		profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i + BOX_HEIGHT / 2 );
 
 		++lit;
 	}
@@ -280,151 +335,135 @@ void ControlProfileMenu::UpdateNames()
 	saSelector->totalItems = numProfiles;
 
 	Vector2f offset(20, 0);
-	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), 
+	vSlider.Setup(Vector2f(topLeft.x + BOX_WIDTH + offset.x, topLeft.y + offset.y), 
 		Vector2f(vSlider.barSize.x, max((vSlider.selectorSize.y / numProfiles), 5.f) ), vSlider.selectorSize);
 
 	vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
 }
 
-void ControlProfileMenu::SetTopMid(Vector2f &tm)
+void ControlProfileMenu::SetTopLeft(sf::Vector2f &p_topLeft)
 {
-	topMid = tm;
+	topLeft = p_topLeft;
 	//SetupBoxes(); //only need this if i was going to be moving the boxes while the selector isup
-	selectedProfileText.setPosition(topMid.x, topMid.y + 90);
+	selectedProfileText.setPosition(topLeft.x, topLeft.y + 90);
+
+	actionButtonGroup->SetTopLeft(topLeft);
+
+	SetupBoxes();
+
+	/*int numProfiles = profiles.size();
+	Vector2f offset(20, 0);
+	vSlider.Setup(Vector2f(topLeft.x + BOX_WIDTH + offset.x, topLeft.y + offset.y),
+		Vector2f(vSlider.barSize.x, max((vSlider.selectorSize.y / numProfiles), 5.f)), vSlider.selectorSize);*/
 }
 
-void ControlProfileMenu::Update( ControllerDualStateQueue *controllerInput )
+void ControlProfileMenu::BeginSelectingProfile()
+{
+	action = A_SHOWING_OPTIONS;
+	UpdateNames();
+	oldCurrIndex = saSelector->currIndex;
+}
+
+void ControlProfileMenu::Update()
 {	
-	if(controllerInput->ButtonPressed_A())
+	switch(action)
 	{
-		switch( state )
+	case A_SELECTED:
+	{
+		if (controllerInput->ButtonPressed_A())
 		{
-		case S_SELECTED:
-			state = S_SHOWING_OPTIONS;
-			UpdateNames();
-			oldCurrIndex = saSelector->currIndex;
-
-			break;
-		case S_SHOWING_OPTIONS:
-			{
-				int test = 0;
-				state = S_SELECTED;
-
-				for( list<ControlProfile*>::iterator it = profiles.begin(); 
-					it != profiles.end(); ++it )
-				{
-					if( test == saSelector->currIndex )
-					{
-						currProfile = (*it);
-						break;
-					}
-					++test;
-				}
-
-				selectedProfileText.setString(currProfile->name);
-				/*selectedProfileText.setOrigin(  
-					selectedProfileText.getLocalBounds().width / 2 
-					- selectedProfileText.getLocalBounds().left, 
-					selectedProfileText.getLocalBounds().height );*/
-				selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
-					selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
-				//selectedProfileText.setPosition(selectedProfileText.getPosition());
-				break;
-			}
-		case S_EDIT_CONFIG:
-			{
-				break;
-			}
+			BeginSelectingProfile();
 		}
+		break;
 	}
-	else if( controllerInput->ButtonPressed_RightShoulder())
+	case A_SHOWING_OPTIONS:
 	{
-		switch( state )
+		if (controllerInput->ButtonPressed_A())
 		{
-		case S_SELECTED:
-			{
-			//commented out for now because using mapselectionmenu
-				/*if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
-				{
-					if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
-						|| section->parent->multiSelectorState == MapSelectionMenu::MS_GHOST)
-					{
-						state = S_GHOST_SELECTOR;
-					}
-				}*/
-				break;
-			}
-		case S_SHOWING_OPTIONS:
-		{
-			//state = S_SELECTED;
-			state = S_EDIT_CONFIG;
-			
-			/*XBoxButton *fil = currProfile->GetCurrFilter();
-			for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
-			{
-				tempFilter[i] = fil[i];
-			}*/
-			break;
-		}
-		case S_EDIT_CONFIG:
-			{
-				//save
-				bool res = SaveCurrConfig();
-				assert( res ); //if failed, file write failed
-				break;
-			}
-		}
-	}
-	else if (controllerInput->ButtonPressed_Y())
-	{
-		switch (state)
-		{
-		case S_SELECTED:
+			int test = 0;
+			action = A_SELECTED;
 
-			//commented out for now because using mapselectionmenu
-			/*if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
-			{
-				if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
-					|| section->parent->multiSelectorState == MapSelectionMenu::MS_MUSIC )
-				{
-					state = S_MUSIC_SELECTOR;
-				}
-			}
-			else
-			{
+			currProfile = GetProfileAtIndex(saSelector->currIndex);
 
-			}*/
-			
-			break;
+			selectedProfileText.setString(currProfile->name);
+			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
+				selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
 		}
-	}
-	if( controllerInput->ButtonPressed_B() )
-	{
-		switch (state)
+		else if (controllerInput->ButtonPressed_B())
 		{
-		case S_SHOWING_OPTIONS:
-		{
+			action = A_SELECTED;
 			saSelector->currIndex = oldCurrIndex;
-			state = S_SELECTED;
-			break;
 		}
-		case S_MUSIC_SELECTOR:
-			state = S_SELECTED;
-			break;
-		case S_GHOST_SELECTOR:
-			state = S_SELECTED;
-			break;
+		else if (controllerInput->ButtonPressed_X())
+		{
+			action = A_EDIT_PROFILE;
+			GetProfileAtIndex(saSelector->currIndex)->CopyTo(tempProfile);
+			actionButtonGroup->UpdateButtonIcons();
 		}
-		
-			
-		
+		break;
+	}
+	case A_EDIT_PROFILE:
+	{
+		if (controllerInput->ButtonPressed_A())
+		{
+			actionButtonGroup->ModifySelectedButton();
+			action = A_REPLACE_BUTTON;
+		}
+		else if (controllerInput->ButtonPressed_B())
+		{
+			action = A_SHOWING_OPTIONS;
+		}
+		else if (controllerInput->ButtonPressed_X())
+		{
+			action = A_SHOWING_OPTIONS;
+			tempProfile->CopyTo(GetProfileAtIndex( saSelector->currIndex ));
+			MainMenu::GetInstance()->cpm->WriteProfiles();
+		}
+		break;
+	}
+	case A_REPLACE_BUTTON:
+	{
+		if (controllerInput->ButtonPressed_Any())
+		{
+			XBoxButton button = XBOX_BLANK;
+			if (controllerInput->ButtonPressed_A())
+			{
+				button = XBOX_A;
+			}
+			else if (controllerInput->ButtonPressed_B())
+			{
+				button = XBOX_B;
+			}
+			else if (controllerInput->ButtonPressed_X())
+			{
+				button = XBOX_X;
+			}
+			else if (controllerInput->ButtonPressed_Y())
+			{
+				button = XBOX_Y;
+			}
+			else if (controllerInput->ButtonPressed_LeftShoulder())
+			{
+				button = XBOX_L1;
+			}
+			else if (controllerInput->ButtonPressed_RightShoulder())
+			{
+				button = XBOX_R1;
+			}
+
+			//dont forget triggers
+
+			if (button != XBOX_BLANK)
+			{
+				actionButtonGroup->SetModifiedButton(button);
+				action = A_EDIT_PROFILE;
+			}
+		}
+		break;
+	}
 	}
 
-	//tomorrow: set up the edit profile grid to draw in a separate state from a selected
-	//profile. then make a popup window where you input a button to change your controls.
-	//editProfileGrid->Update( currInput, prevInput );
-
-	if( state == S_SHOWING_OPTIONS )
+	if( action == A_SHOWING_OPTIONS )
 	{
 
 		bool up = controllerInput->GetCurrState().LUp();
@@ -487,25 +526,26 @@ void ControlProfileMenu::Update( ControllerDualStateQueue *controllerInput )
 		UpdateBoxesDebug();
 		
 	}
-	else if( state == S_EDIT_CONFIG )
+	else if( action == A_EDIT_PROFILE )
 	{
-		actionButtonGroup->Update(controllerInput);
+		actionButtonGroup->Update();
 		//editProfileGrid->Update( currInput, prevInput );
 	}
-	else if( state == S_RECEIVE_BUTTON )
+	else if( action == A_REPLACE_BUTTON )
 	{
+		actionButtonGroup->Update();
 		//XBoxButton but = ReceiveInput( currInput, prevInput );
 		/*if( but == XBoxButton::XBOX_BLANK )
 		{
 			if( currReceiveFrame == maxReceiveFrames )
 			{
-				state = S_EDIT_CONFIG;
+				action = A_EDIT_PROFILE;
 			}
 		}
 		else
 		{
 			tempFilter[editIndex] = but;
-			state = S_EDIT_CONFIG;
+			action = A_EDIT_PROFILE;
 		}*/
 	}
 }
@@ -525,25 +565,25 @@ bool ControlProfileMenu::SaveCurrConfig()
 
 	//commented out for now because using mapselectionmenu or related stuff
 	//if( different ) section->mainMenu->cpm->WriteProfiles();
+	MainMenu::GetInstance()->cpm->WriteProfiles();
 
-
-	state = S_SELECTED;
+	action = A_SELECTED;
 	return true;
 }
 
 void ControlProfileMenu::SetupBoxes()
 {
-	sf::Vector2f currTopMid;
+	sf::Vector2f currTopLeft;
 	int extraHeight = 0;
 	
 	for( int i = 0; i < NUM_BOXES; ++i )
 	{
-		currTopMid = topMid + Vector2f( 0, extraHeight );
+		currTopLeft = topLeft + Vector2f( 0, extraHeight );
 
-		boxes[i*4+0].position = Vector2f( currTopMid.x - BOX_WIDTH / 2, currTopMid.y );
-		boxes[i*4+1].position = Vector2f( currTopMid.x + BOX_WIDTH / 2, currTopMid.y );
-		boxes[i*4+2].position = Vector2f( currTopMid.x + BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT );
-		boxes[i*4+3].position = Vector2f( currTopMid.x - BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT );
+		boxes[i*4+0].position = Vector2f(currTopLeft.x, currTopLeft.y );
+		boxes[i*4+1].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y );
+		boxes[i*4+2].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y + BOX_HEIGHT );
+		boxes[i*4+3].position = Vector2f(currTopLeft.x, currTopLeft.y + BOX_HEIGHT );
 
 		boxes[i*4+0].color = Color::Red;
 		boxes[i*4+1].color = Color::Red;
@@ -554,7 +594,7 @@ void ControlProfileMenu::SetupBoxes()
 	}
 
 	Vector2f offset(20, 0);
-	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f(30, 0),
+	vSlider.Setup(Vector2f(topLeft.x + BOX_WIDTH + offset.x, topLeft.y + offset.y), Vector2f(30, 0),
 		Vector2f(30, NUM_BOXES * (BOX_HEIGHT + BOX_SPACING)));
 }
 
@@ -599,7 +639,7 @@ void ControlProfileMenu::UpdateBoxesDebug()
 
 void ControlProfileManager::ClearProfiles()
 {
-	for( list<ControlProfile*>::iterator it = profiles.begin(); it != profiles.end(); ++it )
+	for( auto it = profiles.begin(); it != profiles.end(); ++it )
 	{
 		delete (*it);
 	}
@@ -612,7 +652,8 @@ bool ControlProfileManager::LoadProfiles()
 
 	ControlProfile *def = new ControlProfile;
 	def->name = "KIN_Default";
-	profiles.push_front(def);
+	def->SetFilterDefault();
+	profiles.push_back(def);
 
 	is.open( "Resources/controlprofiles.txt" );
 
@@ -627,59 +668,59 @@ bool ControlProfileManager::LoadProfiles()
 			newProfile->name = profileName;
 			profiles.push_back( newProfile );
 
-			while (true)
+			//while (true)
+			//{
+
+			char opener = 0;
+			bool res = MoveToPeekNextOpener(opener);
+
+			char test = is.peek();
+
+			if (opener == PROFILE_START_CHAR)
 			{
-
-				char opener = 0;
-				bool res = MoveToPeekNextOpener(opener);
-
-				char test = is.peek();
-
-				if (opener == PROFILE_START_CHAR)
+				cout << "done with input types\n";
+				break;
+			}
+			else if (opener == INPUT_TYPE_START_CHAR)
+			{
+				res = MoveToNextSymbolText(INPUT_TYPE_START_CHAR, INPUT_TYPE_END_CHAR, inputTypeName);
+				if (!res)
 				{
-					cout << "done with input types\n";
-					break;
+					assert(0);
+					return false;
 				}
-				else if (opener == INPUT_TYPE_START_CHAR)
+				//cout << "input type: " << inputTypeName << "\n";
+				if (inputTypeName == INPUT_TYPE_XBOX)
 				{
-					res = MoveToNextSymbolText(INPUT_TYPE_START_CHAR, INPUT_TYPE_END_CHAR, inputTypeName);
+					res = LoadXBOXConfig(newProfile);
 					if (!res)
 					{
+						newProfile->SetFilterDefault();
+						//SetFilterDefault(newProfile->filter);
 						assert(0);
 						return false;
 					}
-					//cout << "input type: " << inputTypeName << "\n";
-					if (inputTypeName == INPUT_TYPE_XBOX)
-					{
-						res = LoadXBOXConfig(newProfile);
-						if (!res)
-						{
-							newProfile->SetFilterDefault();
-							//SetFilterDefault(newProfile->filter);
-							assert(0);
-							return false;
-						}
-					}
-					else if (inputTypeName == INPUT_TYPE_KEYBOARD)
-					{
-						//TODO
-					}
-					else if (inputTypeName == INPUT_TYPE_GAMECUBE)
-					{
-						res = LoadGamecubeConfig(newProfile);
-						if (!res)
-						{
-							//SetFilterDefaultGCC(newProfile->gccFilter);
-							assert(0);
-							return false;
-						}
-					}
 				}
-				else
+				else if (inputTypeName == INPUT_TYPE_KEYBOARD)
 				{
-					return true;
+					//TODO
+				}
+				else if (inputTypeName == INPUT_TYPE_GAMECUBE)
+				{
+					res = LoadGamecubeConfig(newProfile);
+					if (!res)
+					{
+						//SetFilterDefaultGCC(newProfile->gccFilter);
+						assert(0);
+						return false;
+					}
 				}
 			}
+			else
+			{
+				return true;
+			}
+			//}
 		}
 	}
 	else
@@ -694,7 +735,7 @@ bool ControlProfileManager::LoadProfiles()
 
 void ControlProfileManager::DebugPrint()
 {
-	for( list<ControlProfile*>::iterator it = profiles.begin(); it != profiles.end(); ++it )
+	for( auto it = profiles.begin(); it != profiles.end(); ++it )
 	{
 		cout << "profile: " << (*it)->name << endl;
 	}
@@ -936,13 +977,17 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_SHIELD;
 	}
-	else if( inputName == "POWER6RIGHT" )
+	else if (inputName == "LEFTWIRE")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_LEFTWIRE;
+	}
+	else if( inputName == "RIGHTWIRE" )
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_RIGHTWIRE;
 	}
-	else if( inputName == "POWER6LEFT" )
+	else if (inputName == "SPECIAL")
 	{
-		buttonType = ControllerSettings::BUTTONTYPE_LEFTWIRE;
+		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL;
 	}
 	else
 	{
@@ -1021,7 +1066,7 @@ void ControlProfileManager::DeleteProfile( std::list<ControlProfile*>::iterator 
 //true if found, false if not found
 bool ControlProfileManager::MoveToNextSymbolText( char startSymbol, char endSymbol, std::string &outStr )
 {
-	const int MAX_NAME_LENGTH = 8;
+	const int MAX_NAME_LENGTH = 24;
 	char cStart = 0;
 	char cEnd = 0;
 	stringstream ss;
@@ -1060,19 +1105,15 @@ bool ControlProfileManager::MoveToNextSymbolText( char startSymbol, char endSymb
 }
 
 
-
 void ControlProfileManager::WriteFilter( ofstream &of, XBoxButton *filter)
 {
 	of << "JUMP=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
 	of << "DASH=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
 	of << "ATTACK=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
 	of << "SHIELD=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
-	of << "POWER6LEFT=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
-	of << "POWER6RIGHT=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
 	of << "SPECIAL=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
-	of << "PAUSE=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_PAUSE]) << "\n";
-
-	of << "\n";
+	of << "LEFTWIRE=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
+	of << "RIGHTWIRE=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
 }
 
 void ControlProfileManager::WriteInputType(ofstream &of, const std::string &inputType)
@@ -1085,18 +1126,32 @@ void ControlProfileManager::WriteProfiles()
 	ofstream of;
 	of.open( "Resources/controlprofiles.txt" );
 
-	list<ControlProfile*>::iterator it = profiles.begin();
+	auto it = profiles.begin();
 	++it; //always skip KIN
 
+	int controllerType;
 	for( ; it != profiles.end(); ++it )
 	{
 		of << PROFILE_START_CHAR << (*it)->name << PROFILE_END_CHAR << "\n";
 		
-		WriteInputType(of, INPUT_TYPE_XBOX);
+		controllerType = (*it)->GetControllerType();
+		switch (controllerType)
+		{
+		case CTYPE_XBOX:
+		{
+			WriteInputType(of, INPUT_TYPE_XBOX);
+			break;
+		}
+		case CTYPE_GAMECUBE:
+		{
+			WriteInputType(of, INPUT_TYPE_GAMECUBE);
+			break;
+		}
+		}
 
 		WriteFilter(of, (*it)->filter );
 
-		WriteInputType(of, INPUT_TYPE_GAMECUBE);
+		//WriteInputType(of, INPUT_TYPE_GAMECUBE);
 
 		//WriteFilter(of, (*it)->gccFilter);
 
@@ -1109,11 +1164,12 @@ ControlProfileManager::~ControlProfileManager()
 	ClearProfiles();
 }
 
-ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
-	sf::Vector2f &p_topMid)
-	:topMid(p_topMid), cpm(p_mainMenu->cpm), mainMenu(p_mainMenu )
+ProfileSelector::ProfileSelector()
 {
-	state = S_SELECTED;
+	mainMenu = MainMenu::GetInstance();
+	cpm = mainMenu->cpm;
+
+	action = A_SELECTED;
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
@@ -1121,7 +1177,7 @@ ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
 	
 	currProfile = cpm->profiles.front(); //KIN 
 
-	selectedProfileText.setFont(p_mainMenu->arial);
+	selectedProfileText.setFont(mainMenu->arial);
 	selectedProfileText.setCharacterSize(40);
 	selectedProfileText.setFillColor(Color::White);
 
@@ -1129,23 +1185,29 @@ ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
 
 	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
 		0 );
-	selectedProfileText.setPosition(topMid.x, topMid.y);
-
-	SetupBoxes();
-
+	
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		profileNames[i].setFont(p_mainMenu->arial);
+		profileNames[i].setFont(mainMenu->arial);
 		profileNames[i].setCharacterSize(40);
 		profileNames[i].setFillColor(Color::White);
 	}
-
-	UpdateNames();
 }
 
 ProfileSelector::~ProfileSelector()
 {
 	delete saSelector;
+}
+
+void ProfileSelector::SetTopLeft(sf::Vector2f &p_topLeft)
+{
+	topLeft = p_topLeft;
+
+	selectedProfileText.setPosition(topLeft.x + BOX_WIDTH / 2.f, topLeft.y);
+
+	SetupBoxes();
+
+	UpdateNames();
 }
 
 bool ProfileSelector::SetCurrProfileByName(const string &name)
@@ -1173,7 +1235,7 @@ bool ProfileSelector::SetCurrProfileByName(const string &name)
 
 void ProfileSelector::UpdateNames()
 {
-	list<ControlProfile*>::iterator lit = cpm->profiles.begin();
+	auto lit = cpm->profiles.begin();
 	if (topIndex > cpm->profiles.size())
 	{
 		topIndex = cpm->profiles.size() - 1;
@@ -1183,6 +1245,8 @@ void ProfileSelector::UpdateNames()
 	{
 		++lit;
 	}
+
+	Vector2f topMid = topLeft + Vector2f(BOX_WIDTH / 2, 0);
 
 	int trueI;
 	int i = 0;
@@ -1222,7 +1286,7 @@ void ProfileSelector::UpdateNames()
 
 void ProfileSelector::Draw(sf::RenderTarget *target)
 {
-	if (state == S_SHOWING_OPTIONS)
+	if (action == A_SHOWING_OPTIONS)
 	{
 		target->draw(boxes, NUM_BOXES * 4, sf::Quads);
 		for (int i = 0; i < NUM_BOXES; ++i)
@@ -1231,7 +1295,7 @@ void ProfileSelector::Draw(sf::RenderTarget *target)
 		}
 		vSlider.Draw(target);
 	}
-	else if (state == State::S_SELECTED)
+	else if (action == A_SELECTED)
 	{
 		target->draw(selectedProfileText);
 	}
@@ -1257,17 +1321,17 @@ void ProfileSelector::MoveDown()
 
 void ProfileSelector::SetupBoxes()
 {
-	sf::Vector2f currTopMid;
+	sf::Vector2f currTopLeft;
 	int extraHeight = 0;
 
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		currTopMid = topMid + Vector2f(0, extraHeight);
+		currTopLeft = topLeft + Vector2f(0, extraHeight);
 
-		boxes[i * 4 + 0].position = Vector2f(currTopMid.x - BOX_WIDTH / 2, currTopMid.y);
-		boxes[i * 4 + 1].position = Vector2f(currTopMid.x + BOX_WIDTH / 2, currTopMid.y);
-		boxes[i * 4 + 2].position = Vector2f(currTopMid.x + BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
-		boxes[i * 4 + 3].position = Vector2f(currTopMid.x - BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
+		boxes[i * 4 + 0].position = Vector2f(currTopLeft.x, currTopLeft.y);
+		boxes[i * 4 + 1].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y);
+		boxes[i * 4 + 2].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y + BOX_HEIGHT);
+		boxes[i * 4 + 3].position = Vector2f(currTopLeft.x, currTopLeft.y + BOX_HEIGHT);
 
 		boxes[i * 4 + 0].color = Color::Red;
 		boxes[i * 4 + 1].color = Color::Red;
@@ -1278,33 +1342,33 @@ void ProfileSelector::SetupBoxes()
 	}
 
 	Vector2f offset(20, 0);
-	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f(30, 0),
+	vSlider.Setup(Vector2f(currTopLeft.x + BOX_WIDTH + offset.x, currTopLeft.y + offset.y), Vector2f(30, 0),
 		Vector2f(30, NUM_BOXES * (BOX_HEIGHT + BOX_SPACING)));
 }
 
 
 void ProfileSelector::Update(ControllerDualStateQueue *controllerInput)
 {
-	switch (state)
+	switch (action)
 	{
-	case S_SELECTED:
+	case A_SELECTED:
 	{
 		if (controllerInput->ButtonPressed_A())
 		{
-			state = S_SHOWING_OPTIONS;
+			action = A_SHOWING_OPTIONS;
 			UpdateNames();
 			oldCurrIndex = saSelector->currIndex;
 		}
 		break;
 	}
-	case S_SHOWING_OPTIONS:
+	case A_SHOWING_OPTIONS:
 	{
 		if (controllerInput->ButtonPressed_A())
 		{
 			int test = 0;
-			state = S_SELECTED;
+			action = A_SELECTED;
 
-			for (list<ControlProfile*>::iterator it = cpm->profiles.begin();
+			for (auto it = cpm->profiles.begin();
 				it != cpm->profiles.end(); ++it)
 			{
 				if (test == saSelector->currIndex)
@@ -1324,7 +1388,7 @@ void ProfileSelector::Update(ControllerDualStateQueue *controllerInput)
 	}
 	}
 
-	if (state == S_SHOWING_OPTIONS)
+	if (action == A_SHOWING_OPTIONS)
 	{
 		bool up = controllerInput->GetCurrState().LUp();
 		bool down = controllerInput->GetCurrState().LDown();
@@ -1357,7 +1421,7 @@ void ProfileSelector::Update(ControllerDualStateQueue *controllerInput)
 		if (changed != 0)
 		{
 			int test = 0;
-			for (list<ControlProfile*>::iterator it = cpm->profiles.begin();
+			for (auto it = cpm->profiles.begin();
 				it != cpm->profiles.end(); ++it)
 			{
 				if (test == saSelector->currIndex)
@@ -1418,30 +1482,44 @@ bool ProfileSelector::SaveCurrConfig()
 	}
 		
 
-	state = S_SELECTED;
+	action = A_SELECTED;
 	return true;
 }
 
-ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu, sf::Vector2f &p_topLeft )
+ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu )
 {
 	controlMenu = p_controlMenu;
 
-	topLeft = p_topLeft;
+	topLeft = Vector2f( 0, 0 );
 
 	selectedIndex = 0;
 
-	std::string buttonTexts[] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
-		"SHIELD", "POWER5", "POWER6LEFT", "POWER6RIGHT" };
+	std::vector<std::string> buttonTexts = { 
+		"JUMP", 
+		"DASH", 
+		"ATTACK", 
+		"SHIELD",
+		//"SHIELD/\nPOWER", 
+		"SPECIAL",
+		"B-WIRE", 
+		"R-WIRE" };
 
-	int xSpacing = 20;
-	int ySpacing = 20;
-	int squareSize = 64;
-	int x, y;
-	for (int i = 0; i < NUM_BUTTONS; ++i)
+	
+
+	numButtons = buttonTexts.size();
+	
+	cols = 3;
+	rows = ceil(numButtons / (float)cols);
+
+	MainMenu *mm = MainMenu::GetInstance();
+	Tileset *ts_buttons = mm->GetButtonIconTileset(CTYPE_XBOX); //for now
+
+	buttonQuads = new Vertex[numButtons * 4];
+
+	actionButtons.resize(numButtons);
+	for (int i = 0; i < numButtons; ++i)
 	{
-		x = i % COLS;
-		y = i / COLS;
-		actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i], topLeft + Vector2f(x * (squareSize + xSpacing), y * (squareSize + ySpacing)));
+		actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i]);
 	}
 
 	Reset();
@@ -1449,10 +1527,12 @@ ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu, sf::Vect
 
 ActionButtonGroup::~ActionButtonGroup()
 {
-	for (int i = 0; i < NUM_BUTTONS; ++i)
+	for (int i = 0; i < actionButtons.size(); ++i)
 	{
 		delete actionButtons[i];
 	}
+
+	delete[] buttonQuads;
 }
 
 void ActionButtonGroup::Reset()
@@ -1462,74 +1542,153 @@ void ActionButtonGroup::Reset()
 	SetSelectedIndex(0);
 }
 
+void ActionButtonGroup::SetTopLeft(sf::Vector2f &pos)
+{
+	topLeft = pos;
+
+	int squareSize = 64 + 16;
+
+	int xSpacing = 50 + squareSize;
+	int ySpacing = 40 + squareSize;
+
+	Vector2f start = Vector2f(xSpacing / 2, 10);
+	
+	int x, y;
+	for (int i = 0; i < numButtons; ++i)
+	{
+		x = i % cols;
+		y = i / cols;
+		actionButtons[i]->SetPosition(topLeft + start + Vector2f(x * xSpacing, y * ySpacing));
+	}
+	SetSelectedIndex(selectedIndex);
+}
+
 void ActionButtonGroup::SetSelectedIndex(int sel)
 {
+	if (selectedIndex != sel)
+	{
+		//play noise
+	}
 	selectedIndex = sel;
 
-	SetRectColor(highlightQuad, Color::Red);
+	SetRectColor(highlightQuad, Color::White);
 	float bSize = actionButtons[selectedIndex]->buttonSize;
 	float border = 16;
 	SetRectCenter(highlightQuad, bSize + border, bSize + border, actionButtons[selectedIndex]->quadCenter );
 }
 
-void ActionButtonGroup::Update(ControllerDualStateQueue *controllerInput)
+void ActionButtonGroup::SetModifiedButton(XBoxButton button)
 {
+	//replace the button here
+	action = A_SELECT_BUTTON;
+	SetRectColor(highlightQuad, Color::White);
+
+	controlMenu->tempProfile->filter[selectedIndex] = button;
+	UpdateButtonIcons();
+	
+	//MainMenu::GetInstance()->cpm->WriteProfiles();
+
+	//actionButtons[selectedIndex]->SetButtonSubRect(mm->GetButtonIconTile((ControllerSettings::ButtonType)i, controlMenu->currProfile));
+}
+
+void ActionButtonGroup::ModifySelectedButton()
+{
+	action = A_MODIFY_BUTTON;
+	SetRectColor(highlightQuad, Color::Magenta);
+}
+
+void ActionButtonGroup::UpdateButtonIcons()
+{
+	assert(controlMenu->tempProfile != NULL);
+	ControllerDualStateQueue *controllerInput = controlMenu->controllerInput;
+
+	MainMenu *mm = MainMenu::GetInstance();
+	for (int i = 0; i < numButtons; ++i)
+	{
+		actionButtons[i]->SetButtonSubRect(mm->GetButtonIconTile((ControllerSettings::ButtonType)i, controlMenu->tempProfile));
+	}
+}
+
+void ActionButtonGroup::Update()
+{
+	ControllerDualStateQueue *controllerInput = controlMenu->controllerInput;
+
 	switch (action)
 	{
 	case A_SELECT_BUTTON:
 	{
-		int x = selectedIndex % COLS;
-		int y = selectedIndex / COLS;
+		int x = selectedIndex % cols;
+		int y = selectedIndex / cols;
+
+		//int oldX = x;
+		//int oldY = y;
+
+		int tempIndex = selectedIndex;
 
 		if (controllerInput->GetPrevState().IsLeftNeutral())
 		{
-
-
 			if (controllerInput->DirPressed_Left())
 			{
-				--x;
-				if (x < 0)
+				do
 				{
-					x = COLS - 1;
-				}
+					--x;
+					if (x < 0)
+					{
+						x = cols - 1;
+					}
+
+					tempIndex = y * cols + x;
+				} 
+				while (tempIndex >= numButtons);
 			}
 			else if (controllerInput->DirPressed_Right())
 			{
-				++x;
-				if (x == COLS)
+				do
 				{
-					x = 0;
+					++x;
+					if (x == cols)
+					{
+						x = 0;
+					}
+					tempIndex = y * cols + x;
 				}
+				while (tempIndex >= numButtons);
 			}
 
 			if (controllerInput->DirPressed_Up())
 			{
-				--y;
-				if (y < 0)
+				do
 				{
-					y = ROWS - 1;
+					--y;
+					if (y < 0)
+					{
+						y = cols - 1;
+					}
+					tempIndex = y * cols + x;
 				}
+				while (tempIndex >= numButtons);
 			}
 			else if (controllerInput->DirPressed_Down())
 			{
-				++y;
-				if (y == ROWS)
+				do
 				{
-					y = 0;
+					++y;
+					if (y == cols)
+					{
+						y = 0;
+					}
+					tempIndex = y * cols + x;
 				}
+				while (tempIndex >= numButtons);
 			}
 		}
 
-		int tempIndex = y * COLS + x;
+		//tempIndex = y * cols + x;
 
 		if (tempIndex != selectedIndex)
 		{
 			SetSelectedIndex(tempIndex);
 		}
-		break;
-	}
-	case A_MODIFY_BUTTON:
-	{
 		break;
 	}
 	}
@@ -1539,21 +1698,20 @@ void ActionButtonGroup::Draw(sf::RenderTarget *target)
 {
 	MainMenu *mm = MainMenu::GetInstance();
 	
-	Tileset *ts_buttons = mm->GetButtonIconTileset(controlMenu->currControllerType);
+	Tileset *ts_buttons = mm->GetButtonIconTileset(controlMenu->controllerInput->GetControllerType());
 
 	target->draw(highlightQuad, 4, sf::Quads);
 
-	target->draw(buttonQuads, 4 * NUM_BUTTONS, sf::Quads, ts_buttons->texture);
+	target->draw(buttonQuads, 4 * numButtons, sf::Quads, ts_buttons->texture);
 
-	for (int i = 0; i < NUM_BUTTONS; ++i)
+	for (int i = 0; i < numButtons; ++i)
 	{
 		actionButtons[i]->Draw(target);
 	}
 }
 
-ActionButton::ActionButton(sf::Vertex *p_quad, const std::string &name, sf::Vector2f &pos)
+ActionButton::ActionButton(sf::Vertex *p_quad, const std::string &name )
 {
-	position = pos;
 	quad = p_quad;
 
 	buttonSize = 64;
@@ -1566,16 +1724,21 @@ ActionButton::ActionButton(sf::Vertex *p_quad, const std::string &name, sf::Vect
 	actionName.setString(name);
 	auto lb = actionName.getLocalBounds();
 	actionName.setOrigin(lb.left + lb.width / 2, 0);
-	actionName.setPosition(pos);
 
-	quadCenter = pos + Vector2f(0, 25 + buttonSize / 2);
-	SetRectCenter(quad, buttonSize, buttonSize, quadCenter);
-	
+	SetPosition(Vector2f(0, 0));
 }
 
 void ActionButton::SetButtonSubRect(sf::IntRect &ir)
 {
 	SetRectSubRect(quad, ir);
+}
+
+void ActionButton::SetPosition(sf::Vector2f &pos)
+{
+	position = pos;
+	actionName.setPosition(position);
+	quadCenter = position + Vector2f(0, 35 + buttonSize / 2);
+	SetRectCenter(quad, buttonSize, buttonSize, quadCenter);
 }
 
 void ActionButton::Draw(sf::RenderTarget *target)

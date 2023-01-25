@@ -13,7 +13,7 @@ using namespace sf;
 ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm, TilesetManager *tm)
 	:mainMenu( p_mm )
 {
-	pSel = new ProfileSelector(mainMenu, Vector2f( 250, 100));
+	pSel = new ProfileSelector;
 
 	ts_xboxButtons = tm->GetSizedTileset("Menu/xbox_button_icons_128x128.png");
 	ts_actionIcons = tm->GetSizedTileset("Menu/power_icon_128x128.png");
@@ -198,7 +198,7 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update(ControllerDualState
 		//UpdateXboxButtonIcons();
 	}
 
-	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && controllerInput->ButtonPressed_X() && pSel->saSelector->currIndex > 0)
+	if (!editMode && pSel->action == ProfileSelector::A_SELECTED && controllerInput->ButtonPressed_X() && pSel->saSelector->currIndex > 0)
 	{
 		editMode = true;
 		SetGreyActionTiles(!editMode);

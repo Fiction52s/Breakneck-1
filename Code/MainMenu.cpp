@@ -1458,7 +1458,7 @@ void MainMenu::GGPOOption()
 	delete edit;
 }
 
-sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInput, ControllerSettings::ButtonType button)
+sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, ControlProfile *profile)
 {
 	/*CTYPE_XBOX,
 		CTYPE_GAMECUBE,
@@ -1467,22 +1467,21 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInpu
 		CTYPE_KEYBOARD,
 		CTYPE_NONE,*/
 
-	
 
 	int buttonIndex = 0;
 
-	int cType = controllerInput->GetControllerType();
+	int cType = profile->GetControllerType();
 
 	switch (cType)
 	{
 	case CTYPE_XBOX:
 	{
-		buttonIndex = 0;//(controllerInput->con->filter[button]);// -1);
+		buttonIndex = profile->Filter(button);//0;//(controllerInput->con->filter[button]);// -1);
 		break;
 	}
 	case CTYPE_GAMECUBE:
 	{
-		buttonIndex = 0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
+		buttonIndex = profile->Filter(button);//0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
 		break;
 	}
 	case CTYPE_PS4:
@@ -1493,7 +1492,7 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerDualStateQueue *controllerInpu
 	}
 	case CTYPE_KEYBOARD:
 	{
-		buttonIndex = controllerInput->con->keySettings.buttonMap[button];
+		buttonIndex = 0;//controllerInput->con->keySettings.buttonMap[button];
 
 
 		//if (baseButtonIndex < 12 * 6)
