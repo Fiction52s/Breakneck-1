@@ -19,11 +19,7 @@ SinglePlayerBox::SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen 
 {
 	joinScreen = p_joinScreen;
 
-	currProfile = NULL;
-	
-	controlMenu = new ControlProfileMenu(MainMenu::GetInstance()->cpm->profiles);
-
-	currProfile = MainMenu::GetInstance()->cpm->profiles.front();
+	controlMenu = new ControlProfileMenu;
 
 	mode = MODE_DEFAULT;
 
@@ -126,6 +122,11 @@ void SinglePlayerBox::Hide()
 	//numberText->setString("");
 }
 
+ControlProfile *SinglePlayerBox::GetCurrProfile()
+{
+	return controlMenu->currProfile;
+}
+
 void SinglePlayerBox::Update()
 {
 	if (controllerStates != NULL)
@@ -160,7 +161,6 @@ void SinglePlayerBox::Update()
 				if (controlMenu->action == ControlProfileMenu::A_SELECTED)
 				{
 					action = A_HAS_PLAYER;
-					currProfile = controlMenu->currProfile;
 				}
 				break;
 			}
@@ -531,6 +531,7 @@ void SinglePlayerControllerJoinScreen::TryControllerJoin(ControllerDualStateQueu
 	assert(playerBox->controllerStates == NULL);
 
 	playerBox->SetControllerStates(conStates, 0);
+
 	SetAction(A_READY);
 	SetRectColor(bgQuad, Color(83, 102, 188));
 	//cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;

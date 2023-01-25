@@ -32,7 +32,6 @@ struct LevelSelector;
 struct MusicInfo;
 struct AdventureMap;
 struct GlobalSaveFile;
-struct ControlSettingsMenu;
 
 struct EffectPool;
 
@@ -365,8 +364,6 @@ struct MainMenu
 	static sf::RenderTexture *brushPreviewTexture;
 	static sf::RenderTexture *extraScreenTexture;
 	static sf::RenderTexture *auraCheckTexture;
-
-	ControlSettingsMenu *controlSettingsMenu;
 	
 	//Tileset *ts_kinTitle[7];
 	TitleScreen *titleScreen;
@@ -394,8 +391,6 @@ struct MainMenu
 	static void sGoToNextLevel(MainMenu *m,
 		AdventureMap *am,
 		Level *lev);
-
-	ControlProfile *GetCurrSelectedProfile();
 
 	//singleton
 	static MainMenu *GetInstance();

@@ -24,7 +24,6 @@
 #include "VisualEffects.h"
 #include "MapHeader.h"
 #include "ButtonHolder.h"
-#include "ControlSettingsMenu.h"
 #include "SaveMenuScreen.h"
 
 #include <Windows.h>
@@ -527,8 +526,6 @@ MainMenu::MainMenu()
 
 	messagePopup = new MessagePopup;
 
-	controlSettingsMenu = new ControlSettingsMenu(this, &tilesetManager);
-
 	deadThread = NULL;
 	loadThread = NULL;
 	
@@ -835,8 +832,6 @@ MainMenu::~MainMenu()
 	delete loadingBackpack;
 	delete cpm;
 	delete musicManager;
-
-	delete controlSettingsMenu;
 
 	if( introMovie != NULL)
 		delete introMovie;
@@ -3153,7 +3148,7 @@ void MainMenu::HandleMenuMode()
 			mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
 			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
 			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBox->skinIndex;
-			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBox->controlMenu->currProfile;
+			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBox->GetCurrProfile();
 			mp.randSeed = time(0);
 			mp.numPlayers = 1;
 			mp.gameModeType = MatchParams::GAME_MODE_BASIC;
@@ -3443,11 +3438,6 @@ void MainMenu::StartLoadModeScreen()
 	fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 	SetMode(LOADINGMENULOOP);
 	loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
-}
-
-ControlProfile *MainMenu::GetCurrSelectedProfile()
-{
-	return controlSettingsMenu->pSel->currProfile;
 }
 
 void MainMenu::UnlockSkin(int skinIndex)

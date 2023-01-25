@@ -35,40 +35,49 @@ const int ProfileSelector::BOX_SPACING = 10;
 
 ControlProfile::ControlProfile()
 {
+	SetControllerType(CTYPE_XBOX);
 	SetFilterDefault();
 }
 
 void ControlProfile::SetFilterDefault()
 {
-	cType = CTYPE_XBOX;
-
 	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 	{
 		filter[i] = XBOX_BLANK;
 	}
 
-	filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_A;
-	filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
-	filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_R1;
-	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_L1;
-	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
-	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
-	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
+	switch (cType)
+	{
+	case CTYPE_XBOX:
+	{
+		filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_A;
+		filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
+		filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_R1;
+		filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_L1;
+		filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
+		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
+		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
 
-	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
-	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
+		filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
+		filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
+		break;
+	}
+	case CTYPE_GAMECUBE:
+	{
+		filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_Y;
+		filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
+		filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_A;
+		filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_R1;
+		filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
+		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
+		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
 
-	//gamecube controller
-
-	/*filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_Y;
-	filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
-	filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_A;
-	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_R1;
-	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
-	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
-	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
-	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
-	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;*/
+		filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
+		filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
+		break;
+	}
+		
+	}
 }
 
 void ControlProfile::FilterState(ControllerState &state)
@@ -100,6 +109,11 @@ int ControlProfile::GetControllerType()
 	return cType;
 }
 
+void ControlProfile::SetControllerType(int c)
+{
+	cType = c;
+}
+
 void ControlProfile::CopyTo(ControlProfile *cp)
 {
 	cp->cType = cType;
@@ -110,20 +124,19 @@ void ControlProfile::CopyTo(ControlProfile *cp)
 	}
 }
 
-ControlProfileMenu::ControlProfileMenu( std::list<ControlProfile*> &p_profiles)
-	:profiles( p_profiles ),
-	font( MainMenu::GetInstance()->arial ), topIndex( 0 ), action( A_SELECTED ), oldCurrIndex( 0 )
+ControlProfileMenu::ControlProfileMenu()
+	:font( MainMenu::GetInstance()->arial ), topIndex( 0 ), action( A_SELECTED ), oldCurrIndex( 0 )
 {
 	actionButtonGroup = new ActionButtonGroup(this);
 
 	tempProfile = new ControlProfile;
 
-	assert(!p_profiles.empty());
+	//assert(!p_profiles.empty());
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector( 3, waitFrames, 2, waitModeThresh, 0, 0 );
 
-	currProfile = p_profiles.front(); //KIN 
+	currProfile = NULL;// p_profiles.front(); //KIN 
 
 	int textSize = 30;
 
@@ -177,9 +190,31 @@ ControlProfileMenu::~ControlProfileMenu()
 	delete tempProfile;
 }
 
+void ControlProfileMenu::SetProfiles(std::list<ControlProfile*> &p_profiles)
+{
+	profiles = p_profiles;
+
+	assert(!profiles.empty());
+
+	currProfile = profiles.front();
+	
+	//if (profiles.empty())
+	//{
+	//	//cant be empty because I always add the default
+	//}
+}
+
 void ControlProfileMenu::SetControllerInput(ControllerDualStateQueue *p_controllerInput)
 {
 	controllerInput = p_controllerInput;
+
+	auto &managedProfiles = MainMenu::GetInstance()->cpm->profiles[controllerInput->GetControllerType()];
+
+	SetProfiles(managedProfiles);
+
+	currProfile = managedProfiles.front();//controlMenu = new ControlProfileMenu;
+
+	//currProfile = MainMenu::GetInstance()->cpm->profiles.front();
 
 	currProfile->CopyTo(tempProfile);
 	actionButtonGroup->UpdateButtonIcons();
@@ -593,21 +628,34 @@ void ControlProfileMenu::UpdateBoxesDebug()
 
 void ControlProfileManager::ClearProfiles()
 {
-	for( auto it = profiles.begin(); it != profiles.end(); ++it )
+	for (int i = 0; i < CTYPE_NONE; ++i)
 	{
-		delete (*it);
+		for (auto it = profiles[i].begin(); it != profiles[i].end(); ++it)
+		{
+			delete (*it);
+		}
+		profiles[i].clear();
 	}
-	profiles.clear();
 }
 
 bool ControlProfileManager::LoadProfiles()
 {
 	ClearProfiles();
 
-	ControlProfile *def = new ControlProfile;
-	def->name = "Default";
-	def->SetFilterDefault();
-	profiles.push_back(def);
+	ControlProfile *defXBOX = new ControlProfile;
+	defXBOX->name = "Default";
+	defXBOX->SetControllerType(CTYPE_XBOX);
+	defXBOX->SetFilterDefault();
+
+	profiles[CTYPE_XBOX].push_back(defXBOX);
+
+
+	ControlProfile *defGCC = new ControlProfile;
+	defGCC->name = "Default";
+	defGCC->SetControllerType(CTYPE_GAMECUBE);
+	defGCC->SetFilterDefault();
+
+	profiles[CTYPE_GAMECUBE].push_back(defGCC);
 
 	is.open( "Resources/controlprofiles.txt" );
 
@@ -620,7 +668,7 @@ bool ControlProfileManager::LoadProfiles()
 			//cout << "new profile: " << profileName << "\n";
 			ControlProfile *newProfile = new ControlProfile;
 			newProfile->name = profileName;
-			profiles.push_back( newProfile );
+			
 
 			//while (true)
 			//{
@@ -646,6 +694,7 @@ bool ControlProfileManager::LoadProfiles()
 				//cout << "input type: " << inputTypeName << "\n";
 				if (inputTypeName == INPUT_TYPE_XBOX)
 				{
+					newProfile->SetControllerType(CTYPE_XBOX);
 					res = LoadXBOXConfig(newProfile);
 					if (!res)
 					{
@@ -654,6 +703,7 @@ bool ControlProfileManager::LoadProfiles()
 						assert(0);
 						return false;
 					}
+					profiles[CTYPE_XBOX].push_back(newProfile);
 				}
 				else if (inputTypeName == INPUT_TYPE_KEYBOARD)
 				{
@@ -661,13 +711,16 @@ bool ControlProfileManager::LoadProfiles()
 				}
 				else if (inputTypeName == INPUT_TYPE_GAMECUBE)
 				{
+					newProfile->SetControllerType(CTYPE_GAMECUBE);
 					res = LoadGamecubeConfig(newProfile);
 					if (!res)
 					{
+						newProfile->SetFilterDefault();
 						//SetFilterDefaultGCC(newProfile->gccFilter);
 						assert(0);
 						return false;
 					}
+					profiles[CTYPE_GAMECUBE].push_back(newProfile);
 				}
 			}
 			else
@@ -689,10 +742,14 @@ bool ControlProfileManager::LoadProfiles()
 
 void ControlProfileManager::DebugPrint()
 {
-	for( auto it = profiles.begin(); it != profiles.end(); ++it )
+	for (int i = 0; i < CTYPE_NONE; ++i)
 	{
-		cout << "profile: " << (*it)->name << endl;
+		for (auto it = profiles[i].begin(); it != profiles[i].end(); ++it)
+		{
+			cout << "profile: " << (*it)->name << endl;
+		}
 	}
+	
 }
 
 bool ControlProfileManager::IsSymbol( char c )
@@ -1012,9 +1069,9 @@ bool ControlProfileManager::MoveToPeekNextOpener( char &outChar )
 
 void ControlProfileManager::DeleteProfile( std::list<ControlProfile*>::iterator &it )
 {
-	profiles.erase( it );
+	//profiles.erase( it );
 
-	WriteProfiles();
+	//WriteProfiles();
 }
 
 //true if found, false if not found
@@ -1080,403 +1137,45 @@ void ControlProfileManager::WriteProfiles()
 	ofstream of;
 	of.open( "Resources/controlprofiles.txt" );
 
-	auto it = profiles.begin();
-	++it; //always skip KIN
-
-	int controllerType;
-	for( ; it != profiles.end(); ++it )
+	for (int i = 0; i < CTYPE_NONE; ++i)
 	{
-		of << PROFILE_START_CHAR << (*it)->name << PROFILE_END_CHAR << "\n";
-		
-		controllerType = (*it)->GetControllerType();
-		switch (controllerType)
+		auto it = profiles[i].begin();
+		++it; //always skip KIN
+
+		int controllerType;
+		for (; it != profiles[i].end(); ++it)
 		{
-		case CTYPE_XBOX:
-		{
-			WriteInputType(of, INPUT_TYPE_XBOX);
-			break;
+			of << PROFILE_START_CHAR << (*it)->name << PROFILE_END_CHAR << "\n";
+
+			controllerType = (*it)->GetControllerType();
+			switch (controllerType)
+			{
+			case CTYPE_XBOX:
+			{
+				WriteInputType(of, INPUT_TYPE_XBOX);
+				break;
+			}
+			case CTYPE_GAMECUBE:
+			{
+				WriteInputType(of, INPUT_TYPE_GAMECUBE);
+				break;
+			}
+			}
+
+			WriteFilter(of, (*it)->filter);
+
+			//WriteInputType(of, INPUT_TYPE_GAMECUBE);
+
+			//WriteFilter(of, (*it)->gccFilter);
+
+			of << "\n";
 		}
-		case CTYPE_GAMECUBE:
-		{
-			WriteInputType(of, INPUT_TYPE_GAMECUBE);
-			break;
-		}
-		}
-
-		WriteFilter(of, (*it)->filter );
-
-		//WriteInputType(of, INPUT_TYPE_GAMECUBE);
-
-		//WriteFilter(of, (*it)->gccFilter);
-
-		of << "\n";
 	}
 }
 
 ControlProfileManager::~ControlProfileManager()
 {
 	ClearProfiles();
-}
-
-ProfileSelector::ProfileSelector()
-{
-	mainMenu = MainMenu::GetInstance();
-	cpm = mainMenu->cpm;
-
-	action = A_SELECTED;
-	int waitFrames[3] = { 10, 5, 2 };
-	int waitModeThresh[2] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
-	topIndex = 0;
-	
-	currProfile = cpm->profiles.front(); //KIN 
-
-	selectedProfileText.setFont(mainMenu->arial);
-	selectedProfileText.setCharacterSize(40);
-	selectedProfileText.setFillColor(Color::White);
-
-	selectedProfileText.setString(currProfile->name);
-
-	//selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
-	//	0 );
-	
-	for (int i = 0; i < NUM_BOXES; ++i)
-	{
-		profileNames[i].setFont(mainMenu->arial);
-		profileNames[i].setCharacterSize(40);
-		profileNames[i].setFillColor(Color::White);
-	}
-}
-
-ProfileSelector::~ProfileSelector()
-{
-	delete saSelector;
-}
-
-void ProfileSelector::SetTopLeft(sf::Vector2f &p_topLeft)
-{
-	topLeft = p_topLeft;
-
-	selectedProfileText.setPosition(topLeft.x, topLeft.y); //+ BOX_WIDTH / 2.f, topLeft.y);
-
-	SetupBoxes();
-
-	UpdateNames();
-}
-
-bool ProfileSelector::SetCurrProfileByName(const string &name)
-{
-	int i = 0;
-	for (auto it = cpm->profiles.begin(); it != cpm->profiles.end(); ++it)
-	{
-		if (name == (*it)->name)
-		{
-			currProfile = (*it);
-			saSelector->currIndex = i;
-			topIndex = i;
-			oldCurrIndex = i;
-			UpdateNames();
-			selectedProfileText.setString(currProfile->name);
-			return true;
-		}
-		++i;
-	}
-
-	return false;
-	//set the current profile to the profile named name.
-	//then in gamesession we use the same code on the current profile that we did before
-}
-
-void ProfileSelector::UpdateNames()
-{
-	auto lit = cpm->profiles.begin();
-	if (topIndex > cpm->profiles.size())
-	{
-		topIndex = cpm->profiles.size() - 1;
-	}
-
-	for (int i = 0; i < topIndex; ++i)
-	{
-		++lit;
-	}
-
-	Vector2f topMid = topLeft + Vector2f(BOX_WIDTH / 2, 0);
-
-	int trueI;
-	int i = 0;
-	int numProfiles = cpm->profiles.size();
-	for (; i < NUM_BOXES; ++i)
-	{
-		trueI = (topIndex + i) % NUM_BOXES;
-		if (i == numProfiles)
-		{
-			for (; i < NUM_BOXES; ++i)
-			{
-				profileNames[i].setString("");
-			}
-			break;
-		}
-
-		if (lit == cpm->profiles.end())
-			lit = cpm->profiles.begin();
-
-		profileNames[i].setString((*lit)->name);
-		profileNames[i].setOrigin(profileNames[i].getLocalBounds().width / 2, 0);
-		//profileNames[i].getLocalBounds().height / 2 );
-		//profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
-		profileNames[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
-
-		++lit;
-	}
-
-	saSelector->totalItems = numProfiles;
-
-	Vector2f offset(20, 0);
-	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y),
-		Vector2f(vSlider.barSize.x, max((vSlider.selectorSize.y / numProfiles), 5.f)), vSlider.selectorSize);
-
-	vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
-}
-
-void ProfileSelector::Draw(sf::RenderTarget *target)
-{
-	if (action == A_SHOWING_OPTIONS)
-	{
-		target->draw(boxes, NUM_BOXES * 4, sf::Quads);
-		for (int i = 0; i < NUM_BOXES; ++i)
-		{
-			target->draw(profileNames[i]);
-		}
-		vSlider.Draw(target);
-	}
-	else if (action == A_SELECTED)
-	{
-		target->draw(selectedProfileText);
-	}
-}
-
-void ProfileSelector::MoveUp()
-{
-	topIndex++;
-	if (topIndex == cpm->profiles.size())
-	{
-		topIndex = 0;
-	}
-}
-
-void ProfileSelector::MoveDown()
-{
-	topIndex--;
-	if (topIndex == -1)
-	{
-		topIndex = cpm->profiles.size() - 1;
-	}
-}
-
-void ProfileSelector::SetupBoxes()
-{
-	sf::Vector2f currTopLeft;
-	int extraHeight = 0;
-
-	for (int i = 0; i < NUM_BOXES; ++i)
-	{
-		currTopLeft = topLeft + Vector2f(0, extraHeight);
-
-		boxes[i * 4 + 0].position = Vector2f(currTopLeft.x, currTopLeft.y);
-		boxes[i * 4 + 1].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y);
-		boxes[i * 4 + 2].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y + BOX_HEIGHT);
-		boxes[i * 4 + 3].position = Vector2f(currTopLeft.x, currTopLeft.y + BOX_HEIGHT);
-
-		boxes[i * 4 + 0].color = Color::Red;
-		boxes[i * 4 + 1].color = Color::Red;
-		boxes[i * 4 + 2].color = Color::Red;
-		boxes[i * 4 + 3].color = Color::Red;
-
-		extraHeight += BOX_HEIGHT + BOX_SPACING;
-	}
-
-	Vector2f offset(20, 0);
-	vSlider.Setup(Vector2f(currTopLeft.x + BOX_WIDTH + offset.x, currTopLeft.y + offset.y), Vector2f(30, 0),
-		Vector2f(30, NUM_BOXES * (BOX_HEIGHT + BOX_SPACING)));
-}
-
-
-void ProfileSelector::Update(ControllerDualStateQueue *controllerInput)
-{
-	switch (action)
-	{
-	case A_SELECTED:
-	{
-		if (controllerInput->ButtonPressed_A())
-		{
-			action = A_SHOWING_OPTIONS;
-			UpdateNames();
-			oldCurrIndex = saSelector->currIndex;
-		}
-		break;
-	}
-	case A_SHOWING_OPTIONS:
-	{
-		if (controllerInput->ButtonPressed_A())
-		{
-			int test = 0;
-			action = A_SELECTED;
-
-			for (auto it = cpm->profiles.begin();
-				it != cpm->profiles.end(); ++it)
-			{
-				if (test == saSelector->currIndex)
-				{
-					currProfile = (*it);
-					break;
-				}
-				++test;
-			}
-
-			selectedProfileText.setString(currProfile->name);
-			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left
-				+ selectedProfileText.getLocalBounds().width / 2, 0);
-		}
-
-		break;
-	}
-	}
-
-	if (action == A_SHOWING_OPTIONS)
-	{
-		bool up = controllerInput->GetCurrState().LUp();
-		bool down = controllerInput->GetCurrState().LDown();
-
-		int changed = saSelector->UpdateIndex(up, down);
-		int cIndex = saSelector->currIndex;
-
-		bool inc = changed > 0;
-		bool dec = changed < 0;
-
-		if (inc)
-		{
-			if (cIndex - topIndex == NUM_BOXES)
-			{
-				topIndex = cIndex - (NUM_BOXES - 1);
-			}
-			else if (cIndex == 0)
-			{
-				topIndex = 0;
-			}
-		}
-		else if (dec)
-		{
-			if (cIndex == saSelector->totalItems - 1)
-				topIndex = saSelector->totalItems - NUM_BOXES;
-			else if (cIndex < topIndex)
-				topIndex = cIndex;
-		}
-
-		if (changed != 0)
-		{
-			int test = 0;
-			for (auto it = cpm->profiles.begin();
-				it != cpm->profiles.end(); ++it)
-			{
-				if (test == saSelector->currIndex)
-				{
-					currProfile = (*it);
-					break;
-				}
-				++test;
-			}
-
-			UpdateNames();
-
-			vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
-		}
-		UpdateBoxColor();
-	}
-}
-
-void ProfileSelector::UpdateBoxColor()
-{
-	Color c;
-	int trueI = (saSelector->currIndex - topIndex);// % NUM_BOXES;
-	for (int i = 0; i < NUM_BOXES; ++i)
-	{
-		if (i == trueI)
-		{
-			c = Color::Blue;
-		}
-		else
-		{
-			c = Color::Red;
-		}
-		SetRectColor(boxes + i * 4, c);
-	}
-}
-
-bool ProfileSelector::SaveCurrConfig()
-{
-	bool different = false;
-	
-	//XBoxButton *fil = currProfile->GetCurrFilter();
-	/*for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
-	{
-		if (oldFilter[i] != tempFilter[i])
-		{
-			fil[i] = tempFilter[i];	
-			different = true;
-		}
-		else
-		{		
-			fil[i] = oldFilter[i];
-		}
-	}*/
-
-	if (different)
-	{
-		mainMenu->cpm->WriteProfiles();
-	}
-		
-
-	action = A_SELECTED;
-	return true;
-}
-
-ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu )
-{
-	controlMenu = p_controlMenu;
-
-	topLeft = Vector2f( 0, 0 );
-
-	selectedIndex = 0;
-
-	std::vector<std::string> buttonTexts = { 
-		"JUMP", 
-		"DASH", 
-		"ATTACK", 
-		"SHIELD",
-		//"SHIELD/\nPOWER", 
-		"SPECIAL",
-		"B-WIRE", 
-		"R-WIRE" };
-
-	
-
-	numButtons = buttonTexts.size();
-	
-	cols = 3;
-	rows = ceil(numButtons / (float)cols);
-
-	MainMenu *mm = MainMenu::GetInstance();
-	Tileset *ts_buttons = mm->GetButtonIconTileset(CTYPE_XBOX); //for now
-
-	buttonQuads = new Vertex[numButtons * 4];
-
-	actionButtons.resize(numButtons);
-	for (int i = 0; i < numButtons; ++i)
-	{
-		actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i]);
-	}
-
-	Reset();
 }
 
 ActionButtonGroup::~ActionButtonGroup()

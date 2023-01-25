@@ -23,6 +23,7 @@ struct ControlProfile
 	XBoxButton Filter(ControllerSettings::ButtonType b);
 	int GetControllerType();
 	void CopyTo(ControlProfile *cp);
+	void SetControllerType(int c);
 
 	void SetFilterDefault();
 private:
@@ -31,7 +32,7 @@ private:
 
 struct ControlProfileManager
 {
-	std::list<ControlProfile*> profiles;
+	std::list<ControlProfile*> profiles[CTYPE_NONE];
 
 	~ControlProfileManager();
 	bool LoadProfiles();
@@ -55,53 +56,6 @@ private:
 	void DeleteProfile( std::list<ControlProfile*>::iterator &it );
 	void ClearProfiles();
 };
-
-struct ProfileSelector
-{
-	static const int NUM_BOXES = 7;
-
-	static const int BOX_WIDTH;
-	static const int BOX_HEIGHT;
-	static const int BOX_SPACING;
-
-
-	enum Action
-	{
-		A_SELECTED,
-		A_SHOWING_OPTIONS
-	};
-
-	int action;
-	ControlProfileManager *cpm;
-	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
-	XBoxButton oldFilter[ControllerSettings::BUTTONTYPE_Count];
-	sf::Vertex boxes[NUM_BOXES * 4];
-	sf::Text profileNames[NUM_BOXES];
-	VertSlider vSlider;
-	sf::Vector2f topLeft;
-	int topIndex;
-	MainMenu *mainMenu;
-	ControlProfile *currProfile;
-	SingleAxisSelector *saSelector;
-
-
-	ProfileSelector();
-	~ProfileSelector();
-	void SetTopLeft(sf::Vector2f &topLeft);
-	void UpdateNames();
-	bool SetCurrProfileByName(const std::string &name);
-	bool SaveCurrConfig();
-	void Draw(sf::RenderTarget *target);
-	void SetupBoxes();
-	void MoveUp();
-	void MoveDown();
-	void Update(ControllerDualStateQueue *controllerInput);
-	void UpdateBoxColor();
-	sf::Text selectedProfileText;
-	int oldCurrIndex;
-};
-
-
 
 struct ActionButton
 {
@@ -220,10 +174,11 @@ struct ControlProfileMenu
 	ControllerDualStateQueue *controllerInput;
 
 
-	ControlProfileMenu(std::list<ControlProfile*> &p_profiles);
+	ControlProfileMenu();
 	~ControlProfileMenu();
 	bool SaveCurrConfig();
 	ControlProfile *GetProfileAtIndex(int ind);
+	void SetProfiles(std::list<ControlProfile*> &p_profiles);
 	void SetControllerInput(ControllerDualStateQueue *controllerInput);
 	void SetupBoxes();
 	void SetTopLeft(sf::Vector2f &p_topLeft);

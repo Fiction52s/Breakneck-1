@@ -45,7 +45,6 @@
 #include "MusicPlayer.h"
 #include "Background.h"
 #include "ShaderTester.h"
-#include "ControlSettingsMenu.h"
 #include "TouchGrass.h"
 
 #include "Barrier.h"

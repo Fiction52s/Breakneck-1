@@ -10,7 +10,6 @@
 struct GameSession;
 struct ShardMenu;
 struct LogMenu;
-struct ControlSettingsMenu;
 struct ColorShifter;
 struct ControlProfile;
 struct PaletteShader;
@@ -77,7 +76,6 @@ struct OptionsMenu
 	void Draw( sf::RenderTarget *target );
 	void UpdateOptionModeQuads();
 	bool CanChangeTab();
-	ControlSettingsMenu *csm;
 };
 
 struct GameSession;

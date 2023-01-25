@@ -7,7 +7,6 @@
 #include <fstream>
 #include "ShardMenu.h"
 #include "MusicSelector.h"
-#include "ControlSettingsMenu.h"
 #include "ControlProfile.h"
 #include "ColorShifter.h"
 #include "MapHeader.h"
@@ -161,8 +160,6 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 		
 		SetRectCenter(optionModeQuads + i * 4, 768, 128, startOffset + Vector2f(0, (128 + spacing) * i));
 	}
-
-	csm = mainMenu->controlSettingsMenu;
 }
 
 OptionsMenu::~OptionsMenu()
@@ -225,7 +222,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 	}
 	case CONTROL:
 	{
-		if (csm->currButtonState != ControlSettingsMenu::S_SELECTED)
+		/*if (csm->currButtonState != ControlSettingsMenu::S_SELECTED)
 		{
 			if (currInput.B && !prevInput.B)
 			{
@@ -234,7 +231,9 @@ void OptionsMenu::Update( ControllerState &currInput,
 			}
 		}
 
-		csm->currCType = cType;
+		csm->currCType = cType;*/
+
+
 		//ControlSettingsMenu::UpdateState uState = csm->Update(currInput, prevInput);
 		//if (uState == ControlSettingsMenu::CONFIRM)
 		{
@@ -324,8 +323,6 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	ts_select = game->GetSizedTileset("Menu/menu_select_800x140.png");
 	
 	ts_pauseOptions = game->GetSizedTileset("Menu/Pause/pauseoptions_768x128.png");
-
-	controlSettingsMenu = game->mainMenu->controlSettingsMenu;
 
 	Vector2f startOffset(1820 / 2, 128/2 + 100);
 	int spacing = 20;
@@ -792,11 +789,11 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 {
 	if( (currInput.start && !prevInput.start))// || (currInput.back && !prevInput.back ) )
 	{
-		if (controlSettingsMenu->IsEditingButtons() )
+		/*if (controlSettingsMenu->IsEditingButtons() )
 		{
 
 		}
-		else
+		else*/
 		{
 			ResetCounters();
 			
@@ -806,7 +803,6 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				int sVol = game->mainMenu->config->GetData().soundVolume;
 				game->soundNodeList->SetSoundVolume(sVol);
 				game->pauseSoundNodeList->SetSoundVolume(sVol);
-				controlSettingsMenu->SetButtonAssoc();
 				optionsMenu->optionModeSelector->currIndex = 0;
 			}
 
@@ -824,7 +820,6 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			ResetCounters();
 			if (currentTab == OPTIONS)
 			{
-				controlSettingsMenu->SetButtonAssoc();
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
 
@@ -861,7 +856,6 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			ResetCounters();
 			if (currentTab == OPTIONS)
 			{
-				controlSettingsMenu->SetButtonAssoc();
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
 

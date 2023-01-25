@@ -10,7 +10,6 @@
 struct Actor;
 struct GameSession;
 struct ShardMenu;
-struct ControlSettingsMenu;
 struct ColorShifter;
 struct SingleAxisSelector;
 
@@ -19,7 +18,6 @@ struct KinMenu
 	PlayerSkinShader playerSkinShader;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
-	ControlSettingsMenu *csm;
 	int GetCurrIndex();
 	~KinMenu();
 	GameSession *game;

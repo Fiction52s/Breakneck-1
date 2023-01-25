@@ -52,8 +52,6 @@ struct SinglePlayerBox
 
 	ControlProfileMenu *controlMenu;
 
-	ControlProfile *currProfile;
-
 	sf::Sprite kinSprite;
 
 	int action;
@@ -70,6 +68,7 @@ struct SinglePlayerBox
 	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex);
 	void Show();
 	void Hide();
+	ControlProfile *GetCurrProfile();
 	void SetTopLeft(sf::Vector2f &pos);
 	void ClearInfo();
 private:

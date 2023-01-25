@@ -6,7 +6,6 @@
 #include <fstream>
 #include "ShardMenu.h"
 #include "MusicSelector.h"
-#include "ControlSettingsMenu.h"
 #include "ControlProfile.h"
 #include "ColorShifter.h"
 #include "MapHeader.h"
@@ -22,7 +21,6 @@ KinMenu::KinMenu( GameSession *p_game)
 	:playerSkinShader( "player"),
 	game( p_game )
 {
-	csm = game->mainMenu->controlSettingsMenu;
 	Vector2f powersOffset(512, 495);
 	Vector2f powerPos(0, 0);
 	Vector2f powerSpacing(30, 20);
