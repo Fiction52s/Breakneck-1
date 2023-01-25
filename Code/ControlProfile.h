@@ -14,22 +14,27 @@ struct MainMenu;
 
 struct ControlProfile
 {
-	ControlProfile();
 	std::string name;
 	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
+
+	ControlProfile();
+	void SetFilterDefault();
 };
 
 struct ControlProfileManager
 {
+	std::list<ControlProfile*> profiles;
+
 	~ControlProfileManager();
 	bool LoadProfiles();
 	void DebugPrint();
-	std::list<ControlProfile*> profiles;
 	static XBoxButton GetButton( const std::string &str );
 	static ControllerSettings::ButtonType 
 		GetButtonTypeFromAction( const std::string &str );
 	void WriteProfiles();
 private:
+	std::ifstream is;
+
 	void WriteFilter( std::ofstream &of, XBoxButton *filter);
 	void WriteInputType(std::ofstream &of, const std::string &inputType);
 	bool MoveToNextSymbolText( char startSymbol,
@@ -41,29 +46,7 @@ private:
 	bool IsSymbol( char c );
 	void DeleteProfile( std::list<ControlProfile*>::iterator &it );
 	void ClearProfiles();
-
-	//std::list<ControlProfile*> profiles;
-	std::ifstream is;
 };
-
-
-//struct ScrollingVerticalSelector
-//{
-//	ScrollingVerticalSelector(MainMenu *mainMenu);
-//	void Draw(sf::RenderTarget *target);
-//	int numBoxes;
-//	int boxWidth;
-//	int boxHeight;
-//	int boxSpacing;
-//	void SetupBoxes();
-//	sf::Vertex *boxes;// [NUM_BOXES * 4];
-//	sf::Text *profileNames;// [NUM_BOXES];
-//	sf::Vector2f topMid;
-//	int topIndex;
-//	int currIndex;
-//	sf::Font &font;
-//	MainMenu *mainMenu;
-//};
 
 struct ProfileSelector
 {
@@ -110,6 +93,62 @@ struct ProfileSelector
 	int oldCurrIndex;
 };
 
+
+
+struct ActionButton
+{
+	sf::Text actionName;
+	sf::Vertex *quad;
+
+	sf::Vector2f position;
+	sf::Vector2f quadCenter;
+
+	float buttonSize;
+	
+	ActionButton( sf::Vertex *quad, const std::string &name, sf::Vector2f &pos);
+	void SetButtonSubRect( sf::IntRect &ir );
+	void Draw(sf::RenderTarget *target);
+};
+
+struct ControlProfileMenu;
+struct ActionButtonGroup
+{
+	enum Action
+	{
+		A_SELECT_BUTTON,
+		A_MODIFY_BUTTON,
+	};
+
+	const static int NUM_BUTTONS = 9;
+	const static int COLS = 3;
+	const static int ROWS = 3;
+
+	sf::Vertex buttonQuads[NUM_BUTTONS * 4];
+	sf::Vertex highlightQuad[4];
+	
+	ActionButton *actionButtons[NUM_BUTTONS];
+
+	ControlProfileMenu *controlMenu;
+
+	int selectedIndex;
+
+	int action;
+
+	sf::Vector2f topLeft;
+
+	ActionButtonGroup(ControlProfileMenu *p_controlMenu, sf::Vector2f &p_topLeft );
+	~ActionButtonGroup();
+
+	void Reset();
+
+	void SetSelectedIndex(int sel);
+
+	void Update(ControllerDualStateQueue *controllerInput);
+	
+
+	void Draw(sf::RenderTarget *target);
+};
+
 struct MainMenu;
 struct ControlProfileMenu : UIEventHandlerBase
 {
@@ -124,29 +163,46 @@ struct ControlProfileMenu : UIEventHandlerBase
 		S_Count
 	};
 
-	int currReceiveFrame;
-	int maxReceiveFrames;
-	ControllerSettings::ButtonType editIndex;
-	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
-	ControllerType tempCType;
-
-	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;
 	static const int BOX_WIDTH;
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
 
+	int currReceiveFrame;
+	int maxReceiveFrames;
+	ControllerSettings::ButtonType editIndex;
+	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
+	ControllerType tempCType;
+	sf::Vertex boxes[NUM_BOXES * 4];
+	sf::Text profileNames[NUM_BOXES];
+	State state;
+	sf::Vector2f topMid;
+	int oldCurrIndex;
+	int topIndex;
+
+	std::list<ControlProfile*> profiles;
+	sf::Font font;
+
+	VertSlider vSlider;
+
+	ControlProfile *currProfile;
+	SingleAxisSelector *saSelector;
+
+	int currControllerType;
+
+	sf::Text selectedProfileText;
+
+
+	ActionButtonGroup *actionButtonGroup;
+
+
+	ControlProfileMenu(std::list<ControlProfile*> &p_profiles,
+		sf::Vector2f &p_topMid);
+	~ControlProfileMenu();
 	XBoxButton ReceiveInput( ControllerState &currInput, 
 	ControllerState &prevInput );
 	bool SaveCurrConfig();
-	
-
-	ControlProfileMenu(std::list<ControlProfile*> &p_profiles,
-		sf::Vector2f &p_topMid );
-	~ControlProfileMenu();
 	void SetTopMid(sf::Vector2f &tm);
-	
-
 	bool ButtonEvent( UIEvent eType,
 		ButtonEventParams *param );
 	void SetupBoxes();
@@ -156,32 +212,6 @@ struct ControlProfileMenu : UIEventHandlerBase
 	void UpdateNames();
 	void UpdateBoxesDebug();
 	void Draw( sf::RenderTarget *target );
-
-	sf::Vertex boxes[NUM_BOXES*4];
-	sf::Text profileNames[NUM_BOXES];
-	State state;
-	sf::Vector2f topMid;
-
-	//int currIndex;
-	int oldCurrIndex;
-	int topIndex;
-	
-	std::list<ControlProfile*> profiles;
-	sf::Font font;
-
-	VertSlider vSlider;
-
-	//int waitFrames[3];
-	//int waitModeThresh[2];
-	//int framesWaiting;
-	//int currWaitLevel;
-	//int flipCounterUp;
-	//int flipCounterDown;
-	ControlProfile *currProfile;
-	SingleAxisSelector *saSelector;
-
-	sf::Text selectedProfileText;
-	UIControlGrid *editProfileGrid;
 };
 
 #endif

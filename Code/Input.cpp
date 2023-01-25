@@ -1473,37 +1473,6 @@ void KeyboardSettings::SaveToFile( const std::string &fileName )
 	of.close();
 }
 
-void SetFilterDefault( XBoxButton *filter)
-{
-	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
-	{
-		filter[i] = XBOX_BLANK;
-	}
-
-	filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_A;
-	filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
-	filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_R1;
-	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_L1;
-	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
-	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
-	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
-	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
-	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
-}
-
-void SetFilterDefaultGCC(XBoxButton *filter)
-{
-	filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_Y;
-	filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
-	filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_A;
-	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_R1;
-	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
-	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
-	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
-	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
-	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
-}
-
 std::string GetXBoxButtonString( XBoxButton button )
 {
 	switch( button )

@@ -98,8 +98,6 @@ struct ControllerState
 	
 };
 
-
-
 struct KeyboardFilter
 {
 	KeyboardFilter();
@@ -175,8 +173,6 @@ enum XBoxButton
 	XBOX_BLANK,
 	XBOX_Count
 };	
-void SetFilterDefault( XBoxButton *filter);
-void SetFilterDefaultGCC(XBoxButton *filter);
 std::string GetXBoxButtonString( XBoxButton button );
 
 
@@ -218,35 +214,9 @@ struct MainMenu;
 class GameController
 {
 public:
-	///index 0-3, corresponding to the different physical
-	///controllers. 0 = top left light, 1 = top right light,
-	///2 = bottom left light, 3 = bottom right light
-	GameController( DWORD index, ControllerType ct );
 	sf::RenderWindow *window;
-	///Gets if the controller is plugged in or functioning
-	bool IsKeyPressed(int k);
-	bool IsConnected();
-	ControllerType GetCType();
-	//Gets the that was passed to the constructor
-	DWORD GetIndex();
-	//Queries and stores the current state of the physical 
-	///controller
-	bool UpdateState();
-	///Gets the state most recently queried from the
-	///controller. Used to update external ControllerStates
-	ControllerState & GetState();
-//	ControllerState & GetUnfilteredState();
-//	void SetFilter( XBoxButton *buttons );
-//	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
-	int Pressed( XBoxButton b );
-	int GetGCCLeftTrigger();
-	int GetGCCRightTrigger();
-	void UpdateLeftStickPad();
-	
 	ButtonStick keyboardStick;
-
 	ControllerState m_state;
-
 	KeyboardSettings keySettings;
 	static float stickThresh;
 	GCC::GCController gcController;
@@ -255,14 +225,21 @@ public:
 	sf::Vector2i gcDefaultC;
 	int gcDefaultLeftTrigger;
 	int gcDefaultRightTrigger;
+
+	GameController( DWORD index, ControllerType ct );
+	bool IsKeyPressed(int k);
+	bool IsConnected();
+	ControllerType GetCType();
+	DWORD GetIndex();
+	bool UpdateState();
+	ControllerState & GetState();
+	int Pressed( XBoxButton b );
+	int GetGCCLeftTrigger();
+	int GetGCCRightTrigger();
+	void UpdateLeftStickPad();
 private:
 	bool isConnected;
 	DWORD m_index;
-	bool UpdateGCC();
-	bool UpdateXBOX();
-	bool UpdatePS5();
-	bool UpdateKeyboard();
-	
 	ControllerType controllerType;
 
 	const static DWORD LEFT_STICK_DEADZONE;
@@ -270,6 +247,11 @@ private:
 	const static DWORD TRIGGER_THRESHOLD;
 	const static double GC_LEFT_STICK_DEADZONE;
 	const static double GC_RIGHT_STICK_DEADZONE;
+
+	bool UpdateGCC();
+	bool UpdateXBOX();
+	bool UpdatePS5();
+	bool UpdateKeyboard();
 };
 
 struct ControllerStateQueue
@@ -306,13 +288,6 @@ struct ControllerStateQueue
 	int GetIndex();
 	const ControllerState &GetCurrState();
 	const ControllerState &GetPrevState();
-	
-	/*bool ButtonHeld_Jump();
-	bool ButtonPressed_Jump();
-	bool ButtonHeld_Dash();
-	bool ButtonPressed_Dash();
-	bool ButtonHeld_Attack();
-	bool ButtonPressed_Attack();*/
 };
 
 
@@ -336,15 +311,12 @@ struct AllControllers
 	GameController * GetWindowsController(int index);
 	GameController * GetController(int cType, int index);
 
-	//ControllerState GetCurrState(int cType, int index);
-	//ControllerState GetPrevState(int cType, int index);
 	ControllerDualStateQueue * GetStateQueue( int cType, int index);
 	ControllerDualStateQueue * GetStateQueue(GameController *con);
 	
 	void Update();
 	void CheckForControllers();
 	void SetRenderWindow(sf::RenderWindow *rw);
-
 
 	bool ButtonHeld_A();
 	bool ButtonPressed_A();
@@ -362,7 +334,6 @@ struct AllControllers
 	bool ButtonPressed_Start();
 	bool ButtonHeld_Any();
 	bool ButtonPressed_Any();
-
 
 private:
 	std::vector<GameController*> gcControllers;
@@ -389,8 +360,6 @@ private:
 };
 
 #define CONTROLLERS AllControllers::GetInstance()
-
-
 
 //wButtons
 /*XINPUT_GAMEPAD_DPAD_UP         0x00000001

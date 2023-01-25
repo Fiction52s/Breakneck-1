@@ -36,13 +36,45 @@ const int ProfileSelector::BOX_SPACING = 10;
 
 ControlProfile::ControlProfile()
 {
-	SetFilterDefault(filter);
+	SetFilterDefault();
+}
+
+void ControlProfile::SetFilterDefault()
+{
+	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
+	{
+		filter[i] = XBOX_BLANK;
+	}
+
+	filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_A;
+	filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
+	filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_R1;
+	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_L1;
+	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
+	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
+	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
+	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
+	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
+
+	//gamecube controller
+
+	/*filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_Y;
+	filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
+	filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_A;
+	filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_R1;
+	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
+	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
+	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
+	filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
+	filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;*/
 }
 
 ControlProfileMenu::ControlProfileMenu( list<ControlProfile*> &p_profiles, Vector2f &p_topMid )
 	:profiles( p_profiles ),
 	font( MainMenu::GetInstance()->arial ), topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), topMid( p_topMid )
 {
+	actionButtonGroup = new ActionButtonGroup(this, topMid);
+
 	assert(!p_profiles.empty());
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
@@ -98,16 +130,15 @@ ControlProfileMenu::ControlProfileMenu( list<ControlProfile*> &p_profiles, Vecto
 	}
 	
 	int quarter = 1920 / 4;
-	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 20, 20, true );
-	editProfileGrid->SetTopLeft( topMid.x - quarter/2 + 10, topMid.y + 10 );
+	//editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 20, 20, true );
+	//editProfileGrid->SetTopLeft( topMid.x - quarter/2 + 10, topMid.y + 10 );
 
 	maxReceiveFrames = 240;
-
 }
 
 ControlProfileMenu::~ControlProfileMenu()
 {
-	delete editProfileGrid;
+	delete actionButtonGroup;
 	delete saSelector;
 }
 
@@ -189,7 +220,8 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 	}
 	else if( state == S_EDIT_CONFIG )
 	{
-		editProfileGrid->Draw( target );
+		actionButtonGroup->Draw(target);
+		//editProfileGrid->Draw( target );
 	}
 	else if (state == State::S_SELECTED)
 	{
@@ -457,6 +489,7 @@ void ControlProfileMenu::Update( ControllerDualStateQueue *controllerInput )
 	}
 	else if( state == S_EDIT_CONFIG )
 	{
+		actionButtonGroup->Update(controllerInput);
 		//editProfileGrid->Update( currInput, prevInput );
 	}
 	else if( state == S_RECEIVE_BUTTON )
@@ -621,7 +654,8 @@ bool ControlProfileManager::LoadProfiles()
 						res = LoadXBOXConfig(newProfile);
 						if (!res)
 						{
-							SetFilterDefault(newProfile->filter);
+							newProfile->SetFilterDefault();
+							//SetFilterDefault(newProfile->filter);
 							assert(0);
 							return false;
 						}
@@ -1386,4 +1420,165 @@ bool ProfileSelector::SaveCurrConfig()
 
 	state = S_SELECTED;
 	return true;
+}
+
+ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu, sf::Vector2f &p_topLeft )
+{
+	controlMenu = p_controlMenu;
+
+	topLeft = p_topLeft;
+
+	selectedIndex = 0;
+
+	std::string buttonTexts[] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
+		"SHIELD", "POWER5", "POWER6LEFT", "POWER6RIGHT" };
+
+	int xSpacing = 20;
+	int ySpacing = 20;
+	int squareSize = 64;
+	int x, y;
+	for (int i = 0; i < NUM_BUTTONS; ++i)
+	{
+		x = i % COLS;
+		y = i / COLS;
+		actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i], topLeft + Vector2f(x * (squareSize + xSpacing), y * (squareSize + ySpacing)));
+	}
+
+	Reset();
+}
+
+ActionButtonGroup::~ActionButtonGroup()
+{
+	for (int i = 0; i < NUM_BUTTONS; ++i)
+	{
+		delete actionButtons[i];
+	}
+}
+
+void ActionButtonGroup::Reset()
+{
+	action = A_SELECT_BUTTON;
+
+	SetSelectedIndex(0);
+}
+
+void ActionButtonGroup::SetSelectedIndex(int sel)
+{
+	selectedIndex = sel;
+
+	SetRectColor(highlightQuad, Color::Red);
+	float bSize = actionButtons[selectedIndex]->buttonSize;
+	float border = 16;
+	SetRectCenter(highlightQuad, bSize + border, bSize + border, actionButtons[selectedIndex]->quadCenter );
+}
+
+void ActionButtonGroup::Update(ControllerDualStateQueue *controllerInput)
+{
+	switch (action)
+	{
+	case A_SELECT_BUTTON:
+	{
+		int x = selectedIndex % COLS;
+		int y = selectedIndex / COLS;
+
+		if (controllerInput->GetPrevState().IsLeftNeutral())
+		{
+
+
+			if (controllerInput->DirPressed_Left())
+			{
+				--x;
+				if (x < 0)
+				{
+					x = COLS - 1;
+				}
+			}
+			else if (controllerInput->DirPressed_Right())
+			{
+				++x;
+				if (x == COLS)
+				{
+					x = 0;
+				}
+			}
+
+			if (controllerInput->DirPressed_Up())
+			{
+				--y;
+				if (y < 0)
+				{
+					y = ROWS - 1;
+				}
+			}
+			else if (controllerInput->DirPressed_Down())
+			{
+				++y;
+				if (y == ROWS)
+				{
+					y = 0;
+				}
+			}
+		}
+
+		int tempIndex = y * COLS + x;
+
+		if (tempIndex != selectedIndex)
+		{
+			SetSelectedIndex(tempIndex);
+		}
+		break;
+	}
+	case A_MODIFY_BUTTON:
+	{
+		break;
+	}
+	}
+}
+
+void ActionButtonGroup::Draw(sf::RenderTarget *target)
+{
+	MainMenu *mm = MainMenu::GetInstance();
+	
+	Tileset *ts_buttons = mm->GetButtonIconTileset(controlMenu->currControllerType);
+
+	target->draw(highlightQuad, 4, sf::Quads);
+
+	target->draw(buttonQuads, 4 * NUM_BUTTONS, sf::Quads, ts_buttons->texture);
+
+	for (int i = 0; i < NUM_BUTTONS; ++i)
+	{
+		actionButtons[i]->Draw(target);
+	}
+}
+
+ActionButton::ActionButton(sf::Vertex *p_quad, const std::string &name, sf::Vector2f &pos)
+{
+	position = pos;
+	quad = p_quad;
+
+	buttonSize = 64;
+
+	MainMenu *mm = MainMenu::GetInstance();
+
+	actionName.setFont(mm->arial);
+	actionName.setCharacterSize(20);
+	actionName.setFillColor(Color::White);
+	actionName.setString(name);
+	auto lb = actionName.getLocalBounds();
+	actionName.setOrigin(lb.left + lb.width / 2, 0);
+	actionName.setPosition(pos);
+
+	quadCenter = pos + Vector2f(0, 25 + buttonSize / 2);
+	SetRectCenter(quad, buttonSize, buttonSize, quadCenter);
+	
+}
+
+void ActionButton::SetButtonSubRect(sf::IntRect &ir)
+{
+	SetRectSubRect(quad, ir);
+}
+
+void ActionButton::Draw(sf::RenderTarget *target)
+{
+	target->draw(actionName);
 }
