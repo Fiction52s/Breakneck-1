@@ -130,7 +130,7 @@ struct RecordPlayer
 	void WriteToFile(const std::string &fileName);
 	void RecordFrame();
 	const static int MAX_RECORD = 3600 * 60;
-	int inputBuffer[MAX_RECORD];
+	COMPRESSED_INPUT_TYPE inputBuffer[MAX_RECORD];
 };
 
 
@@ -144,7 +144,7 @@ struct ReplayPlayer
 	bool OpenReplay(const std::string &fileName);
 	void Reset();
 	void UpdateInput(ControllerDualStateQueue *controllerInput);
-	int *inputBuffer;
+	COMPRESSED_INPUT_TYPE *inputBuffer;
 	Actor *player;
 	int frame;
 	int numTotalFrames;

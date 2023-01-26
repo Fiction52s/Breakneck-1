@@ -10,12 +10,12 @@ using namespace std;
 
 #define PROFILE_START_CHAR '<'
 #define PROFILE_END_CHAR '>'
-#define INPUT_TYPE_START_CHAR '['
-#define INPUT_TYPE_END_CHAR ']'
+#define INPUT_TYPE_START_CHAR '{'
+#define INPUT_TYPE_END_CHAR '}'
 #define INPUT_TYPE_XBOX "XBOX"
 #define INPUT_TYPE_KEYBOARD "KEYBOARD"
 #define INPUT_TYPE_GAMECUBE "GAMECUBE"
-#define EQUALS '='
+#define COLON ':'
 
 //const int ControlProfileMenu::NUM_BOXES = 8;
 const int ControlProfileMenu::BOX_WIDTH = 300;
@@ -72,6 +72,31 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
 		break;
 	}
+	case CTYPE_KEYBOARD:
+	{
+		filter[ControllerSettings::BUTTONTYPE_JUMP] = Keyboard::Key::Z;
+		filter[ControllerSettings::BUTTONTYPE_DASH] = Keyboard::Key::X;
+		filter[ControllerSettings::BUTTONTYPE_ATTACK] = Keyboard::Key::C;
+		filter[ControllerSettings::BUTTONTYPE_SHIELD] = Keyboard::Key::V;
+		filter[ControllerSettings::BUTTONTYPE_SPECIAL] = Keyboard::Key::B;
+		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = Keyboard::Key::LControl;
+		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::Key::Space;
+
+		filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Delete;
+		filter[ControllerSettings::BUTTONTYPE_MAP] = Keyboard::Key::Backspace;
+
+		filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::J;
+		filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::L;
+		filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::I;
+		filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::K;
+
+		filter[ControllerSettings::BUTTONTYPE_RLEFT] = Keyboard::Key::U;
+		filter[ControllerSettings::BUTTONTYPE_RRIGHT] = Keyboard::Key::O;
+		filter[ControllerSettings::BUTTONTYPE_RUP] = Keyboard::Key::P;
+		filter[ControllerSettings::BUTTONTYPE_RDOWN] = Keyboard::Key::SemiColon;
+
+		break;
+	}
 		
 	}
 }
@@ -80,22 +105,22 @@ void ControlProfile::FilterState(ControllerState &state)
 {
 	ControllerState origState = state;
 
-	state.A = origState.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-	state.B = origState.Check(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
-	state.X = origState.Check(filter[ControllerSettings::BUTTONTYPE_DASH]);
+	state.A = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	state.B = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
+	state.X = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_DASH]);
 	state.Y = false;
 
-	state.leftShoulder = origState.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-	state.rightShoulder = origState.Check(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
+	state.leftShoulder = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	state.rightShoulder = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
 	
-	state.leftTrigger = origState.Check(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-	state.rightTrigger = origState.Check(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	state.leftTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	state.rightTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_JUMP]);
 
-	state.back = origState.Check(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
-	state.start = origState.Check(filter[ControllerSettings::BUTTONTYPE_MAP]);
+	state.back = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
+	state.start = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_MAP]);
 }
 
-XBoxButton ControlProfile::Filter(ControllerSettings::ButtonType b)
+int ControlProfile::Filter(ControllerSettings::ButtonType b)
 {
 	return filter[b];
 }
@@ -108,6 +133,40 @@ int ControlProfile::GetControllerType()
 void ControlProfile::SetControllerType(int c)
 {
 	cType = c;
+}
+
+void ControlProfile::Save(ofstream &of)
+{
+	if (cType == CTYPE_KEYBOARD)
+	{
+		of << "JUMP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
+		of << "DASH:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
+		of << "ATTACK:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
+		of << "SHIELD:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
+		of << "SPECIAL:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
+		of << "LEFTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
+		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+	}
+	else
+	{
+		of << "JUMP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
+		of << "DASH:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
+		of << "ATTACK:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
+		of << "SHIELD:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
+		of << "SPECIAL:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
+		of << "LEFTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
+		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+
+		of << "LLEFT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LLEFT]) << "\n";
+		of << "LRIGHT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LRIGHT]) << "\n";
+		of << "LUP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LUP]) << "\n";
+		of << "LDOWN:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LDOWN]) << "\n";
+
+		of << "RLEFT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RLEFT]) << "\n";
+		of << "RRIGHT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RRIGHT]) << "\n";
+		of << "RUP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RUP]) << "\n";
+		of << "RDOWN:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RDOWN]) << "\n";
+	}
 }
 
 void ControlProfile::CopyTo(ControlProfile *cp)
@@ -693,7 +752,7 @@ bool ControlProfileManager::LoadProfiles()
 				if (inputTypeName == INPUT_TYPE_XBOX)
 				{
 					newProfile->SetControllerType(CTYPE_XBOX);
-					res = LoadXBOXConfig(newProfile);
+					res = LoadControllerConfig(newProfile);
 					if (!res)
 					{
 						newProfile->SetFilterDefault();
@@ -705,12 +764,22 @@ bool ControlProfileManager::LoadProfiles()
 				}
 				else if (inputTypeName == INPUT_TYPE_KEYBOARD)
 				{
+					newProfile->SetControllerType(CTYPE_KEYBOARD);
+					res = LoadKeyboardConfig(newProfile);
+					if (!res)
+					{
+						newProfile->SetFilterDefault();
+						//SetFilterDefaultGCC(newProfile->gccFilter);
+						assert(0);
+						return false;
+					}
+					profiles[CTYPE_KEYBOARD].push_back(newProfile);
 					//TODO
 				}
 				else if (inputTypeName == INPUT_TYPE_GAMECUBE)
 				{
 					newProfile->SetControllerType(CTYPE_GAMECUBE);
-					res = LoadGamecubeConfig(newProfile);
+					res = LoadControllerConfig(newProfile);
 					if (!res)
 					{
 						newProfile->SetFilterDefault();
@@ -760,7 +829,7 @@ bool ControlProfileManager::IsSymbol( char c )
 }
 
 //char is 0 for fail, or a symbol if it hits a symbol
-char ControlProfileManager::MoveToEquals( std::string &outStr )
+char ControlProfileManager::MoveToColon( std::string &outStr )
 {
 	stringstream ss;
 	char c = 0;
@@ -775,7 +844,7 @@ char ControlProfileManager::MoveToEquals( std::string &outStr )
 			return c;
 		}
 
-		if( c == EQUALS )
+		if( c == COLON )
 		{
 			outStr = ss.str();
 			
@@ -799,96 +868,60 @@ char ControlProfileManager::MoveToEquals( std::string &outStr )
 	}
 }
 
-bool ControlProfileManager::LoadXBOXConfig( ControlProfile *profile ) 
+bool ControlProfileManager::LoadControllerConfig( ControlProfile *profile ) 
 {
 	string inputName;
 	string buttonStr;
 
 	while( true )
 	{
+		char ec = MoveToColon( inputName );
+		char c = 0;
 
-	char ec = MoveToEquals( inputName );
-	char c = 0;
+		if( ec == 0 )
+			return true;
 
-	if( ec == 0 )
-		return true;
-
-	if( IsSymbol( ec ) )
-	{
-		return true;
-	}
-
-
-	if( !is.get( c ) )
-	{
-		return false;
-	}
-
-	
-	char mod = 0;
-	switch( c )
-	{
-	case 'a':
-	case 'A':
-		buttonStr = "A";
-		break;
-	case 'b':
-	case 'B':
-		buttonStr = "B";
-		break;
-	case 'x':
-	case 'X':
-		buttonStr = "X";
-		break;
-	case 'y':
-	case 'Y':
-		buttonStr = "Y";
-		break;
-	case 'r':
-	case 'R':
-
-		if( !is.get( mod ) )
-			return false;
-		if( mod == '1' )
-			buttonStr = "R1";
-		else if( mod == '2' )
-			buttonStr = "R2";
-		else
+		if( IsSymbol( ec ) )
 		{
-			assert( 0 );
+			return true;
+		}
+
+
+		if( !is.get( c ) )
+		{
 			return false;
 		}
-		break;
-	case 'l':
-	case 'L':
-		if( !is.get( mod ) )
-			return false;
-		if( mod == '1' )
-			buttonStr = "L1";
-		else if( mod == '2' )
-			buttonStr = "L2";
-		break;
-	}
 
-	XBoxButton b = GetButton( buttonStr );
-	ControllerSettings::ButtonType buttonType = GetButtonTypeFromAction( inputName );
+	
+		buttonStr.push_back(c);
+		char mod = 0;
 
-	assert( buttonType < ControllerSettings::BUTTONTYPE_Count );
+		if (c == 'R' || c == 'L')
+		{
+			if (!is.get(mod))
+				return false;
 
-	profile->filter[buttonType] = b;
+			buttonStr.push_back(mod);
+		}
+
+		XBoxButton b = GetButton( buttonStr );
+		ControllerSettings::ButtonType buttonType = GetButtonTypeFromAction( inputName );
+
+		assert( buttonType < ControllerSettings::BUTTONTYPE_Count );
+
+		profile->filter[buttonType] = b;
 
 	}
 }
 
-bool ControlProfileManager::LoadGamecubeConfig(ControlProfile *profile)
+bool ControlProfileManager::LoadKeyboardConfig(ControlProfile *profile)
 {
 	string inputName;
 	string buttonStr;
 
 	while (true)
 	{
-
-		char ec = MoveToEquals(inputName);
+		char ec = MoveToColon(inputName);
 		char c = 0;
 
 		if (ec == 0)
@@ -899,70 +932,14 @@ bool ControlProfileManager::LoadGamecubeConfig(ControlProfile *profile)
 			return true;
 		}
 
+		getline(is, buttonStr);
 
-		if (!is.get(c))
-		{
-			return false;
-		}
-
-
-		char mod = 0;
-		switch (c)
-		{
-		case 'a':
-		case 'A':
-			buttonStr = "A";
-			break;
-		case 'b':
-		case 'B':
-			buttonStr = "B";
-			break;
-		case 'x':
-		case 'X':
-			buttonStr = "X";
-			break;
-		case 'y':
-		case 'Y':
-			buttonStr = "Y";
-			break;
-		case 'r':
-		case 'R':
-
-			if (!is.get(mod))
-				return false;
-			if (mod == '1')
-				buttonStr = "R1";
-			else if (mod == '2')
-				buttonStr = "R2";
-			else
-			{
-				assert(0);
-				return false;
-			}
-			break;
-		case 'l':
-		case 'L':
-
-			if (!is.get(mod))
-				return false;
-			if (mod == '1')
-				buttonStr = "L1";
-			else if (mod == '2')
-				buttonStr = "L2";
-			else
-			{
-				assert(0);
-				return false;
-			}
-			break;
-		}
-
-		XBoxButton b = GetButton(buttonStr);
+		sf::Keyboard::Key k = GetKey(buttonStr);
 		ControllerSettings::ButtonType buttonType = GetButtonTypeFromAction(inputName);
 
 		assert(buttonType < ControllerSettings::BUTTONTYPE_Count);
 
-		//profile->gccFilter[buttonType] = b;
+		profile->filter[buttonType] = k;
 	}
 }
 
@@ -986,6 +963,10 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_SHIELD;
 	}
+	else if (inputName == "SPECIAL")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL;
+	}
 	else if (inputName == "LEFTWIRE")
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_LEFTWIRE;
@@ -994,9 +975,45 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_RIGHTWIRE;
 	}
-	else if (inputName == "SPECIAL")
+	else if (inputName == "PAUSE")
 	{
-		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL;
+		buttonType = ControllerSettings::BUTTONTYPE_PAUSE;
+	}
+	else if (inputName == "MAP")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_MAP;
+	}
+	else if (inputName == "LLEFT")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_LLEFT;
+	}
+	else if (inputName == "LRIGHT")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_LRIGHT;
+	}
+	else if (inputName == "LUP")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_LUP;
+	}
+	else if (inputName == "LDOWN")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_LDOWN;
+	}
+	else if (inputName == "RLEFT")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_RLEFT;
+	}
+	else if (inputName == "RRIGHT")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_RRIGHT;
+	}
+	else if (inputName == "RUP")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_RUP;
+	}
+	else if (inputName == "RDOWN")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_RDOWN;
 	}
 	else
 	{
@@ -1008,38 +1025,264 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 
 XBoxButton ControlProfileManager::GetButton( const std::string &str )
 {
-	if( str == "A" )
+	if( str == "A" || str == "a" )
 	{
 		return XBoxButton::XBOX_A;
 	}
-	else if( str == "B" )
+	else if( str == "B" || str == "b")
 	{
 		return XBoxButton::XBOX_B;
 	}
-	else if( str == "X" )
+	else if( str == "X" || str == "x")
 	{
 		return XBoxButton::XBOX_X;
 	}
-	else if( str == "Y" )
+	else if( str == "Y" || str == "y")
 	{
 		return XBoxButton::XBOX_Y;
 	}
-	else if( str == "R1" )
+	else if( str == "R1"  || str == "r1" )
 	{
 		return XBoxButton::XBOX_R1;
 	}
-	else if( str == "L1" )
+	else if( str == "L1"  || str == "l1")
 	{
 		return XBoxButton::XBOX_L1;
 	}
-	else if( str == "R2" )
+	else if( str == "R2" || str == "r2")
 	{
 		return XBoxButton::XBOX_R2;
 	}
-	else if( str == "L2" )
+	else if( str == "L2" || str == "l2")
 	{
 		return XBoxButton::XBOX_L2;
 	}
+
+	return XBOX_BLANK;
+}
+
+sf::Keyboard::Key ControlProfileManager::GetKey(const std::string &str)
+{
+	if (str.length() == 1)
+	{
+		//assume its a letter
+
+		char c = str[0];
+
+		int k = c - 'A';
+
+		assert(k >= 0);
+
+		if (c >= 'A' && c <= 'Z')
+		{
+			return (Keyboard::Key)(c - 'A');
+		}
+		else if( c >= '0' && c <= '9')
+		{
+			return (Keyboard::Key)(c - '0');
+		}
+		else
+		{
+			switch (c)
+			{
+			case '[':
+				return Keyboard::LBracket;
+			case ']':
+				return Keyboard::RBracket;
+			case ';':
+				return Keyboard::Semicolon;
+			case ',':
+				return Keyboard::Comma;
+			case '.':
+				return Keyboard::Period;
+			case '\'':
+				return Keyboard::Quote;
+			case '/':
+				return Keyboard::Slash;
+			case '\\':
+				return Keyboard::Backslash;
+			case '`':
+				return Keyboard::Tilde;
+			case '=':
+				return Keyboard::Equal;
+			case '-':
+				return Keyboard::Hyphen;
+			}
+		}
+	}
+	else
+	{
+		if (str == "LCONTROL")
+		{
+			return Keyboard::LControl;
+		}
+		else if (str == "LSHIFT")
+		{
+			return Keyboard::LShift;
+		}
+		else if (str == "LALT")
+		{
+			return Keyboard::LAlt;
+		}
+		else if (str == "RCONTROL")
+		{
+			return Keyboard::RControl;
+		}
+		else if (str == "RSHIFT")
+		{
+			return Keyboard::RShift;
+		}
+		else if (str == "RALT")
+		{
+			return Keyboard::RAlt;
+		}
+		else if (str == "SPACE")
+		{
+			return Keyboard::Space;
+		}
+		else if (str == "ENTER")
+		{
+			return Keyboard::Enter;
+		}
+		else if (str == "BACKSPACE")
+		{
+			return Keyboard::Backspace;
+		}
+		else if (str == "TAB")
+		{
+			return Keyboard::Tab;
+		}
+		else if (str == "PAGEUP")
+		{
+			return Keyboard::PageUp;
+		}
+		else if (str == "PAGEDOWN")
+		{
+			return Keyboard::PageDown;
+		}
+		else if (str == "END")
+		{
+			return Keyboard::End;
+		}
+		else if (str == "HOME")
+		{
+			return Keyboard::Home;
+		}
+		else if (str == "INSERT")
+		{
+			return Keyboard::Insert;
+		}
+		else if (str == "DELETE")
+		{
+			return Keyboard::Delete;
+		}
+		else if (str == "LEFT")
+		{
+			return Keyboard::Left;
+		}
+		else if (str == "RIGHT")
+		{
+			return Keyboard::Right;
+		}
+		else if (str == "UP")
+		{
+			return Keyboard::Up;
+		}
+		else if (str == "DOWN")
+		{
+			return Keyboard::Down;
+		}
+		else if (str == "NUMPAD0")
+		{
+			return Keyboard::Numpad0;
+		}
+		else if (str == "NUMPAD1")
+		{
+			return Keyboard::Numpad1;
+		}
+		else if (str == "NUMPAD2")
+		{
+			return Keyboard::Numpad2;
+		}
+		else if (str == "NUMPAD3")
+		{
+			return Keyboard::Numpad3;
+		}
+		else if (str == "NUMPAD4")
+		{
+			return Keyboard::Numpad4;
+		}
+		else if (str == "NUMPAD5")
+		{
+			return Keyboard::Numpad5;
+		}
+		else if (str == "NUMPAD6")
+		{
+			return Keyboard::Numpad6;
+		}
+		else if (str == "NUMPAD7")
+		{
+			return Keyboard::Numpad7;
+		}
+		else if (str == "NUMPAD8")
+		{
+			return Keyboard::Numpad8;
+		}
+		else if (str == "NUMPAD9")
+		{
+			return Keyboard::Numpad9;
+		}
+		else if (str == "F1")
+		{
+			return Keyboard::F1;
+		}
+		else if (str == "F2")
+		{
+			return Keyboard::F2;
+		}
+		else if (str == "F3")
+		{
+			return Keyboard::F3;
+		}
+		else if (str == "F4")
+		{
+			return Keyboard::F4;
+		}
+		else if (str == "F5")
+		{
+			return Keyboard::F5;
+		}
+		else if (str == "F6")
+		{
+			return Keyboard::F6;
+		}
+		else if (str == "F7")
+		{
+			return Keyboard::F7;
+		}
+		else if (str == "F8")
+		{
+			return Keyboard::F8;
+		}
+		else if (str == "F9")
+		{
+			return Keyboard::F9;
+		}
+		else if (str == "F10")
+		{
+			return Keyboard::F10;
+		}
+		else if (str == "F11")
+		{
+			return Keyboard::F11;
+		}
+		else if (str == "F12")
+		{
+			return Keyboard::F12;
+		}
+	}
+
+	return Keyboard::Key::Unknown;
 }
 
 bool ControlProfileManager::MoveToPeekNextOpener( char &outChar )
@@ -1113,18 +1356,6 @@ bool ControlProfileManager::MoveToNextSymbolText( char startSymbol, char endSymb
 	}
 }
 
-
-void ControlProfileManager::WriteFilter( ofstream &of, XBoxButton *filter)
-{
-	of << "JUMP=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
-	of << "DASH=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
-	of << "ATTACK=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
-	of << "SHIELD=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
-	of << "SPECIAL=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
-	of << "LEFTWIRE=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
-	of << "RIGHTWIRE=" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
-}
-
 void ControlProfileManager::WriteInputType(ofstream &of, const std::string &inputType)
 {
 	of << INPUT_TYPE_START_CHAR << inputType << INPUT_TYPE_END_CHAR << "\n";
@@ -1163,13 +1394,14 @@ void ControlProfileManager::WriteProfiles()
 				WriteInputType(of, INPUT_TYPE_GAMECUBE);
 				break;
 			}
+			case CTYPE_KEYBOARD:
+			{
+				WriteInputType(of, INPUT_TYPE_KEYBOARD);
+				break;
+			}
 			}
 
-			WriteFilter(of, (*it)->filter);
-
-			//WriteInputType(of, INPUT_TYPE_GAMECUBE);
-
-			//WriteFilter(of, (*it)->gccFilter);
+			(*it)->Save(of);
 
 			of << "\n";
 		}

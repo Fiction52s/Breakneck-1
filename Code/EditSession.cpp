@@ -13167,13 +13167,13 @@ void EditSession::GeneralEventHandler()
 				{
 					TryExitEditor();
 				}
-				else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash)
+				else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Hyphen)
 				{
 					if (ev.key.code == sf::Keyboard::Equal)
 					{
 						ModifyZoom(.5);
 					}
-					else if (ev.key.code == sf::Keyboard::Dash)
+					else if (ev.key.code == sf::Keyboard::Hyphen)
 					{
 						ModifyZoom(2);
 					}

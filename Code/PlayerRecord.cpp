@@ -337,7 +337,7 @@ void RecordPlayer::RecordFrame()
 
 	//Buf & b = player->owner->testBuf;
 
-	int compressedInputs = s.GetCompressedState();
+	COMPRESSED_INPUT_TYPE compressedInputs = s.GetCompressedState();
 
 	//b.Send(compressedInputs);
 
@@ -386,7 +386,7 @@ void RecordPlayer::WriteToFile(const std::string &fileName)
 		header.Write(of);
 
 		of.write((char*)&numTotalFrames, sizeof(numTotalFrames));
-		of.write((char*)inputBuffer, numTotalFrames * sizeof(int));
+		of.write((char*)inputBuffer, numTotalFrames * COMPRESSED_INPUT_SIZE);
 
 		of.close();
 	}
@@ -423,9 +423,9 @@ bool ReplayPlayer::OpenReplay(const std::string &fileName)
 		is.read((char*)&numTotalFrames, sizeof(numTotalFrames));
 		cout << "reading num frames: " << numTotalFrames << endl;
 
-		inputBuffer = new int[numTotalFrames];
+		inputBuffer = new COMPRESSED_INPUT_TYPE[numTotalFrames];
 
-		is.read((char*)inputBuffer, numTotalFrames * sizeof(int));
+		is.read((char*)inputBuffer, numTotalFrames * COMPRESSED_INPUT_SIZE);
 
 		is.close();
 		return true;

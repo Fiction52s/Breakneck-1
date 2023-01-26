@@ -16,6 +16,9 @@
 
 #pragma comment(lib, "Resources/XInput.lib")
 
+#define COMPRESSED_INPUT_TYPE sf::Uint32
+#define COMPRESSED_INPUT_SIZE sizeof(sf::Uint32)
+
 /** Remarks:
 For each button, its bool its true if the it is down 
 (pressed) and false if it is up (not pressed).
@@ -48,16 +51,24 @@ enum XBoxButton
 	XBOX_BLANK,
 	XBOX_Count
 };
-std::string GetXBoxButtonString(XBoxButton button);
+std::string GetXBoxButtonString(int button);
+std::string GetKeyboardButtonString(int button);
 
-struct KeyboardState;
+struct KeyboardState
+{
+	bool m_state[sf::Keyboard::KeyCount];
+};
+
 struct ControllerState
 {
-	
 	double leftStickMagnitude; // 0 - 1.0
 	double leftStickRadians;
 	double rightStickMagnitude; // 0 - 1.0
 	double rightStickRadians;
+
+	//ButtonStick keyboardStickLeft;
+	//ButtonStick keyboardStickRight;
+
 	BYTE leftTrigger;
 	BYTE rightTrigger;
 	BYTE triggerThresh;
@@ -83,12 +94,11 @@ struct ControllerState
 	void SetLeftDirection();
 	
 	sf::Vector2<double> GetLeft8Dir();
-	int GetCompressedState();
-	void SetFromCompressedState(int s);
+	COMPRESSED_INPUT_TYPE GetCompressedState();
+	void SetFromCompressedState(COMPRESSED_INPUT_TYPE s);
 	void InvertLeftStick();
 	void Clear();
-	int Check(XBoxButton b);
-
+	int CheckControllerButton(int b);
 
 	bool IsLeftNeutral() const;
 	bool IsRightNeutral() const;
@@ -127,17 +137,6 @@ struct ControllerState
 	
 };
 
-struct KeyboardFilter
-{
-	KeyboardFilter();
-	void SetKey( sf::Keyboard::Key old, 
-		sf::Keyboard::Key newKey );
-	bool LoadReplacements( const std::string &file );
-	sf::Keyboard::Key Filter( sf::Keyboard::Key key );
-	//std::map<sf::Keyboard::Key, sf::Keyboard::Key> filter;
-	sf::Keyboard::Key keyFilter[sf::Keyboard::KeyCount];
-};
-
 struct ControllerSettings
 {
 	enum ButtonType
@@ -163,22 +162,6 @@ struct ControllerSettings
 	};
 };
 
-struct KeyboardSettings
-{
-	KeyboardSettings();
-	sf::Keyboard::Key buttonMap[ControllerSettings::BUTTONTYPE_Count];
-	void LoadFromFile( const std::string &fileName );
-	void SaveToFile( const std::string &fileName );
-
-	bool toggleBounce;
-	bool toggleGrind;
-	bool toggleTimeSlow;
-};
-
-
-
-
-
 enum ControllerType
 {
 	CTYPE_XBOX,
@@ -190,17 +173,17 @@ enum ControllerType
 	CTYPE_Count
 };
 
-void LoadInputMapKeyboard( ControllerState &cs, 
-	const std::string &fileName,
-	KeyboardFilter &filter );
-
 struct ButtonStick
 {
 	bool oldLeft;
 	bool oldRight;
 	bool oldUp;
 	bool oldDown;
-	sf::Vector2<double> oldStickVec;
+	
+	bool oldGoingLeft;
+	bool oldGoingRight;
+	bool oldGoingUp;
+	bool oldGoingDown;
 
 	ButtonStick();
 	void Reset();
@@ -217,9 +200,10 @@ class GameController
 {
 public:
 	sf::RenderWindow *window;
-	ButtonStick keyboardStick;
+	ButtonStick keyboardStickLeft;
+	ButtonStick keyboardStickRight;
 	ControllerState m_state;
-	KeyboardSettings keySettings;
+	KeyboardState m_keyboardState;
 	static float stickThresh;
 	GCC::GCController gcController;
 	PS5Controller ps5Controller;

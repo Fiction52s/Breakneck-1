@@ -6,6 +6,7 @@
 #include "VectorMath.h"
 #include "MainMenu.h"
 #include "Config.h"
+#include "ControlProfile.h"
 
 using namespace std;
 using namespace sf;
@@ -71,8 +72,9 @@ void ControllerState::Set( const ControllerState &state )
 //	altPad = state.altPad;
 }
 
-int ControllerState::Check(XBoxButton b)
+int ControllerState::CheckControllerButton(int b)
 {
+	//b is XBoxButton
 	switch (b)
 	{
 	case XBOX_A:
@@ -100,9 +102,9 @@ int ControllerState::Check(XBoxButton b)
 	return 0;
 }
 
-int ControllerState::GetCompressedState()
+COMPRESSED_INPUT_TYPE ControllerState::GetCompressedState()
 {
-	int s = 0;
+	COMPRESSED_INPUT_TYPE s = 0;
 	int bit = 0;
 	s |= LUp() << bit++;
 	s |= LDown() << bit++;
@@ -120,15 +122,34 @@ int ControllerState::GetCompressedState()
 	s |= rightShoulder << bit++;
 	s |= LeftTriggerPressed() << bit++;
 	s |= RightTriggerPressed() << bit++;
+	//first 16 bits above^
 
 	int leftStickDir = leftStickDirection;
-	s |= (leftStickDir << 16);
+	s |= (leftStickDir << bit++);
+
+	/*s |= keyboardStickLeft.oldLeft << bit++;
+	s |= keyboardStickLeft.oldRight << bit++;
+	s |= keyboardStickLeft.oldUp << bit++;
+	s |= keyboardStickLeft.oldDown << bit++;
+	s |= keyboardStickLeft.oldGoingLeft << bit++;
+	s |= keyboardStickLeft.oldGoingRight << bit++;
+	s |= keyboardStickLeft.oldGoingUp << bit++;
+	s |= keyboardStickLeft.oldGoingDown << bit++;
+
+	s |= keyboardStickRight.oldLeft << bit++;
+	s |= keyboardStickRight.oldRight << bit++;
+	s |= keyboardStickRight.oldUp << bit++;
+	s |= keyboardStickRight.oldDown << bit++;
+	s |= keyboardStickRight.oldGoingLeft << bit++;
+	s |= keyboardStickRight.oldGoingRight << bit++;
+	s |= keyboardStickRight.oldGoingUp << bit++;
+	s |= keyboardStickRight.oldGoingDown << bit++;*/
 
 	return s;
 }
 
 //notably this doesnt give you the analog stick values
-void ControllerState::SetFromCompressedState(int s)
+void ControllerState::SetFromCompressedState(COMPRESSED_INPUT_TYPE s)
 {
 	Clear();
 
@@ -193,9 +214,32 @@ void ControllerState::SetFromCompressedState(int s)
 		rightStickPad += 1 << 1;
 	}
 
-	int leftDir = (s >> 16);
-	leftStickDirection = leftDir;
+	/*int leftDir = (s >> bit) | ((int)pow( 2, sizeof( leftStickDirection) ) - 1);
+	bit += sizeof(leftStickDirection);
+	leftStickDirection = leftDir;*/
 
+	leftStickDirection = (s >> bit) | ((int)pow(2, sizeof(leftStickDirection)) - 1);
+	bit += sizeof(leftStickDirection);
+
+	/*keyboardStickLeft.oldLeft = s & (1 << bit++);
+	keyboardStickLeft.oldRight = s & (1 << bit++);
+	keyboardStickLeft.oldUp = s & (1 << bit++);
+	keyboardStickLeft.oldDown = s & (1 << bit++);
+	keyboardStickLeft.oldGoingLeft = s & (1 << bit++);
+	keyboardStickLeft.oldGoingRight = s & (1 << bit++);
+	keyboardStickLeft.oldGoingUp = s & (1 << bit++);
+	keyboardStickLeft.oldGoingDown = s & (1 << bit++);
+
+	keyboardStickRight.oldLeft = s & (1 << bit++);
+	keyboardStickRight.oldRight = s & (1 << bit++);
+	keyboardStickRight.oldUp = s & (1 << bit++);
+	keyboardStickRight.oldDown = s & (1 << bit++);
+	keyboardStickRight.oldGoingLeft = s & (1 << bit++);
+	keyboardStickRight.oldGoingRight = s & (1 << bit++);
+	keyboardStickRight.oldGoingUp = s & (1 << bit++);
+	keyboardStickRight.oldGoingDown = s & (1 << bit++);*/
+
+	//current total is 16 + 8 + 8 + 8
 }
 
 
@@ -482,7 +526,7 @@ void ButtonStick::Reset()
 
 sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, bool down)
 {
-	sf::Vector2<double> stickVec = oldStickVec;
+	V2d stickVec;
 
 	bool leftPress = left && !oldLeft;
 	bool rightPress = right && !oldRight;
@@ -510,6 +554,10 @@ sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, 
 		else if (leftPress && rightPress)
 		{
 			stickVec.x = 0;
+		}
+		else
+		{
+			stickVec.x = oldGoing.x;
 		}
 	}
 	else
@@ -539,6 +587,10 @@ sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, 
 		{
 			stickVec.y = 0;
 		}
+		else
+		{
+			stickVec.y = oldGoing.y;
+		}
 	}
 	else
 	{
@@ -549,11 +601,11 @@ sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, 
 	oldRight = right;
 	oldUp = up;
 	oldDown = down;
-	oldStickVec = stickVec;
+	oldGoing.x = stickVec.x;
+	oldGoing.y = stickVec.y;
 
 	return stickVec;
 }
-
 
 int GameController::GetGCCLeftTrigger()
 {
@@ -1102,27 +1154,47 @@ bool GameController::UpdateKeyboard()
 
 		//WORD b = state.Gamepad.wButtons;
 
-		m_state.A = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_JUMP]);
-		m_state.B = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_SPECIAL]);
-		m_state.rightShoulder = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_ATTACK]);
-		m_state.X = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_DASH]);
+		ControlProfile cp;
+		cp.SetControllerType(CTYPE_KEYBOARD);
+		cp.SetFilterDefault();
+		
+		/*m_state.A = IsKeyPressed(Keyboard::Z);
+		m_state.B = IsKeyPressed(Keyboard::A);
+		m_state.rightShoulder = IsKeyPressed(Keyboard::C);
+		m_state.X = IsKeyPressed(Keyboard::X);
+		m_state.Y = IsKeyPressed(Keyboard::V);
+		m_state.leftShoulder = 
+		m_state.leftTrigger = 
+		m_state.rightTrigger = 
+		m_state.back = 
+		m_state.start = IsKeyPressed(Keyboard::V);*/
+
+		for (int i = 0; i < Keyboard::KeyCount; ++i)
+		{
+			m_keyboardState.m_state[i] = IsKeyPressed(i);
+		}
+
+		m_state.A = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_JUMP)];
+		m_state.B = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_SPECIAL)];
+		m_state.rightShoulder = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_ATTACK)];
+		m_state.X = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_DASH)];
 		m_state.Y = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::GRIND]);
-		m_state.leftShoulder = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_SHIELD]);
-		m_state.leftTrigger = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
-		m_state.rightTrigger = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-		m_state.back = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_MAP]);
-		m_state.start = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_PAUSE]);
+		m_state.leftShoulder = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_SHIELD)];
+		m_state.leftTrigger = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LEFTWIRE)];
+		m_state.rightTrigger = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RIGHTWIRE)];
+		m_state.back = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_MAP)];
+		m_state.start = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_PAUSE)];
 		
 		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
 		m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
 		m_state.pad = 0;//( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
 
-		bool up = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LUP]);
-		bool down = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LDOWN]);
-		bool left = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LLEFT]);
-		bool right = IsKeyPressed(keySettings.buttonMap[ControllerSettings::BUTTONTYPE_LRIGHT]);
+		bool up = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LUP)];
+		bool down = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LDOWN)];
+		bool left = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LLEFT)];
+		bool right = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LRIGHT)];
 
-		V2d stickVec = keyboardStick.UpdateStickVec(left, right, up, down);
+		V2d stickVec = keyboardStickLeft.UpdateStickVec(left, right, up, down);
 		if (length(stickVec) > 0)
 		{
 			m_state.leftStickMagnitude = 1;
@@ -1133,8 +1205,6 @@ bool GameController::UpdateKeyboard()
 		}
 			
 		stickVec = normalize(stickVec);
-		/*double mag = sqrt(thing.x * thing.x + thing.y * thing.y);
-		thing = sf::Vector2<double>(thing.x / mag, thing.y / mag);*/
 
 		double angle = -atan2(stickVec.y, stickVec.x);
 
@@ -1169,43 +1239,56 @@ bool GameController::UpdateKeyboard()
 			//cout << "DOWN" << endl;
 		}
 
-		m_state.rightStickMagnitude = 0;
+
+		bool rup = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RUP)];
+		bool rdown = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RDOWN)];
+		bool rleft = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RLEFT)];
+		bool rright = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RRIGHT)];
+
+		stickVec = keyboardStickRight.UpdateStickVec(rleft, rright, rup, rdown);
+		if (length(stickVec) > 0)
+		{
+			m_state.rightStickMagnitude = 1;
+		}
+		else
+		{
+			m_state.rightStickMagnitude = 0;
+		}
+
+		stickVec = normalize(stickVec);
+
+		double angle = -atan2(stickVec.y, stickVec.x);
+
+		m_state.rightStickRadians = angle;
+
+
 		m_state.rightStickPad = 0;
 
-		//m_unfilteredState = m_state;
-		//if( m_state.leftStickMagnitude > stickThresh )
-		//{
-		//	//cout << "left stick radians: " << currInput.leftStickRadians << endl;
-		//	float x = cos( m_state.leftStickRadians );
-		//	float y = sin( m_state.leftStickRadians );
+		if (stickVec.x > 0)
+		{
+			m_state.rightStickMagnitude = 1.0;
+			m_state.rightStickPad += 1 << 3;
+			//cout << "RIGHT" << endl;
+		}
+		else if (stickVec.x < 0)
+		{
+			m_state.rightStickMagnitude = 1.0;
+			m_state.rightStickPad += 1 << 2;
+			//cout << "LEFT" << endl;
+		}
 
-		//	if( x > stickThresh )
-		//		m_state.leftStickPad += 1 << 3;
-		//	if( x < -stickThresh )
-		//		m_state.leftStickPad += 1 << 2;
-		//	if( y > stickThresh )
-		//		m_state.leftStickPad += 1;
-		//	if( y < -stickThresh )
-		//		m_state.leftStickPad += 1 << 1;
-		//}
-
-		//if( m_state.rightStickMagnitude > stickThresh )
-		//{
-		//	//cout << "left stick radians: " << m_state.leftStickRadians << endl;
-		//	float x = cos( m_state.rightStickRadians );
-		//	float y = sin( m_state.rightStickRadians );
-
-		//	if( x > stickThresh )
-		//		m_state.rightStickPad += 1 << 3;
-		//	if( x < -stickThresh )
-		//		m_state.rightStickPad += 1 << 2;
-		//	if( y > stickThresh )
-		//		m_state.rightStickPad += 1;
-		//	if( y < -stickThresh )
-		//		m_state.rightStickPad += 1 << 1;
-		//}
-
-		//m_state.SetLeftDirection();
+		if (stickVec.y < 0)
+		{
+			m_state.rightStickMagnitude = 1.0;
+			m_state.rightStickPad += 1;
+			//cout << "UP" << endl;
+		}
+		else if (stickVec.y > 0)
+		{
+			m_state.rightStickMagnitude = 1.0;
+			m_state.rightStickPad += 1 << 1;
+			//cout << "DOWN" << endl;
+		}
 
 		return true;
 	}
@@ -1332,177 +1415,8 @@ DWORD GameController::GetIndex()
 	return m_index;
 }
 
-//void GameController::SetFilter( XBoxButton *buttons )
-//{
-//	for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
-//	{
-//		filter[i] = buttons[i];
-//	}
-//}
 
-
-KeyboardFilter::KeyboardFilter()
-{
-	for( int i = 0; i < sf::Keyboard::KeyCount; ++i )
-	{
-		keyFilter[i] = (sf::Keyboard::Key)i;
-	}
-}
-
-sf::Keyboard::Key KeyboardFilter::Filter( sf::Keyboard::Key key )
-{
-	int i = (int)key;
-
-	return keyFilter[i];
-}
-
-void SetKey( sf::Keyboard::Key old, 
-		sf::Keyboard::Key newKey )
-{
-	//keyFilter[
-}
-
-void LoadInputMapKeyboard( ControllerState &cs, const std::string &fileName, KeyboardFilter &filter )
-{
-	ifstream is;
-	is.open( fileName );
-
-	if( is.is_open() )
-	{
-		/*sf::Keyboard::Key up;
-		sf::Keyboard::Key left;
-		sf::Keyboard::Key down;
-		sf::Keyboard::Key right;
-
-		is >> up;
-		is >> left;
-		is >> down;
-		is >> right;
-
-		if( x > stickThresh )
-			m_state.leftStickPad += 1 << 3;
-		if( x < -stickThresh )
-			m_state.leftStickPad += 1 << 2;
-		if( y > stickThresh )
-			m_state.leftStickPad += 1;
-		if( y < -stickThresh )
-			m_state.leftStickPad += 1 << 1;*/
-	}
-	else
-	{
-		cout << "file: " << fileName << endl;
-		assert( "failed to load keyboard inputs" );
-	}
-}
-
-KeyboardSettings::KeyboardSettings()
-{
-	using namespace sf;
-	
-	buttonMap[ControllerSettings::BUTTONTYPE_JUMP] = Keyboard::Z;
-	buttonMap[ControllerSettings::BUTTONTYPE_DASH] = Keyboard::X;
-	buttonMap[ControllerSettings::BUTTONTYPE_ATTACK] = Keyboard::C;
-	buttonMap[ControllerSettings::BUTTONTYPE_SHIELD] = Keyboard::LShift;
-
-	buttonMap[ControllerSettings::BUTTONTYPE_LEFTWIRE] = Keyboard::LControl;
-	buttonMap[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::RControl;
-	buttonMap[ControllerSettings::BUTTONTYPE_MAP] = Keyboard::BackSpace;//Keyboard::Tilde;
-	buttonMap[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Delete;
-
-	buttonMap[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Left;
-	buttonMap[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Right;
-	buttonMap[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Up;
-	buttonMap[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Down;	
-
-	toggleBounce = false;
-	toggleGrind = false;
-	toggleTimeSlow = false;
-	//SaveToFile( "defaultkeys" );
-}
-
-void KeyboardSettings::LoadFromFile( const std::string &fileName )
-{
-	ifstream is;
-	is.open( fileName );
-
-	if( is.is_open() )
-	{
-		for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
-		{
-			int temp;
-			is >> temp;
-
-			buttonMap[i] = (sf::Keyboard::Key)temp;
-		}
-	}
-	else
-	{
-		cout << "file: " << fileName << endl;
-		assert( "failed to load keyboard inputs" );
-	}
-
-	int tBounce, tGrind, tSlow;
-	is >> tBounce;
-	is >> tGrind;
-	is >> tSlow;
-
-	toggleBounce = (bool)tBounce;
-	toggleGrind = (bool)tGrind;
-	toggleTimeSlow = (bool)tSlow;
-
-	is.close();
-}
-
-void KeyboardSettings::SaveToFile( const std::string &fileName )
-{
-	ofstream of;
-	of.open( fileName );
-
-	if( of.is_open() )
-	{
-		for( int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i )
-		{
-			of << buttonMap[i] << endl;
-		}
-	}
-	else
-	{
-		cout << "FAILED TO SAVE KEYBOARD FILTER" << endl;
-		assert( "failed to save keyboard inputs" );
-	}
-
-	
-	if( toggleBounce )
-	{
-		of << 1 << endl;
-	}
-	else
-	{
-		of << 0 << endl;
-	}
-
-	if( toggleGrind )
-	{
-		of << 1 << endl;
-	}
-	else
-	{
-		of << 0 << endl;
-	}
-
-	if( toggleTimeSlow )
-	{
-		of << 1 << endl;
-	}
-	else
-	{
-		of << 0 << endl;
-	}
-
-	of.close();
-}
-
-std::string GetXBoxButtonString( XBoxButton button )
+std::string GetXBoxButtonString( int button )
 {
 	switch( button )
 	{
@@ -1526,6 +1440,143 @@ std::string GetXBoxButtonString( XBoxButton button )
 		assert( 0 );
 		return "";
 	}
+}
+
+std::string GetKeyboardButtonString(int key)
+{
+	char c = 0;
+	string str;
+
+	if (key >= Keyboard::A && key <= Keyboard::Z)
+	{
+		c = ( key - Keyboard::A ) + 'A';
+		str.push_back(c);
+		return str;
+	}
+	else if (key >= Keyboard::Num0 && key <= Keyboard::Num9)
+	{
+		c = ( key - Keyboard::Num0 ) + '0';
+		str.push_back(c);
+		return str;
+	}
+	else if (key >= Keyboard::Numpad0 && key <= Keyboard::Numpad9)
+	{
+		return "NUMPAD" + to_string(key - Keyboard::Numpad0);
+	}
+	else if (key >= Keyboard::F1 && key <= Keyboard::F12)
+	{
+		return "F" + to_string(key - Keyboard::F1);
+	}
+	else
+	{
+		switch (key)
+		{
+		case Keyboard::LBracket:
+			return "[";
+		case Keyboard::RBracket:
+			return "]";
+		case Keyboard::Semicolon:
+			return ";";
+		case Keyboard::Comma:
+			return ",";
+		case Keyboard::Period:
+			return ".";
+		case Keyboard::Quote:
+			return "\'";
+		case Keyboard::Slash:
+			return "/";
+		case Keyboard::Backslash:
+			return "\\";
+		case Keyboard::Tilde:
+			return "`";
+		case Keyboard::Equal:
+			return "=";
+		case Keyboard::Hyphen:
+			return "-";
+		case Keyboard::LControl:
+			return "LCONTROL";
+		case Keyboard::LShift:
+			return "LSHIFT";
+		case Keyboard::LAlt:
+			return "LALT";
+		case Keyboard::RControl:
+			return "RCONTROL";
+		case Keyboard::RShift:
+			return "RSHIFT";
+		case Keyboard::RAlt:
+			return "RALT";
+		case Keyboard::Space:
+			return "SPACE";
+		case Keyboard::Enter:
+			return "ENTER";
+		case Keyboard::BackSpace:
+			return "BACKSPACE";
+		case Keyboard::Tab:
+			return "TAB";
+		case Keyboard::PageUp:
+			return "PAGEUP";
+		case Keyboard::PageDown:
+			return "PAGEDOWN";
+		case Keyboard::End:
+			return "END";
+		case Keyboard::Home:
+			return "HOME";
+		case Keyboard::Insert:
+			return "INSERT";
+		case Keyboard::Delete:
+			return "DELETE";
+		case Keyboard::Left:
+			return "LEFT";
+		case Keyboard::Right:
+			return "RIGHT";
+		case Keyboard::Up:
+			return "UP";
+		case Keyboard::Down:
+			return "DOWN";
+		}
+	}
+
+	
+	//case Keyboard::BackSpace:
+	//{
+	//	//text.setString( text.getString().substring( 0, cursorIndex ) + text.getString().substring( cursorIndex + 1 ) );
+
+	//	if (cursorIndex > 0)
+	//	{
+	//		sf::String s = text.getString();
+	//		if (s.getSize() > 0)
+	//		{
+	//			s.erase(cursorIndex - 1);
+	//			SetString(s);
+	//			SetCursorIndex(cursorIndex - 1);
+	//		}
+	//	}
+
+	//	break;
+	//}
+	//case Keyboard::Enter:
+	//{
+	//	int numLines = lineStartIndexes.size();
+	//	if (numLines < maxRows)
+	//	{
+	//		c = '\n';
+	//	}
+	//	break;
+	//}
+	//case Keyboard::Left:
+	//	SetCursorIndex(cursorIndex - 1);
+	//	break;
+	//case Keyboard::Right:
+	//	SetCursorIndex(cursorIndex + 1);
+	//	break;
+	//case Keyboard::Up:
+	//{
+
+
+	//testText.setString(text.getString().substring(0, cursorIndex));
+	//cursor.setPosition(pos.x + testText.getLocalBounds().width, pos.y);
+
+	return "error";
 }
 
 AllControllers::AllControllers()

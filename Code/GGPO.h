@@ -155,8 +155,8 @@ struct PState
 	int action;
 	int frame;
 	double groundSpeed;
-	int prevInput;
-	int currInput;
+	uint64 prevInput;
+	uint64 currInput;
 	Edge *ground;
 	double quant;
 	

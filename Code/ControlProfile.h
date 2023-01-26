@@ -15,16 +15,16 @@ struct MainMenu;
 struct ControlProfile
 {
 	std::string name;
-	XBoxButton filter[ControllerSettings::BUTTONTYPE_Count];
+	int filter[ControllerSettings::BUTTONTYPE_Count];
 
 	ControlProfile();
 
 	void FilterState(ControllerState &state);
-	XBoxButton Filter(ControllerSettings::ButtonType b);
+	int Filter(ControllerSettings::ButtonType b);
 	int GetControllerType();
 	void CopyTo(ControlProfile *cp);
 	void SetControllerType(int c);
-
+	void Save(ofstream &of);
 	void SetFilterDefault();
 private:
 	int cType;
@@ -38,20 +38,20 @@ struct ControlProfileManager
 	bool LoadProfiles();
 	void DebugPrint();
 	static XBoxButton GetButton( const std::string &str );
+	static sf::Keyboard::Key GetKey(const std::string &str);
 	static ControllerSettings::ButtonType 
 		GetButtonTypeFromAction( const std::string &str );
 	void WriteProfiles();
 private:
 	std::ifstream is;
 
-	void WriteFilter( std::ofstream &of, XBoxButton *filter);
 	void WriteInputType(std::ofstream &of, const std::string &inputType);
 	bool MoveToNextSymbolText( char startSymbol,
 		char endSymbol, std::string &outStr );
 	bool MoveToPeekNextOpener( char &outChar );
-	char MoveToEquals( std::string &outStr );
-	bool LoadXBOXConfig( ControlProfile *profile );
-	bool LoadGamecubeConfig(ControlProfile *profile);
+	char MoveToColon( std::string &outStr );
+	bool LoadControllerConfig( ControlProfile *profile );
+	bool LoadKeyboardConfig(ControlProfile *profile);
 	bool IsSymbol( char c );
 	void DeleteProfile( std::list<ControlProfile*>::iterator &it );
 	void ClearProfiles();

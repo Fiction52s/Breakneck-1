@@ -1496,7 +1496,7 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 	}
 	case CTYPE_KEYBOARD:
 	{
-		buttonIndex = 0;//controllerInput->con->keySettings.buttonMap[button];
+		buttonIndex = profile->Filter(button);//0;//controllerInput->con->keySettings.buttonMap[button];
 
 
 		//if (baseButtonIndex < 12 * 6)

@@ -464,7 +464,7 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 	case Keyboard::Numpad9:
 		c = '9';
 		break;
-	case Keyboard::Dash:
+	case Keyboard::Hyphen:
 		c = '-';
 		break;
 	case Keyboard::Period:
