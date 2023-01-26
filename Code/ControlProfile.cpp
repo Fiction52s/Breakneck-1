@@ -55,7 +55,6 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
 
 		filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
-		filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
 		break;
 	}
 	case CTYPE_GAMECUBE:
@@ -69,7 +68,6 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
 
 		filter[ControllerSettings::BUTTONTYPE_PAUSE] = XBOX_START;
-		filter[ControllerSettings::BUTTONTYPE_MAP] = XBOX_BACK;
 		break;
 	}
 	case CTYPE_KEYBOARD:
@@ -83,12 +81,16 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::Key::Space;
 
 		filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Delete;
-		filter[ControllerSettings::BUTTONTYPE_MAP] = Keyboard::Key::Backspace;
 
-		filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::J;
+	/*	filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::J;
 		filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::L;
 		filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::I;
-		filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::K;
+		filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::K;*/
+
+		filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::Left;
+		filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::Right;
+		filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::Up;
+		filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::Down;
 
 		filter[ControllerSettings::BUTTONTYPE_RLEFT] = Keyboard::Key::U;
 		filter[ControllerSettings::BUTTONTYPE_RRIGHT] = Keyboard::Key::O;
@@ -116,8 +118,7 @@ void ControlProfile::FilterState(ControllerState &state)
 	state.leftTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
 	state.rightTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_JUMP]);
 
-	state.back = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
-	state.start = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_MAP]);
+	state.start = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
 }
 
 int ControlProfile::Filter(ControllerSettings::ButtonType b)
@@ -139,13 +140,23 @@ void ControlProfile::Save(ofstream &of)
 {
 	if (cType == CTYPE_KEYBOARD)
 	{
-		of << "JUMP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
-		of << "DASH:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
-		of << "ATTACK:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
-		of << "SHIELD:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
-		of << "SPECIAL:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
-		of << "LEFTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
-		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+		of << "JUMP:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
+		of << "DASH:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
+		of << "ATTACK:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
+		of << "SHIELD:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
+		of << "SPECIAL:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
+		of << "LEFTWIRE:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
+		of << "RIGHTWIRE:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+
+		of << "LLEFT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LLEFT]) << "\n";
+		of << "LRIGHT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LRIGHT]) << "\n";
+		of << "LUP:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LUP]) << "\n";
+		of << "LDOWN:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LDOWN]) << "\n";
+
+		of << "RLEFT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RLEFT]) << "\n";
+		of << "RRIGHT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RRIGHT]) << "\n";
+		of << "RUP:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RUP]) << "\n";
+		of << "RDOWN:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RDOWN]) << "\n";
 	}
 	else
 	{
@@ -156,16 +167,6 @@ void ControlProfile::Save(ofstream &of)
 		of << "SPECIAL:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
 		of << "LEFTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
 		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
-
-		of << "LLEFT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LLEFT]) << "\n";
-		of << "LRIGHT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LRIGHT]) << "\n";
-		of << "LUP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LUP]) << "\n";
-		of << "LDOWN:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LDOWN]) << "\n";
-
-		of << "RLEFT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RLEFT]) << "\n";
-		of << "RRIGHT:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RRIGHT]) << "\n";
-		of << "RUP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RUP]) << "\n";
-		of << "RDOWN:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RDOWN]) << "\n";
 	}
 }
 
@@ -438,6 +439,9 @@ void ControlProfileMenu::Update()
 			action = A_EDIT_PROFILE;
 			editingProfileText.setString(focusedProfile->name);
 			focusedProfile->CopyTo(tempProfile);
+
+			bool keyboardMode = (tempProfile->GetControllerType() == CTYPE_KEYBOARD);
+			actionButtonGroup->SetKeyboardMode(keyboardMode);
 			actionButtonGroup->SetSelectedIndex(0);
 			actionButtonGroup->UpdateButtonIcons();
 		}
@@ -464,47 +468,75 @@ void ControlProfileMenu::Update()
 	}
 	case A_REPLACE_BUTTON:
 	{
-		XBoxButton button = XBOX_BLANK;
-		if (controllerInput->ButtonPressed_A())
+		if (controllerInput->GetControllerType() == CTYPE_KEYBOARD)
 		{
-			button = XBOX_A;
-		}
-		else if (controllerInput->ButtonPressed_B())
-		{
-			button = XBOX_B;
-		}
-		else if (controllerInput->ButtonPressed_X())
-		{
-			button = XBOX_X;
-		}
-		else if (controllerInput->ButtonPressed_Y())
-		{
-			button = XBOX_Y;
-		}
-		else if (controllerInput->ButtonPressed_LeftShoulder())
-		{
-			button = XBOX_L1;
-		}
-		else if (controllerInput->ButtonPressed_RightShoulder())
-		{
-			button = XBOX_R1;
-		}
-		else if (controllerInput->ButtonPressed_LeftTrigger())
-		{
-			button = XBOX_L2;
-		}
-		else if (controllerInput->ButtonPressed_RightTrigger())
-		{
-			button = XBOX_R2;
-		}
+			int key = Keyboard::Unknown;
 
-		//dont forget triggers
+			for (int i = 0; i < Keyboard::KeyCount; ++i)
+			{
+				if( IsKeyValidForInput(i) )
+				{
+					if (CONTROLLERS.KeyboardButtonPressed(i))
+					{
+						key = i;
+						break;
+					}
+				}	
+			}
 
-		if (button != XBOX_BLANK)
-		{
-			actionButtonGroup->SetModifiedButton(button);
-			action = A_EDIT_PROFILE;
+			if (key != Keyboard::Unknown)
+			{
+				actionButtonGroup->SetModifiedButton(key);
+				action = A_EDIT_PROFILE;
+			}
+			
+			//if( controllerInput->GetCurrState())
 		}
+		else
+		{
+			XBoxButton button = XBOX_BLANK;
+			if (controllerInput->ButtonPressed_A())
+			{
+				button = XBOX_A;
+			}
+			else if (controllerInput->ButtonPressed_B())
+			{
+				button = XBOX_B;
+			}
+			else if (controllerInput->ButtonPressed_X())
+			{
+				button = XBOX_X;
+			}
+			else if (controllerInput->ButtonPressed_Y())
+			{
+				button = XBOX_Y;
+			}
+			else if (controllerInput->ButtonPressed_LeftShoulder())
+			{
+				button = XBOX_L1;
+			}
+			else if (controllerInput->ButtonPressed_RightShoulder())
+			{
+				button = XBOX_R1;
+			}
+			else if (controllerInput->ButtonPressed_LeftTrigger())
+			{
+				button = XBOX_L2;
+			}
+			else if (controllerInput->ButtonPressed_RightTrigger())
+			{
+				button = XBOX_R2;
+			}
+
+			//dont forget triggers
+
+			if (button != XBOX_BLANK)
+			{
+				actionButtonGroup->SetModifiedButton(button);
+				action = A_EDIT_PROFILE;
+			}
+		}
+		
 		break;
 	}
 	}
@@ -892,7 +924,7 @@ bool ControlProfileManager::LoadControllerConfig( ControlProfile *profile )
 			return false;
 		}
 
-	
+		buttonStr.clear();
 		buttonStr.push_back(c);
 		char mod = 0;
 
@@ -979,10 +1011,6 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_PAUSE;
 	}
-	else if (inputName == "MAP")
-	{
-		buttonType = ControllerSettings::BUTTONTYPE_MAP;
-	}
 	else if (inputName == "LLEFT")
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_LLEFT;
@@ -1068,10 +1096,6 @@ sf::Keyboard::Key ControlProfileManager::GetKey(const std::string &str)
 		//assume its a letter
 
 		char c = str[0];
-
-		int k = c - 'A';
-
-		assert(k >= 0);
 
 		if (c >= 'A' && c <= 'Z')
 		{
@@ -1419,32 +1443,14 @@ ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu)
 
 	topLeft = Vector2f(0, 0);
 
+	numButtons = 0;
+
 	selectedIndex = 0;
 
-	std::vector<std::string> buttonTexts = {
-		"JUMP",
-		"DASH",
-		"ATTACK",
-		"SHIELD",
-		"SPECIAL",
-		"B-WIRE",
-		"R-WIRE" };
+	buttonQuads = NULL;
 
-	numButtons = buttonTexts.size();
-
-	cols = 3;
-	rows = ceil(numButtons / (float)cols);
-
-	MainMenu *mm = MainMenu::GetInstance();
-//	Tileset *ts_buttons = mm->GetButtonIconTileset(CTYPE_XBOX); //for now
-
-	buttonQuads = new Vertex[numButtons * 4];
-
-	actionButtons.resize(numButtons);
-	for (int i = 0; i < numButtons; ++i)
-	{
-		actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i]);
-	}
+	keyboardMode = true;
+	SetKeyboardMode(false);
 
 	Reset();
 }
@@ -1470,21 +1476,121 @@ void ActionButtonGroup::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
 
-	int squareSize = 64 + 16;
-
-	int xSpacing = 50 + squareSize;
-	int ySpacing = 40 + squareSize;
-
-	Vector2f start = Vector2f(xSpacing / 2, 10);
+	Vector2f start = Vector2f(spacing.x / 2, 10);
 	
 	int x, y;
 	for (int i = 0; i < numButtons; ++i)
 	{
 		x = i % cols;
 		y = i / cols;
-		actionButtons[i]->SetPosition(topLeft + start + Vector2f(x * xSpacing, y * ySpacing));
+		actionButtons[i]->SetPosition(topLeft + start + Vector2f(x * spacing.x, y * spacing.y));
 	}
 	SetSelectedIndex(selectedIndex);
+}
+
+void ActionButtonGroup::SetKeyboardMode(bool p_keyboardMode)
+{
+	if (keyboardMode != p_keyboardMode)
+	{
+		keyboardMode = p_keyboardMode;
+
+		if (keyboardMode)
+		{
+			float textSize = 16;
+			squareSize = 40;
+			spacing.x = 56 + squareSize;
+			spacing.y = 48 + squareSize;
+
+			std::vector<std::string> buttonTexts = {
+				"JUMP",
+				"DASH",
+				"ATTACK",
+				"SHIELD",
+				"SPECIAL",
+				"B-WIRE",
+				"R-WIRE",
+				"PAUSE",
+				"L-LEFT",
+				"L-RIGHT",
+				"L-UP",
+				"L-DOWN",
+				"R-LEFT",
+				"R-RIGHT",
+				"R-UP",
+				"R-DOWN" };
+
+			numButtons = buttonTexts.size();
+
+			cols = 4;
+			rows = ceil(numButtons / (float)cols);
+
+			if (buttonQuads != NULL)
+			{
+				delete[]buttonQuads;
+			}
+
+			buttonQuads = new Vertex[numButtons * 4];
+
+			for (int i = 0; i < actionButtons.size(); ++i)
+			{
+				delete actionButtons[i];
+			}
+
+			actionButtons.resize(numButtons);
+			for (int i = 0; i < numButtons; ++i)
+			{
+				actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i]);
+
+				actionButtons[i]->SetSizes(squareSize, textSize);
+			}
+
+			SetTopLeft(topLeft);
+		}
+		else
+		{
+			float textSize = 20;
+			squareSize = 64;
+			spacing.x = 66 + squareSize;
+			spacing.y = 56 + squareSize;
+
+			std::vector<std::string> buttonTexts = {
+				"JUMP",
+				"DASH",
+				"ATTACK",
+				"SHIELD",
+				"SPECIAL",
+				"B-WIRE",
+				"R-WIRE" };
+
+			numButtons = buttonTexts.size();
+
+			cols = 3;
+			rows = ceil(numButtons / (float)cols);
+
+			if (buttonQuads != NULL)
+			{
+				delete[]buttonQuads;
+			}
+
+			buttonQuads = new Vertex[numButtons * 4];
+
+			for (int i = 0; i < actionButtons.size(); ++i)
+			{
+				delete actionButtons[i];
+			}
+
+			actionButtons.resize(numButtons);
+			for (int i = 0; i < numButtons; ++i)
+			{
+				actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i]);
+				actionButtons[i]->SetSizes(squareSize, textSize);
+			}
+
+			SetTopLeft(topLeft);
+		}
+
+	}
+	
 }
 
 void ActionButtonGroup::SetSelectedIndex(int sel)
@@ -1497,21 +1603,28 @@ void ActionButtonGroup::SetSelectedIndex(int sel)
 
 	SetRectColor(highlightQuad, Color::White);
 	float bSize = actionButtons[selectedIndex]->buttonSize;
-	float border = 16;
+	float border = 8;//bSize / 4;//16;
 	SetRectCenter(highlightQuad, bSize + border, bSize + border, actionButtons[selectedIndex]->quadCenter );
 }
 
-void ActionButtonGroup::SetModifiedButton(XBoxButton button)
+void ActionButtonGroup::SetModifiedButton(int button)
 {
 	//replace the button here
 	action = A_SELECT_BUTTON;
 	SetRectColor(highlightQuad, Color::White);
 
+	int defaultButton = XBOX_BLANK;
+
+	if (controlMenu->tempProfile->GetControllerType() == CTYPE_KEYBOARD)
+	{
+		defaultButton = Keyboard::Unknown; //keyboard blank??
+	}
+
 	for (int i = 0; i < numButtons; ++i)
 	{
 		if (controlMenu->tempProfile->filter[i] == button)
 		{
-			controlMenu->tempProfile->filter[i] = XBOX_BLANK;
+			controlMenu->tempProfile->filter[i] = defaultButton;
 		}
 	}
 
@@ -1644,18 +1757,25 @@ ActionButton::ActionButton(sf::Vertex *p_quad, const std::string &name )
 {
 	quad = p_quad;
 
-	buttonSize = 64;
-
 	MainMenu *mm = MainMenu::GetInstance();
 
 	actionName.setFont(mm->arial);
-	actionName.setCharacterSize(20);
 	actionName.setFillColor(Color::White);
 	actionName.setString(name);
+
+	SetSizes(64, 20);
+}
+
+void ActionButton::SetSizes(float bSize, float p_textSize )
+{
+	buttonSize = bSize;
+
+	textSize = p_textSize;
+	actionName.setCharacterSize(textSize);
 	auto lb = actionName.getLocalBounds();
 	actionName.setOrigin(lb.left + lb.width / 2, 0);
 
-	SetPosition(Vector2f(0, 0));
+	SetPosition(position);
 }
 
 void ActionButton::SetButtonSubRect(sf::IntRect &ir)
@@ -1667,7 +1787,11 @@ void ActionButton::SetPosition(sf::Vector2f &pos)
 {
 	position = pos;
 	actionName.setPosition(position);
-	quadCenter = position + Vector2f(0, 35 + buttonSize / 2);
+
+	float border = 8;//buttonSize / 4;
+	float extra = 5;
+
+	quadCenter = position + Vector2f(0, textSize + border + buttonSize / 2 + extra);
 	SetRectCenter(quad, buttonSize, buttonSize, quadCenter);
 }
 

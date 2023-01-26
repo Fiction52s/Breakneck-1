@@ -19,6 +19,9 @@
 #define COMPRESSED_INPUT_TYPE sf::Uint32
 #define COMPRESSED_INPUT_SIZE sizeof(sf::Uint32)
 
+//just the spot on the spritesheet thats blank for now. contrasts with XBOX_BLANK
+//#define KEYBOARD_BLANK 75
+
 /** Remarks:
 For each button, its bool its true if the it is down 
 (pressed) and false if it is up (not pressed).
@@ -52,11 +55,13 @@ enum XBoxButton
 	XBOX_Count
 };
 std::string GetXBoxButtonString(int button);
-std::string GetKeyboardButtonString(int button);
+std::string GetKeyboardButtonString(int key);
+bool IsKeyValidForInput(int key);
 
 struct KeyboardState
 {
 	bool m_state[sf::Keyboard::KeyCount];
+	void Update();
 };
 
 struct ControllerState
@@ -149,7 +154,6 @@ struct ControllerSettings
 		BUTTONTYPE_LEFTWIRE,
 		BUTTONTYPE_RIGHTWIRE,
 		BUTTONTYPE_PAUSE,
-		BUTTONTYPE_MAP,
 		BUTTONTYPE_LLEFT,
 		BUTTONTYPE_LRIGHT,
 		BUTTONTYPE_LUP,
@@ -243,7 +247,6 @@ private:
 struct ControllerStateQueue
 {
 	std::vector<ControllerState> states;
-	std::vector<ControllerState> unfilteredStates;
 	GameController *con;
 
 	ControllerStateQueue(int size, GameController *con );
@@ -326,8 +329,12 @@ struct AllControllers
 	bool ButtonPressed_Start();
 	bool ButtonHeld_Any();
 	bool ButtonPressed_Any();
-
+	bool KeyboardButtonPressed(int key);
+	bool KeyboardButtonHeld(int key);
 private:
+	KeyboardState pastKeyboard;
+	KeyboardState currKeyboard;
+
 	std::vector<GameController*> gcControllers;
 	std::vector<GameController*> windowsControllers;
 	GameController *keyboardController;

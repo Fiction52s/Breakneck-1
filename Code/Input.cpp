@@ -521,7 +521,7 @@ void ButtonStick::Reset()
 	oldRight = false;
 	oldUp = false;
 	oldDown = false;
-	oldStickVec = Vector2<double>(0, 0);
+	//oldStickVec = Vector2<double>(0, 0);
 }
 
 sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, bool down)
@@ -557,7 +557,7 @@ sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, 
 		}
 		else
 		{
-			stickVec.x = oldGoing.x;
+			//stickVec.x = oldGoing.x;
 		}
 	}
 	else
@@ -589,7 +589,7 @@ sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, 
 		}
 		else
 		{
-			stickVec.y = oldGoing.y;
+			//stickVec.y = oldGoing.y;
 		}
 	}
 	else
@@ -601,8 +601,8 @@ sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, 
 	oldRight = right;
 	oldUp = up;
 	oldDown = down;
-	oldGoing.x = stickVec.x;
-	oldGoing.y = stickVec.y;
+	//oldGoing.x = stickVec.x;
+	//oldGoing.y = stickVec.y;
 
 	return stickVec;
 }
@@ -823,7 +823,6 @@ bool GameController::UpdatePS5()
 	//tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
 	//tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
 	//tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-	//tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
 	//tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
 
 	//m_state = tempState;
@@ -982,7 +981,6 @@ bool GameController::UpdateGCC()
 	//tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
 	//tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
 	//tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-	//tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
 	//tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
 
 	//m_state = tempState;
@@ -1130,7 +1128,6 @@ bool GameController::UpdateXBOX()
 		//tempState.leftShoulder = Pressed(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
 		//tempState.leftTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
 		//tempState.rightTrigger = Pressed(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
-		//tempState.back = Pressed(filter[ControllerSettings::BUTTONTYPE_MAP]);
 		//tempState.start = Pressed(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
 
 		//m_state = tempState;
@@ -1182,7 +1179,6 @@ bool GameController::UpdateKeyboard()
 		m_state.leftShoulder = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_SHIELD)];
 		m_state.leftTrigger = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LEFTWIRE)];
 		m_state.rightTrigger = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RIGHTWIRE)];
-		m_state.back = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_MAP)];
 		m_state.start = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_PAUSE)];
 		
 		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
@@ -1257,7 +1253,7 @@ bool GameController::UpdateKeyboard()
 
 		stickVec = normalize(stickVec);
 
-		double angle = -atan2(stickVec.y, stickVec.x);
+		angle = -atan2(stickVec.y, stickVec.x);
 
 		m_state.rightStickRadians = angle;
 
@@ -1442,6 +1438,7 @@ std::string GetXBoxButtonString( int button )
 	}
 }
 
+
 std::string GetKeyboardButtonString(int key)
 {
 	char c = 0;
@@ -1579,6 +1576,67 @@ std::string GetKeyboardButtonString(int key)
 	return "error";
 }
 
+bool IsKeyValidForInput(int key)
+{
+	if (key >= Keyboard::A && key <= Keyboard::Z)
+	{
+		return true;
+	}
+	else if (key >= Keyboard::Num0 && key <= Keyboard::Num9)
+	{
+		return true;
+	}
+	else if (key >= Keyboard::Numpad0 && key <= Keyboard::Numpad9)
+	{
+		return true;
+	}
+	else if (key >= Keyboard::F1 && key <= Keyboard::F12)
+	{
+		return true;
+	}
+	else
+	{
+		switch (key)
+		{
+		case Keyboard::LBracket:
+		case Keyboard::RBracket:
+		case Keyboard::Semicolon:
+		case Keyboard::Comma:
+		case Keyboard::Period:
+		case Keyboard::Quote:
+		case Keyboard::Slash:
+		case Keyboard::Backslash:
+		case Keyboard::Tilde:
+		case Keyboard::Equal:
+		case Keyboard::Hyphen:
+		case Keyboard::LControl:
+		case Keyboard::LShift:
+		case Keyboard::LAlt:
+		case Keyboard::RControl:
+		case Keyboard::RShift:
+		case Keyboard::RAlt:
+		case Keyboard::Space:
+		case Keyboard::Enter:
+		case Keyboard::BackSpace:
+		case Keyboard::Tab:
+		case Keyboard::PageUp:
+		case Keyboard::PageDown:
+		case Keyboard::End:
+		case Keyboard::Home:
+		case Keyboard::Insert:
+		case Keyboard::Delete:
+		case Keyboard::Left:
+		case Keyboard::Right:
+		case Keyboard::Up:
+		case Keyboard::Down:
+			return true;
+		}
+
+		return false;
+
+	}
+}
+
 AllControllers::AllControllers()
 {
 	windowsControllers.resize(4);
@@ -1635,6 +1693,9 @@ void AllControllers::Update()
 		windowsControllers[i]->UpdateState();
 		windowsStatesVec[i]->AddInput(windowsControllers[i]->GetState());
 	}
+
+	pastKeyboard = currKeyboard;
+	currKeyboard.Update();
 
 	keyboardController->UpdateState();
 	keyboardStates->AddInput(keyboardController->GetState());
@@ -1990,6 +2051,16 @@ bool AllControllers::ButtonPressed_Any()
 	return false;
 }
 
+bool AllControllers::KeyboardButtonPressed(int key)
+{
+	return (!pastKeyboard.m_state[key] && currKeyboard.m_state[key]);
+}
+
+bool AllControllers::KeyboardButtonHeld(int key)
+{
+	return currKeyboard.m_state[key];
+}
+
 ControllerDualStateQueue * AllControllers::GetStateQueue(GameController *con)
 {
 	return GetStateQueue(con->GetCType(), con->GetIndex());
@@ -2201,4 +2272,12 @@ ControllerDualStateQueue::ControllerDualStateQueue( GameController *p_con )
 	:ControllerStateQueue(2, p_con)
 {
 
+}
+
+void KeyboardState::Update()
+{
+	for (int i = 0; i < Keyboard::KeyCount; ++i)
+	{
+		m_state[i] = Keyboard::isKeyPressed( (sf::Keyboard::Key)i);
+	}
 }

@@ -3152,9 +3152,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currTileIndex = 0;
 
 	GameController *cont = GetController(actorIndex);
-	toggleBounceInput = cont->keySettings.toggleBounce;
-	toggleTimeSlowInput = cont->keySettings.toggleTimeSlow;
-	toggleGrindInput = cont->keySettings.toggleGrind;
+	toggleBounceInput = false;//cont->keySettings.toggleBounce;
+	toggleTimeSlowInput = false;//cont->keySettings.toggleTimeSlow;
+	toggleGrindInput = false;//cont->keySettings.toggleGrind;
 	speedParticleRate = 10; //20
 	//re = new RotaryParticleEffect( this );
 	//re1 = new RotaryParticleEffect( this );

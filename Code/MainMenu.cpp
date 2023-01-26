@@ -1497,7 +1497,10 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 	case CTYPE_KEYBOARD:
 	{
 		buttonIndex = profile->Filter(button);//0;//controllerInput->con->keySettings.buttonMap[button];
-
+		if (buttonIndex == Keyboard::Unknown)
+		{
+			buttonIndex = 75; //blank tile for now
+		}
 
 		//if (baseButtonIndex < 12 * 6)
 		//{

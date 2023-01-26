@@ -219,6 +219,13 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2f &pos)
 	}
 	else
 	{
+		float scaleFactor = 1.5;
+
+		controllerIconSize.x *= scaleFactor;
+		controllerIconSize.y *= scaleFactor;
+		portIconSize.x *= scaleFactor;
+		portIconSize.y *= scaleFactor;
+
 		SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(joinScreen->playerBoxWidth - (controllerIconSize.x + border), border) + Vector2f(topLeft));
 		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(joinScreen->playerBoxWidth - (portIconSize.x + border), controllerIconSize.y) + Vector2f(topLeft));
 	}

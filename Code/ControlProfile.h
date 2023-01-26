@@ -24,7 +24,7 @@ struct ControlProfile
 	int GetControllerType();
 	void CopyTo(ControlProfile *cp);
 	void SetControllerType(int c);
-	void Save(ofstream &of);
+	void Save(std::ofstream &of);
 	void SetFilterDefault();
 private:
 	int cType;
@@ -66,11 +66,13 @@ struct ActionButton
 	sf::Vector2f quadCenter;
 
 	float buttonSize;
+	float textSize;
 	
 	ActionButton(sf::Vertex *quad, const std::string &name);
 	void SetPosition(sf::Vector2f &pos);
 	void SetButtonSubRect( sf::IntRect &ir );
 	void Draw(sf::RenderTarget *target);
+	void SetSizes(float bSize, float textSize);
 };
 
 struct ControlProfileMenu;
@@ -85,6 +87,9 @@ struct ActionButtonGroup
 	//const static int NUM_BUTTONS = 9;
 	//const static int COLS = 3;
 	//const static int ROWS = 3;
+
+	int squareSize;
+	sf::Vector2f spacing;
 
 	sf::Vertex *buttonQuads;
 	sf::Vertex highlightQuad[4];
@@ -103,10 +108,14 @@ struct ActionButtonGroup
 
 	sf::Vector2f topLeft;
 
+	bool keyboardMode;
+
 	ActionButtonGroup(ControlProfileMenu *p_controlMenu);
 	~ActionButtonGroup();
 
 	void Reset();
+
+	void SetKeyboardMode(bool p_keyboardMode );
 
 	void UpdateButtonIcons();
 
@@ -114,7 +123,7 @@ struct ActionButtonGroup
 
 	void SetSelectedIndex(int sel);
 
-	void SetModifiedButton(XBoxButton button);
+	void SetModifiedButton(int button);
 
 	void ModifySelectedButton();
 
@@ -140,6 +149,9 @@ struct ControlProfileMenu
 	static const int BOX_WIDTH;
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
+
+	KeyboardState prevKeyState;
+	KeyboardState currKeyState;
 
 	int currReceiveFrame;
 	int maxReceiveFrames;

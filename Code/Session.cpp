@@ -2829,7 +2829,7 @@ void Session::UpdatePlayerInput(int index)
 		
 		//player->prevInput = prevInput;
 
-		if (controller->keySettings.toggleBounce)
+		/*if (controller->keySettings.toggleBounce)
 		{
 			if (currSessInput.X && !prevSessInput.X)
 			{
@@ -2861,7 +2861,7 @@ void Session::UpdatePlayerInput(int index)
 			{
 				pCurr.leftShoulder = alreadyTimeSlow;
 			}
-		}
+		}*/
 	}
 }
 
