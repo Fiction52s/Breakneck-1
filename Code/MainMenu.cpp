@@ -1480,7 +1480,7 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 	}
 	case CTYPE_GAMECUBE:
 	{
-		buttonIndex = profile->Filter(button);//0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
+		buttonIndex = profile->Filter(button) + 16 * 2;//0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
 
 		if (buttonIndex == XBOX_BLANK)
 		{

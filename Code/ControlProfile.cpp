@@ -140,7 +140,7 @@ ControlProfileMenu::ControlProfileMenu()
 	selectedProfileText.setCharacterSize(textSize);
 	selectedProfileText.setFillColor(Color::Black);
 
-	selectedProfileText.setString("Controls: " + currProfile->name);
+	
 
 	editingProfileText.setFont(MainMenu::GetInstance()->arial);
 	editingProfileText.setCharacterSize(textSize);
@@ -209,6 +209,8 @@ void ControlProfileMenu::SetControllerInput(ControllerDualStateQueue *p_controll
 	SetProfiles(managedProfiles);
 
 	currProfile = managedProfiles.front();//controlMenu = new ControlProfileMenu;
+
+	selectedProfileText.setString("Controls: " + currProfile->name);
 
 	//currProfile = MainMenu::GetInstance()->cpm->profiles.front();
 
@@ -1135,6 +1137,11 @@ void ControlProfileManager::WriteProfiles()
 
 	for (int i = 0; i < CTYPE_NONE; ++i)
 	{
+		if (profiles[i].size() <= 1)
+		{
+			//empty
+			continue;
+		}
 		auto it = profiles[i].begin();
 		++it; //always skip KIN
 
@@ -1197,7 +1204,7 @@ ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu)
 	rows = ceil(numButtons / (float)cols);
 
 	MainMenu *mm = MainMenu::GetInstance();
-	Tileset *ts_buttons = mm->GetButtonIconTileset(CTYPE_XBOX); //for now
+//	Tileset *ts_buttons = mm->GetButtonIconTileset(CTYPE_XBOX); //for now
 
 	buttonQuads = new Vertex[numButtons * 4];
 
@@ -1387,7 +1394,9 @@ void ActionButtonGroup::Draw(sf::RenderTarget *target)
 {
 	MainMenu *mm = MainMenu::GetInstance();
 	
-	Tileset *ts_buttons = mm->GetButtonIconTileset(controlMenu->controllerInput->GetControllerType());
+	int currProfileControllerType = controlMenu->currProfile->GetControllerType();
+
+	Tileset *ts_buttons = mm->GetButtonIconTileset(currProfileControllerType);
 
 	target->draw(highlightQuad, 4, sf::Quads);
 
