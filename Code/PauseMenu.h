@@ -150,7 +150,6 @@ struct PauseMenu
 	Tileset *ts_tabs;
 	sf::Sprite selectSprite;
 	GameSession *game;
-	ControlSettingsMenu *controlSettingsMenu;
 
 	ControlProfile *GetCurrSelectedProfile();
 	bool SetCurrProfileByName(const std::string &name);

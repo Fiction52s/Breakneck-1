@@ -22,10 +22,6 @@ const int ControlProfileMenu::BOX_WIDTH = 300;
 const int ControlProfileMenu::BOX_HEIGHT = 40;//50; //40
 const int ControlProfileMenu::BOX_SPACING = 0;//10;
 
-const int ProfileSelector::BOX_WIDTH = 300;
-const int ProfileSelector::BOX_HEIGHT = 40;
-const int ProfileSelector::BOX_SPACING = 10;
-
 //waitFrames[0] = 10;
 //waitFrames[1] = 5;
 //waitFrames[2] = 2;
@@ -1176,6 +1172,42 @@ void ControlProfileManager::WriteProfiles()
 ControlProfileManager::~ControlProfileManager()
 {
 	ClearProfiles();
+}
+
+ActionButtonGroup::ActionButtonGroup(ControlProfileMenu *p_controlMenu)
+{
+	controlMenu = p_controlMenu;
+
+	topLeft = Vector2f(0, 0);
+
+	selectedIndex = 0;
+
+	std::vector<std::string> buttonTexts = {
+		"JUMP",
+		"DASH",
+		"ATTACK",
+		"SHIELD",
+		"SPECIAL",
+		"B-WIRE",
+		"R-WIRE" };
+
+	numButtons = buttonTexts.size();
+
+	cols = 3;
+	rows = ceil(numButtons / (float)cols);
+
+	MainMenu *mm = MainMenu::GetInstance();
+	Tileset *ts_buttons = mm->GetButtonIconTileset(CTYPE_XBOX); //for now
+
+	buttonQuads = new Vertex[numButtons * 4];
+
+	actionButtons.resize(numButtons);
+	for (int i = 0; i < numButtons; ++i)
+	{
+		actionButtons[i] = new ActionButton(buttonQuads + 4 * i, buttonTexts[i]);
+	}
+
+	Reset();
 }
 
 ActionButtonGroup::~ActionButtonGroup()

@@ -262,7 +262,7 @@ void OptionsMenu::Draw( sf::RenderTarget *target )
 		target->draw(optionModeQuads, 4 * 4, sf::Quads, ts_optionMode->texture);
 		break;
 	case CONTROL:
-		csm->Draw(target);
+		//csm->Draw(target);
 		break;
 	case SOUND:
 		mainMenu->gameSettingsScreen->Draw(target);
@@ -274,10 +274,10 @@ bool OptionsMenu::CanChangeTab()
 {
 	if (state == CONTROL)
 	{
-		if (csm->IsEditingButtons())
+		/*if (csm->IsEditingButtons())
 		{
 			return false;
-		}
+		}*/
 	}
 
 	return true;
@@ -464,7 +464,8 @@ PauseMenu::~PauseMenu()
 
 ControlProfile * PauseMenu::GetCurrSelectedProfile()
 {
-	return game->mainMenu->GetCurrSelectedProfile();;
+	return NULL;
+	//return game->mainMenu->GetCurrSelectedProfile();;
 }
 
 bool PauseMenu::SetCurrProfileByName(const std::string &name)
