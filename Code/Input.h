@@ -27,6 +27,8 @@ For each button, its bool its true if the it is down
 (pressed) and false if it is up (not pressed).
 */
 
+struct ControlProfile;
+
 enum XBoxButton
 {
 	XBOX_A,
@@ -98,7 +100,9 @@ struct ControllerState
 	void Set(const ControllerState &state);
 	void SetLeftDirection();
 	
-	sf::Vector2<double> GetLeft8Dir();
+	sf::Vector2<double> GetLeft8Dir() const;
+	sf::Vector2<double> GetStickVectorLeft() const;
+	sf::Vector2<double> GetStickVectorRight() const;
 	COMPRESSED_INPUT_TYPE GetCompressedState();
 	void SetFromCompressedState(COMPRESSED_INPUT_TYPE s);
 	void InvertLeftStick();
@@ -331,8 +335,10 @@ struct AllControllers
 	bool ButtonPressed_Any();
 	bool KeyboardButtonPressed(int key);
 	bool KeyboardButtonHeld(int key);
+	void UpdateStateKeyboard(ControlProfile *cp, ControllerState &state, const ControllerState &prevState);
+	void UpdateKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState);
 private:
-	KeyboardState pastKeyboard;
+	KeyboardState prevKeyboard;
 	KeyboardState currKeyboard;
 
 	std::vector<GameController*> gcControllers;

@@ -415,7 +415,7 @@ bool ControllerState::LeftTriggerPressed() const
 	return leftTrigger >= triggerThresh;
 }
 
-sf::Vector2<double> ControllerState::GetLeft8Dir()
+sf::Vector2<double> ControllerState::GetLeft8Dir() const
 {
 	sf::Vector2<double> dir(0, 0);
 	if (LLeft())
@@ -437,6 +437,20 @@ sf::Vector2<double> ControllerState::GetLeft8Dir()
 	}
 
 	return normalize(dir);
+}
+
+sf::Vector2<double> ControllerState::GetStickVectorLeft() const
+{
+	float x = cos(leftStickRadians) * leftStickMagnitude;
+	float y = -sin(leftStickRadians) * leftStickMagnitude;
+	return V2d(x, y);
+}
+
+sf::Vector2<double> ControllerState::GetStickVectorRight() const
+{
+	float x = cos(rightStickRadians) * rightStickMagnitude;
+	float y = -sin(rightStickRadians) * rightStickMagnitude;
+	return V2d(x, y);
 }
 
 void ControllerState::InvertLeftStick()
@@ -1153,7 +1167,7 @@ bool GameController::UpdateKeyboard()
 
 		ControlProfile cp;
 		cp.SetControllerType(CTYPE_KEYBOARD);
-		cp.SetFilterDefault();
+		cp.SetFilterKeyboardMenuDefault();
 		
 		/*m_state.A = IsKeyPressed(Keyboard::Z);
 		m_state.B = IsKeyPressed(Keyboard::A);
@@ -1184,6 +1198,8 @@ bool GameController::UpdateKeyboard()
 		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
 		m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
 		m_state.pad = 0;//( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
+
+		//CONTROLLERS.UpdateStateKeyboard( )
 
 		bool up = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LUP)];
 		bool down = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LDOWN)];
@@ -1456,14 +1472,14 @@ std::string GetKeyboardButtonString(int key)
 		str.push_back(c);
 		return str;
 	}
-	else if (key >= Keyboard::Numpad0 && key <= Keyboard::Numpad9)
+	/*else if (key >= Keyboard::Numpad0 && key <= Keyboard::Numpad9)
 	{
 		return "NUMPAD" + to_string(key - Keyboard::Numpad0);
 	}
 	else if (key >= Keyboard::F1 && key <= Keyboard::F12)
 	{
 		return "F" + to_string(key - Keyboard::F1);
-	}
+	}*/
 	else
 	{
 		switch (key)
@@ -1694,7 +1710,7 @@ void AllControllers::Update()
 		windowsStatesVec[i]->AddInput(windowsControllers[i]->GetState());
 	}
 
-	pastKeyboard = currKeyboard;
+	prevKeyboard = currKeyboard;
 	currKeyboard.Update();
 
 	keyboardController->UpdateState();
@@ -2053,13 +2069,233 @@ bool AllControllers::ButtonPressed_Any()
 
 bool AllControllers::KeyboardButtonPressed(int key)
 {
-	return (!pastKeyboard.m_state[key] && currKeyboard.m_state[key]);
+	return (!prevKeyboard.m_state[key] && currKeyboard.m_state[key]);
 }
 
 bool AllControllers::KeyboardButtonHeld(int key)
 {
 	return currKeyboard.m_state[key];
 }
+
+void AllControllers::UpdateKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState)
+{
+	int leftIndex = ControllerSettings::BUTTONTYPE_LLEFT;
+	if (rightStick)
+	{
+		leftIndex = ControllerSettings::ButtonType::BUTTONTYPE_RLEFT;
+	}
+
+	bool left = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)leftIndex));
+	bool right = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex+1)));
+	bool up = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex + 2)));
+	bool down = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex + 3)));	
+
+	bool oldLeft = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex))];
+	bool oldRight = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+1))];
+	bool oldUp = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+2))];
+	bool oldDown = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+3))];
+
+	V2d stickVec;
+
+	bool leftPress = left && !oldLeft;
+	bool rightPress = right && !oldRight;
+	bool upPress = up && !oldUp;
+	bool downPress = down && !oldDown;
+
+	if (left && !right)
+	{
+		stickVec.x = -1;
+	}
+	else if (!left && right)
+	{
+		stickVec.x = 1;
+	}
+	else if (left && right)
+	{
+		if (leftPress && !rightPress)
+		{
+			stickVec.x = -1;
+		}
+		else if (!leftPress && rightPress)
+		{
+			stickVec.x = 1;
+		}
+		else if (leftPress && rightPress)
+		{
+			stickVec.x = 0;
+		}
+		else
+		{
+			if (rightStick)
+			{
+				if (prevState.RLeft())
+				{
+					stickVec.x = -1;
+				}
+				else if (prevState.RRight())
+				{
+					stickVec.x = 1;
+				}
+				else
+				{
+					stickVec.x = 0;
+				}
+			}
+			else
+			{
+				if (prevState.LLeft())
+				{
+					stickVec.x = -1;
+				}
+				else if (prevState.LRight())
+				{
+					stickVec.x = 1;
+				}
+				else
+				{
+					stickVec.x = 0;
+				}
+			}
+		}
+	}
+	else
+	{
+		stickVec.x = 0;
+	}
+
+	if (up && !down)
+	{
+		stickVec.y = -1;
+	}
+	else if (!up && down)
+	{
+		stickVec.y = 1;
+	}
+	else if (up && down)
+	{
+		if (upPress && !downPress)
+		{
+			stickVec.y = -1;
+		}
+		else if (!upPress && downPress)
+		{
+			stickVec.y = 1;
+		}
+		else if (upPress && downPress)
+		{
+			stickVec.y = 0;
+		}
+		else
+		{
+			if (rightStick)
+			{
+				if (prevState.RUp())
+				{
+					stickVec.y = -1;
+				}
+				else if (prevState.RDown())
+				{
+					stickVec.y = 1;
+				}
+				else
+				{
+					stickVec.y = 0;
+				}
+			}
+			else
+			{
+				if (prevState.LUp())
+				{
+					stickVec.y = -1;
+				}
+				else if (prevState.LDown())
+				{
+					stickVec.y = 1;
+				}
+				else
+				{
+					stickVec.y = 0;
+				}
+			}
+		}
+	}
+	else
+	{
+		stickVec.y = 0;
+	}
+
+	double *magPtr = &state.leftStickMagnitude;
+	double *radPtr = &state.leftStickRadians;
+	unsigned char *padPtr = &state.leftStickPad;
+	if (rightStick)
+	{
+		magPtr = &state.rightStickMagnitude;
+		radPtr = &state.rightStickRadians;
+		padPtr = &state.rightStickPad;
+	}
+
+	if (length(stickVec) > 0)
+	{
+		*magPtr = 1;
+	}
+	else
+	{
+		*magPtr = 0;
+	}
+
+	stickVec = normalize(stickVec);
+
+	double angle = -atan2(stickVec.y, stickVec.x);
+
+	*radPtr = angle;
+
+	*padPtr = 0;
+
+	if (stickVec.x > 0)//right
+	{
+		*magPtr = 1.0;
+		*padPtr += 1 << 3;
+	}
+	else if (stickVec.x < 0)//left
+	{
+		*magPtr = 1.0;
+		*padPtr += 1 << 2;
+	}
+
+	if (stickVec.y < 0)//up
+	{
+		*magPtr = 1.0;
+		*padPtr += 1;
+	}
+	else if (stickVec.y > 0)//down
+	{
+		*magPtr = 1.0;
+		*padPtr += 1 << 1;
+	}
+}
+
+void AllControllers::UpdateStateKeyboard(ControlProfile *cp, ControllerState &state, const ControllerState &prevState)
+{
+	state.Clear();
+
+	state.A = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_JUMP));
+	state.B = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SPECIAL));
+	state.X = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_DASH));
+	state.Y = false;
+
+	state.leftShoulder = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SHIELD));
+	state.rightShoulder = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_ATTACK));
+
+	state.leftTrigger = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_LEFTWIRE));
+	state.rightTrigger = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_RIGHTWIRE));
+
+	state.start = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_PAUSE));
+
+	UpdateKeyboardStick(cp, false, state, prevState);
+	UpdateKeyboardStick(cp, true, state, prevState);
+}
+
+
 
 ControllerDualStateQueue * AllControllers::GetStateQueue(GameController *con)
 {

@@ -2707,7 +2707,13 @@ ControllerState Session::GetCurrInputFiltered(int index)
 {
 	if (controllerStates[index] != NULL)
 	{
-		assert(controlProfiles[index] != NULL);
+		if (controllerStates[index]->GetControllerType() == CTYPE_KEYBOARD)
+		{
+			assert(0); //keyboard needs to work differently
+		}
+
+		ControlProfile *currProf = controlProfiles[index];
+		assert(currProf != NULL);
 
 		ControllerState curr = controllerStates[index]->GetCurrState();
 
@@ -2810,8 +2816,9 @@ void Session::UpdatePlayerInput(int index)
 
 	ControllerState &pCurr = player->currInput;
 	GameController *controller = GetController(index);
-	ControllerState currSessInput = GetCurrInputFiltered(index);
-	ControllerState prevSessInput = GetPrevInputFiltered(index);
+	
+
+	//ControllerState prevSessInput = GetPrevInputFiltered(index);
 
 	bool alreadyBounce = pCurr.X;
 	bool alreadyGrind = pCurr.Y;
@@ -2824,6 +2831,18 @@ void Session::UpdatePlayerInput(int index)
 	else
 	{
 		player->prevInput = player->currInput;
+
+
+		ControllerState currSessInput;
+		if (controlProfiles[index]->GetControllerType() == CTYPE_KEYBOARD)
+		{
+			CONTROLLERS.UpdateStateKeyboard(controlProfiles[index], currSessInput, player->prevInput);
+		}
+		else
+		{
+			currSessInput = GetCurrInputFiltered(index);
+		}
+
 		player->currInput = currSessInput;
 
 		

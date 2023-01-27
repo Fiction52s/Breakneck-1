@@ -35,6 +35,34 @@ ControlProfile::ControlProfile()
 	SetFilterDefault();
 }
 
+void ControlProfile::SetFilterKeyboardMenuDefault()
+{
+	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
+	{
+		filter[i] = XBOX_BLANK;
+	}
+
+	filter[ControllerSettings::BUTTONTYPE_JUMP] = Keyboard::Key::Z;
+	filter[ControllerSettings::BUTTONTYPE_DASH] = Keyboard::Key::X;
+	filter[ControllerSettings::BUTTONTYPE_ATTACK] = Keyboard::Key::C;
+	filter[ControllerSettings::BUTTONTYPE_SHIELD] = Keyboard::Key::V;
+	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = Keyboard::Key::B;
+	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = Keyboard::Key::LControl;
+	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::Key::Space;
+
+	filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Delete;
+
+	filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::Left;
+	filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::Right;
+	filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::Up;
+	filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::Down;
+
+	filter[ControllerSettings::BUTTONTYPE_RLEFT] = Keyboard::Key::U;
+	filter[ControllerSettings::BUTTONTYPE_RRIGHT] = Keyboard::Key::O;
+	filter[ControllerSettings::BUTTONTYPE_RUP] = Keyboard::Key::P;
+	filter[ControllerSettings::BUTTONTYPE_RDOWN] = Keyboard::Key::SemiColon;
+}
+
 void ControlProfile::SetFilterDefault()
 {
 	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
@@ -82,15 +110,10 @@ void ControlProfile::SetFilterDefault()
 
 		filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Delete;
 
-	/*	filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::J;
+		filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::J;
 		filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::L;
 		filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::I;
-		filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::K;*/
-
-		filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::Left;
-		filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::Right;
-		filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::Up;
-		filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::Down;
+		filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::K;
 
 		filter[ControllerSettings::BUTTONTYPE_RLEFT] = Keyboard::Key::U;
 		filter[ControllerSettings::BUTTONTYPE_RRIGHT] = Keyboard::Key::O;
@@ -115,8 +138,8 @@ void ControlProfile::FilterState(ControllerState &state)
 	state.leftShoulder = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
 	state.rightShoulder = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
 	
-	state.leftTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
-	state.rightTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_JUMP]);
+	state.leftTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
+	state.rightTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);
 
 	state.start = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_PAUSE]);
 }
@@ -156,7 +179,7 @@ void ControlProfile::Save(ofstream &of)
 		of << "RLEFT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RLEFT]) << "\n";
 		of << "RRIGHT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RRIGHT]) << "\n";
 		of << "RUP:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RUP]) << "\n";
-		of << "RDOWN:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RDOWN]) << "\n";
+		of << "RDOWN:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RDOWN]);// << "\n";
 	}
 	else
 	{
@@ -166,7 +189,7 @@ void ControlProfile::Save(ofstream &of)
 		of << "SHIELD:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
 		of << "SPECIAL:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
 		of << "LEFTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
-		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);// << "\n";
 	}
 }
 
@@ -738,13 +761,19 @@ bool ControlProfileManager::LoadProfiles()
 
 	profiles[CTYPE_XBOX].push_back(defXBOX);
 
-
 	ControlProfile *defGCC = new ControlProfile;
 	defGCC->name = "Default";
 	defGCC->SetControllerType(CTYPE_GAMECUBE);
 	defGCC->SetFilterDefault();
 
 	profiles[CTYPE_GAMECUBE].push_back(defGCC);
+
+	ControlProfile *defKeyboard = new ControlProfile;
+	defKeyboard->name = "Default";
+	defKeyboard->SetControllerType(CTYPE_KEYBOARD);
+	defKeyboard->SetFilterDefault();
+
+	profiles[CTYPE_KEYBOARD].push_back(defKeyboard);
 
 	is.open( "Resources/controlprofiles.txt" );
 
@@ -1216,7 +1245,7 @@ sf::Keyboard::Key ControlProfileManager::GetKey(const std::string &str)
 		{
 			return Keyboard::Down;
 		}
-		else if (str == "NUMPAD0")
+		/*else if (str == "NUMPAD0")
 		{
 			return Keyboard::Numpad0;
 		}
@@ -1303,7 +1332,7 @@ sf::Keyboard::Key ControlProfileManager::GetKey(const std::string &str)
 		else if (str == "F12")
 		{
 			return Keyboard::F12;
-		}
+		}*/
 	}
 
 	return Keyboard::Key::Unknown;
@@ -1427,7 +1456,7 @@ void ControlProfileManager::WriteProfiles()
 
 			(*it)->Save(of);
 
-			of << "\n";
+			of << "\n\n";
 		}
 	}
 }
