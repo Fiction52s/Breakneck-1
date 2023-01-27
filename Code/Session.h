@@ -21,6 +21,8 @@
 #include "steam/steam_api.h"
 #include "MatchParams.h"
 
+struct RecordPlayer;
+struct ReplayPlayer;
 struct Nexus;
 
 struct GroundedWarper;
@@ -204,6 +206,9 @@ struct Session : TilesetManager, QuadTreeCollider
 		FROZEN,
 		MAP
 	};
+
+	ReplayPlayer *repPlayer;
+	RecordPlayer *recPlayer;
 
 	int parallelSessionIndex; //-1 if not parallel
 
@@ -810,8 +815,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual bool RunPostUpdate() { return true; }
 	void ActiveStorySequenceUpdate();
 	virtual int TryToActivateBonus() { return 0; }
-	virtual void RecPlayerRecordFrame() {}
-	virtual void RepPlayerUpdateInput() {}
+	virtual void RecPlayerRecordFrame();
+	virtual void RepPlayerUpdateInput();
 	virtual void RecGhostRecordFrame() {}
 	virtual void UpdateReplayGhostSprites() {}
 	bool RunGameModeUpdate();

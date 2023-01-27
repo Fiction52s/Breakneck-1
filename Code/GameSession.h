@@ -305,8 +305,7 @@ struct GameSession : RayCastHandler, Session
 	
 	Buf testBuf;//for recording ghost
 	RecordGhost *recGhost;
-	RecordPlayer *recPlayer;
-	ReplayPlayer *repPlayer;
+	
 	std::vector<ReplayGhost*> replayGhosts;
 	Grass *explodingGravityGrass;
 	bool quit;
@@ -513,7 +512,7 @@ struct GameSession : RayCastHandler, Session
 
 	bool RunPreUpdate();
 	void UpdateSoundNodeLists();
-	void RecPlayerRecordFrame();
+	//void RecPlayerRecordFrame();
 	void RepPlayerUpdateInput();
 	void RecGhostRecordFrame();
 	bool RunPostUpdate();

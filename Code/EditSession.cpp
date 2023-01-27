@@ -478,7 +478,7 @@ void EditSession::RepPlayerUpdateInput()
 	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
 	{
 		//currently only records 1 player replays. fix this later
-		debugReplayPlayer->UpdateInput(controllerStates[0]);
+		//debugReplayPlayer->UpdateInput(controllerStates[0]);
 	}
 }
 

@@ -935,6 +935,7 @@ void GameSession::Cleanup()
 	if (repPlayer != NULL)
 	{
 		delete repPlayer;
+		repPlayer = NULL;
 	}
 
 	if (recPlayer != NULL)
@@ -4516,13 +4517,7 @@ void GameSession::UpdateSoundNodeLists()
 	pauseSoundNodeList->Update();
 }
 
-void GameSession::RecPlayerRecordFrame()
-{
-	if (recPlayer != NULL)
-	{
-		recPlayer->RecordFrame();
-	}
-}
+
 
 void GameSession::RepPlayerUpdateInput()
 {
@@ -4530,7 +4525,7 @@ void GameSession::RepPlayerUpdateInput()
 	{
 		//currently only records 1 player replays. fix this later
 
-		repPlayer->UpdateInput(controllerStates[0]);
+		repPlayer->UpdateInput(GetPlayer(0)->currInput);//controllerStates[0]);
 	}
 }
 

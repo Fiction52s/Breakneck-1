@@ -143,7 +143,7 @@ struct ReplayPlayer
 	~ReplayPlayer();
 	bool OpenReplay(const std::string &fileName);
 	void Reset();
-	void UpdateInput(ControllerDualStateQueue *controllerInput);
+	void UpdateInput(ControllerState &state);//ControllerDualStateQueue *controllerInput);
 	COMPRESSED_INPUT_TYPE *inputBuffer;
 	Actor *player;
 	int frame;

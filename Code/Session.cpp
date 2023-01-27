@@ -30,6 +30,7 @@
 #include "GoalFlow.h"
 #include "GoalExplosion.h"
 #include "InputVisualizer.h"
+#include "PlayerRecord.h"
 //#include "Enemy_Shard.h"
 #include "EnvEffects.h"
 #include "MusicPlayer.h"
@@ -1562,6 +1563,9 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
 
+	repPlayer = NULL;
+	recPlayer = NULL;
+
 	parallelSessionIndex = -1;
 	randomState = 0;
 	ggpoReady = false;
@@ -2814,74 +2818,84 @@ void Session::UpdatePlayerInput(int index)
 	if (player == NULL)
 		return;
 
-	ControllerState &pCurr = player->currInput;
-	GameController *controller = GetController(index);
+	//ControllerState &pCurr = player->currInput;
+	//GameController *controller = GetController(index);
 	
 
 	//ControllerState prevSessInput = GetPrevInputFiltered(index);
 
-	bool alreadyBounce = pCurr.X;
-	bool alreadyGrind = pCurr.Y;
-	bool alreadyTimeSlow = pCurr.leftShoulder;
+	//bool alreadyBounce = pCurr.X;
+	//bool alreadyGrind = pCurr.Y;
+	//bool alreadyTimeSlow = pCurr.leftShoulder;
 
-	if (cutPlayerInput)
+	
+
+	if (repPlayer != NULL && playerInd == 0)
 	{
-		player->currInput = ControllerState();
+		player->prevInput = player->currInput;
+
+		repPlayer->UpdateInput(player->currInput);//controllerStates[0]);
 	}
 	else
 	{
 		player->prevInput = player->currInput;
 
-
-		ControllerState currSessInput;
-		if (controlProfiles[index]->GetControllerType() == CTYPE_KEYBOARD)
+		if (cutPlayerInput)
 		{
-			CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[index], currSessInput, player->prevInput);
+			player->currInput = ControllerState();
 		}
 		else
 		{
-			currSessInput = GetCurrInputFiltered(index);
-		}
-
-		player->currInput = currSessInput;
-
-		
-		//player->prevInput = prevInput;
-
-		/*if (controller->keySettings.toggleBounce)
-		{
-			if (currSessInput.X && !prevSessInput.X)
+			ControllerState currSessInput;
+			if (controlProfiles[index]->GetControllerType() == CTYPE_KEYBOARD)
 			{
-				pCurr.X = !alreadyBounce;
+				CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[index], currSessInput, player->prevInput);
 			}
 			else
 			{
-				pCurr.X = alreadyBounce;
+				currSessInput = GetCurrInputFiltered(index);
 			}
+
+			player->currInput = currSessInput;
 		}
-		if (controller->keySettings.toggleGrind)
+
+		RecPlayerRecordFrame();
+	}	
+	//player->prevInput = prevInput;
+
+	/*if (controller->keySettings.toggleBounce)
+	{
+		if (currSessInput.X && !prevSessInput.X)
 		{
-			if (currSessInput.Y && !prevSessInput.Y)
-			{
-				pCurr.Y = !alreadyGrind;
-			}
-			else
-			{
-				pCurr.Y = alreadyGrind;
-			}
+			pCurr.X = !alreadyBounce;
 		}
-		if (controller->keySettings.toggleTimeSlow)
+		else
 		{
-			if (currSessInput.leftShoulder && !prevSessInput.leftShoulder)
-			{
-				pCurr.leftShoulder = !alreadyTimeSlow;
-			}
-			else
-			{
-				pCurr.leftShoulder = alreadyTimeSlow;
-			}
-		}*/
+			pCurr.X = alreadyBounce;
+		}
 	}
+	if (controller->keySettings.toggleGrind)
+	{
+		if (currSessInput.Y && !prevSessInput.Y)
+		{
+			pCurr.Y = !alreadyGrind;
+		}
+		else
+		{
+			pCurr.Y = alreadyGrind;
+		}
+	}
+	if (controller->keySettings.toggleTimeSlow)
+	{
+		if (currSessInput.leftShoulder && !prevSessInput.leftShoulder)
+		{
+			pCurr.leftShoulder = !alreadyTimeSlow;
+		}
+		else
+		{
+			pCurr.leftShoulder = alreadyTimeSlow;
+		}
+	}*/
 }
 
 void Session::UpdateAllPlayersInput()
@@ -6611,11 +6625,13 @@ bool Session::RunGameModeUpdate()
 
 		UpdateControllers();
 
-		RepPlayerUpdateInput();
+		//RepPlayerUpdateInput(); //original spot
 
-		RecPlayerRecordFrame();
+		//RecPlayerRecordFrame(); //original spot
 
 		UpdateAllPlayersInput();
+
+		//RepPlayerUpdateInput();
 
 		if (pauseFrames > 0)
 		{
@@ -7983,6 +7999,22 @@ void Session::EndLevelNoScene()
 	}
 }
 
+void Session::RepPlayerUpdateInput()
+{
+	if (repPlayer != NULL)
+	{
+		//currently only records 1 player replays. fix this later
+		repPlayer->UpdateInput(GetPlayer(0)->currInput);//controllerStates[0]);
+	}
+}
+
+void Session::RecPlayerRecordFrame()
+{
+	if (recPlayer != NULL)
+	{
+		recPlayer->RecordFrame();
+	}
+}
 
 bool Session::IsMapVersionNewerThanOrEqualTo(int ver1, int ver2)
 {

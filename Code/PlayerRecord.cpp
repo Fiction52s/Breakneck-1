@@ -321,57 +321,12 @@ void RecordPlayer::RecordFrame()
 	if (frame >= MAX_RECORD)
 		return;
 
-	//of << state.leftStickMagnitude << " " << state.leftStickRadians << " " << state.leftTrigger << " "
-	//			<< state.rightTrigger 
-	//			<< " " // << (int)state.start << " " << (int)state.back << " "
-	//			<< (int)state.leftShoulder
-	//			<< " " << (int)state.rightShoulder << " " << (int)state.A << " " << (int)state.B << " " 
-	//			<< (int)state.X << " " << (int)state.Y << endl;
-	ControllerState &s = player->owner->GetCurrInput(0);//currInput;
-														//temporary hack^
-														//ControllerState &state = inputBuffer[frame];
-														//state = ;
-
-
-
-
-	//Buf & b = player->owner->testBuf;
+	ControllerState &s = player->currInput;//player->owner->GetCurrInput(0);
 
 	COMPRESSED_INPUT_TYPE compressedInputs = s.GetCompressedState();
 
-	//b.Send(compressedInputs);
-
 	inputBuffer[frame] = compressedInputs;
 
-
-
-
-	/*b.Send(s.leftStickMagnitude);
-	b.Send(s.leftStickRadians);
-	b.Send(s.leftTrigger);
-	b.Send(s.rightTrigger);
-
-	b.Send(s.leftShoulder);
-	b.Send(s.rightShoulder);
-	b.Send(s.A);
-	b.Send(s.B);
-	b.Send(s.X);
-	b.Send(s.Y);*/
-
-	//cout << "record frame: " << frame << " buttons A: " << (int)s.A << ", B: " << (int)s.B << endl;
-
-	//if( state.A )
-	//	cout << "record frame: " << frame << " jump" << endl;
-	/*info.position = player->sprite->getPosition();
-	info.origin = player->sprite->getOrigin();
-	info.rotation = player->sprite->getRotation();
-	info.flipX = player->flipTileX;
-	info.flipY = player->flipTileY;
-	info.action = (int)player->spriteAction;
-	info.tileIndex = player->currTileIndex;
-	info.speedLevel = player->speedLevel;*/
-
-	//cout << "record frame: " << frame << ",action: " << info.action << ", t: " << info.tileIndex << endl;
 	++frame;
 }
 
@@ -442,19 +397,27 @@ void ReplayPlayer::Reset()
 	player->currPowerMode = header.startPowerMode;
 }
 
-void ReplayPlayer::UpdateInput(ControllerDualStateQueue *controllerInput)
+void ReplayPlayer::UpdateInput( ControllerState &state )//ControllerDualStateQueue *controllerInput)
 {
 	if (!init || frame == numTotalFrames)
 		return;
 
-	bool start = controllerInput->GetCurrState().start;
-	bool back = controllerInput->GetCurrState().back;
+	bool start = state.start;
+	bool back = state.back;
 
-	controllerInput->states[0].SetFromCompressedState(inputBuffer[frame]);
-	//state.SetFromCompressedState(inputBuffer[frame]);
+	state.SetFromCompressedState(inputBuffer[frame]);
 
-	controllerInput->states[0].start = start;
-	controllerInput->states[0].back = back;
+	state.start = start;
+	state.back = back;
+
+	//bool start = controllerInput->GetCurrState().start;
+	//bool back = controllerInput->GetCurrState().back;
+
+	//controllerInput->states[0].SetFromCompressedState(inputBuffer[frame]);
+	
+
+	//controllerInput->states[0].start = start;
+	//controllerInput->states[0].back = back;
 
 	++frame;
 }
