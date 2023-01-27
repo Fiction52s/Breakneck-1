@@ -33,6 +33,7 @@ ControlProfile::ControlProfile()
 {
 	SetControllerType(CTYPE_XBOX);
 	SetFilterDefault();
+	editable = true;
 }
 
 void ControlProfile::SetFilterKeyboardMenuDefault()
@@ -197,6 +198,7 @@ void ControlProfile::CopyTo(ControlProfile *cp)
 {
 	cp->cType = cType;
 	cp->name = name;
+	cp->editable = editable;
 	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
 	{
 		cp->filter[i] = filter[i];
@@ -360,12 +362,13 @@ void ControlProfileMenu::UpdateNames()
 	{
 		++lit;
 	}
-
+	
 	Vector2f topMid = topLeft + Vector2f(BOX_WIDTH / 2, 0);
 
 	int trueI;
 	int i = 0;
 	int numProfiles = profiles.size();
+	ControlProfile *tempProfile = NULL;
 	for( ; i < NUM_BOXES; ++i )
 	{
 		trueI = (topIndex + i) % NUM_BOXES;
@@ -381,6 +384,16 @@ void ControlProfileMenu::UpdateNames()
 		if( lit == profiles.end() )
 			lit = profiles.begin();
 
+		tempProfile = GetProfileAtIndex(trueI);
+
+		if (tempProfile->editable)
+		{
+			profileNames[i].setFillColor(Color::White);
+		}
+		else
+		{
+			profileNames[i].setFillColor(Color(150, 150, 150));
+		}
 		profileNames[i].setString( (*lit)->name );
 
 		auto &lb = profileNames[i].getLocalBounds();
@@ -465,6 +478,7 @@ void ControlProfileMenu::Update()
 
 			bool keyboardMode = (tempProfile->GetControllerType() == CTYPE_KEYBOARD);
 			actionButtonGroup->SetKeyboardMode(keyboardMode);
+
 			actionButtonGroup->SetSelectedIndex(0);
 			actionButtonGroup->UpdateButtonIcons();
 		}
@@ -472,21 +486,32 @@ void ControlProfileMenu::Update()
 	}
 	case A_EDIT_PROFILE:
 	{
-		if (controllerInput->ButtonPressed_A())
+		if (tempProfile->editable)
 		{
-			actionButtonGroup->ModifySelectedButton();
-			action = A_REPLACE_BUTTON;
+			if (controllerInput->ButtonPressed_A())
+			{
+				actionButtonGroup->ModifySelectedButton();
+				action = A_REPLACE_BUTTON;
+			}
+			else if (controllerInput->ButtonPressed_B())
+			{
+				action = A_SHOWING_OPTIONS;
+			}
+			else if (controllerInput->ButtonPressed_X())
+			{
+				action = A_SHOWING_OPTIONS;
+				tempProfile->CopyTo(GetProfileAtIndex(saSelector->currIndex));
+				MainMenu::GetInstance()->cpm->WriteProfiles();
+			}
 		}
-		else if (controllerInput->ButtonPressed_B())
+		else
 		{
-			action = A_SHOWING_OPTIONS;
+			if (controllerInput->ButtonPressed_A() || controllerInput->ButtonPressed_B() || controllerInput->ButtonPressed_X())
+			{
+				action = A_SHOWING_OPTIONS;
+			}
 		}
-		else if (controllerInput->ButtonPressed_X())
-		{
-			action = A_SHOWING_OPTIONS;
-			tempProfile->CopyTo(GetProfileAtIndex( saSelector->currIndex ));
-			MainMenu::GetInstance()->cpm->WriteProfiles();
-		}
+		
 		break;
 	}
 	case A_REPLACE_BUTTON:
@@ -756,6 +781,7 @@ bool ControlProfileManager::LoadProfiles()
 
 	ControlProfile *defXBOX = new ControlProfile;
 	defXBOX->name = "Default";
+	defXBOX->editable = false;
 	defXBOX->SetControllerType(CTYPE_XBOX);
 	defXBOX->SetFilterDefault();
 
@@ -763,6 +789,7 @@ bool ControlProfileManager::LoadProfiles()
 
 	ControlProfile *defGCC = new ControlProfile;
 	defGCC->name = "Default";
+	defGCC->editable = false;
 	defGCC->SetControllerType(CTYPE_GAMECUBE);
 	defGCC->SetFilterDefault();
 
@@ -770,6 +797,7 @@ bool ControlProfileManager::LoadProfiles()
 
 	ControlProfile *defKeyboard = new ControlProfile;
 	defKeyboard->name = "Default";
+	defKeyboard->editable = false;
 	defKeyboard->SetControllerType(CTYPE_KEYBOARD);
 	defKeyboard->SetFilterDefault();
 
@@ -1419,19 +1447,33 @@ void ControlProfileManager::WriteProfiles()
 	ofstream of;
 	of.open( "Resources/controlprofiles.txt" );
 
+	int editableProfiles;
+
 	for (int i = 0; i < CTYPE_NONE; ++i)
 	{
-		if (profiles[i].size() <= 1)
+		editableProfiles = 0;
+		for (auto it = profiles[i].begin(); it != profiles[i].end(); ++it)
+		{
+			if ((*it)->editable)
+			{
+				editableProfiles++;
+			}
+		}
+
+		if (editableProfiles == 0)
 		{
 			//empty
 			continue;
 		}
-		auto it = profiles[i].begin();
-		++it; //always skip KIN
-
 		int controllerType;
-		for (; it != profiles[i].end(); ++it)
+
+		for (auto it = profiles[i].begin(); it != profiles[i].end(); ++it)
 		{
+			if (!(*it)->editable)
+			{
+				continue;
+			}
+
 			of << PROFILE_START_CHAR << (*it)->name << PROFILE_END_CHAR << "\n";
 
 			controllerType = (*it)->GetControllerType();
@@ -1687,6 +1729,9 @@ void ActionButtonGroup::Update()
 	{
 	case A_SELECT_BUTTON:
 	{
+		if (!controlMenu->tempProfile->editable)
+			break;
+
 		int x = selectedIndex % cols;
 		int y = selectedIndex / cols;
 
@@ -1772,7 +1817,10 @@ void ActionButtonGroup::Draw(sf::RenderTarget *target)
 
 	Tileset *ts_buttons = mm->GetButtonIconTileset(currProfileControllerType);
 
-	target->draw(highlightQuad, 4, sf::Quads);
+	if (controlMenu->tempProfile->editable )
+	{
+		target->draw(highlightQuad, 4, sf::Quads);
+	}
 
 	target->draw(buttonQuads, 4 * numButtons, sf::Quads, ts_buttons->texture);
 

@@ -16,6 +16,7 @@ struct ControlProfile
 {
 	std::string name;
 	int filter[ControllerSettings::BUTTONTYPE_Count];
+	bool editable;
 
 	ControlProfile();
 
