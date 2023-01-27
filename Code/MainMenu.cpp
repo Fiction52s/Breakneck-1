@@ -2044,6 +2044,8 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 	MatchParams mp;
 	mp.saveFile = m->adventureManager->currSaveFile;// ->files[m->saveMenu->selectedSaveIndex];
 	mp.mapPath = levName;
+	mp.controllerStateVec[0] = m->adventureManager->controllerInput;
+	mp.controlProfiles[0] = m->adventureManager->currProfile;
 
 	m->currLevel = new GameSession(&mp);
 	m->currLevel->level = lev;
@@ -2594,6 +2596,10 @@ void MainMenu::HandleMenuMode()
 				mp.randSeed = time(0);
 				mp.numPlayers = 1;
 				mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+
+				mp.controllerStateVec[0] = adventureManager->controllerInput;
+				mp.controlProfiles[0] = adventureManager->currProfile;
+
 				*menuMatchParams = mp;
 
 				musicPlayer->FadeOutCurrentMusic(30);
