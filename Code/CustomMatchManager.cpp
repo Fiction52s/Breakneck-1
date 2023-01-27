@@ -141,7 +141,7 @@ void CustomMatchManager::CreateCustomLobby()
 	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
 
 	mapBrowserScreen->StartLocalBrowsing();
-	/*if (sf::Keyboard::isKeyPressed(Keyboard::LShift))
+	/*
 	{
 		mapBrowserScreen->StartWorkshopBrowsing();
 	}

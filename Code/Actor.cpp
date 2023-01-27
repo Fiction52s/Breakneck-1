@@ -7689,25 +7689,31 @@ void Actor::HandleWaitingScoreDisplay()
 		bool y = unfilteredCurr.Y && !unfilteredPrev.Y;
 		bool r1 = unfilteredCurr.rightShoulder && !unfilteredPrev.rightShoulder;*/
 
-		bool jump = sess->controllerStates[actorIndex]->ButtonPressed_A();
-		bool dash = sess->controllerStates[actorIndex]->ButtonPressed_X();
-		bool shield = sess->controllerStates[actorIndex]->ButtonPressed_LeftShoulder();
-		bool attack = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
-		bool special = sess->controllerStates[actorIndex]->ButtonPressed_B();
+		/*bool a = sess->controllerStates[actorIndex]->ButtonPressed_A();
+		bool x = sess->controllerStates[actorIndex]->ButtonPressed_X();
+		bool y = sess->controllerStates[actorIndex]->ButtonPressed_Y();
+		bool r1 = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
+		bool b = sess->controllerStates[actorIndex]->ButtonPressed_B();*/
 
-		if (!sess->scoreDisplay->madeRecord && (owner != NULL && !owner->bestReplayOn))
+		bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
+		bool xPressed = sess->controllerStates[actorIndex]->ButtonPressed_X();
+		bool yPressed = sess->controllerStates[actorIndex]->ButtonPressed_Y();
+		bool r1Pressed = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
+		bool bPressed = sess->controllerStates[actorIndex]->ButtonPressed_B();
+
+		/*if (!sess->scoreDisplay->madeRecord && (owner != NULL && !owner->bestReplayOn))
 		{
-			shield = false;
-			attack = false;
-		}
+			yPressed = false;
+			r1Pressed = false;
+		}*/
 
-		if (jump || dash)
+		if (aPressed || xPressed)
 		{
 			if (owner != NULL)
 			{
 				SaveFile *currFile = adventureManager->currSaveFile;
 				bool levValid = owner->level != NULL; 
-				if (jump && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
+				if (aPressed && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 				{
 					if (currFile->IsLevelLastInSector(owner->level))
 					{
@@ -7718,7 +7724,7 @@ void Actor::HandleWaitingScoreDisplay()
 						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 					}
 				}
-				else if (dash)
+				else if (xPressed)
 				{
 					owner->resType = GameSession::GameResultType::GR_WIN;
 				}
@@ -7726,7 +7732,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 			sess->scoreDisplay->Deactivate();
 		}
-		else if (special)
+		else if (bPressed)
 		{
 			if (owner != NULL)
 			{
@@ -7753,7 +7759,7 @@ void Actor::HandleWaitingScoreDisplay()
 			}
 			return;
 		}
-		else if (shield)
+		else if (yPressed)
 		{
 			//turn on ghosts
 			if (owner != NULL)
@@ -7777,7 +7783,7 @@ void Actor::HandleWaitingScoreDisplay()
 				//owner->NextFrameRestartLevel();
 			}
 		}
-		else if (attack)
+		else if (r1Pressed)
 		{
 			if (owner != NULL)
 			{
@@ -15686,19 +15692,25 @@ void Actor::WriteBestTimeRecordings()
 			recordTime = true;
 		}
 
-		if (owner->recPlayer != NULL && recordTime)
+		if (recordTime)
 		{
-			owner->recPlayer->RecordFrame();
-			owner->recPlayer->StopRecording();
-			owner->recPlayer->WriteToFile(owner->GetBestReplayPath());
-		}
+			if (owner->recPlayer != NULL )
+			{
+				owner->recPlayer->RecordFrame();
+				owner->recPlayer->StopRecording();
+				owner->recPlayer->WriteToFile(owner->GetBestReplayPath());
+			}
 
-		if (owner->recGhost != NULL && recordTime)
-		{
-			owner->recGhost->StopRecording();
-			owner->recGhost->WriteToFile(owner->GetBestTimeGhostPath());
-			owner->SetupBestTimeGhost(); //only if ghost is already on
+			if (owner->recGhost != NULL )
+			{
+				owner->recGhost->StopRecording();
+				owner->recGhost->WriteToFile(owner->GetBestTimeGhostPath());
+				owner->SetupBestTimeGhost(); //only if ghost is already on
+			}
+
+			owner->scoreDisplay->madeRecord = true;
 		}
+		
 	}
 }
 

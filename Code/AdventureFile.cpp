@@ -313,6 +313,8 @@ bool AdventureFile::Load(const std::string &p_path,
 
 		copyMode = (CopyMode)cMode;
 
+		is.get();
+
 		for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
 		{
 			worlds[i].Load(is, ver, copyMode);

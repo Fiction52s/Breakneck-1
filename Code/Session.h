@@ -635,8 +635,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateAllPlayersInput();
 	void UpdateControllers();
 	void UpdateControllersOneFrameMode();
-	bool IsKeyPressed(int k);
-	bool IsMousePressed(int m);
 	void DrawPlayers(sf::RenderTarget *target);
 	void DrawPlayerWires(sf::RenderTarget *target);
 	void UpdatePlayerWireQuads();

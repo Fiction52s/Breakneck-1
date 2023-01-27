@@ -131,44 +131,42 @@ void SinglePlayerBox::Update()
 {
 	if (controllerStates != NULL)
 	{
-		//S_EDIT_CONFIG
-		if (mode != MODE_CONTROLLER_ONLY)
+		switch (action)
 		{
-			switch (action)
+		case A_HAS_PLAYER:
+		{
+			if (controllerStates->ButtonPressed_A())
 			{
-			case A_HAS_PLAYER:
+				controlMenu->BeginSelectingProfile();
+				action = A_CHANGING_CONTROLS;
+			}
+			else
 			{
-				if (controllerStates->ButtonPressed_LeftShoulder())
+				if (mode != MODE_CONTROLLER_ONLY)
 				{
-					joinScreen->PrevSkin();
+					if (controllerStates->ButtonPressed_LeftShoulder())
+					{
+						joinScreen->PrevSkin();
+					}
+					else if (controllerStates->ButtonPressed_RightShoulder())
+					{
+						joinScreen->NextSkin();
+					}
 				}
-				else if (controllerStates->ButtonPressed_RightShoulder())
-				{
-					joinScreen->NextSkin();
-				}
-				else if( controllerStates->ButtonPressed_A() )
-				{
-					controlMenu->BeginSelectingProfile();
-					action = A_CHANGING_CONTROLS;
-					//controlMenu->Update();
-					//if( controlMenu->state)
-				}
-				break;
 			}
-			case A_CHANGING_CONTROLS:
+			break;
+		}
+		case A_CHANGING_CONTROLS:
+		{
+			controlMenu->Update();
+			if (controlMenu->action == ControlProfileMenu::A_SELECTED)
 			{
-				controlMenu->Update();
-				if (controlMenu->action == ControlProfileMenu::A_SELECTED)
-				{
-					action = A_HAS_PLAYER;
-				}
-				break;
+				action = A_HAS_PLAYER;
 			}
-			}
+			break;
+		}
 			
 		}
-
-		
 	}
 }
 
@@ -189,9 +187,9 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
 
-	Vector2i center(topLeft.x + joinScreen->playerBoxWidth / 2, topLeft.y + joinScreen->playerBoxHeight / 2);
+	Vector2f center(topLeft.x + joinScreen->playerBoxWidth / 2, topLeft.y + joinScreen->playerBoxHeight / 2);
 
-	pressText.setPosition(Vector2f(center));
+	pressText.setPosition(center);
 	//numberText->setPosition(Vector2f(center));
 
 	Vector2i namePos(joinScreen->playerBoxWidth / 2, 0);
@@ -201,11 +199,11 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2f &pos)
 	Vector2f controllerIconSize(joinScreen->ts_controllerIcons->tileWidth, joinScreen->ts_controllerIcons->tileHeight);
 	Vector2f portIconSize(joinScreen->ts_portIcons->tileWidth, joinScreen->ts_portIcons->tileHeight);
 
-	int border = 10;
+	int border = 0;
 
 	if (mode == MODE_CONTROLLER_ONLY)
 	{
-		border = 10;
+		border = 0;
 
 		float scaleFactor = 3;
 
@@ -214,8 +212,12 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2f &pos)
 		portIconSize.x *= scaleFactor;
 		portIconSize.y *= scaleFactor;
 
-		SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(center.x - (controllerIconSize.x / 2), border + topLeft.y));
-		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(center.x - (portIconSize.x / 2), border + controllerIconSize.y + topLeft.y));
+		
+		Vector2f controlIconPos = Vector2f(center.x - (controllerIconSize.x / 2), center.y - (controllerIconSize.y / 2));
+		Vector2f portIconPos = Vector2f(center.x - (portIconSize.x / 2), controlIconPos.y + controllerIconSize.y - (controllerIconSize.y / 6));
+
+		SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, controlIconPos);
+		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, portIconPos );
 	}
 	else
 	{
@@ -226,8 +228,11 @@ void SinglePlayerBox::SetTopLeft(sf::Vector2f &pos)
 		portIconSize.x *= scaleFactor;
 		portIconSize.y *= scaleFactor;
 
-		SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(joinScreen->playerBoxWidth - (controllerIconSize.x + border), border) + Vector2f(topLeft));
-		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(joinScreen->playerBoxWidth - (portIconSize.x + border), controllerIconSize.y) + Vector2f(topLeft));
+		Vector2f controlIconPos = Vector2f(joinScreen->playerBoxWidth - (controllerIconSize.x + border), border) + Vector2f(topLeft);
+		Vector2f portIconPos = Vector2f(joinScreen->playerBoxWidth - (portIconSize.x + border), border + controllerIconSize.y - (controllerIconSize.y / 6)) + Vector2f(topLeft);
+
+		SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, controlIconPos);
+		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, portIconPos);
 	}
 
 	controlMenu->SetTopLeft(topLeft); //+ Vector2f(joinScreen->playerBoxWidth / 2, 0 ));

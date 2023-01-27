@@ -2,6 +2,7 @@
 #include "VectorMath.h"
 #include "CircleGroup.h"
 #include <iostream>
+#include "Input.h"
 
 using namespace std;
 using namespace sf;
@@ -289,7 +290,7 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 				scale.y = along / origSize.y;
 			}
 
-			if (Keyboard::isKeyPressed(Keyboard::LShift))
+			if (CONTROLLERS.KeyboardButtonHeld( Keyboard::LShift ) )
 			{
 				if (abs( scale.x) > abs( scale.y ) )
 				{

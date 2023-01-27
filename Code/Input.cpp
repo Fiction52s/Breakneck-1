@@ -509,118 +509,6 @@ void ControllerState::InvertLeftStick()
 	}*/
 }
 
-bool GameController::IsKeyPressed(int k)
-{
-	Keyboard::Key key = (Keyboard::Key)k;
-
-	if (window == NULL)
-		return false;
-//	assert(window != NULL);
-
-	if (window->hasFocus())
-	{
-		return Keyboard::isKeyPressed(key);
-	}
-
-	return false;
-}
-
-ButtonStick::ButtonStick()
-{
-	Reset();
-}
-void ButtonStick::Reset()
-{
-	oldLeft = false;
-	oldRight = false;
-	oldUp = false;
-	oldDown = false;
-	//oldStickVec = Vector2<double>(0, 0);
-}
-
-sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, bool down)
-{
-	V2d stickVec;
-
-	bool leftPress = left && !oldLeft;
-	bool rightPress = right && !oldRight;
-	bool upPress = up && !oldUp;
-	bool downPress = down && !oldDown;
-
-	if (left && !right)
-	{
-		stickVec.x = -1;
-	}
-	else if (!left && right)
-	{
-		stickVec.x = 1;
-	}
-	else if (left && right)
-	{
-		if (leftPress && !rightPress )
-		{
-			stickVec.x = -1;
-		}
-		else if (!leftPress && rightPress)
-		{
-			stickVec.x = 1;
-		}
-		else if (leftPress && rightPress)
-		{
-			stickVec.x = 0;
-		}
-		else
-		{
-			//stickVec.x = oldGoing.x;
-		}
-	}
-	else
-	{
-		stickVec.x = 0;
-	}
-
-	if (up && !down)
-	{
-		stickVec.y = -1;
-	}
-	else if (!up && down)
-	{
-		stickVec.y = 1;
-	}
-	else if (up && down)
-	{
-		if (upPress && !downPress)
-		{
-			stickVec.y = -1;
-		}
-		else if (!upPress && downPress)
-		{
-			stickVec.y = 1;
-		}
-		else if (upPress && downPress)
-		{
-			stickVec.y = 0;
-		}
-		else
-		{
-			//stickVec.y = oldGoing.y;
-		}
-	}
-	else
-	{
-		stickVec.y = 0;
-	}
-
-	oldLeft = left;
-	oldRight = right;
-	oldUp = up;
-	oldDown = down;
-	//oldGoing.x = stickVec.x;
-	//oldGoing.y = stickVec.y;
-
-	return stickVec;
-}
-
 int GameController::GetGCCLeftTrigger()
 {
 	int lAxis = gcController.axis.l_axis;
@@ -1159,148 +1047,7 @@ bool GameController::UpdateKeyboard()
 	ControllerState tempState;
 	if (m_index == 0)
 	{
-		//controllerType = ControllerType::CTYPE_KEYBOARD; //change to keyboard soon
-		//cout << "updating controller state keyboard " << m_index << endl;
-		using namespace sf;
-
-		//WORD b = state.Gamepad.wButtons;
-
-		ControlProfile cp;
-		cp.SetControllerType(CTYPE_KEYBOARD);
-		cp.SetFilterKeyboardMenuDefault();
-		
-		/*m_state.A = IsKeyPressed(Keyboard::Z);
-		m_state.B = IsKeyPressed(Keyboard::A);
-		m_state.rightShoulder = IsKeyPressed(Keyboard::C);
-		m_state.X = IsKeyPressed(Keyboard::X);
-		m_state.Y = IsKeyPressed(Keyboard::V);
-		m_state.leftShoulder = 
-		m_state.leftTrigger = 
-		m_state.rightTrigger = 
-		m_state.back = 
-		m_state.start = IsKeyPressed(Keyboard::V);*/
-
-		for (int i = 0; i < Keyboard::KeyCount; ++i)
-		{
-			m_keyboardState.m_state[i] = IsKeyPressed(i);
-		}
-
-		m_state.A = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_JUMP)];
-		m_state.B = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_SPECIAL)];
-		m_state.rightShoulder = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_ATTACK)];
-		m_state.X = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_DASH)];
-		m_state.Y = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::GRIND]);
-		m_state.leftShoulder = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_SHIELD)];
-		m_state.leftTrigger = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LEFTWIRE)];
-		m_state.rightTrigger = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RIGHTWIRE)];
-		m_state.start = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_PAUSE)];
-		
-		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
-		m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
-		m_state.pad = 0;//( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
-
-		//CONTROLLERS.UpdateStateKeyboard( )
-
-		bool up = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LUP)];
-		bool down = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LDOWN)];
-		bool left = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LLEFT)];
-		bool right = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_LRIGHT)];
-
-		V2d stickVec = keyboardStickLeft.UpdateStickVec(left, right, up, down);
-		if (length(stickVec) > 0)
-		{
-			m_state.leftStickMagnitude = 1;
-		}
-		else
-		{
-			m_state.leftStickMagnitude = 0;
-		}
-			
-		stickVec = normalize(stickVec);
-
-		double angle = -atan2(stickVec.y, stickVec.x);
-
-		m_state.leftStickRadians = angle;
-
-
-		m_state.leftStickPad = 0;
-
-		if (stickVec.x > 0 )
-		{
-			m_state.leftStickMagnitude = 1.0;
-			m_state.leftStickPad += 1 << 3;
-			//cout << "RIGHT" << endl;
-		}
-		else if (stickVec.x < 0 )
-		{
-			m_state.leftStickMagnitude = 1.0;
-			m_state.leftStickPad += 1 << 2;
-			//cout << "LEFT" << endl;
-		}
-
-		if (stickVec.y < 0 )
-		{
-			m_state.leftStickMagnitude = 1.0;
-			m_state.leftStickPad += 1;
-			//cout << "UP" << endl;
-		}
-		else if (stickVec.y > 0)
-		{
-			m_state.leftStickMagnitude = 1.0;
-			m_state.leftStickPad += 1 << 1;
-			//cout << "DOWN" << endl;
-		}
-
-
-		bool rup = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RUP)];
-		bool rdown = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RDOWN)];
-		bool rleft = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RLEFT)];
-		bool rright = m_keyboardState.m_state[cp.Filter(ControllerSettings::BUTTONTYPE_RRIGHT)];
-
-		stickVec = keyboardStickRight.UpdateStickVec(rleft, rright, rup, rdown);
-		if (length(stickVec) > 0)
-		{
-			m_state.rightStickMagnitude = 1;
-		}
-		else
-		{
-			m_state.rightStickMagnitude = 0;
-		}
-
-		stickVec = normalize(stickVec);
-
-		angle = -atan2(stickVec.y, stickVec.x);
-
-		m_state.rightStickRadians = angle;
-
-
-		m_state.rightStickPad = 0;
-
-		if (stickVec.x > 0)
-		{
-			m_state.rightStickMagnitude = 1.0;
-			m_state.rightStickPad += 1 << 3;
-			//cout << "RIGHT" << endl;
-		}
-		else if (stickVec.x < 0)
-		{
-			m_state.rightStickMagnitude = 1.0;
-			m_state.rightStickPad += 1 << 2;
-			//cout << "LEFT" << endl;
-		}
-
-		if (stickVec.y < 0)
-		{
-			m_state.rightStickMagnitude = 1.0;
-			m_state.rightStickPad += 1;
-			//cout << "UP" << endl;
-		}
-		else if (stickVec.y > 0)
-		{
-			m_state.rightStickMagnitude = 1.0;
-			m_state.rightStickPad += 1 << 1;
-			//cout << "DOWN" << endl;
-		}
+		CONTROLLERS.UpdateUnfilteredKeyboardState(m_state);
 
 		return true;
 	}
@@ -1659,6 +1406,35 @@ AllControllers::AllControllers()
 	gcControllers.resize(4);
 	rawGCControllers.reserve(4);
 
+	//menuKeyboardMap[XBOX_BLANK];
+	menuKeyboardMap[XBOX_A] = Keyboard::Z;
+	menuKeyboardMap[XBOX_B] = Keyboard::B;
+	menuKeyboardMap[XBOX_X] = Keyboard::C;
+	menuKeyboardMap[XBOX_Y] = Keyboard::V;;
+
+	menuKeyboardMap[XBOX_R1] = Keyboard::D;
+	menuKeyboardMap[XBOX_R2] = Keyboard::Space;
+	
+	menuKeyboardMap[XBOX_L1] = Keyboard::A;
+	menuKeyboardMap[XBOX_L2] = Keyboard::LShift;
+
+	menuKeyboardMap[XBOX_START] = Keyboard::Delete;
+	/*menuKeyboardMap[XBOX_BACK] = Keyboard::Z;
+
+	menuKeyboardMap[XBOX_PLEFT] = Keyboard::Z;
+	menuKeyboardMap[XBOX_PRIGHT] = Keyboard::Z;
+	menuKeyboardMap[XBOX_PUP] = Keyboard::Z;
+	menuKeyboardMap[XBOX_PDOWN] = Keyboard::Z;*/
+
+	menuKeyboardMap[XBOX_LLEFT] = Keyboard::Left;
+	menuKeyboardMap[XBOX_LRIGHT] = Keyboard::Right;
+	menuKeyboardMap[XBOX_LUP] = Keyboard::Up;
+	menuKeyboardMap[XBOX_LDOWN] = Keyboard::Down;
+
+	/*menuKeyboardMap[XBOX_RLEFT] = Keyboard::Z;
+	menuKeyboardMap[XBOX_RRIGHT] = Keyboard::Z;
+	menuKeyboardMap[XBOX_RUP] = Keyboard::Z;
+	menuKeyboardMap[XBOX_RDOWN] = Keyboard::Z;*/
 
 	gccStatesVec.resize(4);
 	windowsStatesVec.resize(4);
@@ -1711,7 +1487,7 @@ void AllControllers::Update()
 	}
 
 	prevKeyboard = currKeyboard;
-	currKeyboard.Update();
+	currKeyboard.Update(window);
 
 	keyboardController->UpdateState();
 	keyboardStates->AddInput(keyboardController->GetState());
@@ -2077,24 +1853,44 @@ bool AllControllers::KeyboardButtonHeld(int key)
 	return currKeyboard.m_state[key];
 }
 
-void AllControllers::UpdateKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState)
+bool AllControllers::KeyboardButtonHeldPrev(int key)
 {
-	int leftIndex = ControllerSettings::BUTTONTYPE_LLEFT;
-	if (rightStick)
-	{
-		leftIndex = ControllerSettings::ButtonType::BUTTONTYPE_RLEFT;
-	}
+	return prevKeyboard.m_state[key];
+}
 
-	bool left = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)leftIndex));
-	bool right = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex+1)));
-	bool up = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex + 2)));
-	bool down = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex + 3)));	
+void AllControllers::UpdateUnfilteredKeyboardState(ControllerState &state)
+{
+	state.Clear();
 
-	bool oldLeft = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex))];
-	bool oldRight = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+1))];
-	bool oldUp = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+2))];
-	bool oldDown = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+3))];
+	state.A = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_A));
+	state.B = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_B));
+	state.rightShoulder = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_R1));
+	state.X = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_X));
+	state.Y = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_Y));
+	state.leftShoulder = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_L1));
+	state.leftTrigger = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_L2));
+	state.rightTrigger = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_R2));
+	state.start = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_START));
 
+	bool left = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_LLEFT));
+	bool right = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_LRIGHT));
+	bool up = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_LUP));
+	bool down = KeyboardButtonHeld(GetMenuKeyFromControllerButton(XBOX_LDOWN));
+
+	bool oldLeft = KeyboardButtonHeldPrev(GetMenuKeyFromControllerButton(XBOX_LLEFT));
+	bool oldRight = KeyboardButtonHeldPrev(GetMenuKeyFromControllerButton(XBOX_LRIGHT));
+	bool oldUp = KeyboardButtonHeldPrev(GetMenuKeyFromControllerButton(XBOX_LUP));
+	bool oldDown = KeyboardButtonHeldPrev(GetMenuKeyFromControllerButton(XBOX_LDOWN));
+
+	UpdateKeyboardStick(false, state, keyboardStates->GetPrevState(), left, right, up, down, oldLeft, oldRight, oldUp, oldDown);
+
+	//I don't think right stick is even used for menus, so gonna ignore for now
+}
+
+void AllControllers::UpdateKeyboardStick(bool rightStick, ControllerState &state, const ControllerState &prevState,
+	bool left, bool right, bool up, bool down,
+	bool oldLeft, bool oldRight, bool oldUp, bool oldDown)
+{
 	V2d stickVec;
 
 	bool leftPress = left && !oldLeft;
@@ -2274,7 +2070,29 @@ void AllControllers::UpdateKeyboardStick(ControlProfile *cp, bool rightStick, Co
 	}
 }
 
-void AllControllers::UpdateStateKeyboard(ControlProfile *cp, ControllerState &state, const ControllerState &prevState)
+void AllControllers::UpdateFilteredKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState)
+{
+	int leftIndex = ControllerSettings::BUTTONTYPE_LLEFT;
+	if (rightStick)
+	{
+		leftIndex = ControllerSettings::ButtonType::BUTTONTYPE_RLEFT;
+	}
+
+	bool left = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)leftIndex));
+	bool right = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex+1)));
+	bool up = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex + 2)));
+	bool down = KeyboardButtonHeld(cp->Filter((ControllerSettings::ButtonType)(leftIndex + 3)));	
+
+	bool oldLeft = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex))];
+	bool oldRight = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+1))];
+	bool oldUp = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+2))];
+	bool oldDown = prevKeyboard.m_state[cp->Filter((ControllerSettings::ButtonType)(leftIndex+3))];
+
+	UpdateKeyboardStick(rightStick, state, prevState, left, right, up, down,
+		oldLeft, oldRight, oldUp, oldDown);
+}
+
+void AllControllers::UpdateFilteredKeyboardState(ControlProfile *cp, ControllerState &state, const ControllerState &prevState)
 {
 	state.Clear();
 
@@ -2291,11 +2109,14 @@ void AllControllers::UpdateStateKeyboard(ControlProfile *cp, ControllerState &st
 
 	state.start = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_PAUSE));
 
-	UpdateKeyboardStick(cp, false, state, prevState);
-	UpdateKeyboardStick(cp, true, state, prevState);
+	UpdateFilteredKeyboardStick(cp, false, state, prevState);
+	UpdateFilteredKeyboardStick(cp, true, state, prevState);
 }
 
-
+int AllControllers::GetMenuKeyFromControllerButton(XBoxButton button)
+{
+	return menuKeyboardMap[button];
+}
 
 ControllerDualStateQueue * AllControllers::GetStateQueue(GameController *con)
 {
@@ -2510,10 +2331,31 @@ ControllerDualStateQueue::ControllerDualStateQueue( GameController *p_con )
 
 }
 
-void KeyboardState::Update()
+KeyboardState::KeyboardState()
+{
+	Clear();
+}
+
+
+void KeyboardState::Update( sf::RenderWindow * window)
+{
+	if (window->hasFocus())
+	{
+		for (int i = 0; i < Keyboard::KeyCount; ++i)
+		{
+			m_state[i] = Keyboard::isKeyPressed((sf::Keyboard::Key)i);
+		}
+	}
+	else
+	{
+		Clear();
+	}
+}
+
+void KeyboardState::Clear()
 {
 	for (int i = 0; i < Keyboard::KeyCount; ++i)
 	{
-		m_state[i] = Keyboard::isKeyPressed( (sf::Keyboard::Key)i);
+		m_state[i] = false;
 	}
 }

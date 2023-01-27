@@ -187,11 +187,10 @@ void ScoreDisplay::Activate()
 {
 	active = true;
 	waiting = false;
-	madeRecord = false;
 
 	GameSession *game = GameSession::GetSession();
 
-	if (game != NULL && game->saveFile != NULL)
+	/*if (game != NULL && game->saveFile != NULL)
 	{
 		int recordScore = 0;
 		recordScore = game->saveFile->GetBestFramesLevel(game->level->index);
@@ -199,7 +198,7 @@ void ScoreDisplay::Activate()
 		{
 			madeRecord = true;
 		}
-	}
+	}*/
 
 	
 
@@ -422,23 +421,15 @@ void ScoreBar::PopOut()
 	{
 		if (game != NULL && game->saveFile != NULL)
 		{
-			if (recordScore > 0)
+			if (parent->madeRecord)
 			{
-				if (game->totalFramesBeforeGoal < recordScore)
-				{
-					SetText(GetTimeStr(game->totalFramesBeforeGoal),
-						Color::Red);
-				}
-				else
-				{
-					SetText(GetTimeStr(recordScore),
-						Color::White);
-				}
+				SetText(GetTimeStr(recordScore),
+					Color::Red);
 			}
 			else
 			{
-				SetText(GetTimeStr(game->totalFramesBeforeGoal),
-					Color::Red);
+				SetText(GetTimeStr(recordScore),
+					Color::White);
 			}
 		}
 		else
@@ -450,23 +441,15 @@ void ScoreBar::PopOut()
 	{
 		if( game != NULL )
 		{
-			if (recordScore > 0)
+			if (parent->madeRecord)
 			{
-				if (game->totalFramesBeforeGoal < recordScore)
-				{
-					SetText(GetTimeStr(game->totalFramesBeforeGoal),
-						Color::Red);
-				}
-				else
-				{
-					SetText(GetTimeStr(game->totalFramesBeforeGoal),
-						Color::White);
-				}
+				SetText(GetTimeStr(recordScore),
+					Color::Red);
 			}
 			else
 			{
 				SetText(GetTimeStr(game->totalFramesBeforeGoal),
-					Color::Red);
+					Color::White);
 			}
 		}
 		else
@@ -495,13 +478,6 @@ void ScoreBar::PopOut()
 		stringstream ss;
 		ss << currCaptured << "/" << total;
 		SetText(ss.str(), Color::White);
-		//}
-		//else
-		//{
-		//	//do this for editor soon
-		//	SetText("---", Color::White);
-		//}
-		
 	}
 }
 

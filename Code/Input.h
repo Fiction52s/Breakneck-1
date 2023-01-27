@@ -41,20 +41,19 @@ enum XBoxButton
 	XBOX_L2,
 	XBOX_START,
 	XBOX_BACK,
-	XBOX_PUP,
-	XBOX_PDOWN,
 	XBOX_PLEFT,
 	XBOX_PRIGHT,
-	XBOX_LUP,
+	XBOX_PUP,
+	XBOX_PDOWN,
 	XBOX_LLEFT,
 	XBOX_LRIGHT,
+	XBOX_LUP,
 	XBOX_LDOWN,
 	XBOX_RLEFT,
-	XBOX_RUP,
 	XBOX_RRIGHT,
+	XBOX_RUP,
 	XBOX_RDOWN,
-	XBOX_BLANK,
-	XBOX_Count
+	XBOX_BLANK
 };
 std::string GetXBoxButtonString(int button);
 std::string GetKeyboardButtonString(int key);
@@ -63,7 +62,9 @@ bool IsKeyValidForInput(int key);
 struct KeyboardState
 {
 	bool m_state[sf::Keyboard::KeyCount];
-	void Update();
+	void Update(sf::RenderWindow *win);
+	KeyboardState();
+	void Clear();
 };
 
 struct ControllerState
@@ -72,9 +73,6 @@ struct ControllerState
 	double leftStickRadians;
 	double rightStickMagnitude; // 0 - 1.0
 	double rightStickRadians;
-
-	//ButtonStick keyboardStickLeft;
-	//ButtonStick keyboardStickRight;
 
 	BYTE leftTrigger;
 	BYTE rightTrigger;
@@ -181,23 +179,6 @@ enum ControllerType
 	CTYPE_Count
 };
 
-struct ButtonStick
-{
-	bool oldLeft;
-	bool oldRight;
-	bool oldUp;
-	bool oldDown;
-	
-	bool oldGoingLeft;
-	bool oldGoingRight;
-	bool oldGoingUp;
-	bool oldGoingDown;
-
-	ButtonStick();
-	void Reset();
-	sf::Vector2<double> UpdateStickVec(bool left, bool right, bool up, bool down);
-};
-
 /** Remarks:
 Wrapper for XINPUT controller. Used to access the actual
 controllers and generate state information for use in the 
@@ -208,10 +189,9 @@ class GameController
 {
 public:
 	sf::RenderWindow *window;
-	ButtonStick keyboardStickLeft;
-	ButtonStick keyboardStickRight;
+	//ButtonStick keyboardStickLeft;
+	//ButtonStick keyboardStickRight;
 	ControllerState m_state;
-	KeyboardState m_keyboardState;
 	static float stickThresh;
 	GCC::GCController gcController;
 	PS5Controller ps5Controller;
@@ -221,7 +201,6 @@ public:
 	int gcDefaultRightTrigger;
 
 	GameController( DWORD index, ControllerType ct );
-	bool IsKeyPressed(int k);
 	bool IsConnected();
 	ControllerType GetCType();
 	DWORD GetIndex();
@@ -317,6 +296,8 @@ struct AllControllers
 	void CheckForControllers();
 	void SetRenderWindow(sf::RenderWindow *rw);
 
+
+
 	bool ButtonHeld_A();
 	bool ButtonPressed_A();
 	bool ButtonHeld_B();
@@ -335,9 +316,19 @@ struct AllControllers
 	bool ButtonPressed_Any();
 	bool KeyboardButtonPressed(int key);
 	bool KeyboardButtonHeld(int key);
-	void UpdateStateKeyboard(ControlProfile *cp, ControllerState &state, const ControllerState &prevState);
-	void UpdateKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState);
+	bool KeyboardButtonHeldPrev(int key);
+	void UpdateFilteredKeyboardState(ControlProfile *cp, ControllerState &state, const ControllerState &prevState);
+	void UpdateFilteredKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState);
+	void UpdateUnfilteredKeyboardState(ControllerState &state);
+	int GetMenuKeyFromControllerButton(XBoxButton button);
 private:
+	void UpdateKeyboardStick( bool rightStick, ControllerState &state, const ControllerState &prevState, 
+		bool left, bool right, bool up, bool down, 
+		bool oldLeft, bool oldRight, bool oldUp, bool oldDown);
+
+	
+	int menuKeyboardMap[XBOX_BLANK];
+
 	KeyboardState prevKeyboard;
 	KeyboardState currKeyboard;
 

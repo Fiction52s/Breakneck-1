@@ -27,7 +27,6 @@ struct ControlProfile
 	void SetControllerType(int c);
 	void Save(std::ofstream &of);
 	void SetFilterDefault();
-	void SetFilterKeyboardMenuDefault();
 private:
 	int cType;
 };

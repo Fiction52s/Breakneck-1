@@ -612,7 +612,7 @@ void EditSession::TestPlayerMode()
 	scoreDisplay->Reset();
 
 
-	if (IsKeyPressed( sf::Keyboard::LAlt ))
+	if (CONTROLLERS.KeyboardButtonHeld(Keyboard::LAlt))
 	{
 		debugReplayPlayerOn = true;
 	}
@@ -1845,16 +1845,6 @@ void EditSession::SnapPointToGraph(V2d &p, int gridSize)
 	adjY = ((int)p.y) * gridSize;
 
 	p = V2d(adjX, adjY);
-}
-
-bool EditSession::IsKeyPressed(int k)
-{
-	return mainMenu->IsKeyPressed(k);
-}
-
-bool EditSession::IsMousePressed(int m)
-{
-	return mainMenu->IsMousePressed(m);
 }
 
 bool EditSession::IsDrawMode(Emode em)
@@ -4216,7 +4206,7 @@ int EditSession::EditRun()
 				V2d pathBack(patrolPath.back());
 				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
 
-				if (IsKeyPressed(Keyboard::LShift))
+				if (CONTROLLERS.KeyboardButtonHeld(Keyboard::LShift))
 				{
 					double angle = atan2(-temp.y, temp.x);
 					if (angle < 0)
@@ -4246,7 +4236,7 @@ int EditSession::EditRun()
 
 			UICONTROLLER.Update();
 
-			if (IsKeyPressed(Keyboard::Num5))
+			if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num5))
 			{
 				Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f,
 					scaleSprite.getGlobalBounds().height / 2.f);
@@ -8342,7 +8332,7 @@ bool EditSession::ExecuteTerrainCompletion()
 	int liRes;
 
 	bool tryMakeInverse = 
-		createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_SETINVERSE;//IsKeyPressed(Keyboard::LAlt);
+		createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_SETINVERSE;
 
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
 	ClearMostRecentError();
@@ -8479,7 +8469,7 @@ bool EditSession::ExecuteTerrainCompletion()
 			inProgress.push_back(polygonInProgress);
 
 			bool add = 
-				createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_ADD;//!(IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift));
+				createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_ADD;
 			bool success = false;
 			if (add)
 			{
@@ -8926,17 +8916,18 @@ void EditSession::SetInversePoly()
 
 bool EditSession::HoldingShift()
 {
-	return ((IsKeyPressed(Keyboard::LShift) ||
-		IsKeyPressed(Keyboard::RShift)));
+	return CONTROLLERS.KeyboardButtonHeld(Keyboard::LShift) || CONTROLLERS.KeyboardButtonHeld(Keyboard::RShift);
 }
 
 bool EditSession::HoldingControl()
 {
-	return ((IsKeyPressed(Keyboard::LControl) ||
-		IsKeyPressed(Keyboard::RControl)));
+	return CONTROLLERS.KeyboardButtonHeld(Keyboard::LControl) || CONTROLLERS.KeyboardButtonHeld(Keyboard::RControl);
 }
 
-
+bool EditSession::HoldingAlt()
+{
+	return CONTROLLERS.KeyboardButtonHeld(Keyboard::LAlt) || CONTROLLERS.KeyboardButtonHeld(Keyboard::RAlt);
+}
 
 void EditSession::GetShardWorldAndIndex(int selX, int selY,
 	int &w, int &li)
@@ -10522,8 +10513,6 @@ bool EditSession::PointSelectTerrain(V2d &pos, int terrainLayer )
 
 bool EditSession::PointSelectPolyPoint( V2d &pos, int terrainLayer )
 {
-	bool shift = IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift);
-
 	auto & currPolyList = GetCorrectPolygonList(terrainLayer);
 
 	TerrainPoint *foundPoint = NULL;
@@ -10542,7 +10531,7 @@ bool EditSession::PointSelectPolyPoint( V2d &pos, int terrainLayer )
 			{	
 				if (!foundPoint->selected)
 				{
-					if (!shift)
+					if (!HoldingShift())
 						ClearSelectedPoints();
 
 					SelectPoint((*it), foundPoint);
@@ -10644,10 +10633,6 @@ bool EditSession::PointSelectPoly(V2d &pos, int terrainLayer )
 	auto & currPolyList = GetCorrectPolygonList(terrainLayer);
 	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
-		//bool pressF1 = IsKeyPressed(Keyboard::F1);
-		//if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
-		//	continue;
-
 		bool sel = (*it)->ContainsPoint(Vector2f(pos));
 		/*if ((*it)->inverse)
 		{
@@ -11039,7 +11024,7 @@ void EditSession::UpdateGrass()
 
 void EditSession::ModifyGrass()
 {
-	if (editModeUI->IsShowGrassOn() && IsMousePressed(Mouse::Left)
+	if (editModeUI->IsShowGrassOn() && MOUSE.IsMouseDownLeft()
 		&& !justCompletedPolyWithClick )
 	{
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
@@ -11856,8 +11841,6 @@ void EditSession::PreventNearPrimaryAnglesOnRailInProgress()
 
 void EditSession::TryAddPointToPolygonInProgress()
 {
-	//bool mouseDown = IsMousePressed(Mouse::Left);
-	
 	bool justClicked = MOUSE.IsMouseLeftClicked();//mouseDown && !lastLeftMouseDown;
 	//if (!panning && mouseDown)
 	if( !panning && MOUSE.IsMouseDownLeft())
@@ -11901,7 +11884,7 @@ void EditSession::TryAddPointToPolygonInProgress()
 
 void EditSession::TryAddPointToRailInProgress()
 {
-	if (!panning && IsMousePressed(Mouse::Left))
+	if (!panning && MOUSE.IsMouseDownLeft())
 	{
 		bool validPoint = true;
 
@@ -12098,7 +12081,7 @@ void EditSession::TryAddToPatrolPath()
 	V2d pathBack(patrolPath.back());
 	V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
 
-	if (!panning && IsMousePressed(Mouse::Left))
+	if (!panning && MOUSE.IsMouseDownLeft())
 	{
 		//double test = 100;
 		//worldPos before testPoint
@@ -14333,7 +14316,7 @@ void EditSession::CreateTerrainModeUpdate()
 		return;
 	}
 
-	bool back = IsKeyPressed(sf::Keyboard::X) || IsKeyPressed(sf::Keyboard::Delete) || UICONTROLLER.IsCancelHeld();
+	bool back = CONTROLLERS.KeyboardButtonHeld(Keyboard::X) || CONTROLLERS.KeyboardButtonHeld(Keyboard::Delete) || UICONTROLLER.IsCancelHeld();
 
 	if (back)
 	{
@@ -14366,11 +14349,11 @@ void EditSession::CreateTerrainModeUpdate()
 			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 		}
 
-		/*if (IsKeyPressed(sf::Keyboard::LAlt))
+		/*
 		{
 			createTerrainModeUI->SetTempTerrainTool(TERRAINTOOL_SETINVERSE);
 		}
-		else if (IsKeyPressed(sf::Keyboard::LControl))
+		
 		{
 			createTerrainModeUI->SetTempTerrainTool(TERRAINTOOL_SUBTRACT);
 		}
@@ -14437,7 +14420,7 @@ void EditSession::CreateRailsModeUpdate()
 	potentialRailAttachPoint = NULL;
 	potentialRailAttach = NULL;
 
-	if (IsKeyPressed(sf::Keyboard::X) || IsKeyPressed(sf::Keyboard::Delete))
+	if (CONTROLLERS.KeyboardButtonHeld(Keyboard::X) || CONTROLLERS.KeyboardButtonHeld(Keyboard::Delete))
 	{
 		if (!focusedPanel)
 		{
@@ -15046,7 +15029,7 @@ void EditSession::PasteModeUpdate()
 
 	editMouseGrabPos = pos;
 
-	if (!panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0)
+	if (!panning && MOUSE.IsMouseDownLeft() && (delta.x != 0 || delta.y != 0)
 		&& length(lastBrushPastePos - worldPos ) >= brushRepeatDist )
 	{
 		PasteTerrain(copiedBrush, freeActorCopiedBrush);
@@ -15325,8 +15308,6 @@ void EditSession::CreateImagesModeUpdate()
 		editStartMove = false;
 		grabbedImage = NULL;
 	}
-
-	//createDecorModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
 	//createDecorModeUI->UpdateSprites(spriteUpdateFrames);
 
 	/*if (grabbedActor != NULL)
@@ -15343,7 +15324,7 @@ void EditSession::CreateImagesModeUpdate()
 
 void EditSession::TransformModeUpdate()
 {
-	if (IsKeyPressed(Keyboard::G))
+	if (CONTROLLERS.KeyboardButtonHeld( Keyboard::G ) ) //is this supposed to be on a press?
 	{
 		SnapPointToGraph(testPoint, graph->graphSpacing);
 		showGraph = true;
@@ -15355,7 +15336,7 @@ void EditSession::TransformModeUpdate()
 	{
 		fWorldPos = testPoint;
 	}
-	transformTools->Update(fWorldPos, IsMousePressed(Mouse::Left));
+	transformTools->Update(fWorldPos, MOUSE.IsMouseDownLeft());
 	
 
 	PolyPtr p;

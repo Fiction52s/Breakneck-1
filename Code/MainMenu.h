@@ -263,9 +263,6 @@ struct MainMenu
 
 	sf::Vector2i GetPixelPos();
 
-	bool IsKeyPressed(int key);
-	bool IsMousePressed(int m);
-
 	EffectPool *indEffectPool;
 	void DrawEffects( sf::RenderTarget *target );
 	void UpdateEffects();

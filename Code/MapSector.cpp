@@ -1039,30 +1039,20 @@ void MapSector::UpdateSelectorSprite()
 }
 
 void MapSector::UpdateOptionButtons()
-{
-	//ControllerType ct = CONTROLLERS.GetWindowsController(0)->GetCType();//ms->mainMenu->GetController(0)->GetCType();
-	//int tileOffset = 0;
-	//switch (ct)
-	//{
-	//case ControllerType::CTYPE_XBOX:
-	//	tileOffset = 0;
-	//	break;
-	//case ControllerType::CTYPE_PS5:
-	//	tileOffset = 16 * 1;
-	//	break;
-	//case ControllerType::CTYPE_GAMECUBE:
-	//	tileOffset = 16 * 2;
-	//	break;
-	//}
+{	
+	MainMenu *mainMenu = ms->mainMenu;
 
 	auto button = XBOX_A;
-	ts_buttons->SetQuadSubRect(levelSelectOptionButtonQuads, button);
-	button = XBOX_R1;
-	ts_buttons->SetQuadSubRect(levelSelectOptionButtonQuads+4, button);
-	button = XBOX_Y;
-	ts_buttons->SetQuadSubRect(levelSelectOptionButtonQuads+8, button);
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	SetRectSubRect(levelSelectOptionButtonQuads, ir);
 
-	
+	button = XBoxButton::XBOX_R1;
+	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	SetRectSubRect(levelSelectOptionButtonQuads + 4 * 1, ir);
+
+	button = XBoxButton::XBOX_Y;
+	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	SetRectSubRect(levelSelectOptionButtonQuads + 4 * 2, ir);
 }
 
 void MapSector::UpdateSectorArrows()

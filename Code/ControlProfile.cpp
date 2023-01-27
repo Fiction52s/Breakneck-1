@@ -36,33 +36,33 @@ ControlProfile::ControlProfile()
 	editable = true;
 }
 
-void ControlProfile::SetFilterKeyboardMenuDefault()
-{
-	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
-	{
-		filter[i] = XBOX_BLANK;
-	}
-
-	filter[ControllerSettings::BUTTONTYPE_JUMP] = Keyboard::Key::Z;
-	filter[ControllerSettings::BUTTONTYPE_DASH] = Keyboard::Key::X;
-	filter[ControllerSettings::BUTTONTYPE_ATTACK] = Keyboard::Key::C;
-	filter[ControllerSettings::BUTTONTYPE_SHIELD] = Keyboard::Key::V;
-	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = Keyboard::Key::B;
-	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = Keyboard::Key::LControl;
-	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::Key::Space;
-
-	filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Delete;
-
-	filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::Left;
-	filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::Right;
-	filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::Up;
-	filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::Down;
-
-	filter[ControllerSettings::BUTTONTYPE_RLEFT] = Keyboard::Key::U;
-	filter[ControllerSettings::BUTTONTYPE_RRIGHT] = Keyboard::Key::O;
-	filter[ControllerSettings::BUTTONTYPE_RUP] = Keyboard::Key::P;
-	filter[ControllerSettings::BUTTONTYPE_RDOWN] = Keyboard::Key::SemiColon;
-}
+//void ControlProfile::SetFilterKeyboardMenuDefault()
+//{
+//	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
+//	{
+//		filter[i] = XBOX_BLANK;
+//	}
+//
+//	filter[ControllerSettings::BUTTONTYPE_JUMP] = Keyboard::Key::Z;
+//	filter[ControllerSettings::BUTTONTYPE_DASH] = Keyboard::Key::X;
+//	filter[ControllerSettings::BUTTONTYPE_ATTACK] = Keyboard::Key::C;
+//	filter[ControllerSettings::BUTTONTYPE_SHIELD] = Keyboard::Key::V;
+//	filter[ControllerSettings::BUTTONTYPE_SPECIAL] = Keyboard::Key::B;
+//	filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = Keyboard::Key::LControl;
+//	filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::Key::Space;
+//
+//	filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Delete;
+//
+//	filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::Left;
+//	filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::Right;
+//	filter[ControllerSettings::BUTTONTYPE_LUP] = Keyboard::Key::Up;
+//	filter[ControllerSettings::BUTTONTYPE_LDOWN] = Keyboard::Key::Down;
+//
+//	filter[ControllerSettings::BUTTONTYPE_RLEFT] = Keyboard::Key::U;
+//	filter[ControllerSettings::BUTTONTYPE_RRIGHT] = Keyboard::Key::O;
+//	filter[ControllerSettings::BUTTONTYPE_RUP] = Keyboard::Key::P;
+//	filter[ControllerSettings::BUTTONTYPE_RDOWN] = Keyboard::Key::SemiColon;
+//}
 
 void ControlProfile::SetFilterDefault()
 {

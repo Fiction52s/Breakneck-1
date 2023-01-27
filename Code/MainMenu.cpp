@@ -133,6 +133,7 @@ void MainMenu::sLevelLoad(MainMenu *mm, GameSession *gs)
 void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
 	ControllerDualStateQueue *storedControllerStates = NULL;
+	ControlProfile *storedControlProfile = NULL;
 
 	switch (fromMode)
 	{
@@ -208,6 +209,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			if (toMode == SAVEMENU)
 			{
 				storedControllerStates = singlePlayerControllerJoinScreen->playerBox->controllerStates;
+				storedControlProfile = singlePlayerControllerJoinScreen->playerBox->GetCurrProfile();
 			}
 
 			delete singlePlayerControllerJoinScreen;
@@ -306,6 +308,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			assert(adventureManager == NULL);
 			adventureManager = new AdventureManager;
 			adventureManager->controllerInput = storedControllerStates;//singlePlayerControllerJoinScreen->playerBox->controllerStates;
+			adventureManager->currProfile = storedControlProfile;
 			adventureManager->CreateWorldMap();
 			adventureManager->CreateSaveMenu();
 
@@ -513,7 +516,7 @@ MainMenu::MainMenu()
 	style = config->GetData().windowStyle;
 
 	CONTROLLERS.CheckForControllers();
-	CONTROLLERS.Update();
+	
 
 	//CONTROLLERS.Update();
 
@@ -697,6 +700,8 @@ MainMenu::MainMenu()
 	matchResultsScreen = NULL;
 
 	loadingBackpack = new LoadingBackpack(&tilesetManager);
+
+	CONTROLLERS.Update();
 }
 
 void MainMenu::SetupWindow()
@@ -940,28 +945,6 @@ void MainMenu::Init()
 	ts_loadBG = NULL;
 
 	cout << "init finished" << endl;
-}
-
-bool MainMenu::IsKeyPressed(int k)
-{
-	Keyboard::Key key = (Keyboard::Key)k;
-
-	if (window->hasFocus())
-	{
-		return Keyboard::isKeyPressed(key);
-	}
-	
-	return false;
-}
-
-bool MainMenu::IsMousePressed(int m)
-{
-	Mouse::Button but = (Mouse::Button)m;
-
-	if (window->hasFocus())
-	{
-		return Mouse::isButtonPressed(but);
-	}
 }
 
 void MainMenu::DrawEffects( RenderTarget *target )
@@ -1554,25 +1537,7 @@ sf::IntRect MainMenu::GetButtonIconTileForMenu(ControllerDualStateQueue *control
 	}
 	case CTYPE_KEYBOARD:
 	{
-		switch (buttonIndex)
-		{
-		case XBOX_A:
-			buttonIndex = 25; //Z
-			break;
-		case XBOX_X:
-			buttonIndex = 25; //Z
-			break;
-		case XBOX_Y:
-			buttonIndex = 25; //Z
-			break;
-		case XBOX_B:
-			buttonIndex = 25; //Z
-			break;
-		default:
-			buttonIndex = 0;
-			break;
-		}
-		//buttonIndex = controllerInput->con->keySettings.buttonMap[button];
+		buttonIndex = CONTROLLERS.GetMenuKeyFromControllerButton(button);//controllerInput->con->keySettings.buttonMap[button];
 
 
 		//if (baseButtonIndex < 12 * 6)
@@ -1967,6 +1932,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->currSaveFile];
 	mp.mapPath = levelPath;
 	mp.controllerStateVec[0] = adventureManager->controllerInput;
+	mp.controlProfiles[0] = adventureManager->currProfile;
 
 	currLevel = new GameSession(&mp);
 	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
@@ -3649,7 +3615,7 @@ void MainMenu::TitleMenuModeUpdate()
 	else
 	{
 		//turned off for beta
-		if (IsKeyPressed(Keyboard::Tilde))
+		if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Tilde))
 		{
 			quit = true;
 			return;

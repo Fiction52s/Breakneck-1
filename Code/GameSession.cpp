@@ -152,7 +152,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			soundNodeList->Pause(true);
 			return true;
 		}
-		else if ((currInput.back && !prevInput.back) || IsKeyPressed(Keyboard::G))
+		else if ((currInput.back && !prevInput.back) || CONTROLLERS.KeyboardButtonHeld(Keyboard::G))
 		{
 			gameState = PAUSE;
 			pauseMenu->SetTab(PauseMenu::MAP);
@@ -2162,7 +2162,7 @@ bool GameSession::RunMainLoopOnce()
 	
 	if (netplayManager != NULL)
 	{
-		if (IsKeyPressed(Keyboard::Escape))
+		if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Escape))
 		{
 			cout << "esc is pressed. ending match." << endl;
 			quit = true;
@@ -2263,7 +2263,7 @@ bool GameSession::RunMainLoopOnce()
 
 		if (matchParams.netplayManager != NULL)
 		{
-			if (IsKeyPressed(Keyboard::Escape))
+			if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Escape))
 			{
 				cout << "esc is pressed. ending match." << endl;
 				quit = true;
@@ -3540,27 +3540,27 @@ void GameSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
 
 void GameSession::UpdateDebugModifiers()
 {
-	if (IsKeyPressed(Keyboard::Num1))
+	if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num1))
 	{
 		showDebugDraw = true;
 	}
-	else if (IsKeyPressed(Keyboard::Num2))
+	else if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num2))
 	{
 		showDebugDraw = false;
 	}
-	else if (IsKeyPressed(Keyboard::Num3))
+	else if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num3))
 	{
 		showTerrainDecor = false;
 	}
-	else if (IsKeyPressed(Keyboard::Num4))
+	else if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num4))
 	{
 		showTerrainDecor = true;
 	}
-	else if (IsKeyPressed(sf::Keyboard::Num9))
+	else if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num9))
 	{
 		runningTimerDisplay.showRunningTimer = true;
 	}
-	else if (IsKeyPressed(sf::Keyboard::Num0))
+	else if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num0))
 	{
 		runningTimerDisplay.showRunningTimer = false;
 	}

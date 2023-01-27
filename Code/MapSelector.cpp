@@ -110,7 +110,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	if (world->numSectors == 1)
 	{
 		state = S_MAPSELECT;
-		FocusedSector()->UpdateMapPreview();
+		//FocusedSector()->UpdateMapPreview();
 	}
 	else
 	{

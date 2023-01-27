@@ -471,8 +471,6 @@ struct EditSession : GUIHandler, Session
 	PolyPtr GetPolygon(int index );
 	RailPtr GetRail(int index);
 	void EndTestMode();
-	bool IsKeyPressed(int k);
-	bool IsMousePressed(int m);
 	void SetMode(Emode m);
 	void SetBoxTool();
 	ActorParams * AttachActorToPolygon( ActorPtr actor, PolyPtr poly );
@@ -832,6 +830,7 @@ struct EditSession : GUIHandler, Session
 		std::list<GateInfoPtr> &gList);
 	bool HoldingShift();
 	bool HoldingControl();
+	bool HoldingAlt();
 	void InitDecorPanel();
 	void SetupGates();
 	bool IsShardCaptured(int sType);

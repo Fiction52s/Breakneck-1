@@ -2836,7 +2836,7 @@ void Session::UpdatePlayerInput(int index)
 		ControllerState currSessInput;
 		if (controlProfiles[index]->GetControllerType() == CTYPE_KEYBOARD)
 		{
-			CONTROLLERS.UpdateStateKeyboard(controlProfiles[index], currSessInput, player->prevInput);
+			CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[index], currSessInput, player->prevInput);
 		}
 		else
 		{
@@ -2909,22 +2909,12 @@ void Session::UpdateAllPlayersInput()
 	}
 }
 
-bool Session::IsKeyPressed(int k)
-{
-	return mainMenu->IsKeyPressed(k);
-}
-
-bool Session::IsMousePressed(int m)
-{
-	return mainMenu->IsMousePressed(m);
-}
-
 bool Session::OneFrameModeUpdate()
 {
 	//turned off for the beta
 	
 	//fix this so you can only tas in the editor right after testing this.
-	bool skipInput = /*IsSessTypeEdit() && */ IsKeyPressed(sf::Keyboard::PageUp);
+	bool skipInput = /*IsSessTypeEdit() && */ CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
 
 	if (skipInput && !oneFrameMode)
 	{
@@ -2945,7 +2935,7 @@ bool Session::OneFrameModeUpdate()
 			skipInput = true;
 		}*/
 
-		bool stopSkippingInput = IsKeyPressed(sf::Keyboard::PageDown);
+		bool stopSkippingInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageDown);
 		/*if (GetCurrInput(0).PRight())
 		{
 			stopSkippingInput = true;
@@ -6818,14 +6808,6 @@ bool Session::RunGameModeUpdate()
 	{
 		return false;
 	}
-
-	//if (debugScreenRecorder != NULL)
-	//	if (IsKeyPressed(Keyboard::R))
-	//	{
-	//		debugScreenRecorder->StartRecording();
-	//		//player->maxFallSpeedSlo += maxFallSpeedFactor;
-	//		//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
-	//	}
 	return true;
 }
 
@@ -7170,8 +7152,6 @@ void Session::InitGGPO()
 	ggpo_set_disconnect_notify_start(ggpo, 1000);
 	//int myIndex = 0;
 	//int otherIndex = 1;
-
-	//bool shift = IsKeyPressed(Keyboard::LShift);
 
 	/*for (int i = 0; i < netplayManager->numPlayers; ++i)
 	{

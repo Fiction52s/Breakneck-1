@@ -15,6 +15,7 @@ AdventureManager::AdventureManager()
 	saveMenu = NULL;
 	adventurePlanet = NULL;
 	controllerInput = NULL;
+	currProfile = NULL;
 
 	LoadAdventure("tadventure");
 

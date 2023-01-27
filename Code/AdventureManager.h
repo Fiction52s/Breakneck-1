@@ -10,6 +10,7 @@ struct SaveMenuScreen;
 struct KinBoostScreen;
 struct GameSession;
 struct SaveFile;
+struct ControlProfile;
 
 struct AdventureManager
 {
@@ -24,6 +25,7 @@ struct AdventureManager
 	AdventurePlanet *adventurePlanet;
 
 	ControllerDualStateQueue *controllerInput;
+	ControlProfile *currProfile;
 
 	GameSession *currLevel;
 
