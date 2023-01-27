@@ -7736,12 +7736,6 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				/*if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-				{
-					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-				}*/
-
-
 				if (owner->repPlayer != NULL)
 				{
 					delete owner->repPlayer;
@@ -7764,11 +7758,6 @@ void Actor::HandleWaitingScoreDisplay()
 			//turn on ghosts
 			if (owner != NULL)
 			{
-				/*if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-				{
-					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-				}*/
-
 				if (owner->repPlayer != NULL)
 				{
 					delete owner->repPlayer;
@@ -7787,11 +7776,6 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				/*if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-				{
-					adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-				}*/
-
 				owner->CleanupGhosts();
 
 				owner->bestTimeGhostOn = false;
@@ -15344,40 +15328,12 @@ void Actor::ProcessHitGoal()
 
 	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
-		
-		sess->totalFramesBeforeGoal = sess->totalGameFrames;
 		SetAction(GOALKILL);
-		hitGoal = false;
-		SetSkin(SKIN_NORMAL);
-		
-
-		WriteBestTimeRecordings();
-
-		frame = 0;
-		position = sess->goalNodePos;
-		sess->cam.Ease(Vector2f(sess->goalNodePosFinal), 1, 60, CubicBezier());
-		rightWire->Reset();
-		leftWire->Reset();
-		SetKinMode(K_NORMAL);
-		
-		/*else if (editOwner != NULL)
-		{
-			editOwner->EndTestMode();
-		}*/
 	}
 	else if (hitNexus != NULL && action != NEXUSKILL && action != SEQ_FLOAT_TO_NEXUS_OPENING
 		&& action != SEQ_FADE_INTO_NEXUS)
 	{
-		sess->totalFramesBeforeGoal = sess->totalGameFrames;
 		SetAction(NEXUSKILL);
-		SetKinMode(K_NORMAL);
-//		hitNexus = NULL;
-		WriteBestTimeRecordings();
-
-		frame = 0;
-		position = sess->goalNodePos;
-		rightWire->Reset();
-		leftWire->Reset();
 	}
 }
 

@@ -4,6 +4,7 @@
 #include "WorldMap.h"
 #include "MainMenu.h"
 #include "GameSession.h"
+#include "PlayerRecord.h"
 
 using namespace std;
 using namespace sf;
@@ -98,13 +99,16 @@ bool AdventureManager::TryToGoToNextLevel()
 	}
 }
 
-void AdventureManager::CompleteCurrentMap(Level *lev, int totalFrames)
+//returns true if you make a record!
+bool AdventureManager::CompleteCurrentMap(GameSession *game)
 {
+	Level *lev = game->level;
+	int totalFrames = game->totalFramesBeforeGoal;
 
 	if (currSaveFile == NULL)
 	{
 		assert(0);
-		return;
+		return false;
 	}
 
 	if (!currSaveFile->IsCompleteLevel(lev))
@@ -119,10 +123,25 @@ void AdventureManager::CompleteCurrentMap(Level *lev, int totalFrames)
 	bool isRecordSet = currSaveFile->TrySetRecordTime(totalFrames, lev);
 	if (isRecordSet)
 	{
+		if (game->recPlayer != NULL)
+		{
+			game->recPlayer->RecordFrame();
+			game->recPlayer->StopRecording();
+			game->recPlayer->WriteToFile(game->GetBestReplayPath());
+		}
+
+		if (game->recGhost != NULL)
+		{
+			game->recGhost->StopRecording();
+			game->recGhost->WriteToFile(game->GetBestTimeGhostPath());
+			game->SetupBestTimeGhost(); //only if ghost is already on
+		}
 		//create a flag so that you can get hype over this
 	}
 
 	SaveCurrFile();
+
+	return isRecordSet;
 }
 
 void AdventureManager::CreateWorldMap()

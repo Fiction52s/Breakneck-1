@@ -5,16 +5,41 @@
 #include "SoundTypes.h"
 #include "AdventureManager.h"
 #include "MainMenu.h"
+#include "Wire.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::GOALKILL_Start()
 {
+	sess->totalFramesBeforeGoal = sess->totalGameFrames;
 	SetExpr(KinMask::Expr_NEUTRAL);
+	SetKinMode(K_NORMAL);
+	SetSkin(SKIN_NORMAL);
 	velocity = V2d(0, 0);
 	groundSpeed = 0;
 	grindSpeed = 0;
+	position = sess->goalNodePos;
+	sess->cam.Ease(Vector2f(sess->goalNodePosFinal), 1, 60, CubicBezier());
+	rightWire->Reset();
+	leftWire->Reset();
+	hitGoal = false;
+
+	bool setRecord = false;
+	if (owner != NULL)
+	{
+		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+		{
+			setRecord = adventureManager->CompleteCurrentMap(owner);
+		}
+	}
+
+	if (setRecord)
+	{
+		owner->scoreDisplay->madeRecord = true;
+	}
+
+	//WriteBestTimeRecordings();
 }
 
 void Actor::GOALKILL_End()
@@ -25,14 +50,6 @@ void Actor::GOALKILL_End()
 	sess->scoreDisplay->Activate();
 	sess->hud->Hide(60);
 	ActivateSound(PlayerSounds::S_LEVEL_COMPLETE);
-
-	if (owner != NULL)
-	{
-		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-		{
-			adventureManager->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
-		}
-	}
 }
 
 void Actor::GOALKILL_Change()

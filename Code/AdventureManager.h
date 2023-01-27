@@ -34,7 +34,7 @@ struct AdventureManager
 	AdventureManager();
 	~AdventureManager();
 	void LoadAdventure( const std::string &adventureName );
-	void CompleteCurrentMap(Level *lev, int totalFrames);
+	bool CompleteCurrentMap(GameSession *game );
 	void DrawWorldMap(sf::RenderTarget *target);
 	void CreateWorldMap();
 	void CreateWorldMapOnLevel(int w, int s, int m);

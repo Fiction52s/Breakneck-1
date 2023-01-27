@@ -1,15 +1,40 @@
 #include "Actor.h"
 #include "HUD.h"
+#include "Wire.h"
+#include "MainMenu.h"
+#include "AdventureManager.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::NEXUSKILL_Start()
 {
+	sess->totalFramesBeforeGoal = sess->totalGameFrames;
+
 	SetExpr(KinMask::Expr_NEUTRAL);
 	velocity = V2d(0, 0);
 	groundSpeed = 0;
 	grindSpeed = 0;
+
+	position = sess->goalNodePos;
+	rightWire->Reset();
+	leftWire->Reset();
+
+	SetKinMode(K_NORMAL);
+
+	bool setRecord = false;
+	if (owner != NULL)
+	{
+		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+		{
+			setRecord = adventureManager->CompleteCurrentMap(owner);
+		}
+	}
+
+	if (setRecord)
+	{
+		owner->scoreDisplay->madeRecord = true;
+	}
 }
 
 void Actor::NEXUSKILL_End()
