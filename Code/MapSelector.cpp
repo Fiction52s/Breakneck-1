@@ -208,8 +208,11 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 	{
 		if (controllerInput->ButtonPressed_A())
 		{
-			state = S_MAPSELECT;
-			FocusedSector()->UpdateMapPreview();
+			if (FocusedSector()->IsUnlocked())
+			{
+				state = S_MAPSELECT;
+				FocusedSector()->UpdateMapPreview();
+			}
 			break;
 		}
 		else if (controllerInput->ButtonPressed_B())
@@ -218,24 +221,25 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 			//FocusedSector()->DestroyBG();
 			return false;
 		}
-
-		int oldIndex = sectorSASelector->currIndex;
-		int changed = sectorSASelector->UpdateIndex(controllerInput->GetCurrState().LLeft(), controllerInput->GetCurrState().LRight());
-		int numCurrLevels = FocusedSector()->unlockedLevelCount;
-		if (changed != 0)
+		else
 		{
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
+			int oldIndex = sectorSASelector->currIndex;
+			int changed = sectorSASelector->UpdateIndex(controllerInput->GetCurrState().LLeft(), controllerInput->GetCurrState().LRight());
+			int numCurrLevels = FocusedSector()->unlockedLevelCount;
+			if (changed != 0)
+			{
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
 
-			//mapSelector->SetTotalSize(numCurrLevels);
+				//mapSelector->SetTotalSize(numCurrLevels);
 
-			/*loadIndex = sectorSASelector->currIndex;
-			sectorSASelector->currIndex = oldIndex;
-			bgLoadFinished = false;
-			state = S_CHANGINGSECTORS;*/
+				/*loadIndex = sectorSASelector->currIndex;
+				sectorSASelector->currIndex = oldIndex;
+				bgLoadFinished = false;
+				state = S_CHANGINGSECTORS;*/
 
-			FocusedSector()->UpdateLevelStats();
-		}
-		
+				FocusedSector()->UpdateLevelStats();
+			}
+		}		
 		break;
 	}
 	case S_MAPSELECT:

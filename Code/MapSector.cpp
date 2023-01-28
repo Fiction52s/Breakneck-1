@@ -38,9 +38,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ms->ts_statIcons->SetSpriteTexture(sectorShardIconSpr);
 	ms->ts_statIcons->SetSubRect(sectorShardIconSpr, 14);
 	
-
-	SetRectCenter(lockedOverlayQuad, 1920, 1080, Vector2f(960, 540));
-	SetRectColor(lockedOverlayQuad, Color(100, 100, 100, 100));
+	SetRectColor(lockedOverlayQuad, Color( 0, 0, 0, 230 ));//Color(100, 100, 100, 100));
 
 	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
 
@@ -54,6 +52,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
 	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
 	ts_mapSelectOptions = worldMap->GetSizedTileset("Menu/LevelSelect/map_select_options_384x80.png");
+	ts_lock = worldMap->GetSizedTileset("Menu/LevelSelect/sector_lock_256x256.png");
 	//ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
 
 	ts_levelSelectNumbers = worldMap->GetSizedTileset("Menu/LevelSelect/level_select_number_32x32.png");
@@ -67,6 +66,9 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 		ts_levelSelectNumbers->SetQuadSubRect(levelNumberQuads + i * 4, i);
 	}
 
+	lockSpr.setTexture(*ts_lock->texture);
+	lockSpr.setTextureRect(ts_lock->GetSubRect(0));
+	lockSpr.setOrigin(lockSpr.getLocalBounds().width / 2, lockSpr.getLocalBounds().height / 2);
 	
 
 	nodeExplodeSpr.setTexture(*ts_nodeExplode->texture);
@@ -201,6 +203,13 @@ void MapSector::CreateBG()
 	bg = Background::SetupFullBG(bgName, ms->worldMap, true);
 }
 
+
+bool MapSector::IsUnlocked()
+{
+	return saveFile->IsUnlockedSector(world, sec);
+}
+
+
 void MapSector::UpdateUnlockedLevelCount()
 {
 	unlockedLevelCount = numLevels;
@@ -222,13 +231,13 @@ void MapSector::UpdateUnlockedLevelCount()
 	}
 }
 
-bool MapSector::IsFocused()
-{
-	if (ms->sectorSASelector == NULL)
-		return false;
-
-	return ms->sectorSASelector->currIndex == sectorIndex;
-}
+//bool MapSector::IsFocused()
+//{
+//	if (ms->sectorSASelector == NULL)
+//		return false;
+//
+//	return ms->sectorSASelector->currIndex == sectorIndex;
+//}
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
@@ -236,16 +245,9 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 	//if (!saveFile->adventureFile->IsUnlocked()) //later, store this variable instead of 
 		//calling the function every frame
-	bool unlocked = saveFile->IsUnlockedSector(world, sec);
+	bool unlocked = IsUnlocked();
 
-	if( !unlocked)
-	{
-		target->draw(lockedOverlayQuad, 4, sf::Quads);
-	}
-	
-	bool focused = IsFocused();
-
-	if (focused)
+	if (unlocked)
 	{
 		target->draw(sectorNameText);
 		if (unlocked)
@@ -268,7 +270,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 				target->draw(selectorSprite);
 
-				
+
 
 				if (state == LEVELJUSTCOMPLETE)
 				{
@@ -300,16 +302,16 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 				target->draw(levelNumberQuads, numLevels * 4, sf::Quads, ts_levelSelectNumbers->texture);
 			}
-
-			
-		}
-		else
-		{
-			//DrawRequirement(target);
 		}
 	}
-
-	
+	else
+	{
+		target->draw(lockedOverlayQuad, 4, sf::Quads);
+		target->draw(sectorNameText);
+		target->draw(endSpr);
+		target->draw(sectorArrowQuads, 2 * 4, sf::Quads, ts_sectorArrows->texture);
+		target->draw(lockSpr);
+	}
 }
 
 void MapSector::DrawLevelStats(sf::RenderTarget *target)
@@ -325,6 +327,8 @@ void MapSector::SetXCenter(float x)
 
 	//mapPreviewSpr.setPosition(960, 500+50);
 
+	SetRectCenter(lockedOverlayQuad, 1920, 1080, Vector2f(960, 540));
+
 	//left = Vector2f(xCenter - 600, 400);
 	left = Vector2f(xCenter, 170 + 50);//150
 	int numLevelsPlus = numLevels + 0;
@@ -336,7 +340,8 @@ void MapSector::SetXCenter(float x)
 	{
 		left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevelsPlus / 2);
 	}
-
+	
+	lockSpr.setPosition(x, 540 - 100);
 	
 
 
@@ -924,7 +929,7 @@ int MapSector::GetNodeSubIndex(int node)
 		}
 		else
 		{
-			if (IsFocused() && GetSelectedIndex() == node)
+			if (GetSelectedIndex() == node)
 			{
 				if (isFullyComplete)
 				{
@@ -969,7 +974,7 @@ int MapSector::GetNodeSubIndex(int node)
 		}
 		else
 		{
-			if (IsFocused() && GetSelectedIndex() == node)
+			if (GetSelectedIndex() == node)
 			{
 				if (isFullyComplete)
 				{

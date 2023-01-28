@@ -91,6 +91,7 @@ struct MapSector
 	sf::Sprite mapShardIconSpr;
 	sf::Sprite mapBestTimeIconSpr;
 	sf::Sprite sectorShardIconSpr;
+	sf::Sprite lockSpr;
 
 	sf::Text bestTimeText;
 	sf::Text shardsCollectedText;
@@ -107,6 +108,7 @@ struct MapSector
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
+	Tileset *ts_lock;
 	//Tileset *ts_shards;
 	Tileset *ts_sectorArrows;
 
@@ -128,11 +130,12 @@ struct MapSector
 		Sector *p_sector, 
 		MapSelector *ms, int index);
 	~MapSector();
+	bool IsUnlocked();
 	void UpdateUnlockedLevelCount();
 	void DestroyBG();
 	void CreateBG();
 	void UpdateHighlight();
-	bool IsFocused();
+	//bool IsFocused();
 	void RunSelectedMap();
 	void Init(SaveFile *sf);
 	int GetNumLevels();

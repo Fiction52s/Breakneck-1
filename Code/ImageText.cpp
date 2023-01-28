@@ -122,6 +122,7 @@ void ImageText::UpdateSprite()
 
 	Vector2f anchorTopLeft;
 
+	//its possible there is an issue with this on alignments that aren't 
 	if (posType == CENTER)
 	{
 		anchorTopLeft = anchor + Vector2f(tw * -1.5, th * -.5); //-2.5 on x before
@@ -138,7 +139,7 @@ void ImageText::UpdateSprite()
 	if (symbolType != SYMBOL_NONE)
 	{
 		SetRectTopLeft(vert + maxDigits * 4, tw, th, anchorTopLeft);
-		//anchorTopLeft.x += tw;
+		anchorTopLeft.x += tw;
 
 		int tile = 0;
 
