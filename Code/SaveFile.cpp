@@ -593,10 +593,10 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 {
 	SetVer(1);
 
-	stringstream ss;
-	ss << "Resources/Data/" << name << ".kin";
+	string dataFolder = "Resources/Data/";
 
-	fileName = ss.str();
+	fileName = dataFolder + name + ".kin";
+	replayFolderName = dataFolder + name + "/";
 }
 
 SaveFile::~SaveFile()
@@ -1029,6 +1029,11 @@ bool SaveFile::LoadInfo(ifstream &is)
 		newShardField.Load(is);
 
 		is.close();
+
+		if (!boost::filesystem::exists(replayFolderName))
+		{
+			boost::filesystem::create_directory(replayFolderName);
+		}
 		return true;
 	}
 	else
@@ -1098,7 +1103,6 @@ bool SaveFile::Load()
 	}
 	else
 	{
-
 		return true;
 	}
 }
@@ -1139,11 +1143,23 @@ void SaveFile::Save()
 		cout << "error saving file: " << fileName << endl;
 		assert(false);
 	}
+
+	if (!boost::filesystem::exists(replayFolderName))
+	{
+		boost::filesystem::create_directory(replayFolderName);
+	}
 }
 
 void SaveFile::Delete()
 {
 	boost::filesystem::remove(fileName);
+	if (boost::filesystem::exists(replayFolderName))
+	{
+		boost::filesystem::remove_all(replayFolderName);
+	}
+
+	//boost::filesystem::directory
+	//boost::filesystem::create_directory
 	SetAsDefault();
 }
 

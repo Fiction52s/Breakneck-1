@@ -18,8 +18,6 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	frame = 0;
 	nodes = NULL;
 
-	
-
 	MainMenu *mainMenu = ms->mainMenu;
 
 	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());

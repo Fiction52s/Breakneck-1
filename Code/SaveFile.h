@@ -231,6 +231,7 @@ struct SaveFile
 	//info
 	std::string name;
 	std::string fileName;
+	std::string replayFolderName;
 	AdventureFile *adventureFile;
 	int mostRecentWorldSelected;
 	

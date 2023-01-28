@@ -302,19 +302,6 @@ SaveMenuScreen::SaveMenuScreen()
 		skinButtonIconSpr.setScale(1.0, 1.0);
 	}
 
-	//button = ControllerSettings::BUTTONTYPE_SPECIAL;
-	//IntRect ir = mainMenu->GetButtonIconTile(mainMenu->adventureManager->controllerInput, button);
-	//SetRectSubRect(actionButtonIcons, ir);
-
-	//Reset();
-
-	//selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
-	//kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
-
-	//Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
-
-	//selectSlot.setPosition(topLeftPos);
-
 	SetSelectedIndex(mainMenu->adventureManager->currSaveFileIndex);
 
 	Reset();
