@@ -25,6 +25,7 @@
 #include "PoiInfo.h"
 
 #include "Session.h"
+#include "GamePopup.h"
 
 
 struct BonusHandler;
@@ -208,6 +209,12 @@ struct GameSession : RayCastHandler, Session
 		GR_BONUS_RESPAWN,
 	};
 
+	enum PopupType
+	{
+		POPUPTYPE_NO_REPLAY_FOUND,
+		POPUPTYPE_NO_GHOST_FOUND,
+		POPUPTYPE_Count,
+	};
 
 
 	enum SoundType
@@ -242,6 +249,9 @@ struct GameSession : RayCastHandler, Session
 	static GameSession *GetSession();
 	static GameSession *currSession;
 
+	int gameStatePrePopup;
+	int currPopupType;
+	GamePopup *gamePopup;
 
 	//new
 	bool boostEntrance;
@@ -419,8 +429,8 @@ struct GameSession : RayCastHandler, Session
 	//fader
 	
 
-	void SetupBestTimeGhost();
-	void SetupBestReplay();
+	bool SetupBestTimeGhost();
+	bool SetupBestReplay();
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();
@@ -516,12 +526,19 @@ struct GameSession : RayCastHandler, Session
 	void RepPlayerUpdateInput();
 	void RecGhostRecordFrame();
 	bool RunPostUpdate();
+	bool PopupGameModeUpdate();
 	void SequenceGameModeRespondToGoalDestroyed();
 	void UpdateTerrainStates();
 	void UpdateRailStates();
 
 	void SetupPauseMenu();
 	void CleanupPauseMenu();
+
+	void SetupPopup();
+	void CleanupPopup();
+
+	void UpdatePopup();
+	void OpenPopup(int popType);
 
 	bool HasLog(int logIndex);
 	int GetBonusType();

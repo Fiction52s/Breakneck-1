@@ -14,6 +14,7 @@ struct SkinMenu;
 struct MessagePopup;
 struct ConfirmPopup;
 struct AdventurePlanet;
+struct GamePopup;
 
 struct SaveFileDisplay
 {
@@ -38,64 +39,6 @@ struct SaveFileDisplay
 	void Draw(sf::RenderTarget *target);
 };
 
-struct SaveMenuConfirmPopup
-{
-	enum Options
-	{
-		OPTION_NOTHING,
-		OPTION_OK,
-		OPTION_CANCEL,
-	};
-
-	SaveMenuConfirmPopup();
-	sf::Vector2f size;
-	sf::Vertex popupBGQuad[4];
-	sf::Text confirmText;
-	sf::Vertex buttonQuads[4 * 2];
-	Tileset *ts_buttons;
-	sf::Vector2f position;
-	int Update(ControllerDualStateQueue *controllerInput);
-	void SetText(const std::string &str);
-	void SetPos(sf::Vector2f &pos);
-	void Draw(sf::RenderTarget *target);
-};
-
-struct SaveMenuDecisionPopup
-{
-	enum Options
-	{
-		OPTION_YES,
-		OPTION_NO,
-		OPTION_BACK,
-		OPTION_NOTHING,
-	};
-
-	int currentlySelectedOption;
-
-	SaveMenuDecisionPopup();
-	sf::Vector2f size;
-	sf::Vertex popupBGQuad[4];
-	sf::Text optionText;
-	sf::Vertex yesSelectedQuad[4];
-	sf::Vertex noSelectedQuad[4];
-	sf::Vertex backSelectedQuad[4];
-
-	int numOptions;
-
-	sf::Text yesText;
-	sf::Text noText;
-	sf::Text backText;
-	sf::Text okText;
-	sf::Vector2f position;
-	void SetOption(int op);
-	int Update(ControllerDualStateQueue *controllerInput);
-	void SetText(const std::string &str);
-	void SetPos(sf::Vector2f &pos);
-	void Draw(sf::RenderTarget *target);
-	void SetNumOptions(int n);
-};
-
-
 
 struct SaveMenuScreen : TilesetManager
 {
@@ -118,8 +61,7 @@ struct SaveMenuScreen : TilesetManager
 	};
 
 	int copiedIndex;
-	//SaveMenuConfirmPopup confirmPopup;
-	SaveMenuDecisionPopup decisionPopup;
+	GamePopup *decisionPopup;
 	//MessagePopup *messagePopup;
 	//ConfirmPopup *confirmPopup;
 

@@ -10,6 +10,7 @@
 #include <vector>
 #include <fstream>
 #include "MapBrowser.h" //for MapNode
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -1176,6 +1177,7 @@ void NetplayManager::LoadMap()
 	cout << "loading map" << endl;
 
 	assert(game == NULL);
+	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_FREEPLAY;
 	game = new GameSession(&matchParams);
 
 	assert(loadThread == NULL);

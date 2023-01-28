@@ -951,6 +951,9 @@ void GameSession::Cleanup()
 		recGhost = NULL;
 	}
 
+	CleanupPopup();
+		
+
 	CleanupShardMenu();
 	CleanupLogMenu();
 
@@ -1504,7 +1507,7 @@ bool GameSession::Load()
 	replayText.setOrigin(replayText.getLocalBounds().width / 2 + replayText.getLocalBounds().left, 0);
 	replayText.setPosition(960, 10);
 
-
+	SetupPopup();
 
 	RegisterAllEnemies();
 	SetupEnemyTypes();
@@ -1884,6 +1887,75 @@ void GameSession::SetupPlayers()
 	}
 }
 
+void GameSession::SetupPopup()
+{
+	if (parentGame != NULL)
+	{
+		gamePopup = parentGame->gamePopup;
+	}
+	else if( gamePopup == NULL )
+	{
+		gamePopup = new GamePopup;
+		currPopupType = -1;
+		gameStatePrePopup = -1;
+	}
+}
+
+void GameSession::CleanupPopup()
+{
+	if (parentGame == NULL && gamePopup != NULL )
+	{
+		delete gamePopup;
+		gamePopup = NULL;
+		currPopupType = -1;
+		gameStatePrePopup = -1;
+	}
+}
+
+void GameSession::UpdatePopup()
+{
+	int res = gamePopup->Update(controllerStates[0]);
+
+	if (gamePopup->numOptions == 1)
+	{
+		if (res != GamePopup::OPTION_NOTHING)
+		{
+			gameState = (Session::GameState)gameStatePrePopup;
+		}
+	}
+
+	switch (currPopupType)
+	{
+	case POPUPTYPE_NO_REPLAY_FOUND:
+	{
+		if (res == GamePopup::OPTION_YES)
+		{
+			
+		}
+	}
+	}
+}
+
+void GameSession::OpenPopup(int popType)
+{
+	gameStatePrePopup = gameState;
+	gameState = POPUP;
+	currPopupType = popType;
+	switch (currPopupType)
+	{
+	case POPUPTYPE_NO_REPLAY_FOUND:
+	{
+		gamePopup->SetInfo("Error: Replay not found", 1);
+		break;
+	}
+	case POPUPTYPE_NO_GHOST_FOUND:
+	{
+		gamePopup->SetInfo("Error: Ghost not found", 1);
+		break;
+	}
+	}
+}
+
 void GameSession::SetupShaders()
 {
 	//since these are not pointers, cannot transfer them from the parentGame. Might want to change that?
@@ -2081,7 +2153,7 @@ void GameSession::CleanupGhosts()
 	replayGhosts.clear();
 }
 
-void GameSession::SetupBestReplay()
+bool GameSession::SetupBestReplay()
 {
 	if (saveFile != NULL)
 	{
@@ -2091,23 +2163,29 @@ void GameSession::SetupBestReplay()
 			repPlayer = NULL;
 		}
 
-
 		string replayPath = GetBestReplayPath();
 		if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
 			&& boost::filesystem::exists(replayPath))
 		{
 			repPlayer = new ReplayPlayer(GetPlayer(0));
 			bool canOpen = repPlayer->OpenReplay(replayPath);
-			if (!canOpen)
+			if (canOpen)
+			{
+				return true;
+			}
+			else
 			{
 				delete repPlayer;
 				repPlayer = NULL;
+				return false;
 			}
 		}
 	}
+
+	return false;
 }
 
-void GameSession::SetupBestTimeGhost()
+bool GameSession::SetupBestTimeGhost()
 {
 	CleanupGhosts();
 
@@ -2127,8 +2205,15 @@ void GameSession::SetupBestTimeGhost()
 				delete (*it);
 			}
 			ghostEntries.clear();
+
+			if (replayGhosts.size() > 0)
+			{
+				return true;
+			}
 		}
 	}
+
+	return false;
 }
 
 //return false means continue/go again
@@ -2992,6 +3077,41 @@ bool GameSession::RunMainLoopOnce()
 
 
 	}
+	else if (gameState == POPUP)
+	{
+		//clear window here or under the update? not sure yet
+		window->clear();
+		pauseTex->clear(Color::Transparent);
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+		}
+
+		if (!PopupGameModeUpdate())
+		{
+			return false;
+		}
+
+		//could clear the window here!
+		//window->clear();
+
+		
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+
+		gamePopup->Draw(pauseTex);
+
+		pauseTex->display();
+		Sprite pauseMenuSprite;
+		pauseMenuSprite.setTexture(pauseTex->getTexture());
+		pauseMenuSprite.setPosition((1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
+		pauseMenuSprite.setScale(.5, .5);
+		window->draw(pauseMenuSprite);
+	}
 
 	if (!IsParallelSession())
 	{
@@ -3241,6 +3361,10 @@ void GameSession::Init()
 
 	activateBonus = false;
 	bonusType = BONUSTYPE_NONE;
+
+	currPopupType = -1;
+	gameStatePrePopup = -1;
+	gamePopup = NULL;
 	bonusGame = NULL;
 	bonusHandler = NULL;
 	gateMarkers = NULL;
@@ -4002,6 +4126,37 @@ bool GameSession::IsShardCaptured(int shardType)
 	{
 		return shardsCapturedField->GetBit(shardType);
 	}
+}
+
+bool GameSession::PopupGameModeUpdate()
+{
+	while (accumulator >= TIMESTEP)
+	{
+		if (!OneFrameModeUpdate())
+		{
+			break;
+		}
+
+		UpdateControllers();
+
+		UpdatePopup();
+
+		SteamAPI_RunCallbacks();
+
+		if (gameState != POPUP)
+		{
+			break;
+		}
+
+		accumulator -= TIMESTEP;
+	}
+
+	if (gameState != POPUP)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void GameSession::UpdateExplodingGravityGrass()

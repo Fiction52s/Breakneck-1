@@ -41,6 +41,8 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 
 	active = false;
 	waiting = false;
+
+	includeExtraSelectBars = false;
 }
 
 ScoreDisplay::~ScoreDisplay()
@@ -101,7 +103,8 @@ void ScoreDisplay::PopOutBar(int row)
 
 void ScoreDisplay::PopOutSelectBars()
 {
-	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	int numSelectBars = GetNumSelectBars();
+	for (int i = 0; i < numSelectBars; ++i)
 	{
 		selectBars[i]->PopOut();
 	}
@@ -109,14 +112,13 @@ void ScoreDisplay::PopOutSelectBars()
 
 int ScoreDisplay::GetNumSelectBars()
 {
-	bool isReplaying = game != NULL && game->bestReplayOn;
-	int activeSelectBars = NUM_SELECT_BARS;
-	//if (!madeRecord && !isReplaying)
-	//{
-	//	activeSelectBars = 3;
-	//}
+	int selectBarNum = NUM_SELECT_BARS;
+	if (!includeExtraSelectBars)
+	{
+		selectBarNum = 3;
+	}
 
-	return activeSelectBars;
+	return selectBarNum;
 }
 
 void ScoreDisplay::Update()
@@ -200,7 +202,17 @@ void ScoreDisplay::Activate()
 		}
 	}*/
 
-	
+	MainMenu *mm = MainMenu::GetInstance();
+
+	if (mm->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE)
+	{
+		includeExtraSelectBars = true;
+	}
+	else
+	{
+		includeExtraSelectBars = false;
+	}
+	//includeSelectBars = /true;
 
 	PopOutBar(0);
 	//bars[0]->state = ScoreBar::POP_OUT;

@@ -364,6 +364,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case TUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
+		gameRunType = GameRunType::GRT_TUTORIAL;
 		currTutorialSession = new GameSession(menuMatchParams);
 		GameSession::sLoad(currTutorialSession);
 		break;
@@ -371,6 +372,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case ADVENTURETUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
+		gameRunType = GameRunType::GRT_TUTORIAL;
 		currTutorialSession = new GameSession(menuMatchParams);
 		GameSession::sLoad(currTutorialSession);
 
@@ -384,7 +386,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		//assert(freeplayScreen != NULL);
 
 		//MatchParams mp = freeplayScreen->GetMatchParams();
-
+		gameRunType = GameRunType::GRT_FREEPLAY;
 		currFreePlaySession = new GameSession(menuMatchParams);
 		GameSession::sLoad(currFreePlaySession);
 		break;

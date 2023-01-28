@@ -94,6 +94,8 @@ struct ScoreDisplay
 
 	bool madeRecord;
 
+	int includeExtraSelectBars;
+
 	Session *sess;
 	Tileset *ts_score;
 	Tileset *ts_mapSelectOptions;

@@ -212,6 +212,7 @@ struct MainMenu
 	enum GameRunType
 	{
 		GRT_ADVENTURE,
+		GRT_TUTORIAL,
 		GRT_FREEPLAY
 	};
 

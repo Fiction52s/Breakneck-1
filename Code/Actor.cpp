@@ -7711,17 +7711,28 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				SaveFile *currFile = adventureManager->currSaveFile;
-				bool levValid = owner->level != NULL; 
-				if (aPressed && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
+				//bool levValid = owner->level != NULL; 
+				if (aPressed )// && levValid)
 				{
-					if (currFile->IsLevelLastInSector(owner->level))
+					if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 					{
-						owner->resType = GameSession::GameResultType::GR_WIN;
+						assert(owner->level != NULL);
+						assert(adventureManager != NULL);
+
+						SaveFile *currFile = adventureManager->currSaveFile;
+
+						if (currFile->IsLevelLastInSector(owner->level))
+						{
+							owner->resType = GameSession::GameResultType::GR_WIN;
+						}
+						else
+						{
+							owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+						}
 					}
 					else
 					{
-						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+						owner->resType = GameSession::GameResultType::GR_WIN;
 					}
 				}
 				else if (xPressed)
@@ -7753,10 +7764,10 @@ void Actor::HandleWaitingScoreDisplay()
 			}
 			return;
 		}
-		else if (yPressed)
+		else if (yPressed )
 		{
 			//turn on ghosts
-			if (owner != NULL)
+			if (owner != NULL && sess->scoreDisplay->includeExtraSelectBars)
 			{
 				if (owner->repPlayer != NULL)
 				{
@@ -7764,26 +7775,52 @@ void Actor::HandleWaitingScoreDisplay()
 					owner->repPlayer = NULL;
 				}
 
+				bool oldGhostOn = owner->bestTimeGhostOn;
+				bool oldReplayOn = owner->bestReplayOn;
+
 				owner->bestTimeGhostOn = true;
 				owner->bestReplayOn = false;
-				owner->SetupBestTimeGhost();
-				owner->RestartGame();
+				if (owner->SetupBestTimeGhost())
+				{
+					owner->RestartGame();
+				}
+				else
+				{
+					owner->OpenPopup(GameSession::POPUPTYPE_NO_GHOST_FOUND);
+					owner->bestTimeGhostOn = oldGhostOn;
+					owner->bestTimeGhostOn = oldReplayOn;
+
+					//put up an error message
+				}
+				
 				
 				//owner->NextFrameRestartLevel();
 			}
 		}
 		else if (r1Pressed)
 		{
-			if (owner != NULL)
+			if (owner != NULL && sess->scoreDisplay->includeExtraSelectBars)
 			{
 				owner->CleanupGhosts();
 
+
+				bool oldGhostOn = owner->bestTimeGhostOn;
+				bool oldReplayOn = owner->bestReplayOn;
+				
 				owner->bestTimeGhostOn = false;
 				owner->bestReplayOn = true;
-				owner->SetupBestReplay();
-				owner->RestartGame();
-				
-				//owner->NextFrameRestartLevel();
+				if (owner->SetupBestReplay())
+				{
+					owner->RestartGame();
+				}
+				else
+				{
+					owner->OpenPopup(GameSession::POPUPTYPE_NO_REPLAY_FOUND);
+					owner->bestTimeGhostOn = oldGhostOn;
+					owner->bestTimeGhostOn = oldReplayOn;
+
+					//put up an error message
+				}
 			}
 			
 		}

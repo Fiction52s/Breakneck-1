@@ -10,6 +10,7 @@
 #include "AdventureManager.h"
 #include "UIMouse.h"
 #include "CustomCursor.h"
+#include "GamePopup.h"
 
 using namespace sf;
 using namespace std;
@@ -123,6 +124,8 @@ SaveMenuScreen::SaveMenuScreen()
 	//TilesetManager &tsMan = mainMenu->tilesetManager;
 	
 	skinMenu = new SkinMenu(this);
+
+	decisionPopup = new GamePopup;
 	
 	frame = 0;
 	kinFaceTurnLength = 15;
@@ -320,6 +323,8 @@ SaveMenuScreen::SaveMenuScreen()
 
 SaveMenuScreen::~SaveMenuScreen()
 {
+	delete decisionPopup;
+
 	delete skinMenu;
 	for (int i = 0; i < 6; ++i)
 	{
@@ -476,12 +481,8 @@ bool SaveMenuScreen::Update()
 				{
 					action = ASKTUTORIAL;
 					frame = 0;
-					decisionPopup.SetText("You are starting a new file.\nDo you want a tutorial?");
-					decisionPopup.SetNumOptions(3);
-					decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_YES);
-					//confirmPopup->Pop(ConfirmPopup::BACK_ALLOWED);
-					//confirmPopup->SetQuestion("You are starting a new file.\nDo you want a tutorial?");
-					//decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_YES);
+
+					decisionPopup->SetInfo("You are starting a new file.\nDo you want a tutorial?", 3, GamePopup::OPTION_YES);
 				}
 				else
 				{
@@ -511,10 +512,8 @@ bool SaveMenuScreen::Update()
 				if (!defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 				{
 					action = CONFIRMDELETE;
-					decisionPopup.SetText("Are you sure you want\nto delete this save file?");
-					decisionPopup.SetNumOptions(2);
-					decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_NO);
-					//confirmPopup->SetQuestion("Are you sure you want\nto delete this save file?");
+
+					decisionPopup->SetInfo("Are you sure you want\nto delete this save file?", 2, GamePopup::OPTION_NO);
 					frame = 0;
 				}
 			}
@@ -535,21 +534,20 @@ bool SaveMenuScreen::Update()
 		else if (action == CONFIRMDELETE)
 		{
 			
-			int res = decisionPopup.Update( mainMenu->adventureManager->controllerInput);
+			int res = decisionPopup->Update( mainMenu->adventureManager->controllerInput);
 
-			if (res == SaveMenuDecisionPopup::OPTION_BACK || res == SaveMenuDecisionPopup::OPTION_NO)
+			if (res == GamePopup::OPTION_BACK || res == GamePopup::OPTION_NO)
 			{
 				action = WAIT;
 				frame = 0;
 			}
-			else if (res == SaveMenuDecisionPopup::OPTION_YES)
+			else if (res == GamePopup::OPTION_YES)
 			{
 				action = CONFIRMDELETE2;
 				//confirmPopup->Pop();
 				//confirmPopup->SetQuestion("Save file will be permanently\ndeleted. Continue?");
-				decisionPopup.SetText("Save file will be permanently\ndeleted. Continue?");
-				decisionPopup.SetNumOptions(2);
-				decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_NO);
+
+				decisionPopup->SetInfo("Save file will be permanently\ndeleted. Continue?", 2, GamePopup::OPTION_NO);
 				frame = 0;
 			}
 
@@ -564,14 +562,14 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == CONFIRMDELETE2)
 		{
-			int res = decisionPopup.Update(mainMenu->adventureManager->controllerInput);
+			int res = decisionPopup->Update(mainMenu->adventureManager->controllerInput);
 
-			if (res == SaveMenuDecisionPopup::OPTION_BACK || res == SaveMenuDecisionPopup::OPTION_NO)
+			if (res == GamePopup::OPTION_BACK || res == GamePopup::OPTION_NO)
 			{
 				action = WAIT;
 				frame = 0;
 			}
-			else if (res == SaveMenuDecisionPopup::OPTION_YES)
+			else if (res == GamePopup::OPTION_YES)
 			{
 				action = INFOPOP;
 				frame = 0;
@@ -581,9 +579,7 @@ bool SaveMenuScreen::Update()
 				mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]->Delete();
 				fileDisplay[mainMenu->adventureManager->currSaveFileIndex]->SetValues(NULL, NULL);
 
-				decisionPopup.SetText("Deleted save file");
-				decisionPopup.SetNumOptions(1);
-				//infoPopup->SetText("Deleted save file");
+				decisionPopup->SetInfo("Deleted save file", 1);
 
 				defaultFiles[mainMenu->adventureManager->currSaveFileIndex] = true;
 				
@@ -591,9 +587,9 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == INFOPOP)
 		{
-			int res = decisionPopup.Update(mainMenu->adventureManager->controllerInput);
+			int res = decisionPopup->Update(mainMenu->adventureManager->controllerInput);
 
-			if (res == SaveMenuDecisionPopup::OPTION_YES)
+			if (res == GamePopup::OPTION_YES)
 			{
 				action = WAIT;
 				frame = 0;
@@ -601,9 +597,9 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == ASKTUTORIAL)
 		{
-			int res = decisionPopup.Update(mainMenu->adventureManager->controllerInput);
+			int res = decisionPopup->Update(mainMenu->adventureManager->controllerInput);
 
-			if (res == SaveMenuDecisionPopup::OPTION_NO)
+			if (res == GamePopup::OPTION_NO)
 			{
 				action = SELECT;
 				frame = 0;
@@ -612,14 +608,14 @@ bool SaveMenuScreen::Update()
 
 				mainMenu->adventureManager->worldMap->SetShipToColony(0);
 			}
-			else if (res == SaveMenuDecisionPopup::OPTION_YES)
+			else if (res == GamePopup::OPTION_YES)
 			{
 				action = SELECT;
 				frame = 0;
 				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
 				startWithTutorial = true;
 			}
-			else if (res == SaveMenuDecisionPopup::OPTION_BACK)
+			else if (res == GamePopup::OPTION_BACK)
 			{
 				action = WAIT;
 				frame = 0;
@@ -652,17 +648,15 @@ bool SaveMenuScreen::Update()
 					action = CONFIRMCOPY;
 					frame = 0;
 					//confirmPopup->SetQuestion("Are you sure you want to\ncopy the save file here?");
-					decisionPopup.SetText("Are you sure you want to\ncopy the save file here?");
-					decisionPopup.SetNumOptions(2);
-					decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_NO);
+
+					decisionPopup->SetInfo("Are you sure you want to\ncopy the save file here?", 2, GamePopup::OPTION_NO);
 				}
 				else
 				{
 					action = INFOPOP;
 					frame = 0;
 
-					decisionPopup.SetText("Cannot overwrite existing file");
-					decisionPopup.SetNumOptions(1);
+					decisionPopup->SetInfo("Cannot overwrite existing file", 1);
 					//messagePopup->Pop("Cannot overwrite existing file");
 				}
 			}
@@ -678,19 +672,19 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == CONFIRMCOPY)
 		{
-			int res = decisionPopup.Update(mainMenu->adventureManager->controllerInput);
+			int res = decisionPopup->Update(mainMenu->adventureManager->controllerInput);
 
-			if (res == SaveMenuDecisionPopup::OPTION_NO || res == SaveMenuDecisionPopup::OPTION_BACK)
+			if (res == GamePopup::OPTION_NO || res == GamePopup::OPTION_BACK)
 			{
 				action = WAIT;
 				frame = 0;
 			}
-			else if (res == SaveMenuDecisionPopup::OPTION_YES)
+			else if (res == GamePopup::OPTION_YES)
 			{
 				action = INFOPOP;
 				frame = 0;
-				decisionPopup.SetText("Copied save file successfully");
-				decisionPopup.SetNumOptions(1);
+
+				decisionPopup->SetInfo("Copied save file successfully", 1);
 
 				mainMenu->adventureManager->files[copiedIndex]->CopyTo(mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]);
 				mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]->Save();
@@ -1019,17 +1013,17 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	}
 	else if (action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY)
 	{
-		decisionPopup.Draw(target);
+		decisionPopup->Draw(target);
 		//confirmPopup->Draw(target);
 	}
 	else if (action == ASKTUTORIAL)
 	{
-		decisionPopup.Draw(target);
+		decisionPopup->Draw(target);
 		//confirmPopup->Draw(target);
 	}
 	else if (action == INFOPOP)
 	{
-		decisionPopup.Draw(target);
+		decisionPopup->Draw(target);
 		//messagePopup->Draw(target);
 		//infoPopup->Draw(target);
 	}
@@ -1083,268 +1077,4 @@ void SaveMenuScreen::UpdateClouds()
 	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(f));
 
 	cloudFrame++;
-}
-
-SaveMenuConfirmPopup::SaveMenuConfirmPopup( )
-{
-	MainMenu *mainMenu = MainMenu::GetInstance();
-
-	size = Vector2f(500, 300);
-	ts_buttons = mainMenu->tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
-	SetRectColor(popupBGQuad, Color::Black);
-
-	ts_buttons->SetQuadSubRect(buttonQuads, 0);
-	ts_buttons->SetQuadSubRect(buttonQuads+4, 1);
-
-	confirmText.setFont(mainMenu->arial);
-	confirmText.setCharacterSize(40);
-	confirmText.setFillColor(Color::White);
-	confirmText.setString("HELLO");
-
-	SetPos(Vector2f(960, 540));
-}
-
-void SaveMenuConfirmPopup::SetPos(sf::Vector2f &pos)
-{
-	position = pos;
-	SetRectCenter(popupBGQuad, size.x, size.y, pos);
-	SetRectCenter(buttonQuads, 128, 128, pos + Vector2f(-100, 50));
-	SetRectCenter(buttonQuads+4, 128, 128, pos + Vector2f(100, 50));
-	confirmText.setPosition(Vector2f( pos.x, (pos.y - size.y / 2) + 10));
-}
-
-int SaveMenuConfirmPopup::Update(ControllerDualStateQueue *controllerInput)
-{
-	if (controllerInput->ButtonPressed_A())
-	{
-		return OPTION_OK;
-	}
-	else if (controllerInput->ButtonPressed_B())
-	{
-		return OPTION_CANCEL;
-	}
-
-	return OPTION_NOTHING;
-}
-
-void SaveMenuConfirmPopup::Draw(sf::RenderTarget *target)
-{
-	target->draw(popupBGQuad, 4, sf::Quads);
-	target->draw(confirmText);
-	target->draw(buttonQuads, 4 * 2, sf::Quads, ts_buttons->texture);
-}
-
-void SaveMenuConfirmPopup::SetText(const std::string &str)
-{
-	confirmText.setString(str);
-	confirmText.setOrigin(confirmText.getLocalBounds().left
-		+ confirmText.getLocalBounds().width / 2, 0);
-	size = Vector2f(max(confirmText.getGlobalBounds().width + 40.f, 500.f ), 300);
-	SetPos(position);
-}
-
-SaveMenuDecisionPopup::SaveMenuDecisionPopup()
-{
-	MainMenu *mainMenu = MainMenu::GetInstance();
-	
-	//size is set in setText
-	size = Vector2f(500, 300);
-	
-	SetRectColor(popupBGQuad, Color::Black);
-
-	
-
-	optionText.setFont(mainMenu->arial);
-	optionText.setCharacterSize(40);
-	optionText.setFillColor(Color::White);
-	optionText.setString("HELLO");
-
-	yesText.setFont(mainMenu->arial);
-	yesText.setCharacterSize(40);
-	yesText.setFillColor(Color::White);
-	yesText.setString("YES");
-	yesText.setOrigin(yesText.getLocalBounds().left + yesText.getLocalBounds().width / 2,
-		yesText.getLocalBounds().top + yesText.getLocalBounds().height / 2);
-
-	okText.setFont(mainMenu->arial);
-	okText.setCharacterSize(40);
-	okText.setFillColor(Color::White);
-	okText.setString("OK");
-	okText.setOrigin(yesText.getLocalBounds().left + okText.getLocalBounds().width / 2,
-		okText.getLocalBounds().top + okText.getLocalBounds().height / 2);
-
-	noText.setFont(mainMenu->arial);
-	noText.setCharacterSize(40);
-	noText.setFillColor(Color::White);
-	noText.setString("NO");
-	noText.setOrigin(noText.getLocalBounds().left + noText.getLocalBounds().width / 2,
-		noText.getLocalBounds().top + noText.getLocalBounds().height / 2);
-
-	backText.setFont(mainMenu->arial);
-	backText.setCharacterSize(40);
-	backText.setFillColor(Color::White);
-	backText.setString("BACK");
-	backText.setOrigin(backText.getLocalBounds().left + backText.getLocalBounds().width / 2,
-		backText.getLocalBounds().top + backText.getLocalBounds().height / 2);
-
-	
-	//SetRectColor(yesSelectedQuad, Color::Red);
-	//SetRectColor(noSelectedQuad, Color::Blue);
-
-	//currentlySelectedOption = OPTION_YES;
-
-	SetPos(Vector2f(960, 540));
-
-	SetNumOptions(3);
-	SetOption(OPTION_YES);
-}
-
-void SaveMenuDecisionPopup::SetPos(sf::Vector2f &pos)
-{
-	position = pos;
-	SetRectCenter(popupBGQuad, size.x, size.y, pos);
-
-	float yOffset = 50;
-
-	Vector2f yesOffset = Vector2f(-200, yOffset);
-	Vector2f noOffset = Vector2f(0, yOffset);
-	Vector2f backOffset = Vector2f(200, yOffset);
-
-	if (numOptions == 1)
-	{
-		yesOffset = Vector2f(0, yOffset);
-		okText.setPosition(pos + yesOffset);
-	}
-	else if (numOptions == 2)
-	{
-		yesOffset = Vector2f(-100, yOffset);
-		noOffset = Vector2f(100, yOffset);
-	}
-
-	SetRectCenter(yesSelectedQuad, 128, 128, pos + yesOffset);
-	yesText.setPosition(pos + yesOffset);
-
-	SetRectCenter(noSelectedQuad, 128, 128, pos + noOffset);
-	noText.setPosition(pos + noOffset);
-
-	SetRectCenter(backSelectedQuad, 128, 128, pos + backOffset);
-	backText.setPosition(pos + backOffset);
-
-
-	optionText.setPosition(Vector2f(pos.x, (pos.y - size.y / 2) + 10));
-}
-
-int SaveMenuDecisionPopup::Update(ControllerDualStateQueue *controllerInput)
-{
-	int oldOption = currentlySelectedOption;
-
-	if (numOptions > 1)
-	{
-		if (controllerInput->DirPressed_Left())
-		{
-			currentlySelectedOption--;
-			if (currentlySelectedOption < 0)
-			{
-				currentlySelectedOption = numOptions - 1;//OPTION_BACK;
-			}
-		}
-		if (controllerInput->DirPressed_Right())
-		{
-			currentlySelectedOption++;
-			if (currentlySelectedOption == numOptions)
-			{
-				currentlySelectedOption = OPTION_YES;
-			}
-		}
-	}
-	
-
-	if (oldOption != currentlySelectedOption)
-	{
-		SetOption(currentlySelectedOption);
-	}
-	
-	if (controllerInput->ButtonPressed_A())
-	{
-		return currentlySelectedOption;
-	}
-	else if (controllerInput->ButtonPressed_B())
-	{
-		if (numOptions > 1)
-		{
-			return OPTION_BACK;
-		}
-	}
-
-	
-	return OPTION_NOTHING;
-}
-
-void SaveMenuDecisionPopup::SetOption(int op)
-{
-	Color yesSelectedColor = Color( 29, 208, 9 );
-	Color noSelectedColor = Color::Red;
-	Color backSelectorColor = Color::Cyan;
-	Color unselectedColor = Color(93, 93, 93);//Color::Green;
-	currentlySelectedOption = op;
-	if (op == OPTION_YES)
-	{
-		SetRectColor( yesSelectedQuad, yesSelectedColor);
-		SetRectColor( noSelectedQuad, unselectedColor);
-		SetRectColor( backSelectedQuad, unselectedColor);
-	}
-	else if (op == OPTION_NO)
-	{
-		SetRectColor(yesSelectedQuad, unselectedColor);
-		SetRectColor(noSelectedQuad, noSelectedColor);
-		SetRectColor(backSelectedQuad, unselectedColor);
-	}
-	else if (op == OPTION_BACK)
-	{
-		SetRectColor(yesSelectedQuad, unselectedColor);
-		SetRectColor(noSelectedQuad, unselectedColor);
-		SetRectColor(backSelectedQuad, backSelectorColor);
-	}
-}
-
-void SaveMenuDecisionPopup::SetNumOptions(int n)
-{
-	SetOption(OPTION_YES);
-	numOptions = n;
-	SetPos(position);
-}
-
-void SaveMenuDecisionPopup::Draw(sf::RenderTarget *target)
-{
-	target->draw(popupBGQuad, 4, sf::Quads);
-	target->draw(optionText);
-
-	target->draw(yesSelectedQuad, 4, sf::Quads);
-
-	if (numOptions == 1)
-	{
-		target->draw(okText);
-	}
-	else
-	{
-		target->draw(yesText);
-
-		target->draw(noSelectedQuad, 4, sf::Quads);
-		target->draw(noText);
-
-		if (numOptions == 3)
-		{
-			target->draw(backSelectedQuad, 4, sf::Quads);
-			target->draw(backText);
-		}
-	}
-}
-
-void SaveMenuDecisionPopup::SetText(const std::string &str)
-{
-	optionText.setString(str);
-	optionText.setOrigin(optionText.getLocalBounds().left
-		+ optionText.getLocalBounds().width / 2, 0);
-	size = Vector2f(max(optionText.getGlobalBounds().width + 40.f, 600.f), 300);
-	SetPos(position);
 }

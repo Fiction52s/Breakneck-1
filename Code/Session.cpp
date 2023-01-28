@@ -6864,6 +6864,12 @@ bool Session::GGPOFrozenGameModeUpdate()
 	return true;
 }
 
+
+bool Session::PopupGameModeUpdate()
+{
+	return true;
+}
+
 bool Session::FrozenGameModeUpdate()
 {
 	while (accumulator >= TIMESTEP)

@@ -204,6 +204,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		STORY,
 		SEQUENCE,
 		FROZEN,
+		POPUP,
 		MAP
 	};
 
@@ -822,6 +823,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool RunGameModeUpdate();
 	bool GGPOFrozenGameModeUpdate();
 	bool FrozenGameModeUpdate();
+	virtual bool PopupGameModeUpdate();
 	bool SequenceGameModeUpdate();
 	void DrawGameSequence(sf::RenderTarget *target);
 	virtual void SequenceGameModeRespondToGoalDestroyed() = 0;
