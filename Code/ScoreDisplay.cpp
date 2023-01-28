@@ -212,20 +212,8 @@ void ScoreDisplay::Activate()
 	{
 		includeExtraSelectBars = false;
 	}
-	//includeSelectBars = /true;
 
 	PopOutBar(0);
-	//bars[0]->state = ScoreBar::POP_OUT;
-	//bars[0]->frame = 0;
-
-	/*timeText.setFont(font);
-	timeText.setCharacterSize(40);
-	timeText.setFillColor(Color::Black);
-
-	
-	keys.setFont(font);
-	keys.setCharacterSize(40);
-	keys.setFillColor(Color::Black);*/
 
 	stringstream ss;
 

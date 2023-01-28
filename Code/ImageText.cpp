@@ -124,7 +124,7 @@ void ImageText::UpdateSprite()
 
 	if (posType == CENTER)
 	{
-		anchorTopLeft = anchor + Vector2f(tw * -2.5, th * -.5);
+		anchorTopLeft = anchor + Vector2f(tw * -1.5, th * -.5); //-2.5 on x before
 	}
 	else if (posType == TOP_RIGHT)
 	{
@@ -138,7 +138,7 @@ void ImageText::UpdateSprite()
 	if (symbolType != SYMBOL_NONE)
 	{
 		SetRectTopLeft(vert + maxDigits * 4, tw, th, anchorTopLeft);
-		anchorTopLeft.x += tw;
+		//anchorTopLeft.x += tw;
 
 		int tile = 0;
 
