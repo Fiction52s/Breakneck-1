@@ -892,10 +892,12 @@ MainMenu::~MainMenu()
 	delete postProcessTexture2;
 	delete minimapTexture;
 	delete mapTexture;
+	
 
 	delete pauseTexture;
 	delete saveTexture;
 	delete mapPreviewTexture;
+	delete mapPreviewThumbnailTexture;
 	delete auraCheckTexture;
 	delete brushPreviewTexture;
 

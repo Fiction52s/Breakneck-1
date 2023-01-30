@@ -1143,7 +1143,7 @@ TerrainPolygon::TerrainPolygon()
 
 	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)
 	{
-		tilePattern[i] = rand() % 4;
+		tilePattern[i] = rand() % 2;
 	}
 	//ts_water = sess->GetSizedTileset("Env/water_128x128.png");
 
