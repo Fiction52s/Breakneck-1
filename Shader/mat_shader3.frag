@@ -6,10 +6,12 @@ uniform sampler2D u_pattern;
 uniform vec4 skyColor;
 uniform vec2 topLeft;
 uniform float zoom;
-uniform vec4 u_quad;
+uniform vec4 u_quadArray[4];
 
 uniform float u_cameraAngle;
-//uniform float u_seed;
+uniform float u_patternGrid[16];
+
+float patternGridSize = 4.0;
 
 uniform vec2 Resolution;      //resolution of screen
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
@@ -51,7 +53,20 @@ void main()
 	
 	vec4 DiffuseColor;
 	
-	vec2 UV = mod( pos / texSize, tileLimit ) + u_quad.xy;
+	vec2 test = pos / texSize;
+	
+	
+	vec2 UV = vec2( 0.0, 0.0 );
+	
+	
+	int xTest = int(mod( floor(test.x / tileLimit.x), patternGridSize ));
+	int yTest = int(mod( floor(test.y / tileLimit.y), patternGridSize ));
+	
+	int index = yTest * int(patternGridSize) + xTest;
+	
+	int tileBlah = int(u_patternGrid[index]);
+	
+	UV = mod( test, tileLimit) + u_quadArray[tileBlah].xy;
 	
 	DiffuseColor = texture2D(u_texture, UV );
 	

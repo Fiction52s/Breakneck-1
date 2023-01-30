@@ -1,7 +1,7 @@
 #version 130
 
 uniform sampler2D u_texture;
-uniform vec4 u_palette[64];
+uniform vec4 u_palette[164];
 
 void main()
 {		
