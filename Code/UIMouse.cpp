@@ -197,3 +197,37 @@ void UIMouse::SetPosition(sf::Vector2i &pos)
 	myPos = pos;
 	sf::Mouse::setPosition(myPos, *currWindow);
 }
+
+//cannot be called from non-main thread
+void UIMouse::Hide()
+{
+	if (customCursor != NULL)
+	{
+		customCursor->Hide();
+	}
+}
+
+//cannot be called from non-main thread
+void UIMouse::Show()
+{
+	if (customCursor != NULL)
+	{
+		customCursor->Show();
+	}
+}
+
+void UIMouse::Grab()
+{
+	if (customCursor != NULL)
+	{
+		customCursor->Grab();
+	}
+}
+
+void UIMouse::Release()
+{
+	if (customCursor != NULL)
+	{
+		customCursor->Release();
+	}
+}

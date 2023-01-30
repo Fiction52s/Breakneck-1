@@ -5,6 +5,7 @@
 #include "Tileset.h"
 #include "MatchParams.h"
 #include "GUI.h"
+#include "PlayerBox.h"
 
 struct MainMenu;
 struct MapBrowser;
@@ -16,65 +17,7 @@ struct MapOptionsPopup;
 struct PlayerSkinShader;
 
 struct ControlProfileMenu;
-
-struct SinglePlayerBox
-{
-	enum Action
-	{
-		A_WAITING_FOR_JOIN,
-		A_HAS_PLAYER,
-		A_CHANGING_CONTROLS,
-	};
-
-	enum Mode
-	{
-		MODE_DEFAULT,
-		MODE_CONTROLLER_ONLY,
-	};
-
-	sf::Text playerNameText;
-	sf::Vector2f topLeft;
-	sf::Vertex bgQuad[4];
-	SinglePlayerControllerJoinScreen *joinScreen;
-	sf::Text numberText;
-	sf::Text pressText;
-	sf::Text skinNumberText;
-	int skinIndex;
-
-	sf::Vertex controllerIconQuad[4];
-	sf::Vertex portIconQuad[4];
-
-	sf::Vertex kinQuad[4];
-
-	PlayerSkinShader *playerShader;
-
-	ControllerDualStateQueue *controllerStates;
-
-	ControlProfileMenu *controlMenu;
-
-	sf::Sprite kinSprite;
-
-	int action;
-	int mode;
-
-	SinglePlayerBox(SinglePlayerControllerJoinScreen *p_joinScreen);
-	~SinglePlayerBox();
-
-	void SetMode(int m);
-	void Update();
-	void SetSkin(int index);
-	void Draw(sf::RenderTarget *target);
-	void SetName(const std::string &name);
-	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex);
-	void Show();
-	void Hide();
-	ControlProfile *GetCurrProfile();
-	void SetTopLeft(sf::Vector2f &pos);
-	void ClearInfo();
-private:
-	bool show;
-	std::string playerNameStr;
-};
+struct PlayerBoxGroup;
 
 struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 {
@@ -92,19 +35,11 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 
-	Tileset *ts_controllerIcons;
-	Tileset *ts_portIcons;
-	Tileset *ts_kin;
-
 	Panel *panel;
-
-	int playerBoxWidth;
-	int playerBoxHeight;
-	int playerBoxSpacing;
 
 	MapNode *selectedMap;
 
-	SinglePlayerBox *playerBox;
+	PlayerBoxGroup *playerBoxGroup;
 	MapOptionsPopup *mapOptionsPopup;
 
 	MatchParams currParams;
@@ -117,9 +52,6 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 	bool HandleEvent(sf::Event ev);
 
 	void SetMode(int m);
-
-	void NextSkin();
-	void PrevSkin();
 
 	void TryControllerJoin(ControllerDualStateQueue *conStates);
 

@@ -35,6 +35,10 @@ struct UIMouse
 	void SetCustomCursor(CustomCursor *cc);
 	bool IsWindowFocused();
 	void SetPosition(sf::Vector2i &pos);
+	void Hide();
+	void Show();
+	void Grab();
+	void Release();
 private:
 	UIMouse();
 

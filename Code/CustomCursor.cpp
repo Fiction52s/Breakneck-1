@@ -76,12 +76,14 @@ void CustomCursor::SetClicked()
 	}
 }
 
+//cannot be called from non-main thread
 void CustomCursor::Show()
 {
 	window->setMouseCursorVisible(true);
 	visible = true;
 }
 
+//cannot be called from non-main thread
 void CustomCursor::Hide()
 {
 	window->setMouseCursorVisible(false);

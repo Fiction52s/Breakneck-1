@@ -135,6 +135,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	ControllerDualStateQueue *storedControllerStates = NULL;
 	ControlProfile *storedControlProfile = NULL;
 
+
 	switch (fromMode)
 	{
 	case SAVEMENU:
@@ -208,8 +209,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		{
 			if (toMode == SAVEMENU)
 			{
-				storedControllerStates = singlePlayerControllerJoinScreen->playerBox->controllerStates;
-				storedControlProfile = singlePlayerControllerJoinScreen->playerBox->GetCurrProfile();
+				storedControllerStates = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
+				storedControlProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
 			}
 
 			delete singlePlayerControllerJoinScreen;
@@ -394,7 +395,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case FREEPLAY:
 	{
 		assert(freeplayScreen == NULL);
-		freeplayScreen = new FreeplayScreen(this);
+		freeplayScreen = new FreeplayScreen;
 		freeplayScreen->Start();
 
 		if (fromMode == BROWSE_WORKSHOP)
@@ -417,7 +418,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		if (toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE)
 		{
-			singlePlayerControllerJoinScreen->SetMode(SinglePlayerBox::MODE_CONTROLLER_ONLY);
+			singlePlayerControllerJoinScreen->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
 		}
 		break;
 	}
@@ -739,6 +740,8 @@ void MainMenu::SetupWindow()
 	customCursor->Init(window);
 
 	MOUSE.SetCustomCursor(customCursor);
+
+	//window->setMouseCursorVisible(false);
 
 	//customCursor->Grab();
 
@@ -3099,6 +3102,7 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (freeplayScreen->action == FreeplayScreen::A_BACK)
 		{
+			MOUSE.Show();
 			LoadMode(TITLEMENU);
 		}
 		break;
@@ -3116,9 +3120,9 @@ void MainMenu::HandleMenuMode()
 		{
 			MatchParams mp;
 			mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
-			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
-			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBox->skinIndex;
-			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBox->GetCurrProfile();
+			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
+			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
+			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
 			mp.randSeed = time(0);
 			mp.numPlayers = 1;
 			mp.gameModeType = MatchParams::GAME_MODE_BASIC;
@@ -3529,8 +3533,8 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 			//SetMode(MATCH_RESULTS);
 			//matchResultsScreen = netplayManager->CreateResultsScreen();
+			MOUSE.Hide();
 			musicPlayer->FadeOutCurrentMusic(30);
-			customCursor->Hide();
 			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
 			//customCursor->SetMode(CustomCursor::M_SHIP);
 			
@@ -3538,6 +3542,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_FREE_PLAY:
 		{
+			MOUSE.Hide();
 			LoadMode(FREEPLAY);
 			break;
 		}

@@ -6,6 +6,7 @@
 #include "Tileset.h"
 #include "MatchParams.h"
 #include "GUI.h"
+#include "PlayerBox.h"
 
 struct MainMenu;
 struct MapBrowser;
@@ -15,53 +16,7 @@ struct FreeplayScreen;
 struct MapNode;
 struct MapOptionsPopup;
 struct PlayerSkinShader;
-
-struct FreeplayPlayerBox
-{
-	enum Action
-	{
-		A_WAITING_FOR_JOIN,
-		A_HAS_PLAYER,
-	};
-
-	sf::Text playerNameText;
-	int index;
-	sf::Vector2i topLeft;
-	sf::Vertex bgQuad[4];
-	FreeplayScreen *fps;
-	sf::Text numberText;
-	sf::Text pressText;
-	sf::Text skinNumberText;
-	int skinIndex;
-
-	sf::Vertex controllerIconQuad[4];
-	sf::Vertex portIconQuad[4];
-
-	sf::Vertex kinQuad[4];
-
-	PlayerSkinShader *playerShader;
-
-	ControllerDualStateQueue *controllerStates;
-
-	sf::Sprite kinSprite;
-
-	int action;
-
-	FreeplayPlayerBox(FreeplayScreen *p_fps, int index);
-	~FreeplayPlayerBox();
-	void Update();
-	void SetSkin(int index);
-	void Draw(sf::RenderTarget *target);
-	void SetName(const std::string &name);
-	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex );
-	void Show();
-	void Hide();
-	void SetTopLeft(sf::Vector2i &pos);
-	void ClearInfo();
-private:
-	bool show;
-	std::string playerNameStr;
-};
+struct PlayerBoxGroup;
 
 struct FreeplayScreen : TilesetManager, GUIHandler
 {
@@ -80,19 +35,11 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 
-	Tileset *ts_controllerIcons;
-	Tileset *ts_portIcons;
-	Tileset *ts_kin;
-
 	Panel *panel;
-
-	int playerBoxWidth;
-	int playerBoxHeight;
-	int playerBoxSpacing;
 
 	MapNode *selectedMap;
 
-	FreeplayPlayerBox *playerBoxes[4];
+	PlayerBoxGroup *playerBoxGroup;
 	MapOptionsPopup *mapOptionsPopup;
 
 	MatchParams currParams;
@@ -102,28 +49,18 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 
 	MapBrowserScreen *mapBrowserScreen;
 
-	FreeplayScreen(MainMenu *mm);
+	FreeplayScreen();
 	~FreeplayScreen();
 
 	void Start();
 	void Quit();
 	bool HandleEvent(sf::Event ev);
 
-	int GetFirstAvailableSkinIndex();
-	bool IsSkinAvailable(int p_skinIndex);
-	void NextSkin(int playerBoxIndex);
-	void PrevSkin(int playerBoxIndex);
-
-	void TryControllerJoin(ControllerDualStateQueue *conStates);
-	bool IsFull();
-	bool AlreadyJoined(ControllerDualStateQueue *conStates);
-	FreeplayPlayerBox *GetNextOpenBox();
 	void StartBrowsing();
 	void TryActivateOptionsPanel(MapNode *mp);
 
 	void DrawPopupBG(sf::RenderTarget *target);
 
-	int NumActivePlayers();
 
 	const MatchParams &GetMatchParams();
 	void SetFromMatchParams(MatchParams &mp);
