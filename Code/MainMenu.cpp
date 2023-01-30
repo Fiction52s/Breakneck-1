@@ -73,6 +73,7 @@ sf::RenderTexture *MainMenu::mapTexture = NULL;
 sf::RenderTexture *MainMenu::pauseTexture = NULL;
 sf::RenderTexture *MainMenu::saveTexture = NULL;
 sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
+sf::RenderTexture *MainMenu::mapPreviewThumbnailTexture = NULL;
 sf::RenderTexture *MainMenu::brushPreviewTexture = NULL;
 sf::RenderTexture *MainMenu::extraScreenTexture = NULL;
 sf::RenderTexture *MainMenu::auraCheckTexture = NULL;
@@ -792,6 +793,7 @@ void MainMenu::CreateRenderTextures()
 		mapTexture->clear();
 	}
 
+
 	if (pauseTexture == NULL)
 	{
 		pauseTexture = new RenderTexture;
@@ -809,8 +811,15 @@ void MainMenu::CreateRenderTextures()
 	if (mapPreviewTexture == NULL)
 	{
 		mapPreviewTexture = new RenderTexture;
-		mapPreviewTexture->create(960 - 48, 540 - 48);
+		mapPreviewTexture->create(912, 492);
 		mapPreviewTexture->clear();
+	}
+
+	if (mapPreviewThumbnailTexture == NULL)
+	{
+		mapPreviewThumbnailTexture = new RenderTexture;
+		mapPreviewThumbnailTexture->create(228, 123); // 1/4 the size of the original for now
+		mapPreviewThumbnailTexture->clear();
 	}
 
 	if (brushPreviewTexture == NULL)

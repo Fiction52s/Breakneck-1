@@ -1141,6 +1141,10 @@ TerrainPolygon::TerrainPolygon()
 {
 	sess = Session::GetSession();
 
+	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)
+	{
+		tilePattern[i] = rand() % 4;
+	}
 	//ts_water = sess->GetSizedTileset("Env/water_128x128.png");
 
 	//if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
@@ -4903,14 +4907,31 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 				
 
 				int tile = 8 * terrainWorldType + terrainVariation;
-				IntRect ir = ts->GetSubRect(tile);
+				IntRect ir;//rand() % 8);//tile + rand() % 2);
 
 				float width = ts->texture->getSize().x;
 				float height = ts->texture->getSize().y;
-					
-				sess->terrainShader.setUniform("u_quad",
+				
+				
+				sess->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
+
+				for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
+				{
+					ir = ts->GetSubRect(tile + i);
+					tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
+				}
+
+				sess->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
+
+				/*sess->terrainShader.setUniform("u_quad",
 					Glsl::Vec4(ir.left / width, ir.top / height,
 					(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+
+				IntRect ir_alt = ts->GetSubRect(tile+1);
+
+				sess->terrainShader.setUniform("u_alt_quad",
+					Glsl::Vec4(ir_alt.left / width, ir_alt.top / height,
+					(ir_alt.left + ir_alt.width) / width, (ir_alt.top + ir_alt.height) / height));*/
 			}
 
 			rt->draw(*va, pShader);

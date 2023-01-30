@@ -272,6 +272,15 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	int waterType;
 
+	const static int TILE_PATTERN_GRID_SIZE = 4;
+	const static int TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
+
+	float tilePattern[TILE_PATTERN_TOTAL_INDEXES];
+
+	const static int TOTAL_TILES_IN_USE = 4;
+	sf::Glsl::Vec4 tileQuads[TOTAL_TILES_IN_USE];
+
+
 	bool grassBufferForAABBOn;
 	void ResetState();
 	static int GetWaterWorld(int waterT);

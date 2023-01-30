@@ -193,6 +193,7 @@ struct EditSession : GUIHandler, Session
 	bool saveUpdated;
 	int tempWriteIndex;
 	sf::RenderTexture *mapPreviewTex;
+	sf::RenderTexture *mapPreviewThumbnailTex;
 	sf::RenderTexture *brushPreviewTex;
 	std::list<Enemy*> allCurrEnemies;
 	std::list<Panel*> allPopups;
@@ -455,7 +456,7 @@ struct EditSession : GUIHandler, Session
 	void WriteGates(std::ofstream &of);
 	void WriteDecor(std::ofstream &of);
 	void WriteMapHeader(std::ofstream &of);
-	void CreatePreview(sf::Vector2i imageSize);
+	void CreatePreview(bool thumbnail);
 	void WriteInversePoly(std::ofstream &of);
 	void WritePlayerOptions(std::ofstream &of);
 	void ClearSelectedPolys();
@@ -681,6 +682,9 @@ struct EditSession : GUIHandler, Session
 	void DrawGateInfos();
 	void DrawDecor( EffectLayer ef, sf::RenderTarget *target);
 	void Draw();
+	void DrawPreview(sf::RenderTarget *target, sf::View &v, int width, int left, int right, int top, int bot);
+	void SavePreview();
+	void SavePreviewThumbnail();
 	void DrawUI();
 	void Display();
 	void DrawBoxSelection();

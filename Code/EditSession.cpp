@@ -1495,6 +1495,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	PoiParams::font = &mainMenu->arial;
 	
 	mapPreviewTex = MainMenu::mapPreviewTexture;
+	mapPreviewThumbnailTex = MainMenu::mapPreviewThumbnailTexture;
 	brushPreviewTex = MainMenu::brushPreviewTexture;
 
 
@@ -2862,10 +2863,8 @@ bool EditSession::WriteFile()
 	boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
 	boost::filesystem::remove(from);
 
-	CreatePreview(Vector2i( 1920 / 2 - 48, 1080 / 2 - 48 ));
-
-
-	
+	CreatePreview(false);
+	CreatePreview(true);
 
 
 	return true;
@@ -7764,8 +7763,150 @@ void EditSession::CreateDecorImage(DecorPtr dec)
 	AddDoneAction(action);
 }
 
-void EditSession::CreatePreview(Vector2i imageSize)
+//pView
+//width
+//top
+//bot
+
+void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int width, int left, int right, int top, int bot)
 {
+	target->clear(Color::Black);
+
+	target->setView(pView);
+
+	//DrawTopClouds(target);
+
+	CircleShape cs;
+	cs.setRadius(10.f * ((float)width / 1920));
+	cs.setFillColor(Color::Red);
+	cs.setOrigin(cs.getLocalBounds().width / 2,
+		cs.getLocalBounds().height / 2);
+
+	CircleShape goalCS;
+	goalCS.setRadius(16.f * ((float)width / 1920));
+	goalCS.setFillColor(Color::Magenta);
+	goalCS.setOrigin(cs.getLocalBounds().width / 2,
+		cs.getLocalBounds().height / 2);
+
+	bool oldSelected;
+
+	DrawDecor(EffectLayer::BEHIND_TERRAIN, target);
+
+	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+		(*it)->Draw(false, 1, target, false, NULL);
+		(*it)->SetSelected(oldSelected);
+	}
+
+	for (auto it = flyPolygons.begin(); it != flyPolygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+		(*it)->Draw(false, 1, target, false, NULL);
+		(*it)->SetSelected(oldSelected);
+	}
+
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+		(*it)->Draw(false, 1, target, false, NULL);
+		(*it)->SetSelected(oldSelected);
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	{
+		(*it)->DrawPreview(target);
+	}
+
+	sf::RectangleShape borderRect;
+	borderRect.setFillColor(Color(30, 30, 30));
+	borderRect.setSize(Vector2f(1000000, bot - top));
+	borderRect.setPosition(left, top);
+	borderRect.setOrigin(borderRect.getLocalBounds().width, 0);
+	target->draw(borderRect);
+
+	borderRect.setOrigin(0, 0);
+	borderRect.setPosition(right, top);
+	target->draw(borderRect);
+	//sf::Vertex borderRect[4];
+	//SetRectColor(borderRect, Color::Cyan);
+
+	DrawDecor(EffectLayer::BEHIND_ENEMIES, target);
+	DrawDecor(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
+			it2 != (*it).second->actors.end(); ++it2)
+		{
+			/*if ((*it2)->type->IsGoalType())
+			{
+			goalCS.setPosition((*it2)->GetFloatPos());
+			mapPreviewTex->draw(goalCS);
+			}
+			else
+			{
+			cs.setPosition((*it2)->GetFloatPos());
+			mapPreviewTex->draw(cs);
+			}*/
+
+			(*it2)->DrawPreview(target);
+
+
+		}
+
+
+		//(*it).second->DrawPreview( mapPreviewTex );
+	}
+
+	DrawDecor(EffectLayer::IN_FRONT, target);
+
+	cs.setPosition(playerMarkers[0]->GetFloatPos());
+	cs.setFillColor(Color::Green);
+	target->draw(cs);
+
+	sf::RectangleShape rs;
+	rs.setPosition(pView.getCenter().x - pView.getSize().x / 2, top);// pView.getCenter().y);
+	rs.setSize(Vector2f(pView.getSize().x, top - (pView.getCenter().y - pView.getSize().y / 2)));
+	rs.setFillColor(Color::Cyan);
+	target->draw(rs);
+}
+
+void EditSession::SavePreview()
+{
+	Image img = mapPreviewTex->getTexture().copyToImage();
+	std::stringstream ssPrev;
+	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string() << ".png";
+	std::string previewFile = ssPrev.str();
+	img.saveToFile(previewFile);
+}
+
+void EditSession::SavePreviewThumbnail()
+{
+	Image img = mapPreviewThumbnailTex->getTexture().copyToImage();
+	std::stringstream ssPrev;
+	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string() << "_thumbnail.png";
+	std::string previewFile = ssPrev.str();
+	img.saveToFile(previewFile);
+}
+
+
+void EditSession::CreatePreview(bool thumbnail)
+{
+	Vector2i imageSize = Vector2i(mapPreviewTex->getSize());//912, 492
+	if (thumbnail)
+	{
+		imageSize = Vector2i(mapPreviewThumbnailTex->getSize());//228, 123 // 1/4 the size of the original for now
+	}
+
 	int extraBound = 0;
 	int left, top, right, bot;
 	cout << "CREATING PREVIEW" << endl;
@@ -7895,126 +8036,26 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 	oldShaderZoom = -1; //updates the shader back to normal after this is over
 
-	mapPreviewTex->clear(Color::Black);
-
-	mapPreviewTex->setView( pView );
-
-	//DrawTopClouds(mapPreviewTex);
-
-	CircleShape cs;
-	cs.setRadius( 10.f * ( (float)width / 1920 ) );
-	cs.setFillColor( Color::Red );
-	cs.setOrigin( cs.getLocalBounds().width / 2, 
-		cs.getLocalBounds().height / 2 );
-
-	CircleShape goalCS;
-	goalCS.setRadius(16.f * ((float)width / 1920));
-	goalCS.setFillColor(Color::Magenta);
-	goalCS.setOrigin(cs.getLocalBounds().width / 2,
-		cs.getLocalBounds().height / 2);
-
-	bool oldSelected;
-
-	DrawDecor(EffectLayer::BEHIND_TERRAIN, mapPreviewTex);
-
-	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
+	if (thumbnail)
 	{
-		oldSelected = (*it)->selected;
-		(*it)->SetSelected(false);
-		(*it)->Draw(false, 1, mapPreviewTex, false, NULL);
-		(*it)->SetSelected(oldSelected);
+		DrawPreview(mapPreviewThumbnailTex, pView, width, left, right, top, bot);
 	}
-
-	for (auto it = flyPolygons.begin(); it != flyPolygons.end(); ++it)
+	else
 	{
-		oldSelected = (*it)->selected;
-		(*it)->SetSelected(false);
-		(*it)->Draw(false, 1, mapPreviewTex, false, NULL);
-		(*it)->SetSelected(oldSelected);
+		DrawPreview(mapPreviewTex, pView, width, left, right, top, bot);
 	}
-
-	for( auto it = polygons.begin(); it != polygons.end(); ++it )
-	{
-		oldSelected = (*it)->selected;
-		(*it)->SetSelected(false);
-		(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
-		(*it)->SetSelected(oldSelected);
-	}
-
-	for (auto it = rails.begin(); it != rails.end(); ++it)
-	{
-		(*it)->Draw(mapPreviewTex);
-	}
-
-	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
-	{
-		(*it)->DrawPreview(mapPreviewTex);
-	}
-
-	sf::RectangleShape borderRect;
-	borderRect.setFillColor(Color( 30, 30, 30));
-	borderRect.setSize(Vector2f(1000000, bot - top));
-	borderRect.setPosition(left, top);
-	borderRect.setOrigin(borderRect.getLocalBounds().width, 0);
-	mapPreviewTex->draw(borderRect);
-
-	borderRect.setOrigin(0, 0);
-	borderRect.setPosition(right, top);
-	mapPreviewTex->draw(borderRect);
-	//sf::Vertex borderRect[4];
-	//SetRectColor(borderRect, Color::Cyan);
-		
-	DrawDecor(EffectLayer::BEHIND_ENEMIES, mapPreviewTex);
-	DrawDecor(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, mapPreviewTex);
-
-	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-	{
-		for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
-			it2 != (*it).second->actors.end(); ++it2 )
-		{
-			/*if ((*it2)->type->IsGoalType())
-			{
-				goalCS.setPosition((*it2)->GetFloatPos());
-				mapPreviewTex->draw(goalCS);
-			}
-			else
-			{
-				cs.setPosition((*it2)->GetFloatPos());
-				mapPreviewTex->draw(cs);
-			}*/
-
-			(*it2)->DrawPreview(mapPreviewTex);
-			
-				
-		}
-
-			
-		//(*it).second->DrawPreview( mapPreviewTex );
-	}
-
-	DrawDecor(EffectLayer::IN_FRONT, mapPreviewTex);
-
-	cs.setPosition(playerMarkers[0]->GetFloatPos());
-	cs.setFillColor(Color::Green);
-	mapPreviewTex->draw(cs);
-
-	sf::RectangleShape rs;
-	rs.setPosition(pView.getCenter().x - pView.getSize().x / 2, top);// pView.getCenter().y);
-	rs.setSize(Vector2f(pView.getSize().x, top - (pView.getCenter().y - pView.getSize().y / 2 )));
-	rs.setFillColor(Color::Cyan);
-	mapPreviewTex->draw(rs);
-	//this rectangle shape is just a placeholder, because eventually we will texture stuff.
-
-		
 
 	Image img = mapPreviewTex->getTexture().copyToImage();
-		
 	std::stringstream ssPrev;
-	//ssPrev << filePath.parent_path().relative_path().string() << "/Previews/" << filePath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
+	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string();
 
+	if (thumbnail)
+	{
+		ssPrev << "_thumbnail";
+	}
+	
+	ssPrev << ".png";
 
-	//ssPrev << filePath.parent_path().relative_path().string() << "\\" << filePath.stem().string() << ".png";
-	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string() << ".png";
 	std::string previewFile = ssPrev.str();
 	img.saveToFile( previewFile );
 }
