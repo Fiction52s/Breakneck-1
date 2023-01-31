@@ -2329,6 +2329,8 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//mapHeader->ver1 = 2;
 	//mapHeader->ver2 = 9;
 
+	//mapHeader->description = "no description"; //just for now so that I can save all the maps correctly
+
 	mapHeader->ver1 = 7;
 	mapHeader->ver2 = 0;
 
@@ -8045,7 +8047,15 @@ void EditSession::CreatePreview(bool thumbnail)
 		DrawPreview(mapPreviewTex, pView, width, left, right, top, bot);
 	}
 
-	Image img = mapPreviewTex->getTexture().copyToImage();
+	Image img;
+	if (thumbnail)
+	{
+		img = mapPreviewThumbnailTex->getTexture().copyToImage();
+	}
+	else
+	{
+		img = mapPreviewTex->getTexture().copyToImage();
+	}
 	std::stringstream ssPrev;
 	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string();
 
