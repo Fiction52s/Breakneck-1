@@ -9,9 +9,11 @@ uniform float zoom;
 uniform vec4 u_quadArray[4];
 
 uniform float u_cameraAngle;
-uniform float u_patternGrid[16];
 
-float patternGridSize = 4.0;
+int patternGridSize = 16;
+uniform float u_patternGrid[16*16];
+
+
 
 uniform vec2 Resolution;      //resolution of screen
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
@@ -37,10 +39,11 @@ float gold_noise(vec2 xy, float seed){
 
 void main()
 {	
-	float size = 256.0;
+	float size = 128.0;//64.0;//256.0;
 	vec2 fc = gl_FragCoord.xy;
 	fc.y = 1.0 - fc.y;
-	fc = fc * vec2( 960, 540 ) / Resolution;
+	vec2 resRatio = vec2( 960, 540 ) / Resolution;
+	fc = fc * resRatio;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
 
 	vec2 pos = topLeft + rotateUV( pixelPos, vec2( 0.0 ), u_cameraAngle );
@@ -53,16 +56,18 @@ void main()
 	
 	vec4 DiffuseColor;
 	
-	vec2 test = pos / texSize;
+	//vec2 testSize = vec2(size * 0.5 *float(patternGridSize));
+	vec2 testSize = vec2(size * float(patternGridSize) * resRatio );
+	vec2 test = pos / testSize; //texSize;
 	
 	
 	vec2 UV = vec2( 0.0, 0.0 );
 	
 	
-	int xTest = int(mod( floor(test.x / tileLimit.x), patternGridSize ));
-	int yTest = int(mod( floor(test.y / tileLimit.y), patternGridSize ));
+	int xTest = int(mod( floor(test.x / tileLimit.x), float(patternGridSize) ));
+	int yTest = int(mod( floor(test.y / tileLimit.y), float(patternGridSize) ));
 	
-	int index = yTest * int(patternGridSize) + xTest;
+	int index = yTest * patternGridSize + xTest;
 	
 	int tileBlah = int(u_patternGrid[index]);
 	

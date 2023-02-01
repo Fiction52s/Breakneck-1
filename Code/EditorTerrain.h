@@ -272,13 +272,13 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	int waterType;
 
-	const static int TILE_PATTERN_GRID_SIZE = 4;
-	const static int TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
+	const static int TILE_PATTERN_GRID_SIZE;
+	const static int TILE_PATTERN_TOTAL_INDEXES;
+	const static int TOTAL_TILES_IN_USE;
+	const static int inverseExtraBoxDist;
 
-	float tilePattern[TILE_PATTERN_TOTAL_INDEXES];
-
-	const static int TOTAL_TILES_IN_USE = 4;
-	sf::Glsl::Vec4 tileQuads[TOTAL_TILES_IN_USE];
+	float *tilePattern;
+	sf::Glsl::Vec4 *tileQuads;
 
 
 	bool grassBufferForAABBOn;
@@ -684,7 +684,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	std::list<sf::Vector2i> path;
 
 
-	const static int inverseExtraBoxDist;
+	
 
 	//enemymap
 	std::map<TerrainPoint*, std::list<ActorPtr>> enemies;

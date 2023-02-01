@@ -997,7 +997,12 @@ void MapBrowser::TurnOff()
 	action = A_CANCELLED;
 	ClearFilters();
 	
-	//edit->RemoveActivePanel(panel);
+	if (mode == EDITOR_SAVE || mode == EDITOR_OPEN)
+	{
+		EditSession *edit = EditSession::GetSession();
+		assert(edit != NULL);
+		edit->RemoveActivePanel(panel);
+	}
 }
 
 void MapBrowser::ShowFileNameTextBox()
@@ -1016,7 +1021,15 @@ void MapBrowser::Init()
 {
 	//ClearNodes();
 	//edit->AddActivePanel(panel);
-	if (mode == OPEN)
+	if (mode == EDITOR_OPEN)
+	{
+		EditSession *edit = EditSession::GetSession();
+		assert(edit != NULL);
+		edit->AddActivePanel(panel);
+	}
+
+
+	if (mode == OPEN || mode == EDITOR_OPEN )
 	{
 		openButton->ShowMember();
 		saveButton->HideMember();
@@ -1026,7 +1039,7 @@ void MapBrowser::Init()
 		ShowFileNameTextBox();
 		fileNameTextBox->SetString("");
 	}
-	else if(mode == SAVE )
+	else if(mode == SAVE || mode == EDITOR_SAVE)
 	{
 		openButton->HideMember();
 		saveButton->ShowMember();
@@ -1449,13 +1462,17 @@ void MapBrowserHandler::Confirm()
 	string fileName = chooser->fileNameTextBox->GetString();
 	if (fileName != "")
 	{
-		if (chooser->mode == MapBrowser::OPEN)
+		if (chooser->mode == MapBrowser::EDITOR_OPEN)
 		{
-			//chooser->edit->ChooseFileOpen(chooser, fileName);
+			EditSession *edit = EditSession::GetSession();
+			assert(edit != NULL);
+			edit->ChooseFileOpen(fileName);
 		}
-		else if (chooser->mode == MapBrowser::SAVE)
+		else if (chooser->mode == MapBrowser::EDITOR_SAVE)
 		{
-			//chooser->edit->ChooseFileSave(chooser, fileName);
+			EditSession *edit = EditSession::GetSession();
+			assert(edit != NULL);
+			edit->ChooseFileSave(fileName);
 		}
 		//chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
 		//chooser->TurnOff();
@@ -1495,7 +1512,7 @@ void MapBrowserHandler::ClickFile(ChooseRect *cr)
 			//chooser->TurnOff();
 		}
 	}
-	else if (chooser->mode == MapBrowser::SAVE)
+	else if (chooser->mode == MapBrowser::SAVE || chooser->mode == MapBrowser::EDITOR_SAVE)
 	{
 		chooser->fileNameTextBox->SetString(mn->fileName);
 		//chooser->edit->ChooseFileSave(chooser, fileName);

@@ -19,7 +19,7 @@
 #include "EditorRail.h"
 #include "TouchGrass.h"
 #include "Enemy_HealthFly.h"
-
+#include "RandomPicker.h"
 
 using namespace std;
 using namespace sf;
@@ -32,6 +32,11 @@ using namespace sf;
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
+const int TerrainPolygon::inverseExtraBoxDist = 1500;
+const int TerrainPolygon::TILE_PATTERN_GRID_SIZE = 16;
+const int TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
+const int TerrainPolygon::TOTAL_TILES_IN_USE = 4;
 
 namespace mapbox
 {
@@ -69,7 +74,7 @@ Brush * PointMover::MakeBrush()
 	return b;
 }
 
-const int TerrainPolygon::inverseExtraBoxDist = 1500;
+
 
 //for creating blockers and flies..for now
 void TerrainPolygon::MakeGlobalPath(V2d &startPos, std::vector<sf::Vector2i> &path )
@@ -1141,10 +1146,23 @@ TerrainPolygon::TerrainPolygon()
 {
 	sess = Session::GetSession();
 
+	tilePattern = new float[TILE_PATTERN_TOTAL_INDEXES];
+	tileQuads = new Glsl::Vec4[TOTAL_TILES_IN_USE];
+
+
+	RandomPicker p;
+	p.AddActiveOption(0,2);
+	p.AddActiveOption(1,2);
+	p.AddActiveOption(2,2);
+	p.AddActiveOption(3,2);
+
+	
 	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)
 	{
-		tilePattern[i] = rand() % 2;
+		tilePattern[i] = p.AlwaysGetNextOption();//rand() % TOTAL_TILES_IN_USE;
 	}
+
+
 	//ts_water = sess->GetSizedTileset("Env/water_128x128.png");
 
 	//if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
@@ -1273,6 +1291,9 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 TerrainPolygon::~TerrainPolygon()
 {
 	//cout << "destroying poly: " << this << endl;
+
+	delete[] tilePattern;
+	delete[] tileQuads;
 
 	if (lines != NULL)
 		delete[] lines;

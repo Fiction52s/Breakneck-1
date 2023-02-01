@@ -362,8 +362,8 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 			t.setFont(font);
 			t.setCharacterSize(fontHeight);
 
-			string name = (*it).filename().string();
-			name = name.substr(0, name.size() - 6);
+			string name = (*it).filename().stem().string();
+			//name = name.substr(0, name.size() - 6);
 
 
 			t.setString(name);

@@ -388,11 +388,11 @@ void DefaultFileSelector::Confirm()
 	{
 		if (chooser->fMode == FileChooser::OPEN)
 		{
-			chooser->edit->ChooseFileOpen(chooser, fileName);
+			//chooser->edit->ChooseFileOpen(chooser, fileName);
 		}
 		else if (chooser->fMode == FileChooser::SAVE)
 		{
-			chooser->edit->ChooseFileSave(chooser, fileName);
+			//chooser->edit->ChooseFileSave(chooser, fileName);
 		}
 		chooser->TurnOff();
 	}
@@ -415,13 +415,13 @@ void DefaultFileSelector::ClickFile(ChooseRect *cr)
 
 		if (found)
 		{
-			chooser->edit->ChooseFileOpen(chooser, fileName);
+			//chooser->edit->ChooseFileOpen(chooser, fileName);
 			chooser->TurnOff();
 		}
 	}
 	else if (chooser->fMode == FileChooser::SAVE)
 	{
-		chooser->edit->ChooseFileSave(chooser, fileName);
+		//chooser->edit->ChooseFileSave(chooser, fileName);
 		chooser->TurnOff();
 	}
 }

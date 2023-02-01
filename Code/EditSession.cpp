@@ -34,7 +34,6 @@
 
 #include "GateMarker.h"
 #include "BrushManager.h"
-#include "FileChooser.h"
 #include "AdventureCreator.h"
 #include "AbsorbParticles.h"
 #include "HUD.h"
@@ -65,6 +64,8 @@
 #include "CustomCursor.h"
 #include "AdventureManager.h"
 #include "globals.h"
+
+#include "MapBrowser.h"
 
 //#define GGPO_ON
 
@@ -1727,7 +1728,7 @@ EditSession::~EditSession()
 
 	delete brushManager;
 
-	delete fileChooser;
+	delete mapBrowserHandler;
 
 	delete adventureCreator;
 
@@ -3765,7 +3766,7 @@ void EditSession::Init()
 	
 
 	brushManager = new BrushManager;
-	fileChooser = new DefaultFileSelector;
+	mapBrowserHandler = new MapBrowserHandler(5, 5, true);
 	adventureCreator = new AdventureCreator;
 
 	for (auto it = types.begin(); it != types.end(); ++it)
@@ -4831,12 +4832,12 @@ TerrainPoint * EditSession::TrySnapPosToPoint(V2d &p, SelectPtr &obj, double rad
 	return NULL;
 }
 
-void EditSession::ChooseFileOpen(FileChooser *fc,
-	const std::string &fileName)
+void EditSession::ChooseFileOpen(const std::string &fileName)
 {
-	if (fc->ext == BRUSH_EXT)
+	MapBrowser *mb = mapBrowserHandler->chooser;
+	if (mb->ext == BRUSH_EXT)
 	{
-		Brush *loadedBrush = brushManager->LoadBrush(fc->currPath.string(),
+		Brush *loadedBrush = brushManager->LoadBrush(mb->currPath.string(),
 			fileName);
 
 		createTerrainModeUI->UpdateBrushHotbar();
@@ -4848,31 +4849,31 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 
 		EditModePaste();
 	}
-	else if (fc->ext == ADVENTURE_EXT)
+	else if (mb->ext == ADVENTURE_EXT)
 	{
-		adventureCreator->LoadAdventure(fc->currPath.string(), fileName);
+		adventureCreator->LoadAdventure(mb->currPath.string(), fileName);
 		adventureCreator->Open();
 	}
-	else if (fc->ext == MAP_EXT)
+	else if (mb->ext == MAP_EXT)
 	{
-		Reload(fc->currPath.string() + "\\" + fileName + MAP_EXT);
+		Reload(mb->currPath.string() + "\\" + fileName + MAP_EXT);
 	}
 }
 
-void EditSession::ChooseFileSave(FileChooser *fc,
-	const std::string &fileName)
+void EditSession::ChooseFileSave(const std::string &fileName)
 {
-	if (fc->ext == BRUSH_EXT)
+	MapBrowser *mb = mapBrowserHandler->chooser;
+	if (mb->ext == BRUSH_EXT)
 	{
-		brushManager->SaveBrush(selectedBrush, fc->currPath.string(),
+		brushManager->SaveBrush(selectedBrush, mb->currPath.string(),
 			fileName );
 
 		createTerrainModeUI->UpdateBrushHotbar();
 	}
-	else if (fc->ext == MAP_EXT)
+	else if (mb->ext == MAP_EXT)
 	{
 		//folderPath = ;
-		string fp = fc->currPath.string() + "\\" + fileName + MAP_EXT;
+		string fp = mb->currPath.string() + "\\" + fileName + MAP_EXT;
 		
 		filePath = fp;
 		filePathStr = fp;
@@ -13004,12 +13005,12 @@ void EditSession::GeneralMouseUpdate()
 
 void EditSession::SaveMapDialog()
 {
-	fileChooser->chooser->StartRelative(MAP_EXT, FileChooser::SAVE, "Resources\\Maps\\CustomMaps");
+	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_SAVE, "Resources\\Maps\\CustomMaps");
 }
 
 void EditSession::OpenMapDialog()
 {
-	fileChooser->chooser->StartRelative(MAP_EXT, FileChooser::OPEN, "Resources\\Maps\\CustomMaps");
+	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_OPEN, "Resources\\Maps\\CustomMaps");
 }
 
 void EditSession::TryReloadNew()
@@ -13831,15 +13832,11 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			fileChooser->chooser->StartRelative(BRUSH_EXT,
-				FileChooser::OPEN, "Resources/Brushes");
+			mapBrowserHandler->chooser->StartRelative(BRUSH_EXT, MapBrowser::EDITOR_OPEN, "Resources/Brushes");
 		}
 		else if (ev.key.code == sf::Keyboard::Num8)
 		{
-			fileChooser->chooser->StartRelative(BRUSH_EXT,
-				FileChooser::SAVE, "Resources/Brushes");
-			/*brushManager->SaveBrush(selectedBrush, "Resources/Brushes/", 
-				"testbrush");*/
+			mapBrowserHandler->chooser->StartRelative(BRUSH_EXT, MapBrowser::EDITOR_SAVE, "Resources/Brushes");
 		}
 		
 		break;

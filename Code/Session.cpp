@@ -2232,7 +2232,8 @@ bool Session::ReadDecorImagesFile()
 
 bool Session::LoadPolyShader()
 {
-	ts_terrain = GetSizedTileset("Env/terrain_256x256.png");
+	//ts_terrain = GetSizedTileset("Env/terrain_256x256.png");
+	ts_terrain = GetSizedTileset("Env/terrain_128x128.png");
 
 	if (!terrainShader.loadFromFile("Resources/Shader/mat_shader3.frag", sf::Shader::Fragment))
 	{

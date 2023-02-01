@@ -1,9 +1,9 @@
 #include "GUI.h"
 #include "VectorMath.h"
 #include "EditSession.h"
-#include "FileChooser.h"
 #include "globals.h"
 #include "AdventureCreator.h"
+#include "MapBrowser.h"
 
 using namespace std;
 using namespace sf;
@@ -77,7 +77,8 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		}
 		case EDIT_ADVENTURE:
 		{
-			edit->fileChooser->chooser->StartRelative(ADVENTURE_EXT, FileChooser::OPEN, "");
+			edit->mapBrowserHandler->chooser->StartRelative(ADVENTURE_EXT, MapBrowser::OPEN, "");
+			//edit->fileChooser->chooser->StartRelative(ADVENTURE_EXT, FileChooser::OPEN, "");
 			break;
 		}
 		case CREATE_ADVENTURE:

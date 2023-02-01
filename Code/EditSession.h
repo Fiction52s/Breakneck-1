@@ -22,6 +22,8 @@
 #include "EditorTerrain.h"
 #include "Session.h"
 #include "PositionInfo.h"
+
+struct MapBrowserHandler;
 //#include "ActorParamsBase.h"
 //#include "EditorRail.h"
 struct GateMarker;
@@ -58,9 +60,7 @@ struct PlayerTracker;
 
 struct BrushManager;
 
-struct DefaultFileSelector;
 struct AdventureCreator;
-struct FileChooser;
 struct ReplayPlayer;
 
 struct WorkshopUploader;
@@ -260,7 +260,7 @@ struct EditSession : GUIHandler, Session
 	std::list<PolyPtr> waterPolygons;
 	std::list<PolyPtr> flyPolygons;
 	BrushManager *brushManager;
-	DefaultFileSelector *fileChooser;
+	MapBrowserHandler *mapBrowserHandler;
 	AdventureCreator *adventureCreator;
 	PolyPtr polygonInProgress;
 	RailPtr railInProgress;
@@ -465,10 +465,8 @@ struct EditSession : GUIHandler, Session
 	void DeselectObject(SelectPtr sel);
 	void DeselectObjectType(ISelectable::ISelectableType sType);
 	void DeselectActorType(const std::string &typeName);
-	void ChooseFileOpen(FileChooser *fc,
-		const std::string &fileName);
-	void ChooseFileSave(FileChooser *fc,
-		const std::string &fileName);
+	void ChooseFileOpen(const std::string &fileName);
+	void ChooseFileSave(const std::string &fileName);
 	PolyPtr GetPolygon(int index );
 	RailPtr GetRail(int index);
 	void EndTestMode();

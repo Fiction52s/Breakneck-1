@@ -146,6 +146,8 @@ struct MapBrowser : TilesetManager,
 		WORKSHOP,
 		OPEN,
 		SAVE,
+		EDITOR_OPEN,
+		EDITOR_SAVE,
 		CREATE_CUSTOM_GAME,
 	};
 

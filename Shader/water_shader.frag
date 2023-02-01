@@ -30,12 +30,22 @@ vec2 rotateUV(in vec2 uv, in vec2 pivot, in float rotation) {
     return uv;
 }
 
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+float brightness( vec4 col )
+{
+	return (0.2126*col.r + 0.7152*col.g + 0.0722*col.b);
+}
+
 void main()
 {	
 	float size = 128.0;
 	vec2 fc = gl_FragCoord.xy;
 	fc.y = 1.0 - fc.y;
-	fc = fc * vec2( 960, 540 ) / Resolution;
+	vec2 resRatio = vec2( 960, 540 ) / Resolution;
+	fc = fc * resRatio;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );	
 	
 	vec2 pos = topLeft + rotateUV( pixelPos, vec2( 0.0 ), u_cameraAngle );
@@ -46,12 +56,6 @@ void main()
 	
 	pos = mod( pos, size ) / texSize;
 	//vec2 UV = mod( topLeft + pixelPos, size) / texSize;
-	
-	
-	
-	
-	
-	
 	
 	vec4 DiffuseColor;
 	
@@ -67,17 +71,51 @@ void main()
 	tileLimit.x = tileLimit.x - .001;
 	tileLimit.y = tileLimit.y - .001;
 	
-	vec2 stuff0 = mod( pos + vec2( 0, u_slide * .2 ) * tileLimit, tileLimit ) + q1.xy;
-	vec2 stuff1 = mod( pos + vec2( 0, u_slide * -.4 ) * tileLimit, tileLimit ) + q2.xy;
-	vec2 stuff2 = mod( pos + vec2( u_slide * .2 + .2, 0 ) * tileLimit, tileLimit ) + q1.xy;
-	vec2 stuff3 = mod( pos + vec2( u_slide * -.4 + .2, 0 ) * tileLimit, tileLimit ) + q2.xy;
+	float scrollBase = .1;
+	float extra = 0.2;
+	vec2 stuff0 = mod( pos + vec2( u_slide * scrollBase * 0.5, u_slide * scrollBase ) * tileLimit, tileLimit ) + q1.xy;
+	vec2 stuff1 = mod( pos + vec2( u_slide * -scrollBase * 0.5, u_slide * -scrollBase * 2.0 ) * tileLimit, tileLimit ) + q2.xy;
+	vec2 stuff2 = mod( pos + vec2( u_slide * scrollBase + extra, u_slide * -scrollBase * 0.5 ) * tileLimit, tileLimit ) + q1.xy;
+	vec2 stuff3 = mod( pos + vec2( u_slide * -scrollBase * 2.0 + extra, u_slide * scrollBase * 0.5 ) * tileLimit, tileLimit ) + q2.xy;
 	
-	vec4 colora0 = texture2D( u_texture, stuff0.xy );
-	vec4 colora1 = texture2D( u_texture, stuff1.xy );
-	vec4 colora2 = texture2D( u_texture, stuff2.xy );
-	vec4 colora3 = texture2D( u_texture, stuff3.xy );
+	vec4 colsTest[4];
+	colsTest[0] = texture2D( u_texture, stuff0.xy );
+	colsTest[1] = texture2D( u_texture, stuff1.xy );
+	colsTest[2] = texture2D( u_texture, stuff2.xy );
+	colsTest[3] = texture2D( u_texture, stuff3.xy );
 	
-	DiffuseColor = colora0;
+	float test = rand( pos );
+	
+	float numAdded = 0;
+	for( int i = 0; i < 4; ++i )
+	{
+		if( colsTest[i].a != 0 )
+		{
+			if( DiffuseColor.a == 0 )
+			{
+				DiffuseColor = colsTest[i];
+				numAdded = numAdded + 1.0;
+			}
+			else
+			{
+				if( brightness( DiffuseColor ) < brightness( colsTest[i] ) )
+				{
+					DiffuseColor = colsTest[i];
+				}
+				//DiffuseColor = DiffuseColor + colsTest[i];
+				numAdded = numAdded + 1.0;
+			}
+		}
+	}
+	
+	//DiffuseColor.rgb = DiffuseColor.rgb / vec3( numAdded );
+	
+	test = test * 4;
+	int index = int(floor( test ));
+	
+	//DiffuseColor = colsTest[index];
+	
+	/*DiffuseColor = colora0;
 	if( DiffuseColor.a == 0 )
 	{
 		DiffuseColor = colora1;
@@ -91,7 +129,7 @@ void main()
 	if( DiffuseColor.a == 0 )
 	{
 		DiffuseColor = colora3;
-	}
+	}*/
 	
 	DiffuseColor.a = DiffuseColor.a * .5;
 	
