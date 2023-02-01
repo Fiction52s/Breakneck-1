@@ -1402,6 +1402,8 @@ bool IsKeyValidForInput(int key)
 
 AllControllers::AllControllers()
 {
+	isKeyboardActive = true;
+
 	windowsControllers.resize(4);
 	gcControllers.resize(4);
 	rawGCControllers.reserve(4);
@@ -1489,8 +1491,11 @@ void AllControllers::Update()
 	prevKeyboard = currKeyboard;
 	currKeyboard.Update(window);
 
-	keyboardController->UpdateState();
-	keyboardStates->AddInput(keyboardController->GetState());
+	if (isKeyboardActive)
+	{
+		keyboardController->UpdateState();
+		keyboardStates->AddInput(keyboardController->GetState());
+	}
 }
 
 GameController * AllControllers::GetGCController(int index)
@@ -1578,6 +1583,11 @@ void AllControllers::CheckForControllers()
 		delete gccDriver;
 		gccDriver = NULL;
 	}
+}
+
+void AllControllers::SetKeyboardActiveAsController(bool keyActive)
+{
+	isKeyboardActive = keyActive;
 }
 
 void AllControllers::SetRenderWindow(sf::RenderWindow *rw)

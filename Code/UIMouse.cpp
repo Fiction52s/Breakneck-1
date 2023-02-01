@@ -23,6 +23,8 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 	bool mouseDownL = Mouse::isButtonPressed(Mouse::Left);
 	bool mouseDownR = Mouse::isButtonPressed(Mouse::Right);
 
+	cout << "mouse: " << (int)mouseDownL << endl;
+
 	bool cursorOn = customCursor == NULL || customCursor->visible;
 
 	if (cursorOn)

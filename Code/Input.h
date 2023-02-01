@@ -295,6 +295,7 @@ struct AllControllers
 	void Update();
 	void CheckForControllers();
 	void SetRenderWindow(sf::RenderWindow *rw);
+	void SetKeyboardActiveAsController(bool keyActive);
 
 
 
@@ -326,7 +327,7 @@ private:
 		bool left, bool right, bool up, bool down, 
 		bool oldLeft, bool oldRight, bool oldUp, bool oldDown);
 
-	
+	bool isKeyboardActive;
 	int menuKeyboardMap[XBOX_BLANK];
 
 	KeyboardState prevKeyboard;

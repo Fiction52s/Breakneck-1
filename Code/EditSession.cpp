@@ -4324,6 +4324,7 @@ int EditSession::EditRun()
 
 int EditSession::Run()
 {
+	CONTROLLERS.SetKeyboardActiveAsController(false);
 	soundNodeList->SetSoundVolume(mainMenu->config->GetData().soundVolume);
 	int result;
 	while( true )
@@ -4345,6 +4346,8 @@ int EditSession::Run()
 	soundNodeList->Reset();
 
 	StopCurrentMusic();
+
+	CONTROLLERS.SetKeyboardActiveAsController(true);
 	//StopMusic(originalMusic);
 	//StopMusic(previewMusic);
 
