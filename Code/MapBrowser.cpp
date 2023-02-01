@@ -621,15 +621,20 @@ void MapBrowser::AddFile(const path &p_filePath)
 	mapNode->myBrowser = this;
 	mapNode->filePath = p_filePath;
 	mapNode->type = MapNode::FILE;
-	string pathStr = p_filePath.string();
-	auto d = pathStr.find(".");
-	string middleTest = pathStr.substr(0, d);
-	string previewPath = middleTest + ".png";
-	mapNode->ts_preview = GetTileset(previewPath);
+	
 	mapNode->fileName = mapNode->filePath.filename().stem().string();
 	mapNode->nodeName = mapNode->fileName;//mapNode->filePath.filename().stem().string();
 
-	mapNode->UpdateHeaderInfo();
+	if (ext == MAP_EXT)
+	{
+		string pathStr = p_filePath.string();
+		auto d = pathStr.find(".");
+		string middleTest = pathStr.substr(0, d);
+		string previewPath = middleTest + ".png";
+		mapNode->ts_preview = GetTileset(previewPath);
+
+		mapNode->UpdateHeaderInfo();
+	}
 
 	if (CheckFilters(mapNode))
 	{
@@ -1573,30 +1578,32 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 	if (!showPreview)
 		return;
 	
-	
 	//ts_largePreview = cr->GetAsImageChooseRect()->ts;
 	
 	MapNode *mn = (MapNode*)cr->info;
 
 	focusedRect = cr->GetAsImageChooseRect();
 
-	ts_largePreview = mn->ts_preview;//cr->GetAsImageChooseRect()->ts;
+	ts_largePreview = mn->ts_preview;
 
-	mn->UpdateHeaderInfo();
-
-	fullNameText.setString(mn->fullMapName);
-	descriptionText.setString(mn->description);
-
-	if (mn->isWorkshop)
+	if (chooser->ext == MAP_EXT)
 	{
-		//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
-		creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mn->creatorId));
-		creatorLink->SetString(mn->creatorName);
-		creatorLink->ShowMember();
-	}
-	else
-	{
-		creatorLink->HideMember();
+		mn->UpdateHeaderInfo();
+
+		fullNameText.setString(mn->fullMapName);
+		descriptionText.setString(mn->description);
+
+		if (mn->isWorkshop)
+		{
+			//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
+			creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mn->creatorId));
+			creatorLink->SetString(mn->creatorName);
+			creatorLink->ShowMember();
+		}
+		else
+		{
+			creatorLink->HideMember();
+		}
 	}
 }
 

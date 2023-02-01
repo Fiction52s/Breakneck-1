@@ -77,7 +77,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		}
 		case EDIT_ADVENTURE:
 		{
-			edit->mapBrowserHandler->chooser->StartRelative(ADVENTURE_EXT, MapBrowser::OPEN, "");
+			edit->mapBrowserHandler->chooser->StartRelative(ADVENTURE_EXT, MapBrowser::EDITOR_OPEN, "Resources/Adventure");
 			//edit->fileChooser->chooser->StartRelative(ADVENTURE_EXT, FileChooser::OPEN, "");
 			break;
 		}
