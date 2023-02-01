@@ -77,6 +77,7 @@
 #include "MatchStats.h"
 #include "CustomCursor.h"
 #include "AdventureManager.h"
+#include "globals.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -483,7 +484,7 @@ std::string GameSession::GetBestReplayPath()
 
 GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonusType )
 {
-	boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
+	boost::filesystem::path p("Resources/Maps/" + bonusName + MAP_EXT);
 	
 	MatchParams mp;
 	mp.saveFile = saveFile;
@@ -1802,7 +1803,7 @@ bool GameSession::Load()
 	{
 
 		//this is a temporary test. create a bonus whenever you have a parent level
-		/*boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
+		/*boost::filesystem::path p("Resources/Maps//W2//gateblank9.kinmap");
 		bonusGame = new GameSession(saveFile, p);
 		bonusGame->SetParentGame(this);
 		bonusGame->Load();

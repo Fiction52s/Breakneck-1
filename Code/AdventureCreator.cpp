@@ -3,6 +3,7 @@
 #include <iostream>
 #include "EditSession.h"
 #include "UIMouse.h"
+#include "globals.h"
 
 using namespace sf;
 using namespace std;
@@ -105,7 +106,7 @@ void AdventureCreator::Cancel()
 void AdventureCreator::Open()
 {
 	state = BROWSE;
-	chooser->StartRelative( ".brknk", FileChooser::Mode::OPEN, "Resources\\Maps");
+	chooser->StartRelative(MAP_EXT, FileChooser::Mode::OPEN, "Resources\\Maps");
 
 	CollapseWorlds();
 	currWorld = 1;
@@ -139,7 +140,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 					{
 						name = adventure->worlds[w].sectors[s].maps[m].name;
 						file = sectorStr + name;
-						adventureNodes[ind].filePath = file + ".brknk";
+						adventureNodes[ind].filePath = file + MAP_EXT;
 						adventureNodes[ind].ts_preview = chooser->GetTileset(file + ".png");
 						adventureNodes[ind].index = ind;
 					}
@@ -166,7 +167,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 					{
 						filePath = am->path + "\\" + am->name;
 						adventureNodes[ind].filePath = 
-							localDir + filePath + ".brknk";
+							localDir + filePath + MAP_EXT;
 						adventureNodes[ind].ts_preview = 
 							chooser->GetTileset(filePath + ".png");
 						adventureNodes[ind].index = ind;
@@ -230,7 +231,7 @@ void AdventureCreator::SaveAdventure(const std::string &p_path,
 						= currentNode->filePath.stem().string();
 					if (currentNode->ts_preview != NULL)
 					{
-						boost::filesystem::copy_file(currentNode->filePath, sectorStr + "/" + fileName + ".brknk");
+						boost::filesystem::copy_file(currentNode->filePath, sectorStr + "/" + fileName + MAP_EXT);
 
 						imagePath = currentNode->filePath.parent_path().string() + "/" + fileName + ".png";
 						boost::filesystem::copy_file(imagePath, sectorStr + "/" + fileName + ".png");

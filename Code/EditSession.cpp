@@ -64,6 +64,7 @@
 #include "UIController.h"
 #include "CustomCursor.h"
 #include "AdventureManager.h"
+#include "globals.h"
 
 //#define GGPO_ON
 
@@ -2861,7 +2862,11 @@ bool EditSession::WriteFile()
 	of.close();
 
 	string from = tempMap;
-	string to = filePath.string();
+
+	stringstream fixExt;
+	fixExt << filePath.parent_path().string() << "\\" << filePath.stem().string() << ".kinmap";
+
+	string to = fixExt.str();//filePath.string();
 	boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
 	boost::filesystem::remove(from);
 
@@ -4371,7 +4376,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				mapHeader->drainSeconds = d;
 
 				string pathStr = newMapPanel->labels["pathlabel"]->text.getString().toAnsiString()
-					+ "\\" + mapName + ".brknk";
+					+ "\\" + mapName + MAP_EXT;
 				filePathStr = pathStr;
 				filePath = pathStr;
 
@@ -4848,9 +4853,9 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 		adventureCreator->LoadAdventure(fc->currPath.string(), fileName);
 		adventureCreator->Open();
 	}
-	else if (fc->ext == ".brknk")
+	else if (fc->ext == MAP_EXT)
 	{
-		Reload(fc->currPath.string() + "\\" + fileName + ".brknk");
+		Reload(fc->currPath.string() + "\\" + fileName + MAP_EXT);
 	}
 }
 
@@ -4864,10 +4869,10 @@ void EditSession::ChooseFileSave(FileChooser *fc,
 
 		createTerrainModeUI->UpdateBrushHotbar();
 	}
-	else if (fc->ext == ".brknk")
+	else if (fc->ext == MAP_EXT)
 	{
 		//folderPath = ;
-		string fp = fc->currPath.string() + "\\" + fileName + ".brknk";
+		string fp = fc->currPath.string() + "\\" + fileName + MAP_EXT;
 		
 		filePath = fp;
 		filePathStr = fp;
@@ -12999,12 +13004,12 @@ void EditSession::GeneralMouseUpdate()
 
 void EditSession::SaveMapDialog()
 {
-	fileChooser->chooser->StartRelative(".brknk", FileChooser::SAVE, "Resources\\Maps\\CustomMaps");
+	fileChooser->chooser->StartRelative(MAP_EXT, FileChooser::SAVE, "Resources\\Maps\\CustomMaps");
 }
 
 void EditSession::OpenMapDialog()
 {
-	fileChooser->chooser->StartRelative(".brknk", FileChooser::OPEN, "Resources\\Maps\\CustomMaps");
+	fileChooser->chooser->StartRelative(MAP_EXT, FileChooser::OPEN, "Resources\\Maps\\CustomMaps");
 }
 
 void EditSession::TryReloadNew()

@@ -6,6 +6,7 @@
 #include "LobbyManager.h"
 #include "md5.h"
 #include "UIController.h"
+#include "globals.h"
 //#include "steam/steam_api.h"
 
 using namespace std;
@@ -326,7 +327,7 @@ void MapNode::UpdateInstallInfo()
 		uint32 timestamp;
 		cout << SteamUGC()->GetItemInstallInfo(publishedFileId, &fileSize, path, 1024, &timestamp);
 
-		filePath = string(path) + "\\" + fileName + ".brknk";
+		filePath = string(path) + "\\" + fileName + MAP_EXT;
 		folderPath = path;
 	}
 }
@@ -413,7 +414,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	handler->chooser = this;
 	TilesetManager::SetGameResourcesMode(false); //allows tilesets to be outside
 												 //of the resources folder
-	ext = ".brknk";
+	ext = MAP_EXT;
 
 	action = A_IDLE;
 
@@ -1330,7 +1331,7 @@ void MapBrowserHandler::TabGroupCallback(TabGroup *tg, const std::string &e)
 	//need to revisit the whole Create_Custom_Game thing eventually
 	if (tg->currTabIndex == 0)
 	{
-		chooser->StartRelative(".brknk", MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
+		chooser->StartRelative(MAP_EXT, MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
 	}
 	else if (tg->currTabIndex == 1)
 	{

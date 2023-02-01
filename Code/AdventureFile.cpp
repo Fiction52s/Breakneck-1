@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include "MapHeader.h"
+#include "globals.h"
 
 using namespace std;
 
@@ -91,7 +92,7 @@ string AdventureMap::GetFilePath()
 
 std::string AdventureMap::GetMapPath()
 {
-	return "Resources\\" + GetFilePath() + ".brknk";
+	return "Resources\\" + GetFilePath() + MAP_EXT;
 }
 
 bool AdventureMap::Exists()
@@ -107,11 +108,11 @@ bool AdventureMap::LoadHeaderInfo()
 
 	if (path == "")
 	{
-		is.open( "Resources\\" + name + ".brknk");
+		is.open( "Resources\\" + name + MAP_EXT);
 	}
 	else
 	{
-		is.open( "Resources\\" + path + "\\" + name + ".brknk");
+		is.open( "Resources\\" + path + "\\" + name + MAP_EXT);
 	}
 
 	if (is.is_open())

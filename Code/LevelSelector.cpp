@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <time.h>
 #include "CustomMapClient.h"
+#include "globals.h"
 
 using namespace boost::filesystem;
 using namespace std;
@@ -113,7 +114,7 @@ void LevelSelector::UpdateMapList()
 				ftp.download( (*it),"Maps/Downloads", sf::Ftp::Ascii); 
 			}
 		}
-		//ftp.download("map online.brknk", "Maps/Downloads", sf::Ftp::Ascii);
+		//ftp.download("map online.kinmap", "Maps/Downloads", sf::Ftp::Ascii);
 
 		ftp.disconnect();
 	}
@@ -129,7 +130,7 @@ void LevelSelector::UpdateMapList()
 	}*/
 
 	//std::string path = "Maps/";
-	//std::string file = "gateblank9.brknk";
+	//std::string file = "gateblank9.kinmap";
 	//bool goodDownload = levelServer.DownloadFile( path, file );
 
    
@@ -441,7 +442,7 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 		{
 			if (is_regular_file(p))        // is p a regular file?   
 			{
-				if( p.extension().string() == ".brknk" )
+				if( p.extension().string() == MAP_EXT)
 				{
 					//string name = p.filename().string();
 					parentNode->files.push_back( p );//name.substr( 0, name.size() - 6 ) );
@@ -456,7 +457,7 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					//back on when I need to use the functionality.
 
 					//string mapPath = "Resources/Maps/" + pathFolder + "/" + p.filename().string();
-					//allMapPaths.push_back(mapPath);
+					allMapPaths.push_back(p.string());
 				}
 			}
 			else if (is_directory(p))      // is p a directory?
@@ -616,16 +617,18 @@ void LevelSelector::BackupAllMapsAndPreviews()
 
 	string destStr = ss.str();
 
-	copyDirectoryRecursively("Resources/Maps", destStr);
+	//some bug in here dont care rn
+	//copyDirectoryRecursively("Resources/Maps", destStr);
 }
 
 void LevelSelector::LoadAndRewriteAllMaps()
 {
 	BackupAllMapsAndPreviews();
 
+	cout << "starting the full resave" << endl;
 	for (auto it = allMapPaths.begin(); it != allMapPaths.end(); ++it)
 	{
-		cout << (*it) << endl;
+		cout << "map: " << (*it) << endl;
 		mainMenu->LoadAndResaveMap((*it));
 	}
 }

@@ -3,6 +3,7 @@
 #include "MainMenu.h"
 #include "MapBrowser.h"
 #include "WorkshopMapPopup.h"
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -26,7 +27,7 @@ MapBrowserScreen::~MapBrowserScreen()
 
 void MapBrowserScreen::StartLocalBrowsing()
 {
-	browserHandler->chooser->StartRelative(".brknk", MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
+	browserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
 	browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
 	browserHandler->ClearFocus();

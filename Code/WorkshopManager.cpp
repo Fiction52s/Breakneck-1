@@ -7,6 +7,7 @@
 #include "MapPostPublishPopup.h"
 #include "MapPublishFailurePopup.h"
 #include "MapPublishLoadingPopup.h"
+#include "globals.h"
 
 using namespace std;
 
@@ -260,8 +261,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 						uint32 timestamp;
 						cout << SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &fileSize, path, 1024, &timestamp);
 
-						//newNode->filePath = string(path) + "\\" + newNode->nodeName + ".brknk";
-						newNode->filePath = string(path) + "\\" + newNode->fileName + ".brknk";
+						newNode->filePath = string(path) + "\\" + newNode->fileName + MAP_EXT;
 						newNode->folderPath = path;
 					}
 					
@@ -482,7 +482,7 @@ void WorkshopUploader::TryUpdateItem( bool agreementSigned, PublishedFileId_t up
 		+ "\\" + edit->filePath.stem().string() + ".png";
 
 
-	boost::filesystem::path uploadFilePath = uploadFolder.string() + "\\" + mapName + ".brknk";
+	boost::filesystem::path uploadFilePath = uploadFolder.string() + "\\" + mapName + MAP_EXT;
 
 	//eventually these need to be in try-catches because they can force the function to return
 	//early

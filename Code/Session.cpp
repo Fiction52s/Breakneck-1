@@ -8024,7 +8024,7 @@ void Session::RecPlayerRecordFrame()
 
 bool Session::IsMapVersionNewerThanOrEqualTo(int ver1, int ver2)
 {
-	return (mapHeader->ver1 >= ver1 && mapHeader->ver2 >= ver2);
+	return (mapHeader->ver1 > ver1 || ( mapHeader->ver1 == ver1 && mapHeader->ver2 >= ver2));
 }
 
 AdventureHUD *Session::GetAdventureHUD()

@@ -6,6 +6,7 @@
 #include "MapBrowser.h"
 #include "SavePopup.h"
 #include "UIController.h"
+#include "globals.h"
 
 using namespace sf;
 using namespace std;
@@ -188,7 +189,7 @@ void WorkshopBrowser::Update()
 				MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 
 				string copyLocation = savePopup->browserHandler->chooser->currPath.string() + "\\" + fileNameStr;
-				string mapCopy = copyLocation + ".brknk";
+				string mapCopy = copyLocation + MAP_EXT;
 				string previewCopy = copyLocation + ".png";
 
 				string filePath = mp->filePath.string();

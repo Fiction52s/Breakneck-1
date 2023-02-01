@@ -3,6 +3,7 @@
 #include "MapBrowser.h"
 #include "SavePopup.h"
 #include <boost/filesystem.hpp>
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -31,7 +32,7 @@ bool SavePopup::Activate(const std::string &activationPath, const std::string &d
 {
 	action = A_ACTIVE;
 	browserHandler->chooser->panel->SetCenterPos(Vector2i(960, 540));
-	browserHandler->chooser->StartRelative(".brknk", MapBrowser::SAVE, activationPath);//"Resources\\Maps\\WorkshopDownloads");
+	browserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::SAVE, activationPath);//"Resources\\Maps\\WorkshopDownloads");
 	browserHandler->chooser->panel->tabGroups["tabs"]->HideMember();
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
 
@@ -88,7 +89,7 @@ void SavePopup::Update()
 		else if (browserHandler->chooser->action == MapBrowser::Action::A_CONFIRMED)
 		{
 			string fileName = browserHandler->chooser->fileNameTextBox->GetString();
-			fileName += ".brknk";
+			fileName += MAP_EXT;
 
 			
 			path filePath = browserHandler->chooser->currPath.string() + "\\" + fileName;

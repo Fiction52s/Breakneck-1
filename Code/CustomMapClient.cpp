@@ -18,6 +18,7 @@
 
 #include <aws/cognito-identity/model/GetIdRequest.h>
 #include <aws/cognito-identity/model/GetCredentialsForIdentityRequest.h>
+#include "globals.h"
 
 using namespace std;
 using namespace Aws;
@@ -37,7 +38,7 @@ void CustomMapEntry::Set(const json &j)
 
 std::string CustomMapEntry::GetMapFileName()
 {
-	return string(name + ".brknk");
+	return string(name + MAP_EXT);
 }
 
 std::string CustomMapEntry::CreateKey()
@@ -588,7 +589,7 @@ void S3Interface::DownloadObject(const Aws::String &downloadPath, const Aws::Str
 
 	Aws::S3::Model::GetObjectRequest getReq;
 	getReq.WithBucket(bucketName.c_str());
-	getReq.WithKey(key);//"gateblank9.brknk");
+	getReq.WithKey(key);
 	getReq.SetResponseStreamFactory([]() {return Aws::New<Aws::FStream>("mapfstream", downloadDest.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary); });
 
 	auto outcome = s3Client->GetObject(getReq);

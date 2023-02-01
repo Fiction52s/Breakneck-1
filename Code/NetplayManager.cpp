@@ -11,6 +11,7 @@
 #include <fstream>
 #include "MapBrowser.h" //for MapNode
 #include "MainMenu.h"
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -91,8 +92,6 @@ NetplayManager::NetplayManager()
 
 	numPlayers = -1;
 
-	//choose this in a separate function soon
-	//matchParams.mapPath = "Resources/Maps/W2/afighting1.brknk";
 	matchParams.netplayManager = this;
 }
 
@@ -415,7 +414,7 @@ void NetplayManager::CheckForMapAndSetMatchParams()
 					{
 						if (boost::filesystem::is_regular_file((*it)))
 						{
-							if ((*it).extension().string() == ".brknk")
+							if ((*it).extension().string() == MAP_EXT)
 							{
 								cout << "found file in folder: " << (*it).stem().string() << endl;
 								if ((*it).filename().string() == mapFile)
@@ -523,23 +522,13 @@ void NetplayManager::Update()
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
 			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
 
-			/*int r = rand() % 2;
-			if (r == 0)
-			{
-				lp.mapPath = "Resources/Maps/W2/afighting1.brknk";
-			}
-			else
-			{
-				lp.mapPath = "Resources/Maps/W2/afighting2.brknk";
-			}*/
-
 			// set the name of the lobby if it's ours
 			string lobbyName = SteamFriends()->GetPersonaName();
 			lobbyName += "'s lobby";
 
 			ld.lobbyName = lobbyName;
 
-			ld.mapPath = "Resources/Maps/W2/afighting6.brknk";
+			ld.mapPath = "Resources/Maps/W2/afighting6" + string(MAP_EXT);
 
 			ld.fileHash = md5file(ld.mapPath);
 			ld.creatorId = 0;
@@ -938,7 +927,7 @@ void NetplayManager::BroadcastMapDetailsToLobby()
 	assert(IsHost());
 
 	LobbyMessage msg;
-	msg.mapPath = "Resources/Maps/W2/afighting1.brknk";//matchParams.mapPath.string();//
+	msg.mapPath = "Resources/Maps/W2/afighting1" + string(MAP_EXT);
 	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_SHARE_MAP_DETAILS;
 
 	uint8 *buffer = NULL;
@@ -1255,7 +1244,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		playerIndex = 0;
 
-		matchParams.mapPath = "Resources/Maps/W2/afighting6.brknk";
+		matchParams.mapPath = "Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
 		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;
 

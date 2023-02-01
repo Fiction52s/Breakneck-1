@@ -45,8 +45,6 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else if (b->name == "Delete")
 		{
-			//std::stringstream SSr;
-			//SSr << ls.GetSelectedPath() << ls.GetSelectedName() << ".brknk";
 			boost::filesystem::remove(ls.GetSelectedPath());
 			ls.UpdateMapList();
 		}

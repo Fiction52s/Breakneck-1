@@ -59,6 +59,7 @@
 #include "LobbyBrowser.h"
 #include "SinglePlayerControllerJoinScreen.h"
 #include "GameSettingsScreen.h"
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -1262,7 +1263,7 @@ void MainMenu::CustomMapsOption()
 
 	ls.UpdateMapList();
 
-	//ls.LoadAndRewriteAllMaps();
+	ls.LoadAndRewriteAllMaps();
 
 	//empty map. fix this later
 	string empty = "5\n0 0\nmat\n5\n-209 78\n286 78\n286 132\n60 132\n-201 132\n0\n0\n0\n1\n-- 1\ngoal -air 0 0 76";
@@ -1447,7 +1448,7 @@ void MainMenu::CustomMapsOption()
 
 void MainMenu::GGPOOption()
 {
-	EditSession *edit = new EditSession(this, "Resources\\Maps\\W2\\gateblank91.brknk");
+	EditSession *edit = new EditSession(this, "Resources\\Maps\\W2\\gateblank91" + string(MAP_EXT));
 	edit->Run();
 	delete edit;
 }
@@ -1460,6 +1461,11 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 		CTYPE_PS5,
 		CTYPE_KEYBOARD,
 		CTYPE_NONE,*/
+
+	if (profile == NULL)
+	{
+		return IntRect();
+	}
 
 	int buttonIndex = 0;
 
@@ -1600,10 +1606,10 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 
 			if (ls.text[ls.selectedIndex].getFillColor() == Color::Red)
 			{
-				path from("Resources/Maps/empty.brknk");
+				path from("Resources/Maps/empty" + string(MAP_EXT));
 
 				std::stringstream ssPath;
-				ssPath << ls.localPaths[ls.selectedIndex] << ls.newLevelName << ".brknk";
+				ssPath << ls.localPaths[ls.selectedIndex] << ls.newLevelName << MAP_EXT;
 				string toString = ssPath.str();
 				path to(toString);
 
@@ -1628,7 +1634,7 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 				TreeNode * toNode = ls.dirNode[ls.selectedIndex];
 
 				std::stringstream ssPath;
-				ssPath << "Resources/" << toNode->GetLocalPath() << ls.newLevelName << ".brknk";
+				ssPath << "Resources/" << toNode->GetLocalPath() << ls.newLevelName << MAP_EXT;
 				string toString = ssPath.str();
 
 				path to(toString);
@@ -2606,7 +2612,7 @@ void MainMenu::HandleMenuMode()
 			if (adventureManager->saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
 			{
 				MatchParams mp;
-				mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
+				mp.mapPath = "Resources/Maps/Beta3/tut1" + string(MAP_EXT);
 				//mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
 				//fix this soon!
 				mp.randSeed = time(0);
@@ -3130,7 +3136,7 @@ void MainMenu::HandleMenuMode()
 		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
 		{
 			MatchParams mp;
-			mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
+			mp.mapPath = "Resources/Maps/Beta3/tut1" + string(MAP_EXT);
 			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
 			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
 			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
@@ -3211,7 +3217,7 @@ void MainMenu::HandleMenuMode()
 			/*MatchParams mp;
 			mp.netplayManager = netplayManager;
 			mp.numPlayers = 2;
-			mp.filePath = "Resources/Maps/W2/afighting1.brknk";
+			mp.filePath = "Resources/Maps/W2/afighting1.kinmap";
 			netplayManager->RunMatch(&mp);*/
 		}
 		else if (!fader->IsFading())
@@ -3492,7 +3498,7 @@ void MainMenu::TitleMenuModeUpdate()
 			else
 			{
 				//titleMusic.stop();
-				//GameEditLoop2( "Maps/aba.brknk" );
+				//GameEditLoop2( "Maps/aba.kinmap" );
 				//window->setView( v );
 				//titleMusic.play();
 			}

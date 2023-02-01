@@ -307,6 +307,11 @@ bool MapHeader::Load(std::ifstream &is)
 		int oldGameMode;
 		is >> oldGameMode;
 
+		if ((ver1 == 2 && ver2 <=1) || ver1 < 2 )
+		{
+			oldGameMode = MatchParams::GAME_MODE_BASIC;
+		}
+
 		switch (oldGameMode)
 		{
 		case MatchParams::GAME_MODE_BASIC:
@@ -365,7 +370,7 @@ bool MapHeader::Load(std::ifstream &is)
 	is >> bossFightType;
 	is >> numVertices;
 
-	if (ver1 >= 2 && ver2 >= 2)
+	if (ver1 > 2 || ( ver1 ==2 && ver2 >= 2))
 	{
 		is >> preLevelSceneName;
 		is >> postLevelSceneName;

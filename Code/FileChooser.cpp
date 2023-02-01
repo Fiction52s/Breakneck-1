@@ -2,6 +2,7 @@
 #include "VectorMath.h"
 #include <iostream>
 #include "EditSession.h"
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -19,7 +20,7 @@ FileChooser::FileChooser( FileChooserHandler *p_handler,
 	handler->chooser = this;
 	TilesetManager::SetGameResourcesMode(false); //allows tilesets to be outside
 	//of the resources folder
-	ext = ".brknk";
+	ext = MAP_EXT;
 
 	edit = EditSession::GetSession();
 
