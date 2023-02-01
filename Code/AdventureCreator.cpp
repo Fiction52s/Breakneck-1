@@ -10,16 +10,13 @@ using namespace std;
 using namespace boost::filesystem;
 
 AdventureCreator::AdventureCreator()
-	:FileChooserHandler( 3, 4, EXTRA_RECTS )
+	:MapBrowserHandler(3, 4, true, EXTRA_RECTS)
 {
 	adventure = new AdventureFile;
 
-
 	musicListHandler = new MusicChooserHandler(10);
 
-	ts_largePreview = NULL;
 	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
-	
 
 	Panel *panel = chooser->panel;
 
@@ -32,9 +29,12 @@ AdventureCreator::AdventureCreator()
 	Vector2f startMapPos(rightSideStart, 385 - 20);
 	Vector2f startMusicPos(startMapPos.x, startMapPos.y + 130);
 
-	Tileset *ts_worldChoosers = chooser->edit->GetSizedTileset("Editor/worldselector_64x64.png");
+	//EditSession *edit = EditSession::GetSession();
+	//assert(edit != NULL);
 
-	ts_sectorIcons = chooser->edit->GetSizedTileset("Editor/sectoricons_64x64.png");
+	Tileset *ts_worldChoosers = chooser->GetSizedTileset("Editor/worldselector_64x64.png");
+
+	ts_sectorIcons = chooser->GetSizedTileset("Editor/sectoricons_64x64.png");
 
 	currWorldRect = panel->AddImageRect(ChooseRect::I_ADVENTURECREATOR_WORLD_SEARCH,
 		startWorldPos, ts_worldChoosers, 1, 100);
@@ -97,16 +97,10 @@ AdventureCreator::~AdventureCreator()
 	delete musicListHandler;
 }
 
-
-void AdventureCreator::Cancel()
-{
-	chooser->TurnOff();
-}
-
 void AdventureCreator::Open()
 {
-	state = BROWSE;
-	chooser->StartRelative(MAP_EXT, FileChooser::Mode::OPEN, "Resources\\Maps");
+	action = BROWSE;
+	chooser->StartRelative(MAP_EXT, MapBrowser::Mode::EDITOR_OPEN, "Resources\\Maps");
 
 	CollapseWorlds();
 	currWorld = 1;
@@ -182,10 +176,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 void AdventureCreator::SaveAdventure(const std::string &p_path, 
 	const std::string &adventureName, AdventureFile::CopyMode copyMode )
 {
-	
-
-	FileNode *currentNode;
-	
+	MapNode *currentNode;	
 	
 	if (copyMode == AdventureFile::COPY)
 	{
@@ -296,11 +287,11 @@ bool AdventureCreator::MouseUpdate()
 {
 	if (MOUSE.IsMouseLeftReleased())
 	{
-		state = BROWSE;
+		action = BROWSE;
 		grabbedFile = NULL;
 	}
 
-	if (state == DRAG)
+	if (action == DRAG)
 	{
 		SetRectCenter(grabbedFileQuad, grabbedFile->ts_preview->tileWidth / 8,
 			grabbedFile->ts_preview->tileHeight / 8, Vector2f(chooser->panel->GetMousePos()));
@@ -310,46 +301,28 @@ bool AdventureCreator::MouseUpdate()
 
 void AdventureCreator::ClickFile(ChooseRect *cr)
 {
-	FileNode *fn = (FileNode*)cr->info;
+	MapNode *mn = (MapNode*)cr->info;
 	
-	if (fn->ts_preview != NULL)
+	if (mn->ts_preview != NULL)
 	{
-		grabbedFile = fn;
-		fn->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
-		state = DRAG;
-	}
-	//grabbedFileSpr.setTexture( )
-}
-
-void AdventureCreator::FocusFile(ChooseRect *cr)
-{
-	ts_largePreview = cr->GetAsImageChooseRect()->ts;
-}
-
-void AdventureCreator::UnfocusFile(ChooseRect *cr)
-{
-	ts_largePreview = NULL;
-}
-
-void AdventureCreator::Draw(sf::RenderTarget *target)
-{
-	if (ts_largePreview)
-	{
-		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
+		grabbedFile = mn;
+		mn->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
+		action = DRAG;
 	}
 }
+
+//void AdventureCreator::FocusFile(ChooseRect *cr)
+//{
+//	ts_largePreview = cr->GetAsImageChooseRect()->ts;
+//}
+
 
 void AdventureCreator::LateDraw(sf::RenderTarget *target)
 {
-	if (state == DRAG)
+	if (action == DRAG)
 	{
 		target->draw(grabbedFileQuad, 4, sf::Quads, grabbedFile->ts_preview->texture);
 	}
-}
-
-void AdventureCreator::ChangePath()
-{
-	ts_largePreview = NULL;
 }
 
 void AdventureCreator::ExpandWorlds()
@@ -369,7 +342,7 @@ void AdventureCreator::CollapseWorlds()
 	worldsExpanded = false;
 }
 
-void AdventureCreator::SetRectNode(ChooseRect *cr, FileNode *fn)
+void AdventureCreator::SetRectNode(ChooseRect *cr, MapNode *fn)
 {
 	ImageChooseRect *icRect = cr->GetAsImageChooseRect();
 	icRect->SetInfo(fn);
@@ -432,7 +405,7 @@ void AdventureCreator::ChooseSector(int s)
 	//update maps
 }
 
-FileNode * AdventureCreator::GetCurrNode(int m)
+MapNode * AdventureCreator::GetCurrNode(int m)
 {
 	return &(adventureNodes[GetNodeStart() + m]);
 }
@@ -441,7 +414,7 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	if (cr->rectIdentity == ChooseRect::I_FILESELECT)
 	{
-		FileChooserHandler::ChooseRectEvent(cr, eventType);
+		MapBrowserHandler::ChooseRectEvent(cr, eventType);
 	}
 	else if (cr->rectIdentity == ChooseRect::I_ADVENTURECREATOR_WORLD_SEARCH)
 	{
@@ -455,7 +428,6 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 			{
 				ExpandWorlds();
 			}
-			
 		}
 	}
 	else if (cr->rectIdentity == ChooseRect::I_ADVENTURECREATOR_WORLD)
@@ -476,7 +448,7 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 		{
 			ChooseSector((int)cr->info);
 		}
-		else if (state == DRAG && eventType == ChooseRect::ChooseRectEventType::E_FOCUSED )
+		else if (action == DRAG && eventType == ChooseRect::ChooseRectEventType::E_FOCUSED )
 		{
 			ChooseSector((int)cr->info);
 		}
@@ -486,33 +458,35 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 	{
 		if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
 		{
-			ts_largePreview = cr->GetAsImageChooseRect()->ts;
+			FocusFile( cr );
+			//ts_largePreview = cr->GetAsImageChooseRect()->ts;
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_UNFOCUSED)
 		{
-			ts_largePreview = NULL;
+			ClearFocus();
+			//ts_largePreview = NULL;
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
 		{
-			FileNode *fn = (FileNode*)cr->info;
+			MapNode *mn = (MapNode*)cr->info;
 
-			if (fn->ts_preview != NULL)
+			if (mn->ts_preview != NULL)
 			{
-				tempGrabbedFile = *fn;
+				tempGrabbedFile.Copy(mn);
 
 				grabbedFile = &tempGrabbedFile;
 				grabbedFile->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
-				state = DRAG;
+				action = DRAG;
 
-				fn->ts_preview = NULL;
-				fn->filePath = "";
+				mn->ts_preview = NULL;
+				mn->filePath = "";
 
-				SetRectNode(cr, fn);
+				SetRectNode(cr, mn);
 			}
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTRELEASED)
 		{
-			if (state == DRAG )
+			if (action == DRAG )
 			{
 				int mapIndex = -1;
 				for (int i = 0; i < 8; ++i)
@@ -526,7 +500,7 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				assert(mapIndex >= 0);
 
-				FileNode *currNode = GetCurrNode(mapIndex);
+				MapNode *currNode = GetCurrNode(mapIndex);
 
 				currNode->ts_preview = grabbedFile->ts_preview;
 				currNode->filePath = grabbedFile->filePath;
@@ -537,10 +511,13 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_RIGHTCLICKED)
 		{
-			FileNode *fn = (FileNode*)cr->info;
+			MapNode *fn = (MapNode*)cr->info;
+
+			EditSession *edit = EditSession::GetSession();
+			assert(edit != NULL);
 
 			chooser->TurnOff();
-			chooser->edit->Reload(fn->filePath);
+			edit->Reload(fn->filePath);
 		}
 	}
 	else if (cr->rectIdentity == ChooseRect::I_MUSICLEVEL)
@@ -554,7 +531,7 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTRELEASED)
 		{
-			if (state == DRAG)
+			if (action == DRAG)
 			{
 				//cr->SetName(grabbedString);
 				//chooser->ResetSlider(grabbedString);

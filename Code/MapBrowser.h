@@ -84,6 +84,7 @@ struct MapNode
 		bool bIOFailure);
 	void ClearPreview();
 	void UpdateHeaderInfo();
+	void Copy(MapNode *mn);
 
 	void OnSubscribe(RemoteStorageSubscribePublishedFileResult_t *callback, bool bIOFailure);
 	void OnUnsubscribe(RemoteStorageUnsubscribePublishedFileResult_t *callback, bool bIOFailure);
@@ -97,29 +98,32 @@ struct MapBrowserHandler : GUIHandler
 {
 	MapBrowserHandler(int cols, int rows, bool showPreview, int extraImageRects = 0);
 	~MapBrowserHandler();
-	void Clear();
-	void Cancel();
-	void Confirm();
-	void ClickFile(ChooseRect *cr);
+
+	virtual void Cancel();
+	virtual void Confirm();
+	virtual void ClickFile(ChooseRect *cr);
 	void FocusFile(ChooseRect *cr);
-	void ClearFocus();
+	virtual void LateDraw(sf::RenderTarget *target);
+
 	void Draw(sf::RenderTarget *target);
 	void ChangePath();
+	
+	void Clear();
 	void ClearSelection();
 	void SelectRect(ChooseRect *cr);
-
+	void ClearFocus();
 	void Update();
 	bool CheckIfSelectedItemInstalled();
 	void SubscribeToItem();
 	void UnsubscribeFromItem();
 
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
+
 	void ButtonCallback(Button *b, const std::string & e);
 	void TabGroupCallback(TabGroup *tg, const std::string &e);
 	void ScrollBarCallback(ScrollBar *sb, const std::string &e);
 	void ConfirmCallback(Panel *p);
 	void CancelCallback(Panel *p);
-	//void SliderCallback(Slider *slider);
 
 	sf::Vertex largePreview[4];
 	sf::Vertex noPreviewQuad[4];

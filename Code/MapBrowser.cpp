@@ -115,6 +115,44 @@ void MapNode::ClearPreview()
 	}
 }
 
+void MapNode::Copy(MapNode *mn)
+{
+	//some of these are definitely wrong but probably not in any ways that are relevant, at least yet lol
+	type = mn->type;
+	action = mn->action;
+	filePath = mn->filePath;
+	ts_preview = mn->ts_preview;
+	index = mn->index;
+	myBrowser = mn->myBrowser;
+	mapDownloaded = mn->mapDownloaded;
+	mapUpdating = mn->mapUpdating;
+	downloadResult = mn->downloadResult;
+	nodeName = mn->nodeName;
+	fileName = mn->fileName;
+	folderPath = mn->folderPath;
+	nameAndDescriptionUpdated = mn->nameAndDescriptionUpdated;
+	description = mn->description;
+	fullMapName = mn->fullMapName;
+	previewURL = mn->previewURL;
+	previewTex = mn->previewTex;
+	checkingForPreview = mn->checkingForPreview;
+	previewRequestHandle = mn->previewRequestHandle;
+	publishedFileId = mn->publishedFileId;
+	chooseRect = mn->chooseRect;
+	isWorkshop = mn->isWorkshop;
+	creatorNameRetrieved = mn->creatorNameRetrieved;
+	checkingForCreatorName = mn->checkingForCreatorName;
+	creatorName = mn->creatorName;
+	creatorId = mn->creatorId;
+	subscribing = mn->subscribing;
+	unsubscribing = mn->unsubscribing;
+	
+	if (mn->header != NULL)
+	{
+		UpdateHeaderInfo();
+	}
+}
+
 void MapNode::UpdateHeaderInfo()
 {
 	//eventually work for workshop too
@@ -1409,6 +1447,11 @@ void MapBrowserHandler::ChangePath()
 	//chooser->ClearTilesets();
 }
 
+void MapBrowserHandler::LateDraw(sf::RenderTarget *target)
+{
+
+}
+
 void MapBrowserHandler::ClearSelection()
 {
 	chooser->selectedRect = NULL;
@@ -1474,10 +1517,7 @@ void MapBrowserHandler::Confirm()
 			assert(edit != NULL);
 			edit->ChooseFileSave(fileName);
 		}
-		//chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
-		//chooser->TurnOff();
 	}
-
 	
 	chooser->TurnOff();
 

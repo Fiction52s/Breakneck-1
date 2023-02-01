@@ -1,14 +1,14 @@
 #ifndef __ADVENTURE_CREATOR__
 #define __ADVENTURE_CREATOR__
 
-#include "FileChooser.h"
 #include "SaveFile.h"
 #include "MusicSelector.h"
+#include "MapBrowser.h"
 struct AdventureFile;
 
-struct AdventureCreator : FileChooserHandler
+struct AdventureCreator : MapBrowserHandler
 {
-	enum State
+	enum Action
 	{
 		BROWSE,
 		DRAG,
@@ -16,37 +16,33 @@ struct AdventureCreator : FileChooserHandler
 
 	AdventureCreator();
 	~AdventureCreator();
-	void Cancel();
+
+	//inherited
 	void Confirm();
 	void ClickFile(ChooseRect *cr);
-	void FocusFile(ChooseRect *cr);
-	void UnfocusFile(ChooseRect *cr);
-	void Draw(sf::RenderTarget *target);
-	void LateDraw(sf::RenderTarget *target);
-	void ChangePath();
-	void Open();
+	//void FocusFile(ChooseRect *cr);
 	bool MouseUpdate();
+	//void Draw(sf::RenderTarget *target);
+	void LateDraw(sf::RenderTarget *target);
+
+	void Open();
 	void ExpandWorlds();
 	void CollapseWorlds();
 	void ChooseWorld(int w);
 	void ChooseSector(int s);
 	
 	MusicChooserHandler *musicListHandler;
-	State state;
-
-	sf::Vertex largePreview[4];
-	Tileset *ts_largePreview;
+	int action;
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	//void SliderCallback(Slider *slider);
 
 	sf::Vertex grabbedFileQuad[4];
-	FileNode *grabbedFile;
-	FileNode tempGrabbedFile;
+	MapNode *grabbedFile;
+	MapNode tempGrabbedFile;
 
 	Label *sectorLabel;
 
-	void SetRectNode(ChooseRect *cr, FileNode *fn);
+	void SetRectNode(ChooseRect *cr, MapNode *mn);
 	int GetNodeStart();
 	void LoadAdventure(const std::string &path, const std::string &adventureName);
 	void SaveAdventure(const std::string &path, const std::string &adventureName,
@@ -56,8 +52,8 @@ struct AdventureCreator : FileChooserHandler
 	Tileset *ts_sectorIcons;
 
 	//512 = 8 * 8 * 8
-	FileNode adventureNodes[512];
-	FileNode * GetCurrNode(int m);
+	MapNode adventureNodes[512];
+	MapNode * GetCurrNode(int m);
 
 
 	
