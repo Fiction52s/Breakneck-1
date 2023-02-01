@@ -2,6 +2,7 @@
 #include "VectorMath.h"
 #include "EditSession.h"
 #include "FileChooser.h"
+#include "globals.h"
 #include "AdventureCreator.h"
 
 using namespace std;
@@ -76,7 +77,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		}
 		case EDIT_ADVENTURE:
 		{
-			edit->fileChooser->chooser->StartRelative(".adventure", FileChooser::OPEN, "");
+			edit->fileChooser->chooser->StartRelative(ADVENTURE_EXT, FileChooser::OPEN, "");
 			break;
 		}
 		case CREATE_ADVENTURE:

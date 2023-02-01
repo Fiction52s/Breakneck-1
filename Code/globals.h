@@ -6,8 +6,11 @@
 #define MAP_EXT ".kinmap"
 #define SAVE_EXT ".kinsave"
 #define GLOBAL_SAVE_EXT ".kingsave"
-#define IMAGE_EXT ".png"
+//maybe get to cleaning this up later, right now its too much.
+//#define IMAGE_EXT ".png" 
 #define GHOST_EXT ".kinghost"
-#define REPLAY_EXT ".kinrep"
+#define REPLAY_EXT ".kinreplay"
+#define BRUSH_EXT ".kinbrush"
+#define ADVENTURE_EXT ".kinadventure"
 
 #endif

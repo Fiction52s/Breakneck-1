@@ -8,6 +8,7 @@
 #include "MapHeader.h"
 #include "MainMenu.h"
 #include <boost/filesystem.hpp>
+#include "globals.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -47,9 +48,9 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 {
 	SetVer(1);
 
-	string dataFolder = "Resources/Data/";
+	string dataFolder = "Resources/Adventure/SaveData/";
 
-	fileName = dataFolder + name + ".kin";
+	fileName = dataFolder + name + SAVE_EXT;
 	replayFolderName = dataFolder + name + "/";
 }
 
@@ -446,15 +447,6 @@ bool SaveFile::ShardIsCaptured(int sType)
 	return shardField.GetBit(sType);
 }
 
-//void SaveFile::CopyFromDefault()
-//{
-//	path from("Resources/Data/default.kin");
-//
-//	path to(fileName);
-//
-//	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
-//}
-
 void SaveFile::SetVer(int v)
 {
 	ver = v;
@@ -549,10 +541,6 @@ bool SaveFile::Load()
 	if (!LoadInfo(is))
 	{
 		SetAsDefault();
-		/*ifstream defIs;
-		defIs.open("Resources/Data/default.kin");
-		bool test = LoadInfo(defIs);
-		assert(test);*/
 		return false;
 	}
 	else
@@ -653,7 +641,7 @@ void SaveFile::SetAsDefault()
 	defaultSkinIndex = 0;
 }
 
-string GlobalSaveFile::fileName = "Resources/Data/globalsave";
+string GlobalSaveFile::fileName = "Resources/Adventure/SaveData/globalsave" + string(GLOBAL_SAVE_EXT);
 
 GlobalSaveFile::GlobalSaveFile()
 	:skinField(64)

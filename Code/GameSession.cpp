@@ -456,7 +456,7 @@ string GameSession::GetBestTimeGhostPath()
 	{
 		stringstream ss;
 
-		ss << "Resources/Data/" << saveFile->name << "/" << level->index << "_besttime.bghst";
+		ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << level->index << "_besttime" << GHOST_EXT;
 
 		return ss.str();
 	}
@@ -473,7 +473,7 @@ std::string GameSession::GetBestReplayPath()
 	{
 		stringstream ss;
 
-		ss << "Resources/Data/" << saveFile->name << "/" << level->index << "_best.brep";
+		ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << level->index << "_best" << REPLAY_EXT;
 		return ss.str();
 	}
 	else
@@ -610,8 +610,6 @@ bool GameSession::RunPostUpdate()
 	{
 		quit = true;
 		returnVal = resType;
-		/*recGhost->StopRecording();
-		recGhost->WriteToFile( "testghost.bghst" );*/
 		return false;
 	}
 
@@ -2814,7 +2812,7 @@ bool GameSession::RunMainLoopOnce()
 					{
 						ActivatePauseSound(GetSound("pause_off"));
 						recPlayer->numTotalFrames = recPlayer->frame;
-						recPlayer->WriteToFile("Resources/Debug/debugreplay.brep");
+						recPlayer->WriteToFile("Resources/Debug/debugreplay" + string(REPLAY_EXT));
 					}
 				}
 
@@ -3177,21 +3175,6 @@ int GameSession::Run()
 		recGhost->StartRecording();
 	}
 
-	/*if (repGhost != NULL)
-	{
-		repGhost->OpenGhost("testghost.bghst");
-	}*/
-	testBuf.byteIndex = 0;
-	
-	//boost::thread *threa = NULL;
-	//ofstream of;
-	//if (recPlayer != NULL)//&& !repPlayer->init )
-	//{
-	//	of.open("tempreplay.brep", ios::binary | ios::out);
-	//	threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
-	//}
-	
-	
 	SetOriginalMusic();
 
 	std::stringstream ss;
@@ -3260,53 +3243,10 @@ int GameSession::Run()
 			string mName = filePath.filename().stem().string();
 			fss << "Resources/Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
 				<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
-				<< now.tm_min << "_" << now.tm_sec << ".bghst";
+				<< now.tm_min << "_" << now.tm_sec << GHOST_EXT;
 
 			//recGhost->WriteToFile(fss.str());
 		}
-
-
-
-		testBuf.SetRecOver(true);
-
-		//if (recPlayer != NULL)
-		//{
-		//	threa->join();
-		//	delete threa;
-
-		//	assert(of.is_open());
-		//	of.close();
-
-		//	ifstream is;
-		//	is.open("tempreplay.brep", ios::binary | ios::in);
-
-
-		//	ofstream out;
-		//	//custom file
-		//	out.open("testreplay.brep", ios::binary | ios::out);
-		//	out.write((char*)&(recPlayer->numTotalFrames), sizeof(int));
-		//	//out << recPlayer->numTotalFrames << "\n";
-
-		//	char c;
-		//	while (true)
-		//	{
-		//		c = is.get();
-		//		if (is.eof()) break;
-		//		out.put(c);
-		//	}
-
-		//	out.close();
-
-
-		//	/*istreambuf_iterator<char> begin_source( is );
-		//	istreambuf_iterator<char> end_source;
-		//	ostreambuf_iterator<char> begin_dest( out );
-		//	copy( begin_source, end_source, begin_dest );*/
-
-		//	is.close();
-
-		//}
-
 	}
 
 	soundNodeList->Reset();
@@ -3430,7 +3370,6 @@ void GameSession::Init()
 	preScreenTex->setSmooth(false);
 	postProcessTex2->setSmooth(false);
 	ReadDecorImagesFile();
-	testBuf.SetRecOver(false);
 }
 
 void GameSession::SetStorySeq(StorySequence *storySeq)

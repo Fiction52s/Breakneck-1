@@ -296,7 +296,7 @@ void AdventureFile::SetVer(int v )
 bool AdventureFile::Load(const std::string &p_path,
 	const std::string &adventureName)
 {
-	string filePath = p_path + "/" + adventureName + ".adventure";
+	string filePath = p_path + "/" + adventureName + ADVENTURE_EXT;
 
 	ifstream is;
 	is.open(filePath);
@@ -330,7 +330,7 @@ bool AdventureFile::Load(const std::string &p_path,
 void AdventureFile::Save(const std::string &p_path,
 	const std::string &adventureName, CopyMode cpy)
 {
-	string ext = ".adventure";
+	string ext = ADVENTURE_EXT;
 	ofstream of;
 
 	if (p_path == "")

@@ -8,6 +8,7 @@
 #include "GameSession.h"
 #include "MainMenu.h"
 #include <vector>
+#include "globals.h"
 
 using namespace sf;
 using namespace std;
@@ -524,7 +525,7 @@ void RecordGhostMenu::LoadDir(boost::filesystem::path &p, list<GhostEntry*> &ent
 			{
 				if (is_regular_file((*it)))        // is p a regular file?   
 				{
-					if ((*it).extension().string() == ".bghst")
+					if ((*it).extension().string() == GHOST_EXT)
 					{
 						//items.push_back(p);
 						//entries.push_back( )

@@ -1313,9 +1313,9 @@ void Enemy::Record( int enemyIndex )
 	{
 		GameSession *game = GameSession::GetSession();
 
-		Buf & b = game->testBuf;
+		//Buf & b = game->testBuf;
 
-		b.Send(enemyIndex);
+		//b.Send(enemyIndex);
 
 	}
 

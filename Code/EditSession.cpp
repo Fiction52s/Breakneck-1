@@ -2864,7 +2864,7 @@ bool EditSession::WriteFile()
 	string from = tempMap;
 
 	stringstream fixExt;
-	fixExt << filePath.parent_path().string() << "\\" << filePath.stem().string() << ".kinmap";
+	fixExt << filePath.parent_path().string() << "\\" << filePath.stem().string() << MAP_EXT;
 
 	string to = fixExt.str();//filePath.string();
 	boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
@@ -3753,7 +3753,7 @@ void EditSession::Init()
 	}
 
 	debugReplayPlayer = new ReplayPlayer(players[0]);
-	bool canOpen = debugReplayPlayer->OpenReplay("Resources/Debug/debugreplay.brep");
+	bool canOpen = debugReplayPlayer->OpenReplay("Resources/Debug/debugreplay" + string(REPLAY_EXT));
 	if (!canOpen)
 	{
 		delete debugReplayPlayer;
@@ -4834,7 +4834,7 @@ TerrainPoint * EditSession::TrySnapPosToPoint(V2d &p, SelectPtr &obj, double rad
 void EditSession::ChooseFileOpen(FileChooser *fc,
 	const std::string &fileName)
 {
-	if (fc->ext == ".bnbrush")
+	if (fc->ext == BRUSH_EXT)
 	{
 		Brush *loadedBrush = brushManager->LoadBrush(fc->currPath.string(),
 			fileName);
@@ -4848,7 +4848,7 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 
 		EditModePaste();
 	}
-	else if (fc->ext == ".adventure")
+	else if (fc->ext == ADVENTURE_EXT)
 	{
 		adventureCreator->LoadAdventure(fc->currPath.string(), fileName);
 		adventureCreator->Open();
@@ -4862,7 +4862,7 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 void EditSession::ChooseFileSave(FileChooser *fc,
 	const std::string &fileName)
 {
-	if (fc->ext == ".bnbrush" )
+	if (fc->ext == BRUSH_EXT)
 	{
 		brushManager->SaveBrush(selectedBrush, fc->currPath.string(),
 			fileName );
@@ -13831,12 +13831,12 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			fileChooser->chooser->StartRelative(".bnbrush",
+			fileChooser->chooser->StartRelative(BRUSH_EXT,
 				FileChooser::OPEN, "Resources/Brushes");
 		}
 		else if (ev.key.code == sf::Keyboard::Num8)
 		{
-			fileChooser->chooser->StartRelative(".bnbrush",
+			fileChooser->chooser->StartRelative(BRUSH_EXT,
 				FileChooser::SAVE, "Resources/Brushes");
 			/*brushManager->SaveBrush(selectedBrush, "Resources/Brushes/", 
 				"testbrush");*/

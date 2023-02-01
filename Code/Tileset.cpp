@@ -1,8 +1,8 @@
 #include "Tileset.h"	
 #include <iostream>
 #include <assert.h>
-//#include "Kin"
-//#include "globals.h"
+#include <boost/filesystem.hpp>
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -312,7 +312,7 @@ TilesetManager::TilesetCategory TilesetManager::GetCategory(const std::string &s
 }
 
 
-#include <boost/filesystem.hpp>
+
 
 Tileset * TilesetManager::GetSizedTileset(const std::string & s)
 {

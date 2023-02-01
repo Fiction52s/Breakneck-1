@@ -2,6 +2,7 @@
 #include "Action.h"
 #include <fstream>
 #include "EditSession.h"
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -69,7 +70,7 @@ int BrushManager::SaveBrush(Brush *b,
 			return 0;
 		}
 
-		of.open(filePath + ".bnbrush");
+		of.open(filePath + BRUSH_EXT);
 
 		
 
@@ -103,7 +104,7 @@ Brush * BrushManager::LoadBrush(const std::string &path,
 {
 	ifstream is;
 
-	is.open(path + "/" + name + ".bnbrush");
+	is.open(path + "/" + name + BRUSH_EXT);
 
 	if (is.is_open())
 	{

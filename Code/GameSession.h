@@ -312,8 +312,6 @@ struct GameSession : RayCastHandler, Session
 	V2d nexusPos;
 	Nexus *nexus;
 	
-	
-	Buf testBuf;//for recording ghost
 	RecordGhost *recGhost;
 	
 	std::vector<ReplayGhost*> replayGhosts;
