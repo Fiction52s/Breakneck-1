@@ -1141,26 +1141,31 @@ void BorderSizeInfo::SetWidth(int w)
 	startLen - width - inter;
 }
 
-TerrainPolygon::TerrainPolygon()
-	:ISelectable( ISelectable::TERRAIN )
+void TerrainPolygon::SetupTilePattern()
 {
-	sess = Session::GetSession();
-
 	tilePattern = new float[TILE_PATTERN_TOTAL_INDEXES];
 	tileQuads = new Glsl::Vec4[TOTAL_TILES_IN_USE];
 
 
 	RandomPicker p;
-	p.AddActiveOption(0,2);
-	p.AddActiveOption(1,2);
-	p.AddActiveOption(2,2);
-	p.AddActiveOption(3,2);
+	p.AddActiveOption(0, 2);
+	p.AddActiveOption(1, 2);
+	p.AddActiveOption(2, 2);
+	p.AddActiveOption(3, 2);
 
-	
+
 	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)
 	{
 		tilePattern[i] = p.AlwaysGetNextOption();//rand() % TOTAL_TILES_IN_USE;
 	}
+}
+
+TerrainPolygon::TerrainPolygon()
+	:ISelectable( ISelectable::TERRAIN )
+{
+	sess = Session::GetSession();
+
+	SetupTilePattern();
 
 
 	//ts_water = sess->GetSizedTileset("Env/water_128x128.png");
@@ -1267,6 +1272,8 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	ResetState();
 
 	pointVector.resize(2);
+
+	SetupTilePattern();
 
 	if (pointsOnly)
 	{

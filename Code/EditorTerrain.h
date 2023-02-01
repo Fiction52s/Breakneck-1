@@ -494,6 +494,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly,
 		bool storeSelectedPoints = false );
 	~TerrainPolygon();
+	void SetupTilePattern();
 	void UpdateLineColor(int i);
 	void UpdateLineColors();
 	static sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
