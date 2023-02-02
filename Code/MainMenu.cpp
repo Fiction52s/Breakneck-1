@@ -60,6 +60,7 @@
 #include "SinglePlayerControllerJoinScreen.h"
 #include "GameSettingsScreen.h"
 #include "globals.h"
+#include "ClosedBetaScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -613,7 +614,15 @@ MainMenu::MainMenu()
 	
 	//cout << "DDDDDD " << endl;
 
-	titleScreen = new TitleScreen(this);
+
+	//this is turned on when starting at the titlescreen
+	titleScreen = NULL;
+	//titleScreen = new TitleScreen(this);
+	closedBetaScreen = new ClosedBetaScreen;
+
+
+
+
 	//cout << "start mm constfr" << endl;
 	//load a preferences file at some point for window resolution and stuff
 
@@ -662,8 +671,11 @@ MainMenu::MainMenu()
 
 	transWorldMapFrame = 0;
 	
-
-	titleScreen->Draw(preScreenTexture);
+	if (titleScreen != NULL)
+	{
+		titleScreen->Draw(preScreenTexture);
+	}
+	
 
 	adventureManager = NULL;
 	//worldMap = new WorldMap( this );
@@ -844,6 +856,8 @@ MainMenu::~MainMenu()
 	currInstance = NULL;
 
 	window->close();
+
+	delete closedBetaScreen;
 
 	delete menuMatchParams;
 
@@ -1714,7 +1728,8 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_SAVE);
 	//SetMode(TRANS_MAIN_TO_CREDITS);
 	//SetMode(SPLASH);
-	menuMode = TITLEMENU;
+	//menuMode = TITLEMENU;
+	menuMode = CLOSED_BETA;
 
 	
 #if defined( USE_MOVIE_TEST )
@@ -3400,6 +3415,21 @@ void MainMenu::HandleMenuMode()
 
 		break;
 	}
+	case CLOSED_BETA:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		closedBetaScreen->Update();
+
+		if (closedBetaScreen->action == ClosedBetaScreen::A_DONE)
+		{
+			LoadMode(TITLEMENU);
+		}
+		break;
+	}
 	}
 
 	
@@ -3946,6 +3976,12 @@ void MainMenu::DrawMode( Mode m )
 
 		customMatchManager->Draw(preScreenTexture);		
 
+		break;
+	}
+	case CLOSED_BETA:
+	{
+		preScreenTexture->setView(v);
+		closedBetaScreen->Draw(preScreenTexture);
 		break;
 	}
 	default:

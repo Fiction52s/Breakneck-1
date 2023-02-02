@@ -13,6 +13,12 @@ using namespace sf;
 TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
+	panel = new Panel("feedbackpanel", 1920, 1080, this);
+	panel->SetColor(Color::Transparent);
+	//feedbackButton = panel->AddButton("feedbackbutton", Vector2i(1500, 700), Vector2f(500, 50), "Submit Feedback");
+
+	feedbackURL = "https://docs.google.com/forms/d/e/1FAIpQLSewgTgR6kh-0vX3_un4T_WqQkyGZLkH1jGaz1ysI8rPcZSBBQ/viewform?usp=sf_link";
+
 	ts_breakneckTitle = GetSizedTileset("Title/Kinetic_Title_1024x440.png");//GetTileset("Title/breakneck_1034x835.png", 1034, 835);
 	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
 	ts_titleBG = GetTileset("Title/title_base_1920x1080.png", 1920, 1080);
@@ -63,6 +69,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 TitleScreen::~TitleScreen()
 {
+	delete panel;
 	delete background;
 
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
@@ -79,6 +86,8 @@ void TitleScreen::Reset()
 
 void TitleScreen::Update()
 {
+	panel->MouseUpdate();
+
 	if (frame == 60)
 	{
 		//mainMenu->fader->CrossFade(60, 60, Color::Red);
@@ -161,6 +170,14 @@ void TitleScreen::Update()
 	frame++;
 }
 
+void TitleScreen::ButtonCallback(Button *b, const std::string & e)
+{
+	if (b == feedbackButton )
+	{
+		//SteamFriends()->ActivateGameOverlayToWebPage(linkURL.c_str());
+	}
+}
+
 void TitleScreen::Draw(sf::RenderTarget *target)
 {
 	background->Draw(target);
@@ -180,6 +197,8 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 	mainMenu->DrawMenuOptionText(target);
 
 	target->draw(breakneckTitleSprite);
+
+	panel->Draw(target);
 	//target->draw(emergenceTitleSprite);
 	
 }

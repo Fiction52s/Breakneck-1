@@ -376,6 +376,7 @@ void WorldMap::UpdateSelectedColony()
 	Vector2f colMiddle;
 
 	int numCompletedWorlds;
+	int numUnlockedWorlds = -1;
 	if (allUnlocked)
 	{
 		numCompletedWorlds = adventureManager->adventurePlanet->numWorlds;
@@ -386,7 +387,14 @@ void WorldMap::UpdateSelectedColony()
 		numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventureManager->adventurePlanet);
 	}
 
-	int numUnlockedWorlds = max(1, numCompletedWorlds);
+	if (numCompletedWorlds == adventureManager->adventurePlanet->numWorlds)
+	{
+		numUnlockedWorlds = numCompletedWorlds;
+	}
+	else
+	{
+		numUnlockedWorlds = numCompletedWorlds + 1;
+	}
 
 	//for (int i = 0; i < adventureManager->adventurePlanet->numWorlds; ++i)
 	for (int i = 0; i < numUnlockedWorlds; ++i)
@@ -524,7 +532,8 @@ void WorldMap::Update()
 			break;
 		}
 
-		int numCompletedWorlds;
+		int numUnlockedWorlds = -1;
+		int numCompletedWorlds = -1;
 		if (allUnlocked)
 		{
 			numCompletedWorlds = adventureManager->adventurePlanet->numWorlds;
@@ -535,7 +544,14 @@ void WorldMap::Update()
 			numCompletedWorlds = saveFile->GetNumCompleteWorlds(adventureManager->adventurePlanet);
 		}
 
-		int numUnlockedWorlds = max(1, numCompletedWorlds );
+		if (numCompletedWorlds == adventureManager->adventurePlanet->numWorlds)
+		{
+			numUnlockedWorlds = numCompletedWorlds;
+		}
+		else
+		{
+			numUnlockedWorlds = numCompletedWorlds + 1;
+		}
 
 		for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
 		{

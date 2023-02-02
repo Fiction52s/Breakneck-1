@@ -19,6 +19,7 @@
 
 struct AdventureManager;
 struct MapHeader;
+struct ClosedBetaScreen;
 
 struct Config;
 
@@ -198,6 +199,7 @@ struct MainMenu
 		POST_MATCH_OPTIONS,
 		SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL,
 		SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE,
+		CLOSED_BETA,
 		EXITING,
 	};
 
@@ -225,6 +227,7 @@ struct MainMenu
 	EditorMenuScreen *editorMenuScreen;
 	MatchResultsScreen *matchResultsScreen;
 	FreeplayScreen *freeplayScreen;
+	ClosedBetaScreen *closedBetaScreen;
 	SinglePlayerControllerJoinScreen *singlePlayerControllerJoinScreen;
 
 	MatchParams *menuMatchParams;

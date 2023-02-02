@@ -4,19 +4,20 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 #include "Tileset.h"
+#include "GUI.h"
+#include <string>
 
 struct MainMenu;
 struct Background;
 struct ScrollingBackground;
 struct MusicInfo;
 
-struct TitleScreen : TilesetManager
+struct TitleScreen : TilesetManager, GUIHandler
 {
-	TitleScreen(MainMenu *p_mainMenu);
-	~TitleScreen();
-	void Draw(sf::RenderTarget *target);
-	void Reset();
-	void Update();
+	Panel *panel;
+	Button *feedbackButton;
+	std::string feedbackURL;
+
 	Tileset *ts_breakneckTitle;
 	Tileset *ts_emergenceTitle;
 	Tileset *ts_titleBG;
@@ -35,7 +36,13 @@ struct TitleScreen : TilesetManager
 	Background *background;
 
 	MusicInfo *titleMusic;
-	
+
+	TitleScreen(MainMenu *p_mainMenu);
+	~TitleScreen();
+	void ButtonCallback(Button *b, const std::string & e);
+	void Draw(sf::RenderTarget *target);
+	void Reset();
+	void Update();
 };
 
 #endif
