@@ -23,7 +23,7 @@ KinMenu::KinMenu( GameSession *p_game)
 	:playerSkinShader( "player"),
 	game( p_game )
 {
-	Vector2f powersOffset(512, 495);
+	
 	Vector2f powerPos(0, 0);
 	Vector2f powerSpacing(30, 20);
 	ts_powers = game->GetSizedTileset("Menu/power_icon_128x128.png");
@@ -51,14 +51,22 @@ KinMenu::KinMenu( GameSession *p_game)
 
 	description.setPosition(512 + 10, 394 + 10);
 
-	tutBox = new TutorialBox(48, Vector2f(1220, 90), Color::Black, Color::White, 30);
+	//90
+	Vector2f tutBoxSize(1220, 160);
+	tutBox = new TutorialBox(40, tutBoxSize, Color::Black, Color::White, 30);
 
-	tutBox->SetCenterPos(Vector2f(1122, 439));
+	//tutBox->SetCenterPos(Vector2f(1122, 439));
+	Vector2f tutBoxTopLeft(512, 394);
+	tutBox->SetTopLeft(tutBoxTopLeft);
 
 	//SetRectTopLeft(commandRect, 50, 50, Vector2f(512, 394));
 	//commandSpr.setPosition(512, 394);
 	//commandSpr.setTexture(*ts_xboxButtons->texture);
 	//commandSpr.setScale(.4, .4);
+
+	Vector2f bottomLeftTutBox = tutBoxTopLeft + tutBoxSize;
+
+	Vector2f powersOffset(512, bottomLeftTutBox.y + 20);//495 + 45);
 
 	for (int i = 0; i < 10; ++i)
 	{
@@ -176,26 +184,35 @@ KinMenu::KinMenu( GameSession *p_game)
 
 	frame = 0;
 
-	powerDescriptions[0] = "Press JUMP to launch yourself into the air,\nor press JUMP while aerial to double jump.\n"
-		"Hold the JUMP button down longer for extra height!";
-	powerDescriptions[1] = "Attack = ATTACK     Press ATTACK to release an energy burst in front of you capable of destroying enemies.\n"
-		"Hold UP or DOWN while in the air to do a directional attack.";
-	powerDescriptions[2] = "When moving on a slope, hold diagonally UP/DOWN and FORWARD to accelerate.\n"
-		"Hold UP or DOWN to slide with low friction. On steep slopes hold DOWN to slide down even faster.";
-	powerDescriptions[3] = "Dash = DASH     Press DASH to quickly start moving in the direction you are facing while grounded.\n"
-		"Tap DASH quickly while ascending a steep slope to climb your way up.";
-	powerDescriptions[4] = "Hold towards a wall to wall cling and descend slowly. Tap away from a wall to wall jump."
-		"\nHold DOWN and away from the wall to drift away from the wall without wall jumping";
-	powerDescriptions[5] = "Move fast and kill enemies to build up your speed meter. There are 3 different meter levels."
-		"\nWith each speed level, your attacks get bigger and your dash is more powerful.";
-	powerDescriptions[6] = "The TRANSCEND absorbs all energy within its territory, meaning even Kin's energy drains at a constant"
-		"\nrate. Kill enemies and steal their energy to bolster your health while you search for the NODE.";
-	powerDescriptions[7] = "When Kin runs out of energy, the core of the BREAKNECK suit becomes unstable and enters SURVIVAL"
-		"\nMODE. You have 5 seconds to kill an enemy or destroy the NODE before the BREAKNECK self destructs.";
-	powerDescriptions[8] = "Certain enemies have a special ABSORPTION HEART which supports the NODE and VEINS. When you"
-		"\nclear enough of them from an area, the nearby VEINS will weaken, allowing you to break through them.";
-	powerDescriptions[9] = "Dash = DASH     Press DASH while in the air to HOVER for a short period. Hold a direction to"
-		"\nAIRDASH in 1 of 8 directions. You can change your AIRDASH direction at any time. Kin gets 1 AIRDASH per air time.";
+	powerDescriptions[0] = "Press JUMP to launch yourself into the air,or press JUMP while aerial to\n"
+							"double jump. Hold the JUMP button down longer for extra height!";
+	powerDescriptions[1] = "Press ATTACK to release an energy burst in front of you capable of\n"
+							"destroying enemies. Hold up or down while in the air to do a\n"
+							"directional attack.";
+	powerDescriptions[2] = "When moving on a slope, hold diagonally Up/Down and foward to\n"
+							"accelerate. Hold Up or down to slide with low friction. On steep\n"
+							"slopes hold down to slide down even faster.";
+	powerDescriptions[3] = "Press DASH to quickly start moving in the direction you are facing\n"
+							"while grounded. Tap DASH quickly while ascending a steep slope\n"
+							"to climb your way up.";
+	powerDescriptions[4] = "Hold towards a wall to wall cling and descend slowly. Tap away\n"
+							"from a wall to wall jump. Hold down and away from the wall to drift\n"
+							"away from the wall without wall jumping";
+	powerDescriptions[5] = "Move fast and kill enemies to build up your speed meter. There are\n"
+							"3 different meter levels. With each speed level, your attacks get\n"
+							"bigger and your dash is more powerful.";
+	powerDescriptions[6] = "The TRANSCEND absorbs all energy within its territory, even yours!\n"
+							"Kill enemies and steal their energy to bolster your health while\n"
+							"you search for the NODE.";
+	powerDescriptions[7] = "When Kin runs out of energy, the core of the BREAKNECK suit becomes\n"
+							"unstable and enters SURVIVAL MODE. You have 5 seconds to kill an enemy\n"
+							"or destroy the NODE before the BREAKNECK self destructs.";
+	powerDescriptions[8] = "Certain enemies have a special ABSORPTION HEART which supports\n"
+							"the NODE and VEINS. When you clear enough of them from an area,\n"
+							"the nearby VEINS will weaken, allowing you to break through them.";
+	powerDescriptions[9] = "Press DASH while in the air to HOVER for a short period. Hold a direction\n"
+							"to AIRDASH in 1 of 8 directions. You can change your AIRDASH\n"
+							"direction at any time. Kin gets 1 AIRDASH per air time.";
 	UpdateDescription();
 	UpdateSelector();
 	UpdatePowerSprite();

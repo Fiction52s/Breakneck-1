@@ -12,6 +12,7 @@ TutorialBox::TutorialBox()
 	quadColor = Color(0, 0, 0, 100);
 	rectBuffer = 30;
 	textColor = Color::White;
+	topLeftMode = false;
 }
 
 TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color p_quadColor, sf::Color p_textColor, float p_rectBuffer)
@@ -127,8 +128,17 @@ void TutorialBox::SetText(const std::string &str)
 		bool buttonTest = CalcButtonPos(s, inputStrings[i], testPos);
 
 		text.setString(s);
-		text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
-			text.getLocalBounds().top + text.getLocalBounds().height / 2);
+
+		if (topLeftMode)
+		{
+			text.setOrigin(0, 0);	
+		}
+		else
+		{
+			text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
+				text.getLocalBounds().top + text.getLocalBounds().height / 2);
+		}
+		
 
 		if (buttonTest)
 		{
@@ -158,23 +168,38 @@ void TutorialBox::SetText(const std::string &str)
 	}
 	
 	Vector2f quadSize;
+	bool locked = false;
 	if (lockedSize.x != 0 && lockedSize.y != 0)
 	{
 		quadSize = lockedSize;
+		locked = true;
 	}
 	else
 	{
 		quadSize = Vector2f(globalBounds.width + rectBuffer, globalBounds.height + rectBuffer);
+		locked = false;
 	}
 
-	SetRectCenter(quad, quadSize.x, quadSize.y,
-		Vector2f(globalBounds.left + globalBounds.width / 2,
-		globalBounds.top + globalBounds.height / 2 ));
+	if (topLeftMode)
+	{
+		//SetRectCenter(quad, quadSize.x, quadSize.y);
+	}
+	else
+	{
+		if (!locked)
+		{
+			SetRectCenter(quad, quadSize.x, quadSize.y,
+				Vector2f(globalBounds.left + globalBounds.width / 2,
+					globalBounds.top + globalBounds.height / 2));
+		}
+	}	
 }
 
 void TutorialBox::SetCenterPos(sf::Vector2f &pos)
 {
 	text.setPosition(pos);
+	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
+		text.getLocalBounds().top + text.getLocalBounds().height / 2);
 
 	Vector2f quadSize;
 	if (lockedSize.x != 0 && lockedSize.y != 0)
@@ -191,6 +216,20 @@ void TutorialBox::SetCenterPos(sf::Vector2f &pos)
 
 void TutorialBox::SetTopLeft(sf::Vector2f &pos)
 {
+	text.setOrigin(0, 0);
+	text.setPosition(pos + Vector2f( rectBuffer/ 2, rectBuffer / 4 )); //text spacing
+
+	Vector2f quadSize;
+	if (lockedSize.x != 0 && lockedSize.y != 0)
+	{
+		quadSize = lockedSize;
+	}
+	else
+	{
+		quadSize = Vector2f(text.getGlobalBounds().width + rectBuffer, text.getGlobalBounds().height + rectBuffer);
+	}
+
+	SetRectTopLeft(quad, quadSize.x, quadSize.y, pos);
 	/*text.setPosition(pos);
 
 	Vector2f quadSize;

@@ -20,6 +20,7 @@ struct TutorialBox
 	float charHeight;
 	sf::Color quadColor;
 	sf::Color textColor;
+	bool topLeftMode;
 
 	TutorialBox(int charHeight, sf::Vector2f lockedSize, sf::Color quadColor, sf::Color textColor, float rectBuffer );
 	TutorialBox();
