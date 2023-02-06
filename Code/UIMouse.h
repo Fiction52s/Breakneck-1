@@ -33,6 +33,7 @@ struct UIMouse
 	void Consume() { consumed = true; }
 	void SetRenderWindow(sf::RenderWindow *rw);
 	void SetCustomCursor(CustomCursor *cc);
+	void SetControllersOn(bool on);
 	bool IsWindowFocused();
 	void SetPosition(sf::Vector2i &pos);
 	void Hide();
@@ -50,6 +51,7 @@ private:
 	bool isMouseDownRight;
 	bool lastMouseDownRight;
 	bool consumed;
+	bool controllersOn;
 
 	sf::RenderWindow *currWindow;
 	CustomCursor *customCursor;

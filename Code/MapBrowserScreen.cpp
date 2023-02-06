@@ -25,11 +25,22 @@ MapBrowserScreen::~MapBrowserScreen()
 	delete browserHandler;
 }
 
-void MapBrowserScreen::StartLocalBrowsing()
+void MapBrowserScreen::StartLocalBrowsing( int mode, bool showTabs )
 {
-	browserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
-	browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
-	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
+	MapBrowser::Mode m = (MapBrowser::Mode)mode;
+	browserHandler->chooser->StartRelative(MAP_EXT, m, "Resources\\Maps");
+
+	if (showTabs)
+	{
+		browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
+		browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
+	}
+	else
+	{
+		browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
+		browserHandler->chooser->panel->tabGroups["tabs"]->HideMember();
+	}
+	
 	browserHandler->ClearFocus();
 	//browserHandler->chooser->
 }

@@ -1149,9 +1149,9 @@ void TerrainPolygon::SetupTilePattern()
 
 	RandomPicker p;
 	p.AddActiveOption(0, 2);
-	p.AddActiveOption(1, 2);
-	p.AddActiveOption(2, 2);
-	p.AddActiveOption(3, 2);
+	//p.AddActiveOption(1, 2);
+	//p.AddActiveOption(2, 2);
+	//p.AddActiveOption(3, 2);
 
 
 	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)

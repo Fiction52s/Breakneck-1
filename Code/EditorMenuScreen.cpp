@@ -2,6 +2,7 @@
 #include <iostream>
 #include "MainMenu.h"
 #include "MapBrowser.h"
+#include "MapBrowserScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -30,6 +31,9 @@ EditorMenuScreen::EditorMenuScreen(MainMenu *mm)
 	icr->SetShown(true);
 	icr->Init();
 
+	
+	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+
 	//panel->confirmButton =
 	//	panel->AddButton("ok", Vector2i(0, 0), Vector2f(60, 30), "Host");
 	panel->cancelButton =
@@ -52,12 +56,21 @@ EditorMenuScreen::~EditorMenuScreen()
 
 bool EditorMenuScreen::HandleEvent(sf::Event ev)
 {
-	return panel->HandleEvent(ev);
+	if (action == A_CHOOSE_MAP)
+	{
+		return mapBrowserScreen->HandleEvent(ev);
+	}
+	else
+	{
+		return panel->HandleEvent(ev);
+	}
+	
 }
 
 void EditorMenuScreen::Start()
 {
 	action = A_NONE;
+	selectedMap = NULL;
 }
 
 void EditorMenuScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -83,7 +96,10 @@ void EditorMenuScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
 		}
 		case ChooseRect::I_EDITORMENU_OPEN:
 		{
-			action = A_OPEN_MAP;
+			action = A_CHOOSE_MAP;
+			mapBrowserScreen->StartLocalBrowsing(MapBrowser::OPEN, false);
+			selectedMap = NULL;
+			//action = A_OPEN_MAP;
 			break;
 		}
 		}
@@ -105,10 +121,76 @@ void EditorMenuScreen::CancelCallback(Panel *p)
 
 void EditorMenuScreen::Update()
 {
-	panel->MouseUpdate();
+	
+
+	switch(action)
+	{
+	case A_NONE:
+	{
+		panel->MouseUpdate();
+		break;
+	}
+	/*case A_NEW_MAP:
+	case A_OPEN_MAP:*/
+	case A_CHOOSE_MAP:
+	{
+		
+
+
+		//if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
+		//{
+		//	selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+
+		//	if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
+		//	{
+
+		//	}
+		//	else
+		//	{
+		//		//action = A_DOWNLOADING_WORKSHOP_MAP;
+		//		//selectedMap->Subscribe();
+		//	}
+		//}
+
+		mapBrowserScreen->Update();
+
+		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+		{
+			action = A_NONE;
+		}
+		else if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CONFIRMED)
+		{
+			action = A_OPEN_MAP;
+			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+		}
+		break;
+
+		/*if (nextMapMode)
+		{
+
+		}
+		else
+		{
+			if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+			{
+				SetAction(A_IDLE);
+				netplayManager->Abort();
+				return false;
+			}
+		}*/
+	}
+	}
 }
 
 void EditorMenuScreen::Draw(sf::RenderTarget *target)
 {
-	panel->Draw(target);
+	if (action == A_CHOOSE_MAP)
+	{
+		mapBrowserScreen->Draw(target);
+	}
+	else
+	{
+		panel->Draw(target);
+	}
+	
 }

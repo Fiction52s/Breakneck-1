@@ -957,6 +957,7 @@ struct ConfirmPopup : GUIHandler
 		DEFAULT,
 		SAVE_CURRENT,
 		SAVE_CURRENT_EXIT,
+		OVERWRITE_FILE,
 		BACK_ALLOWED,
 	};
 
@@ -1024,6 +1025,7 @@ struct MapOptionsUI : GUIHandler
 	EditSession *edit;
 	Button *bgButton;
 	Button *musicButton;
+	TextBox *mapNameBox;
 	TextBox *descriptionBox;
 	Button *okButton;
 	TextBox* drainTextbox;

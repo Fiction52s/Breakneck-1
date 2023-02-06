@@ -21,7 +21,7 @@ struct MapBrowserScreen
 	MapBrowserScreen(MainMenu *mm);
 	~MapBrowserScreen();
 
-	void StartLocalBrowsing();
+	void StartLocalBrowsing(int mode, bool showTabs );
 	void StartWorkshopBrowsing( int mode );
 
 	bool HandleEvent(sf::Event ev);

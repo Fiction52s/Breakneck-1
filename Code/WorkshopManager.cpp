@@ -498,11 +498,8 @@ void WorkshopUploader::TryUpdateItem( bool agreementSigned, PublishedFileId_t up
 		return;
 	}
 		
-
-	SteamUGC()->SetItemContent(updateHandle, uploadFolder.string().c_str());
-		//"C:\\Users\\ficti\\Documents\\Visual Studio 2015"
-		//"\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02");
-	SteamUGC()->SetItemPreview(updateHandle, previewUploadPath.string().c_str());//"C:\\Users\\ficti\\Documents\\Visual Studio 2015\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02\\b02.png");
+	SteamUGC()->SetItemContent( updateHandle, uploadFolder.string().c_str());
+	SteamUGC()->SetItemPreview(updateHandle, previewUploadPath.string().c_str());
 	SteamUGC()->SetItemVisibility(updateHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
 
 	SteamAPICall_t itemUpdateStatus = SteamUGC()->SubmitItemUpdate(updateHandle, NULL);

@@ -1048,6 +1048,11 @@ void MapBrowser::TurnOff()
 	}
 }
 
+void MapBrowser::SetCurrFileNameText(const std::string &text)
+{
+	fileNameTextBox->SetString(text);
+}
+
 void MapBrowser::ShowFileNameTextBox()
 {
 	fileNameTextBox->ShowMember();
@@ -1064,7 +1069,7 @@ void MapBrowser::Init()
 {
 	//ClearNodes();
 	//edit->AddActivePanel(panel);
-	if (mode == EDITOR_OPEN)
+	if (mode == EDITOR_OPEN || mode == EDITOR_SAVE)
 	{
 		EditSession *edit = EditSession::GetSession();
 		assert(edit != NULL);
@@ -1081,6 +1086,7 @@ void MapBrowser::Init()
 		panel->confirmButton = openButton;
 		ShowFileNameTextBox();
 		fileNameTextBox->SetString("");
+		HideFileNameTextBox();
 	}
 	else if(mode == SAVE || mode == EDITOR_SAVE)
 	{
@@ -1342,9 +1348,20 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	{
 		Cancel();
 	}
-	else if (b == chooser->saveButton || b == chooser->openButton || b == chooser->createLobbyButton)
+	else if (b == chooser->saveButton)
 	{
 		Confirm();
+	}
+	else if (b == chooser->openButton || b == chooser->createLobbyButton)
+	{
+		if (chooser->selectedRect != NULL)
+		{
+			MapNode *map = (MapNode*)chooser->selectedRect->info;
+			if (map != NULL)
+			{
+				Confirm();
+			}
+		}
 	}
 	else if (b == chooser->searchButton)
 	{
@@ -1520,7 +1537,26 @@ void MapBrowserHandler::Confirm()
 		{
 			EditSession *edit = EditSession::GetSession();
 			assert(edit != NULL);
-			edit->ChooseFileSave(fileName);
+
+			if (chooser->ext == MAP_EXT)
+			{
+				//folderPath = ;
+				string fp = chooser->currPath.string() + "\\" + fileName + MAP_EXT;
+				edit->filePath = fp;
+				edit->filePathStr = fp;
+
+				if (edit->WriteTargetExistsAlready())
+				{
+					edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE);
+					return;
+				}
+				else
+				{
+					edit->WriteFile();
+				}
+			}
+
+			//edit->ChooseFileSave(fileName);
 		}
 	}
 	

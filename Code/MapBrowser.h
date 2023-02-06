@@ -263,6 +263,7 @@ struct MapBrowser : TilesetManager,
 	void StartWorkshop( Mode mode );
 	void Init();
 	void TurnOff();
+	void SetCurrFileNameText(const std::string &text);
 
 	void ShowFileNameTextBox();
 	void HideFileNameTextBox();

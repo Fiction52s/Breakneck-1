@@ -65,6 +65,8 @@ struct ReplayPlayer;
 
 struct WorkshopUploader;
 
+struct PlayerBoxGroup;
+
 struct GrassDiff
 {
 	PolyPtr poly;
@@ -115,6 +117,7 @@ struct EditSession : GUIHandler, Session
 		MAP_OPTIONS,
 		NETPLAY_TEST_GATHER_USERS,
 		NETPLAY_TEST_GET_CONNECTIONS,
+		SETUP_CONTROLS,
 		EMODE_Count
 	};
 
@@ -152,6 +155,7 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+	PlayerBoxGroup *playerInputBoxGroup;
 
 	WorkshopUploader *workshopUploader;
 	MusicInfo *previewMusic;
@@ -423,6 +427,7 @@ struct EditSession : GUIHandler, Session
 	void TryReloadNew();
 	void TrySaveMap();
 	void TryExitEditor();
+	void ExitEditor();
 	void SaveMapDialog();
 	void OpenMapDialog();
 	void ProcessDecorFromFile(const std::string &name,
@@ -448,6 +453,7 @@ struct EditSession : GUIHandler, Session
 	bool ReadGates(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
 	bool WriteFile();
+	bool WriteTargetExistsAlready();
 	void WritePolygons(std::ofstream &of,
 		int bgPlatCount0 );
 	void WriteSpecialPolygons(std::ofstream &of);
@@ -711,6 +717,7 @@ struct EditSession : GUIHandler, Session
 	void TestPlayerModeHandleEvent();
 	void NetplayTestGatherUsersModeHandleEvent();
 	void NetplayTestGetConnectionsModeHandleEvent();
+	void SetupControlsModeHandleEvent();
 
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();
@@ -728,6 +735,7 @@ struct EditSession : GUIHandler, Session
 	void MoveBorderModeUpdate();
 	void NetplayTestGatherUsersModeUpdate();
 	void NetplayTestGetConnectionsModeUpdate();
+	void SetupControlsModeUpdate();
 	
 
 

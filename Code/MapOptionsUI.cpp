@@ -14,7 +14,8 @@ MapOptionsUI::MapOptionsUI()
 
 	mapOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
-	mapOptionsPanel->AddLabel("mapnamelabel", Vector2i(0, 0), 28, "Map Name: " + edit->filePath.stem().string());
+	//mapOptionsPanel->AddLabel("mapnamelabel", Vector2i(0, 0), 28, "Map Name: " + edit->filePath.stem().string());
+	mapNameBox = mapOptionsPanel->AddLabeledTextBox("mapname", Vector2i(0, 30), false, 1, 35, 20, 30, "", "Map Name:");
 
 	descriptionBox = mapOptionsPanel->AddLabeledTextBox("description", Vector2i(0, 30), false, 5, 35, 20, 1000, "", "Description:");
 
@@ -128,6 +129,7 @@ void MapOptionsUI::OpenMapOptionsPopup()
 
 	numPlayersSlider->SetCurrValue(edit->mapHeader->numPlayerSpawns);
 
+	mapNameBox->SetString(edit->mapHeader->fullName);
 	descriptionBox->SetString(edit->mapHeader->description);
 }
 
@@ -149,6 +151,7 @@ void MapOptionsUI::CloseMapOptionsPopup()
 	edit->mapHeader->postLevelSceneName = postDropdown->GetSelectedText();
 	edit->SetNumPlayers(numPlayersSlider->GetCurrValue());
 
+	edit->mapHeader->fullName = mapNameBox->GetString();
 	edit->mapHeader->description = descriptionBox->GetString();
 	//edit->SetGameMode(gameModeDropdown->selectedIndex);
 	edit->RemoveActivePanel(mapOptionsPanel);

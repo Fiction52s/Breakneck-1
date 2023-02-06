@@ -6,6 +6,8 @@
 #include "GUI.h"
 
 struct MainMenu;
+struct MapNode;
+struct MapBrowserScreen;
 
 struct EditorMenuScreen : GUIHandler
 {
@@ -13,6 +15,7 @@ struct EditorMenuScreen : GUIHandler
 	{
 		A_NEW_MAP,
 		A_OPEN_MAP,
+		A_CHOOSE_MAP,
 		Count,
 		A_NONE,
 		A_CANCELLED,
@@ -23,6 +26,8 @@ struct EditorMenuScreen : GUIHandler
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 	Panel *panel;
+	MapNode *selectedMap;
+	MapBrowserScreen * mapBrowserScreen;
 
 	EditorMenuScreen(MainMenu *mm);
 	~EditorMenuScreen();

@@ -1,5 +1,6 @@
 #include "GUI.h"
 #include "EditSession.h"
+#include "MapBrowser.h"
 
 using namespace std;
 using namespace sf;
@@ -50,6 +51,7 @@ void ConfirmPopup::Pop(ConfirmType ct)
 	{
 	case SAVE_CURRENT:
 	case SAVE_CURRENT_EXIT:
+		backButton->ShowMember();
 		SetQuestion("Changes to current map have not been saved.\nSave before continuing?");
 		break;
 	case DEFAULT:
@@ -63,6 +65,12 @@ void ConfirmPopup::Pop(ConfirmType ct)
 		backButton->ShowMember();
 		break;
 	}
+	case OVERWRITE_FILE:
+	{
+		SetQuestion("File already exists. Overwrite it?");
+		backButton->ShowMember();
+		break;
+	}
 	}
 }
 
@@ -71,6 +79,11 @@ void ConfirmPopup::ButtonCallback(Button *b,
 {
 	if (b == yesButton)
 	{
+		if (edit != NULL)
+		{
+			edit->RemoveActivePanel(panel);
+		}
+
 		action = A_YES;
 
 		switch (type)
@@ -83,22 +96,48 @@ void ConfirmPopup::ButtonCallback(Button *b,
 		}
 		case SAVE_CURRENT_EXIT:
 		{
+			edit->TrySaveMap();
+			break;
+		}
+		case OVERWRITE_FILE:
+		{
+			edit->mapBrowserHandler->chooser->TurnOff();
+			edit->mapBrowserHandler->chooser->action = MapBrowser::A_CONFIRMED;
 			edit->WriteFile();
-
-			edit->quit = true;
-			edit->returnVal = 1;
 			break;
 		}
 		}
 
+		
+	}
+	else if (b == noButton )
+	{
 		if (edit != NULL)
 		{
 			edit->RemoveActivePanel(panel);
 		}
-	}
-	else if (b == noButton )
-	{
+
 		action = A_NO;
+
+		switch (type)
+		{
+		case SAVE_CURRENT:
+		{
+			break;
+		}
+		case SAVE_CURRENT_EXIT:
+		{
+			edit->quit = true;
+			edit->returnVal = 1;
+			break;
+		}
+		case OVERWRITE_FILE:
+		{
+			
+			break;
+		}
+		}
+		
 	}
 	else if (b == backButton)
 	{
@@ -125,8 +164,8 @@ void ConfirmPopup::CancelCallback(Panel *p)
 		}
 		case SAVE_CURRENT_EXIT:
 		{
-			edit->quit = true;
-			edit->returnVal = 1;
+			//edit->quit = true;
+			//edit->returnVal = 1;
 			break;
 		}
 

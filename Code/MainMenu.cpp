@@ -3015,7 +3015,7 @@ void MainMenu::HandleMenuMode()
 		case EditorMenuScreen::A_OPEN_MAP:
 			//netplayManager->FindQuickplayMatch();
 			//SetMode(QUICKPLAY_TEST);
-			RunEditor(TITLEMENU, "");
+			RunEditor(TITLEMENU, editorMenuScreen->selectedMap->filePath.string());
 			break;
 		//case OnlineMenuScreen::A_CREATE_LOBBY:
 		//	customMatchManager->CreateCustomLobby();

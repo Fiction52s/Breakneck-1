@@ -10,6 +10,7 @@ UIMouse::UIMouse()
 {
 	currWindow = NULL;
 	customCursor = NULL;
+	controllersOn = true;
 	ResetMouse();
 }
 
@@ -25,7 +26,7 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 
 	bool cursorOn = customCursor == NULL || customCursor->visible;
 
-	if (cursorOn)
+	if (cursorOn && controllersOn )
 	{
 		if (CONTROLLERS.ButtonHeld_A())
 		{
@@ -46,10 +47,8 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 	mousePos = p_mousePos;
 
 
-	if (cursorOn)
+	if (cursorOn && controllersOn)
 	{
-
-
 		ControllerDualStateQueue *nonNeutralStates = NULL;
 		ControllerDualStateQueue *currStates = NULL;
 		double mag = 0;
@@ -176,6 +175,11 @@ void UIMouse::SetRenderWindow(sf::RenderWindow *rw)
 void UIMouse::SetCustomCursor(CustomCursor *cc)
 {
 	customCursor = cc;
+}
+
+void UIMouse::SetControllersOn(bool on)
+{
+	controllersOn = on;
 }
 
 bool UIMouse::IsWindowFocused()

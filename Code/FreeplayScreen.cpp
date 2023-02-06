@@ -145,7 +145,7 @@ void FreeplayScreen::StartBrowsing()
 	mapBrowserScreen->browserHandler->chooser->UpdateGameModeCriteria(gameModesVec);
 
 
-	mapBrowserScreen->StartLocalBrowsing();
+	mapBrowserScreen->StartLocalBrowsing(MapBrowser::OPEN, true);
 }
 
 void FreeplayScreen::TryActivateOptionsPanel(MapNode *mp)

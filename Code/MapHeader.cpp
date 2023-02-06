@@ -380,13 +380,15 @@ bool MapHeader::Load(std::ifstream &is)
 
 void MapHeader::Save(std::ofstream &of)
 {
-
 	//current version is 4, go up by an integer every time from now on
 	of << ver1 << "\n"; // << "." << ver2 << "\n";
 
 	of << fullName.size() << "\n";
 
-	of << fullName << "\n";
+	if (fullName.size() > 0)
+	{
+		of << fullName << "\n";
+	}
 
 	of << description.size() << "\n";
 

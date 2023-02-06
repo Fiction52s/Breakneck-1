@@ -66,6 +66,7 @@
 #include "globals.h"
 
 #include "MapBrowser.h"
+#include "PlayerBox.h"
 
 //#define GGPO_ON
 
@@ -577,7 +578,6 @@ void EditSession::TestPlayerMode()
 #ifdef GGPO_ON
 		InitGGPO();
 #endif
-		
 		gameMode->Setup();
 	}
 	
@@ -827,6 +827,7 @@ void EditSession::TestPlayerMode()
 	}
 
 	SetMode(TEST_PLAYER);
+	MOUSE.SetControllersOn(false);
 	ClearSelectedPoints();
 	ClearSelectedBrush();
 	
@@ -1376,6 +1377,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	handleEventFunctions[NETPLAY_TEST_GATHER_USERS] = &EditSession::NetplayTestGatherUsersModeHandleEvent;
 	handleEventFunctions[NETPLAY_TEST_GET_CONNECTIONS] = &EditSession::NetplayTestGetConnectionsModeHandleEvent;
+	handleEventFunctions[SETUP_CONTROLS] = &EditSession::SetupControlsModeHandleEvent;
 
 
 
@@ -1398,6 +1400,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	updateModeFunctions[NETPLAY_TEST_GATHER_USERS] = &EditSession::NetplayTestGatherUsersModeUpdate;
 	updateModeFunctions[NETPLAY_TEST_GET_CONNECTIONS] = &EditSession::NetplayTestGetConnectionsModeUpdate;
+	updateModeFunctions[SETUP_CONTROLS] = &EditSession::SetupControlsModeUpdate;
 
 	ggpoStatsPanel = NULL;
 	currGrassType = 0;
@@ -1425,6 +1428,12 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	SetupWaterShaders();
 
+	playerInputBoxGroup = new PlayerBoxGroup(this, 1, 400, 400, 100);
+	playerInputBoxGroup->SetMode(PlayerBox::Mode::MODE_CONTROLLER_ONLY);
+
+	Vector2f center(960, 540 + 100);
+	playerInputBoxGroup->SetBoxCenter(0, center);
+	playerInputBoxGroup->ClearInfo();
 
 	transformTools = new TransformTools();
 
@@ -1713,6 +1722,8 @@ EditSession::~EditSession()
 	delete variationSelector;
 
 	delete playerTracker;
+
+	delete playerInputBoxGroup;
 
 	delete transformTools;
 
@@ -2779,8 +2790,31 @@ void EditSession::WritePlayerOptions(std::ofstream &of)
 	playerOptionsField.Save(of);
 }
 
+bool EditSession::WriteTargetExistsAlready()
+{
+	stringstream fixExt;
+	fixExt << filePath.parent_path().string() << "\\" << filePath.stem().string() << MAP_EXT;
+	string dest = fixExt.str();
+
+	if (boost::filesystem::exists(dest))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+
+
 bool EditSession::WriteFile()
 {
+	if (filePath.empty())
+	{
+		return false;
+	}
+
+	//assert(!filePath.empty());
+
 	saveUpdated = true;
 	
 	
@@ -4877,10 +4911,19 @@ void EditSession::ChooseFileSave(const std::string &fileName)
 	{
 		//folderPath = ;
 		string fp = mb->currPath.string() + "\\" + fileName + MAP_EXT;
-		
 		filePath = fp;
 		filePathStr = fp;
-		WriteFile();
+
+		if (WriteTargetExistsAlready())
+		{
+			confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE);
+		}
+		else
+		{
+			WriteFile();
+		}
+		
+		//WriteFile();
 	}
 }
 
@@ -11192,6 +11235,8 @@ void EditSession::StopCurrentMusic()
 
 void EditSession::CleanupTestPlayerMode()
 {
+	MOUSE.SetControllersOn(true);
+
 	if ( !(previewMusic != NULL && mainMenu->musicPlayer->currMusic == previewMusic 
 		&& !musicSelectorUI->ShouldPlayOriginal() ) )
 	{
@@ -11314,6 +11359,12 @@ void EditSession::SetMode(Emode m)
 		createGatesModeUI->modifyGate = NULL;
 		break;
 	}
+	case SETUP_CONTROLS:
+	{
+		MOUSE.SetControllersOn(true);
+		//MOUSE.Show();
+		break;
+	}
 	}
 
 	ClearActivePanels();
@@ -11377,6 +11428,12 @@ void EditSession::SetMode(Emode m)
 	{
 		mapOptionsUI->oldMode = oldMode;
 		mapOptionsUI->OpenMapOptionsPopup();
+		break;
+	}
+	case SETUP_CONTROLS:
+	{
+		MOUSE.SetControllersOn(false);
+		//MOUSE.Hide();
 		break;
 	}
 		
@@ -12802,6 +12859,10 @@ void EditSession::DrawMode()
 		}
 		break;
 	}
+	case SETUP_CONTROLS:
+	{
+		break;
+	}
 	}
 }
 
@@ -12887,8 +12948,8 @@ void EditSession::DrawModeUI()
 
 		sf::Text textmag;
 
-		bool singleObj, singleActor, singleImage, singleRail, onlyPoly; 
-		
+		bool singleObj, singleActor, singleImage, singleRail, onlyPoly;
+
 		singleObj = selectedBrush->objects.size() == 1 && selectedPoints.size() == 0;
 
 		singleActor = singleObj && selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
@@ -12917,6 +12978,11 @@ void EditSession::DrawModeUI()
 	case CREATE_IMAGES:
 
 		break;
+	case SETUP_CONTROLS:
+	{
+		playerInputBoxGroup->Draw(preScreenTex);
+		break;
+	}
 	}
 }
 
@@ -13009,6 +13075,7 @@ void EditSession::GeneralMouseUpdate()
 void EditSession::SaveMapDialog()
 {
 	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_SAVE, "Resources\\Maps\\CustomMaps");
+	mapBrowserHandler->chooser->SetCurrFileNameText(mapHeader->fullName);
 }
 
 void EditSession::OpenMapDialog()
@@ -13036,9 +13103,30 @@ void EditSession::TrySaveMap()
 	}
 	else
 	{
-		cout << "writing to file: " << filePath.string() << endl;
 		WriteFile();
+		/*if (WriteTargetExistsAlready())
+		{
+			confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE);
+		}
+		else
+		{
+			
+		}*/
+		//cout << "writing to file: " << filePath.string() << endl;
+		//WriteFile();
 	}
+
+	/*bool EditSession::TryWriteFile()
+	{
+		if (WriteTargetExistsAlready())
+		{
+			confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE);
+		}
+		else
+		{
+			WriteFile();
+		}
+	}*/
 }
 
 void EditSession::TryExitEditor()
@@ -13047,9 +13135,14 @@ void EditSession::TryExitEditor()
 		confirmPopup->Pop(ConfirmPopup::ConfirmType::SAVE_CURRENT_EXIT);
 	else
 	{
-		quit = true;
-		returnVal = 1;
+		ExitEditor();
 	}
+}
+
+void EditSession::ExitEditor()
+{
+	quit = true;
+	returnVal = 1;
 }
 
 void EditSession::GeneralEventHandler()
@@ -13200,7 +13293,14 @@ void EditSession::GeneralEventHandler()
 						TestNetplay();
 					}
 #else
-					TestPlayerMode();
+					if (playerInputBoxGroup->IsFull())
+					{
+						TestPlayerMode();
+					}
+					else
+					{
+						SetMode(SETUP_CONTROLS);
+					}
 #endif
 
 					
@@ -14305,9 +14405,19 @@ void EditSession::NetplayTestGetConnectionsModeHandleEvent()
 {
 }
 
+void EditSession::SetupControlsModeHandleEvent()
+{
+
+}
+
 void EditSession::UpdateMode()
 {
 	bool focusedUpdate = false;
+
+	//if (mode != TEST_PLAYER)
+	//{
+	//	//UpdateControllers();
+	//}
 
 	for (auto it = activePanels.begin(); it != activePanels.end(); ++it)
 	{
@@ -15420,11 +15530,31 @@ void EditSession::TransformModeUpdate()
 	}
 }
 
+void EditSession::SetupControlsModeUpdate()
+{
+	playerInputBoxGroup->Update();
+
+	if (playerInputBoxGroup->IsReadyAndStartPressed())
+	{
+		controlProfiles[0] = playerInputBoxGroup->GetControlProfile(0);
+		controllerStates[0] = playerInputBoxGroup->GetControllerStates(0);
+		TestPlayerMode();
+	}
+	else
+	{
+		playerInputBoxGroup->CheckControllerJoins();
+	}
+}
+
 #include "steam/steam_api.h"
 void EditSession::PublishMap()
 {
 	if (WriteFile())
 	{
 		workshopUploader->ActivatePublishPopup();
+	}
+	else
+	{
+		messagePopup->Pop("Map must be saved before it can be published.");
 	}
 }

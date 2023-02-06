@@ -93,7 +93,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		}
 		case EXIT_EDITOR:
 		{
-			
+			edit->TryExitEditor();
 			//are you sure you want to exit without saving?
 		}
 		}
