@@ -1023,7 +1023,7 @@ void MapBrowser::PopulateRects()
 
 void MapBrowser::Deactivate()
 {
-	ClearNodes();
+	//ClearNodes();
 	//ClearTilesets();
 }
 
@@ -1039,6 +1039,7 @@ void MapBrowser::TurnOff()
 {
 	action = A_CANCELLED;
 	ClearFilters();
+	ClearNodes();
 	
 	if (mode == EDITOR_SAVE || mode == EDITOR_OPEN)
 	{
