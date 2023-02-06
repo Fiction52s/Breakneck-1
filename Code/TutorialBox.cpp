@@ -7,13 +7,29 @@ using namespace sf;
 
 TutorialBox::TutorialBox()
 {
+	charHeight = 48;
+	lockedSize = Vector2f();
+	quadColor = Color(0, 0, 0, 100);
+	rectBuffer = 30;
+	textColor = Color::White;
+}
+
+TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color p_quadColor, sf::Color p_textColor, float p_rectBuffer)
+{
 	sess = Session::GetSession();
 
-	text.setFont(sess->mainMenu->arial);
-	text.setCharacterSize(48);
-	text.setFillColor(Color::White);
+	charHeight = p_charHeight;
+	lockedSize = p_lockedSize;
+	quadColor = p_quadColor;
+	textColor = p_textColor;
+	rectBuffer = p_rectBuffer;
+	
 
-	SetRectColor(quad, Color(0, 0, 0, 100));
+	text.setFont(sess->mainMenu->arial);
+	text.setCharacterSize(charHeight);
+	text.setFillColor(textColor);
+
+	SetRectColor(quad, quadColor);
 }
 
 bool TutorialBox::CalcButtonPos( std::string &startString, 
@@ -31,7 +47,7 @@ bool TutorialBox::CalcButtonPos( std::string &startString,
 	}
 
 	string stringBeforeFound = startString.substr(0, found);
-	size_t newLineFound = stringBeforeFound.find('\n', 0);
+	size_t newLineFound = stringBeforeFound.find_last_of('\n');
 
 	int buttonX = 0;
 	if (newLineFound != string::npos)
@@ -61,7 +77,9 @@ bool TutorialBox::CalcButtonPos( std::string &startString,
 		}
 	}
 
-	int buttonY = numLines * text.getCharacterSize();
+	int lineSpacing = text.getFont()->getLineSpacing(text.getCharacterSize());
+	int textTest = text.getLineSpacing();
+	int buttonY = numLines * lineSpacing;//(text.getLineSpacing() + text.getCharacterSize() );
 
 	buttonPos = Vector2f(buttonX, buttonY);
 
@@ -96,8 +114,8 @@ void TutorialBox::SetText(const std::string &str)
 	std::vector<string> inputStrings = {  "JUMP", "DASH",
 	"ATTACK", "SHIELD", "LEFTWIRE", "RIGHTWIRE", "MAP", "PAUSE"};
 
-	float buttonSize = 48;
-	float rectBuffer = 30;
+	float buttonSize = charHeight;
+	//float rectBuffer = 30;
 
 	FloatRect globalBounds;
 
@@ -135,40 +153,21 @@ void TutorialBox::SetText(const std::string &str)
 		SetRectCenter(buttonQuad + i * 4, buttonSize, buttonSize,
 			Vector2f(globalBounds.left, globalBounds.top) + buttonInfos[i].pos + Vector2f(buttonSize / 2, buttonSize / 2));
 
-		
-
-		//int cType = sess->controllerStates[0]->GetControllerType();
-		//int bIndex = 0;
-		//switch (cType)
-		//{
-		//case CTYPE_XBOX:
-		//{
-		//	bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;
-		//	break;
-		//}
-		//case CTYPE_GAMECUBE:
-		//	bIndex = sess->controllerStates[0]->con->filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
-		//	break;
-		//case CTYPE_KEYBOARD:
-		//{
-		//	bIndex = sess->controllerStates[0]->con->keySettings.buttonMap[buttonInfos[i].buttonType];//filter[buttonInfos[i].buttonType] - 1;//sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
-		//	break;
-		//}
-		//}
-		//dash = x
-		//jump = a
-		//attack = rightshoulder
-		//shield = leftshoulder
-		//rightwire = r2
-		//leftwire = l2
-
 		ControllerSettings::ButtonType bType = (ControllerSettings::ButtonType)buttonInfos[i].buttonType;
 		SetRectSubRect(buttonQuad + i * 4, sess->GetButtonIconTile(0, bType));
 	}
 	
-	
+	Vector2f quadSize;
+	if (lockedSize.x != 0 && lockedSize.y != 0)
+	{
+		quadSize = lockedSize;
+	}
+	else
+	{
+		quadSize = Vector2f(globalBounds.width + rectBuffer, globalBounds.height + rectBuffer);
+	}
 
-	SetRectCenter(quad, globalBounds.width + rectBuffer, globalBounds.height + rectBuffer,
+	SetRectCenter(quad, quadSize.x, quadSize.y,
 		Vector2f(globalBounds.left + globalBounds.width / 2,
 		globalBounds.top + globalBounds.height / 2 ));
 }
@@ -177,7 +176,34 @@ void TutorialBox::SetCenterPos(sf::Vector2f &pos)
 {
 	text.setPosition(pos);
 
-	SetRectCenter(quad, text.getGlobalBounds().width + 20, text.getGlobalBounds().height + 20, Vector2f());
+	Vector2f quadSize;
+	if (lockedSize.x != 0 && lockedSize.y != 0)
+	{
+		quadSize = lockedSize;
+	}
+	else
+	{
+		quadSize = Vector2f(text.getGlobalBounds().width + rectBuffer, text.getGlobalBounds().height + rectBuffer);
+	}
+
+	SetRectCenter(quad, quadSize.x, quadSize.y, Vector2f());
+}
+
+void TutorialBox::SetTopLeft(sf::Vector2f &pos)
+{
+	/*text.setPosition(pos);
+
+	Vector2f quadSize;
+	if (lockedSize.x != 0 && lockedSize.y != 0)
+	{
+		quadSize = lockedSize;
+	}
+	else
+	{
+		quadSize = Vector2f(text.getGlobalBounds().width + rectBuffer, text.getGlobalBounds().height + rectBuffer);
+	}
+
+	SetRectCenter(quad, quadSize.x, quadSize.y, Vector2f());*/
 }
 
 void TutorialBox::ClearButtons()
@@ -186,7 +212,6 @@ void TutorialBox::ClearButtons()
 	{
 		ClearRect(buttonQuad + i * 4);
 	}
-	
 }
 
 void TutorialBox::Draw(sf::RenderTarget *target)

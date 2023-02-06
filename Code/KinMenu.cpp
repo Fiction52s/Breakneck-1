@@ -13,6 +13,8 @@
 #include "KinMenu.h"
 #include "Actor.h"
 #include "PauseMenu.h"
+#include "TutorialBox.h"
+
 
 using namespace sf;
 using namespace std;
@@ -44,17 +46,19 @@ KinMenu::KinMenu( GameSession *p_game)
 	ts_tutorial[9] = game->GetTileset("Menu/tut_airdash.png", tutWidth, tutHeight);
 	tutorialSpr.setPosition(512, 74);
 
-
-	ts_xboxButtons = game->GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
-
 	SetRectColor(descriptionBox, Color(0, 0, 0, 255));
 	SetRectCenter(descriptionBox, 1220, 90, Vector2f(1122, 439));//topleft is 512,394
 
 	description.setPosition(512 + 10, 394 + 10);
 
-	commandSpr.setPosition(512, 394);
-	commandSpr.setTexture(*ts_xboxButtons->texture);
-	commandSpr.setScale(.4, .4);
+	tutBox = new TutorialBox(48, Vector2f(1220, 90), Color::Black, Color::White, 30);
+
+	tutBox->SetCenterPos(Vector2f(1122, 439));
+
+	//SetRectTopLeft(commandRect, 50, 50, Vector2f(512, 394));
+	//commandSpr.setPosition(512, 394);
+	//commandSpr.setTexture(*ts_xboxButtons->texture);
+	//commandSpr.setScale(.4, .4);
 
 	for (int i = 0; i < 10; ++i)
 	{
@@ -172,13 +176,13 @@ KinMenu::KinMenu( GameSession *p_game)
 
 	frame = 0;
 
-	powerDescriptions[0] = "      = JUMP     Press JUMP to launch yourself into the air, or press JUMP while aerial to double jump.\n"
+	powerDescriptions[0] = "Press JUMP to launch yourself into the air,\nor press JUMP while aerial to double jump.\n"
 		"Hold the JUMP button down longer for extra height!";
-	powerDescriptions[1] = "      = ATTACK     Press ATTACK to release an energy burst in front of you capable of destroying enemies.\n"
+	powerDescriptions[1] = "Attack = ATTACK     Press ATTACK to release an energy burst in front of you capable of destroying enemies.\n"
 		"Hold UP or DOWN while in the air to do a directional attack.";
 	powerDescriptions[2] = "When moving on a slope, hold diagonally UP/DOWN and FORWARD to accelerate.\n"
 		"Hold UP or DOWN to slide with low friction. On steep slopes hold DOWN to slide down even faster.";
-	powerDescriptions[3] = "      = DASH     Press DASH to quickly start moving in the direction you are facing while grounded.\n"
+	powerDescriptions[3] = "Dash = DASH     Press DASH to quickly start moving in the direction you are facing while grounded.\n"
 		"Tap DASH quickly while ascending a steep slope to climb your way up.";
 	powerDescriptions[4] = "Hold towards a wall to wall cling and descend slowly. Tap away from a wall to wall jump."
 		"\nHold DOWN and away from the wall to drift away from the wall without wall jumping";
@@ -190,7 +194,7 @@ KinMenu::KinMenu( GameSession *p_game)
 		"\nMODE. You have 5 seconds to kill an enemy or destroy the NODE before the BREAKNECK self destructs.";
 	powerDescriptions[8] = "Certain enemies have a special ABSORPTION HEART which supports the NODE and VEINS. When you"
 		"\nclear enough of them from an area, the nearby VEINS will weaken, allowing you to break through them.";
-	powerDescriptions[9] = "      = DASH     Press DASH while in the air to HOVER for a short period. Hold a direction to"
+	powerDescriptions[9] = "Dash = DASH     Press DASH while in the air to HOVER for a short period. Hold a direction to"
 		"\nAIRDASH in 1 of 8 directions. You can change your AIRDASH direction at any time. Kin gets 1 AIRDASH per air time.";
 	UpdateDescription();
 	UpdateSelector();
@@ -201,6 +205,8 @@ KinMenu::KinMenu( GameSession *p_game)
 
 KinMenu::~KinMenu()
 {
+	delete tutBox;
+
 	delete xSelector;
 	delete ySelector;
 
@@ -239,6 +245,9 @@ void KinMenu::UpdatePowers(Actor *player)
 
 void KinMenu::UpdateCommandButton()
 {
+	//SetRectSubRect(commandRect, game->GetButtonIconTile( 0, ControllerSettings::BUTTONTYPE_JUMP));
+	
+
 	//GameController *con = game->GetController(0);
 	//ts_currentButtons = NULL;
 	//ControllerType cType = con->GetCType();
@@ -364,6 +373,7 @@ int KinMenu::GetCurrIndex()
 void KinMenu::UpdateDescription()
 {
 	description.setString(powerDescriptions[GetCurrIndex()]);
+	tutBox->SetText(powerDescriptions[GetCurrIndex()]);
 
 	/*sf::FloatRect textRect = description.getLocalBounds();
 	description.setOrigin(textRect.left + textRect.width / 2.0f,
@@ -420,15 +430,18 @@ void KinMenu::Draw(sf::RenderTarget *target)
 
 
 	target->draw(tutorialSpr);
-	target->draw(descriptionBox, 4, sf::Quads);
+	//target->draw(descriptionBox, 4, sf::Quads);
 
 	int index = GetCurrIndex();
 	if (index == 0 || index == 1 || index == 3 || index == 9)
 	{
-		target->draw(commandSpr);
+		//Tileset *ts_buttons = game->GetButtonIconTileset( 0 );
+		//target->draw(commandRect, 4, sf::Quads, *ts_buttons);
 	}
 
-	target->draw(description);
+	//target->draw(description);
+
+	tutBox->Draw(target);
 
 	target->draw(selectorSpr);
 }

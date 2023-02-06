@@ -12,9 +12,11 @@ struct GameSession;
 struct ShardMenu;
 struct ColorShifter;
 struct SingleAxisSelector;
+struct TutorialBox;
 
 struct KinMenu
 {
+	TutorialBox *tutBox;
 	PlayerSkinShader playerSkinShader;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
@@ -51,9 +53,6 @@ struct KinMenu
 	sf::Sprite tutorialSpr;
 	sf::Vertex descriptionBox[4];
 	void UpdateCommandButton();
-	Tileset *ts_xboxButtons;
-	Tileset *ts_currentButtons;
-	sf::Sprite commandSpr;
 	Tileset *ts_tutorial[10];
 	sf::Sprite kinSpr;
 	sf::Sprite veinSpr;

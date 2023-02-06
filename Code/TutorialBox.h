@@ -15,6 +15,13 @@ struct TutorialBox
 	const static int MAX_BUTTONS = 12;
 	sf::Vertex buttonQuad[4 * MAX_BUTTONS];
 
+	sf::Vector2f lockedSize;
+	float rectBuffer;
+	float charHeight;
+	sf::Color quadColor;
+	sf::Color textColor;
+
+	TutorialBox(int charHeight, sf::Vector2f lockedSize, sf::Color quadColor, sf::Color textColor, float rectBuffer );
 	TutorialBox();
 	bool CalcButtonPos(
 		std::string &startString,
@@ -23,6 +30,7 @@ struct TutorialBox
 	void ClearButtons();
 	void SetText(const std::string &str);
 	void SetCenterPos(sf::Vector2f &pos);
+	void SetTopLeft(sf::Vector2f &pos);
 	void Draw(sf::RenderTarget *target);
 };
 
