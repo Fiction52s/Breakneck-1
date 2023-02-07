@@ -1149,9 +1149,9 @@ void TerrainPolygon::SetupTilePattern()
 
 	RandomPicker p;
 	p.AddActiveOption(0, 2);
-	//p.AddActiveOption(1, 2);
-	//p.AddActiveOption(2, 2);
-	//p.AddActiveOption(3, 2);
+	p.AddActiveOption(1, 2);
+	p.AddActiveOption(2, 2);
+	p.AddActiveOption(3, 2);
 
 
 	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)
@@ -4934,7 +4934,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 				Tileset *ts = sess->ts_terrain;
 				
 
-				int tile = 8 * terrainWorldType + terrainVariation;
+				int tile = (8 * terrainWorldType + terrainVariation) * 4;
 				IntRect ir;//rand() % 8);//tile + rand() % 2);
 
 				float width = ts->texture->getSize().x;

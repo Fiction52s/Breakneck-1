@@ -145,7 +145,7 @@ void FreeplayScreen::StartBrowsing()
 	mapBrowserScreen->browserHandler->chooser->UpdateGameModeCriteria(gameModesVec);
 
 
-	mapBrowserScreen->StartLocalBrowsing(MapBrowser::OPEN, true);
+	mapBrowserScreen->StartLocalBrowsing(MapBrowser::FREEPLAY, true);
 }
 
 void FreeplayScreen::TryActivateOptionsPanel(MapNode *mp)
@@ -232,6 +232,8 @@ void FreeplayScreen::Update()
 			//cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
 			//cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
 			//cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
+
+			mapBrowserScreen->TurnOff();
 
 			SetAction(A_START);
 

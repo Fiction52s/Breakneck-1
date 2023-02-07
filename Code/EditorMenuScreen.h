@@ -26,7 +26,6 @@ struct EditorMenuScreen : GUIHandler
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 	Panel *panel;
-	MapNode *selectedMap;
 	MapBrowserScreen * mapBrowserScreen;
 
 	EditorMenuScreen(MainMenu *mm);

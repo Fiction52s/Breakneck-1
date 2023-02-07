@@ -3469,7 +3469,7 @@ void EditSession::SetupTerrainSelectPanel()
 			matTypeRects[TERRAINLAYER_NORMAL][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
-				ts_terrain, ts_terrain->GetSubRect( worldI * maxTerrainVarPerWorld + i ),
+				ts_terrain, ts_terrain->GetSubRect( (worldI * maxTerrainVarPerWorld + i) * 4 ),
 				terrainGridSize);
 
 			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();

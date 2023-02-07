@@ -49,6 +49,8 @@ struct PauseMenu;
 struct MainMenu;
 struct SingleAxisSelector;
 struct GameSession;
+struct PlayerBoxGroup;
+
 struct OptionsMenu
 {
 
@@ -64,6 +66,8 @@ struct OptionsMenu
 		GAMEPLAY,
 	};
 	State state;
+
+	PlayerBoxGroup *playerBoxGroup;
 
 	Tileset *ts_optionMode;
 	sf::Vertex optionModeQuads[4*4];

@@ -277,12 +277,19 @@ void ControlProfileMenu::SetProfiles(std::list<ControlProfile*> &p_profiles)
 
 	assert(!profiles.empty());
 
-	currProfile = profiles.front();
+	currProfile = NULL;
+	//currProfile = profiles.front();
 	
 	//if (profiles.empty())
 	//{
 	//	//cant be empty because I always add the default
 	//}
+}
+
+void ControlProfileMenu::SetCurrProfile(ControlProfile *profile)
+{
+	currProfile = profile;
+	selectedProfileText.setString("Controls: " + currProfile->name);
 }
 
 void ControlProfileMenu::SetControllerInput(ControllerDualStateQueue *p_controllerInput)
@@ -293,9 +300,11 @@ void ControlProfileMenu::SetControllerInput(ControllerDualStateQueue *p_controll
 
 	SetProfiles(managedProfiles);
 
-	currProfile = managedProfiles.front();//controlMenu = new ControlProfileMenu;
+	SetCurrProfile(managedProfiles.front());
 
-	selectedProfileText.setString("Controls: " + currProfile->name);
+	//currProfile = managedProfiles.front();//controlMenu = new ControlProfileMenu;
+
+	//selectedProfileText.setString("Controls: " + currProfile->name);
 
 	//currProfile = MainMenu::GetInstance()->cpm->profiles.front();
 
@@ -458,9 +467,7 @@ void ControlProfileMenu::Update()
 			int test = 0;
 			action = A_SELECTED;
 
-			currProfile = GetProfileAtIndex(saSelector->currIndex);
-
-			selectedProfileText.setString("Controls: " + currProfile->name);
+			SetCurrProfile(GetProfileAtIndex(saSelector->currIndex));
 			//selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
 			//	selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
 		}
@@ -495,13 +502,19 @@ void ControlProfileMenu::Update()
 			}
 			else if (controllerInput->ButtonPressed_B())
 			{
-				action = A_SHOWING_OPTIONS;
+				if (actionButtonGroup->AllButtonsAssigned())
+				{
+					action = A_SHOWING_OPTIONS;
+				}
 			}
 			else if (controllerInput->ButtonPressed_X())
 			{
-				action = A_SHOWING_OPTIONS;
-				tempProfile->CopyTo(GetProfileAtIndex(saSelector->currIndex));
-				MainMenu::GetInstance()->cpm->WriteProfiles();
+				if (actionButtonGroup->AllButtonsAssigned())
+				{
+					action = A_SHOWING_OPTIONS;
+					tempProfile->CopyTo(GetProfileAtIndex(saSelector->currIndex));
+					MainMenu::GetInstance()->cpm->WriteProfiles();
+				}
 			}
 		}
 		else
@@ -1559,6 +1572,33 @@ void ActionButtonGroup::SetTopLeft(sf::Vector2f &pos)
 	SetSelectedIndex(selectedIndex);
 }
 
+int ActionButtonGroup::GetDefaultButton()
+{
+	int defaultButton = XBOX_BLANK;
+
+	if (controlMenu->tempProfile->GetControllerType() == CTYPE_KEYBOARD)
+	{
+		defaultButton = Keyboard::Unknown; //keyboard blank??
+	}
+
+	return defaultButton;
+}
+
+bool ActionButtonGroup::AllButtonsAssigned()
+{
+	int defaultButton = GetDefaultButton();
+
+	for (int i = 0; i < numButtons; ++i)
+	{
+		if (controlMenu->tempProfile->filter[i] == defaultButton)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void ActionButtonGroup::SetKeyboardMode(bool p_keyboardMode)
 {
 	if (keyboardMode != p_keyboardMode)
@@ -1684,12 +1724,7 @@ void ActionButtonGroup::SetModifiedButton(int button)
 	action = A_SELECT_BUTTON;
 	SetRectColor(highlightQuad, Color::White);
 
-	int defaultButton = XBOX_BLANK;
-
-	if (controlMenu->tempProfile->GetControllerType() == CTYPE_KEYBOARD)
-	{
-		defaultButton = Keyboard::Unknown; //keyboard blank??
-	}
+	int defaultButton = GetDefaultButton();
 
 	for (int i = 0; i < numButtons; ++i)
 	{
@@ -1706,6 +1741,8 @@ void ActionButtonGroup::SetModifiedButton(int button)
 void ActionButtonGroup::ModifySelectedButton()
 {
 	action = A_MODIFY_BUTTON;
+	
+	//controlMenu->tempProfile->filter[i]
 	SetRectColor(highlightQuad, Color::Magenta);
 }
 

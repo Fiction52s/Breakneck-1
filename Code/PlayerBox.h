@@ -65,6 +65,7 @@ struct PlayerBox
 	void Draw(sf::RenderTarget *target);
 	void SetName(const std::string &name);
 	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex);
+	void SetCurrProfile(ControlProfile *cp);
 	void Show();
 	void Hide();
 	ControlProfile *GetCurrProfile();
@@ -91,6 +92,7 @@ struct PlayerBoxGroup
 	bool IsStateChangingControls(ControllerDualStateQueue *conStates);
 	bool IsReadyAndStartPressed();
 	bool BackButtonPressed();
+	void SetControlProfile(int index, ControlProfile *cp);
 	bool IsReady();
 	bool IsFull();
 	void Update();

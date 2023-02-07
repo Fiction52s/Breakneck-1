@@ -25,9 +25,15 @@ MapBrowserScreen::~MapBrowserScreen()
 	delete browserHandler;
 }
 
+void MapBrowserScreen::TurnOff()
+{
+	browserHandler->chooser->TurnOff();
+}
+
 void MapBrowserScreen::StartLocalBrowsing( int mode, bool showTabs )
 {
 	MapBrowser::Mode m = (MapBrowser::Mode)mode;
+	browserHandler->confirmedMapFilePath = "";
 	browserHandler->chooser->StartRelative(MAP_EXT, m, "Resources\\Maps");
 
 	if (showTabs)
@@ -56,6 +62,7 @@ void MapBrowserScreen::StartWorkshopBrowsing( int mode )
 	{
 		browserHandler->chooser->panel->tabGroups["tabs"]->HideMember();
 	}
+	browserHandler->confirmedMapFilePath = "";
 	browserHandler->chooser->StartWorkshop((MapBrowser::Mode)mode );
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(1);
 	browserHandler->ClearFocus();

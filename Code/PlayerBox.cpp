@@ -276,6 +276,11 @@ void PlayerBox::SetControllerStates(ControllerDualStateQueue *conStates, int p_s
 	SetSkin(p_skinIndex);
 }
 
+void PlayerBox::SetCurrProfile(ControlProfile *cp)
+{
+	controlMenu->SetCurrProfile(cp);
+}
+
 void PlayerBox::SetName(const std::string &name)
 {
 	playerNameStr = name;
@@ -358,6 +363,11 @@ void PlayerBoxGroup::Update()
 	{
 		(*it)->Update();
 	}	
+}
+
+void PlayerBoxGroup::SetControlProfile(int index, ControlProfile *cp)
+{
+	playerBoxes[index]->SetCurrProfile(cp);
 }
 
 bool PlayerBoxGroup::CheckControllerJoins()

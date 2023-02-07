@@ -114,9 +114,6 @@ void SavePopup::Update()
 			
 			browserHandler->chooser->action = MapBrowser::A_IDLE;
 			
-			//assert(browserHandler->chooser->selectedRect != NULL);
-			//MapNode *mp = (MapNode*)browserHandler->chooser->selectedRect->info;
-			
 		}
 	}
 	

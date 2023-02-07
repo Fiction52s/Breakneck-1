@@ -1107,9 +1107,15 @@ void MapBrowser::Init()
 		panel->confirmButton = createLobbyButton;
 		HideFileNameTextBox();
 	}
-
-	
-	
+	else if (mode == FREEPLAY)
+	{
+		openButton->HideMember();
+		saveButton->HideMember();
+		createLobbyButton->HideMember();
+		panel->confirmButton = NULL;
+		HideFileNameTextBox();
+		cancelButton->ShowMember();
+	}
 
 	nextPageButton->HideMember();
 	prevPageButton->HideMember();
@@ -1140,6 +1146,10 @@ void MapBrowser::Init()
 	{
 		panel->cancelButton = cancelButton;
 		cancelButton->SetPos(panel->confirmButton->pos + Vector2i(panel->confirmButton->size.x + 30, 0));
+	}
+	else
+	{
+		cancelButton->SetPos(openButton->pos);
 	}
 	
 	if (mode == OPEN)
@@ -1280,7 +1290,7 @@ MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool p_showPreview, int
 	SetRectTopLeft(noPreviewQuad, previewSize.x, previewSize.y, previewTopLeft);
 	SetRectColor(noPreviewQuad, Color::Black);
 
-	
+	confirmedMapFilePath = "";
 
 	MainMenu *mm = MainMenu::GetInstance();
 
@@ -1513,8 +1523,7 @@ void MapBrowserHandler::Update()
 void MapBrowserHandler::Cancel()
 {
 	chooser->TurnOff();
-
-
+	confirmedMapFilePath = "";
 }
 
 void MapBrowserHandler::Clear()
@@ -1522,6 +1531,7 @@ void MapBrowserHandler::Clear()
 	ClearFocus();
 	ClearSelection();
 	chooser->ClearNodes();
+	confirmedMapFilePath = "";
 }
 
 void MapBrowserHandler::Confirm()
@@ -1562,6 +1572,9 @@ void MapBrowserHandler::Confirm()
 		}
 	}
 	
+	MapNode *mn = (MapNode*)chooser->selectedRect->info;
+	confirmedMapFilePath = mn->filePath.string();
+
 	chooser->TurnOff();
 
 	chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs

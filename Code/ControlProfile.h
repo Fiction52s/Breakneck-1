@@ -116,6 +116,10 @@ struct ActionButtonGroup
 
 	void Reset();
 
+	int GetDefaultButton();
+
+	bool AllButtonsAssigned();
+
 	void SetKeyboardMode(bool p_keyboardMode );
 
 	void UpdateButtonIcons();
@@ -193,6 +197,7 @@ struct ControlProfileMenu
 	ControlProfile *GetProfileAtIndex(int ind);
 	void SetProfiles(std::list<ControlProfile*> &p_profiles);
 	void SetControllerInput(ControllerDualStateQueue *controllerInput);
+	void SetCurrProfile(ControlProfile *profile);
 	void SetupBoxes();
 	void SetTopLeft(sf::Vector2f &p_topLeft);
 	void Update();

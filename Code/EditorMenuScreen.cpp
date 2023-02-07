@@ -70,7 +70,6 @@ bool EditorMenuScreen::HandleEvent(sf::Event ev)
 void EditorMenuScreen::Start()
 {
 	action = A_NONE;
-	selectedMap = NULL;
 }
 
 void EditorMenuScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -98,7 +97,6 @@ void EditorMenuScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
 		{
 			action = A_CHOOSE_MAP;
 			mapBrowserScreen->StartLocalBrowsing(MapBrowser::OPEN, false);
-			selectedMap = NULL;
 			//action = A_OPEN_MAP;
 			break;
 		}
@@ -161,7 +159,6 @@ void EditorMenuScreen::Update()
 		else if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CONFIRMED)
 		{
 			action = A_OPEN_MAP;
-			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 		}
 		break;
 

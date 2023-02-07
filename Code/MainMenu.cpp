@@ -2926,22 +2926,7 @@ void MainMenu::HandleMenuMode()
 		{
 			workshopBrowser->workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
 			RunEditor(BROWSE_WORKSHOP, workshopBrowser->savedPath);
-		}
-
-		//workshopBrowser->Update();
-
-		/*if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
-		{
-			SetMode(ONLINE_MENU);
-		}
-		else if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
-		{
-			MapNode *mn = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
-
-			mapBrowserScreen->workshopPopup->Activate(mn);
-		}*/
-
-		
+		}		
 		break;
 	}
 	case ONLINE_MENU:
@@ -3017,7 +3002,7 @@ void MainMenu::HandleMenuMode()
 		case EditorMenuScreen::A_OPEN_MAP:
 			//netplayManager->FindQuickplayMatch();
 			//SetMode(QUICKPLAY_TEST);
-			RunEditor(TITLEMENU, editorMenuScreen->selectedMap->filePath.string());
+			RunEditor(TITLEMENU, editorMenuScreen->mapBrowserScreen->browserHandler->confirmedMapFilePath);
 			break;
 		//case OnlineMenuScreen::A_CREATE_LOBBY:
 		//	customMatchManager->CreateCustomLobby();
@@ -3107,13 +3092,13 @@ void MainMenu::HandleMenuMode()
 
 			modeToLoad = FREEPLAY;//RUN_FREEPLAY_MAP;
 
-			MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+			//MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 
-			if (selectedNode == NULL)
-				assert(0);
+			//if (selectedNode == NULL)
+			//	assert(0);
 
 			menuMatchParams->Clear();
-			menuMatchParams->mapPath = selectedNode->filePath.string();
+			menuMatchParams->mapPath = mapBrowserScreen->browserHandler->confirmedMapFilePath;//selectedNode->filePath.string();
 			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			SetMode(LOADINGMENULOOP);
 		}

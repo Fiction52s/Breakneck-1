@@ -139,7 +139,7 @@ struct MapBrowserHandler : GUIHandler
 
 	MapBrowser *chooser;
 
-	
+	std::string confirmedMapFilePath;
 };
 
 struct MapBrowser : TilesetManager,
@@ -153,6 +153,7 @@ struct MapBrowser : TilesetManager,
 		EDITOR_OPEN,
 		EDITOR_SAVE,
 		CREATE_CUSTOM_GAME,
+		FREEPLAY,
 	};
 
 	//new vars

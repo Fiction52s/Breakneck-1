@@ -15,6 +15,8 @@
 #include "LogMenu.h"
 #include "PaletteShader.h"
 #include "GameSettingsScreen.h"
+#include "PlayerBox.h"
+#include "AdventureManager.h"
 //#include "Actor.h"
 
 using namespace sf;
@@ -160,11 +162,19 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 		
 		SetRectCenter(optionModeQuads + i * 4, 768, 128, startOffset + Vector2f(0, (128 + spacing) * i));
 	}
+
+	playerBoxGroup = new PlayerBoxGroup(game, 1, 400, 400, 100);
+	playerBoxGroup->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
+	playerBoxGroup->SetBoxCenter(0, startOffset + Vector2f(0, 128 + 150));
+	playerBoxGroup->SetControllerStates(0, game->controllerStates[0], game->GetPlayerNormalSkin(0));
+	playerBoxGroup->SetControlProfile(0, game->controlProfiles[0]);
 }
 
 OptionsMenu::~OptionsMenu()
 {
 	delete optionModeSelector;
+
+	delete playerBoxGroup;
 }
 
 void OptionsMenu::UpdateOptionModeQuads()
@@ -185,7 +195,6 @@ void OptionsMenu::UpdateOptionModeQuads()
 void OptionsMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
-	ControllerType cType = CONTROLLERS.GetWindowsController(0)->GetCType();//mainMenu->GetController(0)->GetCType();
 	switch (state)
 	{
 	case CHOOSESTATE:
@@ -204,6 +213,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 			switch (state)
 			{
 			case CONTROL:
+				//playerBoxGroup->Update();
 				//csm->UpdateXboxButtonIcons();
 				break;
 			case SOUND:
@@ -222,24 +232,28 @@ void OptionsMenu::Update( ControllerState &currInput,
 	}
 	case CONTROL:
 	{
-		/*if (csm->currButtonState != ControlSettingsMenu::S_SELECTED)
+		playerBoxGroup->Update();
+
+
+		if (playerBoxGroup->IsReady())
 		{
-			if (currInput.B && !prevInput.B)
+			ControlProfile *cp = playerBoxGroup->GetControlProfile(0);
+			if (cp != game->controlProfiles[0])
 			{
-				state = CHOOSESTATE;
-				break;
+				if (mainMenu->adventureManager != NULL)
+				{
+					mainMenu->adventureManager->currProfile = cp;
+				}
+				game->controlProfiles[0] = cp;
 			}
 		}
 
-		csm->currCType = cType;*/
-
-
-		//ControlSettingsMenu::UpdateState uState = csm->Update(currInput, prevInput);
-		//if (uState == ControlSettingsMenu::CONFIRM)
+		if (playerBoxGroup->BackButtonPressed())
 		{
-			//GameSession *owner = mainMenu->pauseMenu->owner;
-			//owner->GetController(0).SetFilter(csm->pSel->currProfile->filter);
+			state = CHOOSESTATE;
+			break;
 		}
+
 		break;
 	}
 	case SOUND:
@@ -262,6 +276,7 @@ void OptionsMenu::Draw( sf::RenderTarget *target )
 		target->draw(optionModeQuads, 4 * 4, sf::Quads, ts_optionMode->texture);
 		break;
 	case CONTROL:
+		playerBoxGroup->Draw(target);
 		//csm->Draw(target);
 		break;
 	case SOUND:
