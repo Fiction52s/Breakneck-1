@@ -244,6 +244,7 @@ void FreeplayScreen::Update()
 			{
 				currParams.controllerStateVec[i] = playerBoxGroup->GetControllerStates(i);
 				currParams.controlProfiles[i] = playerBoxGroup->GetControlProfile(i);
+				currParams.playerSkins[i] = playerBoxGroup->GetSkinIndex(i);
 			}
 
 			//cout << "waiting room" << endl;

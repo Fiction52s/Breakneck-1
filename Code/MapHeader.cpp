@@ -147,7 +147,15 @@ bool MapHeader::Load(std::ifstream &is)
 	}
 
 	ver1 = part1Num;
-	ver2 = part2Num;
+
+	if (ver1 >= 7)
+	{
+		ver2 = 0;
+	}
+	else
+	{
+		ver2 = part2Num;
+	}
 
 	//get description
 	char last = 0;
@@ -276,7 +284,9 @@ bool MapHeader::Load(std::ifstream &is)
 
 	if (ver1 >= 6)
 	{
-		is >> creatorName;
+		getline(is, creatorName);
+		is.get();
+		//is >> creatorName;
 	}
 
 	if (ver1 < 2 || ( ver1 == 2 && ver2 <= 8 ) )

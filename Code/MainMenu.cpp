@@ -137,6 +137,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
 	ControllerDualStateQueue *storedControllerStates = NULL;
 	ControlProfile *storedControlProfile = NULL;
+	int storedSkin = -1;
 
 
 	switch (fromMode)
@@ -214,6 +215,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			{
 				storedControllerStates = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
 				storedControlProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+				storedSkin = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
 			}
 
 			delete singlePlayerControllerJoinScreen;
@@ -3155,6 +3157,7 @@ void MainMenu::HandleMenuMode()
 			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
 			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
 			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
 			mp.randSeed = time(0);
 			mp.numPlayers = 1;
 			mp.gameModeType = MatchParams::GAME_MODE_BASIC;
