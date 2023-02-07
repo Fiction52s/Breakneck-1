@@ -3915,6 +3915,12 @@ void GameSession::RestartLevel()
 		recGhost->StartRecording();
 	}
 
+	if (playerRecorder != NULL)
+	{
+		playerRecorder->StopRecording();
+		playerRecorder->StartRecording();
+	}
+
 	if( repPlayer != NULL )
 		repPlayer->frame = 0;
 

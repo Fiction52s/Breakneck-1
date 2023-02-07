@@ -15701,6 +15701,13 @@ void Actor::WriteBestTimeRecordings()
 				owner->SetupBestTimeGhost(); //only if ghost is already on
 			}
 
+			if (owner->playerRecorder != NULL)
+			{
+				owner->playerRecorder->RecordFrame();
+				owner->playerRecorder->StopRecording();
+				owner->playerRecorder->WriteToFile(owner->GetBestReplayPath());
+			}
+
 			owner->scoreDisplay->madeRecord = true;
 		}
 		

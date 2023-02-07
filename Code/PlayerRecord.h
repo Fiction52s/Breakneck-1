@@ -13,6 +13,37 @@
 
 struct Actor;
 
+struct NewPlayerRecordHeader
+{
+	enum RecordType
+	{
+		RECORDTYPE_LEVEL_COMPLETE,
+		RECORDTYPE_LEVEL_INCOMPLETE,
+	};
+
+	int ver;
+	int recordType;
+};
+
+struct NewPlayerRecorder
+{
+	void StopRecording();
+	void StartRecording();
+	void RecordFrame();
+	void WriteToFile(const std::string &fileName);
+	void StopRecordingAndWriteToFile(const std::string &fileName);
+};
+
+struct NewPlayerReplayHeader
+{
+
+};
+
+struct NewPlayerReplayer
+{
+
+};
+
 //what is recorded each frame for the ghost
 struct SprInfo
 {
