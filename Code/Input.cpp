@@ -125,7 +125,9 @@ COMPRESSED_INPUT_TYPE ControllerState::GetCompressedState()
 	//first 16 bits above^
 
 	int leftStickDir = leftStickDirection;
-	s |= (leftStickDir << bit++);
+	s |= ( leftStickDir << bit );
+
+	bit += sizeof(leftStickDirection);
 
 	/*s |= keyboardStickLeft.oldLeft << bit++;
 	s |= keyboardStickLeft.oldRight << bit++;
@@ -1410,7 +1412,7 @@ AllControllers::AllControllers()
 
 	//menuKeyboardMap[XBOX_BLANK];
 	menuKeyboardMap[XBOX_A] = Keyboard::Z;
-	menuKeyboardMap[XBOX_B] = Keyboard::B;
+	menuKeyboardMap[XBOX_B] = Keyboard::BackSpace;//Keyboard::B;
 	menuKeyboardMap[XBOX_X] = Keyboard::C;
 	menuKeyboardMap[XBOX_Y] = Keyboard::V;;
 
@@ -1420,7 +1422,7 @@ AllControllers::AllControllers()
 	menuKeyboardMap[XBOX_L1] = Keyboard::A;
 	menuKeyboardMap[XBOX_L2] = Keyboard::LShift;
 
-	menuKeyboardMap[XBOX_START] = Keyboard::Delete;
+	menuKeyboardMap[XBOX_START] = Keyboard::Enter;//Keyboard::Delete;
 	/*menuKeyboardMap[XBOX_BACK] = Keyboard::Z;
 
 	menuKeyboardMap[XBOX_PLEFT] = Keyboard::Z;

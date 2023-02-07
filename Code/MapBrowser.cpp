@@ -1097,6 +1097,7 @@ void MapBrowser::Init()
 		panel->confirmButton = saveButton;
 		ShowFileNameTextBox();
 		fileNameTextBox->SetString("");
+		panel->SetFocusedMember(fileNameTextBox);
 	}
 	else if (mode == CREATE_CUSTOM_GAME)
 	{

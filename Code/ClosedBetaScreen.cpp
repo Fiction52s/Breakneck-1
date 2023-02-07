@@ -11,7 +11,7 @@ ClosedBetaScreen::ClosedBetaScreen()
 
 	text.setFont(mm->arial);
 	text.setCharacterSize(40);
-	text.setString("The folowing is a WORK IN PROGRESS. All assets, levels, and mechanics are subject to change.\nWe recommend using a controller. "
+	text.setString("The following is a WORK IN PROGRESS. All assets, levels, and mechanics are subject to change.\nWe recommend using a controller. "
 		"Thanks for playing and we look forward to your feedback!\n");
 	auto lb = text.getLocalBounds();
 	text.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);

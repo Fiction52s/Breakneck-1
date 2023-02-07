@@ -38,7 +38,7 @@ PlayerBox::PlayerBox(PlayerBoxGroup *p_group, int p_index )
 	skinNumberText.setFont(f);
 	skinNumberText.setFillColor(Color::White);
 
-	pressText.setString("Press Start");
+	pressText.setString("Press Start\nor ENTER");
 	auto localB = pressText.getLocalBounds();
 	pressText.setOrigin(localB.left + localB.width / 2, localB.top + localB.height / 2);
 
