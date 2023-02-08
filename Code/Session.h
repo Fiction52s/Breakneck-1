@@ -21,7 +21,8 @@
 #include "steam/steam_api.h"
 #include "MatchParams.h"
 
-struct NewPlayerRecorder;
+struct PlayerRecordingManager;
+struct PlayerReplayManager;
 struct RecordPlayer;
 struct ReplayPlayer;
 struct Nexus;
@@ -209,9 +210,8 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
-	ReplayPlayer *repPlayer;
-	RecordPlayer *recPlayer;
-	NewPlayerRecorder *playerRecorder;
+	PlayerReplayManager *playerReplayManager;
+	PlayerRecordingManager *playerRecordingManager;
 
 	int parallelSessionIndex; //-1 if not parallel
 
@@ -818,8 +818,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual bool RunPostUpdate() { return true; }
 	void ActiveStorySequenceUpdate();
 	virtual int TryToActivateBonus() { return 0; }
-	virtual void RecPlayerRecordFrame();
-	virtual void RepPlayerUpdateInput();
+	virtual void RecPlayerRecordFrame( int pIndex );
 	virtual void RecGhostRecordFrame() {}
 	virtual void UpdateReplayGhostSprites() {}
 	bool RunGameModeUpdate();

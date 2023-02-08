@@ -6,6 +6,10 @@
 
 struct BitField
 {
+	sf::Uint32 *optionField;
+	int numOptions;
+	int numFields;
+
 	BitField(int p_numOptions);
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
@@ -19,9 +23,6 @@ struct BitField
 	bool IsNonZero();
 	void Reset();
 	void Set(const BitField & otherField);
-	sf::Uint32 *optionField;
-	int numOptions;
-	int numFields;
 };
 
 #endif

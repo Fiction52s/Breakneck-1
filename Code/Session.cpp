@@ -1563,8 +1563,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
 
-	repPlayer = NULL;
-	recPlayer = NULL;
+	playerReplayManager = NULL;
+	playerRecordingManager = NULL;
 
 	parallelSessionIndex = -1;
 	randomState = 0;
@@ -2831,11 +2831,12 @@ void Session::UpdatePlayerInput(int index)
 
 	
 
-	if (repPlayer != NULL && playerInd == 0)
+	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn( playerInd ) )
 	{
 		player->prevInput = player->currInput;
 
-		repPlayer->UpdateInput(player->currInput);//controllerStates[0]);
+		playerReplayManager->GetReplayer(playerInd)->replayPlayer->UpdateInput(player->currInput);
+		//repPlayer->UpdateInput(player->currInput);//controllerStates[0]);
 	}
 	else
 	{
@@ -2860,7 +2861,7 @@ void Session::UpdatePlayerInput(int index)
 			player->currInput = currSessInput;
 		}
 
-		RecPlayerRecordFrame();
+		RecPlayerRecordFrame(playerInd);
 	}	
 	//player->prevInput = prevInput;
 
@@ -6626,13 +6627,9 @@ bool Session::RunGameModeUpdate()
 
 		UpdateControllers();
 
-		//RepPlayerUpdateInput(); //original spot
-
-		//RecPlayerRecordFrame(); //original spot
 
 		UpdateAllPlayersInput();
 
-		//RepPlayerUpdateInput();
 
 		if (pauseFrames > 0)
 		{
@@ -6660,9 +6657,6 @@ bool Session::RunGameModeUpdate()
 
 		UpdateControllers();
 
-		RepPlayerUpdateInput();
-
-		RecPlayerRecordFrame();
 
 		UpdateAllPlayersInput();*/
 
@@ -7473,14 +7467,7 @@ bool Session::GGPORunGameModeUpdate()
 
 		ggpo_advance_frame(ggpo);
 		return true;
-	}
-
-	
-	//RepPlayerUpdateInput();
-
-	//RecPlayerRecordFrame();
-
-	
+	}	
 
 	ActiveSequenceUpdate();
 	if (switchGameState)
@@ -8006,20 +7993,11 @@ void Session::EndLevelNoScene()
 	}
 }
 
-void Session::RepPlayerUpdateInput()
+void Session::RecPlayerRecordFrame( int index )
 {
-	if (repPlayer != NULL)
+	if (playerRecordingManager != NULL)
 	{
-		//currently only records 1 player replays. fix this later
-		repPlayer->UpdateInput(GetPlayer(0)->currInput);//controllerStates[0]);
-	}
-}
-
-void Session::RecPlayerRecordFrame()
-{
-	if (recPlayer != NULL)
-	{
-		recPlayer->RecordFrame();
+		playerRecordingManager->RecordReplayFrame(index);
 	}
 }
 

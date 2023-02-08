@@ -1299,7 +1299,6 @@ struct Actor : QuadTreeCollider,
 	double GetBounceBoostSpeed();
 	int GetSurvivalFrame();
 
-	void WriteBestTimeRecordings();
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
 	bool TryThrowSwordProjectileBasic();
 	bool TryThrowEnemySwordProjectileBasic();

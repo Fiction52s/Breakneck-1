@@ -7747,12 +7747,16 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				if (owner->repPlayer != NULL)
+				/*if (owner->repPlayer != NULL)
 				{
 					delete owner->repPlayer;
 					owner->repPlayer = NULL;
-				}
+				}*/
 				owner->bestReplayOn = false;
+				if (owner->playerReplayManager != NULL)
+				{
+					owner->playerReplayManager->replaysActive = owner->bestReplayOn;
+				}
 
 				
 				owner->RestartGame();
@@ -7769,18 +7773,19 @@ void Actor::HandleWaitingScoreDisplay()
 			//turn on ghosts
 			if (owner != NULL && sess->scoreDisplay->includeExtraSelectBars)
 			{
-				if (owner->repPlayer != NULL)
+				/*if (owner->repPlayer != NULL)
 				{
 					delete owner->repPlayer;
 					owner->repPlayer = NULL;
-				}
+				}*/
 
 				bool oldGhostOn = owner->bestTimeGhostOn;
 				bool oldReplayOn = owner->bestReplayOn;
 
 				owner->bestTimeGhostOn = true;
 				owner->bestReplayOn = false;
-				if (owner->SetupBestTimeGhost())
+
+				if (owner->SetupBestPlayerReplayer())
 				{
 					owner->RestartGame();
 				}
@@ -7789,9 +7794,20 @@ void Actor::HandleWaitingScoreDisplay()
 					owner->OpenPopup(GameSession::POPUPTYPE_NO_GHOST_FOUND);
 					owner->bestTimeGhostOn = oldGhostOn;
 					owner->bestTimeGhostOn = oldReplayOn;
-
-					//put up an error message
 				}
+
+				//if (owner->SetupBestTimeGhost())
+				//{
+				//	owner->RestartGame();
+				//}
+				//else
+				//{
+				//	owner->OpenPopup(GameSession::POPUPTYPE_NO_GHOST_FOUND);
+				//	owner->bestTimeGhostOn = oldGhostOn;
+				//	owner->bestTimeGhostOn = oldReplayOn;
+
+				//	//put up an error message
+				//}
 				
 				
 				//owner->NextFrameRestartLevel();
@@ -7809,7 +7825,9 @@ void Actor::HandleWaitingScoreDisplay()
 				
 				owner->bestTimeGhostOn = false;
 				owner->bestReplayOn = true;
-				if (owner->SetupBestReplay())
+
+
+				if (owner->SetupBestPlayerReplayer())
 				{
 					owner->RestartGame();
 				}
@@ -7818,8 +7836,6 @@ void Actor::HandleWaitingScoreDisplay()
 					owner->OpenPopup(GameSession::POPUPTYPE_NO_REPLAY_FOUND);
 					owner->bestTimeGhostOn = oldGhostOn;
 					owner->bestTimeGhostOn = oldReplayOn;
-
-					//put up an error message
 				}
 			}
 			
@@ -15671,49 +15687,6 @@ void Actor::UpdateDashBooster()
 	}
 }
 
-void Actor::WriteBestTimeRecordings()
-{
-	if (owner != NULL && owner->parentGame == NULL && owner->saveFile != NULL)
-	{
-		bool recordTime = false;
-
-		int levelIndex = owner->level->index;
-		int currRecord = owner->saveFile->GetBestFramesLevel(levelIndex);
-		if (currRecord == 0
-			|| (currRecord > 0 && sess->totalFramesBeforeGoal < currRecord))
-		{
-			recordTime = true;
-		}
-
-		if (recordTime)
-		{
-			if (owner->recPlayer != NULL )
-			{
-				owner->recPlayer->RecordFrame();
-				owner->recPlayer->StopRecording();
-				owner->recPlayer->WriteToFile(owner->GetBestReplayPath());
-			}
-
-			if (owner->recGhost != NULL )
-			{
-				owner->recGhost->StopRecording();
-				owner->recGhost->WriteToFile(owner->GetBestTimeGhostPath());
-				owner->SetupBestTimeGhost(); //only if ghost is already on
-			}
-
-			if (owner->playerRecorder != NULL)
-			{
-				owner->playerRecorder->RecordFrame();
-				owner->playerRecorder->StopRecording();
-				owner->playerRecorder->WriteToFile(owner->GetBestReplayPath());
-			}
-
-			owner->scoreDisplay->madeRecord = true;
-		}
-		
-	}
-}
-
 void Actor::SlowDependentFrameIncrement()
 {
 	if (slowCounter == slowMultiple)
@@ -18730,7 +18703,7 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 			sess->hud->Hide(60);
 		}
 		
-		WriteBestTimeRecordings();
+		//WriteBestTimeRecordings();
 
 		SetAction(WAITFORSHIP);
 		frame = 0;

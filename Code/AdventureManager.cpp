@@ -123,18 +123,29 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 	bool isRecordSet = currSaveFile->TrySetRecordTime(totalFrames, lev);
 	if (isRecordSet)
 	{
-		if (game->recPlayer != NULL)
-		{
-			game->recPlayer->RecordFrame();
-			game->recPlayer->StopRecording();
-			game->recPlayer->WriteToFile(game->GetBestReplayPath());
-		}
+		//if (game->recPlayer != NULL)
+		//{
+		//	game->recPlayer->RecordFrame();
+		//	game->recPlayer->StopRecording();
+		//	game->recPlayer->WriteToFile(game->GetBestReplayPath());
+		//}
 
-		if (game->recGhost != NULL)
+		//if (game->recGhost != NULL)
+		//{
+		//	game->recGhost->StopRecording();
+		//	game->recGhost->WriteToFile(game->GetBestTimeGhostPath());
+		//	game->SetupBestTimeGhost(); //only if ghost is already on
+		//}
+
+		if (game->playerRecordingManager != NULL)
 		{
-			game->recGhost->StopRecording();
-			game->recGhost->WriteToFile(game->GetBestTimeGhostPath());
-			game->SetupBestTimeGhost(); //only if ghost is already on
+			game->playerRecordingManager->RecordReplayFrames();
+			game->playerRecordingManager->RecordGhostFrames(); //added this rn
+
+			game->playerRecordingManager->StopRecording();
+			game->playerRecordingManager->WriteToFile(game->GetBestReplayPath());
+
+			game->SetupBestPlayerReplayer();
 		}
 		//create a flag so that you can get hype over this
 	}

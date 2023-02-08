@@ -476,15 +476,6 @@ void EditSession::TestNetplay()
 	lobbyManager->FindLobby();*/
 }
 
-void EditSession::RepPlayerUpdateInput()
-{
-	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
-	{
-		//currently only records 1 player replays. fix this later
-		//debugReplayPlayer->UpdateInput(controllerStates[0]);
-	}
-}
-
 bool EditSession::TestPlayerModeUpdate()
 {
 	switchGameState = false;
@@ -3787,13 +3778,13 @@ void EditSession::Init()
 		allPlayers[i] = players[i];
 	}
 
-	debugReplayPlayer = new ReplayPlayer(players[0]);
-	bool canOpen = debugReplayPlayer->OpenReplay("Resources/Debug/debugreplay" + string(REPLAY_EXT));
+	debugReplayPlayer = NULL;//new ReplayPlayer(players[0]);
+	/*bool canOpen = debugReplayPlayer->OpenReplay("Resources/Debug/debugreplay" + string(REPLAY_EXT));
 	if (!canOpen)
 	{
 		delete debugReplayPlayer;
 		debugReplayPlayer = NULL;
-	}
+	}*/
 
 	SetupEnemyTypes();
 

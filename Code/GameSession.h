@@ -42,9 +42,7 @@ struct Minimap;
 struct ScreenRecorder;
 struct TopClouds;
 struct TerrainRender;
-struct RecordPlayer;
 struct ReplayPlayer;
-struct RecordGhost;
 struct ReplayGhost;
 struct Config;
 struct InputVisualizer;
@@ -312,8 +310,6 @@ struct GameSession : RayCastHandler, Session
 	V2d nexusPos;
 	Nexus *nexus;
 	
-	RecordGhost *recGhost;
-	
 	std::vector<ReplayGhost*> replayGhosts;
 	Grass *explodingGravityGrass;
 	bool quit;
@@ -426,9 +422,11 @@ struct GameSession : RayCastHandler, Session
 
 	//fader
 	
+	
+	void SetBestReplayOn(bool on);
+	void SetBestGhostOn(bool on);
 
-	bool SetupBestTimeGhost();
-	bool SetupBestReplay();
+	bool SetupBestPlayerReplayer();
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();
@@ -453,7 +451,7 @@ struct GameSession : RayCastHandler, Session
 	void SetupQuadTrees();
 	bool SetupControlProfiles();
 	
-	void SetupRecGhost();
+	void SetupPlayerRecordingManager();
 	
 	sf::VertexArray *SetupBushes(int bgLayer,
 		Edge *startEdge, Tileset *ts);
@@ -520,8 +518,7 @@ struct GameSession : RayCastHandler, Session
 
 	bool RunPreUpdate();
 	void UpdateSoundNodeLists();
-	//void RecPlayerRecordFrame();
-	void RepPlayerUpdateInput();
+
 	void RecGhostRecordFrame();
 	bool RunPostUpdate();
 	bool PopupGameModeUpdate();

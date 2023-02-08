@@ -1974,8 +1974,8 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.controlProfiles[0] = adventureManager->currProfile;
 
 	currLevel = new GameSession(&mp);
-	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
-	currLevel->bestReplayOn = loadParams.bestReplayOn;
+	currLevel->SetBestGhostOn(loadParams.bestTimeGhostOn);
+	currLevel->SetBestReplayOn(loadParams.bestReplayOn);
 	currLevel->level = loadParams.level;
 
 	adventureManager->currLevel = currLevel;

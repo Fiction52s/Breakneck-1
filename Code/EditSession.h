@@ -411,7 +411,6 @@ struct EditSession : GUIHandler, Session
 	bool TestPlayerModeUpdate();
 	void TestPlayerMode();
 	void CleanupTestPlayerMode();
-	void RepPlayerUpdateInput();
 
 	void TestNetplay();
 

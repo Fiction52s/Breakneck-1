@@ -931,23 +931,18 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 
-	if (repPlayer != NULL)
+	if (playerReplayManager != NULL)
 	{
-		delete repPlayer;
-		repPlayer = NULL;
-	}
-
-	if (recPlayer != NULL)
-	{
-		delete recPlayer;
+		delete playerReplayManager;
+		playerReplayManager = NULL;
 	}
 
 	CleanupGhosts();
 
-	if (parentGame == NULL && recGhost != NULL)
+	if (parentGame == NULL && playerRecordingManager != NULL)
 	{
-		delete recGhost;
-		recGhost = NULL;
+		delete playerRecordingManager;
+		playerRecordingManager = NULL;
 	}
 
 	CleanupPopup();
@@ -1675,7 +1670,7 @@ bool GameSession::Load()
 		}
 	}
 
-	recPlayer = new RecordPlayer(GetPlayer(0));
+	
 	
 
 	//for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
@@ -1753,17 +1748,12 @@ bool GameSession::Load()
 	//too far
 	
 
-	SetupRecGhost();
+	SetupPlayerRecordingManager();
 
-	
+	//playerRecordingManager = new PlayerRecordingManager(m_numActivePlayers);
 	//GhostHeader *gh = new GhostHeader;
 
-	SetupBestTimeGhost();
-	/*header.ver1 = 1;
-	header.ver2 = 0;
-	header.playerInfo = new GhostHeader::PlayerInfo[1];
-	header.playerInfo[0].skinIndex = 0;*/
-	SetupBestReplay();
+	SetupBestPlayerReplayer();
 
 	if (hasGoal)
 	{
@@ -1863,7 +1853,7 @@ void GameSession::SetupPlayers()
 	}
 	else
 	{
-
+		m_numActivePlayers = matchParams.numPlayers; //m_numActivePlayers depreciated I think
 		if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
 			for (int i = 1; i < matchParams.numPlayers; ++i)//mapHeader->GetNumPlayerPositions(); ++i)
@@ -2074,16 +2064,15 @@ void GameSession::SetupQuadTrees()
 	airTriggerTree = new QuadTree(1000000, 1000000);
 }
 
-void GameSession::SetupRecGhost()
+void GameSession::SetupPlayerRecordingManager()
 {
-	//will need to figure out how to do this later for recordings transferring through to bonus levels
 	if (parentGame != NULL)
 	{
-		recGhost = parentGame->recGhost;
+		playerRecordingManager = parentGame->playerRecordingManager;
 	}
-	else if (gameModeType == MatchParams::GAME_MODE_BASIC && recGhost == NULL )//mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
+	else if (gameModeType == MatchParams::GAME_MODE_BASIC && playerRecordingManager == NULL)//mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
 	{
-		recGhost = new RecordGhost(GetPlayer(0));
+		playerRecordingManager = new PlayerRecordingManager(matchParams.numPlayers);
 	}
 }
 
@@ -2132,7 +2121,7 @@ bool GameSession::SetupControlProfiles()
 
 void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 {
-	for( auto it = ghostEntries.begin(); it != ghostEntries.end(); ++it )
+	/*for( auto it = ghostEntries.begin(); it != ghostEntries.end(); ++it )
 	{
 		boost::filesystem::path &p = (*it)->gPath;
 		ReplayGhost *rg = new ReplayGhost(players[0]);
@@ -2140,75 +2129,79 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 		replayGhosts.push_back(rg);
 
 		rg->frame = 0;
-	}
+	}*/
 }
 
 void GameSession::CleanupGhosts()
 {
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 	{
-		delete (*it);
+		//delete (*it);
 	}
 	replayGhosts.clear();
 }
 
-bool GameSession::SetupBestReplay()
+void GameSession::SetBestReplayOn(bool on)
 {
-	if (saveFile != NULL)
+	bestReplayOn = on;
+	if (playerReplayManager != NULL)
 	{
-		if (repPlayer != NULL)
-		{
-			delete repPlayer;
-			repPlayer = NULL;
-		}
-
-		string replayPath = GetBestReplayPath();
-		if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
-			&& boost::filesystem::exists(replayPath))
-		{
-			repPlayer = new ReplayPlayer(GetPlayer(0));
-			bool canOpen = repPlayer->OpenReplay(replayPath);
-			if (canOpen)
-			{
-				return true;
-			}
-			else
-			{
-				delete repPlayer;
-				repPlayer = NULL;
-				return false;
-			}
-		}
+		playerReplayManager->replaysActive = on;
 	}
-
-	return false;
 }
 
-bool GameSession::SetupBestTimeGhost()
+void GameSession::SetBestGhostOn(bool on)
+{
+	bestTimeGhostOn = on;
+	if (playerReplayManager != NULL)
+	{
+		playerReplayManager->ghostsActive = on;
+	}
+}
+
+bool GameSession::SetupBestPlayerReplayer()
 {
 	CleanupGhosts();
 
+	if (playerReplayManager != NULL)
+	{
+		delete playerReplayManager;
+		playerReplayManager = NULL;
+	}
+
 	if (saveFile != NULL)
 	{
-		string ghostPath = GetBestTimeGhostPath();
-		std::list<GhostEntry*> ghostEntries;
-		if (bestTimeGhostOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
-			&& boost::filesystem::exists(ghostPath))
+		if (bestReplayOn || bestTimeGhostOn)
 		{
-			GhostEntry *ge = new GhostEntry(boost::filesystem::path(ghostPath), NULL);
-			ghostEntries.push_back(ge);
-			SetupGhosts(ghostEntries);
+			string replayPath = GetBestReplayPath();
 
-			for (auto it = ghostEntries.begin(); it != ghostEntries.end(); ++it)
+			if (saveFile->GetBestFramesLevel(level->index) > 0 && boost::filesystem::exists(replayPath))
 			{
-				delete (*it);
+				playerReplayManager = new PlayerReplayManager;
+				playerReplayManager->replaysActive = bestReplayOn;
+				playerReplayManager->ghostsActive = bestTimeGhostOn;
+				if (!playerReplayManager->LoadFromFile(replayPath))
+				{
+					delete playerReplayManager;
+					playerReplayManager = NULL;
+					return false;
+				}
 			}
-			ghostEntries.clear();
 
-			if (replayGhosts.size() > 0)
+			if (bestTimeGhostOn)
 			{
-				return true;
+				//CleanupGhosts();
+
+				if (playerReplayManager != NULL)
+				{
+					for (auto it = playerReplayManager->repVec.begin(); it != playerReplayManager->repVec.end(); ++it)
+					{
+						replayGhosts.push_back((*it)->replayGhost);
+					}
+				}
 			}
+
+			return true;
 		}
 	}
 
@@ -2305,7 +2298,7 @@ bool GameSession::RunMainLoopOnce()
 
 		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
 
-		if (repPlayer != NULL)
+		if (playerReplayManager != NULL && playerReplayManager->replaysActive)
 		{
 			preScreenTex->setView(uiView);
 			preScreenTex->draw(replayText);
@@ -2428,7 +2421,7 @@ bool GameSession::RunMainLoopOnce()
 
 		DrawGame(preScreenTex);
 		
-		if (repPlayer != NULL)
+		if (playerReplayManager != NULL && playerReplayManager->replaysActive)
 		{
 			preScreenTex->setView(uiView);
 			preScreenTex->draw(replayText);
@@ -2780,7 +2773,9 @@ bool GameSession::RunMainLoopOnce()
 					}
 					else
 					{
-						bestTimeGhostOn = true;
+						//turn this back on eventually!
+
+						/*bestTimeGhostOn = true;
 						bestReplayOn = false;
 
 						if (repPlayer != NULL)
@@ -2790,7 +2785,7 @@ bool GameSession::RunMainLoopOnce()
 						}
 
 						SetupBestTimeGhost();
-						RestartLevel();
+						RestartLevel();*/
 					}
 				}
 				else if (curr.X && !prev.X)
@@ -2808,12 +2803,12 @@ bool GameSession::RunMainLoopOnce()
 				}
 				else if (curr.B && curr.PDown() && !prev.PDown())
 				{
-					if (recPlayer != NULL)
+					/*if (recPlayer != NULL)
 					{
 						ActivatePauseSound(GetSound("pause_off"));
 						recPlayer->numTotalFrames = recPlayer->frame;
 						recPlayer->WriteToFile("Resources/Debug/debugreplay" + string(REPLAY_EXT));
-					}
+					}*/
 				}
 
 			}
@@ -3161,7 +3156,7 @@ int GameSession::Run()
 
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
-	
+
 	View v;
 	v.setCenter(0, 0);
 	v.setSize(1920 / 2, 1080 / 2);
@@ -3170,9 +3165,9 @@ int GameSession::Run()
 	//might move replay stuff later
 	cout << "loop about to start" << endl;
 
-	if (recGhost != NULL)
+	if (playerRecordingManager != NULL)
 	{
-		recGhost->StartRecording();
+		playerRecordingManager->StartRecording();
 	}
 
 	SetOriginalMusic();
@@ -3219,33 +3214,34 @@ int GameSession::Run()
 
 	if (parentGame == NULL)
 	{
-
-		if( false)
-		if (recGhost != NULL)
+		if (false)
 		{
-			recGhost->StopRecording();
+			//if (recGhost != NULL)
+			//{
+			//	recGhost->StopRecording();
 
-			//string fName = fileName
-			//1. get folder. if it doesn't exist, make it.
-			//2. include map name in ghost name
-			//3. tag ghost with timestamp
-			//4. 
+			//	//string fName = fileName
+			//	//1. get folder. if it doesn't exist, make it.
+			//	//2. include map name in ghost name
+			//	//3. tag ghost with timestamp
+			//	//4. 
 
-			time_t t = time(0);
-			struct tm now;
-			localtime_s(&now, &t);
-
-
+			//	time_t t = time(0);
+			//	struct tm now;
+			//	localtime_s(&now, &t);
 
 
 
-			stringstream fss;
-			string mName = filePath.filename().stem().string();
-			fss << "Resources/Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
-				<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
-				<< now.tm_min << "_" << now.tm_sec << GHOST_EXT;
 
-			//recGhost->WriteToFile(fss.str());
+
+			//	stringstream fss;
+			//	string mName = filePath.filename().stem().string();
+			//	fss << "Resources/Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
+			//		<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
+			//		<< now.tm_min << "_" << now.tm_sec << GHOST_EXT;
+
+			//	//recGhost->WriteToFile(fss.str());
+			//}
 		}
 	}
 
@@ -3332,10 +3328,9 @@ void GameSession::Init()
 	va = NULL;
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
-	recPlayer = NULL;
-	repPlayer = NULL;
-	recGhost = NULL;
-	//repGhost = NULL;
+	playerReplayManager = NULL;
+	playerRecordingManager = NULL;
+
 	explodingGravityGrass = NULL;
 	polyQueryList = NULL;
 	specialPieceList = NULL;
@@ -3903,29 +3898,14 @@ void GameSession::RestartLevel()
 	
 	//soundNodeList->Reset(); //already done using Clear
 	scoreDisplay->Reset();
-	if( recPlayer != NULL )
+
+	if (playerRecordingManager != NULL)
 	{
-		recPlayer->StopRecording();
-		recPlayer->StartRecording();
+		playerRecordingManager->RestartRecording();
 	}
 
-	if( recGhost != NULL )
-	{
-		recGhost->StopRecording();
-		recGhost->StartRecording();
-	}
-
-	if (playerRecorder != NULL)
-	{
-		playerRecorder->StopRecording();
-		playerRecorder->StartRecording();
-	}
-
-	if( repPlayer != NULL )
-		repPlayer->frame = 0;
-
-	/*if( repGhost != NULL )
-		repGhost->frame = 0;*/
+	if (playerReplayManager != NULL)
+		playerReplayManager->SetToStart();
 
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 	{
@@ -3957,9 +3937,9 @@ void GameSession::RestartLevel()
 
 	//cam.Update();
 
-	if (repPlayer != NULL)
+	if( playerReplayManager != NULL )
 	{
-		repPlayer->Reset();
+		playerReplayManager->Reset();
 	}
 
 	scoreDisplay->Reset();
@@ -4618,22 +4598,12 @@ void GameSession::UpdateSoundNodeLists()
 	pauseSoundNodeList->Update();
 }
 
-
-
-void GameSession::RepPlayerUpdateInput()
-{
-	if (repPlayer != NULL)
-	{
-		//currently only records 1 player replays. fix this later
-
-		repPlayer->UpdateInput(GetPlayer(0)->currInput);//controllerStates[0]);
-	}
-}
-
 void GameSession::RecGhostRecordFrame()
 {
-	if (recGhost != NULL)
-		recGhost->RecordFrame();
+	if (playerRecordingManager != NULL)
+	{
+		playerRecordingManager->RecordGhostFrames();
+	}
 }
 
 GameSession::DecorDraw::DecorDraw(sf::Vertex *q,
