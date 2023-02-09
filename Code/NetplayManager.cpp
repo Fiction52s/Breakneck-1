@@ -13,6 +13,9 @@
 #include "MainMenu.h"
 #include "globals.h"
 
+#include "ControlProfile.h"
+#include "Input.h"
+
 using namespace std;
 using namespace sf;
 
@@ -75,6 +78,8 @@ void NetplayPlayer::DumpDesyncInfo()
 
 NetplayManager::NetplayManager()
 {
+	myControllerInput = NULL;
+	myCurrProfile = NULL;
 	lobbyManager = NULL;
 	connectionManager = NULL;
 	loadThread = NULL;
@@ -318,6 +323,8 @@ void NetplayManager::CheckForMapAndSetMatchParams()
 	matchParams.gameModeType = lobbyData.gameModeType;
 	matchParams.randSeed = lobbyData.randSeed;
 	//matchParams.numPlayers = numPlayers;
+	//matchParams.numPlayers = lobbyData
+	//matchParams.numPlayers = numPlayers;
 
 	if (IsHost())
 	{
@@ -520,7 +527,7 @@ void NetplayManager::Update()
 			LobbyData ld;
 			ld.maxMembers = 2;
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
-			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
+			ld.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
 
 			// set the name of the lobby if it's ours
 			string lobbyName = SteamFriends()->GetPersonaName();
@@ -1165,6 +1172,10 @@ void NetplayManager::LoadMap()
 	//}
 	cout << "loading map" << endl;
 
+
+	matchParams.controllerStateVec[0] = myControllerInput;
+	matchParams.controlProfiles[0] = myCurrProfile;
+
 	assert(game == NULL);
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_FREEPLAY;
 	game = new GameSession(&matchParams);
@@ -1247,6 +1258,9 @@ void NetplayManager::FindQuickplayMatch()
 		matchParams.mapPath = "Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
 		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;
+
+		//matchParams.controllerStateVec[0] = myControllerInput;
+		//matchParams.controlProfiles[0] = myCurrProfile;
 
 		netplayPlayers[0].name = SteamFriends()->GetPersonaName();
 		for (int i = 1; i < 4; ++i)

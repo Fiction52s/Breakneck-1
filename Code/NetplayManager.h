@@ -100,6 +100,9 @@ struct NetplayManager
 		A_DISCONNECT,
 	};
 
+	ControllerDualStateQueue *myControllerInput;
+	ControlProfile *myCurrProfile;
+
 	Action action;
 	sf::Vertex quad[4];
 	bool isSyncTest;

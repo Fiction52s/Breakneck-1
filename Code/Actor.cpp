@@ -3796,6 +3796,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	if (!isCampaign)
 	{
+		sess->playerOptionsField.Reset();
 		SetAllUpgrades(sess->playerOptionsField);
 	}
 	else
@@ -4584,7 +4585,7 @@ void Actor::Respawn( bool setStartPos )
 	speedLevel = 0;
 	currentSpeedBar = 0;//60;
 
-	int numStartMomentumUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_START_MOMENTUM_1, 3);
+	int numStartMomentumUpgrades = 0;//NumUpgradeRange(UPGRADE_W4_INCREASE_START_MOMENTUM_1, 3);
 
 	float startMomentumUpgradeFactor = 15.0;
 	currentSpeedBar = startMomentumUpgradeFactor * numStartMomentumUpgrades;
@@ -15487,6 +15488,9 @@ void Actor::UpdateSpeedBar()
 			speedLevel = 0;
 		}
 	}
+
+	currentSpeedBar = 0;
+	speedLevel = 0;
 }
 //static int testBlah = 0;
 

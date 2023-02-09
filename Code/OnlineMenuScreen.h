@@ -6,6 +6,8 @@
 #include "GUI.h"
 
 struct MainMenu;
+struct ControllerDualStateQueue;
+struct ControlProfile;
 
 struct OnlineMenuScreen : GUIHandler
 {

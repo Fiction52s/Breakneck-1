@@ -208,6 +208,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
 	{
 		if (singlePlayerControllerJoinScreen != NULL)
 		{
@@ -416,12 +417,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
 	{
 		assert(singlePlayerControllerJoinScreen == NULL);
 		singlePlayerControllerJoinScreen = new SinglePlayerControllerJoinScreen(this);
 		singlePlayerControllerJoinScreen->Start();
 
-		if (toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE)
+		if (toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE || toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE )
 		{
 			singlePlayerControllerJoinScreen->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
 		}
@@ -3175,6 +3177,28 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
+	{
+		while (window->pollEvent(ev))
+		{
+			singlePlayerControllerJoinScreen->HandleEvent(ev);
+		}
+
+		singlePlayerControllerJoinScreen->Update();
+
+		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
+		{
+			netplayManager->myControllerInput = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
+			netplayManager->myCurrProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+
+			LoadMode(ONLINE_MENU);
+		}
+		else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
+		{
+			LoadMode(TITLEMENU);
+		}
+		break;
+	}
 	case QUICKPLAY_TEST:
 		while (window->pollEvent(ev))
 		{
@@ -3583,8 +3607,9 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LOCAL_MULTIPLAYER:
 		{
+			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE);
 			//onlineMenuScreen->Start();
-			LoadMode(ONLINE_MENU);
+			//LoadMode(ONLINE_MENU);
 			//SetMode(ONLINE_MENU);
 
 			//netplayManager->isSyncTest = true;
@@ -3924,6 +3949,11 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
+	{
+		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
+		break;
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
 	{
 		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
 		break;

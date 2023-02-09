@@ -210,6 +210,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;
 	PlayerReplayManager *playerReplayManager;
 	PlayerRecordingManager *playerRecordingManager;
 

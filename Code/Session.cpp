@@ -1563,6 +1563,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
 
+	ggpoCompressedInputs = new COMPRESSED_INPUT_TYPE[GGPO_MAX_PLAYERS];
+
 	playerReplayManager = NULL;
 	playerRecordingManager = NULL;
 
@@ -1990,6 +1992,8 @@ Session::~Session()
 	}
 
 	CleanupSuperSequence();
+
+	delete[] ggpoCompressedInputs;
 
 	//CleanupNetplay();
 }
@@ -2714,7 +2718,9 @@ ControllerState Session::GetCurrInputFiltered(int index)
 	{
 		if (controllerStates[index]->GetControllerType() == CTYPE_KEYBOARD)
 		{
-			assert(0); //keyboard needs to work differently
+			//testing
+			return ControllerState();
+			//assert(0); //keyboard needs to work differently
 		}
 
 		ControlProfile *currProf = controlProfiles[index];
@@ -2816,22 +2822,18 @@ void Session::UpdatePlayerInput(int index)
 	}
 
 	Actor *player = GetPlayer(playerInd);
+
 	if (player == NULL)
 		return;
-
-	//ControllerState &pCurr = player->currInput;
-	//GameController *controller = GetController(index);
 	
+	if (netplayManager != NULL)
+	{
+		player->prevInput = player->currInput;
 
-	//ControllerState prevSessInput = GetPrevInputFiltered(index);
-
-	//bool alreadyBounce = pCurr.X;
-	//bool alreadyGrind = pCurr.Y;
-	//bool alreadyTimeSlow = pCurr.leftShoulder;
-
-	
-
-	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn( playerInd ) )
+		player->currInput.SetFromCompressedState(ggpoCompressedInputs[index]);//8
+		//cout << "setting player: " << playerInd << "in universe " << parallelSessionIndex << " to input " << ggpoCompressedInputs[index] << "\n";
+	}
+	else if (playerReplayManager != NULL && playerReplayManager->IsReplayOn( playerInd ) )
 	{
 		player->prevInput = player->currInput;
 
@@ -2930,7 +2932,11 @@ bool Session::OneFrameModeUpdate()
 	//turned off for the beta
 	
 	//fix this so you can only tas in the editor right after testing this.
-	bool skipInput = /*IsSessTypeEdit() && */ CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
+#ifdef _DEBUG
+	bool skipInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
+#else
+	bool skipInput = IsSessTypeEdit() && CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
+#endif
 
 	if (skipInput && !oneFrameMode)
 	{
@@ -6596,6 +6602,7 @@ bool Session::RunGameModeUpdate()
 
 		if (!OneFrameModeUpdate())
 		{
+			UpdateControllers();
 			break;
 		}
 
@@ -6828,6 +6835,7 @@ bool Session::GGPOFrozenGameModeUpdate()
 
 	if (!OneFrameModeUpdate())
 	{
+		UpdateControllers();
 		return true;
 	}
 
@@ -6871,6 +6879,7 @@ bool Session::FrozenGameModeUpdate()
 	{
 		if (!OneFrameModeUpdate())
 		{
+			UpdateControllers();
 			break;
 		}
 
@@ -6932,6 +6941,7 @@ bool Session::SequenceGameModeUpdate()
 	{
 		if (!OneFrameModeUpdate())
 		{
+			UpdateControllers();
 			return true;
 		}
 
@@ -7433,6 +7443,7 @@ bool Session::GGPORunGameModeUpdate()
 
 	if (!OneFrameModeUpdate())
 	{
+		UpdateControllers();
 		return true;
 	}
 
@@ -7647,26 +7658,59 @@ void Session::GGPORunFrame()
 	assert(!IsParallelSession());
 	//cout << "ggpo run frame " << endl;
 	int disconnect_flags;
-	int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
+
+	for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
+	{
+		ggpoCompressedInputs[i] = 0;
+	}
+
+	
 
 	//UpdateControllers();
 
 	CONTROLLERS.Update();
 
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		GameController *con = GetController(i);
+	//just turned this off
+	//Actor *p = NULL;
+	//for (int i = 0; i < 4; ++i)
+	//{
+	//	GameController *con = GetController(i);
 
-		GetCurrInput(i) = con->GetState();
-		//GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
-	}
+	//	GetCurrInput(i) = con->GetState();
+	//	//GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
+	//}
 
 	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
+	
+	/*if (ngs->local_player_handle == 0)
+	{
+		cout << "handle is 0" << endl;
+		assert(0);
+	}*/
+
+	int pIndex = ngs->local_player_handle - 1;
+
+	ControllerState testInput;
+	Actor *player = GetPlayer(pIndex);
+
+	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
+	{
+		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->prevInput);
+	}
+	else
+	{
+		testInput = GetCurrInputFiltered(0);
+	}
+
+	
+
+	COMPRESSED_INPUT_TYPE input = testInput.GetCompressedState();//GetCurrInputFiltered().GetCompressedState();
 	//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();
-	int input = GetCurrInput(0).GetCompressedState();
-	//input = rand();
-	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
+	//GetPlayer(ngs->local_player_handle - 1)->currInput.GetCompressedState(); 
+	//GetCurrInput(0).GetCompressedState();
+
+	
+	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, COMPRESSED_INPUT_SIZE);
 
 	//cout << "ggpo run frame: " << result << endl;
 	//cout << "local player handle: " << ngs->local_player_handle << "\n";
@@ -7676,19 +7720,32 @@ void Session::GGPORunFrame()
 
 	if (GGPO_SUCCEEDED(result))
 	{
+		//cout << "putting in input " << pIndex << ": " << input << "\n";
+
 		frameConfirmed = false; //to make sure to only send desync checks on confirmed frames
-		result = ggpo_synchronize_input(ggpo, (void*)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS, &disconnect_flags);
+		result = ggpo_synchronize_input(ggpo, (void*)ggpoCompressedInputs, COMPRESSED_INPUT_SIZE * GGPO_MAX_PLAYERS, &disconnect_flags);
 		if (GGPO_SUCCEEDED(result))
 		{
-			//GetPrevInput(1) = lastCurr;
-			
-			for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
+			//this was used recently
+			/*for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
 			{
 				GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
+			}*/
+
+			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+			{
+				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+				for (int i = 0; i < 3; ++i)
+				{
+					if (prm->parallelGames[i] != NULL)
+					{
+						prm->parallelGames[i]->ggpoCompressedInputs = ggpoCompressedInputs;
+					}
+				}
 			}
 
-			//lastCurr = GetCurrInput(1);
-			//cout << "actually update the game" << endl;
+
 			UpdateAllPlayersInput();
 
 			//assert(gameState == GameState::RUN);
@@ -8486,11 +8543,10 @@ void Session::ProcessDesyncMessageQueue()
 				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
 				cout << "my action frame: " << dci.actionFrame << ", their action frame: " << msg->u.desync_info.player_action_frame << "\n";
 				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;
-				//cout << "my health: " << dci.health << ", their health: " << msg->u.desync_info.health << endl;
 
 				netplayManager->desyncDetected = true;
 
-				netplayManager->DumpDesyncInfo();
+				//netplayManager->DumpDesyncInfo();
 			}
 		}
 		else

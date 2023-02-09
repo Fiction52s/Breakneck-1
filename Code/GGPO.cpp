@@ -195,18 +195,14 @@ on_event_callback(GGPOEvent *info)
 bool __cdecl
 advance_frame_callback(int flags)
 {
-	COMPRESSED_INPUT_TYPE compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
 	int disconnect_flags;
 
 	Session *sess = Session::GetSession();
 
 	sess->frameConfirmed = false;
-	ggpo_synchronize_input(sess->ggpo, (void *)compressedInputs, COMPRESSED_INPUT_SIZE * GGPO_MAX_PLAYERS,
+	ggpo_synchronize_input(sess->ggpo, (void *)sess->ggpoCompressedInputs, COMPRESSED_INPUT_SIZE * GGPO_MAX_PLAYERS,
 		&disconnect_flags);
-	for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
-	{
-		sess->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
-	}
+
 	sess->UpdateAllPlayersInput();
 
 	sess->SimulateGGPOGameFrame();
