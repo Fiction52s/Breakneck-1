@@ -140,7 +140,8 @@ GameSession * GameSession::currSession = NULL;
 bool GameSession::UpdateRunModeBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);
-	if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+	//eventually add better logic for when its okay to pause in multiplayer etc
+	if ( matchParams.numPlayers == 1 && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
 	{
 		ControllerState &currInput = GetCurrInput(0);
 		ControllerState &prevInput = GetPrevInput(0);
@@ -2240,7 +2241,7 @@ bool GameSession::RunMainLoopOnce()
 	
 	if (netplayManager != NULL)
 	{
-		if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Escape))
+		/*if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Escape))
 		{
 			cout << "esc is pressed. ending match." << endl;
 			quit = true;
@@ -2248,7 +2249,7 @@ bool GameSession::RunMainLoopOnce()
 
 			netplayManager->DumpDesyncInfo();
 			return true;
-		}
+		}*/
 
 		if (netplayManager->action == NetplayManager::A_DISCONNECT)
 		{
@@ -2339,7 +2340,7 @@ bool GameSession::RunMainLoopOnce()
 		preScreenTex->clear(Color::Red);
 		postProcessTex2->clear(Color::Red);
 
-		if (matchParams.netplayManager != NULL)
+		if (netplayManager != NULL)
 		{
 			if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Escape))
 			{
@@ -3267,7 +3268,7 @@ int GameSession::Run()
 		pauseMenu->game = NULL;
 	}
 
-	if (matchParams.netplayManager != NULL)
+	if (netplayManager != NULL)
 	{
 		cout << "cleaning up ggpo" << endl;
 		ggpo_close_session(ggpo);

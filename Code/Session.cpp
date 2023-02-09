@@ -1563,6 +1563,10 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
 
+	currSaveState = NULL;
+	ngs = NULL;
+	ggpoPlayers = NULL;
+
 	ggpoCompressedInputs = new COMPRESSED_INPUT_TYPE[GGPO_MAX_PLAYERS];
 
 	playerReplayManager = NULL;
@@ -7115,6 +7119,8 @@ void Session::InitGGPO()
 	saveStates[i] = new SaveGameState;
 	usedSaveState[i] = false;
 	}*/
+	assert(currSaveState == NULL);
+	//assert(ngs == NULL);
 
 	currSaveState = new SaveGameState;
 	ngs = new GGPONonGameState;
@@ -7333,11 +7339,13 @@ void Session::UpdateJustGGPO()
 void Session::CleanupGGPO()
 {
 	delete currSaveState;
-	delete ngs;
-	delete[] ggpoPlayers;
-
 	currSaveState = NULL;
+
+	delete ngs;
 	ngs = NULL;
+
+
+	delete[] ggpoPlayers;
 	ggpoPlayers = NULL;
 }
 
@@ -7690,12 +7698,21 @@ void Session::GGPORunFrame()
 
 	int pIndex = ngs->local_player_handle - 1;
 
+	if (netplayManager->isSyncTest)
+	{
+		//cout << "pIndex: " << pIndex << endl;
+		if (pIndex < 0)
+		{
+			pIndex = 0;
+		}
+	}
+
 	ControllerState testInput;
 	Actor *player = GetPlayer(pIndex);
 
 	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
 	{
-		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->prevInput);
+		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->currInput);
 	}
 	else
 	{

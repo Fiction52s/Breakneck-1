@@ -86,7 +86,7 @@ NetplayManager::NetplayManager()
 	game = NULL;
 	playerIndex = -1;
 
-	desyncDetected = false;//false;
+	desyncDetected = false;
 
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
@@ -994,7 +994,12 @@ void NetplayManager::SendSignalToAllClients(int type)
 	{
 		if (!netplayPlayers[i].isHost)
 		{
-			assert(i != playerIndex);
+			if (i == playerIndex)
+			{
+				cout << "playerIndex: " << playerIndex << "\n";
+				assert(i != playerIndex);
+			}
+			
 			SendUdpMsg(netplayPlayers[i].connection, &msg);
 		}
 	}	
@@ -1937,6 +1942,10 @@ void NetplayManager::ClearDataForNextMatch()
 void NetplayManager::HostInitiateRematch()
 {
 	action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;//NetplayManager::A_READY_TO_RUN;
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		netplayPlayers[i].readyToRun = false;
+	}
 	SendSignalToAllClients(UdpMsg::Game_Host_Rematch);
 }
 

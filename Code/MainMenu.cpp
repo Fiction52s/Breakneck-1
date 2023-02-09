@@ -3338,6 +3338,8 @@ void MainMenu::HandleMenuMode()
 			case NetplayManager::POST_MATCH_A_CHOOSE_MAP:
 			{
 				netplayManager->CleanupMatch();
+				
+
 				SetMode(CUSTOM_MATCH_SETUP);
 				customMatchManager->StartClientWaitingRoomForNextMap();
 				break;
@@ -3348,7 +3350,7 @@ void MainMenu::HandleMenuMode()
 			}
 			}
 			
-			
+			netplayManager->postMatchOptionReceived = -1;
 			break;
 		}
 
@@ -3382,7 +3384,8 @@ void MainMenu::HandleMenuMode()
 			netplayManager->CleanupMatch();
 			netplayManager->Abort();
 
-			SetMode(TITLEMENU);
+			LoadMode(TITLEMENU);
+			//SetMode(TITLEMENU);
 			 
 			//some signal to tell the host that you have left, or just disconnect? probably just disconnect
 			break;
@@ -3392,7 +3395,8 @@ void MainMenu::HandleMenuMode()
 			netplayManager->CleanupMatch();
 			netplayManager->Abort();
 
-			SetMode(TITLEMENU);
+			LoadMode(TITLEMENU);
+			//SetMode(TITLEMENU);
 
 			//instead of just disconnecting, need to send a signal to the clients on which option was chosen.
 			break;
@@ -3990,7 +3994,13 @@ void MainMenu::DrawMode( Mode m )
 	case POST_MATCH_OPTIONS:
 	{
 		preScreenTexture->setView(v);
-		matchResultsScreen->Draw(preScreenTexture);
+
+		//this needs to get fixed for smoothness later
+		if (matchResultsScreen != NULL)
+		{
+			matchResultsScreen->Draw(preScreenTexture);
+		}
+		
 
 		customMatchManager->Draw(preScreenTexture);		
 
