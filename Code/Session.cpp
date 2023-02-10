@@ -7135,6 +7135,7 @@ void Session::InitGGPO()
 			if (p->pState == NULL)
 			{
 				p->pState = new PState;
+				memset(p->pState, 0, sizeof(PState));
 			}
 		}
 	}
@@ -7712,7 +7713,7 @@ void Session::GGPORunFrame()
 
 	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
 	{
-		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->currInput);
+		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->currInput); //player->currInput
 	}
 	else
 	{

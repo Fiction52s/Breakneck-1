@@ -168,6 +168,7 @@ void Actor::PopulateState(PState *ps)
 	ps->facingRight = facingRight;
 	ps->groundSpeed = groundSpeed;
 	ps->currInput = currInput.GetCompressedState();
+	ps->prevInput = prevInput.GetCompressedState();
 
 	ps->ground = ground;
 	ps->quant = edgeQuantity;
@@ -415,6 +416,7 @@ void Actor::PopulateFromState(PState *ps)
 	frame = ps->frame;
 	facingRight = ps->facingRight;
 	groundSpeed = ps->groundSpeed;
+	prevInput.SetFromCompressedState(ps->prevInput); //relevant for keyboard
 	currInput.SetFromCompressedState(ps->currInput);
 	ground = ps->ground;
 	edgeQuantity = ps->quant;
@@ -5990,7 +5992,9 @@ void Actor::LimitMaxSpeeds()
 		{
 			//cout << "running wallcling" << endl;
 			if (velocity.y > 4)
+			{
 				velocity.y = 4;
+			}
 		}
 
 		if (velocity.x > maxReal)

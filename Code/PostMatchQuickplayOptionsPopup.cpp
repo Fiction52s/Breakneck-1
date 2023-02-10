@@ -1,4 +1,4 @@
-#include "PostMatchOptionsPopup.h"
+#include "PostMatchQuickplayOptionsPopup.h"
 #include <iostream>
 #include "MainMenu.h"
 #include "MapBrowser.h"
@@ -6,9 +6,9 @@
 using namespace std;
 using namespace sf;
 
-PostMatchOptionsPopup::PostMatchOptionsPopup()
+PostMatchQuickplayOptionsPopup::PostMatchQuickplayOptionsPopup()
 {
-	panel = new Panel("postmatchpopup", 1600,
+	panel = new Panel("postmatchquickplaypopup", 1600,
 		500, this, true);
 
 	panel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(30, 0));
@@ -19,16 +19,12 @@ PostMatchOptionsPopup::PostMatchOptionsPopup()
 
 	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i(20, 0));
 	ImageChooseRect *icr = NULL;
-	icr = panel->AddImageRect(ChooseRect::I_POST_MATCH_REMATCH, Vector2f(0, 0), NULL, sf::IntRect(), 200);
-	icr->SetName("Rematch");
+	icr = panel->AddImageRect(ChooseRect::I_POST_MATCH_QUICKPLAY_VOTE_TO_KEEP_PLAYING, Vector2f(0, 0), NULL, sf::IntRect(), 200);
+	icr->SetName("Keep Playing");
 	icr->SetShown(true);
 	icr->Init();
 
-	icr = panel->AddImageRect(ChooseRect::I_POST_MATCH_CHOOSE_MAP, Vector2f(0, 0), NULL, sf::IntRect(), 200);
-	icr->SetName("Choose Map");
-	icr->SetShown(true);
-	icr->Init();
-	icr = panel->AddImageRect(ChooseRect::I_POST_MATCH_LEAVE, Vector2f(0, 0), NULL, sf::IntRect(), 200);
+	icr = panel->AddImageRect(ChooseRect::I_POST_MATCH_QUICKPLAY_LEAVE, Vector2f(0, 0), NULL, sf::IntRect(), 200);
 	icr->SetName("Leave");
 	icr->SetShown(true);
 	icr->Init();
@@ -48,22 +44,22 @@ PostMatchOptionsPopup::PostMatchOptionsPopup()
 	action = A_IDLE;
 }
 
-PostMatchOptionsPopup::~PostMatchOptionsPopup()
+PostMatchQuickplayOptionsPopup::~PostMatchQuickplayOptionsPopup()
 {
 	delete panel;
 }
 
-bool PostMatchOptionsPopup::HandleEvent(sf::Event ev)
+bool PostMatchQuickplayOptionsPopup::HandleEvent(sf::Event ev)
 {
 	return panel->HandleEvent(ev);
 }
 
-void PostMatchOptionsPopup::Start()
+void PostMatchQuickplayOptionsPopup::Start()
 {
 	action = A_IDLE;
 }
 
-void PostMatchOptionsPopup::ChooseRectEvent(ChooseRect *cr, int eventType)
+void PostMatchQuickplayOptionsPopup::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
 	{
@@ -76,17 +72,12 @@ void PostMatchOptionsPopup::ChooseRectEvent(ChooseRect *cr, int eventType)
 	{
 		switch (cr->rectIdentity)
 		{
-		case ChooseRect::I_POST_MATCH_REMATCH:
+		case ChooseRect::I_POST_MATCH_QUICKPLAY_VOTE_TO_KEEP_PLAYING:
 		{
-			action = A_REMATCH;
+			action = A_KEEP_PLAYING;
 			break;
 		}
-		case ChooseRect::I_POST_MATCH_CHOOSE_MAP:
-		{
-			action = A_CHOOSE_MAP;
-			break;
-		}
-		case ChooseRect::I_POST_MATCH_LEAVE:
+		case ChooseRect::I_POST_MATCH_QUICKPLAY_LEAVE:
 		{
 			action = A_LEAVE;
 			break;
@@ -95,7 +86,7 @@ void PostMatchOptionsPopup::ChooseRectEvent(ChooseRect *cr, int eventType)
 	}
 }
 
-void PostMatchOptionsPopup::ButtonCallback(Button *b, const std::string & e)
+void PostMatchQuickplayOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 {
 	if (b->name == "back")
 	{
@@ -103,12 +94,12 @@ void PostMatchOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 	}
 }
 
-void PostMatchOptionsPopup::Update()
+void PostMatchQuickplayOptionsPopup::Update()
 {
 	panel->MouseUpdate();
 }
 
-void PostMatchOptionsPopup::Draw(sf::RenderTarget *target)
+void PostMatchQuickplayOptionsPopup::Draw(sf::RenderTarget *target)
 {
 	/*if (browserHandler->chooser->action == MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD)
 	{

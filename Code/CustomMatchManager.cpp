@@ -14,6 +14,7 @@
 #include "WorkshopBrowser.h"
 #include "PostMatchOptionsPopup.h"
 #include "PostMatchClientPopup.h"
+#include "PostMatchQuickplayOptionsPopup.h"
 //#include "ggpo/network/udp_msg.h"
 
 using namespace sf;
@@ -29,6 +30,8 @@ CustomMatchManager::CustomMatchManager()
 	messagePopup = new MessagePopup;
 
 	postMatchPopup = new PostMatchOptionsPopup;
+
+	postMatchQuickplayPopup = new PostMatchQuickplayOptionsPopup;
 
 	postMatchClientPopup = new PostMatchClientPopup;
 
@@ -55,6 +58,8 @@ CustomMatchManager::~CustomMatchManager()
 	delete postMatchPopup;
 
 	delete postMatchClientPopup;
+
+	delete postMatchQuickplayPopup;
 }
 
 void CustomMatchManager::SetAction(Action a)
@@ -90,6 +95,11 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 	case A_POST_MATCH_CLIENT:
 	{
 		postMatchClientPopup->HandleEvent(ev);
+		break;
+	}
+	case A_POST_MATCH_QUICKPLAY:
+	{
+		postMatchQuickplayPopup->HandleEvent(ev);
 		break;
 	}
 	}
@@ -595,6 +605,28 @@ bool CustomMatchManager::Update()
 		}
 		break;
 	}
+	case A_POST_MATCH_QUICKPLAY:
+	{
+		postMatchQuickplayPopup->Update();
+
+		if (postMatchQuickplayPopup->action == PostMatchQuickplayOptionsPopup::A_LEAVE)
+		{
+			action = A_POST_MATCH_QUICKPLAY_LEAVE;
+		}
+		else if (postMatchQuickplayPopup->action == PostMatchQuickplayOptionsPopup::A_KEEP_PLAYING)
+		{
+			action = A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING;
+		}
+		break;
+	}
+	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING:
+	{
+		break;
+	}
+	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS:
+	{
+		break;
+	}
 	}
 
 	//testing this
@@ -657,6 +689,21 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 	case A_POST_MATCH_CLIENT:
 	{
 		postMatchClientPopup->Draw(target);
+		break;
+	}
+	case A_POST_MATCH_QUICKPLAY:
+	{
+		postMatchQuickplayPopup->Draw(target);
+		break;
+	}
+	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING:
+	{
+		postMatchQuickplayPopup->Draw(target);
+		break;
+	}
+	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS:
+	{
+		postMatchQuickplayPopup->Draw(target);
 		break;
 	}
 	}

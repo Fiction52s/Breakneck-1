@@ -3348,6 +3348,14 @@ void MainMenu::HandleMenuMode()
 			{
 				break;
 			}
+			case NetplayManager::POST_MATCH_A_QUICKPLAY_VOTE_KEEP_PLAYING:
+			{
+				break;
+			}
+			case NetplayManager::POST_MATCH_A_QUICKPLAY_LEAVE:
+			{
+				break;
+			}
 			}
 			
 			netplayManager->postMatchOptionReceived = -1;
@@ -3425,6 +3433,46 @@ void MainMenu::HandleMenuMode()
 			SetMode(CUSTOM_MATCH_SETUP);
 
 			//now go to map choosing stage
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING:
+		{
+			if (netplayManager->IsHost())
+			{
+				netplayManager->HostQuickplayVoteToKeepPlaying();
+			}
+			else
+			{
+				netplayManager->SendPostMatchQuickplayVoteToKeepPlayingToHost();
+			}
+
+			customMatchManager->action = CustomMatchManager::A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS;
+
+			netplayManager->CleanupMatch();
+
+			//SetMode(QUICKPLAY_PLAY);
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS:
+		{
+			if (netplayManager->action == NetplayManager::A_ALL_VOTED_TO_KEEP_PLAYING)
+			{
+				cout << "we made it!" << endl;
+				netplayManager->game->InitGGPO();
+				netplayManager->HostInitiateRematch();
+
+				fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+
+				SetMode(QUICKPLAY_PLAY);
+			}
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_LEAVE:
+		{
+			netplayManager->CleanupMatch();
+			netplayManager->Abort();
+
+			LoadMode(TITLEMENU);
 			break;
 		}
 		}

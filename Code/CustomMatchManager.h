@@ -12,6 +12,7 @@ struct MapNode;
 struct MessagePopup;
 struct PostMatchOptionsPopup;
 struct PostMatchClientPopup;
+struct PostMatchQuickplayOptionsPopup;
 
 struct CustomMatchManager
 {
@@ -32,7 +33,11 @@ struct CustomMatchManager
 		A_POST_MATCH_CLIENT_LEAVE,
 		A_POST_MATCH_HOST_REMATCH,
 		A_POST_MATCH_HOST_CHOOSE_MAP,
-		A_POST_MATCH_HOST_LEAVE
+		A_POST_MATCH_HOST_LEAVE,
+		A_POST_MATCH_QUICKPLAY,
+		A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING,
+		A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS,
+		A_POST_MATCH_QUICKPLAY_LEAVE,
 	};
 
 	Action action;
@@ -48,6 +53,7 @@ struct CustomMatchManager
 	MessagePopup *messagePopup;
 	PostMatchOptionsPopup *postMatchPopup;
 	PostMatchClientPopup *postMatchClientPopup;
+	PostMatchQuickplayOptionsPopup *postMatchQuickplayPopup;
 	int preErrorAction;
 	bool fromWorkshopBrowser;
 

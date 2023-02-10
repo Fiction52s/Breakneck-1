@@ -44,6 +44,10 @@ struct UdpMsg
 	  Game_Host_Post_Choose_Map,
 	  Game_Host_Next_Map_Data,
 	  Game_Host_Says_Connect_To_All,
+	  Game_Client_Post_Quickplay_Vote_To_Keep_Playing,
+	  Game_Client_Post_Quickplay_Leave,
+	  Game_Host_Post_Quickplay_Vote_To_Keep_Playing,
+	  Game_Host_Post_Quickplay_Says_Keep_Playing,
    };
   /* enum MsgType { 
       Invalid       = 0,

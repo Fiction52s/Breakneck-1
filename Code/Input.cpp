@@ -46,6 +46,7 @@ void ControllerState::Clear()
 	rightStickPad = 0;
 	leftPress = false;
 	rightPress = false;
+	leftStickDirection = 0;
 }
 
 void ControllerState::Set( const ControllerState &state )
@@ -110,22 +111,26 @@ COMPRESSED_INPUT_TYPE ControllerState::GetCompressedState()
 	s |= LDown() << bit++;
 	s |= LLeft() << bit++;
 	s |= LRight() << bit++;
+
 	s |= RUp() << bit++;
 	s |= RDown() << bit++;
 	s |= RLeft() << bit++;
 	s |= RRight() << bit++;
+
 	s |= A << bit++;
 	s |= B << bit++;
 	s |= X << bit++;
 	s |= Y << bit++;
 	s |= leftShoulder << bit++;
 	s |= rightShoulder << bit++;
+
 	s |= LeftTriggerPressed() << bit++;
 	s |= RightTriggerPressed() << bit++;
 	//first 16 bits above^
 
-	int leftStickDir = leftStickDirection;
-	s |= ( leftStickDir << bit );
+	unsigned int leftStickDir = leftStickDirection;
+	COMPRESSED_INPUT_TYPE shiftedDir = (leftStickDir << bit);
+	s |= shiftedDir;
 
 	bit += sizeof(leftStickDirection);
 
@@ -220,7 +225,8 @@ void ControllerState::SetFromCompressedState(COMPRESSED_INPUT_TYPE s)
 	bit += sizeof(leftStickDirection);
 	leftStickDirection = leftDir;*/
 
-	leftStickDirection = (s >> bit) | ((int)pow(2, sizeof(leftStickDirection)) - 1);
+	COMPRESSED_INPUT_TYPE mask = pow(2, sizeof(leftStickDirection) * 8) - 1;
+	leftStickDirection = (s >> bit) & mask;
 	bit += sizeof(leftStickDirection);
 
 	/*keyboardStickLeft.oldLeft = s & (1 << bit++);
@@ -258,7 +264,7 @@ bool ControllerState::IsRightNeutral() const
 void ControllerState::SetLeftDirection()
 {
 	int aimingPrimaryAngleRange = 2;
-	if (leftStickMagnitude > 0)
+	if (!IsLeftNeutral())//leftStickMagnitude > 0)
 	{
 		double angle = leftStickRadians;
 
@@ -303,7 +309,20 @@ void ControllerState::SetLeftDirection()
 	}
 	else
 	{
-		leftStickDirection = 65;
+		leftStickDirection = 0;//65;
+	}
+}
+
+int ControllerState::GetLeftStickDirection()
+{
+	//if (leftStickMagnitude == 0)
+	if( IsLeftNeutral() )
+	{
+		return -1;
+	}
+	else
+	{
+		return leftStickDirection;
 	}
 }
 
@@ -460,7 +479,8 @@ void ControllerState::InvertLeftStick()
 	//int oldLeftStickPad = leftStickPad;
 	int newLeftStickPad = 0;
 
-	if (!IsLeftNeutral())
+	//if (!IsLeftNeutral())
+	if( leftStickMagnitude > 0)
 	{
 		leftStickDirection += 32;
 		if (leftStickDirection > 64)

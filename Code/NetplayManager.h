@@ -52,6 +52,7 @@ struct NetplayPlayer
 	DesyncCheckInfo desyncCheckInfoArray[MAX_DESYNC_CHECK_INFOS_STORED];
 	int skinIndex;
 	bool hasAllData;
+	bool voteToKeepPlaying;
 
 	NetplayPlayer();
 	void Clear();
@@ -74,6 +75,8 @@ struct NetplayManager
 		POST_MATCH_A_REMATCH,
 		POST_MATCH_A_CHOOSE_MAP,
 		POST_MATCH_A_LEAVE,
+		POST_MATCH_A_QUICKPLAY_LEAVE,
+		POST_MATCH_A_QUICKPLAY_VOTE_KEEP_PLAYING,
 	};
 
 	enum Action
@@ -97,6 +100,8 @@ struct NetplayManager
 		A_WAIT_FOR_ALL_READY,
 		A_RUNNING_MATCH,
 		A_MATCH_COMPLETE,
+		A_WAIT_FOR_QUICKPLAY_VOTES_TO_KEEP_PLAYING,
+		A_ALL_VOTED_TO_KEEP_PLAYING,
 		A_DISCONNECT,
 	};
 
@@ -169,6 +174,7 @@ struct NetplayManager
 	void SendSignalToAllClients(int type);
 
 	void HostStartLoading();
+	void HostQuickplayVoteToKeepPlaying();
 
 	void SendDesyncCheckToHost( int currGameFrame );
 	void ConnectToAll();
@@ -222,6 +228,7 @@ struct NetplayManager
 	void ClearDataForNextMatch();
 
 	void SendPostMatchChooseMapSignalToClients();
+	void SendPostMatchQuickplayVoteToKeepPlayingToHost();
 
 	bool AllPlayersHaveFinishedWithResultsScreen();
 	bool CheckResultsScreen();

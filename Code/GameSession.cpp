@@ -528,6 +528,7 @@ GameSession *GameSession::CreateParallelSession( int parIndex )
 		if (p != NULL)
 		{
 			p->pState = new PState;
+			memset(p->pState, 0, sizeof(PState));
 		}
 	}
 

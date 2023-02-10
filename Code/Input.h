@@ -97,6 +97,7 @@ struct ControllerState
 	ControllerState();
 	void Set(const ControllerState &state);
 	void SetLeftDirection();
+	int GetLeftStickDirection();
 	
 	sf::Vector2<double> GetLeft8Dir() const;
 	sf::Vector2<double> GetStickVectorLeft() const;

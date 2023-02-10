@@ -760,7 +760,8 @@ bool Wire::TryFire()
 		}
 		else
 		{
-			if( currInput.leftStickDirection < 65 )
+			int leftDir = currInput.GetLeftStickDirection();
+			if( leftDir >= 0 )
 			//if (currInput.leftStickMagnitude > 0)
 			{
 				double angle = (PI / 32.0) * currInput.leftStickDirection;

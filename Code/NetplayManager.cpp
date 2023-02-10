@@ -36,6 +36,7 @@ void NetplayPlayer::Clear()
 	skinIndex = 0;
 	hasAllData = false;
 	finishedWithResultsScreen = false;
+	voteToKeepPlaying = false;
 
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
 }
@@ -91,7 +92,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = false;
+	isSyncTest = true;
 
 	Abort();
 
@@ -862,6 +863,29 @@ void NetplayManager::Update()
 	}
 	case A_RUNNING_MATCH:
 		break;
+	case A_WAIT_FOR_QUICKPLAY_VOTES_TO_KEEP_PLAYING:
+	{
+		bool allVoteToKeepPlaying = true;
+		for (int i = 0; i < numPlayers; ++i)
+		{
+			//including me this time
+			//if (i == playerIndex)
+			//	continue;
+
+			if (!netplayPlayers[i].voteToKeepPlaying)
+			{
+				allVoteToKeepPlaying = false;
+				break;
+			}
+		}
+
+		if (allVoteToKeepPlaying)
+		{
+			action = A_ALL_VOTED_TO_KEEP_PLAYING;
+			//RunMatch();
+		}
+		break;
+	}
 	}
 
 	ReceiveMessages();
@@ -1697,7 +1721,7 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 				}
 			}
 
-			cout << "handling gamd done loading message" << endl;
+			cout << "handling game done loading message" << endl;
 		}
 		else
 		{
@@ -1789,7 +1813,49 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		ConnectToAll();
 		break;
 	}
+	case UdpMsg::Game_Client_Post_Quickplay_Vote_To_Keep_Playing:
+	{
+		if (IsHost())
+		{
+			for (int i = 0; i < numPlayers; ++i)
+			{
+				if (i == playerIndex)
+					continue;
+
+				if (netplayPlayers[i].connection == connection)
+				{
+					netplayPlayers[i].voteToKeepPlaying = true;
+					break;
+				}
+			}
+
+			cout << "handling vote to keep playing" << endl;
+		}
+		else
+		{
+			assert(0);
+		}
+		break;
 	}
+	case UdpMsg::Game_Client_Post_Quickplay_Leave:
+	{
+		break;
+	}
+	case UdpMsg::Game_Host_Post_Quickplay_Vote_To_Keep_Playing:
+	{
+
+	}
+	case UdpMsg::Game_Host_Post_Quickplay_Says_Keep_Playing:
+	{
+		break;
+	}
+	}
+
+
+	/*Game_Client_Post_Quickplay_Vote_To_Keep_Playing,
+		Game_Client_Post_Quickplay_Leave,
+		Game_Host_Post_Quickplay_Vote_To_Keep_Playing,
+		Game_Host_Post_Quickplay_Says_Keep_Playing,*/
 
 	if (steamMsg != NULL )
 	{
@@ -2002,6 +2068,25 @@ bool NetplayManager::CheckResultsScreen()
 void NetplayManager::SendPostMatchChooseMapSignalToClients()
 {
 	SendSignalToAllClients(UdpMsg::Game_Host_Post_Choose_Map);
+}
+
+void NetplayManager::SendPostMatchQuickplayVoteToKeepPlayingToHost()
+{
+	cout << "client voting to keep playing" << endl;
+	SendSignalToHost(UdpMsg::Game_Client_Post_Quickplay_Vote_To_Keep_Playing);
+}
+
+void NetplayManager::HostQuickplayVoteToKeepPlaying()
+{
+	cout << "host voting to keep playing" << endl;
+	action = A_WAIT_FOR_QUICKPLAY_VOTES_TO_KEEP_PLAYING;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		netplayPlayers[i].voteToKeepPlaying = false;
+	}
+
+	netplayPlayers[playerIndex].voteToKeepPlaying = true;
 }
 
 void NetplayManager::HostStartLoading()
