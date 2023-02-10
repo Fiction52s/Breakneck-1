@@ -37,6 +37,8 @@ QuickplayPreMatchScreen::QuickplayPreMatchScreen()
 	SetRectTopLeft(bgQuad, 1920, 1080, Vector2f(0, 0));
 
 	ts_preview = NULL;
+
+	action = A_STARTUP;
 }
 
 QuickplayPreMatchScreen::~QuickplayPreMatchScreen()
@@ -62,9 +64,10 @@ void QuickplayPreMatchScreen::Update()
 	}
 	case A_SHOW:
 	{
-		if (frame == 120)
+		if (frame == 60 * 2)
 		{
 			action = A_DONE;
+			frame = 0;
 		}
 		break;
 	}
@@ -169,6 +172,8 @@ void QuickplayPreMatchScreen::ClearPreview()
 
 void QuickplayPreMatchScreen::Clear()
 {
+	action = A_STARTUP;
+
 	ClearPreview();
 
 	if (mapHeader != NULL)

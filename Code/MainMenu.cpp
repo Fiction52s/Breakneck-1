@@ -3226,10 +3226,12 @@ void MainMenu::HandleMenuMode()
 		{
 
 			SetMode(QUICKPLAY_PRE_MATCH);
-			customMatchManager->StartQuickplayPreMatchScreen("");
+			customMatchManager->StartQuickplayPreMatchScreen();
 
 			//SetMode(QUICKPLAY_PLAY);
-			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+
+			//turned this off recently
+			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 		}
 		break;
 	}

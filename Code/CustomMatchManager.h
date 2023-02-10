@@ -74,7 +74,7 @@ struct CustomMatchManager
 	void TryActivateOptionsPanel( MapNode *mp );
 	void SetAction(Action a);
 	void HandleEvent(sf::Event ev);
-	void StartQuickplayPreMatchScreen( const std::string &mapPath );
+	void StartQuickplayPreMatchScreen();
 	bool Update();
 	void StartClientWaitingRoomForNextMap();
 	void Draw(sf::RenderTarget *target);

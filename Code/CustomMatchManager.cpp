@@ -239,17 +239,18 @@ void CustomMatchManager::TryActivateOptionsPanel( MapNode *mp )
 	}
 }
 
-void CustomMatchManager::StartQuickplayPreMatchScreen(const std::string &mapPathStr)
+void CustomMatchManager::StartQuickplayPreMatchScreen()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 
 	action = A_QUICKPLAY_PRE_MATCH;
 	frame = 0;
 
-	quickplayPreMatchScreen->Clear();
-	quickplayPreMatchScreen->UpdateMapHeader(mapPathStr);
+	boost::filesystem::path mapPath = netplayManager->matchParams.mapPath;
 
-	boost::filesystem::path mapPath = mapPathStr;
+	quickplayPreMatchScreen->Clear();
+	quickplayPreMatchScreen->UpdateMapHeader(mapPath.string());
+
 	string previewPath = mapPath.parent_path().string() + "\\" + mapPath.stem().string() + ".png";
 
 	netplayManager->previewPath = previewPath;
@@ -584,6 +585,8 @@ bool CustomMatchManager::Update()
 			action = A_QUICKPLAY_PRE_MATCH_DONE;
 			quickplayPreMatchScreen->Clear();
 		}
+
+
 		break;
 	}
 	}
