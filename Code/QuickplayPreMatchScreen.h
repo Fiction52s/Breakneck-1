@@ -6,6 +6,7 @@
 #include "GUI.h"
 #include "steam/steam_api.h"
 #include "Tileset.h"
+#include "PlayerSkinShader.h"
 
 struct WaitingRoom;
 
@@ -37,6 +38,17 @@ struct QuickplayPreMatchScreen : TilesetManager
 	sf::Vertex bgQuad[4];
 
 	sf::Vertex previewQuad[4];
+
+	Tileset *ts_player0;
+	Tileset *ts_player1;
+
+	PlayerSkinShader p0Shader;
+	PlayerSkinShader p1Shader;
+
+	sf::Sprite p0Spr;
+	sf::Sprite p1Spr;
+	//sf::Vertex p0Quad[4];
+	//sf::Vertex p1Quad[4];
 
 	QuickplayPreMatchScreen();
 	~QuickplayPreMatchScreen();

@@ -4,12 +4,18 @@
 #include "LobbyManager.h"
 #include "MapHeader.h"
 
+
 using namespace std;
 using namespace sf;
 
 QuickplayPreMatchScreen::QuickplayPreMatchScreen()
+	:p0Shader( "player" ), p1Shader( "player")
 {
+	ts_player0 = GetSizedTileset("Menu/pause_kin_400x836.png");
+	ts_player1 = GetSizedTileset("Menu/pause_kin_400x836.png");
+
 	TilesetManager::SetGameResourcesMode(false);
+	//be careful of this^
 
 	mapHeader = NULL;
 
@@ -25,10 +31,9 @@ QuickplayPreMatchScreen::QuickplayPreMatchScreen()
 	Vector2f rightNamePos(1920 - leftNamePos.x, previewPos.y);
 
 	Vector2f mapNamePos = previewBottomCenter + Vector2f(0, 50);
-	Vector2f modeNamePos = previewPos + Vector2f(previewSize.x, -100);
+	Vector2f modeNamePos = previewPos + Vector2f(previewSize.x / 2, -100);
 
 	MainMenu *mm = MainMenu::GetInstance();
-
 
 	modeText.setFont(mm->arial);
 	modeText.setFillColor(Color::Red);
@@ -36,7 +41,7 @@ QuickplayPreMatchScreen::QuickplayPreMatchScreen()
 	modeText.setPosition(modeNamePos);
 
 	mapNameText.setFont(mm->arial);
-	mapNameText.setFillColor(Color::Red);
+	mapNameText.setFillColor(Color::White);
 	mapNameText.setCharacterSize(50);
 	mapNameText.setPosition(mapNamePos);
 
@@ -49,6 +54,11 @@ QuickplayPreMatchScreen::QuickplayPreMatchScreen()
 	rightPlayerName.setFillColor(Color::White);
 	rightPlayerName.setCharacterSize(40);
 	rightPlayerName.setPosition(rightNamePos);
+
+	p0Spr.setPosition(Vector2f(leftNamePos.x - ts_player0->tileWidth / 2, leftNamePos.y + 40));
+	p1Spr.setPosition(Vector2f(rightNamePos.x - ts_player1->tileWidth / 2, rightNamePos.y + 40));
+	//SetRectTopLeft(p0Quad, ts_player0->tileWidth, ts_player0->tileHeight, Vector2f(leftNamePos.x - ts_player0->tileWidth / 2, leftNamePos.y + 100));
+	//SetRectTopLeft(p1Quad, ts_player1->tileWidth, ts_player1->tileHeight, Vector2f(rightNamePos.x - ts_player1->tileWidth / 2, rightNamePos.y + 100));
 
 	SetRectColor(bgQuad, Color::Black);
 	SetRectTopLeft(bgQuad, 1920, 1080, Vector2f(0, 0));
@@ -124,6 +134,11 @@ void QuickplayPreMatchScreen::Draw(sf::RenderTarget *target)
 		target->draw(previewQuad, 4, sf::Quads, ts_preview->texture);
 	}
 
+	target->draw(p0Spr, &p0Shader.pShader);
+	target->draw(p1Spr, &p1Shader.pShader);
+	//target->draw(p0Quad, 4, sf::Quads, &p0Shader.pShader);
+	//target->draw(p1Quad, 4, sf::Quads, &p1Shader.pShader);
+
 	target->draw(modeText);
 	target->draw(mapNameText);
 	target->draw(leftPlayerName);
@@ -152,9 +167,22 @@ void QuickplayPreMatchScreen::SetToNetplayMatchParams()
 		mapHeader->Load(is);
 
 		modeText.setString("FIGHT"); //implement tomorrow //netplayManager->matchParams.gameModeType);
+		auto lbModeText = modeText.getLocalBounds();
+		modeText.setOrigin(lbModeText.left + lbModeText.width / 2, 0);
+
 		mapNameText.setString(mapHeader->fullName);
+		auto lbMapNameText = mapNameText.getLocalBounds();
+		mapNameText.setOrigin(lbMapNameText.left + lbMapNameText.width / 2,0);
+
+
 		leftPlayerName.setString(netplayManager->netplayPlayers[0].name);
+		auto lbLeftPlayerName = leftPlayerName.getLocalBounds();
+		leftPlayerName.setOrigin(lbLeftPlayerName.left + lbLeftPlayerName.width / 2, 0 );
+
+
 		rightPlayerName.setString(netplayManager->netplayPlayers[1].name);
+		auto lbRightPlayerName = rightPlayerName.getLocalBounds();
+		rightPlayerName.setOrigin(lbRightPlayerName.left + lbRightPlayerName.width / 2, 0);
 
 		is.close();
 	}
@@ -162,6 +190,25 @@ void QuickplayPreMatchScreen::SetToNetplayMatchParams()
 	{
 		cout << "cannot update map header for waiting room. file at: " << mapPath << endl;
 	}
+
+	//Vector2f texSize(ts_player0->texture->getSize());
+	//SetRectSubRectGL(p0Quad, ts_player0->GetSubRect(0), texSize);
+	//SetRectSubRectGL(p1Quad, ts_player1->GetSubRect(0), texSize);
+
+	p0Shader.SetTileset(ts_player0);
+	p1Shader.SetTileset(ts_player1);
+
+	p0Spr.setTexture(*ts_player0->texture);
+	p1Spr.setTexture(*ts_player1->texture);
+
+	ts_player0->SetSubRect(p0Spr, 0);
+	ts_player1->SetSubRect(p1Spr, 0);
+
+	p0Shader.SetSubRect(ts_player0, ts_player0->GetSubRect(0));
+	p1Shader.SetSubRect(ts_player1, ts_player1->GetSubRect(0));
+
+	p0Shader.SetSkin(netplayManager->matchParams.playerSkins[0]);
+	p1Shader.SetSkin(netplayManager->matchParams.playerSkins[1]);
 }
 
 void QuickplayPreMatchScreen::SetPreview(const std::string &previewPath)

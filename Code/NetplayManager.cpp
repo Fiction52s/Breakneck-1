@@ -329,6 +329,12 @@ void NetplayManager::CheckForMapAndSetMatchParams()
 
 	matchParams.gameModeType = lobbyData.gameModeType;
 	matchParams.randSeed = lobbyData.randSeed;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		matchParams.playerSkins[i] = i;
+	}
+
 	//matchParams.numPlayers = numPlayers;
 	//matchParams.numPlayers = lobbyData
 	//matchParams.numPlayers = numPlayers;
@@ -1330,6 +1336,11 @@ void NetplayManager::FindQuickplayMatch()
 		for (int i = 1; i < 4; ++i)
 		{
 			netplayPlayers[i].name = "CPU" + to_string(i - 1);
+		}
+
+		for (int i = 0; i < 4; ++i)
+		{
+			matchParams.playerSkins[i] = i;
 		}
 		//matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
 
