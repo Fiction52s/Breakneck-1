@@ -139,9 +139,17 @@ bool VictoryScreen4Player::Update()
 
 			if (frame >= 60 * 5)
 			{
-				WaitForOthers();
-				return true;
+				if (matchStats->quickplay)
+				{
+
+				}
+				else
+				{
+					WaitForOthers();
+					return true;
+				}
 			}
+			
 
 			/*if (!mm->netplayManager->IsHost())
 			{
@@ -183,8 +191,15 @@ bool VictoryScreen4Player::Update()
 		{
 			if (confirmComplete)
 			{
-				WaitForOthers();
-				return true;
+				if (matchStats->quickplay)
+				{
+					return false;
+				}
+				else
+				{
+					WaitForOthers();
+					return true;
+				}
 			}
 				
 		}

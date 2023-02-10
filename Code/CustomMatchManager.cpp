@@ -108,16 +108,24 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 void CustomMatchManager::OpenPostMatchPopup()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
-	if (netplayManager->IsHost())
+	if (netplayManager->isQuickplay)
 	{
-		postMatchPopup->Start();
-
-		SetAction(A_POST_MATCH_HOST);
+		postMatchQuickplayPopup->Start();
+		SetAction(A_POST_MATCH_QUICKPLAY);
 	}
 	else
 	{
-		postMatchClientPopup->Start();
-		SetAction(A_POST_MATCH_CLIENT);
+		if (netplayManager->IsHost())
+		{
+			postMatchPopup->Start();
+
+			SetAction(A_POST_MATCH_HOST);
+		}
+		else
+		{
+			postMatchClientPopup->Start();
+			SetAction(A_POST_MATCH_CLIENT);
+		}
 	}
 }
 
@@ -729,6 +737,7 @@ void CustomMatchManager::StartClientWaitingRoomForNextMap()
 	netplayManager->waitingForPreview = false;
 	netplayManager->receivedPostOptionsSignal = false;
 	netplayManager->receivedNextMapData = false;
+	netplayManager->receivedLeaveNetplaySignal = false;
 
 	netplayManager->action = NetplayManager::A_IDLE;
 

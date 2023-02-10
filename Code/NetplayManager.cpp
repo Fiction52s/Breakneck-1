@@ -37,7 +37,7 @@ void NetplayPlayer::Clear()
 	hasAllData = false;
 	finishedWithResultsScreen = false;
 	voteToKeepPlaying = false;
-
+	id.Clear();
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
 }
 
@@ -92,7 +92,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -213,6 +213,8 @@ void NetplayManager::Abort()
 
 	desyncDetected = false;
 
+	isQuickplay = false;
+
 	action = A_IDLE;
 
 	receivedMapLoadSignal = false;
@@ -223,6 +225,7 @@ void NetplayManager::Abort()
 	waitingForMap = false;
 	waitingForPreview = false;
 	receivedPostOptionsSignal = false;
+	receivedLeaveNetplaySignal = false;
 	receivedNextMapData = false;
 	postMatchOptionReceived = -1;
 }
@@ -1206,7 +1209,19 @@ void NetplayManager::LoadMap()
 	matchParams.controlProfiles[0] = myCurrProfile;
 
 	assert(game == NULL);
-	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_FREEPLAY;
+
+	MainMenu *mm = MainMenu::GetInstance();
+
+	if (isQuickplay)
+	{
+		mm->gameRunType = MainMenu::GRT_QUICKPLAY;
+	}
+	else
+	{
+		mm->gameRunType = MainMenu::GRT_FREEPLAY;
+	}
+
+	
 	game = new GameSession(&matchParams);
 
 	assert(loadThread == NULL);
@@ -1282,6 +1297,8 @@ void NetplayManager::FindQuickplayMatch()
 	{
 		Abort();
 
+		isQuickplay = true;
+
 		playerIndex = 0;
 
 		matchParams.mapPath = "Resources/Maps/W2/afighting6" + string(MAP_EXT);
@@ -1305,6 +1322,8 @@ void NetplayManager::FindQuickplayMatch()
 	else
 	{
 		Init();
+
+		isQuickplay = true;
 
 		action = A_QUICKPLAY_CHECKING_FOR_LOBBIES;
 
@@ -1839,6 +1858,11 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	}
 	case UdpMsg::Game_Client_Post_Quickplay_Leave:
 	{
+		assert(IsHost());
+
+		receivedLeaveNetplaySignal = true;
+
+		cout << "client sent leave quickplay signal" << endl;
 		break;
 	}
 	case UdpMsg::Game_Host_Post_Quickplay_Vote_To_Keep_Playing:
@@ -1849,6 +1873,7 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	{
 		break;
 	}
+
 	}
 
 
@@ -2074,6 +2099,12 @@ void NetplayManager::SendPostMatchQuickplayVoteToKeepPlayingToHost()
 {
 	cout << "client voting to keep playing" << endl;
 	SendSignalToHost(UdpMsg::Game_Client_Post_Quickplay_Vote_To_Keep_Playing);
+}
+
+void NetplayManager::SendPostMatchQuickplayLeaveSignalToHost()
+{
+	cout << "client sending host message to leave quickplay" << endl;
+	SendSignalToHost(UdpMsg::Game_Client_Post_Quickplay_Leave);
 }
 
 void NetplayManager::HostQuickplayVoteToKeepPlaying()

@@ -4689,7 +4689,13 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 	MatchStats *stats = new MatchStats;
 
 	if (netplayManager != NULL)
+	{
 		stats->netplay = true;
+		if (netplayManager->isQuickplay )//mainMenu->gameRunType == MainMenu::GRT_QUICKPLAY)
+		{
+			stats->quickplay = true;
+		}
+	}	
 
 	stats->gameModeType = gameModeType;
 

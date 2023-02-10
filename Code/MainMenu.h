@@ -216,7 +216,8 @@ struct MainMenu
 	{
 		GRT_ADVENTURE,
 		GRT_TUTORIAL,
-		GRT_FREEPLAY
+		GRT_FREEPLAY,
+		GRT_QUICKPLAY,
 	};
 
 	//testing

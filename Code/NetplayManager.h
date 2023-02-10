@@ -129,6 +129,8 @@ struct NetplayManager
 	bool waitingForMap;
 	bool waitingForPreview;
 
+	bool receivedLeaveNetplaySignal;
+
 	boost::thread *loadThread;
 
 	LobbyManager *lobbyManager;
@@ -141,6 +143,8 @@ struct NetplayManager
 	bool desyncDetected;
 
 	int playerIndex;
+
+	bool isQuickplay;
 
 	MatchParams matchParams;
 
@@ -226,6 +230,8 @@ struct NetplayManager
 	void ClearClientsFinishingResultsScreen();
 	void HostFinishResultsScreen();
 	void ClearDataForNextMatch();
+
+	void SendPostMatchQuickplayLeaveSignalToHost();
 
 	void SendPostMatchChooseMapSignalToClients();
 	void SendPostMatchQuickplayVoteToKeepPlayingToHost();

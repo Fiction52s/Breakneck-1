@@ -3435,6 +3435,31 @@ void MainMenu::HandleMenuMode()
 			//now go to map choosing stage
 			break;
 		}
+		case CustomMatchManager::A_POST_MATCH_QUICKPLAY:
+		{
+			if (isHost)
+			{
+				if (netplayManager->receivedLeaveNetplaySignal)
+				{
+					cout << "received signal to exit and kick everyone out" << endl;
+					netplayManager->CleanupMatch();
+					netplayManager->Abort();
+					LoadMode(TITLEMENU);
+				}
+				//wait for leaving messages
+			}
+			else
+			{
+				if (!netplayManager->IsConnectedToHost())
+				{
+					netplayManager->CleanupMatch();
+					netplayManager->Abort();
+					//SetMode(TITLEMENU);
+					LoadMode(TITLEMENU);
+				}
+			}
+			break;
+		}
 		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING:
 		{
 			if (netplayManager->IsHost())
@@ -3469,10 +3494,18 @@ void MainMenu::HandleMenuMode()
 		}
 		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_LEAVE:
 		{
-			netplayManager->CleanupMatch();
-			netplayManager->Abort();
+			if (!isHost)
+			{
+				netplayManager->SendPostMatchQuickplayLeaveSignalToHost();
+			}
+			else
+			{
+				netplayManager->CleanupMatch();
+				netplayManager->Abort();
 
-			LoadMode(TITLEMENU);
+				LoadMode(TITLEMENU);
+			}
+			
 			break;
 		}
 		}

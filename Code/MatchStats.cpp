@@ -8,6 +8,7 @@ MatchStats::MatchStats()
 		playerStats[i] = NULL;
 	}
 	netplay = false;
+	quickplay = false;
 }
 MatchStats::~MatchStats()
 {
