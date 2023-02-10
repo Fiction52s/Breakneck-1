@@ -91,7 +91,7 @@ void QuickplayPreMatchScreen::Update()
 	}
 	case A_SHOW:
 	{
-		if (frame == 60 * 2)
+		if (frame == 60 * 3)
 		{
 			action = A_DONE;
 			frame = 0;
