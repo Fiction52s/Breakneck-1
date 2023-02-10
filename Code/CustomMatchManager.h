@@ -6,6 +6,7 @@
 
 struct LobbyBrowser;
 struct WaitingRoom;
+struct QuickplayPreMatchScreen;
 struct MapBrowserScreen;
 struct MapOptionsPopup;
 struct MapNode;
@@ -25,6 +26,8 @@ struct CustomMatchManager
 		A_CHOOSE_MAP_OPTIONS,
 		A_CREATING_LOBBY,
 		A_WAITING_ROOM,
+		A_QUICKPLAY_PRE_MATCH,
+		A_QUICKPLAY_PRE_MATCH_DONE,
 		A_CONNECT_TO_HOST,
 		A_READY,
 		A_ERROR_MESSAGE,
@@ -48,6 +51,7 @@ struct CustomMatchManager
 
 	LobbyBrowser *lobbyBrowser;
 	WaitingRoom *waitingRoom;
+	QuickplayPreMatchScreen *quickplayPreMatchScreen;
 	MapBrowserScreen * mapBrowserScreen;
 	MapOptionsPopup *mapOptionsPopup;
 	MessagePopup *messagePopup;
@@ -70,6 +74,7 @@ struct CustomMatchManager
 	void TryActivateOptionsPanel( MapNode *mp );
 	void SetAction(Action a);
 	void HandleEvent(sf::Event ev);
+	void StartQuickplayPreMatchScreen( const std::string &mapPath );
 	bool Update();
 	void StartClientWaitingRoomForNextMap();
 	void Draw(sf::RenderTarget *target);

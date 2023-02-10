@@ -539,7 +539,7 @@ void NetplayManager::Update()
 
 			ld.lobbyName = lobbyName;
 
-			ld.mapPath = "Resources/Maps/W2/afighting6" + string(MAP_EXT);
+			ld.mapPath = GetNextQuickplayMapName();
 
 			ld.fileHash = md5file(ld.mapPath);
 			ld.creatorId = 0;
@@ -1176,6 +1176,11 @@ void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusC
 		//cout << "state is confused" << endl;
 		cout << "confused: " << "old: " << pCallback->m_eOldState << ", new state: " << pCallback->m_info.m_eState << endl;
 	}
+}
+
+std::string NetplayManager::GetNextQuickplayMapName()
+{
+	return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
 }
 
 CSteamID NetplayManager::GetHostID()
@@ -2093,6 +2098,11 @@ bool NetplayManager::CheckResultsScreen()
 void NetplayManager::SendPostMatchChooseMapSignalToClients()
 {
 	SendSignalToAllClients(UdpMsg::Game_Host_Post_Choose_Map);
+}
+
+void NetplayManager::SendPostMatchQuickplayKeepPlayingSignalToClients()
+{
+	SendSignalToAllClients(UdpMsg::Game_Host_Post_Quickplay_Says_Keep_Playing);
 }
 
 void NetplayManager::SendPostMatchQuickplayVoteToKeepPlayingToHost()

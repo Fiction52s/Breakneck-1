@@ -177,6 +177,7 @@ struct NetplayManager
 	void SendSignalToHost(int type);
 	void SendSignalToAllClients(int type);
 
+	std::string GetNextQuickplayMapName();
 	void HostStartLoading();
 	void HostQuickplayVoteToKeepPlaying();
 
@@ -234,6 +235,7 @@ struct NetplayManager
 	void SendPostMatchQuickplayLeaveSignalToHost();
 
 	void SendPostMatchChooseMapSignalToClients();
+	void SendPostMatchQuickplayKeepPlayingSignalToClients();
 	void SendPostMatchQuickplayVoteToKeepPlayingToHost();
 
 	bool AllPlayersHaveFinishedWithResultsScreen();

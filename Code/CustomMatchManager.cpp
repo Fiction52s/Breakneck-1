@@ -15,6 +15,7 @@
 #include "PostMatchOptionsPopup.h"
 #include "PostMatchClientPopup.h"
 #include "PostMatchQuickplayOptionsPopup.h"
+#include "QuickplayPreMatchScreen.h"
 //#include "ggpo/network/udp_msg.h"
 
 using namespace sf;
@@ -24,6 +25,7 @@ CustomMatchManager::CustomMatchManager()
 {
 	lobbyBrowser = new LobbyBrowser;
 	waitingRoom = new WaitingRoom;
+	quickplayPreMatchScreen = new QuickplayPreMatchScreen;
 	
 	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_CREATE_LOBBY);
 
@@ -50,6 +52,8 @@ CustomMatchManager::~CustomMatchManager()
 {
 	delete lobbyBrowser;
 	delete waitingRoom;
+
+	delete quickplayPreMatchScreen;
 
 	delete mapOptionsPopup;
 
@@ -235,6 +239,23 @@ void CustomMatchManager::TryActivateOptionsPanel( MapNode *mp )
 	}
 }
 
+void CustomMatchManager::StartQuickplayPreMatchScreen(const std::string &mapPathStr)
+{
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+	action = A_QUICKPLAY_PRE_MATCH;
+	frame = 0;
+
+	quickplayPreMatchScreen->Clear();
+	quickplayPreMatchScreen->UpdateMapHeader(mapPathStr);
+
+	boost::filesystem::path mapPath = mapPathStr;
+	string previewPath = mapPath.parent_path().string() + "\\" + mapPath.stem().string() + ".png";
+
+	netplayManager->previewPath = previewPath;
+	quickplayPreMatchScreen->SetPreview(previewPath);
+}
+
 bool CustomMatchManager::Update()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
@@ -242,6 +263,7 @@ bool CustomMatchManager::Update()
 	switch (action)
 	{
 	case A_LOBBY_BROWSER:
+	{
 		if (lobbyBrowser->action == LobbyBrowser::A_IN_LOBBY)
 		{
 			//waitingRoom->OpenPopup();
@@ -256,7 +278,7 @@ bool CustomMatchManager::Update()
 					{
 						SteamNetworkingIdentity identity;
 						identity.SetSteamID(netplayManager->netplayPlayers[i].id);
-							
+
 						cout << "attempting to connect to host" << endl;
 						netplayManager->netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
 						break;
@@ -265,7 +287,7 @@ bool CustomMatchManager::Update()
 			}
 
 			cout << "connect to hosttt action" << endl;
-			
+
 
 			SetAction(A_CONNECT_TO_HOST);
 
@@ -277,6 +299,7 @@ bool CustomMatchManager::Update()
 			return false;
 		}
 		break;
+	}
 	case A_CONNECT_TO_HOST:
 	{
 		for (int i = 0; i < 4; ++i)
@@ -316,10 +339,11 @@ bool CustomMatchManager::Update()
 		break;
 	}	
 	case A_CHOOSE_MAP:
+	{
 		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
 		{
 			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
-			
+
 
 			if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
 			{
@@ -335,7 +359,7 @@ bool CustomMatchManager::Update()
 
 		if (nextMapMode)
 		{
-			
+
 		}
 		else
 		{
@@ -346,8 +370,9 @@ bool CustomMatchManager::Update()
 				return false;
 			}
 		}
-		
+
 		break;
+	}
 	case A_DOWNLOADING_WORKSHOP_MAP:
 	{
 		if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
@@ -365,6 +390,7 @@ bool CustomMatchManager::Update()
 		break;
 	}
 	case A_CHOOSE_MAP_OPTIONS:
+	{
 		if (mapOptionsPopup->action == MapOptionsPopup::A_HOST)
 		{
 			if (fromWorkshopBrowser)
@@ -379,7 +405,7 @@ bool CustomMatchManager::Update()
 				mapOptionsPopup->currLobbyData->mapIndex = currMapIndex;
 				netplayManager->lobbyManager->currentLobby.data = *mapOptionsPopup->currLobbyData;
 				mapOptionsPopup->currLobbyData->SetLobbyData(netplayManager->lobbyManager->currentLobby.m_steamIDLobby);
-				
+
 
 				//netplayManager->SendLobbyDataForNextMapToClients(mapOptionsPopup->currLobbyData);
 				SetAction(A_WAITING_ROOM);
@@ -394,7 +420,7 @@ bool CustomMatchManager::Update()
 				waitingRoom->OpenPopup();
 				waitingRoom->SetPreview(previewPath);
 				waitingRoom->UpdateMapHeader(mapPath.string());
-				
+
 				//send a packet of data containing a buffer of lobbyData
 			}
 			else
@@ -407,7 +433,7 @@ bool CustomMatchManager::Update()
 
 				netplayManager->TryCreateCustomLobby(*mapOptionsPopup->currLobbyData);
 			}
-			
+
 			//cout << "waiting room" << endl;
 		}
 		else if (mapOptionsPopup->action == MapOptionsPopup::A_CANCELLED)
@@ -426,9 +452,10 @@ bool CustomMatchManager::Update()
 				selectedMap = NULL;
 				mapBrowserScreen->browserHandler->ClearSelection();
 			}
-			
+
 		}
 		break;
+	}
 	case A_ERROR_MESSAGE:
 	{
 		if (messagePopup->action == MessagePopup::A_INACTIVE)
@@ -547,7 +574,18 @@ bool CustomMatchManager::Update()
 		break;
 	}
 	case A_READY:
+	{
 		break;
+	}
+	case A_QUICKPLAY_PRE_MATCH:
+	{
+		if (quickplayPreMatchScreen->action == QuickplayPreMatchScreen::A_DONE)
+		{
+			action = A_QUICKPLAY_PRE_MATCH_DONE;
+			quickplayPreMatchScreen->Clear();
+		}
+		break;
+	}
 	}
 
 	switch (action)
@@ -565,19 +603,21 @@ bool CustomMatchManager::Update()
 		messagePopup->Update();
 		break;
 	case A_WAITING_ROOM:
+	{
 		waitingRoom->Update();
 
 		if (!netplayManager->IsHost() && nextMapMode && waitingRoom->action == WaitingRoom::A_READY_TO_START && netplayManager->action == NetplayManager::A_IDLE)
 		{
 			netplayManager->action = NetplayManager::A_WAIT_TO_LOAD_MAP;
 		}
-		
+
 		if (netplayManager->action == NetplayManager::A_WAIT_TO_LOAD_MAP && netplayManager->receivedMapLoadSignal)
 		{
 			//right before map starts loading
 			SetAction(A_READY); //just added this.
 		}
 		break;
+	}
 	case A_CREATING_LOBBY:
 	{
 		//netplayManager->Update();
@@ -633,6 +673,11 @@ bool CustomMatchManager::Update()
 	}
 	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS:
 	{
+		break;
+	}
+	case A_QUICKPLAY_PRE_MATCH:
+	{
+		quickplayPreMatchScreen->Update();
 		break;
 	}
 	}
@@ -712,6 +757,12 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS:
 	{
 		postMatchQuickplayPopup->Draw(target);
+		break;
+	}
+	case A_QUICKPLAY_PRE_MATCH:
+	case A_QUICKPLAY_PRE_MATCH_DONE:
+	{
+		quickplayPreMatchScreen->Draw(target);
 		break;
 	}
 	}

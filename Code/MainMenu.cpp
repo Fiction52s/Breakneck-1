@@ -3200,6 +3200,7 @@ void MainMenu::HandleMenuMode()
 		break;
 	}
 	case QUICKPLAY_TEST:
+	{
 		while (window->pollEvent(ev))
 		{
 			switch (ev.type)
@@ -3217,16 +3218,38 @@ void MainMenu::HandleMenuMode()
 		}
 
 		loadingBackpack->Update();
-		
+
 		netplayManager->Update();
 
 		if (netplayManager->action == NetplayManager::A_WAITING_FOR_START_MESSAGE
 			|| netplayManager->action == NetplayManager::A_READY_TO_RUN)
 		{
-			SetMode(QUICKPLAY_PLAY);
+
+			SetMode(QUICKPLAY_PRE_MATCH);
+			customMatchManager->StartQuickplayPreMatchScreen("");
+
+			//SetMode(QUICKPLAY_PLAY);
 			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 		}
 		break;
+	}
+	case QUICKPLAY_PRE_MATCH:
+	{
+		while (window->pollEvent(ev))
+		{
+			switch (ev.type)
+			{
+			}
+		}
+
+		customMatchManager->Update();
+
+		if (customMatchManager->action == CustomMatchManager::A_QUICKPLAY_PRE_MATCH_DONE)
+		{
+			SetMode(QUICKPLAY_PLAY);
+		}
+		break;
+	}
 	case QUICKPLAY_PLAY:
 	{
 		while (window->pollEvent(ev))
@@ -3247,7 +3270,7 @@ void MainMenu::HandleMenuMode()
 			mp.filePath = "Resources/Maps/W2/afighting1.kinmap";
 			netplayManager->RunMatch(&mp);*/
 		}
-		else if (!fader->IsFading())
+		else// if (!fader->IsFading())
 		{
 			if (netplayManager->action == NetplayManager::A_READY_TO_RUN)
 			{
@@ -3370,6 +3393,7 @@ void MainMenu::HandleMenuMode()
 		{
 			delete matchResultsScreen;
 			matchResultsScreen = NULL;
+			cout << "deleting match results screen early" << endl;
 		}
 
 		switch (customMatchManager->action)
@@ -3483,12 +3507,17 @@ void MainMenu::HandleMenuMode()
 			if (netplayManager->action == NetplayManager::A_ALL_VOTED_TO_KEEP_PLAYING)
 			{
 				cout << "we made it!" << endl;
-				netplayManager->game->InitGGPO();
-				netplayManager->HostInitiateRematch();
 
-				fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+				netplayManager->CleanupMatch();
+				netplayManager->SendPostMatchQuickplayKeepPlayingSignalToClients();
+				customMatchManager->BrowseForNextMap();
+				SetMode(CUSTOM_MATCH_SETUP);
+				//netplayManager->game->InitGGPO();
+				//netplayManager->HostInitiateRematch();
 
-				SetMode(QUICKPLAY_PLAY);
+				//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+
+				//SetMode(QUICKPLAY_PLAY);
 			}
 			break;
 		}
@@ -3497,6 +3526,11 @@ void MainMenu::HandleMenuMode()
 			if (!isHost)
 			{
 				netplayManager->SendPostMatchQuickplayLeaveSignalToHost();
+
+				netplayManager->CleanupMatch();
+				netplayManager->Abort();
+
+				LoadMode(TITLEMENU);
 			}
 			else
 			{
@@ -4058,6 +4092,12 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		loadingBackpack->Draw(preScreenTexture);
+		break;
+	}
+	case QUICKPLAY_PRE_MATCH:
+	{
+		preScreenTexture->setView(v);
+		customMatchManager->Draw(preScreenTexture);
 		break;
 	}
 	case QUICKPLAY_PLAY:
