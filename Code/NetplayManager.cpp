@@ -2063,6 +2063,7 @@ void NetplayManager::ClearDataForNextMatch()
 		netplayPlayers[i].hasAllData = false;
 		netplayPlayers[i].readyToRun = false;
 		netplayPlayers[i].doneLoading = false;
+		netplayPlayers[i].voteToKeepPlaying = false;
 	}
 }
 
@@ -2153,11 +2154,6 @@ void NetplayManager::HostQuickplayVoteToKeepPlaying()
 	cout << "host voting to keep playing" << endl;
 	action = A_WAIT_FOR_QUICKPLAY_VOTES_TO_KEEP_PLAYING;
 
-	for (int i = 0; i < 4; ++i)
-	{
-		netplayPlayers[i].voteToKeepPlaying = false;
-	}
-
 	netplayPlayers[playerIndex].voteToKeepPlaying = true;
 }
 
@@ -2189,7 +2185,6 @@ void NetplayManager::HostLoadNextQuickplayMap()
 
 		++currMapIndex;
 		ld.mapIndex = currMapIndex;
-		cout << "setting new map index: " << ld.mapIndex << endl;
 
 		ld.SetLobbyData(lobbyManager->currentLobby.m_steamIDLobby);
 
