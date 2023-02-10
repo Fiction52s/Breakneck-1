@@ -43,8 +43,6 @@ CustomMatchManager::CustomMatchManager()
 
 	preErrorAction = A_IDLE;
 
-	currMapIndex = 0;
-
 	nextMapMode = false;
 }
 
@@ -135,11 +133,13 @@ void CustomMatchManager::OpenPostMatchPopup()
 
 void CustomMatchManager::BrowseForNextMap()
 {
-	currMapIndex++;
+	
 
 	nextMapMode = true;
 
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+	netplayManager->currMapIndex++;
 
 	netplayManager->previewPath = "";
 	netplayManager->matchParams.mapPath = "";
@@ -152,7 +152,6 @@ void CustomMatchManager::BrowseForNextMap()
 
 void CustomMatchManager::CreateCustomLobby()
 {
-	currMapIndex = 0;
 	nextMapMode = false;
 	fromWorkshopBrowser = false;
 	//assert(action == A_LOBBY_BROWSER);
@@ -198,7 +197,6 @@ void CustomMatchManager::CreateCustomLobbyFromWorkshopBrowser()
 
 void CustomMatchManager::BrowseCustomLobbies()
 {
-	currMapIndex = 0;
 	nextMapMode = false;
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 	netplayManager->Init();
@@ -209,7 +207,6 @@ void CustomMatchManager::BrowseCustomLobbies()
 void CustomMatchManager::TryEnterLobbyFromInvite( CSteamID lobbyId )
 {
 	cout << "TryEnterLobbyFromInvite start" << endl;
-	currMapIndex = 0;
 	nextMapMode = false;
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 	netplayManager->Init();
@@ -239,6 +236,8 @@ void CustomMatchManager::TryActivateOptionsPanel( MapNode *mp )
 	}
 }
 
+
+
 void CustomMatchManager::StartQuickplayPreMatchScreen()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
@@ -249,7 +248,7 @@ void CustomMatchManager::StartQuickplayPreMatchScreen()
 	boost::filesystem::path mapPath = netplayManager->matchParams.mapPath;
 
 	quickplayPreMatchScreen->Clear();
-	quickplayPreMatchScreen->UpdateMapHeader(mapPath.string());
+	quickplayPreMatchScreen->SetToNetplayMatchParams();//UpdateMapHeader(mapPath.string());
 
 	string previewPath = mapPath.parent_path().string() + "\\" + mapPath.stem().string() + ".png";
 
@@ -403,7 +402,7 @@ bool CustomMatchManager::Update()
 
 			if (nextMapMode)
 			{
-				mapOptionsPopup->currLobbyData->mapIndex = currMapIndex;
+				mapOptionsPopup->currLobbyData->mapIndex = netplayManager->currMapIndex;
 				netplayManager->lobbyManager->currentLobby.data = *mapOptionsPopup->currLobbyData;
 				mapOptionsPopup->currLobbyData->SetLobbyData(netplayManager->lobbyManager->currentLobby.m_steamIDLobby);
 
@@ -516,9 +515,9 @@ bool CustomMatchManager::Update()
 		{
 			if (nextMapMode)
 			{
-				if (netplayManager->lobbyManager->currentLobby.data.mapIndex > currMapIndex )//netplayManager->receivedNextMapData)
+				if (netplayManager->lobbyManager->currentLobby.data.mapIndex > netplayManager->currMapIndex )//netplayManager->receivedNextMapData)
 				{
-					currMapIndex = netplayManager->lobbyManager->currentLobby.data.mapIndex;
+					netplayManager->currMapIndex = netplayManager->lobbyManager->currentLobby.data.mapIndex;
 					//maybe tell the lobby manager to refresh or check for updates to the lobby if this doens't match
 					
 					//netplayManager->receivedNextMapData = false;

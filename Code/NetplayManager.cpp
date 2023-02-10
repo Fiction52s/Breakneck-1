@@ -38,6 +38,7 @@ void NetplayPlayer::Clear()
 	finishedWithResultsScreen = false;
 	voteToKeepPlaying = false;
 	id.Clear();
+	index = -1; //not set up currently
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
 }
 
@@ -216,6 +217,8 @@ void NetplayManager::Abort()
 	isQuickplay = false;
 
 	action = A_IDLE;
+
+	currMapIndex = 0;
 
 	receivedMapLoadSignal = false;
 	receivedMapVerifySignal = false;
@@ -869,16 +872,19 @@ void NetplayManager::Update()
 	case A_WAIT_FOR_QUICKPLAY_VOTES_TO_KEEP_PLAYING:
 	{
 		bool allVoteToKeepPlaying = true;
-		for (int i = 0; i < numPlayers; ++i)
+		if (!isSyncTest)
 		{
-			//including me this time
-			//if (i == playerIndex)
-			//	continue;
-
-			if (!netplayPlayers[i].voteToKeepPlaying)
+			for (int i = 0; i < numPlayers; ++i)
 			{
-				allVoteToKeepPlaying = false;
-				break;
+				//including me this time
+				//if (i == playerIndex)
+				//	continue;
+
+				if (!netplayPlayers[i].voteToKeepPlaying)
+				{
+					allVoteToKeepPlaying = false;
+					break;
+				}
 			}
 		}
 
@@ -1012,6 +1018,11 @@ void NetplayManager::SendSignalToHost(int type)
 
 void NetplayManager::SendSignalToAllClients(int type)
 {
+	if (isSyncTest)
+	{
+		return;
+	}
+
 	assert(IsHost());
 	UdpMsg msg((UdpMsg::MsgType)type);
 
@@ -1296,6 +1307,8 @@ void NetplayManager::CleanupMatch()
 	}
 }
 
+
+
 void NetplayManager::FindQuickplayMatch()
 {
 	if (isSyncTest)
@@ -1306,7 +1319,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		playerIndex = 0;
 
-		matchParams.mapPath = "Resources/Maps/W2/afighting6" + string(MAP_EXT);
+		matchParams.mapPath = GetNextQuickplayMapName();//"Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
 		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;
 
@@ -1872,20 +1885,15 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	}
 	case UdpMsg::Game_Host_Post_Quickplay_Vote_To_Keep_Playing:
 	{
-
+		//useful for visuals maybe? needs a rework
 	}
 	case UdpMsg::Game_Host_Post_Quickplay_Says_Keep_Playing:
 	{
+		postMatchOptionReceived = POST_MATCH_A_QUICKPLAY_KEEP_PLAYING;
 		break;
 	}
 
 	}
-
-
-	/*Game_Client_Post_Quickplay_Vote_To_Keep_Playing,
-		Game_Client_Post_Quickplay_Leave,
-		Game_Host_Post_Quickplay_Vote_To_Keep_Playing,
-		Game_Host_Post_Quickplay_Says_Keep_Playing,*/
 
 	if (steamMsg != NULL )
 	{
@@ -2134,4 +2142,53 @@ void NetplayManager::HostStartLoading()
 {
 	SendSignalToAllClients(UdpMsg::Game_Host_Says_Load);
 	LoadMap();
+}
+
+void NetplayManager::HostLoadNextQuickplayMap()
+{
+	assert(IsHost());
+	if (isSyncTest)
+	{
+		LoadMap();
+		receivedGameStartSignal = true;
+	}
+	else
+	{
+		LobbyData ld;
+		ld.maxMembers = 2;
+		ld.gameModeType = MatchParams::GAME_MODE_FIGHT;
+		ld.mapPath = GetNextQuickplayMapName();
+
+		ld.fileHash = md5file(ld.mapPath);
+		ld.creatorId = 0;
+		ld.randSeed = time(0);
+
+		++currMapIndex;
+		ld.mapIndex = currMapIndex;
+
+		ld.SetLobbyData(lobbyManager->currentLobby.m_steamIDLobby);
+
+		ClearDataForNextMatch();
+
+		CheckForMapAndSetMatchParams();
+
+		LoadMap();
+		//HostStartLoading();
+	}
+}
+
+void NetplayManager::PrepareClientForNextQuickplayMap()
+{
+	/*receivedMapLoadSignal = false;
+	receivedMapVerifySignal = false;
+	receivedGameStartSignal = false;
+	receivedStartGGPOSignal = false;
+	receivedMap = false;
+	waitingForMap = false;
+	waitingForPreview = false;
+	receivedPostOptionsSignal = false;
+	receivedNextMapData = false;
+	receivedLeaveNetplaySignal = false;*/
+
+	action = NetplayManager::A_IDLE;//A_WAIT_TO_LOAD_MAP;
 }

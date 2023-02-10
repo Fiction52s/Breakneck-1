@@ -3207,6 +3207,7 @@ void MainMenu::HandleMenuMode()
 			{
 			case sf::Event::KeyPressed:
 			{
+				//needs cleanup
 				if (ev.key.code == Keyboard::Escape)
 				{
 					SetMode(ONLINE_MENU);
@@ -3364,6 +3365,8 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->CleanupMatch();
 				
+				delete matchResultsScreen;
+				matchResultsScreen = NULL;
 
 				SetMode(CUSTOM_MATCH_SETUP);
 				customMatchManager->StartClientWaitingRoomForNextMap();
@@ -3373,10 +3376,12 @@ void MainMenu::HandleMenuMode()
 			{
 				break;
 			}
-			case NetplayManager::POST_MATCH_A_QUICKPLAY_VOTE_KEEP_PLAYING:
+			/*case NetplayManager::POST_MATCH_A_QUICKPLAY_KEEP_PLAYING:
 			{
+				
+
 				break;
-			}
+			}*/
 			case NetplayManager::POST_MATCH_A_QUICKPLAY_LEAVE:
 			{
 				break;
@@ -3390,13 +3395,23 @@ void MainMenu::HandleMenuMode()
 		customMatchManager->Update();
 
 		bool isHost = netplayManager->IsHost();
-		if ( (isHost && customMatchManager->action != CustomMatchManager::A_POST_MATCH_HOST)
-			|| (!isHost && customMatchManager->action != CustomMatchManager::A_POST_MATCH_CLIENT))
-		{
-			delete matchResultsScreen;
-			matchResultsScreen = NULL;
-			cout << "deleting match results screen early" << endl;
-		}
+
+		//bool needResultsScreen = false;
+
+		//bool hostNeedsResults = isHost && customMatchManager->action == CustomMatchManager::A_POST_MATCH_HOST;
+		//bool clientNeedsResults = 
+		//
+
+		//needResultsScreen = ;
+		// 
+		//if ((isHost && customMatchManager->action != CustomMatchManager::A_POST_MATCH_HOST)
+		//	|| (!isHost && customMatchManager->action != CustomMatchManager::A_POST_MATCH_CLIENT)
+		//	|| ( customMatchManager->action !)
+		//{
+		//	//delete matchResultsScreen;
+		//	//matchResultsScreen = NULL;
+		//	//cout << "deleting match results screen early" << endl;
+		//}
 
 		switch (customMatchManager->action)
 		{
@@ -3406,6 +3421,9 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->CleanupMatch();
 				netplayManager->Abort();
+
+				delete matchResultsScreen;
+				matchResultsScreen = NULL;
 				//SetMode(TITLEMENU);
 				LoadMode(TITLEMENU);
 			}
@@ -3418,6 +3436,9 @@ void MainMenu::HandleMenuMode()
 			netplayManager->CleanupMatch();
 			netplayManager->Abort();
 
+			delete matchResultsScreen;
+			matchResultsScreen = NULL;
+
 			LoadMode(TITLEMENU);
 			//SetMode(TITLEMENU);
 			 
@@ -3428,6 +3449,9 @@ void MainMenu::HandleMenuMode()
 		{
 			netplayManager->CleanupMatch();
 			netplayManager->Abort();
+
+			delete matchResultsScreen;
+			matchResultsScreen = NULL;
 
 			LoadMode(TITLEMENU);
 			//SetMode(TITLEMENU);
@@ -3442,6 +3466,9 @@ void MainMenu::HandleMenuMode()
 			
 			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 
+			delete matchResultsScreen;
+			matchResultsScreen = NULL;
+
 			SetMode(QUICKPLAY_PLAY);
 			//QUICKPLAY_PLAY
 			//SetMode(QUICKPLAY_TEST);
@@ -3455,6 +3482,10 @@ void MainMenu::HandleMenuMode()
 
 			netplayManager->CleanupMatch();
 			netplayManager->SendPostMatchChooseMapSignalToClients();
+
+			delete matchResultsScreen;
+			matchResultsScreen = NULL;
+
 			customMatchManager->BrowseForNextMap();
 			SetMode(CUSTOM_MATCH_SETUP);
 
@@ -3470,6 +3501,10 @@ void MainMenu::HandleMenuMode()
 					cout << "received signal to exit and kick everyone out" << endl;
 					netplayManager->CleanupMatch();
 					netplayManager->Abort();
+
+					delete matchResultsScreen;
+					matchResultsScreen = NULL;
+
 					LoadMode(TITLEMENU);
 				}
 				//wait for leaving messages
@@ -3480,6 +3515,9 @@ void MainMenu::HandleMenuMode()
 				{
 					netplayManager->CleanupMatch();
 					netplayManager->Abort();
+
+					delete matchResultsScreen;
+					matchResultsScreen = NULL;
 					//SetMode(TITLEMENU);
 					LoadMode(TITLEMENU);
 				}
@@ -3488,39 +3526,65 @@ void MainMenu::HandleMenuMode()
 		}
 		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING:
 		{
+			netplayManager->CleanupMatch();
+
 			if (netplayManager->IsHost())
 			{
 				netplayManager->HostQuickplayVoteToKeepPlaying();
 			}
 			else
 			{
+				netplayManager->PrepareClientForNextQuickplayMap();
 				netplayManager->SendPostMatchQuickplayVoteToKeepPlayingToHost();
 			}
 
 			customMatchManager->action = CustomMatchManager::A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS;
-
-			netplayManager->CleanupMatch();
-
-			//SetMode(QUICKPLAY_PLAY);
 			break;
 		}
 		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS:
 		{
-			if (netplayManager->action == NetplayManager::A_ALL_VOTED_TO_KEEP_PLAYING)
+			//host
+			if (netplayManager->IsHost())
 			{
-				cout << "we made it!" << endl;
+				if (netplayManager->action == NetplayManager::A_ALL_VOTED_TO_KEEP_PLAYING)
+				{
+					cout << "we made it!" << endl;
 
-				netplayManager->CleanupMatch();
-				netplayManager->SendPostMatchQuickplayKeepPlayingSignalToClients();
-				customMatchManager->BrowseForNextMap();
-				SetMode(CUSTOM_MATCH_SETUP);
-				//netplayManager->game->InitGGPO();
-				//netplayManager->HostInitiateRematch();
+					netplayManager->CleanupMatch();
+					//netplayManager->SendPostMatchQuickplayKeepPlayingSignalToClients();
 
-				//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+					delete matchResultsScreen;
+					matchResultsScreen = NULL;
 
-				//SetMode(QUICKPLAY_PLAY);
+					netplayManager->HostLoadNextQuickplayMap();
+
+					SetMode(QUICKPLAY_TEST);
+
+					//customMatchManager->BrowseForNextMap();
+					//SetMode(CUSTOM_MATCH_SETUP);
+					//netplayManager->game->InitGGPO();
+					//netplayManager->HostInitiateRematch();
+
+					//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+
+					//SetMode(QUICKPLAY_PLAY);
+				}
 			}
+			else
+			{
+				if (netplayManager->lobbyManager->currentLobby.data.mapIndex > netplayManager->currMapIndex)
+				{
+					netplayManager->currMapIndex = netplayManager->lobbyManager->currentLobby.data.mapIndex;
+					//maybe tell the lobby manager to refresh or check for updates to the lobby if this doens't match
+
+					//netplayManager->receivedNextMapData = false;
+
+					netplayManager->CheckForMapAndSetMatchParams();
+
+					netplayManager->LoadMap();
+				}
+			}
+			
 			break;
 		}
 		case CustomMatchManager::A_POST_MATCH_QUICKPLAY_LEAVE:
@@ -3532,12 +3596,18 @@ void MainMenu::HandleMenuMode()
 				netplayManager->CleanupMatch();
 				netplayManager->Abort();
 
+				delete matchResultsScreen;
+				matchResultsScreen = NULL;
+
 				LoadMode(TITLEMENU);
 			}
 			else
 			{
 				netplayManager->CleanupMatch();
 				netplayManager->Abort();
+
+				delete matchResultsScreen;
+				matchResultsScreen = NULL;
 
 				LoadMode(TITLEMENU);
 			}

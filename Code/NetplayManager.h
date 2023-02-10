@@ -76,7 +76,7 @@ struct NetplayManager
 		POST_MATCH_A_CHOOSE_MAP,
 		POST_MATCH_A_LEAVE,
 		POST_MATCH_A_QUICKPLAY_LEAVE,
-		POST_MATCH_A_QUICKPLAY_VOTE_KEEP_PLAYING,
+		POST_MATCH_A_QUICKPLAY_KEEP_PLAYING,
 	};
 
 	enum Action
@@ -161,6 +161,8 @@ struct NetplayManager
 
 	MatchResultsScreen *resultsScreen;
 
+	int currMapIndex;
+
 
 	NetplayManager();
 	~NetplayManager();
@@ -174,6 +176,8 @@ struct NetplayManager
 	void SetHost();
 	bool IsConnectedToHost();
 	
+	void HostLoadNextQuickplayMap();
+
 	void SendSignalToHost(int type);
 	void SendSignalToAllClients(int type);
 
@@ -185,6 +189,8 @@ struct NetplayManager
 	void ConnectToAll();
 	void ReceiveMessages();
 	HSteamNetConnection GetHostConnection();
+
+	void PrepareClientForNextQuickplayMap();
 	
 	HSteamNetConnection GetConnection();
 	void AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci );
@@ -250,6 +256,8 @@ struct NetplayManager
 		int udpMsgType);
 
 	void SendLobbyDataForNextMapToClients(LobbyData *ld);
+
+	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
 	STEAM_CALLBACK(NetplayManager, OnConnectionStatusChangedCallback, SteamNetConnectionStatusChangedCallback_t);

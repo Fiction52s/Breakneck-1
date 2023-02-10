@@ -46,7 +46,6 @@ struct CustomMatchManager
 	Action action;
 	int frame;
 
-	int currMapIndex;
 	bool nextMapMode;
 
 	LobbyBrowser *lobbyBrowser;
@@ -77,6 +76,7 @@ struct CustomMatchManager
 	void StartQuickplayPreMatchScreen();
 	bool Update();
 	void StartClientWaitingRoomForNextMap();
+	void PrepareClientForNextQuickplayMap();
 	void Draw(sf::RenderTarget *target);
 	void DrawPopupBG(sf::RenderTarget *target);
 

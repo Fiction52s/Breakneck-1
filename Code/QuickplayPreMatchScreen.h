@@ -29,13 +29,14 @@ struct QuickplayPreMatchScreen : TilesetManager
 
 	Tileset *ts_preview;
 
-	sf::Text nameText;
-	sf::Text descriptionText;
+	sf::Text mapNameText;
+	sf::Text modeText;
+	sf::Text leftPlayerName;
+	sf::Text rightPlayerName;
 
 	sf::Vertex bgQuad[4];
 
 	sf::Vertex previewQuad[4];
-	sf::Vector2f previewBottomLeft;
 
 	QuickplayPreMatchScreen();
 	~QuickplayPreMatchScreen();
@@ -45,7 +46,7 @@ struct QuickplayPreMatchScreen : TilesetManager
 	void SetPreview(const std::string &previewPath);
 	void SetAction(Action a);
 	void ClearPreview();
-	void UpdateMapHeader(const std::string &mapPath);
+	void SetToNetplayMatchParams();
 };
 
 #endif
