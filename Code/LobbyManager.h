@@ -24,19 +24,17 @@ struct LobbyMember
 	}
 };
 
+
+
 struct LobbyData
 {
-	LobbyData()
+	enum LobbyType
 	{
-		gameModeType = 0;
-		isWorkshopMap = false;
-		randSeed = 0;
-		maxMembers = 0;
-		mapIndex = 0;
-		publishedFileId = 0;
-		creatorId = 0;
-		
-	}
+		LOBBYTYPE_NOT_SET,
+		LOBBYTYPE_QUICKPLAY,
+		LOBBYTYPE_CUSTOM,
+		LOBBYTYPE_Count,
+	};
 
 	std::string lobbyName;
 	std::string mapPath;
@@ -48,8 +46,9 @@ struct LobbyData
 	int mapIndex; //when running next maps
 	uint64 publishedFileId;
 	uint64 creatorId;
+	int lobbyType;
 	
-
+	LobbyData();
 	bool Update( CSteamID lobbyId );
 	void SetLobbyData(CSteamID lobbyId);
 	int GetNumStoredBytes();
@@ -116,6 +115,9 @@ struct LobbyManager
 	CCallResult<LobbyManager, LobbyMatchList_t> m_SteamCallResultLobbyMatchList;
 	CCallResult<LobbyManager, LobbyEnter_t> m_SteamCallResultLobbyEnter;
 
+	int searchLobbyType;
+
+
 	LobbyManager();
 
 	void PopulateLobbyList( CSteamID lobbyID );
@@ -134,10 +136,10 @@ struct LobbyManager
 
 	int GetNumMembers();
 
-	void FindLobby();
+	void FindQuickplayLobby();
 	void LeaveLobby();
 
-	void RefreshLobbyList();
+	void RetrieveLobbyList( int lobbyType );//add more params later
 	void OnLobbyMatchListCallback(LobbyMatchList_t *pLobbyMatchList, bool bIOFailure);
 	void ProcessLobbyList();
 	

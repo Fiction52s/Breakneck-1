@@ -329,7 +329,7 @@ void LobbyBrowser::SetAction(Action a)
 
 	if (action == A_GET_LOBBIES)
 	{
-		lobbyManager->RefreshLobbyList();
+		lobbyManager->RetrieveLobbyList(LobbyData::LOBBYTYPE_CUSTOM);
 	}
 }
 

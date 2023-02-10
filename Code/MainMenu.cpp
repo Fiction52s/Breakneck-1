@@ -3572,14 +3572,19 @@ void MainMenu::HandleMenuMode()
 			}
 			else
 			{
+				//cout << "my lobbymanager index: " << netplayManager->lobbyManager->currentLobby.data.mapIndex << ", my netplay: " << netplayManager->currMapIndex << endl;
 				if (netplayManager->lobbyManager->currentLobby.data.mapIndex > netplayManager->currMapIndex)
 				{
+					//cout << "made it loading" << endl;
+
 					netplayManager->currMapIndex = netplayManager->lobbyManager->currentLobby.data.mapIndex;
 					//maybe tell the lobby manager to refresh or check for updates to the lobby if this doens't match
 
 					//netplayManager->receivedNextMapData = false;
 
 					netplayManager->CheckForMapAndSetMatchParams();
+
+					SetMode(QUICKPLAY_TEST);
 
 					netplayManager->LoadMap();
 				}

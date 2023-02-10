@@ -1495,13 +1495,13 @@ bool GameSession::Load()
 	//while (true);
 
 	replayText.setFont(mainMenu->arial);
-	replayText.setCharacterSize(48);
+	replayText.setCharacterSize(24);
 	replayText.setFillColor(Color(255, 0, 0, 150));
 	replayText.setOutlineColor(Color::Black);
 	replayText.setOutlineThickness(3);
 	replayText.setString("REPLAY");
-	replayText.setOrigin(replayText.getLocalBounds().width / 2 + replayText.getLocalBounds().left, 0);
-	replayText.setPosition(960, 10);
+	//replayText.setOrigin(replayText.getLocalBounds().width / 2 + replayText.getLocalBounds().left, 0);
+	replayText.setPosition(1920 - ( replayText.getGlobalBounds().width + 10 ), 1080 - (replayText.getGlobalBounds().height + 20 ));
 
 	SetupPopup();
 
@@ -2302,9 +2302,9 @@ bool GameSession::RunMainLoopOnce()
 
 		if (playerReplayManager != NULL && playerReplayManager->replaysActive)
 		{
-			preScreenTex->setView(uiView);
+			/*preScreenTex->setView(uiView);
 			preScreenTex->draw(replayText);
-			preScreenTex->setView(view);
+			preScreenTex->setView(view);*/
 		}
 
 		preScreenTex->display();

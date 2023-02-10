@@ -93,7 +93,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -342,11 +342,12 @@ void NetplayManager::CheckForMapAndSetMatchParams()
 	if (IsHost())
 	{
 		matchParams.mapPath = lobbyData.mapPath;
+		cout << "host map path being set for testing: " << lobbyData.mapPath << endl;
 		//for host, is preview already set?
 	}
 	else
 	{
-		
+		cout << "client map path being set for testing: " << lobbyData.mapPath << endl;
 
 		boost::filesystem::path receivedMapPath = lobbyData.mapPath;
 		string receivedCreatorIDStr;
@@ -541,7 +542,7 @@ void NetplayManager::Update()
 			ld.maxMembers = 2;
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
 			ld.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
-
+			ld.lobbyType = LobbyData::LOBBYTYPE_QUICKPLAY;
 			// set the name of the lobby if it's ours
 			string lobbyName = SteamFriends()->GetPersonaName();
 			lobbyName += "'s lobby";
@@ -1197,7 +1198,18 @@ void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusC
 
 std::string NetplayManager::GetNextQuickplayMapName()
 {
-	return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
+	int r = rand() % 2;
+	cout << "choosing quickplay map: " << r << endl;
+
+	if (r == 0)
+	{
+		return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
+	}
+	else
+	{
+		return "Resources/Maps/W2/afighting2" + string(MAP_EXT);
+	}
+	
 }
 
 CSteamID NetplayManager::GetHostID()
@@ -1356,7 +1368,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		action = A_QUICKPLAY_CHECKING_FOR_LOBBIES;
 
-		lobbyManager->FindLobby();
+		lobbyManager->FindQuickplayLobby();
 	}
 }
 
@@ -2166,6 +2178,7 @@ void NetplayManager::HostLoadNextQuickplayMap()
 	else
 	{
 		LobbyData ld;
+		ld.lobbyName = lobbyManager->currentLobby.data.lobbyName;
 		ld.maxMembers = 2;
 		ld.gameModeType = MatchParams::GAME_MODE_FIGHT;
 		ld.mapPath = GetNextQuickplayMapName();
@@ -2176,8 +2189,11 @@ void NetplayManager::HostLoadNextQuickplayMap()
 
 		++currMapIndex;
 		ld.mapIndex = currMapIndex;
+		cout << "setting new map index: " << ld.mapIndex << endl;
 
 		ld.SetLobbyData(lobbyManager->currentLobby.m_steamIDLobby);
+
+		lobbyManager->currentLobby.data = ld;
 
 		ClearDataForNextMatch();
 

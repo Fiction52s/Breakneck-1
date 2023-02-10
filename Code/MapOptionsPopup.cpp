@@ -191,6 +191,7 @@ bool MapOptionsPopup::Activate(MapNode *mp, int numP)
 	lobbyName += "'s lobby";
 
 	currLobbyData->lobbyName = lobbyName;
+	currLobbyData->lobbyType = LobbyData::LOBBYTYPE_CUSTOM;
 
 	if (mp->isWorkshop)
 	{
@@ -382,6 +383,9 @@ bool MapOptionsPopup::Activate(MapNode *mp, int numP)
 
 	currLobbyData->isWorkshopMap = mp->isWorkshop;
 	currLobbyData->publishedFileId = mp->publishedFileId;
+
+	
+
 
 	action = A_ACTIVE;
 

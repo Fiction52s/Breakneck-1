@@ -6,12 +6,25 @@
 
 using namespace std;
 
+LobbyData::LobbyData()
+{
+	gameModeType = 0;
+	isWorkshopMap = false;
+	randSeed = 0;
+	maxMembers = 0;
+	mapIndex = 0;
+	publishedFileId = 0;
+	creatorId = 0;
+	lobbyType = LOBBYTYPE_NOT_SET;
+}
+
 bool LobbyData::Update( CSteamID lobbyId )
 {
 	lobbyName = SteamMatchmaking()->GetLobbyData(lobbyId, "name");
 
 	if (lobbyName == "")
 	{
+		cout << "error updating lobby data. lobbyname is blank" << endl;
 		return false;
 	}
 
@@ -36,6 +49,11 @@ bool LobbyData::Update( CSteamID lobbyId )
 	
 	string creatorIdStr = SteamMatchmaking()->GetLobbyData(lobbyId, "creatorID");
 	creatorId = stoll(creatorIdStr);
+
+	string lobbyTypeStr = SteamMatchmaking()->GetLobbyData(lobbyId, "lobbyType");
+	lobbyType = stoi(lobbyTypeStr);
+
+	//cout << "updated lobby info: " << mapIndex << endl;
 	return true;
 }
 
@@ -68,6 +86,8 @@ void LobbyData::SetLobbyData(CSteamID lobbyId)
 
 	string creatorIDStr = to_string(creatorId);
 	SteamMatchmaking()->SetLobbyData(lobbyId, "creatorID", creatorIDStr.c_str());
+
+	SteamMatchmaking()->SetLobbyData(lobbyId, "lobbyType", to_string(lobbyType).c_str());
 }
 
 int LobbyData::GetNumStoredBytes()
@@ -163,6 +183,7 @@ LobbyManager::LobbyManager()
 	action = A_IDLE;
 	m_bRequestingLobbies = false;
 	currWaitingRoom = NULL;
+	searchLobbyType = -1;
 }
 
 void LobbyManager::TryCreatingLobby(LobbyData &ld)
@@ -228,10 +249,10 @@ void LobbyManager::PrintLobbies()
 	}
 }
 
-void LobbyManager::FindLobby()
+void LobbyManager::FindQuickplayLobby()
 {
 	cout << "finding lobby" << endl;
-	RefreshLobbyList();
+	RetrieveLobbyList(LobbyData::LOBBYTYPE_QUICKPLAY);
 }
 
 void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
@@ -454,6 +475,17 @@ void LobbyManager::ProcessLobbyList()
 	}
 	else
 	{
+		vector<Lobby> copyVec = lobbyVec;
+		lobbyVec.clear();
+		for (auto it = copyVec.begin(); it != copyVec.end(); ++it)
+		{
+			if ((*it).data.lobbyType == searchLobbyType)
+			{
+				lobbyVec.push_back((*it));
+			}
+		}
+		
+
 		PrintLobbies();
 
 		if (IsAllLobbyDataReceived())
@@ -469,10 +501,12 @@ void LobbyManager::ProcessLobbyList()
 	}
 }
 
-void LobbyManager::RefreshLobbyList()
+void LobbyManager::RetrieveLobbyList( int lobbyType )//more params later for searching etc
 {
 	if (!m_bRequestingLobbies)
 	{
+		searchLobbyType = lobbyType;
+
 		m_bRequestingLobbies = true;
 		// request all lobbies for this game
 		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->RequestLobbyList();
