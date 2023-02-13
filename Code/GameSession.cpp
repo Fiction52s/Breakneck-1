@@ -487,10 +487,10 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 {
 	boost::filesystem::path p("Resources/Maps/" + bonusName + MAP_EXT);
 	
-	MatchParams mp;
-	mp.saveFile = saveFile;
+	MatchParams mp = matchParams;
+	//mp.saveFile = saveFile;
 	mp.mapPath = p;
-	mp.gameModeType = gameModeType;
+	//mp.gameModeType = gameModeType;
 
 	GameSession *newBonus = new GameSession(&mp);
 	newBonus->bonusType = p_bonusType;
@@ -1788,26 +1788,6 @@ bool GameSession::Load()
 	//need this after the whole level is setup in case of warp barriers
 	//create sequences for the barriers after all enemies have already been loaded
 	SetupBarrierScenes();
-	
-	if (parentGame == NULL)
-	{
-
-		//this is a temporary test. create a bonus whenever you have a parent level
-		/*boost::filesystem::path p("Resources/Maps//W2//gateblank9.kinmap");
-		bonusGame = new GameSession(saveFile, p);
-		bonusGame->SetParentGame(this);
-		bonusGame->Load();
-
-		currSession = this;
-		pauseMenu->owner = this;*/
-	}
-
-	//bonusPaths.push_back(p);
-
-	/*for (auto it = bonusPaths.begin(); it != bonusPaths.end(); ++it)
-	{
-		
-	}*/
 
 	cout << "done loading" << endl;
 
@@ -4644,45 +4624,45 @@ int GameSession::GetBonusType()
 	}
 }
 
-int GameSession::GetPlayerNormalSkin(int index)
-{
-	if (saveFile != NULL)
-	{
-		return saveFile->defaultSkinIndex;
-	}
-	else if (netplayManager != NULL)
-	{
-		int realIndex = index;
-		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
-		{
-			int adjustedIndex = index;
-			if (IsParallelSession())
-			{
-				assert(index == 0); //each parallel session can only have 1 player so far
-
-				adjustedIndex = parallelSessionIndex + 1;
-			}
-
-			realIndex = adjustedIndex;
-			if (adjustedIndex == 0)
-			{
-				realIndex = netplayManager->playerIndex;
-			}
-			else if (adjustedIndex <= netplayManager->playerIndex)
-			{
-				realIndex = adjustedIndex - 1;
-			}
-		}
-
-		return netplayManager->netplayPlayers[realIndex].skinIndex;
-	}
-	else
-	{
-		return matchParams.playerSkins[index];
-	}
-
-	return Actor::SKIN_NORMAL;
-}
+//int GameSession::GetPlayerNormalSkin(int index)
+//{
+//	if (saveFile != NULL)
+//	{
+//		return saveFile->defaultSkinIndex;
+//	}
+//	else if (netplayManager != NULL)
+//	{
+//		int realIndex = index;
+//		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+//		{
+//			int adjustedIndex = index;
+//			if (IsParallelSession())
+//			{
+//				assert(index == 0); //each parallel session can only have 1 player so far
+//
+//				adjustedIndex = parallelSessionIndex + 1;
+//			}
+//
+//			realIndex = adjustedIndex;
+//			if (adjustedIndex == 0)
+//			{
+//				realIndex = netplayManager->playerIndex;
+//			}
+//			else if (adjustedIndex <= netplayManager->playerIndex)
+//			{
+//				realIndex = adjustedIndex - 1;
+//			}
+//		}
+//
+//		return netplayManager->netplayPlayers[realIndex].skinIndex;
+//	}
+//	else
+//	{
+//		return matchParams.playerSkins[index];
+//	}
+//
+//	return Actor::SKIN_NORMAL;
+//}
 
 MatchResultsScreen *GameSession::CreateResultsScreen()
 {

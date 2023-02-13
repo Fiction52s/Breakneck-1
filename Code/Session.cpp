@@ -2821,6 +2821,12 @@ void Session::UpdatePlayerInput(int index)
 {
 	int playerInd = index;
 
+
+	if (IsSessTypeEdit() && index > 0)
+	{ 
+		return;
+	}
+
 	if(IsParallelSession())
 	{
 		playerInd = 0;
@@ -4615,12 +4621,20 @@ void Session::SetupAbsorbParticles()
 		absorbDarkParticles = parentGame->absorbDarkParticles;
 		absorbShardParticles = parentGame->absorbShardParticles;
 	}
-	else if (absorbParticles == NULL)
+	else
 	{
+		if (absorbParticles != NULL)
+		{
+			delete absorbParticles;
+			delete absorbDarkParticles;
+			delete absorbShardParticles;
+		}
+
 		absorbParticles = new AbsorbParticles(this, AbsorbParticles::ENERGY);
 		absorbDarkParticles = new AbsorbParticles(this, AbsorbParticles::DARK);
 		absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
 	}
+	
 }
 
 void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
@@ -4654,6 +4668,8 @@ void Session::CollectKey()
 
 void Session::ResetAbsorbParticles()
 {
+	if (absorbParticles == NULL)
+		return;
 	absorbParticles->Reset();
 	absorbDarkParticles->Reset();
 	absorbShardParticles->Reset();
@@ -7663,6 +7679,26 @@ bool Session::GGPORunGameModeUpdate()
 //	if (input == -1)
 //		input = 41;
 //}
+void Session::CopyGGPOInputsToParallelSessions()
+{
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	{
+		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+		for (int i = 0; i < 3; ++i)
+		{
+			if (prm->parallelGames[i] != NULL)
+			{
+				for (int pIndex = 0; pIndex < GGPO_MAX_PLAYERS; ++pIndex)
+				{
+					prm->parallelGames[i]->ggpoCompressedInputs[pIndex] = ggpoCompressedInputs[pIndex];
+				}
+
+			}
+		}
+	}
+}
+
 void Session::GGPORunFrame()
 {
 	assert(!IsParallelSession());
@@ -7714,7 +7750,7 @@ void Session::GGPORunFrame()
 
 	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
 	{
-		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->currInput); //player->currInput
+		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->prevInput); //player->currInput
 	}
 	else
 	{
@@ -7751,22 +7787,7 @@ void Session::GGPORunFrame()
 				GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
 			}*/
 
-			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
-			{
-				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-				for (int i = 0; i < 3; ++i)
-				{
-					if (prm->parallelGames[i] != NULL)
-					{
-						for (int pIndex = 0; pIndex < GGPO_MAX_PLAYERS; ++pIndex)
-						{
-							prm->parallelGames[i]->ggpoCompressedInputs[pIndex] = ggpoCompressedInputs[pIndex];
-						}
-						
-					}
-				}
-			}
+			CopyGGPOInputsToParallelSessions();
 
 
 			UpdateAllPlayersInput();
@@ -8595,7 +8616,15 @@ void Session::ConfirmFrame(int frameCheck)
 
 int Session::GetPlayerNormalSkin(int index)
 {
-	return Actor::SKIN_NORMAL;
+	return matchParams.playerSkins[index];
+	/*if (IsSessTypeEdit())
+	{
+		return Actor::SKIN_NORMAL + index;
+	}
+	else
+	{
+		return Actor::SKIN_NORMAL;
+	}*/
 }
 
 int Session::GetRand()

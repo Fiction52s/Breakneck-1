@@ -348,6 +348,7 @@ struct EditSession : GUIHandler, Session
 	V2d menuDownPos;
 	Emode menuDownStored;
 	Emode stored;
+	Emode oldMenuMode;
 	ActorPtr playerMarkers[MAX_PLAYERS];
 	ActorType *playerType;
 	int gatePoints;
@@ -410,6 +411,7 @@ struct EditSession : GUIHandler, Session
 		sf::Vector2f &size);
 	bool TestPlayerModeUpdate();
 	void TestPlayerMode();
+	void TryTestPlayerMode();
 	void CleanupTestPlayerMode();
 
 	void TestNetplay();
@@ -854,7 +856,7 @@ struct EditSession : GUIHandler, Session
 	std::string postLevelSceneName;
 
 	void SetGameMode(int gm);
-	void SetNumPlayers( int num );
+	void SetNumPlayers( bool loading, int num );
 	void UpdateTerrainStates();
 	void UpdateRailStates();
 

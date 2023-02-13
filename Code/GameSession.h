@@ -537,7 +537,7 @@ struct GameSession : RayCastHandler, Session
 
 	bool HasLog(int logIndex);
 	int GetBonusType();
-	int GetPlayerNormalSkin(int index);
+	//int GetPlayerNormalSkin(int index);
 
 	bool RunMainLoopOnce(); //return false means go again
 	MatchResultsScreen *CreateResultsScreen();

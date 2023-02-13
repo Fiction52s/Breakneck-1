@@ -1015,71 +1015,6 @@ void MainMenu::LoadAndResaveMap(const std::string &path)
 	delete es;
 }
 
-void MainMenu::GameEditLoop( const std::string &p_path )
-{
-	int result = 0;
-
-	Vector2f lastViewSize( 0, 0 );
-	Vector2f lastViewCenter( 0, 0 );
-	while( result == 0 )
-	{
-		EditSession *es = new EditSession(this, p_path );
-		es->SetInitialView(lastViewCenter, lastViewSize);
-		result = es->Run();
-		delete es;
-		if( result > 0 )
-			break;
-
-		//v.setSize( 1920, 1080 );
-		window->setView( v );
-
-		MatchParams mp;
-		mp.mapPath = p_path;
-
-		GameSession *gs = new GameSession(&mp);
-		GameSession::sLoad(gs);
-		
-		gameRunType = GRT_FREEPLAY;
-		result = gs->Run();
-	
-
-		lastViewCenter = gs->lastViewCenter;
-		lastViewSize = gs->lastViewSize;
-		delete gs;
-	}
-}
-
-void MainMenu::GameEditLoop2( const std::string &p_path )
-{
-	int result = 0;
-
-	Vector2f lastViewSize( 0, 0 );
-	Vector2f lastViewCenter( 0, 0 );
-	while( result == 0 )
-	{
-		gameRunType = MainMenu::GRT_FREEPLAY;
-		window->setView( v );
-
-		MatchParams mp;
-		mp.mapPath = p_path;
-
-		GameSession *gs = new GameSession(&mp);
-		GameSession::sLoad(gs);
-		
-		result = gs->Run();
-		lastViewCenter = gs->lastViewCenter;
-		lastViewSize = gs->lastViewSize;
-		delete gs;
-		if( result > 0 )
-			break;
-
-		EditSession *es = new EditSession(this, p_path );
-		es->SetInitialView(lastViewCenter, lastViewSize);
-		result = es->Run();
-		delete es;
-	}
-}
-
 void MainMenu::SetMode(Mode m)
 {
 	transFrame = 0;
@@ -1121,6 +1056,7 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == TITLEMENU)
 	{
 		selectorAnimFrame = 0;
+		MOUSE.SetControllersOn(true);
 		customCursor->SetMode(CustomCursor::M_REGULAR);
 		customCursor->Show();
 	}
@@ -1973,6 +1909,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.mapPath = levelPath;
 	mp.controllerStateVec[0] = adventureManager->controllerInput;
 	mp.controlProfiles[0] = adventureManager->currProfile;
+	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
 
 	currLevel = new GameSession(&mp);
 	currLevel->SetBestGhostOn(loadParams.bestTimeGhostOn);
@@ -2021,6 +1958,10 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 void MainMenu::PlayIntroMovie()
 {
+	//you'll get crashes when you add this because it doesn't use the controller stuff correctly etc
+	//just double check/redo stuff when you add the movie
+	return;
+
 	adventureManager->worldMap->SetToLevel(0, 0, 0 );
 	//worldMap->testSelector->UpdateAllInfo();
 
@@ -2045,6 +1986,9 @@ void MainMenu::PlayIntroMovie()
 	MatchParams mp;
 	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->curr];
 	mp.mapPath = levelPath;
+
+	
+
 	currLevel = new GameSession(&mp);
 	currLevel->level = lev;
 
@@ -2086,6 +2030,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 	mp.mapPath = levName;
 	mp.controllerStateVec[0] = m->adventureManager->controllerInput;
 	mp.controlProfiles[0] = m->adventureManager->currProfile;
+	mp.playerSkins[0] = m->adventureManager->currSaveFile->defaultSkinIndex;
 
 	m->currLevel = new GameSession(&mp);
 	m->currLevel->level = lev;
@@ -2536,6 +2481,8 @@ void MainMenu::HandleMenuMode()
 
 		int result = currEditSession->Run();
 
+		MOUSE.SetControllersOn(true);
+
 		window->setView(oldView);
 
 		//LoadMode(TITLEMENU);
@@ -2639,6 +2586,7 @@ void MainMenu::HandleMenuMode()
 
 				mp.controllerStateVec[0] = adventureManager->controllerInput;
 				mp.controlProfiles[0] = adventureManager->currProfile;
+				mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
 
 				*menuMatchParams = mp;
 
@@ -3194,6 +3142,8 @@ void MainMenu::HandleMenuMode()
 		{
 			netplayManager->myControllerInput = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
 			netplayManager->myCurrProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+
+			//skin deliberately not set here. set later in the menus
 
 			LoadMode(ONLINE_MENU);
 		}

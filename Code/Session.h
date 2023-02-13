@@ -901,6 +901,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsParallelSession() { return parallelSessionIndex >= 0; }
 	sf::IntRect GetButtonIconTile(int controllerIndex, ControllerSettings::ButtonType button);
 	Tileset * GetButtonIconTileset(int controllerIndex);
+	void CopyGGPOInputsToParallelSessions();
 };
 
 #endif

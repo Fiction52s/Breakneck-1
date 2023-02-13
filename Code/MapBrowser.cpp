@@ -1590,6 +1590,28 @@ void MapBrowserHandler::Confirm()
 
 		chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
 	}
+	else
+	{
+		if (chooser->mode == MapBrowser::EDITOR_OPEN || chooser->mode == MapBrowser::OPEN)
+		{
+			if (chooser->selectedRect != NULL)
+			{
+				MapNode *mn = (MapNode*)chooser->selectedRect->info;
+				confirmedMapFilePath = mn->filePath.string();
+
+				if (chooser->mode == MapBrowser::EDITOR_OPEN)
+				{
+					EditSession *edit = EditSession::GetSession();
+					assert(edit != NULL);
+					edit->ChooseFileOpen(mn->fileName);
+				}
+
+				chooser->TurnOff();
+
+				chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
+			}
+		}
+	}
 }
 
 void MapBrowserHandler::ClickFile(ChooseRect *cr)

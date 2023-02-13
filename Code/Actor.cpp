@@ -18276,7 +18276,7 @@ void Actor::ApplyHit( HitboxInfo *info,
 	{
 		if (receivedHit.hType == HitboxInfo::NO_HITBOX || info->damage > receivedHit.damage)
 		{
-			cout << "apply hit" << endl;
+			//cout << "apply hit" << endl;
 			receivedHit = *info;
 			receivedHitPlayer = attackingPlayer;
 			//receivedHitEnemy = attackingEnemy;
@@ -21529,34 +21529,38 @@ void Actor::UpdateInHitlag()
 
  bool Actor::IsNormalSkin()
  {
-	 if (owner != NULL )
-	 {
-		 if (owner->saveFile != NULL)
-		 {
-			 int defaultSkin = owner->saveFile->defaultSkinIndex;
-			 if (currSkinIndex == defaultSkin)
-			 {
-				 return true;
-			 }
-		 }
-		 else
-		 {
-			 int defaultSkin = owner->matchParams.playerSkins[actorIndex];
-			 if (currSkinIndex == defaultSkin)
-			 {
-				 return true;
-			 }
-		 }
-	 }
-	 else
-	 {
-		 if (currSkinIndex == SKIN_NORMAL)
-		 {
-			 return true;
-		 }
-	 }
+	 return (currSkinIndex == sess->GetPlayerNormalSkin(actorIndex));
+	
 
-	 return false;
+	 //if (owner != NULL )
+	 //{
+		// if (owner->saveFile != NULL)
+		// {
+		//	 int defaultSkin = owner->saveFile->defaultSkinIndex;
+		//	 if (currSkinIndex == defaultSkin)
+		//	 {
+		//		 return true;
+		//	 }
+		// }
+		// else
+		// {
+		//	 int defaultSkin = owner->matchParams.playerSkins[actorIndex];
+		//	 if (currSkinIndex == defaultSkin)
+		//	 {
+		//		 return true;
+		//	 }
+		// }
+	 //}
+	 //else
+	 //{
+		// //for editor
+		// if (currSkinIndex == SKIN_NORMAL + actorIndex)
+		// {
+		//	 return true;
+		// }
+	 //}
+
+	 //return false;
 
  }
 

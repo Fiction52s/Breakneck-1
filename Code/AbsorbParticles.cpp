@@ -172,7 +172,7 @@ AbsorbParticles::~AbsorbParticles()
 void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos,
 	float p_startAngle )
 {
-	cout << "activate particles" << endl;
+	//cout << "activate particles" << endl;
 	float startSpeed = 4;
 
 	int numProjectiles = storedHits;

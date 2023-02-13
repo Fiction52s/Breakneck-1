@@ -2136,8 +2136,8 @@ void AllControllers::UpdateFilteredKeyboardState(ControlProfile *cp, ControllerS
 	state.leftShoulder = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SHIELD));
 	state.rightShoulder = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_ATTACK));
 
-	state.leftTrigger = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_LEFTWIRE));
-	state.rightTrigger = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_RIGHTWIRE));
+	state.leftTrigger = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_LEFTWIRE)) * 255;
+	state.rightTrigger = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_RIGHTWIRE)) * 255;
 
 	state.start = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_PAUSE));
 

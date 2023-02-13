@@ -203,6 +203,8 @@ advance_frame_callback(int flags)
 	ggpo_synchronize_input(sess->ggpo, (void *)sess->ggpoCompressedInputs, COMPRESSED_INPUT_SIZE * GGPO_MAX_PLAYERS,
 		&disconnect_flags);
 
+	sess->CopyGGPOInputsToParallelSessions();
+
 	sess->UpdateAllPlayersInput();
 
 	sess->SimulateGGPOGameFrame();

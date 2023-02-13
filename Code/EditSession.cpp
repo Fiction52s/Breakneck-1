@@ -562,6 +562,37 @@ void EditSession::UpdateNetworkStats()
 	}
 }
 
+void EditSession::TryTestPlayerMode()
+{
+	//make this only to some modes later
+
+	//NETPLAY_TEST_GATHER_USERS,
+	//NETPLAY_TEST_GET_CONNECTIONS,
+
+#ifdef GGPO_ON
+	if (ggpoSyncTest)
+	{
+		TestPlayerMode();
+	}
+	else
+	{
+		TestNetplay();
+	}
+#else
+	if (playerInputBoxGroup->IsFull())
+	{
+		TestPlayerMode();
+	}
+	else
+	{
+		SetMode(SETUP_CONTROLS);
+	}
+#endif
+
+
+	//quit = true;
+}
+
 void EditSession::TestPlayerMode()
 {
 	if (mode != TEST_PLAYER)
@@ -629,7 +660,6 @@ void EditSession::TestPlayerMode()
 	
 	ClearEmitters();
 	ClearEffects();
-	ResetAbsorbParticles();
 
 	pokeTriangleScreenGroup->Reset();
 	
@@ -1148,6 +1178,8 @@ void EditSession::TestPlayerMode()
 		(*it)->Setup();
 	}
 
+	SetupAbsorbParticles();
+
 
 	/*for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -1282,7 +1314,6 @@ void EditSession::TestPlayerMode()
 
 void EditSession::EndTestMode()
 {
-	
 	SetMode(EDIT);
 }
 
@@ -1349,6 +1380,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 {	
 	currSession = this;
 
+	oldMenuMode = EDIT;
+
 	handleEventFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeHandleEvent;
 	handleEventFunctions[EDIT] = &EditSession::EditModeHandleEvent;
 	handleEventFunctions[SELECT_MODE] = &EditSession::SelectModeHandleEvent;
@@ -1395,6 +1428,15 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	ggpoStatsPanel = NULL;
 	currGrassType = 0;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		//if (matchParams.playerSkins[i] == -1)
+		{
+			matchParams.playerSkins[i] = i;
+		}
+	}
+
 
 	int waitFrames[] = { 30, 2 };
 	int waitModeThresh[] = { 1 };
@@ -1683,6 +1725,12 @@ void EditSession::CleanupForReload()
 	{
 		delete background;
 		background = NULL;
+	}
+
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		players[i] = NULL;
+		playerMarkers[i] = NULL;//->Deactivate();
 	}
 
 	ClearEffects();
@@ -3770,13 +3818,16 @@ void EditSession::Init()
 
 	assert(players[0] == NULL);
 
-	players[0] = new Actor(NULL, this, 0);
-	allPlayers[0] = players[0];
-	for (int i = 1; i < MAX_PLAYERS; ++i)
+
+	//players[0] = new Actor(NULL, this, 0);
+	//allPlayers[0] = players[0];
+	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		players[i] = new Actor(NULL, this, i);
-		allPlayers[i] = players[i];
+		allPlayers[i] = new Actor(NULL, this, i);
+		players[i] = NULL;
+		//allPlayers[i] = players[i];
 	}
+	players[0] = allPlayers[0]; //for when reading enemies that use it? might need a cleanup later
 
 	debugReplayPlayer = NULL;//new ReplayPlayer(players[0]);
 	/*bool canOpen = debugReplayPlayer->OpenReplay("Resources/Debug/debugreplay" + string(REPLAY_EXT));
@@ -3836,7 +3887,7 @@ void EditSession::Init()
 
 	AllocateEffects();
 
-	SetupAbsorbParticles();
+	//SetupAbsorbParticles();
 
 	SetupPokeTriangleScreenGroup();
 
@@ -3879,6 +3930,11 @@ void EditSession::Load()
 
 void EditSession::DefaultInit()
 {
+	if (mapHeader != NULL)
+	{
+		delete mapHeader;
+	}
+
 	mapHeader = new MapHeader;
 	mapHeader->description = "no description";
 
@@ -3911,9 +3967,10 @@ void EditSession::DefaultInit()
 	UpdateFullBounds();
 }
 
-void EditSession::SetNumPlayers( int num )
+void EditSession::SetNumPlayers( bool loading, int num )
 {
 	mapHeader->numPlayerSpawns = num;
+
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (players[i] != NULL)
@@ -3933,25 +3990,27 @@ void EditSession::SetNumPlayers( int num )
 					players[i] = allPlayers[i];
 					playerMarkers[i]->Activate();
 
-					if (i == 1)
+					if (!loading)
 					{
-						playerMarkers[i]->MoveTo(
-							playerMarkers[0]->GetIntPos() + Vector2i(100, 0));
-					}
-					else if (i == 2)
-					{
-						playerMarkers[i]->MoveTo(
-							playerMarkers[0]->GetIntPos() + Vector2i(0, 100));
-					}
-					else if (i == 3)
-					{
-						playerMarkers[i]->MoveTo(
-							playerMarkers[0]->GetIntPos() + Vector2i(100, 100));
+						if (i == 1)
+						{
+							playerMarkers[i]->MoveTo(
+								playerMarkers[0]->GetIntPos() + Vector2i(100, 0));
+						}
+						else if (i == 2)
+						{
+							playerMarkers[i]->MoveTo(
+								playerMarkers[0]->GetIntPos() + Vector2i(0, 100));
+						}
+						else if (i == 3)
+						{
+							playerMarkers[i]->MoveTo(
+								playerMarkers[0]->GetIntPos() + Vector2i(100, 100));
+						}
 					}
 				}
 			}
 		}
-
 	}
 }
 
@@ -4095,6 +4154,8 @@ int EditSession::EditRun()
 		mapStartBrush->AddObject(currPlayerMarker);
 
 		playerMarkers[i] = currPlayerMarker;
+
+		playerMarkers[i]->Deactivate();
 		/*if (i == 0)
 		{
 			playerMarkers[i]->Activate();
@@ -4112,8 +4173,9 @@ int EditSession::EditRun()
 	reloadNew = false;
 
 	//SetupHUD();
-	
-	SetNumPlayers(mapHeader->numPlayerSpawns);
+
+	players[0] = NULL;
+	SetNumPlayers(true, mapHeader->numPlayerSpawns);
 	//-------------------------
 
 	/*for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -11305,19 +11367,17 @@ void EditSession::CleanupTestPlayerMode()
 
 void EditSession::SetMode(Emode m)
 {
-
-
-	Emode oldMode = mode;
-	if (oldMode == SELECT_MODE)
+	oldMenuMode = mode;
+	if (oldMenuMode == SELECT_MODE)
 	{
-		oldMode = menuDownStored;
+		oldMenuMode = menuDownStored;
 	}
 
 	errorBar.SetShown(false);
 
 	mode = m;
 
-	switch (oldMode)
+	switch (oldMenuMode)
 	{
 	case CREATE_RAILS:
 		if (trackingEnemyParams != NULL)
@@ -11417,7 +11477,7 @@ void EditSession::SetMode(Emode m)
 	}
 	case MAP_OPTIONS:
 	{
-		mapOptionsUI->oldMode = oldMode;
+		mapOptionsUI->oldMode = oldMenuMode;
 		mapOptionsUI->OpenMapOptionsPopup();
 		break;
 	}
@@ -13269,37 +13329,23 @@ void EditSession::GeneralEventHandler()
 				}
 				else if (ev.key.code == Keyboard::T )
 				{
-					//make this only to some modes later
-					
-					//NETPLAY_TEST_GATHER_USERS,
-						//NETPLAY_TEST_GET_CONNECTIONS,
-
-#ifdef GGPO_ON
-					if (ggpoSyncTest)
-					{
-						TestPlayerMode();
-					}
-					else
-					{
-						TestNetplay();
-					}
-#else
-					if (playerInputBoxGroup->IsFull())
-					{
-						TestPlayerMode();
-					}
-					else
-					{
-						SetMode(SETUP_CONTROLS);
-					}
-#endif
-
-					
-					//quit = true;
+					TryTestPlayerMode();
 				}
 				else if (ev.key.code == Keyboard::Escape)
 				{
-					TryExitEditor();
+					if (mode == TEST_PLAYER)
+					{
+						EndTestMode();
+						//SetMode(EDIT);
+					}
+					else if (mode == SETUP_CONTROLS)
+					{
+						SetMode(oldMenuMode);
+					}
+					else
+					{
+						TryExitEditor();
+					}
 				}
 				else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Hyphen)
 				{
@@ -13502,24 +13548,9 @@ void EditSession::CreateTerrainModeHandleEvent()
 		{
 			createTerrainModeUI->SetDrawTool(TOOL_BRUSH);
 		}
-		else if (ev.key.code == Keyboard::T )
+		else if (ev.key.code == Keyboard::T)
 		{
-			//eventually something telling the create mode that you can here from create terrain
-			//TestPlayerMode();
-
-#ifdef GGPO_ON
-			if (ggpoSyncTest)
-			{
-				TestPlayerMode();
-			}
-			else
-			{
-				TestNetplay();
-			}
-#else
-			TestPlayerMode();
-#endif
-			
+			//covered in global events
 		}
 		else if (ev.key.code == Keyboard::G)
 		{
@@ -14469,7 +14500,7 @@ void EditSession::CreateTerrainModeUpdate()
 
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{
-		TestPlayerMode();
+		TryTestPlayerMode();
 		return;
 	}
 
@@ -14932,74 +14963,73 @@ void EditSession::EditModeUpdate()
 	bool rightClicked = MOUSE.IsMouseRightClicked();
 	bool sizeOne = selectedBrush->objects.size() == 1;
 	bool oneActor = selectedBrush->GetNumActors() == 1;
-	if ( rightClicked && sizeOne &&
-oneActor )
+	if ( rightClicked && sizeOne && oneActor )
 	{
-	ActorPtr a = selectedBrush->objects.front()->GetAsActor();
-	if (a->type->info.name != "player")
-	{
-		if (a->ContainsPoint(testPoint))
+		ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+		if (a->type->info.name != "player")
 		{
-			Vector2i pixel = preScreenTex->mapCoordsToPixel(a->GetFloatPos());
-			variationSelector->SetPosition(Vector2f(pixel));
-			variationSelector->SetType(a->type);
-			AddActivePanel(variationSelector->panel);
-			focusedPanel = variationSelector->panel;
-			return;
+			if (a->ContainsPoint(testPoint))
+			{
+				Vector2i pixel = preScreenTex->mapCoordsToPixel(a->GetFloatPos());
+				variationSelector->SetPosition(Vector2f(pixel));
+				variationSelector->SetType(a->type);
+				AddActivePanel(variationSelector->panel);
+				focusedPanel = variationSelector->panel;
+				return;
+			}
 		}
 	}
-	}
 
-UpdateInputNonGame();
+	UpdateInputNonGame();
 
-if (GetCurrInput(0).start && !GetPrevInput(0).start)
-{
-	TestPlayerMode();
-	return;
-}
-
-if (focusedPanel == NULL)
-{
-	if (IsGridOn())
+	if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{
-		SnapPointToGraph(worldPos, graph->graphSpacing);
+		TryTestPlayerMode();
+		return;
 	}
-}
 
-if (grabbedBorderIndex >= 0)
-{
-	Vector2i wPos(worldPos);
-	switch (grabbedBorderIndex)
+	if (focusedPanel == NULL)
 	{
-	case 0:
+		if (IsGridOn())
+		{
+			SnapPointToGraph(worldPos, graph->graphSpacing);
+		}
+	}
+
+	if (grabbedBorderIndex >= 0)
 	{
-		int bot = mapHeader->topBounds + mapHeader->boundsHeight;
-		mapHeader->topBounds = wPos.y;
-		mapHeader->boundsHeight = bot - wPos.y;
-		break;
-	}
-	case 1:
-	{
-		int right = mapHeader->leftBounds + mapHeader->boundsWidth;
-		mapHeader->leftBounds = wPos.x;
-		mapHeader->boundsWidth = right - wPos.x;
-		break;
-	}
-	case 2:
-	{
-		mapHeader->boundsWidth = wPos.x - mapHeader->leftBounds;
-		break;
-	}
+		Vector2i wPos(worldPos);
+		switch (grabbedBorderIndex)
+		{
+		case 0:
+		{
+			int bot = mapHeader->topBounds + mapHeader->boundsHeight;
+			mapHeader->topBounds = wPos.y;
+			mapHeader->boundsHeight = bot - wPos.y;
+			break;
+		}
+		case 1:
+		{
+			int right = mapHeader->leftBounds + mapHeader->boundsWidth;
+			mapHeader->leftBounds = wPos.x;
+			mapHeader->boundsWidth = right - wPos.x;
+			break;
+		}
+		case 2:
+		{
+			mapHeader->boundsWidth = wPos.x - mapHeader->leftBounds;
+			break;
+		}
+
+		}
+
+		UpdateFullBounds();
 
 	}
 
-	UpdateFullBounds();
+	TrySelectedMove();
 
-}
-
-TrySelectedMove();
-
-ModifyGrass();
+	ModifyGrass();
 }
 
 void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType)

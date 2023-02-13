@@ -149,7 +149,7 @@ void MapOptionsUI::CloseMapOptionsPopup()
 
 	edit->mapHeader->preLevelSceneName = preDropdown->GetSelectedText();
 	edit->mapHeader->postLevelSceneName = postDropdown->GetSelectedText();
-	edit->SetNumPlayers(numPlayersSlider->GetCurrValue());
+	edit->SetNumPlayers( false, numPlayersSlider->GetCurrValue());
 
 	edit->mapHeader->fullName = mapNameBox->GetString();
 	edit->mapHeader->description = descriptionBox->GetString();
@@ -218,5 +218,5 @@ void MapOptionsUI::PanelCallback(Panel *p, const std::string & e)
 
 void MapOptionsUI::SliderCallback(Slider *slider)
 {
-	edit->SetNumPlayers(slider->GetCurrValue());
+	edit->SetNumPlayers(false, slider->GetCurrValue());
 }

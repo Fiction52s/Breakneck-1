@@ -322,8 +322,6 @@ struct MainMenu
 		int windowHeight, int style );
 	//void Deactivate();
 	void Run();
-	void GameEditLoop( const std::string &fileName );
-	void GameEditLoop2( const std::string &filename);
 	void CustomMapsOption();
 	void GGPOOption();
 	void SetModeAdventureLoadingMap( int wIndex );

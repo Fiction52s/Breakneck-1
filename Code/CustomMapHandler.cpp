@@ -39,7 +39,7 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else if (b->name == "Edit")
 		{
-			menu->GameEditLoop(ls.GetSelectedPath());//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
+			//menu->GameEditLoop(ls.GetSelectedPath());//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
 			ls.UpdateSelectedPreview();
 			menu->window->setView(menu->uiView);
 		}
