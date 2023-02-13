@@ -211,10 +211,7 @@ int main()
 	mm->Run();
 	delete mm;
 
-	
-
 	SteamAPI_Shutdown();
-
 	//_CrtDumpMemoryLeaks();
 }
 

@@ -197,6 +197,7 @@ struct NetplayManager
 	void RemoveDesyncCheckInfos(int numRollbackFrames);
 	void UpdateNetplayPlayers();
 	bool IsHost();
+	bool IsLobbyHost();
 	void Abort();
 	void Update();
 	void Draw(sf::RenderTarget *target);

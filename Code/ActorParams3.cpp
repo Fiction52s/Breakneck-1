@@ -145,7 +145,7 @@ void PulserParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	
-	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
+	p->textBoxes["framesbetweennodes"]->SetString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 
@@ -269,9 +269,9 @@ void OwlParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["movespeed"]->text.setString( boost::lexical_cast<string>( moveSpeed ) );
-	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
-	p->textBoxes["rhythmframes"]->text.setString( boost::lexical_cast<string>( rhythmFrames ) );
+	p->textBoxes["movespeed"]->SetString( boost::lexical_cast<string>( moveSpeed ) );
+	p->textBoxes["bulletspeed"]->SetString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["rhythmframes"]->SetString( boost::lexical_cast<string>( rhythmFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -359,8 +359,8 @@ void BadgerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	
-	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
-	p->textBoxes["jumpstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength ) );
+	p->textBoxes["speed"]->SetString( boost::lexical_cast<string>( speed ) );
+	p->textBoxes["jumpstrength"]->SetString( boost::lexical_cast<string>( jumpStrength ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -461,9 +461,9 @@ void CactusParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	
-	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
-	p->textBoxes["rhythm"]->text.setString( boost::lexical_cast<string>( rhythm ) );
-	p->textBoxes["amplitude"]->text.setString( boost::lexical_cast<string>( amplitude ) );
+	p->textBoxes["bulletspeed"]->SetString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["rhythm"]->SetString( boost::lexical_cast<string>( rhythm ) );
+	p->textBoxes["amplitude"]->SetString( boost::lexical_cast<string>( amplitude ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }

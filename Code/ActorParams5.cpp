@@ -75,7 +75,7 @@ void SharkParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["circleframes"]->text.setString( boost::lexical_cast<string>( circleFrames ) );
+	p->textBoxes["circleframes"]->SetString( boost::lexical_cast<string>( circleFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -144,7 +144,7 @@ void SwarmParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["liveframes"]->text.setString( boost::lexical_cast<string>( liveFrames ) );
+	p->textBoxes["liveframes"]->SetString( boost::lexical_cast<string>( liveFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -211,7 +211,7 @@ void GhostParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->textBoxes["speed"]->SetString( boost::lexical_cast<string>( speed ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }

@@ -176,9 +176,9 @@ void BatParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["bulletspeed"]->SetString( boost::lexical_cast<string>( bulletSpeed ) );
 	//p->textBoxes["nodedistance"]->text.setString( boost::lexical_cast<string>( nodeDistance ) );
-	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
+	p->textBoxes["framesbetweennodes"]->SetString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
 	p->checkBoxes["monitor"]->checked = false;
 
@@ -282,7 +282,7 @@ void StagBeetleParams::SetPanelInfo()
 	Panel *p = type->panel;
 	
 	p->checkBoxes["clockwise"]->checked = clockwise;
-	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->textBoxes["speed"]->SetString( boost::lexical_cast<string>( speed ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -416,10 +416,10 @@ void PoisonFrogParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	
-	p->textBoxes["jumpwaitframes"]->text.setString( boost::lexical_cast<string>( jumpWaitFrames ) ); 
-	p->textBoxes["xstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.x ) ); 
-	p->textBoxes["ystrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.y ) ); 
-	p->textBoxes["gravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor ) ); 
+	p->textBoxes["jumpwaitframes"]->SetString( boost::lexical_cast<string>( jumpWaitFrames ) );
+	p->textBoxes["xstrength"]->SetString( boost::lexical_cast<string>( jumpStrength.x ) );
+	p->textBoxes["ystrength"]->SetString( boost::lexical_cast<string>( jumpStrength.y ) );
+	p->textBoxes["gravfactor"]->SetString( boost::lexical_cast<string>( gravFactor ) );
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -713,9 +713,9 @@ void CurveTurretParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
-	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );
-	p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.x ) );
+	p->textBoxes["bulletspeed"]->SetString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["waitframes"]->SetString( boost::lexical_cast<string>( framesWait ) );
+	p->textBoxes["xgravfactor"]->SetString( boost::lexical_cast<string>( gravFactor.x ) );
 	p->textBoxes["ygravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.y ) );
 	p->checkBoxes["relativegrav"]->checked = relativeGrav;
 	p->checkBoxes["monitor"]->checked = hasMonitor;
@@ -801,7 +801,7 @@ void GravityFallerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["var"]->text.setString(boost::lexical_cast<string>(variation));
+	p->textBoxes["var"]->SetString(boost::lexical_cast<string>(variation));
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -909,7 +909,7 @@ void GravitySpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
+	p->textBoxes["speed"]->SetString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);

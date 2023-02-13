@@ -73,7 +73,10 @@ bool PS5Controller::InitContext( DS5W::DeviceEnumInfo &info)
 
 void PS5Controller::CleanupContext()
 {
-	DS5W::freeDeviceContext(&context);
+	if (enabled)
+	{
+		DS5W::freeDeviceContext(&context);
+	}
 }
 
 bool PS5Controller::UpdateState()

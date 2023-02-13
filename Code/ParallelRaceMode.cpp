@@ -111,7 +111,8 @@ void ParallelRaceMode::StartGame()
 
 HUD *ParallelRaceMode::CreateHUD()
 {
-	return NULL;
+	return new AdventureHUD;
+	//return NULL;
 	//return new FightHUD;
 }
 
@@ -181,7 +182,17 @@ bool ParallelRaceMode::CheckVictoryConditions()
 			{
 				placings[i] = 1;
 			}
-			placings[sess->netplayManager->netplayPlayers[winningIndex].index] = 0;
+
+			if (sess->netplayManager->isSyncTest)
+			{
+				placings[sess->netplayManager->playerIndex] = 0;
+			}
+			else
+			{
+				placings[sess->netplayManager->netplayPlayers[winningIndex].index] = 0;
+			}
+
+			
 
 
 			cout << "placings: " << placings[0] << ", " << placings[1] << ", " << placings[2] << ", " << placings[3] << "\n";

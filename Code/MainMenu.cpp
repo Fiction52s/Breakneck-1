@@ -935,7 +935,6 @@ MainMenu::~MainMenu()
 		delete workshopBrowser;
 	}
 	
-
 	delete fader;
 	delete swiper;
 	delete indEffectPool;
@@ -3006,6 +3005,11 @@ void MainMenu::HandleMenuMode()
 			//SetMode(QUICKPLAY_TEST);
 			RunEditor(TITLEMENU, editorMenuScreen->mapBrowserScreen->browserHandler->confirmedMapFilePath);
 			break;
+		case EditorMenuScreen::A_CANCELLED:
+		{
+			LoadMode(TITLEMENU);
+			break;
+		}
 		//case OnlineMenuScreen::A_CREATE_LOBBY:
 		//	customMatchManager->CreateCustomLobby();
 		//	SetMode(CUSTOM_MATCH_SETUP);

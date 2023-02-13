@@ -623,6 +623,8 @@ struct Actor : QuadTreeCollider,
 
 	const static int MAX_BUBBLES = 5;
 
+	const static int MAX_FRAMES_TO_LIVE = (100 * 60 * 60) - 1;
+
 	PState *pState;
 
 	//havent put into rollback yet

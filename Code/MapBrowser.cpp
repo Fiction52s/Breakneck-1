@@ -1537,8 +1537,12 @@ void MapBrowserHandler::Clear()
 void MapBrowserHandler::Confirm()
 {
 	string fileName = chooser->fileNameTextBox->GetString();
+	confirmedMapFilePath = "";
+
 	if (fileName != "")
 	{
+		string filePath = chooser->currPath.string() + "\\" + fileName + chooser->ext;
+
 		if (chooser->mode == MapBrowser::EDITOR_OPEN)
 		{
 			EditSession *edit = EditSession::GetSession();
@@ -1553,9 +1557,8 @@ void MapBrowserHandler::Confirm()
 			if (chooser->ext == MAP_EXT)
 			{
 				//folderPath = ;
-				string fp = chooser->currPath.string() + "\\" + fileName + MAP_EXT;
-				edit->filePath = fp;
-				edit->filePathStr = fp;
+				edit->filePath = filePath;
+				edit->filePathStr = filePath;
 
 				if (edit->WriteTargetExistsAlready())
 				{
@@ -1565,19 +1568,28 @@ void MapBrowserHandler::Confirm()
 				else
 				{
 					edit->WriteFile();
+					//confirmedMapFilePath = fp;
 				}
+
 			}
 
 			//edit->ChooseFileSave(fileName);
 		}
+
+		if (chooser->selectedRect != NULL)
+		{
+			MapNode *mn = (MapNode*)chooser->selectedRect->info;
+			confirmedMapFilePath = mn->filePath.string();
+		}
+		else
+		{
+			confirmedMapFilePath = filePath;
+		}
+
+		chooser->TurnOff();
+
+		chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
 	}
-	
-	MapNode *mn = (MapNode*)chooser->selectedRect->info;
-	confirmedMapFilePath = mn->filePath.string();
-
-	chooser->TurnOff();
-
-	chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
 }
 
 void MapBrowserHandler::ClickFile(ChooseRect *cr)

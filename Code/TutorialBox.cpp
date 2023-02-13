@@ -7,12 +7,20 @@ using namespace sf;
 
 TutorialBox::TutorialBox()
 {
+	sess = Session::GetSession();
+
 	charHeight = 48;
 	lockedSize = Vector2f();
 	quadColor = Color(0, 0, 0, 100);
 	rectBuffer = 30;
 	textColor = Color::White;
 	topLeftMode = false;
+
+	SetRectColor(quad, quadColor);
+
+	text.setFont(sess->mainMenu->arial);
+	text.setCharacterSize(charHeight);
+	text.setFillColor(textColor);
 }
 
 TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color p_quadColor, sf::Color p_textColor, float p_rectBuffer)
@@ -78,7 +86,12 @@ bool TutorialBox::CalcButtonPos( std::string &startString,
 		}
 	}
 
-	int lineSpacing = text.getFont()->getLineSpacing(text.getCharacterSize());
+	const Font *f = text.getFont();
+	if( f == NULL )
+	{ 
+		assert(0);
+	}
+	int lineSpacing = f->getLineSpacing(text.getCharacterSize());
 	int textTest = text.getLineSpacing();
 	int buttonY = numLines * lineSpacing;//(text.getLineSpacing() + text.getCharacterSize() );
 

@@ -166,8 +166,8 @@ void GorillaParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["wallwidth"]->text.setString( boost::lexical_cast<string>( wallWidth ) );
-	p->textBoxes["followframes"]->text.setString( boost::lexical_cast<string>( followFrames ) );
+	p->textBoxes["wallwidth"]->SetString( boost::lexical_cast<string>( wallWidth ) );
+	p->textBoxes["followframes"]->SetString( boost::lexical_cast<string>( followFrames ) );
 	
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
@@ -262,7 +262,7 @@ void NarwhalParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["moveframes"]->text.setString( boost::lexical_cast<string>( moveFrames ) );
+	p->textBoxes["moveframes"]->SetString( boost::lexical_cast<string>( moveFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 

@@ -355,9 +355,9 @@ void KeyParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["numkeys"]->text.setString( boost::lexical_cast<string>( numKeys ) );
+	p->textBoxes["numkeys"]->SetString( boost::lexical_cast<string>( numKeys ) );
 
-	p->textBoxes["zonetype"]->text.setString(boost::lexical_cast<string>(zoneType));
+	p->textBoxes["zonetype"]->SetString(boost::lexical_cast<string>(zoneType));
 }
 
 ActorParams *KeyParams::Copy()
@@ -385,7 +385,7 @@ void NexusParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["nexusindex"]->text.setString( boost::lexical_cast<string>( nexusIndex ) );
+	p->textBoxes["nexusindex"]->SetString( boost::lexical_cast<string>( nexusIndex ) );
 }
 
 void NexusParams::SetParams()
@@ -443,9 +443,9 @@ GroundTriggerParams::GroundTriggerParams(ActorType *at, int level)
 void GroundTriggerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
+	p->textBoxes["name"]->SetString("test");
 	//p->checkBoxes["clockwise"]->checked = clockwise;
-	p->textBoxes["triggertype"]->text.setString(typeStr);
+	p->textBoxes["triggertype"]->SetString(typeStr);
 	p->checkBoxes["facingright"]->checked = facingRight;
 	
 }
@@ -478,8 +478,24 @@ TutorialObjectParams::TutorialObjectParams(ActorType *at, ifstream &is)
 {
 	LoadAerial(is);
 
+	int numLines = 0;
+	is >> numLines;
 	is.get();
-	getline(is, tutStr);
+
+	string readStr;
+	stringstream ss;
+	for (int i = 0; i < numLines; ++i)
+	{
+		getline(is, readStr);
+		ss << readStr;
+
+		if (i < numLines - 1)
+		{
+			ss << "\n";
+		}
+	}
+
+	tutStr = ss.str();
 }
 
 TutorialObjectParams::TutorialObjectParams(ActorType *at, int level)
@@ -493,7 +509,8 @@ void TutorialObjectParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	//p->textBoxes["name"]->text.setString("test");
-	p->textBoxes["tutstr"]->text.setString(tutStr);
+	p->textBoxes["tutstr"]->SetString(tutStr);
+	p->textBoxes["tutstr"]->SetCursorIndex(0);
 
 }
 
@@ -508,6 +525,15 @@ void TutorialObjectParams::SetParams()
 
 void TutorialObjectParams::WriteParamFile(ofstream &of)
 {
+	int numLines = 1;
+	for (int i = 0; i < tutStr.size(); ++i)
+	{
+		if (tutStr.at(i) == '\n')
+		{
+			++numLines;
+		}
+	}
+	of << numLines << endl;
 	of << tutStr << endl;
 }
 
@@ -1142,7 +1168,7 @@ void AirTriggerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["triggertype"]->text.setString(trigType);
+	p->textBoxes["triggertype"]->SetString(trigType);
 }
 
 ActorParams *AirTriggerParams::Copy()
@@ -1190,7 +1216,7 @@ FlowerPodParams::FlowerPodParams(ActorType *at, int level)
 void FlowerPodParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["podtype"]->text.setString(typeStr);
+	p->textBoxes["podtype"]->SetString(typeStr);
 }
 
 void FlowerPodParams::SetParams()
@@ -1570,7 +1596,7 @@ void GroundedJugglerParams::SetSpecialPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["numjuggles"]->text.setString(boost::lexical_cast<string>(numJuggles));
+	p->textBoxes["numjuggles"]->SetString(boost::lexical_cast<string>(numJuggles));
 }
 
 void GroundedJugglerParams::SetSpecialParams()

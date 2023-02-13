@@ -4498,7 +4498,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				minimumEdgeLength = 8;
 
-				p->textBoxes["minedgesize"]->text.setString("8");
+				p->textBoxes["minedgesize"]->SetString("8");
 
 				//MessagePop("minimum edge length too low.\n Set to minimum of 8");
 
@@ -4692,7 +4692,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			}
 			else
 			{
-				decorPanel->textBoxes["layer"]->text.setString("0");
+				decorPanel->textBoxes["layer"]->SetString("0");
 			}
 
 			RemoveActivePanel(panel);

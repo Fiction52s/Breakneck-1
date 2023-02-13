@@ -143,7 +143,7 @@ void WaitingRoom::Update()
 	{
 	case A_WAITING_FOR_MEMBERS:
 	{
-		if (netplayManager->IsHost())
+		if (netplayManager->IsLobbyHost())
 		{
 			//fix this later. waiting room has the header and the lobby info, so we can figure out when the start button is valid.
 			int numMembers = netplayManager->lobbyManager->GetNumMembers();
@@ -184,7 +184,7 @@ void WaitingRoom::Update()
 	}
 	case A_READY_TO_START:
 	{
-		if (netplayManager->IsHost())
+		if (netplayManager->IsLobbyHost())
 		{
 			if (netplayManager->lobbyManager->CurrentLobbyHasMaxMembers())
 			{

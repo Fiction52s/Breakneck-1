@@ -4706,6 +4706,7 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 
 	for (int i = 0; i < 4; ++i)
 	{
+		p = NULL;
 		if (matchParams.gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
 			//int parallelIndex = i - 1;

@@ -1998,6 +1998,7 @@ Session::~Session()
 	CleanupSuperSequence();
 
 	delete[] ggpoCompressedInputs;
+	ggpoCompressedInputs = NULL;
 
 	//CleanupNetplay();
 }
@@ -7758,7 +7759,11 @@ void Session::GGPORunFrame()
 				{
 					if (prm->parallelGames[i] != NULL)
 					{
-						prm->parallelGames[i]->ggpoCompressedInputs = ggpoCompressedInputs;
+						for (int pIndex = 0; pIndex < GGPO_MAX_PLAYERS; ++pIndex)
+						{
+							prm->parallelGames[i]->ggpoCompressedInputs[pIndex] = ggpoCompressedInputs[pIndex];
+						}
+						
 					}
 				}
 			}

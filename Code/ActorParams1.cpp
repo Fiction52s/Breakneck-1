@@ -84,7 +84,7 @@ void BoosterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
+	p->textBoxes["strength"]->SetString(boost::lexical_cast<string>(strength));
 }
 
 ActorParams *BoosterParams::Copy()

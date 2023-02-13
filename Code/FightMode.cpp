@@ -88,7 +88,7 @@ void FightMode::SetFromBytes(unsigned char *bytes)
 
 void FightMode::Setup()
 {
-	maxHealth = 10;
+	maxHealth = 100;
 	meterSection = 10;
 	numMeterSections = 6;
 }

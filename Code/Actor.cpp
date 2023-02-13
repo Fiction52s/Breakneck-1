@@ -4458,7 +4458,7 @@ void Actor::Respawn( bool setStartPos )
 	if (sess->mapHeader != NULL)
 	{
 		numFramesToLive = min( sess->mapHeader->drainSeconds * 60, 
-			100 * 60 * 60);
+			MAX_FRAMES_TO_LIVE);
 	}
 	else
 	{
@@ -4933,8 +4933,8 @@ void Actor::KinModeUpdate()
 			//springStunFrames = 0;
 
 
-			sess->deathSeq->Reset();
-			sess->SetActiveSequence(sess->deathSeq);
+			//sess->deathSeq->Reset();
+			//sess->SetActiveSequence(sess->deathSeq);
 
 			for (int i = 0; i < 3; ++i)
 			{
@@ -5406,7 +5406,8 @@ void Actor::SetKinMode(Mode m)
 
 void Actor::UpdateDrain()
 {
-	if (sess->gameModeType != MatchParams::GAME_MODE_BASIC)
+	if (sess->gameModeType != MatchParams::GAME_MODE_BASIC
+		&& sess->gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
 		return;
 	}
@@ -5483,6 +5484,11 @@ void Actor::HealTimer(int healFrames)
 	}
 	assert(healFrames > 0);
 	numFramesToLive += healFrames;
+
+	if (numFramesToLive > MAX_FRAMES_TO_LIVE)
+	{
+		numFramesToLive = MAX_FRAMES_TO_LIVE;
+	}
 
 	if (numFramesToLive > maxDespFrames)
 	{
@@ -7459,6 +7465,8 @@ void Actor::WireMovement()
 
 float Actor::GetSpeedBarPart()
 {
+	//purple can build up infinitely by hitting enemies. Who cares though, its pretty cool LOL
+
 	float quant = 0;
 	if (speedLevel == 0)
 	{
@@ -7471,6 +7479,11 @@ float Actor::GetSpeedBarPart()
 	else
 	{
 		quant = (float)((currentSpeedBar - level2SpeedThresh) / (GetMaxSpeed() - level2SpeedThresh));
+	}
+
+	if (quant > 1.f)
+	{
+		quant = 1.f;
 	}
 
 	return quant;
@@ -9971,6 +9984,7 @@ double Actor::GetOriginalDashSpeed()
 	case 2:
 	{
 		double sbp = GetSpeedBarPart();
+
 		if (sbp > .8)
 			sbp = 1.0;
 		dSpeed = dashSpeed2 + 4.0 * sbp;

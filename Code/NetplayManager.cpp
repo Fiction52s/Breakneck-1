@@ -541,7 +541,7 @@ void NetplayManager::Update()
 			LobbyData ld;
 			ld.maxMembers = 2;
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
-			ld.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
+			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
 			ld.lobbyType = LobbyData::LOBBYTYPE_QUICKPLAY;
 			// set the name of the lobby if it's ours
 			string lobbyName = SteamFriends()->GetPersonaName();
@@ -1201,6 +1201,8 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	int r = rand() % 2;
 	cout << "choosing quickplay map: " << r << endl;
 
+	r = 0; //just for testing
+
 	if (r == 0)
 	{
 		return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
@@ -1339,8 +1341,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = GetNextQuickplayMapName();//"Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;
-
+		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;
 		//matchParams.controllerStateVec[0] = myControllerInput;
 		//matchParams.controlProfiles[0] = myCurrProfile;
 
@@ -1420,6 +1421,28 @@ void NetplayManager::RemoveDesyncCheckInfos(int numRollbackFrames)
 	
 }
 
+bool NetplayManager::IsLobbyHost()
+{
+	if (isSyncTest) //if synctest is turned on for quickplay, itll ruin the ishost checks in custom matches also
+	{
+		return true;
+	}
+
+	if (lobbyManager == NULL)
+	{
+		assert(0);
+	}
+
+	if (lobbyManager->action == LobbyManager::A_IN_LOBBY)
+	{
+		return GetHostID() == GetMyID();
+	}
+	else
+	{
+		return false;
+	}
+}
+
 bool NetplayManager::IsHost()
 {
 	if (isSyncTest) //if synctest is turned on for quickplay, itll ruin the ishost checks in custom matches also
@@ -1428,7 +1451,10 @@ bool NetplayManager::IsHost()
 	}
 	else
 	{
-		if (lobbyManager == NULL)
+		
+		return netplayPlayers[playerIndex].isHost;
+
+		/*if (lobbyManager == NULL)
 		{
 			assert(0);
 		}
@@ -1440,7 +1466,7 @@ bool NetplayManager::IsHost()
 		else
 		{
 			return netplayPlayers[playerIndex].isHost;
-		}
+		}*/
 	}
 }
 
@@ -2176,7 +2202,7 @@ void NetplayManager::HostLoadNextQuickplayMap()
 		LobbyData ld;
 		ld.lobbyName = lobbyManager->currentLobby.data.lobbyName;
 		ld.maxMembers = 2;
-		ld.gameModeType = MatchParams::GAME_MODE_FIGHT;
+		ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//GAME_MODE_FIGHT;
 		ld.mapPath = GetNextQuickplayMapName();
 
 		ld.fileHash = md5file(ld.mapPath);

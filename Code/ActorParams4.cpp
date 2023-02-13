@@ -78,7 +78,7 @@ void CoralParams::SetPanelInfo()
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 
-	p->textBoxes["moveframes"]->text.setString( 
+	p->textBoxes["moveframes"]->SetString(
 		boost::lexical_cast<string>( moveFrames ) );
 }
 
@@ -224,7 +224,7 @@ void SpiderParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	
-	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->textBoxes["speed"]->SetString( boost::lexical_cast<string>( speed ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
