@@ -123,7 +123,7 @@ void DeathSequence::UpdateState()
 
 void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
-	sess->DrawEmitters(layer, target);
+	//sess->DrawEmitters(layer, target); //recently turned this off because I think the session draws them itself?
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		geoGroup->Draw(target);
@@ -156,4 +156,35 @@ void DeathSequence::Reset()
 	//emitter->SetOn(false);
 	//owner->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
+}
+
+int DeathSequence::GetNumStoredBytes()
+{
+	return sizeof(MyData) + geoGroup->GetNumStoredBytes();
+}
+
+void DeathSequence::StoreBytes(unsigned char *bytes)
+{
+	data.frame = frame;
+	data.frameCount = frameCount;
+	data.state = state;
+
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	geoGroup->StoreBytes(bytes);
+	bytes += geoGroup->GetNumStoredBytes();
+}
+
+void DeathSequence::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	frame = data.frame;
+	frameCount = data.frameCount;
+	state = data.state;
+	
+	geoGroup->SetFromBytes(bytes);
+	bytes += geoGroup->GetNumStoredBytes();
 }

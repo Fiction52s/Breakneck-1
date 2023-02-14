@@ -541,7 +541,7 @@ void NetplayManager::Update()
 			LobbyData ld;
 			ld.maxMembers = 2;
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
-			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
+			ld.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
 			ld.lobbyType = LobbyData::LOBBYTYPE_QUICKPLAY;
 			// set the name of the lobby if it's ours
 			string lobbyName = SteamFriends()->GetPersonaName();
@@ -1201,7 +1201,7 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	int r = rand() % 2;
 	cout << "choosing quickplay map: " << r << endl;
 
-	r = 0; //just for testing
+	//r = 0; //just for testing
 
 	if (r == 0)
 	{
@@ -1341,7 +1341,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = GetNextQuickplayMapName();//"Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;
+		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//
 		//matchParams.controllerStateVec[0] = myControllerInput;
 		//matchParams.controlProfiles[0] = myCurrProfile;
 
@@ -2202,7 +2202,7 @@ void NetplayManager::HostLoadNextQuickplayMap()
 		LobbyData ld;
 		ld.lobbyName = lobbyManager->currentLobby.data.lobbyName;
 		ld.maxMembers = 2;
-		ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//GAME_MODE_FIGHT;
+		ld.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//GAME_MODE_FIGHT;
 		ld.mapPath = GetNextQuickplayMapName();
 
 		ld.fileHash = md5file(ld.mapPath);

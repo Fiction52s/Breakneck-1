@@ -21,6 +21,7 @@
 #include "steam/steam_api.h"
 #include "MatchParams.h"
 
+struct DeathSequence;
 struct PlayerRecordingManager;
 struct PlayerReplayManager;
 struct RecordPlayer;
@@ -380,7 +381,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;
 	PowerPopup *powerPop;
-	Sequence *deathSeq;
+	DeathSequence *deathSeq;
 	BitField *shardsCapturedField;
 
 	Sequence *activeSequence;
@@ -845,6 +846,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;
 	sf::CircleShape testSimCircle;
+	bool nextFrameRestartGame;
 
 	//SaveGameState *saveStates[10];
 	//bool usedSaveState[10];

@@ -169,10 +169,12 @@ struct SceneBG
 
 
 struct Sequence
-{
+{	
 	int frameCount;
 	int frame;
+	int state;
 	Sequence *nextSeq;
+	Barrier *barrier;
 
 	std::map <std::string, FlashGroup*> flashGroups;
 	FlashGroup *currFlashGroup;
@@ -191,10 +193,10 @@ struct Sequence
 	sf::Color movieFadeColor;
 	int movieStopFrame;
 	Session *sess;
-	int state;
+	
 	int *stateLength;
 	int numStates;
-	Barrier *barrier;
+	
 
 	static Sequence *CreateScene(const std::string &name);
 	Sequence();

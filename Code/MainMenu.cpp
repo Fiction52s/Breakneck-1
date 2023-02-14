@@ -1057,12 +1057,14 @@ void MainMenu::SetMode(Mode m)
 	{
 		selectorAnimFrame = 0;
 		MOUSE.SetControllersOn(true);
+		MOUSE.Show();
 		customCursor->SetMode(CustomCursor::M_REGULAR);
 		customCursor->Show();
 	}
 
 	if (menuMode == ONLINE_MENU)
 	{
+		MOUSE.Show();
 		onlineMenuScreen->Start();
 	}
 	else if (menuMode == EDITOR_MENU)
@@ -1115,6 +1117,14 @@ void MainMenu::SetMode(Mode m)
 	{
 		adventureManager->worldMap->state = WorldMap::PLANET_VISUAL_ONLY;
 		adventureManager->worldMap->frame = 0;
+	}
+	if (menuMode == QUICKPLAY_TEST)
+	{
+		MOUSE.Hide();
+	}
+	else if (menuMode == POST_MATCH_OPTIONS)
+	{
+		MOUSE.Show();
 	}
 
 	if (menuMode == THANKS_FOR_PLAYING)
@@ -2838,6 +2848,10 @@ void MainMenu::HandleMenuMode()
 			SetMode(EXITING);
 			quit = true;
 		}
+		else if (result == GameSession::GR_EXITTITLE)
+		{
+			LoadMode(TITLEMENU);
+		}
 		else
 		{
 			LoadMode(FREEPLAY);
@@ -2904,6 +2918,7 @@ void MainMenu::HandleMenuMode()
 			break;
 		case OnlineMenuScreen::A_QUICKPLAY:
 			netplayManager->FindQuickplayMatch();
+			MOUSE.Hide();
 			SetMode(QUICKPLAY_TEST);
 			break;
 		case OnlineMenuScreen::A_CREATE_LOBBY:
@@ -3075,7 +3090,6 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (freeplayScreen->action == FreeplayScreen::A_BACK)
 		{
-			MOUSE.Show();
 			LoadMode(TITLEMENU);
 		}
 		break;
@@ -3145,6 +3159,7 @@ void MainMenu::HandleMenuMode()
 
 			//skin deliberately not set here. set later in the menus
 
+			
 			LoadMode(ONLINE_MENU);
 		}
 		else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
@@ -3164,7 +3179,7 @@ void MainMenu::HandleMenuMode()
 				//needs cleanup
 				if (ev.key.code == Keyboard::Escape)
 				{
-					SetMode(ONLINE_MENU);
+					MOUSE.Show();
 					netplayManager->Abort();
 					//quit = true;
 				}
@@ -3278,6 +3293,7 @@ void MainMenu::HandleMenuMode()
 
 		if (!matchResultsScreen->Update())
 		{
+			
 			SetMode(POST_MATCH_OPTIONS);
 			//SetMode(TITLEMENU);
 		}
@@ -3608,6 +3624,11 @@ void MainMenu::RunEditor(Mode preMode, const std::string &p_editMapName)
 
 void MainMenu::LoadMode(Mode m)
 {
+	if (m == TITLEMENU || m == ONLINE_MENU )
+	{
+		MOUSE.Show();
+	}
+
 	fader->Fade(false, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 	modeLoadingFrom = menuMode;
 
@@ -3757,6 +3778,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LOCAL_MULTIPLAYER:
 		{
+			MOUSE.Hide();
 			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE);
 			//onlineMenuScreen->Start();
 			//LoadMode(ONLINE_MENU);

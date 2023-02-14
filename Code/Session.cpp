@@ -1559,6 +1559,8 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	nextFrameRestartGame = false;
+
 	matchPlacings.resize(4);
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
@@ -7834,7 +7836,7 @@ void Session::GGPORunFrame()
 int Session::GetNumStoredBytes()
 {
 	int totalSize = 0;
-	
+
 	totalSize += sizeof(SaveGameState);
 
 	Actor *p = NULL;
@@ -7861,6 +7863,8 @@ int Session::GetNumStoredBytes()
 	totalSize += absorbDarkParticles->GetNumStoredBytes();
 	totalSize += absorbShardParticles->GetNumStoredBytes();
 
+	totalSize += deathSeq->GetNumStoredBytes();
+
 	return totalSize;
 }
 
@@ -7873,6 +7877,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->pauseFrames = pauseFrames;
 	currSaveState->currSuperPlayer = currSuperPlayer;
 	currSaveState->gameState = gameState;
+	currSaveState->nextFrameRestartGame = nextFrameRestartGame;
 	currSaveState->activeSequence = activeSequence;
 	currSaveState->randomState = randomState;
 	currSaveState->cam = cam;
@@ -7915,6 +7920,9 @@ void Session::StoreBytes(unsigned char *bytes)
 	absorbShardParticles->StoreBytes(bytes);
 	bytes += absorbShardParticles->GetNumStoredBytes();
 
+	deathSeq->StoreBytes(bytes);
+	bytes += deathSeq->GetNumStoredBytes();
+
 	/*if (IsParallelSession())
 	{
 		currSaveState->states[0].Print();
@@ -7956,6 +7964,9 @@ void Session::SetFromBytes(unsigned char *bytes)
 	absorbShardParticles->SetFromBytes(bytes);
 	bytes += absorbShardParticles->GetNumStoredBytes();
 
+	deathSeq->SetFromBytes(bytes);
+	bytes += deathSeq->GetNumStoredBytes();
+
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = currSaveState->activeEnemyList;
 	inactiveEnemyList = currSaveState->inactiveEnemyList;
@@ -7966,6 +7977,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 	cam = currSaveState->cam;
 
 	gameState = (GameState)currSaveState->gameState;
+	nextFrameRestartGame = currSaveState->nextFrameRestartGame;
 	activeSequence = currSaveState->activeSequence;
 }
 

@@ -21,8 +21,6 @@ sf::Color GetBlendColor(
 }
 
 
-
-
 MovingGeo::MovingGeo()
 	:points( NULL )
 {
@@ -72,11 +70,31 @@ void MovingGeo::Clear()
 	{
 		points[i].position = Vector2f(0, 0);
 	}
+	data.done = false;
+	data.state = 0;
+	data.frame = 0;
+}
+
+int MovingGeo::GetNumStoredBytes()
+{
+	return sizeof(MovingGeoBasicData);
+}
+
+void MovingGeo::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MovingGeoBasicData));
+	bytes += sizeof(MovingGeoBasicData);
+}
+
+void MovingGeo::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MovingGeoBasicData));
+	bytes += sizeof(MovingGeoBasicData);
 }
 
 MovingGeoGroup::MovingGeoGroup()
 {
-	frame = 0;
+	data.frame = 0;
 	points = NULL;
 	numTotalPoints = 0;
 }
@@ -94,17 +112,17 @@ void MovingGeoGroup::RemoveAll()
 
 void MovingGeoGroup::Reset()
 {
-	frame = 0;
+	data.frame = 0;
 	for (auto it = geoList.begin(); it != geoList.end(); ++it)
 	{
 		(*it)->Reset();
 	}
-	running = false;
+	data.running = false;
 }
 
 void MovingGeoGroup::Start()
 {
-	running = true;
+	data.running = true;
 }
 
 void MovingGeoGroup::SetBase(sf::Vector2f &pos)
@@ -117,7 +135,7 @@ void MovingGeoGroup::SetBase(sf::Vector2f &pos)
 
 bool MovingGeoGroup::Update()
 {
-	if (!running)
+	if (!data.running)
 		return false;
 
 	bool stillRunning = false;
@@ -127,10 +145,10 @@ bool MovingGeoGroup::Update()
 	for (auto it = geoList.begin(); it != geoList.end(); ++it, ++wit)
 	{
 		wFrames = (*wit);
-		if (frame >= wFrames)
+		if (data.frame >= wFrames)
 		{
 			(*it)->Update();
-			if (!(*it)->done)
+			if (!(*it)->data.done)
 			{
 				stillRunning = true;
 			}
@@ -141,9 +159,9 @@ bool MovingGeoGroup::Update()
 		}
 	}
 
-	++frame;
+	++data.frame;
 
-	running = stillRunning;
+	data.running = stillRunning;
 	return stillRunning;
 }
 
@@ -182,7 +200,40 @@ void MovingGeoGroup::Init()
 }
 
 
+int MovingGeoGroup::GetNumStoredBytes()
+{
+	int geoTotalSize = 0;
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		geoTotalSize += (*it)->GetNumStoredBytes();
+	}
 
+	return sizeof(MyData) + geoTotalSize;
+}
+
+void MovingGeoGroup::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		(*it)->StoreBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+}
+
+void MovingGeoGroup::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+}
 
 SpinningTri::SpinningTri(float p_startAngle)
 	:startAngle( p_startAngle )
@@ -203,47 +254,47 @@ SpinningTri::SpinningTri(float p_startAngle)
 void SpinningTri::Reset()
 {
 	color = startColor;
+
+	Clear();
+
+	data.state = S_EXPANDING;
+
 	length = 0;
-	frame = 0;
-	state = S_EXPANDING;
 	angle = startAngle;
 	width = startWidth;
-	done = false;
-	Clear();
-	//UpdatePoints();
 }
 
 void SpinningTri::Update()
 {
-	if (done)
+	if (data.done)
 		return;
 
-	if (frame == stateLength[state])
+	if (data.frame == stateLength[data.state])
 	{
-		frame = 0;
-		switch (state)
+		data.frame = 0;
+		switch (data.state)
 		{
 		case S_EXPANDING:
-			state = S_GROW;
+			data.state = S_GROW;
 			break;
 		case S_GROW:
-			state = S_ROTATE;
+			data.state = S_ROTATE;
 			break;
 		case S_ROTATE:
-			state = S_ROTATE_AND_FADE;
+			data.state = S_ROTATE_AND_FADE;
 			break;
 		case S_ROTATE_AND_FADE:
-			done = true;
+			data.done = true;
 			Clear();
 			return;
 			break;
 		}
 	}
 
-	double fac = (double)frame / stateLength[state];
+	double fac = (double)data.frame / stateLength[data.state];
 	float finalAngle = startAngle + PI / 12.0;
 	float finalAngle2 = finalAngle + PI / 6.0;
-	switch (state)
+	switch (data.state)
 	{
 	case S_EXPANDING:
 		length = fac * maxLength;
@@ -262,7 +313,7 @@ void SpinningTri::Update()
 
 
 	UpdatePoints();
-	++frame;
+	++data.frame;
 }
 
 void SpinningTri::UpdatePoints()
@@ -302,7 +353,6 @@ void SpinningTri::SetColorGrad(sf::Color startCol,
 	points[3].color = endCol;
 }
 
-
 Laser::Laser(float p_startWidth, float p_growWidth, float p_shrinkWidth, float p_startAngle,
 	sf::Color p_startColor )
 	:startAngle(p_startAngle),startWidth( p_startWidth),
@@ -330,13 +380,13 @@ void Laser::Reset()
 {
 	SetColor(color);
 	color = startColor;
+
+	Clear();
+
 	height = 0;
-	frame = 0;
-	state = S_VERTICALGROW;
+	data.state = S_VERTICALGROW;
 	angle = startAngle;
 	currWidth = startWidth;
-	done = false;
-	Clear();
 }
 
 void Laser::SetHeight(float h)
@@ -374,39 +424,39 @@ void Laser::SetWidth(float w)
 
 void Laser::Update()
 {
-	if (done)
+	if (data.done)
 		return;
 
-	if (frame == stateLength[state])
+	if (data.frame == stateLength[data.state])
 	{
-		frame = 0;
+		data.frame = 0;
 
-		switch (state)
+		switch (data.state)
 		{
 		case S_VERTICALGROW:
-			state = S_WIDEN;
+			data.state = S_WIDEN;
 			break;
 		case S_WIDEN:
-			state = S_SHRINK;
+			data.state = S_SHRINK;
 			break;
 		case S_SHRINK:
-			state = S_SLOWGROW;
+			data.state = S_SLOWGROW;
 			break;
 		case S_SLOWGROW:
-			state = S_DISAPPEAR;
+			data.state = S_DISAPPEAR;
 			break;
 		case S_DISAPPEAR:
-			done = true;
 			Clear();
+			data.done = true;
 			return;
 			break;
 		}
 	}
 
-	double fac = (double)frame / stateLength[state];
+	double fac = (double)data.frame / stateLength[data.state];
 	//float finalAngle = startAngle + PI / 12.0;
 	//float finalAngle2 = finalAngle + PI / 6.0;
-	switch (state)
+	switch (data.state)
 	{
 	case S_VERTICALGROW:
 		SetWidth(startWidth);
@@ -437,7 +487,7 @@ void Laser::Update()
 	//Vector2f dir(1, 0);
 	//RotateCCW(dir, angle);
 	
-	++frame;
+	++data.frame;
 }
 
 void Laser::SetColorChange(sf::Color &startC,
@@ -461,7 +511,6 @@ void Laser::SetColor(sf::Color c)
 	}
 
 }
-
 
 Ring::Ring(int p_circlePoints)
 	:innerRadius(100), outerRadius(200), shader(NULL), circlePoints(p_circlePoints)
@@ -551,25 +600,23 @@ MovingRing::MovingRing(int p_circlePoints,
 
 void MovingRing::Reset()
 {
-	Clear();//Set(startPos, startInner, startWidth);
-	frame = 0;
-	done = false;
+	Clear();
 }
 
 void MovingRing::Update()
 {
-	if (done)
+	if (data.done)
 		return;
 
-	if (frame > totalFrames)
+	if (data.frame > totalFrames)
 	{
-		done = true;
 		Clear();
+		data.done = true;
 		return;
 		//Reset(); //debugging
 	}
 
-	float fac = (float)frame / totalFrames;
+	float fac = (float)data.frame / totalFrames;
 	float sa = sizeBez.GetValue(fac);
 	float ca = colorBez.GetValue(fac);
 	float pa = posBez.GetValue(fac);
@@ -583,7 +630,7 @@ void MovingRing::Update()
 	Set(currPos, currInner, currWidth);
 	SetColor(currColor);
 
-	++frame;
+	++data.frame;
 }
 
 PokeTri::PokeTri(sf::Vector2f &p_offset)
@@ -601,19 +648,16 @@ PokeTri::PokeTri(sf::Vector2f &p_offset)
 
 void PokeTri::Reset()
 {
+	Clear();
+
 	color = startColor;
 	length = 0;
-	frame = 0;
-	state = S_POKING;
+	data.state = S_POKING;
 	angle = pokeAngle;
 	width = startWidth;
-	done = false;
 	lengthFactor = 1;
 
 	maxLength = 500 + ( rand() % 100 );
-
-	Clear();
-
 	width = startWidth + (rand() % 20);
 	//UpdatePoints();
 }
@@ -625,26 +669,26 @@ void PokeTri::SetLengthFactor(float f)
 
 void PokeTri::Update()
 {
-	if (done)
+	if (data.done)
 		return;
 
-	if (frame == stateLength[state])
+	if (data.frame == stateLength[data.state])
 	{
-		frame = 0;
-		switch (state)
+		data.frame = 0;
+		switch (data.state)
 		{
 		case S_POKING:
-			state = S_SHRINKING;
+			data.state = S_SHRINKING;
 			break;
 		case S_SHRINKING:
-			done = true;
 			Clear();
+			data.done = true;
 			return;
 		}
 	}
 
-	double fac = (double)frame / stateLength[state];
-	switch (state)
+	double fac = (double)data.frame / stateLength[data.state];
+	switch (data.state)
 	{
 	case S_POKING:
 		length = fac * maxLength;
@@ -656,7 +700,7 @@ void PokeTri::Update()
 
 
 	UpdatePoints();
-	++frame;
+	++data.frame;
 }
 
 void PokeTri::UpdatePoints()

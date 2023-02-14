@@ -218,7 +218,7 @@ void PulseAttack::ProcessState()
 
 	geoGroup.Update();
 
-	if (!geoGroup.running)
+	if (!geoGroup.data.running)
 	{
 		sess->RemoveEnemy(this);
 		spawned = false;

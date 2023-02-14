@@ -76,7 +76,7 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 		else
 		{
 			ControllerState currState = nonNeutralStates->GetCurrState();
-			if (currState.leftStickMagnitude > 0)
+			if (currState.leftStickMagnitude > .1)
 			{
 				float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
 				float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;

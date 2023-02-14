@@ -176,6 +176,7 @@ struct MapBrowser : TilesetManager,
 	bool isWorkshop;
 	Action action;
 	ImageChooseRect *selectedRect;
+	MapNode *selectedNode;
 	
 	WorkshopManager *workshop;
 	int currWorkshopPage;
@@ -241,6 +242,9 @@ struct MapBrowser : TilesetManager,
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
 	void MouseScroll(int delta);
+
+	void SelectRect(ChooseRect *cr);
+	void ClearSelection();
 
 	void UpdateSearchCriteria(const std::string &s);
 	void UpdateNumPlayersCriteria(std::vector<int> &numAllowedPlayers);

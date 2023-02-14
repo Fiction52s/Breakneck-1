@@ -359,7 +359,6 @@ struct GameSession : RayCastHandler, Session
 	std::list<EnvPlant*> allEnvPlants;
 	QuadTree *airTriggerTree;
 	std::list<AirTrigger*> fullAirTriggerList;
-	bool nextFrameRestart;
 	bool showTerrainDecor;
 	
 	

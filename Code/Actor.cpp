@@ -75,6 +75,7 @@
 #include "TimerHUD.h"
 #include "PaletteShader.h"
 #include "AdventureManager.h"
+#include "DeathSequence.h"
 
 using namespace sf;
 using namespace std;
@@ -1018,8 +1019,10 @@ void Actor::SetupFXTilesets()
 
 	effectPools[PLAYERFX_SPRINT_STAR].Set(sess->GetSizedTileset(folder, "fx_sprint_star_01_64x64.png"), EffectType::FX_RELATIVE, 100);
 
-	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100);
-	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100);
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100, 
+		BETWEEN_PLAYER_AND_ENEMIES, false, false);
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100, 
+		BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
 	effectPools[PLAYERFX_ENTER].Set(sess->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
 
@@ -4465,6 +4468,11 @@ void Actor::Respawn( bool setStartPos )
 		numFramesToLive = -1;
 	}
 
+	if (sess->IsParallelSession())
+	{
+		numFramesToLive = 99999;
+	}
+
 	prevInput.Clear();
 	currInput.Clear();
 	storedGroundSpeed = 0;
@@ -4933,8 +4941,8 @@ void Actor::KinModeUpdate()
 			//springStunFrames = 0;
 
 
-			//sess->deathSeq->Reset();
-			//sess->SetActiveSequence(sess->deathSeq);
+			sess->deathSeq->Reset();
+			sess->SetActiveSequence(sess->deathSeq);
 
 			for (int i = 0; i < 3; ++i)
 			{

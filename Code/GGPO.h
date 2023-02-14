@@ -392,6 +392,7 @@ struct SaveGameState
 	int pauseFrames;
 	Actor *currSuperPlayer;
 	int gameState; //game mode such as RUN or FROZEN
+	bool nextFrameRestartGame;
 	Sequence  *activeSequence;
 	uint32 randomState;
 	Camera cam;

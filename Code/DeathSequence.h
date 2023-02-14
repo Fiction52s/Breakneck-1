@@ -15,6 +15,13 @@ struct DeathSequence : Sequence
 		Count
 	};
 
+	struct MyData
+	{
+		int frameCount;
+		int frame;
+		int state;
+	};
+
 	DeathSequence();
 	~DeathSequence();
 	void UpdateState();
@@ -23,7 +30,11 @@ struct DeathSequence : Sequence
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
+	MyData data;
 	MovingGeoGroup *geoGroup;
 	ShapeEmitter *emitter;
 	Session *sess;

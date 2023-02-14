@@ -177,9 +177,9 @@ void CustomMatchManager::CreateCustomLobbyFromWorkshopBrowser()
 
 	//SetAction(A_CHOOSE_MAP);
 
-	if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
+	if (mapBrowserScreen->browserHandler->chooser->selectedNode != NULL)
 	{
-		selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+		selectedMap = mapBrowserScreen->browserHandler->chooser->selectedNode;
 	}
 
 	assert(selectedMap != NULL);
@@ -340,9 +340,9 @@ bool CustomMatchManager::Update()
 	}	
 	case A_CHOOSE_MAP:
 	{
-		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
+		if (mapBrowserScreen->browserHandler->chooser->selectedNode != NULL)
 		{
-			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+			selectedMap = mapBrowserScreen->browserHandler->chooser->selectedNode;
 
 
 			if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
@@ -379,7 +379,7 @@ bool CustomMatchManager::Update()
 		{
 			cout << "map download complete" << endl;
 
-			MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+			MapNode *selectedNode = mapBrowserScreen->browserHandler->chooser->selectedNode;
 
 			if (selectedNode == NULL)
 				assert(0);

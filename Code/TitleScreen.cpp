@@ -15,6 +15,9 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 {
 	panel = new Panel("feedbackpanel", 1920, 1080, this);
 	panel->SetColor(Color::Transparent);
+
+	panel->ReserveImageRects(1);
+	
 	//feedbackButton = panel->AddButton("feedbackbutton", Vector2i(1500, 700), Vector2f(500, 50), "Submit Feedback");
 
 	feedbackURL = "https://docs.google.com/forms/d/e/1FAIpQLSewgTgR6kh-0vX3_un4T_WqQkyGZLkH1jGaz1ysI8rPcZSBBQ/viewform?usp=sf_link";
@@ -37,6 +40,12 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	ts_energy = GetTileset("Title/energy_1920x1080.png", 1920, 1080);
 	energySpr.setTexture(*ts_energy->texture);
+
+	ts_discord = GetSizedTileset("Title/discord_256x256.png");
+
+	ImageChooseRect *icr = panel->AddImageRect(ChooseRect::I_DISCORD_LINK, Vector2f(1920 - 300, 1080 - 300), ts_discord, 0, 256);
+	icr->Init();
+	icr->SetShown(true);
 
 	energySpr.setColor(Color::Blue);
 
@@ -175,6 +184,15 @@ void TitleScreen::ButtonCallback(Button *b, const std::string & e)
 	if (b == feedbackButton )
 	{
 		//SteamFriends()->ActivateGameOverlayToWebPage(linkURL.c_str());
+	}
+}
+
+void TitleScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
+{
+	if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
+	{
+		SteamFriends()->ActivateGameOverlayToWebPage("https://discord.gg/S7ePrzA");
+		//cout << "clicked on discord" << endl;
 	}
 }
 

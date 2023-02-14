@@ -16,6 +16,7 @@ void SaveGameState::Print()
 	cout << "currSuperPlayer: " << currSuperPlayer << "\n";
 	cout << "gameState: " << gameState << "\n";
 	cout << "activeSequence: " << activeSequence << "\n";
+	cout << "next frame restart: " << (int)nextFrameRestartGame << "\n";
 }
 
 void PState::Print()

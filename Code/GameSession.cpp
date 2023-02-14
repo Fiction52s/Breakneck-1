@@ -598,7 +598,7 @@ bool GameSession::RunPreUpdate()
 		return false;
 	}*/
 
-	if (nextFrameRestart)
+	if (nextFrameRestartGame)
 	{
 		RestartLevel();
 	}
@@ -3329,7 +3329,7 @@ void GameSession::Init()
 
 	hasGoal = false;
 	boostIntro = false;
-	nextFrameRestart = false;
+	nextFrameRestartGame = false;
 	showTerrainDecor = true;
 	cutPlayerInput = false;
 	usePolyShader = true;
@@ -3779,13 +3779,13 @@ void GameSession::NextFrameRestartLevel()
 {
 	if (parentGame != NULL)
 	{
-		parentGame->nextFrameRestart = true;
+		parentGame->nextFrameRestartGame = true;
 		quit = true;
 		returnVal = GR_BONUS_RESPAWN;
 	}
 	else
 	{
-		nextFrameRestart = true;
+		nextFrameRestartGame = true;
 	}
 }
 
@@ -3833,7 +3833,7 @@ void GameSession::RestartLevel()
 	}
 	
 
-	nextFrameRestart = false;
+	nextFrameRestartGame = false;
 	//accumulator = TIMESTEP + .1;
 	currStorySequence = NULL;
 	currSuperPlayer = NULL;

@@ -201,9 +201,9 @@ void FreeplayScreen::Update()
 		break;
 	}
 	case A_CHOOSE_MAP:
-		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
+		if (mapBrowserScreen->browserHandler->chooser->selectedNode != NULL)
 		{
-			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+			selectedMap = mapBrowserScreen->browserHandler->chooser->selectedNode;
 
 			if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
 			{
@@ -234,6 +234,8 @@ void FreeplayScreen::Update()
 			//cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
 
 			mapBrowserScreen->TurnOff();
+
+			MOUSE.Hide();
 
 			SetAction(A_START);
 

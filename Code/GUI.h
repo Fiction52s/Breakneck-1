@@ -191,6 +191,7 @@ struct ChooseRect : PanelMember
 		I_POST_MATCH_QUICKPLAY_LEAVE,
 		I_EDITORMENU_NEW,
 		I_EDITORMENU_OPEN,
+		I_DISCORD_LINK,
 	};
 
 	sf::Text nameText;

@@ -35,7 +35,7 @@ void SpecialMovingGeoGroup::Reset()
 	for (auto it = geoVector.begin(); it != geoVector.end(); ++it)
 	{
 		(*it)->Reset();
-		(*it)->done = true;
+		(*it)->data.done = true;
 	}
 	running = false;
 }
@@ -74,7 +74,7 @@ bool SpecialMovingGeoGroup::Update()
 		//Color white = Color::White;
 		//(*it)->SetColor(GetBlendColor(randColor, white, .3));
 		(*it)->Update();
-		if (!(*it)->done)
+		if (!(*it)->data.done)
 		{
 			geoActive = true;
 		}
@@ -190,7 +190,7 @@ void PokeTriangleScreenGeoGroup::StartGeo()
 		while (true)
 		{
 			int r = rand() % geoVector.size();
-			if (geoVector[r]->done)
+			if (geoVector[r]->data.done)
 			{
 				geoVector[r]->Reset();
 				break;

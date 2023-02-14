@@ -17,6 +17,18 @@ sf::Color GetBlendColor(
 
 struct MovingGeo
 {
+	struct MovingGeoBasicData
+	{
+		int state;
+		int frame;
+		bool done;
+	};
+
+	MovingGeoBasicData data;
+	sf::Vertex *points;
+	sf::Color color;
+	sf::Vector2f basePos;
+
 	MovingGeo();
 	~MovingGeo();
 	void Clear();
@@ -27,14 +39,26 @@ struct MovingGeo
 	virtual int GetNumPoints() = 0;
 	virtual void SetPoints(sf::Vertex *p);
 	virtual void SetBase(sf::Vector2f &base);
-	sf::Vertex *points;
-	sf::Color color;
-	sf::Vector2f basePos;
-	bool done;
+	virtual int GetNumStoredBytes();
+	virtual void StoreBytes(unsigned char *bytes);
+	virtual void SetFromBytes(unsigned char *bytes);
 };
 
 struct MovingGeoGroup
 {
+	//rollback
+	struct MyData
+	{
+		bool running;
+		int frame;
+	};
+
+	std::list<MovingGeo*> geoList;
+	std::list<int> waitFrames;
+	sf::Vertex *points;
+	int numTotalPoints;
+	MyData data;
+
 	MovingGeoGroup();
 	~MovingGeoGroup();
 	void Start();
@@ -46,12 +70,9 @@ struct MovingGeoGroup
 	void SetBase(sf::Vector2f &pos);
 	void RemoveAll();
 
-	std::list<MovingGeo*> geoList;
-	int frame;
-	std::list<int> waitFrames;
-	sf::Vertex *points;
-	int numTotalPoints;
-	bool running;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 
@@ -101,6 +122,17 @@ struct SpinningTri : MovingGeo
 		S_Count
 	};
 
+	int stateLength[S_Count];
+	int maxLength;
+	float length;
+	float width;
+	float angle;
+	float startAngle;
+	sf::Color startColor;
+	sf::Color fadeColor;
+
+	float finalWidth;
+	float startWidth;
 
 	SpinningTri(float startAngle);
 	void Reset();
@@ -112,20 +144,6 @@ struct SpinningTri : MovingGeo
 		sf::Color &endC, float progress);
 	int GetNumPoints() { return 4; }
 	void UpdatePoints();
-	int stateLength[S_Count];
-	int maxLength;
-	State state;
-	int frame;
-
-	float length;
-	float width;
-	float angle;
-	float startAngle;
-	sf::Color startColor;
-	sf::Color fadeColor;
-
-	float finalWidth;
-	float startWidth;
 };
 
 struct Laser: MovingGeo
@@ -140,6 +158,17 @@ struct Laser: MovingGeo
 		S_Count
 	};
 
+	int stateLength[S_Count];
+	int maxHeight;
+	float height;
+	float currWidth;
+	float angle;
+	float startAngle;
+	sf::Color startColor;
+	float growWidth;
+	float shrinkWidth;
+	float startWidth;
+	sf::Vector2f center;
 
 	Laser( float startWidth, float growWidth, float shrinkWidth, float startAngle,
 		sf::Color startColor );
@@ -152,26 +181,17 @@ struct Laser: MovingGeo
 	void SetHeight(float h);
 	void SetWidth(float w);
 	int GetNumPoints() { return 8; }
-
-	int stateLength[S_Count];
-	int maxHeight;
-	State state;
-	int frame;
-
-	float height;
-	float currWidth;
-	float angle;
-	float startAngle;
-	sf::Color startColor;
-
-	float growWidth;
-	float shrinkWidth;
-	float startWidth;
-	sf::Vector2f center;
 };
 
 struct Ring : MovingGeo
 {
+	bool ownsPoints;
+	float innerRadius;
+	float outerRadius;
+	sf::Shader *shader;
+	sf::Vector2f position;
+	int circlePoints;
+
 	Ring( int p_circlePoints );
 	~Ring();
 	virtual void Reset() {};
@@ -184,16 +204,27 @@ struct Ring : MovingGeo
 		float innerR, float ringWidth);
 	void SetShader(sf::Shader *sh);
 	int GetNumPoints() { return circlePoints * 4; }
-	bool ownsPoints;
-	float innerRadius;
-	float outerRadius;
-	sf::Shader *shader;
-	sf::Vector2f position;
-	int circlePoints;
 };
 
 struct MovingRing : Ring
 {	
+	float startInner;
+	float startWidth;
+	float endInner;
+	float endWidth;
+	sf::Color startColor;
+	sf::Color endColor;
+
+	sf::Vector2f startPos;
+	sf::Vector2f endPos;
+
+	int totalFrames;
+
+	CubicBezier sizeBez;
+	CubicBezier colorBez;
+	CubicBezier posBez;
+	CubicBezier innerBez;
+
 	MovingRing(int p_circlePoints,
 		float p_startInner,
 		float p_endInner,
@@ -206,31 +237,6 @@ struct MovingRing : Ring
 		int totalFrames);
 	void Reset();
 	void Update();
-	//void UpdatePoints();
-	//void SetColor(sf::Color c);
-	//void SetShader(sf::Shader *sh);
-
-	float startInner;
-	float startWidth;
-	float endInner;
-	float endWidth;
-	sf::Color startColor;
-	sf::Color endColor;
-
-	sf::Vector2f startPos;
-	sf::Vector2f endPos;
-
-	int frame;
-	int totalFrames;
-
-	CubicBezier sizeBez;
-	CubicBezier colorBez;
-	CubicBezier posBez;
-	CubicBezier innerBez;
-
-	
-
-	
 };
 
 struct PokeTri : MovingGeo
@@ -242,23 +248,8 @@ struct PokeTri : MovingGeo
 		S_Count
 	};
 
-
-	PokeTri(sf::Vector2f &offset );
-	void Reset();
-	void Update();
-
-	//void SetColorGrad(sf::Color startCol,
-	//	sf::Color endCol);
-	//void SetColorChange(sf::Color &startC,
-	//	sf::Color &endC, float progress);
-	int GetNumPoints() { return 4; }
-	void UpdatePoints();
-	void SetLengthFactor(float f);
 	int stateLength[S_Count];
 	int maxLength;
-	State state;
-	int frame;
-
 	float length;
 	float width;
 	float angle;
@@ -266,14 +257,16 @@ struct PokeTri : MovingGeo
 	sf::Color startColor;
 	sf::Color fadeColor;
 	sf::Vector2f offset;
-
 	float lengthFactor;
-
 	float startWidth;
 
 
-	//float finalWidth;
-	//float startWidth;
+	PokeTri(sf::Vector2f &offset );
+	void Reset();
+	void Update();
+	int GetNumPoints() { return 4; }
+	void UpdatePoints();
+	void SetLengthFactor(float f);
 };
 
 #endif

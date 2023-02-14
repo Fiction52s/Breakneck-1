@@ -98,11 +98,9 @@ void WorkshopBrowser::Update()
 
 		mapBrowserScreen->Update();
 
-		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
+		if (mapBrowserScreen->browserHandler->chooser->selectedNode != NULL)
 		{
-			MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
-
-			workshopMapPopup->Activate(mp);
+			workshopMapPopup->Activate(mapBrowserScreen->browserHandler->chooser->selectedNode);
 			action = A_POPUP;
 		}
 		break;
@@ -120,10 +118,10 @@ void WorkshopBrowser::Update()
 			mapBrowserScreen->browserHandler->ClearSelection();
 			break;
 
-			MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+			/*MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 
-			savePopup->Activate("Resources\\Maps\\WorkshopDownloads", mp->fileName);
-			break;
+			savePopup->Activate("Resources\\Maps\\WorkshopDownloads", mapBrowserScreen->browserHandler->chooser->selectedNode->fileName);
+			break;*/
 		}
 		case WorkshopMapPopup::Action::A_HOST:
 			
@@ -141,7 +139,7 @@ void WorkshopBrowser::Update()
 		case WorkshopMapPopup::Action::A_SAVE_AND_EDIT:
 		case WorkshopMapPopup::Action::A_SAVE:
 		{
-			MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+			MapNode *mp = mapBrowserScreen->browserHandler->chooser->selectedNode;
 
 			if (mp->CheckIfFullyInstalled())
 			{
@@ -186,7 +184,7 @@ void WorkshopBrowser::Update()
 			}
 			else
 			{
-				MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+				MapNode *mp = mapBrowserScreen->browserHandler->chooser->selectedNode;
 
 				string copyLocation = savePopup->browserHandler->chooser->currPath.string() + "\\" + fileNameStr;
 				string mapCopy = copyLocation + MAP_EXT;

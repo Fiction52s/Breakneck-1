@@ -480,7 +480,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	panel = new Panel("mapchooser", 1920,
 		1080 - 28, handler, true);
 
-
+	selectedRect = NULL;
+	selectedNode = NULL;
 
 	panel->SetPosition(Vector2i(0, 0));//960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
 
@@ -917,13 +918,12 @@ void MapBrowser::ClearPreviews()
 
 void MapBrowser::ClearAllPreviewsButSelected()
 {
-	if (selectedRect == NULL)
+	if (selectedNode == NULL)
 	{
 		ClearPreviews();
 		return;
-	}	
+	}
 
-	MapNode *selectedNode = (MapNode*)selectedRect->info;
 	for (auto it = nodes.begin(); it != nodes.end(); ++it)
 	{
 		if ((*it) != selectedNode)
@@ -931,6 +931,25 @@ void MapBrowser::ClearAllPreviewsButSelected()
 			(*it)->ClearPreview();
 		}
 	}
+}
+
+void MapBrowser::ClearSelection()
+{
+	selectedRect = NULL;
+	selectedNode = NULL;
+
+	for (int i = 0; i < totalRects; ++i)
+	{
+		imageRects[i]->Deselect();
+	}
+}
+
+void MapBrowser::SelectRect(ChooseRect *cr)
+{
+	ClearSelection();
+	cr->Select();
+	selectedRect = cr->GetAsImageChooseRect();
+	selectedNode = (MapNode*)cr->info;
 }
 
 void MapBrowser::QueryMaps()
@@ -954,6 +973,12 @@ void MapBrowser::PopulateRects()
 	ImageChooseRect *icRect;
 	MapNode *node;
 	path *folderPath;
+
+	selectedRect = NULL;
+	for (int i = 0; i < totalRects; ++i)
+	{
+		imageRects[i]->Deselect();
+	}
 
 	int start = topRow * cols;
 	int maxNameCharsShown = 15;
@@ -1018,6 +1043,20 @@ void MapBrowser::PopulateRects()
 	{
 		icRect = imageRects[i - start];
 		icRect->SetShown(false);
+	}
+
+	if (selectedNode != NULL)
+	{
+		MapNode *mn = NULL;
+		for (int i = 0; i < totalRects; ++i)
+		{
+			mn = (MapNode*)imageRects[i]->info;
+			if (mn == selectedNode)
+			{
+				SelectRect(imageRects[i]);
+				break;
+			}
+		}
 	}
 }
 
@@ -1171,6 +1210,7 @@ void MapBrowser::Init()
 
 	currWorkshopPage = 1;
 	selectedRect = NULL;
+	selectedNode = NULL;
 	action = A_IDLE;
 }
 
@@ -1260,6 +1300,7 @@ void MapBrowser::UpdateGameModeCriteria(std::vector<int> &p_gameModesAllowed)
 void MapBrowser::Refresh()
 {
 	selectedRect = NULL;
+	selectedNode = NULL;
 	action = A_IDLE;
 	SetPath(currPath.string());
 }
@@ -1366,13 +1407,9 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	}
 	else if (b == chooser->openButton || b == chooser->createLobbyButton)
 	{
-		if (chooser->selectedRect != NULL)
+		if (chooser->selectedNode != NULL)
 		{
-			MapNode *map = (MapNode*)chooser->selectedRect->info;
-			if (map != NULL)
-			{
-				Confirm();
-			}
+			Confirm();
 		}
 	}
 	else if (b == chooser->searchButton)
@@ -1450,29 +1487,29 @@ void MapBrowserHandler::CancelCallback(Panel *p)
 //return true if installed. sets the filepath if its installation is just being registered.
 bool MapBrowserHandler::CheckIfSelectedItemInstalled()
 {
-	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
-
-	if (selectedNode == NULL)
+	if (chooser->selectedNode == NULL)
 		return false;
 
 	if (!chooser->isWorkshop)
 		return true;
 
-	return selectedNode->CheckIfFullyInstalled();
+	return chooser->selectedNode->CheckIfFullyInstalled();
 }
 
 void MapBrowserHandler::SubscribeToItem()
 {
-	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
-
-	selectedNode->Subscribe();
+	if (chooser->selectedNode != NULL)
+	{
+		chooser->selectedNode->Subscribe();
+	}
 }
 
 void MapBrowserHandler::UnsubscribeFromItem()
 {
-	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
-
-	selectedNode->Unsubscribe();
+	if (chooser->selectedNode != NULL)
+	{
+		chooser->selectedNode->Unsubscribe();
+	}
 }
 
 void MapBrowserHandler::ChangePath()
@@ -1488,19 +1525,12 @@ void MapBrowserHandler::LateDraw(sf::RenderTarget *target)
 
 void MapBrowserHandler::ClearSelection()
 {
-	chooser->selectedRect = NULL;
-
-	for (int i = 0; i < chooser->totalRects; ++i)
-	{
-		chooser->imageRects[i]->Deselect();
-	}	
+	chooser->ClearSelection();
 }
 
 void MapBrowserHandler::SelectRect(ChooseRect *cr)
 {
-	ClearSelection();
-	cr->Select();
-	chooser->selectedRect = cr->GetAsImageChooseRect();
+	chooser->SelectRect(cr);
 }
 
 void MapBrowserHandler::Update()
@@ -1576,10 +1606,9 @@ void MapBrowserHandler::Confirm()
 			//edit->ChooseFileSave(fileName);
 		}
 
-		if (chooser->selectedRect != NULL)
+		if (chooser->selectedNode != NULL)
 		{
-			MapNode *mn = (MapNode*)chooser->selectedRect->info;
-			confirmedMapFilePath = mn->filePath.string();
+			confirmedMapFilePath = chooser->selectedNode->filePath.string();
 		}
 		else
 		{
@@ -1594,16 +1623,15 @@ void MapBrowserHandler::Confirm()
 	{
 		if (chooser->mode == MapBrowser::EDITOR_OPEN || chooser->mode == MapBrowser::OPEN)
 		{
-			if (chooser->selectedRect != NULL)
+			if (chooser->selectedNode != NULL)
 			{
-				MapNode *mn = (MapNode*)chooser->selectedRect->info;
-				confirmedMapFilePath = mn->filePath.string();
+				confirmedMapFilePath = chooser->selectedNode->filePath.string();
 
 				if (chooser->mode == MapBrowser::EDITOR_OPEN)
 				{
 					EditSession *edit = EditSession::GetSession();
 					assert(edit != NULL);
-					edit->ChooseFileOpen(mn->fileName);
+					edit->ChooseFileOpen(chooser->selectedNode->fileName);
 				}
 
 				chooser->TurnOff();
@@ -1650,11 +1678,14 @@ void MapBrowserHandler::ClickFile(ChooseRect *cr)
 	}
 	else if (chooser->mode == MapBrowser::WORKSHOP)
 	{
-		chooser->selectedRect = cr->GetAsImageChooseRect();	
+		//already done in SelectRect
+		//chooser->selectedRect = cr->GetAsImageChooseRect();	
+		//chooser->selectedNode = (MapNode*)cr->info;
 	}
 	else if (chooser->mode == MapBrowser::CREATE_CUSTOM_GAME)
 	{
-		chooser->selectedRect = cr->GetAsImageChooseRect();
+		//chooser->selectedRect = cr->GetAsImageChooseRect();
+		//chooser->selectedNode = (MapNode*)cr->info;
 	}
 }
 

@@ -601,8 +601,17 @@ void EditSession::TestPlayerMode()
 		InitGGPO();
 #endif
 		gameMode->Setup();
+
+		
+
+	}
+
+	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
+	{
+		CONTROLLERS.SetKeyboardActiveAsController(true);
 	}
 	
+
 	//----------------------------------------
 	
 	if (hud != NULL)
@@ -11289,6 +11298,7 @@ void EditSession::StopCurrentMusic()
 void EditSession::CleanupTestPlayerMode()
 {
 	MOUSE.SetControllersOn(true);
+	CONTROLLERS.SetKeyboardActiveAsController(false);
 
 	if ( !(previewMusic != NULL && mainMenu->musicPlayer->currMusic == previewMusic 
 		&& !musicSelectorUI->ShouldPlayOriginal() ) )
@@ -11413,6 +11423,7 @@ void EditSession::SetMode(Emode m)
 	case SETUP_CONTROLS:
 	{
 		MOUSE.SetControllersOn(true);
+		CONTROLLERS.SetKeyboardActiveAsController(false);
 		//MOUSE.Show();
 		break;
 	}
@@ -11484,6 +11495,7 @@ void EditSession::SetMode(Emode m)
 	case SETUP_CONTROLS:
 	{
 		MOUSE.SetControllersOn(false);
+		CONTROLLERS.SetKeyboardActiveAsController(true);
 		//MOUSE.Hide();
 		break;
 	}
