@@ -1645,6 +1645,10 @@ void MainMenu::Slide()
 //#define USE_MOVIE_TEST
 void MainMenu::Run()
 {
+	/*RemoteStorageManager rsm;
+	rsm.LoadAll();
+	rsm.Test();*/
+
 
 	sf::Event ev;
 

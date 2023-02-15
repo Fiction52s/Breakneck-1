@@ -719,3 +719,115 @@ void GlobalSaveFile::SetToDefaults()
 	skinField.Reset();
 	skinField.SetBit(0, true);
 }
+
+RemoteStorageManager::RemoteStorageManager()
+{
+	m_pSteamRemoteStorage = SteamRemoteStorage();
+
+	destPath = "Resources\\hello\\";
+
+	GetFileStats();
+}
+
+void RemoteStorageManager::GetFileStats()
+{
+	m_ulBytesQuota = 0;
+	m_ulAvailableBytes = 0;
+	m_nNumFilesInCloud = m_pSteamRemoteStorage->GetFileCount();
+	m_pSteamRemoteStorage->GetQuota(&m_ulBytesQuota, &m_ulAvailableBytes);
+}
+
+void RemoteStorageManager::Test()
+{
+	Upload("globalsave.kingsave");
+}
+
+void RemoteStorageManager::LoadAll()
+{
+	if (boost::filesystem::exists(destPath))
+	{
+		boost::filesystem::remove_all(destPath);
+	}
+	boost::filesystem::create_directory(destPath);
+
+	DownloadAndSave("globalsave" + string(GLOBAL_SAVE_EXT));
+
+	/*string saveFileName = "blue";
+
+	DownloadAndSave(saveFileName + string(SAVE_EXT));
+
+	boost::filesystem::path saveFileReplayPath = path + saveFileName;
+
+	if (boost::filesystem::exists(saveFileReplayPath))
+	{
+		boost::filesystem::remove_all(saveFileReplayPath);
+	}
+	boost::filesystem::create_directory(saveFileReplayPath);*/
+
+
+
+
+	
+	//	return;
+}
+
+bool RemoteStorageManager::DownloadAndSave(const std::string &file)
+{
+	if (!m_pSteamRemoteStorage->FileExists(file.c_str()))
+		return false;
+
+	int32 fileSize = m_pSteamRemoteStorage->GetFileSize(file.c_str());
+
+	char *bytes = new char[fileSize];
+	int32 bytesRead = m_pSteamRemoteStorage->FileRead(file.c_str(), bytes, sizeof(char) * fileSize - 1);
+
+	string fullPath = destPath + file;
+
+	FILE *filePtr = fopen(fullPath.c_str(), "wb");
+	fwrite(bytes, 1, bytesRead, filePtr);
+	fclose(filePtr);
+
+	delete[] bytes;
+
+	if (bytesRead > 0 )
+	{
+		cout << "successfully downloaded: " << file << endl;
+		return true;
+	}
+	else
+	{
+		cout << "failed to download " << file << endl;
+		return false;
+	}
+}
+
+bool RemoteStorageManager::Upload(const std::string &file)
+{
+	std::ifstream is;
+	is.open(file);
+
+	assert(is.is_open());
+	std::string content((std::istreambuf_iterator<char>(is)),
+		(std::istreambuf_iterator<char>()));
+	is.close();
+
+	bool bRet = m_pSteamRemoteStorage->FileWrite(file.c_str(), content.c_str(), content.size());
+
+	GetFileStats();
+
+	if (bRet)
+	{
+		cout << "successfully uploaded: " << file << endl;
+		return true;
+	}
+	else
+	{
+		cout << "failed to upload " << file << endl;
+		return false;
+	}
+}
+
+bool RemoteStorageManager::Upload(SaveFile *saveFile)
+{
+	return Upload(saveFile->fileName);
+}
