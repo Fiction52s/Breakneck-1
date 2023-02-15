@@ -6974,7 +6974,8 @@ bool Session::SequenceGameModeUpdate()
 
 		mainMenu->musicPlayer->Update();
 
-		SteamAPI_RunCallbacks();
+		if (!IsSessTypeEdit())
+			SteamAPI_RunCallbacks();
 
 		fader->Update();
 		swiper->Update();

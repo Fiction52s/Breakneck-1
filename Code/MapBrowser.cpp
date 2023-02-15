@@ -842,7 +842,9 @@ void MapBrowser::Update()
 	if (edit == NULL)
 	{
 		panel->UpdateSlide(1);
+		panel->extraUpdater = NULL;
 		panel->MouseUpdate();
+		panel->extraUpdater = this;
 		panel->UpdateSprites();
 	}
 }
@@ -1626,7 +1628,7 @@ void MapBrowserHandler::Update()
 {
 	BasicUpdate();
 
-	MouseUpdate();
+	//MouseUpdate();
 }
 
 void MapBrowserHandler::Cancel()

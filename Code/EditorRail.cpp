@@ -1217,15 +1217,64 @@ bool TerrainRail::ContainsPoint(sf::Vector2f test, double rad)
 
 void TerrainRail::UpdateLineColor(sf::Vertex *li, int i, int index)
 {
-	/*TerrainPoint *next = p->next;
-	if (next == NULL)
-	{
-		assert(false);
-	}*/
+	//TerrainPoint *curr, *next;
 
-	//Vector2f diff = Vector2f(next->pos - p->pos);//p1 - p0;
+	//Vector2f diff;
+
+	//int nextIndex = index + 1;
+
+	//if (renderMode == RENDERMODE_TRANSFORM)
+	//{
+	//	Vector2f roundedNextPos(round(lines[nextIndex].position.x), round(lines[nextIndex].position.y));
+	//	Vector2f roundedPos(round(lines[index].position.x), round(lines[index].position.y));
+
+	//	diff = roundedNextPos - roundedPos;
+
+	//}
+	//else
+	//{
+	//	curr = GetPoint(i);
+	//	next = GetPoint(i+1);
+
+	//	diff = Vector2f(next->pos - curr->pos);
+	//}
+
 	//V2d dir = normalize(V2d(diff));
 	//V2d norm = V2d(dir.y, -dir.x);
+
+	////static EdgeAngleType GetEdgeAngleType(Edge * e);
+	////static EdgeAngleType GetEdgeAngleType(V2d &normal);
+
+	//TerrainPolygon::EdgeAngleType eat = TerrainPolygon::GetEdgeAngleType(norm);
+
+	//Color edgeColor;
+	//switch (eat)
+	//{
+	//case TerrainPolygon::EDGE_FLAT:
+	//	edgeColor = Color::Red;
+	//	break;
+	//case TerrainPolygon::EDGE_SLOPED:
+	//	edgeColor = Color::Green;
+	//	break;
+	//case TerrainPolygon::EDGE_STEEPSLOPE:
+	//	edgeColor = Color::White;
+	//	break;
+	//case TerrainPolygon::EDGE_WALL:
+	//	edgeColor = Color::Magenta;
+	//	break;
+	//case TerrainPolygon::EDGE_STEEPCEILING:
+	//	edgeColor = Color::Yellow;
+	//	break;
+	//case TerrainPolygon::EDGE_SLOPEDCEILING:
+	//	edgeColor = Color::Cyan;
+	//	break;
+	//case TerrainPolygon::EDGE_FLATCEILING:
+	//	edgeColor = Color::Red;
+	//	break;
+	//}
+
+	//lines[index].color = edgeColor;
+	//lines[nextIndex].color = edgeColor;
 
 	Color edgeColor = GetRailColor();
 

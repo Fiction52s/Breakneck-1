@@ -284,10 +284,12 @@ void SpinningTri::Update()
 			data.state = S_ROTATE_AND_FADE;
 			break;
 		case S_ROTATE_AND_FADE:
-			data.done = true;
+		{
 			Clear();
+			data.done = true;
 			return;
 			break;
+		}
 		}
 	}
 

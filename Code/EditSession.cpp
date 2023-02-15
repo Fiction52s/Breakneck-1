@@ -4333,7 +4333,10 @@ int EditSession::EditRun()
 				}
 			}
 
-			UpdateControllers();
+			if (mode != TEST_PLAYER)
+			{
+				UpdateControllers();
+			}
 
 			MOUSE.Update(pixelPos);
 
@@ -4390,7 +4393,10 @@ int EditSession::EditRun()
 				}
 			}
 
-			SteamAPI_RunCallbacks();
+			if (mode != TEST_PLAYER)
+			{
+				SteamAPI_RunCallbacks();
+			}
 		}
 
 		//ShowMostRecentError();
