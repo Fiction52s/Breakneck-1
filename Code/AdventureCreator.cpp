@@ -10,31 +10,41 @@ using namespace std;
 using namespace boost::filesystem;
 
 AdventureCreator::AdventureCreator()
-	:MapBrowserHandler(3, 4, true, EXTRA_RECTS)
+	:MapBrowserHandler(3, 5, true, EXTRA_RECTS)
 {
 	adventure = new AdventureFile;
 
 	musicListHandler = new MusicChooserHandler(10);
 
-	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
+	//SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
 
 	Panel *panel = chooser->panel;
 
 	int rightSideStart = 610;
 
-	SetRectTopLeft(largePreview, 912, 492, Vector2f(rightSideStart + 150, 550 ));
+	SetPreviewTopLeft(Vector2f(rightSideStart + 150, 550));
+
+	//SetRectTopLeft(largePreview, 912, 492, Vector2f(rightSideStart + 150, 550 ));
 
 	Vector2f startWorldPos(rightSideStart, 90 - 20);
 	Vector2f startSectorPos(rightSideStart, 210 - 20);
 	Vector2f startMapPos(rightSideStart, 385 - 20);
 	Vector2f startMusicPos(startMapPos.x, startMapPos.y + 130);
 
-	//EditSession *edit = EditSession::GetSession();
-	//assert(edit != NULL);
+	EditSession *edit = EditSession::GetSession();
+	assert(edit != NULL);
 
-	Tileset *ts_worldChoosers = chooser->GetSizedTileset("Editor/worldselector_64x64.png");
+	for (int i = 0; i < 512; ++i)
+	{
+		adventureNodes[i].myBrowser = chooser;
+		adventureNodes[i].type = MapNode::FILE;
+	}
 
-	ts_sectorIcons = chooser->GetSizedTileset("Editor/sectoricons_64x64.png");
+	//chooser->GetSizedTileset
+	Tileset *ts_worldChoosers = edit->GetSizedTileset("Editor/worldselector_64x64.png");
+
+	ts_sectorIcons = edit->GetSizedTileset("Editor/sectoricons_64x64.png");
+	ts_sectorNumbers = edit->GetSizedTileset("Menu/keynum_red_dark_80x80.png");
 
 	currWorldRect = panel->AddImageRect(ChooseRect::I_ADVENTURECREATOR_WORLD_SEARCH,
 		startWorldPos, ts_worldChoosers, 1, 100);
@@ -46,17 +56,20 @@ AdventureCreator::AdventureCreator()
 		worldRects[i] = panel->AddImageRect(ChooseRect::I_ADVENTURECREATOR_WORLD,
 			startWorldPos + Vector2f((i+1) * 120, 0), ts_worldChoosers, i+1, 100);
 		worldRects[i]->SetShown(false);
+		worldRects[i]->SetName("World " + to_string(i + 1));
 		worldRects[i]->Init();
-		worldRects[i]->SetInfo((void*)(i+1));
+		worldRects[i]->SetInfo((void*)(i));
 	}
 
 	for (int i = 0; i < 8; ++i)
 	{
 		sectorRects[i] = panel->AddImageRect(ChooseRect::I_ADVENTURECREATOR_SECTOR,
-			startSectorPos + Vector2f((i + 1) * 120, 0), ts_sectorIcons, 0, 100);
+			startSectorPos + Vector2f((i + 1) * 120, 0), ts_sectorNumbers, 0, 100);
+		//startSectorPos + Vector2f((i + 1) * 120, 0), ts_sectorIcons, 0, 100);
 		sectorRects[i]->SetShown(true);
+		sectorRects[i]->SetName("Sector " + to_string(i + 1));
 		sectorRects[i]->Init();
-		sectorRects[i]->SetInfo((void*)(i+1));
+		sectorRects[i]->SetInfo((void*)(i));
 	}
 
 	
@@ -97,14 +110,23 @@ AdventureCreator::~AdventureCreator()
 	delete musicListHandler;
 }
 
+void AdventureCreator::Clear()
+{
+	adventure->Clear();
+
+	for (int i = 0; i < 512; ++i)
+	{
+		adventureNodes[i].Clear();
+	}
+}
+
 void AdventureCreator::Open()
 {
 	action = BROWSE;
-	chooser->StartRelative(MAP_EXT, MapBrowser::Mode::EDITOR_OPEN, "Resources\\Maps");
+	chooser->StartRelative(MAP_EXT, MapBrowser::Mode::EDITOR_SAVE_ADVENTURE, "Resources\\Maps");
 
+	ChooseWorld(0);
 	CollapseWorlds();
-	currWorld = 1;
-	ChooseSector(1);
 }
 
 void AdventureCreator::LoadAdventure(const std::string &path, 
@@ -134,8 +156,13 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 					{
 						name = adventure->worlds[w].sectors[s].maps[m].name;
 						file = sectorStr + name;
+						adventureNodes[ind].myBrowser = chooser;
 						adventureNodes[ind].filePath = file + MAP_EXT;
 						adventureNodes[ind].ts_preview = chooser->GetTileset(file + ".png");
+						adventureNodes[ind].index = ind;
+					}
+					else
+					{
 						adventureNodes[ind].index = ind;
 					}
 				}
@@ -148,7 +175,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 		chooser->SetGameResourcesMode(true);
 		AdventureMap *am;
 		string filePath;
-		string localDir = "BreakneckEmergence\\Resources\\";
+		string mapDir = "Maps\\";//chooser->currPath.string(); //current_path().string();//"BreakneckEmergence\\Resources\\";
 		for (int w = 0; w < 8; ++w)
 		{
 			for (int s = 0; s < 8; ++s)
@@ -157,14 +184,13 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 				{
 					ind = w * 64 + s * 8 + m;
 					am = &(adventure->worlds[w].sectors[s].maps[m]);
+
+					adventureNodes[ind].index = ind;
+
 					if (am->Exists() )
 					{
-						filePath = am->path + "\\" + am->name;
-						adventureNodes[ind].filePath = 
-							localDir + filePath + MAP_EXT;
-						adventureNodes[ind].ts_preview = 
-							chooser->GetTileset(filePath + ".png");
-						adventureNodes[ind].index = ind;
+						adventureNodes[ind].filePath = am->GetFilePath();
+						adventureNodes[ind].ts_preview = chooser->GetTileset(mapDir + am->path + ".png");
 					}
 				}
 			}
@@ -176,7 +202,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 void AdventureCreator::SaveAdventure(const std::string &p_path, 
 	const std::string &adventureName, AdventureFile::CopyMode copyMode )
 {
-	MapNode *currentNode;	
+	MapNode *currentNode;
 	
 	if (copyMode == AdventureFile::COPY)
 	{
@@ -235,20 +261,24 @@ void AdventureCreator::SaveAdventure(const std::string &p_path,
 	}
 	else if (copyMode == AdventureFile::PATH)
 	{
-		string findPath = "BreakneckEmergence\\Resources\\";
+		//string findPath = "";//"BreakneckEmergence\\Resources\\";
 		string nodePath;
 		string nodeName;
+		int ind;
 
-		for (int w = 0; w < 8; ++w)
+		/*for (int w = 0; w < 8; ++w)
 		{
 			for (int s = 0; s < 8; ++s)
 			{
 				for (int m = 0; m < 8; ++m)
 				{
-					currentNode = &(adventureNodes[w * 64 + s * 8 + m]);
+					ind = w * 64 + s * 8 + m;
+					currentNode = &(adventureNodes[ind]);
 
 					if (currentNode->ts_preview != NULL)
 					{
+						adventure->GetMap(ind).
+
 						nodePath = currentNode->filePath.parent_path().string();
 						nodeName = currentNode->filePath.stem().string();
 						auto pathClip = nodePath.find(findPath);
@@ -271,7 +301,7 @@ void AdventureCreator::SaveAdventure(const std::string &p_path,
 					}
 				}
 			}
-		}
+		}*/
 
 		adventure->Save(p_path, adventureName, AdventureFile::PATH);
 	}
@@ -280,11 +310,22 @@ void AdventureCreator::SaveAdventure(const std::string &p_path,
 
 void AdventureCreator::Confirm()
 {
-	SaveAdventure("Adventure"/*chooser->currPath.string()*/, "tadventure", AdventureFile::PATH );
+	assert(chooser->mode == MapBrowser::EDITOR_SAVE_ADVENTURE);
+
+	SaveAdventure("Adventure"/*chooser->currPath.string()*/, "tadventure_test", AdventureFile::PATH );
+}
+
+void AdventureCreator::Cancel()
+{
+	MapBrowserHandler::Cancel();
+
+	Clear();
 }
 
 bool AdventureCreator::MouseUpdate()
 {
+	MapBrowserHandler::BasicUpdate();
+
 	if (MOUSE.IsMouseLeftReleased())
 	{
 		action = BROWSE;
@@ -296,6 +337,7 @@ bool AdventureCreator::MouseUpdate()
 		SetRectCenter(grabbedFileQuad, grabbedFile->ts_preview->tileWidth / 8,
 			grabbedFile->ts_preview->tileHeight / 8, Vector2f(chooser->panel->GetMousePos()));
 	}
+
 	return true;
 }
 
@@ -303,7 +345,7 @@ void AdventureCreator::ClickFile(ChooseRect *cr)
 {
 	MapNode *mn = (MapNode*)cr->info;
 	
-	if (mn->ts_preview != NULL)
+	if (mn->ts_preview != NULL )
 	{
 		grabbedFile = mn;
 		mn->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
@@ -315,6 +357,19 @@ void AdventureCreator::ClickFile(ChooseRect *cr)
 //{
 //	ts_largePreview = cr->GetAsImageChooseRect()->ts;
 //}
+
+
+void AdventureCreator::Draw(sf::RenderTarget *target)
+{
+	if (ts_largePreview)
+	{
+		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
+	}
+	else
+	{
+		target->draw(noPreviewQuad, 4, sf::Quads);
+	}
+}
 
 
 void AdventureCreator::LateDraw(sf::RenderTarget *target)
@@ -342,46 +397,60 @@ void AdventureCreator::CollapseWorlds()
 	worldsExpanded = false;
 }
 
-void AdventureCreator::SetRectNode(ChooseRect *cr, MapNode *fn)
+void AdventureCreator::SetRectNode(ChooseRect *cr, MapNode *mn)
 {
 	ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-	icRect->SetInfo(fn);
+	icRect->SetInfo(mn);
 
-	icRect->SetImage(fn->ts_preview, 0);
-	if (fn->ts_preview == NULL)
+	icRect->SetImage(mn->ts_preview, 0);
+	if (mn->ts_preview == NULL)
 		icRect->SetShown(true);
-	icRect->SetName(fn->filePath.stem().string());
-	
-	if (fn->index >= 0)
+	icRect->SetName(mn->filePath.stem().string());
+
+	if (mn->ts_preview == NULL)
 	{
-		auto &mhi = adventure->GetMapHeaderInfo(fn->index);
-		//if (mhi.mainSongName != "")
-		//{
-		int levelIndex = fn->index % 8;
+		int levelIndex = mn->index % 8;
 		TextChooseRect *tcRect = musicRects[levelIndex];
-		tcRect->SetText(mhi.mainSongName);
-		//}
-		//TextChooseRect *tcRect = fn-
+		tcRect->SetText("");
 	}
 	else
 	{
-		
+		if (mn->index >= 0)
+		{
+			auto &mhi = adventure->GetMapHeaderInfo(mn->index);
+			//if (mhi.mainSongName != "")
+			//{
+			int levelIndex = mn->index % 8;
+			TextChooseRect *tcRect = musicRects[levelIndex];
+			tcRect->SetText(mhi.mainSongName);
+			//}
+			//TextChooseRect *tcRect = fn-
+		}
 	}
+
 	
+	
+	int w, s, m;
+	adventure->GetMapIndexes(mn->index, w, s, m);
+	int numMapsInSector = adventure->GetSector(w, s).GetNumExistingMaps();
+	sectorRects[s]->SetImage(ts_sectorNumbers, numMapsInSector);
 }
 
 void AdventureCreator::ChooseWorld(int w)
 {
 	currWorld = w;
 
-	ChooseSector(1);
+	currWorldRect->SetImage(worldRects[currWorld]->ts, worldRects[currWorld]->tileIndex);
+	currWorldRect->SetName(worldRects[currWorld]->nameText.getString());
+
+	ChooseSector(0);
 
 	//update sector and map info
 }
 
 int AdventureCreator::GetNodeStart()
 {
-	return (currWorld - 1) * 64 + (currSector - 1) * 8;
+	return currWorld * 64 + currSector * 8;
 }
 
 void AdventureCreator::ChooseSector(int s)
@@ -398,10 +467,7 @@ void AdventureCreator::ChooseSector(int s)
 		SetRectNode(mapRects[i], &(adventureNodes[nodeStart + i]));
 	}
 
-	//sectorRequirementsSlider->SetCurrValue(
-	//	adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes);
-
-	sectorLabel->text.setString("Sector " + to_string(currSector));
+	sectorLabel->text.setString("Sector " + to_string(currSector + 1));
 	//update maps
 }
 
@@ -435,8 +501,6 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 		if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED
 			|| eventType == ChooseRect::ChooseRectEventType::E_LEFTRELEASED)
 		{
-			ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-			currWorldRect->SetImage(icRect->ts, icRect->tileIndex);
 			ChooseWorld((int)cr->info);
 			CollapseWorlds();
 		}
@@ -480,6 +544,15 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				mn->ts_preview = NULL;
 				mn->filePath = "";
+				mn->fileName = "";
+
+				//tempGrabbedFile.Copy(mn);
+
+				AdventureMap &currAdventureMap = adventure->GetMap(mn->index);
+
+				tempGrabbedAdventureMap.Set(currAdventureMap);
+
+				currAdventureMap.Clear();
 
 				SetRectNode(cr, mn);
 			}
@@ -504,7 +577,45 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				currNode->ts_preview = grabbedFile->ts_preview;
 				currNode->filePath = grabbedFile->filePath;
+				currNode->fileName = currNode->filePath.stem().string();
 
+				int grabbedIndex = grabbedFile->index;
+
+				if (grabbedIndex < 0)
+				{
+					AdventureMap &currAdventureMap = adventure->GetMap(currNode->index);
+					currAdventureMap.Clear();
+					
+					currAdventureMap.name = currNode->fileName;
+
+					string nodePath = currNode->filePath.parent_path().string() + "\\" + currNode->fileName;//currNode->filePath.stem().string();
+					//test.find( "Resources\\Maps", )
+					string localPath = "Resources\\Maps\\";
+					size_t pathClip = nodePath.find(localPath);
+					if (pathClip == string::npos)
+					{
+						cout << "cannot save adventure. bad path: " << nodePath << endl;
+						assert(0);
+					}
+					else
+					{
+						currAdventureMap.path = nodePath.substr( pathClip + localPath.size());
+						/*adventure->worlds[w].sectors[s].maps[m].name = nodeName;
+						adventure->worlds[w].sectors[s].maps[m].path =
+							nodePath.substr(pathClip + findPath.length());*/
+					}
+
+					//currAdventureMap.path = currNode->filePath.string();
+					currAdventureMap.LoadHeaderInfo();
+				}
+				else
+				{
+					AdventureMap &currAdventureMap = adventure->GetMap(currNode->index);
+					//AdventureMap &grabbedAdventureMap = adventure->GetMap(grabbedIndex);
+					currAdventureMap.Set(tempGrabbedAdventureMap);
+				}
+
+				
 
 				SetRectNode(cr, currNode);
 			}
@@ -562,8 +673,3 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 		assert(0);
 	}
 }
-
-//void AdventureCreator::SliderCallback(Slider *slider)
-//{
-//	adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes = slider->currValue;
-//}

@@ -66,15 +66,14 @@ struct AdventureMapHeaderInfo
 {
 	int mapType;
 	std::vector<ShardInfo> shardInfoVec;
-	bool IsLoaded() { return mapType >= 0; }
-	BitField hasShardField;
 	std::string mainSongName;
+	BitField hasShardField;
+	
 
-	AdventureMapHeaderInfo()
-		:mapType(-1), hasShardField( ShardInfo::MAX_SHARDS )
-	{
-
-	}
+	AdventureMapHeaderInfo();
+	void Set(AdventureMapHeaderInfo &inf);
+	void Clear();
+	bool IsLoaded();
 };
 
 struct AdventureMap
@@ -84,10 +83,15 @@ struct AdventureMap
 	std::string GetFilePath();
 	std::string GetMapPath();
 	AdventureMapHeaderInfo headerInfo;
+
+	AdventureMap();
 	bool Exists();
+	void Set(AdventureMap &am);
+	void Clear();
 	void Load(std::ifstream &is, int copyMode );
 	void Save(std::ofstream &of, int copyMode);
 	bool LoadHeaderInfo();
+
 };
 
 struct AdventureSector
@@ -95,6 +99,7 @@ struct AdventureSector
 	AdventureSector();
 	BitField hasShardField;
 	AdventureMap maps[ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR];
+	void Clear();
 	void Load(std::ifstream &is, int ver, int copyMode );
 	void Save(std::ofstream &of, int ver, int copyMode );
 	int GetNumExistingMaps();
@@ -111,6 +116,7 @@ struct AdventureWorld
 
 	}
 	
+	void Clear();
 	void Load(std::ifstream &is, int ver, int copyMode );
 	void Save(std::ofstream &of, int ver, int copyMode );
 	int GetNumExistingSectors();
@@ -133,6 +139,7 @@ struct AdventureFile
 
 	AdventureFile();
 	~AdventureFile();
+	void Clear();
 	void SetVer(int v);
 	bool Load(const std::string &p_path,
 		const std::string &adventureName);

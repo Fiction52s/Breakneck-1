@@ -584,8 +584,6 @@ bool CustomMatchManager::Update()
 			action = A_QUICKPLAY_PRE_MATCH_DONE;
 			quickplayPreMatchScreen->Clear();
 		}
-
-
 		break;
 	}
 	}
@@ -666,11 +664,23 @@ bool CustomMatchManager::Update()
 		else if (postMatchQuickplayPopup->action == PostMatchQuickplayOptionsPopup::A_KEEP_PLAYING)
 		{
 			action = A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING;
+			postMatchQuickplayPopup->action = PostMatchQuickplayOptionsPopup::A_IDLE;
 		}
 		break;
 	}
 	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING:
 	{
+		postMatchQuickplayPopup->Update();
+
+		if (postMatchQuickplayPopup->action == PostMatchQuickplayOptionsPopup::A_LEAVE)
+		{
+			action = A_POST_MATCH_QUICKPLAY_LEAVE;
+		}
+		else if (postMatchQuickplayPopup->action == PostMatchQuickplayOptionsPopup::A_KEEP_PLAYING)
+		{
+			//disable the keep playing option here
+			postMatchQuickplayPopup->action = PostMatchQuickplayOptionsPopup::A_IDLE;
+		}
 		break;
 	}
 	case A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS:

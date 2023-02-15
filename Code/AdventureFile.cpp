@@ -7,6 +7,38 @@
 
 using namespace std;
 
+AdventureMapHeaderInfo::AdventureMapHeaderInfo()
+	:hasShardField(ShardInfo::MAX_SHARDS)
+{
+	Clear();
+}
+
+bool AdventureMapHeaderInfo::IsLoaded() 
+{ 
+	return mapType >= 0; 
+}
+
+void AdventureMapHeaderInfo::Clear()
+{
+	mapType = -1;
+	
+	shardInfoVec.clear();
+	mainSongName = "";
+	
+
+	hasShardField.Reset();
+}
+
+void AdventureMapHeaderInfo::Set(AdventureMapHeaderInfo &info)
+{
+	mapType = info.mapType;
+	
+	shardInfoVec = info.shardInfoVec;
+	mainSongName = info.mainSongName;
+
+	hasShardField.Set(info.hasShardField);
+}
+
 AdventurePlanet::AdventurePlanet(AdventureFile &adventureFile)
 {
 	int numSectors;
@@ -80,24 +112,46 @@ AdventurePlanet::~AdventurePlanet()
 	delete[] worlds;
 }
 
+AdventureMap::AdventureMap()
+{
+	Clear();
+}
+
 string AdventureMap::GetFilePath()
 {
-	if (path == "")
-		return name;
-	else
-	{
-		return path + "\\" + name;
-	}
+	return path;
+
+	//if (path == "")
+	//	return name;
+	//else
+	//{
+	//	return path;
+	//	//return path + "\\" + name;
+	//}
 }
 
 std::string AdventureMap::GetMapPath()
 {
-	return "Resources\\" + GetFilePath() + MAP_EXT;
+	return path + MAP_EXT;//"Resources\\" + GetFilePath() + MAP_EXT;
+}
+
+void AdventureMap::Clear()
+{
+	name = "";
+	path = "";
+	headerInfo.Clear();
 }
 
 bool AdventureMap::Exists()
 {
 	return name != "";
+}
+
+void AdventureMap::Set(AdventureMap &am)
+{
+	name = am.name;
+	path = am.path;
+	headerInfo.Set(am.headerInfo);
 }
 
 bool AdventureMap::LoadHeaderInfo()
@@ -106,14 +160,18 @@ bool AdventureMap::LoadHeaderInfo()
 
 	ifstream is;
 
-	if (path == "")
+	//path is just correct already! probably ruined opening world map!
+	/*if (path == "")
 	{
-		is.open( "Resources\\" + name + MAP_EXT);
+		is.open( "Resources\\Maps\\" + name + MAP_EXT);
 	}
 	else
 	{
 		is.open( "Resources\\" + path + "\\" + name + MAP_EXT);
-	}
+	}*/
+
+	string filePath = "Resources\\Maps\\" + GetMapPath();
+	is.open(filePath);
 
 	if (is.is_open())
 	{
@@ -126,6 +184,10 @@ bool AdventureMap::LoadHeaderInfo()
 		{
 			headerInfo.mainSongName = mh.songOrder[0];
 		}
+		else
+		{
+			headerInfo.mainSongName = "";
+		}
 		
 
 		for (auto it = headerInfo.shardInfoVec.begin();
@@ -133,6 +195,8 @@ bool AdventureMap::LoadHeaderInfo()
 		{
 			headerInfo.hasShardField.SetBit((*it).GetTrueIndex(), true);
 		}
+
+		is.close();
 	}
 	else
 	{
@@ -152,17 +216,21 @@ void AdventureMap::Load(std::ifstream &is, int copyMode)
 	}
 	else if (copyMode == AdventureFile::PATH)
 	{
-		string fullPath;
-		std::getline(is, fullPath);
+		string pathStr;
+		std::getline(is, pathStr);
 
-		if (fullPath == "----")
+		if (pathStr == "----")
 		{
 			name = "";
 			path = "";
 			return;
 		}
 
-		auto lastSlash = fullPath.find_last_of('\\');
+		boost::filesystem::path p(pathStr);
+
+		name = p.filename().string();
+		path = p.string();// +MAP_EXT;
+		/*auto lastSlash = fullPath.find_last_of('\\');
 		if (lastSlash == std::string::npos)
 		{
 			name = fullPath;
@@ -172,7 +240,7 @@ void AdventureMap::Load(std::ifstream &is, int copyMode)
 		{
 			name = fullPath.substr(lastSlash + 1);
 			path = fullPath.substr(0, lastSlash);
-		}
+		}*/
 	}
 }
 
@@ -190,7 +258,8 @@ void AdventureMap::Save(std::ofstream &of, int copyMode)
 		}
 		else if (copyMode == AdventureFile::PATH)
 		{
-			of << path << "\\" << name << "\n";
+			of << path << "\n";
+			//of << path << "\\" << name << "\n";
 		}
 	}
 }
@@ -198,6 +267,15 @@ void AdventureMap::Save(std::ofstream &of, int copyMode)
 AdventureSector::AdventureSector()
 	:hasShardField(ShardInfo::MAX_SHARDS)
 {
+}
+
+void AdventureSector::Clear()
+{
+	hasShardField.Reset();
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR; ++i)
+	{
+		maps[i].Clear();
+	}
 }
 
 int AdventureSector::GetNumExistingMaps()
@@ -246,6 +324,14 @@ int AdventureWorld::GetNumExistingSectors()
 	return activeCounter;
 }
 
+void AdventureWorld::Clear()
+{
+	for (int i = 0; i < ADVENTURE_MAX_NUM_SECTORS_PER_WORLD; ++i)
+	{
+		sectors[i].Clear();
+	}
+}
+
 void AdventureWorld::Load(std::ifstream &is, int ver,
 	int copyMode)
 {
@@ -291,6 +377,15 @@ AdventureFile::~AdventureFile()
 void AdventureFile::SetVer(int v )
 {
 	ver = v;
+}
+
+void AdventureFile::Clear()
+{
+	hasShardField.Reset();
+	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
+	{
+		worlds[i].Clear();
+	}
 }
 
 bool AdventureFile::Load(const std::string &p_path,

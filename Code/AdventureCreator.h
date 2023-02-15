@@ -19,12 +19,15 @@ struct AdventureCreator : MapBrowserHandler
 
 	//inherited
 	void Confirm();
+	void Cancel();
 	void ClickFile(ChooseRect *cr);
 	//void FocusFile(ChooseRect *cr);
 	bool MouseUpdate();
 	//void Draw(sf::RenderTarget *target);
 	void LateDraw(sf::RenderTarget *target);
+	void Draw(sf::RenderTarget *target);
 
+	void Clear();
 	void Open();
 	void ExpandWorlds();
 	void CollapseWorlds();
@@ -39,6 +42,7 @@ struct AdventureCreator : MapBrowserHandler
 	sf::Vertex grabbedFileQuad[4];
 	MapNode *grabbedFile;
 	MapNode tempGrabbedFile;
+	AdventureMap tempGrabbedAdventureMap;
 
 	Label *sectorLabel;
 
@@ -50,6 +54,7 @@ struct AdventureCreator : MapBrowserHandler
 
 	
 	Tileset *ts_sectorIcons;
+	Tileset *ts_sectorNumbers;
 
 	//512 = 8 * 8 * 8
 	MapNode adventureNodes[512];

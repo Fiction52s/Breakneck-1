@@ -15,8 +15,25 @@ using namespace boost::filesystem;
 
 MapNode::MapNode()
 {
-	checkingForPreview = false;
+	header = NULL;
 	myBrowser = NULL;
+	ts_preview = NULL; //needed
+	Clear();
+}
+
+
+
+void MapNode::Clear()
+{
+	if (header != NULL)
+	{
+		delete header;
+		header = NULL;
+	}
+
+	ClearPreview();
+
+	checkingForPreview = false;
 	type = FILE;
 	index = -1;
 	ts_preview = NULL;
@@ -33,8 +50,19 @@ MapNode::MapNode()
 	mapUpdating = false;
 	subscribing = false;
 	unsubscribing = false;
-	header = NULL;
 	downloadResult = -1;
+	filePath = "";
+	nodeName = "";
+	fileName = "";
+	folderPath = "";
+	description = "";
+	fullMapName = "";
+	previewURL = "";
+	previewRequestHandle = 0;
+	creatorName = "";
+	OnHTTPRequestCompletedCallResult.Cancel();
+	onRemoteStorageSubscribePublishedFileResultCallResult.Cancel();
+	onRRemoteStorageUnsubscribePublishedFileResultCallResult.Cancel();
 }
 
 void MapNode::Draw(sf::RenderTarget *target)
@@ -564,14 +592,19 @@ MapBrowser::~MapBrowser()
 	//delete workshop;
 }
 
-//bool MapBrowser::MouseUpdate()
-//{
-//	return handler->MouseUpdate();
-//}
+bool MapBrowser::MouseUpdate()
+{
+	return handler->MouseUpdate();
+}
 
 void MapBrowser::Draw(sf::RenderTarget *target)
 {
 	handler->Draw(target);
+}
+
+void MapBrowser::LateDraw(sf::RenderTarget *target)
+{
+	handler->LateDraw(target);
 }
 
 bool MapBrowser::CheckFilters(MapNode *mn)
@@ -805,10 +838,13 @@ void MapBrowser::Update()
 		MouseScroll(scroll);
 	}
 
-
-	panel->UpdateSlide(1);
-	panel->MouseUpdate();
-	panel->UpdateSprites();
+	EditSession *edit = EditSession::GetSession();
+	if (edit == NULL)
+	{
+		panel->UpdateSlide(1);
+		panel->MouseUpdate();
+		panel->UpdateSprites();
+	}
 }
 
 void MapBrowser::SetRelativePath(const std::string &p_relPath)
@@ -1080,7 +1116,7 @@ void MapBrowser::TurnOff()
 	ClearFilters();
 	ClearNodes();
 	
-	if (mode == EDITOR_SAVE || mode == EDITOR_OPEN)
+	if (mode == EDITOR_SAVE || mode == EDITOR_OPEN || mode == EDITOR_SAVE_ADVENTURE)
 	{
 		EditSession *edit = EditSession::GetSession();
 		assert(edit != NULL);
@@ -1095,64 +1131,74 @@ void MapBrowser::SetCurrFileNameText(const std::string &text)
 
 void MapBrowser::ShowFileNameTextBox()
 {
+	panel->SetFocusedMember(fileNameTextBox);
 	fileNameTextBox->ShowMember();
 	fileNameTextBoxLabel->text.setString("Filename:");
+	fileNameTextBox->SetString("");
 }
 
 void MapBrowser::HideFileNameTextBox()
 {
 	fileNameTextBox->HideMember();
 	fileNameTextBoxLabel->text.setString("");
+	fileNameTextBox->SetString("");
 }
 
 void MapBrowser::Init()
 {
 	//ClearNodes();
 	//edit->AddActivePanel(panel);
-	if (mode == EDITOR_OPEN || mode == EDITOR_SAVE)
+	if (mode == EDITOR_OPEN || mode == EDITOR_SAVE || mode == EDITOR_SAVE_ADVENTURE)
 	{
 		EditSession *edit = EditSession::GetSession();
 		assert(edit != NULL);
 		edit->AddActivePanel(panel);
 	}
 
+	openButton->HideMember();
+	saveButton->HideMember();
+	createLobbyButton->HideMember();
+	HideFileNameTextBox();
+
+	panel->confirmButton = NULL;
+
+	cancelButton->HideMember();
+	//panel->cancelButton = NULL;
 
 	if (mode == OPEN || mode == EDITOR_OPEN )
 	{
 		openButton->ShowMember();
-		saveButton->HideMember();
-		createLobbyButton->HideMember();
-		
 		panel->confirmButton = openButton;
+
 		ShowFileNameTextBox();
-		fileNameTextBox->SetString("");
-		HideFileNameTextBox();
+
+		cancelButton->ShowMember();
 	}
 	else if(mode == SAVE || mode == EDITOR_SAVE)
 	{
-		openButton->HideMember();
 		saveButton->ShowMember();
-		createLobbyButton->HideMember();
 		panel->confirmButton = saveButton;
+
 		ShowFileNameTextBox();
-		fileNameTextBox->SetString("");
-		panel->SetFocusedMember(fileNameTextBox);
+
+		cancelButton->ShowMember();
 	}
 	else if (mode == CREATE_CUSTOM_GAME)
 	{
-		openButton->HideMember();
-		saveButton->HideMember();
 		createLobbyButton->ShowMember();
 		panel->confirmButton = createLobbyButton;
-		HideFileNameTextBox();
+
+		cancelButton->ShowMember();
 	}
 	else if (mode == FREEPLAY)
 	{
-		openButton->HideMember();
-		saveButton->HideMember();
-		createLobbyButton->HideMember();
-		panel->confirmButton = NULL;
-		HideFileNameTextBox();
+		cancelButton->ShowMember();
+	}
+	else if (mode == EDITOR_SAVE_ADVENTURE)
+	{
+		saveButton->ShowMember();
+		panel->confirmButton = saveButton;
+		
 		cancelButton->ShowMember();
 	}
 
@@ -1325,11 +1371,11 @@ MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool p_showPreview, int
 	Vector2f previewSize(912, 492);
 
 	SetRectSubRect(largePreview, FloatRect(0, 0, previewSize.x, previewSize.y));
-	SetRectTopLeft(largePreview, previewSize.x, previewSize.y, previewTopLeft);
 
 	SetRectSubRect(noPreviewQuad, FloatRect(0, 0, previewSize.x, previewSize.y));
-	SetRectTopLeft(noPreviewQuad, previewSize.x, previewSize.y, previewTopLeft);
 	SetRectColor(noPreviewQuad, Color::Black);
+
+	SetPreviewTopLeft(previewTopLeft);
 
 	confirmedMapFilePath = "";
 
@@ -1358,6 +1404,12 @@ MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool p_showPreview, int
 MapBrowserHandler::~MapBrowserHandler()
 {
 	delete chooser;
+}
+
+bool MapBrowserHandler::MouseUpdate()
+{
+	BasicUpdate();
+	return true;
 }
 
 void MapBrowserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -1512,6 +1564,12 @@ void MapBrowserHandler::UnsubscribeFromItem()
 	}
 }
 
+void MapBrowserHandler::SetPreviewTopLeft(sf::Vector2f &pos)
+{
+	SetRectTopLeft(largePreview, 912, 492, pos);
+	SetRectTopLeft(noPreviewQuad, 912, 492, pos);
+}
+
 void MapBrowserHandler::ChangePath()
 {
 	ts_largePreview = NULL;
@@ -1530,24 +1588,45 @@ void MapBrowserHandler::ClearSelection()
 
 void MapBrowserHandler::SelectRect(ChooseRect *cr)
 {
+	MapNode *mn = (MapNode*)cr->info;
+	if ( !chooser->fileNameTextBox->hidden && mn != NULL && mn->type == MapNode::FILE )
+	{
+		chooser->fileNameTextBox->SetString(mn->fileName);
+	}
+
 	chooser->SelectRect(cr);
 }
 
-void MapBrowserHandler::Update()
+void MapBrowserHandler::BasicUpdate()
 {
 	chooser->Update();
 
 	if (focusedRect != NULL && ts_largePreview == NULL)
-	{	
+	{
 		MapNode *mn = (MapNode*)focusedRect->info;
-		if (mn->type == MapNode::FILE)
+		if (mn != NULL && mn->type == MapNode::FILE)
 		{
 			if (mn->ts_preview != NULL)
 			{
 				ts_largePreview = mn->ts_preview;
 			}
+			else
+			{
+				ts_largePreview = NULL;
+			}
+		}
+		else
+		{
+			ts_largePreview = NULL;
 		}
 	}
+}
+
+void MapBrowserHandler::Update()
+{
+	BasicUpdate();
+
+	MouseUpdate();
 }
 
 void MapBrowserHandler::Cancel()
@@ -1672,7 +1751,7 @@ void MapBrowserHandler::ClickFile(ChooseRect *cr)
 	}
 	else if (chooser->mode == MapBrowser::SAVE || chooser->mode == MapBrowser::EDITOR_SAVE)
 	{
-		chooser->fileNameTextBox->SetString(mn->fileName);
+		//chooser->fileNameTextBox->SetString(mn->fileName);
 		//chooser->edit->ChooseFileSave(chooser, fileName);
 		//chooser->TurnOff();
 	}
@@ -1700,27 +1779,44 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 
 	focusedRect = cr->GetAsImageChooseRect();
 
-	ts_largePreview = mn->ts_preview;
-
-	if (chooser->ext == MAP_EXT)
+	if (mn != NULL)
 	{
-		mn->UpdateHeaderInfo();
+		ts_largePreview = mn->ts_preview;
 
-		fullNameText.setString(mn->fullMapName);
-		descriptionText.setString(mn->description);
-
-		if (mn->isWorkshop)
+		if (chooser->ext == MAP_EXT)
 		{
-			//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
-			creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mn->creatorId));
-			creatorLink->SetString(mn->creatorName);
-			creatorLink->ShowMember();
+			mn->UpdateHeaderInfo();
+
+			fullNameText.setString(mn->fullMapName);
+			descriptionText.setString(mn->description);
+
+			if (mn->isWorkshop)
+			{
+				//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
+				creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mn->creatorId));
+				creatorLink->SetString(mn->creatorName);
+				creatorLink->ShowMember();
+			}
+			else
+			{
+				creatorLink->HideMember();
+			}
 		}
-		else
+	}
+	else
+	{
+		ts_largePreview = NULL;
+
+		if (chooser->ext == MAP_EXT)
 		{
+			fullNameText.setString("");
+			descriptionText.setString("");
 			creatorLink->HideMember();
 		}
 	}
+	
+	
+	
 }
 
 void MapBrowserHandler::ClearFocus()

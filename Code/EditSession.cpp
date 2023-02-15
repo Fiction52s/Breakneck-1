@@ -13352,6 +13352,7 @@ void EditSession::GeneralEventHandler()
 					}
 					else if (mode == SETUP_CONTROLS)
 					{
+						playerInputBoxGroup->ClearInfo();
 						SetMode(oldMenuMode);
 					}
 					else

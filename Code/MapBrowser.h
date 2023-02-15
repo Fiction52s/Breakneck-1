@@ -73,6 +73,7 @@ struct MapNode
 
 	MapNode();
 	~MapNode();
+	void Clear();
 	bool IsSubscribed();
 	void Subscribe();
 	void Unsubscribe();
@@ -105,7 +106,11 @@ struct MapBrowserHandler : GUIHandler
 	void FocusFile(ChooseRect *cr);
 	virtual void LateDraw(sf::RenderTarget *target);
 
-	void Draw(sf::RenderTarget *target);
+	virtual bool MouseUpdate();
+
+	void BasicUpdate();
+
+	virtual void Draw(sf::RenderTarget *target);
 	void ChangePath();
 	
 	void Clear();
@@ -116,6 +121,7 @@ struct MapBrowserHandler : GUIHandler
 	bool CheckIfSelectedItemInstalled();
 	void SubscribeToItem();
 	void UnsubscribeFromItem();
+	void SetPreviewTopLeft(sf::Vector2f &pos);
 
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
 
@@ -152,6 +158,7 @@ struct MapBrowser : TilesetManager,
 		SAVE,
 		EDITOR_OPEN,
 		EDITOR_SAVE,
+		EDITOR_SAVE_ADVENTURE,
 		CREATE_CUSTOM_GAME,
 		FREEPLAY,
 	};
@@ -233,12 +240,15 @@ struct MapBrowser : TilesetManager,
 	void Update();
 	void QueryMaps();
 	void ClearFilters();
+
+	bool MouseUpdate();
 	
 	void ClearPreviews();
 	void ClearAllPreviewsButSelected();
 	void RequestAllPreviews();
 	//panelupdater functions
-	//bool MouseUpdate();
+	
+	void LateDraw(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
 	void MouseScroll(int delta);
