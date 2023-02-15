@@ -8063,6 +8063,8 @@ bool Actor::CheckWall( bool right )
 	
 	
 	sess->barrierTree->Query(this, r);
+
+	GetRailEdgeTree()->Query(this, r);
 	
 
 
@@ -17569,6 +17571,14 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		Edge *e = (Edge*)qte;
 		if (ground == e)
 			return;
+
+		if (e->rail != NULL)
+		{
+			if (!e->rail->IsTerrainType() && e->rail->IsActive() && e->rail->IsEdgeActive( e ) )
+			{
+				return;
+			}
+		}
 
 		if (e->edgeType == Edge::OPEN_GATE)
 		{

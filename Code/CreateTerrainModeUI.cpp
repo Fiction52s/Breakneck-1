@@ -315,6 +315,7 @@ void CreateTerrainModeUI::SetLayerWater()
 	{
 		SetTerrainTool(EditSession::TERRAINTOOL_ADD);
 	}
+
 	terrainLayerDropdown->SetSelectedIndex(1);
 	SetLayer(1);
 

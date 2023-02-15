@@ -7472,7 +7472,7 @@ bool Session::GGPORunGameModeUpdate()
 
 	if (!OneFrameModeUpdate())
 	{
-		UpdateControllers();
+		//UpdateControllers();
 		return true;
 	}
 
@@ -7753,7 +7753,7 @@ void Session::GGPORunFrame()
 
 	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
 	{
-		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->prevInput); //player->currInput
+		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->currInput); //player->currInput
 	}
 	else
 	{

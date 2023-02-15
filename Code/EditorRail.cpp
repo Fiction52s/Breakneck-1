@@ -211,7 +211,7 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 	case INVERSEPHASE:
 		return true;
 	case FLOOR:
-		if (e->Normal().y < 0)
+		if (e->Normal().y <= 0)
 		{
 			return true;
 		}
@@ -220,7 +220,7 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 			return false;
 		}
 	case CEILING:
-		if (e->Normal().y > 0)
+		if (e->Normal().y >= 0)
 		{
 			return true;
 		}
