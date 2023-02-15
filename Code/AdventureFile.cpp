@@ -132,7 +132,7 @@ string AdventureMap::GetFilePath()
 
 std::string AdventureMap::GetMapPath()
 {
-	return path + MAP_EXT;//"Resources\\" + GetFilePath() + MAP_EXT;
+	return "Resources\\Maps\\" + path + MAP_EXT;//"Resources\\" + GetFilePath() + MAP_EXT;
 }
 
 void AdventureMap::Clear()
@@ -170,7 +170,7 @@ bool AdventureMap::LoadHeaderInfo()
 		is.open( "Resources\\" + path + "\\" + name + MAP_EXT);
 	}*/
 
-	string filePath = "Resources\\Maps\\" + GetMapPath();
+	string filePath = GetMapPath();
 	is.open(filePath);
 
 	if (is.is_open())

@@ -900,7 +900,7 @@ void MapSector::UpdateMapPreview()
 	DestroyMapPreview();
 
 	string fPath = adventureFile.GetAdventureSector(sec).maps[GetSelectedIndex()].GetFilePath();
-	string previewPath = fPath + ".png";
+	string previewPath = "Maps\\" + fPath + ".png";
 
 	ts_mapPreview = ms->worldMap->GetTileset(previewPath, 912, 492);
 	mapPreviewSpr.setTexture(*ts_mapPreview->texture);
