@@ -28,6 +28,7 @@ MapBrowserScreen::~MapBrowserScreen()
 void MapBrowserScreen::TurnOff()
 {
 	browserHandler->chooser->TurnOff();
+	CONTROLLERS.SetKeyboardActiveAsController(true);
 }
 
 void MapBrowserScreen::StartLocalBrowsing( int mode, bool showTabs )
@@ -48,6 +49,7 @@ void MapBrowserScreen::StartLocalBrowsing( int mode, bool showTabs )
 	}
 	
 	browserHandler->ClearFocus();
+	CONTROLLERS.SetKeyboardActiveAsController(false);
 	//browserHandler->chooser->
 }
 
@@ -66,6 +68,8 @@ void MapBrowserScreen::StartWorkshopBrowsing( int mode )
 	browserHandler->chooser->StartWorkshop((MapBrowser::Mode)mode );
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(1);
 	browserHandler->ClearFocus();
+
+	CONTROLLERS.SetKeyboardActiveAsController(false);
 }
 
 bool MapBrowserScreen::HandleEvent(sf::Event ev)

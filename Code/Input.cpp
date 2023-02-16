@@ -1518,6 +1518,10 @@ void AllControllers::Update()
 		keyboardController->UpdateState();
 		keyboardStates->AddInput(keyboardController->GetState());
 	}
+	else
+	{
+		keyboardStates->AddInput(ControllerState());//keyboardController->GetState());
+	}
 }
 
 GameController * AllControllers::GetGCController(int index)
