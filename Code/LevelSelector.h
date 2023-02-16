@@ -97,8 +97,4 @@ struct LevelSelector
 	CustomMapClient *customMapClient;
 	
 };
-
-void copyDirectoryRecursively(
-	const boost::filesystem::path& sourceDir, 
-	const boost::filesystem::path& destinationDir);
 #endif

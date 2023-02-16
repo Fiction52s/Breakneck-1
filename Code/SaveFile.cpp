@@ -48,10 +48,10 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 {
 	SetVer(1);
 
-	string dataFolder = "Resources/Adventure/SaveData/";
+	string dataFolder = "Resources\\Adventure\\SaveData\\";
 
 	fileName = dataFolder + name + SAVE_EXT;
-	replayFolderName = dataFolder + name + "/";
+	replayFolderName = dataFolder + name + "\\";
 }
 
 SaveFile::~SaveFile()
@@ -605,20 +605,31 @@ void SaveFile::Delete()
 	SetAsDefault();
 }
 
-void SaveFile::CopyTo(SaveFile *saveFile)
+void SaveFile::SetAndSave(SaveFile *saveFile)
 {
-	saveFile->levelsBeatenField.Set(saveFile->levelsBeatenField);
+	levelsBeatenField.Set(saveFile->levelsBeatenField);
 
 	for (int i = 0; i < 512; ++i)
 	{
-		saveFile->levelScores[i] = levelScores[i];
+		levelScores[i] = saveFile->levelScores[i];
 	}
-	saveFile->upgradeField.Set(saveFile->upgradeField);
-	saveFile->upgradesTurnedOnField.Set(saveFile->upgradesTurnedOnField);
-	saveFile->logField.Set(saveFile->logField);
-	saveFile->shardField.Set(saveFile->shardField);
-	saveFile->newShardField.Set(saveFile->newShardField);
-	saveFile->defaultSkinIndex = defaultSkinIndex;
+	upgradeField.Set(saveFile->upgradeField);
+	upgradesTurnedOnField.Set(saveFile->upgradesTurnedOnField);
+	logField.Set(saveFile->logField);
+	shardField.Set(saveFile->shardField);
+	newShardField.Set(saveFile->newShardField);
+
+	defaultSkinIndex = saveFile->defaultSkinIndex;
+
+	Save();
+
+	if (boost::filesystem::exists(replayFolderName))
+	{
+		boost::filesystem::remove(replayFolderName);
+	}
+	//boost::filesystem::create_directory(replayFolderName);
+
+	MainMenu::copyDirectoryRecursively(saveFile->replayFolderName, replayFolderName);
 }
 
 void SaveFile::SetAsDefault()

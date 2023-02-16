@@ -93,6 +93,7 @@ struct SaveMenuScreen : TilesetManager
 	bool HandleEvent(sf::Event ev);
 	void SetSelectedIndex(int index);
 
+
 	MainMenu *mainMenu;
 	sf::Vector2f menuOffset;
 	sf::Sprite background;

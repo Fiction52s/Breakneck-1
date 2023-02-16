@@ -181,7 +181,7 @@ struct SaveFile
 	bool Load();
 	bool LoadInfo(std::ifstream &is );
 	void Delete();
-	void CopyTo(SaveFile *saveFile);
+	void SetAndSave(SaveFile *saveFile);
 
 	void SetAsDefault();
 

@@ -4257,3 +4257,30 @@ void MainMenu::OnGameLobbyJoinRequestedCallback(GameLobbyJoinRequested_t *pCallb
 	}
 	//SetJoinRequest(pCallback->m_steamIDLobby, pCallback->m_steamIDFriend);
 }
+
+namespace fs = boost::filesystem;
+void MainMenu::copyDirectoryRecursively(const fs::path& sourceDir, const fs::path& destinationDir)
+{
+	//cout << "copy directory recursively" << "\n";
+	if (!fs::exists(sourceDir) || !fs::is_directory(sourceDir))
+	{
+		throw std::runtime_error("Source directory " + sourceDir.string() + " does not exist or is not a directory");
+	}
+	if (fs::exists(destinationDir))
+	{
+		throw std::runtime_error("Destination directory " + destinationDir.string() + " already exists");
+	}
+	if (!fs::create_directory(destinationDir))
+	{
+		throw std::runtime_error("Cannot create destination directory " + destinationDir.string());
+	}
+
+	//if this fails its usually because I used / in the paths instead of \\
+	for (const auto& dirEnt : fs::recursive_directory_iterator{ sourceDir })
+	{
+		const auto& path = dirEnt.path();
+		auto relativePathStr = path.string();
+		boost::replace_first(relativePathStr, sourceDir.string(), "");
+		fs::copy(path, destinationDir / relativePathStr);
+	}
+}

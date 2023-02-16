@@ -395,6 +395,10 @@ struct MainMenu
 		AdventureMap *am,
 		Level *lev);
 
+	static void copyDirectoryRecursively(
+		const boost::filesystem::path& sourceDir,
+		const boost::filesystem::path& destinationDir);
+
 	//singleton
 	static MainMenu *GetInstance();
 	static MainMenu *currInstance;

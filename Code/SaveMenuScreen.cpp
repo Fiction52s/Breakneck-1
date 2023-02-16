@@ -673,8 +673,7 @@ bool SaveMenuScreen::Update()
 
 				decisionPopup->SetInfo("Copied save file successfully", 1);
 
-				mainMenu->adventureManager->files[copiedIndex]->CopyTo(mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]);
-				mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]->Save();
+				mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex]->SetAndSave(mainMenu->adventureManager->files[copiedIndex]);
 				defaultFiles[mainMenu->adventureManager->currSaveFileIndex] = false;
 				fileDisplay[mainMenu->adventureManager->currSaveFileIndex]->SetValues(mainMenu->adventureManager->files[mainMenu->adventureManager->currSaveFileIndex], mainMenu->adventureManager->adventurePlanet);
 			}
