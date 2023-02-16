@@ -1181,10 +1181,15 @@ void Actor::UpdateGroundedShieldSprite( int tile)
 
 	SetGroundedSpriteTransform();
 
-	shieldSprite.setOrigin(sprite->getOrigin());
-	shieldSprite.setPosition(sprite->getPosition());
+	Vector2f norm(ground->Normal());
+	Vector2f test = sprite->getPosition() + norm * 32.f;
+
+
+
+	shieldSprite.setOrigin(shieldSprite.getLocalBounds().width / 2, shieldSprite.getLocalBounds().height / 2);//sprite->getOrigin());
+	shieldSprite.setPosition(test);//position.x, position.y - 10);//sprite->getPosition());
 	ts_blockShield->SetSubRect(shieldSprite, tile, !r, false);
-	shieldSprite.setRotation(sprite->getRotation());
+	shieldSprite.setRotation(0);//sprite->getRotation());
 }
 
 
@@ -7783,11 +7788,17 @@ void Actor::HandleWaitingScoreDisplay()
 					delete owner->repPlayer;
 					owner->repPlayer = NULL;
 				}*/
+				
 				owner->bestReplayOn = false;
-				if (owner->playerReplayManager != NULL)
+				owner->bestTimeGhostOn = false;
+
+				owner->CleanupGhosts();
+				owner->CleanupPlayerReplayManager();
+				/*if (owner->playerReplayManager != NULL)
 				{
 					owner->playerReplayManager->replaysActive = owner->bestReplayOn;
-				}
+					owner->playerrepal
+				}*/
 
 				
 				owner->RestartGame();
@@ -20593,7 +20604,98 @@ bool Actor::CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos )
 		hpt = HitboxInfo::GetAirType(normalize(diff));
 	}
 
-	if (action == GROUNDBLOCKDOWN)
+
+	//basically changed the block to include 180+ degrees instead of <180
+	if (action == GROUNDBLOCKDOWN )
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
+			return true;
+	}
+	else if (action == GROUNDBLOCKDOWNFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::GROUND
+				|| hpt == HitboxInfo::HitPosType::GROUNDLOW)))
+			return true;
+	}
+	else if (action == GROUNDBLOCKFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::GROUND))
+			return true;
+	}
+	else if (action == GROUNDBLOCKUPFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)))
+			return true;
+	}
+	else if (action == GROUNDBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD )
+			return true;
+	}
+	else if (action == AIRBLOCKDOWNFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| (facingHitbox && (hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| (facingHitbox &&
+				  (hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+					|| hpt == HitboxInfo::HitPosType::AIRFORWARD
+					|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKUPFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			return true;
+	}
+
+	/*if (action == GROUNDBLOCKDOWN)
 	{
 		if (hpt == HitboxInfo::HitPosType::AIRUP
 			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
@@ -20668,7 +20770,7 @@ bool Actor::CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos )
 		if (hpt == HitboxInfo::HitPosType::AIRDOWN
 			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD )
 			return true;
-	}
+	}*/
 
 	return false;
 }

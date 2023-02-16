@@ -6239,7 +6239,14 @@ void Session::DrawGoalPulse(sf::RenderTarget *target)
 	}
 }
 
-
+void Session::CleanupPlayerReplayManager()
+{
+	if (playerReplayManager != NULL)
+	{
+		delete playerReplayManager;
+		playerReplayManager = NULL;
+	}
+}
 
 void Session::SetupShardMenu()
 {

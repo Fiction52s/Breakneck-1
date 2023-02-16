@@ -4275,7 +4275,7 @@ void MainMenu::copyDirectoryRecursively(const fs::path& sourceDir, const fs::pat
 		throw std::runtime_error("Cannot create destination directory " + destinationDir.string());
 	}
 
-	//if this fails its usually because I used / in the paths instead of \\
+	//if this fails its usually because I used / in the paths instead of backslash
 	for (const auto& dirEnt : fs::recursive_directory_iterator{ sourceDir })
 	{
 		const auto& path = dirEnt.path();

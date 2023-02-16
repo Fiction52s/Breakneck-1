@@ -904,6 +904,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::IntRect GetButtonIconTile(int controllerIndex, ControllerSettings::ButtonType button);
 	Tileset * GetButtonIconTileset(int controllerIndex);
 	void CopyGGPOInputsToParallelSessions();
+	void CleanupPlayerReplayManager();
 };
 
 #endif

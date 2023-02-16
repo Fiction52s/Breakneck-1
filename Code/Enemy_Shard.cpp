@@ -486,7 +486,7 @@ void ShardPopup::Update()
 void ShardPopup::Draw(RenderTarget *target)
 {
 	target->draw(bgSpr);
-	target->draw(shardSpr);
+	//target->draw(shardSpr);
 	target->draw(effectSpr);
 	target->draw(desc);
 }

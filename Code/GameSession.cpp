@@ -933,11 +933,7 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 
-	if (playerReplayManager != NULL)
-	{
-		delete playerReplayManager;
-		playerReplayManager = NULL;
-	}
+	CleanupPlayerReplayManager();
 
 	CleanupGhosts();
 
@@ -2145,11 +2141,7 @@ bool GameSession::SetupBestPlayerReplayer()
 {
 	CleanupGhosts();
 
-	if (playerReplayManager != NULL)
-	{
-		delete playerReplayManager;
-		playerReplayManager = NULL;
-	}
+	CleanupPlayerReplayManager();
 
 	if (saveFile != NULL)
 	{
@@ -2164,8 +2156,7 @@ bool GameSession::SetupBestPlayerReplayer()
 				playerReplayManager->ghostsActive = bestTimeGhostOn;
 				if (!playerReplayManager->LoadFromFile(replayPath))
 				{
-					delete playerReplayManager;
-					playerReplayManager = NULL;
+					CleanupPlayerReplayManager();
 					return false;
 				}
 			}

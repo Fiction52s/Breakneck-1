@@ -596,7 +596,6 @@ void EditSession::TryTestPlayerMode()
 void EditSession::TestPlayerMode()
 {
 	assert(controlProfiles[0] != NULL);
-
 	if (mode != TEST_PLAYER)
 	{
 #ifdef GGPO_ON
@@ -646,7 +645,6 @@ void EditSession::TestPlayerMode()
 
 	scoreDisplay->Reset();
 
-
 	if (CONTROLLERS.KeyboardButtonHeld(Keyboard::LAlt))
 	{
 		debugReplayPlayerOn = true;
@@ -674,7 +672,6 @@ void EditSession::TestPlayerMode()
 
 	pokeTriangleScreenGroup->Reset();
 	
-
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (GetPlayer(i) != NULL)
@@ -865,8 +862,6 @@ void EditSession::TestPlayerMode()
 	
 	pauseFrames = 0;
 
-	
-
 	if (terrainTree != NULL)
 	{
 		terrainTree->Clear();
@@ -1049,8 +1044,6 @@ void EditSession::TestPlayerMode()
 			}
 		}
 	}
-
-	
 
 	/*for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -4174,6 +4167,7 @@ int EditSession::EditRun()
 	}
 
 
+	gameModeType = -1;
 	SetGameMode(MatchParams::GAME_MODE_BASIC);
 	//int gm = mapHeader->gameMode;
 	//mapHeader->gameMode = -1;
@@ -15580,6 +15574,7 @@ void EditSession::SetupControlsModeUpdate()
 	{
 		controlProfiles[0] = playerInputBoxGroup->GetControlProfile(0);
 		controllerStates[0] = playerInputBoxGroup->GetControllerStates(0);
+		//cout << "start pressed. testing" << endl;
 		TestPlayerMode();
 	}
 	else
