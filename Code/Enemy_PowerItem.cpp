@@ -454,8 +454,8 @@ PowerPopup::PowerPopup()
 	effectRel = Vector2f(20, 20);
 	powerRel = Vector2f(100, 20);
 
-	Tileset *ts_bg = sess->GetTileset("Menu/GetShard/getshardbg.png", 0, 0);
-	bgSpr.setTexture(*ts_bg->texture);
+	//Tileset *ts_bg = sess->GetTileset("Menu/GetShard/getshardbg.png", 0, 0);
+	//bgSpr.setTexture(*ts_bg->texture);
 }
 
 void PowerPopup::Reset()
@@ -471,7 +471,7 @@ void PowerPopup::Update()
 
 void PowerPopup::Draw(RenderTarget *target)
 {
-	target->draw(bgSpr);
+	//target->draw(bgSpr);
 	//target->draw(powerSpr);
 	target->draw(effectSpr);
 	target->draw(desc);

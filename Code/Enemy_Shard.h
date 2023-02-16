@@ -28,15 +28,20 @@ struct ShardPopup
 	void SetShard(int w, int li);
 	void SetDescription(const std::string &desc);
 	void Draw(sf::RenderTarget *target);
-	sf::Text desc;
+
 	sf::Sprite shardSpr;
-	sf::Sprite effectSpr;
-	sf::Sprite bgSpr;
+	
+	sf::Vertex bgQuad[4];
+
+	sf::Text nameText;
+	sf::Text descText;
 
 	sf::Vector2f topLeft;
 	sf::Vector2f descRel;
-	sf::Vector2f effectRel;
 	sf::Vector2f shardRel;
+
+	float width;
+	float height;
 
 	Session *sess;
 	int w;

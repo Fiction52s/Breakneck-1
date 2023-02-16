@@ -2,9 +2,12 @@
 #include "Input.h"
 #include <iostream>
 #include "CustomCursor.h"
+#include <assert.h>
 
 using namespace sf;
 using namespace std;
+
+const float UIMouse::stickDeadZone = .1;
 
 UIMouse::UIMouse()
 {
@@ -60,7 +63,7 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 				if (currStates != NULL)
 				{
 					mag = currStates->GetCurrState().leftStickMagnitude;
-					if (mag > 0)
+					if (mag > stickDeadZone)
 					{
 						nonNeutralStates = currStates;
 						break;
@@ -75,37 +78,16 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 		}
 		else
 		{
+			//we already know its out of the deadzone because of the previous calculation
 			ControllerState currState = nonNeutralStates->GetCurrState();
-			if (currState.leftStickMagnitude > .1)
-			{
-				float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
-				float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
-				float maxSpeed = 20;
-				sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
 
-				//cout << "old mypos: " << myPos.x << ", " << myPos.y << endl;
-				myPos += movement;
-			}
-			else
-			{
-				if (currState.LLeft())
-				{
-					myPos.x -= 10;
-				}
-				else if (currState.LRight())
-				{
-					myPos.x += 10;
-				}
+			float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
+			float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
+			float maxSpeed = 20;
+			sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
 
-				if (currState.LUp())
-				{
-					myPos.y -= 10;
-				}
-				else if (currState.LDown())
-				{
-					myPos.y += 10;
-				}
-			}
+			//cout << "old mypos: " << myPos.x << ", " << myPos.y << endl;
+			myPos += movement;
 
 			Vector2f pos(myPos);
 			//turn back into screen coords

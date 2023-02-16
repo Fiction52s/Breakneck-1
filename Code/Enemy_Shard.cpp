@@ -455,21 +455,29 @@ void Shard::DrawMinimap( sf::RenderTarget *target )
 
 ShardPopup::ShardPopup()
 {
+	//563 x 186
 	sess = Session::GetSession();
 
 	w = -1;
 	li = -1;
 
-	desc.setCharacterSize(20);
-	desc.setFillColor(Color::White);
-	desc.setFont(sess->mainMenu->arial);
+	descText.setCharacterSize(20);
+	descText.setFillColor(Color::White);
+	descText.setFont(sess->mainMenu->arial);
+
+	nameText.setCharacterSize(30);
+	nameText.setFillColor(Color::White);
+	nameText.setFont(sess->mainMenu->arial);
+
+	SetRectColor(bgQuad, Color(0, 0, 0, 200));
+	width = 800;
+	height = 200;
 
 	descRel = Vector2f(10, 10);
-	effectRel = Vector2f(20, 20);
-	shardRel = Vector2f(100, 20);
 
-	Tileset *ts_bg = sess->GetTileset("Menu/GetShard/getshardbg.png", 0, 0 );
-	bgSpr.setTexture(*ts_bg->texture);
+	int nameHeight = nameText.getFont()->getLineSpacing(nameText.getCharacterSize());
+
+	shardRel = Vector2f(10, nameHeight + 10);
 }
 
 void ShardPopup::Reset()
@@ -483,14 +491,6 @@ void ShardPopup::Update()
 	++frame;
 }
 
-void ShardPopup::Draw(RenderTarget *target)
-{
-	target->draw(bgSpr);
-	//target->draw(shardSpr);
-	target->draw(effectSpr);
-	target->draw(desc);
-}
-
 void ShardPopup::SetShard(int p_w, int p_li)
 {
 	w = p_w;
@@ -500,26 +500,44 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	shardSpr.setTexture(*ts_shard->texture);
 	shardSpr.setTextureRect(ts_shard->GetSubRect(li));
 
-	effectSpr.setTexture(*shardSpr.getTexture());
-	effectSpr.setTextureRect(shardSpr.getTextureRect());
+	string nameStr = sess->shardMenu->GetShardName(w, li);
+	nameText.setString(nameStr);
+	auto lb = nameText.getLocalBounds();
+	nameText.setOrigin(lb.left + lb.width / 2, 0);
 
-	string test = sess->shardMenu->GetShardDesc(w, li);
-	desc.setString(test);
+	string descStr = sess->shardMenu->GetShardDesc(w, li);
+	descText.setString(descStr);
 }
 
 void ShardPopup::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
 	shardSpr.setPosition(topLeft + shardRel);
-	effectSpr.setPosition(topLeft + effectRel);
-	desc.setPosition(topLeft + descRel);
-	bgSpr.setPosition(topLeft);
+
+	Vector2f center = topLeft + Vector2f(width / 2, height / 2);
+	
+	nameText.setPosition(center.x, topLeft.y);
+
+	int nameHeight = nameText.getFont()->getLineSpacing(nameText.getCharacterSize());
+	float shardRight = shardSpr.getGlobalBounds().left + shardSpr.getGlobalBounds().width;
+
+	descText.setPosition(topLeft + Vector2f(shardRight + 10, nameHeight + 10 ));
+
+	
+
+	SetRectTopLeft(bgQuad, width, height, topLeft);
+	//bgSpr.setPosition(topLeft);
 }
 
 void ShardPopup::SetCenter(sf::Vector2f &pos)
 {
-	float width = bgSpr.getLocalBounds().width;
-	float height = bgSpr.getLocalBounds().height;
-
 	SetTopLeft(Vector2f( pos.x - width / 2, pos.y - height / 2));
+}
+
+void ShardPopup::Draw(RenderTarget *target)
+{
+	target->draw(bgQuad, 4, sf::Quads);
+	//target->draw(shardSpr);
+	target->draw(nameText);
+	target->draw(descText);
 }

@@ -53,6 +53,8 @@ private:
 	bool consumed;
 	bool controllersOn;
 
+	const static float stickDeadZone;
+
 	sf::RenderWindow *currWindow;
 	CustomCursor *customCursor;
 
