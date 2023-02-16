@@ -89,7 +89,7 @@ Tiger::Tiger(ActorParams *ap)
 	launchers[0] = new Launcher(this,
 		BasicBullet::LIZARD, 32, 1, GetPosition(), V2d(0, -1), 0, 180, true);
 	launchers[0]->SetBulletSpeed(10);
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;

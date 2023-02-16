@@ -55,7 +55,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 4;
@@ -78,7 +78,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, 32, 1, GetPosition(), V2d( 0,-1), 
 		0, 90, false, 30, 50 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);

@@ -91,7 +91,7 @@ CoyoteBullet::CoyoteBullet(sf::Vertex *myQuad, CoyoteBulletPool *pool)
 	
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

@@ -351,6 +351,7 @@ struct Actor : QuadTreeCollider,
 		GROUNDTECHINPLACE,
 		WALLTECH,
 		WATERGLIDE,
+		WATERGLIDE_HITSTUN,
 		STEEPSLIDE,
 		GRAVREVERSE,
 		GRINDBALL,
@@ -780,7 +781,6 @@ struct Actor : QuadTreeCollider,
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
 	Edge *grindEdge;
-	double grindQuantity;
 	double grindSpeed;
 
 	int slowMultiple;
@@ -840,7 +840,6 @@ struct Actor : QuadTreeCollider,
 	V2d oldBounceNorm;
 	Edge *bounceEdge;
 	double storedBounceGroundSpeed;
-	double bounceQuant;
 	Edge *oldBounceEdge;
 	int framesSinceBounce;
 	bool groundedWallBounce;
@@ -1520,6 +1519,8 @@ struct Actor : QuadTreeCollider,
 	void UpdateSprite();
 	void ConfirmEnemyNoKill( Enemy *e );
 	void ConfirmHit(Enemy * e);
+	bool IsHitstunAction(int a);
+	bool IsAirHitstunAction(int a);
 	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -3338,6 +3339,17 @@ struct Actor : QuadTreeCollider,
 	void WATERGLIDE_TimeDepFrameInc();
 	int WATERGLIDE_GetActionLength();
 	Tileset * WATERGLIDE_GetTileset();
+
+	void WATERGLIDE_HITSTUN_Start();
+	void WATERGLIDE_HITSTUN_End();
+	void WATERGLIDE_HITSTUN_Change();
+	void WATERGLIDE_HITSTUN_Update();
+	void WATERGLIDE_HITSTUN_UpdateSprite();
+	void WATERGLIDE_HITSTUN_TransitionToAction(int a);
+	void WATERGLIDE_HITSTUN_TimeIndFrameInc();
+	void WATERGLIDE_HITSTUN_TimeDepFrameInc();
+	int WATERGLIDE_HITSTUN_GetActionLength();
+	Tileset * WATERGLIDE_HITSTUN_GetTileset();
 
 	void WIREHOLD_Start();
 	void WIREHOLD_End();

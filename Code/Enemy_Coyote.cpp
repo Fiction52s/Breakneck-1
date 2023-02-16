@@ -90,12 +90,12 @@ Coyote::Coyote(ActorParams *ap)
 	SetNumLaunchers(2);
 	launchers[0] = new Launcher(this, BasicBullet::OWL, 16, 3, GetPosition(), V2d(1, 0), PI / 12, 300);
 	launchers[0]->SetBulletSpeed(10);
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->Reset();
 
 	launchers[1] = new Launcher(this, BasicBullet::OWL, 6*6, 6, GetPosition(), V2d(1, 0), PI / 3, 300);
 	launchers[1]->SetBulletSpeed(15);
-	launchers[1]->hitboxInfo->damage = 18;
+	launchers[1]->hitboxInfo->damage = 60;
 	launchers[1]->Reset();
 
 	patternPreview.setFillColor(Color::Magenta);

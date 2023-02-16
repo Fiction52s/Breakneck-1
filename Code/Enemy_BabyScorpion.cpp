@@ -29,7 +29,7 @@ BabyScorpion::BabyScorpion(ActorParams *ap)
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
@@ -44,7 +44,7 @@ BabyScorpion::BabyScorpion(ActorParams *ap)
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::OWL, 16, 1, GetPosition(), V2d(1, 0),0/* PI / 12*/, 300);
 	launchers[0]->SetBulletSpeed(10);
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->Reset();
 
 	stopStartPool = NULL;

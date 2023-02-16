@@ -75,7 +75,6 @@ void PState::Print()
 	cout << "framesSinceGrindAttempt: " << framesSinceGrindAttempt << "\n";
 	cout << "maxFramesSinceGrindAttempt: " << maxFramesSinceGrindAttempt << "\n";
 	cout << "grindEdge: " << grindEdge << "\n";
-	cout << "grindQuantity: " << grindQuantity << "\n";
 	cout << "grindSpeed: " << grindSpeed << "\n";
 	cout << "slowMultiple: " << slowMultiple << "\n";
 	cout << "slowCounter: " << slowCounter << "\n";

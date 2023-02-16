@@ -49,7 +49,7 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	//shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 4;

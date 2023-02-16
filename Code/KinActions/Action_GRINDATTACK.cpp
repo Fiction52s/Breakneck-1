@@ -64,7 +64,6 @@ void Actor::GRINDATTACK_Change()
 				framesNotGrinding = 0;
 				RestoreAirOptions();
 				ground = grindEdge;
-				edgeQuantity = grindQuantity;
 				SetAction(LAND);
 				frame = 0;
 				groundSpeed = grindSpeed;
@@ -177,7 +176,6 @@ void Actor::GRINDATTACK_Change()
 
 					ground = grindEdge;
 					groundSpeed = -grindSpeed;
-					edgeQuantity = grindQuantity;
 					grindEdge = NULL;
 					reversed = true;
 

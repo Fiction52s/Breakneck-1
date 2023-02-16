@@ -69,7 +69,6 @@ void Actor::GRINDBALL_Change()
 				if (!j)
 				{
 					ground = grindEdge;
-					edgeQuantity = grindQuantity;
 					SetAction(LAND);
 					frame = 0;
 					groundSpeed = grindSpeed;
@@ -94,7 +93,6 @@ void Actor::GRINDBALL_Change()
 				else
 				{
 					ground = grindEdge;
-					edgeQuantity = grindQuantity;
 					groundSpeed = grindSpeed;
 					SetAction(JUMPSQUAT);
 					frame = 0;
@@ -182,7 +180,6 @@ void Actor::GRINDBALL_Change()
 
 					ground = grindEdge;
 					groundSpeed = -grindSpeed;
-					edgeQuantity = grindQuantity;
 					reversed = true;
 					grindEdge = NULL;
 
@@ -490,7 +487,7 @@ void Actor::GRINDBALL_UpdateSprite()
 	V2d oldv0 = grindEdge->v0;
 	V2d oldv1 = grindEdge->v1;
 
-	V2d grindPoint = grindEdge->GetPosition(grindQuantity);
+	V2d grindPoint = grindEdge->GetPosition(edgeQuantity);
 	V2d pp = grindPoint + grindNorm * 20.0;
 
 	sprite->setPosition(pp.x, pp.y);

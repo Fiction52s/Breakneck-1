@@ -69,7 +69,7 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, GetPosition(), V2d(1, 0), 0, 200, false);
 	launchers[0]->SetBulletSpeed(5);//70);
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hitstunFrames = 10;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::BLUE;
 

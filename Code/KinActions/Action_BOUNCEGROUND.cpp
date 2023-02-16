@@ -290,7 +290,6 @@ void Actor::BOUNCEGROUND_Change()
 		{
 			V2d alongVel = V2d(-bn.y, bn.x);
 			ground = bounceEdge;
-			edgeQuantity = bounceQuant;
 			bounceEdge = NULL;
 
 			if (bn.y > -steepThresh)
@@ -378,7 +377,7 @@ void Actor::BOUNCEGROUND_Update()
 		boostBounce = true;
 
 
-		V2d bouncePos = bounceEdge->GetPosition(bounceQuant);
+		V2d bouncePos = bounceEdge->GetPosition(edgeQuantity);
 		V2d bn = bounceEdge->Normal();
 		double angle = atan2(bn.x, -bn.y);
 		bouncePos += bn * 80.0;

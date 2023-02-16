@@ -86,7 +86,7 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, 16, 1, launchPos, gn, 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::BLUE;
 
 	cutObject->Setup(ts, 12, 11, scale, 0);

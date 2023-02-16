@@ -69,7 +69,6 @@ void Actor::SPRINGSTUNGRIND_Change()
 					springStunFrames = 0;
 
 					ground = grindEdge;
-					edgeQuantity = grindQuantity;
 					SetAction(LAND);
 					frame = 0;
 					groundSpeed = grindSpeed;
@@ -96,7 +95,6 @@ void Actor::SPRINGSTUNGRIND_Change()
 					springStunFrames = 0;
 
 					ground = grindEdge;
-					edgeQuantity = grindQuantity;
 					groundSpeed = grindSpeed;
 					SetAction(JUMPSQUAT);
 					frame = 0;
@@ -188,7 +186,6 @@ void Actor::SPRINGSTUNGRIND_Change()
 
 					ground = grindEdge;
 					groundSpeed = -grindSpeed;
-					edgeQuantity = grindQuantity;
 					reversed = true;
 					grindEdge = NULL;
 
@@ -455,7 +452,7 @@ void Actor::SPRINGSTUNGRIND_UpdateSprite()
 	V2d oldv0 = grindEdge->v0;
 	V2d oldv1 = grindEdge->v1;
 
-	V2d pp = grindEdge->GetPosition(grindQuantity);
+	V2d pp = grindEdge->GetPosition(edgeQuantity);
 
 	sprite->setPosition(pp.x, pp.y);
 

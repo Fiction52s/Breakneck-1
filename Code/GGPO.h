@@ -193,7 +193,6 @@ struct PState
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
 	Edge *grindEdge;
-	double grindQuantity;
 	double grindSpeed;
 
 	int slowMultiple;
@@ -237,7 +236,6 @@ struct PState
 	sf::Vector2<double> oldBounceNorm;
 	Edge *bounceEdge;
 	double storedBounceGroundSpeed;
-	double bounceQuant;
 	Edge *oldBounceEdge;
 	int framesSinceBounce;
 	bool groundedWallBounce;

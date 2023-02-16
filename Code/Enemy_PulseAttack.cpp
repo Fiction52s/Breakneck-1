@@ -97,7 +97,7 @@ PulseAttack::PulseAttack(PulseAttackPool *pool)
 	//maxRadius = 200;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

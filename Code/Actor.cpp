@@ -209,7 +209,6 @@ void Actor::PopulateState(PState *ps)
 	ps->framesSinceGrindAttempt = framesSinceGrindAttempt;
 	ps->maxFramesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	ps->grindEdge = grindEdge;
-	ps->grindQuantity = grindQuantity;
 	ps->grindSpeed = grindSpeed;
 
 	ps->slowMultiple = slowMultiple;
@@ -266,7 +265,6 @@ void Actor::PopulateState(PState *ps)
 	ps->oldBounceNorm = oldBounceNorm;
 	ps->bounceEdge = bounceEdge;
 	ps->storedBounceGroundSpeed = storedBounceGroundSpeed;
-	ps->bounceQuant = bounceQuant;
 	ps->oldBounceEdge = oldBounceEdge;
 	ps->framesSinceBounce = framesSinceBounce;
 	ps->groundedWallBounce = groundedWallBounce;
@@ -459,7 +457,6 @@ void Actor::PopulateFromState(PState *ps)
 	framesSinceGrindAttempt = ps->framesSinceGrindAttempt;
 	maxFramesSinceGrindAttempt = ps->maxFramesSinceGrindAttempt;
 	grindEdge = ps->grindEdge;
-	grindQuantity = ps->grindQuantity;
 	grindSpeed = ps->grindSpeed;
 
 	slowMultiple = ps->slowMultiple;
@@ -516,7 +513,6 @@ void Actor::PopulateFromState(PState *ps)
 	oldBounceNorm = ps->oldBounceNorm;
 	bounceEdge = ps->bounceEdge;
 	storedBounceGroundSpeed = ps->storedBounceGroundSpeed;
-	bounceQuant = ps->bounceQuant;
 	oldBounceEdge = ps->oldBounceEdge;
 	framesSinceBounce = ps->framesSinceBounce;
 	groundedWallBounce = ps->groundedWallBounce;
@@ -948,7 +944,7 @@ void Actor::SetupFXTilesets()
 	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_BOUNCE_BOOST].Set(sess->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_BOUNCE_BOOST].Set(sess->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false );
 	effectPools[PLAYERFX_HURT_SPACK].Set(sess->GetSizedTileset(folder, "fx_hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
 
 	effectPools[PLAYERFX_DASH_START].Set(sess->GetSizedTileset(folder, "fx_dash_start_160x160.png"), EffectType::FX_REGULAR, 20);
@@ -2970,6 +2966,18 @@ void Actor::SetupActionFunctions()
 		&Actor::WATERGLIDE_GetActionLength,
 		&Actor::WATERGLIDE_GetTileset);
 
+	SetupFuncsForAction(WATERGLIDE_HITSTUN,
+		&Actor::WATERGLIDE_HITSTUN_Start,
+		&Actor::WATERGLIDE_HITSTUN_End,
+		&Actor::WATERGLIDE_HITSTUN_Change,
+		&Actor::WATERGLIDE_HITSTUN_Update,
+		&Actor::WATERGLIDE_HITSTUN_UpdateSprite,
+		&Actor::WATERGLIDE_HITSTUN_TransitionToAction,
+		&Actor::WATERGLIDE_HITSTUN_TimeIndFrameInc,
+		&Actor::WATERGLIDE_HITSTUN_TimeDepFrameInc,
+		&Actor::WATERGLIDE_HITSTUN_GetActionLength,
+		&Actor::WATERGLIDE_HITSTUN_GetTileset);
+
 	SetupFuncsForAction(WIREHOLD,
 		&Actor::WIREHOLD_Start,
 		&Actor::WIREHOLD_End,
@@ -4750,7 +4758,6 @@ void Actor::Respawn( bool setStartPos )
 	framesSinceClimbBoost = 0;
 	groundSpeed = 0;
 	collision = false;
-	grindQuantity = 0;
 	grindSpeed = 0;
 	bounceGrounded = false;
 	touchEdgeWithLeftWire = false;
@@ -5157,7 +5164,7 @@ void Actor::ProcessReceivedHit()
 
 void Actor::ReactToBeingHit()
 {
-	if (action == GROUNDHITSTUN || action == AIRHITSTUN)
+	if (IsHitstunAction( action ))
 	{
 		hitOutOfHitstunLastFrame = true;
 	}
@@ -5365,7 +5372,6 @@ void Actor::ReactToBeingHit()
 		else if (ground == NULL || onRail)
 		{
 			HitWhileAerial();
-
 		}
 		else
 		{
@@ -9662,7 +9668,6 @@ bool Actor::ExitGrind(bool jump)
 			if (!jump)
 			{
 				ground = grindEdge;
-				edgeQuantity = grindQuantity;
 				SetAction(LAND);
 				frame = 0;
 				groundSpeed = grindSpeed;
@@ -9687,7 +9692,6 @@ bool Actor::ExitGrind(bool jump)
 			else
 			{
 				ground = grindEdge;
-				edgeQuantity = grindQuantity;
 				groundSpeed = grindSpeed;
 				SetAction(JUMPSQUAT);
 				frame = 0;
@@ -9775,7 +9779,6 @@ bool Actor::ExitGrind(bool jump)
 
 				ground = grindEdge;
 				groundSpeed = -grindSpeed;
-				edgeQuantity = grindQuantity;
 				reversed = true;
 				grindEdge = NULL;
 
@@ -11018,7 +11021,6 @@ void Actor::StopGrind()
 
 				ground = grindEdge;
 				groundSpeed = -grindSpeed;
-				edgeQuantity = grindQuantity;
 				reversed = true;
 				grindEdge = NULL;
 
@@ -11082,7 +11084,7 @@ void Actor::UpdateGrindPhysics(double movement)
 		e1n = e1->Normal();
 	}
 
-	double q = grindQuantity;
+	double q = edgeQuantity;
 	double hitBorderSpeed = GetDashSpeed() / 2;
 
 	while (!approxEquals(movement, 0))
@@ -11259,7 +11261,7 @@ void Actor::UpdateGrindPhysics(double movement)
 			}
 		}
 	}
-	grindQuantity = q;
+	edgeQuantity = q;
 
 	PhysicsResponse();
 }
@@ -11368,7 +11370,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 	//V2d e0n = e0->Normal();
 	//V2d e1n = e1->Normal();
 
-	double q = grindQuantity;
+	double q = edgeQuantity;
 	while (!approxEquals(movement, 0))
 	{
 		//cout << "movement: " << movement << endl;
@@ -11477,7 +11479,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 
 	if (IsOnRailAction(action))
 	{
-		grindQuantity = q;
+		edgeQuantity = q;
 
 		PhysicsResponse();
 		return true;
@@ -12705,7 +12707,7 @@ void Actor::UpdatePhysics()
 			{
 				velocity = newVel;
 			}
-			else if (tempCollision && action == WATERGLIDE)
+			else if (tempCollision && ( action == WATERGLIDE || action == WATERGLIDE_HITSTUN ))
 			{
 				velocity = newVel;
 			}
@@ -12766,7 +12768,7 @@ void Actor::UpdatePhysics()
 
 				bounceEdge = minContact.edge;
 				bounceNorm = minContact.normal;
-				bounceQuant = bounceEdge->GetQuantity(minContact.position);
+				edgeQuantity = bounceEdge->GetQuantity(minContact.position);
 
 				framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
@@ -12857,7 +12859,7 @@ void Actor::UpdatePhysics()
 					V2d oldv0 = bounceEdge->v0;
 					V2d oldv1 = bounceEdge->v1;
 
-					bounceQuant = bounceEdge->GetQuantity( minContact.position );
+					edgeQuantity = bounceEdge->GetQuantity( minContact.position );
 
 					offsetX = ( position.x + b.offset.x ) - minContact.position.x;
 
@@ -13067,7 +13069,7 @@ void Actor::UpdatePhysics()
 			}
 			else if(( HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] )
 				&& tempCollision
-				&& action != AIRHITSTUN && action != GROUNDHITSTUN
+				&& !IsHitstunAction(action)
 				&& !touchedGrass[Grass::ANTIGRAVREVERSE]
 				&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE])|| (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 				&& minContact.normal.y > 0 
@@ -13555,7 +13557,6 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 
 	ground = grindEdge;
 	groundSpeed = -grindSpeed;
-	edgeQuantity = grindQuantity;
 	grindEdge = NULL;
 	reversed = true;
 
@@ -13715,7 +13716,6 @@ void Actor::HitOutOfGrind()
 	framesNotGrinding = 0;
 	RestoreAirOptions();
 	ground = grindEdge;
-	edgeQuantity = grindQuantity;
 	groundSpeed = grindSpeed;
 
 	hurtBody.isCircle = false;
@@ -13820,8 +13820,21 @@ void Actor::HitWhileAerial()
 	if (TryHandleHitWhileRewindBoosted())
 		return;
 
-	SetAction(AIRHITSTUN);
+	if (action == WATERGLIDE)
+	{
+		SetAction(WATERGLIDE_HITSTUN);
+	}
+	else
+	{
+		SetAction(AIRHITSTUN);
+	}
+	
 	frame = 0;
+
+	ground = NULL;
+	grindEdge = NULL;
+	bounceEdge = NULL;
+
 
 	velocity = CalcKnockback(&receivedHit);
 }
@@ -14048,7 +14061,7 @@ void Actor::PhysicsResponse()
 		V2d oldv1 = grindEdge->v1;
 
 
-		V2d grindPoint = grindEdge->GetPosition( grindQuantity );
+		V2d grindPoint = grindEdge->GetPosition( edgeQuantity );
 
 		position = grindPoint;
 	}
@@ -14105,7 +14118,6 @@ void Actor::PhysicsResponse()
 					frame = 0;
 					//bounceEdge = NULL;
 					ground = bounceEdge;
-					edgeQuantity = bounceQuant;
 					bounceEdge = NULL;
 					//oldBounceEdge = NULL;
 				}
@@ -14119,7 +14131,7 @@ void Actor::PhysicsResponse()
 					V2d oldv1 = bounceEdge->v1;
 
 					
-					position = bounceEdge->GetPosition( bounceQuant );
+					position = bounceEdge->GetPosition( edgeQuantity );
 
 				}
 				else
@@ -14128,7 +14140,7 @@ void Actor::PhysicsResponse()
 					V2d oldv1 = ground->v1;
 
 
-					position = ground->GetPosition( bounceQuant );
+					position = ground->GetPosition(edgeQuantity);
 				}
 		
 				position.x += offsetX + b.offset.x;
@@ -14217,11 +14229,11 @@ void Actor::PhysicsResponse()
 					
 					//frame = 0;
 				}
-				else if (action != GROUNDHITSTUN && action != AIRHITSTUN && action != LAND2 && action != LAND
+				else if (!IsHitstunAction(action) && action != LAND2 && action != LAND
 					&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 					&& action != SEQ_CRAWLERFIGHT_LAND
 					&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
-					&& action != JUMPSQUAT && action != WATERGLIDE)
+					&& action != JUMPSQUAT && action != WATERGLIDE )
 				{
 					if (currInput.LLeft() || currInput.LRight())
 					{
@@ -14347,7 +14359,8 @@ void Actor::PhysicsResponse()
 				}
 			}
 		}
-		else if( action != AIRHITSTUN && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE && action != FREEFLIGHTSTUN )
+		else if( !IsAirHitstunAction(action) && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE
+			&& action != FREEFLIGHTSTUN )
 		{
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
@@ -14422,7 +14435,7 @@ void Actor::PhysicsResponse()
 				holdJump = false;
 			}
 		}
-		else if (action != AIRHITSTUN && action != WALLATTACK && action != AIRDASH)
+		else if (!IsAirHitstunAction(action) && action != WALLATTACK && action != AIRDASH)
 		{
 			if (collision)
 			{
@@ -14435,7 +14448,7 @@ void Actor::PhysicsResponse()
 
 		if (collision && minContact.normal.y > 0 && !reversed && action != WALLCLING 
 			&& rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING
-			&& action != SEQ_KINFALL && action != WATERGLIDE && action != SPRINGSTUNGLIDE
+			&& action != SEQ_KINFALL && action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != SPRINGSTUNGLIDE
 			&& action != FREEFLIGHT && action != FREEFLIGHTSTUN
 			&& !InWater( TerrainPolygon::WATER_BUOYANCY))
 			//&& hitCeilingCounter == 0 )
@@ -14656,7 +14669,7 @@ void Actor::UpdateHitboxes()
 			V2d pos = position;
 			if( grindEdge != NULL )
 			{
-				pos = grindEdge->GetPosition( grindQuantity );// + gn * (double)(b.rh);// + hurtBody.rh );
+				pos = grindEdge->GetPosition( edgeQuantity );// + gn * (double)(b.rh);// + hurtBody.rh );
 			}
 			else if( ground != NULL )
 			{
@@ -14708,7 +14721,7 @@ void Actor::UpdateHitboxes()
 	
 	if( grindEdge != NULL )
 	{
-		hurtBody.globalPosition = grindEdge->GetPosition( grindQuantity );// + gn * (double)(b.rh);// + hurtBody.rh );
+		hurtBody.globalPosition = grindEdge->GetPosition( edgeQuantity );// + gn * (double)(b.rh);// + hurtBody.rh );
 		hurtBody.globalAngle = angle;
 	}
 	else if( ground != NULL )
@@ -14968,7 +14981,7 @@ void Actor::HandleWaterSituation(int wType,
 			//if i add glide attack, adjust this
 			//this makes sure that you don't
 			//get hit and then hitstun cancels the glide.
-			if (action != WATERGLIDE)
+			if (action != WATERGLIDE && action != WATERGLIDE_HITSTUN)
 			{
 				SetAction(WATERGLIDE);
 			}
@@ -15210,7 +15223,7 @@ void Actor::HandleWaterSituation(int wType,
 
 			if (grindEdge != NULL )
 			{
-				waterEntranceQuantity = grindQuantity;
+				waterEntranceQuantity = edgeQuantity;
 			}
 			if (ground != NULL)
 			{
@@ -16302,7 +16315,7 @@ sf::Vector2<double> Actor::AddAerialGravity( sf::Vector2<double> vel )
 		normalGravity *= wallClimbGravityFactor;
 	}
 
-	if (action == AIRHITSTUN)
+	if (IsAirHitstunAction(action))
 	{
 		normalGravity = gravity * hitstunGravMultiplier / slowMultiple;
 	}
@@ -17786,7 +17799,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				if (!li.parallel)
 				{
 					V2d p = li.position;
-					grindQuantity = grindEdge->GetQuantity(p);
+					edgeQuantity = grindEdge->GetQuantity(p);
 				}
 				else
 				{
@@ -19270,6 +19283,16 @@ void Actor::ConfirmHit( Enemy *e )
 	}*/
 }
 
+bool Actor::IsHitstunAction(int a)
+{
+	return IsAirHitstunAction(a) || a == GROUNDHITSTUN;
+}
+
+bool Actor::IsAirHitstunAction(int a)
+{
+	return a == AIRHITSTUN || a == WATERGLIDE_HITSTUN;
+}
+
 //void Actor::ConfirmWireHit( bool right )
 //{
 //
@@ -20271,7 +20294,6 @@ void Actor::SetActionGrind()
 	
 	grindEdge = ground;
 	frame = 0;
-	grindQuantity = edgeQuantity;
 
 
 	if (grindHitboxes[0] != NULL)

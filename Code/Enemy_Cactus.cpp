@@ -56,7 +56,7 @@ Cactus::Cactus( ActorParams *ap )
 	animFactor[ACTIVE] = 1;
 	
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
@@ -299,7 +299,7 @@ CactusShotgun::CactusShotgun(Cactus *p, ObjectPool *pool, int poolIndex )
 	double height = 64;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
@@ -322,7 +322,7 @@ CactusShotgun::CactusShotgun(Cactus *p, ObjectPool *pool, int poolIndex )
 			3, 3, GetPosition(), V2d(t.transformPoint(dir)),
 			PI / 6.0, 90, false);
 		launchers[i]->SetBulletSpeed(bulletSpeed);
-		launchers[i]->hitboxInfo->damage = 18;
+		launchers[i]->hitboxInfo->damage = 60;
 		t.rotate(90);
 	}
 

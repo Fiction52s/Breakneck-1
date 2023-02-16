@@ -37,7 +37,7 @@ Bat::Bat( ActorParams *ap )
 	launchers[0] = new Launcher( this, BasicBullet::BAT, 16, 1, GetPosition(), 
 		V2d( 1, 0 ), 0, 120, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::GREEN;
 
 	int pSize = pathFollower.path.size();

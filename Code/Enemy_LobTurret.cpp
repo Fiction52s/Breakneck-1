@@ -79,7 +79,7 @@ LobTurret::LobTurret(ActorParams *ap)
 		BasicBullet::LOB_TURRET, 4, 1, GetPosition(), V2d(0, -1),
 		0, 180, true);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::GREEN;
 
 	V2d gravity(0, .3);

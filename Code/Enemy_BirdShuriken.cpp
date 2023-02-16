@@ -137,7 +137,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 16, 1, GetPosition(),
 		V2d(1, 0), 0, 120, false, 0, 0, ts_basicBullets );
 	launchers[0]->SetBulletSpeed(bulletSpeed);
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 	frame = 0;
 
 	ts = sess->GetSizedTileset("Bosses/Bird/bird_shuriken_256x256.png");
@@ -146,7 +146,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

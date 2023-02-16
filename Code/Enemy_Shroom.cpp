@@ -259,7 +259,7 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	sprite.setPosition(GetPositionF());	
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = .5;
 	hitboxInfo->drainY = .5;
 	hitboxInfo->hitlagFrames = 0;

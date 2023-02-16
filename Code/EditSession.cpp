@@ -579,7 +579,7 @@ void EditSession::TryTestPlayerMode()
 		TestNetplay();
 	}
 #else
-	if (playerInputBoxGroup->IsFull())
+	if (controlProfiles[0] != NULL )//playerInputBoxGroup->IsFull())
 	{
 		TestPlayerMode();
 	}
@@ -595,6 +595,8 @@ void EditSession::TryTestPlayerMode()
 
 void EditSession::TestPlayerMode()
 {
+	assert(controlProfiles[0] != NULL);
+
 	if (mode != TEST_PLAYER)
 	{
 #ifdef GGPO_ON

@@ -90,14 +90,14 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 2, GetPosition(),
 		V2d(1, 0), 2 * PI, 40, false, 0, 0, ts_basicBullets);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
-	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->damage = 60;
 
 	ts = GetSizedTileset("Bosses/Tiger/bosstiger_spinturret_80x80.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
