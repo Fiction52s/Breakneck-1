@@ -285,7 +285,7 @@ bool MapHeader::Load(std::ifstream &is)
 	if (ver1 >= 6)
 	{
 		getline(is, creatorName);
-		is.get();
+		//is.get();
 		//is >> creatorName;
 	}
 
@@ -305,6 +305,12 @@ bool MapHeader::Load(std::ifstream &is)
 	else
 	{
 		is >> creatorID;
+		/*string creatorIDStr;
+		is >> creatorIDStr;
+
+		creatorID = stoll(creatorIDStr);*/
+
+		//is >> creatorID;
 	}
 
 	if (ver1 >= 3)

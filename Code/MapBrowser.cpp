@@ -657,7 +657,9 @@ void MapBrowser::AddFile(const path &p_filePath)
 	mapNode->type = MapNode::FILE;
 	
 	mapNode->fileName = mapNode->filePath.filename().stem().string();
+	mapNode->folderPath = mapNode->filePath.parent_path().string();
 	mapNode->nodeName = mapNode->fileName;//mapNode->filePath.filename().stem().string();
+
 
 	if (ext == MAP_EXT)
 	{
