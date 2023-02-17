@@ -125,8 +125,23 @@ void TutorialBox::SetText(const std::string &str)
 	string s = str;
 	std::replace(s.begin(), s.end(), '\\', '\n');
 
-	std::vector<string> inputStrings = {  "JUMP", "DASH",
-	"ATTACK", "SHIELD", "LEFTWIRE", "RIGHTWIRE", "MAP", "PAUSE"};
+	std::vector<string> inputStrings = {  
+		"JUMP", 
+		"DASH",
+		"ATTACK", 
+		"SHIELD", 
+		"LEFTWIRE", 
+		"RIGHTWIRE", 
+		"PAUSE",
+		"LLEFT",
+		"LRIGHT"
+		"LRIGHT",
+		"LUP",
+		"LDOWN",
+		"RLEFT",
+		"RRIGHT",
+		"RUP",
+		"RDOWN"};
 
 	float buttonSize = charHeight;
 	//float rectBuffer = 30;

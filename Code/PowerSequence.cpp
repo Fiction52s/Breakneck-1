@@ -163,8 +163,8 @@ void GetPowerSequence::Reset()
 
 		assert(powerItem != NULL);
 
-		powerPop->SetPower(powerItem->powerIndex);
 		powerPop->SetCenter(Vector2f(960, 800));
+		powerPop->SetPower(powerItem->powerIndex);
 		powerPop->Reset();
 
 		emitter->SetPos(Vector2f(pPos));

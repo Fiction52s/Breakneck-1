@@ -6,7 +6,7 @@
 
 #include "MovingGeo.h"
 
-
+struct TutorialBox;
 struct EffectPool;
 struct TilesetManager;
 struct Session;
@@ -29,19 +29,25 @@ struct ShardPopup
 	void SetDescription(const std::string &desc);
 	void Draw(sf::RenderTarget *target);
 
+	TutorialBox *tutBox;
 	sf::Sprite shardSpr;
 	
-	sf::Vertex bgQuad[4];
-
-	sf::Text nameText;
-	sf::Text descText;
-
-	sf::Vector2f topLeft;
-	sf::Vector2f descRel;
-	sf::Vector2f shardRel;
-
+	float borderHeight;
+	float shardBorder;
 	float width;
 	float height;
+	float shardSize;
+	float nameHeight;
+
+	sf::Vertex bgQuad[4];
+	sf::Vertex topBorderQuad[4];
+	sf::Vertex shardBorderQuad[4];
+
+	sf::Text nameText;
+
+	sf::Vector2f topLeft;
+	sf::Vector2f descBorder;
+	sf::Vector2f shardRel;
 
 	Session *sess;
 	int w;

@@ -14,6 +14,7 @@
 #include "ShardSequence.h"
 
 #include "ParticleEffects.h"
+#include "TutorialBox.h"
 
 using namespace std;
 using namespace sf;
@@ -461,23 +462,37 @@ ShardPopup::ShardPopup()
 	w = -1;
 	li = -1;
 
-	descText.setCharacterSize(20);
-	descText.setFillColor(Color::White);
-	descText.setFont(sess->mainMenu->arial);
-
-	nameText.setCharacterSize(30);
-	nameText.setFillColor(Color::White);
+	nameText.setCharacterSize(50);
+	nameText.setFillColor(Color::Red);
 	nameText.setFont(sess->mainMenu->arial);
 
 	SetRectColor(bgQuad, Color(0, 0, 0, 200));
-	width = 800;
-	height = 200;
 
-	descRel = Vector2f(10, 10);
+	Color borderColor = Color(100, 100, 100, 100);
+	SetRectColor(topBorderQuad, borderColor);
+	SetRectColor(shardBorderQuad, borderColor);
+	
+	borderHeight = 2;
 
-	int nameHeight = nameText.getFont()->getLineSpacing(nameText.getCharacterSize());
+	width = 1400;
 
-	shardRel = Vector2f(10, nameHeight + 10);
+	shardBorder = 20;
+
+	descBorder = Vector2f(10, 10);
+
+	nameHeight = nameText.getFont()->getLineSpacing(nameText.getCharacterSize());
+
+	tutBox = new TutorialBox(40, Vector2f(0, 0), Color::Transparent, Color::White, 0);
+
+	float descLineHeight = tutBox->text.getFont()->getLineSpacing(tutBox->text.getCharacterSize());
+
+	float extraHeight = 10;
+
+	shardSize = 192;
+
+	height = nameHeight + borderHeight + descLineHeight * 4 + descBorder.y * 2 + extraHeight;
+
+	shardRel = Vector2f(shardBorder, nameHeight + borderHeight + shardBorder );
 }
 
 void ShardPopup::Reset()
@@ -499,6 +514,7 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	Tileset *ts_shard = Shard::GetShardTileset(w, sess);
 	shardSpr.setTexture(*ts_shard->texture);
 	shardSpr.setTextureRect(ts_shard->GetSubRect(li));
+	//shardSpr.setOrigin(shardSpr.getLocalBounds().width / 2, shardSpr.getLocalBounds().height / 2);
 
 	string nameStr = sess->shardMenu->GetShardName(w, li);
 	nameText.setString(nameStr);
@@ -506,27 +522,30 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	nameText.setOrigin(lb.left + lb.width / 2, 0);
 
 	string descStr = sess->shardMenu->GetShardDesc(w, li);
-	descText.setString(descStr);
+	tutBox->SetText(descStr);
 }
 
 void ShardPopup::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
+
+	SetRectTopLeft(bgQuad, width, height, topLeft);
+	SetRectTopLeft(topBorderQuad, width, borderHeight, topLeft + Vector2f(0, nameHeight));
+
 	shardSpr.setPosition(topLeft + shardRel);
+
+	float remaining = height - nameHeight;
+
+	float shardBorderLeft = shardBorder * 2 + shardSize;
+
+	SetRectTopLeft(shardBorderQuad, borderHeight, remaining, topLeft + Vector2f(shardBorderLeft, nameHeight + borderHeight));
+
 
 	Vector2f center = topLeft + Vector2f(width / 2, height / 2);
 	
 	nameText.setPosition(center.x, topLeft.y);
 
-	int nameHeight = nameText.getFont()->getLineSpacing(nameText.getCharacterSize());
-	float shardRight = shardSpr.getGlobalBounds().left + shardSpr.getGlobalBounds().width;
-
-	descText.setPosition(topLeft + Vector2f(shardRight + 10, nameHeight + 10 ));
-
-	
-
-	SetRectTopLeft(bgQuad, width, height, topLeft);
-	//bgSpr.setPosition(topLeft);
+	tutBox->SetTopLeft(topLeft + Vector2f(shardBorderLeft + borderHeight + descBorder.x, nameHeight + borderHeight + descBorder.y));
 }
 
 void ShardPopup::SetCenter(sf::Vector2f &pos)
@@ -537,7 +556,11 @@ void ShardPopup::SetCenter(sf::Vector2f &pos)
 void ShardPopup::Draw(RenderTarget *target)
 {
 	target->draw(bgQuad, 4, sf::Quads);
-	//target->draw(shardSpr);
+	target->draw(topBorderQuad, 4, sf::Quads);
+	target->draw(shardBorderQuad, 4, sf::Quads);
+
+	target->draw(shardSpr);
 	target->draw(nameText);
-	target->draw(descText);
+
+	tutBox->Draw(target);
 }

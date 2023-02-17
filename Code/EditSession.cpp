@@ -11324,11 +11324,12 @@ void EditSession::CleanupTestPlayerMode()
 		if (p != NULL)
 		{
 			p->StopRepeatingSound();
+			SetPlayerOptionField(i);
 		}
 	}
 
-	
-
+	//player option field needs to get reset before resetting enemies or it messes
+	//powers and shards if you exit during power popup or shard popup
 	ResetEnemies();
 
 	Enemy *curr = activeEnemyList;

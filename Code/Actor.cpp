@@ -4481,11 +4481,6 @@ void Actor::Respawn( bool setStartPos )
 		numFramesToLive = -1;
 	}
 
-	if (sess->IsParallelSession())
-	{
-		numFramesToLive = 99999;
-	}
-
 	prevInput.Clear();
 	currInput.Clear();
 	storedGroundSpeed = 0;

@@ -15,6 +15,7 @@
 #include "ParticleEffects.h"
 
 #include "Enemy_PowerItem.h"
+#include "TutorialBox.h"
 
 using namespace std;
 using namespace sf;
@@ -197,7 +198,6 @@ void PowerItem::ResetEnemy()
 			alreadyCollected = true;
 		}
 	}
-	
 	
 
 	SetCurrPosInfo(startPosInfo);
@@ -446,16 +446,40 @@ PowerPopup::PowerPopup()
 
 	powerIndex = -1;
 
-	desc.setCharacterSize(20);
-	desc.setFillColor(Color::White);
-	desc.setFont(sess->mainMenu->arial);
+	nameText.setCharacterSize(50);
+	nameText.setFillColor(Color::Red);
+	nameText.setFont(sess->mainMenu->arial);
 
-	descRel = Vector2f(10, 10);
-	effectRel = Vector2f(20, 20);
-	powerRel = Vector2f(100, 20);
+	SetRectColor(bgQuad, Color(0, 0, 0, 200));
 
-	//Tileset *ts_bg = sess->GetTileset("Menu/GetShard/getshardbg.png", 0, 0);
-	//bgSpr.setTexture(*ts_bg->texture);
+	Color borderColor = Color(100, 100, 100, 100);
+	SetRectColor(topBorderQuad, borderColor);
+	SetRectColor(powerBorderQuad, borderColor);
+
+	ts_powers = sess->GetSizedTileset("Enemies/poweritem_128x128.png");
+	powerSpr.setTexture(*ts_powers->texture);
+
+	borderHeight = 2;
+
+	width = 1400;
+
+	powerBorder = 20;
+
+	descBorder = Vector2f(10, 10);
+
+	nameHeight = nameText.getFont()->getLineSpacing(nameText.getCharacterSize());
+
+	tutBox = new TutorialBox(40, Vector2f(0, 0), Color::Transparent, Color::White, 0);
+
+	float descLineHeight = tutBox->text.getFont()->getLineSpacing(tutBox->text.getCharacterSize());
+
+	float extraHeight = 10;
+
+	powerSize = 128;
+
+	height = nameHeight + borderHeight + descLineHeight * 4 + descBorder.y * 2 + extraHeight;
+
+	powerRel = Vector2f(powerBorder, nameHeight + borderHeight + powerBorder);
 }
 
 void PowerPopup::Reset()
@@ -469,66 +493,91 @@ void PowerPopup::Update()
 	++frame;
 }
 
-void PowerPopup::Draw(RenderTarget *target)
+void PowerPopup::SetName(const std::string &name)
 {
-	//target->draw(bgSpr);
-	//target->draw(powerSpr);
-	target->draw(effectSpr);
-	target->draw(desc);
+	nameText.setString(name);
+	auto lb = nameText.getLocalBounds();
+	nameText.setOrigin(lb.left + lb.width / 2, 0);
 }
 
 void PowerPopup::SetPower(int index)
 {
 	powerIndex = index;
 
-
-
-	//Tileset *ts_shard = Shard::GetShardTileset(w, sess);
-	//shardSpr.setTexture(*ts_shard->texture);
-	//shardSpr.setTextureRect(ts_shard->GetSubRect(li));
-
-	//effectSpr.setTexture(*shardSpr.getTexture());
-	//effectSpr.setTextureRect(shardSpr.getTextureRect());
+	powerSpr.setTextureRect(ts_powers->GetSubRect(index));
 
 	switch (index)
 	{
 	case 0:
-		desc.setString("You unlocked airdash!\nHold dash in the air to dash in any of the 8 directions!");
+		SetName("Airdash");
+		tutBox->SetText("You unlocked Airdash!\n"
+			"-Hold DASH in the air to hover!\n"
+			"-Hold DASH and a direction to airdash in any of the 8 directions!");
 		break;
 	case 1:
-		desc.setString("You unlocked gravity cling!\nHold dash and up while touching a ceiling to reverse gravity and stick!");
+		SetName("Reverse Gravity Cling");
+		tutBox->SetText("You unlocked Reverse Gravity Cling!\n"
+			"-Hold DASH and up while touching a ceiling to reverse gravity and stick!");
 		break;
 	case 2:
-		desc.setString("You unlocked bounce scorpion!\nUse left c stick to change modes, and the shield button to toggle!");
+		SetName("Bounce Scorpion");
+		tutBox->SetText("You unlocked Bounce Scorpion!\n"
+			"Use RLEFT to change modes, and SHIELD to toggle!");
 		break;
 	case 3:
-		desc.setString("You unlocked grind!\nUse right c stick to change modes, and the shield button to move on any surface!");
+		SetName("Surface Grind");
+		tutBox->SetText("You unlocked Surface Grind!\n"
+			"Use RRIGHT to change modes, then hold SHIELD to move on any surface!");
 		break;
 	case 4:
-		desc.setString("You unlocked time slow bubbles!\nUse down c stick to change modes, and the shield button to slow down enemies and yourself!");
+		SetName("Time Slow Bubbles");
+		tutBox->SetText("You unlocked Time Slow Bubbles!\n"
+			"Use RDOWN to change modes, then press SHIELD to create time bubbles.\n"
+			"Enemies are slowed down while in the bubbles. Hold SHIELD to slow down yourself too!");
 		break;
 	case 5:
-		desc.setString("You unlocked double wires!\nUse the triggers to swing and move around anywhere!");
+		SetName("Double Wires");
+		tutBox->SetText("You unlocked Double Wires!\n"
+			"Use the triggers to swing and move around anywhere!");
 		break;
 	}
-
-	//string test = sess->mainMenu->pauseMenu->shardMenu->GetShardDesc(0, 0);
-	//desc.setString(test);
 }
 
 void PowerPopup::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
+
+	SetRectTopLeft(bgQuad, width, height, topLeft);
+	SetRectTopLeft(topBorderQuad, width, borderHeight, topLeft + Vector2f(0, nameHeight));
+
 	powerSpr.setPosition(topLeft + powerRel);
-	effectSpr.setPosition(topLeft + effectRel);
-	desc.setPosition(topLeft + descRel);
-	bgSpr.setPosition(topLeft);
+
+	float remaining = height - nameHeight;
+
+	float powerBorderLeft = powerBorder * 2 + powerSize;
+
+	SetRectTopLeft(powerBorderQuad, borderHeight, remaining, topLeft + Vector2f(powerBorderLeft, nameHeight + borderHeight));
+
+	Vector2f center = topLeft + Vector2f(width / 2, height / 2);
+
+	nameText.setPosition(center.x, topLeft.y);
+
+	tutBox->SetTopLeft(topLeft + Vector2f(powerBorderLeft + borderHeight + descBorder.x, nameHeight + borderHeight + descBorder.y));
 }
 
 void PowerPopup::SetCenter(sf::Vector2f &pos)
 {
-	float width = bgSpr.getLocalBounds().width;
-	float height = bgSpr.getLocalBounds().height;
-
 	SetTopLeft(Vector2f(pos.x - width / 2, pos.y - height / 2));
+}
+
+void PowerPopup::Draw(RenderTarget *target)
+{
+	target->draw(bgQuad, 4, sf::Quads);
+	target->draw(topBorderQuad, 4, sf::Quads);
+	target->draw(powerBorderQuad, 4, sf::Quads);
+
+	target->draw(powerSpr);
+	target->draw(nameText);
+
+	tutBox->Draw(target);
 }
