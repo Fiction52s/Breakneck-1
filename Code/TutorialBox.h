@@ -21,9 +21,11 @@ struct TutorialBox
 	sf::Color quadColor;
 	sf::Color textColor;
 	bool topLeftMode;
+	std::vector<std::string> buttonStrings;
 
 	TutorialBox(int charHeight, sf::Vector2f lockedSize, sf::Color quadColor, sf::Color textColor, float rectBuffer );
 	TutorialBox();
+	int NextButtonStringIndex(const std::string &s);
 	bool CalcButtonPos(
 		std::string &startString,
 		const std::string &buttonStr,

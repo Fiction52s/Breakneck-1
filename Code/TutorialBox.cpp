@@ -41,6 +41,30 @@ TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color
 	SetRectColor(quad, quadColor);
 }
 
+int TutorialBox::NextButtonStringIndex(const std::string &s)
+{
+	int closestCharIndex = -1;
+	int closestButton = -1;
+
+	size_t found;
+	int foundI;
+	for (int i = 0; i < ControllerSettings::BUTTONTYPE_Count; ++i)
+	{
+		found = s.find(ControllerSettings::GetButtonTypeStr((ControllerSettings::ButtonType)i), 0);
+		if (found != string::npos)
+		{
+			foundI = found;
+			if (closestCharIndex == -1 || foundI < closestCharIndex)
+			{
+				closestCharIndex = found;
+				closestButton = i;
+			}
+		}
+	}
+
+	return closestButton;
+}
+
 bool TutorialBox::CalcButtonPos( std::string &startString, 
 	const std::string &buttonStr, sf::Vector2f &buttonPos )
 {
@@ -123,25 +147,9 @@ void TutorialBox::SetText(const std::string &str)
 	ClearButtons();
 
 	string s = str;
-	std::replace(s.begin(), s.end(), '\\', '\n');
+	//std::replace(s.begin(), s.end(), '\\', '\n');
 
-	std::vector<string> inputStrings = {  
-		"JUMP", 
-		"DASH",
-		"ATTACK", 
-		"SHIELD", 
-		"LEFTWIRE", 
-		"RIGHTWIRE", 
-		"PAUSE",
-		"LLEFT",
-		"LRIGHT"
-		"LRIGHT",
-		"LUP",
-		"LDOWN",
-		"RLEFT",
-		"RRIGHT",
-		"RUP",
-		"RDOWN"};
+	
 
 	float buttonSize = charHeight;
 	//float rectBuffer = 30;
@@ -150,35 +158,62 @@ void TutorialBox::SetText(const std::string &str)
 
 	vector<ButtonInfo> buttonInfos;
 
-	for (int i = 0; i < inputStrings.size();)
-	{
-		Vector2f testPos;
-		bool buttonTest = CalcButtonPos(s, inputStrings[i], testPos);
 
+
+	int nextButtonIndex = NextButtonStringIndex(s);
+	string buttonStr;
+
+	if (nextButtonIndex == -1)
+	{
 		text.setString(s);
 
 		if (topLeftMode)
 		{
-			text.setOrigin(0, 0);	
+			text.setOrigin(0, 0);
 		}
 		else
 		{
 			text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
 				text.getLocalBounds().top + text.getLocalBounds().height / 2);
 		}
-		
-
-		if (buttonTest)
+	}
+	else
+	{
+		while (nextButtonIndex >= 0)
 		{
-			//testPos.y -= rectBuffer / 4;
+			buttonStr = ControllerSettings::GetButtonTypeStr((ControllerSettings::ButtonType)nextButtonIndex);
 
-			buttonInfos.push_back(ButtonInfo(i, testPos));
-		}
-		else
-		{
-			++i;
+			Vector2f testPos;
+			bool buttonTest = CalcButtonPos(s, buttonStr, testPos);
+
+			text.setString(s);
+
+			if (topLeftMode)
+			{
+				text.setOrigin(0, 0);
+			}
+			else
+			{
+				text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
+					text.getLocalBounds().top + text.getLocalBounds().height / 2);
+			}
+
+
+			if (buttonTest)
+			{
+				//testPos.y -= rectBuffer / 4;
+
+				buttonInfos.push_back(ButtonInfo(nextButtonIndex, testPos));
+
+				nextButtonIndex = NextButtonStringIndex(s);
+			}
+			else
+			{
+				nextButtonIndex = -1;
+			}
 		}
 	}
+	
 
 	/*text.setString(s);
 	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,

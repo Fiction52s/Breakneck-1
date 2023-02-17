@@ -1223,6 +1223,33 @@ std::string GetXBoxButtonString( int button )
 	}
 }
 
+std::string ControllerSettings::buttonTypeStrings[ControllerSettings::BUTTONTYPE_Count];
+
+void ControllerSettings::InitStrings()
+{
+	buttonTypeStrings[BUTTONTYPE_JUMP] = "JUMP";
+	buttonTypeStrings[BUTTONTYPE_DASH] = "DASH";
+	buttonTypeStrings[BUTTONTYPE_ATTACK] = "ATTACK";
+	buttonTypeStrings[BUTTONTYPE_SHIELD] = "SHIELD";
+	buttonTypeStrings[BUTTONTYPE_SPECIAL] = "SPECIAL";
+	buttonTypeStrings[BUTTONTYPE_LEFTWIRE] = "LEFTWIRE";
+	buttonTypeStrings[BUTTONTYPE_RIGHTWIRE] = "RIGHTWIRE";
+	buttonTypeStrings[BUTTONTYPE_PAUSE] = "PAUSE";
+	buttonTypeStrings[BUTTONTYPE_LLEFT] = "LLEFT";
+	buttonTypeStrings[BUTTONTYPE_LRIGHT] = "LRIGHT";
+	buttonTypeStrings[BUTTONTYPE_LUP] = "LUP";
+	buttonTypeStrings[BUTTONTYPE_LDOWN] = "LDOWN";
+	buttonTypeStrings[BUTTONTYPE_RLEFT] = "RLEFT";
+	buttonTypeStrings[BUTTONTYPE_RRIGHT] = "RRIGHT";
+	buttonTypeStrings[BUTTONTYPE_RUP] = "RUP";
+	buttonTypeStrings[BUTTONTYPE_RDOWN] = "RDOWN";
+}
+
+const string &ControllerSettings::GetButtonTypeStr(ControllerSettings::ButtonType bType)
+{
+	return buttonTypeStrings[bType];
+}
+
 
 std::string GetKeyboardButtonString(int key)
 {

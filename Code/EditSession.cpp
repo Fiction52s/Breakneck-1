@@ -11631,6 +11631,7 @@ void EditSession::AddActorMove(Action *a)
 
 void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush )
 {
+	
 	ActorPtr actor;
 	Vector2i extraDelta = Vector2i(0, 0);
 	bool unanchored = false;
@@ -11671,8 +11672,12 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 
 	//PositionInfo grabbedActorInfo;
 
-	//V2d grabCenter = V2d(grabbedActor->GetGrabAABBCenter());
-	extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
+	//this used to say just worldpos - grabcenter but it ends up making moving the player fuzzy because it moves things back
+	//so I think adding the delta makes the math line up correctly.
+	extraDelta = Vector2i(worldPos) - (Vector2i(grabCenter) + delta);
+	//extraDelta = Vector2i(round(worldPos.x), round(worldPos.y)) - Vector2i(round(grabCenter.x), round(grabCenter.y));
+	//cout << "extraDelta: " << extraDelta.x << ", " << extraDelta.y << endl;
+	//cout << "delta: " << delta.x << ", " << delta.y << endl;
 
 	V2d actorRealignDiff;
 	for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it )

@@ -167,7 +167,14 @@ struct ControllerSettings
 		BUTTONTYPE_RDOWN,
 		BUTTONTYPE_Count
 	};
+
+	static void InitStrings();
+	static const std::string &GetButtonTypeStr(ControllerSettings::ButtonType bType);
+private:
+	static std::string buttonTypeStrings[BUTTONTYPE_Count];
 };
+
+
 
 enum ControllerType
 {

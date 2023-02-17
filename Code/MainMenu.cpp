@@ -494,6 +494,8 @@ MainMenu::MainMenu()
 	customCursor = NULL;
 	window = NULL;
 
+	ControllerSettings::InitStrings();
+
 	selectorAnimFrame = 0;
 	selectorAnimDuration = 21;
 	selectorAnimFactor = 3;
@@ -1674,8 +1676,6 @@ void MainMenu::Run()
 	
 
 	gameClock.restart();
-
-	
 
 	//SetMode(TRANS_MAIN_TO_OPTIONS);
 	//SetMode(TRANS_MAIN_TO_SAVE);
