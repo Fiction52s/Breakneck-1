@@ -17,6 +17,8 @@ KeyMarker::KeyMarker()
 	//backSprite.setPosition( 1920 - 256 - 40, 1080 - 256 - 40 );
 	//energySprite.setPosition( backSprite.getPosition() );
 
+	showMaxKeys = false;
+
 	frame = 0;
 
 	scale = .5;
@@ -28,6 +30,16 @@ KeyMarker::KeyMarker()
 	xKeyText.setOrigin(xKeyText.getLocalBounds().left + xKeyText.getLocalBounds().width / 2,
 		xKeyText.getLocalBounds().top + xKeyText.getLocalBounds().height / 2);
 	xKeyText.setScale(scale,scale);
+
+	slashText.setFont(sess->mainMenu->arial);
+	slashText.setCharacterSize(40);
+	slashText.setFillColor(Color::White);
+	slashText.setString("/");
+	slashText.setOrigin(slashText.getLocalBounds().left + slashText.getLocalBounds().width / 2,
+		slashText.getLocalBounds().top + slashText.getLocalBounds().height / 2);
+	slashText.setScale(scale, scale);
+
+	
 
 	Tileset *scoreTS = sess->GetSizedTileset("Menu/keynum_small_32x32.png");
 	ts_keyNumLight = sess->GetSizedTileset("Menu/keynum_light_80x80.png");
@@ -45,6 +57,9 @@ KeyMarker::KeyMarker()
 	keyNumberNeededHUD->SetScale(scale);
 	keyNumberNeededHUDBack->SetScale(scale);
 
+	keyNumberTotalHUD = new ImageText(2, ts_keyNumDark);
+	keyNumberTotalHUD->SetScale(scale);
+
 	SetMarkerType(KEY);
 	//keyNumberTotalHUD = new ImageText(2, scoreTS);
 
@@ -56,6 +71,19 @@ KeyMarker::~KeyMarker()
 {
 	delete keyNumberNeededHUD;
 	delete keyNumberNeededHUDBack;
+
+	delete keyNumberTotalHUD;
+}
+
+void KeyMarker::ShowMaxKeys(int k)
+{
+	showMaxKeys = true;
+	keyNumberTotalHUD->SetNumber(k);
+}
+
+void KeyMarker::HideMaxKeys()
+{
+	showMaxKeys = false;
 }
 
 void KeyMarker::SetPosition(Vector2f &pos)
@@ -64,9 +92,11 @@ void KeyMarker::SetPosition(Vector2f &pos)
 
 	keyNumberNeededHUD->SetCenter(neededCenter );
 	keyNumberNeededHUDBack->SetCenter(neededCenter);
+	keyNumberTotalHUD->SetCenter(neededCenter + Vector2f(100 * scale, 0));
 
 	keyIconSpr.setPosition(neededCenter + Vector2f( -150 * scale, 0 ));
 	xKeyText.setPosition(neededCenter + Vector2f(-75 * scale, 0));
+	slashText.setPosition(neededCenter + Vector2f(50 * scale, 0));
 	//keyNumberTotalHUD->SetCenter(neededCenter + Vector2f(-60, -40));
 	
 }
@@ -260,6 +290,12 @@ void KeyMarker::Draw( sf::RenderTarget *target )
 
 	target->draw(xKeyText);
 	target->draw(keyIconSpr);
+
+	if (showMaxKeys && markerType == KEY)
+	{
+		target->draw(slashText);
+		keyNumberTotalHUD->Draw(target);
+	}
 
 	//target->draw( backSprite );
 	//if( state == NONZERO )

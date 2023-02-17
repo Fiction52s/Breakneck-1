@@ -8442,6 +8442,13 @@ void Session::SetKeyMarkerToCurrentZone()
 	bool hasEnemyGate = false;
 	bool hasKeyGate = false;
 	Gate *g;
+
+	
+
+	
+	
+
+
 	for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
 	{
 		g = (Gate*)(*it)->info;
@@ -8456,6 +8463,7 @@ void Session::SetKeyMarkerToCurrentZone()
 			if (g->category == Gate::ALLKEY || g->category == Gate::NUMBER_KEY)
 			{
 				hasKeyGate = true;
+				
 			}
 		}
 		if (!hasEnemyGate)
@@ -8470,7 +8478,33 @@ void Session::SetKeyMarkerToCurrentZone()
 
 	if (hasKeyGate)
 	{
+		bool showMaxKeys = true;
+		for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
+		{
+			g = (Gate*)(*it)->info;
+
+			if (g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER)
+			{
+				continue;
+			}
+
+			if (g->category == Gate::NUMBER_KEY && g->numToOpen < currentZone->totalNumKeys)
+			{
+				showMaxKeys = false;
+				break;
+			}
+		}
+
 		ah->numActiveKeyMarkers++;
+		if (showMaxKeys)
+		{
+			ah->keyMarkers[0]->ShowMaxKeys(currentZone->totalNumKeys);
+		}
+		else
+		{
+			ah->keyMarkers[0]->HideMaxKeys();
+		}
+		
 		ah->keyMarkers[0]->SetMarkerType(KeyMarker::KEY);
 	}
 

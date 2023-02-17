@@ -26,6 +26,7 @@ struct KeyMarker
 	Action action;
 	MarkerType markerType;
 	int frame;
+	bool showMaxKeys;
 	void VibrateNumbers();
 	void SetMarkerType(int k);
 	Session *sess;
@@ -39,6 +40,8 @@ struct KeyMarker
 	void Update();
 	void UpdateKeyNumbers();
 	void SetPosition(sf::Vector2f &pos);
+	void ShowMaxKeys(int k);
+	void HideMaxKeys();
 	sf::Vector2f GetPosition();
 
 	sf::Vector2f neededCenter;
@@ -50,6 +53,7 @@ struct KeyMarker
 	//sf::Sprite energySprite;
 
 	sf::Text xKeyText;
+	sf::Text slashText;
 	sf::Text xEnemyText;
 
 	sf::Sprite keyIconSpr;
@@ -65,6 +69,8 @@ struct KeyMarker
 	Tileset *ts_enemyNumDark;
 	ImageText *keyNumberNeededHUD;
 	ImageText *keyNumberNeededHUDBack;
+
+	ImageText *keyNumberTotalHUD;
 
 	ImageText *enemyNumberNeededHUD;
 	ImageText *enemyNumberNeededHUDBack;
