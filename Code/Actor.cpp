@@ -15939,6 +15939,7 @@ void Actor::UpdatePostPhysics()
 
 	if (action == HIDDEN)
 	{
+		UpdateAllEffects();
 		return;
 	}
 
@@ -16008,6 +16009,7 @@ void Actor::UpdatePostPhysics()
 		sprite->setPosition( position.x, position.y );
 		sprite->setRotation( 0 );
 
+		UpdateAllEffects();
 		//if( frame % 1 == 0 )
 		//{
 		//	double startRadius = 64;
