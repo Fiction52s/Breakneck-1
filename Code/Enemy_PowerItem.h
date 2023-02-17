@@ -21,6 +21,7 @@ struct PowerPopup
 	};
 
 	PowerPopup();
+	~PowerPopup();
 	void SetTopLeft(sf::Vector2f &pos);
 	void SetCenter(sf::Vector2f &pos);
 	void Reset();

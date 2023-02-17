@@ -112,6 +112,9 @@ struct AdventureHUD : HUD
 	TimerHUD *timer;
 	TimerHUD *modifierTimer;
 
+	Tileset *ts_go;
+	sf::Sprite goSpr;
+
 	sf::Text flyCountText;
 
 	sf::Vector2f miniShowPos;
@@ -147,6 +150,7 @@ struct AdventureHUD : HUD
 
 	AdventureHUD();
 	~AdventureHUD();
+	void CheckForGo();
 	void UpdateKeyNumbers();
 	void UpdateEnemyNumbers();
 	void SetBossHealthBar(BossHealth *bh);

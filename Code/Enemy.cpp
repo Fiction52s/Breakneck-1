@@ -1039,6 +1039,7 @@ void Enemy::Reset()
 	currHitboxFrame = 0;
 	currHurtboxFrame = 0;
 	SetCurrPosInfo(startPosInfo);
+	
 
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -1046,6 +1047,8 @@ void Enemy::Reset()
 	}
 
 	ResetEnemy();
+
+	UpdateKeySprite();
 
 	UpdateHitboxes();
 }

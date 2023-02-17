@@ -418,8 +418,6 @@ void PowerItem::EnemyDraw(sf::RenderTarget *target)
 {
 	if (!alreadyCollected)
 	{
-
-
 		geoGroup.Draw(target);
 
 		if (action != DISSIPATE)
@@ -480,6 +478,11 @@ PowerPopup::PowerPopup()
 	height = nameHeight + borderHeight + descLineHeight * 4 + descBorder.y * 2 + extraHeight;
 
 	powerRel = Vector2f(powerBorder, nameHeight + borderHeight + powerBorder);
+}
+
+PowerPopup::~PowerPopup()
+{
+	delete tutBox;
 }
 
 void PowerPopup::Reset()

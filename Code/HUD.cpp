@@ -54,6 +54,12 @@ AdventureHUD::AdventureHUD()
 		flyCountText.getLocalBounds().width, 0);
 	flyCountText.setString("x0");
 	flyCountText.setPosition(flyCountTextShowPos);
+
+	ts_go = sess->GetSizedTileset("Zone/gate_orb_64x64.png");
+	ts_go->SetSpriteTexture(goSpr);
+	ts_go->SetSubRect(goSpr, 2);
+
+	goSpr.setOrigin(goSpr.getLocalBounds().width / 2, goSpr.getLocalBounds().height / 2);
 	
 
 	miniShowPos = mini->minimapSprite.getPosition();
@@ -100,6 +106,63 @@ void AdventureHUD::UpdateKeyNumbers()
 		keyMarkers[0]->UpdateKeyNumbers();
 	}
 }
+
+void AdventureHUD::CheckForGo()
+{
+	if (numActiveKeyMarkers > 0)
+	{
+		if (sess->currentZone->secretZone)
+		{
+			return;
+		}
+
+		//wait until vibrating is done!
+		for (int i = 0; i < numActiveKeyMarkers; ++i)
+		{
+			if (keyMarkers[i]->action == KeyMarker::VIBRATING)
+			{
+				return;
+			}
+		}
+
+		bool allGatesSatisfied = true;
+
+		int numKeys = sess->GetPlayer(0)->numKeysHeld;
+		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
+
+		for (auto it = sess->currentZone->gates.begin(); it != sess->currentZone->gates.end(); ++it)
+		{
+			Gate *g = (Gate*)(*it)->info;
+			if (g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER)
+			{
+				continue;
+			}
+
+			if (g->category == Gate::ALLKEY || g->category == Gate::NUMBER_KEY)
+			{
+				if (g->numToOpen > numKeys)
+				{
+					allGatesSatisfied = false;
+					break;
+				}
+			}
+			else if (g->category == Gate::ENEMY)
+			{
+				if (numEnemiesRemaining > 0 )
+				{
+					allGatesSatisfied = false;
+					break;
+				}
+			}
+		}
+
+		if (allGatesSatisfied)
+		{
+			numActiveKeyMarkers = 0;
+		}
+	}
+}
+
 
 void AdventureHUD::UpdateEnemyNumbers()
 {
@@ -302,6 +365,8 @@ void AdventureHUD::Update()
 	{
 		keyMarkers[i]->Update();
 	}
+
+	CheckForGo();
 	/*if (state != HIDDEN)
 	{
 		
@@ -345,6 +410,9 @@ void AdventureHUD::Reset()
 	{
 		keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
 	}
+	
+	goSpr.setPosition(keyMarkerShowPos);
+
 	powerSelector->SetPosition(powerSelectorShowPos);
 	if (bossHealthBar != NULL)
 	{
@@ -377,10 +445,18 @@ void AdventureHUD::Draw(RenderTarget *target)
 
 		powerSelector->Draw(target);
 
-		for (int i = 0; i < numActiveKeyMarkers; ++i)
+		if (numActiveKeyMarkers == 0)
 		{
-			keyMarkers[i]->Draw(target);
+			target->draw(goSpr);
 		}
+		else
+		{
+			for (int i = 0; i < numActiveKeyMarkers; ++i)
+			{
+				keyMarkers[i]->Draw(target);
+			}
+		}
+		
 
 		if (bossHealthBar != NULL)
 		{

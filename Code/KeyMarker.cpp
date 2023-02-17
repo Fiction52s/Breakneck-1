@@ -32,7 +32,7 @@ KeyMarker::KeyMarker()
 	xKeyText.setScale(scale,scale);
 
 	slashText.setFont(sess->mainMenu->arial);
-	slashText.setCharacterSize(40);
+	slashText.setCharacterSize(80);
 	slashText.setFillColor(Color::White);
 	slashText.setString("/");
 	slashText.setOrigin(slashText.getLocalBounds().left + slashText.getLocalBounds().width / 2,
@@ -79,6 +79,7 @@ void KeyMarker::ShowMaxKeys(int k)
 {
 	showMaxKeys = true;
 	keyNumberTotalHUD->SetNumber(k);
+	keyNumberTotalHUD->UpdateSprite();
 }
 
 void KeyMarker::HideMaxKeys()
@@ -175,7 +176,12 @@ void KeyMarker::UpdateKeyNumbers()
 		for (auto it = sess->currentZone->gates.begin(); it != sess->currentZone->gates.end(); ++it)
 		{
 			Gate *g = (Gate*)(*it)->info;
-			if (g->category == Gate::ALLKEY || g->NUMBER_KEY)
+			if (g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER)
+			{
+				continue;
+			}
+
+			if (g->category == Gate::ALLKEY || g->category == Gate::NUMBER_KEY)
 			{
 				if (g->numToOpen == numKeys)
 				{
@@ -208,7 +214,7 @@ void KeyMarker::UpdateKeyNumbers()
 	keyNumberNeededHUDBack->UpdateSprite();
 
 
-	//keyNumberTotalHUD->UpdateSprite();
+	
 }
 
 void KeyMarker::SetStartKeysZone(Zone *z)

@@ -11674,7 +11674,13 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 
 	//this used to say just worldpos - grabcenter but it ends up making moving the player fuzzy because it moves things back
 	//so I think adding the delta makes the math line up correctly.
-	extraDelta = Vector2i(worldPos) - (Vector2i(grabCenter) + delta);
+	//extraDelta = Vector2i(worldPos) - (Vector2i(grabCenter) + delta);
+
+	extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
+
+
+
+
 	//extraDelta = Vector2i(round(worldPos.x), round(worldPos.y)) - Vector2i(round(grabCenter.x), round(grabCenter.y));
 	//cout << "extraDelta: " << extraDelta.x << ", " << extraDelta.y << endl;
 	//cout << "delta: " << delta.x << ", " << delta.y << endl;
@@ -11918,15 +11924,16 @@ void EditSession::ContinueSelectedMove()
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
 	
-	
 	//if (IsSingleActorSelected() && selectedPoints.empty())
 	//if( selectedBrush->num)
 	if (/*selectedPoints.empty() && */grabbedActor != NULL && selectedBrush->GetNumTerrain() == 0 )
 	{
-		MoveActors(delta, V2d(grabbedActor->GetGrabAABBCenter()), selectedBrush );
+		//MoveActors(delta, V2d(grabbedActor->GetGrabAABBCenter()), selectedBrush );
+		MoveActors(Vector2i(), V2d(grabbedActor->GetGrabAABBCenter()), selectedBrush);
 	}
 	else
 	{
+		//MoveActors(delta, worldPos, selectedBrush);
 		MoveActors(delta, worldPos, selectedBrush);
 	}
 	/*else if(selectedPoints.empty())

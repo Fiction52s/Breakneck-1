@@ -3776,14 +3776,11 @@ int Session::SetupZones()
 
 
 
-
+	//original pos
 	if (originalZone != NULL)
 	{
 		//cout << "setting original zone to active: " << originalZone << endl;
 		ActivateZone(originalZone, true);
-
-		SetKeyMarkerToCurrentZone();
-		
 		
 	}
 
@@ -3901,6 +3898,12 @@ int Session::SetupZones()
 	{
 		(*it)->Init();
 	}
+
+	if (originalZone != NULL)
+	{
+		SetKeyMarkerToCurrentZone(); //moved this to account for some gates getting set to secret
+	}
+
 
 	return 0;
 	//if (originalZone != NULL)
@@ -8476,9 +8479,10 @@ void Session::SetKeyMarkerToCurrentZone()
 		
 	}
 
-	if (hasKeyGate)
+	if (hasKeyGate && currentZone->totalNumKeys > 0 )
 	{
 		bool showMaxKeys = true;
+		int keysRequired = -1;
 		for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
 		{
 			g = (Gate*)(*it)->info;
@@ -8488,17 +8492,45 @@ void Session::SetKeyMarkerToCurrentZone()
 				continue;
 			}
 
-			if (g->category == Gate::NUMBER_KEY && g->numToOpen < currentZone->totalNumKeys)
+			if (g->category == Gate::NUMBER_KEY )//&& g->numToOpen < currentZone->totalNumKeys )
 			{
-				showMaxKeys = false;
+				if (keysRequired >= 0)
+				{
+					if (g->numToOpen != keysRequired)
+					{
+						showMaxKeys = false;
+						break;
+					}
+				}
+				else
+				{
+					keysRequired = g->numToOpen;
+				}
 				break;
+			}
+			else if (g->category == Gate::ALLKEY)
+			{
+				if (keysRequired >= 0)
+				{
+					if (currentZone->totalNumKeys != keysRequired)
+					{
+						showMaxKeys = false;
+						break;
+					}
+				}
+				else
+				{
+					keysRequired = currentZone->totalNumKeys;
+				}
 			}
 		}
 
 		ah->numActiveKeyMarkers++;
 		if (showMaxKeys)
 		{
-			ah->keyMarkers[0]->ShowMaxKeys(currentZone->totalNumKeys);
+			assert(keysRequired >= 0);
+
+			ah->keyMarkers[0]->ShowMaxKeys(keysRequired);
 		}
 		else
 		{
@@ -8508,7 +8540,7 @@ void Session::SetKeyMarkerToCurrentZone()
 		ah->keyMarkers[0]->SetMarkerType(KeyMarker::KEY);
 	}
 
-	if (hasEnemyGate)
+	if (hasEnemyGate && currentZone->allEnemies.size() > 0 )
 	{
 		ah->numActiveKeyMarkers++;
 		if (hasKeyGate)

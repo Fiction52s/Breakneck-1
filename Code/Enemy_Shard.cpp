@@ -495,6 +495,11 @@ ShardPopup::ShardPopup()
 	shardRel = Vector2f(shardBorder, nameHeight + borderHeight + shardBorder );
 }
 
+ShardPopup::~ShardPopup()
+{
+	delete tutBox;
+}
+
 void ShardPopup::Reset()
 {
 	state = SHOW;
