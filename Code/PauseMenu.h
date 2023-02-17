@@ -84,6 +84,8 @@ struct OptionsMenu
 
 struct GameSession;
 struct KinMenu;
+struct PauseMap;
+
 struct PauseMenu
 {
 	OptionsMenu *cOptions;
@@ -170,8 +172,7 @@ struct PauseMenu
 	int numVideoOptions;
 	int numSoundOptions;
 	//map tab
-	sf::Vector2f mapCenter;
-	float mapZoomFactor;
+	PauseMap *pauseMap;
 
 	SingleAxisSelector *pauseSelector;
 	//int pauseSelectIndex;

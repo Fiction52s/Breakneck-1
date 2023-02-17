@@ -691,6 +691,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void EnemiesCheckedMiniDraw(
 		sf::RenderTarget *target,
 		sf::FloatRect &rect);
+	void EnemiesCheckPauseMapDraw(sf::RenderTarget *target,
+		sf::FloatRect &rect);
 	void DrawPlayersMini(sf::RenderTarget *target);
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void TrySpawnEnemy(QuadTreeEntrant *qte);

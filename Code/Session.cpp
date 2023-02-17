@@ -4494,6 +4494,19 @@ void Session::EnemiesCheckedMiniDraw(RenderTarget *target,
 	}
 }
 
+void Session::EnemiesCheckPauseMapDraw(sf::RenderTarget *target,
+	sf::FloatRect &rect)
+{
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		if ((*it)->IsGoalType())
+		{
+			continue;
+		}
+		(*it)->CheckedMiniDraw(target, rect);
+	}
+}
+
 void Session::DrawAllMapWires(
 	sf::RenderTarget *target)
 {

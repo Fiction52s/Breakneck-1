@@ -2008,7 +2008,7 @@ void EditSession::UpdateFullBounds()
 {
 	AdjustBoundsHeightFromTerrain();
 
-	int boundRectWidth = 5 * zoomMultiple;
+	float boundRectWidth = 5 * zoomMultiple;
 
 	int leftBound = mapHeader->leftBounds;
 	int topBound = mapHeader->topBounds;

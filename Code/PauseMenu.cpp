@@ -17,6 +17,7 @@
 #include "GameSettingsScreen.h"
 #include "PlayerBox.h"
 #include "AdventureManager.h"
+#include "PauseMap.h"
 //#include "Actor.h"
 
 using namespace sf;
@@ -352,6 +353,9 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	
 	optionsMenu = new OptionsMenu(this);
 
+	pauseMap = new PauseMap;
+	pauseMap->SetCenter(Vector2f(960 - 50, 540 - 50));
+
 	selectSprite.setTexture( *ts_select->texture );
 
 	bgSprite.setPosition(0, 0);//50, 50 );
@@ -425,6 +429,8 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	maxMomentum = 4;
 
 	SetTab(PAUSE);
+
+	
 	/*maxWaitFrames = 30;
 	currWaitFrames = maxWaitFrames;
 	minWaitFrames = 4;
@@ -474,6 +480,8 @@ PauseMenu::~PauseMenu()
 	delete[] soundSelectors;
 
 	delete bgPaletteShader;
+
+	delete pauseMap;
 }
 
 
@@ -529,9 +537,7 @@ void PauseMenu::SetTab( Tab t )
 	switch( t )
 	{
 	case MAP:
-		mapCenter.x = game->GetPlayerPos( 0 ).x;
-		mapCenter.y = game->GetPlayerPos( 0 ).y;
-		mapZoomFactor = 16;	
+		pauseMap->Reset();
 		break;
 	case KIN:
 	{
@@ -603,6 +609,10 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 		target->draw(pauseOptionQuads, 4 * 5, sf::Quads, ts_pauseOptions->texture);
 		target->draw(debugText);
 		//target->draw( selectSprite );
+	}
+	else if (currentTab == MAP)
+	{
+		pauseMap->Draw(target);
 	}
 	else if( currentTab == OPTIONS )
 	{
@@ -893,61 +903,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 	{
 	case MAP:
 		{
-			float fac = .05;
-			if( currInput.A )
-			{
-				mapZoomFactor -= fac * mapZoomFactor;
-			}
-			else if( currInput.B )
-			{
-				mapZoomFactor += fac * mapZoomFactor;
-			}
-
-			if( mapZoomFactor < 1.f )
-			{
-				mapZoomFactor = 1.f;
-			}
-			else if( mapZoomFactor > 128.f )
-			{
-				mapZoomFactor = 128.f;
-			}
-
-			float move = 20.0 * mapZoomFactor / 2.0;
-			if( currInput.LLeft() )
-			{
-				mapCenter.x -= move;
-			}
-			else if( currInput.LRight() )
-			{
-				mapCenter.x += move;
-			}
-
-			if( currInput.LUp() )
-			{
-				mapCenter.y -= move;
-			}
-			else if( currInput.LDown() )
-			{
-				mapCenter.y += move;
-			}
-
-			if( mapCenter.x < game->mapHeader->leftBounds )
-			{
-				mapCenter.x = game->mapHeader->leftBounds;
-			}
-			else if( mapCenter.x > game->mapHeader->leftBounds + game->mapHeader->boundsWidth )
-			{
-				mapCenter.x = game->mapHeader->leftBounds + game->mapHeader->boundsWidth;
-			}
-
-			if( mapCenter.y < game->mapHeader->topBounds )
-			{
-				mapCenter.y = game->mapHeader->topBounds;
-			}
-			else if( mapCenter.y > game->mapHeader->topBounds + game->mapHeader->boundsHeight )
-			{
-				mapCenter.y = game->mapHeader->topBounds + game->mapHeader->boundsHeight;
-			}
+			pauseMap->Update(currInput, prevInput);
 			break;
 		}
 	case KIN:

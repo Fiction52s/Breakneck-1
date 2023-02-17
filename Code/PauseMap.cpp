@@ -1,0 +1,320 @@
+#include "PauseMap.h"
+#include <iostream>
+#include <assert.h>
+#include "GameSession.h"
+#include "MapHeader.h"
+#include "Session.h"
+
+using namespace sf;
+using namespace std;
+
+Color PauseMap::terrainColor(0x75, 0x70, 0x90);// , 191);
+
+PauseMap::PauseMap()
+{
+	game = GameSession::GetSession();
+
+	assert(game != NULL);
+
+	mapTex = game->mapTex;
+
+	/*if (!mapShader.loadFromFile("Resources/Shader/minimap_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "minimap shader not loaded");
+	}
+	mapShader.setUniform("imageSize", Vector2f(mapTex->getSize().x,
+		mapTex->getSize().y));*/
+
+	mapSprite.setTexture(mapTex->getTexture());
+	mapSprite.setOrigin(mapSprite.getLocalBounds().width / 2,
+		mapSprite.getLocalBounds().height / 2);
+
+	//mapSprite.setScale(1, -1);
+
+	ts_miniIcons = game->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+	kinMapIcon.setTexture(*ts_miniIcons->texture);
+	kinMapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
+	kinMapIcon.setScale(2, 2);
+	kinMapIcon.setOrigin(kinMapIcon.getLocalBounds().width / 2,
+		kinMapIcon.getLocalBounds().height / 2);
+	kinMapIcon.setPosition(0, 0);
+	//.5, .5);
+
+
+	goalMapIcon.setTexture(*ts_miniIcons->texture);
+	goalMapIcon.setTextureRect(ts_miniIcons->GetSubRect(5));
+	goalMapIcon.setScale(1.5, 1.5);
+	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
+		goalMapIcon.getLocalBounds().height / 2);
+
+	SetCenter(Vector2f(200, game->preScreenTex->getSize().y - 200));
+
+	Reset();
+}
+
+void PauseMap::Reset()
+{
+	mapCenter.x = game->GetPlayerPos(0).x;
+	mapCenter.y = game->GetPlayerPos(0).y;
+	mapZoomFactor = 8;
+}
+
+void PauseMap::SetCenter(sf::Vector2f &center)
+{
+	mapSprite.setPosition(center);
+}
+
+void PauseMap::Update(ControllerState &currInput,
+	ControllerState &prevInput)
+{
+	float fac = .05;
+	if (currInput.A)
+	{
+		mapZoomFactor -= fac * mapZoomFactor;
+	}
+	else if (currInput.B)
+	{
+		mapZoomFactor += fac * mapZoomFactor;
+	}
+
+	if (mapZoomFactor < 1.f)
+	{
+		mapZoomFactor = 1.f;
+	}
+	else if (mapZoomFactor > 128.f)
+	{
+		mapZoomFactor = 128.f;
+	}
+
+	float move = 20.0 * mapZoomFactor / 2.0;
+	if (currInput.LLeft())
+	{
+		mapCenter.x -= move;
+	}
+	else if (currInput.LRight())
+	{
+		mapCenter.x += move;
+	}
+
+	if (currInput.LUp())
+	{
+		mapCenter.y -= move;
+	}
+	else if (currInput.LDown())
+	{
+		mapCenter.y += move;
+	}
+
+	if (mapCenter.x < game->mapHeader->leftBounds)
+	{
+		mapCenter.x = game->mapHeader->leftBounds;
+	}
+	else if (mapCenter.x > game->mapHeader->leftBounds + game->mapHeader->boundsWidth)
+	{
+		mapCenter.x = game->mapHeader->leftBounds + game->mapHeader->boundsWidth;
+	}
+
+	if (mapCenter.y < game->mapHeader->topBounds)
+	{
+		mapCenter.y = game->mapHeader->topBounds;
+	}
+	else if (mapCenter.y > game->mapHeader->topBounds + game->mapHeader->boundsHeight)
+	{
+		mapCenter.y = game->mapHeader->topBounds + game->mapHeader->boundsHeight;
+	}
+}
+
+void PauseMap::SetupBorderQuads(
+	bool *blackBorder, bool topBorderOn,
+	MapHeader *mapHeader)
+{
+	int miniQuadWidth = 4000;
+	int inverseTerrainBorder = 4000;
+	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
+	int blackMiniBot = mapHeader->topBounds + mapHeader->boundsHeight + inverseTerrainBorder;
+	int blackMiniLeft = mapHeader->leftBounds - miniQuadWidth;
+	int rightBounds = mapHeader->leftBounds + mapHeader->boundsWidth;
+	int blackMiniRight = rightBounds + miniQuadWidth;
+
+	blackBorderQuadsMini[1].position.x = mapHeader->leftBounds;
+	blackBorderQuadsMini[2].position.x = mapHeader->leftBounds;
+	blackBorderQuadsMini[0].position.x = mapHeader->leftBounds - miniQuadWidth;
+	blackBorderQuadsMini[3].position.x = mapHeader->leftBounds - miniQuadWidth;
+
+	blackBorderQuadsMini[0].position.y = blackMiniTop;
+	blackBorderQuadsMini[1].position.y = blackMiniTop;
+
+	blackBorderQuadsMini[2].position.y = blackMiniBot;
+	blackBorderQuadsMini[3].position.y = blackMiniBot;
+
+
+	blackBorderQuadsMini[5].position.x = rightBounds + miniQuadWidth;
+	blackBorderQuadsMini[6].position.x = rightBounds + miniQuadWidth;
+	blackBorderQuadsMini[4].position.x = rightBounds;
+	blackBorderQuadsMini[7].position.x = rightBounds;
+
+	blackBorderQuadsMini[4].position.y = blackMiniTop;
+	blackBorderQuadsMini[5].position.y = blackMiniTop;
+
+	blackBorderQuadsMini[6].position.y = blackMiniBot;
+	blackBorderQuadsMini[7].position.y = blackMiniBot;
+
+	Color miniBorderColor = Color(100, 100, 100);
+	Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
+	//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
+
+	if (blackBorder[0])
+		SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
+	else
+	{
+		SetRectColor(blackBorderQuadsMini, Color::Transparent);
+	}
+	if (blackBorder[1])
+		SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
+	else
+	{
+		SetRectColor(blackBorderQuadsMini + 4, Color::Transparent);
+	}
+
+	if (topBorderOn)
+	{
+		SetRectColor(topBorderQuadMini, miniTopBorderColor);
+
+		topBorderQuadMini[0].position.x = blackMiniLeft;
+		topBorderQuadMini[1].position.x = blackMiniRight;
+		topBorderQuadMini[2].position.x = blackMiniRight;
+		topBorderQuadMini[3].position.x = blackMiniLeft;
+
+		topBorderQuadMini[0].position.y = blackMiniTop;
+		topBorderQuadMini[1].position.y = blackMiniTop;
+		topBorderQuadMini[2].position.y = mapHeader->topBounds;
+		topBorderQuadMini[3].position.y = mapHeader->topBounds;
+	}
+}
+
+void PauseMap::DrawToTex()
+{
+	//Actor *p0 = owner->GetPlayer(0);
+
+	//double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
+	V2d pos0 = game->GetPlayerPos(0);
+	View vv;
+	vv.setCenter(mapCenter.x, mapCenter.y);
+	vv.setSize(mapTex->getSize().x * mapZoomFactor, mapTex->getSize().y * mapZoomFactor);
+
+	mapTex->setView(vv);
+	mapTex->clear(Color::Black);//Color(0, 0, 0, 191));
+
+	for (list<Zone*>::iterator it = game->zones.begin(); it != game->zones.end(); ++it)
+	{
+		(*it)->Draw(mapTex);
+	}
+
+	sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+		vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
+
+	DrawSpecialTerrain(minimapRect, mapTex);
+
+	DrawTerrain(minimapRect, mapTex);
+
+	DrawRails(minimapRect, mapTex);
+
+	DrawZones(mapTex);
+
+	DrawMapBorders(mapTex);
+
+	DrawGates(minimapRect, mapTex);
+
+	game->DrawAllMapWires(mapTex);
+
+	game->EnemiesCheckPauseMapDraw(mapTex, FloatRect(minimapRect));
+
+	game->DrawPlayersMini(mapTex);
+
+	Vector2i kinIconPixel = mapTex->mapCoordsToPixel(Vector2f(pos0));
+
+	Vector2i goalIconPixel = mapTex->mapCoordsToPixel(Vector2f(game->goalPos));
+
+	sf::View iconView;
+	iconView.setCenter(0, 0);
+	iconView.setSize(mapTex->getSize().x, mapTex->getSize().y);
+	mapTex->setView(iconView);
+
+	Vector2f trueKinMapIconPos = mapTex->mapPixelToCoords(kinIconPixel);
+
+	Vector2f trueGoalMapIconPos = mapTex->mapPixelToCoords(goalIconPixel);
+
+	kinMapIcon.setPosition(trueKinMapIconPos);
+
+	goalMapIcon.setPosition(trueGoalMapIconPos);
+
+	mapTex->draw(goalMapIcon);
+
+	mapTex->draw(kinMapIcon);
+
+}
+
+void PauseMap::Draw(sf::RenderTarget *target)
+{
+	DrawToTex();
+
+	mapTex->display();
+	const Texture &tex = mapTex->getTexture();
+	//mapShader.setUniform("u_texture", mapTex->getTexture());
+
+	mapSprite.setTexture(tex);
+
+	//target->draw(mapSprite, &mapShader);
+	target->draw(mapSprite);
+}
+
+void PauseMap::DrawZones(RenderTarget *target)
+{
+	auto &zones = game->zones;
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->DrawMinimap(target);
+	}
+}
+
+void PauseMap::DrawTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)
+{
+	game->QueryBorderTree(rect);
+	game->DrawColoredMapTerrain(target, terrainColor);
+}
+
+void PauseMap::DrawRails(sf::Rect<double> &rect,
+	sf::RenderTarget *target)
+{
+	game->QueryRailDrawTree(rect);
+	game->DrawQueriedRails(target);
+}
+
+void PauseMap::DrawSpecialTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)
+{
+	game->QuerySpecialTerrainTree(rect);
+	game->DrawSpecialMapTerrain(target);
+}
+
+void PauseMap::DrawMapBorders(
+	sf::RenderTarget *target)
+{
+	target->draw(blackBorderQuadsMini, 8, sf::Quads);
+	target->draw(topBorderQuadMini, 4, sf::Quads);
+}
+
+void PauseMap::DrawGates(sf::Rect<double> &rect,
+	sf::RenderTarget *target)
+{
+	game->QueryGateTree(rect);
+	Gate *gateList = game->gateList;
+	while (gateList != NULL)
+	{
+		gateList->MapDraw(target);
+
+		Gate *next = gateList->next;
+		gateList = next;
+	}
+	game->gateList = NULL;
+}

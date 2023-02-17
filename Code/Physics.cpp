@@ -1987,6 +1987,9 @@ bool QuadContainsPoint(sf::Vector2<float> &A,
 	sf::Vector2<float> &D,
 	sf::Vector2<float> &point)
 {
+	assert(A != B && A != C && A != D && B != C && B != D && C != D); //means it has 0 volume, which can cause a return true when it shouldn't
+	//assume a 0 volume rectangle is broken somehow
+
 	Vector2f AB = B - A;
 	Vector2f AD = D - A;
 	Vector2f pointA = point - A;
