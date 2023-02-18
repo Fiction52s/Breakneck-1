@@ -3795,31 +3795,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bHasUpgradeField.Reset();
 	bStartHasUpgradeField.Reset();
 
-	bool isCampaign = false;
-	if (owner != NULL)
-	{
-		SaveFile *currProgress = owner->GetCurrSaveFile();
-		if (currProgress != NULL )
-		{
-			isCampaign = true;
-
-			//sess->playerOptionsField.Set(currProgress->upgradeField);
-
-			SetAllUpgrades(currProgress->upgradeField);
-			//set this up better later
-			/*if( currProgress->HasUpgrade(UPGRADE_POWER_AIRDASH) )
-				SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);*/
-		}
-	}
-
-	if (!isCampaign)
-	{
-		SetAllUpgrades(sess->playerOptionsField);
-	}
-	else
-	{
-		
-	}
+	
 
 	//for (int i = 0; i < UPGRADE_Count; ++i)
 	//{
@@ -4479,6 +4455,16 @@ void Actor::Respawn( bool setStartPos )
 	else
 	{
 		numFramesToLive = -1;
+	}
+
+	bool isAdventure = false;
+	if (owner != NULL && owner->saveFile != NULL )
+	{
+		SetAllUpgrades(owner->saveFile->upgradeField);
+	}
+	else
+	{
+		SetAllUpgrades(sess->playerOptionsField);
 	}
 
 	prevInput.Clear();
@@ -6512,6 +6498,8 @@ void Actor::UpdatePrePhysics()
 
 	if (action == HIDDEN)
 		return;
+
+	cout << "game frame: " << sess->totalGameFrames << ", action: " << action << ", " << "frame: " << frame << ", posiiton: " << position.x << ", " << position.y << "\n";
 	/*static int skinTest = 0;
 	SetSkin(skinTest / 3);
 	++skinTest;

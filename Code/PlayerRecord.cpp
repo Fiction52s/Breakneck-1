@@ -158,6 +158,12 @@ void ReplayPlayer::UpdateInput( ControllerState &state )//ControllerDualStateQue
 	state.start = start;
 	state.back = back;
 
+	cout << "replaying input: " << inputBuffer[frame] << " on frame " << frame << "\n";
+
+	/*if (state.A)
+	{
+		cout << "replay held A down on frame: " << frame << "\n";
+	}*/
 	//bool start = controllerInput->GetCurrState().start;
 	//bool back = controllerInput->GetCurrState().back;
 
@@ -234,6 +240,13 @@ void PlayerRecorder::RecordReplayFrame()
 	ControllerState &s = player->currInput;
 	COMPRESSED_INPUT_TYPE compressedInputs = s.GetCompressedState();
 	inputBuffer[frame] = compressedInputs;
+
+	cout << "recording input: " << compressedInputs << " on frame " << frame << "\n";
+
+	/*if (s.A)
+	{
+		cout << "recording held A down on frame: " << frame << "\n";
+	}*/
 
 	//frame gets incremented when the ghost is stored
 
@@ -513,8 +526,15 @@ void PlayerReplayManager::Reset()
 {
 	for (auto it = repVec.begin(); it != repVec.end(); ++it)
 	{
-		(*it)->replayPlayer->Reset();
-		(*it)->replayGhost->Reset();
+		if (replaysActive)
+		{
+			(*it)->replayPlayer->Reset();
+		}
+		
+		if (ghostsActive)
+		{
+			(*it)->replayGhost->Reset();
+		}
 	}
 }
 

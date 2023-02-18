@@ -6686,7 +6686,8 @@ bool Session::RunGameModeUpdate()
 		UpdateControllers();
 
 
-		UpdateAllPlayersInput();
+		// UpdateAllPlayersInput(); //moving this below ActiveSequenceUpdate, because the gamestate changing can make this replay an extra frame of inputs
+		//it basically gets called twice in the same time that the actual players update once which makes no sense
 
 
 		if (pauseFrames > 0)
@@ -6721,6 +6722,8 @@ bool Session::RunGameModeUpdate()
 		ActiveSequenceUpdate();
 		if (switchGameState)
 			break;
+
+		UpdateAllPlayersInput();
 
 		if (!playerAndEnemiesFrozen)
 		{
@@ -6998,7 +7001,7 @@ bool Session::SequenceGameModeUpdate()
 
 		UpdateControllers();
 
-		//UpdateAllPlayersInput();
+		//UpdateAllPlayersInput(); //added this recently. hopefully doesn't break netplay.
 
 		ActiveSequenceUpdate();
 

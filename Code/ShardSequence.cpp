@@ -3,6 +3,7 @@
 #include "Enemy_Shard.h"
 #include "ParticleEffects.h"
 #include "Actor.h"
+#include "PlayerRecord.h"
 
 using namespace sf;
 using namespace std;
@@ -117,7 +118,11 @@ void GetShardSequence::UpdateState()
 		}
 		else if (frame > freezeFrame)
 		{
-			if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
+			if (sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn(0))
+			{
+				sess->SetGameSessionState(GameSession::RUN);
+			}
+			else if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 			}
