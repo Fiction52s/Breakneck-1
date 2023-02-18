@@ -27,10 +27,10 @@ struct MapNode
 	};
 
 	Type type;
-
 	Action action;
 	boost::filesystem::path filePath;
 	Tileset *ts_preview;
+	bool previewOwner;
 	int index;
 
 	//new
@@ -84,6 +84,7 @@ struct MapNode
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		bool bIOFailure);
 	void ClearPreview();
+	void CreatePreview();
 	void UpdateHeaderInfo();
 	void Copy(MapNode *mn);
 

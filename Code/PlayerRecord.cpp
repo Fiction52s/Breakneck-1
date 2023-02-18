@@ -215,6 +215,11 @@ void PlayerRecorder::RecordGhostFrame()
 	}*/
 
 	//ghost update
+	if (player->simulationMode)
+	{
+		return;
+	}
+
 	SprInfo &info = sprBuffer[frame];
 	info.position = player->sprite->getPosition();
 	info.origin = player->sprite->getOrigin();

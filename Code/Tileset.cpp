@@ -92,6 +92,7 @@ int Tileset::GetMemoryUsage()
 TilesetManager::TilesetManager()
 {
 	gameResourcesMode = true;
+	lastQueriedTilesetWasDuplicate = false;
 	parentManager = NULL;
 }
 
@@ -320,8 +321,12 @@ Tileset * TilesetManager::GetSizedTileset(const std::string & s)
 
 	Tileset *alreadyExistsTS = Find(cat, s);
 	if (alreadyExistsTS != NULL)
+	{
+		lastQueriedTilesetWasDuplicate = true;
 		return alreadyExistsTS;
+	}
 
+	lastQueriedTilesetWasDuplicate = false;
 	std::size_t finalUnderScore = s.find_last_of("_");
 	std::size_t finalX = s.find_last_of("x");
 	std::size_t finalDot = s.find('.');
@@ -343,7 +348,12 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 
 	Tileset *alreadyExistsTS = Find(cat, s);
 	if (alreadyExistsTS != NULL)
+	{
+		lastQueriedTilesetWasDuplicate = true;
 		return alreadyExistsTS;
+	}
+
+	lastQueriedTilesetWasDuplicate = false;
 
 	return Create(cat, s, tileWidth, tileHeight);
 }
@@ -355,8 +365,12 @@ Tileset *TilesetManager::GetTileset(const std::string & s, sf::Texture *tex)
 
 	Tileset *alreadyExistsTS = Find(cat, s);
 	if (alreadyExistsTS != NULL)
+	{
+		lastQueriedTilesetWasDuplicate = true;
 		return alreadyExistsTS;
-
+	}
+		
+	lastQueriedTilesetWasDuplicate = false;
 
 	Tileset *t = new Tileset();
 	t->texture = tex;

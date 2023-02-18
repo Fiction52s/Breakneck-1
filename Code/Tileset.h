@@ -67,6 +67,8 @@ struct TilesetManager
 		sf::Color *endColorBuf );*/
 	
 	void SetParentTilesetManager(TilesetManager *man);
+
+	bool lastQueriedTilesetWasDuplicate;
 private:
 	bool gameResourcesMode;
 	TilesetManager *parentManager;

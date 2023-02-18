@@ -18,6 +18,7 @@ MapNode::MapNode()
 	header = NULL;
 	myBrowser = NULL;
 	ts_preview = NULL; //needed
+	previewOwner = false;
 	Clear();
 }
 
@@ -128,8 +129,12 @@ void MapNode::ClearPreview()
 	{
 		if (ts_preview != NULL)
 		{
-			assert(myBrowser != NULL);
-			myBrowser->DestroyTileset(ts_preview);
+			if (previewOwner)
+			{
+				assert(myBrowser != NULL);
+				myBrowser->DestroyTileset(ts_preview);
+			}
+			
 			ts_preview = NULL;
 			previewTex = NULL;
 			if (chooseRect != NULL)
@@ -143,8 +148,39 @@ void MapNode::ClearPreview()
 	}
 }
 
+void MapNode::CreatePreview()
+{
+	if (myBrowser->ext == MAP_EXT)
+	{
+		string pathStr = filePath.string();
+		auto d = pathStr.find(".");
+		string middleTest = pathStr.substr(0, d);
+		string previewPath = middleTest + ".png";
+
+		if (ts_preview != NULL)
+		{
+			if (ts_preview->sourceName == previewPath)
+			{
+				//dont worry about it
+			}
+			else
+			{
+				ClearPreview();
+				ts_preview = myBrowser->GetTileset(previewPath);
+				previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+			}
+		}
+		else
+		{
+			ts_preview = myBrowser->GetTileset(previewPath);
+			previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+		}
+	}
+}
+
 void MapNode::Copy(MapNode *mn)
 {
+	previewOwner = false;
 	//some of these are definitely wrong but probably not in any ways that are relevant, at least yet lol
 	type = mn->type;
 	action = mn->action;
@@ -311,7 +347,9 @@ void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 			else
 			{
 				assert(myBrowser != NULL);
+				//ts_preview = myBrowser->GetTileset("WorkshopPreview/" + to_string(publishedFileId), previewTex);
 				ts_preview = myBrowser->GetTileset("WorkshopPreview/" + to_string(publishedFileId), previewTex);
+				previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
 			}
 
 			delete[] buffer;
@@ -660,15 +698,9 @@ void MapBrowser::AddFile(const path &p_filePath)
 	mapNode->folderPath = mapNode->filePath.parent_path().string();
 	mapNode->nodeName = mapNode->fileName;//mapNode->filePath.filename().stem().string();
 
-
 	if (ext == MAP_EXT)
 	{
-		string pathStr = p_filePath.string();
-		auto d = pathStr.find(".");
-		string middleTest = pathStr.substr(0, d);
-		string previewPath = middleTest + ".png";
-		mapNode->ts_preview = GetTileset(previewPath);
-
+		mapNode->CreatePreview();
 		mapNode->UpdateHeaderInfo();
 	}
 

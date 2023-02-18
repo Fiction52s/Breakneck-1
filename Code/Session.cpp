@@ -2853,6 +2853,11 @@ void Session::UpdatePlayerInput(int index)
 		player->currInput.SetFromCompressedState(ggpoCompressedInputs[index]);//8
 		//cout << "setting player: " << playerInd << "in universe " << parallelSessionIndex << " to input " << ggpoCompressedInputs[index] << "\n";
 	}
+	else if (player->simulationMode)
+	{
+		//make sure this takes priority over the replay
+		player->prevInput = player->currInput;
+	}
 	else if (playerReplayManager != NULL && playerReplayManager->IsReplayOn( playerInd ) )
 	{
 		player->prevInput = player->currInput;
