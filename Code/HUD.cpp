@@ -40,6 +40,10 @@ AdventureHUD::AdventureHUD()
 
 	powerSelector = new PowerSelector;
 
+	timerShowPos = Vector2f(1920 / 2, 50);
+
+	timerHidePos = timerShowPos + Vector2f(0, -200);
+
 	powerSelectorShowPos = Vector2f(288, 140);
 	powerSelectorHidePos = Vector2f(288-500, 140);
 
@@ -208,6 +212,7 @@ void AdventureHUD::Hide(int frames)
 		kinMask->SetTopLeft(kinMaskHidePos);
 		powerSelector->SetPosition(powerSelectorHidePos);
 		flyCountText.setPosition(flyCountTextHidePos);
+		timer->SetCenter(timerHidePos);
 		if (bossHealthBar != NULL)
 		{
 			bossHealthBar->SetTopLeft(bossHealthHidePos);
@@ -234,7 +239,9 @@ void AdventureHUD::Show(int frames)
 			keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
 		}
 		flyCountText.setPosition(flyCountTextShowPos);
+		timer->SetCenter(timerShowPos);
 		powerSelector->SetPosition(powerSelectorShowPos);
+		goSpr.setPosition(keyMarkerHidePos);
 		if (bossHealthBar != NULL)
 		{
 			bossHealthBar->SetTopLeft(bossHealthShowPos);
@@ -278,6 +285,7 @@ void AdventureHUD::Update()
 			}
 			flyCountText.setPosition(flyCountTextShowPos);
 			powerSelector->SetPosition(powerSelectorShowPos);
+			timer->SetCenter(timerShowPos);
 			if (bossHealthBar != NULL)
 			{
 				bossHealthBar->SetTopLeft(bossHealthShowPos);
@@ -297,6 +305,7 @@ void AdventureHUD::Update()
 			{
 				keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
 			}
+			goSpr.setPosition(neededCenter);
 			Vector2f countPos = flyCountTextHidePos * (1.f - a) + a * flyCountTextShowPos;
 			flyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorHidePos * (1.f - a) + a * powerSelectorShowPos;
@@ -308,6 +317,10 @@ void AdventureHUD::Update()
 			{
 				bossHealthBar->SetTopLeft(bossHealthPos);
 			}
+
+			Vector2f timerPos = timerHidePos * (1.f - a) + a * timerShowPos;
+
+			timer->SetCenter(timerPos);
 		}
 		break;
 	case EXITING:
@@ -320,6 +333,7 @@ void AdventureHUD::Update()
 			{
 				keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
 			}
+			goSpr.setPosition(keyMarkerHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
 			flyCountText.setPosition(flyCountTextHidePos);
 			powerSelector->SetPosition(powerSelectorHidePos);
@@ -327,6 +341,7 @@ void AdventureHUD::Update()
 			{
 				bossHealthBar->SetTopLeft(bossHealthHidePos);
 			}
+			timer->SetCenter(timerHidePos);
 		}
 		else
 		{
@@ -341,6 +356,7 @@ void AdventureHUD::Update()
 			{
 				keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
 			}
+			goSpr.setPosition(neededCenter);
 			Vector2f countPos = flyCountTextShowPos * (1.f - a) + a * flyCountTextHidePos;
 			flyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorShowPos * (1.f - a) + a * powerSelectorHidePos;
@@ -352,6 +368,10 @@ void AdventureHUD::Update()
 			{
 				bossHealthBar->SetTopLeft(bossHealthPos);
 			}
+
+			Vector2f timerPos = timerShowPos * (1.f - a) + a * timerHidePos;
+
+			timer->SetCenter(timerPos);
 		}
 		break;
 	case HIDDEN:
@@ -378,6 +398,7 @@ void AdventureHUD::Update()
 	}
 	//healthBar->Update();
 
+	
 	timer->SetNumFrames(sess->GetPlayer(0)->numFramesToLive);
 	timer->Update();
 
@@ -404,20 +425,24 @@ void AdventureHUD::Reset()
 	timer->Reset();
 	modifierTimer->Reset();
 
-	mini->SetCenter(miniShowPos);
-	kinMask->SetTopLeft(kinMaskShowPos);
-	for (int i = 0; i < keyMarkers.size(); ++i)
+	Show();
+
+	//mini->SetCenter(miniShowPos);
+	//kinMask->SetTopLeft(kinMaskShowPos);
+	/*for (int i = 0; i < keyMarkers.size(); ++i)
 	{
 		keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
-	}
+	}*/
 	
-	goSpr.setPosition(keyMarkerShowPos);
+	//goSpr.setPosition(keyMarkerShowPos);
 
-	powerSelector->SetPosition(powerSelectorShowPos);
-	if (bossHealthBar != NULL)
-	{
-		bossHealthBar->SetTopLeft(bossHealthShowPos);
-	}
+	//powerSelector->SetPosition(powerSelectorShowPos);
+	//if (bossHealthBar != NULL)
+	//{
+	//	bossHealthBar->SetTopLeft(bossHealthShowPos);
+	//}
+
+	
 	//sprite.setPosition(288, 140);
 	//momentumBar->SetTopLeft(momentumShowPos);
 }

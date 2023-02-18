@@ -117,6 +117,9 @@ struct AdventureHUD : HUD
 
 	sf::Text flyCountText;
 
+	sf::Vector2f timerShowPos;
+	sf::Vector2f timerHidePos;
+
 	sf::Vector2f miniShowPos;
 	sf::Vector2f miniHidePos;
 

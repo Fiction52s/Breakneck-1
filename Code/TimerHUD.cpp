@@ -16,7 +16,7 @@ TimerHUD::TimerHUD( bool p_modifier )
 	//ts_text = sess->GetSizedTileset("HUD/numbers_2_50x64.png");
 	timer = new TimerText(ts_text);
 
-	center = Vector2f(1920 / 2, 50);
+	//center = Vector2f(1920 / 2, 50);
 
 	textShader = new PaletteShader("timer", "Resources/HUD/numbers_palette_2x1.png");
 
@@ -29,7 +29,7 @@ TimerHUD::TimerHUD( bool p_modifier )
 	{
 		baseScale = .6f;
 		grownScale = .6f;//1.5f;
-		center.x += 250;
+		//center.x += 250;
 		//timer->SetSymbol(ImageText::SYMBOL_PLUS);
 	}
 	else
