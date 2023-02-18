@@ -85,6 +85,7 @@ struct MusicInfo;
 
 struct ShardPopup;
 struct PowerPopup;
+struct LogPopup;
 struct DeathSequece;
 
 struct ShardMenu;
@@ -381,6 +382,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;
 	PowerPopup *powerPop;
+	LogPopup *logPop;
 	DeathSequence *deathSeq;
 	BitField *shardsCapturedField;
 
@@ -742,6 +744,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void QueryToSpawnEnemies();
 	void DrawBlackBorderQuads(sf::RenderTarget *target);
 	void TryCreateShardResources();
+	void TryCreateLogResources();
 	void TryCreatePowerItemResources();
 	virtual bool IsShardCaptured(int sType);
 	void SetupShardsCapturedField();

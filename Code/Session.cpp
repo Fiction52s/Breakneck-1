@@ -1650,6 +1650,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	topClouds = NULL;
 	deathSeq = NULL;
 	shardPop = NULL;
+	logPop = NULL;
 	powerPop = NULL;
 
 	shardMenu = NULL;
@@ -1939,6 +1940,12 @@ Session::~Session()
 	{
 		delete shardPop;
 		shardPop = NULL;
+	}
+
+	if (logPop != NULL)
+	{
+		delete logPop;
+		logPop = NULL;
 	}
 
 	if (powerPop != NULL)
@@ -5253,6 +5260,14 @@ void Session::TryCreateShardResources()
 	if (shardPop == NULL)
 	{
 		shardPop = new ShardPopup;
+	}
+}
+
+void Session::TryCreateLogResources()
+{
+	if (logPop == NULL)
+	{
+		logPop = new LogPopup;
 	}
 }
 

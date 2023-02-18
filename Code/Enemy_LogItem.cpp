@@ -8,12 +8,13 @@
 #include "MapHeader.h"
 #include "VisualEffects.h"
 #include "PauseMenu.h"
-#include "ShardMenu.h"
 #include "Actor.h"
+#include "LogSequence.h"
 
 #include "ParticleEffects.h"
 
 #include "Enemy_LogItem.h"
+#include "TutorialBox.h"
 #include "LogMenu.h"
 
 using namespace std;
@@ -30,7 +31,7 @@ using namespace sf;
 
 void LogItem::UpdateParamsSettings()
 {
-	int oldShardType = logType;
+	int oldlogType = logType;
 
 	LogParams *lParams = (LogParams*)editParams;
 	logWorld = lParams->lInfo.world;
@@ -38,11 +39,11 @@ void LogItem::UpdateParamsSettings()
 
 	tile = sess->logMenu->GetLogTile(logWorld, localIndex);
 	sprite.setTextureRect(ts->GetSubRect(tile));
-	logType = logWorld * LogInfo::MAX_LOGS_PER_WORLD + localIndex;//GetShardTypeFromWorldAndIndex(shardWorld, localIndex);//shardWorld * 22 + localIndex;//Shard::GetShardType(shardWorld, localIndex);
+	logType = logWorld * LogInfo::MAX_LOGS_PER_WORLD + localIndex;//GetlogTypeFromWorldAndIndex(logWorld, localIndex);//logWorld * 22 + localIndex;//log::GetlogType(logWorld, localIndex);
 
-	/*if (logType != oldShardType)
+	/*if (logType != oldlogType)
 	{
-		ts = Shard::GetShardTileset(shardWorld, sess);
+		ts = log::GetlogTileset(logWorld, sess);
 
 		sprite.setTexture(*ts->texture);
 		
@@ -65,16 +66,20 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	radius = 400;
 	logType = 0;
 
+	logSeq = NULL;
+
 	ts = GetSizedTileset("Logs/logs_64x64.png");
 	ts_shine = GetSizedTileset("Logs/logs_shine_64x64.png");
 	UpdateParamsSettings();
 
 	alreadyCollected = false;
 
+	sess->TryCreateLogResources();
+
 	sprite.setScale(1.5, 1.5);
 	shineSprite.setScale(1.5, 1.5);
 
-	/*if (sess->IsShardCaptured(shardType))
+	/*if (sess->IslogCaptured(logType))
 	{
 	alreadyCollected = true;
 	}*/
@@ -111,6 +116,10 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 		Color::Cyan, Color(0, 0, 100, 0), 60));
 	geoGroup.Init();
 
+	logSeq = new GetLogSequence;
+	logSeq->Init();
+	logSeq->log = this;
+
 	sprite.setTexture(*ts->texture);
 	shineSprite.setTexture(*ts_shine->texture);
 
@@ -137,6 +146,12 @@ LogItem::~LogItem()
 	if (sparklePool != NULL)
 	{
 		delete sparklePool;
+	}
+
+	if (logSeq != NULL)
+	{
+		delete logSeq;
+		logSeq = NULL;
 	}
 }
 
@@ -204,6 +219,14 @@ void LogItem::DissipateOnTouch()
 	HurtboxesOff();
 
 	Capture();
+
+	logSeq->Reset();
+	sess->SetActiveSequence(logSeq);
+
+	Actor *player = sess->GetPlayer(0);
+	player->SetAction(Actor::GETSHARD);
+	player->frame = 0;
+	player->velocity = V2d(0, 0);
 }
 
 void LogItem::Capture()
@@ -365,4 +388,123 @@ int LogItem::GetLogTypeFromWorldAndIndex(int w, int li)
 int LogItem::GetNumLogsTotal()
 {
 	return LogInfo::MAX_LOGS_PER_WORLD * 8;
+}
+
+
+
+LogPopup::LogPopup()
+{
+	//563 x 186
+	sess = Session::GetSession();
+
+	logWorld = -1;
+	logLocalIndex = -1;
+
+	ts_log = sess->GetSizedTileset("Logs/logs_64x64.png");
+
+	
+
+	nameText.setCharacterSize(50);
+	nameText.setFillColor(Color::Red);
+	nameText.setFont(sess->mainMenu->arial);
+
+	SetRectColor(bgQuad, Color(0, 0, 0, 200));
+
+	Color borderColor = Color(100, 100, 100, 100);
+	SetRectColor(topBorderQuad, borderColor);
+	SetRectColor(logBorderQuad, borderColor);
+
+	borderHeight = 2;
+
+	width = 1400;
+
+	logBorder = 20;
+
+	descBorder = Vector2f(10, 10);
+
+	nameHeight = nameText.getFont()->getLineSpacing(nameText.getCharacterSize());
+
+	tutBox = new TutorialBox(40, Vector2f(0, 0), Color::Transparent, Color::White, 0);
+
+	float descLineHeight = tutBox->text.getFont()->getLineSpacing(tutBox->text.getCharacterSize());
+
+	float extraHeight = 10;
+
+	logSize = 192;
+
+	height = nameHeight + borderHeight + descLineHeight * 4 + descBorder.y * 2 + extraHeight;
+
+	logRel = Vector2f(logBorder, nameHeight + borderHeight + logBorder);
+}
+
+LogPopup::~LogPopup()
+{
+	delete tutBox;
+}
+
+void LogPopup::Reset()
+{
+	state = SHOW;
+	frame = 0;
+}
+
+void LogPopup::Update()
+{
+	++frame;
+}
+
+void LogPopup::SetLog( int w, int i )
+{
+	logWorld = w;
+	logLocalIndex = i;
+
+	ts_log->SetSubRect(logSpr, sess->logMenu->GetLogTile(logWorld, logLocalIndex));
+
+	string nameStr = sess->logMenu->GetLogName(logWorld, logLocalIndex);
+	nameText.setString(nameStr);
+	auto lb = nameText.getLocalBounds();
+	nameText.setOrigin(lb.left + lb.width / 2, 0);
+
+	string descStr = sess->logMenu->GetLogDesc(logWorld, logLocalIndex);
+	tutBox->SetText(descStr);
+}
+
+void LogPopup::SetTopLeft(sf::Vector2f &pos)
+{
+	topLeft = pos;
+
+	SetRectTopLeft(bgQuad, width, height, topLeft);
+	SetRectTopLeft(topBorderQuad, width, borderHeight, topLeft + Vector2f(0, nameHeight));
+
+	logSpr.setPosition(topLeft + logRel);
+
+	float remaining = height - nameHeight;
+
+	float logBorderLeft = logBorder * 2 + logSize;
+
+	SetRectTopLeft(logBorderQuad, borderHeight, remaining, topLeft + Vector2f(logBorderLeft, nameHeight + borderHeight));
+
+
+	Vector2f center = topLeft + Vector2f(width / 2, height / 2);
+
+	nameText.setPosition(center.x, topLeft.y);
+
+	tutBox->SetTopLeft(topLeft + Vector2f(logBorderLeft + borderHeight + descBorder.x, nameHeight + borderHeight + descBorder.y));
+}
+
+void LogPopup::SetCenter(sf::Vector2f &pos)
+{
+	SetTopLeft(Vector2f(pos.x - width / 2, pos.y - height / 2));
+}
+
+void LogPopup::Draw(RenderTarget *target)
+{
+	target->draw(bgQuad, 4, sf::Quads);
+	target->draw(topBorderQuad, 4, sf::Quads);
+	target->draw(logBorderQuad, 4, sf::Quads);
+
+	target->draw(logSpr);
+	target->draw(nameText);
+
+	tutBox->Draw(target);
 }
