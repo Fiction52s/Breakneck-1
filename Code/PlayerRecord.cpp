@@ -9,6 +9,7 @@
 #include "MainMenu.h"
 #include <vector>
 #include "globals.h"
+#include "SaveFile.h"
 
 using namespace sf;
 using namespace std;
@@ -134,7 +135,7 @@ void ReplayPlayer::Read(ifstream &is)
 void ReplayPlayer::Reset()
 {
 	SetToStart();
-	pReplayer->player->SetAllUpgrades(pReplayer->bUpgradeField);
+	pReplayer->player->SetAllUpgrades(pReplayer->replayManager->header.bUpgradeField);//pReplayer->//pReplayer->bUpgradeField);
 	pReplayer->player->currPowerMode = pReplayer->startPowerMode;
 }
 
@@ -170,7 +171,7 @@ void ReplayPlayer::UpdateInput( ControllerState &state )//ControllerDualStateQue
 }
 
 PlayerRecorder::PlayerRecorder(Actor *p_player)
-	:player(p_player),bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
+	:player(p_player)
 {
 	numTotalFrames = -1;
 	frame = -1;
@@ -191,7 +192,7 @@ void PlayerRecorder::StartRecording()
 	numTotalFrames = -1;
 
 	//only works for 1 player atm
-	bUpgradeField.Set(player->bStartHasUpgradeField);
+
 	startPowerMode = player->currPowerMode;
 }
 
@@ -244,7 +245,6 @@ void PlayerRecorder::Write(ofstream &of )
 	of.write((char*)&numTotalFrames, sizeof(numTotalFrames));
 	of.write((char*)&skinIndex, sizeof(skinIndex));
 	of.write((char*)&startPowerMode, sizeof(startPowerMode));
-	bUpgradeField.SaveBinary(of);
 	
 	of.write((char*)sprBuffer, numTotalFrames * sizeof(SprInfo));
 	of.write((char*)inputBuffer, numTotalFrames * COMPRESSED_INPUT_SIZE);
@@ -256,7 +256,11 @@ void PlayerRecorder::StopRecordingAndWriteToFile(const std::string &fileName)
 }
 
 PlayerRecordHeader::PlayerRecordHeader()
-	:numberOfPlayers(0)
+	:numberOfPlayers(0),
+	bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	bShardField(ShardInfo::MAX_SHARDS), 
+	bUpgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
+	bLogField(256)
 {
 	SetVer(1);
 }
@@ -270,10 +274,35 @@ void PlayerRecordHeader::SetVer(int v)
 	ver = v;
 }
 
+void PlayerRecordHeader::SetFields()
+{
+	GameSession *game = GameSession::GetSession();
+	if (game != NULL && game->saveFile != NULL)
+	{
+		bUpgradeField.Set(game->saveFile->upgradeField);//sess->GetPlayer(0)->bStartHasUpgradeField);
+		bUpgradesTurnedOnField.Reset();
+
+		bLogField.Set(game->saveFile->logField);
+		bShardField.Set(game->saveFile->shardField);
+	}
+	else
+	{
+		bUpgradeField.Reset();
+		bUpgradesTurnedOnField.Reset();
+		bLogField.Reset();
+		bShardField.Reset();
+	}
+}
+
 void PlayerRecordHeader::Read(std::ifstream &is)
 {
 	is.read((char*)&ver, sizeof(ver)); //read in the basic vars
 	is.read((char*)&numberOfPlayers, sizeof(numberOfPlayers));
+
+	bUpgradeField.LoadBinary(is);
+	bUpgradesTurnedOnField.LoadBinary(is);
+	bShardField.LoadBinary(is);
+	bLogField.LoadBinary(is);
 
 	assert(numberOfPlayers > 0 && numberOfPlayers <= 4);
 }
@@ -282,11 +311,16 @@ void PlayerRecordHeader::Write(std::ofstream &of)
 {
 	of.write((char*)&ver, sizeof(ver));
 	of.write((char*)&numberOfPlayers, sizeof(numberOfPlayers));
+
+	bUpgradeField.SaveBinary(of);
+	bUpgradesTurnedOnField.SaveBinary(of);
+	bShardField.SaveBinary(of);
+	bLogField.SaveBinary(of);
 }
 
-PlayerReplayer::PlayerReplayer(Actor *p)
-	:bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
+PlayerReplayer::PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager)
 {
+	replayManager = p_replayManager;
 	player = p;
 	replayGhost = new ReplayGhost(this);
 	replayPlayer = new ReplayPlayer(this);
@@ -306,8 +340,7 @@ bool PlayerReplayer::Read(ifstream & is)
 	is.read((char*)&numTotalFrames, sizeof(numTotalFrames));
 	is.read((char*)&skinIndex, sizeof(skinIndex));
 	is.read((char*)&startPowerMode, sizeof(startPowerMode));
-	bUpgradeField.LoadBinary(is);
-
+	
 	replayGhost->Read(is);
 	replayPlayer->Read(is);
 
@@ -353,6 +386,10 @@ void PlayerRecordingManager::StopRecording()
 
 void PlayerRecordingManager::StartRecording()
 {
+	//header.bUpgradeField.Set(player->bStartHasUpgradeField);
+
+	header.SetFields();
+
 	for (auto it = recorderVec.begin(); it != recorderVec.end(); ++it)
 	{
 		(*it)->StartRecording();
@@ -364,8 +401,9 @@ void PlayerRecordingManager::RestartRecording()
 	for (auto it = recorderVec.begin(); it != recorderVec.end(); ++it)
 	{
 		(*it)->StopRecording();
-		(*it)->StartRecording();
 	}
+
+	StartRecording();
 }
 
 
@@ -460,7 +498,7 @@ bool PlayerReplayManager::LoadFromFile(const boost::filesystem::path &fileName)
 
 		for (int i = 0; i < header.numberOfPlayers; ++i)
 		{
-			repVec[i] = new PlayerReplayer(sess->GetPlayer(i));
+			repVec[i] = new PlayerReplayer(sess->GetPlayer(i), this);
 			repVec[i]->Read(is);
 		}
 

@@ -3890,6 +3890,11 @@ void GameSession::RemoveGravityGrassFromExplodeList(Grass *g)
 
 bool GameSession::IsShardCaptured(int shardType)
 {
+	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	{
+		return playerReplayManager->header.bShardField.GetBit(shardType);
+	}
+
 	if (saveFile != NULL)
 	{
 		return saveFile->ShardIsCaptured(shardType);
@@ -4469,6 +4474,11 @@ void GameSession::DecorDraw::Draw(sf::RenderTarget *target)
 
 bool GameSession::HasLog(int logIndex)
 {
+	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	{
+		return playerReplayManager->header.bLogField.GetBit(logIndex);
+	}
+
 	if (saveFile != NULL)
 	{
 		return saveFile->HasLog(logIndex);

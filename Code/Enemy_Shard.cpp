@@ -15,6 +15,7 @@
 
 #include "ParticleEffects.h"
 #include "TutorialBox.h"
+#include "PlayerRecord.h"
 
 using namespace std;
 using namespace sf;
@@ -82,15 +83,17 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 
 	alreadyCollected = false;
 
-	if (sess->IsShardCaptured(shardType))
+	/*if (sess->IsShardCaptured(shardType))
 	{
 		alreadyCollected = true;
-	}
+	}*/
 
-	if( !alreadyCollected)
+	sess->TryCreateShardResources();
+
+	/*if( !alreadyCollected)
 	{
-		sess->TryCreateShardResources();
-	}
+		
+	}*/
 	
 	testEmitter = NULL;
 	ts_sparkle = NULL;
@@ -162,13 +165,28 @@ Shard::~Shard()
 
 void Shard::ResetEnemy()
 {
-	if (!alreadyCollected)
+	alreadyCollected = sess->IsShardCaptured(shardType);
+
+	/*if (!alreadyCollected)
 	{
-		if (sess->IsShardCaptured(shardType))
+		
+	}
+	else
+	{
+		if (!sess->IsShardCaptured(shardType))
 		{
 			alreadyCollected = true;
 		}
-	}
+	}*/
+	
+	/*GameSession *game = GameSession::GetSession();
+	if (game != NULL)
+	{
+		if (game->playerReplayManager != NULL && game->playerReplayManager->IsReplayOn(0))
+		{
+
+		}
+	}*/
 
 	SetCurrPosInfo(startPosInfo);
 
@@ -289,33 +307,46 @@ void Shard::Capture()
 {
 	//owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
 
-	sess->shardsCapturedField->SetBit(shardType, true);
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		if (game->saveFile != NULL)
-		{
-			assert(!game->saveFile->shardField.GetBit(shardType));
-			//both give you the shard and mark it as a new shard
-			game->saveFile->shardField.SetBit(shardType, true);
-			game->saveFile->newShardField.SetBit(shardType, true);
-			game->saveFile->Save();
-		}
-	}
-
 	int upgradeIndex = shardType + (Actor::UPGRADE_POWER_LWIRE + 1); //sess->shardMenu->upgradeIndexes[shardType];
 
-	if (upgradeIndex != -1)
-	{
-		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
+	sess->shardsCapturedField->SetBit(shardType, true);
 
+	if (sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn(0))
+	{
+		if (upgradeIndex != -1)
+		{
+			sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
+		}
+	}
+	else
+	{
 		if (sess->IsSessTypeGame())
 		{
 			GameSession *game = GameSession::GetSession();
+			if (game->saveFile != NULL)
+			{
+				assert(!game->saveFile->shardField.GetBit(shardType));
+				//both give you the shard and mark it as a new shard
+				game->saveFile->shardField.SetBit(shardType, true);
+				game->saveFile->newShardField.SetBit(shardType, true);
+				game->saveFile->Save();
+			}
+		}
 
-			game->UnlockUpgrade(upgradeIndex);
+		if (upgradeIndex != -1)
+		{
+			sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
+
+			if (sess->IsSessTypeGame())
+			{
+				GameSession *game = GameSession::GetSession();
+
+				game->UnlockUpgrade(upgradeIndex);
+			}
 		}
 	}
+
+	
 }
 
 void Shard::DirectKill()

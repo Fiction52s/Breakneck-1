@@ -445,7 +445,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 
 		powerSelector->Draw(target);
 
-		if (numActiveKeyMarkers == 0)
+		if (numActiveKeyMarkers == 0 && sess->currentZone != NULL )
 		{
 			target->draw(goSpr);
 		}

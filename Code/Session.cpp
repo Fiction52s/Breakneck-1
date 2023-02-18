@@ -5379,6 +5379,11 @@ void Session::DrawActiveSequence(EffectLayer layer, sf::RenderTarget *target)
 
 bool Session::IsShardCaptured(int s)
 {
+	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	{
+		return playerReplayManager->header.bShardField.GetBit(s);
+	}
+
 	return shardsCapturedField->GetBit(s);
 }
 
@@ -6993,6 +6998,8 @@ bool Session::SequenceGameModeUpdate()
 
 		UpdateControllers();
 
+		//UpdateAllPlayersInput();
+
 		ActiveSequenceUpdate();
 
 		mainMenu->musicPlayer->Update();
@@ -7004,6 +7011,8 @@ bool Session::SequenceGameModeUpdate()
 		swiper->Update();
 		mainMenu->UpdateEffects();
 		UpdateEmitters();
+
+		//totalGameFrames++;
 
 		accumulator -= TIMESTEP;
 

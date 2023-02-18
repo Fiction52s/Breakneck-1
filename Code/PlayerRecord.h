@@ -33,9 +33,15 @@ struct PlayerRecordHeader
 	int numberOfPlayers;
 	int ver;
 
+	BitField bUpgradeField;
+	BitField bUpgradesTurnedOnField;
+	BitField bLogField;
+	BitField bShardField;
+
 	PlayerRecordHeader();
 	~PlayerRecordHeader();
 
+	void SetFields();
 	void SetVer(int v);
 	void Read(std::ifstream &is);
 	void Write(std::ofstream &of);
@@ -49,7 +55,7 @@ struct PlayerRecorder
 	int numTotalFrames;
 	int skinIndex;
 	int startPowerMode;
-	BitField bUpgradeField;
+
 
 	SprInfo sprBuffer[MAX_RECORD]; //1 hour
 	COMPRESSED_INPUT_TYPE inputBuffer[MAX_RECORD];
@@ -117,19 +123,22 @@ struct ReplayPlayer
 	void UpdateInput(ControllerState &state);//ControllerDualStateQueue *controllerInput);
 };
 
+struct PlayerReplayManager;
+
 struct PlayerReplayer
 {
 	int numTotalFrames;
 	int skinIndex;
 	int startPowerMode;
-	BitField bUpgradeField;
 
 	ReplayGhost *replayGhost;
 	ReplayPlayer *replayPlayer;
 
+	PlayerReplayManager *replayManager;
+
 	Actor *player;
 
-	PlayerReplayer(Actor *p);
+	PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager);
 	~PlayerReplayer();
 	bool Read(std::ifstream &is );
 	//bool OpenGhost(const boost::filesystem::path &fileName);

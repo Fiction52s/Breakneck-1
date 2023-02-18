@@ -16,6 +16,7 @@
 
 #include "Enemy_PowerItem.h"
 #include "TutorialBox.h"
+#include "PlayerRecord.h"
 
 using namespace std;
 using namespace sf;
@@ -101,22 +102,23 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	alreadyCollected = false;
 
-	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
-
-	if (sess->GetPlayer(0)->HasUpgrade(upgradeIndex))
+	//int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+	/*if (sess->GetPlayer(0)->HasUpgrade(upgradeIndex))
 	{
 		alreadyCollected = true;
-	}
+	}*/
 
 	/*if (sess->IsShardCaptured(shardType))
 	{
 		alreadyCollected = true;
 	}*/
 
-	if (!alreadyCollected)
+	sess->TryCreatePowerItemResources();
+
+	/*if (!alreadyCollected)
 	{
-		sess->TryCreatePowerItemResources();
-	}
+		
+	}*/
 
 	testEmitter = NULL;
 	ts_sparkle = NULL;
@@ -190,14 +192,32 @@ PowerItem::~PowerItem()
 
 void PowerItem::ResetEnemy()
 {
+	//implement for power
+	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+	alreadyCollected = sess->GetPlayer(0)->HasUpgrade(upgradeIndex);
+
+	/*if (sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn())
+	{
+		alreadyCollected = sess->GetPlayer(0)->HasUpgrade(upgradeIndex)
+	}
+	else
+	{
+		
+	}
+	if ()
+	{
+		alreadyCollected = true;
+	}
+
+	if (sess->IsShardCaptured(shardType))
+	{
+		alreadyCollected = true;
+	}
+
 	if (!alreadyCollected)
 	{
-		int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
-		if (sess->GetPlayer(0)->HasUpgrade(upgradeIndex))
-		{
-			alreadyCollected = true;
-		}
-	}
+		
+	}*/
 	
 
 	SetCurrPosInfo(startPosInfo);
