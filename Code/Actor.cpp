@@ -6499,7 +6499,7 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-	cout << "game frame: " << sess->totalGameFrames << ", action: " << action << ", " << "frame: " << frame << ", posiiton: " << position.x << ", " << position.y << "\n";
+	//cout << "game frame: " << sess->totalGameFrames << ", action: " << action << ", " << "frame: " << frame << ", posiiton: " << position.x << ", " << position.y << "\n";
 	/*static int skinTest = 0;
 	SetSkin(skinTest / 3);
 	++skinTest;

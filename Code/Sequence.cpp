@@ -562,6 +562,17 @@ bool Sequence::IsFlashDone(const std::string &flashName)
 	return flashes[flashName]->IsDone();
 }
 
+bool Sequence::PlayerPressedConfirm()
+{
+	if ((sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn(0))
+		|| (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void Sequence::EndCurrState()
 {
 	int sLen = stateLength[state];

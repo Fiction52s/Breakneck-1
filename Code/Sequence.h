@@ -12,6 +12,7 @@
 #include "VectorMath.h"
 #include <SFML/Audio.hpp>
 #include "SoundManager.h"
+#include "PlayerRecord.h"
 
 struct Edge;
 struct MovementSequence;
@@ -257,6 +258,7 @@ struct Sequence
 		CubicBezier bez = CubicBezier());
 	void Flash(const std::string &flashName);
 	bool IsFlashDone(const std::string &flashName);
+	bool PlayerPressedConfirm();
 	virtual void ReturnToGame() {}
 	virtual void DrawFlashes(sf::RenderTarget *target);
 	virtual void SpecialInit() {}

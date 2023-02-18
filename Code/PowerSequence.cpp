@@ -4,6 +4,7 @@
 #include "ParticleEffects.h"
 #include "Actor.h"
 
+
 using namespace sf;
 using namespace std;
 
@@ -111,7 +112,7 @@ void GetPowerSequence::UpdateState()
 		}
 		else if (frame > freezeFrame)
 		{
-			if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
+			if( PlayerPressedConfirm() )
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 			}

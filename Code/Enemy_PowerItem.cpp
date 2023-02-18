@@ -113,12 +113,14 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 		alreadyCollected = true;
 	}*/
 
-	sess->TryCreatePowerItemResources();
+	
 
 	/*if (!alreadyCollected)
 	{
 		
 	}*/
+
+	sess->TryCreatePowerItemResources();
 
 	testEmitter = NULL;
 	ts_sparkle = NULL;
@@ -127,33 +129,32 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	powerSeq = NULL;
 
-	if (!alreadyCollected)
-	{
-		testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
-		testEmitter->CreateParticles();
-		testEmitter->SetPos(GetPositionF());
-		testEmitter->SetRatePerSecond(30);
+	
 
-		ts_sparkle = GetSizedTileset("Menu/shard_sparkle_64x64.png");
+	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
+	testEmitter->CreateParticles();
+	testEmitter->SetPos(GetPositionF());
+	testEmitter->SetRatePerSecond(30);
 
-		ts_explodeCreate = GetSizedTileset("FX/shard_explode_01_256x256.png");
+	ts_sparkle = GetSizedTileset("Menu/shard_sparkle_64x64.png");
 
-		sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
-		sparklePool->ts = ts_sparkle;
+	ts_explodeCreate = GetSizedTileset("FX/shard_explode_01_256x256.png");
 
-		BasicCircleHurtBodySetup(32);
-		BasicCircleHitBodySetup(32);
+	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
+	sparklePool->ts = ts_sparkle;
 
-		hitBody.hitboxInfo = NULL;
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 
-		geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
-			Color::Cyan, Color(0, 0, 100, 0), 60));
-		geoGroup.Init();
+	hitBody.hitboxInfo = NULL;
 
-		powerSeq = new GetPowerSequence;
-		powerSeq->Init();
-		powerSeq->powerItem = this;
-	}
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 60));
+	geoGroup.Init();
+
+	powerSeq = new GetPowerSequence;
+	powerSeq->Init();
+	powerSeq->powerItem = this;
 
 
 	sprite.setTexture(*ts->texture);

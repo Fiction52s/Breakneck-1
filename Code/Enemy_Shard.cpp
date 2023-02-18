@@ -101,33 +101,30 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	sparklePool = NULL;
 
 	
-	if (!alreadyCollected)
-	{
-		testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
-		testEmitter->CreateParticles();
-		testEmitter->SetPos(GetPositionF());
-		testEmitter->SetRatePerSecond(30);
+	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
+	testEmitter->CreateParticles();
+	testEmitter->SetPos(GetPositionF());
+	testEmitter->SetRatePerSecond(30);
 
-		ts_sparkle = GetSizedTileset("Menu/shard_sparkle_64x64.png");
+	ts_sparkle = GetSizedTileset("Menu/shard_sparkle_64x64.png");
 
-		ts_explodeCreate = GetSizedTileset("FX/shard_explode_01_256x256.png");
+	ts_explodeCreate = GetSizedTileset("FX/shard_explode_01_256x256.png");
 
-		sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
-		sparklePool->ts = ts_sparkle;
+	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
+	sparklePool->ts = ts_sparkle;
 
-		BasicCircleHurtBodySetup(64);
-		BasicCircleHitBodySetup(64);
+	BasicCircleHurtBodySetup(64);
+	BasicCircleHitBodySetup(64);
 
-		hitBody.hitboxInfo = NULL;
+	hitBody.hitboxInfo = NULL;
 
-		geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
-			Color::Cyan, Color(0, 0, 100, 0), 60));
-		geoGroup.Init();
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 60));
+	geoGroup.Init();
 
-		shardSeq = new GetShardSequence;
-		shardSeq->Init();
-		shardSeq->shard = this;
-	}
+	shardSeq = new GetShardSequence;
+	shardSeq->Init();
+	shardSeq->shard = this;
 	
 	
 

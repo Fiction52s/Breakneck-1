@@ -118,11 +118,7 @@ void GetShardSequence::UpdateState()
 		}
 		else if (frame > freezeFrame)
 		{
-			if (sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn(0))
-			{
-				sess->SetGameSessionState(GameSession::RUN);
-			}
-			else if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
+			if (PlayerPressedConfirm())
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 			}
