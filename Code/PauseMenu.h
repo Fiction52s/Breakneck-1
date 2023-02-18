@@ -6,6 +6,8 @@
 #include "Input.h"
 #include "Movement.h"
 
+struct GameSettingsScreen;
+
 
 struct GameSession;
 struct ShardMenu;
@@ -110,12 +112,15 @@ struct PauseMenu
 	void ApplyVideoSettings();
 	void ApplySoundSettings( );
 	bool CanChangeTab();
+	void HandleEvent(sf::Event ev);
 
 	sf::Text debugText;
 
 	MainMenu *mainMenu;
 	Tileset *ts_pauseOptions;
 	sf::Vertex pauseOptionQuads[5 * 4];
+
+	GameSettingsScreen *gameSettingsMenu;
 	void UpdatePauseOptions();
 	
 	enum OptionType

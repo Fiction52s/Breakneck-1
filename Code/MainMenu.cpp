@@ -767,10 +767,31 @@ void MainMenu::SetupWindow()
 
 	assert(window != NULL);
 	window->setVerticalSyncEnabled(true);
+
+	auto vMode = VideoMode::getDesktopMode();
+
+	Vector2i border((vMode.width - windowWidth) / 2, (vMode.height - windowHeight) / 2 );
+
+	window->setPosition(border);
+
+	Session *sess = Session::GetSession();
+	if (sess != NULL)
+	{
+		sess->window = window;
+
+		View vTest;
+		vTest.setCenter(0, 0);
+		vTest.setSize(1920 / 2, 1080 / 2);
+		window->setView(vTest);
+
+		//simulates what is done within gamesession. fix this later and make it cleaner
+	}
+	else
+	{
+		window->setView(v);
+	}
 	//window->setFramerateLimit(120);
 	//std::cout << "opened window" << endl;
-
-	window->setView(v);
 }
 
 

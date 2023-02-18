@@ -753,7 +753,6 @@ struct EditSession : GUIHandler, Session
 	void FixPathSlivers(ClipperLib::Path &p);
 	bool FixPathSlivers(ClipperLib::Path &p,
 		ClipperIntPointSet &fusedPoints );
-	sf::Vector2i GetPixelPos();
 	void TryCompleteSelectedMove();
 	void TryCompleteEnemyCreation();
 	sf::Vector2i GetCopiedCenter();

@@ -2567,6 +2567,7 @@ bool GameSession::RunMainLoopOnce()
 		sf::Event ev;
 		while (window->pollEvent(ev))
 		{
+			pauseMenu->HandleEvent(ev);
 			/*if( ev.type == sf::Event::KeyPressed )
 			{
 			if( ev.key.code = Keyboard::O )

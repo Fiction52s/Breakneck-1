@@ -4279,7 +4279,7 @@ int EditSession::EditRun()
 			editAccumulator -= mult * TIMESTEP;
 			//}
 
-			pixelPos = GetPixelPos();
+			pixelPos = MOUSE.GetRealPixelPos();
 
 			oldWorldPosTest = worldPos;
 			worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
@@ -12246,21 +12246,12 @@ void EditSession::SetZoom(double z)
 		Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y);//worldPos - ( - (  .5f * view.getSize() ) );
 		view.setSize(Vector2f(960 * (zoomMultiple), 540 * (zoomMultiple)));
 		preScreenTex->setView(view);
-		Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(GetPixelPos());
+		Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(MOUSE.GetRealPixelPos());
 		Vector2<double> newWorldPos(newWorldPosTemp.x, newWorldPosTemp.y);
 		Vector2<double> tempCenter = ff + (worldPos - newWorldPos);
 		view.setCenter(tempCenter.x, tempCenter.y);
 		preScreenTex->setView(view);
 	}
-}
-
-Vector2i EditSession::GetPixelPos()
-{
-	Vector2i pPos = Mouse::getPosition(*window);
-	pPos.x *= 1920.f / window->getSize().x;
-	pPos.y *= 1080.f / window->getSize().y;
-
-	return pPos;
 }
 
 void EditSession::UpdateCurrTerrainType()

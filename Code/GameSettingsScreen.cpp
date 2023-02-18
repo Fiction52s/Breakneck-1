@@ -12,6 +12,7 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 
 	panel = new Panel("gamesettingsscreen", 1920, 1080, this, true);
 	//panel->SetColor(Color::Transparent);
+	//panel->SetTop
 	panel->SetCenterPos(Vector2i(960, 540));
 
 	SetRectColor(bgQuad, Color(100, 100, 100));
@@ -160,6 +161,17 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 	d.musicVolume = mVol;
 	d.soundVolume = sVol;
 
+	bool windowNeedsReset = false;
+
+	const ConfigData &currData = mainMenu->config->GetData();
+
+	if (d.resolutionX != currData.resolutionX
+		|| d.resolutionY != currData.resolutionY
+		|| d.windowStyle != currData.windowStyle)
+	{
+		windowNeedsReset = true;
+	}
+
 	mainMenu->config->SetData(d);
 	Config::CreateSaveThread(mainMenu->config);
 	mainMenu->config->WaitForSave();
@@ -168,8 +180,10 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 	mainMenu->musicPlayer->UpdateVolume();
 	mainMenu->soundNodeList->SetSoundVolume(sVol);
 
-	mainMenu->SetupWindow();
-
+	if (windowNeedsReset)
+	{
+		mainMenu->SetupWindow();
+	}
 	//mainMenu->ResizeWindow(res.x, res.y, winMode);
 }
 

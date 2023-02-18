@@ -16,7 +16,6 @@ struct ConfigData
 	int windowStyle;
 	int musicVolume;
 	int soundVolume;
-	std::string defaultProfileName;
 };
 
 struct Config
@@ -37,11 +36,6 @@ struct Config
 	static void CreateSaveThread(Config *config);
 	static void CreateLoadThread(Config *config);
 	void SetToDefault();
-
-	int resolutionX;
-	int resolutionY;
-	
-
 private:
 	bool doneSaving;
 	bool doneLoading;

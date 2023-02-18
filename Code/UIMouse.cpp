@@ -184,6 +184,15 @@ void UIMouse::SetPosition(sf::Vector2i &pos)
 	sf::Mouse::setPosition(myPos, *currWindow);
 }
 
+sf::Vector2i UIMouse::GetRealPixelPos()
+{
+	Vector2i pPos = Mouse::getPosition(*currWindow);
+	pPos.x *= 1920.f / currWindow->getSize().x;
+	pPos.y *= 1080.f / currWindow->getSize().y;
+
+	return pPos;
+}
+
 //cannot be called from non-main thread
 void UIMouse::Hide()
 {

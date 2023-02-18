@@ -32,7 +32,6 @@ void ConfigData::SetToDefault()
 	windowStyle = sf::Style::Fullscreen;
 	musicVolume = 100;
 	soundVolume = 100;
-	defaultProfileName = "Default";
 }
 
 Config::Config()
@@ -128,10 +127,6 @@ void Config::Load()
 				is >> vol;
 				data.musicVolume = vol;
 			}
-			else if (settingName == "defaultprofile")
-			{
-				is >> data.defaultProfileName;
-			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -181,8 +176,6 @@ void Config::Save()
 		of << "WindowMode " << data.GetWindowModeString(data.windowStyle) << "\n";
 		of << "MusicVolume " << data.musicVolume << "\n";
 		of << "SoundVolume " << data.soundVolume << "\n";
-		of << "DefaultProfile " << data.defaultProfileName << "\n";
-		//of << "DefaultInputFormat " << data.defaultInputFormat;
 		of.close();
 	}
 	else

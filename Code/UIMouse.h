@@ -36,6 +36,7 @@ struct UIMouse
 	void SetControllersOn(bool on);
 	bool IsWindowFocused();
 	void SetPosition(sf::Vector2i &pos);
+	sf::Vector2i GetRealPixelPos();
 	void Hide();
 	void Show();
 	void Grab();

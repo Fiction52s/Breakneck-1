@@ -18,6 +18,8 @@
 #include "PlayerBox.h"
 #include "AdventureManager.h"
 #include "PauseMap.h"
+#include "UIMouse.h"
+#include "UIController.h"
 //#include "Actor.h"
 
 using namespace sf;
@@ -304,6 +306,8 @@ PauseMenu::PauseMenu( GameSession *p_game)
 {
 	game = p_game;
 	mainMenu = game->mainMenu;
+
+	gameSettingsMenu = mainMenu->gameSettingsScreen;
 	
 
 	debugText.setFont(game->mainMenu->arial);
@@ -520,6 +524,12 @@ void PauseMenu::SetTab( Tab t )
 {
 	switch (currentTab)
 	{
+	case OPTIONS:
+	{
+		MOUSE.Hide();
+		MOUSE.SetControllersOn(false);
+		break;
+	}
 	case SHARDS:
 	//	shardMenu->StopMusic();
 		break;
@@ -570,6 +580,9 @@ void PauseMenu::SetTab( Tab t )
 	case OPTIONS:
 		optionsMenu->state = OptionsMenu::CHOOSESTATE;
 
+		MOUSE.Show();
+		MOUSE.SetControllersOn(true);
+		gameSettingsMenu->Start();
 		//removed for gamesettings changes
 		//game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
 
@@ -582,6 +595,14 @@ void PauseMenu::SetTab( Tab t )
 		//pauseSelector->currIndex = 0;
 		pauseSelector->Reset();
 		break;
+	}
+}
+
+void PauseMenu::HandleEvent(sf::Event ev)
+{
+	if (currentTab == OPTIONS)
+	{
+		gameSettingsMenu->HandleEvent(ev);
 	}
 }
 
@@ -616,7 +637,11 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	}
 	else if( currentTab == OPTIONS )
 	{
-		optionsMenu->Draw(target);
+		//optionsMenu->Draw(target);
+
+		gameSettingsMenu->Draw(target);
+
+
 		/*string inputType = inputSelectors[0]->GetString();
 		int num = numCurrentSelectors;
 		if( inputType == "Keyboard" )
@@ -823,14 +848,15 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		{
 			ResetCounters();
 			
-
-			if (currentTab == OPTIONS)
+			MOUSE.Hide();
+			MOUSE.SetControllersOn(false);
+			/*if (currentTab == OPTIONS)
 			{
 				int sVol = game->mainMenu->config->GetData().soundVolume;
 				game->soundNodeList->SetSoundVolume(sVol);
 				game->pauseSoundNodeList->SetSoundVolume(sVol);
 				optionsMenu->optionModeSelector->currIndex = 0;
-			}
+			}*/
 
 			game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_off"));
 			game->SetGameSessionState(GameSession::RUN);
@@ -844,7 +870,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			|| (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed()))
 		{
 			ResetCounters();
-			if (currentTab == OPTIONS)
+			/*if (currentTab == OPTIONS)
 			{
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
@@ -852,26 +878,9 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				int sVol = game->mainMenu->config->GetData().soundVolume;
 				game->soundNodeList->SetSoundVolume(sVol);
 				game->pauseSoundNodeList->SetSoundVolume(sVol);
-			}
-			
-			/*if (currentTab == OPTIONS)
-			{
-				optionsMenu->state = OptionsMenu::CHOOSESTATE;
-				game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
-			}
-			else if (currentTab == SHARDS)
-			{
-				shardMenu->SetShardTab();
-			}
-			else if (currentTab == LOGS)
-			{
-				logMenu->SetLogTab();
-			}
-			else if (currentTab == KIN)
-			{
-				kinMenu->UpdateCommandButton();
 			}*/
-
+			
+			
 			TabLeft();
 
 			return R_NONE;
@@ -880,7 +889,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			|| (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed()))
 		{
 			ResetCounters();
-			if (currentTab == OPTIONS)
+			/*if (currentTab == OPTIONS)
 			{
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
@@ -888,7 +897,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				int sVol = game->mainMenu->config->GetData().soundVolume;
 				game->soundNodeList->SetSoundVolume(sVol);
 				game->pauseSoundNodeList->SetSoundVolume(sVol);
-			}
+			}*/
 			
 
 			
@@ -923,11 +932,13 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 	}
 	case OPTIONS:
 		{	
-			
+			MOUSE.Update(MOUSE.GetRealPixelPos() - Vector2i( 50, 50 )); //just testing
+			UICONTROLLER.Update();
 			//return UpdateOptions( currInput, prevInput );
 			
-			optionsMenu->Update( currInput, prevInput );
+			//optionsMenu->Update( currInput, prevInput );
 			
+			gameSettingsMenu->Update();
 			
 			break;
 		}
