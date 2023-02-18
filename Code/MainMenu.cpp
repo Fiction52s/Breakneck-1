@@ -2102,7 +2102,7 @@ void MainMenu::ReturnToWorldAfterLevel()
 	//int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 
 	
-	musicPlayer->TransitionMusic(menuMusic, 60);
+	
 
 	LoadMode(WORLDMAP_COLONY);
 	//int numWorlds = worldMap->adventurePlanet->numWorlds;
@@ -2579,6 +2579,7 @@ void MainMenu::HandleMenuMode()
 		}
 		else
 		{
+			musicPlayer->TransitionMusic(menuMusic, 60);
 			LoadMode(WORLDMAP);
 		}
 

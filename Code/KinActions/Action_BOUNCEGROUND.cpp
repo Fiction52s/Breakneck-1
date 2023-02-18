@@ -123,8 +123,12 @@ void Actor::BOUNCEGROUND_Change()
 					}
 				}
 
+				double bouncePower = 20;
+				double absY = abs(storedBounceVel.y);
+				bouncePower = max(bouncePower, absY);
+				
 
-				velocity = V2d(storedBounceVel.x, -abs(storedBounceVel.y));//length( storedBounceVel ) * bounceEdge->Normal();
+				velocity = V2d(storedBounceVel.x, -bouncePower);//length( storedBounceVel ) * bounceEdge->Normal();
 
 				if (boostNow)
 				{

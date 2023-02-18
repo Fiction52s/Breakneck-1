@@ -241,7 +241,7 @@ void AdventureHUD::Show(int frames)
 		flyCountText.setPosition(flyCountTextShowPos);
 		timer->SetCenter(timerShowPos);
 		powerSelector->SetPosition(powerSelectorShowPos);
-		goSpr.setPosition(keyMarkerHidePos);
+		goSpr.setPosition(keyMarkerShowPos);
 		if (bossHealthBar != NULL)
 		{
 			bossHealthBar->SetTopLeft(bossHealthShowPos);

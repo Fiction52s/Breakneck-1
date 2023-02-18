@@ -14103,18 +14103,18 @@ void Actor::PhysicsResponse()
 				RestoreAirOptions();
 
 
-				if( abs( storedBounceVel.y ) < 10 )
-				{
-					//cout << "land: " << abs(storedBounceVel.y) << endl;
-					BounceFlameOn();
-					
-					SetAction(LAND);
-					frame = 0;
-					//bounceEdge = NULL;
-					ground = bounceEdge;
-					bounceEdge = NULL;
-					//oldBounceEdge = NULL;
-				}
+				//if( abs( storedBounceVel.y ) < 10 )
+				//{
+				//	//cout << "land: " << abs(storedBounceVel.y) << endl;
+				//	BounceFlameOn();
+				//	
+				//	SetAction(LAND);
+				//	frame = 0;
+				//	//bounceEdge = NULL;
+				//	ground = bounceEdge;
+				//	bounceEdge = NULL;
+				//	//oldBounceEdge = NULL;
+				//}
 			}
 
 			if( bn.y != 0 )
