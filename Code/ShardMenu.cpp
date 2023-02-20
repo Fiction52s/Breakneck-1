@@ -306,7 +306,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 
 bool ShardMenu::IsCurrShardCaptured()
 {
-	return IsShardCaptured(worldSelector->currIndex, selectedIndex - 1);
+	return IsShardCaptured(worldSelector->currIndex, selectedIndex);
 }
 
 void ShardMenu::UpdateUnlockedShards()
@@ -426,12 +426,23 @@ void ShardMenu::UpdateShardSelectQuads()
 
 void ShardMenu::SetCurrentDescription( bool captured)
 {
-	ShardDetailedInfo &currInfo = GetCurrShardInfo();
-	currShardNameText.setString(currInfo.name);
-	FloatRect lBounds = currShardNameText.getLocalBounds();
-	currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
 	if( captured )
-		currShardText.setString(currInfo.desc);
+	{
+		ShardDetailedInfo &currInfo = GetCurrShardInfo();
+		currShardNameText.setString(currInfo.name);
+		FloatRect lBounds = currShardNameText.getLocalBounds();
+		currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
+		if (captured)
+			currShardText.setString(currInfo.desc);
+	}
+	else
+	{
+		currShardNameText.setString("???");
+		FloatRect lBounds = currShardNameText.getLocalBounds();
+		currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
+		currShardText.setString("");
+	}
+	
 }
 
 const std::string & ShardMenu::GetShardDesc(int w, int li)
@@ -451,18 +462,11 @@ ShardDetailedInfo &ShardMenu::GetCurrShardInfo()
 
 void ShardMenu::SetCurrShard()
 {
+	int index = xSelector->currIndex + (ySelector->currIndex - 1) * xSelector->totalItems;
+	selectedIndex = index;
+
 	bool captured = IsCurrShardCaptured();
 
-	if (captured)
-	{
-		int index = xSelector->currIndex + (ySelector->currIndex - 1) * xSelector->totalItems;
-		selectedIndex = index;
-	}
-	else
-	{
-		/*previewSpr.setTexture(*ts_notCapturedPreview->texture);
-		previewSpr.setTextureRect(ts_notCapturedPreview->GetSubRect(0));*/
-	}
 	SetCurrentDescription(captured);
 }
 
@@ -569,10 +573,12 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 
 
 				//state = PAUSED;
-				if (!currShardCap)
+				/*if (!currShardCap)
 				{
-					sparklePool->Reset();
-				}
+					
+				}*/
+
+				sparklePool->Reset();
 				
 				state = WAIT;
 				SetCurrShard();
