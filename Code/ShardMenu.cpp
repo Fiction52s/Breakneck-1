@@ -282,7 +282,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 		if (saveFile != NULL)
 		{
-			return saveFile->ShardIsCaptured(shardType);
+			return saveFile->IsShardCaptured(shardType);
 		}
 		else
 		{
@@ -291,7 +291,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 	}
 	else
 	{
-		return sess->defaultStartingPlayerOptionsField.GetBit( shardType + )
+		return sess->currShardField.GetBit( shardType + Actor::SHARD_START_INDEX );
 	}
 }
 

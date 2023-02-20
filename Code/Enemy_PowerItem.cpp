@@ -308,19 +308,6 @@ void PowerItem::Capture()
 
 		game->UnlockUpgrade(upgradeIndex);
 	}
-
-	//if (sess->IsSessTypeGame())
-	//{
-	//	GameSession *game = GameSession::GetSession();
-	//	if (game->saveFile != NULL)
-	//	{
-	//		assert(!game->saveFile->shardField.GetBit(shardType));
-	//		//both give you the shard and mark it as a new shard
-	//		game->saveFile->shardField.SetBit(shardType, true);
-	//		game->saveFile->newShardField.SetBit(shardType, true);
-	//		game->saveFile->Save();
-	//	}
-	//}
 }
 
 void PowerItem::DirectKill()

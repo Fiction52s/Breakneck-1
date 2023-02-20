@@ -552,6 +552,7 @@ struct Actor : QuadTreeCollider,
 
 	};
 
+	
 	std::vector<FXInfo> effectPools;
 	PaletteShader *fxPaletteShader;
 
@@ -619,6 +620,9 @@ struct Actor : QuadTreeCollider,
 		SKIN_TRIX,
 		SKIN_Count
 	};
+
+
+	const static int SHARD_START_INDEX = UPGRADE_POWER_LWIRE + 1;
 
 	AdventureManager *adventureManager;
 

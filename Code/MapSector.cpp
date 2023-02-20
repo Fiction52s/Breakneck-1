@@ -497,7 +497,7 @@ void MapSector::UpdateStats()
 		totalShards += numShardsPerLevel;
 		for (int j = 0; j < numShardsPerLevel; ++j)
 		{
-			if (saveFile->ShardIsCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
+			if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
 			{
 				++numCaptured;
 			}
@@ -574,7 +574,7 @@ void MapSector::UpdateLevelStats()
 	for (auto it = headerInfo.shardInfoVec.begin(); it !=
 		headerInfo.shardInfoVec.end(); ++it)
 	{
-		if (saveFile->ShardIsCaptured((*it).GetTrueIndex()))
+		if (saveFile->IsShardCaptured((*it).GetTrueIndex()))
 		{
 			numCollected++;
 		}

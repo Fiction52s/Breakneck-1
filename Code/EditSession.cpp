@@ -91,7 +91,7 @@ EditSession * EditSession::currSession = NULL;
 
 bool EditSession::IsShardCaptured(int sType)
 {
-	return shardsCapturedField->GetBit(sType);
+	return currShardField.GetBit(sType);
 }
 
 void EditSession::SetupGates()
@@ -641,7 +641,7 @@ void EditSession::TestPlayerMode()
 		(*it)->CancelTransformation();
 	}
 
-	shardsCapturedField->Reset();
+	currShardField.Reset();
 
 	scoreDisplay->Reset();
 
@@ -3817,8 +3817,6 @@ void EditSession::Init()
 #ifdef GGPO_ON
 	SetupNetplay();
 #endif
-
-	SetupShardsCapturedField();
 
 	assert(players[0] == NULL);
 
@@ -11313,7 +11311,7 @@ void EditSession::CleanupTestPlayerMode()
 		originalMusic->music->stop();
 	}*/
 
-	shardsCapturedField->Reset();
+	currShardField.Reset();
 	fader->Reset();
 	swiper->Reset();
 

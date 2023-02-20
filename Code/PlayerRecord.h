@@ -36,12 +36,13 @@ struct PlayerRecordHeader
 	BitField bUpgradeField;
 	BitField bUpgradesTurnedOnField;
 	BitField bLogField;
-	BitField bShardField;
 
 	PlayerRecordHeader();
 	~PlayerRecordHeader();
 
 	void SetFields();
+	bool IsShardCaptured(int ind);
+	bool IsLogCaptured(int ind);
 	void SetVer(int v);
 	void Read(std::ifstream &is);
 	void Write(std::ofstream &of);

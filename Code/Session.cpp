@@ -1557,7 +1557,8 @@ void Session::DrawBullets(sf::RenderTarget *target)
 }
 
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
-	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT)
+	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT),
+	currShardField( ShardInfo::MAX_SHARDS ), currLogField( LogDetailedInfo::MAX_LOGS)
 {
 	nextFrameRestartGame = false;
 
@@ -1634,7 +1635,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	goalFlow = NULL;
 	goalPulse = NULL;
 	currStorySequence = NULL;
-	shardsCapturedField = NULL;
 	preLevelScene = NULL;
 	postLevelScene = NULL;
 	activeSequence = NULL;
@@ -1952,12 +1952,6 @@ Session::~Session()
 	{
 		delete powerPop;
 		powerPop = NULL;
-	}
-
-	if (parentGame == NULL && shardsCapturedField != NULL)
-	{
-		delete shardsCapturedField;
-		shardsCapturedField = NULL;
 	}
 
 	if ( parentGame == NULL && deathSeq != NULL)
@@ -5284,20 +5278,6 @@ void Session::TryCreatePowerItemResources()
 	}
 }
 
-void Session::SetupShardsCapturedField()
-{
-	if (parentGame != NULL)
-	{
-		shardsCapturedField = parentGame->shardsCapturedField;
-	}
-	else if (shardsCapturedField == NULL)
-		shardsCapturedField = new BitField(32 * 5);
-	else
-	{
-		shardsCapturedField->Reset();
-	}
-}
-
 void Session::SetActiveSequence(Sequence *activeSeq)
 {
 	if (activeSeq == NULL)
@@ -5401,10 +5381,10 @@ bool Session::IsShardCaptured(int s)
 {
 	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
 	{
-		return playerReplayManager->header.bShardField.GetBit(s);
+		return playerReplayManager->header.IsShardCaptured(s);
 	}
 
-	return shardsCapturedField->GetBit(s);
+	return currShardField.GetBit(s);
 }
 
 void Session::AddEmitter(ShapeEmitter *emit,

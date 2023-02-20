@@ -469,7 +469,7 @@ void ScoreBar::PopOut()
 		for (auto it = sess->mapHeader->shardInfoVec.begin();
 			it != sess->mapHeader->shardInfoVec.end(); ++it)
 		{
-			if (sess->shardsCapturedField->GetBit((*it).GetTrueIndex()))
+			if (sess->currShardField.GetBit((*it).GetTrueIndex()))
 			{
 				currCaptured++;
 			}

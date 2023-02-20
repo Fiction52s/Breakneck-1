@@ -208,7 +208,7 @@ struct SaveFile
 	void UnlockUpgrade(int pType);
 	bool HasLog(int lType);
 	void UnlockLog(int lType);
-	bool ShardIsCaptured(int sType);
+	bool IsShardCaptured(int sType);
 
 	bool IsCompleteSector(Sector *sector);
 	bool IsCompleteWorld(World *world);
@@ -253,8 +253,7 @@ struct SaveFile
 	BitField upgradeField;
 	BitField upgradesTurnedOnField;
 	BitField logField;
-	BitField shardField;
-	BitField newShardField; //for unviewed shards
+
 	int defaultSkinIndex;
 
 	int ver;

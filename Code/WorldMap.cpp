@@ -253,7 +253,7 @@ void WorldMap::UpdateWorldStats()
 			numTotalShards += numShardsInLevel;
 			for (int k = 0; k < numShardsInLevel; ++k)
 			{
-				if (saveFile->ShardIsCaptured(amhi.shardInfoVec[k].GetTrueIndex()))
+				if (saveFile->IsShardCaptured(amhi.shardInfoVec[k].GetTrueIndex()))
 				{
 					++totalCaptured;
 				}

@@ -1508,8 +1508,6 @@ bool GameSession::Load()
 	SetupSoundManager();
 	SetupSoundLists();
 
-	SetupShardsCapturedField();
-
 	/*SetupShardMenu();
 	SetupLogMenu();
 
@@ -3155,7 +3153,6 @@ void GameSession::Init()
 	inversePolygon = NULL;
 
 	postLevelScene = NULL;
-	shardsCapturedField = NULL;
 	level = NULL;
 	inputVis = NULL;
 	
@@ -3694,7 +3691,7 @@ void GameSession::RestartLevel()
 
 	if (saveFile == NULL)
 	{
-		shardsCapturedField->Reset();
+		currShardField.Reset();
 	}
 	
 
@@ -3893,16 +3890,16 @@ bool GameSession::IsShardCaptured(int shardType)
 {
 	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
 	{
-		return playerReplayManager->header.bShardField.GetBit(shardType);
+		return playerReplayManager->header.IsShardCaptured(shardType);
 	}
 
 	if (saveFile != NULL)
 	{
-		return saveFile->ShardIsCaptured(shardType);
+		return saveFile->IsShardCaptured(shardType);
 	}
 	else
 	{
-		return shardsCapturedField->GetBit(shardType);
+		return currShardField.GetBit(shardType);
 	}
 }
 
@@ -4477,7 +4474,7 @@ bool GameSession::HasLog(int logIndex)
 {
 	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
 	{
-		return playerReplayManager->header.bLogField.GetBit(logIndex);
+		return playerReplayManager->header.IsLogCaptured(logIndex);
 	}
 
 	if (saveFile != NULL)

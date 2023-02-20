@@ -10,6 +10,7 @@
 #include <vector>
 #include "globals.h"
 #include "SaveFile.h"
+#include "LogMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -276,9 +277,8 @@ void PlayerRecorder::StopRecordingAndWriteToFile(const std::string &fileName)
 PlayerRecordHeader::PlayerRecordHeader()
 	:numberOfPlayers(0),
 	bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	bShardField(ShardInfo::MAX_SHARDS), 
 	bUpgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
-	bLogField(256)
+	bLogField(LogDetailedInfo::MAX_LOGS)
 {
 	SetVer(1);
 }
@@ -301,15 +301,23 @@ void PlayerRecordHeader::SetFields()
 		bUpgradesTurnedOnField.Reset();
 
 		bLogField.Set(game->saveFile->logField);
-		bShardField.Set(game->saveFile->shardField);
 	}
 	else
 	{
 		bUpgradeField.Reset();
 		bUpgradesTurnedOnField.Reset();
 		bLogField.Reset();
-		bShardField.Reset();
 	}
+}
+
+bool PlayerRecordHeader::IsShardCaptured(int ind)
+{
+	return bUpgradeField.GetBit(Actor::SHARD_START_INDEX + ind);
+}
+
+bool PlayerRecordHeader::IsLogCaptured(int ind)
+{
+	return bLogField.GetBit(ind);
 }
 
 void PlayerRecordHeader::Read(std::ifstream &is)
@@ -319,7 +327,6 @@ void PlayerRecordHeader::Read(std::ifstream &is)
 
 	bUpgradeField.LoadBinary(is);
 	bUpgradesTurnedOnField.LoadBinary(is);
-	bShardField.LoadBinary(is);
 	bLogField.LoadBinary(is);
 
 	assert(numberOfPlayers > 0 && numberOfPlayers <= 4);
@@ -332,7 +339,6 @@ void PlayerRecordHeader::Write(std::ofstream &of)
 
 	bUpgradeField.SaveBinary(of);
 	bUpgradesTurnedOnField.SaveBinary(of);
-	bShardField.SaveBinary(of);
 	bLogField.SaveBinary(of);
 }
 

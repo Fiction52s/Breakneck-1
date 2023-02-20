@@ -272,8 +272,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::list<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
 	BitField defaultStartingPlayerOptionsField;
-	BitField defaultStartingShardField;
 	BitField currShardField;
+	BitField currLogField;
 	//timeslow stuff
 	float fBubbleRadiusSize[MAX_TOTAL_BUBBLES];
 	sf::Vector2f fBubblePos[MAX_TOTAL_BUBBLES];
@@ -386,7 +386,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	PowerPopup *powerPop;
 	LogPopup *logPop;
 	DeathSequence *deathSeq;
-	BitField *shardsCapturedField;
 
 	Sequence *activeSequence;
 	Sequence *preLevelScene;
@@ -749,7 +748,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void TryCreateLogResources();
 	void TryCreatePowerItemResources();
 	virtual bool IsShardCaptured(int sType);
-	void SetupShardsCapturedField();
 	void SetActiveSequence(Sequence *activeSeq);
 	void ActiveSequenceUpdate();
 	void AddEmitter(ShapeEmitter *emit,

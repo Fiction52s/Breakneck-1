@@ -304,46 +304,28 @@ void Shard::Capture()
 {
 	//owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
 
-	int upgradeIndex = shardType + (Actor::UPGRADE_POWER_LWIRE + 1); //sess->shardMenu->upgradeIndexes[shardType];
+	assert(shardType != -1);
 
-	sess->shardsCapturedField->SetBit(shardType, true);
+	int upgradeIndex = shardType + Actor::SHARD_START_INDEX;
+
+	sess->currShardField.SetBit(shardType, true);
 
 	if (sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn(0))
 	{
-		if (upgradeIndex != -1)
-		{
-			sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
-		}
+		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
 	}
 	else
 	{
+		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
+
 		if (sess->IsSessTypeGame())
 		{
 			GameSession *game = GameSession::GetSession();
-			if (game->saveFile != NULL)
-			{
-				assert(!game->saveFile->shardField.GetBit(shardType));
-				//both give you the shard and mark it as a new shard
-				game->saveFile->shardField.SetBit(shardType, true);
-				game->saveFile->newShardField.SetBit(shardType, true);
-				game->saveFile->Save();
-			}
-		}
 
-		if (upgradeIndex != -1)
-		{
-			sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
-
-			if (sess->IsSessTypeGame())
-			{
-				GameSession *game = GameSession::GetSession();
-
-				game->UnlockUpgrade(upgradeIndex);
-			}
+			game->UnlockUpgrade(upgradeIndex);
+			game->saveFile->Save();
 		}
 	}
-
-	
 }
 
 void Shard::DirectKill()

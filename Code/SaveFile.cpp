@@ -9,6 +9,7 @@
 #include "MainMenu.h"
 #include <boost/filesystem.hpp>
 #include "globals.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -35,8 +36,6 @@ void LevelScore::Load(ifstream &is)
 
 SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	:levelsBeatenField(512),
-	shardField(ShardInfo::MAX_SHARDS),
-	newShardField(ShardInfo::MAX_SHARDS),
 	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	upgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
 	logField(256),
@@ -212,7 +211,7 @@ void SaveFile::CalcShardProgress(BitField &b, float &totalShards,
 		if (b.GetBit(i))
 		{
 			++totalShards;
-			if (ShardIsCaptured(i))
+			if (IsShardCaptured(i))
 			{
 				++totalCaptured;
 			}
@@ -442,9 +441,9 @@ void SaveFile::UnlockLog(int lType)
 	logField.SetBit(lType, true);
 }
 
-bool SaveFile::ShardIsCaptured(int sType)
+bool SaveFile::IsShardCaptured(int sType)
 {
-	return shardField.GetBit(sType);
+	return upgradeField.GetBit( Actor::SHARD_START_INDEX + sType  );
 }
 
 void SaveFile::SetVer(int v)
@@ -471,9 +470,6 @@ bool SaveFile::LoadInfo(ifstream &is)
 		upgradeField.Load(is);
 		upgradesTurnedOnField.Load(is);
 		logField.Load(is);
-		shardField.Load(is);
-		newShardField.Load(is);
-
 		is.close();
 
 		if (!boost::filesystem::exists(replayFolderName))
@@ -486,11 +482,6 @@ bool SaveFile::LoadInfo(ifstream &is)
 	{
 		return false;
 	}
-}
-
-bool SaveFile::HasNewShards()
-{
-	return newShardField.IsNonZero();
 }
 
 bool SaveFile::IsUnlockedLevel(Sector *sec, int index )
@@ -575,8 +566,6 @@ void SaveFile::Save()
 		upgradeField.Save(of);
 		upgradesTurnedOnField.Save(of);
 		logField.Save(of);
-		shardField.Save(of);
-		newShardField.Save(of);
 
 		of.close();
 	}
@@ -616,8 +605,6 @@ void SaveFile::SetAndSave(SaveFile *saveFile)
 	upgradeField.Set(saveFile->upgradeField);
 	upgradesTurnedOnField.Set(saveFile->upgradesTurnedOnField);
 	logField.Set(saveFile->logField);
-	shardField.Set(saveFile->shardField);
-	newShardField.Set(saveFile->newShardField);
 
 	defaultSkinIndex = saveFile->defaultSkinIndex;
 
@@ -646,8 +633,6 @@ void SaveFile::SetAsDefault()
 	upgradeField.Reset();
 	upgradesTurnedOnField.Reset();
 	logField.Reset();
-	shardField.Reset();
-	newShardField.Reset();
 
 	defaultSkinIndex = 0;
 }

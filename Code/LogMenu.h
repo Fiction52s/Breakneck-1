@@ -36,6 +36,7 @@ struct LogDetailedInfo
 		Count
 	};
 
+	const static int MAX_LOGS = 256;
 
 	std::string name;
 	std::string desc;
