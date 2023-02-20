@@ -307,7 +307,7 @@ bool SaveFile::IsRangeComplete(int start, int end)
 
 int SaveFile::GetNumShardsCaptured()
 {
-	return shardField.GetOnCount();
+	return upgradeField.GetOnCount(Actor::SHARD_START_INDEX);
 }
 
 int SaveFile::GetNumShardsTotal()

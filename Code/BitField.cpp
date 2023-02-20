@@ -84,10 +84,10 @@ bool BitField::IsNonZero()
 	return false;
 }
 
-int BitField::GetOnCount()
+int BitField::GetOnCount( int startBit )
 {
 	int counter = 0;
-	for (int i = 0; i < numOptions; ++i)
+	for (int i = startBit; i < numOptions; ++i)
 	{
 		if (GetBit(i))
 			++counter;

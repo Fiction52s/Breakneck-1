@@ -19,7 +19,7 @@ struct BitField
 	void SetBit(int index, bool val);
 	bool GetBit(int index);
 	void Or(const BitField &b);
-	int GetOnCount();
+	int GetOnCount( int startBit = 0);
 	bool IsNonZero();
 	void Reset();
 	void Set(const BitField & otherField);
