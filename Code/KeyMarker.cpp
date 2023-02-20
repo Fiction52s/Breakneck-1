@@ -169,6 +169,7 @@ void KeyMarker::UpdateKeyNumbers()
 	if (markerType == KEY)
 	{
 		int numKeys = sess->GetPlayer(0)->numKeysHeld;
+
 		keyNumberNeededHUD->SetNumber(numKeys);
 		keyNumberNeededHUDBack->SetNumber(numKeys);
 
@@ -199,6 +200,10 @@ void KeyMarker::UpdateKeyNumbers()
 	else if (markerType == ENEMY)
 	{
 		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
+
+		//testing
+		numEnemiesRemaining = 10;
+
 		keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
 		keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
 

@@ -122,10 +122,15 @@ void ImageText::UpdateSprite()
 
 	Vector2f anchorTopLeft;
 
+	float halfOfDigits = maxDigits / 2.f;
+
 	//its possible there is an issue with this on alignments that aren't 
 	if (posType == CENTER)
 	{
-		anchorTopLeft = anchor + Vector2f(tw * -1.5, th * -.5); //-2.5 on x before
+		if (activeDigits % 2 == 0 )
+		{
+			anchorTopLeft = anchor + Vector2f(tw * halfOfDigits, th * -.5); //-2.5 on x before
+		}
 	}
 	else if (posType == TOP_RIGHT)
 	{
@@ -164,9 +169,14 @@ void ImageText::UpdateSprite()
 		}
 	}
 
-	for (int i = 0; i < maxDigits; ++i)
+	/*for (int i = 0; i < maxDigits; ++i)
 	{
 		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw * ((maxDigits-1) - i), 0));
+	}*/
+
+	for (int i = 0; i < maxDigits; ++i)
+	{
+		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw/2 * i, 0));//tw * i, 0));
 	}
 
 
