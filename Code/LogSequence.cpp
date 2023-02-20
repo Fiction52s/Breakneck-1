@@ -173,6 +173,8 @@ void GetLogSequence::Reset()
 
 		assert(log != NULL);
 
+		logPop->logPreview = log->logPreview;
+
 		logPop->SetCenter(Vector2f(960, 800));
 		logPop->SetLog(log->logWorld, log->localIndex);
 		logPop->Reset();

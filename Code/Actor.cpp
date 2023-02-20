@@ -4464,7 +4464,7 @@ void Actor::Respawn( bool setStartPos )
 	}
 	else
 	{
-		SetAllUpgrades(sess->playerOptionsField);
+		SetAllUpgrades(sess->defaultStartingPlayerOptionsField);
 	}
 
 	prevInput.Clear();

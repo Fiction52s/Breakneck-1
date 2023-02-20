@@ -877,6 +877,11 @@ void LogPreview::SetCenter(sf::Vector2f &pos)
 
 	center = pos;
 
+	if (previewParams != NULL)
+	{
+		previewParams->MoveTo(Vector2i(center));
+	}
+
 	previewPoly->Move(delta);
 	previewRail->Move(delta);
 

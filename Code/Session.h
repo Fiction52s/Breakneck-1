@@ -271,7 +271,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	Zone *originalZone;
 	std::list<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
-	BitField playerOptionsField;
+	BitField defaultStartingPlayerOptionsField;
+	BitField defaultStartingShardField;
+	BitField currShardField;
 	//timeslow stuff
 	float fBubbleRadiusSize[MAX_TOTAL_BUBBLES];
 	sf::Vector2f fBubblePos[MAX_TOTAL_BUBBLES];

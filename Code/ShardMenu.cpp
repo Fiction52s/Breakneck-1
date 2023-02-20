@@ -270,16 +270,29 @@ void ShardMenu::LoadShardInfo()
 
 bool ShardMenu::IsShardCaptured(int w, int li)
 {
-	//return true; //testing
-
-	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
-	if (saveFile == NULL)
+	if (shardInfo[w][li].name == "")
 	{
 		return false;
 	}
 
-	return (shardInfo[w][li].name != "" 
-		&& saveFile->ShardIsCaptured(Shard::GetShardTypeFromWorldAndIndex(w, li)));
+	int shardType = Shard::GetShardTypeFromWorldAndIndex(w, li);
+
+	if (sess->mainMenu->adventureManager != NULL)
+	{
+		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
+		if (saveFile != NULL)
+		{
+			return saveFile->ShardIsCaptured(shardType);
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return sess->defaultStartingPlayerOptionsField.GetBit( shardType + )
+	}
 }
 
 bool ShardMenu::IsCurrShardCaptured()

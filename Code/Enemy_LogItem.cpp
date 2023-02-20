@@ -132,6 +132,16 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	animFactor[DISSIPATE] = 1;
 	animFactor[LAUNCH] = 1;
 
+	if (sess->IsSessTypeGame())
+	{
+		logPreview = new LogPreview;
+		logPreview->SetInfo(sess->logMenu->GetLogInfo(world, localIndex));
+	}
+	else
+	{
+		logPreview = NULL;
+	}
+
 	ResetEnemy();
 
 	SetSpawnRect();
@@ -154,6 +164,12 @@ LogItem::~LogItem()
 		delete logSeq;
 		logSeq = NULL;
 	}
+
+	if (logPreview != NULL)
+	{
+		delete logPreview;
+	}
+
 }
 
 void LogItem::ResetEnemy()
@@ -403,7 +419,14 @@ LogPopup::LogPopup()
 
 	ts_log = sess->GetSizedTileset("Logs/logs_64x64.png");
 
-	logPreview = new LogPreview;
+	if (sess->IsSessTypeEdit())
+	{
+		logPreview = new LogPreview;
+	}
+	else
+	{
+		logPreview = NULL;
+	}
 
 	nameText.setCharacterSize(50);
 	nameText.setFillColor(Color::Red);
@@ -446,7 +469,11 @@ LogPopup::LogPopup()
 LogPopup::~LogPopup()
 {
 	delete tutBox;
-	delete logPreview;
+
+	if (logPreview != NULL && sess->IsSessTypeEdit())
+	{
+		delete logPreview;
+	}
 }
 
 void LogPopup::Reset()
@@ -477,7 +504,10 @@ void LogPopup::SetLog( int w, int i )
 	string descStr = sess->logMenu->GetLogDesc(logWorld, logLocalIndex);
 	tutBox->SetText(descStr);
 
-	logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, logLocalIndex));
+	if (sess->IsSessTypeEdit())
+	{
+		logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, logLocalIndex));
+	}
 }
 
 void LogPopup::SetTopLeft(sf::Vector2f &pos)

@@ -24,7 +24,7 @@ struct LogItem : Enemy
 		Count
 	};
 
-
+	LogPreview *logPreview;
 	ShapeEmitter *testEmitter;
 	//MovingGeoGroup geoGroup;
 	MovingGeoGroup geoGroup;

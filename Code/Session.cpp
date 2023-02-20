@@ -194,7 +194,7 @@ void Session::SetParentGame(GameSession *game)
 
 void Session::SetPlayerOptionField(int pIndex)
 {
-	GetPlayer(pIndex)->SetAllUpgrades(playerOptionsField);
+	GetPlayer(pIndex)->SetAllUpgrades(defaultStartingPlayerOptionsField);
 }
 
 void Session::SetupHitboxManager()
@@ -1557,7 +1557,7 @@ void Session::DrawBullets(sf::RenderTarget *target)
 }
 
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
-	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
+	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
 	nextFrameRestartGame = false;
 
@@ -2403,11 +2403,11 @@ bool Session::ReadPlayerOptions(std::ifstream &is)
 {
 	if ((mapHeader->ver1 == 2 && mapHeader->ver2 >= 1) || mapHeader->ver1 > 2)
 	{
-		return playerOptionsField.Load(is);
+		return defaultStartingPlayerOptionsField.Load(is);
 	}
 	else
 	{
-		playerOptionsField.Reset();
+		defaultStartingPlayerOptionsField.Reset();
 	}
 
 	return true;

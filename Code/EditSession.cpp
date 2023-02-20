@@ -2830,7 +2830,7 @@ void EditSession::WriteRails(ofstream &of)
 
 void EditSession::WritePlayerOptions(std::ofstream &of)
 {
-	playerOptionsField.Save(of);
+	defaultStartingPlayerOptionsField.Save(of);
 }
 
 bool EditSession::WriteTargetExistsAlready()

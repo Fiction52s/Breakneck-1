@@ -117,7 +117,7 @@ EditModeUI::~EditModeUI()
 void EditModeUI::AddKinOption( int world, const std::string &text, const std::string &toolTipText, int upgradeIndex)
 {
 	kinCheckboxes[world][upgradeIndex] = kinOptionsPanel->AddLabeledCheckBox(
-		text, Vector2i(0, 0), text, edit->playerOptionsField.GetBit(upgradeIndex));
+		text, Vector2i(0, 0), text, edit->defaultStartingPlayerOptionsField.GetBit(upgradeIndex));
 	kinCheckboxes[world][upgradeIndex]->SetToolTip(toolTipText);
 }
 
@@ -649,7 +649,7 @@ void EditModeUI::SaveKinOptions()
 		{
 			if (kinCheckboxes[w].count( i ) > 0)
 			{
-				edit->playerOptionsField.SetBit(i, kinCheckboxes[w][i]->checked);
+				edit->defaultStartingPlayerOptionsField.SetBit(i, kinCheckboxes[w][i]->checked);
 			}
 			else if (kinSliders[w].count( i ) > 0 )
 			{
@@ -660,11 +660,11 @@ void EditModeUI::SaveKinOptions()
 				{
 					if (sliderVal > j)
 					{
-						edit->playerOptionsField.SetBit(i + j, true);
+						edit->defaultStartingPlayerOptionsField.SetBit(i + j, true);
 					}
 					else
 					{
-						edit->playerOptionsField.SetBit(i + j, false);
+						edit->defaultStartingPlayerOptionsField.SetBit(i + j, false);
 					}
 				}
 
@@ -682,7 +682,7 @@ void EditModeUI::LoadKinOptions()
 		{
 			if ((*it).second != NULL)
 			{
-				(*it).second->checked = edit->playerOptionsField.GetBit((*it).first);
+				(*it).second->checked = edit->defaultStartingPlayerOptionsField.GetBit((*it).first);
 			}
 		}
 	}
@@ -701,7 +701,7 @@ void EditModeUI::LoadKinOptions()
 				currMax = (*it).second->maxValue;
 				for (int i = 0; i < currMax; ++i)
 				{
-					if (edit->playerOptionsField.GetBit((*it).first + i))
+					if (edit->defaultStartingPlayerOptionsField.GetBit((*it).first + i))
 					{
 						currNumOn++;
 					}
@@ -1080,7 +1080,7 @@ void EditModeUI::UpdateAllAbilitiesCheckbox()
 	bool allChecked = true;
 	for (int i = 0; i < Actor::UPGRADE_Count; ++i)
 	{
-		if (!edit->playerOptionsField.GetBit(i))
+		if (!edit->defaultStartingPlayerOptionsField.GetBit(i))
 		{
 			allChecked = false;
 			break;
@@ -1107,7 +1107,7 @@ void EditModeUI::UpdateAllAbilitiesPerWorldCheckboxes( int w)
 	{
 		if ((*it).second != NULL)
 		{
-			if (!edit->playerOptionsField.GetBit((*it).first))
+			if (!edit->defaultStartingPlayerOptionsField.GetBit((*it).first))
 			{
 				allChecked = false;
 				break;
@@ -1121,7 +1121,7 @@ void EditModeUI::UpdateAllAbilitiesPerWorldCheckboxes( int w)
 			int maxVal = (*it).second->maxValue;
 			for (int i = 0; i < maxVal; ++i)
 			{
-				if (!edit->playerOptionsField.GetBit((*it).first + i))
+				if (!edit->defaultStartingPlayerOptionsField.GetBit((*it).first + i))
 				{
 					allChecked = false;
 					break;
