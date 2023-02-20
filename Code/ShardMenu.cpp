@@ -171,12 +171,19 @@ void ShardMenu::UpdateWorld()
 	worldText.setString("World " + to_string(worldSelector->currIndex + 1));
 	sf::FloatRect localBounds = worldText.getLocalBounds();
 	worldText.setOrigin(localBounds.left + localBounds.width / 2, 0);
+	UpdateUnlockedShards();
 	UpdateShardQuads();
 }
 
 void ShardMenu::UpdateShardQuads()
 {
-	int index;
+	for (int i = 0; i < ShardInfo::MAX_SHARDS_PER_WORLD; ++i)
+	{
+		SetRectSubRect(shardSelectQuads + i * 4,
+			ts_shards[worldSelector->currIndex]->GetSubRect(i));
+	}
+
+	/*int index;
 	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
@@ -191,7 +198,7 @@ void ShardMenu::UpdateShardQuads()
 			SetRectSubRect(shardSelectQuads + index * 4,
 				ts_shards[worldSelector->currIndex]->GetSubRect(index));
 		}
-	}
+	}*/
 }
 
 ShardMenu::~ShardMenu()
@@ -277,6 +284,8 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 
 	int shardType = Shard::GetShardTypeFromWorldAndIndex(w, li);
 
+	sess->IsShardCaptured(shardType);
+
 	if (sess->mainMenu->adventureManager != NULL)
 	{
 		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
@@ -297,38 +306,49 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 
 bool ShardMenu::IsCurrShardCaptured()
 {
-	return IsShardCaptured(worldSelector->currIndex, selectedIndex);
+	return IsShardCaptured(worldSelector->currIndex, selectedIndex - 1);
 }
 
 void ShardMenu::UpdateUnlockedShards()
 {
 	int index = 0;
-	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 
-	if (saveFile == NULL)
-		return;
-
-	for (int i = 0; i < ySelector->totalItems - 1; ++i)
+	int world = worldSelector->currIndex;
+	for (int i = 0; i < ShardInfo::MAX_SHARDS_PER_WORLD; ++i)
 	{
-		for (int j = 0; j < xSelector->totalItems; ++j)
+		if (IsShardCaptured(world, i))
 		{
-			index = (i * xSelector->totalItems + j) * 4;
-
-			//SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
-			
-			if (IsShardCaptured( j, i ))
-			{
-				SetRectColor(shardSelectQuads + index, Color(Color::White));
-				//SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
-			}
-			else
-			{
-				SetRectColor(shardSelectQuads + index, Color(Color::Black));
-				//SetRectSubRect(shardSelectQuads + index, FloatRect());
-			}
-			//ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
+			SetRectColor(shardSelectQuads + i * 4, Color(Color::White));
+			//SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
+		}
+		else
+		{
+			SetRectColor(shardSelectQuads + i * 4, Color(Color::Black));
+			//SetRectSubRect(shardSelectQuads + index, FloatRect());
 		}
 	}
+
+	
+	//for (int i = 0; i < ySelector->totalItems - 1; ++i)
+	//{
+	//	for (int j = 0; j < xSelector->totalItems; ++j)
+	//	{
+	//		index = (i * xSelector->totalItems + j);
+	//		//SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
+	//		
+	//		if (IsShardCaptured( worldSelector->currIndex, index))
+	//		{
+	//			SetRectColor(shardSelectQuads + index * 4, Color(Color::White));
+	//			//SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
+	//		}
+	//		else
+	//		{
+	//			SetRectColor(shardSelectQuads + index * 4, Color(Color::Black));
+	//			//SetRectSubRect(shardSelectQuads + index, FloatRect());
+	//		}
+	//		//ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
+	//	}
+	//}
 }
 
 bool ShardMenu::SetDescription( std::string &nameStr, std::string &destStr, const std::string &shardTypeStr)
@@ -614,6 +634,8 @@ void ShardMenu::SetShardTab()
 	xSelector->ResetCounters();
 	ySelector->ResetCounters();
 
+	UpdateWorld();
+
 	bool currShardCap = IsCurrShardCaptured();
 	if (currShardCap)
 	{
@@ -624,7 +646,7 @@ void ShardMenu::SetShardTab()
 	{
 		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
 	}
-	UpdateUnlockedShards();
+	//UpdateUnlockedShards();
 	//UpdateShardSelectQuads();
 
 	//shardMenu->SetCurrShard();
@@ -717,8 +739,6 @@ void PNGSeq::IncrementFrame()
 	}
 
 	spr.setTextureRect(tSets[setIndex]->GetSubRect(tileIndex));
-
-	
 }
 
 void PNGSeq::DecrementFrame()

@@ -478,8 +478,9 @@ struct GameSession : RayCastHandler, Session
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
 	void UpdateEnvShaders();
-	void UnlockUpgrade(int pType);
-	void UnlockLog(int lType);
+	void UnlockUpgrade(int upgradeType, int playerIndex = 0 );
+	bool TrySaveCurrentSaveFile();
+	void UnlockLog(int lType, int playerIndex = 0);
 	void UpdateExplodingGravityGrass();
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);

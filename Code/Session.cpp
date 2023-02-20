@@ -4805,6 +4805,17 @@ void Session::AddBarrier(XBarrierParams *xbp, bool warp )
 	barriers.push_back(b);
 }
 
+void Session::UnlockUpgrade(int upgradeType, int playerIndex )
+{
+	GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
+}
+
+void Session::UnlockLog(int logType, int playerIndex )
+{
+	//nothing
+}
+
+
 void Session::Fade(bool in, int frames, sf::Color c, bool skipKin, EffectLayer layer )
 {
 	fader->Fade(in, frames, c, skipKin, layer );

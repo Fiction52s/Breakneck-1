@@ -338,16 +338,20 @@ bool LogMenu::IsLogFound(int w, int li)
 {
 	return true; //testing
 
-	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
+	//int logType = 
+		
+	//fix this soon!
+
+	/*SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 	if (saveFile == NULL)
 	{
 		return false;
-	}
+	}*/
 
-	LogDetailedInfo &currLog = logInfo[w][li];
+	/*LogDetailedInfo &currLog = logInfo[w][li];
 
 	return (currLog.name != "" 
-		&& saveFile->HasLog(LogItem::GetLogTypeFromWorldAndIndex(w, li)));
+		&& saveFile->HasLog(LogItem::GetLogTypeFromWorldAndIndex(w, li)));*/
 }
 
 bool LogMenu::IsCurrLogFound()
@@ -358,10 +362,6 @@ bool LogMenu::IsCurrLogFound()
 void LogMenu::UpdateUnlockedLogs()
 {
 	int index = 0;
-	SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
-
-	if (saveFile == NULL)
-		return;
 
 	for (int i = 0; i < ySelector->totalItems-1; ++i)
 	{

@@ -294,20 +294,15 @@ void PowerItem::Capture()
 {
 	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
 
-	sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
+	sess->UnlockUpgrade(upgradeIndex);
 
 	if (powerIndex == 5)
 	{
 		//left wire also
-		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex + 1, true);
+		sess->UnlockUpgrade(upgradeIndex + 1);
 	}
 
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-
-		game->UnlockUpgrade(upgradeIndex);
-	}
+	sess->TrySaveCurrentSaveFile();
 }
 
 void PowerItem::DirectKill()

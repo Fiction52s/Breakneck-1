@@ -111,7 +111,7 @@ void GetLogSequence::UpdateState()
 		int freezeFrame = 100;
 		if (frame == freezeFrame)
 		{
-			sess->SetGameSessionState(GameSession::FROZEN);
+			sess->SetGameSessionState(GameSession::SEQUENCE);//FROZEN
 			emitter->SetOn(false);
 		}
 		else if (frame > freezeFrame)
@@ -132,7 +132,7 @@ void GetLogSequence::UpdateState()
 	}
 	}
 
-	if (sess->GetGameSessionState() == GameSession::FROZEN)
+	if (sess->GetGameSessionState() == GameSession::SEQUENCE)
 	{
 		logPop->Update();
 	}

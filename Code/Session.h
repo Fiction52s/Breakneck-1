@@ -720,6 +720,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetNumGates(int nGates);
 	void LockGate(Gate *g);
 	void UnlockGate(Gate *g);
+	virtual void UnlockUpgrade(int upgradeType, int playerIndex = 0 );
+	virtual void UnlockLog(int logType, int playerIndex = 0);
+	virtual bool TrySaveCurrentSaveFile() { return false; };
 	void DrawGates(sf::RenderTarget *target);
 	void ResetGates();
 	void ResetBarriers();

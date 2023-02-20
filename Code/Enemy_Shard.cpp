@@ -310,22 +310,9 @@ void Shard::Capture()
 
 	sess->currShardField.SetBit(shardType, true);
 
-	if (sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn(0))
-	{
-		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
-	}
-	else
-	{
-		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
+	sess->UnlockUpgrade(upgradeIndex);
 
-		if (sess->IsSessTypeGame())
-		{
-			GameSession *game = GameSession::GetSession();
-
-			game->UnlockUpgrade(upgradeIndex);
-			game->saveFile->Save();
-		}
-	}
+	sess->TrySaveCurrentSaveFile();
 }
 
 void Shard::DirectKill()

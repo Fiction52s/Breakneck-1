@@ -965,8 +965,6 @@ GameSession *GameSession::GetSession()
 }
 
 
-
-
 void GameSession::RecordReplayEnemies()
 {
 	Actor *player = GetPlayer( 0 );
@@ -987,17 +985,44 @@ void GameSession::RecordReplayEnemies()
 	}
 }
 
-void GameSession::UnlockUpgrade(int pType)
+void GameSession::UnlockUpgrade(int upgradeType, int playerIndex )
 {
-	if (saveFile != NULL)
+	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
 	{
-		saveFile->UnlockUpgrade(pType);
+		//replay on
 	}
+	else if (saveFile != NULL)
+	{
+		saveFile->UnlockUpgrade(upgradeType);
+	}
+
+	GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
 }
 
-void GameSession::UnlockLog(int lType)
+bool GameSession::TrySaveCurrentSaveFile()
 {
-	if (saveFile != NULL)
+	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	{
+		//replay on
+		return false;
+	}
+	else if (saveFile != NULL)
+	{
+		saveFile->Save();
+		return true;
+	}
+
+	return false;
+}
+
+
+void GameSession::UnlockLog(int lType, int playerIndex )
+{
+	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	{
+		//replay on
+	}
+	else if (saveFile != NULL)
 	{
 		saveFile->UnlockLog(lType);
 	}

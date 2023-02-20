@@ -248,12 +248,7 @@ void LogItem::DissipateOnTouch()
 
 void LogItem::Capture()
 {
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-
-		game->UnlockLog(logType);
-	}
+	sess->UnlockLog(logType);
 }
 
 void LogItem::DirectKill()

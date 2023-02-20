@@ -7659,14 +7659,7 @@ void Actor::SetUpgrade(int upgrade, bool on)
 void Actor::SetStartUpgrade(int upgrade, bool on)
 {
 	bStartHasUpgradeField.SetBit(upgrade, on);
-	SetUpgrade(upgrade, on);
-
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		game->UnlockUpgrade(upgrade);
-	}
-	
+	SetUpgrade(upgrade, on);	
 }
 
 
