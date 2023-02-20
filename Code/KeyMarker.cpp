@@ -80,11 +80,49 @@ void KeyMarker::ShowMaxKeys(int k)
 	showMaxKeys = true;
 	keyNumberTotalHUD->SetNumber(k);
 	keyNumberTotalHUD->UpdateSprite();
+	SetTopRight(topRight);
 }
 
 void KeyMarker::HideMaxKeys()
 {
 	showMaxKeys = false;
+}
+
+void KeyMarker::SetTopRight(sf::Vector2f &pos)
+{
+	topRight = pos;
+
+	float currRight = topRight.x;
+
+	if (showMaxKeys && markerType == KEY)
+	{
+		keyNumberTotalHUD->SetTopRight(Vector2f(currRight, topRight.y));
+		float keyNumberTotalWidth = keyNumberTotalHUD->GetWidth();
+
+		currRight -= keyNumberTotalWidth;
+
+		float slashSpacing = 10;
+
+		slashText.setPosition(Vector2f(currRight - (xKeyText.getGlobalBounds().width / 2 + slashSpacing), topRight.y + keyNumberNeededHUD->GetHeight() / 2.f));
+		currRight -= xKeyText.getGlobalBounds().width + slashSpacing;
+
+		currRight -= 20;//slashSpacing / 2;
+	}
+
+	//new ^
+
+	keyNumberNeededHUD->SetTopRight(Vector2f( currRight, topRight.y ));
+	keyNumberNeededHUDBack->SetTopRight(Vector2f(currRight, topRight.y));
+	currRight -= keyNumberNeededHUD->GetWidth();
+
+	float keySpacing = 20;
+	float iconSpacing = 10;
+
+	xKeyText.setPosition( Vector2f( currRight - (xKeyText.getGlobalBounds().width / 2 + keySpacing ), topRight.y + keyNumberNeededHUD->GetHeight() / 2.f ));
+
+	currRight -= xKeyText.getGlobalBounds().width + keySpacing;
+
+	keyIconSpr.setPosition( Vector2f( currRight - keyIconSpr.getGlobalBounds().width / 2, topRight.y + keyNumberNeededHUD->GetHeight() / 2.f));
 }
 
 void KeyMarker::SetPosition(Vector2f &pos)
@@ -172,6 +210,7 @@ void KeyMarker::UpdateKeyNumbers()
 
 		keyNumberNeededHUD->SetNumber(numKeys);
 		keyNumberNeededHUDBack->SetNumber(numKeys);
+		SetTopRight(topRight);
 
 		bool makeRing = false;
 		for (auto it = sess->currentZone->gates.begin(); it != sess->currentZone->gates.end(); ++it)
@@ -206,6 +245,7 @@ void KeyMarker::UpdateKeyNumbers()
 
 		keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
 		keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
+		SetTopRight(topRight);
 
 		if (numEnemiesRemaining == 0)
 		{
@@ -218,8 +258,7 @@ void KeyMarker::UpdateKeyNumbers()
 	keyNumberNeededHUD->UpdateSprite();
 	keyNumberNeededHUDBack->UpdateSprite();
 
-
-	
+	SetTopRight(topRight);
 }
 
 void KeyMarker::SetStartKeysZone(Zone *z)
@@ -239,13 +278,8 @@ void KeyMarker::SetStartKeys( int neededKeys, int totalKeys )
 	
 	keyNumberNeededHUD->SetNumber(neededKeys);
 	keyNumberNeededHUDBack->SetNumber(neededKeys);
-	//keyNumberTotalHUD->SetNumber(totalKeys);
 
-
-	keyNumberNeededHUD->UpdateSprite();
-	keyNumberNeededHUDBack->UpdateSprite();
-//	keyNumberTotalHUD->UpdateSprite();
-	//set bg sprite
+	SetTopRight(topRight);
 
 	Reset();
 	//SetEnergySprite();
@@ -262,6 +296,8 @@ void KeyMarker::Reset()
 		keyNumberNeededHUD->SetNumber(0);
 		keyNumberNeededHUDBack->SetNumber(0);
 
+		SetTopRight(topRight);
+
 		keyNumberNeededHUD->ts = ts_keyNumDark;
 	}
 	else if (markerType == ENEMY)
@@ -271,15 +307,17 @@ void KeyMarker::Reset()
 			int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
 			keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
 			keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
+
+			SetTopRight(topRight);
 		}
 
 		keyNumberNeededHUD->ts = ts_enemyNumDark;
 	}
 	
 
-	keyNumberNeededHUDBack->SetCenter(neededCenter);
+	//keyNumberNeededHUDBack->SetCenter(neededCenter);
 	keyNumberNeededHUDBack->UpdateSprite();
-	keyNumberNeededHUD->SetCenter(neededCenter);
+	//keyNumberNeededHUD->SetCenter(neededCenter);
 	keyNumberNeededHUD->UpdateSprite();
 }
 
@@ -288,12 +326,11 @@ void KeyMarker::Draw( sf::RenderTarget *target )
 
 	if (action == VIBRATING && frame < 20 )
 	{
-		//cout << "blah: " << keyNumberNeededHUDBack->center.x << ", " << keyNumberNeededHUDBack->center.y << endl;
-		keyNumberNeededHUDBack->Draw(target);
+		//keyNumberNeededHUDBack->Draw(target);
 	}
 	
 
-	//keyNumberTotalHUD->Draw(target);
+	
 	
 	keyNumberNeededHUD->Draw(target);
 	
@@ -307,12 +344,6 @@ void KeyMarker::Draw( sf::RenderTarget *target )
 		target->draw(slashText);
 		keyNumberTotalHUD->Draw(target);
 	}
-
-	//target->draw( backSprite );
-	//if( state == NONZERO )
-	//{
-	//	target->draw( energySprite );
-	//}
 }
 
 void KeyMarker::Update()
@@ -343,7 +374,7 @@ void KeyMarker::Update()
 			int ry = (rand() % 3) - 1;
 			rx *= 10;
 			ry *= 10;
-			keyNumberNeededHUDBack->SetCenter(keyNumberNeededHUD->anchor + Vector2f(rx, ry));
+			keyNumberNeededHUDBack->SetTopRight(keyNumberNeededHUD->anchor + Vector2f(rx, ry));
 			keyNumberNeededHUDBack->UpdateSprite();
 
 			int rx1 = (rand() % 3) - 1;
@@ -351,15 +382,16 @@ void KeyMarker::Update()
 			rx1 *= 2;
 			ry1 *= 2;
 
-			keyNumberNeededHUD->SetCenter(keyNumberNeededHUD->anchor + Vector2f(rx1, ry1));
+			keyNumberNeededHUD->SetTopRight(keyNumberNeededHUD->anchor + Vector2f(rx1, ry1));
 			keyNumberNeededHUD->UpdateSprite();
 		}
 		else if (frame == 20)
 		{
-			keyNumberNeededHUDBack->SetCenter(neededCenter);
+			SetTopRight(topRight);
+			/*keyNumberNeededHUDBack->SetTopRight(topR);
 			keyNumberNeededHUDBack->UpdateSprite();
 			keyNumberNeededHUD->SetCenter(neededCenter);
-			keyNumberNeededHUD->UpdateSprite();
+			keyNumberNeededHUD->UpdateSprite();*/
 		}
 
 		if (frame % 2 == 0)

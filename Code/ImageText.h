@@ -38,6 +38,9 @@ struct ImageText
 	//in a timer this sets number of seconds
 	void SetNumber( int num );
 	void SetScale(float s);
+	float GetWidth();
+	float GetHeight();
+	float GetDigitWidth();
 	void UpdateSymbolSprite();
 
 	void SetSymbol(SymbolType sType);

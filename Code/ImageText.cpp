@@ -21,7 +21,7 @@ ImageText::ImageText( int p_maxDigits, Tileset *ts_tex )
 	
 	posType = TOP_LEFT;
 	numShowZeroes = 0;
-	activeDigits = 1;
+	activeDigits = 0;
 	scale = 1.f;
 
 	sh = NULL;
@@ -47,6 +47,16 @@ void ImageText::SetShader(sf::Shader *p_sh)
 	sh = p_sh;
 }
 
+float ImageText::GetWidth()
+{
+	return GetDigitWidth() * activeDigits;
+}
+
+float ImageText::GetHeight()
+{
+	return ts->tileHeight * scale;
+}
+
 void ImageText::SetCenter(sf::Vector2f &p_center)
 {
 	anchor = p_center;
@@ -58,12 +68,19 @@ void ImageText::SetTopRight(sf::Vector2f &p_topRight)
 {
 	anchor = p_topRight;
 	posType = TOP_RIGHT;
+	UpdateSprite();
 }
 
 void ImageText::SetTopLeft(sf::Vector2f &p_topLeft)
 {
 	anchor = p_topLeft;
 	posType = TOP_LEFT;
+	UpdateSprite();
+}
+
+float ImageText::GetDigitWidth()
+{
+	return ts->tileWidth * scale * .7; //.8 is the current spacing factor
 }
 
 void ImageText::UpdateSprite()
@@ -117,8 +134,8 @@ void ImageText::UpdateSprite()
 
 	activeDigits = ind;
 
-	float tw = ts->tileWidth * scale;
-	float th = ts->tileHeight * scale;
+	float tw = GetDigitWidth();
+	float th = GetHeight();
 
 	Vector2f anchorTopLeft;
 
@@ -134,7 +151,7 @@ void ImageText::UpdateSprite()
 	}
 	else if (posType == TOP_RIGHT)
 	{
-		anchorTopLeft = anchor + Vector2f(tw * -5, 0);
+		anchorTopLeft = anchor - Vector2f(tw * activeDigits, 0);
 	}
 	else if (posType == TOP_LEFT)
 	{
@@ -169,15 +186,18 @@ void ImageText::UpdateSprite()
 		}
 	}
 
-	/*for (int i = 0; i < maxDigits; ++i)
+	for (int i = 0; i < activeDigits; ++i)
 	{
-		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw * ((maxDigits-1) - i), 0));
-	}*/
-
-	for (int i = 0; i < maxDigits; ++i)
-	{
-		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw/2 * i, 0));//tw * i, 0));
+		//used to used maxDigits
+		//use ts->tilewidth * scale to make sure the rects are the right size.
+		//use GetDigitWidth() to make sure they're in the right position
+		SetRectTopLeft(vert + i * 4, ts->tileWidth * scale, th, anchorTopLeft + Vector2f(tw * ((activeDigits-1) - i), 0));
 	}
+
+	//for (int i = 0; i < maxDigits; ++i)
+	//{
+	//	SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw * .8 * i, 0));//tw * i, 0));
+	//}
 
 
 }
@@ -198,12 +218,14 @@ void ImageText::ShowZeroes( int numZ )
 {
 	assert( numZ <= maxDigits && numZ >= 0 );
 	numShowZeroes = numZ;
+	UpdateSprite();
 }
 
 void ImageText::SetNumber( int num )
 {
 	assert( num >= 0 );
 	value = num;
+	UpdateSprite();
 }
 
 void ImageText::SetScale(float s)

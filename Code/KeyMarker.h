@@ -23,6 +23,7 @@ struct KeyMarker
 		Count
 	};
 
+	sf::Vector2f topRight;
 	Action action;
 	MarkerType markerType;
 	int frame;
@@ -40,6 +41,7 @@ struct KeyMarker
 	void Update();
 	void UpdateKeyNumbers();
 	void SetPosition(sf::Vector2f &pos);
+	void SetTopRight(sf::Vector2f &pos);
 	void ShowMaxKeys(int k);
 	void HideMaxKeys();
 	sf::Vector2f GetPosition();
