@@ -10,7 +10,7 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
-	panel = new Panel("gamesettingsscreen", 1920, 1080, this, true);
+	panel = new Panel("gamesettingsscreen", 1000, 700, this, true);
 	//panel->SetColor(Color::Transparent);
 	//panel->SetTop
 	panel->SetCenterPos(Vector2i(960, 540));

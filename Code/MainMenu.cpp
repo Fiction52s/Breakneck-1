@@ -837,7 +837,7 @@ void MainMenu::CreateRenderTextures()
 	if (pauseTexture == NULL)
 	{
 		pauseTexture = new RenderTexture;
-		pauseTexture->create(1820, 980);
+		pauseTexture->create(1920, 1080);//1820, 980);
 		pauseTexture->clear();
 	}
 

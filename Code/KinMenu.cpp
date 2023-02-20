@@ -24,8 +24,7 @@ KinMenu::KinMenu( GameSession *p_game)
 	game( p_game )
 {
 	
-	Vector2f powerPos(0, 0);
-	Vector2f powerSpacing(30, 20);
+	
 	ts_powers = game->GetSizedTileset("Menu/power_icon_128x128.png");
 
 	description.setFont(game->mainMenu->arial);
@@ -44,7 +43,7 @@ KinMenu::KinMenu( GameSession *p_game)
 	ts_tutorial[7] = game->GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
 	ts_tutorial[8] = game->GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
 	ts_tutorial[9] = game->GetTileset("Menu/tut_airdash.png", tutWidth, tutHeight);
-	tutorialSpr.setPosition(512, 74);
+	
 
 	SetRectColor(descriptionBox, Color(0, 0, 0, 255));
 	SetRectCenter(descriptionBox, 1220, 90, Vector2f(1122, 439));//topleft is 512,394
@@ -55,29 +54,10 @@ KinMenu::KinMenu( GameSession *p_game)
 	Vector2f tutBoxSize(1220, 160);
 	tutBox = new TutorialBox(40, tutBoxSize, Color::Black, Color::White, 30);
 
-	//tutBox->SetCenterPos(Vector2f(1122, 439));
-	Vector2f tutBoxTopLeft(512, 394);
-	tutBox->SetTopLeft(tutBoxTopLeft);
-
-	//SetRectTopLeft(commandRect, 50, 50, Vector2f(512, 394));
-	//commandSpr.setPosition(512, 394);
-	//commandSpr.setTexture(*ts_xboxButtons->texture);
-	//commandSpr.setScale(.4, .4);
-
-	Vector2f bottomLeftTutBox = tutBoxTopLeft + tutBoxSize;
-
-	Vector2f powersOffset(512, bottomLeftTutBox.y + 20);//495 + 45);
-
 	for (int i = 0; i < 10; ++i)
 	{
 		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i));
 		SetRectSubRect(powerQuadsBG + i * 4, ts_powers->GetSubRect(i));
-		//powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i%9) + 64;
-		powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i % 8) + 64;
-		powerPos.y = powersOffset.y + (128 + powerSpacing.y) * (i / 8) + 64;
-		SetRectCenter(powerQuads + i * 4, 128, 128, powerPos);
-		SetRectCenter(powerQuadsBG + i * 4, 128, 128, powerPos);
-
 	}
 
 	int waitFrames[3] = { 60, 30, 20 };
@@ -111,7 +91,7 @@ KinMenu::KinMenu( GameSession *p_game)
 	}
 	scrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
 	scrollShader2.setUniform("blendColor", ColorGL(Color::White));
-	Vector2f offset(72, 74);
+	
 
 	kinSpr.setTexture(*ts_kin->texture);
 	aura1ASpr.setTexture(*ts_aura1A->texture);
@@ -170,17 +150,9 @@ KinMenu::KinMenu( GameSession *p_game)
 	bgShifter->Reset();
 	selectedShifter->Reset();
 
-	kinSpr.setPosition(offset);
-	aura1ASpr.setPosition(offset);
-	aura1BSpr.setPosition(offset);
-	aura2ASpr.setPosition(offset);
-	aura2BSpr.setPosition(offset);
-	veinSpr.setPosition(offset);
-	veinSpr.setColor(Color::Transparent);
-
-	SetRectCenter(kinBG, aura1ASpr.getGlobalBounds().width, aura1ASpr.getGlobalBounds().height,
-		Vector2f(offset.x + 200, offset.y + 418));
 	//SetRectColor(kinBG, Color(Color::Cyan));
+
+	SetTopLeft(Vector2f(50, 50));
 
 	frame = 0;
 
@@ -235,6 +207,55 @@ KinMenu::~KinMenu()
 	delete bgShifter;
 
 	delete selectedShifter;
+}
+
+void KinMenu::SetTopLeft(sf::Vector2f &pos)
+{
+
+	Vector2f powerPos(0, 0);
+	Vector2f powerSpacing(30, 20);
+
+	Vector2f tutBoxTopLeft(512, 394);
+	tutBoxTopLeft += pos;
+
+	tutBox->SetTopLeft(tutBoxTopLeft);
+
+	Vector2f tutBoxSize(1220, 160);
+
+	Vector2f bottomLeftTutBox = tutBoxTopLeft + tutBoxSize;
+
+	Vector2f powersOffset(512, bottomLeftTutBox.y + 20);//495 + 45);
+	powersOffset += pos;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i));
+		SetRectSubRect(powerQuadsBG + i * 4, ts_powers->GetSubRect(i));
+		//powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i%9) + 64;
+		powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i % 8) + 64;
+		powerPos.y = powersOffset.y + (128 + powerSpacing.y) * (i / 8) + 64;
+		SetRectCenter(powerQuads + i * 4, 128, 128, powerPos);
+		SetRectCenter(powerQuadsBG + i * 4, 128, 128, powerPos);
+	}
+
+	Vector2f tutPos(512, 74);
+	tutorialSpr.setPosition(tutPos + pos);
+
+
+	Vector2f offset(72, 74);
+
+	offset += pos;
+
+	kinSpr.setPosition(offset);
+	aura1ASpr.setPosition(offset);
+	aura1BSpr.setPosition(offset);
+	aura2ASpr.setPosition(offset);
+	aura2BSpr.setPosition(offset);
+	veinSpr.setPosition(offset);
+	veinSpr.setColor(Color::Transparent);
+
+	SetRectCenter(kinBG, aura1ASpr.getGlobalBounds().width, aura1ASpr.getGlobalBounds().height,
+		Vector2f(offset.x + 200, offset.y + 418));
 }
 
 void KinMenu::UpdateSelector()

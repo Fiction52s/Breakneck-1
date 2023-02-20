@@ -113,6 +113,7 @@ struct PauseMenu
 	void ApplySoundSettings( );
 	bool CanChangeTab();
 	void HandleEvent(sf::Event ev);
+	void SetTopLeft(sf::Vector2f &pos);
 
 	sf::Text debugText;
 

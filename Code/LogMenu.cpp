@@ -38,72 +38,12 @@ LogMenu::LogMenu(Session *p_sess)
 	currLogText.setCharacterSize(20);
 	currLogText.setFont(sess->mainMenu->arial);
 	
-
 	worldText.setFont(sess->mainMenu->arial);
 	worldText.setCharacterSize(40);
 	worldText.setFillColor(Color::White);
 
 	currLogNameText.setCharacterSize(36);
 	currLogNameText.setFont(sess->mainMenu->arial);
-
-	int edgeMargin = 65;
-
-	Vector2f pauseTexSize(1820, 980);
-
-	Vector2f controlCenter = Vector2f(1243 + 512 / 2, 594 + 93 / 2);
-
-	float logBGQuadWidth = 740;
-
-	//worldText.setPosition(edgeMargin + logBGQuadWidth / 2, 100);
-
-	Vector2f logBGQuadTopLeft = Vector2f(edgeMargin, edgeMargin);
-
-	SetRectTopLeft(logBGQuad, logBGQuadWidth, pauseTexSize.y - edgeMargin * 2, logBGQuadTopLeft);
-
-	float rightOfLogBGQuad = logBGQuadTopLeft.x + logBGQuadWidth;
-
-	float leftSideMiddle = logBGQuadTopLeft.x + logBGQuadWidth / 2;
-
-	worldText.setPosition(leftSideMiddle, 80);
-
-	float separationMargin = 15;
-	float rightSideStartX = rightOfLogBGQuad + separationMargin;
-
-	float rightSideWidth = (pauseTexSize.x - edgeMargin) - rightSideStartX;
-	float rightSideCenterX = rightSideStartX + rightSideWidth / 2;
-
-
-
-
-	float containerBGQuadHeight = 512;
-
-	Vector2f containerBGQuadPos = Vector2f(rightSideStartX, edgeMargin);
-
-	SetRectTopLeft(containerBGQuad, rightSideWidth, containerBGQuadHeight, containerBGQuadPos);
-
-	previewCenter = containerBGQuadPos + Vector2f(rightSideWidth / 2, containerBGQuadHeight / 2);
-
-	float containerQuadBottom = containerBGQuadPos.y + containerBGQuadHeight;
-
-	float nameQuadHeight = 93;
-	float descriptionQuadHeight = 215;
-
-	Vector2f logTitleBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin);
-	Vector2f logDescriptionBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin + nameQuadHeight + separationMargin);
-
-	SetRectTopLeft(shardTitleBGQuad, rightSideWidth, nameQuadHeight, logTitleBGQuadPos);
-	SetRectTopLeft(descriptionBGQuad, rightSideWidth, descriptionQuadHeight, logDescriptionBGQuadPos);
-
-
-	currLogNameText.setPosition(Vector2f(rightSideCenterX, logTitleBGQuadPos.y + nameQuadHeight / 2));
-
-	currLogText.setPosition(logDescriptionBGQuadPos + Vector2f(edgeMargin, edgeMargin));
-	
-
-	/*SetRectCenter(shardButtons, 128, 93, Vector2f(controlCenter.x - 128 - 128 / 2, controlCenter.y));
-	SetRectCenter(shardButtons + 1 * 4, 128, 93, Vector2f(controlCenter.x - 128 / 2, controlCenter.y));
-	SetRectCenter(shardButtons + 2 * 4, 128, 93, Vector2f(controlCenter.x + 128 / 2, controlCenter.y));
-	SetRectCenter(shardButtons + 3 * 4, 128, 93, Vector2f(controlCenter.x + 128 + 128 / 2, controlCenter.y));*/
 
 	SetRectColor(logBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
@@ -118,26 +58,23 @@ LogMenu::LogMenu(Session *p_sess)
 	{
 		SetRectSubRect(shardButtons + i * 4, ts_shardButtons->GetSubRect(i));
 	}
-	previewSpr.setPosition(previewCenter);
-
 
 	ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
 	grassSprite.setTexture(*ts_grass->texture);
-	grassSprite.setPosition(previewCenter);
+	
 
 	ts_kin = sess->GetSizedTileset("Menu/pause_kin_400x836.png");
 	kinSprite.setTexture(*ts_kin->texture);
 	kinSprite.setScale(.5, .5);
-	kinSprite.setPosition(previewCenter + Vector2f( -100, 0 ));
+	
 	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, kinSprite.getLocalBounds().height / 2);
 
 	pSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
-	
 
 	ts_kinFace = sess->GetSizedTileset("HUD/kin_face_320x288.png");
 	kinFaceSprite.setTexture(*ts_kinFace->texture);
 	kinFaceSprite.setTextureRect(ts_kinFace->GetSubRect(0));
-	kinFaceSprite.setPosition(previewCenter + Vector2f(100, 0));
+	
 	kinFaceSprite.setOrigin(kinFaceSprite.getLocalBounds().width / 2, kinFaceSprite.getLocalBounds().height / 2);
 
 	pFaceSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
@@ -162,20 +99,19 @@ LogMenu::LogMenu(Session *p_sess)
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
 
-
 	int waterWidth = 400;
 	int waterHeight = 400;
 	previewPoly = new TerrainPolygon;
-	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(-waterWidth / 2, -waterHeight / 2)), false);
-	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(waterWidth / 2, -waterHeight / 2)), false);
-	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(waterWidth/2, waterHeight/2)), false);
-	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(-waterWidth/2, waterHeight/2)), false);
+	previewPoly->AddPoint(Vector2i(Vector2f(-waterWidth / 2, -waterHeight / 2)), false);
+	previewPoly->AddPoint(Vector2i(Vector2f(waterWidth / 2, -waterHeight / 2)), false);
+	previewPoly->AddPoint(Vector2i(Vector2f(waterWidth/2, waterHeight/2)), false);
+	previewPoly->AddPoint(Vector2i(Vector2f(-waterWidth/2, waterHeight/2)), false);
 	previewPoly->SetAsWaterType(TerrainPolygon::WATER_NORMAL);
 	previewPoly->Finalize();
 
 	previewRail = new TerrainRail;
-	previewRail->AddPoint(Vector2i(previewCenter + Vector2f( -150, -150 )), false);
-	previewRail->AddPoint(Vector2i(previewCenter + Vector2f(150, 150)), false);
+	previewRail->AddPoint(Vector2i(Vector2f( -150, -150 )), false);
+	previewRail->AddPoint(Vector2i(Vector2f(150, 150)), false);
 
 	previewRail->SetRailType(TerrainRail::FLOORANDCEILING);
 	previewRail->Finalize();
@@ -184,23 +120,14 @@ LogMenu::LogMenu(Session *p_sess)
 
 	logSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
-	int index = 0;
-	int rectSize = 192/2;
-	int xSpacing = 20 * 2;
-	int ySpacing = 12 * 2;
+	
+	topLeft = Vector2f(0, 0);
+	SetTopLeft(Vector2f(50, 50));
 
-	Vector2f gridStart(150, 200);
-	for (int i = 0; i < ySelector->totalItems - 1; ++i)
-	{
-		for (int j = 0; j < xSelector->totalItems; ++j)
-		{
-			index = (i * xSelector->totalItems + j);
-
-			SetRectCenter(logSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
-			SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(0));
-		}
-	}
-
+	//Vector2i delta = Vector2i(pos - topLeft);
+	//assumes you only use this a single time
+	previewPoly->Move(Vector2i(previewCenter));
+	previewRail->Move(Vector2i(previewCenter));
 	
 	SetWorldMode();
 	UpdateLogsOnWorldChange();
@@ -222,6 +149,84 @@ LogMenu::~LogMenu()
 
 	delete previewPoly;
 	delete previewRail;
+}
+
+void LogMenu::SetTopLeft(sf::Vector2f &pos)
+{
+	int edgeMargin = 65;
+
+	Vector2f pauseTexSize(1820, 980);
+
+	//Vector2f controlCenter = Vector2f(1243 + 512 / 2, 594 + 93 / 2);
+
+	float logBGQuadWidth = 740;
+
+	//worldText.setPosition(edgeMargin + logBGQuadWidth / 2, 100);
+
+	Vector2f logBGQuadTopLeft = pos + Vector2f(edgeMargin, edgeMargin);
+
+	SetRectTopLeft(logBGQuad, logBGQuadWidth, pauseTexSize.y - edgeMargin * 2, logBGQuadTopLeft);
+
+	float rightOfLogBGQuad = logBGQuadTopLeft.x + logBGQuadWidth;
+
+	float leftSideMiddle = logBGQuadTopLeft.x + logBGQuadWidth / 2;
+
+	worldText.setPosition(leftSideMiddle, 80 + pos.y);
+
+	float separationMargin = 15;
+	float rightSideStartX = rightOfLogBGQuad + separationMargin;
+
+	float rightSideWidth = (pauseTexSize.x - edgeMargin) - rightSideStartX;
+	float rightSideCenterX = rightSideStartX + rightSideWidth / 2;
+
+	float containerBGQuadHeight = 512;
+
+	Vector2f containerBGQuadPos = Vector2f(rightSideStartX, edgeMargin + pos.y);
+
+	SetRectTopLeft(containerBGQuad, rightSideWidth, containerBGQuadHeight, containerBGQuadPos);
+
+	previewCenter = containerBGQuadPos + Vector2f(rightSideWidth / 2, containerBGQuadHeight / 2);
+
+	float containerQuadBottom = containerBGQuadPos.y + containerBGQuadHeight;
+
+	float nameQuadHeight = 93;
+	float descriptionQuadHeight = 215;
+
+	Vector2f logTitleBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin);
+	Vector2f logDescriptionBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin + nameQuadHeight + separationMargin);
+
+	SetRectTopLeft(shardTitleBGQuad, rightSideWidth, nameQuadHeight, logTitleBGQuadPos);
+	SetRectTopLeft(descriptionBGQuad, rightSideWidth, descriptionQuadHeight, logDescriptionBGQuadPos);
+
+
+	currLogNameText.setPosition(Vector2f(rightSideCenterX, logTitleBGQuadPos.y + nameQuadHeight / 2));
+
+	currLogText.setPosition(logDescriptionBGQuadPos + Vector2f(edgeMargin, edgeMargin));
+
+	previewSpr.setPosition(previewCenter);
+	kinSprite.setPosition(previewCenter + Vector2f(-100, 0));
+	grassSprite.setPosition(previewCenter);
+	kinFaceSprite.setPosition(previewCenter + Vector2f(100, 0));
+
+	int index = 0;
+	int rectSize = 192 / 2;
+	int xSpacing = 20 * 2;
+	int ySpacing = 12 * 2;
+
+	Vector2f gridStart(150, 200);
+	gridStart += pos;
+	for (int i = 0; i < ySelector->totalItems - 1; ++i)
+	{
+		for (int j = 0; j < xSelector->totalItems; ++j)
+		{
+			index = (i * xSelector->totalItems + j);
+
+			SetRectCenter(logSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
+			SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(0));
+		}
+	}
+
+	topLeft = pos;
 }
 
 void LogMenu::LoadLogInfo()

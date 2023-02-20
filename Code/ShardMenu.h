@@ -126,6 +126,8 @@ struct ShardMenu
 
 	ShardMenu( Session *sess );
 	~ShardMenu();
+
+	void SetTopLeft(sf::Vector2f &pos);
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );
 	void Draw(sf::RenderTarget *target);

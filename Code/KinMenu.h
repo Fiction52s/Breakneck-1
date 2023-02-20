@@ -22,6 +22,7 @@ struct KinMenu
 	SingleAxisSelector *ySelector;
 	int GetCurrIndex();
 	~KinMenu();
+	void SetTopLeft(sf::Vector2f &pos);
 	GameSession *game;
 	sf::Sprite selectorSpr;
 	void UpdatePowers(Actor *player);

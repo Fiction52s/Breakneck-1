@@ -27,9 +27,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 
 	selectedIndex = 0;
 
-	int edgeMargin = 65;
-
-	Vector2f pauseTexSize(1820, 980);
+	
 
 	
 
@@ -47,58 +45,6 @@ ShardMenu::ShardMenu(Session *p_sess)
 	
 
 	//SetRectCenter(shardBGQuad, 744, 848, Vector2f(65 + 744 / 2, 66 + 848 / 2));
-
-	float shardBGQuadWidth = 740;
-
-	Vector2f shardBGQuadTopLeft = Vector2f(edgeMargin, edgeMargin);
-	SetRectTopLeft(shardBGQuad, shardBGQuadWidth, pauseTexSize.y - edgeMargin * 2, shardBGQuadTopLeft);
-
-	
-
-	float rightOfShardBGQuad = shardBGQuadTopLeft.x + shardBGQuadWidth;
-
-	float leftSideMiddle = shardBGQuadTopLeft.x + shardBGQuadWidth / 2;
-
-	worldText.setPosition(leftSideMiddle, 80);
-
-	float separationMargin = 15;
-	float rightSideStartX = rightOfShardBGQuad + separationMargin;
-
-	float rightSideWidth = (pauseTexSize.x - edgeMargin) - rightSideStartX;
-	float rightSideCenterX = rightSideStartX + rightSideWidth / 2;
-	
-	
-	
-
-	float containerBGQuadHeight = 512;
-
-	Vector2f containerBGQuadPos = Vector2f(rightSideStartX, edgeMargin);
-
-
-	SetRectTopLeft(containerBGQuad, rightSideWidth, containerBGQuadHeight, containerBGQuadPos);
-
-	float containerQuadBottom = containerBGQuadPos.y + containerBGQuadHeight;
-
-	Vector2f containerSize = Vector2f(ts_shardContainer->tileWidth,
-		ts_shardContainer->tileHeight);
-	containerCenter = Vector2f(rightSideCenterX, edgeMargin + containerSize.y / 2);
-
-	SetRectCenter(largeShardContainer, containerSize.x, containerSize.y, containerCenter);
-	SetRectCenter(largeShard, 192, 192, containerCenter);
-
-	float nameQuadHeight = 93;
-	float descriptionQuadHeight = 215;
-
-	Vector2f shardTitleBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin);
-	Vector2f shardDescriptionBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin + nameQuadHeight + separationMargin);
-
-
-	SetRectTopLeft(shardTitleBGQuad, rightSideWidth, nameQuadHeight, shardTitleBGQuadPos);
-	SetRectTopLeft(descriptionBGQuad, rightSideWidth, descriptionQuadHeight, shardDescriptionBGQuadPos);
-
-	currShardNameText.setPosition(Vector2f(rightSideCenterX, shardTitleBGQuadPos.y + nameQuadHeight / 2));
-
-	currShardText.setPosition(shardDescriptionBGQuadPos + Vector2f( edgeMargin, edgeMargin));
 
 	SetRectColor(shardBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
@@ -143,13 +89,72 @@ ShardMenu::ShardMenu(Session *p_sess)
 
 	shardSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
+	SetTopLeft(Vector2f(50, 50));
+
+	SetWorldMode();
+	UpdateWorld();
+}
+
+void ShardMenu::SetTopLeft(sf::Vector2f &pos)
+{
+	float shardBGQuadWidth = 740;
+
+	Vector2f pauseTexSize(1820, 980);
+
+	int edgeMargin = 65;
+
+	Vector2f shardBGQuadTopLeft = Vector2f(edgeMargin, edgeMargin) + pos;
+	SetRectTopLeft(shardBGQuad, shardBGQuadWidth, pauseTexSize.y - edgeMargin * 2, shardBGQuadTopLeft);
+
+	float rightOfShardBGQuad = shardBGQuadTopLeft.x + shardBGQuadWidth;
+
+	float leftSideMiddle = shardBGQuadTopLeft.x + shardBGQuadWidth / 2;
+
+	worldText.setPosition(leftSideMiddle, 80 + pos.y);
+
+	float separationMargin = 15;
+	float rightSideStartX = rightOfShardBGQuad + separationMargin;
+
+	float rightSideWidth = (pauseTexSize.x - edgeMargin) - rightSideStartX;
+	float rightSideCenterX = rightSideStartX + rightSideWidth / 2;
+
+	float containerBGQuadHeight = 512;
+
+	Vector2f containerBGQuadPos = Vector2f(rightSideStartX, edgeMargin + pos.y);
+
+	SetRectTopLeft(containerBGQuad, rightSideWidth, containerBGQuadHeight, containerBGQuadPos);
+
+	float containerQuadBottom = containerBGQuadPos.y + containerBGQuadHeight;
+
+	Vector2f containerSize = Vector2f(ts_shardContainer->tileWidth,
+		ts_shardContainer->tileHeight);
+	containerCenter = Vector2f(rightSideCenterX, edgeMargin + containerSize.y / 2 + pos.y);
+
+	SetRectCenter(largeShardContainer, containerSize.x, containerSize.y, containerCenter);
+	SetRectCenter(largeShard, 192, 192, containerCenter);
+
+	float nameQuadHeight = 93;
+	float descriptionQuadHeight = 215;
+
+	Vector2f shardTitleBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin);
+	Vector2f shardDescriptionBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin + nameQuadHeight + separationMargin);
+
+	SetRectTopLeft(shardTitleBGQuad, rightSideWidth, nameQuadHeight, shardTitleBGQuadPos);
+	SetRectTopLeft(descriptionBGQuad, rightSideWidth, descriptionQuadHeight, shardDescriptionBGQuadPos);
+
+	currShardNameText.setPosition(Vector2f(rightSideCenterX, shardTitleBGQuadPos.y + nameQuadHeight / 2));
+
+	currShardText.setPosition(shardDescriptionBGQuadPos + Vector2f(edgeMargin, edgeMargin));
+
 	int index = 0;
-	int rectSize = 192/2;
+	int rectSize = 192 / 2;
 	int xSpacing = 20 * 2;
 	int ySpacing = 12 * 2;
 
 	Vector2f gridStart(150, 200);
-	
+
+	gridStart += pos;
+
 	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
@@ -159,9 +164,6 @@ ShardMenu::ShardMenu(Session *p_sess)
 			SetRectCenter(shardSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
 		}
 	}
-
-	SetWorldMode();
-	UpdateWorld();
 }
 
 void ShardMenu::UpdateWorld()

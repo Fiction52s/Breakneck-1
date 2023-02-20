@@ -2750,7 +2750,7 @@ bool GameSession::RunMainLoopOnce()
 		state = RUN;
 		soundNodeList->Pause( false );
 		}*/
-		pauseTex->clear();
+		pauseTex->clear(Color::Transparent);
 		window->clear();
 		Sprite preTexSprite;
 		preTexSprite.setTexture(preScreenTex->getTexture());
@@ -2764,7 +2764,7 @@ bool GameSession::RunMainLoopOnce()
 		Sprite pauseMenuSprite;
 		pauseMenuSprite.setTexture(pauseTex->getTexture());
 		//bgSprite.setPosition( );
-		pauseMenuSprite.setPosition((1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
+		pauseMenuSprite.setPosition(-960 / 2, -540 / 2);//(1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
 		pauseMenuSprite.setScale(.5, .5);
 		window->draw(pauseMenuSprite);
 

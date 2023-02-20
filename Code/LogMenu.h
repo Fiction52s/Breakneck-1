@@ -76,6 +76,7 @@ struct LogMenu
 		SM_LOG,
 	};
 
+	sf::Vector2f topLeft;
 	sf::Text worldText;
 	int currSelectMode;
 	Tileset *ts_grass;
@@ -128,6 +129,7 @@ struct LogMenu
 		ControllerState &prevInput);
 	void Draw(sf::RenderTarget *target);
 	void SetCurrLog();
+	void SetTopLeft(sf::Vector2f &pos);
 	MusicInfo *GetLogMusic(const std::string &str);
 	void SetCurrMusic();
 	void StopMusic();

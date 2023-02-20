@@ -313,13 +313,12 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	debugText.setFont(game->mainMenu->arial);
 	debugText.setCharacterSize(28);
 	debugText.setFillColor(Color::White);
-//	debugText.setOutlineColor(Color::Black);
-	debugText.setString(
+	/*debugText.setString(
 		"Hold B and press Dpad Down\n"
 		"while paused to store a debug\n"
 		"replay. The game is currently a\n"
 		"work in progress.\nThanks for testing\n\nPress Y to restart w/ ghost");
-	debugText.setPosition(100, 100);
+	debugText.setPosition(100, 100);*/
 
 	optionType = OptionType::O_INPUT;
 	cOptions = NULL;//new OptionsMenu( this );
@@ -344,12 +343,7 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	
 	ts_pauseOptions = game->GetSizedTileset("Menu/Pause/pauseoptions_768x128.png");
 
-	Vector2f startOffset(1820 / 2, 128/2 + 100);
-	int spacing = 20;
-	for (int i = 0; i < 5; ++i)
-	{
-		SetRectCenter(pauseOptionQuads + i * 4, 768, 128, startOffset + Vector2f(0, (spacing + 128) * i));
-	}
+	
 
 	int waitFrames[3] = { 60, 30, 30 };
 	int waitModeThresh[2] = { 2, 2 };
@@ -358,12 +352,11 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	optionsMenu = new OptionsMenu(this);
 
 	pauseMap = new PauseMap;
-	pauseMap->SetCenter(Vector2f(960 - 50, 540 - 50));
+	
 
 	selectSprite.setTexture( *ts_select->texture );
 
-	bgSprite.setPosition(0, 0);//50, 50 );
-	tabSprite.setPosition(0, 0);
+	
 
 	//pauseSelectIndex = 0;
 
@@ -432,9 +425,12 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	momentum = 0;
 	maxMomentum = 4;
 
+	SetTopLeft(Vector2f(50, 50));
+
 	SetTab(PAUSE);
 
 	
+
 	/*maxWaitFrames = 30;
 	currWaitFrames = maxWaitFrames;
 	minWaitFrames = 4;
@@ -606,6 +602,23 @@ void PauseMenu::HandleEvent(sf::Event ev)
 	}
 }
 
+void PauseMenu::SetTopLeft(sf::Vector2f &pos)
+{
+	bgSprite.setPosition(pos);//50, 50 );
+	tabSprite.setPosition(pos);
+
+	pauseMap->SetCenter(Vector2f(960, 540));
+
+	Vector2f startOffset(1820 / 2, 128 / 2 + 100);
+
+	startOffset += pos;
+	int spacing = 20;
+	for (int i = 0; i < 5; ++i)
+	{
+		SetRectCenter(pauseOptionQuads + i * 4, 768, 128, startOffset + Vector2f(0, (spacing + 128) * i));
+	}
+}
+
 bool PauseMenu::CanChangeTab()
 {
 	if (currentTab == OPTIONS)
@@ -628,7 +641,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	if( currentTab == PAUSE )
 	{
 		target->draw(pauseOptionQuads, 4 * 5, sf::Quads, ts_pauseOptions->texture);
-		target->draw(debugText);
+		//target->draw(debugText);
 		//target->draw( selectSprite );
 	}
 	else if (currentTab == MAP)
@@ -932,7 +945,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 	}
 	case OPTIONS:
 		{	
-			MOUSE.Update(MOUSE.GetRealPixelPos() - Vector2i( 50, 50 )); //just testing
+			MOUSE.Update(MOUSE.GetRealPixelPos());// -Vector2i(50, 50)); //just testing
 			UICONTROLLER.Update();
 			//return UpdateOptions( currInput, prevInput );
 			
