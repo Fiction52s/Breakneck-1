@@ -131,6 +131,11 @@ void GetLogSequence::UpdateState()
 		}
 	}
 	}
+
+	if (sess->GetGameSessionState() == GameSession::FROZEN)
+	{
+		logPop->Update();
+	}
 	//++frame; //i think this skips frames
 
 	//emitter->Update();
@@ -168,8 +173,8 @@ void GetLogSequence::Reset()
 
 		assert(log != NULL);
 
-		logPop->SetLog(log->logWorld, log->localIndex);
 		logPop->SetCenter(Vector2f(960, 800));
+		logPop->SetLog(log->logWorld, log->localIndex);
 		logPop->Reset();
 
 		emitter->SetPos(Vector2f(pPos));

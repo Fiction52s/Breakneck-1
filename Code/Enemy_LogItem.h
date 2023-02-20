@@ -12,6 +12,7 @@ struct Session;
 struct ShapeEmitter;
 struct TutorialBox;
 struct GetLogSequence;
+struct LogPreview;
 
 struct LogItem : Enemy
 {
@@ -84,16 +85,6 @@ struct LogPopup
 		Count
 	};
 
-	LogPopup();
-	~LogPopup();
-	void SetTopLeft(sf::Vector2f &pos);
-	void SetCenter(sf::Vector2f &pos);
-	void Reset();
-	void Update();
-	void SetLog(int w, int i );
-	void SetDescription(const std::string &desc);
-	void Draw(sf::RenderTarget *target);
-
 	TutorialBox *tutBox;
 	sf::Sprite logSpr;
 
@@ -105,11 +96,14 @@ struct LogPopup
 	float nameHeight;
 
 	Tileset *ts_log;
-	
+
+	float previewBGWidth;
+	float previewBGHeight;
+
+	sf::Vertex previewBGQuad[4];
 
 	sf::Vertex bgQuad[4];
 	sf::Vertex topBorderQuad[4];
-	sf::Vertex logBorderQuad[4];
 
 	sf::Text nameText;
 
@@ -123,6 +117,17 @@ struct LogPopup
 	int frame;
 	State state;
 
+	LogPreview *logPreview;
+
+	LogPopup();
+	~LogPopup();
+	void SetTopLeft(sf::Vector2f &pos);
+	void SetCenter(sf::Vector2f &pos);
+	void Reset();
+	void Update();
+	void SetLog(int w, int i );
+	void SetDescription(const std::string &desc);
+	void Draw(sf::RenderTarget *target);
 };
 
 #endif

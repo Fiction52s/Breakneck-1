@@ -89,6 +89,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	//	sess->TryCreatePowerItemResources();
 	//}
 
+
 	testEmitter = NULL;
 	ts_sparkle = NULL;
 	ts_explodeCreate = NULL;
@@ -402,17 +403,19 @@ LogPopup::LogPopup()
 
 	ts_log = sess->GetSizedTileset("Logs/logs_64x64.png");
 
-	
+	logPreview = new LogPreview;
 
 	nameText.setCharacterSize(50);
 	nameText.setFillColor(Color::Red);
 	nameText.setFont(sess->mainMenu->arial);
 
-	SetRectColor(bgQuad, Color(0, 0, 0, 200));
+	Color bgColor = Color(0, 0, 0, 200);
+
+	SetRectColor(bgQuad, bgColor);
+	SetRectColor(previewBGQuad, bgColor);
 
 	Color borderColor = Color(100, 100, 100, 100);
 	SetRectColor(topBorderQuad, borderColor);
-	SetRectColor(logBorderQuad, borderColor);
 
 	borderHeight = 2;
 
@@ -432,6 +435,9 @@ LogPopup::LogPopup()
 
 	logSize = 192;
 
+	previewBGWidth = 400;
+	previewBGHeight = 400;
+
 	height = nameHeight + borderHeight + descLineHeight * 4 + descBorder.y * 2 + extraHeight;
 
 	logRel = Vector2f(logBorder, nameHeight + borderHeight + logBorder);
@@ -440,6 +446,7 @@ LogPopup::LogPopup()
 LogPopup::~LogPopup()
 {
 	delete tutBox;
+	delete logPreview;
 }
 
 void LogPopup::Reset()
@@ -450,6 +457,8 @@ void LogPopup::Reset()
 
 void LogPopup::Update()
 {
+	logPreview->Update();
+
 	++frame;
 }
 
@@ -467,11 +476,21 @@ void LogPopup::SetLog( int w, int i )
 
 	string descStr = sess->logMenu->GetLogDesc(logWorld, logLocalIndex);
 	tutBox->SetText(descStr);
+
+	logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, logLocalIndex));
 }
 
 void LogPopup::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
+
+	float previewBottomBorder = 100;
+
+	Vector2f previewQuadPos = topLeft + Vector2f(width / 2 - previewBGWidth / 2, -previewBGHeight - previewBottomBorder);
+
+	SetRectTopLeft(previewBGQuad, previewBGWidth, previewBGHeight, previewQuadPos);
+
+	logPreview->SetCenter(previewQuadPos + Vector2f(previewBGWidth / 2, previewBGHeight / 2));
 
 	SetRectTopLeft(bgQuad, width, height, topLeft);
 	SetRectTopLeft(topBorderQuad, width, borderHeight, topLeft + Vector2f(0, nameHeight));
@@ -480,16 +499,11 @@ void LogPopup::SetTopLeft(sf::Vector2f &pos)
 
 	float remaining = height - nameHeight;
 
-	float logBorderLeft = logBorder * 2 + logSize;
-
-	SetRectTopLeft(logBorderQuad, borderHeight, remaining, topLeft + Vector2f(logBorderLeft, nameHeight + borderHeight));
-
-
 	Vector2f center = topLeft + Vector2f(width / 2, height / 2);
 
 	nameText.setPosition(center.x, topLeft.y);
 
-	tutBox->SetTopLeft(topLeft + Vector2f(logBorderLeft + borderHeight + descBorder.x, nameHeight + borderHeight + descBorder.y));
+	tutBox->SetTopLeft(topLeft + Vector2f(borderHeight + descBorder.x, nameHeight + borderHeight + descBorder.y));
 }
 
 void LogPopup::SetCenter(sf::Vector2f &pos)
@@ -499,9 +513,12 @@ void LogPopup::SetCenter(sf::Vector2f &pos)
 
 void LogPopup::Draw(RenderTarget *target)
 {
+	target->draw(previewBGQuad, 4, sf::Quads);
+
 	target->draw(bgQuad, 4, sf::Quads);
 	target->draw(topBorderQuad, 4, sf::Quads);
-	target->draw(logBorderQuad, 4, sf::Quads);
+	
+	logPreview->Draw(target);
 
 	target->draw(logSpr);
 	target->draw(nameText);

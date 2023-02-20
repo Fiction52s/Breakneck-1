@@ -530,7 +530,7 @@ void PauseMenu::SetTab( Tab t )
 	//	shardMenu->StopMusic();
 		break;
 	case LOGS:
-		logMenu->StopMusic();
+		logMenu->logPreview.StopMusic();
 		break;
 	}
 

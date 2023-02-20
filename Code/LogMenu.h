@@ -36,17 +36,6 @@ struct LogDetailedInfo
 		Count
 	};
 
-	LogDetailedInfo()
-		:logType(-1), ts_preview(NULL),
-		waterIndex(-1),
-		railIndex(-1),
-		skinIndex(-1),
-		grassTypeIndex(-1),
-		specialTerrainWorld(-1),
-		specialTerrainVariation(-1)
-	{
-
-	}
 
 	std::string name;
 	std::string desc;
@@ -60,6 +49,60 @@ struct LogDetailedInfo
 	int specialTerrainWorld;
 	int specialTerrainVariation;
 	Tileset *ts_preview;
+
+	LogDetailedInfo();
+	void Reset();
+};
+
+struct LogPreview
+{
+	LogDetailedInfo logInfo;
+	TilesetManager tMan;
+	SoundManager sMan;
+	Session *sess;
+	sf::Vector2f center;
+	sf::Vector2f terrainCenter;
+
+	//LT_ENEMY
+	ActorParams *previewParams;
+
+	//LT_WATER/LT_TERRAIN
+	float waterShaderCounter;
+	TerrainPolygon *previewPoly;
+
+	//LT_RAIL
+	Tileset *ts_rail;
+	TerrainRail *previewRail;
+
+	//LT_SKIN
+	Tileset *ts_kin;
+	Tileset *ts_kinFace;
+
+	sf::Sprite kinSprite;
+	sf::Sprite kinFaceSprite;
+
+	PlayerSkinShader pSkinShader;
+	PlayerSkinShader pFaceSkinShader;
+
+	//LT_GRASS
+	Tileset *ts_grass;
+	sf::Sprite grassSprite;
+
+	//LT_MUSIC
+	MusicInfo *currLogMusic;
+
+	LogPreview();
+	~LogPreview();
+	void Clear();
+	void PlayMusic();
+	void StopMusic();
+	void Update();
+	void SetCenter(sf::Vector2f &pos);
+	void SetInfo(LogDetailedInfo &li);
+	void Draw(sf::RenderTarget *target);
+
+private:
+	void ClearActorParams();
 };
 
 struct LogMenu
@@ -76,21 +119,11 @@ struct LogMenu
 		SM_LOG,
 	};
 
+	LogPreview logPreview;
 	sf::Vector2f topLeft;
 	sf::Text worldText;
 	int currSelectMode;
-	Tileset *ts_grass;
-	sf::Sprite grassSprite;
-	PlayerSkinShader pSkinShader;
-	PlayerSkinShader pFaceSkinShader;
-	Tileset *ts_kinFace;
-	sf::Sprite kinFaceSprite;
-	Tileset *ts_kin;
-	sf::Sprite kinSprite;
 	int currLogType;
-	float waterShaderCounter;
-	TerrainPolygon *previewPoly;
-	TerrainRail *previewRail;
 	State state;
 	int selectedIndex;
 	int totalFrame;
@@ -98,17 +131,13 @@ struct LogMenu
 	sf::Text currLogNameText;
 	LogDetailedInfo **logInfo;
 	Tileset *ts_logs;
-	Tileset *ts_rail;
 	Session *sess;
-	TilesetManager tMan;
-	SoundManager sMan;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
 	SingleAxisSelector *worldSelector;
 	sf::Vertex previewQuad[4];
 	sf::Sprite previewSpr;
-	ActorParams *previewParams;
-	MusicInfo *currLogMusic;
+	
 	sf::Vertex selectedBGQuad[4];
 	sf::Vertex *logSelectQuads;
 	sf::Vertex logBGQuad[4];
@@ -132,11 +161,11 @@ struct LogMenu
 	void SetTopLeft(sf::Vector2f &pos);
 	MusicInfo *GetLogMusic(const std::string &str);
 	void SetCurrMusic();
-	void StopMusic();
 	void LoadLogInfo();
 	void SetupLogImages();
 	std::string GetLogDesc(int w, int li);
 	std::string GetLogName(int w, int li);
+	LogDetailedInfo GetLogInfo(int w, int li);
 	bool SetDescription(std::string &nameStr, std::string &destStr, const std::string &shardTypeStr);
 	void SetCurrentDescription(bool captured);
 	void UpdateUnlockedLogs();

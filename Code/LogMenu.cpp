@@ -26,14 +26,27 @@
 using namespace sf;
 using namespace std;
 
-LogMenu::LogMenu(Session *p_sess)
-	:sess(p_sess), pSkinShader("player"), pFaceSkinShader( "player")
+LogDetailedInfo::LogDetailedInfo()
 {
-	previewParams = NULL;
+	Reset();
+}
 
-	waterShaderCounter = 0;
+void LogDetailedInfo::Reset()
+{
+	logType = -1;
+	ts_preview = NULL;
+	waterIndex = -1;
+	railIndex = -1;
+	skinIndex = -1;
+	grassTypeIndex = -1;
+	specialTerrainWorld = -1;
+	specialTerrainVariation = -1;
+}
+
+LogMenu::LogMenu(Session *p_sess)
+	:sess(p_sess)
+{
 	totalFrame = 0;
-	currLogMusic = NULL;
 
 	currLogText.setCharacterSize(20);
 	currLogText.setFont(sess->mainMenu->arial);
@@ -59,26 +72,6 @@ LogMenu::LogMenu(Session *p_sess)
 		SetRectSubRect(shardButtons + i * 4, ts_shardButtons->GetSubRect(i));
 	}
 
-	ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
-	grassSprite.setTexture(*ts_grass->texture);
-	
-
-	ts_kin = sess->GetSizedTileset("Menu/pause_kin_400x836.png");
-	kinSprite.setTexture(*ts_kin->texture);
-	kinSprite.setScale(.5, .5);
-	
-	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, kinSprite.getLocalBounds().height / 2);
-
-	pSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
-
-	ts_kinFace = sess->GetSizedTileset("HUD/kin_face_320x288.png");
-	kinFaceSprite.setTexture(*ts_kinFace->texture);
-	kinFaceSprite.setTextureRect(ts_kinFace->GetSubRect(0));
-	
-	kinFaceSprite.setOrigin(kinFaceSprite.getLocalBounds().width / 2, kinFaceSprite.getLocalBounds().height / 2);
-
-	pFaceSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
-
 	state = WAIT;
 
 	ts_logs = sess->GetSizedTileset("Logs/logs_64x64.png");
@@ -99,23 +92,6 @@ LogMenu::LogMenu(Session *p_sess)
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
 
-	int waterWidth = 400;
-	int waterHeight = 400;
-	previewPoly = new TerrainPolygon;
-	previewPoly->AddPoint(Vector2i(Vector2f(-waterWidth / 2, -waterHeight / 2)), false);
-	previewPoly->AddPoint(Vector2i(Vector2f(waterWidth / 2, -waterHeight / 2)), false);
-	previewPoly->AddPoint(Vector2i(Vector2f(waterWidth/2, waterHeight/2)), false);
-	previewPoly->AddPoint(Vector2i(Vector2f(-waterWidth/2, waterHeight/2)), false);
-	previewPoly->SetAsWaterType(TerrainPolygon::WATER_NORMAL);
-	previewPoly->Finalize();
-
-	previewRail = new TerrainRail;
-	previewRail->AddPoint(Vector2i(Vector2f( -150, -150 )), false);
-	previewRail->AddPoint(Vector2i(Vector2f(150, 150)), false);
-
-	previewRail->SetRailType(TerrainRail::FLOORANDCEILING);
-	previewRail->Finalize();
-
 	LoadLogInfo();
 
 	logSelectQuads = new sf::Vertex[xSize * ySize * 4];
@@ -123,11 +99,6 @@ LogMenu::LogMenu(Session *p_sess)
 	
 	topLeft = Vector2f(0, 0);
 	SetTopLeft(Vector2f(50, 50));
-
-	//Vector2i delta = Vector2i(pos - topLeft);
-	//assumes you only use this a single time
-	previewPoly->Move(Vector2i(previewCenter));
-	previewRail->Move(Vector2i(previewCenter));
 	
 	SetWorldMode();
 	UpdateLogsOnWorldChange();
@@ -146,9 +117,6 @@ LogMenu::~LogMenu()
 	delete worldSelector;
 
 	delete[] logSelectQuads;
-
-	delete previewPoly;
-	delete previewRail;
 }
 
 void LogMenu::SetTopLeft(sf::Vector2f &pos)
@@ -204,9 +172,8 @@ void LogMenu::SetTopLeft(sf::Vector2f &pos)
 	currLogText.setPosition(logDescriptionBGQuadPos + Vector2f(edgeMargin, edgeMargin));
 
 	previewSpr.setPosition(previewCenter);
-	kinSprite.setPosition(previewCenter + Vector2f(-100, 0));
-	grassSprite.setPosition(previewCenter);
-	kinFaceSprite.setPosition(previewCenter + Vector2f(100, 0));
+
+	logPreview.SetCenter(previewCenter);
 
 	int index = 0;
 	int rectSize = 192 / 2;
@@ -466,17 +433,7 @@ void LogMenu::SetCurrMusic()
 {
 	LogDetailedInfo &currLog = logInfo[ySelector->currIndex][xSelector->currIndex];
 
-	assert(currLogMusic == NULL);
-	currLogMusic = GetLogMusic(currLog.name);
-	if (currLogMusic != NULL)
-	{
-		bool loaded = currLogMusic->music != NULL;
-		if (currLogMusic->music == NULL)
-			loaded = currLogMusic->Load();
-		assert(loaded);
-		currLogMusic->music->setVolume(100);
-		currLogMusic->music->play();
-	}
+	logPreview.PlayMusic();
 }
 
 MusicInfo *LogMenu::GetLogMusic(const std::string &str)
@@ -608,13 +565,9 @@ std::string LogMenu::GetLogName(int w, int li)
 	return currLog.name;
 }
 
-void LogMenu::StopMusic()
+LogDetailedInfo LogMenu::GetLogInfo(int w, int li)
 {
-	if (currLogMusic != NULL)
-	{
-		currLogMusic->music->stop();
-		currLogMusic = NULL;
-	}
+	return logInfo[w][li];
 }
 
 void LogMenu::SetCurrLog()
@@ -637,65 +590,7 @@ void LogMenu::SetCurrLog()
 		{
 			LogDetailedInfo &currInfo = logInfo[worldSelector->currIndex][selectedIndex];
 
-			if (previewParams != NULL)
-			{
-				delete previewParams;
-				previewParams = NULL;
-				tMan.ClearTilesets();
-				sMan.ClearAll();
-			}
-
-			currLogType = currInfo.logType;
-
-			if (currLogType == LogDetailedInfo::LT_ENEMY )
-			{
-				ActorType *at;
-				at = sess->types[currInfo.enemyTypeName];
-
-				
-
-				sess->specialTempTilesetManager = &tMan;
-				sess->specialTempSoundManager = &sMan;
-				previewParams = at->info.pMaker(at, 1);
-
-				previewParams->SetPosition(previewCenter);
-				previewParams->CreateMyEnemy();
-
-				sess->specialTempTilesetManager = NULL;
-				sess->specialTempSoundManager = NULL;
-
-				previewParams->myEnemy->UpdateFromEditParams(0);
-
-				//currInfo.ts_preview = tMan.GetSizedTileset(currInfo.imageStr + ".png");
-				//previewSpr.setTexture(*currInfo.ts_preview->texture);
-				//previewSpr.setTextureRect(currInfo.ts_preview->GetSubRect(currInfo.tile));
-			}
-			else if (currLogType == LogDetailedInfo::LT_WATER)
-			{
-				previewPoly->SetAsWaterType(currInfo.waterIndex);
-			}
-			else if (currLogType == LogDetailedInfo::LT_RAIL)
-			{
-				previewRail->SetRailType(currInfo.railIndex);
-				previewRail->UpdateTexturedQuads();
-			}
-			else if (currLogType == LogDetailedInfo::LT_SKIN)
-			{
-				pSkinShader.SetSkin(currInfo.skinIndex);
-				pFaceSkinShader.SetSkin(currInfo.skinIndex);
-			}
-			else if (currLogType == LogDetailedInfo::LT_GRASS)
-			{
-				grassSprite.setTextureRect(ts_grass->GetSubRect(currInfo.grassTypeIndex));
-				grassSprite.setOrigin(grassSprite.getLocalBounds().width / 2, grassSprite.getLocalBounds().height / 2);
-			}
-			else
-			{
-				previewSpr.setTexture(*ts_noPreview->texture);
-				previewSpr.setTextureRect(ts_noPreview->GetSubRect(0));
-			}
-			
-			
+			logPreview.SetInfo(currInfo);
 		}
 	}
 	else
@@ -773,7 +668,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		if (ySelector->currIndex == 0)
 		{
 			SetWorldMode();
-			StopMusic();
+			logPreview.StopMusic();
 			state = WAIT;
 		}
 		else
@@ -801,7 +696,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 					}
 				}
 
-				StopMusic();
+				logPreview.StopMusic();
 				state = WAIT;
 
 				/*LogDetailedInfo &li = logInfo[oldY][oldX];
@@ -840,24 +735,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 			UpdateLogSelectQuads();
 
 
-			if (previewParams != NULL)
-			{
-				previewParams->myEnemy->UpdateFromEditParams(1);
-			}
-
-			if (currLogType == LogDetailedInfo::LT_WATER)
-			{
-				//set oldshaderzoom when you pause the game, so that if it gets changed
-				//it updates when you return to the game
-				//oldShaderZoom = zoom;
-
-				for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
-				{
-					sess->waterShaders[i].setUniform("u_slide", waterShaderCounter);
-					sess->waterShaders[i].setUniform("zoom", 1.f);
-				}
-				waterShaderCounter += .01f;
-			}
+			logPreview.Update();
 		}
 	}
 
@@ -896,35 +774,7 @@ void LogMenu::Draw(sf::RenderTarget *target)
 
 	if (currSelectMode == SM_LOG)
 	{
-		switch (currLogType)
-		{
-		case LogDetailedInfo::LT_ENEMY:
-		{
-			previewParams->DrawEnemy(target);
-			break;
-		}
-		case LogDetailedInfo::LT_WATER:
-		{
-			previewPoly->Draw(target);
-			break;
-		}
-		case LogDetailedInfo::LT_RAIL:
-		{
-			previewRail->Draw(target);
-			break;
-		}
-		case LogDetailedInfo::LT_SKIN:
-		{
-			target->draw(kinSprite, &pSkinShader.pShader);
-			target->draw(kinFaceSprite, &pFaceSkinShader.pShader);
-			break;
-		}
-		case LogDetailedInfo::LT_GRASS:
-		{
-			target->draw(grassSprite);
-			break;
-		}
-		}
+		logPreview.Draw(target);
 
 		target->draw(selectedBGQuad, 4, sf::Quads);
 	}
@@ -945,4 +795,231 @@ void LogMenu::Draw(sf::RenderTarget *target)
 		target->draw(currLogNameText);
 	}
 
+}
+
+LogPreview::LogPreview()
+	:pSkinShader("player"), pFaceSkinShader("player")
+{
+	sess = Session::GetSession();
+
+	previewParams = NULL;
+
+	waterShaderCounter = 0;
+	currLogMusic = NULL;
+
+	ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
+	grassSprite.setTexture(*ts_grass->texture);
+
+	ts_kin = sess->GetSizedTileset("Menu/pause_kin_400x836.png");
+	kinSprite.setTexture(*ts_kin->texture);
+	kinSprite.setScale(.5, .5);
+
+	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, kinSprite.getLocalBounds().height / 2);
+
+	pSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
+
+	ts_kinFace = sess->GetSizedTileset("HUD/kin_face_320x288.png");
+	kinFaceSprite.setTexture(*ts_kinFace->texture);
+	kinFaceSprite.setTextureRect(ts_kinFace->GetSubRect(0));
+
+	kinFaceSprite.setOrigin(kinFaceSprite.getLocalBounds().width / 2, kinFaceSprite.getLocalBounds().height / 2);
+
+	pFaceSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
+
+	int waterWidth = 400;
+	int waterHeight = 400;
+	previewPoly = new TerrainPolygon;
+	previewPoly->AddPoint(Vector2i(Vector2f(-waterWidth / 2, -waterHeight / 2)), false);
+	previewPoly->AddPoint(Vector2i(Vector2f(waterWidth / 2, -waterHeight / 2)), false);
+	previewPoly->AddPoint(Vector2i(Vector2f(waterWidth / 2, waterHeight / 2)), false);
+	previewPoly->AddPoint(Vector2i(Vector2f(-waterWidth / 2, waterHeight / 2)), false);
+	previewPoly->SetAsWaterType(TerrainPolygon::WATER_NORMAL);
+	previewPoly->Finalize();
+
+	previewRail = new TerrainRail;
+	previewRail->AddPoint(Vector2i(Vector2f(-150, -150)), false);
+	previewRail->AddPoint(Vector2i(Vector2f(150, 150)), false);
+
+	previewRail->SetRailType(TerrainRail::FLOORANDCEILING);
+	previewRail->Finalize();
+}
+
+LogPreview::~LogPreview()
+{
+	ClearActorParams();
+
+	delete previewPoly;
+	delete previewRail;
+}
+
+void LogPreview::ClearActorParams()
+{
+	if (previewParams != NULL)
+	{
+		delete previewParams;
+		previewParams = NULL;
+		tMan.ClearTilesets();
+		sMan.ClearAll();
+	}
+}
+
+void LogPreview::Clear()
+{
+	ClearActorParams();
+
+	logInfo.Reset();
+}
+
+//center must be set before setting info for good results
+void LogPreview::SetCenter(sf::Vector2f &pos)
+{
+	Vector2i delta(pos - center);
+
+	center = pos;
+
+	previewPoly->Move(delta);
+	previewRail->Move(delta);
+
+	kinSprite.setPosition(center + Vector2f(-100, 0));
+	grassSprite.setPosition(center);
+	kinFaceSprite.setPosition(center + Vector2f(100, 0));
+}
+
+void LogPreview::SetInfo(LogDetailedInfo &li)
+{
+	logInfo = li;
+
+	ClearActorParams();
+
+	switch (logInfo.logType)
+	{
+	case LogDetailedInfo::LT_ENEMY:
+	{
+		ActorType *at;
+		at = sess->types[logInfo.enemyTypeName];
+
+		sess->specialTempTilesetManager = &tMan;
+		sess->specialTempSoundManager = &sMan;
+		previewParams = at->info.pMaker(at, 1);
+
+		previewParams->SetPosition(center);
+		previewParams->CreateMyEnemy();
+
+		sess->specialTempTilesetManager = NULL;
+		sess->specialTempSoundManager = NULL;
+
+		previewParams->myEnemy->UpdateFromEditParams(0);
+		break;
+	}
+	case LogDetailedInfo::LT_WATER:
+	{
+		previewPoly->SetAsWaterType(logInfo.waterIndex);
+		break;
+	}
+	case LogDetailedInfo::LT_RAIL:
+	{
+		previewRail->SetRailType(logInfo.railIndex);
+		previewRail->UpdateTexturedQuads();
+		break;
+	}
+	case LogDetailedInfo::LT_SKIN:
+	{
+		pSkinShader.SetSkin(logInfo.skinIndex);
+		pFaceSkinShader.SetSkin(logInfo.skinIndex);
+		break;
+	}
+	case LogDetailedInfo::LT_GRASS:
+	{
+		grassSprite.setTextureRect(ts_grass->GetSubRect(logInfo.grassTypeIndex));
+		grassSprite.setOrigin(grassSprite.getLocalBounds().width / 2, grassSprite.getLocalBounds().height / 2);
+		break;
+	}
+	default:
+	{
+		//previewSpr.setTexture(*ts_noPreview->texture);
+		//previewSpr.setTextureRect(ts_noPreview->GetSubRect(0));
+		break;
+	}
+	}
+}
+
+void LogPreview::PlayMusic()
+{
+	//testing
+	assert(currLogMusic == NULL);
+	//logInfo.name
+	currLogMusic = sess->mainMenu->musicManager->songMap["w02_Glade"];
+	if (currLogMusic != NULL)
+	{
+		bool loaded = currLogMusic->music != NULL;
+		if (currLogMusic->music == NULL)
+			loaded = currLogMusic->Load();
+		assert(loaded);
+		currLogMusic->music->setVolume(100);
+		currLogMusic->music->play();
+	}
+}
+
+void LogPreview::StopMusic()
+{
+	if (currLogMusic != NULL)
+	{
+		currLogMusic->music->stop();
+		currLogMusic = NULL;
+	}
+}
+
+void LogPreview::Update()
+{
+	if (previewParams != NULL)
+	{
+		previewParams->myEnemy->UpdateFromEditParams(1);
+	}
+
+	if (logInfo.logType == LogDetailedInfo::LT_WATER)
+	{
+		//set oldshaderzoom when you pause the game, so that if it gets changed
+		//it updates when you return to the game
+		//oldShaderZoom = zoom;
+
+		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		{
+			sess->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+			sess->waterShaders[i].setUniform("zoom", 1.f);
+		}
+		waterShaderCounter += .01f;
+	}
+}
+
+void LogPreview::Draw(sf::RenderTarget *target)
+{
+	switch (logInfo.logType)
+	{
+	case LogDetailedInfo::LT_ENEMY:
+	{
+		previewParams->DrawEnemy(target);
+		break;
+	}
+	case LogDetailedInfo::LT_WATER:
+	{
+		previewPoly->Draw(target);
+		break;
+	}
+	case LogDetailedInfo::LT_RAIL:
+	{
+		previewRail->Draw(target);
+		break;
+	}
+	case LogDetailedInfo::LT_SKIN:
+	{
+		target->draw(kinSprite, &pSkinShader.pShader);
+		target->draw(kinFaceSprite, &pFaceSkinShader.pShader);
+		break;
+	}
+	case LogDetailedInfo::LT_GRASS:
+	{
+		target->draw(grassSprite);
+		break;
+	}
+	}
 }

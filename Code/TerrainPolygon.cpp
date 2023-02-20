@@ -3718,7 +3718,6 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 
 	UpdateWaterType();
 
-
 	if (finalized)
 	{
 		//optimize this later
