@@ -203,7 +203,6 @@ struct SaveFile
 	int GetBestFramesLevel(int w, int s, int m);
 	int GetBestFramesLevel(int index);
 
-	bool HasNewShards();
 	bool HasUpgrade(int pType);
 	void UnlockUpgrade(int pType);
 	bool HasLog(int lType);

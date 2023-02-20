@@ -284,8 +284,6 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 
 	int shardType = Shard::GetShardTypeFromWorldAndIndex(w, li);
 
-	sess->IsShardCaptured(shardType);
-
 	if (sess->mainMenu->adventureManager != NULL)
 	{
 		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
@@ -300,7 +298,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 	}
 	else
 	{
-		return sess->currShardField.GetBit( shardType + Actor::SHARD_START_INDEX );
+		return sess->IsShardCaptured(shardType);
 	}
 }
 
@@ -403,14 +401,14 @@ void ShardMenu::UpdateShardSelectQuads()
 		return;
 	}
 
-	index = (xSelector->currIndex + xSelector->totalItems * (ySelector->currIndex-1));
+	//index = (xSelector->currIndex + xSelector->totalItems * (ySelector->currIndex-1));
 
 	//SetRectColor(shardSelectQuads + index, currColor);
 	int selectedShardTileIndex = -1;
 	if (IsCurrShardCaptured())
 	{
 		SetRectSubRect(largeShard,
-			ts_shards[worldSelector->currIndex]->GetSubRect(index));
+			ts_shards[worldSelector->currIndex]->GetSubRect(selectedIndex));
 		//selectedShardTileIndex = index + 22;
 	}
 	else
@@ -420,7 +418,7 @@ void ShardMenu::UpdateShardSelectQuads()
 	}
 
 	SetRectCenter(selectedBGQuad, 192/2, 192/2,
-		Vector2f((shardSelectQuads + index * 4)->position + Vector2f(192/4, 192/4)));
+		Vector2f((shardSelectQuads + selectedIndex * 4)->position + Vector2f(192/4, 192/4)));
 	SetRectColor(selectedBGQuad, Color::White);
 }
 
@@ -432,8 +430,9 @@ void ShardMenu::SetCurrentDescription( bool captured)
 		currShardNameText.setString(currInfo.name);
 		FloatRect lBounds = currShardNameText.getLocalBounds();
 		currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
-		if (captured)
-			currShardText.setString(currInfo.desc);
+		
+		currShardText.setString(currInfo.desc);
+			
 	}
 	else
 	{
@@ -476,6 +475,9 @@ void ShardMenu::SetWorldMode()
 	worldText.setOutlineColor(Color::Red);
 	worldText.setOutlineThickness(2);
 	SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
+
+	currShardNameText.setString("");
+	currShardText.setString("");
 }
 
 void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )

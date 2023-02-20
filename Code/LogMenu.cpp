@@ -336,22 +336,30 @@ void LogMenu::LoadLogInfo()
 
 bool LogMenu::IsLogFound(int w, int li)
 {
-	return true; //testing
-
-	//int logType = 
-		
-	//fix this soon!
-
-	/*SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
-	if (saveFile == NULL)
+	if (logInfo[w][li].name == "")
 	{
 		return false;
-	}*/
+	}
 
-	/*LogDetailedInfo &currLog = logInfo[w][li];
+	int logType = LogItem::GetLogTypeFromWorldAndIndex(w, li);
 
-	return (currLog.name != "" 
-		&& saveFile->HasLog(LogItem::GetLogTypeFromWorldAndIndex(w, li)));*/
+	if (sess->mainMenu->adventureManager != NULL)
+	{
+		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
+		if (saveFile != NULL)
+		{
+			return saveFile->HasLog(logType);
+		}
+		else
+		{
+			//tutorials
+			return false;
+		}
+	}
+	else
+	{
+		return sess->HasLog(logType);
+	}
 }
 
 bool LogMenu::IsCurrLogFound()
@@ -527,22 +535,31 @@ void LogMenu::UpdateLogsOnWorldChange()
 
 void LogMenu::UpdateLogSelectQuads()
 {
-	int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+	//int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
 
 	float quadSize = 192/2;
 	SetRectCenter(selectedBGQuad, quadSize, quadSize,
-		Vector2f((logSelectQuads + index * 4)->position + Vector2f(quadSize/2, quadSize/2)));
+		Vector2f((logSelectQuads + selectedIndex * 4)->position + Vector2f(quadSize/2, quadSize/2)));
 	SetRectColor(selectedBGQuad, Color::White);
 }
 
 void LogMenu::SetCurrentDescription(bool captured)
 {
-	LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][selectedIndex];
-	currLogNameText.setString(currLog.name);
-	FloatRect lBounds = currLogNameText.getLocalBounds();
-	currLogNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
 	if (captured)
+	{
+		LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][selectedIndex];
+		currLogNameText.setString(currLog.name);
+		FloatRect lBounds = currLogNameText.getLocalBounds();
+		currLogNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
 		currLogText.setString(currLog.desc);
+	}
+	else
+	{
+		currLogNameText.setString("???");
+		FloatRect lBounds = currLogNameText.getLocalBounds();
+		currLogNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
+		currLogText.setString("");
+	}
 }
 
 std::string LogMenu::GetLogDesc(int w, int li)
@@ -575,11 +592,12 @@ void LogMenu::SetCurrLog()
 	if (currSelectMode == SM_WORLD)
 		return;
 
+	int index = xSelector->currIndex + (ySelector->currIndex - 1) * xSelector->totalItems;
+	selectedIndex = index;
+
 	bool captured = IsCurrLogFound();
 	if (captured)
 	{
-		int index = xSelector->currIndex + (ySelector->currIndex-1) * xSelector->totalItems;
-		selectedIndex = index;
 		Tileset *tp = NULL;//ts_preview[index];
 		if (tp != NULL)
 		{
@@ -760,6 +778,9 @@ void LogMenu::SetWorldMode()
 	currSelectMode = SM_WORLD;
 	worldText.setOutlineColor(Color::Red);
 	worldText.setOutlineThickness(2);
+
+	currLogNameText.setString("");
+	currLogText.setString("");
 }
 
 void LogMenu::Draw(sf::RenderTarget *target)
