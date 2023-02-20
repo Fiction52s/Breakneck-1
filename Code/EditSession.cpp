@@ -4166,14 +4166,10 @@ int EditSession::EditRun()
 		}*/
 	}
 
-
-	gameModeType = -1;
-	SetGameMode(MatchParams::GAME_MODE_BASIC);
-	//int gm = mapHeader->gameMode;
-	//mapHeader->gameMode = -1;
-	//SetGameMode(gm);
-
-	//UpdateNumPlayers();
+	//old pos
+	/*gameModeType = -1;
+	SetGameMode(MatchParams::GAME_MODE_BASIC);*/
+	
 
 	reloadNew = false;
 
@@ -4181,6 +4177,10 @@ int EditSession::EditRun()
 
 	players[0] = NULL;
 	SetNumPlayers(true, mapHeader->numPlayerSpawns);
+
+	gameModeType = -1;
+	SetGameMode(MatchParams::GAME_MODE_BASIC);
+
 	//-------------------------
 
 	/*for (int i = 0; i < MAX_PLAYERS; ++i)
