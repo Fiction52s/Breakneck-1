@@ -722,9 +722,12 @@ void Enemy::SetKey()
 			w = 2; //we dont have all the sprites yet
 		}
 
-		stringstream ss;
-		ss << "FX/key_w0" << w << "_1_128x128.png";
-		ts_key = sess->GetTileset(ss.str(), 128, 128);
+		//stringstream ss;
+		//ss << "FX/key_w0" << w << "_1_128x128.png";
+		//ts_key = sess->GetTileset(ss.str(), 128, 128);
+
+
+		ts_key = sess->GetSizedTileset("FX/key_w1_256x256.png");
 
 		keySprite.setTexture(*ts_key->texture);
 		UpdateKeySprite();
