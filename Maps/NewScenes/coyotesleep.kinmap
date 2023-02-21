@@ -12,7 +12,7 @@ fiction52s
 76561198058577095
 1
 1
-7
+6
 7818
 4214
 w3_01
@@ -55,19 +55,16 @@ no_borderpoly
 0
 0
 1
--- 7
+-- 6
 poi 1 1 2 154
 kinstart0
 poi 1 1 2 395
 kinstop0
 poi 1 1 2 1502
 coyotedest
-goal 0 6 1014
 camerashot 3752 -2874
 sleepcam
 1
 sequencecoyote 1 2 1145
-xbarrierwarp 5123 -2920
-BossTest/coyotefight1
-0
+goal 1 2 2375
 0

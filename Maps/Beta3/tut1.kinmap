@@ -1020,34 +1020,58 @@ borderpoly
 1
 -- 50
 tutorialobject -2798 -812
+1
 Press JUMP to jump. Hold it longer to go higher.
 tutorialobject -4243 -856
+1
 Press and hold DASH to dash.
 tutorialobject -396 -1439
-Press JUMP while airborne to double jump.\Hold it longer to go higher.
+2
+Press JUMP while airborne to double jump.
+Hold it longer to go higher.
 tutorialobject 2229 -1337
-Press left or right away from a wall you are touching to walljump.
+2
+Press left or right away from a wall you are
+touching to walljump.
 tutorialobject 4763 -2487
+1
 Hold down and forward to sprint downhill and gain speed.
 tutorialobject 8898 -968
+1
 Hold up and forward to sprint uphill and gain speed.
 tutorialobject 11515 -1995
-Hold up or down while grounded to slide without friction\and let gravity take over.
+2
+Hold up or down while grounded to slide without friction
+and let gravity take over.
 tutorialobject 16129 -2572
-Hold forward and jump onto a downwards slope\as another way to gain speed.
+2
+Hold forward and jump onto a downwards slope
+as another way to gain speed.
 tutorialobject 19834 -710
-Some slopes are so steep that you can only slide down them.\Hold down to go faster.
+2
+Some slopes are so steep that you can only slide down them.
+Hold down to go faster.
 tutorialobject 22264 -1051
-Tap DASH repeatedly to climb a steep slope.\Hold up to climb faster
+2
+Tap DASH repeatedly to climb a steep slope.
+Hold up to climb faster
 tutorialobject 24153 -3789
-Press ATTACK to perform an attack.\Press it multiple times to do a combo.
+2
+Press ATTACK to perform an attack.
+Press it multiple times to do a combo.
 tutorialobject 25366 -3787
+1
 Press ATTACK while dashing to perform a dash attack.
 tutorialobject 27289 -4201
-Press ATTACK while in the air to perform an aerial attack.\If you hit an enemy you will get your doublejump back.
+2
+Press ATTACK while in the air to perform an aerial attack.
+If you hit an enemy you will get your doublejump back.
 tutorialobject 28533 -3719
-Perform an aerial attack while holding up or down\to perform an up or down variation
+2
+Perform an aerial attack while holding up or down
+to perform an up or down variation
 tutorialobject 32261 -3898
+1
 Gates separate parts of the level into zones.
 patroller 27715 -4330
 0
@@ -1060,7 +1084,9 @@ patroller 29053 -3868
 0
 1
 tutorialobject 35249 -5206
-Gates can be unlocked in different ways.\Some can be unlocked by defeating all enemies in a zone
+2
+Gates can be unlocked in different ways.
+Some can be unlocked by defeating all enemies in a zone
 patroller 35821 -5151
 0
 0
@@ -1073,47 +1099,63 @@ bluekeyfly 38752 -3488
 bluekeyfly 38773 -4013
 1
 tutorialobject 37782 -4078
-Some gates only unlock when youve found a number of keys.\the number of keys collected is in the top right of the screen
+2
+Some gates only unlock when youve found a number of keys.
+The number of keys collected is in the top right of the screen
 tutorialobject 39826 -3025
+1
 Glowing enemies also have keys
 basicturret 7 0 193
 1
 1
 tutorialobject 50675 -2177
+1
 Hit a goal node to complete a level
 tutorialobject 42455 -2130
-The orb on the top left represents your remaining health
+2
+The timer at the top of the screen represents
+your remaining time to beat the level.
 tutorialobject 43556 -2104
-It will drain slowly over time and will deplete when you are hit by an enemy.\Hitting enemies will gain you health.
-tutorialobject 44738 -2060
-The orb will turn from blue to orange to red and eventually you will\enter Survival Mode and start flashing.
-tutorialobject 45703 -2002
-In Survival Mode you have 5 seconds to either finish the level\or gain health by hitting an enemy before you explode
+1
+Hitting enemies will add more time, and getting hit will remove time.
+tutorialobject 45881 -1975
+2
+You do not take damage in survival mode. Quickly
+finish the level or hit an enemy before you explode
 tutorialobject 46781 -1972
-The bar on the top left is your Momentum Meter. It increases\when you go fast or hit enemies
+2
+The bar on the top left is your Momentum Meter. 
+It increases when you go fast or hit enemies
 tutorialobject 48056 -1832
-It has 3 levels. Teal blue and purple. Each higher level will grant\enhanced speed and sword size
+2
+It has 3 levels. Teal blue and purple. Each higher level will grant
+enhanced speed and sword size
 patroller 44170 -2060
 0
 0
 0
 1
 tutorialobject 30007 -3945
-Press SHIELD to block. You can aim it towards an enemy by holding a direction.
+2
+Press SHIELD to block. 
+You can aim it towards an enemy by holding a direction.
 tutorialobject 46648 -3430
+1
 There is a minimap in the bottom left to help you navigate large spaces.
 tutorialobject 35681 -3360
-Gates that are off-camera are shown with markers on the edges of the screen.
+2
+Gates that are off-camera are shown with markers
+on the edges of the screen.
 tutorialobject 40779 -525
+1
 Some zones might even have multiple exits each with their own conditions
 bluekeyfly 41729 -1118
 1
 bluekeyfly 42399 -867
 1
 tutorialobject 36459 -4654
+1
 The number of remaining enemies is displayed in the top right.
-tutorialobject 3442 -6222
-Walljumping can restore your doublejump once per airtime.
 basicturret -1 866 1021
 0
 1
@@ -1139,7 +1181,15 @@ patroller 29210 -5418
 0
 1
 tutorialobject 28671 -5041
-When you hit an enemy, you can instantly cancel your attack with\another attack or a doublejump
+2
+When you hit an enemy, you can instantly cancel your attack with
+another attack or a doublejump
+tutorialobject 3295 -2473
+1
+Walljumping can restore your doublejump once per airtime.
+tutorialobject 45008 -2026
+1
+When 5 seconds remain, Kin will go into Survival Mode and start flashing.
 10
 0 0 0 -1 16 -1 723
 0 0 0 -1 718 -1 54
