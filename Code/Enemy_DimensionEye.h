@@ -20,6 +20,7 @@ struct DimensionEye : Enemy
 	GameSession *myBonus;
 	bool CountsForEnemyGate() { return false; }
 	DimensionEye(ActorParams *ap);
+	~DimensionEye();
 	void ProcessState();
 	void HandleHitAndSurvive();
 

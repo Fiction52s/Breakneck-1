@@ -371,7 +371,26 @@ int GameSession::TryToActivateBonus()
 
 			bonusGame->oneFrameMode = oneFrameMode;
 
+			bonusGame->playerReplayManager = playerReplayManager;
+
+			bonusGame->bestReplayOn = bestReplayOn;
+
+			bonusGame->bestTimeGhostOn = bestTimeGhostOn;
+
+			bonusGame->replayGhosts = replayGhosts;
+
 			bonusGame->RestartLevel();
+
+			Actor *p;
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->position = V2d(bonusGame->playerOrigPos[i]);
+				}
+			}
+
 
 			bonusGame->Run();
 
@@ -2466,11 +2485,23 @@ bool GameSession::RunMainLoopOnce()
 			return false;
 		}
 
+		
 		Sprite preTexSprite;
 		preTexSprite.setTexture(preScreenTex->getTexture());
 		preTexSprite.setPosition(-960 / 2, -540 / 2);
 		preTexSprite.setScale(.5, .5);
 		window->draw(preTexSprite);
+
+		pauseTex->clear(Color::Transparent);
+
+		DrawGameSequence(pauseTex);
+
+		pauseTex->display();
+		Sprite pauseMenuSprite;
+		pauseMenuSprite.setTexture(pauseTex->getTexture());
+		pauseMenuSprite.setPosition(-960 / 2, -540 / 2);
+		pauseMenuSprite.setScale(.5, .5);
+		window->draw(pauseMenuSprite);
 	}
 	else if (gameState == STORY)
 	{
@@ -2766,13 +2797,6 @@ bool GameSession::RunMainLoopOnce()
 			return false;
 		}
 
-		//if( currInput.
-
-		/*if( IsKeyPressed( Keyboard::O ) )
-		{
-		state = RUN;
-		soundNodeList->Pause( false );
-		}*/
 		pauseTex->clear(Color::Transparent);
 		window->clear();
 		Sprite preTexSprite;
@@ -2790,156 +2814,6 @@ bool GameSession::RunMainLoopOnce()
 		pauseMenuSprite.setPosition(-960 / 2, -540 / 2);//(1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
 		pauseMenuSprite.setScale(.5, .5);
 		window->draw(pauseMenuSprite);
-
-		//draw map
-
-		/*if (pauseMenu->currentTab == PauseMenu::MAP)
-		{
-
-		}*/
-
-		//if (pauseMenu->currentTab == PauseMenu::MAP)
-		if( false )
-		{
-			View vv;
-			//vv.setCenter(pauseMenu->mapCenter);
-			//vv.setSize(mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor);
-
-			mapTex->clear();
-			mapTex->setView(vv);
-			mapTex->clear(Color(0, 0, 0, 255));
-
-			View vuiView;
-			vuiView.setSize(Vector2f(mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f));
-			vuiView.setCenter(0, 0);
-
-			for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
-			{
-				(*it)->Draw(mapTex);
-			}
-
-
-			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
-				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
-
-			QueryBorderTree(mapRect);
-
-
-			DrawColoredMapTerrain(mapTex, Color(Color::Green));
-
-			/*Color testColor(0x75, 0x70, 0x90, 191);
-			testColor = Color::Green;
-			TerrainPiece * listVAIter = listVA;
-			while (listVAIter != NULL)
-			{
-			if (listVAIter->visible)
-			{
-			int vertexCount = listVAIter->terrainVA->getVertexCount();
-			for (int i = 0; i < vertexCount; ++i)
-			{
-			(*listVAIter->terrainVA)[i].color = testColor;
-			}
-			mapTex->draw(*listVAIter->terrainVA);
-			for (int i = 0; i < vertexCount; ++i)
-			{
-			(*listVAIter->terrainVA)[i].color = Color::White;
-			}
-			}
-
-			listVAIter = listVAIter->next;
-			}*/
-
-			testGateCount = 0;
-			queryMode = QUERY_GATE;
-			gateList = NULL;
-			gateTree->Query(this, mapRect);
-			Gate *mGateList = gateList;
-			while (gateList != NULL)
-			{
-				gateList->MapDraw(mapTex);
-
-				Gate *next = gateList->next;//edgeA->edge1;
-				gateList = next;
-			}
-
-
-
-
-			Vector2i b = mapTex->mapCoordsToPixel(Vector2f(GetPlayer(0)->position.x, GetPlayer(0)->position.y));
-
-			mapTex->setView(vuiView);
-
-			Vector2f realPos = mapTex->mapPixelToCoords(b);
-			realPos.x = floor(realPos.x + .5f);
-			realPos.y = floor(realPos.y + .5f);
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-
-			//mapTex->draw( kinMinimapIcon );
-
-			mapTex->setView(vv);
-
-			Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(playerOrigPos[0].x, playerOrigPos[0].y));
-
-			mapTex->setView(vuiView);
-
-			Vector2f realPos1 = mapTex->mapPixelToCoords(b1);
-			realPos1.x = floor(realPos1.x + .5f);
-			realPos1.y = floor(realPos1.y + .5f);
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			kinMapSpawnIcon.setPosition(realPos1);
-			mapTex->draw(kinMapSpawnIcon);
-
-			mapTex->setView(vv);
-
-			Vector2i bGoal = mapTex->mapCoordsToPixel(Vector2f(goalPos.x, goalPos.y));
-
-			mapTex->setView(vuiView);
-
-			Vector2f realPosGoal = mapTex->mapPixelToCoords(bGoal);
-			realPosGoal.x = floor(realPosGoal.x + .5f);
-			realPosGoal.y = floor(realPosGoal.y + .5f);
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-
-
-
-			//goalMapIcon.setPosition(realPosGoal);
-			//mapTex->draw(goalMapIcon);
-
-			if (currentZone != NULL)
-			{
-				for (list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it)
-				{
-					//cout << "drawing map" << endl;
-					(*it)->DrawMinimap(mapTex);
-				}
-			}
-
-			//mapTex->clear();
-			Sprite mapTexSprite;
-			mapTexSprite.setTexture(mapTex->getTexture());
-			mapTexSprite.setOrigin(mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2);
-			mapTexSprite.setPosition(0, 0);
-
-
-			//pauseTex->setView( bigV );
-			//window->setView( bigV );
-
-			//mapTexSprite.setScale( .5, -.5 );
-			mapTexSprite.setScale(.5, -.5);
-			//mapTexSprite.setScale( 1, -1 );
-
-			window->draw(mapTexSprite);
-			//pauseTex->draw( mapTexSprite );
-
-			//pauseTex->setV
-		}
-
-
-
-
 	}
 	else if (gameState == POPUP)
 	{
@@ -3035,7 +2909,7 @@ int GameSession::Run()
 	//might move replay stuff later
 	cout << "loop about to start" << endl;
 
-	if (playerRecordingManager != NULL)
+	if (playerRecordingManager != NULL && parentGame == NULL )
 	{
 		playerRecordingManager->StartRecording();
 	}
@@ -3160,9 +3034,6 @@ void GameSession::Init()
 	continueLoading = true;
 	bestTimeGhostOn = false;
 	bestReplayOn = false;
-
-	mapTex = mainMenu->mapTexture;
-	pauseTex = mainMenu->pauseTexture;
 
 	boostEntrance = false;
 
@@ -3768,17 +3639,20 @@ void GameSession::RestartLevel()
 	//soundNodeList->Reset(); //already done using Clear
 	scoreDisplay->Reset();
 
-	if (playerRecordingManager != NULL)
+	if (playerRecordingManager != NULL && parentGame == NULL )
 	{
 		playerRecordingManager->RestartRecording();
 	}
 
-	if (playerReplayManager != NULL)
+	if (playerReplayManager != NULL && parentGame == NULL )
 		playerReplayManager->SetToStart();
 
-	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+	if (parentGame == NULL)
 	{
-		(*it)->Reset();
+		for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+		{
+			(*it)->Reset();
+		}
 	}
 
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
@@ -3801,12 +3675,22 @@ void GameSession::RestartLevel()
 				player->Respawn();
 		}
 	}
+	/*else
+	{
+		Actor *p;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			Actor *player = GetPlayer(i);
+			
+		}
+	}*/
 
 	cam.Reset();
 
 	//cam.Update();
 
-	if( playerReplayManager != NULL )
+	if( playerReplayManager != NULL && parentGame == NULL )
 	{
 		playerReplayManager->Reset();
 	}

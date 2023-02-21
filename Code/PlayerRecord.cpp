@@ -159,7 +159,7 @@ void ReplayPlayer::UpdateInput( ControllerState &state )//ControllerDualStateQue
 	state.start = start;
 	state.back = back;
 
-	//cout << "replaying input: " << inputBuffer[frame] << " on frame " << frame << "\n";
+	cout << "replaying input: " << inputBuffer[frame] << " on frame " << frame << "\n";
 
 	/*if (state.A)
 	{

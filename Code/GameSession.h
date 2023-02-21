@@ -260,9 +260,6 @@ struct GameSession : RayCastHandler, Session
 
 	//from mainmenu
 
-	sf::RenderTexture *mapTex;
-	sf::RenderTexture *pauseTex;
-
 	//for loading only
 	std::list<PolyPtr> allPolygonsList;
 	bool continueLoading;

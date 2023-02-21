@@ -135,18 +135,25 @@ void GetPowerSequence::UpdateState()
 
 void GetPowerSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
-	sess->DrawEmitters(layer, target);
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (target == sess->preScreenTex)
 	{
-		geoGroup.Draw(target);
-	}
-	else if (layer == EffectLayer::UI_FRONT)
-	{
-		if ( /*(state != END &&*/ sess->GetGameSessionState() == GameSession::FROZEN)
+		sess->DrawEmitters(layer, target);
+		if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 		{
-			target->draw(overlayRect, 4, sf::Quads);
-			powerPop->Draw(target);
+			geoGroup.Draw(target);
 		}
+	}
+	else
+	{
+		if (layer == EffectLayer::UI_FRONT)
+		{
+			if (target == sess->pauseTex)
+			{
+				target->draw(overlayRect, 4, sf::Quads);
+				powerPop->Draw(target);
+			}
+		}
+
 	}
 }
 

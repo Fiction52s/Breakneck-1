@@ -111,7 +111,7 @@ void GetLogSequence::UpdateState()
 		int freezeFrame = 100;
 		if (frame == freezeFrame)
 		{
-			sess->SetGameSessionState(GameSession::SEQUENCE);//FROZEN
+			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}
 		else if (frame > freezeFrame)
@@ -132,7 +132,7 @@ void GetLogSequence::UpdateState()
 	}
 	}
 
-	if (sess->GetGameSessionState() == GameSession::SEQUENCE)
+	if (sess->GetGameSessionState() == GameSession::FROZEN)
 	{
 		logPop->Update();
 	}
@@ -144,18 +144,25 @@ void GetLogSequence::UpdateState()
 
 void GetLogSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
-	sess->DrawEmitters(layer, target);
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (target == sess->preScreenTex)
 	{
-		geoGroup.Draw(target);
-	}
-	else if (layer == EffectLayer::UI_FRONT)
-	{
-		if ( /*(state != END &&*/ sess->GetGameSessionState() == GameSession::FROZEN)
+		sess->DrawEmitters(layer, target);
+		if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 		{
-			target->draw(overlayRect, 4, sf::Quads);
-			logPop->Draw(target);
+			geoGroup.Draw(target);
 		}
+	}
+	else
+	{
+		if (layer == EffectLayer::UI_FRONT)
+		{
+			if (target == sess->pauseTex)
+			{
+				target->draw(overlayRect, 4, sf::Quads);
+				logPop->Draw(target);
+			}
+		}
+
 	}
 }
 

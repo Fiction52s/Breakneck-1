@@ -1588,6 +1588,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	preScreenTex = MainMenu::preScreenTexture;
 	minimapTex = MainMenu::minimapTexture;
 	postProcessTex2 = MainMenu::postProcessTexture2;
+	pauseTex = MainMenu::pauseTexture;
+	mapTex = MainMenu::mapTexture;
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
 	ggpo = NULL;
@@ -6273,7 +6275,7 @@ void Session::DrawGoalPulse(sf::RenderTarget *target)
 
 void Session::CleanupPlayerReplayManager()
 {
-	if (playerReplayManager != NULL)
+	if (parentGame == NULL && playerReplayManager != NULL)
 	{
 		delete playerReplayManager;
 		playerReplayManager = NULL;
@@ -6734,6 +6736,16 @@ bool Session::RunGameModeUpdate()
 		if (switchGameState)
 			break;
 
+		int bonusRes = TryToActivateBonus();
+		if (bonusRes == GameSession::GR_BONUS_RESPAWN)
+		{
+			return false;
+		}
+		else if (bonusRes == GameSession::GR_EXITLEVEL)
+		{
+			return false;
+		}
+
 		UpdateAllPlayersInput();
 
 		if (!playerAndEnemiesFrozen)
@@ -6744,8 +6756,8 @@ bool Session::RunGameModeUpdate()
 			}
 		}
 		
-
-		int bonusRes = TryToActivateBonus();
+		//old pos below update inputs
+		/*int bonusRes = TryToActivateBonus();
 		if (bonusRes == GameSession::GR_BONUS_RESPAWN)
 		{
 			return false;
@@ -6753,7 +6765,7 @@ bool Session::RunGameModeUpdate()
 		else if (bonusRes == GameSession::GR_EXITLEVEL)
 		{
 			return false;
-		}
+		}*/
 
 
 		ActiveStorySequenceUpdate();
@@ -6981,23 +6993,21 @@ void Session::DrawGameSequence(sf::RenderTarget *target)
 		//preScreenTex->setView(uiView);
 		for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 		{
-			View oldView = preScreenTex->getView();
-			preScreenTex->setView(uiView);
-			fader->Draw(i, preScreenTex);
-			preScreenTex->setView(oldView);
+			View oldView = target->getView();
+			target->setView(uiView);
+			fader->Draw(i, target);
+			target->setView(oldView);
 			//swiper->Draw(i, preScreenTex);
-			activeSequence->Draw(preScreenTex, (EffectLayer)i);
+			activeSequence->Draw(target, (EffectLayer)i);
 		}
 	}
 
-	preScreenTex->setView(uiView);
-
-
+	target->setView(uiView);
 	//fader draw was here before
 
-	mainMenu->DrawEffects(preScreenTex);
+	mainMenu->DrawEffects(target);
 
-	DrawFrameRate(preScreenTex);
+	DrawFrameRate(target);
 }
 
 bool Session::SequenceGameModeUpdate()

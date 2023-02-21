@@ -18,6 +18,7 @@ void DimensionEye::Setup()
 	GameSession *game = GameSession::GetSession();
 	if (game != NULL )
 	{
+		assert(myBonus == NULL);
 		myBonus = game->CreateBonus("Bosses/greyw1");
 	}
 	else
@@ -60,6 +61,12 @@ DimensionEye::DimensionEye(ActorParams *ap)
 	myBonus = NULL;
 
 	ResetEnemy();
+}
+
+DimensionEye::~DimensionEye()
+{
+	if (myBonus != NULL)
+		delete myBonus;
 }
 
 void DimensionEye::ResetEnemy()

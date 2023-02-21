@@ -257,6 +257,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::map<std::string, Barrier*> barrierMap;
 
 	sf::RenderTexture *preScreenTex;
+	sf::RenderTexture *pauseTex;
+	sf::RenderTexture *mapTex;
 	int numGates;
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;

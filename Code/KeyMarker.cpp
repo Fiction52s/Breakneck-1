@@ -240,9 +240,6 @@ void KeyMarker::UpdateKeyNumbers()
 	{
 		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
 
-		//testing
-		numEnemiesRemaining = 10;
-
 		keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
 		keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
 		SetTopRight(topRight);

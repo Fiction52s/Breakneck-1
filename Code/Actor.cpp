@@ -7841,7 +7841,8 @@ void Actor::HandleWaitingScoreDisplay()
 				bool oldGhostOn = owner->bestTimeGhostOn;
 				bool oldReplayOn = owner->bestReplayOn;
 				
-				owner->bestTimeGhostOn = false;
+				owner->bestTimeGhostOn = true;
+				//owner->bestTimeGhostOn = false;
 				owner->bestReplayOn = true;
 
 
