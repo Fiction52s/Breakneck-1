@@ -413,11 +413,17 @@ void ScoreBar::PopOut()
 
 	GameSession *game = GameSession::GetSession();
 
-	GameSession *topParent = game->GetTopParentGame();
-
 	int recordScore = 0;
-	if( game != NULL && game->saveFile != NULL )
-		recordScore = game->saveFile->GetBestFramesLevel(topParent->level->index);
+	if (game != NULL)
+	{
+		GameSession *topParent = game->GetTopParentGame();
+		
+		if (game->saveFile != NULL)
+		{
+			recordScore = game->saveFile->GetBestFramesLevel(topParent->level->index);
+		}
+	}
+	
 
 	if (row == 0)
 	{
