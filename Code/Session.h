@@ -476,6 +476,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	Session(SessionType p_sessType, const boost::filesystem::path &p_filePath);
 	virtual ~Session();
 	void AddDesyncCheckInfo();
+	GameSession *GetTopParentGame();
 	void UpdateJustGGPO();
 	virtual void SimulateGGPOGameFrame();
 	void SimulateGameFrame();

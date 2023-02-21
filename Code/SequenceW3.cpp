@@ -82,7 +82,13 @@ void CoyoteSleepScene::AddFlashes()
 	AddSimulFlashToGroup(group, "wake0");
 	AddSimulFlashToGroup(group, "wake1", 90);*/
 
-	FlashedImage *testIm1 = AddFlashedImage("break_01", sess->GetTileset("Story/test/break_01.png", 1920, 1080),
+
+
+
+
+
+
+	/*FlashedImage *testIm1 = AddFlashedImage("break_01", sess->GetTileset("Story/test/break_01.png", 1920, 1080),
 	0, 0, 0, 0, Vector2f(960, 540));
 	testIm1->SetSplit(sess->GetTileset("Story/test/break_01_split.png", 1920, 1080),
 		sess->GetTileset("Story/test/break_01_line.png", 1920, 1080), 0,Vector2f(960, 540));
@@ -107,7 +113,7 @@ void CoyoteSleepScene::AddFlashes()
 	testIm4->SetBG(GetBG("anim1"));
 
 	FlashedImage *testIm5 = AddFlashedImage("break_05", sess->GetTileset("Story/test/break_05.png", 1920, 1080),
-		0, 0, 240, 0, Vector2f(960, 540));
+		0, 0, 240, 0, Vector2f(960, 540));*/
 
 	/*group->SetBG(bgs["anim1"]);
 
@@ -116,6 +122,14 @@ void CoyoteSleepScene::AddFlashes()
 	AddSimulFlashToGroup(group, "break_03", 90);
 	AddSimulFlashToGroup(group, "break_04", 90);
 	AddSimulFlashToGroup(group, "break_05", 90);*/
+
+
+
+
+
+
+
+
 
 
 

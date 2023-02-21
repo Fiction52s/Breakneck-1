@@ -386,6 +386,8 @@ struct GameSession : RayCastHandler, Session
 	~GameSession();
 
 	
+
+	
 	//process reading file
 	void ProcessHeader();
 	void ProcessDecorSpr(const std::string &name,

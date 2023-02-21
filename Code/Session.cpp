@@ -7426,6 +7426,19 @@ void Session::CleanupGGPO()
 	ggpoPlayers = NULL;
 }
 
+GameSession *Session::GetTopParentGame()
+{
+	if (parentGame == NULL)
+	{
+		assert(IsSessTypeGame());
+		return (GameSession*)this;
+	}
+	else
+	{
+		return parentGame->GetTopParentGame();
+	}
+}
+
 void Session::AddDesyncCheckInfo()
 {
 	//cout << "add desync check info: " << totalGameFrames << endl;

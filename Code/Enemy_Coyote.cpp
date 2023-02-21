@@ -34,7 +34,8 @@ Coyote::Coyote(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
-	StageSetup(8, 4);
+	//StageSetup(8, 4);
+	StageSetup(1, 3);
 
 	actionLength[SUMMON] = 60;
 	actionLength[DANCE_PREP] = 60;
@@ -604,7 +605,7 @@ void Coyote::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_COYOTE, "A"));
 
-	danceNode = sess->GetBossNodeVector(BossFightType::FT_COYOTE, "B")->at(0);
+	danceNode = NULL;// sess->GetBossNodeVector(BossFightType::FT_COYOTE, "B")->at(0);
 }
 
 bool Coyote::IsEnemyMoverAction(int a)
