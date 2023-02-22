@@ -175,7 +175,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 		chooser->SetGameResourcesMode(true);
 		AdventureMap *am;
 		string filePath;
-		string mapDir = "Maps\\";//chooser->currPath.string(); //current_path().string();//"BreakneckEmergence\\Resources\\";
+		string mapDir = "Resources\\Maps\\";//chooser->currPath.string(); //current_path().string();//"BreakneckEmergence\\Resources\\";
 		for (int w = 0; w < 8; ++w)
 		{
 			for (int s = 0; s < 8; ++s)
@@ -189,8 +189,9 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 
 					if (am->Exists() )
 					{
-						adventureNodes[ind].filePath = am->GetFilePath();
-						adventureNodes[ind].ts_preview = chooser->GetTileset(mapDir + am->path + ".png");
+						adventureNodes[ind].filePath = mapDir + am->GetFilePath();
+						//adventureNodes[ind].ts_preview = chooser->GetTileset(mapDir + am->path + ".png");
+						adventureNodes[ind].CreatePreview();//ts_preview = chooser->GetTileset(mapDir + am->path + ".png");
 					}
 				}
 			}
@@ -341,16 +342,30 @@ bool AdventureCreator::MouseUpdate()
 	return true;
 }
 
+void AdventureCreator::Drag(MapNode *mn)
+{
+	if (mn->ts_preview != NULL)
+	{
+		tempGrabbedFile.Copy(mn);
+		tempGrabbedFile.index = mn->index;
+
+		grabbedFile = &tempGrabbedFile;
+		grabbedFile->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
+		action = DRAG;
+	}
+}
+
 void AdventureCreator::ClickFile(ChooseRect *cr)
 {
 	MapNode *mn = (MapNode*)cr->info;
 	
-	if (mn->ts_preview != NULL )
-	{
-		grabbedFile = mn;
-		mn->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
-		action = DRAG;
-	}
+	Drag(mn);
+
+	//if (mn->ts_preview != NULL)
+	//{
+	//	mn->chooseRect->SetImage(mn->ts_preview, 0);
+	//	//replace the preview after the previous copy removed it
+	//}
 }
 
 //void AdventureCreator::FocusFile(ChooseRect *cr)
@@ -445,6 +460,16 @@ void AdventureCreator::ChooseWorld(int w)
 
 	ChooseSector(0);
 
+	int nodeStart = GetNodeStart();
+	for (int i = 0; i < 8; ++i)
+	{
+		int numMapsInSector = adventure->GetSector(currWorld, i).GetNumExistingMaps();
+		sectorRects[i]->SetImage(ts_sectorNumbers, numMapsInSector);
+		//SetRectNode(mapRects[i], &(adventureNodes[nodeStart + i]));
+	}
+
+	
+
 	//update sector and map info
 }
 
@@ -536,13 +561,10 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 			if (mn->ts_preview != NULL)
 			{
-				tempGrabbedFile.Copy(mn);
+				Drag(mn);
 
-				grabbedFile = &tempGrabbedFile;
-				grabbedFile->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
-				action = DRAG;
-
-				mn->ts_preview = NULL;
+				mn->ClearPreview();
+				//mn->ts_preview = NULL;
 				mn->filePath = "";
 				mn->fileName = "";
 
@@ -575,11 +597,16 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				MapNode *currNode = GetCurrNode(mapIndex);
 
-				currNode->ts_preview = grabbedFile->ts_preview;
-				currNode->filePath = grabbedFile->filePath;
-				currNode->fileName = currNode->filePath.stem().string();
+				currNode->Copy(grabbedFile);
+				//currNode->index = mapIndex;
 
-				int grabbedIndex = grabbedFile->index;
+				//grabbedFile->Clear();
+
+				//currNode->ts_preview = grabbedFile->ts_preview;
+				//currNode->filePath = grabbedFile->filePath;
+				//currNode->fileName = currNode->filePath.stem().string();
+
+				int grabbedIndex = grabbedFile->index;//grabbedFile->index;
 
 				if (grabbedIndex < 0)
 				{

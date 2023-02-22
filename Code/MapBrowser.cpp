@@ -15,6 +15,7 @@ using namespace boost::filesystem;
 
 MapNode::MapNode()
 {
+	SetGameResourcesMode(false);
 	header = NULL;
 	myBrowser = NULL;
 	ts_preview = NULL; //needed
@@ -131,8 +132,14 @@ void MapNode::ClearPreview()
 		{
 			if (previewOwner)
 			{
-				assert(myBrowser != NULL);
-				myBrowser->DestroyTileset(ts_preview);
+				//assert(myBrowser != NULL);
+				//myBrowser->DestroyTileset(ts_preview);
+				if (myBrowser->handler->ts_largePreview == ts_preview)
+				{
+					myBrowser->handler->ts_largePreview = NULL;
+				}
+
+				DestroyTileset(ts_preview);
 			}
 			
 			ts_preview = NULL;
@@ -166,27 +173,43 @@ void MapNode::CreatePreview()
 			else
 			{
 				ClearPreview();
-				ts_preview = myBrowser->GetTileset(previewPath);
-				previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+				//ts_preview = myBrowser->GetTileset(previewPath);
+				//previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+
+				ts_preview = GetTileset(previewPath);
+				previewOwner = true;
+
+
 			}
 		}
 		else
 		{
-			ts_preview = myBrowser->GetTileset(previewPath);
-			previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+			//ts_preview = myBrowser->GetTileset(previewPath);
+			//previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+
+			ts_preview = GetTileset(previewPath);
+			previewOwner = true;
+		}
+
+		if (ts_preview != NULL)
+		{
+			if (chooseRect != NULL)
+			{
+				chooseRect->SetImage(ts_preview, 0);
+			}
 		}
 	}
 }
 
 void MapNode::Copy(MapNode *mn)
 {
-	previewOwner = false;
+	previewOwner = true;
 	//some of these are definitely wrong but probably not in any ways that are relevant, at least yet lol
 	type = mn->type;
 	action = mn->action;
 	filePath = mn->filePath;
-	ts_preview = mn->ts_preview;
-	index = mn->index;
+	
+	//index = mn->index;
 	myBrowser = mn->myBrowser;
 	mapDownloaded = mn->mapDownloaded;
 	mapUpdating = mn->mapUpdating;
@@ -202,7 +225,7 @@ void MapNode::Copy(MapNode *mn)
 	checkingForPreview = mn->checkingForPreview;
 	previewRequestHandle = mn->previewRequestHandle;
 	publishedFileId = mn->publishedFileId;
-	chooseRect = mn->chooseRect;
+	//chooseRect = mn->chooseRect;
 	isWorkshop = mn->isWorkshop;
 	creatorNameRetrieved = mn->creatorNameRetrieved;
 	checkingForCreatorName = mn->checkingForCreatorName;
@@ -210,6 +233,19 @@ void MapNode::Copy(MapNode *mn)
 	creatorId = mn->creatorId;
 	subscribing = mn->subscribing;
 	unsubscribing = mn->unsubscribing;
+
+	if (mn->ts_preview != NULL)
+	{
+		if (type == MapNode::FILE)
+		{
+			ClearPreview();
+			CreatePreview();
+		}
+		else
+		{
+			assert(0);
+		}
+	}
 	
 	if (mn->header != NULL)
 	{
@@ -348,8 +384,10 @@ void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 			{
 				assert(myBrowser != NULL);
 				//ts_preview = myBrowser->GetTileset("WorkshopPreview/" + to_string(publishedFileId), previewTex);
-				ts_preview = myBrowser->GetTileset("WorkshopPreview/" + to_string(publishedFileId), previewTex);
-				previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+				//previewOwner = !myBrowser->lastQueriedTilesetWasDuplicate;
+
+				ts_preview = GetTileset("WorkshopPreview/" + to_string(publishedFileId), previewTex);
+				previewOwner = true;
 			}
 
 			delete[] buffer;

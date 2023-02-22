@@ -82,7 +82,7 @@ void WarpTransitionSequence::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADEOUT] = 60;
+	stateLength[FADEOUT] = 60;//-1;//60;
 }
 
 void WarpTransitionSequence::ReturnToGame()
@@ -104,8 +104,15 @@ void WarpTransitionSequence::UpdateState()
 			sess->cam.SetManual(true);
 			player->Wait();
 			sess->hud->Hide(60);
-			sess->Fade(false, 60, Color::Black, false);
+			sess->Fade(false, 60, Color::Black, false, EffectLayer::IN_FRONT);
 			barrier->Trigger();
+
+
+			//player->EndLevelWithoutGoal();
+
+			
+
+
 			//sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
 			//sess->cam.SetRumble(10, 10, 90);
 		}
@@ -119,6 +126,8 @@ void WarpTransitionSequence::UpdateState()
 			{
 				game->SetBonus(bonus, V2d(0, 0));
 				game->ClearFade();
+
+
 				//sess->SetGameSessionState(GameSession::RUN);
 			}
 

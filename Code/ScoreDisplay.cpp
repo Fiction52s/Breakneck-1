@@ -420,7 +420,7 @@ void ScoreBar::PopOut()
 		
 		if (game->saveFile != NULL)
 		{
-			recordScore = game->saveFile->GetBestFramesLevel(topParent->level->index);
+			recordScore = game->saveFile->GetBestFramesLevel(game->level->index);//topParent->level->index);
 		}
 	}
 	

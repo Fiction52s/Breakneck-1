@@ -11,7 +11,7 @@ struct WorkshopManager;
 struct MapBrowser;
 struct MapHeader;
 
-struct MapNode
+struct MapNode : TilesetManager
 {
 	enum Type
 	{

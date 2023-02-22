@@ -33,6 +33,7 @@ struct AdventureCreator : MapBrowserHandler
 	void CollapseWorlds();
 	void ChooseWorld(int w);
 	void ChooseSector(int s);
+	void Drag(MapNode *mn);
 	
 	MusicChooserHandler *musicListHandler;
 	int action;
