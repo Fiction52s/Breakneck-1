@@ -46,7 +46,9 @@ struct ImageText
 	void SetSymbol(SymbolType sType);
 	
 	void ShowZeroes( int numZeroes );
+	void SetSpacingFactor(float f);
 
+	float spacingFactor;
 	float scale;
 	int numShowZeroes;
 	int maxDigits;

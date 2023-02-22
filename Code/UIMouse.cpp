@@ -81,18 +81,31 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 			//we already know its out of the deadzone because of the previous calculation
 			ControllerState currState = nonNeutralStates->GetCurrState();
 
+			Vector2i origSize(1920, 1080);
+			Vector2f origSizeF(origSize);
+
 			float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
 			float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
 			float maxSpeed = 20;
 			sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
 
-			//cout << "old mypos: " << myPos.x << ", " << myPos.y << endl;
 			myPos += movement;
 
+			if (myPos.x < 0)
+				myPos.x = 0;
+			else if (myPos.x > origSize.x)
+				myPos.x = origSize.x;
+
+			if (myPos.y < 0)
+				myPos.y = 0;
+			else if (myPos.y > origSize.y)
+				myPos.y = origSize.y;
+
+			Vector2f windowSize(currWindow->getSize());
 			Vector2f pos(myPos);
-			//turn back into screen coords
-			pos.x *= currWindow->getSize().x / 1920.f;
-			pos.y *= currWindow->getSize().y / 1080.f;
+
+			pos.x *= windowSize.x / origSizeF.x;
+			pos.y *= windowSize.y / origSizeF.y;
 
 			sf::Mouse::setPosition(Vector2i(pos), *currWindow);
 		}

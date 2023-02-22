@@ -51,13 +51,18 @@ KeyMarker::KeyMarker()
 	ts_keyIcon = sess->GetSizedTileset("FX/key_128x128.png");
 	ts_enemyIcon = sess->GetSizedTileset("HUD/enemy_hud_icon_64x64.png");
 
+	float textSpacingFactor = .7;
+
 	keyNumberNeededHUD = new ImageText(2, ts_keyNumDark);
+	keyNumberNeededHUD->SetSpacingFactor(textSpacingFactor);
 	keyNumberNeededHUDBack = new ImageText(2, ts_keyNumLight);
+	keyNumberNeededHUDBack->SetSpacingFactor(textSpacingFactor);
 
 	keyNumberNeededHUD->SetScale(scale);
 	keyNumberNeededHUDBack->SetScale(scale);
 
 	keyNumberTotalHUD = new ImageText(2, ts_keyNumDark);
+	keyNumberTotalHUD->SetSpacingFactor(textSpacingFactor);
 	keyNumberTotalHUD->SetScale(scale);
 
 	SetMarkerType(KEY);

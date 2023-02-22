@@ -50,6 +50,7 @@ TimerHUD::TimerHUD( bool p_modifier )
 	timer->SetNumber(0);
 
 	centiSecondTimer = new ImageText( 2, ts_text);
+	centiSecondTimer->SetSpacingFactor(1.f);
 	centiSecondTimer->SetNumber(0);
 	centiSecondTimer->ShowZeroes(2);
 

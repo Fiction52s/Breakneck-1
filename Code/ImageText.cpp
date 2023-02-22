@@ -15,6 +15,8 @@ ImageText::ImageText( int p_maxDigits, Tileset *ts_tex )
 	vert = new Vertex[numVertices + 4];
 	value = 0;
 
+	spacingFactor = 1.0;
+
 	symbolType = SymbolType::SYMBOL_NONE;
 
 	ClearRect(vert + (maxDigits * 4));
@@ -80,7 +82,7 @@ void ImageText::SetTopLeft(sf::Vector2f &p_topLeft)
 
 float ImageText::GetDigitWidth()
 {
-	return ts->tileWidth * scale * .7; //.8 is the current spacing factor
+	return ts->tileWidth * scale * spacingFactor;//.7; //.8 is the current spacing factor
 }
 
 void ImageText::UpdateSprite()
@@ -219,6 +221,11 @@ void ImageText::ShowZeroes( int numZ )
 	assert( numZ <= maxDigits && numZ >= 0 );
 	numShowZeroes = numZ;
 	UpdateSprite();
+}
+
+void ImageText::SetSpacingFactor(float f)
+{
+	spacingFactor = f;
 }
 
 void ImageText::SetNumber( int num )
