@@ -5,6 +5,8 @@
 
 struct SequenceCoyote;
 struct SequenceSkeleton;
+struct Coyote;
+struct GroundedWarper;
 
 struct CoyoteSleepScene : BasicBossScene
 {
@@ -31,9 +33,6 @@ struct CoyoteSleepScene : BasicBossScene
 	void UpdateState();
 	void SetEntranceShot();
 };
-
-struct Coyote;
-struct GroundedWarper;
 
 struct CoyotePreFightScene : BasicBossScene
 {
@@ -74,6 +73,7 @@ struct CoyotePostFightScene : BasicBossScene
 		Count
 	};
 
+	//Coyote *coy;
 	SequenceCoyote *seqCoyote;
 	GroundedWarper *warper;
 

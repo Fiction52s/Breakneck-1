@@ -110,6 +110,7 @@ void Barrier::SetScene()
 		GameSession *game = GameSession::GetSession();
 		if (game != NULL)
 		{
+			assert(myBonus == NULL);
 			myBonus = game->CreateBonus(name);
 
 			warpSeq = new WarpTransitionSequence;

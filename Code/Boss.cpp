@@ -38,6 +38,14 @@ int Boss::GetNumSimulationFramesRequired()
 	return sess->MAX_SIMULATED_FUTURE_PLAYER_FRAMES;
 }
 
+void Boss::UpdatePreFrameCalculations()
+{
+	if (WantsToCombo())
+	{
+		sess->PlayerMustSimulateAtLeast(GetNumSimulationFramesRequired(), 0);
+	}
+}
+
 void Boss::CreateHitboxManager(const std::string &folder)
 {
 	assert(hitboxManager == NULL);
@@ -143,37 +151,70 @@ void Boss::ProcessState()
 	EndProcessState();
 }
 
+bool Boss::WantsToCombo()
+{
+	bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
+	return (currCommandIndex < commandQueue.size())
+		&& ((hitPlayer || (movingToCombo && comboInterrupted)));
+}
+
 void Boss::TryCombo()
 {
-	if (currCommandIndex < commandQueue.size())
+	if (WantsToCombo())
 	{
-		bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
-		if (hitPlayer || (movingToCombo && comboInterrupted))
+		assert(targetPlayer->hitstunFrames > 2);
+		V2d tPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
+		int moveDuration = targetPlayer->hitstunFrames - 4;
+
+		BossCommand nextComboAction = commandQueue[currCommandIndex];
+
+		int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
+		int durationBeforeNextAction =
+			moveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1);// -framesRemaining;
+
+		V2d offset;
+		if (hitOffsetMap.find(nextComboAction.action) != hitOffsetMap.end())
 		{
-			assert(targetPlayer->hitstunFrames > 2);
-			V2d tPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
-			int moveDuration = targetPlayer->hitstunFrames - 4;
-
-			BossCommand nextComboAction = commandQueue[currCommandIndex];
-
-			int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
-			int durationBeforeNextAction =
-				moveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1);// -framesRemaining;
-
-			V2d offset;
-			if (hitOffsetMap.find(nextComboAction.action) != hitOffsetMap.end() )
+			offset = -hitOffsetMap[nextComboAction.action];//(-100, 0);
+			if (!nextComboAction.facingRight)
 			{
-				offset = -hitOffsetMap[nextComboAction.action];//(-100, 0);
-				if (!nextComboAction.facingRight)
-				{
-					offset.x = -offset.x;
-				}
+				offset.x = -offset.x;
 			}
-
-			movingToCombo = TryComboMove(tPos, moveDuration,
-				durationBeforeNextAction, framesRemaining, offset );
 		}
+
+		movingToCombo = TryComboMove(tPos, moveDuration,
+			durationBeforeNextAction, framesRemaining, offset);
 	}
+
+	//if (currCommandIndex < commandQueue.size())
+	//{
+	//	bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
+	//	if (hitPlayer || (movingToCombo && comboInterrupted))
+	//	{
+	//		assert(targetPlayer->hitstunFrames > 2);
+	//		V2d tPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
+	//		int moveDuration = targetPlayer->hitstunFrames - 4;
+
+	//		BossCommand nextComboAction = commandQueue[currCommandIndex];
+
+	//		int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
+	//		int durationBeforeNextAction =
+	//			moveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1);// -framesRemaining;
+
+	//		V2d offset;
+	//		if (hitOffsetMap.find(nextComboAction.action) != hitOffsetMap.end() )
+	//		{
+	//			offset = -hitOffsetMap[nextComboAction.action];//(-100, 0);
+	//			if (!nextComboAction.facingRight)
+	//			{
+	//				offset.x = -offset.x;
+	//			}
+	//		}
+
+	//		movingToCombo = TryComboMove(tPos, moveDuration,
+	//			durationBeforeNextAction, framesRemaining, offset );
+	//	}
+	//}
 }
 
 void Boss::Wait( int numFrames )

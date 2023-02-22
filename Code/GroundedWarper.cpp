@@ -18,6 +18,7 @@ void GroundedWarper::Setup()
 	GameSession *game = GameSession::GetSession();
 	if (game != NULL )
 	{
+		assert(myBonus == NULL);
 		myBonus = game->CreateBonus(bonusName);
 	}
 	else

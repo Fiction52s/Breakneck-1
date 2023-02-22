@@ -516,6 +516,9 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 	newBonus->SetParentGame(this);
 	newBonus->Load();
 
+	numSimulatedFramesRequired = max(numSimulatedFramesRequired,
+		newBonus->numSimulatedFramesRequired );
+
 	currSession = this;
 	pauseMenu->game = this;
 
@@ -1697,8 +1700,8 @@ bool GameSession::Load()
 
 	SetupPlayers();
 
-
-	{
+	//original location
+	/*{
 		Actor *p = NULL;
 		for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
@@ -1708,7 +1711,7 @@ bool GameSession::Load()
 				p->UpdateNumFuturePositions();
 			}
 		}
-	}
+	}*/
 
 	
 	
@@ -1828,6 +1831,19 @@ bool GameSession::Load()
 	SetupBarrierScenes();
 
 	cout << "done loading" << endl;
+
+	//make sure this is after all bonuses have been loaded
+	{
+		Actor *p = NULL;
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->UpdateNumFuturePositions();
+			}
+		}
+	}
 
 
 	oneFrameMode = false;

@@ -242,7 +242,6 @@ void CoyotePreFightScene::SetupStates()
 	coy = (Coyote*)sess->GetEnemy(EnemyType::EN_COYOTEBOSS);
 	if (coy != NULL)
 	{
-
 	}
 }
 
@@ -384,7 +383,8 @@ void CoyotePostFightScene::AddShots()
 
 void CoyotePostFightScene::AddPoints()
 {
-	AddStandPoint();
+	//AddStandPoint();
+	AddPoint("kinstop0");
 }
 
 void CoyotePostFightScene::AddFlashes()
@@ -413,13 +413,16 @@ void CoyotePostFightScene::UpdateState()
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == 10)
+		else if (frame == explosionFadeFrames)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->FreezePlayer(false);
-			SetPlayerStandPoint("kinstand0", true);
+			//SetPlayerStandPoint("kinstand0", true);
+			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
+
 			
+
 			seqCoyote->Reset();
 			sess->AddEnemy(seqCoyote);
 			seqCoyote->facingRight = false;

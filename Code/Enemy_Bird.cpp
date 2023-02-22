@@ -41,7 +41,7 @@ Bird::Bird(ActorParams *ap)
 
 	//actionLength[PUNCH] = 14;
 	actionLength[PUNCH] = 28;
-	animFactor[PUNCH] = 2;
+	animFactor[PUNCH] = 1;//2;
 
 	actionLength[PUNCH2] = 18;
 	animFactor[PUNCH2] = 3;
@@ -85,7 +85,11 @@ Bird::Bird(ActorParams *ap)
 	
 	//stageMgr.AddActiveOptionToStages(0, SHURIKEN_SHOTGUN_1, 2);
 	//stageMgr.AddActiveOptionToStages(0, GATHER_ENERGY_START, 2);
-	stageMgr.AddActiveOptionToStages(0, MOVE_NODE_LINEAR, 2);
+
+	stageMgr.AddActiveOptionToStages(0, MOVE_CHASE, 2);
+
+
+	/*stageMgr.AddActiveOptionToStages(0, MOVE_NODE_LINEAR, 2);
 	stageMgr.AddActiveOptionToStages(0, GATHER_ENERGY_START, 2);
 
 	stageMgr.AddActiveOptionToStages(2, MOVE_NODE_QUADRATIC, 2);
@@ -94,7 +98,7 @@ Bird::Bird(ActorParams *ap)
 
 	stageMgr.AddActiveOptionToStages(shotgunStartStage, SHURIKEN_SHOTGUN_1, 2);
 
-	stageMgr.AddActiveOptionToStages(summonStartStage, SUMMON, 2);
+	stageMgr.AddActiveOptionToStages(summonStartStage, SUMMON, 2);*/
 
 	waitFrames.resize(stageMgr.numStages);
 	chargeFrames.resize(stageMgr.numStages);
@@ -234,6 +238,7 @@ void Bird::SetupPostFightScenes()
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
+		assert(myBonus == NULL);
 		myBonus = game->CreateBonus("FinishedScenes/W2/birdpost");
 	}
 	else
@@ -868,6 +873,8 @@ void Bird::InitEnemyForSummon(SummonGroup *group,
 		e->startPosInfo.SetAerial(summonNode->pos);
 	}
 }
+
+
 
 
 //Rollback functions

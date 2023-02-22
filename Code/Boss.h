@@ -47,6 +47,7 @@ struct Boss : Enemy
 	Boss(EnemyType et, ActorParams *ap);
 	virtual ~Boss();
 	virtual int GetNumSimulationFramesRequired();
+	void UpdatePreFrameCalculations();
 	void CreateHitboxManager(const std::string &folder);
 	void QueueCommand(BossCommand &cm);
 	void UpdateHitboxes();
@@ -60,6 +61,7 @@ struct Boss : Enemy
 	void SetCombo( std::vector<BossCommand> &commandVec );
 	void Setup();
 	void Decide();
+	bool WantsToCombo();
 	void TryCombo();
 	void TryExecuteDecision();
 	virtual void RespondToTakingFullHit() {}

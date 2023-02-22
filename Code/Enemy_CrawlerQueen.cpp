@@ -585,6 +585,7 @@ void CrawlerQueen::SetupPostFightScenes()
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
+		assert(myBonus == NULL);
 		myBonus = game->CreateBonus("FinishedScenes/W1/postcrawlerfight1");
 	}
 	else

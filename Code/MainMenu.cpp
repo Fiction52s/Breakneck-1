@@ -2890,6 +2890,9 @@ void MainMenu::HandleMenuMode()
 
 		if (result == GameSession::GR_EXITGAME)
 		{
+			delete currFreePlaySession;
+			currFreePlaySession = NULL;
+
 			SetMode(EXITING);
 			quit = true;
 		}

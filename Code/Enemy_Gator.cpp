@@ -1459,6 +1459,7 @@ void Gator::SetupPostFightScenes()
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
+		assert(myBonus == NULL);
 		myBonus = game->CreateBonus("BossTest/gatorfightpost");
 	}
 	else

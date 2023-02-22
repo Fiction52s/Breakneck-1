@@ -23,12 +23,16 @@ Coyote::Coyote(ActorParams *ap)
 		new BasicAirEnemyParams(sess->types["babyscorpion"], 1),
 		6, 6, 1)
 {
+	SetLevel(ap->GetLevel());
+
 	BabyScorpion *bs = NULL;
 	for (int i = 0; i < babyScorpionGroup.numTotalEnemies; ++i)
 	{
 		bs = (BabyScorpion*)babyScorpionGroup.enemies[i];
 		bs->stopStartPool = &stopStartPool;
 	}
+
+
 
 
 	SetNumActions(A_Count);
@@ -585,6 +589,7 @@ void Coyote::SetupPostFightScenes()
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
+		assert(myBonus == NULL);
 		myBonus = game->CreateBonus("NewScenes/postcoyotefight");
 	}
 	else
@@ -593,7 +598,7 @@ void Coyote::SetupPostFightScenes()
 	}
 
 
-	if (postFightScene != NULL)
+	if (postFightScene == NULL)
 	{
 		postFightScene = new CoyotePostFightScene;
 		//postFightScene->coy = this;
