@@ -86,7 +86,7 @@ struct MapNode : TilesetManager
 	void ClearPreview();
 	void CreatePreview();
 	void UpdateHeaderInfo();
-	void Copy(MapNode *mn);
+	void CopyContent(MapNode *mn);
 
 	void OnSubscribe(RemoteStorageSubscribePublishedFileResult_t *callback, bool bIOFailure);
 	void OnUnsubscribe(RemoteStorageUnsubscribePublishedFileResult_t *callback, bool bIOFailure);

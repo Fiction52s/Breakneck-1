@@ -885,6 +885,20 @@ void MapSector::Load()
 
 }
 
+void MapSector::SetSelectedIndexToFurthestProgress()
+{
+	UpdateUnlockedLevelCount();
+
+	if (unlockedLevelCount < numLevels - 1)
+	{
+		mapSASelector->currIndex = unlockedLevelCount - 1;
+	}
+	else
+	{
+		mapSASelector->currIndex = 0;
+	}
+}
+
 void MapSector::DestroyMapPreview()
 {
 	//cout << "destroyed preview" << endl;

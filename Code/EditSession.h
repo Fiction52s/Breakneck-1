@@ -413,6 +413,7 @@ struct EditSession : GUIHandler, Session
 	void TestPlayerMode();
 	void TryTestPlayerMode();
 	void CleanupTestPlayerMode();
+	bool IsGeneralUIAvailable();
 
 	void TestNetplay();
 

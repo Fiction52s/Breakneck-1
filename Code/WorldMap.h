@@ -148,6 +148,7 @@ struct MapSector
 	void Load();
 	void UpdateMapPreview();
 	void DestroyMapPreview();
+	void SetSelectedIndexToFurthestProgress();
 	void UpdateSelectorSprite();
 	bool Update(ControllerDualStateQueue *controllerInput );
 	void UpdateBG();

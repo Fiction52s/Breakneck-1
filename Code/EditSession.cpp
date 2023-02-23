@@ -13105,7 +13105,8 @@ void EditSession::DrawUI()
 	}
 
 
-	if( mode != TEST_PLAYER )
+	//if( mode != TEST_PLAYER && ( focusedPanel == NULL || !focusedPanel->IsPopup() ) )
+	if(IsGeneralUIAvailable())
 		generalUI->Draw(preScreenTex);
 }
 
@@ -13405,6 +13406,11 @@ void EditSession::GeneralEventHandler()
 	}*/
 }
 
+bool EditSession::IsGeneralUIAvailable()
+{
+	return mode != TEST_PLAYER && (focusedPanel == NULL || !focusedPanel->IsPopup());
+}
+
 void EditSession::HandleEvents()
 {
 	mainWindowLostFocus = false;
@@ -13415,7 +13421,8 @@ void EditSession::HandleEvents()
 
 		bool noFocusedPanel = (focusedPanel == NULL);
 
-		if ( mode != TEST_PLAYER && generalUI->mainPanel->ContainsPoint(mousePos))
+		//if ( mode != TEST_PLAYER && generalUI->mainPanel->ContainsPoint(mousePos))
+		if (IsGeneralUIAvailable() && generalUI->mainPanel->ContainsPoint(mousePos))
 		{
 			if (focusedPanel != generalUI->mainPanel)
 			{

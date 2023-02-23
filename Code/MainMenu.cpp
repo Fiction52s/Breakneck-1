@@ -294,6 +294,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			currLevel = NULL;
 			adventureManager->currLevel = NULL;
 
+			musicPlayer->PlayMusic(menuMusic);
+
 			//adventureManager->worldMap->SetToLevel( adventureManager->currLevel->)
 			//adventureManager->worldMap->SetToColonyMode(0);
 			/*worldMap->selectors[worldMap->selectedColony]->ReturnFromMap();
@@ -2122,9 +2124,7 @@ void MainMenu::ReturnToWorldAfterLevel()
 	//SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
 	//int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 
-	
-	
-
+	musicPlayer->StopCurrentMusic();
 	LoadMode(WORLDMAP_COLONY);
 	//int numWorlds = worldMap->adventurePlanet->numWorlds;
 	//if (worldMap->selectedColony == numWorlds - 1)

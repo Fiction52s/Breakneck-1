@@ -81,9 +81,18 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(0, 0), Vector2i(200, 28), drawOptions, 0);
 	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)\nBrush (R)");
 
-	std::vector<string> actionOptions = { "Add", "Subtract", "Set Inverse Poly" };
-	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(0, 0), Vector2i(200, 28), actionOptions, 0);
+	std::vector<string> terrainOptions = { "Add", "Subtract", "Set Inverse Poly" };
+	terrainActionDropdown = mainPanel->AddDropdown("terraindrop", Vector2i(0, 0), Vector2i(200, 28), terrainOptions, 0);
 	terrainActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract (S)\nSet Inverse Poly (I)");
+
+
+	mainPanel->StopAutoSpacing();
+
+	std::vector<string> waterOptions = { "Add", "Subtract"};
+	waterActionDropdown = mainPanel->AddDropdown("waterdrop", terrainActionDropdown->pos, Vector2i(200, 28), waterOptions, 0);
+	waterActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract");
+	waterActionDropdown->Deactivate();
+	waterActionDropdown->HideMember();
 
 	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 70), Vector2i(20, 0));
 
@@ -204,12 +213,51 @@ void CreateTerrainModeUI::UpdateBrushHotbar()
 
 int CreateTerrainModeUI::GetCurrTerrainTool()
 {
-	return terrainActionDropdown->selectedIndex;
+	int layerIndex = GetTerrainLayer();
+	if (layerIndex == TerrainLayers::TERRAINLAYER_NORMAL)
+	{
+		return terrainActionDropdown->selectedIndex;
+	}
+	else if( layerIndex == TerrainLayers::TERRAINLAYER_WATER )
+	{
+		return waterActionDropdown->selectedIndex;
+	}
+	else
+	{
+		//for pickups. they only need add/subtract rn so its the same as water
+		return waterActionDropdown->selectedIndex;
+	}
+	
 }
 
 void CreateTerrainModeUI::SetTerrainTool(int t)
 {
-	terrainActionDropdown->SetSelectedIndex(t);
+	int layerIndex = GetTerrainLayer();
+
+	if (t == EditSession::TERRAINTOOL_SETINVERSE)
+	{
+		if (layerIndex != TerrainLayers::TERRAINLAYER_NORMAL)
+		{
+			//do nothing!
+			return;
+		}
+	}
+
+	
+	if (layerIndex == TerrainLayers::TERRAINLAYER_NORMAL)
+	{
+		terrainActionDropdown->SetSelectedIndex(t);
+	}
+	else if (layerIndex == TerrainLayers::TERRAINLAYER_WATER)
+	{
+		waterActionDropdown->SetSelectedIndex(t);
+	}
+	else
+	{
+		waterActionDropdown->SetSelectedIndex(t);
+	}
+
+	
 	realTerrainTool = t;
 }
 
@@ -299,7 +347,12 @@ void CreateTerrainModeUI::SetShown(bool s)
 
 void CreateTerrainModeUI::SetLayerTerrain()
 {
-	terrainLayerDropdown->SetSelectedIndex(0);
+	waterActionDropdown->Deactivate();
+	waterActionDropdown->HideMember();
+
+	terrainActionDropdown->ShowMember();
+
+	terrainActionDropdown->SetSelectedIndex(GetCurrTerrainTool());
 	SetLayer(0);
 
 	if (matTypePanel == edit->focusedPanel)
@@ -311,12 +364,18 @@ void CreateTerrainModeUI::SetLayerTerrain()
 
 void CreateTerrainModeUI::SetLayerWater()
 {
-	if (GetCurrTerrainTool() == EditSession::TERRAINTOOL_SETINVERSE )
+	if (GetCurrTerrainTool() == EditSession::TERRAINTOOL_SETINVERSE)
 	{
 		SetTerrainTool(EditSession::TERRAINTOOL_ADD);
 	}
 
-	terrainLayerDropdown->SetSelectedIndex(1);
+	waterActionDropdown->SetSelectedIndex(GetCurrTerrainTool());
+
+	terrainActionDropdown->Deactivate();
+	terrainActionDropdown->HideMember();
+
+	waterActionDropdown->ShowMember();
+
 	SetLayer(1);
 
 	if (matTypePanel == edit->focusedPanel)
@@ -328,6 +387,16 @@ void CreateTerrainModeUI::SetLayerWater()
 
 void CreateTerrainModeUI::SetLayerPickup()
 {
+	if (GetCurrTerrainTool() == EditSession::TERRAINTOOL_SETINVERSE)
+	{
+		SetTerrainTool(EditSession::TERRAINTOOL_ADD);
+	}
+
+	terrainActionDropdown->Deactivate();
+	terrainActionDropdown->HideMember();
+
+	waterActionDropdown->ShowMember();
+
 	terrainLayerDropdown->SetSelectedIndex(2);
 	SetLayer(2);
 }
@@ -340,6 +409,8 @@ void CreateTerrainModeUI::SetLayer(int selectedIndex)
 	}
 
 	currMatRects[selectedIndex]->SetShown(true);
+
+	terrainLayerDropdown->SetSelectedIndex(selectedIndex);
 }
 
 void CreateTerrainModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -443,6 +514,11 @@ void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string
 		SetLayer(dropdown->selectedIndex);
 	}
 	else if (dropdown == terrainActionDropdown)
+	{
+		int selectedIndex = dropdown->selectedIndex;
+		realTerrainTool = selectedIndex;
+	}
+	else if (dropdown == waterActionDropdown)
 	{
 		int selectedIndex = dropdown->selectedIndex;
 		realTerrainTool = selectedIndex;

@@ -42,6 +42,7 @@ struct AdventureCreator : MapBrowserHandler
 
 	sf::Vertex grabbedFileQuad[4];
 	MapNode *grabbedFile;
+	MapNode *grabbedFileSource;
 	MapNode tempGrabbedFile;
 	AdventureMap tempGrabbedAdventureMap;
 
@@ -52,6 +53,8 @@ struct AdventureCreator : MapBrowserHandler
 	void LoadAdventure(const std::string &path, const std::string &adventureName);
 	void SaveAdventure(const std::string &path, const std::string &adventureName,
 		AdventureFile::CopyMode copyMode );
+
+	void UpdateSectorMapCounts();
 
 	
 	Tileset *ts_sectorIcons;

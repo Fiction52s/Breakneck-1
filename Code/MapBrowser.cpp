@@ -201,7 +201,7 @@ void MapNode::CreatePreview()
 	}
 }
 
-void MapNode::Copy(MapNode *mn)
+void MapNode::CopyContent(MapNode *mn)
 {
 	previewOwner = true;
 	//some of these are definitely wrong but probably not in any ways that are relevant, at least yet lol
@@ -582,7 +582,9 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	imageRects = new ImageChooseRect*[totalRects];
 
 	panel = new Panel("mapchooser", 1920,
-		1080 - 28, handler, true);
+		//1080 - 28, handler, true);
+		1080, handler, true);
+
 
 	selectedRect = NULL;
 	selectedNode = NULL;

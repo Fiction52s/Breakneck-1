@@ -94,6 +94,8 @@ AdventureCreator::AdventureCreator()
 		musicRects[i]->SetTextHeight(14);
 	}
 
+	grabbedFileSource = NULL;
+
 	Vector2i sectorLabelPos(rightSideStart, 340 - 20);
 
 	sectorLabel = panel->AddLabel("sectorlabel", sectorLabelPos, 40, "Sector 1");
@@ -346,7 +348,8 @@ void AdventureCreator::Drag(MapNode *mn)
 {
 	if (mn->ts_preview != NULL)
 	{
-		tempGrabbedFile.Copy(mn);
+		grabbedFileSource = mn;
+		tempGrabbedFile.CopyContent(mn);
 		tempGrabbedFile.index = mn->index;
 
 		grabbedFile = &tempGrabbedFile;
@@ -460,6 +463,15 @@ void AdventureCreator::ChooseWorld(int w)
 
 	ChooseSector(0);
 
+	
+	UpdateSectorMapCounts();
+	
+
+	//update sector and map info
+}
+
+void AdventureCreator::UpdateSectorMapCounts()
+{
 	int nodeStart = GetNodeStart();
 	for (int i = 0; i < 8; ++i)
 	{
@@ -467,10 +479,6 @@ void AdventureCreator::ChooseWorld(int w)
 		sectorRects[i]->SetImage(ts_sectorNumbers, numMapsInSector);
 		//SetRectNode(mapRects[i], &(adventureNodes[nodeStart + i]));
 	}
-
-	
-
-	//update sector and map info
 }
 
 int AdventureCreator::GetNodeStart()
@@ -597,7 +605,10 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				MapNode *currNode = GetCurrNode(mapIndex);
 
-				currNode->Copy(grabbedFile);
+				MapNode currNodeCopy;
+				currNodeCopy.CopyContent(currNode);
+
+				currNode->CopyContent(grabbedFile);
 				//currNode->index = mapIndex;
 
 				//grabbedFile->Clear();
@@ -637,9 +648,42 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 				}
 				else
 				{
+					int currWorld = -1;
+					int currSector = -1;
+					int currM = -1;
+					adventure->GetMapIndexes(currNode->index, currWorld, currSector, currM);
+
+					
+					int grabbedWorld = -1;
+					int grabbedSector = -1;
+					int grabbedM = -1;
+					adventure->GetMapIndexes(grabbedFileSource->index, grabbedWorld, grabbedSector, grabbedM);
+
+					AdventureMap &grabbedMap = adventure->GetMap(grabbedIndex);
+
 					AdventureMap &currAdventureMap = adventure->GetMap(currNode->index);
+
+					AdventureMap currCopy;
+					currCopy.Set(currAdventureMap);
+
 					//AdventureMap &grabbedAdventureMap = adventure->GetMap(grabbedIndex);
 					currAdventureMap.Set(tempGrabbedAdventureMap);
+
+					grabbedMap.Set(currCopy);
+
+					grabbedFileSource->CopyContent(&currNodeCopy);
+
+					if (currSector == grabbedSector)
+					{
+						SetRectNode(mapRects[grabbedM], GetCurrNode(grabbedM));
+					}
+					else
+					{
+						UpdateSectorMapCounts();
+					}
+
+					//SetRectNode(grabbedFileSource->chooseRect, grabbedFileSource);
+					//grabbedFileSource->CopyContent
 				}
 
 				

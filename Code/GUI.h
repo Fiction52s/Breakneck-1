@@ -1423,6 +1423,7 @@ struct CreateTerrainModeUI : GUIHandler
 	Button *removePointButton;
 	Button *removeAllPointsButton;
 	Dropdown *terrainActionDropdown;
+	Dropdown *waterActionDropdown;
 	Dropdown *terrainLayerDropdown;
 	Dropdown *drawModeDropdown;
 

@@ -257,7 +257,10 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 				{
 					state = S_SECTORSELECT;
 					FocusedSector()->UpdateStats();
-					FocusedSector()->DestroyMapPreview();
+					FocusedSector()->SetSelectedIndexToFurthestProgress();
+					FocusedSector()->UpdateLevelStats();
+					FocusedSector()->UpdateMapPreview();
+					//FocusedSector()->DestroyMapPreview();
 				}
 				break;
 			}
