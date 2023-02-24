@@ -189,9 +189,12 @@ MapSector::~MapSector()
 
 void MapSector::DestroyBG()
 {
-	assert(bg != NULL);
-	delete bg;
-	bg = NULL;
+	if (bg != NULL)
+	{
+		assert(bg != NULL);
+		delete bg;
+		bg = NULL;
+	}
 }
 
 void MapSector::CreateBG()
@@ -247,7 +250,10 @@ void MapSector::UpdateUnlockedLevelCount()
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
-	bg->Draw(target);
+	if (bg != NULL)
+	{
+		bg->Draw(target);
+	}
 
 	//if (!saveFile->adventureFile->IsUnlocked()) //later, store this variable instead of 
 		//calling the function every frame
@@ -681,7 +687,10 @@ int MapSector::GetNumLevels()
 
 void MapSector::UpdateBG()
 {
-	bg->Update(Vector2f(960, 540));
+	if (bg != NULL)
+	{
+		bg->Update(Vector2f(960, 540));
+	}
 }
 
 bool MapSector::Update(ControllerDualStateQueue *controllerInput)
