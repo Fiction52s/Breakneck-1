@@ -294,27 +294,29 @@ SaveMenuScreen::~SaveMenuScreen()
 
 void SaveMenuScreen::UpdateButtonIconsWhenControllerIsChanged()
 {
-	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+	int cType = mainMenu->adventureManager->controllerInput->GetControllerType();
+
+	ts_buttons = mainMenu->GetButtonIconTileset(cType);
 
 	auto button = XBoxButton::XBOX_A;
-	IntRect ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(actionButtonIcons, ir);
 
 	button = XBoxButton::XBOX_Y;
-	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(actionButtonIcons + 4 * 1, ir);
 
 	button = XBoxButton::XBOX_X;
-	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(actionButtonIcons + 4 * 2, ir);
 
 	button = XBoxButton::XBOX_B;
-	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(actionButtonIcons + 4 * 3, ir);
 
 	button = XBoxButton::XBOX_R1;
 	ts_buttons->SetSpriteTexture(skinButtonIconSpr);
-	skinButtonIconSpr.setTextureRect(mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button));
+	skinButtonIconSpr.setTextureRect(mainMenu->GetButtonIconTileForMenu(cType, button));
 
 	if (ts_buttons == mainMenu->ts_buttonIcons)
 	{

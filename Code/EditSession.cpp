@@ -1465,7 +1465,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	SetupWaterShaders();
 
-	playerInputBoxGroup = new PlayerBoxGroup(this, 1, 400, 400, 100);
+	playerInputBoxGroup = new PlayerBoxGroup(this, 1, 450, 450, 100);
 	playerInputBoxGroup->SetMode(PlayerBox::Mode::MODE_CONTROLLER_ONLY);
 
 	Vector2f center(960, 540 + 100);

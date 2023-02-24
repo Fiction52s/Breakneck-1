@@ -111,6 +111,7 @@ struct PauseMenu
 	void SetTab( Tab t );
 	void TabLeft();
 	void TabRight();
+	void UpdateButtonIconsWhenControllerIsChanged();
 	void ApplyVideoSettings();
 	void ApplySoundSettings( );
 	bool CanChangeTab();
@@ -119,9 +120,12 @@ struct PauseMenu
 
 	sf::Text debugText;
 
+	Tileset *ts_buttons;
+
 	MainMenu *mainMenu;
 	Tileset *ts_pauseOptions;
 	sf::Vertex pauseOptionQuads[5 * 4];
+	sf::Vertex respawnButtonIconQuad[4];
 
 	
 	void UpdatePauseOptions();

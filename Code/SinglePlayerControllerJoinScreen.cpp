@@ -19,20 +19,25 @@ SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
+	ts_bg = mainMenu->tilesetManager.GetTileset("Menu/Load/load_w1.png", 1920, 1080);
+
 	panel = new Panel("SinglePlayerControllerJoinScreen", 1920, 1080, this, true);
 	panel->SetColor(Color::Transparent);
 	panel->SetCenterPos(Vector2i(960, 540));
 
-	playerBoxGroup = new PlayerBoxGroup(this, 1, 400, 400, 100);
+	//playerBoxGroup = new PlayerBoxGroup(this, 1, 400, 400, 100);
+	playerBoxGroup = new PlayerBoxGroup(this, 1, 450, 450, 100);
 
 	//inviteButton = panel->AddButton("invite", Vector2i(20 + 200, panel->size.y - 200), Vector2f(270, 40), "INVITE FRIEND");
 
-	SetRectColor(bgQuad, Color(100, 100, 100));
+	//SetRectColor(bgQuad, Color(100, 100, 100));
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
 
 	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_FREEPLAY);
 
 	Vector2f center(960, 540 + 100);//50);//150
+
+	ts_bg->SetQuadSubRect(bgQuad, 0);
 
 	playerBoxGroup->SetBoxCenter( 0, center);
 	
@@ -50,7 +55,7 @@ SinglePlayerControllerJoinScreen::~SinglePlayerControllerJoinScreen()
 void SinglePlayerControllerJoinScreen::Start()
 {
 	SetAction(A_WAITING_FOR_PLAYER);
-	SetRectColor(bgQuad, Color(100, 100, 100));
+	//SetRectColor(bgQuad, Color(100, 100, 100));
 	playerBoxGroup->ClearInfo();
 }
 
@@ -97,7 +102,7 @@ void SinglePlayerControllerJoinScreen::Update()
 		if (playerBoxGroup->CheckControllerJoins())
 		{
 			SetAction(A_READY);
-			SetRectColor(bgQuad, Color(83, 102, 188));
+			//SetRectColor(bgQuad, Color(83, 102, 188));
 		}
 
 		break;
@@ -170,7 +175,7 @@ void SinglePlayerControllerJoinScreen::TryControllerJoin(ControllerDualStateQueu
 	playerBoxGroup->SetControllerStates( 0, conStates, 0);
 
 	SetAction(A_READY);
-	SetRectColor(bgQuad, Color(83, 102, 188));
+	//SetRectColor(bgQuad, Color(83, 102, 188));
 }
 
 void SinglePlayerControllerJoinScreen::DrawPopupBG(sf::RenderTarget *target)
@@ -192,7 +197,7 @@ void SinglePlayerControllerJoinScreen::Draw(sf::RenderTarget *target)
 	case A_CONTROL_PROFILE:
 	case A_START:
 	{
-		target->draw(bgQuad, 4, sf::Quads);
+		target->draw(bgQuad, 4, sf::Quads, ts_bg->texture);
 
 		playerBoxGroup->Draw(target);
 		panel->Draw(target);

@@ -37,12 +37,12 @@ FreeplayScreen::FreeplayScreen()
 	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_FREEPLAY);
 
 	int numBoxes = 4;
-	int playerBoxWidth = 400;
-	int playerBoxHeight = 400;
-	int playerBoxSpacing = 100;
+	int playerBoxWidth = 450;
+	int playerBoxHeight = 450;
+	int playerBoxSpacing = 20;
 
 	playerBoxGroup = new PlayerBoxGroup(this, numBoxes, playerBoxWidth, playerBoxHeight, playerBoxSpacing);
-	Vector2f left(960, 540 + 100);//50);//150
+	Vector2f left(960, 540 );//50);//150
 	if (numBoxes % 2 == 0)
 	{
 		left.x -= playerBoxSpacing / 2 + playerBoxWidth + (playerBoxSpacing + playerBoxWidth) * (numBoxes / 2 - 1);
@@ -217,8 +217,9 @@ void FreeplayScreen::Update()
 			}
 		}
 
-		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+		if (mapBrowserScreen->IsCancelled())
 		{
+			mapBrowserScreen->TurnOff();
 			SetAction(A_WAITING_FOR_PLAYERS);
 			MOUSE.Hide();
 			//Quit();

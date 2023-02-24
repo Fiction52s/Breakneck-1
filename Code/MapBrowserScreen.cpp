@@ -77,6 +77,16 @@ bool MapBrowserScreen::HandleEvent(sf::Event ev)
 	return browserHandler->chooser->panel->HandleEvent(ev);
 }
 
+bool MapBrowserScreen::IsCancelled()
+{
+	return (browserHandler->chooser->action == MapBrowser::A_CANCELLED);
+}
+
+bool MapBrowserScreen::IsConfirmed()
+{
+	return (browserHandler->chooser->action == MapBrowser::A_CONFIRMED);
+}
+
 void MapBrowserScreen::Update()
 {
 	/*ControllerState &menuCurrInput = mainMenu->menuCurrInput;

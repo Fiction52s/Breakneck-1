@@ -1076,16 +1076,18 @@ void MapSector::UpdateOptionButtons()
 {	
 	MainMenu *mainMenu = ms->mainMenu;
 
+	int cType = mainMenu->adventureManager->controllerInput->GetControllerType();
+
 	auto button = XBOX_A;
-	IntRect ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(levelSelectOptionButtonQuads, ir);
 
 	button = XBoxButton::XBOX_R1;
-	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(levelSelectOptionButtonQuads + 4 * 1, ir);
 
 	button = XBoxButton::XBOX_Y;
-	ir = mainMenu->GetButtonIconTileForMenu(mainMenu->adventureManager->controllerInput, button);
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(levelSelectOptionButtonQuads + 4 * 2, ir);
 }
 

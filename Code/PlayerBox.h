@@ -29,6 +29,10 @@ struct PlayerBox
 	sf::Text playerNameText;
 	sf::Vector2f topLeft;
 	sf::Vertex bgQuad[4];
+	sf::Vertex selectQuad[4];
+	
+
+	int selectBorderSize;
 
 	PlayerBoxGroup *boxGroup;
 	//SinglePlayerControllerJoinScreen *joinScreen;
@@ -42,6 +46,10 @@ struct PlayerBox
 
 	sf::Vertex kinQuad[4];
 
+	Tileset *ts_buttons;
+
+	sf::Vertex skinChangeIconQuads[4 * 2];
+
 	PlayerSkinShader *playerShader;
 
 	ControllerDualStateQueue *controllerStates;
@@ -49,6 +57,8 @@ struct PlayerBox
 	ControlProfileMenu *controlMenu;
 
 	sf::Sprite kinSprite;
+
+	
 
 	int action;
 	int mode;
@@ -60,12 +70,14 @@ struct PlayerBox
 
 	bool IsChangingControls();
 	void SetMode(int m);
+	void UpdateButtonIconsWhenControllerIsChanged();
 	void Update();
 	void SetSkin(int index);
 	void Draw(sf::RenderTarget *target);
 	void SetName(const std::string &name);
 	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex);
 	void SetCurrProfile(ControlProfile *cp);
+	void UpdateCurrProfileText();
 	void Show();
 	void Hide();
 	ControlProfile *GetCurrProfile();
@@ -82,6 +94,8 @@ struct PlayerBoxGroup
 	Tileset *ts_kin;
 	Tileset *ts_controllerIcons;
 	Tileset *ts_portIcons;
+
+	TilesetManager *tilesetManager;
 
 	int playerBoxWidth;
 	int playerBoxHeight;

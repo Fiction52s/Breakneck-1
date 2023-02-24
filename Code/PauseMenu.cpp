@@ -254,6 +254,8 @@ PauseMenu::PauseMenu( GameSession *p_game)
 
 	SetTopLeft(Vector2f(50, 50));
 
+	UpdateButtonIconsWhenControllerIsChanged();
+
 	SetTab(PAUSE);
 
 	
@@ -322,6 +324,17 @@ bool PauseMenu::SetCurrProfileByName(const std::string &name)
 {
 	return false;//game->mainMenu->SetCurrProfileByName(name);
 }
+
+void PauseMenu::UpdateButtonIconsWhenControllerIsChanged()
+{
+	int cType = game->controllerStates[0]->GetControllerType();
+	ts_buttons = mainMenu->GetButtonIconTileset(cType);
+
+	auto button = XBoxButton::XBOX_X;
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(respawnButtonIconQuad, ir);
+}
+
 
 void PauseMenu::TabLeft()
 {
@@ -429,10 +442,18 @@ void PauseMenu::SetTopLeft(sf::Vector2f &pos)
 
 	startOffset += pos;
 	int spacing = 20;
+	Vector2f currPos;
 	for (int i = 0; i < 5; ++i)
 	{
-		SetRectCenter(pauseOptionQuads + i * 4, 768, 128, startOffset + Vector2f(0, (spacing + 128) * i));
+		currPos = startOffset + Vector2f(0, (spacing + 128) * i);
+		SetRectCenter(pauseOptionQuads + i * 4, 768, 128, currPos);
+		if (i == 1)
+		{
+			SetRectCenter(respawnButtonIconQuad, 100, 100, currPos + Vector2f( 120, 0 ));
+		}
 	}
+
+	
 }
 
 bool PauseMenu::CanChangeTab()
@@ -457,6 +478,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	if( currentTab == PAUSE )
 	{
 		target->draw(pauseOptionQuads, 4 * 5, sf::Quads, ts_pauseOptions->texture);
+		target->draw(respawnButtonIconQuad, 4, sf::Quads, ts_buttons->texture);
 		//target->draw(debugText);
 		//target->draw( selectSprite );
 	}

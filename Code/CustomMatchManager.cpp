@@ -363,8 +363,9 @@ bool CustomMatchManager::Update()
 		}
 		else
 		{
-			if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+			if (mapBrowserScreen->IsCancelled())
 			{
+				mapBrowserScreen->TurnOff();
 				SetAction(A_IDLE);
 				netplayManager->Abort();
 				return false;

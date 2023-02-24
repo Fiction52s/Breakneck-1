@@ -513,10 +513,6 @@ SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 		barSprite.setTextureRect(parent->ts_mapSelectOptions->GetSubRect(row - 2));
 	}
 	
-	Session *sess = parent->sess;
-	
-	buttonIconSprite.setTexture(*sess->GetButtonIconTileset(0)->texture);
-
 	stateLength[NONE] = 1;
 	stateLength[POP_OUT] = 30;
 	stateLength[DISPLAY] = 1;
@@ -532,6 +528,7 @@ void SelectBar::Reset()
 	frame = 0;
 
 	Session *sess = parent->sess;
+	buttonIconSprite.setTexture(*sess->GetButtonIconTileset(0)->texture);
 	
 	auto button = XBOX_BLANK;
 
@@ -556,7 +553,7 @@ void SelectBar::Reset()
 		button = XBOX_Y;//ControllerSettings::BUTTONTYPE_SHIELD;
 	}
 
-	IntRect ir = sess->mainMenu->GetButtonIconTileForMenu(sess->controllerStates[0], button);//sess->mainMenu->adventureManager->controllerInput, button);
+	IntRect ir = sess->mainMenu->GetButtonIconTileForMenu(sess->controllerStates[0]->GetControllerType(), button);//sess->mainMenu->adventureManager->controllerInput, button);
 	buttonIconSprite.setTextureRect(ir);
 
 	if (ir.width == 128)

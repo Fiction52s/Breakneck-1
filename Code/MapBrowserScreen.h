@@ -28,6 +28,8 @@ struct MapBrowserScreen
 	bool HandleEvent(sf::Event ev);
 	
 	void Update();
+	bool IsCancelled();
+	bool IsConfirmed();
 	void Draw(sf::RenderTarget *target);
 };
 

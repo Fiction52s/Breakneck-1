@@ -990,43 +990,54 @@ GameSession *GameSession::GetSession()
 
 void GameSession::CheckSinglePlayerInputDefaultKeyboard()
 {
-	if (matchParams.numPlayers == 1 )
+	if (matchParams.numPlayers > 1)
+		return;
+
+	
+	ControllerDualStateQueue *paramStates = matchParams.controllerStateVec[0];
+	if (paramStates->GetControllerType() == CTYPE_KEYBOARD)
 	{
-		ControllerDualStateQueue *keyboardStates = CONTROLLERS.GetStateQueue(CTYPE_KEYBOARD, 0);
-		ControllerDualStateQueue *paramStates = matchParams.controllerStateVec[0];
+		return;
+	}
 
-		bool paramStatesDoingAnything = paramStates->IsDoingAnything();
-		
-		ControlProfile *defaultKeyboardProfile = mainMenu->cpm->profiles[CTYPE_KEYBOARD].front();
-		ControllerState currTestInput;
-		CONTROLLERS.UpdateFilteredKeyboardState(defaultKeyboardProfile, currTestInput, GetPlayer(0)->prevInput);
+	ControllerDualStateQueue *keyboardStates = CONTROLLERS.GetStateQueue(CTYPE_KEYBOARD, 0);
 
-		bool keyboardStatesDoingAnything = keyboardStates->IsDoingAnything();
+	bool paramStatesDoingAnything = paramStates->IsDoingAnything();
 
-		if (!currTestInput.IsLeftNeutral())
+	ControlProfile *defaultKeyboardProfile = mainMenu->cpm->profiles[CTYPE_KEYBOARD].front();
+	ControllerState currTestInput;
+	CONTROLLERS.UpdateFilteredKeyboardState(defaultKeyboardProfile, currTestInput, GetPlayer(0)->prevInput);
+
+	bool keyboardStatesDoingAnything = keyboardStates->IsDoingAnything();
+
+	if (!currTestInput.IsLeftNeutral())
+	{
+		keyboardStatesDoingAnything = true;
+	}
+
+	if (isDefaultKeyboardInputOn)
+	{
+		if (paramStatesDoingAnything && !keyboardStatesDoingAnything)
 		{
-			keyboardStatesDoingAnything = true;
+			//update all icons here
+			SetControllerStates(0, paramStates);
+			controlProfiles[0] = matchParams.controlProfiles[0];
+			isDefaultKeyboardInputOn = false;
+
+			//eventually probably just have a function that updates all the icons when either happens, since its basically the same code
+			pauseMenu->UpdateButtonIconsWhenControllerIsChanged();
 		}
+	}
+	else
+	{
+		if (keyboardStatesDoingAnything && !paramStatesDoingAnything)
+		{
+			//update all icons here
+			SetControllerStates(0, keyboardStates);
+			controlProfiles[0] = defaultKeyboardProfile;
+			isDefaultKeyboardInputOn = true;
 
-		if (isDefaultKeyboardInputOn)
-		{
-			if (paramStatesDoingAnything && !keyboardStatesDoingAnything)
-			{
-				//update all icons here
-				SetControllerStates(0, paramStates);
-				controlProfiles[0] = matchParams.controlProfiles[0];
-				isDefaultKeyboardInputOn = false;
-			}
-		}
-		else
-		{
-			if ( keyboardStatesDoingAnything && !paramStatesDoingAnything )
-			{
-				//update all icons here
-				SetControllerStates(0, keyboardStates);
-				controlProfiles[0] = defaultKeyboardProfile;
-				isDefaultKeyboardInputOn = true;
-			}
+			pauseMenu->UpdateButtonIconsWhenControllerIsChanged();
 		}
 	}
 }

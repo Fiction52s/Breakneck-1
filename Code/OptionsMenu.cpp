@@ -36,7 +36,7 @@ OptionsMenu::OptionsMenu(PauseMenu *pauseMenu)
 		SetRectCenter(optionModeQuads + i * 4, 768, 128, startOffset + Vector2f(0, (128 + spacing) * i));
 	}
 
-	playerBoxGroup = new PlayerBoxGroup(game, 1, 400, 400, 100);
+	playerBoxGroup = new PlayerBoxGroup(game, 1, 450, 450, 100);
 	playerBoxGroup->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
 	playerBoxGroup->SetBoxCenter(0, startOffset + Vector2f(0, 128 + 150));
 	playerBoxGroup->SetControllerStates(0, game->controllerStates[0], game->GetPlayerNormalSkin(0));

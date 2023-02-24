@@ -139,6 +139,8 @@ struct ActionButtonGroup
 };
 
 struct MainMenu;
+struct PlayerBox;
+
 struct ControlProfileMenu
 {
 	enum Action
@@ -164,12 +166,22 @@ struct ControlProfileMenu
 	XBoxButton tempFilter[ControllerSettings::BUTTONTYPE_Count];
 	ControllerType tempCType;
 	sf::Vertex boxes[NUM_BOXES * 4];
+
+	sf::Vertex selectedBox[4];
+	sf::Text selectedProfileText;
+
+	sf::Text selectIconText;
+	sf::Text editIconText;
+
 	sf::Text profileNames[NUM_BOXES];
 	int action;
 	sf::Vector2f topLeft;
 	int oldCurrIndex;
 	int topIndex;
+	PlayerBox *playerBox;
 	
+	Tileset *ts_buttons;
+	sf::Vertex buttonIconQuads[4 * 3];
 
 	std::list<ControlProfile*> profiles;
 	sf::Font font;
@@ -179,8 +191,6 @@ struct ControlProfileMenu
 
 	SingleAxisSelector *saSelector;
 
-
-	sf::Text selectedProfileText;
 	sf::Text editingProfileText;
 
 
@@ -191,9 +201,10 @@ struct ControlProfileMenu
 	ControllerDualStateQueue *controllerInput;
 
 
-	ControlProfileMenu();
+	ControlProfileMenu( PlayerBox *pb );
 	~ControlProfileMenu();
 	bool SaveCurrConfig();
+	void UpdateButtonIconsWhenControllerIsChanged();
 	ControlProfile *GetProfileAtIndex(int ind);
 	void SetProfiles(std::list<ControlProfile*> &p_profiles);
 	void SetControllerInput(ControllerDualStateQueue *controllerInput);

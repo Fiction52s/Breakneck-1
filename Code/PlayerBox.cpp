@@ -14,8 +14,6 @@ PlayerBox::PlayerBox(PlayerBoxGroup *p_group, int p_index )
 
 	boxGroup = p_group;
 
-	controlMenu = new ControlProfileMenu;
-
 	mode = MODE_DEFAULT;
 
 	Font &f = MainMenu::GetInstance()->arial;
@@ -24,19 +22,19 @@ PlayerBox::PlayerBox(PlayerBoxGroup *p_group, int p_index )
 
 	playerNameText.setCharacterSize(30);
 	playerNameText.setFont(f);
-	playerNameText.setFillColor(Color::White);
+	playerNameText.setFillColor(Color::Black);
 
 	numberText.setCharacterSize(30);
 	numberText.setFont(f);
-	numberText.setFillColor(Color::White);
+	numberText.setFillColor(Color::Black);
 
 	pressText.setCharacterSize(30);
 	pressText.setFont(f);
-	pressText.setFillColor(Color::White);
+	pressText.setFillColor(Color::Black);
 
 	skinNumberText.setCharacterSize(30);
 	skinNumberText.setFont(f);
-	skinNumberText.setFillColor(Color::White);
+	skinNumberText.setFillColor(Color::Black);
 
 	pressText.setString("Press Start\nor ENTER");
 	auto localB = pressText.getLocalBounds();
@@ -54,7 +52,15 @@ PlayerBox::PlayerBox(PlayerBoxGroup *p_group, int p_index )
 	playerShader->SetQuad(boxGroup->ts_kin, 0);
 	playerShader->SetSkin(0);
 
-	SetRectColor(bgQuad, Color::Red);
+	controlMenu = new ControlProfileMenu(this);
+
+	Color bgQuadColor(212, 182, 182);//0x5e, 0xe5, 0x50);
+
+	SetRectColor(bgQuad, bgQuadColor);//Color::Red);
+
+	SetRectColor(selectQuad, Color::Black);
+
+	selectBorderSize = 8;
 
 	SetTopLeft(Vector2f(0, 0));
 
@@ -96,6 +102,7 @@ void PlayerBox::ClearInfo()
 	SetName("");
 	action = A_WAITING_FOR_JOIN;
 	skinIndex = -1;
+	SetRectColor(selectQuad, Color::Black);
 }
 
 void PlayerBox::Show()
@@ -173,6 +180,28 @@ bool PlayerBox::IsChangingControls()
 	return action == A_CHANGING_CONTROLS;
 }
 
+void PlayerBox::UpdateButtonIconsWhenControllerIsChanged()
+{
+	MainMenu *mainMenu = MainMenu::GetInstance();
+	int cType = controllerStates->GetControllerType();
+
+	ts_buttons = mainMenu->GetButtonIconTileset(cType);
+
+	controlMenu->UpdateButtonIconsWhenControllerIsChanged();
+
+	auto button = XBoxButton::XBOX_L1;
+	if (cType == CTYPE_GAMECUBE)
+	{
+		button = XBoxButton::XBOX_L2;
+	}
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(skinChangeIconQuads, ir);
+
+	button = XBoxButton::XBOX_R1;
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(skinChangeIconQuads + 4, ir);
+}
+
 
 void PlayerBox::SetTopLeft(sf::Vector2f &pos)
 {
@@ -187,15 +216,15 @@ void PlayerBox::SetTopLeft(sf::Vector2f &pos)
 
 	SetRectTopLeft(bgQuad, boxGroup->playerBoxWidth, boxGroup->playerBoxHeight, Vector2f(topLeft));
 
+	SetRectTopLeft(selectQuad, boxGroup->playerBoxWidth + selectBorderSize * 2, boxGroup->playerBoxHeight + selectBorderSize * 2, topLeft + Vector2f(-selectBorderSize, -selectBorderSize));
+
 	Vector2f controllerIconSize(boxGroup->ts_controllerIcons->tileWidth, boxGroup->ts_controllerIcons->tileHeight);
 	Vector2f portIconSize(boxGroup->ts_portIcons->tileWidth, boxGroup->ts_portIcons->tileHeight);
 
-	int border = 0;
+	int border = 10;
 
 	if (mode == MODE_CONTROLLER_ONLY)
 	{
-		border = 0;
-
 		float scaleFactor = 3;
 
 		controllerIconSize.x *= scaleFactor;
@@ -226,13 +255,22 @@ void PlayerBox::SetTopLeft(sf::Vector2f &pos)
 		SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, portIconPos);
 	}
 
-	controlMenu->SetTopLeft(topLeft);
+
+	controlMenu->SetTopLeft(topLeft + Vector2f( border, border ));
 
 	kinSprite.setPosition(Vector2f(center));
 
 	Vector2f kinBottomCenter = kinSprite.getPosition() + Vector2f(0, kinSprite.getGlobalBounds().height / 2);
 
-	skinNumberText.setPosition(kinBottomCenter + Vector2f(0, 30));
+	kinBottomCenter.y += 30;
+
+	float skinIconSize = 40;
+	float skinIconOffset = 110;
+	SetRectCenter(skinChangeIconQuads, skinIconSize, skinIconSize, Vector2f(kinBottomCenter.x - skinIconOffset, kinBottomCenter.y + 15));
+
+	SetRectCenter(skinChangeIconQuads + 4, skinIconSize, skinIconSize, Vector2f(kinBottomCenter.x + skinIconOffset, kinBottomCenter.y + 15));
+
+	skinNumberText.setPosition(kinBottomCenter);// +Vector2f(0, 30));
 }
 
 void PlayerBox::SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex)
@@ -270,8 +308,12 @@ void PlayerBox::SetControllerStates(ControllerDualStateQueue *conStates, int p_s
 	}
 	}
 
+	SetRectColor(selectQuad, Color::Red);//Color(0x5e, 0xe5, 0x50));
+
 	boxGroup->ts_controllerIcons->SetQuadSubRect(controllerIconQuad, tileIndex);
 	boxGroup->ts_portIcons->SetQuadSubRect(portIconQuad, controllerStates->GetIndex());
+
+	UpdateButtonIconsWhenControllerIsChanged();
 
 	SetSkin(p_skinIndex);
 }
@@ -279,6 +321,11 @@ void PlayerBox::SetControllerStates(ControllerDualStateQueue *conStates, int p_s
 void PlayerBox::SetCurrProfile(ControlProfile *cp)
 {
 	controlMenu->SetCurrProfile(cp);
+}
+
+void PlayerBox::UpdateCurrProfileText()
+{
+	//selectedProfileText.setString("Controls:\n" + controlMenu->currProfile->name);
 }
 
 void PlayerBox::SetName(const std::string &name)
@@ -297,6 +344,7 @@ void PlayerBox::Draw(sf::RenderTarget *target)
 	if (!show)
 		return;
 
+	target->draw(selectQuad, 4, sf::Quads);
 	target->draw(bgQuad, 4, sf::Quads);
 
 	if (action == A_HAS_PLAYER)
@@ -316,7 +364,11 @@ void PlayerBox::Draw(sf::RenderTarget *target)
 			target->draw(kinSprite, &(playerShader->pShader));
 
 			target->draw(skinNumberText);
+
+			target->draw(skinChangeIconQuads, 4 * 2, sf::Quads, ts_buttons->texture);
 		}
+
+		
 
 		controlMenu->Draw(target);
 	}
@@ -333,9 +385,10 @@ void PlayerBox::Draw(sf::RenderTarget *target)
 
 PlayerBoxGroup::PlayerBoxGroup( TilesetManager *tm, int numBoxes, int p_playerBoxWidth, int p_playerBoxHeight, int p_playerBoxSpacing )
 {
-	ts_controllerIcons = tm->GetSizedTileset("Menu/controllers_64x64.png");
-	ts_portIcons = tm->GetSizedTileset("Menu/slots_64x32.png");
-	ts_kin = tm->GetSizedTileset("Kin/stand_64x64.png");
+	tilesetManager = tm;
+	ts_controllerIcons = tilesetManager->GetSizedTileset("Menu/controllers_64x64.png");
+	ts_portIcons = tilesetManager->GetSizedTileset("Menu/slots_64x32.png");
+	ts_kin = tilesetManager->GetSizedTileset("Kin/stand_64x64.png");
 
 	playerBoxWidth = p_playerBoxWidth;
 	playerBoxHeight = p_playerBoxHeight;

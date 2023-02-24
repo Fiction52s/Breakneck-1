@@ -152,12 +152,14 @@ void EditorMenuScreen::Update()
 
 		mapBrowserScreen->Update();
 
-		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+		if (mapBrowserScreen->IsCancelled())
 		{
+			mapBrowserScreen->TurnOff();
 			action = A_NONE;
 		}
-		else if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CONFIRMED)
+		else if (mapBrowserScreen->IsConfirmed())
 		{
+			mapBrowserScreen->TurnOff();
 			action = A_OPEN_MAP;
 		}
 		break;

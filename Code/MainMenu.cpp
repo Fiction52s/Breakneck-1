@@ -1531,7 +1531,7 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 	return ts->GetSubRect(buttonIndex);
 }
 
-sf::IntRect MainMenu::GetButtonIconTileForMenu(ControllerDualStateQueue *controllerInput, XBoxButton button)
+sf::IntRect MainMenu::GetButtonIconTileForMenu(int controllerType, XBoxButton button)
 {
 	/*CTYPE_XBOX,
 	CTYPE_GAMECUBE,
@@ -1544,9 +1544,7 @@ sf::IntRect MainMenu::GetButtonIconTileForMenu(ControllerDualStateQueue *control
 
 	int buttonIndex = 0;
 
-	int cType = controllerInput->GetControllerType();
-
-	switch (cType)
+	switch (controllerType)
 	{
 	case CTYPE_XBOX:
 	{
@@ -1581,7 +1579,7 @@ sf::IntRect MainMenu::GetButtonIconTileForMenu(ControllerDualStateQueue *control
 	}
 	}
 
-	Tileset *ts = GetButtonIconTileset(cType);
+	Tileset *ts = GetButtonIconTileset(controllerType);
 
 	return ts->GetSubRect(buttonIndex);
 }

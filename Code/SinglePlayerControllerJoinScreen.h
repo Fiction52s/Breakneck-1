@@ -42,6 +42,8 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 	PlayerBoxGroup *playerBoxGroup;
 	MapOptionsPopup *mapOptionsPopup;
 
+	Tileset *ts_bg;
+
 	MatchParams currParams;
 
 	SinglePlayerControllerJoinScreen(MainMenu *mm);

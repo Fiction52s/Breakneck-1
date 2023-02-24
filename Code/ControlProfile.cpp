@@ -4,6 +4,7 @@
 #include <iostream>
 #include "MainMenu.h"
 #include "VectorMath.h"
+#include "PlayerBox.h"
 
 using namespace sf;
 using namespace std;
@@ -19,7 +20,7 @@ using namespace std;
 
 //const int ControlProfileMenu::NUM_BOXES = 8;
 const int ControlProfileMenu::BOX_WIDTH = 300;
-const int ControlProfileMenu::BOX_HEIGHT = 40;//50; //40
+const int ControlProfileMenu::BOX_HEIGHT = 48;//50; //40
 const int ControlProfileMenu::BOX_SPACING = 0;//10;
 
 //waitFrames[0] = 10;
@@ -205,9 +206,11 @@ void ControlProfile::CopyTo(ControlProfile *cp)
 	}
 }
 
-ControlProfileMenu::ControlProfileMenu()
+ControlProfileMenu::ControlProfileMenu( PlayerBox *pb)
 	:font( MainMenu::GetInstance()->arial ), topIndex( 0 ), action( A_SELECTED ), oldCurrIndex( 0 )
 {
+	playerBox = pb;
+
 	actionButtonGroup = new ActionButtonGroup(this);
 
 	tempProfile = new ControlProfile;
@@ -222,25 +225,30 @@ ControlProfileMenu::ControlProfileMenu()
 	int textSize = 30;
 
 	selectedProfileText.setFont(MainMenu::GetInstance()->arial);
-	selectedProfileText.setCharacterSize(textSize);
+	selectedProfileText.setCharacterSize(30);
 	selectedProfileText.setFillColor(Color::Black);
-
-	
 
 	editingProfileText.setFont(MainMenu::GetInstance()->arial);
 	editingProfileText.setCharacterSize(textSize);
 	editingProfileText.setFillColor(Color::Black);
-	
-	
 
-	//selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
-	//	selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
+	selectIconText.setFont(MainMenu::GetInstance()->arial);
+	selectIconText.setCharacterSize(textSize);
+	selectIconText.setFillColor(Color::Black);
+
+	editIconText.setFont(MainMenu::GetInstance()->arial);
+	editIconText.setCharacterSize(textSize);
+	editIconText.setFillColor(Color::Black);
+
+	selectIconText.setString("Select");
+	editIconText.setString("Show/Edit");
+
 	
 	for( int i = 0; i < NUM_BOXES; ++i )
 	{
 		profileNames[i].setFont( font );
 		profileNames[i].setCharacterSize(textSize);
-		profileNames[i].setFillColor( Color::White );
+		profileNames[i].setFillColor( Color::Black );
 	}
 
 	/*waitFrames[0] = 10;
@@ -289,7 +297,14 @@ void ControlProfileMenu::SetProfiles(std::list<ControlProfile*> &p_profiles)
 void ControlProfileMenu::SetCurrProfile(ControlProfile *profile)
 {
 	currProfile = profile;
-	selectedProfileText.setString("Controls: " + currProfile->name);
+	//selectedProfileText.setString("Controls:\n" + currProfile->name);
+	selectedProfileText.setString(currProfile->name);
+
+	Vector2f topMid = topLeft + Vector2f(BOX_WIDTH / 2, 0);
+
+	auto &lb = selectedProfileText.getLocalBounds();
+	selectedProfileText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+	selectedProfileText.setPosition(topMid.x, topMid.y + BOX_HEIGHT / 2);
 }
 
 void ControlProfileMenu::SetControllerInput(ControllerDualStateQueue *p_controllerInput)
@@ -303,8 +318,6 @@ void ControlProfileMenu::SetControllerInput(ControllerDualStateQueue *p_controll
 	SetCurrProfile(managedProfiles.front());
 
 	//currProfile = managedProfiles.front();//controlMenu = new ControlProfileMenu;
-
-	//selectedProfileText.setString("Controls: " + currProfile->name);
 
 	//currProfile = MainMenu::GetInstance()->cpm->profiles.front();
 
@@ -338,6 +351,12 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 			target->draw( profileNames[i] );
 		}
 		vSlider.Draw(target);
+		
+		target->draw(selectIconText);
+		target->draw(editIconText);
+
+		//only show the 2nd 2 icons
+		target->draw(buttonIconQuads + 4, 4 * 2, sf::Quads, ts_buttons->texture);
 	}
 	else if( action == A_EDIT_PROFILE || action == A_REPLACE_BUTTON )
 	{
@@ -347,10 +366,37 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 	}
 	else if (action == A_SELECTED)
 	{
+		target->draw(selectedBox, 4, sf::Quads);
 		target->draw(selectedProfileText);
+
+		//only show the first icon
+		target->draw(buttonIconQuads, 4, sf::Quads, ts_buttons->texture);
 	}
+
+	
 }
 
+
+void ControlProfileMenu::UpdateButtonIconsWhenControllerIsChanged()
+{
+	MainMenu *mainMenu = MainMenu::GetInstance();
+
+	int cType = currProfile->GetControllerType();
+
+	ts_buttons = mainMenu->GetButtonIconTileset(cType);
+
+	auto button = XBoxButton::XBOX_A;
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(buttonIconQuads, ir);
+
+	button = XBoxButton::XBOX_A;
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(buttonIconQuads + 4, ir);
+
+	button = XBoxButton::XBOX_X;
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(buttonIconQuads + 8, ir);
+}
 
 void ControlProfileMenu::UpdateNames()
 {
@@ -397,11 +443,11 @@ void ControlProfileMenu::UpdateNames()
 
 		if (tempProfile->editable)
 		{
-			profileNames[i].setFillColor(Color::White);
+			profileNames[i].setFillColor(Color::Black);
 		}
 		else
 		{
-			profileNames[i].setFillColor(Color(150, 150, 150));
+			profileNames[i].setFillColor(Color(100, 100, 100));
 		}
 		profileNames[i].setString( (*lit)->name );
 
@@ -427,10 +473,31 @@ void ControlProfileMenu::SetTopLeft(sf::Vector2f &p_topLeft)
 {
 	topLeft = p_topLeft;
 	//SetupBoxes(); //only need this if i was going to be moving the boxes while the selector isup
-	selectedProfileText.setPosition(topLeft.x + 20, topLeft.y + 20);//topLeft.x, topLeft.y + 90);
-	editingProfileText.setPosition(topLeft.x + 20, topLeft.y + 5);
+	editingProfileText.setPosition(topLeft.x, topLeft.y - 9);//topLeft.x + 10, topLeft.y + 10);
 
-	actionButtonGroup->SetTopLeft(topLeft + Vector2f( 0, 40 ));
+	selectedProfileText.setPosition(topLeft.x, topLeft.y);// + 10);//20);
+
+	actionButtonGroup->SetTopLeft(topLeft + Vector2f( 0, 35 ));// +Vector2f(0, 40));
+
+	float leftBorder = 10;
+	
+
+	float buttonSize = 40;
+	SetRectTopLeft(buttonIconQuads, buttonSize, buttonSize, topLeft + Vector2f(leftBorder, (BOX_HEIGHT - buttonSize) / 2)); //+ Vector2f(4, 4));
+
+	float fullHeight = NUM_BOXES * (BOX_HEIGHT + BOX_SPACING);
+	float vertBorder = 10;
+
+	Vector2f selectIconPos(topLeft.x, topLeft.y + fullHeight + vertBorder);
+
+	SetRectTopLeft(buttonIconQuads + 4, buttonSize, buttonSize, selectIconPos); //+ Vector2f(4, 4));
+
+	selectIconText.setPosition(selectIconPos + Vector2f(buttonSize + 10, 0));
+	
+	Vector2f editIconPos = selectIconPos + Vector2f(0, buttonSize + vertBorder);
+	SetRectTopLeft(buttonIconQuads + 8, buttonSize, buttonSize, editIconPos);
+
+	editIconText.setPosition(editIconPos + Vector2f(buttonSize + 10, 0));
 
 	SetupBoxes();
 
@@ -468,8 +535,6 @@ void ControlProfileMenu::Update()
 			action = A_SELECTED;
 
 			SetCurrProfile(GetProfileAtIndex(saSelector->currIndex));
-			//selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
-			//	selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
 		}
 		else if (controllerInput->ButtonPressed_B())
 		{
@@ -643,7 +708,16 @@ void ControlProfileMenu::Update()
 			}*/
 
 			if (cIndex == saSelector->totalItems - 1)
-				topIndex = saSelector->totalItems - NUM_BOXES;
+			{
+				if (saSelector->totalItems >= NUM_BOXES)
+				{
+					topIndex = saSelector->totalItems - NUM_BOXES;
+				}
+				else
+				{
+					topIndex = 0;
+				}
+			}
 			else if (cIndex < topIndex)
 				topIndex = cIndex;
 		}
@@ -719,15 +793,14 @@ void ControlProfileMenu::SetupBoxes()
 	{
 		currTopLeft = topLeft + Vector2f( 0, extraHeight );
 
-		boxes[i*4+0].position = Vector2f(currTopLeft.x, currTopLeft.y );
-		boxes[i*4+1].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y );
-		boxes[i*4+2].position = Vector2f(currTopLeft.x + BOX_WIDTH, currTopLeft.y + BOX_HEIGHT );
-		boxes[i*4+3].position = Vector2f(currTopLeft.x, currTopLeft.y + BOX_HEIGHT );
+		if (i == 0)
+		{
+			SetRectTopLeft(selectedBox, BOX_WIDTH, BOX_HEIGHT, currTopLeft);
+			SetRectColor(selectedBox, Color::Green);
+		}
 
-		boxes[i*4+0].color = Color::Red;
-		boxes[i*4+1].color = Color::Red;
-		boxes[i*4+2].color = Color::Red;
-		boxes[i*4+3].color = Color::Red;
+		SetRectTopLeft(boxes + i * 4, BOX_WIDTH, BOX_HEIGHT, currTopLeft);
+		SetRectColor(boxes + i * 4, Color::Red);
 
 		extraHeight += BOX_HEIGHT + BOX_SPACING;
 	}
@@ -763,7 +836,7 @@ void ControlProfileMenu::UpdateBoxesDebug()
 	{
 		if( i == trueI )
 		{
-			c = Color::Blue;
+			c = Color::Green;
 		}
 		else
 		{
@@ -1560,7 +1633,7 @@ void ActionButtonGroup::SetTopLeft(sf::Vector2f &pos)
 {
 	topLeft = pos;
 
-	Vector2f start = Vector2f(spacing.x / 2, 10);
+	Vector2f start = Vector2f(spacing.x / 2, 0 );
 	
 	int x, y;
 	for (int i = 0; i < numButtons; ++i)
@@ -1874,7 +1947,7 @@ ActionButton::ActionButton(sf::Vertex *p_quad, const std::string &name )
 	MainMenu *mm = MainMenu::GetInstance();
 
 	actionName.setFont(mm->arial);
-	actionName.setFillColor(Color::White);
+	actionName.setFillColor(Color::Black);
 	actionName.setString(name);
 
 	SetSizes(64, 20);
