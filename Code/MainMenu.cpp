@@ -1788,6 +1788,12 @@ void MainMenu::Run()
 
 				UICONTROLLER.Update();
 
+				if (CONTROLLERS.AltF4())
+				{
+					SetMode(EXITING);
+					quit = true;
+				}
+
 				//added this so going back from the thanks screen
 				//doesnt inta select a level. carrying over inputs
 				//between menus makes no sense.
@@ -2498,8 +2504,6 @@ void MainMenu::HandleMenuMode()
 			currLevel = NULL;
 
 			SetMode(EXITING);
-			//LoadMode(TITLEMENU);
-
 			quit = true;
 		}
 		else

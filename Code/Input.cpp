@@ -1643,6 +1643,12 @@ void AllControllers::SetKeyboardActiveAsController(bool keyActive)
 	isKeyboardActive = keyActive;
 }
 
+bool AllControllers::AltF4()
+{
+	return ((KeyboardButtonHeld(Keyboard::LAlt) || KeyboardButtonHeld(Keyboard::RAlt))
+		&& KeyboardButtonPressed(Keyboard::F4));
+}
+
 void AllControllers::SetRenderWindow(sf::RenderWindow *rw)
 {
 	window = rw;

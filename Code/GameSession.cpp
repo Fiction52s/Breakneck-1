@@ -2286,6 +2286,14 @@ bool GameSession::SetupBestPlayerReplayer()
 //return false means continue/go again
 bool GameSession::RunMainLoopOnce()
 {
+	if (CONTROLLERS.AltF4())
+	{
+		quit = true;
+		returnVal = GR_EXITGAME;
+		mainMenu->musicPlayer->StopCurrentMusic();
+		return true;
+	}
+
 	CheckSinglePlayerInputDefaultKeyboard();
 
 	//cout << this << " << run loop once" << endl;

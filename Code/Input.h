@@ -305,6 +305,7 @@ struct AllControllers
 	void CheckForControllers();
 	void SetRenderWindow(sf::RenderWindow *rw);
 	void SetKeyboardActiveAsController(bool keyActive);
+	bool AltF4();
 
 
 
