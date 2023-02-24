@@ -505,6 +505,7 @@ void ShardPopup::Reset()
 
 void ShardPopup::Update()
 {
+	tutBox->UpdateButtonIconsWhenControllerIsChanged();
 	++frame;
 }
 

@@ -26,9 +26,10 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 	musicVolumeSlider = panel->AddLabeledSlider( "musicslider", Vector2i( 0, 0 ), "Music Volume:", 400, 0, 100, 100, 30 );
 	soundVolumeSlider = panel->AddLabeledSlider("soundslider", Vector2i(0, 0), "Sound Volume:", 400, 0, 100, 100, 30);
 	defaultButton = panel->AddButton("defaultbutton", Vector2i(0, 0), Vector2f(400, 40), "Restore Defaults");
-	applyButton = panel->AddButton("applybutton", Vector2i(0, 0), Vector2f(400, 40), "OK");
+	applyButton = panel->AddButton("applybutton", Vector2i(0, 0), Vector2f(400, 40), "APPLY");
 	backButton = panel->AddButton("backbutton", Vector2i(0, 0), Vector2f(400, 40), "BACK");
-	checkForControllerButton = panel->AddButton("checkforcontrollersbutton", Vector2i(0, 0), Vector2f(400, 40), "Check for controllers");
+	checkForControllerButton = NULL;
+	//checkForControllerButton = panel->AddButton("checkforcontrollersbutton", Vector2i(0, 0), Vector2f(400, 40), "Check for controllers");
 
 	panel->StopAutoSpacing();
 

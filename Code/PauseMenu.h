@@ -70,6 +70,7 @@ struct OptionsMenu
 	State state;
 
 	PlayerBoxGroup *playerBoxGroup;
+	GameSettingsScreen *gameSettingsMenu;
 
 	Tileset *ts_optionMode;
 	sf::Vertex optionModeQuads[4*4];
@@ -77,6 +78,8 @@ struct OptionsMenu
 	sf::Vector2f basePos;
 	OptionsMenu( PauseMenu *pauseMenu );
 	~OptionsMenu();
+	void HandleEvent(sf::Event ev);
+	void Start();
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );
 	void Draw( sf::RenderTarget *target );
@@ -90,7 +93,6 @@ struct PauseMap;
 
 struct PauseMenu
 {
-	OptionsMenu *cOptions;
 	enum Tab
 	{
 		PAUSE,
@@ -121,7 +123,7 @@ struct PauseMenu
 	Tileset *ts_pauseOptions;
 	sf::Vertex pauseOptionQuads[5 * 4];
 
-	GameSettingsScreen *gameSettingsMenu;
+	
 	void UpdatePauseOptions();
 	
 	enum OptionType

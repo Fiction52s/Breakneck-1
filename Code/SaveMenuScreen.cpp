@@ -271,6 +271,29 @@ SaveMenuScreen::SaveMenuScreen()
 		SetRectCenter(actionButtonIcons + i * 4, 128, 128, start + Vector2f(355 * i, 0));
 	}
 
+	UpdateButtonIconsWhenControllerIsChanged();
+
+	SetSelectedIndex(mainMenu->adventureManager->currSaveFileIndex);
+
+	Reset();
+	//kinFace.setPosition(topLeftPos + Vector2f( 50, 0 ));
+}
+
+SaveMenuScreen::~SaveMenuScreen()
+{
+	delete decisionPopup;
+
+	delete skinMenu;
+	for (int i = 0; i < 6; ++i)
+	{
+		delete fileDisplay[i];
+	}
+
+	//delete confirmPopup;
+}
+
+void SaveMenuScreen::UpdateButtonIconsWhenControllerIsChanged()
+{
 	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
 
 	auto button = XBoxButton::XBOX_A;
@@ -301,24 +324,6 @@ SaveMenuScreen::SaveMenuScreen()
 	{
 		skinButtonIconSpr.setScale(1.0, 1.0);
 	}
-
-	SetSelectedIndex(mainMenu->adventureManager->currSaveFileIndex);
-
-	Reset();
-	//kinFace.setPosition(topLeftPos + Vector2f( 50, 0 ));
-}
-
-SaveMenuScreen::~SaveMenuScreen()
-{
-	delete decisionPopup;
-
-	delete skinMenu;
-	for (int i = 0; i < 6; ++i)
-	{
-		delete fileDisplay[i];
-	}
-
-	//delete confirmPopup;
 }
 
 void SaveMenuScreen::SaveSelectedFile()
@@ -456,7 +461,8 @@ bool SaveMenuScreen::Update()
 
 	bool changedToSkin = false;
 
-	
+	bool keyboardBack = controllerInput->GetControllerType() != CTYPE_KEYBOARD && (CONTROLLERS.KeyboardButtonPressed(Keyboard::BackSpace)
+		|| CONTROLLERS.KeyboardButtonPressed(Keyboard::Escape));
 
 	if (mainMenu->menuMode == MainMenu::SAVEMENU )
 	{
@@ -479,7 +485,7 @@ bool SaveMenuScreen::Update()
 					return true;
 				}
 			}
-			else if (controllerInput->ButtonPressed_B())
+			else if (controllerInput->ButtonPressed_B() || keyboardBack)
 			{
 				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
 				return false;
@@ -647,7 +653,7 @@ bool SaveMenuScreen::Update()
 					//messagePopup->Pop("Cannot overwrite existing file");
 				}
 			}
-			else if (controllerInput->ButtonPressed_B())
+			else if (controllerInput->ButtonPressed_B() || keyboardBack )
 			{
 				action = WAIT;
 				frame = 0;

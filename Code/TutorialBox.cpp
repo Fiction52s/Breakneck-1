@@ -32,7 +32,6 @@ TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color
 	quadColor = p_quadColor;
 	textColor = p_textColor;
 	rectBuffer = p_rectBuffer;
-	
 
 	text.setFont(sess->mainMenu->arial);
 	text.setCharacterSize(charHeight);
@@ -126,21 +125,7 @@ bool TutorialBox::CalcButtonPos( std::string &startString,
 	//text.setString(s);
 }
 
-struct ButtonInfo
-{
-	ButtonInfo()
-	{
-		buttonType = -1;
-	}
-	ButtonInfo(int p_buttonType, Vector2f &p_pos)
-	{
-		buttonType = p_buttonType;
-		pos = p_pos;
-	}
-	int buttonType;
-	Vector2f pos;
-	
-};
+
 
 void TutorialBox::SetText(const std::string &str)
 {
@@ -149,15 +134,15 @@ void TutorialBox::SetText(const std::string &str)
 	string s = str;
 	//std::replace(s.begin(), s.end(), '\\', '\n');
 
-	
+	currControllerType = -1;
 
 	float buttonSize = charHeight;
 	//float rectBuffer = 30;
 
 	FloatRect globalBounds;
 
-	vector<ButtonInfo> buttonInfos;
-
+	
+	buttonInfos.clear();
 
 
 	int nextButtonIndex = NextButtonStringIndex(s);
@@ -213,7 +198,6 @@ void TutorialBox::SetText(const std::string &str)
 			}
 		}
 	}
-	
 
 	/*text.setString(s);
 	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
@@ -225,10 +209,9 @@ void TutorialBox::SetText(const std::string &str)
 	{
 		SetRectCenter(buttonQuad + i * 4, buttonSize, buttonSize,
 			Vector2f(globalBounds.left, globalBounds.top) + buttonInfos[i].pos + Vector2f(buttonSize / 2, buttonSize / 2));
-
-		ControllerSettings::ButtonType bType = (ControllerSettings::ButtonType)buttonInfos[i].buttonType;
-		SetRectSubRect(buttonQuad + i * 4, sess->GetButtonIconTile(0, bType));
 	}
+
+	UpdateButtonIconsWhenControllerIsChanged();
 	
 	Vector2f quadSize;
 	bool locked = false;
@@ -256,6 +239,22 @@ void TutorialBox::SetText(const std::string &str)
 					globalBounds.top + globalBounds.height / 2));
 		}
 	}	
+}
+
+void TutorialBox::UpdateButtonIconsWhenControllerIsChanged()
+{
+	int sessControllerType = sess->controllerStates[0]->GetControllerType();
+	if (currControllerType == sessControllerType )
+	{
+		return;
+	}
+
+	currControllerType = sessControllerType;
+	for (int i = 0; i < buttonInfos.size(); ++i)
+	{
+		ControllerSettings::ButtonType bType = (ControllerSettings::ButtonType)buttonInfos[i].buttonType;
+		SetRectSubRect(buttonQuad + i * 4, sess->GetButtonIconTile(0, bType));
+	}
 }
 
 void TutorialBox::SetCenterPos(sf::Vector2f &pos)

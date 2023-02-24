@@ -14,7 +14,6 @@
 #include "KinMenu.h"
 #include "LogMenu.h"
 #include "PaletteShader.h"
-#include "GameSettingsScreen.h"
 #include "PlayerBox.h"
 #include "AdventureManager.h"
 #include "PauseMap.h"
@@ -143,171 +142,13 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 	target->draw( currentText );
 }
 
-OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
-{
-	state = CHOOSESTATE;
-	game = pauseMenu->game;
-	mainMenu = pauseMenu->mainMenu;
-	//temporary init here
-	basePos = Vector2f( 100, 100 );
-
-	int waitFrames[3] = { 10, 5, 2 };
-	int waitModeThresh[2] = { 2, 2 };
-	optionModeSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
-
-	ts_optionMode = game->GetSizedTileset("Menu/Pause/optionsptions_768x128.png");
-
-	//Vector2f startOffset(1820 / 2, 100);
-	Vector2f startOffset(1820 / 2, 128/2 + 150);
-	int spacing = 30;
-	for (int i = 0; i < 4; ++i)
-	{
-		
-		SetRectCenter(optionModeQuads + i * 4, 768, 128, startOffset + Vector2f(0, (128 + spacing) * i));
-	}
-
-	playerBoxGroup = new PlayerBoxGroup(game, 1, 400, 400, 100);
-	playerBoxGroup->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
-	playerBoxGroup->SetBoxCenter(0, startOffset + Vector2f(0, 128 + 150));
-	playerBoxGroup->SetControllerStates(0, game->controllerStates[0], game->GetPlayerNormalSkin(0));
-	playerBoxGroup->SetControlProfile(0, game->controlProfiles[0]);
-}
-
-OptionsMenu::~OptionsMenu()
-{
-	delete optionModeSelector;
-
-	delete playerBoxGroup;
-}
-
-void OptionsMenu::UpdateOptionModeQuads()
-{
-	for (int i = 0; i < 4; ++i)
-	{
-		if (optionModeSelector->currIndex == i)
-		{
-			SetRectSubRect(optionModeQuads + i * 4, ts_optionMode->GetSubRect(i + 4));
-		}
-		else
-		{
-			SetRectSubRect(optionModeQuads + i * 4, ts_optionMode->GetSubRect(i));
-		}
-	}
-}
-
-void OptionsMenu::Update( ControllerState &currInput,
-		ControllerState &prevInput )
-{
-	switch (state)
-	{
-	case CHOOSESTATE:
-	{
-		int res = optionModeSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
-		if (res != 0)
-		{
-			game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_change"));
-			//owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_change"));
-		}
-		UpdateOptionModeQuads();
-
-		if (currInput.A && !prevInput.A)
-		{
-			state = (State)(optionModeSelector->currIndex + 1);
-			switch (state)
-			{
-			case CONTROL:
-				//playerBoxGroup->Update();
-				//csm->UpdateXboxButtonIcons();
-				break;
-			case SOUND:
-				mainMenu->gameSettingsScreen->UpdateFromConfig();
-				break;
-			case VISUAL:
-				state = SOUND;
-				mainMenu->gameSettingsScreen->UpdateFromConfig();
-				break;
-			case GAMEPLAY:
-				state = CHOOSESTATE;
-				break;
-			}
-		}
-		break;
-	}
-	case CONTROL:
-	{
-		playerBoxGroup->Update();
-
-
-		if (playerBoxGroup->IsReady())
-		{
-			ControlProfile *cp = playerBoxGroup->GetControlProfile(0);
-			if (cp != game->controlProfiles[0])
-			{
-				if (mainMenu->adventureManager != NULL)
-				{
-					mainMenu->adventureManager->currProfile = cp;
-				}
-				game->controlProfiles[0] = cp;
-			}
-		}
-
-		if (playerBoxGroup->BackButtonPressed())
-		{
-			state = CHOOSESTATE;
-			break;
-		}
-
-		break;
-	}
-	case SOUND:
-		if (currInput.B && !prevInput.B)
-		{
-			state = CHOOSESTATE;
-			break;
-		}
-		//config->WaitForLoad();
-		mainMenu->gameSettingsScreen->Update();// currInput, prevInput );
-		break;
-	}
-}
-
-void OptionsMenu::Draw( sf::RenderTarget *target )
-{
-	switch (state)
-	{
-	case CHOOSESTATE:
-		target->draw(optionModeQuads, 4 * 4, sf::Quads, ts_optionMode->texture);
-		break;
-	case CONTROL:
-		playerBoxGroup->Draw(target);
-		//csm->Draw(target);
-		break;
-	case SOUND:
-		mainMenu->gameSettingsScreen->Draw(target);
-		break;
-	}
-}
-
-bool OptionsMenu::CanChangeTab()
-{
-	if (state == CONTROL)
-	{
-		/*if (csm->IsEditingButtons())
-		{
-			return false;
-		}*/
-	}
-
-	return true;
-}
-
 PauseMenu::PauseMenu( GameSession *p_game)
 	:currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
 {
 	game = p_game;
 	mainMenu = game->mainMenu;
 
-	gameSettingsMenu = mainMenu->gameSettingsScreen;
+
 	
 
 	debugText.setFont(game->mainMenu->arial);
@@ -321,13 +162,6 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	debugText.setPosition(100, 100);*/
 
 	optionType = OptionType::O_INPUT;
-	cOptions = NULL;//new OptionsMenu( this );
-	/*ts_background[0] = game->GetSizedTileset("Menu/Pause/pause_1_pause_910x490.png");
-	ts_background[1] = game->GetSizedTileset("Menu/Pause/pause_2_map_910x490.png");
-	ts_background[2] = game->GetSizedTileset("Menu/Pause/pause_3_shards_910x490.png");
-	ts_background[3] = game->GetSizedTileset("Menu/Pause/pause_4_logs_910x490.png");
-	ts_background[4] = game->GetSizedTileset("Menu/Pause/pause_5_options_910x490.png");
-	ts_background[5] = game->GetSizedTileset("Menu/Pause/pause_6_kin_910x490.png");*/
 
 	ts_background = game->GetSizedTileset("Menu/Pause/pause_BG_1820x980.png");
 	bgSprite.setTexture(*ts_background->texture);
@@ -343,8 +177,6 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	
 	ts_pauseOptions = game->GetSizedTileset("Menu/Pause/pauseoptions_768x128.png");
 
-	
-
 	int waitFrames[3] = { 60, 30, 30 };
 	int waitModeThresh[2] = { 2, 2 };
 	pauseSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0, false);
@@ -353,12 +185,7 @@ PauseMenu::PauseMenu( GameSession *p_game)
 
 	pauseMap = new PauseMap;
 	
-
 	selectSprite.setTexture( *ts_select->texture );
-
-	
-
-	//pauseSelectIndex = 0;
 
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
@@ -574,18 +401,7 @@ void PauseMenu::SetTab( Tab t )
 		
 		break;
 	case OPTIONS:
-		optionsMenu->state = OptionsMenu::CHOOSESTATE;
-
-		MOUSE.Show();
-		MOUSE.SetControllersOn(true);
-		gameSettingsMenu->Start();
-		//removed for gamesettings changes
-		//game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
-
-
-
-		//LoadControlOptions();
-		//UpdateButtonIcons();
+		optionsMenu->Start();
 		break;
 	case PAUSE:
 		//pauseSelector->currIndex = 0;
@@ -598,7 +414,7 @@ void PauseMenu::HandleEvent(sf::Event ev)
 {
 	if (currentTab == OPTIONS)
 	{
-		gameSettingsMenu->HandleEvent(ev);
+		optionsMenu->HandleEvent(ev);
 	}
 }
 
@@ -650,9 +466,9 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	}
 	else if( currentTab == OPTIONS )
 	{
-		//optionsMenu->Draw(target);
+		optionsMenu->Draw(target);
 
-		gameSettingsMenu->Draw(target);
+		
 
 
 		/*string inputType = inputSelectors[0]->GetString();
@@ -945,15 +761,8 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 	}
 	case OPTIONS:
 		{	
-			MOUSE.Update(MOUSE.GetRealPixelPos());// -Vector2i(50, 50)); //just testing
-			UICONTROLLER.Update();
-			//return UpdateOptions( currInput, prevInput );
-			
-			//optionsMenu->Update( currInput, prevInput );
-			
-			gameSettingsMenu->Update();
-			
-			break;
+		optionsMenu->Update( currInput, prevInput );	
+		break;
 		}
 	case PAUSE:
 		{
@@ -995,7 +804,7 @@ PauseMenu::UpdateResponse PauseMenu::UpdateOptions( ControllerState &currInput,
 		break;
 	case O_INPUT:
 		
-		cOptions->Update( currInput, prevInput );
+		//cOptions->Update( currInput, prevInput );
 		//return UpdateResponse::R_NONE;
 		break;
 	}

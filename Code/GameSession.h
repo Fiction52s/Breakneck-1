@@ -358,6 +358,7 @@ struct GameSession : RayCastHandler, Session
 	std::list<AirTrigger*> fullAirTriggerList;
 	bool showTerrainDecor;
 	
+	bool isDefaultKeyboardInputOn;
 	
 	
 	int returnVal;
@@ -417,6 +418,7 @@ struct GameSession : RayCastHandler, Session
 	bool ShouldContinueLoading();
 	void Init();
 	void Cleanup();
+	void CheckSinglePlayerInputDefaultKeyboard();
 
 	//fader
 	
@@ -465,6 +467,7 @@ struct GameSession : RayCastHandler, Session
 
 	void DebugDraw(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
+
 
 	
 	void QuitGame();

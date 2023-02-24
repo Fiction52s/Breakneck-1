@@ -459,6 +459,9 @@ void WorldMap::Update()
 	auto *controllerInput = adventureManager->controllerInput;
 	assert(controllerInput != NULL);
 
+	bool keyboardBack = controllerInput->GetControllerType() != CTYPE_KEYBOARD && (CONTROLLERS.KeyboardButtonPressed(Keyboard::BackSpace)
+		|| CONTROLLERS.KeyboardButtonPressed(Keyboard::Escape));
+
 	int trans = 20;
 	switch( state )
 	{
@@ -511,7 +514,7 @@ void WorldMap::Update()
 			
 			break;
 		}
-		else if (controllerInput->ButtonPressed_B() )
+		else if (controllerInput->ButtonPressed_B() || keyboardBack)
 		{
 			state = PLANET_VISUAL_ONLY;
 			frame = 0;

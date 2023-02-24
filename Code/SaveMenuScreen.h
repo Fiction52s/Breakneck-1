@@ -92,6 +92,7 @@ struct SaveMenuScreen : TilesetManager
 	void UpdateSelectedIndex();
 	bool HandleEvent(sf::Event ev);
 	void SetSelectedIndex(int index);
+	void UpdateButtonIconsWhenControllerIsChanged();
 
 
 	MainMenu *mainMenu;

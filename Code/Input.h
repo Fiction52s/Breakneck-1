@@ -267,6 +267,7 @@ struct ControllerStateQueue
 	bool DirPressed_Right();
 	bool DirPressed_Up();
 	bool DirPressed_Down();
+	bool IsDoingAnything();
 	
 
 

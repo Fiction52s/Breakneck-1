@@ -20,7 +20,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 	MainMenu *mainMenu = ms->mainMenu;
 
-	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+	UpdateButtonIconsWhenControllerIsChanged();
 
 	WorldMap *worldMap = ms->worldMap;
 	bg = NULL;
@@ -199,6 +199,14 @@ void MapSector::CreateBG()
 	assert(bg == NULL);
 
 	bg = Background::SetupFullBG(bgName, ms->worldMap, true);
+}
+
+void MapSector::UpdateButtonIconsWhenControllerIsChanged()
+{
+	MainMenu *mainMenu = ms->mainMenu;
+	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+
+	UpdateOptionButtons();
 }
 
 

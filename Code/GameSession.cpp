@@ -828,6 +828,8 @@ GameSession::GameSession(MatchParams *mp )
 		}
 	}
 
+	isDefaultKeyboardInputOn = false;
+
 	for (int i = 0; i < 4; ++i)
 	{
 		controlProfiles[i] = matchParams.controlProfiles[i];
@@ -986,6 +988,48 @@ GameSession *GameSession::GetSession()
 	return currSession;
 }
 
+void GameSession::CheckSinglePlayerInputDefaultKeyboard()
+{
+	if (matchParams.numPlayers == 1 )
+	{
+		ControllerDualStateQueue *keyboardStates = CONTROLLERS.GetStateQueue(CTYPE_KEYBOARD, 0);
+		ControllerDualStateQueue *paramStates = matchParams.controllerStateVec[0];
+
+		bool paramStatesDoingAnything = paramStates->IsDoingAnything();
+		
+		ControlProfile *defaultKeyboardProfile = mainMenu->cpm->profiles[CTYPE_KEYBOARD].front();
+		ControllerState currTestInput;
+		CONTROLLERS.UpdateFilteredKeyboardState(defaultKeyboardProfile, currTestInput, GetPlayer(0)->prevInput);
+
+		bool keyboardStatesDoingAnything = keyboardStates->IsDoingAnything();
+
+		if (!currTestInput.IsLeftNeutral())
+		{
+			keyboardStatesDoingAnything = true;
+		}
+
+		if (isDefaultKeyboardInputOn)
+		{
+			if (paramStatesDoingAnything && !keyboardStatesDoingAnything)
+			{
+				//update all icons here
+				SetControllerStates(0, paramStates);
+				controlProfiles[0] = matchParams.controlProfiles[0];
+				isDefaultKeyboardInputOn = false;
+			}
+		}
+		else
+		{
+			if ( keyboardStatesDoingAnything && !paramStatesDoingAnything )
+			{
+				//update all icons here
+				SetControllerStates(0, keyboardStates);
+				controlProfiles[0] = defaultKeyboardProfile;
+				isDefaultKeyboardInputOn = true;
+			}
+		}
+	}
+}
 
 void GameSession::RecordReplayEnemies()
 {
@@ -2242,6 +2286,8 @@ bool GameSession::SetupBestPlayerReplayer()
 //return false means continue/go again
 bool GameSession::RunMainLoopOnce()
 {
+	CheckSinglePlayerInputDefaultKeyboard();
+
 	//cout << this << " << run loop once" << endl;
 	switchGameState = false;
 	double newTime = gameClock.getElapsedTime().asSeconds();

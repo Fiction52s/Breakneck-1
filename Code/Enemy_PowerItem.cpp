@@ -496,6 +496,7 @@ void PowerPopup::Reset()
 
 void PowerPopup::Update()
 {
+	tutBox->UpdateButtonIconsWhenControllerIsChanged();
 	++frame;
 }
 

@@ -130,6 +130,7 @@ struct MapSector
 		Sector *p_sector, 
 		MapSelector *ms, int index);
 	~MapSector();
+	void UpdateButtonIconsWhenControllerIsChanged();
 	bool IsUnlocked();
 	void UpdateUnlockedLevelCount();
 	void DestroyBG();

@@ -2326,12 +2326,14 @@ bool ControllerStateQueue::ButtonPressed_Start()
 
 bool ControllerStateQueue::ButtonHeld_Any()
 {
-	return ButtonHeld_A() || ButtonHeld_B() || ButtonHeld_X() || ButtonHeld_Y() || ButtonHeld_LeftShoulder() || ButtonHeld_RightShoulder();
+	return ButtonHeld_A() || ButtonHeld_B() || ButtonHeld_X() || ButtonHeld_Y() || ButtonHeld_LeftShoulder() || ButtonHeld_RightShoulder() || ButtonHeld_Start()
+		|| ButtonHeld_LeftTrigger() || ButtonHeld_RightTrigger();
 }
 
 bool ControllerStateQueue::ButtonPressed_Any()
 {
-	return ButtonPressed_A() || ButtonPressed_B() || ButtonPressed_X() || ButtonPressed_Y() || ButtonPressed_LeftShoulder() || ButtonPressed_RightShoulder();
+	return ButtonPressed_A() || ButtonPressed_B() || ButtonPressed_X() || ButtonPressed_Y() || ButtonPressed_LeftShoulder() || ButtonPressed_RightShoulder() || ButtonPressed_Start()
+		|| ButtonPressed_LeftTrigger() || ButtonPressed_RightTrigger();
 }
 
 bool ControllerStateQueue::DirPressed_Left()
@@ -2352,6 +2354,11 @@ bool ControllerStateQueue::DirPressed_Up()
 bool ControllerStateQueue::DirPressed_Down()
 {
 	return states[0].LDown() && !states[1].LDown();
+}
+
+bool ControllerStateQueue::IsDoingAnything()
+{
+	return (ButtonHeld_Any() || !states[0].IsLeftNeutral());
 }
 
 int ControllerStateQueue::GetControllerType()

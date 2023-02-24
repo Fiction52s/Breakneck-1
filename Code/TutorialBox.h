@@ -8,6 +8,23 @@ struct Session;
 
 struct TutorialBox
 {
+	struct ButtonInfo
+	{
+		ButtonInfo()
+		{
+			buttonType = -1;
+		}
+		ButtonInfo(int p_buttonType, sf::Vector2f &p_pos)
+		{
+			buttonType = p_buttonType;
+			pos = p_pos;
+		}
+		int buttonType;
+		sf::Vector2f pos;
+
+	};
+
+
 	sf::Text text;
 	sf::Vertex quad[4];
 	Session *sess;
@@ -22,6 +39,8 @@ struct TutorialBox
 	sf::Color textColor;
 	bool topLeftMode;
 	std::vector<std::string> buttonStrings;
+	std::vector<ButtonInfo> buttonInfos;
+	int currControllerType;
 
 	TutorialBox(int charHeight, sf::Vector2f lockedSize, sf::Color quadColor, sf::Color textColor, float rectBuffer );
 	TutorialBox();
@@ -35,6 +54,7 @@ struct TutorialBox
 	void SetCenterPos(sf::Vector2f &pos);
 	void SetTopLeft(sf::Vector2f &pos);
 	void Draw(sf::RenderTarget *target);
+	void UpdateButtonIconsWhenControllerIsChanged();
 };
 
 #endif

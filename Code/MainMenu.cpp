@@ -316,7 +316,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		{
 			assert(adventureManager == NULL);
 			adventureManager = new AdventureManager;
-			adventureManager->controllerInput = storedControllerStates;//singlePlayerControllerJoinScreen->playerBox->controllerStates;
+			adventureManager->controllerInput = storedControllerStates;
 			adventureManager->currProfile = storedControlProfile;
 			adventureManager->CreateWorldMap();
 			adventureManager->CreateSaveMenu();

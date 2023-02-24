@@ -202,6 +202,9 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 	ControllerState empty;
 	MapSector::State currSectorState = FocusedSector()->state;
 
+	bool keyboardBack = controllerInput->GetControllerType() != CTYPE_KEYBOARD && (CONTROLLERS.KeyboardButtonPressed(Keyboard::BackSpace)
+		|| CONTROLLERS.KeyboardButtonPressed(Keyboard::Escape));
+
 	switch (state)
 	{
 	case S_SECTORSELECT:
@@ -215,7 +218,7 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 			}
 			break;
 		}
-		else if (controllerInput->ButtonPressed_B())
+		else if (controllerInput->ButtonPressed_B() || keyboardBack)
 		{
 			//FocusedSector()->DestroyMapPreview();
 			//FocusedSector()->DestroyBG();
@@ -246,7 +249,7 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 	{
 		if (kinState == K_STAND)
 		{
-			if (controllerInput->ButtonPressed_B())
+			if (controllerInput->ButtonPressed_B() || keyboardBack)
 			{
 				if (world->numSectors == 1)
 				{

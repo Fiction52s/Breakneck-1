@@ -479,6 +479,7 @@ void LogPopup::Reset()
 
 void LogPopup::Update()
 {
+	tutBox->UpdateButtonIconsWhenControllerIsChanged();
 	logPreview->Update();
 
 	++frame;

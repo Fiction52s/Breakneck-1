@@ -68,6 +68,8 @@ void TutorialSequence::UpdateState()
 		break;
 	}
 	}
+
+	tutBox->UpdateButtonIconsWhenControllerIsChanged();
 	//++frame;
 
 	//emitter->Update();

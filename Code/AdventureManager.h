@@ -27,6 +27,13 @@ struct AdventureManager
 	ControllerDualStateQueue *controllerInput;
 	ControlProfile *currProfile;
 
+	bool isDefaultKeyboardInputOn;
+
+
+	//ControllerDualStateQueue *chosenControllerInput;
+	//ControlProfile *chosenProfile;
+
+
 	GameSession *currLevel;
 
 	

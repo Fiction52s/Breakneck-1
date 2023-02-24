@@ -222,7 +222,6 @@ struct MainMenu
 	};
 
 	//testing
-
 	CustomCursor *customCursor;
 	NetplayManager *netplayManager;
 	CustomMatchManager *customMatchManager;
