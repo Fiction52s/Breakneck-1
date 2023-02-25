@@ -392,8 +392,10 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 
 	float xPropMultiplier = 4.f;
 	float yPropMultiplierGrounded = 8.f;
-	float yPropMultiplerAerial = 4.f;
-	float returnToCenterMultX = 1.f;
+	float yPropMultiplerAerial = 8.f;//4.f;
+	float returnToCenterStandMultX = 1.f;//.3f;
+	float returnToCenterAirMultX = xPropMultiplier * .5;//1.f;//.3f;
+	float returnToCenterMultXOpposing = 1.f;
 	float returnToCenterMultYGrounded = 3.f;
 	float returnToCenterMultYAerial = 3.f;
 	V2d maxRegisteredSpeed(60, 60);
@@ -441,38 +443,91 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	Vector2f diff = targetOffset - tempOffset;
 	Vector2f dir = normalize(diff);
 
-	offsetVel = dir;
+	Vector2f offsetVelGoal;
 
-	offsetVel.x *= baseOffsetFactor.x;
-	offsetVel.y *= baseOffsetFactor.y;
+	offsetVelGoal = dir;
+
+	offsetVelGoal.x *= baseOffsetFactor.x;
+	offsetVelGoal.y *= baseOffsetFactor.y;
 
 	Vector2f returnToCenterBaseFactor(abs(tempOffset.x / currZoom) / maxOffset.x,
 		abs(tempOffset.y / currZoom) / maxOffset.y);
 
 	if ((pVel.x > 0 && tempOffset.x < 0) || (pVel.x < 0 && tempOffset.x > 0))
 	{
-		offsetVel.x *= 1.0 + returnToCenterMultX * returnToCenterBaseFactor.x;
+		offsetVelGoal.x *= 1.0 + returnToCenterMultXOpposing * returnToCenterBaseFactor.x;
 	}
-	offsetVel.x *= max(1.0, xPropMultiplier * xProp);
+	else if ((pVel.x == 0 && tempOffset.x < 0) || (pVel.x == 0 && tempOffset.x > 0))
+	{
+		if (pVel.y == 0)
+		{
+			offsetVelGoal.x *= returnToCenterStandMultX * returnToCenterBaseFactor.x;
+		}
+		else
+		{
+			offsetVelGoal.x *= 1.0 + returnToCenterAirMultX * returnToCenterBaseFactor.x;
+		}
+		
+	}
+	offsetVelGoal.x *= max(1.0, xPropMultiplier * xProp);
 
 	if (playerIsGrounded)
 	{
 		if ((pVel.y >= 0 && tempOffset.y < 0) || (pVel.y <= 0 && tempOffset.y > 0))
 		{
-			offsetVel.y *= 1.0 + returnToCenterMultYGrounded * returnToCenterBaseFactor.y;
+			offsetVelGoal.y *= 1.0 + returnToCenterMultYGrounded * returnToCenterBaseFactor.y;
 		}
-		offsetVel.y *= max(1.0, yPropMultiplierGrounded * yProp);
+		offsetVelGoal.y *= max(1.0, yPropMultiplierGrounded * yProp);
 	}
 	else
 	{
 		if ((pVel.y >= 0 && tempOffset.y < 0) || pVel.y <= 0 && tempOffset.y > 0)
 		{
-			offsetVel.y *= 1.0 + returnToCenterMultYAerial * returnToCenterBaseFactor.y;
+			offsetVelGoal.y *= 1.0 + returnToCenterMultYAerial * returnToCenterBaseFactor.y;
 		}
-		offsetVel.y *= max(1.0, yPropMultiplerAerial * yProp);
+		offsetVelGoal.y *= max(1.0, yPropMultiplerAerial * yProp);
 	}
 
+	float testFactor = 1.f / 10.f;//15.f;//1.f / 4.f;
+	offsetVel = offsetVelGoal * testFactor + offsetVel * (1.f - testFactor);//offsetVelGoal;//(offsetVelGoal + offsetVel) / 2.f;
+
+	float testLen = length(offsetVelGoal - offsetVel);
+
+	//offsetVel = offsetVelGoal;
+	//if (testLen < 1.f )//yPropMultiplierGrounded * testFactor * 2.0)//1.f)
+	//{
+	//	//offsetVel = offsetVelGoal;
+	//	cout << "lock: " << testLen << ", " << yPropMultiplierGrounded * testFactor * 2.0 << "\n";
+	//}
+	//else
+	//{
+	//	cout << "testLen: " << testLen << ", " << yPropMultiplierGrounded * testFactor * 2.0 << "\n";
+	//}
+
+	//cout << "offsetVel: " << "\n";
+
+	//cout << "tempOffset: " << tempOffset.x << ", " << tempOffset.y << ",   offsetVel: " << offsetVel.x << ", " << offsetVel.y << "\n";
+
+	//offsetVel = offsetVelGoal;
+
 	Vector2f oldTempOffset = tempOffset;
+
+	if ((offsetVelGoal.y < 0 && targetOffset.y >= 0 && tempOffset.y + offsetVel.y < 0)
+		|| (offsetVelGoal.y > 0 && targetOffset.y <= 0 && tempOffset.y + offsetVel.y > 0))
+	{
+		tempOffset.y = 0;
+		offsetVel.y = 0;
+	}
+
+	if ((offsetVelGoal.x < 0 && targetOffset.x >= 0 && tempOffset.x + offsetVel.x < 0)
+		|| (offsetVelGoal.x > 0 && targetOffset.x <= 0 && tempOffset.x + offsetVel.x > 0))
+	{
+		tempOffset.x = 0;
+		offsetVel.x = 0;
+	}
+	
+		
+
 	tempOffset += offsetVel;
 
 	//prevent vibrating by stopping at the target correctly.
