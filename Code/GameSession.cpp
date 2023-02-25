@@ -143,8 +143,23 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 	//eventually add better logic for when its okay to pause in multiplayer etc
 	if ( matchParams.numPlayers == 1 && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
 	{
-		ControllerState &currInput = GetCurrInput(0);
-		ControllerState &prevInput = GetPrevInput(0);
+		ControllerState currInput;
+		
+		ControllerState prevInput;
+
+		currInput = GetPlayer(0)->currInput;
+		prevInput = GetPlayer(0)->prevInput;
+
+		/*if (controllerStates[0]->GetControllerType() == CTYPE_KEYBOARD)
+		{
+			
+		}
+		else
+		{
+			currInput = GetCurrInput(0);
+			prevInput = GetPrevInput(0);
+		}*/
+		
 		//if( IsKeyPressed( Keyboard ) )
 		if (currInput.start && !prevInput.start)
 		{
@@ -154,7 +169,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			soundNodeList->Pause(true);
 			return true;
 		}
-		else if ((currInput.back && !prevInput.back) || CONTROLLERS.KeyboardButtonHeld(Keyboard::G))
+		else if (currInput.back && !prevInput.back) //|| CONTROLLERS.KeyboardButtonHeld(Keyboard::G))
 		{
 			gameState = PAUSE;
 			pauseMenu->SetTab(PauseMenu::MAP);

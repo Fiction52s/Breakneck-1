@@ -1,0 +1,5 @@
+ResolutionX 1920
+ResolutionY 1080
+WindowMode Fullscreen
+MusicVolume 0
+SoundVolume 100

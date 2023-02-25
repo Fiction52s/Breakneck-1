@@ -1,0 +1,121 @@
+Hungry Comboer
+Enemy
+hungrycomboer
+Once hit, it will chase down and eat any enemies in the area.
+Also has a limited verison which will reset after a certain amount
+of enemies killed.
+
+Hungry Return Comboer
+Enemy
+hungryreturncomboer
+Once hit, it will chase down and eat an enemy, and then come back
+to attack you. If you hit it again, it will chase another enemy.
+Also has a limited verison which will reset after a certain amount
+of enemies killed.
+
+Time Booster
+Enemy
+timebooster
+If you touch this, every piece of the game moves in slowmotion except
+for you for 5 seconds.
+
+Homing Booster
+Enemy
+homingbooster
+If you touch this, for 5 seconds your regular sword attacks are replaced with
+an attack that will make you home in on enemies. Can be held to attack continuously
+until the 5 seconds are up.
+
+Anti-Timeslow Booster
+Enemy
+antitimeslowbooster
+If you touch this, for 5 seconds you will not be effected by timeslow effects at
+all.
+
+Homing Launcher
+Enemy
+hominglauncher
+Launches you in a direction of your choice. During the launch, holding the attack
+button will cause you to do an attack and home in on enemies.
+
+Relative Comboer
+Enemy
+relativecomboer
+Can be hit into other enemies. After it travels a short distance, it will lock its position
+relative to Kin and destroy any enemies it touches. Also has a limited version.
+
+Relative Detach Comboer
+Enemy
+relativecomboerdetach
+Can be hit into other enemies. After it travels a short distance, it will lock its position
+relative to Kin. If it kills an enemy, it will unlock and remain stationary until hit again.
+
+Swarm
+Enemy
+swarm
+A swarm colony that holds 5 smaller enemies and launches them at you if you get close. The smaller
+enemies are on a timer and will die after a few seconds. It will continue to generate enemies 
+until you kill it.
+
+Sprout
+Enemy
+growingtree
+After you get close, it will shoot bullets at you, after a couple rounds, it will grow to a new
+state with more powerful bullets.
+
+Ghost
+Enemy
+ghost
+Locks onto a position relative to Kin. Then steadily moves closer until attacking you.
+
+Lizard
+Enemy
+lizard
+Chases you on the ground while sometimes producing energy shocks which travel along the terrain.
+
+Parrot
+Enemy
+parrot
+Flying enemy that chases you but stays at a distance where it can lob bullets onto you.
+
+Timeslow Water
+Water
+WATER_TIMESLOW
+While within this water, your actions are performed slower, and you move slower. You do have
+infinitely refreshing air options, however.
+
+Poison Water
+Water
+WATER_POISON
+While within this water, your health drains at a very fast rate. You also have infinitely
+refreshing air options and will accelerate slightly in any direction that you move.
+
+Fade Rail
+Rail
+FADE
+After you touch this rail, it will disappear after a short time, and then reappear
+soon afterwards.
+
+Locked Rail
+Rail
+LOCKED
+Touching this rail forces you to stay on it until you reach the end. You can also
+pass through terrain completely while riding on it.
+
+AntiTimeslow Rail
+Rail
+ANTITIMESLOW
+Works similarly to a Grind Rail, except that while on it, you are immune to timeslow effects.
+
+Poison Grass
+Grass
+POISON
+While touching this grass, your health drains much much faster.
+
+Bonfire S-Kin
+Skin
+SKIN_BONFIRE
+
+Toxic S-Kin
+Skin
+SKIN_TOXIC

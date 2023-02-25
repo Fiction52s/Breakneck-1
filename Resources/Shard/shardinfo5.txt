@@ -1,0 +1,73 @@
+Decrease W5 Health Drain 1/3
+Decreases the rate at which you passively
+lose energy within world 5.
+
+Decrease W5 Health Drain 2/3
+Decreases the rate at which you passively
+lose energy within world 5.
+
+Decrease W5 Health Drain 3/3
+Decreases the rate at which you passively
+lose energy within world 5.
+
+Decrease W5 Enemy Damage 1/3
+Decreases the damage taken from world 5 enemies.
+
+Decrease W5 Enemy Damage 2/3
+Decreases the damage taken from world 5 enemies.
+
+Decrease W5 Enemy Damage 3/3
+Decreases the damage taken from world 5 enemies.
+
+Increase W5 Energy Capture 1/3
+Increases the amount of energy you get from killing
+enemies within world 5.
+
+Increase W5 Energy Capture 2/3
+Increases the amount of energy you get from killing
+enemies within world 5.
+
+Increase W5 Energy Capture 3/3
+Increases the amount of energy you get from killing
+enemies within world 5.
+
+Unlock Additional Timeslow Bubble 1/4
+You can now have an additional bubble active simultaneously.
+
+Unlock Additional Timeslow Bubble 2/4
+You can now have an additional bubble active simultaneously.
+
+Unlock Additional Timeslow Bubble 3/4
+You can now have an additional bubble active simultaneously.
+
+Unlock Additional Timeslow Bubble 4/4
+You can now have an additional bubble active simultaneously.
+
+Unlock Infinite Doublejump Within Bubbles
+You now have an infinitely refreshing doublejump within the time bubbles.
+
+Unlock Infinite Airdash Within Bubbles
+You now have an Airdash of infinite length within the time bubbles.
+
+Increase Bubble Size 1/3
+The size of your time bubbles is now greater.
+
+Increase Bubble Size 2/3
+The size of your time bubbles is now greater.
+
+Increase Bubble Size 3/3
+The size of your time bubbles is now greater.
+
+Increase Bubble Slow Factor 1/2
+The bubbles now slows down time even more.
+
+Increase Bubble Slow Factor 2/2
+The bubbles now slows down time even more.
+
+Increase Passive Slow Resistance 1/2
+You will slow down less within time slow effects
+aside from your own bubbles.
+
+Increase Passive Slow Resistance 2/2
+You will slow down less within time slow effects
+aside from your own bubbles.

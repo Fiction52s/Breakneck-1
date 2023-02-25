@@ -5051,10 +5051,12 @@ void Session::AdjustBoundsFromTerrain()
 		if (minX >= oldLeft && inversePolygon != NULL)
 		{
 			mapHeader->leftBounds = minX - extraBorder;
+			mapHeader->boundsWidth = oldRight - mapHeader->leftBounds;
 		}
 		else if (minX > oldLeft)
 		{
 			mapHeader->leftBounds = minX;
+			mapHeader->boundsWidth = oldRight - mapHeader->leftBounds;
 		}
 		
 		if (maxX <= oldRight && inversePolygon != NULL)

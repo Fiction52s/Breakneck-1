@@ -1,0 +1,121 @@
+7
+14
+birdfight1test
+14
+no description
+0
+0
+0
+fiction52s
+76561198058577095
+1
+0
+21
+1296
+981
+w1_04
+-4695 1433 1998 1320
+9000
+0
+16
+birdscene0
+NONE
+0
+-3972 2573
+1
+0
+0
+0
+0
+0
+0
+0
+borderpoly
+1 5
+4
+-4280 2653
+-2984 2653
+-2984 1672
+-4280 1672
+3
+1 1
+15 0 2
+2 1
+0 19 2
+3 1
+0 0 2
+1 0
+4
+-4046 2241
+-3887 2241
+-3887 2322
+-4046 2322
+0
+1 0
+4
+-3338 2247
+-3179 2247
+-3179 2328
+-3338 2328
+0
+1 0
+4
+-3688 1908
+-3529 1908
+-3529 1989
+-3688 1989
+0
+0
+0
+0
+1
+-- 21
+poi 1 -1 0 98
+kinstart0
+poi 1 -1 0 224
+kinstop0
+birdnode 0 -3807 2438
+A
+birdnode 0 -3438 2444
+A
+birdnode 0 -3804 2159
+A
+birdnode 0 -3435 2165
+A
+birdnode 0 -4130 2432
+A
+birdnode 0 -3114 2444
+A
+camerashot -3639 2385
+scenecam
+1
+camerashot -3642 2171
+fightcam
+1.93333
+camerashot -3076 1752
+birdstart
+1
+camerashot -3511 1754
+birdstop
+1
+camerashot -3544 2383
+birdland
+1
+groundedwarper -1 1 441
+Bosses/greyw1
+0
+birdnode 0 -4158 1766
+A
+birdnode 0 -3158 1777
+A
+birdnode 0 -3612 1766
+A
+birdnode 0 -3801 2338
+B
+birdnode 0 -3624 2437
+B
+birdnode 0 -3415 2335
+B
+bird -3624 2188
+1
+0

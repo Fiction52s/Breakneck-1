@@ -607,6 +607,8 @@ void EditSession::TestPlayerMode()
 
 	}
 
+	nextFrameRestartGame = false; //for respawning after triggering a score display
+
 	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
 	{
 		CONTROLLERS.SetKeyboardActiveAsController(true);
@@ -775,6 +777,8 @@ void EditSession::TestPlayerMode()
 		ResetZones();
 
 		ResetGates();
+
+		ResetAbsorbParticles();
 
 		currentZone = NULL;
 		if (originalZone != NULL)
@@ -1928,6 +1932,9 @@ void EditSession::Draw()
 		{
 			preScreenTex->clear();
 			DrawGame(preScreenTex);
+
+			pauseTex->clear(Color::Transparent);
+			DrawGameSequence(pauseTex);
 			//redraws the previous frame
 		}
 		
@@ -13120,6 +13127,21 @@ void EditSession::Display()
 	preTexSprite.setScale(.5, .5);
 	window->clear();
 	window->draw(preTexSprite);
+
+	//this covers drawing the log and shard overlays for now
+	if (IsDrawMode(Emode::TEST_PLAYER))
+	{
+		if (gameState == FROZEN)
+		{
+			pauseTex->display();
+			Sprite pauseMenuSprite;
+			pauseMenuSprite.setTexture(pauseTex->getTexture());
+			pauseMenuSprite.setPosition(-960 / 2, -540 / 2);
+			pauseMenuSprite.setScale(.5, .5);
+			window->draw(pauseMenuSprite);
+		}
+	}
+
 	window->display();
 }
 

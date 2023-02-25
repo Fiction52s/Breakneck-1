@@ -1,3 +1,0 @@
-kinletter_4b_1920x1080, position 0 0, layer 0, 3 seconds
-kinletter_4c_1920x1080, position 0 0, layer 0, 3 seconds, outro
-fade color 0 0 0, 1 second

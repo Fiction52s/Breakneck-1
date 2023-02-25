@@ -1,0 +1,29 @@
+{
+	"normal": 
+	{
+		"damage": 180,
+		"hitlag": 6,
+		"hitstun": 30,
+		"knockback": 15,
+		"knockbackangle": 60,
+		"invincibleframes": 50,
+		"gravmultiplier": 1.0,
+		"extradefenderhitlag": 0,
+		"hitblockcanceldelay": 6,
+		"postype": "airforward"
+	},
+	
+	"kick": 
+	{
+		"damage": 0,
+		"hitlag": 6,
+		"hitstun": 60,
+		"knockback": 15,
+		"knockbackangle": 90,
+		"invincibleframes": 16,
+		"gravmultiplier": 0.5,
+		"extradefenderhitlag": 0,
+		"hitblockcanceldelay": 6,
+		"postype": "airup"
+	}
+}

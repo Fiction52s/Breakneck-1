@@ -6626,7 +6626,11 @@ void Actor::UpdatePrePhysics()
 		{ 
 			HandleWaitingScoreDisplay();
 
-			if ( (sess->scoreDisplay == NULL || !sess->scoreDisplay->active) && sess->activeSequence == NULL)
+			if (sess->IsSessTypeEdit() && sess->nextFrameRestartGame)
+			{
+				editOwner->TestPlayerMode();
+			}
+			else if ( (sess->scoreDisplay == NULL || !sess->scoreDisplay->active) && sess->activeSequence == NULL)
 			{
 				sess->SetActiveSequence(sess->shipExitScene);
 				sess->shipExitScene->Reset();
@@ -6669,7 +6673,11 @@ void Actor::UpdatePrePhysics()
 	{
 		HandleWaitingScoreDisplay();
 		
-		if( !sess->scoreDisplay->active )
+		if (sess->IsSessTypeEdit() && sess->nextFrameRestartGame)
+		{
+			editOwner->TestPlayerMode();
+		}
+		else if( !sess->scoreDisplay->active )
 		{
 			if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
 			{
@@ -7782,7 +7790,9 @@ void Actor::HandleWaitingScoreDisplay()
 			}
 			else
 			{
-				editOwner->TestPlayerMode();
+				//a little hacky but after this function runs, if this flag is set, I know to restart the editor run
+				editOwner->nextFrameRestartGame = true;
+				//editOwner->TestPlayerMode();
 			}
 			return;
 		}

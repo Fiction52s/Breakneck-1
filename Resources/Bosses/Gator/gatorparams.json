@@ -1,0 +1,15 @@
+{
+	"dominance": 
+	{
+		"damage": 0,
+		"hitlag": 10,
+		"hitstun": 40,
+		"knockback": 40,
+		"knockbackangle": 10,
+		"invincibleframes": 16,
+		"gravmultiplier": 0.5,
+		"extradefenderhitlag": 0,
+		"hitblockcanceldelay": 6,
+		"postype": "airforward"
+	}
+}

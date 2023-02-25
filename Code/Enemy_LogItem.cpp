@@ -500,6 +500,15 @@ void LogPopup::SetLog( int w, int i )
 	string descStr = sess->logMenu->GetLogDesc(logWorld, logLocalIndex);
 	tutBox->SetText(descStr);
 
+	/*if (sess->IsSessTypeEdit())
+	{
+		logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, logLocalIndex));
+	}*/
+}
+
+void LogPopup::SetInfoInEditor()
+{
+	//loads resources in the editor. meant to be called right when freezing so the hitch doesn't feel weird when hitting the log
 	if (sess->IsSessTypeEdit())
 	{
 		logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, logLocalIndex));

@@ -123,6 +123,7 @@ struct LogPopup
 	~LogPopup();
 	void SetTopLeft(sf::Vector2f &pos);
 	void SetCenter(sf::Vector2f &pos);
+	void SetInfoInEditor();
 	void Reset();
 	void Update();
 	void SetLog(int w, int i );

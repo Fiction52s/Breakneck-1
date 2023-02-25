@@ -20,3 +20,8 @@ skeleleavescam
 tigerdeathcam
 cavecam
 alliancecam
+cagecam
+birdfallfromcagecam
+gatorholdkincam
+crawlerdig1
+crawlerdig2

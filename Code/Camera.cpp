@@ -504,7 +504,7 @@ double Camera::GetEnemyZoomTarget( Actor *player )
 {
 	double minX, maxX, minY, maxY;
 
-	minX = pos.x; -480;// *zoomFactor;
+	minX = pos.x - 480;// *zoomFactor;
 	maxX = pos.x + 480;// *zoomFactor;
 	minY = pos.y - 270;// *zoomFactor;
 	maxY = pos.y + 270;// *zoomFactor;
@@ -1320,8 +1320,10 @@ void Camera::UpdateBasicMode()
 	zoomFactor = nextMovementZoom;
 //	cout << "zoomfactor: " << zoomFactor << endl;
 
+	
 	pos += currOffset;// *GetZoom();
-	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+	//orig pos
+	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 
 
 	Vector2f oldOffset = offset;
@@ -1333,6 +1335,9 @@ void Camera::UpdateBasicMode()
 	if (enemyZoom > zoomFactor && numActive > 0)
 	{
 		double nextEnemyZoom = GetNextEnemyZoom(enemyZoom);
+
+	//	cout << "zooming out for enemy!: " << nextEnemyZoom << ", zoomf: " << zoomFactor << "\n";
+
 		zoomFactor = nextEnemyZoom;
 
 
@@ -1348,21 +1353,28 @@ void Camera::UpdateBasicMode()
 		zoomFactor = nextMovementZoom;
 		}*/
 
-		pos.x = playerPos.x;
+		
+		
+		
+		
+		/*pos.x = playerPos.x;
 		pos.y = playerPos.y;
 
 		pos += currOffset;
 
-		UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+		UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);*/
 
-		//cout << "zooming out for enemy!: " << enemyZoom << " ";
+		
 	}
 	else
 	{
+		//cout << "enemy zoom is smaller or equal to zoomFactor. enemy zoom: " << enemyZoom << ", zoomf: " << zoomFactor << "\n";
 		//cout << "enemy zoom: " << enemyZoom << " ";
 	}
 
 	//cout << "num enemies : " << numActive << endl;
+
+	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 
 	offset = currOffset;
 

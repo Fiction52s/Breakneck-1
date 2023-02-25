@@ -1,0 +1,122 @@
+Glide Target
+Enemy
+glidetarget
+Can only be killed by running into it while gliding.
+
+Green Comboer Target
+Enemy
+greencomboertarget
+Can only be killed by being hit by a Gravity Juggler.
+
+Gravity Juggler
+Enemy
+downgravityjuggler
+Can be hit into other enemies to deal damage. Goes a different
+direction based on which attack you hit it with. Has a limited
+version where it will reset after a certain number of hits.
+
+Reverse Gravity Juggler
+Enemy
+upgravityjuggler
+Can be hit into other enemies to deal damage. Goes a different
+direction based on which attack you hit it with. Falls up instead of down.
+Has a limited version where it will reset after a certain number of hits.
+
+Bat
+Enemy
+bat
+Shoots bullets at you machine gun style. Will move away from you if you get close,
+and return to its normal position if you give it enough space.
+
+Lob Turret
+Enemy
+lobturret
+Shoots bullets in a lob pattern that fall with gravity. Has a 3 bullet cycle of angles
+to shoot at. Also has a reverse gravity version.
+
+Poison Frog
+Enemy
+poisonfrog
+Jumping enemy. If you are close to it at the peak of its jump, it will doublejump.
+It can also climb walls. Also has a reverse gravity version.
+
+Stag Rhino
+Enemy
+stagbeetle
+Heavy enemy that rushes you on the ground. Higher leveled versions have a shield.
+
+Gravity Faller
+Enemy
+gravityfaller
+Loops between falling down and falling up.
+
+Gravity Increaser
+Enemy
+gravityincreaser
+If you touch this, you'll be granted increased gravity for the next 5 seconds.
+
+Gravity Decreaser
+Enemy
+gravitydecreaser
+If you touch this, you'll be granted decreased gravity for the next 5 seconds.
+
+Glide Launcher
+Enemy
+glidespring
+Launches you in a set direction with a set velocity, but you can use Up/Down to turn
+and aim yourself in the air.
+
+Glide Water
+Water
+WATER_GLIDE
+Forces you into a state of gliding. Use up/down to aim yourself. Glide consistently
+at the speed you entered the water.
+
+Low Gravity Water
+Water
+WATER_LOWGRAV
+Decreases the effect of gravity.
+
+High Gravity Water
+Water
+WATER_HEAVYGRAV
+Increases the effect of gravity.
+
+Buoyancy Water
+Water
+WATER_BUOYANCY
+Causes you to rise to the surface whenever you are in it. Upon entering, your airdash will
+be restored if you have already used it.
+
+Floor Rail
+Rail
+FLOOR
+Rail that can only be used as a floor. You can pass through it from below. Also pressing
+straight down will cause you to drop through.
+
+Ceiling Rail
+Rail
+CEILING
+Rail that can only be used as a ceiling. You will pass it through it from above.
+You are always able to walk on the ceiling for this rail, even if you have no powers.
+
+Gravity Reverse Grass
+Grass
+GRAVREVERSE
+This grass allows you to walk on the ceiling by touching any ceiling that its on.
+
+Glide S-kin
+Skin
+SKIN_GLIDE
+
+Pink S-Kin
+Skin
+SKIN_PINK
+
+Dawn S-Kin
+Skin
+SKIN_DAWN
+
+GDubs S-Kin
+Skin
+SKIN_GDUBS

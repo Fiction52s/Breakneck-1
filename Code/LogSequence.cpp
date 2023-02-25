@@ -111,6 +111,7 @@ void GetLogSequence::UpdateState()
 		int freezeFrame = 100;
 		if (frame == freezeFrame)
 		{
+			logPop->SetInfoInEditor();
 			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}
@@ -180,7 +181,15 @@ void GetLogSequence::Reset()
 
 		assert(log != NULL);
 
-		logPop->logPreview = log->logPreview;
+		if (sess->IsSessTypeGame())
+		{
+			logPop->logPreview = log->logPreview;
+		}
+		else
+		{
+			//logpop already has its own logpreview
+		}
+		
 
 		logPop->SetCenter(Vector2f(960, 800));
 		logPop->SetLog(log->logWorld, log->localIndex);

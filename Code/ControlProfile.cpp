@@ -110,7 +110,7 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = Keyboard::Key::LControl;
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::Key::Space;
 
-		filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Delete;
+		filter[ControllerSettings::BUTTONTYPE_PAUSE] = Keyboard::Key::Enter;
 
 		filter[ControllerSettings::BUTTONTYPE_LLEFT] = Keyboard::Key::J;
 		filter[ControllerSettings::BUTTONTYPE_LRIGHT] = Keyboard::Key::L;
@@ -172,6 +172,8 @@ void ControlProfile::Save(ofstream &of)
 		of << "SPECIAL:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
 		of << "LEFTWIRE:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
 		of << "RIGHTWIRE:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+
+		of << "PAUSE:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_PAUSE]) << "\n";
 
 		of << "LLEFT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LLEFT]) << "\n";
 		of << "LRIGHT:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LRIGHT]) << "\n";

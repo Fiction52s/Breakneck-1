@@ -1,0 +1,129 @@
+Yellow Comboer Target
+Enemy
+yellowcomboertarget
+Can only be killed by being hit by a Ball or a Bounce Juggler
+
+Ball
+Enemy
+ball
+Can be hit into other enemies. Bounces off surfaces. Has a limited
+version that will reset after a number of hits.
+
+Bounce Juggler
+Enemy
+bouncejuggler
+Can be hit into other enemies. Will go in a straight line but
+bounce directly off of surfaces. Has a limited version that
+will reset after a number of hits. You can only hit it again
+after it has bounced.
+
+Aim Launcher
+Enemy
+aimlauncher
+Launches you at a set speed, but you have a choice of 9 directions
+(8 directions plus default). When you touch a piece of terrain, press
+the jump button to bounce off, and reset the amount of time you are
+being launched for.
+
+Air Bounce Launcher
+Enemy
+airbouncelauncher
+Launcher you at a set speed, but you have a choice of 9 directions
+(8 directions plus default). If you press jump, you will pause for
+a moment in the air, you can choose a new direction and will redirect
+there and reset your launch timer. You can only do this a total of 3 times.
+
+Shotgun Cactus
+Enemy
+shotgunturret
+Turret which shoots a split of 3 bullets at a high rate of fire.
+
+Trampoline
+Enemy
+upbouncebooster
+If you touch it, you will be launched vertically, maintaining your
+horizontal speed.
+
+Bounce Booster
+Enemy
+omnibouncebooster
+If you touch it, you will be launched whichever direction you are from
+the center of the booster.
+
+Bounce Floater
+Enemy
+bouncefloater
+If you hit it with an attack, you will go flying in the opposite direction
+of the attack's knockback.
+
+Badger
+Enemy
+badger
+Executes a dash, small jump, large jump pattern and chases you.
+
+Roadrunner
+Enemy
+roadrunner
+Chases you around on the ground using its crazy acceleration.
+
+Owl
+Enemy
+owl
+Shoots bullets that bounce off of terrain. Upon its death, it releases a larger
+set of bullets which do the same thing.
+
+Electro Barrel
+Enemy
+explodingbarrel
+Will release an energy charge all around it if you get close.
+
+Firefly
+Enemy
+firefly
+Moves towards you and charges up its energy before releasing it to hit you.
+
+Acceleration Water
+Water
+WATER_ACCEL
+Causes you to accelerate all the time in whatever direction you are moving.
+
+Zero Gravity Water
+Water
+WATER_ZEROGRAV
+Causes you to completely ignore the effects of gravity. You also have an infinitely long airdash
+and air options that continuously refresh.
+
+Bounce Rail
+Rail
+BOUNCE
+Touching this rail causes you to bounce off in the normal direction of the edge that you touched.
+
+Scorpion Only Rail
+Rail
+SCORPIONONLY
+You can only interact with this rail physically with the scorpion turned on. Otherwise
+you will move right through it.
+
+Anti Gravity Reverse Grass
+Grass
+ANTIGRAVREVERSE
+Even if you have the gravity reverse power, you cannot walk on the ceiling where this grass
+is present.
+
+Bounce Grass
+Grass
+BOUNCE
+You will slightly bounce on this grass. You are unable to land on it.
+
+Accelerate Grass
+Grass
+ACCELERATE
+While touching this grass, you will accelerate on the ground/ceiling.
+
+Purple S-Kin
+Skin
+SKIN_PURPLE
+
+Gold S-Kin
+Skin
+SKIN_GOLD

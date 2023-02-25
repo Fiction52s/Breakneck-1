@@ -1,0 +1,74 @@
+Decrease W4 Health Drain 1/3
+Decreases the rate at which you passively
+lose energy within world 4.
+
+Decrease W4 Health Drain 2/3
+Decreases the rate at which you passively
+lose energy within world 4.
+
+Decrease W4 Health Drain 3/3
+Decreases the rate at which you passively
+lose energy within world 4.
+
+Decrease W4 Enemy Damage 1/3
+Decreases the damage taken from world 4 enemies.
+
+Decrease W4 Enemy Damage 2/3
+Decreases the damage taken from world 4 enemies.
+
+Decrease W4 Enemy Damage 3/3
+Decreases the damage taken from world 4 enemies.
+
+Increase W4 Energy Capture 1/3
+Increases the amount of energy you get from killing
+enemies within world 4.
+
+Increase W4 Energy Capture 2/3
+Increases the amount of energy you get from killing
+enemies within world 4.
+
+Increase W4 Energy Capture 3/3
+Increases the amount of energy you get from killing
+enemies within world 4.
+
+Unlock Grind Lunge Slash Projectiles
+Grind lunge slash attack now sends out multiple projectiles.
+
+Grind Lunge Maintains Grind Speed
+If you use grind lunge and find another surface to attach to,
+you can continue on with the grind momentum you had before lunging.
+
+Unlock Grind Attack Boost Dive
+Using a grind lunge during a grind attack will cause you to lunge
+forward instead of moving away from the surface.
+
+Unlock Grind Attack Boost Dive Projectiles
+Using a boost dive will cause multiple projectiles.
+
+Increase Momentum Meter Absorption 1/3
+Your momentum meter will now increase more than before when killing enemies.
+
+Increase Momentum Meter Absorption 2/3
+Your momentum meter will now increase more than before when killing enemies.
+
+Increase Momentum Meter Absorption 3/3
+Your momentum meter will now increase more than before when killing enemies.
+
+Increase Start Momentum Meter 1/3
+At the beginning of each level, your starting momentum will now be higher.
+
+Increase Start Momentum Meter 2/3
+At the beginning of each level, your starting momentum will now be higher.
+
+Increase Start Momentum Meter 3/3
+At the beginning of each level, your starting momentum will now be higher.
+
+Increase Base Dash Speed 1/3
+Your base dash speed has been increased.
+
+Increase Base Dash Speed 2/3
+Your base dash speed has been increased.
+
+Increase Base Dash Speed 3/3
+Your base dash speed has been increased.
+

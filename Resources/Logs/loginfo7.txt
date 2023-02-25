@@ -1,0 +1,56 @@
+Dimension Eye
+Enemy
+dimensioneye
+Touching this will transport you to a new place entirely in the blink of an eye.
+
+Dimension Exit
+Enemy
+dimensionexit
+The only way to return home after warping away with a Dimension Eye
+
+Annihilation Launcher
+Enemy
+annihilationspring
+Launches you into an advanced glide. If you press attack you will cause a large explosion
+that will kill all surrounding enemies.
+
+Rewind Booster
+Enemy
+rewindbooster
+If you are hit in the next 5 seconds, you will return to the position of the booster.
+
+Attract Juggler
+Enemy
+attractjuggler
+Can be hit into other enemies. After being hit, it will be attracted to Kin from gravity.
+Also has a limited version that will reset after a number of hits.
+
+Trailer
+Enemy
+trailer
+Always moves to a position that you were recently in.
+
+Rewind Water
+Water
+WATER_REWIND
+Your position is stored as you enter this water. If you are hit while within it,
+you will be instantly reset to your entrance position.
+
+Sword Projectile Water
+Water
+WATER_SWORDPROJECTILE
+While within this water, all attacks will release a sword projectile that can
+travel and hurt enemies.
+
+Hit Rail
+Rail
+HIT
+Touching this rail will hurt you just like an enemy would.
+
+America S-Kin
+Skin
+SKIN_AMERICA
+
+Red S-Kin
+Skin
+SKIN_RED

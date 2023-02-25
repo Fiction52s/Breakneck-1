@@ -2137,6 +2137,11 @@ void AllControllers::UpdateKeyboardStick(bool rightStick, ControllerState &state
 		*magPtr = 1.0;
 		*padPtr += 1 << 1;
 	}
+
+	if (!rightStick)
+	{
+		state.SetLeftDirection();
+	}
 }
 
 void AllControllers::UpdateFilteredKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState)

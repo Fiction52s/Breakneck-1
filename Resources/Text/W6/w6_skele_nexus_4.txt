@@ -1,0 +1,7 @@
+$Tiger 0
+
+Look out!!
+
+$Bird 0
+
+AGHHHHH!

@@ -1,0 +1,41 @@
+Decrease W7 Health Drain 1/3
+Decreases the rate at which you passively
+lose energy within world 7.
+
+Decrease W7 Health Drain 2/3
+Decreases the rate at which you passively
+lose energy within world 7.
+
+Decrease W7 Health Drain 3/3
+Decreases the rate at which you passively
+lose energy within world 7.
+
+Decrease W7 Enemy Damage 1/3
+Decreases the damage taken from world 7 enemies.
+
+Decrease W7 Enemy Damage 2/3
+Decreases the damage taken from world 7 enemies.
+
+Decrease W7 Enemy Damage 3/3
+Decreases the damage taken from world 7 enemies.
+
+Increase W7 Energy Capture 1/3
+Increases the amount of energy you get from killing
+enemies within world 7.
+
+Increase W7 Energy Capture 2/3
+Increases the amount of energy you get from killing
+enemies within world 7.
+
+Increase W7 Energy Capture 3/3
+Increases the amount of energy you get from killing
+enemies within world 7.
+
+Triple Jump
+Grants you one more doublejump
+
+Triple Jump Boost
+No idea what this is lol
+
+Double Airdash Boost
+Unlocks an extra airdash boost. When you have no airdash left, press dash to use this.

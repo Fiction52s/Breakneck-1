@@ -1,0 +1,19 @@
+$Tiger 0
+
+How dare you intervene in my battle!
+
+$Bird 0
+
+I can't afford to let you die.
+
+$Tiger 0
+
+Blah blah my past
+
+$Bird 0
+
+...
+
+$Tiger 0
+
+I'm in.

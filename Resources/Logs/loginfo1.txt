@@ -1,0 +1,82 @@
+Patroller
+Enemy
+patroller
+Flies and shoots stuff.
+
+Crawler
+Enemy
+crawler
+Crawls around
+
+Booster
+Enemy
+booster
+Gives your speed a boost in whatever 
+direction you are currently travelling.
+
+Airdasher
+Enemy
+airdasher
+Lunges at you, recovers, and then lunges again.
+
+Shroom
+Enemy
+shroom
+Released the jellyfish creature in its cap when killed.
+
+Basic Turret
+Enemy
+basicturret
+Shoots bullets at a set rhythm in a straight line.
+
+Blocker
+Enemy
+blueblocker
+If you hit it with a normal attack, it will take a moment to dissipate.
+
+Comboer
+Enemy
+comboer
+It will fly off in whichever of the 4 primary directions you hit it,
+and hit any enemies along the way.
+
+Split Comboer
+Enemy
+splitcomboer
+It will split and fly at 2 angles similar to the angle you hit it at.
+
+Launcher
+Enemy
+spring
+Shoots you off at a set speed in a set direction. You can cancel the
+launch stun with any action.
+
+Blue Comboer Target
+Enemy
+bluecomboertarget
+An enemy that can only be killed by being hit by a Comboer or Split Comboer.
+
+Normal Water
+Water
+WATER_NORMAL
+Maximum fall speed is lessened, and you have infinitely refreshing
+air options such as doublejump.
+
+Terrain Rail
+Rail
+FLOORANDCEILING
+Rail that behaves exactly normal terrain. It is completely solid.
+
+Decelerate Grass
+Grass
+DECELERATE
+While moving through this grass, you will lose speed.
+
+Jump Grass
+Grass
+JUMP
+If you jump or walljump while touching this grass, you'll go much higher.
+
+Orange S-kin
+Skin
+SKIN_ORANGE

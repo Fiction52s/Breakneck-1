@@ -1,0 +1,7 @@
+Bosses/greyw1
+FinishedScenes/W3/coyotefight
+NewScenes/coyotesleep
+BossTest/coyotefight1
+FinishedScenes/W3/coyoteandskeleton
+FinishedScenes/W2/birdfight1
+BossTest/birdfight1test

@@ -1,0 +1,11 @@
+$Tiger 0
+
+What are you doing here?
+
+$Bird 0
+
+...
+
+$Tiger 0
+
+You better not interfere!

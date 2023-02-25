@@ -19,9 +19,23 @@ uniform float flowSpacing;
 uniform float maxFlowRings;
 uniform vec2 playerPos;
 
+uniform float u_cameraAngle;
 
 float rand(vec2 co){
   return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+vec2 rotateUV(in vec2 uv, in vec2 pivot, in float rotation) {
+    float sine = sin(rotation);
+    float cosine = cos(rotation);
+
+    uv -= pivot;
+	float tempX = uv.x * cosine - uv.y * sine;
+    uv.y = uv.x * sine + uv.y * cosine;
+	uv.x = tempX;
+    uv += pivot;
+
+    return uv;
 }
 
 void main()
@@ -31,7 +45,9 @@ void main()
 	fc = fc * vec2( 960, 540 ) / Resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
 	
-	vec2 pos = topLeft + pixelPos;
+	vec2 pos = topLeft + rotateUV( pixelPos, vec2( 0.0 ), u_cameraAngle );
+	
+	//vec2 pos = topLeft + pixelPos;
 	
 	float realLen = length( pos - goalPos );
 	float len = mod( realLen , maxFlowRings );

@@ -1,0 +1,87 @@
+Gorilla
+Enemy
+gorilla
+Places up a large wall that you have to get around to hit it.
+
+Specter
+Enemy
+specter
+Shoots bullets that home in on you while buffing any surrounding enemies.
+
+Free Flight Target
+Enemy
+freeflighttarget
+Can only be hit by touching it while in a state of free flight.
+
+Wire Juggler
+Enemy
+magentawirejuggler
+Can be hit into other enemies. Blue and red versions can only be
+hit with the blue and red wire respectively. The magenta version
+can be hit by either wire. Also has a limited version.
+
+Chess Piece
+Enemy
+chessx
+Moves to your current position quickly, but only a certain axis.
+
+Future Checker
+Enemy
+futurechecker
+Predicts your future position and appears there to attack you.
+
+Laser Jays
+Enemy
+laserjays
+A 2-part enemy composed of a red and blue jay. They fire a laser between
+them as they chase you. If you kill one but not the other, it will switch
+to shooting bullets.
+
+Tethered Rusher
+Enemy
+tetheredrusher
+Will dash at you but is stuck to its origin position. The head cannot be harmed,
+you can only kill it by hitting the base.
+
+Skunk
+Enemy
+skunk
+Will hop towards you. If you hit it it will cause a big explosion.
+
+Copycat
+Enemy
+copycat
+An enemy that shoots at you while using your directional inputs as its own control inputs.
+
+Free Flight Water
+Water
+WATER_FREEFLIGHT
+Entering this water puts you into a free flight state. Press any direction to accelerate
+in that direction up to a certain point.
+
+Inverted Inputs Water
+Water
+WATER_INVERTEDINPUTS
+While within this water, your left/right and up/down inputs are reversed. Upon entering or exiting
+the water, your directional inputs are frozen for a short while to allow you to switch to inverted
+or normal controls smoothly without losing speed.
+
+Wire Only Rail
+Rail
+WIREONLY
+This rail type can only be touched with wires. You will pass through it.
+
+Wire Blocking Rail
+Rail
+WIREBLOCKING
+You cannot interact with this rail in any way, but it blocks wires that are shot at it.
+
+Anti-Wire Grass
+Grass
+ANTIWIRE
+If you a shoot a wire, and the tip of the wire hits the terrain where this grass is,
+the wire will break.
+
+Magi S-Kin
+Skin
+SKIN_MAGI

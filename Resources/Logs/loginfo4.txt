@@ -1,0 +1,104 @@
+Teleporter
+Enemy
+teleporter
+Sends you a set distance in a certain direction. You will pass through all
+enemies and terrain in the way. Has a one-way and two-way version.
+
+Grind Juggler
+Enemy
+grindjugglercw
+Grinds along terrain or rails that its hit onto. If it kills an enemy,
+it will fly away from the terrain and can be hit again. Has 
+clockwise and counterclockwise versions, as well as a limited version
+that will reset after a certain number of hits.
+
+Grounded Grind Juggler
+Enemy
+groundedgrindjugglercw
+Grinds along the terrain until it slows down and stops. Can be hit again
+to speed back up. Has clockwise and counterclockwise versions, as well 
+as a limited version that will reset after a certain number of hits.
+
+Grind Launcher
+Enemy
+grindlauncher
+Choose a direction to lauch in. You will grind on any terrain that you hit.
+
+Phase Booster
+Enemy
+phasebooster
+When you touch it, you will be able to touch Phase Terrain for 5 seconds.
+
+Momentum Booster
+Enemy
+momentumbooster
+When you touch it, your momentum meter will fill to maximum and maintain
+that maximum for 5 seconds.
+
+Widow
+Enemy
+widow
+Tries to keep away from you on terrain and shoots bullets.
+
+Turtle
+Enemy
+turtle
+Teleports to your position and explodes with bullets.
+
+Pufferfish
+Enemy
+pufferfish
+Puffs up when you're nearby. If you kill another enemy it will explode with spikes.
+
+Palm Turret
+Enemy
+palmturret
+Charges up a huge laser beam and shoots it at you.
+
+Falcon
+Enemy
+falcon
+Flies towards you, and then will dive at you and then resume flying.
+
+Launcher Water
+Water
+WATER_LAUNCHER
+While within this water, you are given infinitely refreshing air options. Upon exiting
+you will be launched in whatever direction the edge faces that you exited from.
+
+Momentum Water
+Water
+WATER_MOMENTUM
+While within this water, you are given infinitely refreshing air options. You also have
+slightly decreased gravity, and your momentum meter will be filled quickly upon entering
+and remain at full fill until you exit.
+
+Grind Rail
+Rail
+GRIND
+Touching this rail will cause you to enter a grind state where you accelerate slowly in
+the direction you're moving until you jump off.
+
+Phase Rail
+Rail
+PHASE
+You can only touch this rail if you have activated a Phase Booster such that you can touch
+Phase Terrain.
+
+Inverse Phase Rail
+Rail
+INVERSEPHASE
+You can touch this rail normally, but can't if you have touched Phase Booster.
+
+Anti-Grind Grass
+Grass
+ANTIGRIND
+If you are grinding in any form when you touch this grass, your grind will end.
+
+Dusk S-Kin
+Skin
+SKIN_DUSK
+
+Villain S-Kin
+Skin
+SKIN_VILLAIN
