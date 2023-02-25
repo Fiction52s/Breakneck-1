@@ -9829,8 +9829,15 @@ bool Actor::TrySlideBrakeOrStand()
 			if (( action == BRAKE && absGroundSpeed < 2) ||
 				( action != STAND && action != BRAKE && absGroundSpeed < dSpeed ) )
 			{
-				SetAction(STAND);
-				frame = 0;
+				if (action == LAND)
+				{
+					return false;
+				}
+				else
+				{
+					SetAction(STAND);
+					frame = 0;
+				}
 			}
 			else if( action != BRAKE && action != STAND )
 			{

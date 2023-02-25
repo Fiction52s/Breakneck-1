@@ -11,6 +11,7 @@ void Actor::LAND_Start()
 
 void Actor::LAND_End()
 {
+	SetAction(STAND);
 	frame = 0;
 }
 
@@ -234,7 +235,7 @@ void Actor::LAND_TimeDepFrameInc()
 
 int Actor::LAND_GetActionLength()
 {
-	return 1;
+	return 10;//30;//1
 }
 
 Tileset * Actor::LAND_GetTileset()
