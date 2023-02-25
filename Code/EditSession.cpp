@@ -13168,6 +13168,22 @@ void EditSession::SaveMapDialog()
 	mapBrowserHandler->chooser->SetCurrFileNameText(mapHeader->fullName);
 }
 
+void EditSession::SaveMapAndExitDialog()
+{
+	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_SAVE_AND_EXIT, "Resources\\Maps\\CustomMaps");
+	mapBrowserHandler->chooser->SetCurrFileNameText(mapHeader->fullName);
+}
+
+//void EditSession::HandlePopupConfirm()
+//{
+//
+//}
+//
+//void EditSession::HandleBrowserConfirm()
+//{
+//
+//}
+
 void EditSession::OpenMapDialog()
 {
 	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_OPEN, "Resources\\Maps\\CustomMaps");
@@ -13185,15 +13201,17 @@ void EditSession::TryReloadNew()
 	}
 }
 
-void EditSession::TrySaveMap()
+bool EditSession::TrySaveMap()
 {
 	if (filePath.string() == "")
 	{
 		SaveMapDialog();
+		return false;
 	}
 	else
 	{
 		WriteFile();
+		return true;
 		/*if (WriteTargetExistsAlready())
 		{
 			confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE);

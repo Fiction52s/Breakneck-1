@@ -1192,12 +1192,17 @@ void MapBrowser::TurnOff()
 	ClearFilters();
 	ClearNodes();
 	
-	if (mode == EDITOR_SAVE || mode == EDITOR_OPEN || mode == EDITOR_SAVE_ADVENTURE)
+	if (IsEditorMode())
 	{
 		EditSession *edit = EditSession::GetSession();
 		assert(edit != NULL);
 		edit->RemoveActivePanel(panel);
 	}
+}
+
+bool MapBrowser::IsEditorMode()
+{
+	return mode == EDITOR_SAVE || mode == EDITOR_OPEN || mode == EDITOR_SAVE_ADVENTURE || mode == EDITOR_SAVE_AND_EXIT;
 }
 
 void MapBrowser::SetCurrFileNameText(const std::string &text)
@@ -1224,7 +1229,7 @@ void MapBrowser::Init()
 {
 	//ClearNodes();
 	//edit->AddActivePanel(panel);
-	if (mode == EDITOR_OPEN || mode == EDITOR_SAVE || mode == EDITOR_SAVE_ADVENTURE)
+	if (IsEditorMode())
 	{
 		EditSession *edit = EditSession::GetSession();
 		assert(edit != NULL);
@@ -1250,7 +1255,7 @@ void MapBrowser::Init()
 
 		cancelButton->ShowMember();
 	}
-	else if(mode == SAVE || mode == EDITOR_SAVE)
+	else if(mode == SAVE || mode == EDITOR_SAVE || mode == EDITOR_SAVE_AND_EXIT)
 	{
 		saveButton->ShowMember();
 		panel->confirmButton = saveButton;
@@ -1734,7 +1739,7 @@ void MapBrowserHandler::Confirm()
 			assert(edit != NULL);
 			edit->ChooseFileOpen(fileName);
 		}
-		else if (chooser->mode == MapBrowser::EDITOR_SAVE)
+		else if (chooser->mode == MapBrowser::EDITOR_SAVE || chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT)
 		{
 			EditSession *edit = EditSession::GetSession();
 			assert(edit != NULL);
@@ -1742,17 +1747,51 @@ void MapBrowserHandler::Confirm()
 			if (chooser->ext == MAP_EXT)
 			{
 				//folderPath = ;
+
+				bool blankFile = false;
+				if (edit->filePath == "")
+				{
+					blankFile = true;
+				}
+
 				edit->filePath = filePath;
 				edit->filePathStr = filePath;
 
 				if (edit->WriteTargetExistsAlready())
 				{
-					edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE);
+					if (chooser->mode == MapBrowser::EDITOR_SAVE)
+					{
+						if (blankFile)
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_WITH_BLANK);
+						}
+						else
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE);
+						}
+					}
+					else if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT)
+					{
+						if (blankFile)
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_WITH_BLANK_AND_EXIT);
+						}
+						else
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_AND_EXIT);
+						}
+					}
+					
 					return;
 				}
 				else
 				{
 					edit->WriteFile();
+
+					if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT)
+					{
+						edit->ExitEditor();
+					}
 					//confirmedMapFilePath = fp;
 				}
 

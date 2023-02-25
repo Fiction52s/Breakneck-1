@@ -427,11 +427,14 @@ struct EditSession : GUIHandler, Session
 	void Init();
 	void DefaultInit();
 	void TryReloadNew();
-	void TrySaveMap();
+	bool TrySaveMap();
 	void TryExitEditor();
 	void ExitEditor();
 	void SaveMapDialog();
+	void SaveMapAndExitDialog();
 	void OpenMapDialog();
+	//void HandlePopupConfirm();
+	//void HandleBrowserConfirm();
 	void ProcessDecorFromFile(const std::string &name,
 		int tile);
 	void ProcessHeader();

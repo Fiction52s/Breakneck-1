@@ -159,6 +159,7 @@ struct MapBrowser : TilesetManager,
 		SAVE,
 		EDITOR_OPEN,
 		EDITOR_SAVE,
+		EDITOR_SAVE_AND_EXIT,
 		EDITOR_SAVE_ADVENTURE,
 		CREATE_CUSTOM_GAME,
 		FREEPLAY,
@@ -236,6 +237,8 @@ struct MapBrowser : TilesetManager,
 	MapBrowser(MapBrowserHandler *handler,
 		int p_cols, int p_rows, int extraImageRects = 0);
 	~MapBrowser();
+
+	bool IsEditorMode();
 
 	//new functions
 	void Update();
