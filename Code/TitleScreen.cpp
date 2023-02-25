@@ -6,6 +6,7 @@
 #include "MusicSelector.h"
 #include "Fader.h"
 #include "VisualEffects.h"
+#include "CreditsMenuScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -68,6 +69,8 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	frame = 0;
 
+	creditsMenuScreen = new CreditsMenuScreen;
+
 	
 	titleMusic = mainMenu->musicManager->songMap["w0_1_Breakneck_Title"];
 	if (titleMusic != NULL)
@@ -85,6 +88,8 @@ TitleScreen::~TitleScreen()
 	{
 		delete (*it);
 	}
+
+	delete creditsMenuScreen;
 }
 
 void TitleScreen::Reset()

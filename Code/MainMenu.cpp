@@ -61,6 +61,7 @@
 #include "GameSettingsScreen.h"
 #include "globals.h"
 #include "ClosedBetaScreen.h"
+#include "CreditsMenuScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -228,7 +229,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 
 	switch (toMode)
-	{	
+	{
 	case WORLDMAP:
 	{
 		if (fromMode == ADVENTURETUTORIAL)
@@ -284,8 +285,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		else if (fromMode == RUN_ADVENTURE_MAP)
 		{
-			
-			
+
+
 			adventureManager->CreateWorldMapOnCurrLevel();
 			//adventureManager->CreateWorldMap();
 			adventureManager->CreateSaveMenu();
@@ -308,7 +309,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 			musicPlayer->TransitionMusic(menuMusic, 60);*/
 		}
-		
+
 	}
 	case SAVEMENU:
 	{
@@ -323,7 +324,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		}
 		break;
-	}	
+	}
 	case TITLEMENU:
 	{
 		if (fromMode == SAVEMENU)
@@ -357,7 +358,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		titleScreen->Reset();
 		break;
 	}
-	
+
 	case RUN_EDITOR_MAP:
 	{
 		if (fromMode == BROWSE_WORKSHOP)
@@ -369,7 +370,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		currEditSession = new EditSession(this, editMapName);
 		break;
 	}
-	
+
 	case TUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
@@ -425,7 +426,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		singlePlayerControllerJoinScreen = new SinglePlayerControllerJoinScreen(this);
 		singlePlayerControllerJoinScreen->Start();
 
-		if (toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE || toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE )
+		if (toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE || toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE)
 		{
 			singlePlayerControllerJoinScreen->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
 		}
@@ -712,8 +713,6 @@ MainMenu::MainMenu()
 
 	gameSettingsScreen = new GameSettingsScreen(this);
 
-	creditsMenu = new CreditsMenuScreen(this);
-
 	mapBrowserScreen = new MapBrowserScreen(this);
 
 	workshopBrowser = NULL;
@@ -950,7 +949,6 @@ MainMenu::~MainMenu()
 	delete window;
 	
 	delete gameSettingsScreen;
-	delete creditsMenu;
 	delete mapBrowserScreen;
 	delete onlineMenuScreen;
 	delete editorMenuScreen;
@@ -1150,6 +1148,10 @@ void MainMenu::SetMode(Mode m)
 	else if (menuMode == POST_MATCH_OPTIONS)
 	{
 		MOUSE.Show();
+	}
+	else if (menuMode == CREDITS)
+	{
+		titleScreen->creditsMenuScreen->Start();
 	}
 
 	if (menuMode == THANKS_FOR_PLAYING)
@@ -2789,7 +2791,12 @@ void MainMenu::HandleMenuMode()
 
 		}
 		
-		creditsMenu->Update();
+		titleScreen->creditsMenuScreen->Update();
+
+		if (titleScreen->creditsMenuScreen->action == CreditsMenuScreen::A_BACK)
+		{
+			SetMode(TITLEMENU);
+		}
 		break;
 	}
 	case TRANS_CREDITS_TO_MAIN:
@@ -3870,7 +3877,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_CREDITS:
 		{
-			
+			SetMode(CREDITS);
 			//cout << "EXITED ON DISCONNECT" << endl;
 			//infoPopup->Pop("Opponent disconnected", 60);
 			//SetMode(TITLEMENU_INFOPOP);
@@ -4081,21 +4088,21 @@ void MainMenu::DrawMode( Mode m )
 	}
 	case TRANS_CREDITS_TO_MAIN:
 	{
-		preScreenTexture->setView(v);
-		creditsMenu->Draw(preScreenTexture);
+		//preScreenTexture->setView(v);
+		//titleScreen->creditsMenuScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_MAIN_TO_CREDITS:
 	{
-		preScreenTexture->setView(v);
-		creditsMenu->Draw(preScreenTexture);
+		//preScreenTexture->setView(v);
+		//creditsMenu->Draw(preScreenTexture);
 		break;
 	}
 	case CREDITS:
 	{
 		preScreenTexture->setView(v);
 		
-		creditsMenu->Draw(preScreenTexture);
+		titleScreen->creditsMenuScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_WORLDMAP_TO_LOADING:

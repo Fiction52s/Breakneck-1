@@ -135,23 +135,7 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 {
 	if( b == createLobbyHostButton )
 	{
-		currLobbyData->randSeed = time(0);
-		currLobbyData->creatorId = currMapHeader->creatorID;
-		//currLobbyParams->maxMembers = 2;
-		if (numPlayersDropdown->selectedIndex < 0)
-		{
-			currLobbyData->maxMembers = -1; //for freeplay/offline mode
-		}
-		else
-		{
-			currLobbyData->maxMembers = playerNumOptions[numPlayersDropdown->selectedIndex];
-		}
-		
-		currLobbyData->gameModeType = gameModeDropdownModes[modeDropdown->selectedIndex];//MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
-
-		cout << "game mode confirmed as: " << currLobbyData->gameModeType << endl;
-
-		action = A_HOST;
+		ConfirmCallback(panel);
 	}
 	else if (b == createLobbyCancelButton )
 	{
@@ -173,6 +157,38 @@ void MapOptionsPopup::DropdownCallback(Dropdown *dropdown, const std::string & e
 void MapOptionsPopup::CancelCallback(Panel *p)
 {
 	action = A_CANCELLED;
+}
+
+void MapOptionsPopup::ConfirmCallback(Panel *p)
+{
+	if (mode == MODE_FREEPLAY)
+	{
+		action = A_HOST;
+	}
+	else if (mode == MODE_CREATE_LOBBY)
+	{
+		currLobbyData->randSeed = time(0);
+		currLobbyData->creatorId = currMapHeader->creatorID;
+		//currLobbyParams->maxMembers = 2;
+		if (numPlayersDropdown->selectedIndex < 0)
+		{
+			currLobbyData->maxMembers = -1; //for freeplay/offline mode
+		}
+		else
+		{
+			currLobbyData->maxMembers = playerNumOptions[numPlayersDropdown->selectedIndex];
+		}
+
+		currLobbyData->gameModeType = gameModeDropdownModes[modeDropdown->selectedIndex];//MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
+
+		cout << "game mode confirmed as: " << currLobbyData->gameModeType << endl;
+
+		action = A_HOST;
+	}
+	else
+	{
+		//workshop, confirm does nothing
+	}
 }
 
 void MapOptionsPopup::PanelCallback(Panel *p, const std::string &e)

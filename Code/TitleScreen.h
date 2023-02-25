@@ -11,6 +11,7 @@ struct MainMenu;
 struct Background;
 struct ScrollingBackground;
 struct MusicInfo;
+struct CreditsMenuScreen;
 
 struct TitleScreen : TilesetManager, GUIHandler
 {
@@ -35,6 +36,8 @@ struct TitleScreen : TilesetManager, GUIHandler
 	Tileset *ts_kinHandEnergy;
 	MainMenu *mainMenu;
 	Background *background;
+
+	CreditsMenuScreen *creditsMenuScreen;
 
 	MusicInfo *titleMusic;
 

@@ -91,19 +91,6 @@ struct CustomMapsHandler : GUIHandler
 };
 
 
-struct CreditsMenuScreen
-{
-	sf::Sprite testSprite;
-	Tileset *ts_test;
-	CreditsMenuScreen(MainMenu *p_mainMenu);
-	void Draw(sf::RenderTarget *target);
-	void Update();
-	MainMenu *mainMenu;
-	sf::Vector2f menuOffset;
-};
-
-
-
 struct LevelLoadParams
 {
 	LevelLoadParams()
@@ -288,7 +275,6 @@ struct MainMenu
 	ControlProfileManager *cpm;
 	SoundInfo *soundInfos[SoundType::S_Count];
 	GameSettingsScreen *gameSettingsScreen;
-	CreditsMenuScreen *creditsMenu;
 	SingleAxisSelector *saSelector;
 	MapBrowserScreen *mapBrowserScreen;
 	WorkshopBrowser *workshopBrowser;
