@@ -4108,6 +4108,8 @@ int EditSession::EditRun()
 		}
 		groups.clear();
 
+		rails.clear();
+
 		DefaultInit();
 
 		ActivateNewMapPanel();
@@ -4936,6 +4938,19 @@ TerrainPoint * EditSession::TrySnapPosToPoint(V2d &p, SelectPtr &obj, double rad
 	}
 
 	return NULL;
+}
+
+void EditSession::TryOpenMap(const std::string &fileName)
+{
+	if (saveUpdated)
+	{
+		ChooseFileOpen(fileName);
+	}
+	else
+	{
+		fileToOpen = fileName;
+		confirmPopup->Pop(ConfirmPopup::ConfirmType::SAVE_CURRENT_OPEN);
+	}
 }
 
 void EditSession::ChooseFileOpen(const std::string &fileName)
@@ -13162,15 +13177,10 @@ void EditSession::GeneralMouseUpdate()
 	}
 }
 
-void EditSession::SaveMapDialog()
+void EditSession::SaveMapDialog( int mode )
 {
-	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_SAVE, "Resources\\Maps\\CustomMaps");
-	mapBrowserHandler->chooser->SetCurrFileNameText(mapHeader->fullName);
-}
-
-void EditSession::SaveMapAndExitDialog()
-{
-	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_SAVE_AND_EXIT, "Resources\\Maps\\CustomMaps");
+	//mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_SAVE, "Resources\\Maps\\CustomMaps");
+	mapBrowserHandler->chooser->StartRelative(MAP_EXT, (MapBrowser::Mode)mode, "Resources\\Maps\\CustomMaps");
 	mapBrowserHandler->chooser->SetCurrFileNameText(mapHeader->fullName);
 }
 
@@ -13205,7 +13215,7 @@ bool EditSession::TrySaveMap()
 {
 	if (filePath.string() == "")
 	{
-		SaveMapDialog();
+		SaveMapDialog(MapBrowser::EDITOR_SAVE);
 		return false;
 	}
 	else
@@ -13358,7 +13368,7 @@ void EditSession::GeneralEventHandler()
 				{
 					if (ev.key.shift)
 					{
-						SaveMapDialog();
+						SaveMapDialog(MapBrowser::EDITOR_SAVE);
 					}
 					else
 					{

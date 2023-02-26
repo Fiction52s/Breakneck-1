@@ -51,6 +51,7 @@ void ConfirmPopup::Pop(ConfirmType ct)
 	{
 	case SAVE_CURRENT:
 	case SAVE_CURRENT_EXIT:
+	case SAVE_CURRENT_OPEN:
 		backButton->ShowMember();
 		SetQuestion("Changes to current map have not been saved.\nSave before continuing?");
 		break;
@@ -68,6 +69,8 @@ void ConfirmPopup::Pop(ConfirmType ct)
 	case OVERWRITE_FILE_AND_EXIT:
 	case OVERWRITE_FILE_WITH_BLANK:
 	case OVERWRITE_FILE_WITH_BLANK_AND_EXIT:
+	case OVERWRITE_FILE_WITH_BLANK_AND_OPEN:
+	case OVERWRITE_FILE_AND_OPEN:
 	case OVERWRITE_FILE:
 	{
 		SetQuestion("File already exists. Overwrite it?");
@@ -101,7 +104,7 @@ void ConfirmPopup::ButtonCallback(Button *b,
 		{
 			if (edit->filePath.string() == "")
 			{
-				edit->SaveMapAndExitDialog();
+				edit->SaveMapDialog( MapBrowser::EDITOR_SAVE_AND_EXIT);
 			}
 			else
 			{
@@ -114,6 +117,19 @@ void ConfirmPopup::ButtonCallback(Button *b,
 			//	//if map was saved without the save dialog, cleanly exit
 			//	
 			//}
+			break;
+		}
+		case SAVE_CURRENT_OPEN:
+		{
+			if (edit->filePath.string() == "")
+			{
+				edit->SaveMapDialog(MapBrowser::EDITOR_SAVE_AND_OPEN);
+			}
+			else
+			{
+				edit->WriteFile();
+				edit->ChooseFileOpen(edit->fileToOpen);
+			}
 			break;
 		}
 		case OVERWRITE_FILE_WITH_BLANK:
@@ -132,6 +148,17 @@ void ConfirmPopup::ButtonCallback(Button *b,
 			edit->WriteFile();
 
 			edit->ExitEditor();
+			break;
+		}
+		case OVERWRITE_FILE_AND_OPEN:
+		case OVERWRITE_FILE_WITH_BLANK_AND_OPEN:
+		{
+			edit->mapBrowserHandler->chooser->TurnOff();
+			edit->mapBrowserHandler->chooser->action = MapBrowser::A_CONFIRMED;
+			edit->WriteFile();
+
+			edit->ChooseFileOpen(edit->fileToOpen);
+			//editor opens new map here
 			break;
 		}
 		}
@@ -157,6 +184,11 @@ void ConfirmPopup::ButtonCallback(Button *b,
 		{
 			edit->quit = true;
 			edit->returnVal = 1;
+			break;
+		}
+		case SAVE_CURRENT_OPEN:
+		{
+			edit->ChooseFileOpen(edit->fileToOpen);
 			break;
 		}
 		case OVERWRITE_FILE_AND_EXIT:

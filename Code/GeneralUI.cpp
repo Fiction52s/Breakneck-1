@@ -72,7 +72,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		}
 		case SAVE_MAP_AS:
 		{
-			edit->SaveMapDialog();
+			edit->SaveMapDialog(MapBrowser::EDITOR_SAVE);
 			break;
 		}
 		case EDIT_ADVENTURE:

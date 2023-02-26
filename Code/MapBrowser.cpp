@@ -1235,7 +1235,7 @@ void MapBrowser::TurnOff()
 
 bool MapBrowser::IsEditorMode()
 {
-	return mode == EDITOR_SAVE || mode == EDITOR_OPEN || mode == EDITOR_SAVE_ADVENTURE || mode == EDITOR_SAVE_AND_EXIT;
+	return mode == EDITOR_SAVE || mode == EDITOR_OPEN || mode == EDITOR_SAVE_ADVENTURE || mode == EDITOR_SAVE_AND_EXIT || mode == EDITOR_SAVE_AND_OPEN;
 }
 
 void MapBrowser::SetCurrFileNameText(const std::string &text)
@@ -1301,7 +1301,7 @@ void MapBrowser::Init()
 	}
 
 
-	if (mode == OPEN || mode == EDITOR_OPEN || mode == OPEN_EDITOR_MAPS)
+	if (mode == OPEN || mode == EDITOR_OPEN || mode == OPEN_EDITOR_MAPS )
 	{
 		openButton->ShowMember();
 		panel->confirmButton = openButton;
@@ -1310,7 +1310,7 @@ void MapBrowser::Init()
 
 		cancelButton->ShowMember();
 	}
-	else if(mode == SAVE || mode == EDITOR_SAVE || mode == EDITOR_SAVE_AND_EXIT)
+	else if(mode == SAVE || mode == EDITOR_SAVE || mode == EDITOR_SAVE_AND_EXIT || mode == EDITOR_SAVE_AND_OPEN)
 	{
 		saveButton->ShowMember();
 		panel->confirmButton = saveButton;
@@ -1822,9 +1822,16 @@ void MapBrowserHandler::Confirm()
 		{
 			EditSession *edit = EditSession::GetSession();
 			assert(edit != NULL);
-			edit->ChooseFileOpen(fileName);
+			if (chooser->ext == MAP_EXT)
+			{
+				edit->TryOpenMap(fileName);
+			}
+			else
+			{
+				edit->ChooseFileOpen(fileName);
+			}
 		}
-		else if (chooser->mode == MapBrowser::EDITOR_SAVE || chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT)
+		else if (chooser->mode == MapBrowser::EDITOR_SAVE || chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT || chooser->mode == MapBrowser::EDITOR_SAVE_AND_OPEN)
 		{
 			EditSession *edit = EditSession::GetSession();
 			assert(edit != NULL);
@@ -1866,6 +1873,17 @@ void MapBrowserHandler::Confirm()
 							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_AND_EXIT);
 						}
 					}
+					else if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_OPEN)
+					{
+						if (blankFile)
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_WITH_BLANK_AND_OPEN);
+						}
+						else
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_AND_OPEN);
+						}
+					}
 					
 					return;
 				}
@@ -1876,6 +1894,10 @@ void MapBrowserHandler::Confirm()
 					if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT)
 					{
 						edit->ExitEditor();
+					}
+					else if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_OPEN)
+					{
+						edit->ChooseFileOpen(edit->fileToOpen);
 					}
 					//confirmedMapFilePath = fp;
 				}
@@ -1912,6 +1934,7 @@ void MapBrowserHandler::Confirm()
 					assert(edit != NULL);
 					edit->ChooseFileOpen(chooser->selectedNode->fileName);
 				}
+				//else if( chooser->mode == MapBrowser::EDITOR_SAVE_AND_OPEN)
 
 				chooser->TurnOff();
 

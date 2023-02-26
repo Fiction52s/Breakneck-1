@@ -152,6 +152,8 @@ struct EditSession : GUIHandler, Session
 		GATEADJUST_POINT_MIDDLE
 	};
 
+
+	std::string fileToOpen;
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
@@ -430,8 +432,7 @@ struct EditSession : GUIHandler, Session
 	bool TrySaveMap();
 	void TryExitEditor();
 	void ExitEditor();
-	void SaveMapDialog();
-	void SaveMapAndExitDialog();
+	void SaveMapDialog( int mode );
 	void OpenMapDialog();
 	//void HandlePopupConfirm();
 	//void HandleBrowserConfirm();
@@ -477,6 +478,7 @@ struct EditSession : GUIHandler, Session
 	void DeselectObjectType(ISelectable::ISelectableType sType);
 	void DeselectActorType(const std::string &typeName);
 	void ChooseFileOpen(const std::string &fileName);
+	void TryOpenMap(const std::string &fileName);
 	void ChooseFileSave(const std::string &fileName);
 	PolyPtr GetPolygon(int index );
 	RailPtr GetRail(int index);
