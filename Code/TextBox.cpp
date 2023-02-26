@@ -12,6 +12,7 @@ using namespace std;
 TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
 	:PanelMember(p), pos(posx, posy), maxLength(lengthLimit), clickedDown(false), name(n)
 {
+	characterHeight = charHeight;
 	Init(rows, cols, f, initialText);
 
 	char *ws = new char[maxCols + 1];
@@ -80,6 +81,7 @@ TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int ch
 TextBox::TextBox(const std::string &n, int posx, int posy, int p_width, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
 	:PanelMember(p), pos(posx, posy), maxLength(lengthLimit), clickedDown(false), name(n)
 {
+	characterHeight = charHeight;
 	Init(1, lengthLimit, f, initialText);
 
 	width = p_width;
@@ -93,7 +95,7 @@ void TextBox::Init(int row, int col, sf::Font &f, const std::string &initialText
 	focused = false;
 	leftBorder = 3;
 	verticalBorder = 0;
-	characterHeight = 20;//charHeight
+	//characterHeight = 20;//charHeight
 
 	maxRows = row;
 	maxCols = col;

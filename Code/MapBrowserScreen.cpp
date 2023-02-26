@@ -31,43 +31,27 @@ void MapBrowserScreen::TurnOff()
 	CONTROLLERS.SetKeyboardActiveAsController(true);
 }
 
-void MapBrowserScreen::StartLocalBrowsing( int mode, bool showTabs )
+void MapBrowserScreen::StartLocalBrowsing( int mode )
 {
 	MapBrowser::Mode m = (MapBrowser::Mode)mode;
 	browserHandler->confirmedMapFilePath = "";
 	browserHandler->chooser->StartRelative(MAP_EXT, m, "Resources\\Maps");
-
-	if (showTabs)
-	{
-		browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
-		browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
-	}
-	else
-	{
-		browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
-		browserHandler->chooser->panel->tabGroups["tabs"]->HideMember();
-	}
-	
 	browserHandler->ClearFocus();
+
+	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
+
+	//dont want this because of searching!
 	CONTROLLERS.SetKeyboardActiveAsController(false);
 	//browserHandler->chooser->
 }
 
 void MapBrowserScreen::StartWorkshopBrowsing( int mode )
 {
-	//MapBrowser::CREATE_CUSTOM_GAME
-	if (mode == MapBrowser::CREATE_CUSTOM_GAME)
-	{
-		browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
-	}
-	else if( mode == MapBrowser::WORKSHOP)
-	{
-		browserHandler->chooser->panel->tabGroups["tabs"]->HideMember();
-	}
 	browserHandler->confirmedMapFilePath = "";
 	browserHandler->chooser->StartWorkshop((MapBrowser::Mode)mode );
-	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(1);
 	browserHandler->ClearFocus();
+
+	
 
 	CONTROLLERS.SetKeyboardActiveAsController(false);
 }

@@ -146,7 +146,7 @@ void CustomMatchManager::BrowseForNextMap()
 
 	netplayManager->ClearDataForNextMatch();
 
-	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME, true);
+	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME);
 	SetAction(A_CHOOSE_MAP);
 }
 
@@ -161,7 +161,7 @@ void CustomMatchManager::CreateCustomLobby()
 
 	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
 
-	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME, true);
+	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME);
 	
 	SetAction(A_CHOOSE_MAP);
 }

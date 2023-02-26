@@ -96,7 +96,7 @@ void EditorMenuScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
 		case ChooseRect::I_EDITORMENU_OPEN:
 		{
 			action = A_CHOOSE_MAP;
-			mapBrowserScreen->StartLocalBrowsing(MapBrowser::OPEN, false);
+			mapBrowserScreen->StartLocalBrowsing(MapBrowser::OPEN_EDITOR_MAPS);
 			//action = A_OPEN_MAP;
 			break;
 		}

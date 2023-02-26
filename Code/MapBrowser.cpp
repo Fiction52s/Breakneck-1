@@ -568,7 +568,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	float boxSize = 150;
 	Vector2f spacing(20, 20);
-	Vector2f startRects(10, 60);
+	//Vector2f startRects(10, 60);
+	Vector2f startRects(10, 100);
 
 	cols = p_cols;
 	rows = p_rows;
@@ -598,16 +599,19 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 
 	vector<string> tabNames = { "Local", "Workshop" };
-	panel->AddTabGroup("tabs", Vector2i(0, 0), tabNames, 200, 30);
 
-	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
-	folderPathLabel = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
+	int tabHeight = 30;
+
+	panel->AddTabGroup("tabs", Vector2i(0, 0), tabNames, 200, tabHeight);
+	upButton = panel->AddButton("UP", Vector2i(10, tabHeight + 10), Vector2f(40, 40), "up");
+	folderPathLabel = panel->AddLabel("folderpath", Vector2i(60, tabHeight + 10), 30, "");
 
 	Vector2i pageButtonOrigin(750, 990);
 
 	
-	searchBox = panel->AddTextBox("searchtextbox", Vector2i(600, 10), 300, 40, "");//panel->AddLabeledTextBox("searchtextbox", Vector2i(600, 10), true, 1, 40, 30, 40, "", "Search: ");//panel->AddTextBox("searchtextbox", Vector2i(600, 10), 1, 40, 30, 40, "");
-	searchButton = panel->AddButton("searchbutton", Vector2i(900, 10), Vector2f(100, 50), "SEARCH");
+	searchBox = panel->AddTextBox("searchtextbox", Vector2i(1000, 10), 1, 20, 30, 20, "");//panel->AddLabeledTextBox("searchtextbox", Vector2i(600, 10), true, 1, 40, 30, 40, "", "Search: ");//panel->AddTextBox("searchtextbox", Vector2i(600, 10), 1, 40, 30, 40, "");
+	searchButton = panel->AddButton("searchbutton", Vector2i(searchBox->pos.x + searchBox->width + 20, 10), Vector2f(150, 30), "SEARCH");
+	clearSearchButton = panel->AddButton("clearsearchbutton", Vector2i(searchBox->pos.x, searchBox->pos.y + searchBox->size.y + 20), Vector2f(300, 30), "Clear Search");
 	
 	int x, y;
 	for (int i = 0; i < totalRects; ++i)
@@ -650,7 +654,6 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	panel->StopAutoSpacing();
 
 	openButton = panel->AddButton("open", saveButton->pos + Vector2i(0, 0), Vector2f(60, 30), "Open");
-	createLobbyButton = panel->AddButton("createlobby", saveButton->pos + Vector2i(0, 0), Vector2f(100, 30), "Create Lobby");
 
 	belowRects += Vector2i((boxSize + spacing.x) * cols, 0) + Vector2i( -100, 0 );
 
@@ -939,9 +942,40 @@ void MapBrowser::SetPath(const std::string &p_path)
 
 	handler->ChangePath();
 
+	if (ext == MAP_EXT)
+	{
+		string searchStr = "Resources\\Maps";
+		size_t foundSubPath = p_path.rfind(searchStr);
+
+		if (foundSubPath == std::string::npos)
+		{
+			localMapFolder = "invalid path";
+		}
+		else
+		{
+			string subPath = p_path.substr(foundSubPath + 10);//foundSubPath - searchStr.length());
+			localMapFolder = subPath + "\\";
+		}
+
+		folderPathLabel->text.setString(localMapFolder);
+
+		if (localMapFolder == "Maps\\")
+		{
+			upButton->HideMember();
+		}
+		else
+		{
+			upButton->ShowMember();
+		}
+	}
+	else
+	{
+		localMapFolder = "";
+		folderPathLabel->text.setString(p_path);
+	}
 	//int maxPathShownLength = 50;
 
-	folderPathLabel->text.setString(p_path);
+	
 
 	path p(p_path);
 
@@ -1182,8 +1216,7 @@ void MapBrowser::ClearFilters()
 {
 	numPlayersAllowed.clear();
 	gameModesAllowed.clear();
-	searchStr = "";
-	searchBox->SetString("");
+	ClearSearch();
 }
 
 void MapBrowser::TurnOff()
@@ -1236,9 +1269,10 @@ void MapBrowser::Init()
 		edit->AddActivePanel(panel);
 	}
 
+	ClearSearch();
+
 	openButton->HideMember();
 	saveButton->HideMember();
-	createLobbyButton->HideMember();
 	HideFileNameTextBox();
 
 	panel->confirmButton = NULL;
@@ -1246,7 +1280,28 @@ void MapBrowser::Init()
 	cancelButton->HideMember();
 	//panel->cancelButton = NULL;
 
-	if (mode == OPEN || mode == EDITOR_OPEN )
+	bool showTabs = mode == OPEN
+		|| mode == CREATE_CUSTOM_GAME
+		|| mode == FREEPLAY;
+	if (showTabs)
+	{
+		int tabIndex = 0;
+		if (mode == WORKSHOP)
+		{
+			tabIndex = 1;
+		}
+
+		panel->tabGroups["tabs"]->ShowMember();
+		//panel->tabGroups["tabs"]->SelectTab(tabIndex);
+	}
+	else
+	{
+		//panel->tabGroups["tabs"]->SelectTab(0);
+		panel->tabGroups["tabs"]->HideMember();
+	}
+
+
+	if (mode == OPEN || mode == EDITOR_OPEN || mode == OPEN_EDITOR_MAPS)
 	{
 		openButton->ShowMember();
 		panel->confirmButton = openButton;
@@ -1266,9 +1321,6 @@ void MapBrowser::Init()
 	}
 	else if (mode == CREATE_CUSTOM_GAME)
 	{
-		createLobbyButton->ShowMember();
-		panel->confirmButton = createLobbyButton;
-
 		cancelButton->ShowMember();
 	}
 	else if (mode == FREEPLAY)
@@ -1293,14 +1345,14 @@ void MapBrowser::Init()
 
 		openButton->HideMember();
 		saveButton->HideMember();
-		createLobbyButton->HideMember();
 
 		HideFileNameTextBox();
 
 		panel->cancelButton = NULL;
 		panel->confirmButton = NULL;
 
-		cancelButton->HideMember();
+		//cancelButton->HideMember();
+		cancelButton->ShowMember();
 	}
 	else
 	{
@@ -1335,6 +1387,8 @@ void MapBrowser::Init()
 
 	}
 
+	
+
 	currWorkshopPage = 1;
 	selectedRect = NULL;
 	selectedNode = NULL;
@@ -1346,9 +1400,12 @@ void MapBrowser::Start(const std::string &p_ext,
 {
 	ext = p_ext;
 	mode = p_mode;
+
 	Init();
 
 	isWorkshop = false;
+	
+	panel->tabGroups["tabs"]->SelectTab(0);
 
 	upButton->ShowMember();
 
@@ -1364,7 +1421,11 @@ void MapBrowser::StartRelative(const std::string &p_ext,
 
 	isWorkshop = false;
 
+	panel->tabGroups["tabs"]->SelectTab(0);
+
 	upButton->ShowMember();
+
+	ClearSearch();
 
 	SetRelativePath(path);
 }
@@ -1374,6 +1435,10 @@ void MapBrowser::StartWorkshop( MapBrowser::Mode p_mode )
 	mode = p_mode;
 	
 	isWorkshop = true;
+
+	panel->tabGroups["tabs"]->SelectTab(1);
+
+	ClearSearch();
 
 	Init();
 
@@ -1412,6 +1477,13 @@ void MapBrowser::UpdateSearchCriteria(const std::string &s)
 {
 	searchStr = s;
 	Refresh();
+}
+
+void MapBrowser::ClearSearch()
+{
+	searchBox->SetString("");
+	searchStr = "";
+	//no refresh
 }
 
 void MapBrowser::UpdateNumPlayersCriteria(std::vector<int> &p_numAllowedPlayers)
@@ -1518,6 +1590,7 @@ void MapBrowserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 	{
 		if (node->type == MapNode::FOLDER)
 		{
+			chooser->ClearSearch();
 			chooser->SetPath(node->filePath.string());
 		}
 		else if (node->type == MapNode::FILE)
@@ -1538,7 +1611,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	{
 		Confirm();
 	}
-	else if (b == chooser->openButton || b == chooser->createLobbyButton)
+	else if (b == chooser->openButton )
 	{
 		if (chooser->selectedNode != NULL)
 		{
@@ -1548,6 +1621,16 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	else if (b == chooser->searchButton)
 	{
 		chooser->UpdateSearchCriteria(chooser->searchBox->GetString());
+	}
+	else if (b == chooser->clearSearchButton)
+	{
+		bool wasBlankAlready = chooser->searchStr == "";
+
+		if (!wasBlankAlready)
+		{
+			chooser->ClearSearch();
+			chooser->Refresh();
+		}
 	}
 	else if (b == chooser->prevPageButton)
 	{
@@ -1577,6 +1660,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	}
 	else if (b == chooser->upButton)
 	{
+		chooser->ClearSearch();
 		chooser->SetPath(chooser->currPath.parent_path().string());
 	}
 }
@@ -1586,11 +1670,12 @@ void MapBrowserHandler::TabGroupCallback(TabGroup *tg, const std::string &e)
 	//need to revisit the whole Create_Custom_Game thing eventually
 	if (tg->currTabIndex == 0)
 	{
-		chooser->StartRelative(MAP_EXT, MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
+		//chooser->StartRelative(MAP_EXT, MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
+		chooser->StartRelative(MAP_EXT, chooser->mode, "Resources\\Maps");
 	}
 	else if (tg->currTabIndex == 1)
 	{
-		chooser->StartWorkshop(MapBrowser::CREATE_CUSTOM_GAME);
+		chooser->StartWorkshop(chooser->mode);
 	}
 }
 
@@ -1815,7 +1900,7 @@ void MapBrowserHandler::Confirm()
 	}
 	else
 	{
-		if (chooser->mode == MapBrowser::EDITOR_OPEN || chooser->mode == MapBrowser::OPEN)
+		if (chooser->mode == MapBrowser::EDITOR_OPEN || chooser->mode == MapBrowser::OPEN || chooser->mode == MapBrowser::OPEN_EDITOR_MAPS)
 		{
 			if (chooser->selectedNode != NULL)
 			{

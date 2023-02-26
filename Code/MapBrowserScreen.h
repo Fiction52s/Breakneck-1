@@ -21,7 +21,7 @@ struct MapBrowserScreen
 	MapBrowserScreen(MainMenu *mm);
 	~MapBrowserScreen();
 
-	void StartLocalBrowsing(int mode, bool showTabs );
+	void StartLocalBrowsing(int mode );
 	void StartWorkshopBrowsing( int mode );
 	void TurnOff();
 

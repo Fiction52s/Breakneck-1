@@ -90,15 +90,20 @@ void WorkshopBrowser::Update()
 	{
 	case A_BROWSER:
 	{
-		if (UICONTROLLER.IsCancelPressed())
+		/*if (UICONTROLLER.IsCancelPressed())
+		{
+			Quit();
+			break;
+		}*/
+
+		mapBrowserScreen->Update();
+
+		if (mapBrowserScreen->IsCancelled())
 		{
 			Quit();
 			break;
 		}
-
-		mapBrowserScreen->Update();
-
-		if (mapBrowserScreen->browserHandler->chooser->selectedNode != NULL)
+		else  if (mapBrowserScreen->browserHandler->chooser->selectedNode != NULL)
 		{
 			workshopMapPopup->Activate(mapBrowserScreen->browserHandler->chooser->selectedNode);
 			action = A_POPUP;

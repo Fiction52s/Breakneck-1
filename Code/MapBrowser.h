@@ -156,6 +156,7 @@ struct MapBrowser : TilesetManager,
 	{
 		WORKSHOP,
 		OPEN,
+		OPEN_EDITOR_MAPS,
 		SAVE,
 		EDITOR_OPEN,
 		EDITOR_SAVE,
@@ -196,12 +197,12 @@ struct MapBrowser : TilesetManager,
 
 	TextBox *searchBox;
 	Button *searchButton;
+	Button *clearSearchButton;
 
 	ScrollBar *mapScroller;
 
 	Button *saveButton;
 	Button *openButton;
-	Button *createLobbyButton;
 	Button *okButton;
 	Button *cancelButton;
 	
@@ -228,6 +229,7 @@ struct MapBrowser : TilesetManager,
 	TextBox *fileNameTextBox;
 	Label *fileNameTextBoxLabel;
 	Button *upButton;
+	std::string localMapFolder;
 
 
 
@@ -260,6 +262,7 @@ struct MapBrowser : TilesetManager,
 	void SelectRect(ChooseRect *cr);
 	void ClearSelection();
 
+	void ClearSearch();
 	void UpdateSearchCriteria(const std::string &s);
 	void UpdateNumPlayersCriteria(std::vector<int> &numAllowedPlayers);
 	void UpdateGameModeCriteria(std::vector<int> &numAllowedPlayers);
