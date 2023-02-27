@@ -178,6 +178,7 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2f startBoxPos;
 	sf::Vertex boxToolQuad[4];
 	sf::Color boxToolColor;
+	bool polyDrawStarted;
 	bool boxDrawStarted;
 	CreateEnemyModeUI *createEnemyModeUI;
 	CreateDecorModeUI *createDecorModeUI;

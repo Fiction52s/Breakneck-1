@@ -630,10 +630,11 @@ void Panel::Cancel()
 
 bool Panel::HandleEvent(sf::Event ev)
 {
+	bool result = false;
 	switch (ev.type)
 	{
 	case Event::KeyPressed:
-		return SendKey(ev.key.code, ev.key.shift);
+		result = SendKey(ev.key.code, ev.key.shift);
 		break;
 	case Event::KeyReleased:
 		break;
@@ -656,11 +657,16 @@ bool Panel::HandleEvent(sf::Event ev)
 				}
 			}
 		}
-		return true;
+		result = true;
 		break;
 	}
 
-	return false;
+	if (IsPopup())
+	{
+		result = true;
+	}
+
+	return result;
 }
 
 void Panel::ReserveEnemyRects(int num)

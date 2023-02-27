@@ -33,6 +33,8 @@ TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color
 	textColor = p_textColor;
 	rectBuffer = p_rectBuffer;
 
+	topLeftMode = false;
+
 	text.setFont(sess->mainMenu->arial);
 	text.setCharacterSize(charHeight);
 	text.setFillColor(textColor);
@@ -259,6 +261,7 @@ void TutorialBox::UpdateButtonIconsWhenControllerIsChanged()
 
 void TutorialBox::SetCenterPos(sf::Vector2f &pos)
 {
+	topLeftMode = false;
 	text.setPosition(pos);
 	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
 		text.getLocalBounds().top + text.getLocalBounds().height / 2);
@@ -278,6 +281,7 @@ void TutorialBox::SetCenterPos(sf::Vector2f &pos)
 
 void TutorialBox::SetTopLeft(sf::Vector2f &pos)
 {
+	topLeftMode = true;
 	text.setOrigin(0, 0);
 	text.setPosition(pos + Vector2f( rectBuffer/ 2, rectBuffer / 4 )); //text spacing
 

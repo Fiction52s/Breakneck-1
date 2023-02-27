@@ -410,8 +410,8 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		case ENERGY:
 		{
 			//need to tune this to heal the right amount
-			int healFrames = 1 * 60;
-			parent->sess->GetPlayer(0)->HealTimer(healFrames); 
+			//int healFrames = 1 * 60;
+			//parent->sess->GetPlayer(0)->HealTimer(healFrames); 
 			break;
 		}
 		case DARK:

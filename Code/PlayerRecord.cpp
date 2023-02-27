@@ -11,6 +11,7 @@
 #include "globals.h"
 #include "SaveFile.h"
 #include "LogMenu.h"
+#include "ReplayHUD.h"
 
 using namespace sf;
 using namespace std;
@@ -159,7 +160,7 @@ void ReplayPlayer::UpdateInput( ControllerState &state )//ControllerDualStateQue
 	state.start = start;
 	state.back = back;
 
-	cout << "replaying input: " << inputBuffer[frame] << " on frame " << frame << "\n";
+	//cout << "replaying input: " << inputBuffer[frame] << " on frame " << frame << "\n";
 
 	/*if (state.A)
 	{
@@ -492,11 +493,13 @@ void PlayerRecordingManager::WriteToFile(const std::string &fileName)
 
 PlayerReplayManager::PlayerReplayManager()
 {
-
+	replayHUD = new ReplayHUD;
 }
 
 PlayerReplayManager::~PlayerReplayManager()
 {
+	delete replayHUD;
+
 	for (auto it = repVec.begin(); it != repVec.end(); ++it)
 	{
 		delete (*it);
@@ -547,6 +550,8 @@ void PlayerReplayManager::Reset()
 			(*it)->replayGhost->Reset();
 		}
 	}
+
+	replayHUD->Reset();
 }
 
 bool PlayerReplayManager::IsReplayOn(int pIndex)
@@ -557,6 +562,24 @@ bool PlayerReplayManager::IsReplayOn(int pIndex)
 	}
 
 	return replaysActive;
+}
+
+bool PlayerReplayManager::IsReplayHUDOn(int pIndex)
+{
+	Session *sess = Session::GetSession();
+	Actor *player = sess->GetPlayer(pIndex);
+	int action = player->action;
+
+	if (player->IsExitAction(action) || player->IsGoalKillAction(action) || action == Actor::GOALKILLWAIT)
+	{
+		return false;
+	}
+
+	return true;
+	/*if ( player->IsIntroAction(action) || (player->IsGoalKillAction(action) && action != Actor::GOALKILLWAIT) || action == EXIT
+		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
+		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction(action) || action == EXITBOOST)
+	{*/
 }
 
 bool PlayerReplayManager::IsGhostOn(int pIndex)

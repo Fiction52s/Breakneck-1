@@ -2,6 +2,11 @@
 #include "MusicSelector.h"
 #include "MainMenu.h"
 #include "Config.h"
+#include <iostream>
+
+using namespace std;
+using namespace sf;
+
 
 MusicPlayer::MusicPlayer(MainMenu *p_mm)
 {
@@ -71,6 +76,8 @@ void MusicPlayer::PlayMusic(MusicInfo *newMusic, sf::Time startTime)
 	newMusic->music->setPlayingOffset(startTime);
 
 	currMusic = newMusic;
+
+	cout << "starting new music" << endl;
 }
 
 void MusicPlayer::Update()
@@ -196,7 +203,7 @@ void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
 
 void MusicPlayer::StopMusic(MusicInfo *m)
 {
-	if (m != NULL)
+	if (m != NULL && m->music != NULL )
 	{
 		m->music->setVolume(0);
 		m->music->stop();

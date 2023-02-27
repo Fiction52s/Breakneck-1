@@ -308,6 +308,8 @@ int CreateTerrainModeUI::GetCurrDrawTool()
 
 void CreateTerrainModeUI::SetDrawTool(int t)
 {
+	edit->polyDrawStarted = false;
+
 	int sel = drawModeDropdown->selectedIndex;
 	if (t != sel)
 	{
@@ -324,6 +326,9 @@ void CreateTerrainModeUI::SetDrawTool(int t)
 			break;
 		case EditSession::TOOL_BRUSH:
 			edit->AddActivePanel(brushHotbar);
+			break;
+		case EditSession::TOOL_DRAW:
+			//edit->polyDrawStarted = false;
 			break;
 		}
 	}

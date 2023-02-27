@@ -196,29 +196,6 @@ void PowerItem::ResetEnemy()
 	//implement for power
 	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
 	alreadyCollected = sess->GetPlayer(0)->HasUpgrade(upgradeIndex);
-
-	/*if (sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn())
-	{
-		alreadyCollected = sess->GetPlayer(0)->HasUpgrade(upgradeIndex)
-	}
-	else
-	{
-		
-	}
-	if ()
-	{
-		alreadyCollected = true;
-	}
-
-	if (sess->IsShardCaptured(shardType))
-	{
-		alreadyCollected = true;
-	}
-
-	if (!alreadyCollected)
-	{
-		
-	}*/
 	
 
 	SetCurrPosInfo(startPosInfo);

@@ -7778,11 +7778,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 				owner->CleanupGhosts();
 				owner->CleanupPlayerReplayManager();
-				/*if (owner->playerReplayManager != NULL)
-				{
-					owner->playerReplayManager->replaysActive = owner->bestReplayOn;
-					owner->playerrepal
-				}*/
+
 
 				
 				owner->RestartGame();

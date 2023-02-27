@@ -4379,7 +4379,8 @@ int EditSession::EditRun()
 					UpdateMode();
 			}
 
-			UpdatePanning();
+			//orig location
+			//UpdatePanning();
 
 			if (background != NULL)
 			{
@@ -12056,15 +12057,30 @@ void EditSession::PreventNearPrimaryAnglesOnRailInProgress()
 
 void EditSession::TryAddPointToPolygonInProgress()
 {
+	bool leftDown = MOUSE.IsMouseDownLeft();
 	bool justClicked = MOUSE.IsMouseLeftClicked();//mouseDown && !lastLeftMouseDown;
 	//if (!panning && mouseDown)
-	if( !panning && MOUSE.IsMouseDownLeft())
+	if (!leftDown)
+	{
+		polyDrawStarted = false;
+	}
+
+	if( !panning && leftDown)
 	{
 		Vector2i worldi(round(testPoint.x), round(testPoint.y));
 
 		if (justClicked)
 		{
 			ClearMostRecentError();
+			if (!polyDrawStarted)
+			{
+				polyDrawStarted = true;
+			}
+		}
+
+		if (!polyDrawStarted)
+		{
+			return;
 		}
 		
 		bool validPoint = polygonInProgress->IsValidInProgressPoint(worldi);//true;
@@ -14538,6 +14554,8 @@ void EditSession::UpdateMode()
 		UpdateModeFunc(mode);
 
 		GeneralMouseUpdate();
+
+		UpdatePanning();
 	}
 	else
 	{

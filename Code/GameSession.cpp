@@ -147,8 +147,10 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 		
 		ControllerState prevInput;
 
-		currInput = GetPlayer(0)->currInput;
-		prevInput = GetPlayer(0)->prevInput;
+		currInput = GetCurrInputFiltered(0);//GetPlayer(0)->currInput;
+		prevInput = GetPrevInputFiltered(0);//GetPlayer(0)->prevInput;
+
+		//cout << "currstart: " << currInput.start << "\n";
 
 		/*if (controllerStates[0]->GetControllerType() == CTYPE_KEYBOARD)
 		{
@@ -1079,7 +1081,7 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UnlockUpgrade(int upgradeType, int playerIndex )
 {
-	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	if (IsReplayOn())
 	{
 		//replay on
 	}
@@ -1093,7 +1095,7 @@ void GameSession::UnlockUpgrade(int upgradeType, int playerIndex )
 
 bool GameSession::TrySaveCurrentSaveFile()
 {
-	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	if (IsReplayOn())
 	{
 		//replay on
 		return false;
@@ -1110,7 +1112,7 @@ bool GameSession::TrySaveCurrentSaveFile()
 
 void GameSession::UnlockLog(int lType, int playerIndex )
 {
-	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	if (IsReplayOn())
 	{
 		//replay on
 	}
@@ -1711,9 +1713,6 @@ bool GameSession::Load()
 	//view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 
 	//repGhost = new ReplayGhost( player );
-
-
-
 
 	//cout << "weird timing 3" << endl;
 	if (!ShouldContinueLoading())
@@ -2409,7 +2408,7 @@ bool GameSession::RunMainLoopOnce()
 
 		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
 
-		if (playerReplayManager != NULL && playerReplayManager->replaysActive)
+		if (IsReplayOn())
 		{
 			/*preScreenTex->setView(uiView);
 			preScreenTex->draw(replayText);
@@ -2532,7 +2531,7 @@ bool GameSession::RunMainLoopOnce()
 
 		DrawGame(preScreenTex);
 		
-		if (playerReplayManager != NULL && playerReplayManager->replaysActive)
+		if (IsReplayOn())
 		{
 			preScreenTex->setView(uiView);
 			preScreenTex->draw(replayText);
@@ -2752,59 +2751,53 @@ bool GameSession::RunMainLoopOnce()
 			ControllerState &curr = GetCurrInput(0);
 			ControllerState &prev = GetPrevInput(0);
 
-			if (pauseMenu->currentTab == PauseMenu::PAUSE)
-			{
-				if (curr.Y && !prev.Y && !bestTimeGhostOn)
-				{
-					if (parentGame != NULL)
-					{
-						/*quit = true;
-						returnVal = GR_BONUS_RESPAWN;
-						break;*/
-					}
-					else
-					{
-						//turn this back on eventually!
-
-						/*bestTimeGhostOn = true;
-						bestReplayOn = false;
-
-						if (repPlayer != NULL)
-						{
-							delete repPlayer;
-							repPlayer = NULL;
-						}
-
-						SetupBestTimeGhost();
-						RestartLevel();*/
-					}
-				}
-				else if (curr.X && !prev.X)
-				{
-					if (parentGame != NULL)
-					{
-						quit = true;
-						returnVal = GR_BONUS_RESPAWN;
-						break;
-					}
-					else
-					{
-						RestartLevel();
-					}
-				}
-				else if (curr.B && curr.PDown() && !prev.PDown())
-				{
-					/*if (recPlayer != NULL)
-					{
-						ActivatePauseSound(GetSound("pause_off"));
-						recPlayer->numTotalFrames = recPlayer->frame;
-						recPlayer->WriteToFile("Resources/Debug/debugreplay" + string(REPLAY_EXT));
-					}*/
-				}
-
-			}
-
-
+			//if (pauseMenu->currentTab == PauseMenu::PAUSE)
+			//{
+			//	if (curr.Y && !prev.Y && !bestTimeGhostOn)
+			//	{
+			//		if (parentGame != NULL)
+			//		{
+			//			/*quit = true;
+			//			returnVal = GR_BONUS_RESPAWN;
+			//			break;*/
+			//		}
+			//		else
+			//		{
+			//			//turn this back on eventually!
+			//			/*bestTimeGhostOn = true;
+			//			bestReplayOn = false;
+			//			if (repPlayer != NULL)
+			//			{
+			//				delete repPlayer;
+			//				repPlayer = NULL;
+			//			}
+			//			SetupBestTimeGhost();
+			//			RestartLevel();*/
+			//		}
+			//	}
+			//	else if (curr.X && !prev.X)
+			//	{
+			//		if (parentGame != NULL)
+			//		{
+			//			quit = true;
+			//			returnVal = GR_BONUS_RESPAWN;
+			//			break;
+			//		}
+			//		else
+			//		{
+			//			RestartLevel();
+			//		}
+			//	}
+			//	else if (curr.B && curr.PDown() && !prev.PDown())
+			//	{
+			//		/*if (recPlayer != NULL)
+			//		{
+			//			ActivatePauseSound(GetSound("pause_off"));
+			//			recPlayer->numTotalFrames = recPlayer->frame;
+			//			recPlayer->WriteToFile("Resources/Debug/debugreplay" + string(REPLAY_EXT));
+			//		}*/
+			//	}
+			//}
 
 			PauseMenu::UpdateResponse ur = pauseMenu->Update(curr, prev);
 			switch (ur)
@@ -2819,6 +2812,12 @@ bool GameSession::RunMainLoopOnce()
 				gameState = GameSession::RUN;
 				ActivatePauseSound(GetSound("pause_off"));
 				soundNodeList->Pause(false);
+
+				if (IsReplayHUDOn())
+				{
+					UpdateControllers();
+				}
+				
 				//pauseMenu->shardMenu->StopMusic();
 				break;
 			}
@@ -2835,6 +2834,12 @@ bool GameSession::RunMainLoopOnce()
 				{
 
 					RestartLevel();
+
+					if (IsReplayHUDOn())
+					{
+						oneFrameMode = false;
+						UpdateControllers();
+					}
 
 					//moved this stuff into restart level
 					/*gameState = GameSession::RUN;
@@ -3759,6 +3764,10 @@ void GameSession::RestartLevel()
 
 	cutPlayerInput = false;
 
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		filteredPrevInput[i].Clear();
+	}
 
 	if (parentGame == NULL)
 	{
@@ -3893,7 +3902,7 @@ void GameSession::RemoveGravityGrassFromExplodeList(Grass *g)
 
 bool GameSession::IsShardCaptured(int shardType)
 {
-	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	if (IsReplayOn())
 	{
 		return playerReplayManager->header.IsShardCaptured(shardType);
 	}
@@ -4477,7 +4486,7 @@ void GameSession::DecorDraw::Draw(sf::RenderTarget *target)
 
 bool GameSession::HasLog(int logIndex)
 {
-	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	if (IsReplayOn())
 	{
 		return playerReplayManager->header.IsLogCaptured(logIndex);
 	}

@@ -11,6 +11,8 @@
 #include "PlayerSkinShader.h"
 #include "BitField.h"
 
+struct ReplayHUD;
+
 struct Actor;
 struct PlayerReplayer;
 //what is recorded each frame for the ghost
@@ -153,9 +155,12 @@ struct PlayerReplayManager
 	bool ghostsActive;
 	bool replaysActive;
 
+	ReplayHUD *replayHUD;
+
 	PlayerReplayManager();
 	~PlayerReplayManager();
 	bool IsReplayOn(int pIndex);
+	bool IsReplayHUDOn(int pIndex);
 	bool IsGhostOn(int pIndex);
 	PlayerReplayer *GetReplayer(int pIndex);
 	void Reset();

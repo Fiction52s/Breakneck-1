@@ -564,7 +564,7 @@ bool Sequence::IsFlashDone(const std::string &flashName)
 
 bool Sequence::PlayerPressedConfirm()
 {
-	if ((sess->playerReplayManager != NULL && sess->playerReplayManager->IsReplayOn(0))
+	if (sess->IsReplayOn()
 		|| (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A))
 	{
 		return true;

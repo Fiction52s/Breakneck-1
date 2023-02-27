@@ -176,14 +176,7 @@ void Shard::ResetEnemy()
 		}
 	}*/
 	
-	/*GameSession *game = GameSession::GetSession();
-	if (game != NULL)
-	{
-		if (game->playerReplayManager != NULL && game->playerReplayManager->IsReplayOn(0))
-		{
 
-		}
-	}*/
 
 	SetCurrPosInfo(startPosInfo);
 

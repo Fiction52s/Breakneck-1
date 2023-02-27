@@ -65,6 +65,8 @@
 #include "ggpo\network\udp_msg.h"
 #include "ControlProfile.h"
 
+#include "ReplayHUD.h"
+
 using namespace sf;
 using namespace std;
 
@@ -2707,7 +2709,8 @@ ControllerState Session::GetCurrInput(int index)
 
 ControllerState Session::GetPrevInputFiltered(int index)
 {
-	if (controllerStates[index] != NULL)
+	return filteredPrevInput[index];
+	/*if (controllerStates[index] != NULL)
 	{
 		assert(controlProfiles[index] != NULL);
 
@@ -2719,27 +2722,34 @@ ControllerState Session::GetPrevInputFiltered(int index)
 	else
 	{
 		return ControllerState();
-	}
+	}*/
 }
 
-ControllerState Session::GetCurrInputFiltered(int index)
+ControllerState Session::GetCurrInputFiltered(int index, Actor *p )
 {
-	if (controllerStates[index] != NULL)
+	ControllerDualStateQueue *currStates = controllerStates[index];
+	if ( currStates != NULL)
 	{
-		if (controllerStates[index]->GetControllerType() == CTYPE_KEYBOARD)
-		{
-			//testing
-			return ControllerState();
-			//assert(0); //keyboard needs to work differently
-		}
-
 		ControlProfile *currProf = controlProfiles[index];
 		assert(currProf != NULL);
 
-		ControllerState curr = controllerStates[index]->GetCurrState();
-
-		controlProfiles[index]->FilterState(curr);
-
+		ControllerState curr;
+		if (currStates->GetControllerType() == CTYPE_KEYBOARD)
+		{
+			if (p == NULL)
+			{
+				CONTROLLERS.UpdateFilteredKeyboardState(currProf, curr, filteredPrevInput[index]);
+			}
+			else
+			{
+				CONTROLLERS.UpdateFilteredKeyboardState(currProf, curr, p->prevInput);
+			}
+		}
+		else
+		{
+			curr = currStates->GetCurrState();
+			currProf->FilterState(curr);
+		}
 		return curr;
 	}
 	else
@@ -2799,7 +2809,18 @@ void Session::UpdateControllersOneFrameMode()
 
 void Session::UpdateControllers()
 {
+	if (IsSessTypeGame())
+	{
+		//pretty sure I only need this for pause menu and replay controls so gamesession only
+		for (int i = 0; i < 4; ++i)
+		{
+			filteredPrevInput[i] = GetCurrInputFiltered(i);
+		}
+	}
+	
+
 	CONTROLLERS.Update();
+	
 	
 	//Actor *p = NULL;
 	//for (int i = 0; i < 4; ++i)
@@ -2854,7 +2875,7 @@ void Session::UpdatePlayerInput(int index)
 		//make sure this takes priority over the replay
 		player->prevInput = player->currInput;
 	}
-	else if (playerReplayManager != NULL && playerReplayManager->IsReplayOn( playerInd ) )
+	else if (IsReplayOn())
 	{
 		player->prevInput = player->currInput;
 
@@ -2871,17 +2892,7 @@ void Session::UpdatePlayerInput(int index)
 		}
 		else
 		{
-			ControllerState currSessInput;
-			if (controlProfiles[index]->GetControllerType() == CTYPE_KEYBOARD)
-			{
-				CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[index], currSessInput, player->prevInput);
-			}
-			else
-			{
-				currSessInput = GetCurrInputFiltered(index);
-			}
-
-			player->currInput = currSessInput;
+			player->currInput = GetCurrInputFiltered(index, player);
 		}
 
 		RecPlayerRecordFrame(playerInd);
@@ -2950,14 +2961,29 @@ void Session::UpdateAllPlayersInput()
 
 bool Session::OneFrameModeUpdate()
 {
+	bool skipInput = false;
+	
 	//turned off for the beta
 	
 	//fix this so you can only tas in the editor right after testing this.
+
+
 #ifdef _DEBUG
-	bool skipInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
+	skipInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
 #else
-	bool skipInput = IsSessTypeEdit() && CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
+	skipInput = IsSessTypeEdit() && CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
 #endif
+	bool replayMode = IsReplayHUDOn();
+	//and hit nexus or start ship sequence
+	if (IsReplayOn())
+	{
+		playerReplayManager->replayHUD->Update();
+
+		if (replayMode)
+		{
+			skipInput = playerReplayManager->replayHUD->IsGoingToNextFrame();
+		}
+	}
 
 	if (skipInput && !oneFrameMode)
 	{
@@ -3005,17 +3031,30 @@ bool Session::OneFrameModeUpdate()
 			}
 		}
 
-		if (!skipped && skipInput)
-		{
-			skipped = true;
-			accumulator = 0;
-			return true;
+		if (replayMode)
+		{	
+			skipped = skipInput;
+			if (skipInput)
+			{
+				accumulator = 0;//TIMESTEP;
+				return true;
+			}
 		}
+		else
+		{
+			if (!skipped && skipInput)
+			{
+				skipped = true;
+				//accumulator = 0;
+				return true;
+			}
 
-		if (skipped && !skipInput)
-		{
-			skipped = false;
+			if (skipped && !skipInput)
+			{
+				skipped = false;
+			}
 		}
+		
 
 		if (stopSkippingInput)
 		{
@@ -5394,7 +5433,7 @@ void Session::DrawActiveSequence(EffectLayer layer, sf::RenderTarget *target)
 
 bool Session::IsShardCaptured(int s)
 {
-	if (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0))
+	if (IsReplayOn())
 	{
 		return playerReplayManager->header.IsShardCaptured(s);
 	}
@@ -6575,6 +6614,11 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	LayeredDraw(EffectLayer::IN_FRONT_OF_UI, target);
 
+	if (playerReplayManager != NULL)
+	{
+		playerReplayManager->replayHUD->Draw(target);
+	}
+
 	mainMenu->DrawEffects(target);
 
 	target->setView(view); //sets it back to normal for any world -> pixel calcs
@@ -6669,6 +6713,11 @@ bool Session::RunGameModeUpdate()
 		if (!OneFrameModeUpdate())
 		{
 			UpdateControllers();
+
+			if (UpdateRunModeBackAndStartButtons())
+			{
+
+			}
 			break;
 		}
 
@@ -7822,22 +7871,9 @@ void Session::GGPORunFrame()
 	ControllerState testInput;
 	Actor *player = GetPlayer(pIndex);
 
-	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
-	{
-		CONTROLLERS.UpdateFilteredKeyboardState(controlProfiles[0], testInput, player->currInput); //player->currInput
-	}
-	else
-	{
-		testInput = GetCurrInputFiltered(0);
-	}
+	testInput = GetCurrInputFiltered(0, player);
 
-	
-
-	COMPRESSED_INPUT_TYPE input = testInput.GetCompressedState();//GetCurrInputFiltered().GetCompressedState();
-	//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();
-	//GetPlayer(ngs->local_player_handle - 1)->currInput.GetCompressedState(); 
-	//GetCurrInput(0).GetCompressedState();
-
+	COMPRESSED_INPUT_TYPE input = testInput.GetCompressedState();
 	
 	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, COMPRESSED_INPUT_SIZE);
 
@@ -8814,4 +8850,14 @@ sf::IntRect Session::GetButtonIconTile(int cIndex, ControllerSettings::ButtonTyp
 Tileset * Session::GetButtonIconTileset(int cIndex)
 {
 	return mainMenu->GetButtonIconTileset(controllerStates[cIndex]->GetControllerType());
+}
+
+bool Session::IsReplayOn()
+{
+	return (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0));
+}
+
+bool Session::IsReplayHUDOn()
+{
+	return IsReplayOn() && playerReplayManager->IsReplayHUDOn(0);
 }

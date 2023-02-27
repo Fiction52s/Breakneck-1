@@ -341,6 +341,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::map<std::string, Tileset*> decorTSMap;
 	sf::RenderWindow *window;
 	sf::Vector2i playerOrigPos[MAX_PLAYERS];
+	ControllerState filteredPrevInput[MAX_PLAYERS];
 	int numPolyShaders;
 	//sf::Shader *polyShaders;
 	sf::Shader terrainShader;
@@ -642,7 +643,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	ControllerState GetCurrInput(int index);
 
 	ControllerState GetPrevInputFiltered(int index);
-	ControllerState GetCurrInputFiltered(int index);
+	ControllerState GetCurrInputFiltered(int index, Actor *p = NULL );
 	GameController *GetController(int index);
 
 	
@@ -916,6 +917,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	Tileset * GetButtonIconTileset(int controllerIndex);
 	void CopyGGPOInputsToParallelSessions();
 	void CleanupPlayerReplayManager();
+	bool IsReplayOn();
+	bool IsReplayHUDOn();
 };
 
 #endif

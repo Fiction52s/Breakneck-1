@@ -1861,7 +1861,10 @@ CameraShotParams::CameraShotParams(ActorType *at, int level)
 
 	nameIndex = type->GetSelectedSpecialDropIndex();
 	cout << "test here" << endl;
-	SetText(type->GetSelectedSpecialDropStr());
+	if (nameIndex >= 0)
+	{
+		SetText(type->GetSelectedSpecialDropStr());
+	}
 	cout << "test over" << endl;
 }
 
