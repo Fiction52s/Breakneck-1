@@ -1235,7 +1235,8 @@ void MapBrowser::TurnOff()
 
 bool MapBrowser::IsEditorMode()
 {
-	return mode == EDITOR_SAVE || mode == EDITOR_OPEN || mode == EDITOR_SAVE_ADVENTURE || mode == EDITOR_SAVE_AND_EXIT || mode == EDITOR_SAVE_AND_OPEN;
+	return mode == EDITOR_SAVE || mode == EDITOR_OPEN || mode == EDITOR_SAVE_ADVENTURE || mode == EDITOR_SAVE_AND_EXIT || mode == EDITOR_SAVE_AND_OPEN
+		|| mode == EDITOR_SAVE_AND_NEW;
 }
 
 void MapBrowser::SetCurrFileNameText(const std::string &text)
@@ -1310,7 +1311,8 @@ void MapBrowser::Init()
 
 		cancelButton->ShowMember();
 	}
-	else if(mode == SAVE || mode == EDITOR_SAVE || mode == EDITOR_SAVE_AND_EXIT || mode == EDITOR_SAVE_AND_OPEN)
+	else if(mode == SAVE || mode == EDITOR_SAVE || mode == EDITOR_SAVE_AND_EXIT || mode == EDITOR_SAVE_AND_OPEN
+		|| mode == EDITOR_SAVE_AND_NEW)
 	{
 		saveButton->ShowMember();
 		panel->confirmButton = saveButton;
@@ -1831,7 +1833,8 @@ void MapBrowserHandler::Confirm()
 				edit->ChooseFileOpen(fileName);
 			}
 		}
-		else if (chooser->mode == MapBrowser::EDITOR_SAVE || chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT || chooser->mode == MapBrowser::EDITOR_SAVE_AND_OPEN)
+		else if (chooser->mode == MapBrowser::EDITOR_SAVE || chooser->mode == MapBrowser::EDITOR_SAVE_AND_EXIT || chooser->mode == MapBrowser::EDITOR_SAVE_AND_OPEN
+			|| chooser->mode == MapBrowser::EDITOR_SAVE_AND_NEW )
 		{
 			EditSession *edit = EditSession::GetSession();
 			assert(edit != NULL);
@@ -1884,6 +1887,17 @@ void MapBrowserHandler::Confirm()
 							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_AND_OPEN);
 						}
 					}
+					else if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_NEW)
+					{
+						if (blankFile)
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_WITH_BLANK_AND_NEW);
+						}
+						else
+						{
+							edit->confirmPopup->Pop(ConfirmPopup::OVERWRITE_FILE_AND_NEW);
+						}
+					}
 					
 					return;
 				}
@@ -1898,6 +1912,11 @@ void MapBrowserHandler::Confirm()
 					else if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_OPEN)
 					{
 						edit->ChooseFileOpen(edit->fileToOpen);
+					}
+					else if (chooser->mode == MapBrowser::EDITOR_SAVE_AND_NEW)
+					{
+						edit->ReloadNew();
+						//edit->ChooseFileOpen(edit->fileToOpen);
 					}
 					//confirmedMapFilePath = fp;
 				}

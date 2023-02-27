@@ -13207,7 +13207,7 @@ void EditSession::TryReloadNew()
 	}
 	else
 	{
-		confirmPopup->Pop(ConfirmPopup::ConfirmType::SAVE_CURRENT);
+		confirmPopup->Pop(ConfirmPopup::ConfirmType::SAVE_CURRENT_NEW);
 	}
 }
 
