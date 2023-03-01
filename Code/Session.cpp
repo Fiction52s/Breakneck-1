@@ -66,6 +66,7 @@
 #include "ControlProfile.h"
 
 #include "ReplayHUD.h"
+#include "AlertBox.h"
 
 using namespace sf;
 using namespace std;
@@ -1568,6 +1569,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
 
+	alertBox = new AlertBox;
+
 	currSaveState = NULL;
 	ngs = NULL;
 	ggpoPlayers = NULL;
@@ -2006,6 +2009,8 @@ Session::~Session()
 
 	delete[] ggpoCompressedInputs;
 	ggpoCompressedInputs = NULL;
+
+	delete alertBox;
 
 	//CleanupNetplay();
 }
@@ -6579,6 +6584,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawScoreDisplay(target);
 
+	alertBox->Draw(target);
+
 	//DrawLeaderboard(target);
 
 	DrawFrameRate(target);
@@ -6891,6 +6898,8 @@ bool Session::RunGameModeUpdate()
 		UpdateBarriers();
 
 		UpdateCamera();
+
+		alertBox->Update();
 
 		if (gateMarkers != NULL)
 			gateMarkers->Update(&cam);
@@ -8871,4 +8880,9 @@ bool Session::IsReplayHUDOn()
 void Session::DrawLeaderboard(sf::RenderTarget *target)
 {
 
+}
+
+void Session::StartAlertBox(const std::string &msg)
+{
+	alertBox->Start(msg);
 }

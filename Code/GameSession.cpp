@@ -80,6 +80,7 @@
 #include "globals.h"
 #include "Leaderboard.h"
 #include "UIMouse.h"
+#include "md5.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -1611,6 +1612,7 @@ bool GameSession::Load()
 
 	//while (true);
 
+
 	replayText.setFont(mainMenu->arial);
 	replayText.setCharacterSize(24);
 	replayText.setFillColor(Color(255, 0, 0, 150));
@@ -1753,9 +1755,7 @@ bool GameSession::Load()
 
 	ReadFile();
 
-
-
-
+	myHash = md5file(filePathStr);
 
 	SetupAbsorbParticles();
 
@@ -4798,6 +4798,6 @@ void GameSession::StartLeaderboard()
 	if (adventureManager != NULL)
 	{
 		gameState = LEADERBOARD;
-		adventureManager->leaderboard->Start();
+		adventureManager->leaderboard->Start(adventureManager->GetLeaderboardName(this));
 	}
 }

@@ -149,6 +149,7 @@ struct AdventureFile
 	AdventureMap &GetMap(int index);
 	AdventureMapHeaderInfo &GetMapHeaderInfo(int index);
 	void GetMapIndexes( int mIndex, int &w, int &s, int &m);
+	std::string GetLeaderboardName(int mIndex);
 
 	AdventureSector &GetSector(int w, int s);
 	AdventureSector &GetAdventureSector(Sector *sec);

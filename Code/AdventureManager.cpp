@@ -6,6 +6,7 @@
 #include "GameSession.h"
 #include "PlayerRecord.h"
 #include "Leaderboard.h"
+#include "md5.h"
 
 using namespace std;
 using namespace sf;
@@ -154,8 +155,9 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 			game->playerRecordingManager->WriteToFile(game->GetBestReplayPath());
 
 			game->SetupBestPlayerReplayer();
-
-			leaderboard->manager.UploadScore(totalFrames);
+			
+			leaderboard->manager.UploadScore(GetLeaderboardName( game ),
+				totalFrames);
 			//leaderboardMan->UploadScore(totalFrames);
 			//leaderboard stuff here!
 		}
@@ -261,7 +263,13 @@ void AdventureManager::FadeInSaveMenu()
 	saveMenu->transparency = 1.f;
 }
 
+std::string AdventureManager::GetLeaderboardName(GameSession *game)
+{
+	return adventureFile.GetLeaderboardName(game->level->index) + "_" + game->myHash;
+}
+
 void AdventureManager::DrawWorldMap(sf::RenderTarget *target)
 {
 	worldMap->Draw(target);
 }
+

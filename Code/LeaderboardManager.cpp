@@ -1,5 +1,6 @@
 #include "Leaderboard.h"
 #include <iostream>
+#include "Session.h"
 
 using namespace std;
 using namespace sf;
@@ -8,6 +9,7 @@ using namespace sf;
 LeaderboardManager::LeaderboardManager()
 {
 	action = A_IDLE;
+	lastUploadSuccess = false;
 }
 
 LeaderboardManager::~LeaderboardManager()
@@ -15,11 +17,13 @@ LeaderboardManager::~LeaderboardManager()
 
 }
 
-void LeaderboardManager::UploadScore(int score)
+void LeaderboardManager::UploadScore(const std::string &name, int score)
 {
-	FindLeaderboard("testboard", A_UPLOADING);
-
 	scoreToUpload = score;
+
+	lastUploadSuccess = false;
+
+	FindLeaderboard(name, A_UPLOADING);
 }
 
 void LeaderboardManager::DownloadBoard(const std::string &name)
@@ -57,7 +61,7 @@ void LeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, b
 		if (action == A_UPLOADING)
 		{
 			SteamAPICall_t call = SteamUserStats()->UploadLeaderboardScore(callback->m_hSteamLeaderboard, ELeaderboardUploadScoreMethod::k_ELeaderboardUploadScoreMethodKeepBest, scoreToUpload, NULL, 0);
-			onLeaderboardScoreUploadedCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardUploaded);
+			onLeaderboardScoreUploadedCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardScoreUploaded);
 		}
 		else if (action == A_DOWNLOADING)
 		{
@@ -72,11 +76,18 @@ void LeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, b
 	}
 }
 
-void LeaderboardManager::OnLeaderboardUploaded(LeaderboardScoreUploaded_t *callback, bool bIOFailure)
+void LeaderboardManager::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *callback, bool bIOFailure)
 {
 	action = A_IDLE;
 	if (callback->m_bSuccess)
 	{
+		lastUploadSuccess = true;
+
+		Session *sess = Session::GetSession();
+		if (sess != NULL)
+		{
+			sess->StartAlertBox("score uploaded successfully");
+		}
 		cout << "leaderboard upload successful\n";
 
 		if (callback->m_bScoreChanged)
@@ -90,6 +101,7 @@ void LeaderboardManager::OnLeaderboardUploaded(LeaderboardScoreUploaded_t *callb
 	}
 	else
 	{
+		lastUploadSuccess = false;
 		cout << "leaderboard upload failed\n";
 	}
 }

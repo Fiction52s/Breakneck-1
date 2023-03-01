@@ -49,12 +49,20 @@ LeaderboardDisplay::LeaderboardDisplay()
 		
 	}
 
+	SetRectColor(bgQuad, Color(100, 100, 200, 150));
+	SetRectTopLeft(bgQuad, 1920, 1080, Vector2f(0, 0));
+
 	for (int i = 0; i < NUM_ROWS; ++i)
 	{
 		rows[i].Init(i, panel);
 	}
 
 	SetTopLeft(Vector2f(960 - ROW_WIDTH / 2, 540 - (NUM_ROWS / 2 * ROW_HEIGHT)));
+}
+
+LeaderboardDisplay::~LeaderboardDisplay()
+{
+	delete panel;
 }
 
 bool LeaderboardDisplay::IsHidden()
@@ -80,11 +88,11 @@ void LeaderboardDisplay::Hide()
 	MOUSE.SetControllersOn(false);
 }
 
-void LeaderboardDisplay::Start()
+void LeaderboardDisplay::Start( const std::string &boardName )
 {
 	Show();
 
-	manager.DownloadBoard("testboard");
+	manager.DownloadBoard(boardName);
 }
 
 void LeaderboardDisplay::SetTopLeft(const sf::Vector2f &p_pos)
@@ -105,7 +113,14 @@ void LeaderboardDisplay::HandleEvent(sf::Event ev)
 	if (IsHidden())
 		return;
 
-	panel->HandleEvent(ev);
+	if (action == A_UPLOAD_FAILED_POPUP)
+	{
+		messagePop.panel->HandleEvent(ev);
+	}
+	else
+	{
+		panel->HandleEvent(ev);
+	}
 }
 
 void LeaderboardDisplay::Update()
@@ -136,6 +151,16 @@ void LeaderboardDisplay::Update()
 
 				rows[i].Set(manager.currBoard.entries[i]);
 			}
+			//if (false)//manager.lastUploadSuccess)
+			//{
+			//	
+			//}
+			//else
+			//{
+			//	messagePop.Pop("Score upload failed. Try again later");
+			//	action = A_UPLOAD_FAILED_POPUP;
+			//}
+			
 		}
 	}
 
@@ -149,7 +174,19 @@ void LeaderboardDisplay::Update()
 		Hide();
 	}
 
-	panel->MouseUpdate();
+	if (action == A_UPLOAD_FAILED_POPUP)
+	{
+		messagePop.Update();
+
+		if (!messagePop.IsActive())
+		{
+			action = A_LOADING;
+		}
+	}
+	else
+	{
+		panel->MouseUpdate();
+	}
 
 	++frame;
 }
@@ -161,6 +198,8 @@ void LeaderboardDisplay::Draw(sf::RenderTarget *target)
 		return;
 	}
 
+	target->draw(bgQuad, 4, sf::Quads);
+
 	target->draw(rowQuads, NUM_ROWS * 4, sf::Quads);
 
 	if (action == A_SHOWING)
@@ -171,5 +210,10 @@ void LeaderboardDisplay::Draw(sf::RenderTarget *target)
 		}
 
 		panel->Draw(target);
+	}
+
+	if (action == A_UPLOAD_FAILED_POPUP)
+	{
+		messagePop.Draw(target);
 	}
 }

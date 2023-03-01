@@ -1020,6 +1020,7 @@ struct MessagePopup : GUIHandler
 	
 	MessagePopup();
 	~MessagePopup();
+	bool IsActive();
 	void Update();
 	void Pop(const std::string &str);
 	void ButtonCallback(Button *b,

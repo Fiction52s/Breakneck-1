@@ -30,6 +30,11 @@ void MessagePopup::Update()
 	panel->MouseUpdate();
 }
 
+bool MessagePopup::IsActive()
+{
+	return action == A_ACTIVE;
+}
+
 void MessagePopup::Pop(const std::string &message)
 {
 	if (edit != NULL)

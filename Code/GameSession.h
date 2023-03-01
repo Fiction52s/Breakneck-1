@@ -247,6 +247,8 @@ struct GameSession : RayCastHandler, Session
 	static GameSession *GetSession();
 	static GameSession *currSession;
 
+
+	std::string myHash;
 	int gameStatePrePopup;
 	int currPopupType;
 	GamePopup *gamePopup;

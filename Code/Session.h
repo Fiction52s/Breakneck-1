@@ -110,6 +110,8 @@ struct InputVisualizer;
 struct PState;
 struct GameMode;
 
+struct AlertBox;
+
 #define TIMESTEP (1.0 / 60.0)
 
 enum BossFightType
@@ -416,6 +418,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	ScoreDisplay *scoreDisplay;
 	InputVisualizer *inputVis;
 	PokeTriangleScreenGeoGroup *pokeTriangleScreenGroup;
+
+	AlertBox *alertBox;
 
 	FrameRateDisplay frameRateDisplay;
 	RunningTimerDisplay runningTimerDisplay;
@@ -922,6 +926,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupPlayerReplayManager();
 	bool IsReplayOn();
 	bool IsReplayHUDOn();
+	void StartAlertBox(const std::string &msg);
 };
 
 #endif

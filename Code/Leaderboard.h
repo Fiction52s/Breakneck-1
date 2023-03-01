@@ -38,11 +38,12 @@ struct LeaderboardManager
 	int scoreToUpload;
 	std::string searchBoardName;
 	int postFindAction;
+	bool lastUploadSuccess;
 
 	LeaderboardManager();
 	~LeaderboardManager();
 	bool IsIdle();
-	void UploadScore(int score);
+	void UploadScore(const std::string &name, int score);
 	void DownloadBoard(const std::string &name);
 private:
 	CCallResult<LeaderboardManager,
@@ -55,7 +56,7 @@ private:
 		LeaderboardScoresDownloaded_t> onLeaderboardScoresDownloadedCallResult;
 
 	void OnLeaderboardFound(LeaderboardFindResult_t *callback, bool bIOFailure);
-	void OnLeaderboardUploaded(LeaderboardScoreUploaded_t *callback, bool bIOFailure);
+	void OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *callback, bool bIOFailure);
 	void OnLeaderboardScoresDownloaded(LeaderboardScoresDownloaded_t *callback, bool bIOFailure);
 	void FindLeaderboard(const std::string &name, int postAction );
 };
@@ -85,13 +86,17 @@ struct LeaderboardDisplay : GUIHandler
 		A_HIDDEN,
 		A_LOADING,
 		A_SHOWING,
+		A_UPLOAD_FAILED_POPUP,
 	};
 
+	MessagePopup messagePop;
 	LeaderboardManager manager;
 	int action;
 	int frame;
 
 	Panel *panel;
+
+	sf::Vertex bgQuad[4];
 
 	const static int NUM_ROWS = 10;
 	const static int ROW_WIDTH = 500;
@@ -106,7 +111,8 @@ struct LeaderboardDisplay : GUIHandler
 	sf::Vector2f topLeft;
 
 	LeaderboardDisplay();
-	void Start();
+	~LeaderboardDisplay();
+	void Start( const std::string &boardName );
 	void SetTopLeft(const sf::Vector2f &p_pos);
 	void HandleEvent(sf::Event ev);
 	void Update();

@@ -470,6 +470,14 @@ void AdventureFile::GetMapIndexes( int index, int &w, int &s, int &m)
 	m = (index % ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR);
 }
 
+std::string AdventureFile::GetLeaderboardName(int mIndex)
+{
+	int w, s, m;
+	GetMapIndexes(mIndex, w, s, m);
+
+	return to_string(w+1) + "_" + to_string(s+1) + "_" + to_string(m+1);
+}
+
 AdventureMapHeaderInfo &AdventureFile::GetMapHeaderInfo(int index)
 {
 	return GetMap(index).headerInfo;
