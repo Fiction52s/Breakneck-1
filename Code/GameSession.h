@@ -524,6 +524,7 @@ struct GameSession : RayCastHandler, Session
 	void RecGhostRecordFrame();
 	bool RunPostUpdate();
 	bool PopupGameModeUpdate();
+	bool LeaderboardGameModeUpdate();
 	void SequenceGameModeRespondToGoalDestroyed();
 	void UpdateTerrainStates();
 	void UpdateRailStates();
@@ -545,5 +546,6 @@ struct GameSession : RayCastHandler, Session
 	MatchResultsScreen *CreateResultsScreen();
 
 	void DrawLeaderboard(sf::RenderTarget *target);
+	void StartLeaderboard();
 };
 #endif

@@ -22,6 +22,17 @@ void LeaderboardManager::UploadScore(int score)
 	scoreToUpload = score;
 }
 
+void LeaderboardManager::DownloadBoard(const std::string &name)
+{
+	FindLeaderboard(name, A_DOWNLOADING);
+}
+
+bool LeaderboardManager::IsIdle()
+{
+	return action == A_IDLE;
+}
+
+
 void LeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
 {
 	postFindAction = p_action;

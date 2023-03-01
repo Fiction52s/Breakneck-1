@@ -6579,6 +6579,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawScoreDisplay(target);
 
+	//DrawLeaderboard(target);
+
 	DrawFrameRate(target);
 
 	DrawRunningTimer(target);
@@ -6996,6 +6998,11 @@ bool Session::GGPOFrozenGameModeUpdate()
 
 
 bool Session::PopupGameModeUpdate()
+{
+	return true;
+}
+
+bool Session::LeaderboardGameModeUpdate()
 {
 	return true;
 }

@@ -4,6 +4,7 @@
 #include <SFML\Graphics.hpp>
 #include "steam\steam_api.h"
 #include <vector>
+#include "GUI.h"
 
 struct KineticLeaderboardEntry
 {
@@ -40,7 +41,9 @@ struct LeaderboardManager
 
 	LeaderboardManager();
 	~LeaderboardManager();
+	bool IsIdle();
 	void UploadScore(int score);
+	void DownloadBoard(const std::string &name);
 private:
 	CCallResult<LeaderboardManager,
 		LeaderboardFindResult_t> onLeaderboardFindResultCallResult;
@@ -60,26 +63,40 @@ private:
 struct LeaderboardEntryRow
 {
 	bool set;
-	sf::Text nameText;
+	HyperLink *nameLink;
 	sf::Text scoreText;
+	sf::Text rankText;
+	int index;
 
 	LeaderboardEntryRow();
+	void Init( int index, Panel *p);
 	void Clear();
 	void Set(KineticLeaderboardEntry &entryInfo);
 	void SetTopLeft(const sf::Vector2f &pos);
 	void Draw(sf::RenderTarget *target);
 };
 
-struct LeaderboardDisplay
+struct LeaderboardDisplay : GUIHandler
 {
 	//placing, icon, name, time
 
-	LeaderboardManager manager;
+	enum Action
+	{
+		A_HIDDEN,
+		A_LOADING,
+		A_SHOWING,
+	};
 
+	LeaderboardManager manager;
+	int action;
+	int frame;
+
+	Panel *panel;
 
 	const static int NUM_ROWS = 10;
-	const static int ROW_WIDTH = 400;
-	const static int ROW_HEIGHT = 30;
+	const static int ROW_WIDTH = 500;
+	const static int ROW_HEIGHT = 50;
+	const static int CHAR_HEIGHT = ROW_HEIGHT - 20;
 	sf::Vertex rowQuads[NUM_ROWS * 4];
 
 	LeaderboardEntryRow rows[NUM_ROWS];
@@ -89,9 +106,13 @@ struct LeaderboardDisplay
 	sf::Vector2f topLeft;
 
 	LeaderboardDisplay();
-	void Start(LeaderboardInfo *currBoard);
+	void Start();
 	void SetTopLeft(const sf::Vector2f &p_pos);
+	void HandleEvent(sf::Event ev);
 	void Update();
+	void Show();
+	void Hide();
+	bool IsHidden();
 	void Draw(sf::RenderTarget *target);
 };
 

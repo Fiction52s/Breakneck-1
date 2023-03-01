@@ -209,7 +209,8 @@ struct Session : TilesetManager, QuadTreeCollider
 		SEQUENCE,
 		FROZEN,
 		POPUP,
-		MAP
+		MAP,
+		LEADERBOARD,
 	};
 
 	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;
@@ -840,6 +841,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool GGPOFrozenGameModeUpdate();
 	bool FrozenGameModeUpdate();
 	virtual bool PopupGameModeUpdate();
+	virtual bool LeaderboardGameModeUpdate();
 	bool SequenceGameModeUpdate();
 	void DrawGameSequence(sf::RenderTarget *target);
 	virtual void SequenceGameModeRespondToGoalDestroyed() = 0;

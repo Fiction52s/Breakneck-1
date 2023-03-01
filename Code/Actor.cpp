@@ -7869,7 +7869,7 @@ void Actor::HandleWaitingScoreDisplay()
 		}
 		else if (startPressed)
 		{
-
+			owner->StartLeaderboard();
 		}
 	}
 }

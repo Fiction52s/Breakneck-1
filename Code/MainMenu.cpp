@@ -105,7 +105,7 @@ std::string GetTimeStr(int numFrames)
 	{
 		ss << "0";
 	}
-	ss << centiSecond << endl;
+	ss << centiSecond;
 
 	return ss.str();
 }

@@ -78,6 +78,8 @@
 #include "CustomCursor.h"
 #include "AdventureManager.h"
 #include "globals.h"
+#include "Leaderboard.h"
+#include "UIMouse.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -2951,6 +2953,51 @@ bool GameSession::RunMainLoopOnce()
 		pauseMenuSprite.setScale(.5, .5);
 		window->draw(pauseMenuSprite);
 	}
+	else if (gameState == LEADERBOARD)
+	{
+		//clear window here or under the update? not sure yet
+		window->clear();
+		pauseTex->clear(Color::Transparent);
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+			if (mainMenu->adventureManager != NULL)
+			{
+				mainMenu->adventureManager->leaderboard->HandleEvent(ev);
+			}
+		}
+
+		if (!LeaderboardGameModeUpdate())
+		{
+			return false;
+		}
+
+		//could clear the window here!
+		//window->clear();
+
+
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+
+
+		DrawLeaderboard(pauseTex);
+		/*if (mainMenu->adventureManager != NULL)
+		{
+			mainMenu->adventureManager->leaderboard->Draw( )
+		}*/
+		//->Draw(pauseTex);
+
+		pauseTex->display();
+		Sprite pauseMenuSprite;
+		pauseMenuSprite.setTexture(pauseTex->getTexture());
+		pauseMenuSprite.setPosition(-960 / 2, -540 / 2);//(1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
+		pauseMenuSprite.setScale(.5, .5);
+		window->draw(pauseMenuSprite);
+	}
 
 	if (!IsParallelSession())
 	{
@@ -3948,6 +3995,68 @@ bool GameSession::PopupGameModeUpdate()
 	return true;
 }
 
+bool GameSession::LeaderboardGameModeUpdate()
+{
+	while (accumulator >= TIMESTEP)
+	{
+		/*if (!OneFrameModeUpdate())
+		{
+			break;
+		}*/
+
+		MOUSE.Update(MOUSE.GetRealPixelPos());
+		UpdateControllers();
+
+		if (mainMenu->adventureManager != NULL)
+		{
+			mainMenu->adventureManager->leaderboard->Update();
+
+			if (mainMenu->adventureManager->leaderboard->IsHidden())
+			{
+				gameState = RUN;
+			}
+		}
+
+
+		/*int res = gamePopup->Update(controllerStates[0]);
+
+		if (gamePopup->numOptions == 1)
+		{
+			if (res != GamePopup::OPTION_NOTHING)
+			{
+				gameState = (Session::GameState)gameStatePrePopup;
+			}
+		}
+
+		switch (currPopupType)
+		{
+		case POPUPTYPE_NO_REPLAY_FOUND:
+		{
+			if (res == GamePopup::OPTION_YES)
+			{
+
+			}
+		}
+		}*/
+
+		SteamAPI_RunCallbacks();
+
+		if (gameState != LEADERBOARD)
+		{
+			break;
+		}
+
+		accumulator -= TIMESTEP;
+	}
+
+	if (gameState != LEADERBOARD)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void GameSession::UpdateExplodingGravityGrass()
 {
 	Grass *curr = explodingGravityGrass;
@@ -4679,5 +4788,16 @@ void GameSession::DrawLeaderboard(sf::RenderTarget *target)
 	if (adventureManager != NULL)
 	{
 		adventureManager->leaderboard->Draw(target);
+	}
+}
+
+void GameSession::StartLeaderboard()
+{
+	AdventureManager *adventureManager = mainMenu->adventureManager;
+
+	if (adventureManager != NULL)
+	{
+		gameState = LEADERBOARD;
+		adventureManager->leaderboard->Start();
 	}
 }
