@@ -237,13 +237,29 @@ ControlProfileMenu::ControlProfileMenu( PlayerBox *pb)
 	selectIconText.setFont(MainMenu::GetInstance()->arial);
 	selectIconText.setCharacterSize(textSize);
 	selectIconText.setFillColor(Color::Black);
+	selectIconText.setString("Select");
 
 	editIconText.setFont(MainMenu::GetInstance()->arial);
 	editIconText.setCharacterSize(textSize);
 	editIconText.setFillColor(Color::Black);
-
-	selectIconText.setString("Select");
 	editIconText.setString("Show/Edit");
+
+	cancelIconText.setFont(MainMenu::GetInstance()->arial);
+	cancelIconText.setCharacterSize(textSize);
+	cancelIconText.setFillColor(Color::Black);
+	cancelIconText.setString("Cancel");
+
+	backIconText.setFont(MainMenu::GetInstance()->arial);
+	backIconText.setCharacterSize(textSize);
+	backIconText.setFillColor(Color::Black);
+	backIconText.setString("Back");
+
+	saveIconText.setFont(MainMenu::GetInstance()->arial);
+	saveIconText.setCharacterSize(textSize);
+	saveIconText.setFillColor(Color::Black);
+	saveIconText.setString("Save");
+	
+	SetRectColor(bottomBorderQuad, Color(50, 50, 50));
 
 	
 	for( int i = 0; i < NUM_BOXES; ++i )
@@ -364,6 +380,27 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 	{
 		actionButtonGroup->Draw(target);
 		target->draw(editingProfileText);
+
+		target->draw(bottomBorderQuad, 4, sf::Quads);
+
+		if (action == A_EDIT_PROFILE)
+		{
+			if (tempProfile->editable)
+			{
+				target->draw(buttonIconQuadsModifyControls, 4 * 2, sf::Quads, ts_buttons->texture);
+
+
+				target->draw(saveIconText);
+				target->draw(cancelIconText);
+			}
+			else
+			{
+				target->draw(buttonIconQuadsModifyControls + 4, 4, sf::Quads, ts_buttons->texture);
+				target->draw(backIconText);
+			}
+
+			
+		}
 		//editProfileGrid->Draw( target );
 	}
 	else if (action == A_SELECTED)
@@ -387,17 +424,14 @@ void ControlProfileMenu::UpdateButtonIconsWhenControllerIsChanged()
 
 	ts_buttons = mainMenu->GetButtonIconTileset(cType);
 
-	auto button = XBoxButton::XBOX_A;
-	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
-	SetRectSubRect(buttonIconQuads, ir);
+	SetRectSubRect(buttonIconQuads, mainMenu->GetButtonIconTileForMenu(cType, XBoxButton::XBOX_A));
+	SetRectSubRect(buttonIconQuads + 4, mainMenu->GetButtonIconTileForMenu(cType, XBoxButton::XBOX_A));
+	SetRectSubRect(buttonIconQuads + 8, mainMenu->GetButtonIconTileForMenu(cType, XBoxButton::XBOX_X));
 
-	button = XBoxButton::XBOX_A;
-	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
-	SetRectSubRect(buttonIconQuads + 4, ir);
+	SetRectSubRect(buttonIconQuadsModifyControls, mainMenu->GetButtonIconTileForMenu(cType, XBoxButton::XBOX_X));
+	SetRectSubRect(buttonIconQuadsModifyControls+4, mainMenu->GetButtonIconTileForMenu(cType, XBoxButton::XBOX_B));
 
-	button = XBoxButton::XBOX_X;
-	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
-	SetRectSubRect(buttonIconQuads + 8, ir);
+
 }
 
 void ControlProfileMenu::UpdateNames()
@@ -491,15 +525,24 @@ void ControlProfileMenu::SetTopLeft(sf::Vector2f &p_topLeft)
 	float vertBorder = 10;
 
 	Vector2f selectIconPos(topLeft.x, topLeft.y + fullHeight + vertBorder);
-
 	SetRectTopLeft(buttonIconQuads + 4, buttonSize, buttonSize, selectIconPos); //+ Vector2f(4, 4));
-
 	selectIconText.setPosition(selectIconPos + Vector2f(buttonSize + 10, 0));
-	
+
 	Vector2f editIconPos = selectIconPos + Vector2f(0, buttonSize + vertBorder);
 	SetRectTopLeft(buttonIconQuads + 8, buttonSize, buttonSize, editIconPos);
-
 	editIconText.setPosition(editIconPos + Vector2f(buttonSize + 10, 0));
+
+	Vector2f saveIconPos = selectIconPos + Vector2f(0, 50);
+	SetRectTopLeft(buttonIconQuadsModifyControls, buttonSize, buttonSize, saveIconPos);
+	saveIconText.setPosition( saveIconPos + Vector2f( buttonSize + 10, 0 ));
+
+	Vector2f cancelIconPos = saveIconPos + Vector2f(200, 0);
+	SetRectTopLeft(buttonIconQuadsModifyControls + 4, buttonSize, buttonSize, cancelIconPos);
+	cancelIconText.setPosition(cancelIconPos + Vector2f( buttonSize + 10, 0 ));
+
+	backIconText.setPosition(cancelIconText.getPosition());
+
+	SetRectTopLeft(bottomBorderQuad, 450, 4, Vector2f(topLeft.x - 10, saveIconPos.y - 10));
 
 	SetupBoxes();
 

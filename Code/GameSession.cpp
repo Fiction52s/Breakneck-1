@@ -4669,3 +4669,15 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 
 	return NULL;
 }
+
+
+#include "Leaderboard.h"
+void GameSession::DrawLeaderboard(sf::RenderTarget *target)
+{
+	AdventureManager *adventureManager = mainMenu->adventureManager;
+
+	if (adventureManager != NULL)
+	{
+		adventureManager->leaderboard->Draw(target);
+	}
+}

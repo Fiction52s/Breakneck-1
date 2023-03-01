@@ -538,11 +538,11 @@ void SelectBar::Reset()
 	}
 	else if (row == 1) //exit
 	{
-		button = XBOX_X;//ControllerSettings::BUTTONTYPE_DASH;//2;
+		button = XBOX_B;//ControllerSettings::BUTTONTYPE_DASH;//2;
 	}
 	else if (row == 2) //retry
 	{
-		button = XBOX_B;//ControllerSettings::BUTTONTYPE_SPECIAL;//1;
+		button = XBOX_X;//ControllerSettings::BUTTONTYPE_SPECIAL;//1;
 	}
 	else if (row == 3)//watch
 	{

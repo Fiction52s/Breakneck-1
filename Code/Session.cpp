@@ -2817,7 +2817,6 @@ void Session::UpdateControllers()
 			filteredPrevInput[i] = GetCurrInputFiltered(i);
 		}
 	}
-	
 
 	CONTROLLERS.Update();
 	
@@ -8860,4 +8859,9 @@ bool Session::IsReplayOn()
 bool Session::IsReplayHUDOn()
 {
 	return IsReplayOn() && playerReplayManager->IsReplayHUDOn(0);
+}
+
+void Session::DrawLeaderboard(sf::RenderTarget *target)
+{
+
 }

@@ -173,6 +173,12 @@ struct ControlProfileMenu
 	sf::Text selectIconText;
 	sf::Text editIconText;
 
+	sf::Text cancelIconText;
+	sf::Text backIconText;
+	sf::Text saveIconText;
+
+	sf::Vertex bottomBorderQuad[4];
+
 	sf::Text profileNames[NUM_BOXES];
 	int action;
 	sf::Vector2f topLeft;
@@ -182,6 +188,8 @@ struct ControlProfileMenu
 	
 	Tileset *ts_buttons;
 	sf::Vertex buttonIconQuads[4 * 3];
+
+	sf::Vertex buttonIconQuadsModifyControls[4 * 2];
 
 	std::list<ControlProfile*> profiles;
 	sf::Font font;

@@ -815,6 +815,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawRain(sf::RenderTarget *target);
 	virtual void DrawRails(sf::RenderTarget *target) = 0;
 	virtual void DrawScoreDisplay(sf::RenderTarget *target);
+	virtual void DrawLeaderboard(sf::RenderTarget *target);
 	void DrawFrameRate(sf::RenderTarget *target);
 	void DrawRunningTimer(sf::RenderTarget *target);
 	void DrawInputVis(sf::RenderTarget *target);

@@ -543,5 +543,7 @@ struct GameSession : RayCastHandler, Session
 
 	bool RunMainLoopOnce(); //return false means go again
 	MatchResultsScreen *CreateResultsScreen();
+
+	void DrawLeaderboard(sf::RenderTarget *target);
 };
 #endif

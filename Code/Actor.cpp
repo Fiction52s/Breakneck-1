@@ -7721,13 +7721,15 @@ void Actor::HandleWaitingScoreDisplay()
 		bool r1Pressed = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
 		bool bPressed = sess->controllerStates[actorIndex]->ButtonPressed_B();
 
+		bool startPressed = sess->controllerStates[actorIndex]->ButtonPressed_Start();
+
 		/*if (!sess->scoreDisplay->madeRecord && (owner != NULL && !owner->bestReplayOn))
 		{
 			yPressed = false;
 			r1Pressed = false;
 		}*/
 
-		if (aPressed || xPressed)
+		if (aPressed || bPressed)
 		{
 			if (owner != NULL)
 			{
@@ -7755,7 +7757,7 @@ void Actor::HandleWaitingScoreDisplay()
 						owner->resType = GameSession::GameResultType::GR_WIN;
 					}
 				}
-				else if (xPressed)
+				else if (bPressed)
 				{
 					owner->resType = GameSession::GameResultType::GR_WIN;
 				}
@@ -7763,7 +7765,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 			sess->scoreDisplay->Deactivate();
 		}
-		else if (bPressed)
+		else if (xPressed)
 		{
 			if (owner != NULL)
 			{
@@ -7864,6 +7866,10 @@ void Actor::HandleWaitingScoreDisplay()
 				}
 			}
 			
+		}
+		else if (startPressed)
+		{
+
 		}
 	}
 }

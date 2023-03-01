@@ -11,6 +11,7 @@ struct KinBoostScreen;
 struct GameSession;
 struct SaveFile;
 struct ControlProfile;
+struct LeaderboardDisplay;
 
 struct AdventureManager
 {
@@ -29,14 +30,9 @@ struct AdventureManager
 
 	bool isDefaultKeyboardInputOn;
 
-
-	//ControllerDualStateQueue *chosenControllerInput;
-	//ControlProfile *chosenProfile;
-
-
 	GameSession *currLevel;
 
-	
+	LeaderboardDisplay *leaderboard;
 
 	AdventureManager();
 	~AdventureManager();
@@ -54,6 +50,7 @@ struct AdventureManager
 	void SaveCurrFile();
 	void SetCurrSaveFile(int index);
 	void FadeInSaveMenu();
+	
 };
 
 #endif

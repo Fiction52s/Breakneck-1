@@ -5,12 +5,14 @@
 #include "MainMenu.h"
 #include "GameSession.h"
 #include "PlayerRecord.h"
+#include "Leaderboard.h"
 
 using namespace std;
 using namespace sf;
 
 AdventureManager::AdventureManager()
 {
+	leaderboard = new LeaderboardDisplay;
 	worldMap = NULL;
 	kinBoostScreen = NULL;
 	saveMenu = NULL;
@@ -35,6 +37,12 @@ AdventureManager::AdventureManager()
 
 AdventureManager::~AdventureManager()
 {
+	if (leaderboard != NULL)
+	{
+		delete leaderboard;
+		leaderboard = NULL;
+	}
+
 	if (worldMap != NULL)
 	{
 		delete worldMap;
@@ -146,6 +154,10 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 			game->playerRecordingManager->WriteToFile(game->GetBestReplayPath());
 
 			game->SetupBestPlayerReplayer();
+
+			leaderboard->manager.UploadScore(totalFrames);
+			//leaderboardMan->UploadScore(totalFrames);
+			//leaderboard stuff here!
 		}
 		//create a flag so that you can get hype over this
 	}
@@ -253,4 +265,3 @@ void AdventureManager::DrawWorldMap(sf::RenderTarget *target)
 {
 	worldMap->Draw(target);
 }
-
