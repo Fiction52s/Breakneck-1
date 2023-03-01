@@ -48,16 +48,18 @@ void LeaderboardEntryRow::Set(KineticLeaderboardEntry &entryInfo)
 	scoreText.setString(entryInfo.timeStr);
 }
 
-void LeaderboardEntryRow::SetTopLeft(const sf::Vector2f &topLeft)
+void LeaderboardEntryRow::SetTopLeft(const sf::Vector2f &p_topLeft)
 {
 	//nameText.setPosition(topLeft);
 	float rankSpacing = 20;
 	float nameSpacing = rankSpacing + 100;
 	float scoreSpacing = nameSpacing + 200;
 
-	rankText.setPosition(topLeft.x + rankSpacing, topLeft.y);
-	nameLink->SetPos(Vector2i(topLeft.x + nameSpacing, topLeft.y));
-	scoreText.setPosition(topLeft.x + scoreSpacing, topLeft.y);
+	Vector2f topLeft = p_topLeft;
+
+	rankText.setPosition(topLeft.x + rankSpacing, topLeft.y + 4);
+	nameLink->SetPos(Vector2i(topLeft.x + nameSpacing, topLeft.y + 4));
+	scoreText.setPosition(topLeft.x + scoreSpacing, topLeft.y + 4);
 }
 
 void LeaderboardEntryRow::Draw(sf::RenderTarget *target)
