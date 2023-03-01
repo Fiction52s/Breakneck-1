@@ -9,18 +9,22 @@ AlertBox::AlertBox()
 {
 	SetRectColor(boxQuad, Color::Black);
 
-	float boxWidth = 200;
-	float boxHeight = 100;
-
-	Vector2f topLeft(1920 - boxWidth, 1080 - boxHeight);
-
-	SetRectTopLeft(boxQuad, boxWidth, boxHeight, topLeft);
-
 	MainMenu *mainMenu = MainMenu::GetInstance();
 	alertText.setFont(mainMenu->arial);
 	alertText.setCharacterSize(20);
-	alertText.setPosition(topLeft);
+	
 	alertText.setFillColor(Color::White);
+
+	actionLength[A_HIDDEN] = 0;
+	actionLength[A_SLIDE_IN] = 30;
+	actionLength[A_DISPLAY] = 60 * 4;
+	actionLength[A_SLIDE_OUT] = 30;
+
+	boxWidth = 400;
+	boxHeight = 50;
+
+	showPos = Vector2f(1920 - boxWidth, 1080 - boxHeight);
+	hidePos = Vector2f(1920 - boxWidth, 1080);
 
 	action = A_HIDDEN;
 	frame = 0;
@@ -31,27 +35,63 @@ void AlertBox::Start(const std::string &msg)
 	alertText.setString(msg);
 	action = A_SLIDE_IN;
 	frame = 0;
+	SetTopLeft(hidePos);
 }
 
 void AlertBox::Update()
 {
-	if (action == A_SLIDE_IN && frame == 30)
+	if (frame == actionLength[action])
 	{
-		action = A_DISPLAY;
-		frame = 0;
+		switch (action)
+		{
+		case A_SLIDE_IN:
+		{
+			action = A_DISPLAY;
+			frame = 0;
+			SetTopLeft(showPos);
+			break;
+		}
+		case A_SLIDE_OUT:
+		{
+			action = A_HIDDEN;
+			frame = 0;
+			SetTopLeft(hidePos);
+			break;
+		}
+		case A_DISPLAY:
+		{
+			action = A_SLIDE_OUT;
+			frame = 0;
+			break;
+		}
+		}
 	}
-	else if (action == A_SLIDE_OUT && frame == 30)
+
+	switch (action)
 	{
-		action = A_HIDDEN;
-		frame = 0;
+	case A_SLIDE_IN:
+	{
+		float a = frame / (float)actionLength[A_SLIDE_IN];
+		Vector2f topLeft = hidePos * (1.f - a) + a * showPos;
+		SetTopLeft(topLeft);
+		break;
 	}
-	else if (action == A_DISPLAY && frame == 60)
+	case A_SLIDE_OUT:
 	{
-		action = A_SLIDE_OUT;
-		frame = 0;
+		float a = frame / (float)actionLength[A_SLIDE_OUT];
+		Vector2f topLeft = showPos * (1.f - a) + a * hidePos;
+		SetTopLeft(topLeft);
+		break;
+	}
 	}
 
 	++frame;
+}
+
+void AlertBox::SetTopLeft(sf::Vector2f topLeft)
+{
+	alertText.setPosition(topLeft);
+	SetRectTopLeft(boxQuad, boxWidth, boxHeight, topLeft);
 }
 
 void AlertBox::Draw(sf::RenderTarget *target)
