@@ -20,9 +20,6 @@ AlertBox::AlertBox()
 	actionLength[A_DISPLAY] = 60 * 7;
 	actionLength[A_SLIDE_OUT] = 30;
 
-	//boxWidth = 400;
-	//boxHeight = 50;
-
 	action = A_HIDDEN;
 	frame = 0;
 }

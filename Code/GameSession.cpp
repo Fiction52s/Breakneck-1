@@ -3179,6 +3179,8 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
+	nexus = NULL;
+
 	continueLoading = true;
 	bestTimeGhostOn = false;
 	bestReplayOn = false;

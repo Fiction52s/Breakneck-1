@@ -151,13 +151,18 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 			game->playerRecordingManager->RecordReplayFrames();
 			game->playerRecordingManager->RecordGhostFrames(); //added this rn
 
+			string bestReplayPath = game->GetBestReplayPath();
+
 			game->playerRecordingManager->StopRecording();
-			game->playerRecordingManager->WriteToFile(game->GetBestReplayPath());
+			game->playerRecordingManager->WriteToFile(bestReplayPath);
 
 			game->SetupBestPlayerReplayer();
+
+			//string currPath = boost::filesystem::current_path().string();
+			//string fullReplayPath = currPath + "\\" + bestReplayPath;
 			
 			leaderboard->manager.UploadScore(GetLeaderboardName( game ),
-				totalFrames);
+				totalFrames, bestReplayPath);
 			//leaderboardMan->UploadScore(totalFrames);
 			//leaderboard stuff here!
 		}

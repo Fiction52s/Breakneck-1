@@ -5,6 +5,7 @@
 #include "steam\steam_api.h"
 #include <vector>
 #include "GUI.h"
+#include "RemoteStorageManager.h"
 
 struct KineticLeaderboardEntry
 {
@@ -23,27 +24,35 @@ struct LeaderboardInfo
 	std::vector<KineticLeaderboardEntry> entries;
 };
 
-struct LeaderboardManager
+struct LeaderboardManager : RemoteStorageResultHandler
 {
 	enum Action
 	{
 		A_IDLE,
 		A_FINDING,
-		A_UPLOADING,
+		A_UPLOAD_REPLAY,
+		A_SHARE_REPLAY,
+		A_UPLOADING_SCORE,
+		A_ATTACH_REPLAY,
 		A_DOWNLOADING,
 	};
 
 	int action;
 	LeaderboardInfo currBoard;
 	int scoreToUpload;
+	std::string localReplayPath;
 	std::string searchBoardName;
 	int postFindAction;
 
+	UGCHandle_t replayToUploadHandle;
+
 	LeaderboardManager();
 	~LeaderboardManager();
+	void FailureAlert();
 	bool IsIdle();
-	void UploadScore(const std::string &name, int score);
+	void UploadScore(const std::string &name, int score, const std::string &replayPath );
 	void DownloadBoard(const std::string &name);
+	
 private:
 	CCallResult<LeaderboardManager,
 		LeaderboardFindResult_t> onLeaderboardFindResultCallResult;
@@ -54,10 +63,21 @@ private:
 	CCallResult<LeaderboardManager,
 		LeaderboardScoresDownloaded_t> onLeaderboardScoresDownloadedCallResult;
 
+	CCallResult<LeaderboardManager,
+		RemoteStorageFileShareResult_t> onRemoteStorageFileShareResultCallResult;
+
+	CCallResult<LeaderboardManager,
+		LeaderboardUGCSet_t> onLeaderboardUGCSetCallResult;
+
 	void OnLeaderboardFound(LeaderboardFindResult_t *callback, bool bIOFailure);
 	void OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *callback, bool bIOFailure);
 	void OnLeaderboardScoresDownloaded(LeaderboardScoresDownloaded_t *callback, bool bIOFailure);
+	void OnRemoteStorageFileShareResult(RemoteStorageFileShareResult_t *callback, bool bIOFailure);
+	void OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool bIOFailure);
 	void FindLeaderboard(const std::string &name, int postAction );
+
+	//from the storage handler, doesnt directly handle the call result
+	void OnRemoteStorageFileWriteAsyncComplete(RemoteStorageFileWriteAsyncComplete_t *callback, bool bIOFailure);
 };
 
 struct LeaderboardEntryRow

@@ -69,6 +69,8 @@ struct MessagePopup;
 
 struct GameSettingsScreen;
 
+struct RemoteStorageManager;
+
 #define ColorGL( c ) sf::Glsl::Vec4( c )// c.r, c.g, c.b, c.a )
 //#define _WIN32_WINNT 0x0601
 
@@ -208,6 +210,8 @@ struct MainMenu
 		GRT_QUICKPLAY,
 	};
 
+
+	RemoteStorageManager *remoteStorageManager;
 	//testing
 	CustomCursor *customCursor;
 	NetplayManager *netplayManager;

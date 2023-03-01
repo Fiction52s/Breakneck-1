@@ -63,6 +63,8 @@
 #include "ClosedBetaScreen.h"
 #include "CreditsMenuScreen.h"
 
+#include "RemoteStorageManager.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -505,6 +507,8 @@ MainMenu::MainMenu()
 	
 	menuMatchParams = new MatchParams;
 
+	remoteStorageManager = new RemoteStorageManager;
+
 	globalFile = new GlobalSaveFile;
 	if (!globalFile->Load())
 	{
@@ -884,6 +888,8 @@ MainMenu::~MainMenu()
 	currInstance = NULL;
 
 	window->close();
+
+	delete remoteStorageManager;
 
 	delete closedBetaScreen;
 

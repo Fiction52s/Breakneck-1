@@ -290,24 +290,6 @@ struct GlobalSaveFile
 	void UnlockSkin(int skinIndex);
 };
 
-struct RemoteStorageManager
-{
-	ISteamUser *m_pSteamUser;
-	ISteamRemoteStorage *m_pSteamRemoteStorage;
 
-	bool m_bFinished;
-	int32 m_nNumFilesInCloud;
-	uint64 m_ulBytesQuota;
-	uint64 m_ulAvailableBytes;
-	std::string destPath;
-
-	RemoteStorageManager();
-	void LoadAll();
-	void Test();
-	void GetFileStats();
-	bool DownloadAndSave(const std::string &file);
-	bool Upload(const std::string &file);
-	bool Upload(SaveFile *saveFile);
-};
 
 #endif
