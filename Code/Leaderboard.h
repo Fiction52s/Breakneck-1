@@ -38,7 +38,6 @@ struct LeaderboardManager
 	int scoreToUpload;
 	std::string searchBoardName;
 	int postFindAction;
-	bool lastUploadSuccess;
 
 	LeaderboardManager();
 	~LeaderboardManager();

@@ -17,14 +17,11 @@ AlertBox::AlertBox()
 
 	actionLength[A_HIDDEN] = 0;
 	actionLength[A_SLIDE_IN] = 30;
-	actionLength[A_DISPLAY] = 60 * 4;
+	actionLength[A_DISPLAY] = 60 * 7;
 	actionLength[A_SLIDE_OUT] = 30;
 
-	boxWidth = 400;
-	boxHeight = 50;
-
-	showPos = Vector2f(1920 - boxWidth, 1080 - boxHeight);
-	hidePos = Vector2f(1920 - boxWidth, 1080);
+	//boxWidth = 400;
+	//boxHeight = 50;
 
 	action = A_HIDDEN;
 	frame = 0;
@@ -33,6 +30,13 @@ AlertBox::AlertBox()
 void AlertBox::Start(const std::string &msg)
 {
 	alertText.setString(msg);
+
+	boxWidth = alertText.getGlobalBounds().width + 20;
+	boxHeight = alertText.getGlobalBounds().height + 20;
+
+	showPos = Vector2f(1920 - boxWidth, 1080 - boxHeight);
+	hidePos = Vector2f(1920 - boxWidth, 1080);
+
 	action = A_SLIDE_IN;
 	frame = 0;
 	SetTopLeft(hidePos);
@@ -90,7 +94,7 @@ void AlertBox::Update()
 
 void AlertBox::SetTopLeft(sf::Vector2f topLeft)
 {
-	alertText.setPosition(topLeft);
+	alertText.setPosition(topLeft + Vector2f( 10, 10 ));
 	SetRectTopLeft(boxQuad, boxWidth, boxHeight, topLeft);
 }
 

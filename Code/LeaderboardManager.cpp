@@ -9,7 +9,6 @@ using namespace sf;
 LeaderboardManager::LeaderboardManager()
 {
 	action = A_IDLE;
-	lastUploadSuccess = false;
 }
 
 LeaderboardManager::~LeaderboardManager()
@@ -20,8 +19,6 @@ LeaderboardManager::~LeaderboardManager()
 void LeaderboardManager::UploadScore(const std::string &name, int score)
 {
 	scoreToUpload = score;
-
-	lastUploadSuccess = false;
 
 	FindLeaderboard(name, A_UPLOADING);
 }
@@ -81,13 +78,12 @@ void LeaderboardManager::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *
 	action = A_IDLE;
 	if (callback->m_bSuccess)
 	{
-		lastUploadSuccess = true;
-
 		Session *sess = Session::GetSession();
 		if (sess != NULL)
 		{
-			sess->StartAlertBox("score uploaded successfully");
+			sess->StartAlertBox("Score uploaded successfully");
 		}
+
 		cout << "leaderboard upload successful\n";
 
 		if (callback->m_bScoreChanged)
@@ -101,7 +97,12 @@ void LeaderboardManager::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *
 	}
 	else
 	{
-		lastUploadSuccess = false;
+		Session *sess = Session::GetSession();
+		if (sess != NULL)
+		{
+			sess->StartAlertBox("Score failed to upload. Try again later.");
+		}
+
 		cout << "leaderboard upload failed\n";
 	}
 }
