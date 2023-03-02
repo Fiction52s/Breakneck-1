@@ -35,6 +35,7 @@ struct LeaderboardManager : RemoteStorageResultHandler
 		A_UPLOADING_SCORE,
 		A_ATTACH_REPLAY,
 		A_DOWNLOADING,
+		A_DOWNLOADING_MY_SCORE,
 	};
 
 	int action;
@@ -43,6 +44,8 @@ struct LeaderboardManager : RemoteStorageResultHandler
 	std::string localReplayPath;
 	std::string searchBoardName;
 	int postFindAction;
+
+	KineticLeaderboardEntry myEntry;
 
 	UGCHandle_t replayToUploadHandle;
 
@@ -78,6 +81,12 @@ private:
 
 	//from the storage handler, doesnt directly handle the call result
 	void OnRemoteStorageFileWriteAsyncComplete(RemoteStorageFileWriteAsyncComplete_t *callback, bool bIOFailure);
+
+	void StartUploadingScore();
+	void StartUploadingReplay();
+	void StartSharingReplay();
+	void StartAttachingReplay();
+	void StartDownloadingMyScore();
 };
 
 struct LeaderboardEntryRow
