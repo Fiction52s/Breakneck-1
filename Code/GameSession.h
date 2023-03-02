@@ -428,7 +428,8 @@ struct GameSession : RayCastHandler, Session
 	void SetBestReplayOn(bool on);
 	void SetBestGhostOn(bool on);
 
-	bool SetupPlayerReplayerManagers();
+	bool SetupMyBestPlayerReplayManager();
+	void CleanupReplaysAndGhosts();
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();
@@ -549,5 +550,10 @@ struct GameSession : RayCastHandler, Session
 
 	void DrawLeaderboard(sf::RenderTarget *target);
 	void StartLeaderboard();
+
+	bool TryStartMyBestReplay();
+	bool TryStartLeaderboardReplay( PlayerReplayManager *prm );
+	bool TryStartGhosts();
+	void RestartWithNoReplayOrGhosts();
 };
 #endif

@@ -36,7 +36,7 @@ struct KineticLeaderboardEntry
 	KineticLeaderboardEntry();
 	KineticLeaderboardEntry(const KineticLeaderboardEntry &);
 	void DownloadReplay();
-
+	bool IsReplayReady();
 	void Init();
 	void Clear();
 private:
@@ -147,6 +147,9 @@ struct LeaderboardDisplay : GUIHandler
 		A_LOADING,
 		A_SHOWING,
 		A_UPLOAD_FAILED_POPUP,
+		A_RUNNING_REPLAY,
+		A_WAITING_FOR_REPLAY,
+		START_REPLAY,
 	};
 
 	MessagePopup messagePop;
@@ -165,6 +168,10 @@ struct LeaderboardDisplay : GUIHandler
 	sf::Vertex rowQuads[NUM_ROWS * 4];
 
 	LeaderboardEntryRow rows[NUM_ROWS];
+
+	PlayerReplayManager *replayChosen;
+	int chosenReplayIndex;
+
 
 	int topIndex;
 	sf::Vector2f topLeft;
@@ -185,6 +192,7 @@ struct LeaderboardDisplay : GUIHandler
 	void ButtonCallback(Button *b, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
 	int GetNumActiveGhosts();
+	bool IsTryingToStartReplay();
 };
 
 

@@ -33,6 +33,11 @@ void KineticLeaderboardEntry::Init()
 	action = A_INITIALIZED;
 }
 
+bool KineticLeaderboardEntry::IsReplayReady()
+{
+	return action == A_READY;
+}
+
 void KineticLeaderboardEntry::DownloadReplay()
 {
 	if (action == A_INITIALIZED)
@@ -235,8 +240,7 @@ void LeaderboardDisplay::Update()
 {
 	if (action == A_HIDDEN)
 		return;
-
-	if (action == A_LOADING)
+	else if (action == A_LOADING)
 	{
 		if (manager.IsIdle())
 		{
@@ -271,6 +275,18 @@ void LeaderboardDisplay::Update()
 			
 		}
 	}
+	else if (action == A_WAITING_FOR_REPLAY)
+	{
+		if (manager.currBoard.entries[chosenReplayIndex].IsReplayReady())
+		{
+			action = A_RUNNING_REPLAY;
+
+			replayChosen = manager.currBoard.entries[chosenReplayIndex].playerReplayManager;
+
+			return;
+			//Hide();
+		}
+	}
 
 	Session *sess = Session::GetSession();
 
@@ -302,6 +318,11 @@ void LeaderboardDisplay::Update()
 int LeaderboardDisplay::GetNumActiveGhosts()
 {
 	return manager.GetNumActiveGhosts();
+}
+
+bool LeaderboardDisplay::IsTryingToStartReplay()
+{
+	return action == A_RUNNING_REPLAY;
 }
 
 void LeaderboardDisplay::AddGhostsToVec(std::vector<ReplayGhost*> &vec)
@@ -381,8 +402,10 @@ void LeaderboardDisplay::ButtonCallback(Button *b, const std::string & e)
 	if (rowIndex >= 0)
 	{
 		int trueIndex = topIndex + rowIndex;
-
-		cout << "watch replay: " << trueIndex << "\n";
+		action = A_WAITING_FOR_REPLAY;
+		manager.currBoard.entries[trueIndex].DownloadReplay();
+		chosenReplayIndex = trueIndex;
+		//cout << "watch replay: " << trueIndex << "\n";
 	}
 }
 

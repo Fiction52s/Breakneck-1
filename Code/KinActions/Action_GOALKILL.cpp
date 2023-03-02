@@ -30,7 +30,10 @@ void Actor::GOALKILL_Start()
 	{
 		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 		{
-			setRecord = adventureManager->CompleteCurrentMap(owner);//owner->GetTopParentGame());
+			if (!owner->IsReplayOn())
+			{
+				setRecord = adventureManager->CompleteCurrentMap(owner);//owner->GetTopParentGame());
+			}
 		}
 	}
 

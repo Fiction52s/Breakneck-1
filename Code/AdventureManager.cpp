@@ -156,7 +156,8 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 			game->playerRecordingManager->StopRecording();
 			game->playerRecordingManager->WriteToFile(bestReplayPath);
 
-			game->SetupPlayerReplayerManagers();
+			//just turned this off
+			//game->SetupPlayerReplayerManagers();
 
 			//string currPath = boost::filesystem::current_path().string();
 			//string fullReplayPath = currPath + "\\" + bestReplayPath;

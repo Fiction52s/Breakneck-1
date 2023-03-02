@@ -793,6 +793,7 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 			else if (r1Press)
 			{
 				bestReplayOn = true;
+				bestTimeGhostOn = true;
 			}
 
 			

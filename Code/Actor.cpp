@@ -7701,33 +7701,12 @@ void Actor::HandleWaitingScoreDisplay()
 {
 	if (sess->scoreDisplay != NULL && sess->scoreDisplay->waiting)
 	{
-		/*ControllerState &unfilteredCurr = sess->GetCurrInputUnfiltered(0);
-		ControllerState &unfilteredPrev = sess->GetPrevInputUnfiltered(0);
-		bool a = unfilteredCurr.A && !unfilteredPrev.A;
-		bool x = unfilteredCurr.X && !unfilteredPrev.X;
-		bool b = unfilteredCurr.B && !unfilteredPrev.B;
-		bool y = unfilteredCurr.Y && !unfilteredPrev.Y;
-		bool r1 = unfilteredCurr.rightShoulder && !unfilteredPrev.rightShoulder;*/
-
-		/*bool a = sess->controllerStates[actorIndex]->ButtonPressed_A();
-		bool x = sess->controllerStates[actorIndex]->ButtonPressed_X();
-		bool y = sess->controllerStates[actorIndex]->ButtonPressed_Y();
-		bool r1 = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
-		bool b = sess->controllerStates[actorIndex]->ButtonPressed_B();*/
-
 		bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
 		bool xPressed = sess->controllerStates[actorIndex]->ButtonPressed_X();
 		bool yPressed = sess->controllerStates[actorIndex]->ButtonPressed_Y();
 		bool r1Pressed = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
 		bool bPressed = sess->controllerStates[actorIndex]->ButtonPressed_B();
-
 		bool startPressed = sess->controllerStates[actorIndex]->ButtonPressed_Start();
-
-		/*if (!sess->scoreDisplay->madeRecord && (owner != NULL && !owner->bestReplayOn))
-		{
-			yPressed = false;
-			r1Pressed = false;
-		}*/
 
 		if (aPressed || bPressed)
 		{
@@ -7769,23 +7748,7 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if (owner != NULL)
 			{
-				/*if (owner->repPlayer != NULL)
-				{
-					delete owner->repPlayer;
-					owner->repPlayer = NULL;
-				}*/
-				
-				owner->bestReplayOn = false;
-				owner->bestTimeGhostOn = false;
-
-				owner->CleanupGhosts();
-				owner->CleanupMyBestPlayerReplayManager();
-				owner->activePlayerReplayManagers.clear();
-
-
-				
-				owner->RestartGame();
-				//owner->NextFrameRestartLevel();
+				owner->RestartWithNoReplayOrGhosts();
 			}
 			else
 			{
@@ -7795,82 +7758,26 @@ void Actor::HandleWaitingScoreDisplay()
 			}
 			return;
 		}
-		else if (yPressed )
+		else if (yPressed && sess->scoreDisplay->includeExtraSelectBars )
 		{
-			//turn on ghosts
-			if (owner != NULL && sess->scoreDisplay->includeExtraSelectBars)
+			if (owner != NULL )
 			{
-				/*if (owner->repPlayer != NULL)
-				{
-					delete owner->repPlayer;
-					owner->repPlayer = NULL;
-				}*/
-
-				bool oldGhostOn = owner->bestTimeGhostOn;
-				bool oldReplayOn = owner->bestReplayOn;
-
-				owner->bestTimeGhostOn = true;
-				owner->bestReplayOn = false;
-
-				if (owner->SetupPlayerReplayerManagers())
-				{
-					owner->RestartGame();
-				}
-				else
-				{
-					owner->OpenPopup(GameSession::POPUPTYPE_NO_GHOST_FOUND);
-					owner->bestTimeGhostOn = oldGhostOn;
-					owner->bestTimeGhostOn = oldReplayOn;
-				}
-
-				//if (owner->SetupBestTimeGhost())
-				//{
-				//	owner->RestartGame();
-				//}
-				//else
-				//{
-				//	owner->OpenPopup(GameSession::POPUPTYPE_NO_GHOST_FOUND);
-				//	owner->bestTimeGhostOn = oldGhostOn;
-				//	owner->bestTimeGhostOn = oldReplayOn;
-
-				//	//put up an error message
-				//}
-				
-				
-				//owner->NextFrameRestartLevel();
+				owner->TryStartGhosts();
 			}
 		}
-		else if (r1Pressed)
+		else if (r1Pressed && sess->scoreDisplay->includeExtraSelectBars)
 		{
-			if (owner != NULL && sess->scoreDisplay->includeExtraSelectBars)
+			if (owner != NULL)
 			{
-				owner->CleanupGhosts();
-
-
-				bool oldGhostOn = owner->bestTimeGhostOn;
-				bool oldReplayOn = owner->bestReplayOn;
-				
-				owner->bestTimeGhostOn = true;
-				//owner->bestTimeGhostOn = false;
-				owner->bestReplayOn = true;
-
-
-				if (owner->SetupPlayerReplayerManagers())
-				{
-					owner->RestartGame();
-				}
-				else
-				{
-					owner->OpenPopup(GameSession::POPUPTYPE_NO_REPLAY_FOUND);
-					owner->bestTimeGhostOn = oldGhostOn;
-					owner->bestTimeGhostOn = oldReplayOn;
-				}
+				owner->TryStartMyBestReplay();
 			}
-			
 		}
 		else if (startPressed)
 		{
-			owner->StartLeaderboard();
+			if (owner != NULL)
+			{
+				owner->StartLeaderboard();
+			}
 		}
 	}
 }

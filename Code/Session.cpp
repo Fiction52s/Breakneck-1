@@ -1563,6 +1563,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT),
 	currShardField( ShardInfo::MAX_SHARDS ), currLogField( LogDetailedInfo::MAX_LOGS)
 {
+	activePlayerReplayManagers.reserve(10);
+
 	nextFrameRestartGame = false;
 
 	matchPlacings.resize(4);
