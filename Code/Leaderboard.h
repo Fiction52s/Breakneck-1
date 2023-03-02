@@ -12,10 +12,18 @@ struct KineticLeaderboardEntry
 	LeaderboardEntry_t steamEntry;
 	std::string name;
 	std::string timeStr;
+	std::string replayPath;
+	bool replayDownloaded;
 
 	KineticLeaderboardEntry();
+	KineticLeaderboardEntry(const KineticLeaderboardEntry &);
+
 	void Init();
 	void Clear();
+//private:
+	CCallResult<KineticLeaderboardEntry,
+		RemoteStorageDownloadUGCResult_t> onRemoteStorageDownloadUGCResultCallResult;
+	void OnRemoteStorageDownloadUGCResult(RemoteStorageDownloadUGCResult_t *callback, bool bIOFailure);
 };
 
 struct LeaderboardInfo

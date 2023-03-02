@@ -12,17 +12,49 @@ KineticLeaderboardEntry::KineticLeaderboardEntry()
 	Clear();
 }
 
+KineticLeaderboardEntry::KineticLeaderboardEntry(const KineticLeaderboardEntry &k)
+{
+	steamEntry = k.steamEntry;
+	name = k.name;
+	timeStr = k.timeStr;
+	replayPath = k.replayPath;;
+	replayDownloaded = k.replayDownloaded;
+	onRemoteStorageDownloadUGCResultCallResult.Cancel();
+}
+
 void KineticLeaderboardEntry::Init()
 {
 	name = SteamFriends()->GetFriendPersonaName(steamEntry.m_steamIDUser);
 	timeStr = GetTimeStr(steamEntry.m_nScore);
+
+	replayDownloaded = false;
+
+	replayPath = "Resources\\templeadertest\\" + to_string(steamEntry.m_steamIDUser.GetAccountID()) + ".kinreplay";
+	SteamAPICall_t call = SteamRemoteStorage()->UGCDownloadToLocation(steamEntry.m_hUGC, replayPath.c_str(), 0);
+	onRemoteStorageDownloadUGCResultCallResult.Set(call, this, &KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult);
 }
 
 void KineticLeaderboardEntry::Clear()
 {
+	replayDownloaded = false;
 	name = "";
 	timeStr = "";
+	replayPath = "";
+	onRemoteStorageDownloadUGCResultCallResult.Cancel();
 	memset(&steamEntry, 0, sizeof(steamEntry));
+}
+
+void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDownloadUGCResult_t *callback, bool bIOFailure)
+{
+	if (callback->m_eResult == k_EResultOK)
+	{
+		replayDownloaded = true;
+		cout << "remote storage download ugc success: " << callback->m_pchFileName << "\n";
+	}
+	else
+	{
+		cout << "remote storage download ugc failed. error: " << callback->m_eResult << "\n";
+	}
 }
 
 LeaderboardDisplay::LeaderboardDisplay()
