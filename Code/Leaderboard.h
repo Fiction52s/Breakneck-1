@@ -42,6 +42,7 @@ struct LeaderboardManager : RemoteStorageResultHandler
 	LeaderboardInfo currBoard;
 	int scoreToUpload;
 	std::string localReplayPath;
+	std::string cloudReplayPath;
 	std::string searchBoardName;
 	int postFindAction;
 

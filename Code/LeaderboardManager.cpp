@@ -25,6 +25,11 @@ void LeaderboardManager::UploadScore(const std::string &name, int score, const s
 
 	localReplayPath = replayPath;
 
+	boost::filesystem::path path = localReplayPath;
+	string file = path.filename().string();
+
+	cloudReplayPath = RemoteStorageManager::GetRemotePath(file);
+
 	FindLeaderboard(name, A_DOWNLOADING_MY_SCORE);
 
 	//1. download my score
@@ -189,7 +194,7 @@ void LeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool
 	{
 		FailureAlert();
 
-		cout << "leaderboard ugc set failed on  " << localReplayPath << ". reason: " << callback->m_eResult << "\n";
+		cout << "leaderboard ugc set failed on  " << cloudReplayPath << ". reason: " << callback->m_eResult << "\n";
 	}
 }
 
@@ -235,10 +240,10 @@ void LeaderboardManager::StartUploadingScore()
 
 void LeaderboardManager::StartUploadingReplay()
 {
-	cout << "Start uploading replay" << "\n";
+	cout << "Start uploading replay:" << cloudReplayPath << "\n";
 
 	MainMenu *mainMenu = MainMenu::GetInstance();
-	bool res = mainMenu->remoteStorageManager->UploadAsync(localReplayPath, this);
+	bool res = mainMenu->remoteStorageManager->UploadAsync(localReplayPath, cloudReplayPath, this);
 	if (!res)
 	{
 		FailureAlert();
@@ -252,7 +257,7 @@ void LeaderboardManager::StartSharingReplay()
 	action = A_SHARE_REPLAY;
 
 	MainMenu *mainMenu = MainMenu::GetInstance();
-	SteamAPICall_t call = mainMenu->remoteStorageManager->FileShare(localReplayPath);
+	SteamAPICall_t call = mainMenu->remoteStorageManager->FileShare(cloudReplayPath);
 	onRemoteStorageFileShareResultCallResult.Set(call, this, &LeaderboardManager::OnRemoteStorageFileShareResult);
 }
 

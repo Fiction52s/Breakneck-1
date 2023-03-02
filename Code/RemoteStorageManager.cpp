@@ -116,20 +116,20 @@ bool RemoteStorageManager::Upload(const std::string &file)
 	}
 }
 
-bool RemoteStorageManager::UploadAsync(const std::string &file, RemoteStorageResultHandler *handler )
+bool RemoteStorageManager::UploadAsync(const std::string &filePath, const std::string &cloudPath, RemoteStorageResultHandler *handler )
 {
 	currHandler = handler;
 
 	std::ifstream is;
-	is.open(file);
+	is.open(filePath);
 
 	assert(is.is_open());
 	std::string content((std::istreambuf_iterator<char>(is)),
 		(std::istreambuf_iterator<char>()));
 	is.close();
 
-	string cloudFilePath = GetRemotePath(file);
-	SteamAPICall_t call = m_pSteamRemoteStorage->FileWriteAsync(cloudFilePath.c_str(), content.c_str(), content.size());
+	//string cloudFilePath = GetRemotePath(cloudPath);
+	SteamAPICall_t call = m_pSteamRemoteStorage->FileWriteAsync(cloudPath.c_str(), content.c_str(), content.size());
 	onRemoteStorageFileWriteAsyncCompleteCallResult.Set(call, this, &RemoteStorageManager::OnRemoteStorageFileWriteAsyncComplete);
 
 
@@ -137,12 +137,12 @@ bool RemoteStorageManager::UploadAsync(const std::string &file, RemoteStorageRes
 
 	if (call != k_uAPICallInvalid)
 	{
-		cout << "async upload started: " << file << "\n";
+		cout << "async upload started: " << filePath << "\n";
 		return true;
 	}
 	else
 	{
-		cout << "async upload failed to start: " << file << "\n";
+		cout << "async upload failed to start: " << filePath << "\n";
 		return false;
 	}
 }
@@ -152,10 +152,10 @@ bool RemoteStorageManager::Upload(SaveFile *saveFile)
 	return Upload(saveFile->fileName);
 }
 
-SteamAPICall_t RemoteStorageManager::FileShare(const std::string &localPath)
+SteamAPICall_t RemoteStorageManager::FileShare(const std::string &cloudPath)
 {
-	string remotePath = GetRemotePath(localPath);
-	return SteamRemoteStorage()->FileShare(remotePath.c_str());
+	//string remotePath = GetRemotePath(localPath);
+	return SteamRemoteStorage()->FileShare(cloudPath.c_str());
 }
 
 void RemoteStorageManager::OnRemoteStorageFileWriteAsyncComplete(RemoteStorageFileWriteAsyncComplete_t *callback, bool bIOFailure)

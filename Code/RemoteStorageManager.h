@@ -30,10 +30,10 @@ struct RemoteStorageManager
 	void GetFileStats();
 	bool DownloadAndSave(const std::string &file);
 	bool Upload(const std::string &file);
-	bool UploadAsync(const std::string &file, RemoteStorageResultHandler *resultHandler );
+	bool UploadAsync(const std::string &filePath, const std::string &cloudPath, RemoteStorageResultHandler *resultHandler );
 	bool Upload(SaveFile *saveFile);
-	SteamAPICall_t FileShare(const std::string &localPath);
-	std::string GetRemotePath(const std::string &file);
+	SteamAPICall_t FileShare(const std::string &cloudPath);
+	static std::string GetRemotePath(const std::string &file);
 private:
 	CCallResult<RemoteStorageManager,
 		RemoteStorageFileWriteAsyncComplete_t> onRemoteStorageFileWriteAsyncCompleteCallResult;
