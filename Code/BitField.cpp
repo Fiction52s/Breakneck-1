@@ -104,7 +104,7 @@ void BitField::Reset()
 	}
 }
 
-bool BitField::Load(std::ifstream &is)
+bool BitField::Load(std::istream &is)
 {
 	//Reset();
 	for (int i = 0; i < numFields; ++i)
@@ -125,7 +125,7 @@ void BitField::Save(std::ofstream &of)
 	}
 }
 
-bool BitField::LoadBinary(std::ifstream &is)
+bool BitField::LoadBinary(std::istream &is)
 {
 	//is.read((char*)optionField, sizeof(sf::Uint32) * numFields);
 	is.read((char*)optionField, sizeof(optionField[0]) * numFields);

@@ -653,6 +653,7 @@ struct CheckBox : PanelMember
 	bool MouseUpdate();
 	void Deactivate();
 	void SetLockedStatus(bool check, bool lock);
+	void SetPos(sf::Vector2i p_pos);
 	//void Lock();
 	sf::Vector2i pos;
 	std::string name;

@@ -29,6 +29,11 @@ void CheckBox::SetLockedStatus(bool check, bool lock)
 	locked = lock;
 }
 
+void CheckBox::SetPos(sf::Vector2i p_pos)
+{
+	pos = p_pos;
+}
+
 bool CheckBox::MouseUpdate()
 {
 	if (hidden)

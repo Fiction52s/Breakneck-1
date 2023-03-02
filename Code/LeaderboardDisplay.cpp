@@ -3,12 +3,16 @@
 #include "MainMenu.h"
 #include "Session.h"
 #include "UIMouse.h"
+#include <fstream>
+#include "PlayerRecord.h"
+#include <sstream>
 
 using namespace std;
 using namespace sf;
 
 KineticLeaderboardEntry::KineticLeaderboardEntry()
 {
+	playerReplayManager = NULL;
 	Clear();
 }
 
@@ -18,41 +22,105 @@ KineticLeaderboardEntry::KineticLeaderboardEntry(const KineticLeaderboardEntry &
 	name = k.name;
 	timeStr = k.timeStr;
 	replayPath = k.replayPath;;
-	replayDownloaded = k.replayDownloaded;
 	onRemoteStorageDownloadUGCResultCallResult.Cancel();
+	action = k.action;
 }
 
 void KineticLeaderboardEntry::Init()
 {
 	name = SteamFriends()->GetFriendPersonaName(steamEntry.m_steamIDUser);
 	timeStr = GetTimeStr(steamEntry.m_nScore);
+	action = A_INITIALIZED;
+}
 
-	replayDownloaded = false;
+void KineticLeaderboardEntry::DownloadReplay()
+{
+	if (action == A_INITIALIZED)
+	{
+		cout << "starting download " << name << "'s replay" << endl;
 
-	replayPath = "Resources\\templeadertest\\" + to_string(steamEntry.m_steamIDUser.GetAccountID()) + ".kinreplay";
-	SteamAPICall_t call = SteamRemoteStorage()->UGCDownloadToLocation(steamEntry.m_hUGC, replayPath.c_str(), 0);
-	onRemoteStorageDownloadUGCResultCallResult.Set(call, this, &KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult);
+		action = A_DOWNLOADING;
+
+		//string downloadDest = boost::filesystem::current_path().string() + "\\" + "test.kinreplay";//"test.kinreplay";//boost::filesystem::current_path().string();// +"\\LeaderboardReplays\\test.kinreplay";// +//replayPath;//+ name + ".kinreplay";
+		//SteamAPICall_t call = SteamRemoteStorage()->UGCDownloadToLocation(steamEntry.m_hUGC, downloadDest.c_str(), 0);
+		SteamAPICall_t call = SteamRemoteStorage()->UGCDownload(steamEntry.m_hUGC, 0);
+		onRemoteStorageDownloadUGCResultCallResult.Set(call, this, &KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult);
+	}
 }
 
 void KineticLeaderboardEntry::Clear()
 {
-	replayDownloaded = false;
+	ghostOn = false;
 	name = "";
 	timeStr = "";
 	replayPath = "";
 	onRemoteStorageDownloadUGCResultCallResult.Cancel();
 	memset(&steamEntry, 0, sizeof(steamEntry));
+	action = A_CLEAR;
+	if (playerReplayManager != NULL)
+		delete playerReplayManager;
+	playerReplayManager = NULL;
 }
 
 void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDownloadUGCResult_t *callback, bool bIOFailure)
 {
 	if (callback->m_eResult == k_EResultOK)
 	{
-		replayDownloaded = true;
+		AppId_t ugcAppID;
+		char *ugcNameArr;
+		int32 ugcFileSize;
+		CSteamID ugcOwner;
+
+		SteamRemoteStorage()->GetUGCDetails(callback->m_hFile, &ugcAppID, (&ugcNameArr), &ugcFileSize, &ugcOwner);
+
+		string ugcName = ugcNameArr;
+
+		replayPath = "Resources\\LeaderboardGhosts\\" + ugcName;
+
 		cout << "remote storage download ugc success: " << callback->m_pchFileName << "\n";
+
+		action = A_SAVING;
+
+		char *fileBytes = new char[ugcFileSize];
+
+		int numBytesRead = SteamRemoteStorage()->UGCRead(callback->m_hFile, fileBytes, ugcFileSize, 0, EUGCReadAction::k_EUGCRead_Close);
+
+		if (numBytesRead == ugcFileSize)
+		{
+			ofstream of;
+			of.open(replayPath, ios::binary | ios::out);
+
+			if (of.is_open())
+			{
+				stringstream ss;
+				ss.write( fileBytes, ugcFileSize);
+
+				assert(playerReplayManager == NULL);
+				playerReplayManager = new PlayerReplayManager;
+				//playerReplayManager->LoadFromFile(replayPath);
+				playerReplayManager->LoadFromStream(ss);
+
+				action = A_READY;
+				cout << "replay is ready\n";
+			}
+			else
+			{
+				cout << "could not write file after reading\n";
+				action = A_INITIALIZED;
+			}
+		}
+		else
+		{
+			cout << "could not read all the bytes from the ugc file" << "\n";
+			action = A_INITIALIZED;
+		}
+
+
+		delete[]fileBytes;
 	}
 	else
 	{
+		action = A_INITIALIZED; //assumes its been initialized before downloading anyway
 		cout << "remote storage download ugc failed. error: " << callback->m_eResult << "\n";
 	}
 }
@@ -223,6 +291,11 @@ void LeaderboardDisplay::Update()
 	++frame;
 }
 
+int LeaderboardDisplay::GetNumActiveGhosts()
+{
+	return manager.GetNumActiveGhosts();
+}
+
 void LeaderboardDisplay::Draw(sf::RenderTarget *target)
 {
 	if (action == A_HIDDEN)
@@ -249,3 +322,56 @@ void LeaderboardDisplay::Draw(sf::RenderTarget *target)
 		messagePop.Draw(target);
 	}
 }
+
+void LeaderboardDisplay::ButtonCallback(Button *b, const std::string & e)
+{
+	int rowIndex = -1;
+	for (int i = 0; i < NUM_ROWS; ++i)
+	{
+		if (b == rows[i].watchButton)
+		{
+			rowIndex = i;
+			break;
+		}
+	}
+
+	if (rowIndex >= 0)
+	{
+		int trueIndex = topIndex + rowIndex;
+
+		cout << "watch replay: " << trueIndex << "\n";
+	}
+}
+
+void LeaderboardDisplay::CheckBoxCallback(CheckBox *cb, const std::string & e)
+{
+	int rowIndex = -1;
+	for (int i = 0; i < NUM_ROWS; ++i)
+	{
+		if (cb == rows[i].ghostCheckBox)
+		{
+			rowIndex = i;
+			break;
+		}
+	}
+
+	if (rowIndex >= 0)
+	{
+		int trueIndex = topIndex + rowIndex;
+
+		manager.currBoard.entries[trueIndex].ghostOn = cb->checked;
+
+		if (cb->checked)
+		{
+			
+			manager.currBoard.entries[trueIndex].DownloadReplay();
+			cout << "downloading replay because you checked ghost: " << trueIndex << "\n";
+			
+		}
+		else
+		{
+			//don't really need to delete the ghost file, nbd for now. Just deleting it when you leave the level anyway
+		}
+	}
+}
+

@@ -2278,6 +2278,19 @@ bool GameSession::SetupBestPlayerReplayer()
 		{
 			string replayPath = GetBestReplayPath();
 
+			bool useDefaultGhost = true;
+			bool useLeaderboardGhosts = false;
+
+			if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			{
+				assert(mainMenu->adventureManager != NULL);
+				if (mainMenu->adventureManager->leaderboard->GetNumActiveGhosts() > 0)
+				{
+					useDefaultGhost = false; //this will eventually depend on some checkbox
+					useLeaderboardGhosts = true;
+				}
+			}
+
 			if (saveFile->GetBestFramesLevel(level->index) > 0 && boost::filesystem::exists(replayPath))
 			{
 				playerReplayManager = new PlayerReplayManager;
@@ -2292,18 +2305,29 @@ bool GameSession::SetupBestPlayerReplayer()
 
 			if (bestTimeGhostOn)
 			{
-				//CleanupGhosts();
-
-				if (playerReplayManager != NULL)
+				if (useDefaultGhost)
 				{
-					for (auto it = playerReplayManager->repVec.begin(); it != playerReplayManager->repVec.end(); ++it)
+					if (playerReplayManager != NULL)
 					{
-						replayGhosts.push_back((*it)->replayGhost);
+						for (auto it = playerReplayManager->repVec.begin(); it != playerReplayManager->repVec.end(); ++it)
+						{
+							replayGhosts.push_back((*it)->replayGhost);
+						}
 					}
+				}
+
+				if (useLeaderboardGhosts)
+				{
+					//mainMenu->adventureManager->leaderboard->playerReplayManager->LoadFromFile( )
+
 				}
 			}
 
 			return true;
+		}
+		else
+		{
+			//cleanup leaderboard ghosts
 		}
 	}
 

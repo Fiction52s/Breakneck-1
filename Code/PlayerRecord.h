@@ -10,6 +10,7 @@
 #include "UIWindow.h"
 #include "PlayerSkinShader.h"
 #include "BitField.h"
+#include <fstream>
 
 struct ReplayHUD;
 
@@ -46,7 +47,7 @@ struct PlayerRecordHeader
 	bool IsShardCaptured(int ind);
 	bool IsLogCaptured(int ind);
 	void SetVer(int v);
-	void Read(std::ifstream &is);
+	void Read(std::istream &is);
 	void Write(std::ofstream &of);
 };
 
@@ -105,7 +106,7 @@ struct ReplayGhost
 	ReplayGhost(PlayerReplayer *pReplayer);
 	~ReplayGhost();
 	void Reset();
-	void Read(std::ifstream &is);
+	void Read(std::istream &is);
 	void UpdateReplaySprite();
 	void Draw(sf::RenderTarget *target);
 };
@@ -120,7 +121,7 @@ struct ReplayPlayer
 
 	ReplayPlayer(PlayerReplayer *pReplayer);
 	~ReplayPlayer();
-	void Read(std::ifstream &is);
+	void Read(std::istream &is);
 	void Reset();
 	void SetToStart();
 	void UpdateInput(ControllerState &state);//ControllerDualStateQueue *controllerInput);
@@ -143,7 +144,7 @@ struct PlayerReplayer
 
 	PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager);
 	~PlayerReplayer();
-	bool Read(std::ifstream &is );
+	bool Read(std::istream &is );
 	//bool OpenGhost(const boost::filesystem::path &fileName);
 };
 
@@ -166,6 +167,7 @@ struct PlayerReplayManager
 	void Reset();
 	void SetToStart();
 	bool LoadFromFile(const boost::filesystem::path &fileName);
+	bool LoadFromStream(std::istream &is);
 	
 };
 

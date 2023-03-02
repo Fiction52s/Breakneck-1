@@ -7,22 +7,40 @@
 #include "GUI.h"
 #include "RemoteStorageManager.h"
 
+struct PlayerReplayManager;
+
 struct KineticLeaderboardEntry
 {
+	enum Action
+	{
+		A_CLEAR,
+		A_INITIALIZED,
+		A_DOWNLOADING,
+		A_SAVING,
+		A_READY,
+		A_Count
+	};
+
 	LeaderboardEntry_t steamEntry;
 	std::string name;
 	std::string timeStr;
 	std::string replayPath;
-	bool replayDownloaded;
+	int action;
+
+	bool ghostOn;
+
+	PlayerReplayManager *playerReplayManager;
 
 	KineticLeaderboardEntry();
 	KineticLeaderboardEntry(const KineticLeaderboardEntry &);
+	void DownloadReplay();
 
 	void Init();
 	void Clear();
-//private:
+private:
 	CCallResult<KineticLeaderboardEntry,
 		RemoteStorageDownloadUGCResult_t> onRemoteStorageDownloadUGCResultCallResult;
+
 	void OnRemoteStorageDownloadUGCResult(RemoteStorageDownloadUGCResult_t *callback, bool bIOFailure);
 };
 
@@ -63,6 +81,7 @@ struct LeaderboardManager : RemoteStorageResultHandler
 	void FailureAlert();
 	bool IsIdle();
 	void UploadScore(const std::string &name, int score, const std::string &replayPath );
+	int GetNumActiveGhosts();
 	void DownloadBoard(const std::string &name);
 	
 private:
@@ -104,6 +123,8 @@ struct LeaderboardEntryRow
 	HyperLink *nameLink;
 	sf::Text scoreText;
 	sf::Text rankText;
+	CheckBox *ghostCheckBox;
+	Button *watchButton;
 	int index;
 
 	LeaderboardEntryRow();
@@ -136,13 +157,12 @@ struct LeaderboardDisplay : GUIHandler
 	sf::Vertex bgQuad[4];
 
 	const static int NUM_ROWS = 10;
-	const static int ROW_WIDTH = 500;
+	const static int ROW_WIDTH = 700;
 	const static int ROW_HEIGHT = 50;
 	const static int CHAR_HEIGHT = ROW_HEIGHT - 20;
 	sf::Vertex rowQuads[NUM_ROWS * 4];
 
 	LeaderboardEntryRow rows[NUM_ROWS];
-	LeaderboardInfo *currBoard;
 
 	int topIndex;
 	sf::Vector2f topLeft;
@@ -157,6 +177,9 @@ struct LeaderboardDisplay : GUIHandler
 	void Hide();
 	bool IsHidden();
 	void Draw(sf::RenderTarget *target);
+	void ButtonCallback(Button *b, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	int GetNumActiveGhosts();
 };
 
 

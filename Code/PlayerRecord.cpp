@@ -38,7 +38,7 @@ ReplayGhost::~ReplayGhost()
 	}
 }
 
-void ReplayGhost::Read(ifstream &is)
+void ReplayGhost::Read(istream &is)
 {
 	sprBuffer = new SprInfo[pReplayer->numTotalFrames];
 	is.read((char*)sprBuffer, sizeof(SprInfo) * pReplayer->numTotalFrames);
@@ -127,7 +127,7 @@ ReplayPlayer::~ReplayPlayer()
 	delete[] inputBuffer;
 }
 
-void ReplayPlayer::Read(ifstream &is)
+void ReplayPlayer::Read(istream &is)
 {
 	assert(inputBuffer == NULL);
 	inputBuffer = new COMPRESSED_INPUT_TYPE[pReplayer->numTotalFrames];
@@ -321,7 +321,7 @@ bool PlayerRecordHeader::IsLogCaptured(int ind)
 	return bLogField.GetBit(ind);
 }
 
-void PlayerRecordHeader::Read(std::ifstream &is)
+void PlayerRecordHeader::Read(std::istream &is)
 {
 	is.read((char*)&ver, sizeof(ver)); //read in the basic vars
 	is.read((char*)&numberOfPlayers, sizeof(numberOfPlayers));
@@ -357,7 +357,7 @@ PlayerReplayer::~PlayerReplayer()
 	delete replayPlayer;
 }
 
-bool PlayerReplayer::Read(ifstream & is)
+bool PlayerReplayer::Read(istream & is)
 {
 	//init = true;
 	//frame = 0;
@@ -517,7 +517,9 @@ bool PlayerReplayManager::LoadFromFile(const boost::filesystem::path &fileName)
 		//init = true;
 		//frame = 0;
 
-		header.Read(is);
+		LoadFromStream(is);
+
+		/*header.Read(is);
 
 		repVec.resize(header.numberOfPlayers);
 
@@ -527,13 +529,30 @@ bool PlayerReplayManager::LoadFromFile(const boost::filesystem::path &fileName)
 		{
 			repVec[i] = new PlayerReplayer(sess->GetPlayer(i), this);
 			repVec[i]->Read(is);
-		}
+		}*/
 
 		is.close();
 		return true;
 	}
 	//return false on failure
 	return false;
+}
+
+bool PlayerReplayManager::LoadFromStream( std::istream &is)
+{
+	header.Read(is);
+
+	repVec.resize(header.numberOfPlayers);
+
+	Session *sess = Session::GetSession();
+
+	for (int i = 0; i < header.numberOfPlayers; ++i)
+	{
+		repVec[i] = new PlayerReplayer(sess->GetPlayer(i), this);
+		repVec[i]->Read(is);
+	}
+
+	return true;
 }
 
 void PlayerReplayManager::Reset()

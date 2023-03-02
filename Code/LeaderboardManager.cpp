@@ -17,6 +17,20 @@ LeaderboardManager::~LeaderboardManager()
 
 }
 
+int LeaderboardManager::GetNumActiveGhosts()
+{
+	int numActiveGhosts = 0;
+	for (auto it = currBoard.entries.begin(); it != currBoard.entries.end(); ++it)
+	{
+		if ((*it).ghostOn)
+		{
+			++numActiveGhosts;
+		}
+	}
+
+	return numActiveGhosts;
+}
+
 void LeaderboardManager::UploadScore(const std::string &name, int score, const std::string &replayPath)
 {
 	scoreToUpload = score;
@@ -28,7 +42,7 @@ void LeaderboardManager::UploadScore(const std::string &name, int score, const s
 	boost::filesystem::path path = localReplayPath;
 	string file = path.filename().string();
 
-	cloudReplayPath = RemoteStorageManager::GetRemotePath(file);
+	cloudReplayPath = userAccountIDStr + "_" + file;//RemoteStorageManager::GetRemotePath(file);
 
 	FindLeaderboard(name, A_DOWNLOADING_MY_SCORE);
 
@@ -189,12 +203,33 @@ void LeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool
 		cout << "full leaderboard submission complete and successful\n";
 
 		action = A_IDLE;
+
+		bool res = SteamRemoteStorage()->FileDelete(cloudReplayPath.c_str());
+		if (res)
+		{
+			cout << "file deleted post-leaderboard update" << "\n";
+		}
+		else
+		{
+			cout << "file tried to delete after leaderboard update but wasn't found\n";
+		}
 	}
 	else
 	{
 		FailureAlert();
 
 		cout << "leaderboard ugc set failed on  " << cloudReplayPath << ". reason: " << callback->m_eResult << "\n";
+
+		bool res = SteamRemoteStorage()->FileDelete(cloudReplayPath.c_str());
+
+		if (res)
+		{
+			cout << "failure file deleted post-leaderboard update" << "\n";
+		}
+		else
+		{
+			cout << "failure file tried to delete after leaderboard update but wasn't found\n";
+		}
 	}
 }
 

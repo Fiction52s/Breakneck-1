@@ -28,7 +28,10 @@ LeaderboardEntryRow::LeaderboardEntryRow()
 void LeaderboardEntryRow::Init( int p_index, Panel *p)
 {
 	index = p_index;
-	nameLink = p->AddHyperLink("namelink" + to_string(index), Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "", "");
+	string indexStr = to_string(index);
+	nameLink = p->AddHyperLink("namelink" + indexStr, Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "", "");
+	ghostCheckBox = p->AddCheckBox("ghostcheckbox" + indexStr, Vector2i(), false);
+	watchButton = p->AddButton("watchbutton" + indexStr, Vector2i(), Vector2f(100, LeaderboardDisplay::CHAR_HEIGHT), "Watch");
 }
 
 void LeaderboardEntryRow::Clear()
@@ -54,12 +57,19 @@ void LeaderboardEntryRow::SetTopLeft(const sf::Vector2f &p_topLeft)
 	float rankSpacing = 20;
 	float nameSpacing = rankSpacing + 100;
 	float scoreSpacing = nameSpacing + 200;
+	float ghostSpacing = scoreSpacing + 150;
+	float watchSpacing = ghostSpacing + 100;
 
 	Vector2f topLeft = p_topLeft;
 
-	rankText.setPosition(topLeft.x + rankSpacing, topLeft.y + 4);
-	nameLink->SetPos(Vector2i(topLeft.x + nameSpacing, topLeft.y + 4));
-	scoreText.setPosition(topLeft.x + scoreSpacing, topLeft.y + 4);
+	float yExtra = 4;
+
+	rankText.setPosition(topLeft.x + rankSpacing, topLeft.y + yExtra);
+	nameLink->SetPos(Vector2i(topLeft.x + nameSpacing, topLeft.y + yExtra));
+	scoreText.setPosition(topLeft.x + scoreSpacing, topLeft.y + yExtra);
+
+	ghostCheckBox->SetPos(Vector2i(topLeft.x + ghostSpacing, topLeft.y + yExtra));
+	watchButton->SetPos(Vector2i(topLeft.x + watchSpacing, topLeft.y + yExtra + 5));
 }
 
 void LeaderboardEntryRow::Draw(sf::RenderTarget *target)
