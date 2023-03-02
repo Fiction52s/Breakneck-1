@@ -120,16 +120,18 @@ bool RemoteStorageManager::UploadAsync(const std::string &filePath, const std::s
 {
 	currHandler = handler;
 
-	std::ifstream is;
-	is.open(filePath);
+	std::ifstream is(filePath, ios_base::binary);
+	//is.open(filePath);
 
 	assert(is.is_open());
 	std::string content((std::istreambuf_iterator<char>(is)),
 		(std::istreambuf_iterator<char>()));
 	is.close();
 
+	int size = content.size();
+
 	//string cloudFilePath = GetRemotePath(cloudPath);
-	SteamAPICall_t call = m_pSteamRemoteStorage->FileWriteAsync(cloudPath.c_str(), content.c_str(), content.size());
+	SteamAPICall_t call = m_pSteamRemoteStorage->FileWriteAsync(cloudPath.c_str(), content.c_str(), size);
 	onRemoteStorageFileWriteAsyncCompleteCallResult.Set(call, this, &RemoteStorageManager::OnRemoteStorageFileWriteAsyncComplete);
 
 

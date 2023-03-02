@@ -391,7 +391,9 @@ int GameSession::TryToActivateBonus()
 
 			bonusGame->oneFrameMode = oneFrameMode;
 
-			bonusGame->playerReplayManager = playerReplayManager;
+			bonusGame->myBestReplayManager = myBestReplayManager;
+
+			bonusGame->activePlayerReplayManagers = activePlayerReplayManagers;
 
 			bonusGame->bestReplayOn = bestReplayOn;
 
@@ -977,7 +979,7 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 
-	CleanupPlayerReplayManager();
+	CleanupMyBestPlayerReplayManager();
 
 	CleanupGhosts();
 
@@ -1867,7 +1869,7 @@ bool GameSession::Load()
 	//playerRecordingManager = new PlayerRecordingManager(m_numActivePlayers);
 	//GhostHeader *gh = new GhostHeader;
 
-	SetupBestPlayerReplayer();
+	SetupPlayerReplayerManagers();
 
 	if (hasGoal)
 	{
@@ -2251,26 +2253,37 @@ void GameSession::CleanupGhosts()
 void GameSession::SetBestReplayOn(bool on)
 {
 	bestReplayOn = on;
-	if (playerReplayManager != NULL)
+	if (!activePlayerReplayManagers.empty())
 	{
-		playerReplayManager->replaysActive = on;
+		activePlayerReplayManagers[0]->replaysActive = on;
 	}
+
+	/*if (myBestReplayManager != NULL)
+	{
+		myBestReplayManager->replaysActive = on;
+	}*/
 }
 
 void GameSession::SetBestGhostOn(bool on)
 {
 	bestTimeGhostOn = on;
-	if (playerReplayManager != NULL)
+	if (!activePlayerReplayManagers.empty())
+	{
+		activePlayerReplayManagers[0]->ghostsActive = on;
+	}
+	/*if (playerReplayManager != NULL)
 	{
 		playerReplayManager->ghostsActive = on;
-	}
+	}*/
 }
 
-bool GameSession::SetupBestPlayerReplayer()
+bool GameSession::SetupPlayerReplayerManagers()
 {
 	CleanupGhosts();
 
-	CleanupPlayerReplayManager();
+	CleanupMyBestPlayerReplayManager();
+
+	activePlayerReplayManagers.clear();
 
 	if (saveFile != NULL)
 	{
@@ -2280,8 +2293,9 @@ bool GameSession::SetupBestPlayerReplayer()
 
 			bool useDefaultGhost = true;
 			bool useLeaderboardGhosts = false;
+			bool useLeaderboardReplay = false;
 
-			if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE )
 			{
 				assert(mainMenu->adventureManager != NULL);
 				if (mainMenu->adventureManager->leaderboard->GetNumActiveGhosts() > 0)
@@ -2293,12 +2307,12 @@ bool GameSession::SetupBestPlayerReplayer()
 
 			if (saveFile->GetBestFramesLevel(level->index) > 0 && boost::filesystem::exists(replayPath))
 			{
-				playerReplayManager = new PlayerReplayManager;
-				playerReplayManager->replaysActive = bestReplayOn;
-				playerReplayManager->ghostsActive = bestTimeGhostOn;
-				if (!playerReplayManager->LoadFromFile(replayPath))
+				myBestReplayManager = new PlayerReplayManager;
+				myBestReplayManager->replaysActive = bestReplayOn;
+				myBestReplayManager->ghostsActive = bestTimeGhostOn;
+				if (!myBestReplayManager->LoadFromFile(replayPath))
 				{
-					CleanupPlayerReplayManager();
+					CleanupMyBestPlayerReplayManager();
 					return false;
 				}
 			}
@@ -2307,20 +2321,23 @@ bool GameSession::SetupBestPlayerReplayer()
 			{
 				if (useDefaultGhost)
 				{
-					if (playerReplayManager != NULL)
+					if (myBestReplayManager != NULL)
 					{
-						for (auto it = playerReplayManager->repVec.begin(); it != playerReplayManager->repVec.end(); ++it)
-						{
-							replayGhosts.push_back((*it)->replayGhost);
-						}
+						myBestReplayManager->AddGhostsToVec(replayGhosts);
 					}
 				}
 
 				if (useLeaderboardGhosts)
 				{
-					//mainMenu->adventureManager->leaderboard->playerReplayManager->LoadFromFile( )
-
+					mainMenu->adventureManager->leaderboard->AddGhostsToVec(replayGhosts);
+					mainMenu->adventureManager->leaderboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers);
+					mainMenu->adventureManager->leaderboard->SetActive(bestReplayOn, bestTimeGhostOn );
 				}
+			}
+
+			if ((bestReplayOn && !useLeaderboardReplay) || ( bestTimeGhostOn && useDefaultGhost))
+			{
+				activePlayerReplayManagers.push_back(myBestReplayManager);
 			}
 
 			return true;
@@ -3242,7 +3259,7 @@ void GameSession::Init()
 	va = NULL;
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
-	playerReplayManager = NULL;
+	myBestReplayManager = NULL;
 	playerRecordingManager = NULL;
 
 	explodingGravityGrass = NULL;
@@ -3818,8 +3835,16 @@ void GameSession::RestartLevel()
 		playerRecordingManager->RestartRecording();
 	}
 
-	if (playerReplayManager != NULL && parentGame == NULL )
-		playerReplayManager->SetToStart();
+	if (parentGame == NULL)
+	{
+		for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
+		{
+			(*it)->SetToStart();
+		}
+	}
+
+	/*if (playerReplayManager != NULL && parentGame == NULL )
+		playerReplayManager->SetToStart();*/
 
 	if (parentGame == NULL)
 	{
@@ -3868,9 +3893,17 @@ void GameSession::RestartLevel()
 
 	//cam.Update();
 
-	if( playerReplayManager != NULL && parentGame == NULL )
+	/*if( playerReplayManager != NULL && parentGame == NULL )
 	{
 		playerReplayManager->Reset();
+	}*/
+
+	if (parentGame == NULL)
+	{
+		for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
+		{
+			(*it)->Reset();
+		}
 	}
 
 	scoreDisplay->Reset();
@@ -3977,7 +4010,7 @@ bool GameSession::IsShardCaptured(int shardType)
 {
 	if (IsReplayOn())
 	{
-		return playerReplayManager->header.IsShardCaptured(shardType);
+		return activePlayerReplayManagers[0]->header.IsShardCaptured(shardType);
 	}
 
 	if (saveFile != NULL)
@@ -4623,7 +4656,7 @@ bool GameSession::HasLog(int logIndex)
 {
 	if (IsReplayOn())
 	{
-		return playerReplayManager->header.IsLogCaptured(logIndex);
+		return activePlayerReplayManagers[0]->header.IsLogCaptured(logIndex);
 	}
 
 	if (saveFile != NULL)

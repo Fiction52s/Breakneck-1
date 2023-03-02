@@ -428,7 +428,7 @@ struct GameSession : RayCastHandler, Session
 	void SetBestReplayOn(bool on);
 	void SetBestGhostOn(bool on);
 
-	bool SetupBestPlayerReplayer();
+	bool SetupPlayerReplayerManagers();
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();

@@ -11,6 +11,7 @@
 #include "PlayerSkinShader.h"
 #include "BitField.h"
 #include <fstream>
+#include <vector>
 
 struct ReplayHUD;
 
@@ -168,7 +169,7 @@ struct PlayerReplayManager
 	void SetToStart();
 	bool LoadFromFile(const boost::filesystem::path &fileName);
 	bool LoadFromStream(std::istream &is);
-	
+	void AddGhostsToVec(std::vector<ReplayGhost*> &vec);
 };
 
 #endif

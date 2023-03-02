@@ -7779,7 +7779,8 @@ void Actor::HandleWaitingScoreDisplay()
 				owner->bestTimeGhostOn = false;
 
 				owner->CleanupGhosts();
-				owner->CleanupPlayerReplayManager();
+				owner->CleanupMyBestPlayerReplayManager();
+				owner->activePlayerReplayManagers.clear();
 
 
 				
@@ -7811,7 +7812,7 @@ void Actor::HandleWaitingScoreDisplay()
 				owner->bestTimeGhostOn = true;
 				owner->bestReplayOn = false;
 
-				if (owner->SetupBestPlayerReplayer())
+				if (owner->SetupPlayerReplayerManagers())
 				{
 					owner->RestartGame();
 				}
@@ -7854,7 +7855,7 @@ void Actor::HandleWaitingScoreDisplay()
 				owner->bestReplayOn = true;
 
 
-				if (owner->SetupBestPlayerReplayer())
+				if (owner->SetupPlayerReplayerManagers())
 				{
 					owner->RestartGame();
 				}

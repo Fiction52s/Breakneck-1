@@ -1577,7 +1577,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	ggpoCompressedInputs = new COMPRESSED_INPUT_TYPE[GGPO_MAX_PLAYERS];
 
-	playerReplayManager = NULL;
+	myBestReplayManager = NULL;
 	playerRecordingManager = NULL;
 
 	parallelSessionIndex = -1;
@@ -2883,7 +2883,9 @@ void Session::UpdatePlayerInput(int index)
 	{
 		player->prevInput = player->currInput;
 
-		playerReplayManager->GetReplayer(playerInd)->replayPlayer->UpdateInput(player->currInput);
+		assert(!activePlayerReplayManagers.empty());
+
+		activePlayerReplayManagers[0]->GetReplayer(playerInd)->replayPlayer->UpdateInput(player->currInput);
 		//repPlayer->UpdateInput(player->currInput);//controllerStates[0]);
 	}
 	else
@@ -2981,11 +2983,11 @@ bool Session::OneFrameModeUpdate()
 	//and hit nexus or start ship sequence
 	if (IsReplayOn())
 	{
-		playerReplayManager->replayHUD->Update();
+		activePlayerReplayManagers[0]->replayHUD->Update();
 
 		if (replayMode)
 		{
-			skipInput = playerReplayManager->replayHUD->IsGoingToNextFrame();
+			skipInput = activePlayerReplayManagers[0]->replayHUD->IsGoingToNextFrame();
 		}
 	}
 
@@ -5439,7 +5441,7 @@ bool Session::IsShardCaptured(int s)
 {
 	if (IsReplayOn())
 	{
-		return playerReplayManager->header.IsShardCaptured(s);
+		return activePlayerReplayManagers[0]->header.IsShardCaptured(s);
 	}
 
 	return currShardField.GetBit(s);
@@ -6318,12 +6320,12 @@ void Session::DrawGoalPulse(sf::RenderTarget *target)
 	}
 }
 
-void Session::CleanupPlayerReplayManager()
+void Session::CleanupMyBestPlayerReplayManager()
 {
-	if (parentGame == NULL && playerReplayManager != NULL)
+	if (parentGame == NULL && myBestReplayManager != NULL)
 	{
-		delete playerReplayManager;
-		playerReplayManager = NULL;
+		delete myBestReplayManager;
+		myBestReplayManager = NULL;
 	}
 }
 
@@ -6622,9 +6624,9 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	LayeredDraw(EffectLayer::IN_FRONT_OF_UI, target);
 
-	if (playerReplayManager != NULL)
+	if (!activePlayerReplayManagers.empty())
 	{
-		playerReplayManager->replayHUD->Draw(target);
+		activePlayerReplayManagers[0]->replayHUD->Draw(target);
 	}
 
 	mainMenu->DrawEffects(target);
@@ -8869,12 +8871,13 @@ Tileset * Session::GetButtonIconTileset(int cIndex)
 
 bool Session::IsReplayOn()
 {
-	return (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0));
+	return (activePlayerReplayManagers.size() > 0 && activePlayerReplayManagers[0]->IsReplayOn(0));
+	//return (playerReplayManager != NULL && playerReplayManager->IsReplayOn(0));
 }
 
 bool Session::IsReplayHUDOn()
 {
-	return IsReplayOn() && playerReplayManager->IsReplayHUDOn(0);
+	return IsReplayOn() && activePlayerReplayManagers[0]->IsReplayHUDOn(0);
 }
 
 void Session::DrawLeaderboard(sf::RenderTarget *target)

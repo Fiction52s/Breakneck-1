@@ -87,7 +87,16 @@ void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDown
 
 		if (numBytesRead == ugcFileSize)
 		{
-			ofstream of;
+			stringstream ss;
+			ss.write(fileBytes, ugcFileSize);
+
+			assert(playerReplayManager == NULL);
+			playerReplayManager = new PlayerReplayManager;
+			playerReplayManager->LoadFromStream(ss);
+
+			action = A_READY;
+			cout << "replay is ready\n";
+			/*ofstream of;
 			of.open(replayPath, ios::binary | ios::out);
 
 			if (of.is_open())
@@ -97,7 +106,6 @@ void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDown
 
 				assert(playerReplayManager == NULL);
 				playerReplayManager = new PlayerReplayManager;
-				//playerReplayManager->LoadFromFile(replayPath);
 				playerReplayManager->LoadFromStream(ss);
 
 				action = A_READY;
@@ -107,7 +115,7 @@ void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDown
 			{
 				cout << "could not write file after reading\n";
 				action = A_INITIALIZED;
-			}
+			}*/
 		}
 		else
 		{
@@ -294,6 +302,41 @@ void LeaderboardDisplay::Update()
 int LeaderboardDisplay::GetNumActiveGhosts()
 {
 	return manager.GetNumActiveGhosts();
+}
+
+void LeaderboardDisplay::AddGhostsToVec(std::vector<ReplayGhost*> &vec)
+{
+	for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
+	{
+		if ((*it).ghostOn && (*it).playerReplayManager != NULL)
+		{
+			(*it).playerReplayManager->AddGhostsToVec(vec);
+			(*it).playerReplayManager->ghostsActive = true;
+		}
+	}
+}
+
+void LeaderboardDisplay::AddPlayerReplayManagersToVec(std::vector<PlayerReplayManager*> &vec)
+{
+	for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
+	{
+		if ((*it).ghostOn && (*it).playerReplayManager != NULL)
+		{
+			vec.push_back((*it).playerReplayManager);
+		}
+	}
+}
+
+void LeaderboardDisplay::SetActive(bool replay, bool ghost)
+{
+	for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
+	{
+		if ((*it).ghostOn && (*it).playerReplayManager != NULL)
+		{
+			(*it).playerReplayManager->replaysActive = replay;
+			(*it).playerReplayManager->ghostsActive = ghost;
+		}
+	}
 }
 
 void LeaderboardDisplay::Draw(sf::RenderTarget *target)

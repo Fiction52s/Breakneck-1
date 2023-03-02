@@ -216,7 +216,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	};
 
 	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;
-	PlayerReplayManager *playerReplayManager;
+	//PlayerReplayManager *playerReplayManager;
+	PlayerReplayManager *myBestReplayManager;
+	std::vector<PlayerReplayManager*> activePlayerReplayManagers;
 	PlayerRecordingManager *playerRecordingManager;
 
 	int parallelSessionIndex; //-1 if not parallel
@@ -923,7 +925,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::IntRect GetButtonIconTile(int controllerIndex, ControllerSettings::ButtonType button);
 	Tileset * GetButtonIconTileset(int controllerIndex);
 	void CopyGGPOInputsToParallelSessions();
-	void CleanupPlayerReplayManager();
+	void CleanupMyBestPlayerReplayManager();
 	bool IsReplayOn();
 	bool IsReplayHUDOn();
 	void StartAlertBox(const std::string &msg);

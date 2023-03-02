@@ -41,6 +41,7 @@ ReplayGhost::~ReplayGhost()
 void ReplayGhost::Read(istream &is)
 {
 	sprBuffer = new SprInfo[pReplayer->numTotalFrames];
+	memset(sprBuffer, 0, sizeof(SprInfo) * pReplayer->numTotalFrames);
 	is.read((char*)sprBuffer, sizeof(SprInfo) * pReplayer->numTotalFrames);
 }
 
@@ -361,11 +362,15 @@ bool PlayerReplayer::Read(istream & is)
 {
 	//init = true;
 	//frame = 0;
+	
+	//is.read()
 
 	is.read((char*)&numTotalFrames, sizeof(numTotalFrames));
+
 	is.read((char*)&skinIndex, sizeof(skinIndex));
+
 	is.read((char*)&startPowerMode, sizeof(startPowerMode));
-	
+
 	replayGhost->Read(is);
 	replayPlayer->Read(is);
 
@@ -553,6 +558,14 @@ bool PlayerReplayManager::LoadFromStream( std::istream &is)
 	}
 
 	return true;
+}
+
+void PlayerReplayManager::AddGhostsToVec(std::vector<ReplayGhost*> &ghosts)
+{
+	for (auto it = repVec.begin(); it != repVec.end(); ++it)
+	{
+		ghosts.push_back((*it)->replayGhost);
+	}
 }
 
 void PlayerReplayManager::Reset()

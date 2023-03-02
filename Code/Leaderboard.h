@@ -6,8 +6,10 @@
 #include <vector>
 #include "GUI.h"
 #include "RemoteStorageManager.h"
+#include <vector>
 
 struct PlayerReplayManager;
+struct ReplayGhost;
 
 struct KineticLeaderboardEntry
 {
@@ -176,6 +178,9 @@ struct LeaderboardDisplay : GUIHandler
 	void Show();
 	void Hide();
 	bool IsHidden();
+	void AddGhostsToVec(std::vector<ReplayGhost*> &vec);
+	void AddPlayerReplayManagersToVec(std::vector<PlayerReplayManager*> &vec);
+	void SetActive(bool replay, bool ghost);
 	void Draw(sf::RenderTarget *target);
 	void ButtonCallback(Button *b, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
