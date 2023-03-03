@@ -37,10 +37,22 @@ void LeaderboardEntryRow::Init( int p_index, Panel *p)
 void LeaderboardEntryRow::Clear()
 {
 	set = false;
+
+	if (index >= 0)
+	{
+		ghostCheckBox->checked = false;
+		nameLink->HideMember();
+		ghostCheckBox->HideMember();
+		watchButton->HideMember();
+	}
 }
 
 void LeaderboardEntryRow::Set(KineticLeaderboardEntry &entryInfo)
 {
+	nameLink->ShowMember();
+	ghostCheckBox->ShowMember();
+	watchButton->ShowMember();
+
 	set = true;
 
 	rankText.setString(to_string(entryInfo.steamEntry.m_nGlobalRank));
@@ -68,7 +80,7 @@ void LeaderboardEntryRow::SetTopLeft(const sf::Vector2f &p_topLeft)
 	nameLink->SetPos(Vector2i(topLeft.x + nameSpacing, topLeft.y + yExtra));
 	scoreText.setPosition(topLeft.x + scoreSpacing, topLeft.y + yExtra);
 
-	ghostCheckBox->SetPos(Vector2i(topLeft.x + ghostSpacing, topLeft.y + yExtra));
+	ghostCheckBox->SetPos(Vector2i(topLeft.x + ghostSpacing, topLeft.y + yExtra + 8));
 	watchButton->SetPos(Vector2i(topLeft.x + watchSpacing, topLeft.y + yExtra + 5));
 }
 

@@ -48,8 +48,13 @@ private:
 
 struct LeaderboardInfo
 {
+	std::string name;
 	SteamLeaderboard_t leaderboardID;
 	std::vector<KineticLeaderboardEntry> entries;
+	
+	LeaderboardInfo();
+	void Clear();
+	void ClearEntries();
 };
 
 struct LeaderboardManager : RemoteStorageResultHandler
@@ -85,7 +90,8 @@ struct LeaderboardManager : RemoteStorageResultHandler
 	void UploadScore(const std::string &name, int score, const std::string &replayPath );
 	int GetNumActiveGhosts();
 	void DownloadBoard(const std::string &name);
-	
+	void UncheckAllGhosts();
+	void RefreshCurrBoard();
 private:
 	CCallResult<LeaderboardManager,
 		LeaderboardFindResult_t> onLeaderboardFindResultCallResult;
@@ -149,7 +155,7 @@ struct LeaderboardDisplay : GUIHandler
 		A_UPLOAD_FAILED_POPUP,
 		A_RUNNING_REPLAY,
 		A_WAITING_FOR_REPLAY,
-		START_REPLAY,
+		A_RACING_GHOSTS,
 	};
 
 	MessagePopup messagePop;
@@ -158,6 +164,13 @@ struct LeaderboardDisplay : GUIHandler
 	int frame;
 
 	Panel *panel;
+
+	Button *clearCheckedGhostsButton;
+	Button *raceGhostsButton;
+	Button *refreshBoardButton;
+	CheckBox *originalGhostCheckBox;
+	Label *originalGhostCheckBoxLabel;
+	
 
 	sf::Vertex bgQuad[4];
 
@@ -191,8 +204,10 @@ struct LeaderboardDisplay : GUIHandler
 	void Draw(sf::RenderTarget *target);
 	void ButtonCallback(Button *b, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	int GetNumActiveGhosts();
+	int GetNumActiveLeaderboardGhosts();
 	bool IsTryingToStartReplay();
+	bool IsTryingToRaceGhosts();
+	bool IsDefaultGhostOn();
 };
 
 

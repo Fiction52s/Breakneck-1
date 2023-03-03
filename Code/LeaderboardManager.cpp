@@ -7,6 +7,23 @@ using namespace std;
 using namespace sf;
 
 
+LeaderboardInfo::LeaderboardInfo()
+{
+	Clear();
+}
+
+void LeaderboardInfo::Clear()
+{
+	leaderboardID = 0;
+	name = "";
+	ClearEntries();
+}
+
+void LeaderboardInfo::ClearEntries()
+{
+	entries.clear();
+}
+
 LeaderboardManager::LeaderboardManager()
 {
 	action = A_IDLE;
@@ -29,6 +46,14 @@ int LeaderboardManager::GetNumActiveGhosts()
 	}
 
 	return numActiveGhosts;
+}
+
+void LeaderboardManager::UncheckAllGhosts()
+{
+	for (auto it = currBoard.entries.begin(); it != currBoard.entries.end(); ++it)
+	{
+		(*it).ghostOn = false;
+	}
 }
 
 void LeaderboardManager::UploadScore(const std::string &name, int score, const std::string &replayPath)
@@ -80,6 +105,8 @@ void LeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
 	postFindAction = p_action;
 	action = A_FINDING;
 
+	currBoard.Clear();
+
 	searchBoardName = name;
 
 	SteamAPICall_t call = SteamUserStats()->FindOrCreateLeaderboard(name.c_str(), ELeaderboardSortMethod::k_ELeaderboardSortMethodAscending, ELeaderboardDisplayType::k_ELeaderboardDisplayTypeNumeric);
@@ -87,6 +114,14 @@ void LeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
 	onLeaderboardFindResultCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardFound);
 }
 
+void LeaderboardManager::RefreshCurrBoard()
+{
+	cout << "refreshing board: " << currBoard.name << "\n";
+	action = A_DOWNLOADING;
+	currBoard.ClearEntries();
+	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntries(currBoard.leaderboardID, ELeaderboardDataRequest::k_ELeaderboardDataRequestGlobal, 0, 100);
+	onLeaderboardScoresDownloadedCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardScoresDownloaded);
+}
 
 
 void LeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, bool bIOFailure)
@@ -98,6 +133,7 @@ void LeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, b
 		cout << "found leaderboard " << searchBoardName << "\n";
 		action = postFindAction;
 
+		currBoard.name = searchBoardName;
 		currBoard.leaderboardID = callback->m_hSteamLeaderboard;
 
 		if (action == A_DOWNLOADING_MY_SCORE )
@@ -106,8 +142,7 @@ void LeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, b
 		}
 		else if (action == A_DOWNLOADING)
 		{
-			SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntries(currBoard.leaderboardID, ELeaderboardDataRequest::k_ELeaderboardDataRequestGlobal, 0, 100);
-			onLeaderboardScoresDownloadedCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardScoresDownloaded);
+			RefreshCurrBoard();
 		}
 	}
 	else
@@ -146,7 +181,7 @@ void LeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDownload
 
 		int numEntries = callback->m_cEntryCount;
 
-		currBoard.entries.clear();
+		
 		currBoard.entries.resize(numEntries);
 
 		for (int i = 0; i < numEntries; ++i)

@@ -3839,7 +3839,7 @@ void MainMenu::TitleMenuModeUpdate()
 			LoadMode(FREEPLAY);
 			break;
 		}
-		case M_LOCAL_MULTIPLAYER:
+		case M_ONLINE:
 		{
 			MOUSE.Hide();
 			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE);

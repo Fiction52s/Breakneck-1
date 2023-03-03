@@ -196,7 +196,7 @@ void Actor::LAND2_UpdateSprite()
 	SetSpriteTexture(action);
 
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(1, r);
+	SetSpriteTile(2, r);
 
 	SetGroundedSpriteTransform();
 }

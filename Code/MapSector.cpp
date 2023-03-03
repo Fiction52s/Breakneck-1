@@ -49,15 +49,16 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_energyMask = worldMap->GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
 	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
 	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
-	ts_mapSelectOptions = worldMap->GetSizedTileset("Menu/LevelSelect/map_select_options_384x80.png");
+	ts_mapSelectOptions = worldMap->GetSizedTileset("HUD/score_384x96.png");
 	ts_lock = worldMap->GetSizedTileset("Menu/LevelSelect/sector_lock_256x256.png");
 	//ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
 
 	ts_levelSelectNumbers = worldMap->GetSizedTileset("Menu/LevelSelect/level_select_number_32x32.png");
 
-	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads, 0);
-	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 4, 1);
-	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 8, 2);
+	int playTileIndex = 21;
+	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads, playTileIndex);
+	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 4, playTileIndex + 2);
+	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 8, playTileIndex + 4);
 
 	for (int i = 0; i < 8; ++i)
 	{
@@ -416,13 +417,13 @@ void MapSector::SetXCenter(float x)
 
 	Vector2f levelSelectOptionsTopLeft = levelStatsTopLeft + Vector2f(0, levelStatsSize.y + 28);
 	Vector2f buttonIconOffset(320, 2);
-	SetRectTopLeft(levelSelectOptionQuads, 384, 80, levelSelectOptionsTopLeft);
+	SetRectTopLeft(levelSelectOptionQuads, 384, 96, levelSelectOptionsTopLeft);
 	SetRectTopLeft(levelSelectOptionButtonQuads, 64, 64, levelSelectOptionsTopLeft + buttonIconOffset);
 
-	SetRectTopLeft(levelSelectOptionQuads + 4, 384, 80, levelSelectOptionsTopLeft + Vector2f( 0, 100 ));
+	SetRectTopLeft(levelSelectOptionQuads + 4, 384, 96, levelSelectOptionsTopLeft + Vector2f( 0, 100 ));
 	SetRectTopLeft(levelSelectOptionButtonQuads + 4, 64, 64, levelSelectOptionsTopLeft + Vector2f(0, 100) + buttonIconOffset);
 
-	SetRectTopLeft(levelSelectOptionQuads + 8, 384, 80, levelSelectOptionsTopLeft + Vector2f( 0, 200 ));
+	SetRectTopLeft(levelSelectOptionQuads + 8, 384, 96, levelSelectOptionsTopLeft + Vector2f( 0, 200 ));
 	SetRectTopLeft(levelSelectOptionButtonQuads + 8, 64, 64, levelSelectOptionsTopLeft + Vector2f(0, 200) + buttonIconOffset);
 
 	

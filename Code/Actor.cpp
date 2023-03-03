@@ -7772,7 +7772,7 @@ void Actor::HandleWaitingScoreDisplay()
 				owner->TryStartMyBestReplay();
 			}
 		}
-		else if (startPressed)
+		else if (startPressed && sess->scoreDisplay->includeExtraSelectBars)
 		{
 			if (owner != NULL)
 			{

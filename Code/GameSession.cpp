@@ -4054,29 +4054,13 @@ bool GameSession::LeaderboardGameModeUpdate()
 				gameState = RUN;
 				mainMenu->adventureManager->leaderboard->Hide();
 			}
-		}
-
-
-		/*int res = gamePopup->Update(controllerStates[0]);
-
-		if (gamePopup->numOptions == 1)
-		{
-			if (res != GamePopup::OPTION_NOTHING)
+			else if (mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
 			{
-				gameState = (Session::GameState)gameStatePrePopup;
+				TryStartGhosts();
+				gameState = RUN;
+				mainMenu->adventureManager->leaderboard->Hide();
 			}
 		}
-
-		switch (currPopupType)
-		{
-		case POPUPTYPE_NO_REPLAY_FOUND:
-		{
-			if (res == GamePopup::OPTION_YES)
-			{
-
-			}
-		}
-		}*/
 
 		SteamAPI_RunCallbacks();
 
@@ -4904,10 +4888,15 @@ bool GameSession::TryStartGhosts()
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 	{
 		assert(mainMenu->adventureManager != NULL);
-		if (bestTimeGhostOn && mainMenu->adventureManager->leaderboard->GetNumActiveGhosts() > 0)
+
+		if (bestTimeGhostOn)
 		{
-			useDefaultGhost = false; //this will eventually depend on some checkbox
-			useLeaderboardGhosts = true;
+			if (mainMenu->adventureManager->leaderboard->GetNumActiveLeaderboardGhosts() > 0)
+			{
+				useLeaderboardGhosts = true;
+			}
+
+			useDefaultGhost = mainMenu->adventureManager->leaderboard->IsDefaultGhostOn();
 		}
 	}
 

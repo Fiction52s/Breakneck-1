@@ -145,6 +145,15 @@ LeaderboardDisplay::LeaderboardDisplay()
 	panel = new Panel("leaderboard", 1920, 1080, this);
 	panel->SetColor(Color::Transparent);
 
+	int buttonHeight = LeaderboardDisplay::CHAR_HEIGHT;
+
+	clearCheckedGhostsButton = panel->AddButton("clearbutton", Vector2i(), Vector2f(200, buttonHeight), "Clear Ghosts");
+	raceGhostsButton = panel->AddButton("racebutton", Vector2i(), Vector2f(200, buttonHeight), "Race Ghosts");
+	refreshBoardButton = panel->AddButton("refreshbutton", Vector2i(), Vector2f(100, buttonHeight), "Refresh");
+	originalGhostCheckBox = panel->AddCheckBox("originalghostcheckbox", Vector2i(), false);
+	originalGhostCheckBoxLabel = panel->AddLabel("originalghostcheckboxlabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Default Ghost:");
+
+
 	Hide();
 
 	Color evenColor = Color(200, 200, 200, 200);
@@ -219,6 +228,17 @@ void LeaderboardDisplay::SetTopLeft(const sf::Vector2f &p_pos)
 		SetRectTopLeft(rowQuads + i * 4, ROW_WIDTH, ROW_HEIGHT, rowTopLeft);
 		rows[i].SetTopLeft(rowTopLeft);
 	}
+
+	Vector2i above(topLeft + Vector2f(0, -200));
+	Vector2i aboveLower(topLeft + Vector2f(0, -100));
+
+	clearCheckedGhostsButton->SetPos(above);
+	raceGhostsButton->SetPos(above + Vector2i(250, 0));
+	refreshBoardButton->SetPos(above + Vector2i(500, 0));
+
+	originalGhostCheckBoxLabel->SetTopLeftPosition(aboveLower);
+
+	originalGhostCheckBox->SetPos(Vector2i(originalGhostCheckBoxLabel->GetTopRight().x + 10, aboveLower.y));
 }
 
 void LeaderboardDisplay::HandleEvent(sf::Event ev)
@@ -315,7 +335,7 @@ void LeaderboardDisplay::Update()
 	++frame;
 }
 
-int LeaderboardDisplay::GetNumActiveGhosts()
+int LeaderboardDisplay::GetNumActiveLeaderboardGhosts()
 {
 	return manager.GetNumActiveGhosts();
 }
@@ -323,6 +343,11 @@ int LeaderboardDisplay::GetNumActiveGhosts()
 bool LeaderboardDisplay::IsTryingToStartReplay()
 {
 	return action == A_RUNNING_REPLAY;
+}
+
+bool LeaderboardDisplay::IsTryingToRaceGhosts()
+{
+	return action == A_RACING_GHOSTS;
 }
 
 void LeaderboardDisplay::AddGhostsToVec(std::vector<ReplayGhost*> &vec)
@@ -389,55 +414,105 @@ void LeaderboardDisplay::Draw(sf::RenderTarget *target)
 
 void LeaderboardDisplay::ButtonCallback(Button *b, const std::string & e)
 {
-	int rowIndex = -1;
-	for (int i = 0; i < NUM_ROWS; ++i)
+	//clearCheckedGhostsButton->SetPos(above);
+	//raceGhostsButton->SetPos(above + Vector2i(250, 0));
+	//refreshBoardButton->SetPo
+
+	if (b == clearCheckedGhostsButton)
 	{
-		if (b == rows[i].watchButton)
+		manager.UncheckAllGhosts();
+		for (int i = 0; i < NUM_ROWS; ++i)
 		{
-			rowIndex = i;
-			break;
+			rows[i].ghostCheckBox->checked = false;
+			//rows[i].Clear();
+		}
+		//manager.currBoard.entries[trueIndex].ghostOn = cb->checked;
+	}
+	else if (b == raceGhostsButton)
+	{
+		if (GetNumActiveLeaderboardGhosts() > 0 || IsDefaultGhostOn() )
+		{
+			action = A_RACING_GHOSTS;
 		}
 	}
-
-	if (rowIndex >= 0)
+	else if (b == refreshBoardButton)
 	{
-		int trueIndex = topIndex + rowIndex;
-		action = A_WAITING_FOR_REPLAY;
-		manager.currBoard.entries[trueIndex].DownloadReplay();
-		chosenReplayIndex = trueIndex;
-		//cout << "watch replay: " << trueIndex << "\n";
+		for (int i = 0; i < NUM_ROWS; ++i)
+		{
+			rows[i].Clear();
+		}
+
+		manager.RefreshCurrBoard();
+
+		action = A_LOADING;
+		frame = 0;
 	}
+	else
+	{
+		//watch buttons
+		int rowIndex = -1;
+		for (int i = 0; i < NUM_ROWS; ++i)
+		{
+			if (b == rows[i].watchButton)
+			{
+				rowIndex = i;
+				break;
+			}
+		}
+
+		if (rowIndex >= 0)
+		{
+			int trueIndex = topIndex + rowIndex;
+			action = A_WAITING_FOR_REPLAY;
+			manager.currBoard.entries[trueIndex].DownloadReplay();
+			chosenReplayIndex = trueIndex;
+			//cout << "watch replay: " << trueIndex << "\n";
+		}
+	}
+}
+
+bool LeaderboardDisplay::IsDefaultGhostOn()
+{
+	return originalGhostCheckBox->checked;
 }
 
 void LeaderboardDisplay::CheckBoxCallback(CheckBox *cb, const std::string & e)
 {
-	int rowIndex = -1;
-	for (int i = 0; i < NUM_ROWS; ++i)
+	if (cb == originalGhostCheckBox)
 	{
-		if (cb == rows[i].ghostCheckBox)
+
+	}
+	else
+	{
+		//one of the row ghost boxes
+		int rowIndex = -1;
+		for (int i = 0; i < NUM_ROWS; ++i)
 		{
-			rowIndex = i;
-			break;
+			if (cb == rows[i].ghostCheckBox)
+			{
+				rowIndex = i;
+				break;
+			}
+		}
+
+		if (rowIndex >= 0)
+		{
+			int trueIndex = topIndex + rowIndex;
+
+			manager.currBoard.entries[trueIndex].ghostOn = cb->checked;
+
+			if (cb->checked)
+			{
+
+				manager.currBoard.entries[trueIndex].DownloadReplay();
+				cout << "downloading replay because you checked ghost: " << trueIndex << "\n";
+
+			}
+			else
+			{
+				//don't really need to delete the ghost file, nbd for now. Just deleting it when you leave the level anyway
+			}
 		}
 	}
-
-	if (rowIndex >= 0)
-	{
-		int trueIndex = topIndex + rowIndex;
-
-		manager.currBoard.entries[trueIndex].ghostOn = cb->checked;
-
-		if (cb->checked)
-		{
-			
-			manager.currBoard.entries[trueIndex].DownloadReplay();
-			cout << "downloading replay because you checked ghost: " << trueIndex << "\n";
-			
-		}
-		else
-		{
-			//don't really need to delete the ghost file, nbd for now. Just deleting it when you leave the level anyway
-		}
-	}
+	
 }
-

@@ -19,7 +19,6 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	basePos = position;
 
 	ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
-	ts_mapSelectOptions = sess->GetSizedTileset("Menu/LevelSelect/map_select_options_384x80.png");
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
@@ -495,23 +494,22 @@ void ScoreBar::Retract()
 	frame = 0;
 }
 
-
-
-
-
 SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 	:row(p_row), parent(p_parent)
 {
+	barSprite.setTexture(*parent->ts_score->texture);
 	if (row <= 2)
 	{
-		barSprite.setTexture(*parent->ts_score->texture);
-		barSprite.setTextureRect(parent->ts_score->GetSubRect(15 + row));
+		int barStartTile = 15;
+		barSprite.setTextureRect(parent->ts_score->GetSubRect(barStartTile + row * 2));
 	}
 	else
 	{
-		barSprite.setTexture(*parent->ts_mapSelectOptions->texture);
-		barSprite.setTextureRect(parent->ts_mapSelectOptions->GetSubRect(row - 2));
+		int barStartTile = 23; //after PLAY
+		int r = row - 3;
+		barSprite.setTextureRect(parent->ts_score->GetSubRect(barStartTile + r * 2));
 	}
+	
 	
 	stateLength[NONE] = 1;
 	stateLength[POP_OUT] = 30;
@@ -551,6 +549,10 @@ void SelectBar::Reset()
 	else if (row == 4)//race ghost
 	{
 		button = XBOX_Y;//ControllerSettings::BUTTONTYPE_SHIELD;
+	}
+	else if (row == 5)
+	{
+		button = XBOX_START;
 	}
 
 	IntRect ir = sess->mainMenu->GetButtonIconTileForMenu(sess->controllerStates[0]->GetControllerType(), button);//sess->mainMenu->adventureManager->controllerInput, button);
