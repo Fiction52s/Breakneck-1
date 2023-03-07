@@ -216,6 +216,8 @@ PlayerRecorder::PlayerRecorder(Actor *p_player)
 {
 	numTotalFrames = -1;
 	frame = -1;
+
+	skinIndex = 0;
 }
 
 void PlayerRecorder::StopRecording()
@@ -233,6 +235,8 @@ void PlayerRecorder::StartRecording()
 	numTotalFrames = -1;
 
 	displayName = player->GetDisplayName();
+
+	skinIndex = player->sess->GetPlayerNormalSkin(player->actorIndex);
 
 	//only works for 1 player atm
 
@@ -421,6 +425,15 @@ bool PlayerReplayer::Read(istream & is)
 	is.read((char*)&numTotalFrames, sizeof(numTotalFrames));
 
 	is.read((char*)&skinIndex, sizeof(skinIndex));
+
+	if (replayManager->header.ver == 1)
+	{
+		//if (skinIndex < 0 || skinIndex >= Actor::SKIN_Count)
+		//{
+		//	skinIndex = 0; //1.0 version has skins that are uninitialized
+		//}
+		skinIndex = 0;
+	}
 
 	is.read((char*)&startPowerMode, sizeof(startPowerMode));
 

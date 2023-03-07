@@ -8863,7 +8863,22 @@ void Session::ConfirmFrame(int frameCheck)
 
 int Session::GetPlayerNormalSkin(int index)
 {
-	return matchParams.playerSkins[index];
+	if (IsReplayOn())
+	{
+		if (index == 0)
+		{
+			return activePlayerReplayManagers[0]->GetReplayer(0)->skinIndex;
+		}
+		else
+		{
+			return matchParams.playerSkins[index];
+		}
+	}
+	else
+	{
+		return matchParams.playerSkins[index];
+	}
+	
 	/*if (IsSessTypeEdit())
 	{
 		return Actor::SKIN_NORMAL + index;

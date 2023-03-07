@@ -514,10 +514,7 @@ KinMask::KinMask( Actor *a )
 	faceBG.setTexture(*ts_portraitBG->texture);
 	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
 
-	if (a->owner != NULL && a->owner->saveFile != NULL)
-	{
-		playerSkinShader.SetSkin(a->owner->saveFile->defaultSkinIndex);
-	}
+	
 	
 
 	momentumBar = new MomentumBar(sess);
@@ -534,6 +531,14 @@ KinMask::~KinMask()
 
 void KinMask::Reset()
 {
+	playerSkinShader.SetSkin(actor->owner->GetPlayerNormalSkin(0));
+	/*if (actor->owner != NULL && actor->owner->saveFile != NULL)
+	{
+		playerSkinShader.SetSkin(actor->owner->saveFile->defaultSkinIndex);
+	}*/
+
+
+
 	SetExpr(Expr_NEUTRAL);
 	Update(0,false);
 	frame = 0;
