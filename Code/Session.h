@@ -888,6 +888,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupSuperSequence();
 	void CleanupSuperSequence();
 	void DrawPlayerShields(sf::RenderTarget *target);
+	void UpdateNameTagsPixelPos(sf::RenderTarget *target);
+	void DrawNameTags(sf::RenderTarget *target);
 	void SetupGameMode();
 	V2d GetFuturePlayerPos(int futureFrames, int index = 0);
 	void PlayerMustSimulateAtLeast(int f, int index = 0);

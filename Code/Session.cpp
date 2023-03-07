@@ -67,6 +67,7 @@
 
 #include "ReplayHUD.h"
 #include "AlertBox.h"
+#include "NameTag.h"
 
 using namespace sf;
 using namespace std;
@@ -6600,6 +6601,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawGateMarkers(target);
 
+	
+
 	//camera debug grid
 	/*sf::Vertex testGrid[4];
 	testGrid[0].position = Vector2f(960, 0);
@@ -6609,7 +6612,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	
 	testGrid[0].color = Color::Red;
 	testGrid[1].color = Color::Red;
-	testGrid[2].color = Color::Red;
+	testGrid[2].color = Color::Red;for the
 	testGrid[3].color = Color::Red;
 	target->draw(testGrid, 4, sf::Lines);*/
 
@@ -6618,6 +6621,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawDyingPlayers(target);
 
+	UpdateNameTagsPixelPos(target);
+
 	//UpdateTimeSlowShader();
 
 	target->setView(uiView);
@@ -6625,6 +6630,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	LayeredDraw(EffectLayer::UI_FRONT, target);
 
 	LayeredDraw(EffectLayer::IN_FRONT_OF_UI, target);
+
+	DrawNameTags(target);
 
 	if (!activePlayerReplayManagers.empty())
 	{
@@ -8283,6 +8290,44 @@ void Session::DrawPlayerShields(sf::RenderTarget *target)
 		if (p != NULL)
 		{
 			p->DrawShield(target);
+		}
+	}
+}
+
+void Session::UpdateNameTagsPixelPos(sf::RenderTarget *target)
+{
+	for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
+	{
+		(*it)->UpdateGhostNameTagsPixelPos(target);
+	}
+
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->nameTag->UpdatePixelPos(target);
+		}
+	}
+}
+
+void Session::DrawNameTags(sf::RenderTarget *target)
+{
+	//draw ghost name tags first!
+
+	for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
+	{
+		(*it)->DrawGhostNameTags(target);
+	}
+
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawNameTag(target);
 		}
 	}
 }

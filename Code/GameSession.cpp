@@ -3843,6 +3843,12 @@ void GameSession::RestartLevel()
 
 	if (parentGame == NULL)
 	{
+		for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
+		{
+			(*it)->Reset();
+		}
+
+
 		Actor *p;
 
 		for (int i = 0; i < 4; ++i)
@@ -3872,13 +3878,14 @@ void GameSession::RestartLevel()
 		playerReplayManager->Reset();
 	}*/
 
-	if (parentGame == NULL)
+	//orig pos below player respawn
+	/*if (parentGame == NULL)
 	{
 		for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
 		{
 			(*it)->Reset();
 		}
-	}
+	}*/
 
 	scoreDisplay->Reset();
 

@@ -99,6 +99,7 @@ struct PlayerEffect;
 struct Wire;
 
 struct BossCommand;
+struct NameTag;
 
 using json = nlohmann::json;
 
@@ -621,6 +622,7 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
+	NameTag *nameTag;
 
 	const static int SHARD_START_INDEX = UPGRADE_POWER_LWIRE + 1;
 
@@ -1283,7 +1285,9 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 	void GatorStun();
+	std::string GetDisplayName();
 	void DrawShield(sf::RenderTarget *target);
+	void DrawNameTag(sf::RenderTarget *target);
 	bool CanParry(HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
 		bool attackFacingRight );

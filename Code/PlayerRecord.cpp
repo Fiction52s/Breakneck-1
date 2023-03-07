@@ -12,6 +12,7 @@
 #include "SaveFile.h"
 #include "LogMenu.h"
 #include "ReplayHUD.h"
+#include "NameTag.h"
 
 using namespace sf;
 using namespace std;
@@ -23,6 +24,8 @@ ReplayGhost::ReplayGhost(PlayerReplayer *p_pReplayer)
 	frame = 0;
 	action = 0;
 
+	nameTag = new NameTag;
+
 	playerSkinShader.SetSkin(Actor::SKIN_GHOST);
 
 	playerSkinShader.pShader.setUniform("u_invincible", 0.f);
@@ -32,6 +35,8 @@ ReplayGhost::ReplayGhost(PlayerReplayer *p_pReplayer)
 
 ReplayGhost::~ReplayGhost()
 {
+	delete nameTag;
+
 	if (sprBuffer != NULL)
 	{
 		delete[] sprBuffer;
@@ -40,9 +45,25 @@ ReplayGhost::~ReplayGhost()
 
 void ReplayGhost::Read(istream &is)
 {
-	sprBuffer = new SprInfo[pReplayer->numTotalFrames];
-	memset(sprBuffer, 0, sizeof(SprInfo) * pReplayer->numTotalFrames);
-	is.read((char*)sprBuffer, sizeof(SprInfo) * pReplayer->numTotalFrames);
+	int readSize = sizeof(SprInfo);
+	if (pReplayer->replayManager->header.ver == 1)
+	{
+		readSize = 36; //old size
+
+		sprBuffer = new SprInfo[pReplayer->numTotalFrames];
+		memset(sprBuffer, 0, sizeof(SprInfo) * pReplayer->numTotalFrames);
+
+		for (int i = 0; i < pReplayer->numTotalFrames; ++i)
+		{
+			is.read((char*)(&sprBuffer[i]), readSize);
+		}
+	}
+	else
+	{
+		sprBuffer = new SprInfo[pReplayer->numTotalFrames];
+		memset(sprBuffer, 0, sizeof(SprInfo) * pReplayer->numTotalFrames);
+		is.read((char*)sprBuffer, sizeof(SprInfo) * pReplayer->numTotalFrames);
+	}
 }
 
 void ReplayGhost::Draw(RenderTarget *target)
@@ -113,6 +134,15 @@ void ReplayGhost::UpdateReplaySprite()
 	replaySprite.setRotation(info.rotation);
 	replaySprite.setPosition(info.position.x, info.position.y);
 
+	if (pReplayer->replayManager->header.ver == 1)
+	{
+		nameTag->SetPos(replaySprite.getPosition());
+	}
+	else
+	{
+		nameTag->SetPos(Vector2f(info.playerPos));
+	}
+
 	++frame;
 }
 
@@ -140,6 +170,8 @@ void ReplayPlayer::Reset()
 	SetToStart();
 	pReplayer->player->SetAllUpgrades(pReplayer->replayManager->header.bUpgradeField);//pReplayer->//pReplayer->bUpgradeField);
 	pReplayer->player->currPowerMode = pReplayer->startPowerMode;
+	pReplayer->player->nameTag->SetActive(true);
+	pReplayer->player->nameTag->SetName(pReplayer->displayName);
 }
 
 void ReplayPlayer::SetToStart()
@@ -200,6 +232,8 @@ void PlayerRecorder::StartRecording()
 	frame = 0;
 	numTotalFrames = -1;
 
+	displayName = player->GetDisplayName();
+
 	//only works for 1 player atm
 
 	startPowerMode = player->currPowerMode;
@@ -224,6 +258,7 @@ void PlayerRecorder::RecordGhostFrame()
 	}
 
 	SprInfo &info = sprBuffer[frame];
+	info.playerPos = player->position;
 	info.position = player->sprite->getPosition();
 	info.origin = player->sprite->getOrigin();
 	info.rotation = player->sprite->getRotation();
@@ -266,6 +301,14 @@ void PlayerRecorder::Write(ofstream &of )
 	of.write((char*)&numTotalFrames, sizeof(numTotalFrames));
 	of.write((char*)&skinIndex, sizeof(skinIndex));
 	of.write((char*)&startPowerMode, sizeof(startPowerMode));
+
+	int numChars = displayName.size();
+	of.write((char*)&numChars, sizeof(numChars));
+
+	if (numChars > 0)
+	{
+		of.write(&displayName[0], numChars);
+	}
 	
 	of.write((char*)sprBuffer, numTotalFrames * sizeof(SprInfo));
 	of.write((char*)inputBuffer, numTotalFrames * COMPRESSED_INPUT_SIZE);
@@ -276,13 +319,17 @@ void PlayerRecorder::StopRecordingAndWriteToFile(const std::string &fileName)
 
 }
 
+//version 1 is the default
+//version 2
+	//-Added a V2d playerPos to the replayghost sprite info to track desyncs and also for the nametag
+
 PlayerRecordHeader::PlayerRecordHeader()
 	:numberOfPlayers(0),
 	bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bUpgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
 	bLogField(LogDetailedInfo::MAX_LOGS)
 {
-	SetVer(1);
+	SetVer(2);
 }
 
 PlayerRecordHeader::~PlayerRecordHeader()
@@ -358,6 +405,12 @@ PlayerReplayer::~PlayerReplayer()
 	delete replayPlayer;
 }
 
+void PlayerReplayer::SetDisplayName(const std::string &n)
+{
+	displayName = n;
+	replayGhost->nameTag->SetName(displayName);
+}
+
 bool PlayerReplayer::Read(istream & is)
 {
 	//init = true;
@@ -370,6 +423,21 @@ bool PlayerReplayer::Read(istream & is)
 	is.read((char*)&skinIndex, sizeof(skinIndex));
 
 	is.read((char*)&startPowerMode, sizeof(startPowerMode));
+
+	if (replayManager->header.ver > 1)
+	{
+		int numChars = -1;
+		is.read((char*)&numChars, sizeof(numChars));
+
+		if (numChars > 0)
+		{
+			is.read(&displayName[0], numChars);
+		}
+		else
+		{
+			displayName = "NOT SET";
+		}
+	}
 
 	replayGhost->Read(is);
 	replayPlayer->Read(is);
@@ -641,4 +709,26 @@ PlayerReplayer *PlayerReplayManager::GetReplayer(int pIndex)
 	}
 
 	return repVec[pIndex];
+}
+
+void PlayerReplayManager::DrawGhostNameTags(sf::RenderTarget *target)
+{
+	if (ghostsActive && !replaysActive)
+	{
+		for (auto it = repVec.begin(); it != repVec.end(); ++it)
+		{
+			(*it)->replayGhost->nameTag->Draw(target);
+		}
+	}
+}
+
+void PlayerReplayManager::UpdateGhostNameTagsPixelPos(sf::RenderTarget *target)
+{
+	if (ghostsActive && !replaysActive)
+	{
+		for (auto it = repVec.begin(); it != repVec.end(); ++it)
+		{
+			(*it)->replayGhost->nameTag->UpdatePixelPos(target);
+		}
+	}
 }

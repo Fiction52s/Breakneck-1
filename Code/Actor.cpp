@@ -76,6 +76,7 @@
 #include "PaletteShader.h"
 #include "AdventureManager.h"
 #include "DeathSequence.h"
+#include "NameTag.h"
 
 using namespace sf;
 using namespace std;
@@ -3044,6 +3045,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
 
+	nameTag = new NameTag;
+
 	pState = NULL;
 	preSimulationState = NULL;
 	futurePositions = NULL;
@@ -3813,6 +3816,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 Actor::~Actor()
 {
+	delete nameTag;
+
 	/*for (auto it = birdCommands.begin(); it != birdCommands.end(); ++it)
 	{
 		delete (*it);
@@ -4001,6 +4006,15 @@ double Actor::GetBounceBoostSpeed()
 }
 
 
+std::string Actor::GetDisplayName()
+{
+	return "";
+	/*if (owner->IsReplayOn())
+	{
+
+	}*/
+}
+
 void Actor::LoadHitboxes()
 {
 	ifstream is;
@@ -4036,6 +4050,8 @@ void Actor::LoadHitboxes()
 
 	is.close();
 }
+
+
 
 void Actor::SetupHitboxInfo( json &j, const std::string &name,
 	HitboxInfo *hi)
@@ -4457,8 +4473,22 @@ void Actor::Respawn( bool setStartPos )
 		numFramesToLive = -1;
 	}
 
+	if (owner != NULL && owner->IsReplayOn())
+	{
+		//do nothing, powers were already set by the replay
+	}
+	else
+	{
+		nameTag->SetActive(false);
+	}
+
+
 	bool isAdventure = false;
-	if (owner != NULL && owner->saveFile != NULL )
+	if (owner != NULL && owner->IsReplayOn())
+	{
+		//do nothing, powers were already set by the replay
+	}
+	else if (owner != NULL && owner->saveFile != NULL )
 	{
 		SetAllUpgrades(owner->saveFile->upgradeField);
 	}
@@ -4721,7 +4751,7 @@ void Actor::Respawn( bool setStartPos )
 	//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
 
 	
-
+	framesSinceBounce = -1; //haven't bounced yet
 	ResetAttackHit();
 	bounceAttackHit = false;
 	flashFrames = 0;
@@ -15681,10 +15711,13 @@ void Actor::SlowDependentFrameIncrement()
 			framesNotGrinding++;
 		}
 
-		if (action == BOUNCEAIR && oldBounceEdge != NULL)
+		framesSinceBounce++;
+
+		//seems better to just update this all the time
+		/*if (action == BOUNCEAIR && oldBounceEdge != NULL)
 		{
 			framesSinceBounce++;
-		}
+		}*/
 
 		++framesSinceRightWireBoost;
 		++framesSinceLeftWireBoost;
@@ -15998,6 +16031,8 @@ void Actor::UpdatePostPhysics()
 	{
 		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
 	}
+
+	nameTag->SetPos(Vector2f( position ) );
 
 	TryEndLevel();
 }
@@ -18623,6 +18658,14 @@ void Actor::DrawShield(sf::RenderTarget *target)
 		{
 			target->draw(shieldSprite);
 		}
+	}
+}
+
+void Actor::DrawNameTag(sf::RenderTarget *target)
+{
+	if (nameTag->IsActive())
+	{
+		nameTag->Draw(target);
 	}
 }
 

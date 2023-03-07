@@ -99,6 +99,13 @@ void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDown
 			playerReplayManager = new PlayerReplayManager;
 			playerReplayManager->LoadFromStream(ss);
 
+			string userName = SteamFriends()->GetFriendPersonaName(ugcOwner);
+
+			assert(!playerReplayManager->repVec.empty());
+
+			playerReplayManager->repVec.front()->SetDisplayName(userName);
+			
+
 			action = A_READY;
 			cout << "replay is ready\n";
 			/*ofstream of;
@@ -150,7 +157,7 @@ LeaderboardDisplay::LeaderboardDisplay()
 	clearCheckedGhostsButton = panel->AddButton("clearbutton", Vector2i(), Vector2f(200, buttonHeight), "Clear Ghosts");
 	raceGhostsButton = panel->AddButton("racebutton", Vector2i(), Vector2f(200, buttonHeight), "Race Ghosts");
 	refreshBoardButton = panel->AddButton("refreshbutton", Vector2i(), Vector2f(100, buttonHeight), "Refresh");
-	originalGhostCheckBox = panel->AddCheckBox("originalghostcheckbox", Vector2i(), false);
+	originalGhostCheckBox = panel->AddCheckBox("originalghostcheckbox", Vector2i(), true);
 	originalGhostCheckBoxLabel = panel->AddLabel("originalghostcheckboxlabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Default Ghost:");
 
 

@@ -12,11 +12,13 @@
 #include "BitField.h"
 #include <fstream>
 #include <vector>
+#include "VectorMath.h"
 
 struct ReplayHUD;
 
 struct Actor;
 struct PlayerReplayer;
+struct NameTag;
 //what is recorded each frame for the ghost
 struct SprInfo
 {
@@ -30,6 +32,8 @@ struct SprInfo
 	int tileIndex;
 
 	int speedLevel;
+
+	V2d playerPos; //for desyncs and tracking the name tag
 };
 
 struct PlayerRecordHeader
@@ -60,6 +64,8 @@ struct PlayerRecorder
 	int numTotalFrames;
 	int skinIndex;
 	int startPowerMode;
+
+	std::string displayName;
 
 
 	SprInfo sprBuffer[MAX_RECORD]; //1 hour
@@ -96,6 +102,8 @@ struct PlayerRecordingManager
 //play back the players sprite info
 struct ReplayGhost
 {
+	NameTag *nameTag;
+
 	PlayerReplayer *pReplayer;
 
 	PlayerSkinShader playerSkinShader;
@@ -136,6 +144,8 @@ struct PlayerReplayer
 	int skinIndex;
 	int startPowerMode;
 
+	std::string displayName;
+
 	ReplayGhost *replayGhost;
 	ReplayPlayer *replayPlayer;
 
@@ -145,6 +155,7 @@ struct PlayerReplayer
 
 	PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager);
 	~PlayerReplayer();
+	void SetDisplayName(const std::string &n);
 	bool Read(std::istream &is );
 	//bool OpenGhost(const boost::filesystem::path &fileName);
 };
@@ -170,6 +181,8 @@ struct PlayerReplayManager
 	bool LoadFromFile(const boost::filesystem::path &fileName);
 	bool LoadFromStream(std::istream &is);
 	void AddGhostsToVec(std::vector<ReplayGhost*> &vec);
+	void DrawGhostNameTags(sf::RenderTarget *target);
+	void UpdateGhostNameTagsPixelPos(sf::RenderTarget *target);
 };
 
 #endif
