@@ -144,7 +144,7 @@ struct LeaderboardEntryRow
 	void Draw(sf::RenderTarget *target);
 };
 
-struct LeaderboardDisplay : GUIHandler
+struct LeaderboardDisplay : GUIHandler, PanelUpdater
 {
 	//placing, icon, name, time
 
@@ -173,6 +173,7 @@ struct LeaderboardDisplay : GUIHandler
 	Label *originalGhostCheckBoxLabel;
 
 	CheckBox *showGhostsWithReplayCheckBox;
+	ScrollBar *scrollBar;
 	
 
 	sf::Vertex bgQuad[4];
@@ -189,7 +190,8 @@ struct LeaderboardDisplay : GUIHandler
 	int chosenReplayIndex;
 
 
-	int topIndex;
+	//int topRow;
+	//int maxTopRow;
 	sf::Vector2f topLeft;
 
 	LeaderboardDisplay();
@@ -213,6 +215,9 @@ struct LeaderboardDisplay : GUIHandler
 	bool IsTryingToRaceGhosts();
 	bool IsDefaultGhostOn();
 	bool ShouldShowGhostsWithReplay();
+	void ScrollBarCallback(ScrollBar *sb, const std::string &e);
+	void MouseScroll(int delta);
+	void PopulateRows();
 };
 
 

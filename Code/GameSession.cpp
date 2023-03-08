@@ -81,6 +81,7 @@
 #include "Leaderboard.h"
 #include "UIMouse.h"
 #include "md5.h"
+#include "UIController.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -4046,6 +4047,8 @@ bool GameSession::LeaderboardGameModeUpdate()
 
 		MOUSE.Update(MOUSE.GetRealPixelPos());
 		UpdateControllers();
+		UICONTROLLER.Update();
+		
 
 		if (mainMenu->adventureManager != NULL)
 		{

@@ -18663,7 +18663,7 @@ void Actor::DrawShield(sf::RenderTarget *target)
 
 void Actor::DrawNameTag(sf::RenderTarget *target)
 {
-	if (nameTag->IsActive())
+	if (nameTag->IsActive() )
 	{
 		nameTag->Draw(target);
 	}

@@ -6,6 +6,7 @@
 #include <fstream>
 #include "PlayerRecord.h"
 #include <sstream>
+#include "UIController.h"
 
 using namespace std;
 using namespace sf;
@@ -147,9 +148,8 @@ void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDown
 
 LeaderboardDisplay::LeaderboardDisplay()
 {
-	topIndex = 0;
-
 	panel = new Panel("leaderboard", 1920, 1080, this);
+	
 	panel->SetColor(Color::Transparent);
 
 	int buttonHeight = LeaderboardDisplay::CHAR_HEIGHT;
@@ -162,6 +162,7 @@ LeaderboardDisplay::LeaderboardDisplay()
 
 	showGhostsWithReplayCheckBox = panel->AddCheckBox("showghostswthreplaycheckbox", Vector2i(), false);
 
+	scrollBar = panel->AddScrollBar("scroll", Vector2i(), Vector2i(30, NUM_ROWS * ROW_HEIGHT ), 1, 1);
 
 	Hide();
 
@@ -225,6 +226,7 @@ void LeaderboardDisplay::Reset()
 	frame = 0;
 	originalGhostCheckBox->checked = true;
 	showGhostsWithReplayCheckBox->checked = false;
+	scrollBar->SetIndex(0);
 
 	manager.Reset();
 }
@@ -262,6 +264,8 @@ void LeaderboardDisplay::SetTopLeft(const sf::Vector2f &p_pos)
 	originalGhostCheckBox->SetPos(Vector2i(originalGhostCheckBoxLabel->GetTopRight().x + 10, aboveLower.y));
 
 	showGhostsWithReplayCheckBox->SetPos(originalGhostCheckBox->pos + Vector2i(200, 0));
+
+	scrollBar->SetPos(Vector2i(topLeft + Vector2f(ROW_WIDTH, 0)));
 }
 
 void LeaderboardDisplay::HandleEvent(sf::Event ev)
@@ -275,7 +279,40 @@ void LeaderboardDisplay::HandleEvent(sf::Event ev)
 	}
 	else
 	{
+		panel->extraUpdater = this;
 		panel->HandleEvent(ev);
+		panel->extraUpdater = NULL;
+	}
+}
+
+void LeaderboardDisplay::MouseScroll(int delta)
+{
+	int oldTopRow = scrollBar->currIndex;
+	scrollBar->SetIndex(scrollBar->currIndex - delta);
+
+	if (scrollBar->currIndex != oldTopRow)
+	{
+		PopulateRows();
+	}
+}
+
+void LeaderboardDisplay::PopulateRows()
+{
+	for (int i = 0; i < NUM_ROWS; ++i)
+	{
+		rows[i].Clear();
+	}
+
+	int numEntries = manager.currBoard.entries.size();
+
+	for (int i = 0; i < NUM_ROWS; ++i)
+	{
+		if (i + scrollBar->currIndex == numEntries)
+		{
+			break;
+		}
+
+		rows[i].Set(manager.currBoard.entries[i + scrollBar->currIndex]);
 	}
 }
 
@@ -292,30 +329,19 @@ void LeaderboardDisplay::Update()
 
 			int numEntries = manager.currBoard.entries.size();
 
-			for (int i = 0; i < NUM_ROWS; ++i)
-			{
-				rows[i].Clear();
-			}
+			scrollBar->SetRows(numEntries, NUM_ROWS);
+			scrollBar->SetIndex(0);
 
-			for (int i = 0; i < NUM_ROWS; ++i)
+			/*if (numEntries <= NUM_ROWS)
 			{
-				if (i == numEntries)
-				{
-					break;
-				}
-
-				rows[i].Set(manager.currBoard.entries[i]);
+				maxTopRow = 0;
 			}
-			//if (false)//manager.lastUploadSuccess)
-			//{
-			//	
-			//}
-			//else
-			//{
-			//	messagePop.Pop("Score upload failed. Try again later");
-			//	action = A_UPLOAD_FAILED_POPUP;
-			//}
-			
+			else
+			{
+				maxTopRow = numEntries - NUM_ROWS;
+			}*/
+
+			PopulateRows();
 		}
 	}
 	else if (action == A_WAITING_FOR_REPLAY)
@@ -353,6 +379,12 @@ void LeaderboardDisplay::Update()
 	else
 	{
 		panel->MouseUpdate();
+
+		int scroll = UICONTROLLER.ConsumeScroll();
+		if (scroll != 0)
+		{
+			MouseScroll(scroll);
+		}
 	}
 
 	++frame;
@@ -493,7 +525,7 @@ void LeaderboardDisplay::ButtonCallback(Button *b, const std::string & e)
 
 		if (rowIndex >= 0)
 		{
-			int trueIndex = topIndex + rowIndex;
+			int trueIndex = scrollBar->currIndex + rowIndex;
 			action = A_WAITING_FOR_REPLAY;
 			manager.currBoard.entries[trueIndex].DownloadReplay();
 			chosenReplayIndex = trueIndex;
@@ -539,13 +571,12 @@ void LeaderboardDisplay::CheckBoxCallback(CheckBox *cb, const std::string & e)
 
 		if (rowIndex >= 0)
 		{
-			int trueIndex = topIndex + rowIndex;
+			int trueIndex = scrollBar->currIndex + rowIndex;
 
 			manager.currBoard.entries[trueIndex].ghostOn = cb->checked;
 
 			if (cb->checked)
 			{
-
 				manager.currBoard.entries[trueIndex].DownloadReplay();
 				cout << "downloading replay because you checked ghost: " << trueIndex << "\n";
 
@@ -557,4 +588,9 @@ void LeaderboardDisplay::CheckBoxCallback(CheckBox *cb, const std::string & e)
 		}
 	}
 	
+}
+
+void LeaderboardDisplay::ScrollBarCallback(ScrollBar *sb, const std::string &e)
+{
+	PopulateRows();
 }
