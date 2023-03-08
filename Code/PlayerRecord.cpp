@@ -66,6 +66,19 @@ void ReplayGhost::Read(istream &is)
 	}
 }
 
+void ReplayGhost::DrawNameTag(sf::RenderTarget *target)
+{
+	if (frame == pReplayer->numTotalFrames)
+		return;
+
+	if (!pReplayer->player->IsVisibleAction(action))
+	{
+		return;
+	}
+
+	nameTag->Draw(target);
+}
+
 void ReplayGhost::Draw(RenderTarget *target)
 {
 	if (frame == pReplayer->numTotalFrames)
@@ -98,49 +111,45 @@ void ReplayGhost::UpdateReplaySprite()
 
 	SprInfo &info = sprBuffer[frame];
 	Tileset *ts = pReplayer->player->tileset[(Actor::Action)info.action];
-	replaySprite.setTexture(*ts->texture);
 
 	action = info.action;
-	Actor::Action a = (Actor::Action)info.action;
-	/*if (a == Actor::JUMPSQUAT)
+
+	if (ts != NULL)
 	{
-		cout << "setting jumpsquat in ghost. frame: " << frame << endl;
-	}*/
-	IntRect ir = ts->GetSubRect(info.tileIndex);
+		replaySprite.setTexture(*ts->texture);
+		IntRect ir = ts->GetSubRect(info.tileIndex);
+		replaySprite.setRotation(info.rotation);
 
-	replaySprite.setRotation(info.rotation);
+		float width = ts->texture->getSize().x;
+		float height = ts->texture->getSize().y;
 
+		playerSkinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
 
-	float width = ts->texture->getSize().x;
-	float height = ts->texture->getSize().y;
+		if (info.flipX)
+		{
+			ir.left += ir.width;
+			ir.width = -ir.width;
+		}
+		if (info.flipY)
+		{
+			ir.top += ir.height;
+			ir.height = -ir.height;
+		}
 
-	playerSkinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
-		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+		replaySprite.setTextureRect(ir);
+		replaySprite.setOrigin(info.origin.x, info.origin.y);
+		replaySprite.setRotation(info.rotation);
+		replaySprite.setPosition(info.position.x, info.position.y);
 
-	if (info.flipX)
-	{
-		ir.left += ir.width;
-		ir.width = -ir.width;
-	}
-	if (info.flipY)
-	{
-		ir.top += ir.height;
-		ir.height = -ir.height;
-	}
-	
-
-	replaySprite.setTextureRect(ir);
-	replaySprite.setOrigin(info.origin.x, info.origin.y);
-	replaySprite.setRotation(info.rotation);
-	replaySprite.setPosition(info.position.x, info.position.y);
-
-	if (pReplayer->replayManager->header.ver == 1)
-	{
-		nameTag->SetPos(replaySprite.getPosition());
-	}
-	else
-	{
-		nameTag->SetPos(Vector2f(info.playerPos));
+		if (pReplayer->replayManager->header.ver == 1)
+		{
+			nameTag->SetPos(replaySprite.getPosition());
+		}
+		else
+		{
+			nameTag->SetPos(Vector2f(info.playerPos));
+		}
 	}
 
 	++frame;
@@ -179,7 +188,7 @@ void ReplayPlayer::SetToStart()
 	frame = 0;
 }
 
-
+//the replay is 1 more frame than the "score" because of how the frames are counted. not a big deal. just keep it in mind
 void ReplayPlayer::UpdateInput( ControllerState &state )//ControllerDualStateQueue *controllerInput)
 {
 	if (frame == pReplayer->numTotalFrames)
@@ -193,7 +202,7 @@ void ReplayPlayer::UpdateInput( ControllerState &state )//ControllerDualStateQue
 	state.start = start;
 	state.back = back;
 
-	//cout << "replaying input: " << inputBuffer[frame] << " on frame " << frame << "\n";
+	//cout << "replaying input frame: " << frame << " out of " << pReplayer->numTotalFrames << "\n";
 
 	/*if (state.A)
 	{
@@ -413,6 +422,11 @@ void PlayerReplayer::SetDisplayName(const std::string &n)
 {
 	displayName = n;
 	replayGhost->nameTag->SetName(displayName);
+}
+
+int PlayerReplayer::GetFramesBeforeGoal()
+{
+	return numTotalFrames - 1;
 }
 
 bool PlayerReplayer::Read(istream & is)
@@ -730,7 +744,7 @@ void PlayerReplayManager::DrawGhostNameTags(sf::RenderTarget *target)
 	{
 		for (auto it = repVec.begin(); it != repVec.end(); ++it)
 		{
-			(*it)->replayGhost->nameTag->Draw(target);
+			(*it)->replayGhost->DrawNameTag(target);
 		}
 	}
 }

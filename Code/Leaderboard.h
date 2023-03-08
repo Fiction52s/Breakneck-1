@@ -79,7 +79,8 @@ struct LeaderboardManager : RemoteStorageResultHandler
 	std::string searchBoardName;
 	int postFindAction;
 
-	KineticLeaderboardEntry myEntry;
+	int myEntryIndex;
+	KineticLeaderboardEntry tempMyEntry;
 
 	UGCHandle_t replayToUploadHandle;
 
@@ -174,6 +175,8 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 
 	CheckBox *showGhostsWithReplayCheckBox;
 	ScrollBar *scrollBar;
+
+	std::vector<CSteamID> storedCheckedGhosts;
 	
 
 	sf::Vertex bgQuad[4];

@@ -2310,6 +2310,10 @@ bool GameSession::SetupMyBestPlayerReplayManager()
 			myBestReplayManager->ghostsActive = bestTimeGhostOn;
 			myBestReplayManager->replaysActive = bestReplayOn;
 
+			//actual frames of run is 1 less than replay count, because its arbitrary which order to count it in
+			int replayFramesBeforeGoal = myBestReplayManager->GetReplayer(0)->GetFramesBeforeGoal();
+			myBestReplayManager->GetReplayer(0)->SetDisplayName(GetTimeStr(replayFramesBeforeGoal));
+
 			if (bestTimeGhostOn)
 			{
 				myBestReplayManager->AddGhostsToVec(replayGhosts);

@@ -53,6 +53,11 @@ void LeaderboardEntryRow::Set(KineticLeaderboardEntry &entryInfo)
 	ghostCheckBox->ShowMember();
 	watchButton->ShowMember();
 
+	if (entryInfo.ghostOn)
+	{
+		ghostCheckBox->checked = true;
+	}
+
 	set = true;
 
 	rankText.setString(to_string(entryInfo.steamEntry.m_nGlobalRank));

@@ -40,6 +40,7 @@ void LeaderboardManager::Reset()
 
 	replayToUploadHandle = 0;
 	postFindAction = -1;
+	myEntryIndex = -1;
 	localReplayPath = "";
 	cloudReplayPath = "";
 	searchBoardName = "";
@@ -136,6 +137,7 @@ void LeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
 void LeaderboardManager::RefreshCurrBoard()
 {
 	cout << "refreshing board: " << currBoard.name << "\n";
+	myEntryIndex = -1;
 	action = A_DOWNLOADING;
 	currBoard.ClearEntries();
 	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntries(currBoard.leaderboardID, ELeaderboardDataRequest::k_ELeaderboardDataRequestGlobal, 0, 100);
@@ -200,13 +202,19 @@ void LeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDownload
 
 		int numEntries = callback->m_cEntryCount;
 
-		
+		myEntryIndex = -1;
 		currBoard.entries.resize(numEntries);
 
 		for (int i = 0; i < numEntries; ++i)
 		{
 			SteamUserStats()->GetDownloadedLeaderboardEntry(callback->m_hSteamLeaderboardEntries, i, &(currBoard.entries[i].steamEntry), NULL, 0);
 			currBoard.entries[i].Init();
+
+
+			if (currBoard.entries[i].steamEntry.m_steamIDUser == SteamUser()->GetSteamID())
+			{
+				myEntryIndex = i;
+			}
 		}
 	}
 	else if( action == A_DOWNLOADING_MY_SCORE )
@@ -214,27 +222,27 @@ void LeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDownload
 		if (callback->m_cEntryCount == 0)
 		{
 			cout << "no old score was found." << "\n";
-			myEntry.Clear(); //can this just be a local var?
+			tempMyEntry.Clear(); //can this just be a local var?
 			StartUploadingReplay();
 			//action = A_IDLE; //gets changed on success
 		}
 		else
 		{
 			action = A_IDLE; //gets changed on success
-			myEntry.Clear();
-			SteamUserStats()->GetDownloadedLeaderboardEntry(callback->m_hSteamLeaderboardEntries, 0, &(myEntry.steamEntry), NULL, 0);
-			myEntry.Init();
+			tempMyEntry.Clear();
+			SteamUserStats()->GetDownloadedLeaderboardEntry(callback->m_hSteamLeaderboardEntries, 0, &(tempMyEntry.steamEntry), NULL, 0);
+			tempMyEntry.Init();
 
-			if (scoreToUpload < myEntry.steamEntry.m_nScore)
+			if (scoreToUpload < tempMyEntry.steamEntry.m_nScore)
 			{
-				cout << "new time of " << scoreToUpload << " is better than the old time of " << myEntry.steamEntry.m_nScore << "\n";
+				cout << "new time of " << scoreToUpload << " is better than the old time of " << tempMyEntry.steamEntry.m_nScore << "\n";
 				StartUploadingReplay();
 				//StartUploadingScore();
 
 			}
 			else
 			{
-				cout << "new time of " << scoreToUpload << " is worse than the old time of " << myEntry.steamEntry.m_nScore << "\n";
+				cout << "new time of " << scoreToUpload << " is worse than the old time of " << tempMyEntry.steamEntry.m_nScore << "\n";
 			}
 		}
 	}

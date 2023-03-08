@@ -114,6 +114,7 @@ struct ReplayGhost
 
 	ReplayGhost(PlayerReplayer *pReplayer);
 	~ReplayGhost();
+	void DrawNameTag(sf::RenderTarget *target);
 	void Reset();
 	void Read(std::istream &is);
 	void UpdateReplaySprite();
@@ -155,6 +156,7 @@ struct PlayerReplayer
 
 	PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager);
 	~PlayerReplayer();
+	int GetFramesBeforeGoal();
 	void SetDisplayName(const std::string &n);
 	bool Read(std::istream &is );
 	//bool OpenGhost(const boost::filesystem::path &fileName);

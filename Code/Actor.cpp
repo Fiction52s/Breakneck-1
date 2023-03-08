@@ -4497,6 +4497,8 @@ void Actor::Respawn( bool setStartPos )
 		SetAllUpgrades(sess->defaultStartingPlayerOptionsField);
 	}
 
+	spriteAction = HIDDEN;
+
 	prevInput.Clear();
 	currInput.Clear();
 	storedGroundSpeed = 0;

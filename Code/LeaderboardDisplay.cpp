@@ -205,6 +205,15 @@ void LeaderboardDisplay::Hide()
 
 	MOUSE.Hide();
 	MOUSE.SetControllersOn(false);
+
+	storedCheckedGhosts.clear();
+	for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
+	{
+		if ((*it).ghostOn)
+		{
+			storedCheckedGhosts.push_back((*it).steamEntry.m_steamIDUser);
+		}
+	}
 }
 
 void LeaderboardDisplay::Reset()
@@ -214,17 +223,23 @@ void LeaderboardDisplay::Reset()
 	originalGhostCheckBox->checked = true;
 	showGhostsWithReplayCheckBox->checked = false;
 	scrollBar->SetIndex(0);
+	storedCheckedGhosts.clear();
 
 	manager.Reset();
 }
 
 void LeaderboardDisplay::Start( const std::string &boardName )
 {
-	Reset();
+	//Reset();
 
 	Show();
 
 	manager.DownloadBoard(boardName);
+
+	/*if (manager.currBoard.entries.empty())
+	{
+		
+	}*/
 }
 
 void LeaderboardDisplay::SetTopLeft(const sf::Vector2f &p_pos)
@@ -313,12 +328,6 @@ void LeaderboardDisplay::PopulateRows()
 		}
 	}
 
-	int myIndexStart = 5;
-	if (myIndex > myIndexStart)
-	{
-		scrollBar->SetIndex(myIndex - myIndexStart);
-	}
-
 	Color evenColor = Color(200, 200, 200, 200);
 	Color oddColor = Color(150, 150, 150, 200);
 	Color myColor = Color::Green;
@@ -355,8 +364,35 @@ void LeaderboardDisplay::Update()
 
 			int numEntries = manager.currBoard.entries.size();
 
+			for (auto it = storedCheckedGhosts.begin(); it != storedCheckedGhosts.end(); ++it)
+			{
+				for (auto mit = manager.currBoard.entries.begin(); mit != manager.currBoard.entries.end(); ++mit)
+				{
+					if ((*it) == (*mit).steamEntry.m_steamIDUser)
+					{
+						(*mit).ghostOn = true;
+						(*mit).DownloadReplay();
+						break;
+					}
+				}
+			}
+
 			scrollBar->SetRows(numEntries, NUM_ROWS);
-			scrollBar->SetIndex(0);
+			
+
+			assert(manager.myEntryIndex != -1);
+
+			int myIndexPosition = 4;
+			if (manager.myEntryIndex < myIndexPosition)
+			{
+				scrollBar->SetIndex(0);
+			}
+			else
+			{
+				scrollBar->SetIndex(manager.myEntryIndex - myIndexPosition);
+			}
+
+			//if( manager.currBoard.entries)
 
 			/*if (numEntries <= NUM_ROWS)
 			{
@@ -529,6 +565,15 @@ void LeaderboardDisplay::ButtonCallback(Button *b, const std::string & e)
 		for (int i = 0; i < NUM_ROWS; ++i)
 		{
 			rows[i].Clear();
+		}
+
+		storedCheckedGhosts.clear();
+		for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
+		{
+			if ((*it).ghostOn)
+			{
+				storedCheckedGhosts.push_back((*it).steamEntry.m_steamIDUser);
+			}
 		}
 
 		manager.RefreshCurrBoard();
