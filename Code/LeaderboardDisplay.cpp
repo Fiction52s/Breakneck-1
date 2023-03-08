@@ -166,20 +166,7 @@ LeaderboardDisplay::LeaderboardDisplay()
 
 	Hide();
 
-	Color evenColor = Color(200, 200, 200, 200);
-	Color oddColor = Color(150, 150, 150, 200);
-	for (int i = 0; i < NUM_ROWS; ++i)
-	{
-		if (i % 2 == 0)
-		{
-			SetRectColor(rowQuads + i * 4, evenColor);
-		}
-		else
-		{
-			SetRectColor(rowQuads + i * 4, oddColor );
-		}
-		
-	}
+	
 
 	SetRectColor(bgQuad, Color(100, 100, 200, 150));
 	SetRectTopLeft(bgQuad, 1920, 1080, Vector2f(0, 0));
@@ -305,14 +292,53 @@ void LeaderboardDisplay::PopulateRows()
 
 	int numEntries = manager.currBoard.entries.size();
 
+	int myIndex = -1;
+
+	int currIndex;
+	CSteamID myId = SteamUser()->GetSteamID();
+
 	for (int i = 0; i < NUM_ROWS; ++i)
 	{
-		if (i + scrollBar->currIndex == numEntries)
+		currIndex = i + scrollBar->currIndex;
+		if (currIndex == numEntries)
 		{
 			break;
 		}
 
-		rows[i].Set(manager.currBoard.entries[i + scrollBar->currIndex]);
+		rows[i].Set(manager.currBoard.entries[currIndex]);
+
+		if (manager.currBoard.entries[currIndex].steamEntry.m_steamIDUser == myId)
+		{
+			myIndex = i;
+		}
+	}
+
+	int myIndexStart = 5;
+	if (myIndex > myIndexStart)
+	{
+		scrollBar->SetIndex(myIndex - myIndexStart);
+	}
+
+	Color evenColor = Color(200, 200, 200, 200);
+	Color oddColor = Color(150, 150, 150, 200);
+	Color myColor = Color::Green;
+	for (int i = 0; i < NUM_ROWS; ++i)
+	{
+		if (myIndex >= 0 && i == myIndex)
+		{
+			SetRectColor(rowQuads + i * 4, myColor);
+		}
+		else
+		{
+			if (i % 2 == 0)
+			{
+				SetRectColor(rowQuads + i * 4, evenColor);
+			}
+			else
+			{
+				SetRectColor(rowQuads + i * 4, oddColor);
+			}
+		}
 	}
 }
 
