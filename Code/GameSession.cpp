@@ -4845,14 +4845,31 @@ bool GameSession::TryStartMyBestReplay()
 
 	if (SetupMyBestPlayerReplayManager())
 	{
-		RestartGame();
-		return true;
+
+		bool res = AddGhostsForReplay(myBestReplayManager);
+
+		if (res)
+		{
+			RestartGame();
+			return true;
+		}
+		else
+		{
+			OpenPopup(GameSession::POPUPTYPE_NO_REPLAY_FOUND);
+			bestTimeGhostOn = oldGhostOn;
+			bestTimeGhostOn = oldReplayOn;
+
+			CleanupReplaysAndGhosts();
+			return false;
+		}
 	}
 	else
 	{
 		OpenPopup(GameSession::POPUPTYPE_NO_REPLAY_FOUND);
 		bestTimeGhostOn = oldGhostOn;
 		bestTimeGhostOn = oldReplayOn;
+
+		CleanupReplaysAndGhosts();
 		return false;
 	}
 
@@ -4874,15 +4891,67 @@ bool GameSession::TryStartLeaderboardReplay(PlayerReplayManager *prm)
 	prm->replaysActive = bestReplayOn;
 	prm->ghostsActive = bestTimeGhostOn;
 
+	bool res = AddGhostsForReplay(prm);
+
+	if (!res)
+	{
+		return false;
+	}
+
 	RestartGame();
 
 	return true;
 }
 
-bool GameSession::TryStartGhosts()
+bool GameSession::AddGhostsForReplay(PlayerReplayManager *prm)
 {
-	CleanupReplaysAndGhosts();
+	if (mainMenu->adventureManager->leaderboard->ShouldShowGhostsWithReplay())
+	{
+		bool useDefaultGhost = true;
+		bool useLeaderboardGhosts = true;
 
+		if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+		{
+			assert(mainMenu->adventureManager != NULL);
+
+			if (bestTimeGhostOn)
+			{
+				if (mainMenu->adventureManager->leaderboard->GetNumActiveLeaderboardGhosts() > 0)
+				{
+					useLeaderboardGhosts = true;
+				}
+
+				useDefaultGhost = mainMenu->adventureManager->leaderboard->IsDefaultGhostOn();
+			}
+		}
+
+		if (useDefaultGhost && prm != myBestReplayManager)
+		{
+			if (!SetupMyBestPlayerReplayManager())
+			{
+				OpenPopup(GameSession::POPUPTYPE_NO_GHOST_FOUND);
+				bestTimeGhostOn = false;
+				bestTimeGhostOn = false;
+
+				CleanupReplaysAndGhosts();
+
+				return false;
+			}			
+		}
+
+		if (useLeaderboardGhosts)
+		{
+			mainMenu->adventureManager->leaderboard->AddGhostsToVec(replayGhosts, prm);
+			mainMenu->adventureManager->leaderboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers, prm);
+			mainMenu->adventureManager->leaderboard->SetActive(false, bestTimeGhostOn, prm);
+		}
+	}
+
+	return true;
+}
+
+bool GameSession::AddGhosts()
+{
 	bool oldGhostOn = bestTimeGhostOn;
 	bool oldReplayOn = bestReplayOn;
 
@@ -4907,6 +4976,11 @@ bool GameSession::TryStartGhosts()
 		}
 	}
 
+	if (!useDefaultGhost && !useLeaderboardGhosts)
+	{
+		useDefaultGhost = true;
+	}
+
 	if (useDefaultGhost)
 	{
 		if (!SetupMyBestPlayerReplayManager())
@@ -4914,6 +4988,8 @@ bool GameSession::TryStartGhosts()
 			OpenPopup(GameSession::POPUPTYPE_NO_GHOST_FOUND);
 			bestTimeGhostOn = oldGhostOn;
 			bestTimeGhostOn = oldReplayOn;
+
+			CleanupReplaysAndGhosts();
 
 			return false;
 		}
@@ -4924,6 +5000,20 @@ bool GameSession::TryStartGhosts()
 		mainMenu->adventureManager->leaderboard->AddGhostsToVec(replayGhosts);
 		mainMenu->adventureManager->leaderboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers);
 		mainMenu->adventureManager->leaderboard->SetActive(false, bestTimeGhostOn);
+	}
+
+	return true;
+}
+
+bool GameSession::TryStartGhosts()
+{
+	CleanupReplaysAndGhosts();
+
+	bool res = AddGhosts();
+
+	if (!res)
+	{
+		return false;
 	}
 
 	RestartGame();

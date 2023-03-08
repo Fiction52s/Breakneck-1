@@ -160,6 +160,8 @@ LeaderboardDisplay::LeaderboardDisplay()
 	originalGhostCheckBox = panel->AddCheckBox("originalghostcheckbox", Vector2i(), true);
 	originalGhostCheckBoxLabel = panel->AddLabel("originalghostcheckboxlabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Default Ghost:");
 
+	showGhostsWithReplayCheckBox = panel->AddCheckBox("showghostswthreplaycheckbox", Vector2i(), false);
+
 
 	Hide();
 
@@ -217,8 +219,20 @@ void LeaderboardDisplay::Hide()
 	MOUSE.SetControllersOn(false);
 }
 
+void LeaderboardDisplay::Reset()
+{
+	action = A_HIDDEN;
+	frame = 0;
+	originalGhostCheckBox->checked = true;
+	showGhostsWithReplayCheckBox->checked = false;
+
+	manager.Reset();
+}
+
 void LeaderboardDisplay::Start( const std::string &boardName )
 {
+	Reset();
+
 	Show();
 
 	manager.DownloadBoard(boardName);
@@ -246,6 +260,8 @@ void LeaderboardDisplay::SetTopLeft(const sf::Vector2f &p_pos)
 	originalGhostCheckBoxLabel->SetTopLeftPosition(aboveLower);
 
 	originalGhostCheckBox->SetPos(Vector2i(originalGhostCheckBoxLabel->GetTopRight().x + 10, aboveLower.y));
+
+	showGhostsWithReplayCheckBox->SetPos(originalGhostCheckBox->pos + Vector2i(200, 0));
 }
 
 void LeaderboardDisplay::HandleEvent(sf::Event ev)
@@ -357,22 +373,30 @@ bool LeaderboardDisplay::IsTryingToRaceGhosts()
 	return action == A_RACING_GHOSTS;
 }
 
-void LeaderboardDisplay::AddGhostsToVec(std::vector<ReplayGhost*> &vec)
+void LeaderboardDisplay::AddGhostsToVec(std::vector<ReplayGhost*> &vec, PlayerReplayManager *ignore)
 {
 	for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
 	{
 		if ((*it).ghostOn && (*it).playerReplayManager != NULL)
 		{
+			if ((*it).playerReplayManager == ignore)
+				continue;
+
 			(*it).playerReplayManager->AddGhostsToVec(vec);
 			(*it).playerReplayManager->ghostsActive = true;
 		}
 	}
 }
 
-void LeaderboardDisplay::AddPlayerReplayManagersToVec(std::vector<PlayerReplayManager*> &vec)
+void LeaderboardDisplay::AddPlayerReplayManagersToVec(std::vector<PlayerReplayManager*> &vec, PlayerReplayManager *ignore)
 {
 	for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
 	{
+		if ((*it).playerReplayManager == ignore)
+		{
+			continue;
+		}
+
 		if ((*it).ghostOn && (*it).playerReplayManager != NULL)
 		{
 			vec.push_back((*it).playerReplayManager);
@@ -380,7 +404,7 @@ void LeaderboardDisplay::AddPlayerReplayManagersToVec(std::vector<PlayerReplayMa
 	}
 }
 
-void LeaderboardDisplay::SetActive(bool replay, bool ghost)
+void LeaderboardDisplay::SetActive(bool replay, bool ghost, PlayerReplayManager *ignore)
 {
 	for (auto it = manager.currBoard.entries.begin(); it != manager.currBoard.entries.end(); ++it)
 	{
@@ -483,9 +507,20 @@ bool LeaderboardDisplay::IsDefaultGhostOn()
 	return originalGhostCheckBox->checked;
 }
 
+bool LeaderboardDisplay::ShouldShowGhostsWithReplay()
+{
+	return showGhostsWithReplayCheckBox->checked;
+}
+
+//showGhostsWithReplayCheckBox
+
 void LeaderboardDisplay::CheckBoxCallback(CheckBox *cb, const std::string & e)
 {
 	if (cb == originalGhostCheckBox)
+	{
+
+	}
+	else if (cb == showGhostsWithReplayCheckBox)
 	{
 
 	}

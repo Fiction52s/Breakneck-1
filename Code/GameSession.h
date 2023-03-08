@@ -553,6 +553,8 @@ struct GameSession : RayCastHandler, Session
 
 	bool TryStartMyBestReplay();
 	bool TryStartLeaderboardReplay( PlayerReplayManager *prm );
+	bool AddGhosts();
+	bool AddGhostsForReplay(PlayerReplayManager *prm);
 	bool TryStartGhosts();
 	void RestartWithNoReplayOrGhosts();
 };

@@ -494,7 +494,7 @@ bool SaveMenuScreen::Update()
 			}
 			else if (controllerInput->ButtonPressed_RightShoulder())
 			{
-				if (!defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
+				//if (!defaultFiles[mainMenu->adventureManager->currSaveFileIndex])
 				{
 					action = SKINMENU;
 					frame = 0;

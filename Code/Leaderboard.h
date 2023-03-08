@@ -85,6 +85,7 @@ struct LeaderboardManager : RemoteStorageResultHandler
 
 	LeaderboardManager();
 	~LeaderboardManager();
+	void Reset();
 	void FailureAlert();
 	bool IsIdle();
 	void UploadScore(const std::string &name, int score, const std::string &replayPath );
@@ -170,6 +171,8 @@ struct LeaderboardDisplay : GUIHandler
 	Button *refreshBoardButton;
 	CheckBox *originalGhostCheckBox;
 	Label *originalGhostCheckBoxLabel;
+
+	CheckBox *showGhostsWithReplayCheckBox;
 	
 
 	sf::Vertex bgQuad[4];
@@ -191,6 +194,7 @@ struct LeaderboardDisplay : GUIHandler
 
 	LeaderboardDisplay();
 	~LeaderboardDisplay();
+	void Reset();
 	void Start( const std::string &boardName );
 	void SetTopLeft(const sf::Vector2f &p_pos);
 	void HandleEvent(sf::Event ev);
@@ -198,9 +202,9 @@ struct LeaderboardDisplay : GUIHandler
 	void Show();
 	void Hide();
 	bool IsHidden();
-	void AddGhostsToVec(std::vector<ReplayGhost*> &vec);
-	void AddPlayerReplayManagersToVec(std::vector<PlayerReplayManager*> &vec);
-	void SetActive(bool replay, bool ghost);
+	void AddGhostsToVec(std::vector<ReplayGhost*> &vec, PlayerReplayManager *ignore = NULL);
+	void AddPlayerReplayManagersToVec(std::vector<PlayerReplayManager*> &vec, PlayerReplayManager *ignore = NULL);
+	void SetActive(bool replay, bool ghost, PlayerReplayManager *ignore = NULL);
 	void Draw(sf::RenderTarget *target);
 	void ButtonCallback(Button *b, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
@@ -208,6 +212,7 @@ struct LeaderboardDisplay : GUIHandler
 	bool IsTryingToStartReplay();
 	bool IsTryingToRaceGhosts();
 	bool IsDefaultGhostOn();
+	bool ShouldShowGhostsWithReplay();
 };
 
 

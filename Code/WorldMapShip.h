@@ -12,6 +12,11 @@ struct WorldMapShip
 	sf::Vertex shipQuad[4];
 	Tileset *ts;
 
+	int frame;
+	int facingIndex;
+
+	float scale;
+
 	WorldMapShip( WorldMap *wm );
 	void Update(ControllerDualStateQueue *controllerInput);
 	void Draw(sf::RenderTarget *target);

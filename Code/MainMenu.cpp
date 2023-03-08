@@ -64,6 +64,7 @@
 #include "CreditsMenuScreen.h"
 
 #include "RemoteStorageManager.h"
+#include "Leaderboard.h"
 
 using namespace std;
 using namespace sf;
@@ -1971,6 +1972,8 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	//loadThread = new boost::thread(DispLoadTest, this);// , currLevel);
 
 	//sf::sleep(sf::milliseconds(5000));
+
+	adventureManager->leaderboard->Reset();
 
 	MatchParams mp;
 	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->currSaveFile];

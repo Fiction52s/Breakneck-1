@@ -764,7 +764,7 @@ bool Wire::TryFire()
 			if( leftDir >= 0 )
 			//if (currInput.leftStickMagnitude > 0)
 			{
-				double angle = (PI / 32.0) * currInput.leftStickDirection;
+				double angle = (PI / 32.0) * leftDir;
 				fireDir.x = cos(angle);
 				fireDir.y = -sin(angle);
 			}

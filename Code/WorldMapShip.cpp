@@ -8,21 +8,80 @@ using namespace sf;
 
 WorldMapShip::WorldMapShip(WorldMap *wm)
 {
-	ts = wm->GetSizedTileset("Menu/ship_mouse_icon_1_172x80.png");
+	ts = wm->GetSizedTileset("WorldMap/ship_256x256.png");//wm->GetSizedTileset("Menu/ship_mouse_icon_1_172x80.png");
 	SetAlpha(1.0);
+	facingIndex = 0;
+	frame = 0;
+
+	scale = .5f;
 }
+
 void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)
 {
 	ControllerState currState = controllerInput->GetCurrState();
-	if (currState.leftStickMagnitude > 0)
+	if (currState.leftStickMagnitude > GameController::stickThresh )
 	{
 		float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
 		float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
-		float maxSpeed = 20;
+		float maxSpeed = 10;
 		sf::Vector2f movement(round(x * maxSpeed), round(y * maxSpeed));
 
+		if (currState.LUp())
+		{
+			if (currState.LLeft())
+			{
+				facingIndex = 5;
+			}
+			else if (currState.LRight())
+			{
+				facingIndex = 7;
+			}
+			else
+			{
+				facingIndex = 6;
+			}
+		}
+		else if (currState.LDown())
+		{
+			if (currState.LLeft())
+			{
+				facingIndex = 3;
+			}
+			else if (currState.LRight())
+			{
+				facingIndex = 1;
+			}
+			else
+			{
+				facingIndex = 2;
+			}
+		}
+		else
+		{
+			if (currState.LLeft())
+			{
+				facingIndex = 4;
+			}
+			else if (currState.LRight())
+			{
+				facingIndex = 0;
+			}
+		}
+
+
+		//facingIndex = (currState.leftStickDirection / 8);
+		//currState.leftStickRadians
+
 		SetPosition(position + movement);
+
+		++frame;
 	}
+	else
+	{
+		frame = 0;
+	}
+
+	UpdateQuads();
 	/*else
 	{
 		if (currState.LLeft())
@@ -43,6 +102,8 @@ void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)
 			myPos.y += 10;
 		}
 	}*/
+
+	
 }
 
 void WorldMapShip::SetPosition(sf::Vector2f &pos)
@@ -68,7 +129,7 @@ void WorldMapShip::SetPosition(sf::Vector2f &pos)
 		position.y = limit.y;
 	}
 
-	UpdateQuads();
+	
 }
 
 sf::Vector2f WorldMapShip::GetPosition()
@@ -78,8 +139,8 @@ sf::Vector2f WorldMapShip::GetPosition()
 
 void WorldMapShip::UpdateQuads()
 {
-	ts->SetQuadSubRect(shipQuad, 0);
-	SetRectCenter(shipQuad, ts->tileWidth, ts->tileHeight, position);
+	ts->SetQuadSubRect(shipQuad, facingIndex * 5 + (( frame / 2 ) % 5));
+	SetRectCenter(shipQuad, ts->tileWidth * scale, ts->tileHeight * scale, position);
 }
 
 void WorldMapShip::SetAlpha(float alpha)

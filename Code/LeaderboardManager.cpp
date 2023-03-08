@@ -26,7 +26,26 @@ void LeaderboardInfo::ClearEntries()
 
 LeaderboardManager::LeaderboardManager()
 {
+	Reset();
+}
+
+void LeaderboardManager::Reset()
+{
 	action = A_IDLE;
+	onLeaderboardFindResultCallResult.Cancel();
+	onLeaderboardScoreUploadedCallResult.Cancel();
+	onLeaderboardScoresDownloadedCallResult.Cancel();
+	onRemoteStorageFileShareResultCallResult.Cancel();
+	onLeaderboardUGCSetCallResult.Cancel();
+
+	replayToUploadHandle = 0;
+	postFindAction = -1;
+	localReplayPath = "";
+	cloudReplayPath = "";
+	searchBoardName = "";
+	scoreToUpload = -1;
+
+	currBoard.Clear();
 }
 
 LeaderboardManager::~LeaderboardManager()
