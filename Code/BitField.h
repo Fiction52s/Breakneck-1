@@ -22,6 +22,7 @@ struct BitField
 	void And(const BitField &b);
 	int GetOnCount( int startBit = 0);
 	bool IsNonZero();
+	bool Equals(BitField &otherField);
 	void Reset();
 	void Set(const BitField & otherField);
 };

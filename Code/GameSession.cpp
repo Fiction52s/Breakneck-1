@@ -841,6 +841,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 GameSession::GameSession(MatchParams *mp )
 	:Session( Session::SESS_GAME, mp->mapPath)
 {
+	originalProgressionCompatible = false;
+
 	matchParams = *mp;
 
 	if (matchParams.HasControllerStates())
@@ -1615,9 +1617,9 @@ bool GameSession::Load()
 
 	//while (true);
 
-	originalProgressionModeOn = true; //testing
+	originalProgressionModeOn = false; //testing
 
-	if (saveFile != NULL)
+	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE )
 	{
 		saveFile->adventureFile->GetOriginalProgressionUpgradeField(level->index, originalProgressionPlayerOptionsField);
 		saveFile->adventureFile->GetOriginalProgressionLogField(level->index, originalProgressionLogField);
@@ -1750,7 +1752,6 @@ bool GameSession::Load()
 
 	cout << "about to open file" << endl;
 
-
 	matSet.clear();
 
 	SetupShardMenu();
@@ -1780,6 +1781,41 @@ bool GameSession::Load()
 	}*/
 
 	SetupPlayers();
+
+	originalProgressionCompatible = false;
+	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+	{
+		originalProgressionCompatible = true;
+		for (int i = 0; i < saveFile->upgradeField.numOptions; ++i)
+		{
+			if (saveFile->upgradeField.GetBit(i) && !originalProgressionPlayerOptionsField.GetBit(i))
+			{
+				originalProgressionCompatible = false;
+				break;
+			}
+		}
+
+		if (originalProgressionCompatible)
+		{
+			for (int i = 0; i < saveFile->logField.numFields; ++i)
+			{
+				if (saveFile->logField.GetBit(i) && !originalProgressionLogField.GetBit(i))
+				{
+					originalProgressionCompatible = false;
+					break;
+				}
+			}
+		}
+	}
+
+	if (originalProgressionCompatible)
+	{
+		cout << "compatible" << "\n";
+	}
+	else
+	{
+		cout << "not compatible \n";
+	}
 
 	//original location
 	/*{

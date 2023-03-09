@@ -90,6 +90,18 @@ void BitField::And(const BitField &b)
 	}
 }
 
+bool BitField::Equals(BitField &otherField)
+{
+	assert(numFields == otherField.numFields);
+	for (int i = 0; i < numFields; ++i)
+	{
+		if (optionField[i] != otherField.optionField[i])
+			return false;
+	}
+
+	return true;
+}
+
 bool BitField::IsNonZero()
 {
 	for (int i = 0; i < numFields; ++i)
@@ -102,6 +114,8 @@ bool BitField::IsNonZero()
 
 	return false;
 }
+
+
 
 int BitField::GetOnCount( int startBit )
 {

@@ -261,6 +261,7 @@ struct GameSession : RayCastHandler, Session
 
 
 	bool originalProgressionModeOn;
+	bool originalProgressionCompatible;
 	
 	//from mainmenu
 
