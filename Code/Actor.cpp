@@ -3040,7 +3040,8 @@ void Actor::UpdateActionSprite()
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	skinShader("player"), exitAuraShader( "boostplayer" )
+	skinShader("player"), exitAuraShader( "boostplayer" ),
+	originalProgressionField( Session::PLAYER_OPTION_BIT_COUNT )
 	{
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
@@ -4490,7 +4491,18 @@ void Actor::Respawn( bool setStartPos )
 	}
 	else if (owner != NULL && owner->saveFile != NULL )
 	{
-		SetAllUpgrades(owner->saveFile->upgradeField);
+		if (owner->originalProgressionModeOn)
+		{
+			originalProgressionField.Set(owner->saveFile->upgradeField);
+			originalProgressionField.And(owner->originalProgressionPlayerOptionsField);
+
+			SetAllUpgrades(originalProgressionField);
+		}
+		else
+		{
+			SetAllUpgrades(owner->saveFile->upgradeField);
+		}
+		
 	}
 	else
 	{

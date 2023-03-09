@@ -216,7 +216,14 @@ void MapSector::UpdateButtonIconsWhenControllerIsChanged()
 
 bool MapSector::IsUnlocked()
 {
-	return saveFile->IsUnlockedSector(world, sec);
+	if (ms->worldMap->allUnlocked)
+	{
+		return true;
+	}
+	else
+	{
+		return saveFile->IsUnlockedSector(world, sec);
+	}
 }
 
 
@@ -768,7 +775,7 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 		bool yPress = controllerInput->ButtonPressed_Y() && ghostAndReplayOn;
 		bool r1Press = controllerInput->ButtonPressed_RightShoulder() && ghostAndReplayOn;
 
-		if ( (aPress || yPress || r1Press) && saveFile->IsUnlockedSector( world, sec ))
+		if ( (aPress || yPress || r1Press) && ( saveFile->IsUnlockedSector( world, sec ) || ms->worldMap->allUnlocked) )
 		{
 			//no idea wtf this does
 			if (saveFile->IsCompleteSector(sec) )

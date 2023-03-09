@@ -1615,6 +1615,12 @@ bool GameSession::Load()
 
 	//while (true);
 
+	originalProgressionModeOn = true; //testing
+
+	if (saveFile != NULL)
+	{
+		saveFile->adventureFile->GetOriginalProgressionField(level->index, originalProgressionPlayerOptionsField);
+	}
 
 	replayText.setFont(mainMenu->arial);
 	replayText.setCharacterSize(24);
@@ -3999,6 +4005,11 @@ bool GameSession::IsShardCaptured(int shardType)
 		return activePlayerReplayManagers[0]->header.IsShardCaptured(shardType);
 	}
 
+	if (originalProgressionModeOn)
+	{
+		return originalProgressionPlayerOptionsField.GetBit(Actor::SHARD_START_INDEX + shardType);
+	}
+
 	if (saveFile != NULL)
 	{
 		return saveFile->IsShardCaptured(shardType);
@@ -4835,7 +4846,8 @@ void GameSession::StartLeaderboard()
 	if (adventureManager != NULL)
 	{
 		gameState = LEADERBOARD;
-		adventureManager->leaderboard->Start(adventureManager->GetLeaderboardName(this));
+		adventureManager->leaderboard->Start(adventureManager->GetLeaderboardNameOriginalPowers(this), 
+			adventureManager->GetLeaderboardNameAnyPowers(this));
 	}
 }
 

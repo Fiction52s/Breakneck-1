@@ -7,6 +7,7 @@
 #include "PlayerRecord.h"
 #include <sstream>
 #include "UIController.h"
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -162,11 +163,22 @@ LeaderboardDisplay::LeaderboardDisplay()
 
 	showGhostsWithReplayCheckBox = panel->AddCheckBox("showghostswthreplaycheckbox", Vector2i(), false);
 
+	showGhostsWithReplayLabel = panel->AddLabel("showghostswithreplaylabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Show ghosts with replay:");
+
+	friendsOnlyCheckBox = panel->AddCheckBox("friendsonlycheckbox", Vector2i(), false);
+	friendsOnlyLabel = panel->AddLabel("friendsonlylabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Friends Only: ");
+
 	scrollBar = panel->AddScrollBar("scroll", Vector2i(), Vector2i(30, NUM_ROWS * ROW_HEIGHT ), 1, 1);
 
-	Hide();
+	std::vector<string> tabStrings = { "Original Powers", "Any Powers" };
 
-	
+	int tabWidth = ROW_WIDTH / 2 - 20;
+	int tabHeight = 40;
+
+	tabs = panel->AddTabGroup("tabs", Vector2i(), tabStrings, tabWidth, tabHeight);//LeaderboardDisplay::CHAR_HEIGHT);
+	tabs->SelectTab(0);
+
+	Hide();
 
 	SetRectColor(bgQuad, Color(100, 100, 200, 150));
 	SetRectTopLeft(bgQuad, 1920, 1080, Vector2f(0, 0));
@@ -225,49 +237,88 @@ void LeaderboardDisplay::Reset()
 	scrollBar->SetIndex(0);
 	storedCheckedGhosts.clear();
 
+	tabs->SelectTab(0);
+
 	manager.Reset();
 }
 
-void LeaderboardDisplay::Start( const std::string &boardName )
+bool LeaderboardDisplay::IsAnyPowersMode()
+{
+	return tabs->currTabIndex == 1;
+}
+
+void LeaderboardDisplay::DownloadCurrBoard()
+{
+	tabWhenDownloadingBoard = tabs->currTabIndex;
+	if (tabs->currTabIndex == 0)
+	{
+		manager.DownloadBoard(origPowersBoardName);
+	}
+	else
+	{
+		manager.DownloadBoard(anyPowersBoardName);
+	}
+}
+
+void LeaderboardDisplay::Start(const std::string &origPowers, const std::string &anyPowers)
 {
 	//Reset();
 
 	Show();
 
-	manager.DownloadBoard(boardName);
-
-	/*if (manager.currBoard.entries.empty())
-	{
-		
-	}*/
+	origPowersBoardName = origPowers;
+	anyPowersBoardName = anyPowers;
+	
+	DownloadCurrBoard();
 }
 
 void LeaderboardDisplay::SetTopLeft(const sf::Vector2f &p_pos)
 {
 	topLeft = p_pos;
 
+	float topBarHeight = 100;
+
+	tabs->SetPos(Vector2i(topLeft));
+
+	//SetRectTopLeft(topBarQuad, ROW_WIDTH, topBarHeight, topLeft);
+	
+	Vector2f rowsStart = topLeft + Vector2f(0, tabs->totalSize.y);
+	
+
 	Vector2f rowTopLeft;
 	for (int i = 0; i < NUM_ROWS; ++i)
 	{
-		rowTopLeft = topLeft + Vector2f(0, i * ROW_HEIGHT);
+		rowTopLeft = rowsStart + Vector2f(0, i * ROW_HEIGHT);
 		SetRectTopLeft(rowQuads + i * 4, ROW_WIDTH, ROW_HEIGHT, rowTopLeft);
 		rows[i].SetTopLeft(rowTopLeft);
 	}
 
-	Vector2i above(topLeft + Vector2f(0, -200));
-	Vector2i aboveLower(topLeft + Vector2f(0, -100));
+	scrollBar->SetPos(Vector2i(rowsStart + Vector2f(ROW_WIDTH, 0)));
 
-	clearCheckedGhostsButton->SetPos(above);
-	raceGhostsButton->SetPos(above + Vector2i(250, 0));
-	refreshBoardButton->SetPos(above + Vector2i(500, 0));
+	Vector2f bottomStart = rowsStart + Vector2f(0, ROW_HEIGHT * NUM_ROWS);
 
-	originalGhostCheckBoxLabel->SetTopLeftPosition(aboveLower);
+	float bottomBarHeight = 200;
+	SetRectTopLeft(bottomBarQuad, ROW_WIDTH, bottomBarHeight, bottomStart);
 
-	originalGhostCheckBox->SetPos(Vector2i(originalGhostCheckBoxLabel->GetTopRight().x + 10, aboveLower.y));
+	Vector2i bottomStartI(bottomStart);
+
+	clearCheckedGhostsButton->SetPos(bottomStartI);
+	raceGhostsButton->SetPos(bottomStartI + Vector2i(250, 0));
+	refreshBoardButton->SetPos(bottomStartI + Vector2i(500, 0));
+
+	originalGhostCheckBoxLabel->SetTopLeftPosition(bottomStartI);
+
+	originalGhostCheckBox->SetPos(Vector2i(originalGhostCheckBoxLabel->GetTopRight().x + 10, bottomStartI.y));
 
 	showGhostsWithReplayCheckBox->SetPos(originalGhostCheckBox->pos + Vector2i(200, 0));
 
-	scrollBar->SetPos(Vector2i(topLeft + Vector2f(ROW_WIDTH, 0)));
+	
+
+	
+	/*showGhostsWithReplayLabel = panel->AddLabel("showghostswithreplaylabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Show ghosts with replay:");
+
+	friendsOnlyCheckBox = panel->AddCheckBox("friendsonlycheckbox", Vector2i(), false);
+	friendsOnlyLabel = panel->AddLabel("friendsonlylabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Friends Only: ");*/
 }
 
 void LeaderboardDisplay::HandleEvent(sf::Event ev)
@@ -665,3 +716,21 @@ void LeaderboardDisplay::ScrollBarCallback(ScrollBar *sb, const std::string &e)
 {
 	PopulateRows();
 }
+
+void LeaderboardDisplay::TabGroupCallback(TabGroup *tg, const std::string &e)
+{
+	if (tg->currTabIndex != tabWhenDownloadingBoard)
+	{
+		/*if (tg->currTabIndex == 0)
+		{
+			for (int i = 0; i < NUM_ROWS; ++i)
+			{
+				rows[i].Clear();
+			}
+		}*/
+
+		DownloadCurrBoard();
+	}
+	
+}
+

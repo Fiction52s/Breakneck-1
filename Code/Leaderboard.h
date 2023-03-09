@@ -174,9 +174,22 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	Label *originalGhostCheckBoxLabel;
 
 	CheckBox *showGhostsWithReplayCheckBox;
+	Label *showGhostsWithReplayLabel;
+
+	CheckBox *friendsOnlyCheckBox;
+	Label *friendsOnlyLabel;
 	ScrollBar *scrollBar;
+	TabGroup *tabs;
+
+	int tabWhenDownloadingBoard;
+	std::string origPowersBoardName;
+	std::string anyPowersBoardName;
+	
 
 	std::vector<CSteamID> storedCheckedGhosts;
+
+	sf::Vertex topBarQuad[4];
+	sf::Vertex bottomBarQuad[4];
 	
 
 	sf::Vertex bgQuad[4];
@@ -199,8 +212,9 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 
 	LeaderboardDisplay();
 	~LeaderboardDisplay();
+	bool IsAnyPowersMode();
 	void Reset();
-	void Start( const std::string &boardName );
+	void Start(const std::string &origPowers, const std::string &anyPowers);
 	void SetTopLeft(const sf::Vector2f &p_pos);
 	void HandleEvent(sf::Event ev);
 	void Update();
@@ -211,16 +225,21 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	void AddPlayerReplayManagersToVec(std::vector<PlayerReplayManager*> &vec, PlayerReplayManager *ignore = NULL);
 	void SetActive(bool replay, bool ghost, PlayerReplayManager *ignore = NULL);
 	void Draw(sf::RenderTarget *target);
-	void ButtonCallback(Button *b, const std::string & e);
-	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	
 	int GetNumActiveLeaderboardGhosts();
 	bool IsTryingToStartReplay();
 	bool IsTryingToRaceGhosts();
 	bool IsDefaultGhostOn();
 	bool ShouldShowGhostsWithReplay();
-	void ScrollBarCallback(ScrollBar *sb, const std::string &e);
+	void DownloadCurrBoard();
+	
 	void MouseScroll(int delta);
 	void PopulateRows();
+
+	void ButtonCallback(Button *b, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void ScrollBarCallback(ScrollBar *sb, const std::string &e);
+	void TabGroupCallback(TabGroup *tg, const std::string &e);
 };
 
 

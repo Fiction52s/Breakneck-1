@@ -4,6 +4,8 @@
 #include <iostream>
 #include "MapHeader.h"
 #include "globals.h"
+#include "Session.h"
+#include "Actor.h"
 
 using namespace std;
 
@@ -451,13 +453,10 @@ void AdventureFile::Save(const std::string &p_path,
 	of.close();
 }
 
-
 AdventureMap &AdventureFile::GetMap(int index)
 {
-	int maxLevelsPerWorld = (ADVENTURE_MAX_NUM_SECTORS_PER_WORLD * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR);
-	int w = index / maxLevelsPerWorld;
-	int s = (index % maxLevelsPerWorld) / ADVENTURE_MAX_NUM_SECTORS_PER_WORLD;
-	int m = (index % ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR);
+	int w, s, m;
+	GetMapIndexes(index, w, s, m);
 
 	return worlds[w].sectors[s].maps[m];
 }
@@ -519,4 +518,68 @@ bool AdventureFile::LoadMapHeaders()
 	}
 
 	return true;
+}
+
+void AdventureFile::GetOriginalProgressionField(int mapIndex, BitField &bf)
+{
+	assert(bf.numOptions == Session::PLAYER_OPTION_BIT_COUNT);
+
+	bf.Reset();
+
+	for (int i = 0; i < mapIndex; ++i)
+	{
+		auto &am = GetMap(i);
+
+		if (!am.Exists())
+		{
+			continue;
+		}
+
+		auto &mhi = GetMapHeaderInfo(i);
+		assert(mhi.IsLoaded());
+
+		for (int j = 0; j < mhi.hasShardField.numOptions; ++j)
+		{
+			bf.SetBit(Actor::SHARD_START_INDEX + j, bf.GetBit(Actor::SHARD_START_INDEX + j) || mhi.hasShardField.GetBit(j)); //Or(mhi.hasShardField);
+		}	
+	}
+
+	int w, s, m;
+	GetMapIndexes(mapIndex, w, s, m);
+
+	if (w >= 1)
+	{
+		bf.SetBit(Actor::UPGRADE_POWER_AIRDASH, true);
+	}
+	
+	if (w >= 2)
+	{
+		bf.SetBit(Actor::UPGRADE_POWER_GRAV, true);
+	}
+
+	if (w >= 3)
+	{
+		bf.SetBit(Actor::UPGRADE_POWER_BOUNCE, true);
+	}
+
+	if (w >= 3)
+	{
+		bf.SetBit(Actor::UPGRADE_POWER_GRIND, true);
+	}
+
+	if (w >= 4)
+	{
+		bf.SetBit(Actor::UPGRADE_POWER_TIME, true);
+	}
+
+	if (w >= 5)
+	{
+		bf.SetBit(Actor::UPGRADE_POWER_TIME, true);
+	}
+
+	if (w >= 6)
+	{
+		bf.SetBit(Actor::UPGRADE_POWER_RWIRE, true);
+		bf.SetBit(Actor::UPGRADE_POWER_LWIRE, true);
+	}
 }

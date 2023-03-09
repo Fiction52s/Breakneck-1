@@ -162,7 +162,17 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 			//string currPath = boost::filesystem::current_path().string();
 			//string fullReplayPath = currPath + "\\" + bestReplayPath;
 			
-			leaderboard->manager.UploadScore(GetLeaderboardName( game ),
+			string leaderBoardStr;
+			if (leaderboard->IsAnyPowersMode())
+			{
+				leaderBoardStr = GetLeaderboardNameAnyPowers(game);
+			}
+			else
+			{
+				leaderBoardStr = GetLeaderboardNameOriginalPowers(game);
+			}
+
+			leaderboard->manager.UploadScore(leaderBoardStr,
 				totalFrames, bestReplayPath);
 			//leaderboardMan->UploadScore(totalFrames);
 			//leaderboard stuff here!
@@ -269,9 +279,14 @@ void AdventureManager::FadeInSaveMenu()
 	saveMenu->transparency = 1.f;
 }
 
-std::string AdventureManager::GetLeaderboardName(GameSession *game)
+std::string AdventureManager::GetLeaderboardNameAnyPowers(GameSession *game)
 {
 	return adventureFile.GetLeaderboardName(game->level->index) + "_" + game->myHash;
+}
+
+std::string AdventureManager::GetLeaderboardNameOriginalPowers(GameSession *game)
+{
+	return adventureFile.GetLeaderboardName(game->level->index) + "_orig_" + game->myHash;
 }
 
 void AdventureManager::DrawWorldMap(sf::RenderTarget *target)

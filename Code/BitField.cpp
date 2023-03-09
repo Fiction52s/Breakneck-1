@@ -5,8 +5,10 @@ using namespace std;
 
 BitField::BitField(int p_numOptions)
 {
+	
 	numOptions = p_numOptions;
 	numFields = numOptions / 32;
+	assert(numFields > 0);
 	if (numFields == 0)
 	{
 		int x = 5;
@@ -24,6 +26,14 @@ BitField::~BitField()
 void BitField::Set(const BitField & otherField)
 {
 	assert(numFields == otherField.numFields);
+	/*if (numFields != otherField.numFields)
+	{
+		delete[] optionField;
+		numFields = otherField.numFields;
+		numOptions = otherField.numOptions;
+		optionField = new sf::Uint32[numFields];
+	}*/
+
 
 	for (int i = 0; i < numFields; ++i)
 	{
@@ -68,6 +78,15 @@ void BitField::Or(const BitField &b)
 	for (int i = 0; i < numFields; ++i)
 	{
 		optionField[i] |= b.optionField[i];
+	}
+}
+
+void BitField::And(const BitField &b)
+{
+	assert(numFields == b.numFields);
+	for (int i = 0; i < numFields; ++i)
+	{
+		optionField[i] &= b.optionField[i];
 	}
 }
 
@@ -146,3 +165,4 @@ void BitField::SaveBinary(std::ofstream &of)
 		of.write((char*)&(optionField[i]), sizeof(optionField[i]));
 	}*/
 }
+

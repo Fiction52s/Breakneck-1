@@ -51,7 +51,8 @@ struct AdventureManager
 	void SetCurrSaveFile(int index);
 	void FadeInSaveMenu();
 
-	std::string GetLeaderboardName(GameSession *game);
+	std::string GetLeaderboardNameAnyPowers(GameSession *game);
+	std::string GetLeaderboardNameOriginalPowers(GameSession *game);
 	
 };
 

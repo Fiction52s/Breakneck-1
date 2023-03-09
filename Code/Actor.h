@@ -943,6 +943,7 @@ struct Actor : QuadTreeCollider,
 	sf::Shader auraTestShader;
 	bool showExitAura;
 	BitField bStartHasUpgradeField;
+	BitField originalProgressionField;
 	bool canStandUp;
 	V2d currNormal;
 	Tileset *ts_kinFace;

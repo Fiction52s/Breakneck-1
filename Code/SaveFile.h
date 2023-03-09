@@ -146,6 +146,7 @@ struct AdventureFile
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
+	void GetOriginalProgressionField( int maxIndex, BitField &bf);
 	AdventureMap &GetMap(int index);
 	AdventureMapHeaderInfo &GetMapHeaderInfo(int index);
 	void GetMapIndexes( int mIndex, int &w, int &s, int &m);
