@@ -497,6 +497,10 @@ void ScoreBar::Retract()
 SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 	:row(p_row), parent(p_parent)
 {
+	extraText.setFont(MainMenu::GetInstance()->arial);
+	extraText.setCharacterSize(20);
+	extraText.setFillColor(Color::White);
+
 	barSprite.setTexture(*parent->ts_score->texture);
 	if (row <= 2)
 	{
@@ -577,6 +581,8 @@ void SelectBar::SetBarPos(float xDiff)
 		parent->basePos.y + row * rowHeight + parent->selectOffset);
 	barSprite.setPosition(newPos);
 	buttonIconSprite.setPosition(newPos + Vector2f( 320, 2 ));
+
+	extraText.setPosition(newPos + Vector2f(278 + 20, 35));
 }
 
 void SelectBar::Update()
@@ -596,6 +602,27 @@ void SelectBar::Update()
 		case RETRACT:
 			state = NONE;
 			break;
+		}
+	}
+
+	if (row == 4)//race ghost
+	{
+		GameSession *game = GameSession::GetSession();
+		if (game != NULL)
+		{
+			int numGhosts = game->GetNumPotentialGhosts();
+
+			if (numGhosts > 1)
+			{
+				extraText.setString("(" + to_string(numGhosts) + ")");
+				auto lb = extraText.getLocalBounds();
+				extraText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+			}
+			else
+			{
+				extraText.setString("");
+			}
+			
 		}
 	}
 
@@ -635,6 +662,7 @@ void SelectBar::Draw(sf::RenderTarget *target)
 {
 	target->draw(barSprite);
 	target->draw(buttonIconSprite);
+	target->draw(extraText);
 }
 
 void SelectBar::PopOut()

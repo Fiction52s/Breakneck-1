@@ -4910,9 +4910,30 @@ bool GameSession::TryStartLeaderboardReplay(PlayerReplayManager *prm)
 	return true;
 }
 
+int GameSession::GetNumPotentialGhosts()
+{
+	if (mainMenu->adventureManager != NULL )
+	{
+		int numGhosts = 0;
+
+		numGhosts += mainMenu->adventureManager->leaderboard->GetNumActiveLeaderboardGhosts();
+
+		if (numGhosts == 0 || mainMenu->adventureManager->leaderboard->IsDefaultGhostOn())
+		{
+			numGhosts += 1;
+		}
+
+		return numGhosts;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 bool GameSession::AddGhostsForReplay(PlayerReplayManager *prm)
 {
-	if (mainMenu->adventureManager->leaderboard->ShouldShowGhostsWithReplay())
+	if (mainMenu->adventureManager != NULL && mainMenu->adventureManager->leaderboard->ShouldShowGhostsWithReplay())
 	{
 		bool useDefaultGhost = true;
 		bool useLeaderboardGhosts = true;

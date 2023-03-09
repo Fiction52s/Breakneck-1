@@ -66,6 +66,7 @@ struct SelectBar
 	int row;
 	float xDiffPos;
 	ScoreDisplay *parent;
+	sf::Text extraText;
 
 	sf::Sprite barSprite;
 	sf::Sprite buttonIconSprite;
