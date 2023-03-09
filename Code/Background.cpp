@@ -399,6 +399,12 @@ Background::Background()
 
 Background::~Background()
 {
+	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+		it != scrollingBackgrounds.end(); ++it)
+	{
+		delete (*it);
+	}
+	scrollingBackgrounds.clear();
 }
 
 void Background::Set(Vector2f &pos, float zoom )

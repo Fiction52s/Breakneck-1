@@ -72,7 +72,7 @@ struct AdventureMapHeaderInfo
 	BitField hasShardField;
 	BitField hasLogField;
 	std::vector<LogInfo> logInfoVec;
-	
+	std::vector<int> powerVec;
 
 	AdventureMapHeaderInfo();
 	void Set(AdventureMapHeaderInfo &inf);

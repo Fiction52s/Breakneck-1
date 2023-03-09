@@ -185,7 +185,7 @@ MapSector::~MapSector()
 		nodes = NULL;
 	}
 
-	delete bg;
+	DestroyBG();
 }
 
 void MapSector::DestroyBG()

@@ -28,6 +28,7 @@ void AdventureMapHeaderInfo::Clear()
 	
 	shardInfoVec.clear();
 	mainSongName = "";
+	powerVec.clear();
 	
 
 	hasShardField.Reset();
@@ -41,6 +42,9 @@ void AdventureMapHeaderInfo::Set(AdventureMapHeaderInfo &info)
 	mainSongName = info.mainSongName;
 
 	hasShardField.Set(info.hasShardField);
+	hasLogField.Set(info.hasLogField);
+
+	powerVec = info.powerVec;
 }
 
 AdventurePlanet::AdventurePlanet(AdventureFile &adventureFile)
@@ -205,6 +209,8 @@ bool AdventureMap::LoadHeaderInfo()
 		{
 			headerInfo.hasLogField.SetBit((*it).GetTrueIndex(), true);
 		}
+
+		headerInfo.powerVec = mh.powerVec;
 
 		is.close();
 	}
@@ -549,47 +555,26 @@ void AdventureFile::GetOriginalProgressionUpgradeField(int mapIndex, BitField &b
 		for (int j = 0; j < mhi.hasShardField.numOptions; ++j)
 		{
 			bf.SetBit(Actor::SHARD_START_INDEX + j, bf.GetBit(Actor::SHARD_START_INDEX + j) || mhi.hasShardField.GetBit(j)); //Or(mhi.hasShardField);
-		}	
+		}
+
+		for (auto it = mhi.powerVec.begin(); it != mhi.powerVec.end(); ++it)
+		{
+			if ((*it) == Actor::UPGRADE_POWER_RWIRE)
+			{
+				bf.SetBit((*it), true);
+				bf.SetBit((*it) + 1, true);
+			}
+			else
+			{
+				bf.SetBit((*it), true);
+			}
+		}
+
+		//for (int j = 0; j < mhi.po.numOptions; ++j)
 	}
 
 	int w, s, m;
 	GetMapIndexes(mapIndex, w, s, m);
-
-	if (w >= 1)
-	{
-		bf.SetBit(Actor::UPGRADE_POWER_AIRDASH, true);
-	}
-	
-	if (w >= 2)
-	{
-		bf.SetBit(Actor::UPGRADE_POWER_GRAV, true);
-	}
-
-	if (w >= 3)
-	{
-		bf.SetBit(Actor::UPGRADE_POWER_BOUNCE, true);
-	}
-
-	if (w >= 3)
-	{
-		bf.SetBit(Actor::UPGRADE_POWER_GRIND, true);
-	}
-
-	if (w >= 4)
-	{
-		bf.SetBit(Actor::UPGRADE_POWER_TIME, true);
-	}
-
-	if (w >= 5)
-	{
-		bf.SetBit(Actor::UPGRADE_POWER_TIME, true);
-	}
-
-	if (w >= 6)
-	{
-		bf.SetBit(Actor::UPGRADE_POWER_RWIRE, true);
-		bf.SetBit(Actor::UPGRADE_POWER_LWIRE, true);
-	}
 }
 
 void AdventureFile::GetOriginalProgressionLogField(int mapIndex, BitField &bf)
