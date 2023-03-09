@@ -282,6 +282,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	BitField currShardField;
 	BitField currLogField;
 	BitField originalProgressionPlayerOptionsField;
+	BitField originalProgressionLogField;
 	//timeslow stuff
 	float fBubbleRadiusSize[MAX_TOTAL_BUBBLES];
 	sf::Vector2f fBubblePos[MAX_TOTAL_BUBBLES];

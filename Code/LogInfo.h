@@ -16,7 +16,7 @@ struct LogInfo
 	int world;
 	int localIndex;
 	int GetTrueIndex() {
-		return world * 22 + localIndex;
+		return world * MAX_LOGS_PER_WORLD + localIndex; //used to say 22 but I think thats a bug
 	}
 
 	const static int MAX_LOGS_PER_WORLD = 7*5;

@@ -10,6 +10,8 @@
 #include <boost/filesystem.hpp>
 #include "globals.h"
 #include "Actor.h"
+#include "LogMenu.h"
+
 
 using namespace std;
 using namespace boost::filesystem;
@@ -38,7 +40,7 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	:levelsBeatenField(512),
 	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	upgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
-	logField(256),
+	logField(LogDetailedInfo::MAX_LOGS),
 	levelsJustBeatenField( 512 ),
 	adventureFile( p_adventure ),
 	name( p_name ),

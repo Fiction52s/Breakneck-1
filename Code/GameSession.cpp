@@ -1619,7 +1619,8 @@ bool GameSession::Load()
 
 	if (saveFile != NULL)
 	{
-		saveFile->adventureFile->GetOriginalProgressionField(level->index, originalProgressionPlayerOptionsField);
+		saveFile->adventureFile->GetOriginalProgressionUpgradeField(level->index, originalProgressionPlayerOptionsField);
+		saveFile->adventureFile->GetOriginalProgressionLogField(level->index, originalProgressionLogField);
 	}
 
 	replayText.setFont(mainMenu->arial);
@@ -4646,6 +4647,11 @@ bool GameSession::HasLog(int logIndex)
 	if (IsReplayOn())
 	{
 		return activePlayerReplayManagers[0]->header.IsLogCaptured(logIndex);
+	}
+
+	if (originalProgressionModeOn)
+	{
+		return originalProgressionLogField.GetBit(logIndex);
 	}
 
 	if (saveFile != NULL)

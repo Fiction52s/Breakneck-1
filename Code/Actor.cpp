@@ -77,6 +77,7 @@
 #include "AdventureManager.h"
 #include "DeathSequence.h"
 #include "NameTag.h"
+#include "LogMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -3041,7 +3042,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	skinShader("player"), exitAuraShader( "boostplayer" ),
-	originalProgressionField( Session::PLAYER_OPTION_BIT_COUNT )
+	originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
+	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 	{
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
@@ -4493,10 +4495,13 @@ void Actor::Respawn( bool setStartPos )
 	{
 		if (owner->originalProgressionModeOn)
 		{
-			originalProgressionField.Set(owner->saveFile->upgradeField);
-			originalProgressionField.And(owner->originalProgressionPlayerOptionsField);
+			originalProgressionUpgradeField.Set(owner->saveFile->upgradeField);
+			originalProgressionUpgradeField.And(owner->originalProgressionPlayerOptionsField);
 
-			SetAllUpgrades(originalProgressionField);
+			SetAllUpgrades(originalProgressionUpgradeField);
+
+			originalProgressionLogField.Set(owner->saveFile->logField);
+			originalProgressionLogField.And(owner->originalProgressionLogField);
 		}
 		else
 		{

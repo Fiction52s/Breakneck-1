@@ -8,6 +8,7 @@
 #include "BitField.h"
 #include "ShardInfo.h"
 #include "steam/steam_api.h"
+#include "LogInfo.h"
 //#include "Actor.h"
 
 struct Actor;
@@ -69,6 +70,8 @@ struct AdventureMapHeaderInfo
 	std::vector<ShardInfo> shardInfoVec;
 	std::string mainSongName;
 	BitField hasShardField;
+	BitField hasLogField;
+	std::vector<LogInfo> logInfoVec;
 	
 
 	AdventureMapHeaderInfo();
@@ -146,7 +149,8 @@ struct AdventureFile
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
-	void GetOriginalProgressionField( int maxIndex, BitField &bf);
+	void GetOriginalProgressionUpgradeField( int mapIndex, BitField &bf);
+	void GetOriginalProgressionLogField(int mapIndex, BitField &bf);
 	AdventureMap &GetMap(int index);
 	AdventureMapHeaderInfo &GetMapHeaderInfo(int index);
 	void GetMapIndexes( int mIndex, int &w, int &s, int &m);

@@ -6,11 +6,13 @@
 #include "globals.h"
 #include "Session.h"
 #include "Actor.h"
+#include "LogMenu.h"
 
 using namespace std;
 
 AdventureMapHeaderInfo::AdventureMapHeaderInfo()
-	:hasShardField(ShardInfo::MAX_SHARDS)
+	:hasShardField(ShardInfo::MAX_SHARDS),
+	hasLogField(LogDetailedInfo::MAX_LOGS)
 {
 	Clear();
 }
@@ -182,6 +184,7 @@ bool AdventureMap::LoadHeaderInfo()
 
 		headerInfo.mapType = mh.bossFightType;
 		headerInfo.shardInfoVec = mh.shardInfoVec;
+		headerInfo.logInfoVec = mh.logInfoVec;
 		if (mh.GetNumSongs() > 0)
 		{
 			headerInfo.mainSongName = mh.songOrder[0];
@@ -190,12 +193,17 @@ bool AdventureMap::LoadHeaderInfo()
 		{
 			headerInfo.mainSongName = "";
 		}
-		
 
 		for (auto it = headerInfo.shardInfoVec.begin();
 			it != headerInfo.shardInfoVec.end(); ++it)
 		{
 			headerInfo.hasShardField.SetBit((*it).GetTrueIndex(), true);
+		}
+
+		for (auto it = headerInfo.logInfoVec.begin();
+			it != headerInfo.logInfoVec.end(); ++it)
+		{
+			headerInfo.hasLogField.SetBit((*it).GetTrueIndex(), true);
 		}
 
 		is.close();
@@ -520,7 +528,7 @@ bool AdventureFile::LoadMapHeaders()
 	return true;
 }
 
-void AdventureFile::GetOriginalProgressionField(int mapIndex, BitField &bf)
+void AdventureFile::GetOriginalProgressionUpgradeField(int mapIndex, BitField &bf)
 {
 	assert(bf.numOptions == Session::PLAYER_OPTION_BIT_COUNT);
 
@@ -581,5 +589,30 @@ void AdventureFile::GetOriginalProgressionField(int mapIndex, BitField &bf)
 	{
 		bf.SetBit(Actor::UPGRADE_POWER_RWIRE, true);
 		bf.SetBit(Actor::UPGRADE_POWER_LWIRE, true);
+	}
+}
+
+void AdventureFile::GetOriginalProgressionLogField(int mapIndex, BitField &bf)
+{
+	assert(bf.numOptions == LogDetailedInfo::MAX_LOGS);
+
+	bf.Reset();
+
+	for (int i = 0; i < mapIndex; ++i)
+	{
+		auto &am = GetMap(i);
+
+		if (!am.Exists())
+		{
+			continue;
+		}
+
+		auto &mhi = GetMapHeaderInfo(i);
+		assert(mhi.IsLoaded());
+
+		for (int j = 0; j < mhi.hasShardField.numOptions; ++j)
+		{
+			bf.SetBit(Actor::SHARD_START_INDEX + j, bf.GetBit(Actor::SHARD_START_INDEX + j) || mhi.hasShardField.GetBit(j)); //Or(mhi.hasShardField);
+		}
 	}
 }

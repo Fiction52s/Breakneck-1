@@ -1563,7 +1563,8 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT),
 	currShardField( ShardInfo::MAX_SHARDS ), currLogField( LogDetailedInfo::MAX_LOGS),
-	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT )
+	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
+	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
 	activePlayerReplayManagers.reserve(10);
 
