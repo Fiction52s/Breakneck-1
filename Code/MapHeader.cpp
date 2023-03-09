@@ -265,6 +265,19 @@ bool MapHeader::Load(std::ifstream &is)
 		}
 	}
 
+	if (ver1 >= 8)
+	{
+		is >> numPowers;
+		powerVec.reserve(7);
+
+		int powerIndex;
+		for (int i = 0; i < numPowers; ++i)
+		{
+			is >> powerIndex;
+			powerVec.push_back(powerIndex);
+		}
+	}
+
 
 	int numSongValues;
 	is >> numSongValues;
@@ -421,6 +434,12 @@ void MapHeader::Save(std::ofstream &of)
 	for (auto it = logInfoVec.begin(); it != logInfoVec.end(); ++it)
 	{
 		of << (*it).world << " " << (*it).localIndex << "\n";
+	}
+
+	of << numPowers << "\n";
+	for (auto it = powerVec.begin(); it != powerVec.end(); ++it)
+	{
+		of << (*it) << "\n";
 	}
 
 	of << songOrder.size() << "\n";

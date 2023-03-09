@@ -64,9 +64,11 @@ struct MapHeader
 	int numVertices;
 	int numShards;
 	int numLogs;
+	int numPowers;
 	int bossFightType;
 	std::vector<ShardInfo> shardInfoVec;
 	std::vector<LogInfo> logInfoVec;
+	std::vector<int> powerVec;
 	std::string preLevelSceneName;
 	std::string postLevelSceneName;
 	uint64 creatorID;

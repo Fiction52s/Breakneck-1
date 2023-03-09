@@ -2394,7 +2394,9 @@ void EditSession::WriteMapHeader(ofstream &of)
 
 	//mapHeader->description = "no description"; //just for now so that I can save all the maps correctly
 
-	mapHeader->ver1 = 7;
+	//version 8 includes the powerVec and powers in the header
+
+	mapHeader->ver1 = 8;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -2534,6 +2536,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 
 	ShardParams *sp = NULL;
 	LogParams *lp = NULL;
+	BasicAirEnemyParams *pp = NULL;
 
 	auto &shardVec = mapHeader->shardInfoVec;
 	shardVec.reserve(16);//unlikely to be more than 16 types
@@ -2568,39 +2571,73 @@ void EditSession::WriteMapHeader(ofstream &of)
 
 	mapHeader->numShards = shardVec.size();
 
-
-	auto &logVec = mapHeader->logInfoVec;
-	logVec.reserve(16);//unlikely to be more than 16 types
-	logVec.clear();
-	bool foundLog;
-	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
-		std::list<ActorPtr> &aList = (*it).second->actors;
-		for (auto ait = aList.begin(); ait != aList.end(); ++ait)
+		auto &logVec = mapHeader->logInfoVec;
+		logVec.reserve(16);//unlikely to be more than 16 types
+		logVec.clear();
+		bool foundLog;
+		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
-			if ((*ait)->type->info.name == "log")
+			std::list<ActorPtr> &aList = (*it).second->actors;
+			for (auto ait = aList.begin(); ait != aList.end(); ++ait)
 			{
-				lp = (LogParams*)(*ait);
-				foundLog = false;
-				for (auto sit = logVec.begin(); sit != logVec.end(); ++sit)
+				if ((*ait)->type->info.name == "log")
 				{
-					if ((*sit).world == lp->lInfo.world
-						&& (*sit).localIndex == lp->lInfo.localIndex)
+					lp = (LogParams*)(*ait);
+					foundLog = false;
+					for (auto sit = logVec.begin(); sit != logVec.end(); ++sit)
 					{
-						foundLog = true;
-						break;
+						if ((*sit).world == lp->lInfo.world
+							&& (*sit).localIndex == lp->lInfo.localIndex)
+						{
+							foundLog = true;
+							break;
+						}
 					}
-				}
 
-				if (!foundLog)
-				{
-					logVec.push_back(lp->lInfo);
+					if (!foundLog)
+					{
+						logVec.push_back(lp->lInfo);
+					}
 				}
 			}
 		}
 	}
 
 	mapHeader->numLogs = logVec.size();
+
+
+	{
+		auto &powerVec = mapHeader->powerVec;
+		powerVec.reserve(7);
+		powerVec.clear();
+		bool foundPower;
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			std::list<ActorPtr> &aList = (*it).second->actors;
+			for (auto ait = aList.begin(); ait != aList.end(); ++ait)
+			{
+				if ((*ait)->type->info.name == "poweritem")
+				{
+					pp = (BasicAirEnemyParams*)(*ait);
+					foundPower = false;
+					for (auto sit = powerVec.begin(); sit != powerVec.end(); ++sit)
+					{
+						if ((*sit) == pp->GetLevel())
+						{
+							foundPower = true;
+							break;
+						}
+					}
+
+					if (!foundPower)
+					{
+						powerVec.push_back(pp->GetLevel());
+					}
+				}
+			}
+		}
+	}
 
 
 	mapHeader->Save(of);
