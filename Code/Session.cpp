@@ -1717,6 +1717,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	waterShaders = NULL;
 	minimapWaterShaders = NULL;
 	background = NULL;
+	ownsBG = true;
 	hitboxManager = NULL;
 	inactiveEffects = NULL;
 
@@ -1925,11 +1926,7 @@ Session::~Session()
 
 	CleanupBarriers(); //has to be before background deletion for warp barriers
 
-	if (background != NULL)
-	{
-		delete background;
-		background = NULL;
-	}	
+	CleanupBackground();
 
 	if ( parentGame == NULL && hitboxManager != NULL)
 	{
@@ -8952,4 +8949,15 @@ void Session::DrawLeaderboard(sf::RenderTarget *target)
 void Session::StartAlertBox(const std::string &msg)
 {
 	alertBox->Start(msg);
+}
+
+void Session::CleanupBackground()
+{
+	if ((IsSessTypeGame() && (background != NULL && ownsBG))
+		|| (IsSessTypeEdit() && background != NULL ))
+	{
+		delete background;
+		background = NULL;
+		ownsBG = true;
+	}
 }

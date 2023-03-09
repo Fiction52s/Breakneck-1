@@ -148,7 +148,7 @@ void ScrollingBackground::Draw(RenderTarget *target)
 	target->setView(oldView);
 }
 
-Background::Background( GameSession *owner, int envLevel, int envType)
+Background::Background( int envLevel, int envType)
 {
 	/*stringstream ss;
 	int eType = envLevel + 1;
@@ -172,9 +172,9 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	string shapeFile = bgStr + "_shape.png";
 	string skyFile = bgStr + "_sky.png";
 
-	ts_bg = owner->GetTileset(bgFile, 960, 540);
-	ts_shape = owner->GetTileset(shapeFile, 960, 540);
-	ts_sky = owner->GetTileset(skyFile, 960, 540);
+	ts_bg = GetTileset(bgFile, 960, 540);
+	ts_shape = GetTileset(shapeFile, 960, 540);
+	ts_sky = GetTileset(skyFile, 960, 540);
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
@@ -203,8 +203,6 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 
 	show = true;
 
-	deleteTilesets = true;
-
 	Reset();
 }
 
@@ -225,18 +223,14 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 		is.close();
 
 		return bgStr;
-		//background = new Background(tm, bgStr);
 	}
 	else
 	{
 		return string("bg error");
 	}
-
-		//background = new Background(this, mh->envLevel, mh->envType);
 }
 
-Background *Background::SetupFullBG(const std::string &fName,
-	TilesetManager *tm, bool p_deleteTilesets)
+Background *Background::SetupFullBG(const std::string &fName)
 {
 	ifstream is;
 	stringstream fss;
@@ -244,8 +238,6 @@ Background *Background::SetupFullBG(const std::string &fName,
 	string fStr = fss.str();
 
 	string worldStr(1, fName[1]);
-
-	
 
 	string eStr = ".png";
 	string parDirStr = "Backgrounds/W" + worldStr + "/" + fName + "/";
@@ -268,8 +260,7 @@ Background *Background::SetupFullBG(const std::string &fName,
 
 		bgStr = fName + "/" + bgStr;
 
-		newBG = new Background(tm, bgStr);
-		newBG->deleteTilesets = p_deleteTilesets;
+		newBG = new Background(bgStr);
 
 		int numPar;
 		is >> numPar;
@@ -290,7 +281,7 @@ Background *Background::SetupFullBG(const std::string &fName,
 
 			newBG->scrollingBackgrounds.push_back(
 				new ScrollingBackground(
-					tm->GetTileset(parDirStr + pStr + eStr), tsIndex, depthLevel, scrollSpeed));
+					newBG->GetTileset(parDirStr + pStr + eStr), tsIndex, depthLevel, scrollSpeed));
 		}
 
 		is.close();
@@ -299,8 +290,7 @@ Background *Background::SetupFullBG(const std::string &fName,
 	return newBG;
 }
 
-Background::Background(TilesetManager *p_tm, const string &bgName)
-	:tm(p_tm)
+Background::Background(const string &bgName)
 {
 	name = bgName;
 
@@ -321,10 +311,10 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	shapeSourceName = bgStr + "_shape.png";
 	string skyFile = bgStr + "_sky.png";
 
-	ts_bg = tm->GetTileset(bgSourceName, 960, 540);
-	ts_shape = tm->GetTileset(shapeSourceName, 960, 540);
+	ts_bg = GetTileset(bgSourceName, 960, 540);
+	ts_shape = GetTileset(shapeSourceName, 960, 540);
 
-	ts_sky = tm->GetTileset(skyFile, 960, 540);
+	ts_sky = GetTileset(skyFile, 960, 540);
 
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
@@ -360,7 +350,7 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	Reset();
 }
 
-Background::Background(MainMenu *mm)
+Background::Background()
 {
 	stringstream ss;
 
@@ -382,11 +372,9 @@ Background::Background(MainMenu *mm)
 	shapeSourceName = folder + "titleshade_1920x1080.png";//bgStr + "_shape.png";
 
 	ts_bg = NULL;
-	ts_shape = mm->tilesetManager.GetTileset(shapeSourceName, 1920, 1080);
+	ts_shape = GetTileset(shapeSourceName, 1920, 1080);
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
-
-	tm = &mm->tilesetManager;
 
 	//background.setTexture(*ts_bg->texture);
 	//background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
@@ -411,27 +399,6 @@ Background::Background(MainMenu *mm)
 
 Background::~Background()
 {
-	if (deleteTilesets)
-	{
-		if (ts_bg != NULL)
-		{
-			tm->DestroyTilesetIfExists(bgSourceName);
-		}
-		if (ts_shape != NULL)
-		{
-			tm->DestroyTilesetIfExists(shapeSourceName);
-		}
-	}
-
-	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
-	{
-		if (deleteTilesets)
-		{
-			tm->DestroyTilesetIfExists((*it)->tsSource);
-		}
-		
-		delete (*it);
-	}
 }
 
 void Background::Set(Vector2f &pos, float zoom )
@@ -450,17 +417,6 @@ void Background::SetExtra(sf::Vector2f &p_extra)
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
 		(*it)->SetExtra(p_extra);
-	}
-}
-
-void Background::DestroyTilesets()
-{
-	tm->DestroyTileset(ts_bg);
-	tm->DestroyTileset(ts_shape);
-
-	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
-	{
-		tm->DestroyTileset((*it)->ts);
 	}
 }
 

@@ -531,7 +531,7 @@ KinMask::~KinMask()
 
 void KinMask::Reset()
 {
-	playerSkinShader.SetSkin(actor->owner->GetPlayerNormalSkin(0));
+	playerSkinShader.SetSkin(actor->sess->GetPlayerNormalSkin(0));
 	/*if (actor->owner != NULL && actor->owner->saveFile != NULL)
 	{
 		playerSkinShader.SetSkin(actor->owner->saveFile->defaultSkinIndex);

@@ -202,7 +202,7 @@ void MapSector::CreateBG()
 {
 	assert(bg == NULL);
 
-	bg = Background::SetupFullBG(bgName, ms->worldMap, true);
+	bg = Background::SetupFullBG(bgName);
 }
 
 void MapSector::UpdateButtonIconsWhenControllerIsChanged()

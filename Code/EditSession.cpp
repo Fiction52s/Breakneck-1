@@ -1390,6 +1390,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	oldMenuMode = EDIT;
 
+	ownsBG = true; //owns all its bgs
+
 	handleEventFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeHandleEvent;
 	handleEventFunctions[EDIT] = &EditSession::EditModeHandleEvent;
 	handleEventFunctions[SELECT_MODE] = &EditSession::SelectModeHandleEvent;
@@ -1729,11 +1731,7 @@ void EditSession::CleanupForReload()
 	waterPolygons.clear();
 	flyPolygons.clear();
 
-	if (background != NULL)
-	{
-		delete background;
-		background = NULL;
-	}
+	CleanupBackground();
 
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -1746,6 +1744,7 @@ void EditSession::CleanupForReload()
 	CleanupTopClouds();
 
 	DestroyTilesetCategory(TilesetCategory::C_STORY);
+	//destroy backgrounds would be needed but bgs handle their own stuff
 
 	StopCurrentMusic();
 	//StopMusic(originalMusic);
@@ -2380,7 +2379,7 @@ void EditSession::ProcessHeader()
 	double memDMM = MainMenu::GetInstance()->tilesetManager.GetMemoryUsage();
 	double megsMM = memDMM / 1000000.0;
 	cout << "mm usage: " << megsMM << endl;
-	background = Background::SetupFullBG(mapHeader->envName, this, true);
+	background = Background::SetupFullBG(mapHeader->envName);
 	mapHeader->envWorldType = background->envWorld;
 	//background->Hide();
 
@@ -2538,38 +2537,40 @@ void EditSession::WriteMapHeader(ofstream &of)
 	LogParams *lp = NULL;
 	BasicAirEnemyParams *pp = NULL;
 
-	auto &shardVec = mapHeader->shardInfoVec;
-	shardVec.reserve(16);//unlikely to be more than 16 types
-	shardVec.clear();
-	bool foundShard;
-	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
-		std::list<ActorPtr> &aList = (*it).second->actors;
-		for (auto ait = aList.begin(); ait != aList.end(); ++ait)
+		auto &shardVec = mapHeader->shardInfoVec;
+		shardVec.reserve(16);//unlikely to be more than 16 types
+		shardVec.clear();
+		bool foundShard;
+		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
-			if ((*ait)->type->info.name == "shard")
+			std::list<ActorPtr> &aList = (*it).second->actors;
+			for (auto ait = aList.begin(); ait != aList.end(); ++ait)
 			{
-				sp = (ShardParams*)(*ait);
-				foundShard = false;
-				for (auto sit = shardVec.begin(); sit != shardVec.end(); ++sit)
+				if ((*ait)->type->info.name == "shard")
 				{
-					if ((*sit).world == sp->shInfo.world
-						&& (*sit).localIndex == sp->shInfo.localIndex)
+					sp = (ShardParams*)(*ait);
+					foundShard = false;
+					for (auto sit = shardVec.begin(); sit != shardVec.end(); ++sit)
 					{
-						foundShard = true;
-						break;
+						if ((*sit).world == sp->shInfo.world
+							&& (*sit).localIndex == sp->shInfo.localIndex)
+						{
+							foundShard = true;
+							break;
+						}
 					}
-				}
 
-				if (!foundShard)
-				{
-					shardVec.push_back(sp->shInfo);
+					if (!foundShard)
+					{
+						shardVec.push_back(sp->shInfo);
+					}
 				}
 			}
 		}
-	}
 
-	mapHeader->numShards = shardVec.size();
+		mapHeader->numShards = shardVec.size();
+	}
 
 	{
 		auto &logVec = mapHeader->logInfoVec;
@@ -2602,9 +2603,11 @@ void EditSession::WriteMapHeader(ofstream &of)
 				}
 			}
 		}
+
+		mapHeader->numLogs = logVec.size();
 	}
 
-	mapHeader->numLogs = logVec.size();
+	
 
 
 	{
@@ -2623,7 +2626,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 					foundPower = false;
 					for (auto sit = powerVec.begin(); sit != powerVec.end(); ++sit)
 					{
-						if ((*sit) == pp->GetLevel())
+						if ((*sit) == pp->GetLevel()-1)
 						{
 							foundPower = true;
 							break;
@@ -2632,11 +2635,13 @@ void EditSession::WriteMapHeader(ofstream &of)
 
 					if (!foundPower)
 					{
-						powerVec.push_back(pp->GetLevel());
+						powerVec.push_back(pp->GetLevel()-1);
 					}
 				}
 			}
 		}
+
+		mapHeader->numPowers = powerVec.size();
 	}
 
 
@@ -3512,14 +3517,10 @@ void EditSession::SetBackground(const std::string &bgName)
 {
 	if (bgName != mapHeader->envName)
 	{
-		if (background != NULL)
-		{
-			delete background;
-			background = NULL;
-		}
+		CleanupBackground();
 
 		mapHeader->envName = bgName;
-		background = Background::SetupFullBG(bgName, this, true );
+		background = Background::SetupFullBG(bgName);
 		mapHeader->envWorldType = background->envWorld;
 	}
 }
@@ -4000,7 +4001,7 @@ void EditSession::DefaultInit()
 
 	mapHeader->drainSeconds = 60;//newMapInfo.drainSeconds;//60;
 
-	background = Background::SetupFullBG(mapHeader->envName, this, true);
+	background = Background::SetupFullBG(mapHeader->envName);
 	mapHeader->envWorldType = background->envWorld;
 
 	mapHeader->bossFightType = 0;
@@ -4513,7 +4514,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				mapHeader->envName = "w1_01";
 				mapHeader->envWorldType = 0;
-				background = Background::SetupFullBG(mapHeader->envName, this, true);
+				background = Background::SetupFullBG(mapHeader->envName);
 				mapHeader->envWorldType = background->envWorld;
 
 				stringstream ss;
@@ -8242,6 +8243,8 @@ void EditSession::CreatePreview(bool thumbnail)
 
 	std::string previewFile = ssPrev.str();
 	img.saveToFile( previewFile );
+
+	cout << "finished saving preview" << "\n";
 }
 
 //needs cleanup badly

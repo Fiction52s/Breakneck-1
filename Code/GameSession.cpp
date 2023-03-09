@@ -2091,28 +2091,32 @@ void GameSession::SetupBackground()
 		}
 	}*/
 	
-	if (background != NULL)
-	{
-		delete background;
-		background = NULL;
-	}
+	CleanupBackground();
 
 	//for when you have the same BG as a parent and don't want to 
 	//delete the tilesets on deletion
 	GameSession *currGame = parentGame;
-	bool sameBGNotAlreadyUsedByParents = true;
+	bool bgAlreadyInUse = false;
 	while (currGame != NULL)
 	{
 		if (currGame->background->name == mapHeader->envName)
 		{
-			sameBGNotAlreadyUsedByParents = false;
+			bgAlreadyInUse = true;
 			break;
 		}
 		currGame = currGame->parentGame;
 	}
 
-	background = Background::SetupFullBG(mapHeader->envName, this,
-		sameBGNotAlreadyUsedByParents);
+	if (bgAlreadyInUse)
+	{
+		background = currGame->background;
+		ownsBG = false;
+	}
+	else
+	{
+		background = Background::SetupFullBG(mapHeader->envName);
+		ownsBG = true;
+	}
 
 	mapHeader->envWorldType = background->envWorld;
 }

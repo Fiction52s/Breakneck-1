@@ -39,18 +39,16 @@ struct ScrollingBackground
 };
 
 
-struct Background
+struct Background : TilesetManager
 {
-	Background( GameSession *owner, int envLevel, int envType);
-	Background(TilesetManager *tm, const std::string &bgName );
-	Background(MainMenu *mm);
+	Background( int envLevel, int envType);
+	Background(const std::string &bgName );
+	Background();
 	void Set(sf::Vector2f &pos, float zoom = 1.f);
 	~Background();
 	static std::string GetBGNameFromBGInfo(const std::string &fileName);
-	static Background *SetupFullBG(const std::string &fName,
-		TilesetManager *tm, bool deleteTilesets);
+	static Background *SetupFullBG(const std::string &fName);
 
-	void DestroyTilesets();
 	void SetExtra(sf::Vector2f &extra);
 	void Update( const sf::Vector2f &camPos,
 		int frames = 1 );
@@ -80,8 +78,8 @@ struct Background
 	Tileset *ts_bg;
 	Tileset *ts_shape;
 	Tileset *ts_sky;
-	TilesetManager *tm;
-	bool deleteTilesets;
+//	TilesetManager *tm;
+	//bool deleteTilesets;
 
 	std::string name;
 

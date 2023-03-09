@@ -322,6 +322,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<Actor*> players;
 	
 	HitboxManager *hitboxManager;
+	bool ownsBG;
 	Background *background;
 	QuadTree * terrainTree;
 	QuadTree *specialTerrainTree;
@@ -933,6 +934,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsReplayOn();
 	bool IsReplayHUDOn();
 	void StartAlertBox(const std::string &msg);
+	void CleanupBackground();
 };
 
 #endif

@@ -37,7 +37,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	breakneckTitleSprite.setPosition(960, 0);// + 20);
 	//emergenceTitleSprite.setPosition(794, 233 + 20);
 
-	background = new Background(p_mainMenu);
+	background = new Background;
 
 	ts_energy = GetTileset("Title/energy_1920x1080.png", 1920, 1080);
 	energySpr.setTexture(*ts_energy->texture);
