@@ -1768,6 +1768,13 @@ bool GameSession::Load()
 
 	myHash = md5file(filePathStr);
 
+
+	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	{
+		mainMenu->adventureManager->SetBoards(this);
+	}
+
+
 	SetupAbsorbParticles();
 
 	SetupGameMode();
@@ -4913,8 +4920,8 @@ void GameSession::StartLeaderboard()
 			adventureManager->leaderboard->SetAnyPowersMode(false);
 		}
 
-		adventureManager->leaderboard->Start(adventureManager->GetLeaderboardNameOriginalPowers(this), 
-			adventureManager->GetLeaderboardNameAnyPowers(this));
+		adventureManager->leaderboard->Start();//adventureManager->GetLeaderboardNameOriginalPowers(this), 
+			//adventureManager->GetLeaderboardNameAnyPowers(this));
 	}
 }
 

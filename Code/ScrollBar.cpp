@@ -46,6 +46,10 @@ void ScrollBar::SetRows(int p_numRows, int p_numDisplayedRows)
 	}
 
 	maxIndex = numRows - numDisplayedRows;
+	if (maxIndex < 0)
+	{
+		maxIndex = 0;
+	}
 
 	int spacing = size.y / (float)numRows;
 	cursorHeight = spacing * (numRows - maxIndex);
@@ -53,9 +57,10 @@ void ScrollBar::SetRows(int p_numRows, int p_numDisplayedRows)
 	SetIndex(0);
 }
 
-void ScrollBar::SetIndex(int ind)
+void ScrollBar::SetIndex(int p_ind)
 {
 	int spacing = size.y / (float)numRows;
+	int ind = p_ind;
 
 	if (ind < 0)
 	{

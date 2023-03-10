@@ -10,6 +10,7 @@
 
 struct PlayerReplayManager;
 struct ReplayGhost;
+struct LeaderboardDisplay;
 
 struct KineticLeaderboardEntry
 {
@@ -57,11 +58,13 @@ struct LeaderboardInfo
 	void ClearEntries();
 };
 
-struct LeaderboardManager : RemoteStorageResultHandler
+struct SteamLeaderboardManager : RemoteStorageResultHandler
 {
 	enum Action
 	{
 		A_IDLE,
+		A_UPLOAD_SCORE_SUCCESS,
+		A_UPLOAD_SCORE_FAILURE,
 		A_FINDING,
 		A_UPLOAD_REPLAY,
 		A_SHARE_REPLAY,
@@ -79,15 +82,19 @@ struct LeaderboardManager : RemoteStorageResultHandler
 	std::string searchBoardName;
 	int postFindAction;
 
+	LeaderboardDisplay *display;
+
 	int myEntryIndex;
 	KineticLeaderboardEntry tempMyEntry;
 
 	UGCHandle_t replayToUploadHandle;
 
-	LeaderboardManager();
-	~LeaderboardManager();
+	SteamLeaderboardManager();
+	~SteamLeaderboardManager();
 	void Reset();
-	void FailureAlert();
+	//void FailureAlert();
+	void UploadingScoreFailed();
+	void UploadingScoreSucceeded();
 	bool IsIdle();
 	void UploadScore(const std::string &name, int score, const std::string &replayPath );
 	int GetNumActiveGhosts();
@@ -95,19 +102,19 @@ struct LeaderboardManager : RemoteStorageResultHandler
 	void UncheckAllGhosts();
 	void RefreshCurrBoard();
 private:
-	CCallResult<LeaderboardManager,
+	CCallResult<SteamLeaderboardManager,
 		LeaderboardFindResult_t> onLeaderboardFindResultCallResult;
 
-	CCallResult<LeaderboardManager,
+	CCallResult<SteamLeaderboardManager,
 		LeaderboardScoreUploaded_t> onLeaderboardScoreUploadedCallResult;
 
-	CCallResult<LeaderboardManager,
+	CCallResult<SteamLeaderboardManager,
 		LeaderboardScoresDownloaded_t> onLeaderboardScoresDownloadedCallResult;
 
-	CCallResult<LeaderboardManager,
+	CCallResult<SteamLeaderboardManager,
 		RemoteStorageFileShareResult_t> onRemoteStorageFileShareResultCallResult;
 
-	CCallResult<LeaderboardManager,
+	CCallResult<SteamLeaderboardManager,
 		LeaderboardUGCSet_t> onLeaderboardUGCSetCallResult;
 
 	void OnLeaderboardFound(LeaderboardFindResult_t *callback, bool bIOFailure);
@@ -160,8 +167,26 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 		A_RACING_GHOSTS,
 	};
 
+	enum UploadType
+	{
+		UPLOAD_TYPE_ANY_POWERS,
+		UPLOAD_TYPE_BOTH_BOARDS,
+	};
+
+	enum UploadState
+	{
+		UPLOAD_STATE_NONE,
+		UPLOAD_STATE_ANY_POWERS,
+		UPLOAD_STATE_ORIG_POWERS,
+	};
+
+	int uploadType;
+
+	int uploadState;
+	bool successfulScoreChange;
+
 	MessagePopup messagePop;
-	LeaderboardManager manager;
+	SteamLeaderboardManager manager;
 	int action;
 	int frame;
 
@@ -212,13 +237,15 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 
 	LeaderboardDisplay();
 	~LeaderboardDisplay();
+	void SetBoards(const std::string &origPowers, const std::string &anyPowers);
 	bool IsAnyPowersMode();
 	void SetAnyPowersMode(bool on);
 	void Reset();
-	void Start(const std::string &origPowers, const std::string &anyPowers);
+	void Start();
 	void SetTopLeft(const sf::Vector2f &p_pos);
 	void HandleEvent(sf::Event ev);
 	void Update();
+	void UploadScore(int score, const std::string &replayPath, bool origCompatible);
 	void Show();
 	void Hide();
 	bool IsHidden();
@@ -236,6 +263,10 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	
 	void MouseScroll(int delta);
 	void PopulateRows();
+
+	void OnManagerUploadingScoreFailed();
+	void OnManagerUploadingScoreSucceeded();
+	void OnManagerScoreWasNotGoodEnoughToUpload();
 
 	void ButtonCallback(Button *b, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);

@@ -24,12 +24,13 @@ void LeaderboardInfo::ClearEntries()
 	entries.clear();
 }
 
-LeaderboardManager::LeaderboardManager()
+SteamLeaderboardManager::SteamLeaderboardManager()
 {
+	display = NULL;
 	Reset();
 }
 
-void LeaderboardManager::Reset()
+void SteamLeaderboardManager::Reset()
 {
 	action = A_IDLE;
 	onLeaderboardFindResultCallResult.Cancel();
@@ -49,12 +50,12 @@ void LeaderboardManager::Reset()
 	currBoard.Clear();
 }
 
-LeaderboardManager::~LeaderboardManager()
+SteamLeaderboardManager::~SteamLeaderboardManager()
 {
 
 }
 
-int LeaderboardManager::GetNumActiveGhosts()
+int SteamLeaderboardManager::GetNumActiveGhosts()
 {
 	int numActiveGhosts = 0;
 	for (auto it = currBoard.entries.begin(); it != currBoard.entries.end(); ++it)
@@ -68,7 +69,7 @@ int LeaderboardManager::GetNumActiveGhosts()
 	return numActiveGhosts;
 }
 
-void LeaderboardManager::UncheckAllGhosts()
+void SteamLeaderboardManager::UncheckAllGhosts()
 {
 	for (auto it = currBoard.entries.begin(); it != currBoard.entries.end(); ++it)
 	{
@@ -76,7 +77,7 @@ void LeaderboardManager::UncheckAllGhosts()
 	}
 }
 
-void LeaderboardManager::UploadScore(const std::string &name, int score, const std::string &replayPath)
+void SteamLeaderboardManager::UploadScore(const std::string &name, int score, const std::string &replayPath)
 {
 	scoreToUpload = score;
 
@@ -99,28 +100,37 @@ void LeaderboardManager::UploadScore(const std::string &name, int score, const s
 	//6. once replay is added, report sucess.
 }
 
-void LeaderboardManager::DownloadBoard(const std::string &name)
+void SteamLeaderboardManager::DownloadBoard(const std::string &name)
 {
 	FindLeaderboard(name, A_DOWNLOADING);
 }
 
-bool LeaderboardManager::IsIdle()
+bool SteamLeaderboardManager::IsIdle()
 {
 	return action == A_IDLE;
 }
 
-void LeaderboardManager::FailureAlert()
+void SteamLeaderboardManager::UploadingScoreFailed()
 {
-	action = A_IDLE;
+	action = A_IDLE;//A_UPLOAD_SCORE_FAILURE;
 
-	Session *sess = Session::GetSession();
-	if (sess != NULL)
+	if (display != NULL)
 	{
-		sess->StartAlertBox("Score failed to upload. Try again later.");
+		display->OnManagerUploadingScoreFailed();
 	}
 }
 
-void LeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
+void SteamLeaderboardManager::UploadingScoreSucceeded()
+{
+	action = A_IDLE;//A_UPLOAD_SCORE_SUCCESS;
+
+	if (display != NULL)
+	{
+		display->OnManagerUploadingScoreSucceeded();
+	}
+}
+
+void SteamLeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
 {
 	postFindAction = p_action;
 	action = A_FINDING;
@@ -131,21 +141,21 @@ void LeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
 
 	SteamAPICall_t call = SteamUserStats()->FindOrCreateLeaderboard(name.c_str(), ELeaderboardSortMethod::k_ELeaderboardSortMethodAscending, ELeaderboardDisplayType::k_ELeaderboardDisplayTypeNumeric);
 
-	onLeaderboardFindResultCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardFound);
+	onLeaderboardFindResultCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardFound);
 }
 
-void LeaderboardManager::RefreshCurrBoard()
+void SteamLeaderboardManager::RefreshCurrBoard()
 {
 	cout << "refreshing board: " << currBoard.name << "\n";
 	myEntryIndex = -1;
 	action = A_DOWNLOADING;
 	currBoard.ClearEntries();
 	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntries(currBoard.leaderboardID, ELeaderboardDataRequest::k_ELeaderboardDataRequestGlobal, 0, 100);
-	onLeaderboardScoresDownloadedCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardScoresDownloaded);
+	onLeaderboardScoresDownloadedCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardScoresDownloaded);
 }
 
 
-void LeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, bool bIOFailure)
+void SteamLeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, bool bIOFailure)
 {
 	assert(action == A_FINDING);
 
@@ -169,13 +179,13 @@ void LeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callback, b
 	else
 	{
 		cout << "Error: leaderboard " << searchBoardName << " not found.\n";
-		FailureAlert();
+		UploadingScoreFailed();
 	}
 }
 
 
 
-void LeaderboardManager::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *callback, bool bIOFailure)
+void SteamLeaderboardManager::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *callback, bool bIOFailure)
 {
 	assert(action == A_UPLOADING_SCORE);
 
@@ -188,13 +198,13 @@ void LeaderboardManager::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t *
 	}
 	else
 	{
-		FailureAlert();
+		UploadingScoreFailed();
 
 		cout << "leaderboard upload failed\n";
 	}
 }
 
-void LeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDownloaded_t *callback, bool bIOFailure)
+void SteamLeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDownloaded_t *callback, bool bIOFailure)
 {
 	if (action == A_DOWNLOADING)
 	{
@@ -243,6 +253,8 @@ void LeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDownload
 			else
 			{
 				cout << "new time of " << scoreToUpload << " is worse than the old time of " << tempMyEntry.steamEntry.m_nScore << "\n";
+				if (display != NULL)
+					display->OnManagerScoreWasNotGoodEnoughToUpload();
 			}
 		}
 	}
@@ -250,22 +262,12 @@ void LeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDownload
 
 
 
-void LeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool bIOFailure)
+void SteamLeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool bIOFailure)
 {
 	assert(action == A_ATTACH_REPLAY);
 
 	if (callback->m_eResult == k_EResultOK)
 	{
-		Session *sess = Session::GetSession();
-		if (sess != NULL)
-		{
-			sess->StartAlertBox("Leaderboard score updated successfully.");
-		}
-
-		cout << "full leaderboard submission complete and successful\n";
-
-		action = A_IDLE;
-
 		bool res = SteamRemoteStorage()->FileDelete(cloudReplayPath.c_str());
 		if (res)
 		{
@@ -275,10 +277,14 @@ void LeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool
 		{
 			cout << "file tried to delete after leaderboard update but wasn't found\n";
 		}
+
+
+		UploadingScoreSucceeded();
+
 	}
 	else
 	{
-		FailureAlert();
+		UploadingScoreFailed();
 
 		cout << "leaderboard ugc set failed on  " << cloudReplayPath << ". reason: " << callback->m_eResult << "\n";
 
@@ -296,7 +302,7 @@ void LeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool
 }
 
 
-void LeaderboardManager::OnRemoteStorageFileShareResult(RemoteStorageFileShareResult_t *callback, bool bIOFailure)
+void SteamLeaderboardManager::OnRemoteStorageFileShareResult(RemoteStorageFileShareResult_t *callback, bool bIOFailure)
 {
 	if (callback->m_eResult == k_EResultOK)
 	{
@@ -307,13 +313,13 @@ void LeaderboardManager::OnRemoteStorageFileShareResult(RemoteStorageFileShareRe
 	}
 	else
 	{
-		FailureAlert();
+		UploadingScoreFailed();
 
 		cout << "remote file share failed on " << callback->m_rgchFilename << ". reason: " << callback->m_eResult << "\n";
 	}
 }
 
-void LeaderboardManager::StartDownloadingMyScore()
+void SteamLeaderboardManager::StartDownloadingMyScore()
 {
 	cout << "Start downloading my score" << "\n";
 
@@ -323,19 +329,19 @@ void LeaderboardManager::StartDownloadingMyScore()
 
 	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntriesForUsers(currBoard.leaderboardID, &myID, 1);
 
-	onLeaderboardScoresDownloadedCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardScoresDownloaded);
+	onLeaderboardScoresDownloadedCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardScoresDownloaded);
 }
 
-void LeaderboardManager::StartUploadingScore()
+void SteamLeaderboardManager::StartUploadingScore()
 {
 	cout << "Start uploading score" << "\n";
 
 	action = A_UPLOADING_SCORE;
 	SteamAPICall_t call = SteamUserStats()->UploadLeaderboardScore(currBoard.leaderboardID, ELeaderboardUploadScoreMethod::k_ELeaderboardUploadScoreMethodForceUpdate, scoreToUpload, NULL, 0);
-	onLeaderboardScoreUploadedCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardScoreUploaded);
+	onLeaderboardScoreUploadedCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardScoreUploaded);
 }
 
-void LeaderboardManager::StartUploadingReplay()
+void SteamLeaderboardManager::StartUploadingReplay()
 {
 	cout << "Start uploading replay:" << cloudReplayPath << "\n";
 
@@ -343,11 +349,11 @@ void LeaderboardManager::StartUploadingReplay()
 	bool res = mainMenu->remoteStorageManager->UploadAsync(localReplayPath, cloudReplayPath, this);
 	if (!res)
 	{
-		FailureAlert();
+		UploadingScoreFailed();
 	}
 }
 
-void LeaderboardManager::StartSharingReplay()
+void SteamLeaderboardManager::StartSharingReplay()
 {
 	cout << "start sharing replay" << "\n";
 
@@ -355,20 +361,20 @@ void LeaderboardManager::StartSharingReplay()
 
 	MainMenu *mainMenu = MainMenu::GetInstance();
 	SteamAPICall_t call = mainMenu->remoteStorageManager->FileShare(cloudReplayPath);
-	onRemoteStorageFileShareResultCallResult.Set(call, this, &LeaderboardManager::OnRemoteStorageFileShareResult);
+	onRemoteStorageFileShareResultCallResult.Set(call, this, &SteamLeaderboardManager::OnRemoteStorageFileShareResult);
 }
 
-void LeaderboardManager::StartAttachingReplay()
+void SteamLeaderboardManager::StartAttachingReplay()
 {
 	cout << "Start attaching replay" << "\n";
 
 	action = A_ATTACH_REPLAY;
 	SteamAPICall_t call = SteamUserStats()->AttachLeaderboardUGC(currBoard.leaderboardID, replayToUploadHandle);
-	onLeaderboardUGCSetCallResult.Set(call, this, &LeaderboardManager::OnLeaderboardUGCSet);
+	onLeaderboardUGCSetCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardUGCSet);
 }
 
 //from RemoteStorageManager
-void LeaderboardManager::OnRemoteStorageFileWriteAsyncComplete(RemoteStorageFileWriteAsyncComplete_t *callback, bool bIOFailure)
+void SteamLeaderboardManager::OnRemoteStorageFileWriteAsyncComplete(RemoteStorageFileWriteAsyncComplete_t *callback, bool bIOFailure)
 {
 	if (callback->m_eResult == k_EResultOK)
 	{

@@ -1975,6 +1975,8 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 	adventureManager->leaderboard->Reset();
 
+	
+
 	MatchParams mp;
 	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->currSaveFile];
 	mp.mapPath = levelPath;
@@ -2268,6 +2270,7 @@ void MainMenu::HandleMenuMode()
 				//window->setVerticalSyncEnabled(true);
 				delete loadThread;
 				loadThread = NULL;
+
 				SetMode(RUN_ADVENTURE_MAP);
 				//fader->CrossFade(30, 0, Color::Black);
 				//return HandleMenuMode();

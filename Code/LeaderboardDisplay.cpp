@@ -149,6 +149,8 @@ void KineticLeaderboardEntry::OnRemoteStorageDownloadUGCResult(RemoteStorageDown
 
 LeaderboardDisplay::LeaderboardDisplay()
 {
+	manager.display = this;
+
 	panel = new Panel("leaderboard", 1920, 1080, this);
 	
 	panel->SetColor(Color::Transparent);
@@ -236,6 +238,8 @@ void LeaderboardDisplay::Reset()
 	showGhostsWithReplayCheckBox->checked = false;
 	scrollBar->SetIndex(0);
 	storedCheckedGhosts.clear();
+	origPowersBoardName = "";
+	anyPowersBoardName = "";
 
 	tabs->SelectTab(0);
 
@@ -245,6 +249,12 @@ void LeaderboardDisplay::Reset()
 bool LeaderboardDisplay::IsAnyPowersMode()
 {
 	return tabs->currTabIndex == 1;
+}
+
+void LeaderboardDisplay::SetBoards(const std::string &origPowers, const std::string &anyPowers)
+{
+	origPowersBoardName = origPowers;
+	anyPowersBoardName = anyPowers;
 }
 
 void LeaderboardDisplay::SetAnyPowersMode(bool on)
@@ -272,15 +282,11 @@ void LeaderboardDisplay::DownloadCurrBoard()
 	}
 }
 
-void LeaderboardDisplay::Start(const std::string &origPowers, const std::string &anyPowers)
+void LeaderboardDisplay::Start()
 {
 	//Reset();
 
 	Show();
-
-	origPowersBoardName = origPowers;
-	anyPowersBoardName = anyPowers;
-	
 	DownloadCurrBoard();
 }
 
@@ -513,6 +519,78 @@ void LeaderboardDisplay::Update()
 	}
 
 	++frame;
+}
+
+void LeaderboardDisplay::OnManagerUploadingScoreFailed()
+{
+	uploadState = UPLOAD_STATE_NONE;
+	Session *sess = Session::GetSession();
+	if (sess != NULL)
+	{
+		sess->StartAlertBox("Score failed to upload. Try again later.");
+	}
+}
+
+void LeaderboardDisplay::OnManagerUploadingScoreSucceeded()
+{
+	if (uploadState == UPLOAD_STATE_ANY_POWERS && uploadType == UPLOAD_TYPE_BOTH_BOARDS)
+	{
+		successfulScoreChange = true;
+		uploadState = UPLOAD_STATE_ORIG_POWERS;
+		manager.UploadScore(origPowersBoardName, manager.scoreToUpload, manager.localReplayPath);
+		cout << "completed the upload to the any powers board. Still need to upload to the orig power board\n";
+	}
+	else
+	{
+		uploadState = UPLOAD_STATE_NONE;
+		Session *sess = Session::GetSession();
+		if (sess != NULL)
+		{
+			sess->StartAlertBox("Leaderboard score updated successfully.");
+		}
+		cout << "full leaderboard submission complete and successful\n";
+	}
+}
+
+void LeaderboardDisplay::OnManagerScoreWasNotGoodEnoughToUpload()
+{
+	if (uploadState == UPLOAD_STATE_ANY_POWERS && uploadType == UPLOAD_TYPE_BOTH_BOARDS)
+	{
+		uploadState = UPLOAD_STATE_ORIG_POWERS;
+		manager.UploadScore(origPowersBoardName, manager.scoreToUpload, manager.localReplayPath);
+		cout << "upload to the any powers board was unncessary due to score. Still need to try upload to the orig power board\n";
+	}
+	else
+	{
+		if (uploadType == UPLOAD_TYPE_BOTH_BOARDS && uploadState == UPLOAD_STATE_ORIG_POWERS && successfulScoreChange)
+		{
+			Session *sess = Session::GetSession();
+			if (sess != NULL)
+			{
+				sess->StartAlertBox("Leaderboard score updated successfully.");
+			}
+
+			cout << "full leaderboard submission complete and successful\n";
+		}
+
+		uploadState = UPLOAD_STATE_NONE;
+	}
+}
+
+void LeaderboardDisplay::UploadScore(int score, const std::string &replayPath, bool origCompatible)
+{
+	successfulScoreChange = false;
+	if (origCompatible)
+	{
+		uploadType = UPLOAD_TYPE_BOTH_BOARDS;
+	}
+	else
+	{
+		uploadType = UPLOAD_TYPE_ANY_POWERS;
+	}
+
+	uploadState = UPLOAD_STATE_ANY_POWERS;
+	manager.UploadScore(anyPowersBoardName, score, replayPath);
 }
 
 int LeaderboardDisplay::GetNumActiveLeaderboardGhosts()

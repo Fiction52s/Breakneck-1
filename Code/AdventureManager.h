@@ -39,6 +39,7 @@ struct AdventureManager
 	void LoadAdventure( const std::string &adventureName );
 	bool CompleteCurrentMap(GameSession *game );
 	void DrawWorldMap(sf::RenderTarget *target);
+	void SetBoards(GameSession *game );
 	void CreateWorldMap();
 	void CreateWorldMapOnLevel(int w, int s, int m);
 	void CreateWorldMapOnCurrLevel();
