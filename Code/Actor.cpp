@@ -7862,7 +7862,8 @@ void Actor::SetStandInPlacePos(Edge *g, double q,
 
 void Actor::SetGroundedPos(Edge *g, double q, double xoff)
 {
-	
+	holdJump = false;
+	holdDouble = false;
 	ground = g;
 	edgeQuantity = q;
 
@@ -7903,6 +7904,8 @@ void Actor::SetAirPos(V2d &pos, bool fr)
 
 void Actor::SetGroundedPos(Edge *g, double q)
 {
+	holdJump = false;
+	holdDouble = false;
 	ground = g;
 	edgeQuantity = q;
 

@@ -5,6 +5,8 @@ using namespace std;
 
 void Actor::LAND2_Start()
 {
+	holdJump = false;
+	holdDouble = false;
 	currBBoostCounter = 0;
 	if (TryGroundBlock()) return;
 }
