@@ -249,6 +249,8 @@ void LogItem::DissipateOnTouch()
 void LogItem::Capture()
 {
 	sess->UnlockLog(logType);
+
+	sess->TrySaveCurrentSaveFile();
 }
 
 void LogItem::DirectKill()

@@ -4076,6 +4076,8 @@ void Actor::ActionEnded()
 	}
 }
 
+
+
 void Actor::CheckHoldJump()
 {
 	if (InWater( TerrainPolygon::WATER_BUOYANCY) )//|| InWater( TerrainPolygon::WATER_NORMAL ))
@@ -4088,13 +4090,16 @@ void Actor::CheckHoldJump()
 		return;
 	}
 
+
+	
 	/*if (InWater(TerrainPolygon::WATER_NORMAL))
 	{
 
 	}*/
 
 
-	if( hasDoubleJump )
+	//if( hasDoubleJump && !holdDouble )//&& holdJump)
+	if( holdJump )
 	{
 		if( holdJump && velocity.y >= -8 )
 			holdJump = false;
@@ -4112,19 +4117,25 @@ void Actor::CheckHoldJump()
 			}
 		}
 	}
-	else
+	else if( holdDouble )
 	{
-		if( holdDouble && velocity.y >= -8 )
+		if (holdDouble && velocity.y >= -8)
 			holdDouble = false;
 
-		if( holdDouble && !JumpButtonHeld() && framesInAir > 2 )
+		if (holdDouble && !JumpButtonHeld() && framesInAir > 2)
 		{
-			if( velocity.y < -8 )
+			if (velocity.y < -8)
 			{
 				velocity.y = -8;
 			}
 		}
 	}
+
+	/*if (!JumpButtonHeld())
+	{
+		holdJump = false;
+		holdDouble = false;
+	}*/
 }
 
 bool Actor::SteepSlideAttack()

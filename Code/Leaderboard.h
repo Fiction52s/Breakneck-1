@@ -213,6 +213,7 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	LeaderboardDisplay();
 	~LeaderboardDisplay();
 	bool IsAnyPowersMode();
+	void SetAnyPowersMode(bool on);
 	void Reset();
 	void Start(const std::string &origPowers, const std::string &anyPowers);
 	void SetTopLeft(const sf::Vector2f &p_pos);

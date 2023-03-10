@@ -247,6 +247,18 @@ bool LeaderboardDisplay::IsAnyPowersMode()
 	return tabs->currTabIndex == 1;
 }
 
+void LeaderboardDisplay::SetAnyPowersMode(bool on)
+{
+	if (on)
+	{
+		tabs->SelectTab(1);
+	}
+	else
+	{
+		tabs->SelectTab(0);
+	}
+}
+
 void LeaderboardDisplay::DownloadCurrBoard()
 {
 	tabWhenDownloadingBoard = tabs->currTabIndex;

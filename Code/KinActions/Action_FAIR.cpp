@@ -6,7 +6,6 @@ using namespace std;
 
 void Actor::FAIR_Start()
 {
-	
 	SetActionSuperLevel();
 	if (currActionSuperLevel == 2)
 	{

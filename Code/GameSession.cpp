@@ -1782,40 +1782,9 @@ bool GameSession::Load()
 
 	SetupPlayers();
 
-	originalProgressionCompatible = false;
-	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-	{
-		originalProgressionCompatible = true;
-		for (int i = 0; i < saveFile->upgradeField.numOptions; ++i)
-		{
-			if (saveFile->upgradeField.GetBit(i) && !originalProgressionPlayerOptionsField.GetBit(i))
-			{
-				originalProgressionCompatible = false;
-				break;
-			}
-		}
+	
 
-		if (originalProgressionCompatible)
-		{
-			for (int i = 0; i < saveFile->logField.numFields; ++i)
-			{
-				if (saveFile->logField.GetBit(i) && !originalProgressionLogField.GetBit(i))
-				{
-					originalProgressionCompatible = false;
-					break;
-				}
-			}
-		}
-	}
-
-	if (originalProgressionCompatible)
-	{
-		cout << "compatible" << "\n";
-	}
-	else
-	{
-		cout << "not compatible \n";
-	}
+	
 
 	//original location
 	/*{
@@ -3786,6 +3755,49 @@ void GameSession::RestartLevel()
 
 	ClearEmitters();
 
+	originalProgressionCompatible = false;
+	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+	{
+		originalProgressionCompatible = true;
+
+
+		if (!originalProgressionModeOn)
+		{
+			//if original progression is not being forced, check to see if we are compatible with it.
+			for (int i = 0; i < saveFile->upgradeField.numOptions; ++i)
+			{
+				if (saveFile->upgradeField.GetBit(i) && !originalProgressionPlayerOptionsField.GetBit(i))
+				{
+					originalProgressionCompatible = false;
+					break;
+				}
+			}
+
+			if (originalProgressionCompatible)
+			{
+				for (int i = 0; i < saveFile->logField.numOptions; ++i)
+				{
+					if (saveFile->logField.GetBit(i) && !originalProgressionLogField.GetBit(i))
+					{
+						originalProgressionCompatible = false;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (originalProgressionCompatible)
+	{
+		cout << "compatible" << "\n";
+	}
+	else
+	{
+		cout << "not compatible \n";
+	}
+
+
+
 	//AddEmitter(testEmit, EffectLayer::IN_FRONT);
 	//testEmit->Reset();
 
@@ -4892,6 +4904,15 @@ void GameSession::StartLeaderboard()
 	if (adventureManager != NULL)
 	{
 		gameState = LEADERBOARD;
+		if (originalProgressionCompatible)
+		{
+			adventureManager->leaderboard->SetAnyPowersMode(true);
+		}
+		else
+		{
+			adventureManager->leaderboard->SetAnyPowersMode(false);
+		}
+
 		adventureManager->leaderboard->Start(adventureManager->GetLeaderboardNameOriginalPowers(this), 
 			adventureManager->GetLeaderboardNameAnyPowers(this));
 	}
