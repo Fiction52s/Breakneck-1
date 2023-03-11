@@ -54,6 +54,7 @@ struct AdventureManager
 
 	std::string GetLeaderboardNameAnyPowers(GameSession *game);
 	std::string GetLeaderboardNameOriginalPowers(GameSession *game);
+	std::string GetLeaderboardDisplayName(GameSession *game);
 	
 };
 

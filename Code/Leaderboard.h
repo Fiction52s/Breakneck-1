@@ -36,6 +36,7 @@ struct KineticLeaderboardEntry
 
 	KineticLeaderboardEntry();
 	KineticLeaderboardEntry(const KineticLeaderboardEntry &);
+	~KineticLeaderboardEntry();
 	void DownloadReplay();
 	bool IsReplayReady();
 	void Init();
@@ -144,6 +145,12 @@ struct LeaderboardEntryRow
 	Button *watchButton;
 	int index;
 
+	float rankSpacing;
+	float nameSpacing;
+	float scoreSpacing;
+	float ghostSpacing;
+	float watchSpacing;
+
 	LeaderboardEntryRow();
 	void Init( int index, Panel *p);
 	void Clear();
@@ -192,6 +199,8 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 
 	Panel *panel;
 
+	Label *titleLabel;
+
 	Button *clearCheckedGhostsButton;
 	Button *raceGhostsButton;
 	Button *refreshBoardButton;
@@ -206,21 +215,37 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	ScrollBar *scrollBar;
 	TabGroup *tabs;
 
+	CheckBox *ghostsUseOriginalSkinsCheckBox;
+	Label *ghostsUseOriginalSkinsLabel;
+
 	int tabWhenDownloadingBoard;
 	std::string origPowersBoardName;
 	std::string anyPowersBoardName;
-	
+
+	int leaderboardBGBorder;
+
+	Label *topRowRankLabel;
+	Label *topRowNameLabel;
+	Label *topRowTimeLabel;
+	Label *topRowGhostLabel;
+	Label *topRowReplayLabel;
+
+	sf::Color evenColor;
+	sf::Color oddColor;
+	sf::Color myColor;
+
+	sf::Vertex topRowQuad[4];
+
+	sf::Vertex dividerQuads[5 * 4];
 
 	std::vector<CSteamID> storedCheckedGhosts;
 
-	sf::Vertex topBarQuad[4];
-	sf::Vertex bottomBarQuad[4];
-	
-
-	sf::Vertex bgQuad[4];
+	sf::Vertex fullscreenBGQuad[4];
+	sf::Vertex leaderboardBGQuad[4];
+	sf::Vertex titleQuad[4];
 
 	const static int NUM_ROWS = 10;
-	const static int ROW_WIDTH = 700;
+	const static int ROW_WIDTH = 800;//700;
 	const static int ROW_HEIGHT = 50;
 	const static int CHAR_HEIGHT = ROW_HEIGHT - 20;
 	sf::Vertex rowQuads[NUM_ROWS * 4];
@@ -237,7 +262,10 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 
 	LeaderboardDisplay();
 	~LeaderboardDisplay();
-	void SetBoards(const std::string &origPowers, const std::string &anyPowers);
+
+	void Clear();
+	bool IsFriendsOnlyMode();
+	void SetBoards(const std::string &leaderboardDisplayName, const std::string &origPowers, const std::string &anyPowers);
 	bool IsAnyPowersMode();
 	void SetAnyPowersMode(bool on);
 	void Reset();
@@ -257,6 +285,7 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	int GetNumActiveLeaderboardGhosts();
 	bool IsTryingToStartReplay();
 	bool IsTryingToRaceGhosts();
+	bool IsUsingPlayerGhostSkins();
 	bool IsDefaultGhostOn();
 	bool ShouldShowGhostsWithReplay();
 	void DownloadCurrBoard();
@@ -267,6 +296,8 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	void OnManagerUploadingScoreFailed();
 	void OnManagerUploadingScoreSucceeded();
 	void OnManagerScoreWasNotGoodEnoughToUpload();
+	
+	void RefreshCurrBoard();
 
 	void ButtonCallback(Button *b, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);

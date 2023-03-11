@@ -43,6 +43,21 @@ ReplayGhost::~ReplayGhost()
 	}
 }
 
+void ReplayGhost::SetSkin(int ind)
+{
+	playerSkinShader.SetSkin(ind);
+}
+
+void ReplayGhost::SetToDefaultSkin()
+{
+	playerSkinShader.SetSkin(Actor::SKIN_GHOST);
+}
+
+void ReplayGhost::SetToReplaySkin()
+{
+	SetSkin(pReplayer->skinIndex);
+}
+
 void ReplayGhost::Read(istream &is)
 {
 	int readSize = sizeof(SprInfo);
@@ -655,11 +670,20 @@ bool PlayerReplayManager::LoadFromStream( std::istream &is)
 	return true;
 }
 
-void PlayerReplayManager::AddGhostsToVec(std::vector<ReplayGhost*> &ghosts)
+void PlayerReplayManager::AddGhostsToVec(std::vector<ReplayGhost*> &ghosts, bool useReplaySkins)
 {
 	for (auto it = repVec.begin(); it != repVec.end(); ++it)
 	{
 		ghosts.push_back((*it)->replayGhost);
+
+		if (useReplaySkins)
+		{
+			(*it)->replayGhost->SetToReplaySkin();
+		}
+		else
+		{
+			(*it)->replayGhost->SetToDefaultSkin();
+		}
 	}
 }
 

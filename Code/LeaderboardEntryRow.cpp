@@ -22,6 +22,12 @@ LeaderboardEntryRow::LeaderboardEntryRow()
 
 	index = -1;
 
+	rankSpacing = 20;
+	nameSpacing = rankSpacing + 100;
+	scoreSpacing = nameSpacing + 200 + 100;
+	ghostSpacing = scoreSpacing + 150;
+	watchSpacing = ghostSpacing + 100;
+
 	Clear();
 }
 
@@ -71,11 +77,7 @@ void LeaderboardEntryRow::Set(KineticLeaderboardEntry &entryInfo)
 void LeaderboardEntryRow::SetTopLeft(const sf::Vector2f &p_topLeft)
 {
 	//nameText.setPosition(topLeft);
-	float rankSpacing = 20;
-	float nameSpacing = rankSpacing + 100;
-	float scoreSpacing = nameSpacing + 200;
-	float ghostSpacing = scoreSpacing + 150;
-	float watchSpacing = ghostSpacing + 100;
+	
 
 	Vector2f topLeft = p_topLeft;
 

@@ -114,6 +114,9 @@ struct ReplayGhost
 
 	ReplayGhost(PlayerReplayer *pReplayer);
 	~ReplayGhost();
+	void SetSkin(int ind);
+	void SetToDefaultSkin();
+	void SetToReplaySkin();
 	void DrawNameTag(sf::RenderTarget *target);
 	void Reset();
 	void Read(std::istream &is);
@@ -156,6 +159,7 @@ struct PlayerReplayer
 
 	PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager);
 	~PlayerReplayer();
+	void SetGhostSkin(int ind);
 	int GetFramesBeforeGoal();
 	void SetDisplayName(const std::string &n);
 	bool Read(std::istream &is );
@@ -182,7 +186,7 @@ struct PlayerReplayManager
 	void SetToStart();
 	bool LoadFromFile(const boost::filesystem::path &fileName);
 	bool LoadFromStream(std::istream &is);
-	void AddGhostsToVec(std::vector<ReplayGhost*> &vec);
+	void AddGhostsToVec(std::vector<ReplayGhost*> &vec, bool useReplaySkins );
 	void DrawGhostNameTags(sf::RenderTarget *target);
 	void UpdateGhostNameTagsPixelPos(sf::RenderTarget *target);
 };

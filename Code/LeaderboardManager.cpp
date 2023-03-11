@@ -102,6 +102,7 @@ void SteamLeaderboardManager::UploadScore(const std::string &name, int score, co
 
 void SteamLeaderboardManager::DownloadBoard(const std::string &name)
 {
+	Reset();
 	FindLeaderboard(name, A_DOWNLOADING);
 }
 
@@ -150,7 +151,20 @@ void SteamLeaderboardManager::RefreshCurrBoard()
 	myEntryIndex = -1;
 	action = A_DOWNLOADING;
 	currBoard.ClearEntries();
-	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntries(currBoard.leaderboardID, ELeaderboardDataRequest::k_ELeaderboardDataRequestGlobal, 0, 100);
+	
+	assert(display != NULL);
+
+	ELeaderboardDataRequest rqType;
+	if (display->IsFriendsOnlyMode())
+	{
+		rqType = ELeaderboardDataRequest::k_ELeaderboardDataRequestFriends;
+	}
+	else
+	{
+		rqType = ELeaderboardDataRequest::k_ELeaderboardDataRequestGlobal;
+	}
+
+	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntries(currBoard.leaderboardID, rqType, 0, 100);
 	onLeaderboardScoresDownloadedCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardScoresDownloaded);
 }
 

@@ -2324,8 +2324,6 @@ bool GameSession::SetupMyBestPlayerReplayManager()
 	if (saveFile->GetBestFramesLevel(level->index) > 0 && boost::filesystem::exists(replayPath))
 	{
 		myBestReplayManager = new PlayerReplayManager;
-		myBestReplayManager->replaysActive = bestReplayOn;
-		myBestReplayManager->ghostsActive = bestTimeGhostOn;
 
 		if (myBestReplayManager->LoadFromFile(replayPath))
 		{
@@ -2337,9 +2335,16 @@ bool GameSession::SetupMyBestPlayerReplayManager()
 			int replayFramesBeforeGoal = myBestReplayManager->GetReplayer(0)->GetFramesBeforeGoal();
 			myBestReplayManager->GetReplayer(0)->SetDisplayName(GetTimeStr(replayFramesBeforeGoal));
 
+
+			bool usePlayerSkins = false;
+			if (mainMenu->adventureManager != NULL && mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins())
+			{
+				usePlayerSkins = true;
+			}
+
 			if (bestTimeGhostOn)
 			{
-				myBestReplayManager->AddGhostsToVec(replayGhosts);
+				myBestReplayManager->AddGhostsToVec(replayGhosts, usePlayerSkins);
 			}
 			return true;
 		}
@@ -4913,11 +4918,11 @@ void GameSession::StartLeaderboard()
 		gameState = LEADERBOARD;
 		if (originalProgressionCompatible)
 		{
-			adventureManager->leaderboard->SetAnyPowersMode(true);
+			adventureManager->leaderboard->SetAnyPowersMode(false);
 		}
 		else
 		{
-			adventureManager->leaderboard->SetAnyPowersMode(false);
+			adventureManager->leaderboard->SetAnyPowersMode(true);
 		}
 
 		adventureManager->leaderboard->Start();//adventureManager->GetLeaderboardNameOriginalPowers(this), 
@@ -4980,7 +4985,7 @@ bool GameSession::TryStartLeaderboardReplay(PlayerReplayManager *prm)
 
 	activePlayerReplayManagers.push_back(prm);
 
-	prm->AddGhostsToVec(replayGhosts);
+	prm->AddGhostsToVec(replayGhosts, mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins());
 	prm->replaysActive = bestReplayOn;
 	prm->ghostsActive = bestTimeGhostOn;
 
@@ -5050,7 +5055,10 @@ bool GameSession::AddGhostsForReplay(PlayerReplayManager *prm)
 				CleanupReplaysAndGhosts();
 
 				return false;
-			}			
+			}
+
+			myBestReplayManager->ghostsActive = true;
+			myBestReplayManager->replaysActive = false;
 		}
 
 		if (useLeaderboardGhosts)

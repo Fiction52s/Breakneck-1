@@ -491,6 +491,14 @@ std::string AdventureFile::GetLeaderboardName(int mIndex)
 	return to_string(w+1) + "_" + to_string(s+1) + "_" + to_string(m+1);
 }
 
+std::string AdventureFile::GetLeaderboardDisplayName(int mIndex)
+{
+	int w, s, m;
+	GetMapIndexes(mIndex, w, s, m);
+
+	return to_string(w + 1) + "-" + to_string(s + 1) + "-" + to_string(m + 1);
+}
+
 AdventureMapHeaderInfo &AdventureFile::GetMapHeaderInfo(int index)
 {
 	return GetMap(index).headerInfo;
