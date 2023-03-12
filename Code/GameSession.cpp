@@ -145,7 +145,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);
 	//eventually add better logic for when its okay to pause in multiplayer etc
-	if ( matchParams.numPlayers == 1 && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+	if ( (matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE ) && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
 	{
 		ControllerState currInput;
 		
@@ -238,6 +238,7 @@ void GameSession::UpdateCamera()
 
 	switch (gameModeType)
 	{
+	case MatchParams::GAME_MODE_PARALLEL_PRACTICE:
 	case MatchParams::GAME_MODE_BASIC:
 	{
 		cam.SetCamType(Camera::CamType::BASIC);
@@ -558,6 +559,8 @@ GameSession *GameSession::CreateParallelSession( int parIndex )
 
 	GameSession *parallelGame = new GameSession(&mp);
 	parallelGame->parallelSessionIndex = parIndex;
+
+	parallelGame->level = level;
 	
 
 	parallelGame->SetParentTilesetManager(this);
@@ -2399,6 +2402,8 @@ bool GameSession::RunMainLoopOnce()
 	accumulator += frameTime;
 
 	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+
+	
 	
 	if (ggpoNetplay)
 	{
@@ -3051,6 +3056,24 @@ bool GameSession::RunMainLoopOnce()
 
 	if (!IsParallelSession())
 	{
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+		{
+			ParallelMode *pm = (ParallelMode*)gameMode;
+
+			for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
+			{
+				if (pm->parallelGames[i] != NULL)
+				{
+					if (netplayManager->practicePlayers[i].HasNextInput())
+					{
+						pm->parallelGames[i]->RunMainLoopOnce();
+					}
+				}
+			}
+			//pm->RunParallelGameModeUpdates();
+			//pm->RunParallelMainLoopsOnce();
+		}
+
 		window->display();
 	}
 	

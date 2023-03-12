@@ -33,6 +33,29 @@ struct DesyncCheckInfo
 	int gameFrame;
 };
 
+struct PracticePlayer
+{
+	const static int MAX_BUFFERED_MESSAGES = 60;
+
+	CSteamID id;
+	HSteamNetConnection connection;
+
+	int waitingForFrame;
+	int currReadIndex;
+	int currWriteIndex;
+	int nextFrameToRead;
+
+	PracticeMsg messages[MAX_BUFFERED_MESSAGES];
+
+	
+
+	PracticePlayer();
+	void Clear();
+	bool HasNextInput();
+	void ReceiveMsg(PracticeMsg &pm);
+	COMPRESSED_INPUT_TYPE GetNextInput();
+};
+
 
 struct NetplayPlayer
 {
@@ -144,6 +167,8 @@ struct NetplayManager
 
 	std::list<SteamNetworkingMessage_t*> ggpoMessageQueue;
 	std::list<SteamNetworkingMessage_t*> desyncMessageQueue;
+
+	PracticePlayer practicePlayers[3];
 
 	bool desyncDetected;
 

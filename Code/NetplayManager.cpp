@@ -19,6 +19,102 @@
 using namespace std;
 using namespace sf;
 
+PracticePlayer::PracticePlayer()
+{
+	Clear();
+}
+
+void PracticePlayer::Clear()
+{
+	waitingForFrame = 0;
+	currReadIndex = 0;
+	currWriteIndex = 0;
+	nextFrameToRead = 0;
+
+	for (int i = 0; i < MAX_BUFFERED_MESSAGES; ++i)
+	{
+		messages[i].Clear();
+	}
+}
+
+bool PracticePlayer::HasNextInput()
+{
+	int buffer = 10;
+	if (nextFrameToRead == 0 )
+	{
+		if (nextFrameToRead < waitingForFrame - buffer)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	if (nextFrameToRead < waitingForFrame)
+	{
+		assert(messages[currReadIndex].frame == nextFrameToRead);
+		return true;
+	}
+	/*int currReadFrame = messages[currReadIndex].frame;
+	if (currReadFrame >= 0 && currReadFrame < waitingForFrame - 2)
+	{
+		return true;
+	}*/
+
+	return false;
+}
+
+COMPRESSED_INPUT_TYPE PracticePlayer::GetNextInput()
+{
+	assert(messages[currReadIndex].frame == nextFrameToRead);
+
+	COMPRESSED_INPUT_TYPE compressedInput = 0;
+
+	compressedInput = messages[currReadIndex].input;
+
+	++currReadIndex;
+	if (currReadIndex == MAX_BUFFERED_MESSAGES)
+	{
+		currReadIndex = 0;
+	}
+
+	++nextFrameToRead;
+
+	return compressedInput;
+}
+
+void PracticePlayer::ReceiveMsg(PracticeMsg &pm)
+{
+	if (pm.frame == 0)
+	{
+		Clear();
+	}
+
+	if (pm.frame == waitingForFrame)
+	{
+		//cout << "received msg from connection: " << messages[0]->GetConnection() << ". input: " << msg->input << ", frame: " << msg->frame << "\n";
+		cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
+
+		++waitingForFrame;
+
+		messages[currWriteIndex] = pm;
+
+		++currWriteIndex;
+		if (currWriteIndex == MAX_BUFFERED_MESSAGES)
+		{
+			currWriteIndex = 0;
+		}
+	}
+	else
+	{
+		//ignore the message
+
+		//assert(false);
+	}
+}
+
 NetplayPlayer::NetplayPlayer()
 {
 	Clear();
@@ -972,7 +1068,15 @@ void NetplayManager::ReceiveMessages()
 		{
 			PracticeMsg *msg = (PracticeMsg*)messages[0]->GetData();
 
-			cout << "received msg from connection: " << messages[0]->GetConnection() << ". input: " << msg->input << ", frame: " << msg->frame << "\n";
+			//cout << "received msg from connection: " << messages[0]->GetConnection() << ". input: " << msg->input << ", frame: " << msg->frame << "\n";
+
+			PracticeMsg msgCopy(*msg);
+
+			practicePlayers[0].ReceiveMsg(msgCopy);
+
+			messages[0]->Release();
+
+			
 		}
 	}
 	else

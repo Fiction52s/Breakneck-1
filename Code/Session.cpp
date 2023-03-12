@@ -2828,7 +2828,8 @@ void Session::UpdatePlayerInput(int index)
 		return;
 	}
 
-	if(IsParallelSession())
+	//only do this in parallel races, not in parallel practice. parallel practice uses its own logic
+	if(IsParallelSession() && gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
 		playerInd = 0;
 	}
@@ -2849,6 +2850,23 @@ void Session::UpdatePlayerInput(int index)
 	}
 	else if (netplayManager != NULL && netplayManager->IsPracticeMode() && IsParallelSession())
 	{
+		assert(netplayManager->practicePlayers[parallelSessionIndex].HasNextInput());
+
+		player->prevInput = player->currInput;
+
+		player->currInput.SetFromCompressedState(netplayManager->practicePlayers[parallelSessionIndex].GetNextInput());
+
+		//if (netplayManager->practicePlayers[0].HasNextInput())
+		//{
+		//	
+		//}
+		//else
+		//{
+		//	int xx = 56;
+		//	//cout << "doesn't have input\n"
+		//}
+
+		
 		//practice mode inputs for parallel sessions go here!
 	}
 	else if (player->simulationMode)
@@ -2934,7 +2952,9 @@ void Session::UpdateAllPlayersInput()
 		UpdatePlayerInput(i);
 	}
 
-	if (IsParallelGameModeType() && !IsParallelSession() )
+
+	//only happens for parallel race. in parallel practice, 
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession() )//IsParallelGameModeType() && !IsParallelSession() )
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
 		pm->UpdateParallelPlayerInputs();
@@ -7469,11 +7489,13 @@ void Session::AddDesyncCheckInfo()
 {
 	//cout << "add desync check info: " << totalGameFrames << endl;
 
-	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
-	assert(ggpoNetplay);
+	
 
 	if (!desyncCheckerActive)
 		return;
+
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+	assert(ggpoNetplay);
 
 	if (netplayManager != NULL)
 	{
@@ -7888,14 +7910,7 @@ void Session::GGPORunFrame()
 			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 			{
 				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-				for (int i = 0; i < 3; ++i)
-				{
-					if (prm->parallelGames[i] != NULL)
-					{
-						prm->parallelGames[i]->RunGGPOModeUpdate();
-					}
-				}
+				prm->RunParallelGGPOModeUpdates();
 			}
 
 			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
@@ -8314,6 +8329,8 @@ void Session::SetupGameMode()
 	case MatchParams::GAME_MODE_EXPLORE:
 		gameMode = new ExploreMode(matchParams.numPlayers);
 		break;
+	case MatchParams::GAME_MODE_PARALLEL_PRACTICE:
+		gameMode = new ParallelPracticeMode;
 	}
 }
 

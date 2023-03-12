@@ -13,6 +13,7 @@ struct Gator;
 struct Bird;
 struct FightEndSequence;
 struct GameSession;
+struct GGPOSession;
 
 struct GameMode
 {
@@ -44,7 +45,11 @@ struct BasicMode : GameMode
 
 struct ParallelMode : GameMode
 {
-	GameSession *parallelGames[3];
+	const static int MAX_PARALLEL_SESSIONS = 3;
+
+	GameSession *parallelGames[MAX_PARALLEL_SESSIONS];
+
+	
 
 	ParallelMode();
 	virtual ~ParallelMode();
@@ -55,6 +60,8 @@ struct ParallelMode : GameMode
 	void SetParallelGGPOSessions(GGPOSession *p_ggpo);
 	void RespawnParallelPlayers();
 	void SetParalellGGPOInputs(COMPRESSED_INPUT_TYPE *ggpoCompressedInputs);
+	void RunParallelGGPOModeUpdates();
+	void RunParallelMainLoopsOnce();
 	/*virtual HUD *CreateHUD() { return NULL; }
 	virtual void StartGame() = 0;
 	virtual bool CheckVictoryConditions() = 0;

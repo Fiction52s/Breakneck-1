@@ -1412,6 +1412,18 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRDASH_GetActionLength,
 		&Actor::AIRDASH_GetTileset);
 
+	SetupFuncsForAction(AIRDASHFORWARDATTACK,
+		&Actor::AIRDASHFORWARDATTACK_Start,
+		&Actor::AIRDASHFORWARDATTACK_End,
+		&Actor::AIRDASHFORWARDATTACK_Change,
+		&Actor::AIRDASHFORWARDATTACK_Update,
+		&Actor::AIRDASHFORWARDATTACK_UpdateSprite,
+		&Actor::AIRDASHFORWARDATTACK_TransitionToAction,
+		&Actor::AIRDASHFORWARDATTACK_TimeIndFrameInc,
+		&Actor::AIRDASHFORWARDATTACK_TimeDepFrameInc,
+		&Actor::AIRDASHFORWARDATTACK_GetActionLength,
+		&Actor::AIRDASHFORWARDATTACK_GetTileset);
+
 	SetupFuncsForAction(AIRHITSTUN,
 		&Actor::AIRHITSTUN_Start,
 		&Actor::AIRHITSTUN_End,
@@ -4214,6 +4226,12 @@ bool Actor::AirAttack()
 					return true;
 				}
 			}
+			else
+			{
+				SetAction(AIRDASHFORWARDATTACK);
+				frame = 0;
+				return true;
+			}
 		}
 		
 		if ((currInput.LUp()))
@@ -4336,7 +4354,7 @@ void Actor::CreateKeyExplosion( int gateCategory )
 void Actor::CreateAttackLightning()
 {
 	if ( frame != 0 || slowCounter != 1 
-		|| ( action != FAIR && action != DAIR && action != UAIR ) )
+		|| ( action != FAIR && action != DAIR && action != UAIR && action != AIRDASHFORWARDATTACK ) )
 		return;
 
 	RelEffectInstance params;
@@ -4367,6 +4385,7 @@ void Actor::CreateAttackLightning()
 
 	switch (action)
 	{
+	case AIRDASHFORWARDATTACK:
 	case FAIR:
 		currLockedFairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_FAIR_SWORD_LIGHTNING_0 + speedLevel, &params);
 		break;
@@ -6395,6 +6414,7 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 	switch (action)
 	{
+	case AIRDASHFORWARDATTACK:
 	case FAIR:
 		if (facingRight)
 		{
@@ -14338,7 +14358,7 @@ void Actor::PhysicsResponse()
 			}
 		}
 		else if( !IsAirHitstunAction(action) && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE
-			&& action != FREEFLIGHTSTUN )
+			&& action != FREEFLIGHTSTUN && action != DIAGUPATTACK && action != AIRDASHFORWARDATTACK )
 		{
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
@@ -15357,7 +15377,7 @@ void Actor::UpdateRisingAura()
 
 void Actor::UpdateLockedFX()
 {
-	if (currLockedFairFX != NULL && action != FAIR)
+	if (currLockedFairFX != NULL && action != FAIR && action != AIRDASHFORWARDATTACK)
 	{
 		currLockedFairFX->ClearLockPos();
 		currLockedFairFX = NULL;
@@ -20378,7 +20398,7 @@ void Actor::ExecuteDoubleJump()
 
 	if (aerialHitCancelDouble)
 	{
-		if (cancelAttack == FAIR)
+		if (cancelAttack == FAIR || cancelAttack == AIRDASHFORWARDATTACK)
 		{
 			if (facingRight && currInput.LLeft()
 				|| (!facingRight && currInput.LRight()))
@@ -20469,7 +20489,7 @@ int Actor::GetDoubleJump()
 {
 	if( (facingRight && currInput.LLeft()) || ( !facingRight && currInput.LRight() ) )
 	{
-		if (action == FAIR)
+		if (action == FAIR || action == AIRDASHFORWARDATTACK )
 		{
 			return DOUBLE;
 		}
@@ -20539,7 +20559,7 @@ bool Actor::TryAirDash()
 	{
 		if ((hasAirDash || inBubble) && (DashButtonPressed() || pauseBufferedDash))
 		{
-			hasFairAirDashBoost = (action == FAIR);
+			hasFairAirDashBoost = (action == FAIR || action == AIRDASHFORWARDATTACK );
 			SetAction( AIRDASH );
 			return true;
 		}
@@ -21119,7 +21139,7 @@ bool Actor::IsGrindAction(int a)
 
 bool Actor::IsAttackAction( int a )
 {
-	return (a == FAIR || a == DAIR || a == UAIR || a == DIAGDOWNATTACK
+	return (a == FAIR || a == DAIR || a == UAIR || a == AIRDASHFORWARDATTACK || a == DIAGDOWNATTACK
 		|| a == DIAGUPATTACK || a == WALLATTACK || IsGroundAttackAction(a));
 }
 

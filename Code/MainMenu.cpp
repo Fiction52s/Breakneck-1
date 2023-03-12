@@ -1951,42 +1951,34 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 
 void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 {
-	//window->setVerticalSyncEnabled(false);
-	//window->setFramerateLimit(60);
 	string levelPath = loadParams.adventureMap->GetMapPath();//lev->GetFullName();// name;
-	//View oldView = window->getView();
+	
+	adventureManager->parallelPracticeMode = true; //for testing
 
-	//netplayManager->Abort();
-	netplayManager->FindPracticeMatch(levelPath);
-
-	//preScreenTexture->setActive(false);
-	//window->setActive(false);
 	doneLoading = false;
 
 	int wIndex = loadParams.world;
 	gameRunType = GameRunType::GRT_ADVENTURE;
 	SetModeAdventureLoadingMap(wIndex);
 
-	//doneLoading = false;
 
-
-	//loadThread = new boost::thread(DispLoadTest, this);// , currLevel);
-
-	//sf::sleep(sf::milliseconds(5000));
-
-	adventureManager->leaderboard->Reset();
-
-	
+	adventureManager->leaderboard->Reset();	
 
 	MatchParams mp;
-	mp.saveFile = adventureManager->currSaveFile;//adventureManager->files[adventureManager->currSaveFile];
+	mp.saveFile = adventureManager->currSaveFile;
 	mp.mapPath = levelPath;
 	mp.controllerStateVec[0] = adventureManager->controllerInput;
 	mp.controlProfiles[0] = adventureManager->currProfile;
 	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
-
+	
 	//do this when using practice mode!
-	mp.netplayManager = netplayManager;
+	if (adventureManager->parallelPracticeMode)
+	{
+		mp.gameModeType = MatchParams::GAME_MODE_PARALLEL_PRACTICE;
+		mp.netplayManager = netplayManager;
+		mp.numPlayers = 2; //me plus 1 other person for now
+		netplayManager->FindPracticeMatch(levelPath);
+	}
 
 	currLevel = new GameSession(&mp);
 	currLevel->SetBestGhostOn(loadParams.bestTimeGhostOn);
@@ -1995,42 +1987,11 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 	adventureManager->currLevel = currLevel;
 
-
 	loadThread = new boost::thread(MainMenu::sLevelLoad, this, currLevel);
-	//loadThread = new boost::thread(GameSession::sLoad, currLevel);
 
 	accumulator = 0;//TIMESTEP + .1;
 	currentTime = 0;
 	gameClock.restart();
-	//window->setActive(true);
-	//currLevel->Load();
-
-	//doneLoading = true;
-
-	
-
-	//loadThread->join();
-	//doneLoading = true;
-
-	//loadThread->join();
-	//delete loadThread;
-	//loadThread = NULL;
-
-	//preScreenTexture->setActive(true);
-	
-
-	
-	//delete loadThread;
-	//loadThread = NULL;
-	//SetMode(RUNNINGMAP);
-	//if (loadingScreen)
-	//{
-	//	int wIndex = lev->sec->world->index;
-	//	//SetModeKinBoostLoadingMap(wIndex);
-	
-	//}
-
-	//loadThread = new boost::thread(GameSession::sLoad, currLevel);
 }
 
 void MainMenu::PlayIntroMovie()

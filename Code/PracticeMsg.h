@@ -7,7 +7,18 @@
 struct PracticeMsg
 {
 	COMPRESSED_INPUT_TYPE input;
-	sf::Uint32 frame;
+	int frame;
+
+	PracticeMsg()
+	{
+		Clear();
+	}
+	
+	void Clear()
+	{
+		frame = -1;
+		input = 0;
+	}
 };
 
 #endif

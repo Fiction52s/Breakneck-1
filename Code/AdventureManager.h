@@ -34,6 +34,8 @@ struct AdventureManager
 
 	LeaderboardDisplay *leaderboard;
 
+	bool parallelPracticeMode;
+
 	AdventureManager();
 	~AdventureManager();
 	void LoadAdventure( const std::string &adventureName );

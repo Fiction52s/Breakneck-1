@@ -4,32 +4,42 @@
 using namespace sf;
 using namespace std;
 
-void Actor::DIAGUPATTACK_Start()
+void Actor::AIRDASHFORWARDATTACK_Start()
 {
 	SetActionSuperLevel();
-	ActivateSound(PlayerSounds::S_DIAGUPATTACK);
-	ResetAttackHit();
+	if (currActionSuperLevel == 2)
+	{
+		SetAction(SUPERBIRD);
+	}
+	else
+	{
+		ActivateSound(PlayerSounds::S_FAIR1);
+		ResetAttackHit();
+	}
 }
 
-void Actor::DIAGUPATTACK_End()
+void Actor::AIRDASHFORWARDATTACK_End()
 {
 	SetAction(JUMP);
 	frame = 1;
 }
 
-void Actor::DIAGUPATTACK_Change()
+void Actor::AIRDASHFORWARDATTACK_Change()
 {
 	if (bouncedFromKill)
 	{
 		SetAction(BOUNCEAIR);
 		if (facingRight)
 		{
-			BounceFloaterBoost(normalize(V2d(1, -1)));
+			BounceFloaterBoost(V2d(1, 0));
+			facingRight = false;
 		}
 		else
 		{
-			BounceFloaterBoost(normalize(V2d(-1, -1)));
+			BounceFloaterBoost(V2d(-1, 0));
+			facingRight = true;
 		}
+
 	}
 
 	bool changed = BasicAirAttackAction();
@@ -39,18 +49,16 @@ void Actor::DIAGUPATTACK_Change()
 	}
 }
 
-void Actor::DIAGUPATTACK_Update()
+void Actor::AIRDASHFORWARDATTACK_Update()
 {
-	SetCurrHitboxes(diagUpHitboxes[speedLevel], frame / 2);
+	CheckHoldJump();
+
+
+	SetCurrHitboxes(fairHitboxes[speedLevel], frame);
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		
-		
 		TryThrowSwordProjectileBasic();
-		
-		
-		//fairSound.play();
 	}
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)
 	{
@@ -60,44 +68,36 @@ void Actor::DIAGUPATTACK_Update()
 	}
 }
 
-void Actor::DIAGUPATTACK_UpdateSprite()
+void Actor::AIRDASHFORWARDATTACK_UpdateSprite()
 {
-	Tileset *curr_ts = ts_diagUpSword[speedLevel];
-	//cout << "fair frame : " << frame / 2 << endl;
+	Tileset *curr_ts = ts_fairSword[speedLevel];
 	int startFrame = 0;
-	showSword = frame / 2 < 11;//frame >= startFrame && frame / 2 <= 9;
+	showSword = true;//frame >= startFrame && frame / 2 <= 9;
 
 	if (showSword)
 	{
 		swordSprite.setTexture(*curr_ts->texture);
 	}
 
+	//Vector2i offset( 32, -16 );
+	Vector2i offset(0, 0);
 
 	SetSpriteTexture(action);
 
-	SetSpriteTile(frame / 2, facingRight);
-
-	//Vector2i offset( 32, -16 );
-	//Vector2i offset( 0, 0 );
+	SetSpriteTile(frame, facingRight);
 
 	if (showSword)
 	{
-		//Vector2i offsets[3];//( 0, 0 );
-		//offsets[0] = Vector2i( 40, -32 );
-		//offsets[1] = Vector2i( 16, -40 );
-		//offsets[2] = Vector2i( 32, -48 );
-
-		Vector2f offset = diagUpSwordOffset[speedLevel];
-
 		if (facingRight)
 		{
-			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
 		}
 		else
 		{
 			offset.x = -offset.x;
 
-			sf::IntRect irSword = curr_ts->GetSubRect(frame / 2 - startFrame);
+			sf::IntRect irSword = curr_ts->GetSubRect(frame - startFrame);
+			//sf::IntRect irSword = ts_AIRDASHFORWARDATTACKSword1->GetSubRect( frame - startFrame );
 			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 		}
@@ -115,27 +115,27 @@ void Actor::DIAGUPATTACK_UpdateSprite()
 		SetAerialScorpSprite();
 }
 
-void Actor::DIAGUPATTACK_TransitionToAction(int a)
+void Actor::AIRDASHFORWARDATTACK_TransitionToAction(int a)
 {
 	ResetSuperLevel();
 }
 
-void Actor::DIAGUPATTACK_TimeIndFrameInc()
+void Actor::AIRDASHFORWARDATTACK_TimeIndFrameInc()
 {
 
 }
 
-void Actor::DIAGUPATTACK_TimeDepFrameInc()
+void Actor::AIRDASHFORWARDATTACK_TimeDepFrameInc()
 {
 
 }
 
-int Actor::DIAGUPATTACK_GetActionLength()
+int Actor::AIRDASHFORWARDATTACK_GetActionLength()
 {
-	return 11 * 2;
+	return 8 * 2;
 }
 
-Tileset * Actor::DIAGUPATTACK_GetTileset()
+Tileset * Actor::AIRDASHFORWARDATTACK_GetTileset()
 {
-	return GetActionTileset("airdash_attack_up_96x80.png");
+	return GetActionTileset("fair_80x80.png");
 }

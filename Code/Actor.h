@@ -396,6 +396,7 @@ struct Actor : QuadTreeCollider,
 		GRABSHIP,
 		DIAGUPATTACK,
 		DIAGDOWNATTACK,
+		AIRDASHFORWARDATTACK,
 		SPRINGSTUN,
 		SPRINGSTUNGLIDE,
 		SPRINGSTUNBOUNCEGROUND,
@@ -1902,6 +1903,17 @@ struct Actor : QuadTreeCollider,
 	void AIRDASH_TimeDepFrameInc();
 	int AIRDASH_GetActionLength();
 	Tileset * AIRDASH_GetTileset();
+
+	void AIRDASHFORWARDATTACK_Start();
+	void AIRDASHFORWARDATTACK_End();
+	void AIRDASHFORWARDATTACK_Change();
+	void AIRDASHFORWARDATTACK_Update();
+	void AIRDASHFORWARDATTACK_UpdateSprite();
+	void AIRDASHFORWARDATTACK_TransitionToAction(int a);
+	void AIRDASHFORWARDATTACK_TimeIndFrameInc();
+	void AIRDASHFORWARDATTACK_TimeDepFrameInc();
+	int AIRDASHFORWARDATTACK_GetActionLength();
+	Tileset * AIRDASHFORWARDATTACK_GetTileset();
 
 
 	void AIRHITSTUN_Start();
