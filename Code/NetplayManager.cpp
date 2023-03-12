@@ -529,6 +529,58 @@ void NetplayManager::Update()
 	{
 	case A_IDLE:
 		break;
+	case A_PRACTICE_CHECKING_FOR_LOBBIES:
+	{
+		if (lobbyManager->action == LobbyManager::A_FOUND_LOBBIES)
+		{
+			lobbyManager->TryJoiningLobby(0);
+			action = A_PRACTICE_WAIT_FOR_IN_LOBBY;
+		}
+		else if (lobbyManager->action == LobbyManager::A_FOUND_NO_LOBBIES)
+		{
+			cout << "creating my own practice lobby\n";
+			LobbyData ld;
+			ld.maxMembers = 2;
+			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
+			ld.lobbyType = LobbyData::LOBBYTYPE_PRACTICE;
+			// set the name of the lobby if it's ours
+			string lobbyName = SteamFriends()->GetPersonaName();
+			lobbyName += "'s lobby";
+
+			ld.lobbyName = lobbyName;
+
+			ld.mapPath = practiceSearchMapPath;
+
+			ld.fileHash = md5file(ld.mapPath);
+			ld.creatorId = 0;
+			ld.randSeed = time(0);
+
+			lobbyManager->TryCreatingLobby(ld);
+			action = A_PRACTICE_WAIT_FOR_IN_LOBBY;
+		}
+		break;
+	}
+	case A_PRACTICE_WAIT_FOR_IN_LOBBY:
+	{
+		lobbyManager->Update();
+
+		if (lobbyManager->IsInLobby())
+		{
+			action = A_PRACTICE_TEST;
+		}
+		/*int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
+		if (numLobbyMembers == 2)
+		{
+			ConnectToAll();
+			CheckForMapAndSetMatchParams();
+
+		}*/
+		break;
+	}
+	case A_PRACTICE_TEST:
+	{
+		break;
+	}
 	case A_QUICKPLAY_CHECKING_FOR_LOBBIES:
 	{
 		if (lobbyManager->action == LobbyManager::A_FOUND_LOBBIES)
@@ -913,48 +965,61 @@ void NetplayManager::ReceiveMessages()
 
 	//Session *sess = Session::GetSession();
 
-	for (int i = 0; i < 4; ++i)
+	if (IsPracticeMode())
 	{
-		if (i == playerIndex)
+		int numMsges = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, messages, 1);
+		if (numMsges == 1)
 		{
-			continue;
+			PracticeMsg *msg = (PracticeMsg*)messages[0]->GetData();
+
+			cout << "received msg from connection: " << messages[0]->GetConnection() << ". input: " << msg->input << ", frame: " << msg->frame << "\n";
 		}
-
-		if (netplayPlayers[i].isConnectedTo)
+	}
+	else
+	{
+		for (int i = 0; i < 4; ++i)
 		{
-			for (;;)
+			if (i == playerIndex)
 			{
-				int numMsges = SteamNetworkingSockets()->ReceiveMessagesOnConnection(netplayPlayers[i].connection, messages, 1);
+				continue;
+			}
 
-				if (numMsges == 1)
+			if (netplayPlayers[i].isConnectedTo)
+			{
+				for (;;)
 				{
-					UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
+					int numMsges = SteamNetworkingSockets()->ReceiveMessagesOnConnection(netplayPlayers[i].connection, messages, 1);
 
-					
-					
-					//cout << "received messageeee" << endl;
-					if (msg->IsGameMsg())
+					if (numMsges == 1)
 					{
-						HandleMessage(netplayPlayers[i].connection, messages[0]);
-						//messages[0]->Release();
+						UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
+
+
+
+						//cout << "received messageeee" << endl;
+						if (msg->IsGameMsg())
+						{
+							HandleMessage(netplayPlayers[i].connection, messages[0]);
+							//messages[0]->Release();
+						}
+						else
+						{
+							//ggpo message(s) that we received before our own ggpo is up and running
+							ggpoMessageQueue.push_back(messages[0]);
+
+							//cout << "queueing message with type: " << (int)msg->hdr.type << endl;
+						}
+
+
+
 					}
 					else
 					{
-						//ggpo message(s) that we received before our own ggpo is up and running
-						ggpoMessageQueue.push_back(messages[0]);
-
-						//cout << "queueing message with type: " << (int)msg->hdr.type << endl;
+						break;
 					}
-
-					
-
 				}
-				else
-				{
-					break;
-				}
+
 			}
-
 		}
 	}
 }
@@ -1101,6 +1166,7 @@ void NetplayManager::SetHost()
 
 	//lobbyManager->LeaveLobby();
 }
+
 
 void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *pCallback)
 {
@@ -1327,7 +1393,19 @@ void NetplayManager::CleanupMatch()
 	}
 }
 
+void NetplayManager::FindPracticeMatch(const std::string &p_mapPath)
+{
+	cout << "searching for practice match\n";
+	Init();
 
+	isQuickplay = false;
+
+	action = A_PRACTICE_CHECKING_FOR_LOBBIES;
+
+	practiceSearchMapPath = p_mapPath;
+
+	lobbyManager->FindPracticeLobby(p_mapPath);
+}
 
 void NetplayManager::FindQuickplayMatch()
 {
@@ -1646,6 +1724,7 @@ void NetplayManager::SendLobbyDataForNextMapToClients(LobbyData *ld)
 
 	delete[] bytes;
 }
+
 
 void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *steamMsg)
 {
@@ -2239,4 +2318,73 @@ void NetplayManager::PrepareClientForNextQuickplayMap()
 	receivedLeaveNetplaySignal = false;*/
 
 	action = NetplayManager::A_IDLE;//A_WAIT_TO_LOAD_MAP;
+}
+
+bool NetplayManager::SendPracticeMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeMsg &pm)
+{
+	const int k_nSteamNetworkingSend_Reliable = 8;
+
+	EResult res = SteamNetworkingMessages()->SendMessageToUser(identityRemote, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, 0);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice message to user " << identityRemote.GetSteamID64() << ". input: " << pm.input << ", frame: " << pm.frame << "\n";
+		return true;
+	}
+	else
+	{
+		cout << "send practice message to user " << identityRemote.GetSteamID64() << " failed with code " << res << "\n";
+	}
+}
+
+void NetplayManager::SendPracticeMessageToAllPeers(PracticeMsg &pm)
+{
+	if (action != A_PRACTICE_TEST)
+	{
+		return;
+	}
+
+	//cout << "sending my input to all peers\n";
+
+	SteamNetworkingIdentity identity;
+	CSteamID myID = SteamUser()->GetSteamID();
+
+	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+	{
+		if ((*it).id == myID)
+		{
+			continue;
+		}
+
+		identity.SetSteamID((*it).id);
+
+		SendPracticeMessageToUser(identity, pm);
+	}
+}
+
+bool NetplayManager::IsPracticeMode()
+{
+	return action == A_PRACTICE_TEST || action == A_PRACTICE_CHECKING_FOR_LOBBIES || action == A_PRACTICE_WAIT_FOR_IN_LOBBY;
+}
+
+void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)
+{
+	auto info = pCallback->m_info;
+	cout << "steam networking messages session failed" << "\n";
+}
+
+void NetplayManager::OnSteamNetworkingMessagesSessionRequest(SteamNetworkingMessagesSessionRequest_t *pCallback)
+{
+	cout << "steam networking messages session requested" << "\n";
+
+	bool res = SteamNetworkingMessages()->AcceptSessionWithUser(pCallback->m_identityRemote);
+
+	if (res)
+	{
+		cout << "successfully accepted practice connection\n";
+	}
+	else
+	{
+		cout << "there is no session witht he user pending or otherwise\n";
+	}
 }

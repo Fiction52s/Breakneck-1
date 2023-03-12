@@ -2397,8 +2397,10 @@ bool GameSession::RunMainLoopOnce()
 	UpdateRunningTimerText();
 
 	accumulator += frameTime;
+
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
 	
-	if (netplayManager != NULL)
+	if (ggpoNetplay)
 	{
 		/*if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Escape))
 		{
@@ -2478,7 +2480,7 @@ bool GameSession::RunMainLoopOnce()
 
 		window->draw(preTexSprite);//, &timeSlowShader );
 
-		if (netplayManager != NULL && netplayManager->desyncDetected)
+		if (ggpoNetplay && netplayManager->desyncDetected)
 		{
 			sf::Vector2u windowSize = window->getSize();
 			sf::Texture texture;
@@ -2499,7 +2501,7 @@ bool GameSession::RunMainLoopOnce()
 		preScreenTex->clear(Color::Red);
 		postProcessTex2->clear(Color::Red);
 
-		if (netplayManager != NULL)
+		if (ggpoNetplay)
 		{
 			if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Escape))
 			{
@@ -2511,7 +2513,7 @@ bool GameSession::RunMainLoopOnce()
 				return true;
 			}
 
-			if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
+			if (netplayManager->action == NetplayManager::A_DISCONNECT)
 			{
 				quit = true;
 				returnVal = GR_EXITLEVEL;
@@ -2601,7 +2603,7 @@ bool GameSession::RunMainLoopOnce()
 
 		window->draw(preTexSprite);//, &timeSlowShader );
 
-		if (netplayManager != NULL && netplayManager->desyncDetected)
+		if (ggpoNetplay && netplayManager->desyncDetected)
 		{
 			sf::Vector2u windowSize = window->getSize();
 			sf::Texture texture;
@@ -3133,7 +3135,9 @@ int GameSession::Run()
 
 	RestartLevel();
 
-	if (netplayManager != NULL) //testing!
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+
+	if (ggpoNetplay) //testing!
 	{
 		fader->Fade(true, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 	}
@@ -3207,7 +3211,7 @@ int GameSession::Run()
 		pauseMenu->game = NULL;
 	}
 
-	if (netplayManager != NULL)
+	if (ggpoNetplay)
 	{
 		cout << "cleaning up ggpo" << endl;
 		ggpo_close_session(ggpo);
@@ -4780,6 +4784,10 @@ int GameSession::GetBonusType()
 MatchResultsScreen *GameSession::CreateResultsScreen()
 {
 	MatchStats *stats = new MatchStats;
+
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+
+	assert(ggpoNetplay);
 
 	if (netplayManager != NULL)
 	{

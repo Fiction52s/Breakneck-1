@@ -32,6 +32,7 @@ struct LobbyData
 	{
 		LOBBYTYPE_NOT_SET,
 		LOBBYTYPE_QUICKPLAY,
+		LOBBYTYPE_PRACTICE,
 		LOBBYTYPE_CUSTOM,
 		LOBBYTYPE_Count,
 	};
@@ -117,6 +118,8 @@ struct LobbyManager
 
 	int searchLobbyType;
 
+	std::string practiceLobbyMapPath;
+
 
 	LobbyManager();
 
@@ -137,6 +140,7 @@ struct LobbyManager
 	int GetNumMembers();
 
 	void FindQuickplayLobby();
+	void FindPracticeLobby( const std::string &mapPath );
 	void LeaveLobby();
 
 	void RetrieveLobbyList( int lobbyType );//add more params later

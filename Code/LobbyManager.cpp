@@ -251,8 +251,15 @@ void LobbyManager::PrintLobbies()
 
 void LobbyManager::FindQuickplayLobby()
 {
-	cout << "finding lobby" << endl;
+	cout << "finding quickplay lobby" << endl;
 	RetrieveLobbyList(LobbyData::LOBBYTYPE_QUICKPLAY);
+}
+
+void LobbyManager::FindPracticeLobby( const std::string &mapPath )
+{
+	cout << "finding practice lobby" << endl;
+	practiceLobbyMapPath = mapPath;
+	RetrieveLobbyList(LobbyData::LOBBYTYPE_PRACTICE);
 }
 
 void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
@@ -481,7 +488,19 @@ void LobbyManager::ProcessLobbyList()
 		{
 			if ((*it).data.lobbyType == searchLobbyType)
 			{
-				lobbyVec.push_back((*it));
+				if (searchLobbyType == LobbyData::LOBBYTYPE_PRACTICE)
+				{
+					if ((*it).data.mapPath == practiceLobbyMapPath)
+					{
+						lobbyVec.push_back((*it));
+						cout << "found a practice lobby!\n";
+					}
+				}
+				else
+				{
+					lobbyVec.push_back((*it));
+				}
+				
 			}
 		}
 		

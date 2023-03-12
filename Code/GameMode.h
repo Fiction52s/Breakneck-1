@@ -2,6 +2,7 @@
 #define __GAMEMODE_H__
 
 #include <vector>
+#include "Input.h"
 
 struct Session;
 struct MultiplayerBase;
@@ -33,10 +34,47 @@ struct GameMode
 
 struct BasicMode : GameMode
 {
-
-
 	BasicMode();
 
+	HUD *CreateHUD();
+	void StartGame();
+	bool CheckVictoryConditions();
+	void EndGame();
+};
+
+struct ParallelMode : GameMode
+{
+	GameSession *parallelGames[3];
+
+	ParallelMode();
+	virtual ~ParallelMode();
+	void UpdateParallelPlayerInputs();
+	void DrawParallelWires(sf::RenderTarget *target);
+	void DrawParallelPlayers(sf::RenderTarget *target);
+	void SimulateParallelGGPOGameFrames();
+	void SetParallelGGPOSessions(GGPOSession *p_ggpo);
+	void RespawnParallelPlayers();
+	void SetParalellGGPOInputs(COMPRESSED_INPUT_TYPE *ggpoCompressedInputs);
+	/*virtual HUD *CreateHUD() { return NULL; }
+	virtual void StartGame() = 0;
+	virtual bool CheckVictoryConditions() = 0;
+	virtual void EndGame() = 0;
+	virtual void Setup() {}
+	bool IsDone() { return done; }
+	virtual int GetNumStoredBytes() { return 0; }
+	virtual void StoreBytes(unsigned char *bytes) {}
+	virtual void SetFromBytes(unsigned char *bytes) {}*/
+
+};
+
+struct ParallelPracticeMode : ParallelMode
+{
+	
+
+	ParallelPracticeMode();
+	~ParallelPracticeMode();
+
+	void Setup();
 	HUD *CreateHUD();
 	void StartGame();
 	bool CheckVictoryConditions();
@@ -164,7 +202,7 @@ struct RaceMode : GameMode
 	void EndGame();
 };
 
-struct ParallelRaceMode : GameMode
+struct ParallelRaceMode : ParallelMode
 {
 	struct MyData
 	{
@@ -181,7 +219,7 @@ struct ParallelRaceMode : GameMode
 	MyData data;
 
 	FightEndSequence *endSeq;
-	GameSession *parallelGames[3];
+	//GameSession *parallelGames[3];
 	//int maxHealth;
 	//int meterSection;
 	//int numMeterSections;

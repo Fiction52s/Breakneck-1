@@ -935,6 +935,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsReplayHUDOn();
 	void StartAlertBox(const std::string &msg);
 	void CleanupBackground();
+	bool IsParallelGameModeType();
 };
 
 #endif

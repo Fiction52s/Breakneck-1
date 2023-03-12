@@ -2125,25 +2125,10 @@ void Session::SetupWaterShader(sf::Shader &waterShader, int waterIndex )
 
 void Session::DrawPlayerWires( RenderTarget *target )
 {
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
+	if (IsParallelGameModeType() && !IsParallelSession())
 	{
-		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-		for (int i = 0; i < 3; ++i)
-		{
-			if (prm->parallelGames[i] != NULL)
-			{
-				Actor *p = NULL;
-				for (int j = 0; j < 4; ++j)
-				{
-					p = prm->parallelGames[i]->GetPlayer(j);
-					if (p != NULL)
-					{
-						p->DrawWires(target);
-					}
-				}
-			}
-		}
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->DrawParallelWires(target);
 	}
 
 
@@ -2170,26 +2155,10 @@ void Session::SetPlayerInputOn(bool on )
 
 void Session::DrawPlayers(sf::RenderTarget *target)
 {
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
+	if (IsParallelGameModeType() && !IsParallelSession())
 	{
-		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-		for (int i = 0; i < 3; ++i)
-		{
-			if (prm->parallelGames[i] != NULL)
-			{
-				Actor *p = NULL;
-				for (int j = 0; j < 4; ++j)
-				{
-					p = prm->parallelGames[i]->GetPlayer(j);
-					if (p != NULL)
-					{
-						//cout << "draw enemy player from world: " << i << " drawing player " << j << endl;
-						p->Draw(target);
-					}
-				}
-			}
-		}
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->DrawParallelPlayers(target);
 	}
 
 	Actor *p = NULL;
@@ -2869,12 +2838,18 @@ void Session::UpdatePlayerInput(int index)
 	if (player == NULL)
 		return;
 	
-	if (netplayManager != NULL)
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+
+	if (ggpoNetplay)
 	{
 		player->prevInput = player->currInput;
 
 		player->currInput.SetFromCompressedState(ggpoCompressedInputs[index]);//8
 		//cout << "setting player: " << playerInd << "in universe " << parallelSessionIndex << " to input " << ggpoCompressedInputs[index] << "\n";
+	}
+	else if (netplayManager != NULL && netplayManager->IsPracticeMode() && IsParallelSession())
+	{
+		//practice mode inputs for parallel sessions go here!
 	}
 	else if (player->simulationMode)
 	{
@@ -2901,6 +2876,16 @@ void Session::UpdatePlayerInput(int index)
 		else
 		{
 			player->currInput = GetCurrInputFiltered(index, player);
+		}
+
+		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession() && playerInd == 0 )
+		{
+			netplayManager->Update();
+
+			PracticeMsg pm;
+			pm.frame = totalGameFrames;
+			pm.input = player->currInput.GetCompressedState();
+			netplayManager->SendPracticeMessageToAllPeers(pm);
 		}
 
 		RecPlayerRecordFrame(playerInd);
@@ -2949,21 +2934,10 @@ void Session::UpdateAllPlayersInput()
 		UpdatePlayerInput(i);
 	}
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession() )
+	if (IsParallelGameModeType() && !IsParallelSession() )
 	{
-		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-		for (int i = 0; i < 3; ++i)
-		{
-			if (prm->parallelGames[i] != NULL)
-			{
-				/*int realIndex = i;
-				if (i >= netplayManager->playerIndex)
-				{
-					realIndex = i + 1;
-				}*/
-				prm->parallelGames[i]->UpdatePlayerInput(i+1);
-			}
-		}
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->UpdateParallelPlayerInputs();
 	}
 }
 
@@ -4194,17 +4168,10 @@ void Session::SimulateGGPOGameFrame()
 
 	simulationMode = false;
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
+	if (IsParallelGameModeType() && !IsParallelSession())
 	{
-		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-		for (int i = 0; i < 3; ++i)
-		{
-			if (prm->parallelGames[i] != NULL)
-			{
-				prm->parallelGames[i]->SimulateGGPOGameFrame();
-			}
-		}
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->SimulateParallelGGPOGameFrames();
 	}
 
 	if (!IsParallelSession())
@@ -7364,11 +7331,6 @@ void Session::InitGGPO()
 		int normalSkin = Actor::SKIN_NORMAL;
 		int realIndex = i;
 
-		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
-		{
-			
-		}
-
 		normalSkin = normalSkins[realIndex];
 
 		netplayManager->netplayPlayers[i].skinIndex = normalSkin;
@@ -7381,7 +7343,7 @@ void Session::InitGGPO()
 	
 	int myIndex = playerIndex;
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	if (IsParallelGameModeType())
 	{
 		myIndex = 0;
 	}
@@ -7456,29 +7418,17 @@ void Session::InitGGPO()
 	}
 
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	if (IsParallelGameModeType())
 	{
 		if (!IsParallelSession())
 		{
-			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-			for (int i = 0; i < 3; ++i)
-			{
-				if (prm->parallelGames[i] != NULL)
-				{
-					prm->parallelGames[i]->ggpo = ggpo;
-				}
-			}
+			ParallelMode *pm = (ParallelMode*)gameMode;
+			pm->SetParallelGGPOSessions(ggpo);
+			
 			Actor *p = GetPlayer(0);
 			p->Respawn();
 
-			for (int i = 0; i < 3; ++i)
-			{
-				if (prm->parallelGames[i] != NULL)
-				{
-					p = prm->parallelGames[i]->GetPlayer(0);
-					p->Respawn();//SetSkin(Actor::SKIN_NORMAL);
-				}
-			}
+			pm->RespawnParallelPlayers();
 		}
 	}
 }
@@ -7519,9 +7469,12 @@ void Session::AddDesyncCheckInfo()
 {
 	//cout << "add desync check info: " << totalGameFrames << endl;
 
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+	assert(ggpoNetplay);
+
 	if (!desyncCheckerActive)
 		return;
-	
+
 	if (netplayManager != NULL)
 	{
 		int playerParIndex = -1;
@@ -7831,9 +7784,10 @@ void Session::CopyGGPOInputsToParallelSessions()
 {
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
-		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->SetParalellGGPOInputs(ggpoCompressedInputs);
 
-		for (int i = 0; i < 3; ++i)
+		/*for (int i = 0; i < 3; ++i)
 		{
 			if (prm->parallelGames[i] != NULL)
 			{
@@ -7843,7 +7797,7 @@ void Session::CopyGGPOInputsToParallelSessions()
 				}
 
 			}
-		}
+		}*/
 	}
 }
 
@@ -8159,6 +8113,10 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	
 	if ( netplayManager != NULL)
 	{
+		bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+		assert(ggpoNetplay);
+
+
 		cout << "rollback of " << rollbackFrames << " from " << oldTotalGameFrames << " back to " << totalGameFrames << endl;
 		//rollback the desync checker system also
 		netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
@@ -8960,4 +8918,9 @@ void Session::CleanupBackground()
 		background = NULL;
 		ownsBG = true;
 	}
+}
+
+bool Session::IsParallelGameModeType()
+{
+	return gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE;
 }

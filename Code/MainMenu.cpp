@@ -1956,7 +1956,8 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	string levelPath = loadParams.adventureMap->GetMapPath();//lev->GetFullName();// name;
 	//View oldView = window->getView();
 
-	
+	//netplayManager->Abort();
+	netplayManager->FindPracticeMatch(levelPath);
 
 	//preScreenTexture->setActive(false);
 	//window->setActive(false);
@@ -1983,6 +1984,9 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.controllerStateVec[0] = adventureManager->controllerInput;
 	mp.controlProfiles[0] = adventureManager->currProfile;
 	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
+
+	//do this when using practice mode!
+	mp.netplayManager = netplayManager;
 
 	currLevel = new GameSession(&mp);
 	currLevel->SetBestGhostOn(loadParams.bestTimeGhostOn);
@@ -2427,6 +2431,11 @@ void MainMenu::HandleMenuMode()
 		case GameSession::GR_EXITGAME:
 			//currFile->Save();
 			break;
+		}
+
+		if (netplayManager != NULL && netplayManager->IsPracticeMode())
+		{
+			netplayManager->Abort();
 		}
 
 		window->setView(oldView);

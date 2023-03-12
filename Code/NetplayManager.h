@@ -8,10 +8,12 @@
 #include "MatchParams.h"
 #include <list>
 #include "VectorMath.h"
+#include "PracticeMsg.h"
 
 struct MatchParams;
 struct GameSession;
 struct UdpMsg;
+//struct PracticeMsg;
 
 struct MatchResultsScreen;
 
@@ -82,6 +84,9 @@ struct NetplayManager
 	enum Action
 	{
 		A_IDLE,
+		A_PRACTICE_CHECKING_FOR_LOBBIES,
+		A_PRACTICE_WAIT_FOR_IN_LOBBY,
+		A_PRACTICE_TEST,
 		A_QUICKPLAY_CHECKING_FOR_LOBBIES,
 		A_QUICKPLAY_GATHERING_USERS,
 		A_CUSTOM_HOST_GATHERING_USERS,
@@ -161,12 +166,15 @@ struct NetplayManager
 
 	MatchResultsScreen *resultsScreen;
 
+	std::string practiceSearchMapPath;
+
 	int currMapIndex;
 
 
 	NetplayManager();
 	~NetplayManager();
 
+	
 	void Init();
 	bool IsReadyToRun();
 	bool IsIdle();
@@ -202,6 +210,7 @@ struct NetplayManager
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	void FindQuickplayMatch();
+	void FindPracticeMatch( const std::string &mapPath );
 	void LoadMap();
 	void HandleLobbyMessage(LobbyMessage &msg);
 	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
@@ -258,12 +267,18 @@ struct NetplayManager
 
 	void SendLobbyDataForNextMapToClients(LobbyData *ld);
 
+	bool SendPracticeMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeMsg &pm);
+	void SendPracticeMessageToAllPeers(PracticeMsg &pm);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
 	STEAM_CALLBACK(NetplayManager, OnConnectionStatusChangedCallback, SteamNetConnectionStatusChangedCallback_t);
+	STEAM_CALLBACK(NetplayManager, OnSteamNetworkingMessagesSessionFailed, SteamNetworkingMessagesSessionFailed_t);
+	STEAM_CALLBACK(NetplayManager, OnSteamNetworkingMessagesSessionRequest, SteamNetworkingMessagesSessionRequest_t);
 
 	void OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback);
+
+	bool IsPracticeMode();
 };
 
 #endif
