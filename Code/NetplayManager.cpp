@@ -41,35 +41,19 @@ void PracticePlayer::Clear()
 	}
 }
 
-bool PracticePlayer::HasNextInput()
+int PracticePlayer::HasInputs()
 {
+	//return 1; //testing
 	//return true;//testing
-
-	int buffer = 10;
-	if (nextFrameToRead == 0 )
-	{
-		if (nextFrameToRead < waitingForFrame - buffer)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
 
 	if (nextFrameToRead < waitingForFrame)
 	{
 		assert(messages[currReadIndex].frame == nextFrameToRead);
-		return true;
-	}
-	/*int currReadFrame = messages[currReadIndex].frame;
-	if (currReadFrame >= 0 && currReadFrame < waitingForFrame - 2)
-	{
-		return true;
-	}*/
 
-	return false;
+		return waitingForFrame - nextFrameToRead;
+	}
+
+	return 0;
 }
 
 const PracticeInputMsg & PracticePlayer::GetNextMsg()
@@ -95,8 +79,6 @@ COMPRESSED_INPUT_TYPE PracticePlayer::AdvanceInput()
 
 	return cs.GetCompressedState();*/
 	//testing^
-	
-
 
 	assert(messages[currReadIndex].frame == nextFrameToRead);
 
@@ -2479,7 +2461,7 @@ void NetplayManager::PrepareClientForNextQuickplayMap()
 	action = NetplayManager::A_IDLE;//A_WAIT_TO_LOAD_MAP;
 }
 
-bool NetplayManager::SendPracticeMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeMsg &pm)
+bool NetplayManager::SendPracticeInputMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeInputMsg &pm)
 {
 	const int k_nSteamNetworkingSend_Reliable = 8;
 
@@ -2496,7 +2478,24 @@ bool NetplayManager::SendPracticeMessageToUser(const SteamNetworkingIdentity &id
 	}
 }
 
-void NetplayManager::SendPracticeMessageToAllPeers(PracticeMsg &pm)
+bool NetplayManager::SendPracticeStartMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeStartMsg &pm)
+{
+	const int k_nSteamNetworkingSend_Reliable = 8;
+
+	EResult res = SteamNetworkingMessages()->SendMessageToUser(identityRemote, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, 0);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice start message to user " << identityRemote.GetSteamID64() << " with skin " << pm.skinIndex << "\n";
+		return true;
+	}
+	else
+	{
+		cout << "send practice start message to user " << identityRemote.GetSteamID64() << " failed with code " << res << "\n";
+	}
+}
+
+void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm)
 {
 	if (action != A_PRACTICE_TEST)
 	{
@@ -2517,7 +2516,32 @@ void NetplayManager::SendPracticeMessageToAllPeers(PracticeMsg &pm)
 
 		identity.SetSteamID((*it).id);
 
-		SendPracticeMessageToUser(identity, pm);
+		SendPracticeInputMessageToUser(identity, pm);
+	}
+}
+
+void NetplayManager::SendPracticeStartMessageToAllPeers(PracticeStartMsg &pm)
+{
+	if (action != A_PRACTICE_TEST)
+	{
+		return;
+	}
+
+	//cout << "sending my input to all peers\n";
+
+	SteamNetworkingIdentity identity;
+	CSteamID myID = SteamUser()->GetSteamID();
+
+	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+	{
+		if ((*it).id == myID)
+		{
+			continue;
+		}
+
+		identity.SetSteamID((*it).id);
+
+		SendPracticeStartMessageToUser(identity, pm);
 	}
 }
 

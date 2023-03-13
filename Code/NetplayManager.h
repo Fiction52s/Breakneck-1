@@ -36,7 +36,8 @@ struct DesyncCheckInfo
 
 struct PracticePlayer
 {
-	const static int MAX_BUFFERED_MESSAGES = 60;
+	const static int MAX_BUFFERED_MESSAGES = 60; //can probably make this way bigger
+	const static int MAX_EXTRA_RUN_FRAMES = 2;
 
 	CSteamID id;
 	HSteamNetConnection connection;
@@ -53,7 +54,7 @@ struct PracticePlayer
 
 	PracticePlayer();
 	void Clear();
-	bool HasNextInput();
+	int HasInputs();
 	void ReceiveInputMsg(PracticeInputMsg &pm);
 	void ReceiveSteamMessage(SteamNetworkingMessage_t *message);
 	COMPRESSED_INPUT_TYPE AdvanceInput();

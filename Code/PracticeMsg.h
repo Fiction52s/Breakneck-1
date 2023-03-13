@@ -61,7 +61,7 @@ struct PracticeInputMsg
 	int frame;
 	
 
-	PracticeMsg()
+	PracticeInputMsg()
 	{
 		Clear();
 	}

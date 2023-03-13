@@ -2877,13 +2877,13 @@ void Session::UpdatePlayerInput(int index)
 	}
 	else if (netplayManager != NULL && netplayManager->IsPracticeMode() && IsParallelSession())
 	{
-		assert(netplayManager->practicePlayers[parallelSessionIndex].HasNextInput());
+		assert(netplayManager->practicePlayers[parallelSessionIndex].HasInputs() > 0 );
 
 		player->prevInput = player->currInput;
 
 		//cout << "X: " << (int)(player->currInput.X) << "\n";
 
-		PracticeMsg test = netplayManager->practicePlayers[parallelSessionIndex].GetNextMsg();
+		PracticeInputMsg test = netplayManager->practicePlayers[parallelSessionIndex].GetNextMsg();
 
 		player->currInput.SetFromCompressedState(netplayManager->practicePlayers[parallelSessionIndex].AdvanceInput());
 
@@ -2938,11 +2938,11 @@ void Session::UpdatePlayerInput(int index)
 		{
 			//netplayManager->Update();
 
-			PracticeMsg pm;
+			PracticeInputMsg pm;
 			pm.frame = totalGameFrames;
 			pm.input = player->currInput.GetCompressedState();
 			pm.desyncCheckPos = player->position;
-			netplayManager->SendPracticeMessageToAllPeers(pm);
+			netplayManager->SendPracticeInputMessageToAllPeers(pm);
 		}
 
 		RecPlayerRecordFrame(playerInd);
@@ -2995,7 +2995,7 @@ void Session::RunFrameForParallelPractice()
 		{
 			if (pm->parallelGames[i] != NULL)
 			{
-				if (netplayManager->practicePlayers[i].HasNextInput())
+				if (netplayManager->practicePlayers[i].HasInputs() > 0 )
 				{
 					pm->parallelGames[i]->UpdatePlayerInput(i);
 					pm->parallelGames[i]->OnlineRunGameModeUpdate();
