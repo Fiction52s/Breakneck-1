@@ -54,7 +54,9 @@ struct ParallelMode : GameMode
 	void UpdateParallelPlayerInputs();
 	void DrawParallelWires(sf::RenderTarget *target);
 	void DrawParallelPlayers(sf::RenderTarget *target);
+	void DrawParallelPlayerShields(sf::RenderTarget *target);
 	void DrawParallelNameTags(sf::RenderTarget *target);
+	void DrawPracticeGames(sf::RenderTarget *target);
 	void UpdateParallelNameTagsPixelPos(sf::RenderTarget *target);
 	void SimulateParallelGGPOGameFrames();
 	void SetParallelGGPOSessions(GGPOSession *p_ggpo);

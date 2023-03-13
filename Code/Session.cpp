@@ -1179,6 +1179,11 @@ SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundInfo *si, bool loop)
 
 SoundNode *Session::ActivateSound(SoundInfo *si, bool loop)
 {
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	{
+		return NULL;
+	}
+
 	return soundNodeList->ActivateSound(si, loop);
 }
 
@@ -1596,6 +1601,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	flowHandler.sess = this;
 	mainMenu = MainMenu::GetInstance();
 	preScreenTex = MainMenu::preScreenTexture;
+	extraScreenTex = MainMenu::extraScreenTexture;
 	minimapTex = MainMenu::minimapTexture;
 	postProcessTex2 = MainMenu::postProcessTexture2;
 	pauseTex = MainMenu::pauseTexture;
@@ -2125,10 +2131,10 @@ void Session::SetupWaterShader(sf::Shader &waterShader, int waterIndex )
 
 void Session::DrawPlayerWires( RenderTarget *target )
 {
-	if (IsParallelGameModeType() && !IsParallelSession())
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelWires(target);
+		pm->DrawParallelWires(extraScreenTex);
 	}
 
 
@@ -2155,10 +2161,30 @@ void Session::SetPlayerInputOn(bool on )
 
 void Session::DrawPlayers(sf::RenderTarget *target)
 {
-	if (IsParallelGameModeType() && !IsParallelSession())
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelPlayers(target);
+		pm->DrawParallelPlayers(extraScreenTex);
+	}
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+
+		for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				sf::CircleShape cs;
+				cs.setFillColor(Color::Red);
+				cs.setRadius(10);
+				cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+				cs.setPosition(Vector2f(pm->parallelGames[i]->GetPlayer(0)->waterEntrancePosition));
+
+				target->draw(cs);
+			}
+		}
+
 	}
 
 	Actor *p = NULL;
@@ -2170,6 +2196,8 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 			p->Draw(target);
 		}
 	}
+
+	
 }
 
 void Session::UpdatePlayerWireQuads()
@@ -2853,7 +2881,18 @@ void Session::UpdatePlayerInput(int index)
 
 		player->prevInput = player->currInput;
 
-		player->currInput.SetFromCompressedState(netplayManager->practicePlayers[parallelSessionIndex].GetNextInput());
+		//cout << "X: " << (int)(player->currInput.X) << "\n";
+
+		PracticeMsg test = netplayManager->practicePlayers[parallelSessionIndex].GetNextMsg();
+
+		player->currInput.SetFromCompressedState(netplayManager->practicePlayers[parallelSessionIndex].AdvanceInput());
+
+		player->waterEntrancePosition = test.desyncCheckPos;
+
+		/*if (player->position != test.desyncCheckPos)
+		{
+			
+		}*/
 
 		//if (netplayManager->practicePlayers[0].HasNextInput())
 		//{
@@ -2895,13 +2934,14 @@ void Session::UpdatePlayerInput(int index)
 			player->currInput = GetCurrInputFiltered(index, player);
 		}
 
-		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession() && playerInd == 0 )
+		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession() )//&& playerInd == 0 )
 		{
-			netplayManager->Update();
+			//netplayManager->Update();
 
 			PracticeMsg pm;
 			pm.frame = totalGameFrames;
 			pm.input = player->currInput.GetCompressedState();
+			pm.desyncCheckPos = player->position;
 			netplayManager->SendPracticeMessageToAllPeers(pm);
 		}
 
@@ -6545,6 +6585,38 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawGoalFlow(target);
 
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+	{
+		extraScreenTex->setView(view);
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->DrawPracticeGames(extraScreenTex);
+
+
+		
+
+		extraScreenTex->display();
+		const Texture &extraTex = extraScreenTex->getTexture();
+		Sprite extraSprite(extraTex);
+
+		int alpha = 255;//150;
+
+		extraSprite.setColor(Color(255, 255, 255, 150));
+
+		extraSprite.setPosition(-960 / 2, -540 / 2);
+		extraSprite.setScale(.5, .5);
+		extraSprite.setTexture(extraTex);
+
+		View oldView = target->getView();
+
+		target->setView(window->getView());
+
+		preScreenTex->draw(extraSprite);
+
+		target->setView(oldView);
+	}
+	//DrawPracticeGame
+
+
 	DrawHUD(target);
 
 	//DrawBossHUD(target);
@@ -6653,6 +6725,21 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	DrawKinOverFader(target);
 }
 
+void Session::DrawPracticeGame(sf::RenderTarget *target)
+{
+	//target->setView(view);
+
+	DrawPlayerWires(target);
+
+	DrawPlayers(target);
+
+	DrawPlayerShields(target);
+
+	DrawDyingPlayers(target);
+
+	//target->setView(view); //sets it back to normal for any world -> pixel calcs
+	DrawKinOverFader(target);
+}
 
 Session::RunningTimerDisplay::RunningTimerDisplay()
 {
@@ -6827,6 +6914,8 @@ bool Session::RunGameModeUpdate()
 
 		UpdateAllPlayersInput();
 
+
+
 		RunFrameForParallelPractice();
 
 		if (!playerAndEnemiesFrozen)
@@ -6927,6 +7016,11 @@ bool Session::RunGameModeUpdate()
 			gateMarkers->Update(&cam);
 
 		SteamAPI_RunCallbacks();
+
+		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession())
+		{
+			netplayManager->Update();
+		}
 
 		fader->Update();
 		swiper->Update();
@@ -8287,6 +8381,12 @@ void Session::CleanupSuperSequence()
 
 void Session::DrawPlayerShields(sf::RenderTarget *target)
 {
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->DrawParallelPlayerShields(extraScreenTex);
+	}
+
 	Actor *p;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -8894,6 +8994,12 @@ int Session::GetPlayerNormalSkin(int index)
 	}
 	else
 	{
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+		{
+			assert(netplayManager != NULL);
+			return netplayManager->practicePlayers[parallelSessionIndex].skinIndex;
+		}
+
 		return matchParams.playerSkins[index];
 	}
 	
@@ -8997,4 +9103,10 @@ void Session::CleanupBackground()
 bool Session::IsParallelGameModeType()
 {
 	return gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE;
+}
+
+void Session::SetView(const sf::View &p_view)
+{
+	preScreenTex->setView(p_view);
+	extraScreenTex->setView(p_view);
 }

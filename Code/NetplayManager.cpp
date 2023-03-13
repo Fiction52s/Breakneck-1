@@ -20,6 +20,7 @@ using namespace std;
 using namespace sf;
 
 PracticePlayer::PracticePlayer()
+	:upgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 {
 	Clear();
 }
@@ -31,6 +32,9 @@ void PracticePlayer::Clear()
 	currWriteIndex = 0;
 	nextFrameToRead = 0;
 
+	upgradeField.Reset();
+	skinIndex = 0;
+
 	for (int i = 0; i < MAX_BUFFERED_MESSAGES; ++i)
 	{
 		messages[i].Clear();
@@ -39,7 +43,7 @@ void PracticePlayer::Clear()
 
 bool PracticePlayer::HasNextInput()
 {
-	return true;//testing
+	//return true;//testing
 
 	int buffer = 10;
 	if (nextFrameToRead == 0 )
@@ -68,14 +72,18 @@ bool PracticePlayer::HasNextInput()
 	return false;
 }
 
-
-static int testCounter = 0;
-COMPRESSED_INPUT_TYPE PracticePlayer::GetNextInput()
+const PracticeInputMsg & PracticePlayer::GetNextMsg()
 {
-	++testCounter;
+	return messages[currReadIndex];
+}
+
+//static int testCounter = 0;
+COMPRESSED_INPUT_TYPE PracticePlayer::AdvanceInput()
+{
+	/*++testCounter;
 
 	ControllerState cs;
-	if (testCounter % 60 < 20)
+	if (testCounter % 10 < 5)
 	{
 		cs.X = true;
 	}
@@ -85,7 +93,7 @@ COMPRESSED_INPUT_TYPE PracticePlayer::GetNextInput()
 		cs.rightShoulder = true;
 	}
 
-	return cs.GetCompressedState();
+	return cs.GetCompressedState();*/
 	//testing^
 	
 
@@ -107,7 +115,7 @@ COMPRESSED_INPUT_TYPE PracticePlayer::GetNextInput()
 	return compressedInput;
 }
 
-void PracticePlayer::ReceiveMsg(PracticeMsg &pm)
+void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 {
 	if (pm.frame == 0)
 	{
@@ -137,6 +145,30 @@ void PracticePlayer::ReceiveMsg(PracticeMsg &pm)
 	}
 }
 
+void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
+{
+	PracticeMsgHeader *hdr = (PracticeMsgHeader*)message->GetData();
+
+	switch (hdr->msgType)
+	{
+	case PracticeMsgHeader::MSG_TYPE_START:
+	{
+		PracticeStartMsg *msg = (PracticeStartMsg*)message->GetData();
+		skinIndex = msg->skinIndex;
+		for (int i = 0; i < 8; ++i)
+		{
+			upgradeField.optionField[i] = msg->upgradeField[i];
+		}
+		break;
+	}
+	case PracticeMsgHeader::MSG_TYPE_INPUT:
+	{
+		PracticeInputMsg *msg = (PracticeInputMsg*)message->GetData();
+		ReceiveInputMsg(*msg);
+		break;
+	}
+	}
+}
 NetplayPlayer::NetplayPlayer()
 {
 	Clear();
@@ -1088,13 +1120,14 @@ void NetplayManager::ReceiveMessages()
 		int numMsges = SteamNetworkingMessages()->ReceiveMessagesOnChannel(0, messages, 1);
 		if (numMsges == 1)
 		{
-			PracticeMsg *msg = (PracticeMsg*)messages[0]->GetData();
+			//PracticeMsg *msg = (PracticeMsg*)messages[0]->GetData();
 
+			practicePlayers[0].ReceiveSteamMessage(messages[0]);
 			//cout << "received msg from connection: " << messages[0]->GetConnection() << ". input: " << msg->input << ", frame: " << msg->frame << "\n";
 
-			PracticeMsg msgCopy(*msg);
+			//PracticeMsg msgCopy(*msg);
 
-			practicePlayers[0].ReceiveMsg(msgCopy);
+			//practicePlayers[0].ReceiveMsg(msgCopy);
 
 			messages[0]->Release();
 

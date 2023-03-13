@@ -804,6 +804,10 @@ SoundNode * Actor::ActivateSound(int st, bool loop )
 	if (si == NULL)
 		return NULL;
 
+	if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && sess->IsParallelSession())
+	{
+		return NULL;
+	}
 	
 
 	//for multiplayer testing

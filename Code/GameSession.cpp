@@ -2467,6 +2467,7 @@ bool GameSession::RunMainLoopOnce()
 		}
 
 		window->clear(Color::Red);
+		extraScreenTex->clear(Color::Transparent);
 		preScreenTex->clear(Color::Red);
 		postProcessTex2->clear(Color::Red);
 
@@ -2511,6 +2512,7 @@ bool GameSession::RunMainLoopOnce()
 	{
 		window->clear(Color::Red);
 		preScreenTex->clear(Color::Red);
+		extraScreenTex->clear(Color::Transparent);
 		postProcessTex2->clear(Color::Red);
 
 		if (ggpoNetplay)
@@ -2597,9 +2599,9 @@ bool GameSession::RunMainLoopOnce()
 		
 		if (IsReplayOn())
 		{
-			preScreenTex->setView(uiView);
+			SetView(uiView);
 			preScreenTex->draw(replayText);
-			preScreenTex->setView(view);
+			SetView(view);
 		}
 
 		preScreenTex->display();
@@ -2700,6 +2702,7 @@ bool GameSession::RunMainLoopOnce()
 			window->clear();
 			window->setView(v);
 			preScreenTex->clear();
+			extraScreenTex->clear(Color::Transparent);
 
 			UpdateControllers();
 
@@ -2731,11 +2734,11 @@ bool GameSession::RunMainLoopOnce()
 
 		if (currStorySequence != NULL)
 		{
-			preScreenTex->setView(uiView);
+			SetView(uiView);
 			currStorySequence->Draw(preScreenTex);
 		}
 
-		preScreenTex->setView(uiView);
+		SetView(uiView);
 		fader->Draw(EffectLayer::IN_FRONT_OF_UI, preScreenTex);
 		//swiper->Draw(preScreenTex);
 
@@ -2759,6 +2762,7 @@ bool GameSession::RunMainLoopOnce()
 
 		window->clear();
 		preScreenTex->clear();
+		extraScreenTex->clear(Color::Transparent);
 
 		if (!SequenceGameModeUpdate())
 		{
@@ -3127,7 +3131,7 @@ int GameSession::Run()
 	View oldPreTexView = preScreenTex->getView();
 	View oldWindowView = window->getView();
 
-	preScreenTex->setView(view);
+	SetView(view);
 
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
@@ -3254,7 +3258,7 @@ int GameSession::Run()
 
 	fader->Clear();
 
-	preScreenTex->setView(oldPreTexView);
+	SetView(oldPreTexView);
 	window->setView(oldWindowView);
 
 	return returnVal;

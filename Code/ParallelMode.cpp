@@ -104,6 +104,25 @@ void ParallelMode::DrawParallelPlayers(sf::RenderTarget *target)
 	}
 }
 
+void ParallelMode::DrawParallelPlayerShields(sf::RenderTarget *target)
+{
+	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+	{
+		if (parallelGames[i] != NULL)
+		{
+			Actor *p = NULL;
+			for (int j = 0; j < 4; ++j)
+			{
+				p = parallelGames[i]->GetPlayer(j);
+				if (p != NULL)
+				{
+					p->DrawShield(target);
+				}
+			}
+		}
+	}
+}
+
 void ParallelMode::DrawParallelNameTags(sf::RenderTarget *target)
 {
 	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
@@ -111,6 +130,17 @@ void ParallelMode::DrawParallelNameTags(sf::RenderTarget *target)
 		if (parallelGames[i] != NULL)
 		{
 			parallelGames[i]->DrawNameTags(target);
+		}
+	}
+}
+
+void ParallelMode::DrawPracticeGames(sf::RenderTarget *target)
+{
+	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+	{
+		if (parallelGames[i] != NULL)
+		{
+			parallelGames[i]->DrawPracticeGame(target);
 		}
 	}
 }

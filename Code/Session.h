@@ -264,6 +264,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::RenderTexture *preScreenTex;
 	sf::RenderTexture *pauseTex;
 	sf::RenderTexture *mapTex;
+	sf::RenderTexture *extraScreenTex;
 	int numGates;
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;
@@ -834,6 +835,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupInputVis();
 	virtual void DrawReplayGhosts(sf::RenderTarget *target) {}
 	void DrawGame(sf::RenderTarget *target);
+	void DrawPracticeGame(sf::RenderTarget *target);
 	void UpdateRunningTimerText();
 	virtual void UpdateEnvPlants() {}
 	virtual void UpdateEnvShaders() {}
@@ -938,6 +940,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupBackground();
 	bool IsParallelGameModeType();
 	void RunPracticeModeUpdate();
+	void SetView(const sf::View &p_view);
 };
 
 #endif

@@ -9,6 +9,7 @@
 #include <list>
 #include "VectorMath.h"
 #include "PracticeMsg.h"
+#include "BitField.h"
 
 struct MatchParams;
 struct GameSession;
@@ -40,20 +41,23 @@ struct PracticePlayer
 	CSteamID id;
 	HSteamNetConnection connection;
 
+	int skinIndex;
+	BitField upgradeField;
+
 	int waitingForFrame;
 	int currReadIndex;
 	int currWriteIndex;
 	int nextFrameToRead;
 
-	PracticeMsg messages[MAX_BUFFERED_MESSAGES];
-
-	
+	PracticeInputMsg messages[MAX_BUFFERED_MESSAGES];
 
 	PracticePlayer();
 	void Clear();
 	bool HasNextInput();
-	void ReceiveMsg(PracticeMsg &pm);
-	COMPRESSED_INPUT_TYPE GetNextInput();
+	void ReceiveInputMsg(PracticeInputMsg &pm);
+	void ReceiveSteamMessage(SteamNetworkingMessage_t *message);
+	COMPRESSED_INPUT_TYPE AdvanceInput();
+	const PracticeInputMsg &GetNextMsg();
 };
 
 
@@ -292,8 +296,10 @@ struct NetplayManager
 
 	void SendLobbyDataForNextMapToClients(LobbyData *ld);
 
-	bool SendPracticeMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeMsg &pm);
-	void SendPracticeMessageToAllPeers(PracticeMsg &pm);
+	bool SendPracticeInputMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeInputMsg &pm);
+	bool SendPracticeStartMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeStartMsg &pm);
+	void SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm);
+	void SendPracticeStartMessageToAllPeers(PracticeStartMsg &pm);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
