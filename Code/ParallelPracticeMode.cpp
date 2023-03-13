@@ -57,3 +57,12 @@ void ParallelPracticeMode::EndGame()
 	sess->EndLevel();
 	cout << "game over" << endl;
 }
+
+
+//bool ParallelPracticeMode::ClearUpdateFlags()
+//{
+//	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+//	{
+//		updatePracticeSessions[i] = false;
+//	}
+//}

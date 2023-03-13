@@ -1989,7 +1989,8 @@ void GameSession::SetupPlayers()
 	else
 	{
 		m_numActivePlayers = matchParams.numPlayers; //m_numActivePlayers depreciated I think
-		if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+		//if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+		if( !IsParallelGameModeType())
 		{
 			for (int i = 1; i < matchParams.numPlayers; ++i)//mapHeader->GetNumPlayerPositions(); ++i)
 			{
@@ -2371,6 +2372,12 @@ bool GameSession::RunMainLoopOnce()
 		mainMenu->musicPlayer->StopCurrentMusic();
 		return true;
 	}
+
+	//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+	//{
+	//	ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+	//	ppm->ClearUpdateFlags();
+	//}
 
 	CheckSinglePlayerInputDefaultKeyboard();
 
@@ -2808,6 +2815,8 @@ bool GameSession::RunMainLoopOnce()
 			ControllerState &curr = GetCurrInput(0);
 			ControllerState &prev = GetPrevInput(0);
 
+			RunFrameForParallelPractice();
+
 			//if (pauseMenu->currentTab == PauseMenu::PAUSE)
 			//{
 			//	if (curr.Y && !prev.Y && !bestTimeGhostOn)
@@ -2870,6 +2879,7 @@ bool GameSession::RunMainLoopOnce()
 				ActivatePauseSound(GetSound("pause_off"));
 				soundNodeList->Pause(false);
 
+				//UpdateControllers();
 				if (IsReplayHUDOn())
 				{
 					UpdateControllers();
@@ -3056,23 +3066,23 @@ bool GameSession::RunMainLoopOnce()
 
 	if (!IsParallelSession())
 	{
-		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
-		{
-			ParallelMode *pm = (ParallelMode*)gameMode;
+		//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+		//{
+		//	ParallelMode *pm = (ParallelMode*)gameMode;
 
-			for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
-			{
-				if (pm->parallelGames[i] != NULL)
-				{
-					if (netplayManager->practicePlayers[i].HasNextInput())
-					{
-						pm->parallelGames[i]->RunMainLoopOnce();
-					}
-				}
-			}
-			//pm->RunParallelGameModeUpdates();
-			//pm->RunParallelMainLoopsOnce();
-		}
+		//	for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
+		//	{
+		//		if (pm->parallelGames[i] != NULL)
+		//		{
+		//			if (netplayManager->practicePlayers[i].HasNextInput())
+		//			{
+		//				pm->parallelGames[i]->OnlineRunGameModeUpdate();//RunMainLoopOnce();
+		//			}
+		//		}
+		//	}
+		//	//pm->RunParallelGameModeUpdates();
+		//	//pm->RunParallelMainLoopsOnce();
+		//}
 
 		window->display();
 	}

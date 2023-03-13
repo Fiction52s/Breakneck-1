@@ -49,19 +49,20 @@ struct ParallelMode : GameMode
 
 	GameSession *parallelGames[MAX_PARALLEL_SESSIONS];
 
-	
-
 	ParallelMode();
 	virtual ~ParallelMode();
 	void UpdateParallelPlayerInputs();
 	void DrawParallelWires(sf::RenderTarget *target);
 	void DrawParallelPlayers(sf::RenderTarget *target);
+	void DrawParallelNameTags(sf::RenderTarget *target);
+	void UpdateParallelNameTagsPixelPos(sf::RenderTarget *target);
 	void SimulateParallelGGPOGameFrames();
 	void SetParallelGGPOSessions(GGPOSession *p_ggpo);
 	void RespawnParallelPlayers();
 	void SetParalellGGPOInputs(COMPRESSED_INPUT_TYPE *ggpoCompressedInputs);
 	void RunParallelGGPOModeUpdates();
 	void RunParallelMainLoopsOnce();
+	
 	/*virtual HUD *CreateHUD() { return NULL; }
 	virtual void StartGame() = 0;
 	virtual bool CheckVictoryConditions() = 0;
@@ -76,7 +77,7 @@ struct ParallelMode : GameMode
 
 struct ParallelPracticeMode : ParallelMode
 {
-	
+	//bool updatePracticeSessions[MAX_PARALLEL_SESSIONS];
 
 	ParallelPracticeMode();
 	~ParallelPracticeMode();
@@ -86,6 +87,8 @@ struct ParallelPracticeMode : ParallelMode
 	void StartGame();
 	bool CheckVictoryConditions();
 	void EndGame();
+
+	//bool ClearUpdateFlags();
 };
 
 

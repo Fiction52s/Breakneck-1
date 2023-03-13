@@ -104,6 +104,28 @@ void ParallelMode::DrawParallelPlayers(sf::RenderTarget *target)
 	}
 }
 
+void ParallelMode::DrawParallelNameTags(sf::RenderTarget *target)
+{
+	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+	{
+		if (parallelGames[i] != NULL)
+		{
+			parallelGames[i]->DrawNameTags(target);
+		}
+	}
+}
+
+void ParallelMode::UpdateParallelNameTagsPixelPos(sf::RenderTarget *target)
+{
+	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+	{
+		if (parallelGames[i] != NULL)
+		{
+			parallelGames[i]->UpdateNameTagsPixelPos(target);
+		}
+	}
+}
+
 void ParallelMode::SimulateParallelGGPOGameFrames()
 {
 	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
@@ -174,3 +196,4 @@ void ParallelMode::RunParallelMainLoopsOnce()
 		}
 	}
 }
+

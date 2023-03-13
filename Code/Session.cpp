@@ -2828,8 +2828,7 @@ void Session::UpdatePlayerInput(int index)
 		return;
 	}
 
-	//only do this in parallel races, not in parallel practice. parallel practice uses its own logic
-	if(IsParallelSession() && gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	if(IsParallelSession() )//&& gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
 		playerInd = 0;
 	}
@@ -2945,13 +2944,37 @@ void Session::UpdatePlayerInput(int index)
 	}*/
 }
 
+void Session::RunFrameForParallelPractice()
+{
+	if (!IsParallelSession() && gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		//ppm->ClearUpdateFlags();
+
+		for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				if (netplayManager->practicePlayers[i].HasNextInput())
+				{
+					pm->parallelGames[i]->UpdatePlayerInput(i);
+					pm->parallelGames[i]->OnlineRunGameModeUpdate();
+					//ppm->updatePracticeSessions[i] = true;
+
+					//ppm->parallelGames[i]->OnlineRunGameModeUpdate();//RunMainLoopOnce();
+				}
+			}
+		}
+		//assert(netplayManager->practicePlayers[parallelSessionIndex].HasNextInput());
+	}
+}
+
 void Session::UpdateAllPlayersInput()
 {
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		UpdatePlayerInput(i);
 	}
-
 
 	//only happens for parallel race. in parallel practice, 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession() )//IsParallelGameModeType() && !IsParallelSession() )
@@ -6709,7 +6732,7 @@ bool Session::RunGameModeUpdate()
 	
 
 	while (accumulator >= TIMESTEP)
-	{	
+	{
 		if (!firstUpdateHasHappened)
 		{
 			firstUpdateHasHappened = true;
@@ -6803,6 +6826,8 @@ bool Session::RunGameModeUpdate()
 		}
 
 		UpdateAllPlayersInput();
+
+		RunFrameForParallelPractice();
 
 		if (!playerAndEnemiesFrozen)
 		{
@@ -7024,6 +7049,8 @@ bool Session::FrozenGameModeUpdate()
 		}
 
 		UpdateControllers();
+
+		RunFrameForParallelPractice();
 
 		ActiveSequenceUpdate();
 
@@ -7579,7 +7606,7 @@ void Session::AddDesyncCheckInfo()
 	}
 }
 
-bool Session::GGPORunGameModeUpdate()
+bool Session::OnlineRunGameModeUpdate()
 {
 	switchGameState = false;
 
@@ -7625,7 +7652,8 @@ bool Session::GGPORunGameModeUpdate()
 			ProcessDesyncMessageQueue(); //netplay only
 		}
 
-		ggpo_advance_frame(ggpo);
+		if( ggpo != NULL )
+			ggpo_advance_frame(ggpo);
 		return true;
 	}	
 
@@ -7634,13 +7662,17 @@ bool Session::GGPORunGameModeUpdate()
 	{
 		//good chance this will be a problem at some point since I moved ggpo_advance_frame out of the normal function for parallel races
 		cout << "switch game state" << endl;
-		ggpo_advance_frame(ggpo);
+		if( ggpo != NULL )
+			ggpo_advance_frame(ggpo);
 		return true;
 	}
 
-	AddDesyncCheckInfo(); //netplay only
+	if (ggpo != NULL)
+	{
+		AddDesyncCheckInfo(); //netplay only
 
-	ProcessDesyncMessageQueue(); //netplay only
+		ProcessDesyncMessageQueue(); //netplay only
+	}
 
 	UpdatePlayersPrePhysics();
 
@@ -8282,6 +8314,12 @@ void Session::UpdateNameTagsPixelPos(sf::RenderTarget *target)
 			p->nameTag->UpdatePixelPos(target);
 		}
 	}
+
+	if (IsParallelGameModeType() && !IsParallelSession())
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->UpdateParallelNameTagsPixelPos(target);
+	}
 }
 
 void Session::DrawNameTags(sf::RenderTarget *target)
@@ -8301,6 +8339,12 @@ void Session::DrawNameTags(sf::RenderTarget *target)
 		{
 			p->DrawNameTag(target);
 		}
+	}
+
+	if (IsParallelGameModeType() && !IsParallelSession())
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->DrawParallelNameTags(target);
 	}
 }
 
@@ -8879,7 +8923,20 @@ void Session::RunGGPOModeUpdate()
 	switch (gameState)
 	{
 	case GameState::RUN:
-		GGPORunGameModeUpdate();
+		OnlineRunGameModeUpdate();
+		break;
+	case GameState::FROZEN:
+		GGPOFrozenGameModeUpdate();
+		break;
+	}
+}
+
+void Session::RunPracticeModeUpdate()
+{
+	switch (gameState)
+	{
+	case GameState::RUN:
+		RunGameModeUpdate();
 		break;
 	case GameState::FROZEN:
 		GGPOFrozenGameModeUpdate();

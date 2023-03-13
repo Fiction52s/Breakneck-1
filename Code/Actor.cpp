@@ -4512,7 +4512,15 @@ void Actor::Respawn( bool setStartPos )
 	}
 	else
 	{
-		nameTag->SetActive(false);
+		if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && sess->IsParallelSession())
+		{
+			nameTag->SetName("parallel");
+			nameTag->SetActive(true);
+		}
+		else
+		{
+			nameTag->SetActive(false);
+		}
 	}
 
 

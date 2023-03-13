@@ -39,6 +39,8 @@ void PracticePlayer::Clear()
 
 bool PracticePlayer::HasNextInput()
 {
+	return true;//testing
+
 	int buffer = 10;
 	if (nextFrameToRead == 0 )
 	{
@@ -66,8 +68,28 @@ bool PracticePlayer::HasNextInput()
 	return false;
 }
 
+
+static int testCounter = 0;
 COMPRESSED_INPUT_TYPE PracticePlayer::GetNextInput()
 {
+	++testCounter;
+
+	ControllerState cs;
+	if (testCounter % 60 < 20)
+	{
+		cs.X = true;
+	}
+
+	if (testCounter % 60 == 0)
+	{
+		cs.rightShoulder = true;
+	}
+
+	return cs.GetCompressedState();
+	//testing^
+	
+
+
 	assert(messages[currReadIndex].frame == nextFrameToRead);
 
 	COMPRESSED_INPUT_TYPE compressedInput = 0;

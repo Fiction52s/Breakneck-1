@@ -661,6 +661,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdatePlayerInput(int index);
 	void UpdateAllPlayersInput();
 	void UpdateControllers();
+	void RunFrameForParallelPractice();
 	void UpdateControllersOneFrameMode();
 	void DrawPlayers(sf::RenderTarget *target);
 	void DrawPlayerWires(sf::RenderTarget *target);
@@ -880,7 +881,7 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	virtual void InitGGPO();
 	virtual void CleanupGGPO();
-	bool GGPORunGameModeUpdate();
+	bool OnlineRunGameModeUpdate();
 	virtual void GGPORunFrame();
 	bool SaveState(unsigned char **buffer,
 		int *len, int *checksum, int frame);
@@ -936,6 +937,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void StartAlertBox(const std::string &msg);
 	void CleanupBackground();
 	bool IsParallelGameModeType();
+	void RunPracticeModeUpdate();
 };
 
 #endif
