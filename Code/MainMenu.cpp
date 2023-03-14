@@ -2236,7 +2236,14 @@ void MainMenu::HandleMenuMode()
 				delete loadThread;
 				loadThread = NULL;
 
-				SetMode(RUN_ADVENTURE_MAP);
+				if (netplayManager != NULL && netplayManager->IsPracticeMode())
+				{
+					SetMode(SETUP_PRACTICE_ADVENTURE_MAP);
+				}
+				else
+				{
+					SetMode(RUN_ADVENTURE_MAP);
+				}
 				//fader->CrossFade(30, 0, Color::Black);
 				//return HandleMenuMode();
 				//cout << "RUNNING MAP" << endl;
@@ -2248,6 +2255,21 @@ void MainMenu::HandleMenuMode()
 				//loadingIconBackpack[2].rotate(2);
 			}
 		}
+		break;
+	}
+	case SETUP_PRACTICE_ADVENTURE_MAP:
+	{
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
+		loadingBackpack->Update();
+
+		if (netplayManager->TrySetupPractice(currLevel))
+		{
+			SetMode(RUN_ADVENTURE_MAP);
+		}		
 		break;
 	}
 	case LOADINGMENUSTART:
@@ -3990,6 +4012,7 @@ void MainMenu::DrawMode( Mode m )
 		adventureManager->saveMenu->Draw(preScreenTexture);
 		break;
 	}
+	case SETUP_PRACTICE_ADVENTURE_MAP:
 	case LOAD_ADVENTURE_MAP:
 	{
 		preScreenTexture->setView(v);

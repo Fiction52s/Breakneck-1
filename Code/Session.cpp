@@ -2991,11 +2991,14 @@ void Session::RunFrameForParallelPractice()
 		ParallelMode *pm = (ParallelMode*)gameMode;
 		//ppm->ClearUpdateFlags();
 
+		int numFramesToRun = 0;
 		for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
 		{
 			if (pm->parallelGames[i] != NULL)
 			{
-				if (netplayManager->practicePlayers[i].HasInputs() > 0 )
+				numFramesToRun = netplayManager->practicePlayers[i].HasInputs();
+				numFramesToRun = min(numFramesToRun, PracticePlayer::MAX_SIM_FRAMES);
+				for( int j = 0; j < numFramesToRun; ++j )
 				{
 					pm->parallelGames[i]->UpdatePlayerInput(i);
 					pm->parallelGames[i]->OnlineRunGameModeUpdate();

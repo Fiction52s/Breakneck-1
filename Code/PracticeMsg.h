@@ -3,6 +3,7 @@
 
 #include "Input.h"
 #include "VectorMath.h"
+#include "BitField.h"
 #include <SFML\Graphics.hpp>
 
 struct PracticeMsgHeader
@@ -16,17 +17,8 @@ struct PracticeMsgHeader
 
 	sf::Uint16 msgType;
 	
-
-	PracticeMsgHeader()
-	{
-		Clear();
-	}
-
-	void Clear()
-	{
-		msgType = 0;
-		
-	}
+	PracticeMsgHeader();
+	void Clear();
 };
 
 struct PracticeStartMsg
@@ -35,21 +27,9 @@ struct PracticeStartMsg
 	sf::Uint32 skinIndex;
 	sf::Uint32 upgradeField[8];
 
-	PracticeStartMsg()
-	{
-		Clear();
-	}
-
-	void Clear()
-	{
-		header.Clear();
-
-		skinIndex = 0;
-		for (int i = 0; i < 8; ++i)
-		{
-			upgradeField[i] = 0;
-		}
-	}
+	PracticeStartMsg();
+	void Clear();
+	void SetUpgradeField(BitField &bf);
 };
 
 struct PracticeInputMsg
@@ -61,20 +41,8 @@ struct PracticeInputMsg
 	int frame;
 	
 
-	PracticeInputMsg()
-	{
-		Clear();
-	}
-	
-	void Clear()
-	{
-		header.Clear();
-		desyncCheckAction = -1;
-		desyncCheckPos.x = 0;
-		desyncCheckPos.y = 0;
-		frame = -1;
-		input = 0;
-	}
+	PracticeInputMsg();
+	void Clear();
 };
 
 #endif

@@ -37,10 +37,11 @@ struct DesyncCheckInfo
 struct PracticePlayer
 {
 	const static int MAX_BUFFERED_MESSAGES = 60; //can probably make this way bigger
-	const static int MAX_EXTRA_RUN_FRAMES = 2;
+	const static int MAX_SIM_FRAMES = 1;
 
 	CSteamID id;
 	HSteamNetConnection connection;
+	std::string name;
 
 	int skinIndex;
 	BitField upgradeField;
@@ -49,6 +50,8 @@ struct PracticePlayer
 	int currReadIndex;
 	int currWriteIndex;
 	int nextFrameToRead;
+
+	bool isConnectedTo;
 
 	PracticeInputMsg messages[MAX_BUFFERED_MESSAGES];
 
@@ -114,6 +117,8 @@ struct NetplayManager
 		A_IDLE,
 		A_PRACTICE_CHECKING_FOR_LOBBIES,
 		A_PRACTICE_WAIT_FOR_IN_LOBBY,
+		A_PRACTICE_CONNECT,
+		A_PRACTICE_SETUP,
 		A_PRACTICE_TEST,
 		A_QUICKPLAY_CHECKING_FOR_LOBBIES,
 		A_QUICKPLAY_GATHERING_USERS,
@@ -137,6 +142,8 @@ struct NetplayManager
 		A_ALL_VOTED_TO_KEEP_PLAYING,
 		A_DISCONNECT,
 	};
+
+	const static int MAX_PRACTICE_PLAYERS = 3;
 
 	ControllerDualStateQueue *myControllerInput;
 	ControlProfile *myCurrProfile;
@@ -173,7 +180,7 @@ struct NetplayManager
 	std::list<SteamNetworkingMessage_t*> ggpoMessageQueue;
 	std::list<SteamNetworkingMessage_t*> desyncMessageQueue;
 
-	PracticePlayer practicePlayers[3];
+	PracticePlayer practicePlayers[MAX_PRACTICE_PLAYERS];
 
 	bool desyncDetected;
 
@@ -210,7 +217,8 @@ struct NetplayManager
 	bool IsIdle();
 	void LeaveLobby();
 	int RunMatch();
-	int GetConnectionIndex(HSteamNetConnection &con);
+	int GetGGPOConnectionIndex(HSteamNetConnection &con);
+	int GetPracticeConnectionIndex(HSteamNetConnection &con);
 	void SetHost();
 	bool IsConnectedToHost();
 	
@@ -297,20 +305,26 @@ struct NetplayManager
 
 	void SendLobbyDataForNextMapToClients(LobbyData *ld);
 
-	bool SendPracticeInputMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeInputMsg &pm);
-	bool SendPracticeStartMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeStartMsg &pm);
+	bool SendPracticeInputMessageToConnection(HSteamNetConnection con, PracticeInputMsg &pm);
+	bool SendPracticeStartMessageToConnection(HSteamNetConnection con, PracticeStartMsg &pm);
 	void SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm);
 	void SendPracticeStartMessageToAllPeers(PracticeStartMsg &pm);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
 	STEAM_CALLBACK(NetplayManager, OnConnectionStatusChangedCallback, SteamNetConnectionStatusChangedCallback_t);
-	STEAM_CALLBACK(NetplayManager, OnSteamNetworkingMessagesSessionFailed, SteamNetworkingMessagesSessionFailed_t);
-	STEAM_CALLBACK(NetplayManager, OnSteamNetworkingMessagesSessionRequest, SteamNetworkingMessagesSessionRequest_t);
+	//STEAM_CALLBACK(NetplayManager, OnSteamNetworkingMessagesSessionFailed, SteamNetworkingMessagesSessionFailed_t);
+	//STEAM_CALLBACK(NetplayManager, OnSteamNetworkingMessagesSessionRequest, SteamNetworkingMessagesSessionRequest_t);
+
+	void OnConnectStatusChangedGGPO(SteamNetConnectionStatusChangedCallback_t *callback);
+	void OnConnectStatusChangedPractice(SteamNetConnectionStatusChangedCallback_t *callback);
+
 
 	void OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback);
 
 	bool IsPracticeMode();
+
+	bool TrySetupPractice( GameSession *game );
 };
 
 #endif

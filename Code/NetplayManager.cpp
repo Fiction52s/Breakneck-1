@@ -27,6 +27,11 @@ PracticePlayer::PracticePlayer()
 
 void PracticePlayer::Clear()
 {
+	name = "";
+	connection = 0;
+	id.Clear();
+
+	isConnectedTo = false;
 	waitingForFrame = 0;
 	currReadIndex = 0;
 	currWriteIndex = 0;
@@ -336,6 +341,16 @@ void NetplayManager::Abort()
 	for (int i = 0; i < 4; ++i)
 	{
 		netplayPlayers[i].Clear();
+	}
+
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo)
+		{
+			SteamNetworkingSockets()->CloseConnection(practicePlayers[i].connection, 0, NULL, false);
+			practicePlayers[i].isConnectedTo = false;
+		}
+		practicePlayers[i].Clear();
 	}
 
 	//CleanupMatch();
@@ -698,15 +713,64 @@ void NetplayManager::Update()
 
 		if (lobbyManager->IsInLobby())
 		{
-			action = A_PRACTICE_TEST;
-		}
-		/*int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
-		if (numLobbyMembers == 2)
-		{
-			ConnectToAll();
-			CheckForMapAndSetMatchParams();
+			action = A_PRACTICE_CONNECT;
 
-		}*/
+			SteamNetworkingIdentity identity;
+			CSteamID myID = SteamUser()->GetSteamID();
+
+			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+			{
+				practicePlayers[i].Clear();
+			}
+
+			connectionManager->CreateListenSocket();
+
+			//connect to the members who aren't me
+			int index = 0;
+			for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it, ++index)
+			{
+				if ((*it).id == myID)
+				{
+					continue;
+				}
+
+				identity.SetSteamID((*it).id);
+
+				practicePlayers[index].id = (*it).id;
+				practicePlayers[index].name = (*it).name;
+
+				assert(netplayPlayers[index].connection == 0);
+
+				practicePlayers[index].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+
+				//SendPracticeInputMessageToUser(identity, pm);
+			}
+		}
+		break;
+	}
+	case A_PRACTICE_CONNECT:
+	{
+		bool connectedToAll = true;
+		for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+		{
+			if (practicePlayers[i].id.IsValid())
+			{
+				if (!practicePlayers[i].isConnectedTo)
+				{
+					connectedToAll = false;
+					break;
+				}
+			}
+		}
+
+		if (connectedToAll)
+		{
+			action = A_PRACTICE_SETUP;
+		}
+		break;
+	}
+	case A_PRACTICE_SETUP:
+	{
 		break;
 	}
 	case A_PRACTICE_TEST:
@@ -1274,7 +1338,7 @@ HSteamNetConnection NetplayManager::GetHostConnection()
 	return con;
 }
 
-int NetplayManager::GetConnectionIndex(HSteamNetConnection &con)
+int NetplayManager::GetGGPOConnectionIndex(HSteamNetConnection &con)
 {
 	int connectionIndex = -1;
 	for (int i = 0; i < numPlayers; ++i)
@@ -1284,6 +1348,21 @@ int NetplayManager::GetConnectionIndex(HSteamNetConnection &con)
 
 		//cout << "test: " << netplayPlayers[i].connection << ", " << con << endl;
 		if (netplayPlayers[i].connection == con)
+		{
+			connectionIndex = i;
+			break;
+		}
+	}
+
+	return connectionIndex;
+}
+
+int NetplayManager::GetPracticeConnectionIndex(HSteamNetConnection &con)
+{
+	int connectionIndex = -1;
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].connection == con)
 		{
 			connectionIndex = i;
 			break;
@@ -1311,9 +1390,21 @@ void NetplayManager::SetHost()
 
 void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *pCallback)
 {
+	if (IsPracticeMode())
+	{
+		OnConnectStatusChangedPractice(pCallback);
+	}
+	else
+	{
+		OnConnectStatusChangedGGPO(pCallback);
+	}
+}
+
+void NetplayManager::OnConnectStatusChangedGGPO(SteamNetConnectionStatusChangedCallback_t *pCallback)
+{
 	//cout << "connection status changed callback" << endl;
-	
-	int connectionIndex = GetConnectionIndex(pCallback->m_hConn);
+
+	int connectionIndex = GetGGPOConnectionIndex(pCallback->m_hConn);
 	//assert(connectionIndex >= 0);
 
 	if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_None
@@ -1335,7 +1426,7 @@ void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusC
 					connectionIndex = i;
 					break;
 				}
-				
+
 			}
 			//pCallback->m_info.m_identityRemote
 
@@ -1365,7 +1456,7 @@ void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusC
 		cout << "connection to " << connectionIndex << " is complete!" << endl;
 
 		netplayPlayers[connectionIndex].isConnectedTo = true;
-		
+
 	}
 	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
 		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
@@ -1390,6 +1481,92 @@ void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusC
 		cout << "connection state problem locally detected: " << pCallback->m_info.m_eEndReason << endl;
 
 		netplayPlayers[connectionIndex].isConnectedTo = false;
+	}
+	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_ClosedByPeer
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_None)
+	{
+		//connection returned to default state
+	}
+	else
+	{
+		//cout << "state is confused" << endl;
+		cout << "confused: " << "old: " << pCallback->m_eOldState << ", new state: " << pCallback->m_info.m_eState << endl;
+	}
+}
+
+void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChangedCallback_t *pCallback)
+{
+	//cout << "connection status changed callback" << endl;
+	int connectionIndex = GetPracticeConnectionIndex(pCallback->m_hConn);
+
+	if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_None
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_Connecting)
+	{
+		if (pCallback->m_info.m_hListenSocket)
+		{
+			EResult result = SteamNetworkingSockets()->AcceptConnection(pCallback->m_hConn);
+
+			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+			{
+				if (practicePlayers[i].id == pCallback->m_info.m_identityRemote.GetSteamID())
+				{
+					cout << "setting practice connection " << i << endl;
+					practicePlayers[i].connection = pCallback->m_hConn;
+					connectionIndex = i;
+					break;
+				}
+			}
+
+			if (result == k_EResultOK)
+			{
+				cout << "accepting connection to " << connectionIndex << endl;
+			}
+			else
+			{
+				cout << "failing to accept connection to " << connectionIndex << endl;
+			}
+		}
+		else
+		{
+			cout << "connecting but I'm not the one with a listen socket" << endl;
+		}
+	}
+	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_FindingRoute)
+	{
+		cout << "finding route.." << endl;
+	}
+	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_FindingRoute)
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_Connected)
+	{
+		cout << "connection to " << connectionIndex << " is complete!" << endl;
+
+		practicePlayers[connectionIndex].isConnectedTo = true;
+	}
+	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_ClosedByPeer)
+	{
+		cout << "connection closed by peer: " << pCallback->m_info.m_eEndReason << endl;
+
+		action = A_DISCONNECT;
+		//Abort();
+		//for now, just close the match when anyone quits. eventually be able to handle people leaving in certain
+		//game modes, as long as they aren't the host.
+
+		//do I still need to close the connection?
+		//SteamNetworkingSockets()->CloseConnection(connection, 0, NULL, false);
+
+		practicePlayers[connectionIndex].isConnectedTo = false;
+	}
+	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
+	{
+		cout << "connection state problem locally detected: " << pCallback->m_info.m_eEndReason << endl;
+
+		practicePlayers[connectionIndex].isConnectedTo = false;
 	}
 	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_ClosedByPeer
 		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_None)
@@ -2461,42 +2638,37 @@ void NetplayManager::PrepareClientForNextQuickplayMap()
 	action = NetplayManager::A_IDLE;//A_WAIT_TO_LOAD_MAP;
 }
 
-bool NetplayManager::SendPracticeInputMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeInputMsg &pm)
+bool NetplayManager::SendPracticeInputMessageToConnection(HSteamNetConnection con, PracticeInputMsg &pm)
 {
-	const int k_nSteamNetworkingSend_Reliable = 8;
-
-	EResult res = SteamNetworkingMessages()->SendMessageToUser(identityRemote, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, 0);
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(con, &pm, sizeof(pm), k_EP2PSendReliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "send practice message to user " << identityRemote.GetSteamID64() << ". input: " << pm.input << ", frame: " << pm.frame << "\n";
-		return true;
+		cout << "send practice input message to connection " << con << ". input: " << pm.input << ", frame: " << pm.frame << "\n";
 	}
 	else
 	{
-		cout << "send practice message to user " << identityRemote.GetSteamID64() << " failed with code " << res << "\n";
+		cout << "failed send practice input message to connection " << con << ". Failed with code " << res << "\n";
 	}
 }
 
-bool NetplayManager::SendPracticeStartMessageToUser(const SteamNetworkingIdentity &identityRemote, PracticeStartMsg &pm)
+bool NetplayManager::SendPracticeStartMessageToConnection(HSteamNetConnection con, PracticeStartMsg &pm)
 {
-	const int k_nSteamNetworkingSend_Reliable = 8;
-
-	EResult res = SteamNetworkingMessages()->SendMessageToUser(identityRemote, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, 0);
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(con, &pm, sizeof(pm), k_EP2PSendReliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "send practice start message to user " << identityRemote.GetSteamID64() << " with skin " << pm.skinIndex << "\n";
-		return true;
+		cout << "send practice start message to connection " << con << ". skin: " << pm.skinIndex << "\n";
 	}
 	else
 	{
-		cout << "send practice start message to user " << identityRemote.GetSteamID64() << " failed with code " << res << "\n";
+		cout << "failed send practice start message to connection " << con << ". Failed with code " << res << "\n";
 	}
 }
 
 void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm)
 {
+	assert(action == A_PRACTICE_TEST);
 	if (action != A_PRACTICE_TEST)
 	{
 		return;
@@ -2507,41 +2679,32 @@ void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm)
 	SteamNetworkingIdentity identity;
 	CSteamID myID = SteamUser()->GetSteamID();
 
-	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if ((*it).id == myID)
+		if (practicePlayers[i].isConnectedTo)
 		{
-			continue;
+			SendPracticeInputMessageToConnection(practicePlayers[i].connection, pm);
 		}
-
-		identity.SetSteamID((*it).id);
-
-		SendPracticeInputMessageToUser(identity, pm);
 	}
 }
 
 void NetplayManager::SendPracticeStartMessageToAllPeers(PracticeStartMsg &pm)
 {
-	if (action != A_PRACTICE_TEST)
+	assert(action == A_PRACTICE_SETUP);
+	if (action != A_PRACTICE_SETUP)
 	{
 		return;
 	}
 
-	//cout << "sending my input to all peers\n";
-
 	SteamNetworkingIdentity identity;
 	CSteamID myID = SteamUser()->GetSteamID();
 
-	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if ((*it).id == myID)
+		if (practicePlayers[i].isConnectedTo)
 		{
-			continue;
+			SendPracticeStartMessageToConnection(practicePlayers[i].connection, pm);
 		}
-
-		identity.SetSteamID((*it).id);
-
-		SendPracticeStartMessageToUser(identity, pm);
 	}
 }
 
@@ -2550,24 +2713,44 @@ bool NetplayManager::IsPracticeMode()
 	return action == A_PRACTICE_TEST || action == A_PRACTICE_CHECKING_FOR_LOBBIES || action == A_PRACTICE_WAIT_FOR_IN_LOBBY;
 }
 
-void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)
+bool NetplayManager::TrySetupPractice( GameSession *game )
 {
-	auto info = pCallback->m_info;
-	cout << "steam networking messages session failed" << "\n";
+	//assert(action == NetplayManager::A_PRACTICE_SETUP);
+
+	if (action == A_PRACTICE_SETUP)
+	{
+		PracticeStartMsg psm;
+		psm.skinIndex = game->GetPlayerNormalSkin(0);
+		psm.SetUpgradeField(game->GetPlayer(0)->bStartHasUpgradeField);
+
+		SendPracticeStartMessageToAllPeers(psm);
+
+		action = A_PRACTICE_TEST;
+
+		return true;
+	}
+
+	return false;
 }
 
-void NetplayManager::OnSteamNetworkingMessagesSessionRequest(SteamNetworkingMessagesSessionRequest_t *pCallback)
-{
-	cout << "steam networking messages session requested" << "\n";
-
-	bool res = SteamNetworkingMessages()->AcceptSessionWithUser(pCallback->m_identityRemote);
-
-	if (res)
-	{
-		cout << "successfully accepted practice connection\n";
-	}
-	else
-	{
-		cout << "there is no session witht he user pending or otherwise\n";
-	}
-}
+//void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)
+//{
+//	auto info = pCallback->m_info;
+//	cout << "steam networking messages session failed" << "\n";
+//}
+//
+//void NetplayManager::OnSteamNetworkingMessagesSessionRequest(SteamNetworkingMessagesSessionRequest_t *pCallback)
+//{
+//	cout << "steam networking messages session requested" << "\n";
+//
+//	bool res = SteamNetworkingMessages()->AcceptSessionWithUser(pCallback->m_identityRemote);
+//
+//	if (res)
+//	{
+//		cout << "successfully accepted practice connection\n";
+//	}
+//	else
+//	{
+//		cout << "there is no session witht he user pending or otherwise\n";
+//	}
+//}
