@@ -1199,6 +1199,7 @@ TerrainPolygon::TerrainPolygon()
 	//waterShader.setUniform("u_quad2",
 	//	Glsl::Vec4(ir2.left / width, ir2.top / height,
 	//	(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
+	polyIndex = -1;
 
 	grassBufferForAABBOn = false;
 	copiedInverse = false;
@@ -1244,6 +1245,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	polyIndex = -1;
 	grassBufferForAABBOn = false;
 	copiedInverse = false;
 	isGrassBackedUp = false;

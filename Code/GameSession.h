@@ -288,8 +288,6 @@ struct GameSession : RayCastHandler, Session
 	
 	SoundInfo * gameSoundInfos[SoundType::Count];
 	
-	
-	std::vector<RailPtr> allRails;
 	int totalRails;
 	
 	std::list<boost::filesystem::path> bonusPaths;

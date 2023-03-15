@@ -270,6 +270,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int frame;
 	State state;
 
+	int polyIndex;
 	int waterType;
 
 	const static int TILE_PATTERN_GRID_SIZE;

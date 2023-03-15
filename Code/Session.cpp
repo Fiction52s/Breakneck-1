@@ -9142,3 +9142,19 @@ const BitField & Session::GetPracticeUpgradeField()
 		return defaultStartingPlayerOptionsField;
 	}
 }
+
+Edge *Session::GetEdge(EdgeInfo * ei)
+{
+	switch (ei->eiType)
+	{
+	case EdgeInfo::ETI_EMPTY:
+		return NULL;
+	case EdgeInfo::ETI_POLY:
+		return allPolysVec[ei->ownerIndex]->GetEdge(ei->edgeIndex);
+	case EdgeInfo::ETI_RAIL:
+		return allRailsVec[ei->ownerIndex]->GetEdge(ei->edgeIndex);
+	default:
+		assert(0);
+		return NULL;
+	}
+}

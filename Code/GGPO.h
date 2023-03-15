@@ -81,6 +81,22 @@ struct GGPONonGameState
 	ChecksumInfo         periodic;
 };
 
+struct EdgeInfo
+{
+	enum EdgeInfoType
+	{
+		ETI_EMPTY,
+		ETI_POLY,
+		ETI_RAIL,
+		ETI_Count,
+	};
+
+	EdgeInfoType eiType;
+	int ownerIndex; //poly or rail
+	int edgeIndex;
+
+	void InitFromEdge(Edge *e);
+};
 
 struct SaveWireInfo
 {
@@ -127,7 +143,7 @@ struct SaveWireInfo
 	int antiWireGrassCount;
 	CollisionBox movingHitbox;
 	bool clockwise;
-	Edge *rcEdge;
+	EdgeInfo rcEdge;
 	double rcQuant;
 	double rcCancelDist;
 };
@@ -157,7 +173,7 @@ struct PState
 	double groundSpeed;
 	COMPRESSED_INPUT_TYPE prevInput;
 	COMPRESSED_INPUT_TYPE currInput;
-	Edge *ground;
+	EdgeInfo ground;
 	double quant;
 	
 	double brh;
@@ -180,10 +196,10 @@ struct PState
 	int speedLevel; //0,1,2
 	double currentSpeedBar;
 	bool airDashStall;
-	sf::Vector2<double> startAirDashVel;
+	V2d startAirDashVel;
 	double extraAirDashY;
 	int oldAction;
-	sf::Vector2<double> oldVelocity;
+	V2d oldVelocity;
 	bool reversed;
 	double storedReverseSpeed;
 
@@ -192,7 +208,7 @@ struct PState
 	int framesNotGrinding;
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
-	Edge *grindEdge;
+	EdgeInfo grindEdge;
 	double grindSpeed;
 
 	int slowMultiple;
@@ -200,7 +216,7 @@ struct PState
 	bool inBubble;
 	bool oldInBubble;
 
-	sf::Vector2<double> bubblePos[Actor::MAX_BUBBLES];
+	V2d bubblePos[Actor::MAX_BUBBLES];
 	int bubbleRadiusSize[Actor::MAX_BUBBLES];
 	int bubbleFramesToLive[Actor::MAX_BUBBLES];
 	int currBubble;
@@ -208,11 +224,6 @@ struct PState
 	bool bounceAttackHit;
 	//flashframes
 
-	
-	
-
-	//CollisionBody *currHitboxes;
-	//int currHitboxFrame;
 	int cancelAttack;
 
 	bool dairBoostedDouble;
@@ -231,12 +242,12 @@ struct PState
 	bool scorpOn;
 	int framesFlameOn;
 	bool bounceFlameOn;
-	sf::Vector2<double> storedBounceVel;
-	sf::Vector2<double> bounceNorm;
-	sf::Vector2<double> oldBounceNorm;
-	Edge *bounceEdge;
+	V2d storedBounceVel;
+	V2d bounceNorm;
+	V2d oldBounceNorm;
+	EdgeInfo bounceEdge;
 	double storedBounceGroundSpeed;
-	Edge *oldBounceEdge;
+	EdgeInfo oldBounceEdge;
 	int framesSinceBounce;
 	bool groundedWallBounce;
 	bool boostBounce;
@@ -300,8 +311,8 @@ struct PState
 	int gravModifyFrames;
 	double extraGravityModifier;
 	V2d waterEntrancePosition;
-	Edge *waterEntranceGround;
-	Edge *waterEntranceGrindEdge;
+	EdgeInfo waterEntranceGround;
+	EdgeInfo waterEntranceGrindEdge;
 	double waterEntranceQuantity;
 	double waterEntranceXOffset;
 	double waterEntrancePhysHeight;

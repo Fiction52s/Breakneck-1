@@ -173,7 +173,7 @@ void Actor::PopulateState(PState *ps)
 	ps->currInput = currInput.GetCompressedState();
 	ps->prevInput = prevInput.GetCompressedState();
 
-	ps->ground = ground;
+	ps->ground.InitFromEdge(ground);
 	ps->quant = edgeQuantity;
 	ps->xOffset = offsetX;
 	ps->holdDouble = holdDouble;
@@ -419,7 +419,9 @@ void Actor::PopulateFromState(PState *ps)
 	groundSpeed = ps->groundSpeed;
 	prevInput.SetFromCompressedState(ps->prevInput); //relevant for keyboard
 	currInput.SetFromCompressedState(ps->currInput);
-	ground = ps->ground;
+
+	ground = sess->GetEdge(&ps->ground);
+
 	edgeQuantity = ps->quant;
 	offsetX = ps->xOffset;
 
@@ -458,7 +460,9 @@ void Actor::PopulateFromState(PState *ps)
 	framesNotGrinding = ps->framesNotGrinding;
 	framesSinceGrindAttempt = ps->framesSinceGrindAttempt;
 	maxFramesSinceGrindAttempt = ps->maxFramesSinceGrindAttempt;
-	grindEdge = ps->grindEdge;
+
+	grindEdge = sess->GetEdge(&ps->grindEdge);
+
 	grindSpeed = ps->grindSpeed;
 
 	slowMultiple = ps->slowMultiple;
@@ -513,9 +517,13 @@ void Actor::PopulateFromState(PState *ps)
 	storedBounceVel = ps->storedBounceVel;
 	bounceNorm = ps->bounceNorm;
 	oldBounceNorm = ps->oldBounceNorm;
-	bounceEdge = ps->bounceEdge;
+
+	bounceEdge = sess->GetEdge(&ps->bounceEdge);
+
 	storedBounceGroundSpeed = ps->storedBounceGroundSpeed;
-	oldBounceEdge = ps->oldBounceEdge;
+
+	oldBounceEdge = sess->GetEdge(&ps->oldBounceEdge);
+
 	framesSinceBounce = ps->framesSinceBounce;
 	groundedWallBounce = ps->groundedWallBounce;
 	boostBounce = ps->boostBounce;
@@ -580,8 +588,11 @@ void Actor::PopulateFromState(PState *ps)
 	gravModifyFrames = ps->gravModifyFrames;
 	extraGravityModifier = ps->extraGravityModifier;
 	waterEntrancePosition = ps->waterEntrancePosition;
-	waterEntranceGround = ps->waterEntranceGround;
-	waterEntranceGrindEdge = ps->waterEntranceGrindEdge;
+
+	waterEntranceGround = sess->GetEdge(&ps->waterEntranceGround);
+
+	waterEntranceGrindEdge = sess->GetEdge(&ps->waterEntranceGrindEdge);
+
 	waterEntranceQuantity = ps->waterEntranceQuantity;
 	waterEntranceXOffset = ps->waterEntranceXOffset;
 	waterEntrancePhysHeight = ps->waterEntrancePhysHeight;

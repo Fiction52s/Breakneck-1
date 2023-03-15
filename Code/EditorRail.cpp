@@ -246,6 +246,7 @@ bool TerrainRail::IsTerrainType()
 void TerrainRail::Init()
 {	
 	sess = Session::GetSession();
+	railIndex = -1;
 	ts_rail = sess->GetSizedTileset("Env/rails_128x64.png");
 	queryNext = NULL;
 	quadHalfWidth = 6;

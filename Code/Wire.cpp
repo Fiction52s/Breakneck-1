@@ -57,7 +57,9 @@ void Wire::PopulateWireInfo( SaveWireInfo *wi)
 	wi->antiWireGrassCount = antiWireGrassCount;
 	wi->movingHitbox = movingHitbox;
 	wi->clockwise = clockwise;
-	wi->rcEdge = rayCastInfo.rcEdge;
+
+	wi->rcEdge.InitFromEdge(rayCastInfo.rcEdge);
+
 	wi->rcCancelDist = rcCancelDist;
 	wi->rcQuant = rayCastInfo.rcQuant;
 }
@@ -109,7 +111,7 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 	clockwise = wi->clockwise;
 
 	//i dont think i need these??
-	rayCastInfo.rcEdge = wi->rcEdge;
+	rayCastInfo.rcEdge = player->sess->GetEdge(&wi->rcEdge);
 	rcCancelDist = wi->rcCancelDist;
 	rayCastInfo.rcQuant = wi->rcQuant;
 }

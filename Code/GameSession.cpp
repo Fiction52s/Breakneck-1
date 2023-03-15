@@ -933,11 +933,11 @@ void GameSession::Cleanup()
 	}
 	allSpecialTerrain.clear();
 
-	for (auto it = allRails.begin(); it != allRails.end(); ++it)
+	for (auto it = allRailsVec.begin(); it != allRailsVec.end(); ++it)
 	{
 		delete (*it);
 	}
-	allRails.clear();
+	allRailsVec.clear();
 
 	/*for (auto it = flyTerrain.begin(); it != flyTerrain.end(); ++it)
 	{
@@ -1282,8 +1282,9 @@ void GameSession::ProcessRail(RailPtr rail)
 	}
 	else
 	{
+		rail->railIndex = totalRails;
 		totalRails++; //is this really even needed?
-		allRails.push_back(rail);
+		allRailsVec.push_back(rail);
 		rail->AddEdgesToQuadTree(railEdgeTree);
 		railDrawTree->Insert(rail);
 	}
@@ -1395,8 +1396,10 @@ void GameSession::ProcessAllTerrain()
 
 	PolyPtr poly;
 	allPolysVec.reserve(allPolygonsList.size());
+	int polyIndex = 0;
 	for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
 	{
+		poly->polyIndex = polyIndex;
 		poly = (*it);
 		poly->Finalize();
 		poly->grassBufferForAABBOn = true; //so that the quadtree can get a bigger AABB for this
@@ -1411,6 +1414,8 @@ void GameSession::ProcessAllTerrain()
 		borderTree->Insert(poly);
 
 		allPolysVec.push_back((*it));
+
+		polyIndex++;
 	}
 	allPolygonsList.clear();
 }
@@ -3873,7 +3878,7 @@ void GameSession::RestartLevel()
 		(*it)->ResetState();
 	}
 
-	for (auto it = allRails.begin(); it != allRails.end(); ++it)
+	for (auto it = allRailsVec.begin(); it != allRailsVec.end(); ++it)
 	{
 		(*it)->ResetState();
 	}
@@ -4588,7 +4593,7 @@ void GameSession::UpdateTerrainStates()
 
 void GameSession::UpdateRailStates()
 {
-	for (auto it = allRails.begin(); it != allRails.end(); ++it)
+	for (auto it = allRailsVec.begin(); it != allRailsVec.end(); ++it)
 	{
 		(*it)->UpdateState();
 	}

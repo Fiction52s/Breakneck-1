@@ -1003,11 +1003,15 @@ void EditSession::TestPlayerMode()
 	}
 
 	//auto &testPolys = GetCorrectPolygonList(0);
+	int polyIndex = 0;
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
+		(*it)->polyIndex = polyIndex;
 		borderTree->Insert((*it));
 		(*it)->AddEdgesToQuadTree(terrainTree);
 		(*it)->AddGrassToQuadTree(grassTree);
+
+		++polyIndex;
 	}
 
 	auto &testPolys1 = GetCorrectPolygonList(1);
@@ -1019,6 +1023,8 @@ void EditSession::TestPlayerMode()
 
 	fullEnemyList.clear();
 
+	allRailsVec.clear();
+	int railIndex = 0;
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
 		
@@ -1032,7 +1038,11 @@ void EditSession::TestPlayerMode()
 		{
 			(*it)->ResetState();
 			(*it)->AddEdgesToQuadTree(railEdgeTree);
+			(*it)->railIndex = railIndex;
 			railDrawTree->Insert((*it));
+			allRailsVec.push_back((*it));
+
+			++railIndex;
 		}
 	}
 

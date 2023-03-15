@@ -80,6 +80,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		FADINGIN,
 	};
 
+	int railIndex;
 
 	const static std::string railTypeNames[];
 	int frame;

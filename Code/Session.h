@@ -21,6 +21,7 @@
 #include "steam/steam_api.h"
 #include "MatchParams.h"
 
+struct EdgeInfo;
 struct DeathSequence;
 struct PlayerRecordingManager;
 struct PlayerReplayManager;
@@ -268,6 +269,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	int numGates;
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;
+	std::vector<RailPtr> allRailsVec;
 	std::list<Enemy*> fullEnemyList;
 	GateMarkerGroup *gateMarkers;
 	ZoneNode *zoneTree;
@@ -942,6 +944,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void RunPracticeModeUpdate();
 	void SetView(const sf::View &p_view);
 	const BitField & GetPracticeUpgradeField();
+	Edge *GetEdge(EdgeInfo * ei);
 };
 
 #endif
