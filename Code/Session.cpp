@@ -2175,13 +2175,15 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 		{
 			if (pm->parallelGames[i] != NULL)
 			{
-				sf::CircleShape cs;
-				cs.setFillColor(Color::Red);
-				cs.setRadius(10);
-				cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-				cs.setPosition(Vector2f(pm->parallelGames[i]->GetPlayer(0)->waterEntrancePosition));
-
-				target->draw(cs);
+				if (pm->parallelGames[i]->GetPlayer(0)->practiceDesyncDetected)
+				{
+					sf::CircleShape cs;
+					cs.setFillColor(Color::Red);
+					cs.setRadius(10);
+					cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+					cs.setPosition(Vector2f(pm->parallelGames[i]->GetPlayer(0)->practiceDesyncPosition));
+					target->draw(cs);
+				}
 			}
 		}
 
@@ -2887,7 +2889,15 @@ void Session::UpdatePlayerInput(int index)
 
 		player->currInput.SetFromCompressedState(netplayManager->practicePlayers[parallelSessionIndex].AdvanceInput());
 
-		player->waterEntrancePosition = test.desyncCheckPos;
+		player->practiceDesyncPosition = test.desyncCheckPos;
+		if (player->practiceDesyncPosition != player->position)
+		{
+			player->practiceDesyncDetected = true;
+		}
+		else
+		{
+			//player->practiceDesyncDetected = true;
+		}
 
 		/*if (player->position != test.desyncCheckPos)
 		{
@@ -2936,7 +2946,11 @@ void Session::UpdatePlayerInput(int index)
 
 		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession() )//&& playerInd == 0 )
 		{
-			//netplayManager->Update();
+			//sends the start to message to any new peers that join
+			PracticeStartMsg psm;
+			psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
+			psm.SetUpgradeField(player->bStartHasUpgradeField);
+			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 
 			PracticeInputMsg pm;
 			pm.frame = totalGameFrames;
@@ -3000,6 +3014,7 @@ void Session::RunFrameForParallelPractice()
 				numFramesToRun = min(numFramesToRun, PracticePlayer::MAX_SIM_FRAMES);
 				for( int j = 0; j < numFramesToRun; ++j )
 				{
+					//cout << "run parallel frame" << endl;
 					pm->parallelGames[i]->UpdatePlayerInput(i);
 					pm->parallelGames[i]->OnlineRunGameModeUpdate();
 					//ppm->updatePracticeSessions[i] = true;
@@ -9112,4 +9127,18 @@ void Session::SetView(const sf::View &p_view)
 {
 	preScreenTex->setView(p_view);
 	extraScreenTex->setView(p_view);
+}
+
+const BitField & Session::GetPracticeUpgradeField()
+{
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	{
+		assert(netplayManager != NULL);
+		return netplayManager->practicePlayers[parallelSessionIndex].upgradeField;
+	}
+	else
+	{
+		assert(0);
+		return defaultStartingPlayerOptionsField;
+	}
 }

@@ -39,7 +39,7 @@ void Sdr::SendTo(char *buffer, int len, int flags, HSteamNetConnection p_connect
 {
 	UdpMsg *msg = (UdpMsg*)buffer;
 	//cout << "sending msg thru sdr: " << msg->hdr.type << endl;
-	EResult res = SteamNetworkingSockets()->SendMessageToConnection(p_connection, buffer, len, k_EP2PSendReliable, NULL);
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(p_connection, buffer, len, k_nSteamNetworkingSend_Unreliable | k_nSteamNetworkingSend_NoNagle, NULL);
 
 	if (res == k_EResultOK)
 	{

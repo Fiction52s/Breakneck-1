@@ -17,7 +17,7 @@ struct PracticeMsgHeader
 
 	sf::Uint16 msgType;
 	
-	PracticeMsgHeader();
+	PracticeMsgHeader(sf::Uint16 mType);
 	void Clear();
 };
 

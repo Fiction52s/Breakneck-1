@@ -7,6 +7,8 @@
 #include "LobbyMessage.h"
 #include <list>
 
+struct NetplayManager;
+
 struct WaitingRoom;
 
 // an item in the list of lobbies we've found to display
@@ -48,6 +50,7 @@ struct LobbyData
 	uint64 publishedFileId;
 	uint64 creatorId;
 	int lobbyType;
+	int levelAdventureIndex;
 	
 	LobbyData();
 	bool Update( CSteamID lobbyId );
@@ -84,6 +87,15 @@ struct Lobby
 
 struct LobbyManager
 {
+	enum SearchType
+	{
+		SEARCH_GET_ALL_OF_TYPE,
+		SEARCH_MATCH_NAME,
+		SEARCH_MATCH_WORLD,
+		SEARCH_MATCH_WORLD_AND_SECTOR,
+		SEARCH_MATCH_WORLD_AND_SECTOR_AND_LEVEL,
+	};
+
 	enum Action
 	{
 		A_IDLE,
@@ -98,7 +110,10 @@ struct LobbyManager
 		A_ERROR,
 	};
 
+	int currSearchType;
+
 	Action action;
+	NetplayManager *netplayManager;
 
 	bool requestJoinFromInvite;
 
@@ -118,10 +133,10 @@ struct LobbyManager
 
 	int searchLobbyType;
 
-	std::string practiceLobbyMapPath;
+	std::string searchMapPath;
 
 
-	LobbyManager();
+	LobbyManager( NetplayManager *nm );
 
 	void PopulateLobbyList( CSteamID lobbyID );
 	void Update();
@@ -143,7 +158,7 @@ struct LobbyManager
 	void FindPracticeLobby( const std::string &mapPath );
 	void LeaveLobby();
 
-	void RetrieveLobbyList( int lobbyType );//add more params later
+	void RetrieveLobbyList( int lobbyType, int p_searchType );//add more params later
 	void OnLobbyMatchListCallback(LobbyMatchList_t *pLobbyMatchList, bool bIOFailure);
 	void ProcessLobbyList();
 	
@@ -155,6 +170,8 @@ struct LobbyManager
 	
 	STEAM_CALLBACK(LobbyManager, OnLobbyEnterCallback, LobbyEnter_t);
 	STEAM_CALLBACK(LobbyManager, OnLobbyDataUpdateCallback, LobbyDataUpdate_t);
+
+	void QueryPracticeLobbies();
 	
 
 

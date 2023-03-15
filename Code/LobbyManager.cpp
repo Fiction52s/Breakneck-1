@@ -3,6 +3,7 @@
 #include <iostream>
 #include "LobbyMessage.h"
 #include "WaitingRoom.h"
+#include "NetplayManager.h"
 
 using namespace std;
 
@@ -16,6 +17,7 @@ LobbyData::LobbyData()
 	publishedFileId = 0;
 	creatorId = 0;
 	lobbyType = LOBBYTYPE_NOT_SET;
+	levelAdventureIndex = -1;
 }
 
 bool LobbyData::Update( CSteamID lobbyId )
@@ -53,6 +55,8 @@ bool LobbyData::Update( CSteamID lobbyId )
 	string lobbyTypeStr = SteamMatchmaking()->GetLobbyData(lobbyId, "lobbyType");
 	lobbyType = stoi(lobbyTypeStr);
 
+	string levelAdventureIndexStr = SteamMatchmaking()->GetLobbyData(lobbyId, "levelAdventureIndex");
+	levelAdventureIndex = stoi(levelAdventureIndexStr);
 	//cout << "updated lobby info: " << mapIndex << endl;
 	return true;
 }
@@ -88,8 +92,11 @@ void LobbyData::SetLobbyData(CSteamID lobbyId)
 	SteamMatchmaking()->SetLobbyData(lobbyId, "creatorID", creatorIDStr.c_str());
 
 	SteamMatchmaking()->SetLobbyData(lobbyId, "lobbyType", to_string(lobbyType).c_str());
+
+	SteamMatchmaking()->SetLobbyData(lobbyId, "levelAdventureIndex", to_string(levelAdventureIndex).c_str());
 }
 
+//dont sore levelAdventureIndex right now
 int LobbyData::GetNumStoredBytes()
 {
 	return lobbyName.length() + 1
@@ -99,9 +106,9 @@ int LobbyData::GetNumStoredBytes()
 		+ sizeof(isWorkshopMap)
 		+ sizeof(randSeed)
 		+ sizeof(maxMembers)
+		+ sizeof(mapIndex)
 		+ sizeof(publishedFileId)
-		+ sizeof(creatorId)
-		+ sizeof(mapIndex);
+		+ sizeof(creatorId);
 }
 
 void LobbyData::StoreBytes(unsigned char *bytes)
@@ -178,8 +185,9 @@ void Lobby::Set(CSteamID p_lobbyId)
 	data.SetLobbyData(m_steamIDLobby);
 }
 
-LobbyManager::LobbyManager()
+LobbyManager::LobbyManager( NetplayManager *p_netMan)
 {
+	netplayManager = p_netMan;
 	action = A_IDLE;
 	m_bRequestingLobbies = false;
 	currWaitingRoom = NULL;
@@ -252,14 +260,14 @@ void LobbyManager::PrintLobbies()
 void LobbyManager::FindQuickplayLobby()
 {
 	cout << "finding quickplay lobby" << endl;
-	RetrieveLobbyList(LobbyData::LOBBYTYPE_QUICKPLAY);
+	RetrieveLobbyList(LobbyData::LOBBYTYPE_QUICKPLAY, SEARCH_GET_ALL_OF_TYPE);
 }
 
 void LobbyManager::FindPracticeLobby( const std::string &mapPath )
 {
 	cout << "finding practice lobby" << endl;
-	practiceLobbyMapPath = mapPath;
-	RetrieveLobbyList(LobbyData::LOBBYTYPE_PRACTICE);
+	searchMapPath = mapPath;
+	RetrieveLobbyList(LobbyData::LOBBYTYPE_PRACTICE, SEARCH_MATCH_NAME);
 }
 
 void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
@@ -267,6 +275,9 @@ void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 	cout << "lobby chat update callback. updated member list" << endl;
 
 	PopulateLobbyList(pCallback->m_ulSteamIDLobby);
+
+	if( netplayManager != NULL && netplayManager->IsPracticeMode())
+		netplayManager->OnLobbyChatUpdateCallback(pCallback);
 
 	if (currWaitingRoom != NULL)
 	{
@@ -358,6 +369,8 @@ void LobbyManager::PopulateLobbyList( CSteamID lobbyID )
 	{
 		currWaitingRoom->UpdateMemberList();
 	}
+
+	
 }
 
 
@@ -484,47 +497,75 @@ void LobbyManager::ProcessLobbyList()
 	{
 		vector<Lobby> copyVec = lobbyVec;
 		lobbyVec.clear();
+
+		bool addToVec = false;
 		for (auto it = copyVec.begin(); it != copyVec.end(); ++it)
 		{
 			if ((*it).data.lobbyType == searchLobbyType)
 			{
-				if (searchLobbyType == LobbyData::LOBBYTYPE_PRACTICE)
+				addToVec = false;
+				switch (currSearchType)
 				{
-					if ((*it).data.mapPath == practiceLobbyMapPath)
+				case SEARCH_GET_ALL_OF_TYPE:
+				{
+					addToVec = true;
+					break;
+				}
+				case SEARCH_MATCH_NAME:
+				{
+					if ((*it).data.mapPath == searchMapPath)
 					{
-						lobbyVec.push_back((*it));
-						cout << "found a practice lobby!\n";
+						addToVec = true;
 					}
+					break;
 				}
-				else
+				case SEARCH_MATCH_WORLD:
 				{
-					lobbyVec.push_back((*it));
+					break;
 				}
+				case SEARCH_MATCH_WORLD_AND_SECTOR:
+				{
+					break;
+				}
+				case SEARCH_MATCH_WORLD_AND_SECTOR_AND_LEVEL:
+				{
+					break;
+				}
+				}
+
+				if( addToVec )
+					lobbyVec.push_back((*it));
 				
 			}
 		}
 		
-
-		PrintLobbies();
-
-		if (IsAllLobbyDataReceived())
+		if (lobbyVec.empty())
 		{
-			action = A_FOUND_LOBBIES;
+			action = A_FOUND_NO_LOBBIES;
 		}
 		else
 		{
-			action = A_FOUND_LOBBIES_WAITING_FOR_DATA;
+			PrintLobbies();
+
+			if (IsAllLobbyDataReceived())
+			{
+				action = A_FOUND_LOBBIES;
+			}
+			else
+			{
+				action = A_FOUND_LOBBIES_WAITING_FOR_DATA;
+			}
 		}
-		
-		//TryJoiningLobby();
 	}
 }
 
-void LobbyManager::RetrieveLobbyList( int lobbyType )//more params later for searching etc
+void LobbyManager::RetrieveLobbyList( int lobbyType, int p_searchType )//more params later for searching etc
 {
 	if (!m_bRequestingLobbies)
 	{
 		searchLobbyType = lobbyType;
+
+		currSearchType = p_searchType;
 
 		m_bRequestingLobbies = true;
 		// request all lobbies for this game
@@ -635,4 +676,10 @@ int LobbyManager::GetNumCurrentLobbyMembers()
 		return 0;
 
 	return currentLobby.memberList.size();
+}
+
+void LobbyManager::QueryPracticeLobbies()
+{
+	cout << "querying practice lobbies" << endl;
+	RetrieveLobbyList(LobbyData::LOBBYTYPE_PRACTICE, SearchType::SEARCH_GET_ALL_OF_TYPE);
 }

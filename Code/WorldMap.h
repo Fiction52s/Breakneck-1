@@ -316,6 +316,8 @@ struct WorldMap : TilesetManager
 	sf::Text shardsCapturedText;
 	sf::Text worldNameText;
 
+	sf::Text numCurrentPlayersText[ADVENTURE_MAX_NUM_WORLDS];
+
 	sf::Vertex asteroidQuads[4 * 4];
 	sf::Vertex worldActiveQuads[ADVENTURE_MAX_NUM_WORLDS * 4];
 	sf::Vertex worldActiveQuadsZoomed[ADVENTURE_MAX_NUM_WORLDS * 4];

@@ -4510,13 +4510,18 @@ void Actor::Respawn( bool setStartPos )
 		numFramesToLive = -1;
 	}
 
+	practiceDesyncDetected = false;
+	practiceDesyncPosition = V2d();
+
+	bool parallelPracticeAndImParallel = sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && sess->IsParallelSession();
+
 	if (owner != NULL && owner->IsReplayOn())
 	{
 		//do nothing, powers were already set by the replay
 	}
 	else
 	{
-		if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && sess->IsParallelSession())
+		if (parallelPracticeAndImParallel)
 		{
 			nameTag->SetName("parallel");
 			nameTag->SetActive(true);
@@ -4529,7 +4534,13 @@ void Actor::Respawn( bool setStartPos )
 
 
 	bool isAdventure = false;
-	if (owner != NULL && owner->IsReplayOn())
+	if (parallelPracticeAndImParallel)
+	{
+		const BitField &practiceUpgradeField = sess->GetPracticeUpgradeField();
+
+		SetAllUpgrades(practiceUpgradeField);
+	}
+	else if (owner != NULL && owner->IsReplayOn())
 	{
 		//do nothing, powers were already set by the replay
 	}
@@ -7727,7 +7738,7 @@ bool Actor::IsRailSlideFacingRight()
 	return r;
 }
 
-void Actor::SetAllUpgrades(BitField &b)
+void Actor::SetAllUpgrades(const BitField &b)
 {
 	bStartHasUpgradeField.Set(b);
 	bHasUpgradeField.Set(b);

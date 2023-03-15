@@ -623,6 +623,9 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
+	V2d practiceDesyncPosition;
+	bool practiceDesyncDetected;
+
 	NameTag *nameTag;
 
 	const static int SHARD_START_INDEX = UPGRADE_POWER_LWIRE + 1;
@@ -1733,7 +1736,7 @@ struct Actor : QuadTreeCollider,
 	int GetBubbleTimeFactor();
 	int GetBeingSlowedFactor();
 	bool IsBeingSlowed();
-	void SetAllUpgrades(BitField &b);
+	void SetAllUpgrades(const BitField &b);
 	bool HasUpgrade(int index);
 	int NumUpgradeRange(int index, int numUpgrades);
 	void SetUpgrade(int upgrade, bool on);

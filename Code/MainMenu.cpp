@@ -1952,8 +1952,6 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 {
 	string levelPath = loadParams.adventureMap->GetMapPath();//lev->GetFullName();// name;
-	
-	adventureManager->parallelPracticeMode = true; //for testing
 
 	doneLoading = false;
 
@@ -1977,7 +1975,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 		mp.gameModeType = MatchParams::GAME_MODE_PARALLEL_PRACTICE;
 		mp.netplayManager = netplayManager;
 		mp.numPlayers = 2; //me plus 1 other person for now
-		netplayManager->FindPracticeMatch(levelPath);
+		netplayManager->FindPracticeMatch(levelPath, loadParams.level->index );
 	}
 
 	currLevel = new GameSession(&mp);
@@ -2228,6 +2226,12 @@ void MainMenu::HandleMenuMode()
 
 		loadingBackpack->Update();
 
+		if (netplayManager != NULL && netplayManager->IsPracticeMode())
+		{
+			netplayManager->Update();
+		}
+		
+
 		if (loadThread != NULL)
 		{
 			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
@@ -2266,10 +2270,12 @@ void MainMenu::HandleMenuMode()
 
 		loadingBackpack->Update();
 
+		netplayManager->Update();
+
 		if (netplayManager->TrySetupPractice(currLevel))
 		{
 			SetMode(RUN_ADVENTURE_MAP);
-		}		
+		}
 		break;
 	}
 	case LOADINGMENUSTART:

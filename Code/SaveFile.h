@@ -153,7 +153,7 @@ struct AdventureFile
 	void GetOriginalProgressionLogField(int mapIndex, BitField &bf);
 	AdventureMap &GetMap(int index);
 	AdventureMapHeaderInfo &GetMapHeaderInfo(int index);
-	void GetMapIndexes( int mIndex, int &w, int &s, int &m);
+	static void GetMapIndexes( int mIndex, int &w, int &s, int &m);
 	std::string GetLeaderboardName(int mIndex);
 	std::string GetLeaderboardDisplayName(int mIndex);
 

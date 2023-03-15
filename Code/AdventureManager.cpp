@@ -20,7 +20,9 @@ AdventureManager::AdventureManager()
 	adventurePlanet = NULL;
 	controllerInput = NULL;
 	currProfile = NULL;
-	parallelPracticeMode = false;
+	//parallelPracticeMode = false;
+
+	parallelPracticeMode = true; //for testing
 
 	LoadAdventure("tadventure");
 

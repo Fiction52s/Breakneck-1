@@ -941,6 +941,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsParallelGameModeType();
 	void RunPracticeModeUpdate();
 	void SetView(const sf::View &p_view);
+	const BitField & GetPracticeUpgradeField();
 };
 
 #endif

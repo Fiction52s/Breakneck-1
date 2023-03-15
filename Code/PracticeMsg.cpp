@@ -1,17 +1,18 @@
 #include "PracticeMsg.h"
 #include <assert.h>
 
-PracticeMsgHeader::PracticeMsgHeader()
+PracticeMsgHeader::PracticeMsgHeader(sf::Uint16 mType)
 {
+	msgType = mType;
 	Clear();
 }
 
 void PracticeMsgHeader::Clear()
 {
-	msgType = 0;
 }
 
 PracticeStartMsg::PracticeStartMsg()
+	:header( PracticeMsgHeader::MSG_TYPE_START )
 {
 	Clear();
 }
@@ -37,6 +38,7 @@ void PracticeStartMsg::SetUpgradeField(BitField &bf)
 }
 
 PracticeInputMsg::PracticeInputMsg()
+	:header(PracticeMsgHeader::MSG_TYPE_INPUT)
 {
 	Clear();
 }

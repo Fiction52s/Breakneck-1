@@ -143,6 +143,9 @@ GameSession * GameSession::currSession = NULL;
 
 bool GameSession::UpdateRunModeBackAndStartButtons()
 {
+	if (IsParallelSession())
+		return false;
+
 	Actor *p0 = GetPlayer(0);
 	//eventually add better logic for when its okay to pause in multiplayer etc
 	if ( (matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE ) && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
@@ -645,6 +648,16 @@ bool GameSession::RunPreUpdate()
 		returnVal = resType;
 		return false;
 	}*/
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	{
+		if (netplayManager->practicePlayers[parallelSessionIndex].action == PracticePlayer::A_NEEDS_LEVEL_RESTART)
+		{
+			nextFrameRestartGame = true;
+			netplayManager->practicePlayers[parallelSessionIndex].action = PracticePlayer::A_RUNNING;
+		}
+	}
+
 
 	if (nextFrameRestartGame)
 	{
@@ -3926,13 +3939,14 @@ void GameSession::RestartLevel()
 		playerRecordingManager->RestartRecording();
 	}
 
-	if (parentGame == NULL)
+	//unneeded i think. I do the same thing a few lines down while calling reset
+	/*if (parentGame == NULL)
 	{
 		for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
 		{
 			(*it)->SetToStart();
 		}
-	}
+	}*/
 
 	/*if (playerReplayManager != NULL && parentGame == NULL )
 		playerReplayManager->SetToStart();*/

@@ -15,6 +15,7 @@
 #include "CustomCursor.h"
 #include "WorldMapShip.h"
 #include "AdventureManager.h"
+#include "NetplayManager.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -53,6 +54,16 @@ WorldMap::WorldMap()
 	worldNameText.setCharacterSize(40);
 	worldNameText.setFont(mainMenu->arial);
 	worldNameText.setPosition(infoQuadPos + Vector2f(256/2, 10) + Vector2f( 0, -64 ));
+
+	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
+	{
+		numCurrentPlayersText[i].setFillColor(Color::White);
+		numCurrentPlayersText[i].setCharacterSize(40);
+		numCurrentPlayersText[i].setFont(mainMenu->arial);
+	}
+
+	
+
 	
 	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
 	ts_colonyActive[0] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
@@ -107,6 +118,8 @@ WorldMap::WorldMap()
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
 
 		SetRectSubRectGL(worldSelectableQuads + i * 4, ts_selectableRing->GetSubRect(0), Vector2f(ts_selectableRing->texture->getSize()));
+
+		numCurrentPlayersText[i].setPosition(colonySpr[i].getPosition() + Vector2f(960 / 8.f, 0) + Vector2f(0, -80));
 	}
 
 	colonyRadius = 192 / 2;
@@ -585,6 +598,37 @@ void WorldMap::Update()
 			UpdateWorldStats();
 		}
 
+
+
+		if (adventureManager->parallelPracticeMode)
+		{
+			NetplayManager *netplayManager = mainMenu->netplayManager;
+			assert(netplayManager != NULL);
+
+			//has a 20 second timeout call
+			if (frame % (60 * 5) == 0)
+			{
+				netplayManager->QueryPracticeMatches();
+			}
+
+			for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
+			{
+				if (i < numUnlockedWorlds)
+				{
+					numCurrentPlayersText[i].setString(to_string( netplayManager->numPracticeUsersPerWorld[i] ));
+					auto lb = numCurrentPlayersText[i].getLocalBounds();
+					numCurrentPlayersText[i].setOrigin(lb.left + lb.width / 2, 0);
+				}
+				else
+				{
+					numCurrentPlayersText[i].setString("");
+				}
+			}
+
+			netplayManager->Update();
+		}
+
+
 		UpdateColonySelect();
 
 		break;
@@ -961,6 +1005,15 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(sectorsCompleteText);
 		rt->draw(shardsCapturedText);
 		rt->draw(worldNameText);
+
+		if (adventureManager->parallelPracticeMode)
+		{
+			for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
+			{
+				//enable again later maybe
+				rt->draw(numCurrentPlayersText[i]);
+			}
+		}
 	}
 
 	rt->display();

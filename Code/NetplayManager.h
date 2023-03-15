@@ -36,8 +36,18 @@ struct DesyncCheckInfo
 
 struct PracticePlayer
 {
-	const static int MAX_BUFFERED_MESSAGES = 60; //can probably make this way bigger
-	const static int MAX_SIM_FRAMES = 1;
+	const static int MAX_BUFFERED_MESSAGES = 60 * 10; //can probably make this way bigger
+	const static int MAX_SIM_FRAMES = 2;
+
+
+	enum Action
+	{
+		A_NEEDS_START,
+		A_NEEDS_LEVEL_RESTART,
+		A_RUNNING,
+	};
+
+	int action;
 
 	CSteamID id;
 	HSteamNetConnection connection;
@@ -53,6 +63,8 @@ struct PracticePlayer
 
 	bool isConnectedTo;
 
+	//GameSession *myGame;
+
 	PracticeInputMsg messages[MAX_BUFFERED_MESSAGES];
 
 	PracticePlayer();
@@ -62,6 +74,8 @@ struct PracticePlayer
 	void ReceiveSteamMessage(SteamNetworkingMessage_t *message);
 	COMPRESSED_INPUT_TYPE AdvanceInput();
 	const PracticeInputMsg &GetNextMsg();
+
+	bool HasBeenSentStartMessage();
 };
 
 
@@ -115,6 +129,7 @@ struct NetplayManager
 	enum Action
 	{
 		A_IDLE,
+		A_PRACTICE_QUERYING_LOBBIES,
 		A_PRACTICE_CHECKING_FOR_LOBBIES,
 		A_PRACTICE_WAIT_FOR_IN_LOBBY,
 		A_PRACTICE_CONNECT,
@@ -173,6 +188,8 @@ struct NetplayManager
 
 	boost::thread *loadThread;
 
+	int numPracticeUsersPerWorld[8];
+
 	LobbyManager *lobbyManager;
 	ConnectionManager *connectionManager;
 	GameSession *game;
@@ -204,6 +221,7 @@ struct NetplayManager
 	MatchResultsScreen *resultsScreen;
 
 	std::string practiceSearchMapPath;
+	int practiceSearchAdventureMapIndex;
 
 	int currMapIndex;
 
@@ -242,13 +260,15 @@ struct NetplayManager
 	void AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci );
 	void RemoveDesyncCheckInfos(int numRollbackFrames);
 	void UpdateNetplayPlayers();
+	void UpdatePracticePlayers();
 	bool IsHost();
 	bool IsLobbyHost();
 	void Abort();
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	void FindQuickplayMatch();
-	void FindPracticeMatch( const std::string &mapPath );
+	void FindPracticeMatch( const std::string &mapPath, int adventureMapIndex );
+	
 	void LoadMap();
 	void HandleLobbyMessage(LobbyMessage &msg);
 	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
@@ -305,10 +325,10 @@ struct NetplayManager
 
 	void SendLobbyDataForNextMapToClients(LobbyData *ld);
 
-	bool SendPracticeInputMessageToConnection(HSteamNetConnection con, PracticeInputMsg &pm);
-	bool SendPracticeStartMessageToConnection(HSteamNetConnection con, PracticeStartMsg &pm);
+	bool SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm);
+	bool SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeStartMsg &pm);
 	void SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm);
-	void SendPracticeStartMessageToAllPeers(PracticeStartMsg &pm);
+	void SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
@@ -325,6 +345,8 @@ struct NetplayManager
 	bool IsPracticeMode();
 
 	bool TrySetupPractice( GameSession *game );
+
+	void QueryPracticeMatches();
 };
 
 #endif
