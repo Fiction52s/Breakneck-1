@@ -208,7 +208,7 @@ void RelativeComboer::PopThrow()
 {
 	V2d dir;
 
-	dir = Get8Dir(receivedHit->hDir);	
+	dir = Get8Dir(receivedHit.hDir);	
 
 	Pop();
 

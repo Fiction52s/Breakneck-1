@@ -290,7 +290,7 @@ void WireJuggler::PopThrow()
 {
 	V2d dir;
 
-	dir = receivedHit->hDir;//normalize(receivedHit->hDir);
+	dir = receivedHit.hDir;//normalize(receivedHit->hDir);
 
 	V2d hit(0, -20);
 
@@ -350,13 +350,13 @@ bool WireJuggler::CanBeHitByComboer()
 
 void WireJuggler::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
-		if (receivedHit->hType == HitboxInfo::WIREHITRED)
+		if (receivedHit.hType == HitboxInfo::WIREHITRED)
 		{
 			numHealth -= 1;
 		}
-		else if (receivedHit->hType == HitboxInfo::WIREHITBLUE)
+		else if (receivedHit.hType == HitboxInfo::WIREHITBLUE)
 		{
 			numHealth -= 1;
 		}

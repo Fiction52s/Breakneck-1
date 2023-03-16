@@ -229,7 +229,7 @@ void AttractJuggler::PopThrow()
 {
 	V2d dir;
 
-	dir = receivedHit->hDir;
+	dir = receivedHit.hDir;
 
 	V2d hit = 20.0 * dir;
 

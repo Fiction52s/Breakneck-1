@@ -118,7 +118,7 @@ void RemoteComboer::ResetEnemy()
 
 void RemoteComboer::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
@@ -132,9 +132,9 @@ void RemoteComboer::ProcessHit()
 
 		V2d dir;
 
-		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
+		comboObj->enemyHitboxInfo->hDir = receivedHit.hDir;
 
-		dir = normalize(receivedHit->hDir);
+		dir = normalize(receivedHit.hDir);
 
 		if (dir.x != 0 && dir.y != 0)
 		{

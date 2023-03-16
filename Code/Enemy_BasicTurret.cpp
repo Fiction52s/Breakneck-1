@@ -33,7 +33,6 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	framesWait = 60;
 	bulletSpeed = 10;
-	receivedHit = NULL;
 
 	double width = 208;
 	double height = 176;
@@ -256,7 +255,7 @@ void BasicTurret::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void BasicTurret::EnemyDraw(sf::RenderTarget *target )

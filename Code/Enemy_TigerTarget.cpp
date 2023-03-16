@@ -405,9 +405,9 @@ void TigerTarget::ProcessHit()
 
 		V2d dir;
 
-		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
+		comboObj->enemyHitboxInfo->hDir = receivedHit.hDir;
 
-		dir = normalize(receivedHit->hDir);
+		dir = normalize(receivedHit.hDir);
 
 		/*if (dir.x != 0 && dir.y != 0)
 		{

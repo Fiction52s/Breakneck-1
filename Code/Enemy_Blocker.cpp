@@ -328,7 +328,7 @@ void Blocker::ProcessHit()
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 
-		if (receivedHit->hType == HitboxInfo::COMBO)
+		if (receivedHit.hType == HitboxInfo::COMBO)
 		{
 			comboHitEnemy->ComboKill(this);
 		}
@@ -431,27 +431,27 @@ bool Blocker::IsFastDying()
 	case GREY:
 		return true;
 	case BLUE:
-		if (receivedHit->hType == HitboxInfo::BLUE)
+		if (receivedHit.hType == HitboxInfo::BLUE)
 			return true;
 		break;
 	case GREEN:
-		if (receivedHit->hType == HitboxInfo::GREEN)
+		if (receivedHit.hType == HitboxInfo::GREEN)
 			return true;
 		break;
 	case YELLOW:
-		if (receivedHit->hType == HitboxInfo::YELLOW)
+		if (receivedHit.hType == HitboxInfo::YELLOW)
 			return true;
 		break;
 	case ORANGE:
-		if (receivedHit->hType == HitboxInfo::ORANGE)
+		if (receivedHit.hType == HitboxInfo::ORANGE)
 			return true;
 		break;
 	case RED:
-		if (receivedHit->hType == HitboxInfo::RED)
+		if (receivedHit.hType == HitboxInfo::RED)
 			return true;
 		break;
 	case MAGENTA:
-		if (receivedHit->hType == HitboxInfo::MAGENTA)
+		if (receivedHit.hType == HitboxInfo::MAGENTA)
 			return true;
 		break;
 	}

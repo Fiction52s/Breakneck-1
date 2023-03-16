@@ -254,7 +254,7 @@ void GrindJuggler::PopThrow()
 {
 	V2d dir;
 
-	dir = Get8Dir(receivedHit->hDir);//normalize(receivedHit->hDir);
+	dir = Get8Dir(receivedHit.hDir);//normalize(receivedHit->hDir);
 							//cout << "dir: " << dir.x << "," << dir.y << endl;
 	if (dir.x == 0 && dir.y == 0)
 	{

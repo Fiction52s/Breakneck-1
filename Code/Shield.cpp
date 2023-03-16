@@ -77,15 +77,15 @@ void Shield::ConfirmHitNoKill()
 {
 	assert(receivedHit != NULL);
 
-	if (receivedHit->hType != HitboxInfo::COMBO)
+	if (receivedHit.hType != HitboxInfo::COMBO)
 	{
 		//parent->sess->Pause(5);
-		data.pauseFrames = receivedHit->hitlagFrames;
+		data.pauseFrames = receivedHit.hitlagFrames;
 	}
 	else
 	{
 		//cout << "set pause frames 5" << endl;
-		data.pauseFrames = receivedHit->hitlagFrames;
+		data.pauseFrames = receivedHit.hitlagFrames;
 	}
 
 	parent->pauseFrames = data.pauseFrames;
@@ -101,9 +101,9 @@ V2d Shield::GetPosition()
 
 void Shield::ConfirmKill()
 {
-	assert(receivedHit != NULL);
+	assert(!receivedHit.IsEmpty());
 
-	if (receivedHit->hType != HitboxInfo::COMBO)
+	if (receivedHit.hType != HitboxInfo::COMBO)
 	{
 		//parent->sess->Pause(7);
 		data.pauseFrames = 7;
@@ -122,7 +122,7 @@ void Shield::ConfirmKill()
 
 void Shield::ProcessHit()
 {
-	if (data.action != S_BREAK && ReceivedHit() && data.currHits > 0)
+	if (data.action != S_BREAK && HasReceivedHit() && data.currHits > 0)
 	{
 		--data.currHits;
 		if (data.currHits == 0)
@@ -140,7 +140,7 @@ void Shield::ProcessHit()
 			{
 				data.action = S_HURT;
 			}
-			else if (sType == T_REFLECT && receivedHit->hType != HitboxInfo::HitboxType::COMBO)
+			else if (sType == T_REFLECT && receivedHit.hType != HitboxInfo::HitboxType::COMBO)
 			{
 				data.action = S_REFLECT;
 				parent->sess->PlayerApplyHit(GetReceivedHitPlayerIndex(),
