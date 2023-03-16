@@ -76,7 +76,7 @@ int PracticePlayer::HasInputs()
 
 	if (nextFrameToRead < waitingForFrame)
 	{
-		cout << "has input. num frames had: " << waitingForFrame - nextFrameToRead << "\n";
+		//cout << "has input. num frames had: " << waitingForFrame - nextFrameToRead << "\n";
 
 		assert(messages[currReadIndex].frame == nextFrameToRead);
 
@@ -145,7 +145,7 @@ void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 
 	if (pm.frame == waitingForFrame)
 	{
-		cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
+		//cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
 
 		++waitingForFrame;
 
@@ -1706,7 +1706,7 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	int r = rand() % 2;
 	cout << "choosing quickplay map: " << r << endl;
 
-	//r = 0; //just for testing
+	r = 0; //just for testing
 
 	if (r == 0)
 	{

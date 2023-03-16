@@ -78,6 +78,7 @@
 #include "DeathSequence.h"
 #include "NameTag.h"
 #include "LogMenu.h"
+#include "NetplayManager.h"
 
 using namespace sf;
 using namespace std;
@@ -4569,7 +4570,10 @@ void Actor::Respawn( bool setStartPos )
 	{
 		if (parallelPracticeAndImParallel)
 		{
-			nameTag->SetName("parallel");
+			assert(sess->netplayManager != NULL);
+
+			string pName = sess->netplayManager->practicePlayers[sess->parallelSessionIndex].name;
+			nameTag->SetName(pName);
 			nameTag->SetActive(true);
 		}
 		else
@@ -5557,7 +5561,8 @@ void Actor::SetKinMode(Mode m)
 void Actor::UpdateDrain()
 {
 	if (sess->gameModeType != MatchParams::GAME_MODE_BASIC
-		&& sess->gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+		&& sess->gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE
+		&& sess->gameModeType != MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 	{
 		return;
 	}
@@ -15484,7 +15489,8 @@ void Actor::HitGoal()
 
 void Actor::ProcessHitGoal()
 {
-	if (sess->gameModeType != MatchParams::GAME_MODE_BASIC)
+	if (sess->gameModeType != MatchParams::GAME_MODE_BASIC
+		&& sess->gameModeType != MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 	{
 		return;
 	}
@@ -21450,7 +21456,7 @@ void Actor::UpdateInHitlag()
 			if( ground != NULL || ( ground == NULL && hasAirDash ) )
 				pauseBufferedDash = true;
 		}
-	}	
+	}
 
 	UpdateDrain();
 	//if (flashFrames > 0)

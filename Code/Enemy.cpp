@@ -2314,7 +2314,18 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 		( e->playerIndex < 0 || e->playerIndex == player->actorIndex) )
 	{
 		comboHitEnemy = NULL;
-		receivedHit = *IsHit(player->actorIndex);
+
+
+		HitboxInfo *hit = IsHit(player->actorIndex);
+		if (hit != NULL)
+		{
+			receivedHit = *hit;
+		}
+		else
+		{
+			receivedHit.SetEmpty();
+		}
+		
 
 		receivedHitPlayerIndex = player->actorIndex;
 		if (receivedHit.IsEmpty())

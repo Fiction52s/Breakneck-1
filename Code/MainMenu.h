@@ -151,6 +151,7 @@ struct MainMenu
 		WORLDMAP,
 		LOAD_ADVENTURE_MAP,
 		SETUP_PRACTICE_ADVENTURE_MAP,
+		SETUP_PRACTICE_ADVENTURE_MAP_BOOST,
 		LOADINGMENUSTART,
 		LOADINGMENULOOP,
 		LOADINGMENUEND,
@@ -383,6 +384,8 @@ struct MainMenu
 
 	static void sGoToNextLevel(MainMenu *m,
 		AdventureMap *am,
+		Level *lev);
+	void GoToNextLevel(AdventureMap *am,
 		Level *lev);
 
 	static void copyDirectoryRecursively(

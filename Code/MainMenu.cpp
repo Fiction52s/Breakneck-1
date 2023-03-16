@@ -1941,6 +1941,7 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 	//fader->Clear();
 	//fader->
 	//swiper->Swipe(Swiper::W1, 15, true);
+	gameRunType = GRT_ADVENTURE;
 	SetMode(KINBOOSTLOADINGMAP);
 	//preScreenTexture->setView(v);
 	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
@@ -2040,58 +2041,42 @@ void MainMenu::PlayIntroMovie()
 
 void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const std::string &levName)
 {
-
-	//sf::sleep(sf::milliseconds(1000));
-
-	//m->window->setVerticalSyncEnabled(false);
-
-	
-
-	//SaveFile *currFile = m->GetCurrSaveFile();
-	//currFile->Save();
-
-	//AdventureMap &am = worldMap->
-	string levName = am->GetMapPath();
-	//Level *lev = &(currFile->worlds[0].sectors[0].levels[0]);
-	//delete m->currLevel;
-
 	GameSession *old = m->currLevel;
-	////m->deadLevel = m->currLevel;
-
 	delete old;
 
-	
+	m->GoToNextLevel(am, lev);
+}
+
+void MainMenu::GoToNextLevel(AdventureMap *am,
+	Level *lev)
+{
+	string levelPath = am->GetMapPath();
+
+	adventureManager->leaderboard->Reset();
+
 	MatchParams mp;
-	mp.saveFile = m->adventureManager->currSaveFile;// ->files[m->saveMenu->selectedSaveIndex];
-	mp.mapPath = levName;
-	mp.controllerStateVec[0] = m->adventureManager->controllerInput;
-	mp.controlProfiles[0] = m->adventureManager->currProfile;
-	mp.playerSkins[0] = m->adventureManager->currSaveFile->defaultSkinIndex;
+	mp.saveFile = adventureManager->currSaveFile;
+	mp.mapPath = levelPath;
+	mp.controllerStateVec[0] = adventureManager->controllerInput;
+	mp.controlProfiles[0] = adventureManager->currProfile;
+	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
 
-	m->currLevel = new GameSession(&mp);
-	m->currLevel->level = lev;
-	m->currLevel->boostEntrance = true;
+	//do this when using practice mode!
+	if (adventureManager->parallelPracticeMode)
+	{
+		mp.gameModeType = MatchParams::GAME_MODE_PARALLEL_PRACTICE;
+		mp.netplayManager = netplayManager;
+		mp.numPlayers = 2; //me plus 1 other person for now
+		netplayManager->FindPracticeMatch(levelPath, lev->index);
+	}
 
-	m->adventureManager->currLevel = m->currLevel;
-	//
-	
-	//
-	GameSession::sLoad(m->currLevel);
+	currLevel = new GameSession(&mp);
+	currLevel->level = lev;
+	currLevel->boostEntrance = true;
 
-	//sf::sleep(sf::milliseconds(50000));
-	//m->loadThread = new boost::thread(GameSession::sLoad, m->currLevel);
-	//m->loadThread->join();
+	adventureManager->currLevel = currLevel;
 
-	//delete m->loadThread;
-	//m->loadThread = NULL;
-
-	//delete	m->loadThread;
-	//m->loadThread = NULL;
-
-	//cout << "deleting deadLevel: " << m->deadLevel << endl;
-	//delete m->deadLevel;
-
-	//m->deadLevel = NULL;
+	GameSession::sLoad(currLevel);
 }
 
 void MainMenu::UpdateMenuMode()
@@ -2342,47 +2327,34 @@ void MainMenu::HandleMenuMode()
 				delete deadThread;
 				deadThread = NULL;
 			}
-			else
-			{
-			}
 		}
 
-		if (deadThread == NULL)
+		if (netplayManager != NULL && netplayManager->IsPracticeMode())
 		{
-			if (loadThread != NULL)//loadThread->try_join_for(boost::chrono::milliseconds(0)))
-			{
-				//loadThread->join();
-
-			}
+			netplayManager->Update();
 		}
 
 		if (adventureManager->kinBoostScreen->IsEnded())//swiper->IsPostWipe())
 		{
-			//mainMenu->fader->Fade(true, 30, Color::Black, true);
 			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
-			gameRunType = GRT_ADVENTURE;
 			SetMode(RUN_ADVENTURE_MAP);
 		}
 		else if (adventureManager->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && adventureManager->kinBoostScreen->IsBoosting())
 		{
-			//gameRunType = GRT_ADVENTURE;
-			//SetMode(RUNNINGMAP);
-			adventureManager->kinBoostScreen->End();
-
-			//gameRunType = GRT_ADVENTURE;
-			//SetMode(RUNNINGMAP);
-			//window->setVerticalSyncEnabled(true);
-			//kinBoostScreen->
-			//kinBoostScreen->End();
-
-
-			//swiper->Swipe(Swiper::W1, 15);
-			//return HandleMenuMode();
+			if (netplayManager != NULL && netplayManager->IsPracticeMode())
+			{
+				if (netplayManager->TrySetupPractice(currLevel))
+				{
+					adventureManager->kinBoostScreen->End();
+				}
+			}
+			else
+			{
+				adventureManager->kinBoostScreen->End();
+			}
 		}
 		else
 		{
-			//kinBoostScreen->Update();
-
 			if (adventureManager->kinBoostScreen->frame == 60 && adventureManager->kinBoostScreen->IsBoosting())
 			{
 				//window->setVerticalSyncEnabled(false);

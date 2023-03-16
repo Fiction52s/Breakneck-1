@@ -2237,9 +2237,18 @@ void GameSession::SetupPlayerRecordingManager()
 	{
 		playerRecordingManager = parentGame->playerRecordingManager;
 	}
-	else if (gameModeType == MatchParams::GAME_MODE_BASIC && playerRecordingManager == NULL)//mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
+	else if (( gameModeType == MatchParams::GAME_MODE_BASIC || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE )
+		&& playerRecordingManager == NULL)//mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
 	{
-		playerRecordingManager = new PlayerRecordingManager(matchParams.numPlayers);
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+		{
+			playerRecordingManager = new PlayerRecordingManager(1);
+		}
+		else
+		{
+			playerRecordingManager = new PlayerRecordingManager(matchParams.numPlayers);
+		}
+		
 	}
 }
 
