@@ -2585,6 +2585,24 @@ void NetplayManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 
 				UpdatePracticePlayers();
 			}
+			else if ((flags & k_EChatMemberStateChangeDisconnected)
+				|| (flags & k_EChatMemberStateChangeBanned)
+				|| (flags & k_EChatMemberStateChangeKicked)
+				|| (flags & k_EChatMemberStateChangeLeft))
+			{
+				for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+				{
+					if (practicePlayers[i].id.ConvertToUint64() == pCallback->m_ulSteamIDUserChanged)
+					{
+						cout << "member left lobby" << "\n";
+
+						practicePlayers[i].Clear();
+
+						UpdatePracticePlayers();
+					}
+				}
+				
+			}
 
 		}
 	}
