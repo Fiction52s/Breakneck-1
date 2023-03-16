@@ -136,7 +136,7 @@ void DimensionEye::HandleHitAndSurvive()
 
 void DimensionEye::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		GameSession *game = GameSession::GetSession();
 
@@ -168,6 +168,6 @@ void DimensionEye::ProcessHit()
 		//	ConfirmHitNoKill();
 		//}
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 	}
 }

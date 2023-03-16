@@ -178,7 +178,7 @@ void Goal::ProcessState()
 
 void Goal::HandleNoHealth()
 {
-	sess->PlayerHitGoal(receivedHitPlayer->actorIndex);
+	sess->PlayerHitGoal(receivedHitPlayerIndex);
 	sess->KillAllEnemies();
 	frame = 0;
 	

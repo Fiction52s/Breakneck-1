@@ -188,7 +188,7 @@ void LogItem::ResetEnemy()
 
 	action = FLOAT;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 
@@ -350,7 +350,7 @@ void LogItem::ProcessState()
 
 void LogItem::ProcessHit()
 {
-	if (!dead && ReceivedHit() && action == FLOAT)
+	if (!dead && HasReceivedHit() && action == FLOAT)
 	{
 		DissipateOnTouch();
 	}

@@ -154,7 +154,7 @@ void Gorilla::ResetEnemy()
 	frame = 0;
 	data.basePos = startPosInfo.GetPosition();
 	
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 	UpdateSprite();

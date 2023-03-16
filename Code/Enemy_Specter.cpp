@@ -149,7 +149,7 @@ void Specter::ResetEnemy()
 
 	dead = false;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	
 	UpdateHitboxes();
 	UpdateSprite();

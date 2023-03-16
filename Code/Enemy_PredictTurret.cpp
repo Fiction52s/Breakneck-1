@@ -255,7 +255,7 @@ void PredictTurret::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void PredictTurret::UpdateSprite()

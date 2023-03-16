@@ -123,7 +123,7 @@ void Pufferfish::DirectKill()
 		b = next;
 	}
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void Pufferfish::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)

@@ -461,7 +461,7 @@ void Widow::DirectKill()
 		b = next;
 	}
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 int Widow::GetNumStoredBytes()

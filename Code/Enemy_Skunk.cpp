@@ -327,7 +327,7 @@ void Skunk::UpdateEnemyPhysics()
 
 void Skunk::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		numHealth -= 1;
 
@@ -362,7 +362,7 @@ void Skunk::ProcessHit()
 
 		
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 	}
 
 	//if (action != EXPLODE && !dead && ReceivedHit() && numHealth > 0)

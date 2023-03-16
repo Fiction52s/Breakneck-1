@@ -2298,6 +2298,10 @@ V2d Enemy::GetFocusedPlayerDir()
 }
 
 
+HittableObject::HittableObject()
+{
+	receivedHit.SetEmpty();
+}
 
 int HittableObject::GetReceivedHitPlayerIndex()
 {
@@ -2329,6 +2333,20 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 		return true;
 	}
 	return false;
+}
+
+HitboxInfo * HittableObject::IsHit(int pIndex)
+{
+	return NULL;
+}
+
+const bool HittableObject::HasReceivedHit()
+{
+	return !receivedHit.IsEmpty();
+}
+
+void HittableObject::ProcessHit()
+{
 }
 
 CuttableObject::CuttableObject()
@@ -2693,32 +2711,4 @@ void StoredEnemyData::Print()
 	cout << "currHurtboxFrame: " << currHurtboxFrame << endl;
 	cout << "currHitboxes: " << currHitboxes << endl;
 	cout << "currHurtboxes: " << currHurtboxes << endl;*/
-}
-
-HittableObject::HittableObject()
-{
-	receivedHit.SetEmpty();
-}
-
-HitboxInfo * HittableObject::IsHit(int pIndex) 
-{ 
-	return NULL; 
-}
-
-const bool HittableObject::HasReceivedHit()
-{
-	return !receivedHit.IsEmpty();
-}
-bool HittableObject::CheckHit(Actor *player, Enemy* e)
-{
-
-}
-
-int HittableObject::GetReceivedHitPlayerIndex()
-{
-
-}
-
-void HittableObject::ProcessHit()
-{
 }

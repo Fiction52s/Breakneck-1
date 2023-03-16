@@ -77,7 +77,7 @@ void Shroom::ResetEnemy()
 	action = LATENT;
 	frame = 0;
 	dead = false;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	slowCounter = 1;
 	data.jellySpawnable = true;
 	slowMultiple = 1;
@@ -248,7 +248,7 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	ts = GetSizedTileset("Enemies/W1/shroom_jelly_160x160.png");
 	sprite.setTexture(*ts->texture);
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	floatSound = GetSound("Enemies/shroom_float");
 
@@ -413,7 +413,7 @@ void ShroomJelly::ResetEnemy()
 	data.currentCycle = 0;
 	frame = 0;
 	dead = false;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	slowCounter = 1;
 	slowMultiple = 1;
 	data.velocity = V2d(0, 0);

@@ -298,7 +298,7 @@ void SplitComboer::ResetEnemy()
 	pathFollower.Reset();
 	action = S_FLOAT;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 

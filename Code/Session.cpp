@@ -4844,7 +4844,7 @@ void Session::DrawEnemies(sf::RenderTarget *target)
 	Enemy *current = activeEnemyList;
 	while (current != NULL)
 	{
-		if (current->type != EnemyType::EN_BASICEFFECT && (pauseFrames < 2 || current->receivedHit == NULL))
+		if (current->type != EnemyType::EN_BASICEFFECT && (pauseFrames < 2 || current->receivedHit.IsEmpty()))
 		{
 			current->Draw(preScreenTex);
 		}
@@ -4862,7 +4862,7 @@ void Session::DrawHitEnemies(sf::RenderTarget *target)
 	Enemy *current = activeEnemyList;
 	while (current != NULL)
 	{
-		if ((pauseFrames >= 2 && current->receivedHit != NULL))
+		if ((pauseFrames >= 2 && !current->receivedHit.IsEmpty() ))
 		{
 			current->Draw(target);
 		}

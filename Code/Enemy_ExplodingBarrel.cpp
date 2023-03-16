@@ -129,7 +129,7 @@ void ExplodingBarrel::ResetEnemy()
 
 void ExplodingBarrel::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();

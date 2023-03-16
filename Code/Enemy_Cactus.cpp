@@ -230,7 +230,7 @@ void Cactus::Draw(sf::RenderTarget *target)
 
 void Cactus::DirectKill()
 {
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void Cactus::ThrowShotgun()
@@ -515,7 +515,7 @@ void CactusShotgun::UpdateEnemyPhysics()
 
 void CactusShotgun::DirectKill()
 {
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	ClearSprite();
 	myPool->DeactivatePoolMember(this);
 }

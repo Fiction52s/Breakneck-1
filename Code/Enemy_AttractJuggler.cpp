@@ -155,7 +155,7 @@ void AttractJuggler::ResetEnemy()
 	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	UpdateHitboxes();
 
 	data.currJuggle = 0;
@@ -242,7 +242,7 @@ void AttractJuggler::PopThrow()
 
 void AttractJuggler::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		numHealth -= 1;
 

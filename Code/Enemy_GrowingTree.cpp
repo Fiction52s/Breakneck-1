@@ -391,7 +391,7 @@ void GrowingTree::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void GrowingTree::BulletHitTerrain(BasicBullet *b, 

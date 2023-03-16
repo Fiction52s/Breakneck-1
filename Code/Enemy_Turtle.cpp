@@ -108,7 +108,7 @@ void Turtle::DirectKill()
 		b = next;
 	}
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )

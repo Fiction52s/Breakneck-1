@@ -21,7 +21,7 @@ using namespace sf;
 RaceFightTarget::RaceFightTarget( ActorParams *ap)//Vector2i &pos )
 	:Enemy( EnemyType::EN_RACEFIGHTTARGET, ap)//., false, 1 )
 {
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	//position = ap->GetPosition();
 	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
@@ -72,7 +72,7 @@ void RaceFightTarget::ResetEnemy()
 	frame = 0;
 	
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 

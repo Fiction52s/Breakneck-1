@@ -171,7 +171,7 @@ void QueenFloatingBomb::ResetEnemy()
 
 void QueenFloatingBomb::ProcessHit()
 {
-	if (!dead && ReceivedHit() && action == FLOATING)
+	if (!dead && HasReceivedHit() && action == FLOATING)
 	{
 		Explode();
 	}

@@ -22,7 +22,7 @@ int MultiplayerProgressTarget::GetNumStoredBytes()
 
 void MultiplayerProgressTarget::StoreBytes(unsigned char *bytes)
 {
-	MyData md;
+	/*MyData md;
 	memset(&md, 0, sizeof(MyData));
 	md.dead = dead;
 	md.receivedHit = receivedHit;
@@ -32,12 +32,12 @@ void MultiplayerProgressTarget::StoreBytes(unsigned char *bytes)
 	md.next = next;
 	md.receivedHitPlayer = receivedHitPlayer;
 	memcpy(md.hitBy, hitBy, sizeof(hitBy));
-	memcpy(bytes, &md, sizeof(MyData));
+	memcpy(bytes, &md, sizeof(MyData));*/
 }
 
 void MultiplayerProgressTarget::SetFromBytes(unsigned char *bytes)
 {
-	MyData md;
+	/*MyData md;
 	memcpy(&md, bytes, sizeof(MyData));
 
 	dead = md.dead;
@@ -48,7 +48,7 @@ void MultiplayerProgressTarget::SetFromBytes(unsigned char *bytes)
 	next = md.next;
 	memcpy(hitBy, md.hitBy, sizeof(hitBy));
 
-	receivedHitPlayer = md.receivedHitPlayer;
+	receivedHitPlayer = md.receivedHitPlayer;*/
 }
 
 MultiplayerProgressTarget::MultiplayerProgressTarget(ActorParams *ap)
@@ -129,12 +129,12 @@ HitboxInfo * MultiplayerProgressTarget::IsHit(int pIndex)
 void MultiplayerProgressTarget::ProcessHit()
 {
 	int receivedHitIndex = GetReceivedHitPlayerIndex();
-	if (!dead && ReceivedHit() && numHealth > 0 && !hitBy[receivedHitIndex])
+	if (!dead && HasReceivedHit() && numHealth > 0 && !hitBy[receivedHitIndex])
 	{
 		sess->PlayerConfirmEnemyNoKill(this, receivedHitIndex);
 		ConfirmHitNoKill();
 		hitBy[receivedHitIndex] = true;
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 
 		if (sess->gameModeType == MatchParams::GAME_MODE_REACHENEMYBASE)
 		{

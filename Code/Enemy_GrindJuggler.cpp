@@ -277,7 +277,7 @@ void GrindJuggler::PopThrow()
 
 void GrindJuggler::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		numHealth -= 1;
 

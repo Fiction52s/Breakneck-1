@@ -256,7 +256,7 @@ void HungryComboer::PopThrow()
 
 void HungryComboer::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		numHealth -= 1;
 

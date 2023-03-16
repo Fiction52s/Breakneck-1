@@ -35,7 +35,7 @@ void Shield::Reset()
 //returns false when the shield is dead
 bool Shield::ProcessState()
 {
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	if (data.pauseFrames > 0)
 		return true;
@@ -75,7 +75,7 @@ bool Shield::ProcessState()
 
 void Shield::ConfirmHitNoKill()
 {
-	assert(receivedHit != NULL);
+	assert(!receivedHit.IsEmpty());
 
 	if (receivedHit.hType != HitboxInfo::COMBO)
 	{
@@ -236,7 +236,7 @@ int Shield::GetNumStoredBytes()
 void Shield::StoreBytes(unsigned char *bytes)
 {
 	data.hittableObjectData.receivedHit = receivedHit;
-	data.hittableObjectData.receivedHitPlayer = receivedHitPlayer;
+	data.hittableObjectData.receivedHitPlayerIndex = receivedHitPlayerIndex;
 	data.hittableObjectData.comboHitEnemy = comboHitEnemy;
 	data.hittableObjectData.numHealth = numHealth;
 	data.hittableObjectData.specterProtected = specterProtected;
@@ -250,7 +250,7 @@ void Shield::SetFromBytes(unsigned char *bytes)
 	memcpy(&data, bytes, sizeof(MyData));
 	
 	receivedHit = data.hittableObjectData.receivedHit;
-	receivedHitPlayer = data.hittableObjectData.receivedHitPlayer;
+	receivedHitPlayerIndex = data.hittableObjectData.receivedHitPlayerIndex;
 	comboHitEnemy = data.hittableObjectData.comboHitEnemy;
 	numHealth = data.hittableObjectData.numHealth;
 	specterProtected = data.hittableObjectData.specterProtected;

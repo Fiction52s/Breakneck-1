@@ -196,7 +196,7 @@ void Owl::DirectKill()
 
 		b = next;
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void Owl::ActionEnded()

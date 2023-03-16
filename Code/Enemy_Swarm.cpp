@@ -21,7 +21,7 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 	frame = 0;
 	slowMultiple = 1;
 	slowCounter = 1;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 60;
@@ -153,7 +153,7 @@ void SwarmMember::ResetEnemy()
 	data.velocity = V2d( 0, 0 );
 	slowMultiple = 1;
 	slowCounter = 1;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 	ClearSprite();
@@ -300,7 +300,7 @@ void Swarm::ResetEnemy()
 
 	action = NEUTRAL;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 	UpdateSprite();

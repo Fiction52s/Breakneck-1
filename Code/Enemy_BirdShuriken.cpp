@@ -222,11 +222,11 @@ void BirdShuriken::SetLevel(int lev)
 
 void BirdShuriken::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		Die();
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 	}
 }
 
@@ -377,7 +377,7 @@ void BirdShuriken::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void BirdShuriken::Die()

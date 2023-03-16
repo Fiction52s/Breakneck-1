@@ -93,7 +93,7 @@ void DimensionExit::EnemyDraw(sf::RenderTarget *target)
 
 void DimensionExit::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		GameSession *game = GameSession::GetSession();
 
@@ -119,7 +119,7 @@ void DimensionExit::ProcessHit()
 		//	ConfirmHitNoKill();
 		//}
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 	}
 }
 

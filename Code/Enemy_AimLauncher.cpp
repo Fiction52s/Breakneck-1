@@ -151,7 +151,7 @@ AimLauncher::AimLauncher(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2
 	V2d position = GetPosition();
 	Vector2f positionF(position);
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	debugSpeed.setFont(sess->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);
@@ -207,7 +207,7 @@ void AimLauncher::ResetEnemy()
 {
 	dead = false;
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	action = IDLE;
 	
 

@@ -404,7 +404,7 @@ int Boss::ChooseNextAction()
 
 void Boss::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 1)
+	if (!dead && HasReceivedHit() && numHealth > 1)
 	{
 		numHealth -= 1;
 
@@ -431,7 +431,7 @@ void Boss::ProcessHit()
 			}
 		}
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 	}
 }
 

@@ -218,7 +218,7 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 
 	minimapCirclePoints = 20;
 	
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	startPosInfo.position = pos;
 	SetCurrPosInfo(startPosInfo);
@@ -323,7 +323,7 @@ void Blocker::ProcessState()
 
 void Blocker::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();

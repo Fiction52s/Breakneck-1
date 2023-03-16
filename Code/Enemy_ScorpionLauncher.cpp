@@ -94,7 +94,7 @@ ScorpionLauncher::ScorpionLauncher(ActorParams *ap)//SpringType sp, Vector2i &po
 	V2d position = GetPosition();
 	Vector2f positionF(position);
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	debugSpeed.setFont(sess->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);
@@ -141,7 +141,7 @@ void ScorpionLauncher::ResetEnemy()
 {
 	dead = false;
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	action = IDLE;
 	//sprite.setTexture(*ts_idle->texture);
 

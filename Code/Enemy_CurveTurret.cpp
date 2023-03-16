@@ -284,7 +284,7 @@ void CurveTurret::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void CurveTurret::UpdateSprite()

@@ -190,7 +190,7 @@ void Shard::ResetEnemy()
 	
 	action = FLOAT;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 
@@ -405,7 +405,7 @@ void Shard::ProcessState()
 
 void Shard::ProcessHit()
 {
-	if (!dead && ReceivedHit() && action == FLOAT)
+	if (!dead && HasReceivedHit() && action == FLOAT)
 	{
 		DissipateOnTouch();
 	}

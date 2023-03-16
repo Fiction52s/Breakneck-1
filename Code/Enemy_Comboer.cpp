@@ -160,7 +160,7 @@ void Comboer::ProcessHit()
 
 		receivedHit.SetEmpty();
 
-		/*switch (receivedHit->hDir)
+		/*switch (receivedHit.hDir)
 		{
 		case HitboxInfo::LEFT:
 			dir = V2d(-1, 0);

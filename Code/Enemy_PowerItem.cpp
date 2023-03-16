@@ -209,7 +209,7 @@ void PowerItem::ResetEnemy()
 
 	action = FLOAT;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 
@@ -378,7 +378,7 @@ void PowerItem::ProcessState()
 
 void PowerItem::ProcessHit()
 {
-	if (!dead && ReceivedHit() && action == FLOAT)
+	if (!dead && HasReceivedHit() && action == FLOAT)
 	{
 		DissipateOnTouch();
 	}

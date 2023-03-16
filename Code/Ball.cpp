@@ -142,7 +142,7 @@ void Ball::ResetEnemy()
 	//DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	data.currJuggle = 0;
 
 	surfaceMover->Set(startPosInfo);
@@ -268,7 +268,7 @@ void Ball::UpdateJuggleRepsText(int reps)
 
 void Ball::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		numHealth -= 1;
 

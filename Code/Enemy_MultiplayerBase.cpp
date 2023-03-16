@@ -22,22 +22,22 @@ int MultiplayerBase::GetNumStoredBytes()
 
 void MultiplayerBase::StoreBytes(unsigned char *bytes)
 {
-	MyData md;
-	memset(&md, 0, sizeof(MyData));
-	md.dead = dead;
-	md.receivedHit = receivedHit;
-	md.pauseFrames = pauseFrames;
-	md.numHealth = numHealth;
-	md.prev = prev;
-	md.next = next;
-	md.receivedHitPlayer = receivedHitPlayer;
-	//memset(&bd.pad, 0, 3 * sizeof(char));
-	memcpy(bytes, &md, sizeof(MyData));
+	//MyData md;
+	//memset(&md, 0, sizeof(MyData));
+	//md.dead = dead;
+	//md.receivedHit = receivedHit;
+	//md.pauseFrames = pauseFrames;
+	//md.numHealth = numHealth;
+	//md.prev = prev;
+	//md.next = next;
+	//md.receivedHitPlayer = receivedHitPlayer;
+	////memset(&bd.pad, 0, 3 * sizeof(char));
+	//memcpy(bytes, &md, sizeof(MyData));
 }
 
 void MultiplayerBase::SetFromBytes(unsigned char *bytes )
 {
-	MyData md;
+	/*MyData md;
 	memcpy(&md, bytes, sizeof(MyData));
 
 	dead = md.dead;
@@ -47,7 +47,7 @@ void MultiplayerBase::SetFromBytes(unsigned char *bytes )
 	prev = md.prev;
 	next = md.next;
 	
-	receivedHitPlayer = md.receivedHitPlayer;
+	receivedHitPlayer = md.receivedHitPlayer;*/
 }
 
 MultiplayerBase::MultiplayerBase(ActorParams *ap)

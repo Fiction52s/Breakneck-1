@@ -16,13 +16,13 @@ struct MultiplayerBase : Enemy
 
 	struct MyData
 	{
-		HitboxInfo *receivedHit;
+		/*HitboxInfo *receivedHit;
 		Enemy *prev;
 		Enemy *next;
 		Actor *receivedHitPlayer;
 		int numHealth;
 		int pauseFrames;
-		bool dead;
+		bool dead;*/
 	};
 
 	Tileset *ts;

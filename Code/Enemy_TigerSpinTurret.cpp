@@ -207,7 +207,7 @@ void TigerSpinTurret::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void TigerSpinTurret::FrameIncrement()

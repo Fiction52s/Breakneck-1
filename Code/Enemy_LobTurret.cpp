@@ -313,7 +313,7 @@ void LobTurret::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void LobTurret::UpdateSprite()

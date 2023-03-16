@@ -579,7 +579,7 @@ void Copycat::DirectKill()
 		b = next;
 	}
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 int Copycat::GetNumStoredBytes()

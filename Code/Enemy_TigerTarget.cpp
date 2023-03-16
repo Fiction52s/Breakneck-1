@@ -389,7 +389,7 @@ void TigerTarget::IHitPlayer(int index)
 
 void TigerTarget::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();

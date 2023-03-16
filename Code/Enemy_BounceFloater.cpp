@@ -84,7 +84,7 @@ void BounceFloater::ResetEnemy()
 
 void BounceFloater::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0 && action == S_FLOAT )
+	if (!dead && HasReceivedHit() && numHealth > 0 && action == S_FLOAT )
 	{
 		Actor *player = sess->GetPlayer(0);
 

@@ -172,10 +172,10 @@ sf::FloatRect HealthFly::GetAABB()
 
 void HealthFly::ProcessHit()
 {
-	if (IsCollectible() && ReceivedHit())
+	if (IsCollectible() && HasReceivedHit())
 	{
 		Collect();
-		receivedHitPlayer->CollectFly(this);
+		sess->GetPlayer(receivedHitPlayerIndex)->CollectFly(this);
 	}
 }
 
@@ -225,7 +225,7 @@ void HealthFly::ResetEnemy()
 	dead = false;
 
 	frame = 0;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 
 	SetHitboxes(&hitBody);
 	SetHurtboxes(&hurtBody);

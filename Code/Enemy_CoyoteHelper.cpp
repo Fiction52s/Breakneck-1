@@ -156,7 +156,7 @@ void CoyoteHelper::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 }
 
 void CoyoteHelper::FrameIncrement()

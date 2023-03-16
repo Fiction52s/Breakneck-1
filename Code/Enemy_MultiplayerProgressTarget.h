@@ -16,14 +16,14 @@ struct MultiplayerProgressTarget : Enemy
 
 	struct MyData
 	{
-		HitboxInfo *receivedHit;
+		/*HitboxInfo *receivedHit;
 		Enemy *prev;
 		Enemy *next;
 		int pauseFrames;
 		bool dead;
 		Actor *receivedHitPlayer;
 		int numHealth;
-		bool hitBy[4];
+		bool hitBy[4];*/
 	};
 
 	bool hitBy[4];

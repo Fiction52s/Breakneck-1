@@ -273,7 +273,7 @@ void Teleporter::ResetEnemy()
 	dead = false;
 
 	teleportedPlayer = false;
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	action = IDLE;
 
 	frame = 0;

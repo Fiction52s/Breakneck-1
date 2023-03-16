@@ -160,7 +160,7 @@ void GreyEye::HandleHitAndSurvive()
 
 void GreyEye::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		GameSession *game = GameSession::GetSession();
 
@@ -184,7 +184,7 @@ void GreyEye::ProcessHit()
 					game->ReturnFromBonus();
 				}
 
-				receivedHit = NULL;
+				receivedHit.SetEmpty();
 			}
 		}
 		//numHealth -= 1;
@@ -205,7 +205,7 @@ void GreyEye::ProcessHit()
 		//	ConfirmHitNoKill();
 		//}
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 	}
 }
 
