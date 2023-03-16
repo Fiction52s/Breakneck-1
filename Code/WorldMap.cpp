@@ -27,7 +27,7 @@ WorldMap::WorldMap()
 	mainMenu = MainMenu::GetInstance();
 	adventureManager = mainMenu->adventureManager;
 	
-	allUnlocked = true;
+	allUnlocked = false;
 
 	ship = new WorldMapShip(this);
 
@@ -546,6 +546,15 @@ void WorldMap::Update()
 			//transition back up later instead of just turning off
 			break;
 		}
+		else if (controllerInput->ButtonPressed_Start())
+		{
+			adventureManager->parallelPracticeMode = !adventureManager->parallelPracticeMode;
+
+			if (adventureManager->parallelPracticeMode)
+			{
+				frame = 0;
+			}
+		}
 
 		int numUnlockedWorlds = -1;
 		int numCompletedWorlds = -1;
@@ -599,9 +608,13 @@ void WorldMap::Update()
 		}
 
 
+	
 
-		if (adventureManager->parallelPracticeMode)
+		//a little messy for now until we get a menu
+		if (adventureManager->parallelPracticeMode )
 		{
+			adventureManager->parallelPracticeMode = true;
+
 			NetplayManager *netplayManager = mainMenu->netplayManager;
 			assert(netplayManager != NULL);
 

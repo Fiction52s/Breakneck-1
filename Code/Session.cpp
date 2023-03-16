@@ -6638,7 +6638,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 			{
 				if (netplayManager->practicePlayers[i].isConnectedTo)
 				{
-					pm->parallelGames[i]->DrawPracticeGame(target);
+					pm->parallelGames[i]->DrawPracticeGame(extraScreenTex);
 				}
 			}
 		}
@@ -8517,7 +8517,17 @@ void Session::DrawNameTags(sf::RenderTarget *target)
 	if (IsParallelGameModeType() && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelNameTags(target);
+
+		for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				if (netplayManager->practicePlayers[i].isConnectedTo)
+				{
+					pm->parallelGames[i]->DrawNameTags(target);
+				}
+			}
+		}
 	}
 }
 
