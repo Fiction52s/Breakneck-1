@@ -489,7 +489,6 @@ struct GameSession : RayCastHandler, Session
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);
 
-	void RecordReplayEnemies();
 	void UpdateEnemiesSprites();
 	
 	void ResetPlants();

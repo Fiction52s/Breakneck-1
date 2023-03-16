@@ -111,18 +111,18 @@ struct SlowableObject
 
 struct HittableObject
 {
-	HitboxInfo *receivedHit;
-	Actor *receivedHitPlayer;
+	HitboxInfo receivedHit;
+	int receivedHitPlayerIndex;
 	Enemy *comboHitEnemy;
 	int numHealth;
 	bool specterProtected;
 
-	HittableObject() :receivedHit(NULL) {}
-	virtual HitboxInfo * IsHit(int pIndex) { return NULL; }
-	const bool ReceivedHit() { return receivedHit; }
+	HittableObject();
+	virtual HitboxInfo * IsHit(int pIndex);
+	const bool HasReceivedHit();
 	bool CheckHit(Actor *player, Enemy* e);
 	int GetReceivedHitPlayerIndex();
-	virtual void ProcessHit() {}
+	virtual void ProcessHit();
 };
 
 struct CuttableObject

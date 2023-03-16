@@ -166,14 +166,13 @@ struct PState
 	int setHitstunFrames;
 	int invincibleFrames;
 	HitboxInfo receivedHit;
-	//sf::Vector2<double> bubblePos[5];
 	double xOffset;
 	int action;
 	int frame;
 	double groundSpeed;
 	COMPRESSED_INPUT_TYPE prevInput;
 	COMPRESSED_INPUT_TYPE currInput;
-	EdgeInfo ground;
+	EdgeInfo groundInfo;
 	double quant;
 	
 	double brh;
@@ -208,7 +207,7 @@ struct PState
 	int framesNotGrinding;
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
-	EdgeInfo grindEdge;
+	EdgeInfo grindEdgeInfo;
 	double grindSpeed;
 
 	int slowMultiple;
@@ -245,9 +244,9 @@ struct PState
 	V2d storedBounceVel;
 	V2d bounceNorm;
 	V2d oldBounceNorm;
-	EdgeInfo bounceEdge;
+	EdgeInfo bounceEdgeInfo;
 	double storedBounceGroundSpeed;
-	EdgeInfo oldBounceEdge;
+	EdgeInfo oldBounceEdgeInfo;
 	int framesSinceBounce;
 	bool groundedWallBounce;
 	bool boostBounce;
@@ -286,7 +285,7 @@ struct PState
 
 	int blockstunFrames;
 	int currAttackHitBlock[4];
-	Actor *receivedHitPlayer;
+	int receivedHitPlayerIndex;
 	int receivedHitReaction;
 
 	bool hasWallJumpRechargeDoubleJump;
@@ -301,7 +300,7 @@ struct PState
 
 	int kinMode;
 
-	TerrainRail * prevRail;
+	int prevRailID;
 	bool specialSlow;
 	bool frameAfterAttackingHitlagOver;
 
@@ -311,8 +310,8 @@ struct PState
 	int gravModifyFrames;
 	double extraGravityModifier;
 	V2d waterEntrancePosition;
-	EdgeInfo waterEntranceGround;
-	EdgeInfo waterEntranceGrindEdge;
+	EdgeInfo waterEntranceGroundInfo;
+	EdgeInfo waterEntranceGrindEdgeInfo;
 	double waterEntranceQuantity;
 	double waterEntranceXOffset;
 	double waterEntrancePhysHeight;
@@ -334,34 +333,34 @@ struct PState
 	int freeFlightFrames;
 	int homingFrames;
 	int antiTimeSlowFrames;
-	TimeBooster *currTimeBooster;
-	FreeFlightBooster *currFreeFlightBooster;
-	HomingBooster *currHomingBooster;
-	AntiTimeSlowBooster *currAntiTimeSlowBooster;
-	SwordProjectileBooster *currSwordProjectileBooster;
-	PhaseBooster *currPhaseBooster;
-	MomentumBooster *currMomentumBooster;
-	RewindBooster *currRewindBooster;
+
+	int currTimeBoosterID;
+	int currFreeFlightBoosterID;
+	int currHomingBoosterID;
+	int currAntiTimeSlowBoosterID;
+	int currSwordProjectileBoosterID;
+	int currPhaseBoosterID;
+	int currMomentumBoosterID;
+	int currRewindBoosterID;
+
 	int aimLauncherStunFrames;
 	int airBounceCounter;
 	int airBounceLimit;
 	int phaseFrames;
 	int momentumBoostFrames;
 
-	Spring *currSpring;
-	AimLauncher *currAimLauncher;
-	Teleporter *currTeleporter;
-	Teleporter *oldTeleporter;
-	Booster *currBooster;
-	Booster *oldBooster;
-	SwingLauncher *currSwingLauncher;
-	SwingLauncher *oldSwingLauncher;
-	BounceBooster *currBounceBooster;
-	BounceBooster *oldBounceBooster;
-	ScorpionLauncher *currScorpionLauncher;
-	ScorpionLauncher *oldScorpionLauncher;
-
-	
+	int currSpringID;
+	int currAimLauncherID;
+	int currTeleporterID;
+	int oldTeleporterID;
+	int currBoosterID;
+	int oldBoosterID;
+	int currSwingLauncherID;
+	int oldSwingLauncherID;
+	int currBounceBoosterID;
+	int oldBounceBoosterID;
+	int currScorpionLauncherID;
+	int oldScorpionLauncherID;
 
 	int springStunFrames;
 	int springStunFramesStart;
@@ -378,13 +377,11 @@ struct PState
 
 	ComboObject *activeComboObjList;
 
-	TutorialObject *currTutorialObject;
-	GravityModifier *currGravModifier;
+	int currTutorialObjectID;
+	int currGravModifierID;
 
 	V2d springVel;
 	double glideTurnFactor;
-
-	//HitboxInfo currVSHitboxInfo;
 
 	bool hitGoal;
 
@@ -395,9 +392,11 @@ struct Sequence;
 struct SaveGameState
 {
 	int totalGameFrames;
-	Enemy *activeEnemyList;
-	Enemy *activeEnemyListTail;
-	Enemy *inactiveEnemyList;
+
+	int activeEnemyListID;
+	int activeEnemyListTailID;
+	int inactiveEnemyListID;
+
 	int pauseFrames;
 	Actor *currSuperPlayer;
 	int gameState; //game mode such as RUN or FROZEN

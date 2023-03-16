@@ -20,11 +20,13 @@ void EdgeInfo::InitFromEdge(Edge *e)
 	{
 		eiType = EdgeInfoType::ETI_POLY;
 		ownerIndex = e->poly->polyIndex;
+		edgeIndex = e->edgeIndex;
 	}
 	else if (e->rail != NULL)
 	{
 		eiType = EdgeInfoType::ETI_RAIL;
 		ownerIndex = e->rail->railIndex;
+		edgeIndex = e->edgeIndex;
 	}
 	else
 	{
@@ -34,7 +36,7 @@ void EdgeInfo::InitFromEdge(Edge *e)
 
 void SaveGameState::Print()
 {
-	cout << "totalGameFrames: " << totalGameFrames << "\n";
+	/*cout << "totalGameFrames: " << totalGameFrames << "\n";
 	cout << "activeEnemyList: " << activeEnemyList << "\n";
 	cout << "activeEnemyListTail: " << activeEnemyListTail << "\n";
 	cout << "inactiveEnemyList: " << inactiveEnemyList << "\n";
@@ -42,12 +44,12 @@ void SaveGameState::Print()
 	cout << "currSuperPlayer: " << currSuperPlayer << "\n";
 	cout << "gameState: " << gameState << "\n";
 	cout << "activeSequence: " << activeSequence << "\n";
-	cout << "next frame restart: " << (int)nextFrameRestartGame << "\n";
+	cout << "next frame restart: " << (int)nextFrameRestartGame << "\n";*/
 }
 
 void PState::Print()
 {
-	cout << "position: " << position.x << ", " << position.y << "\n";
+	/*cout << "position: " << position.x << ", " << position.y << "\n";
 	cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
 	cout << "flashFrames: " << flashFrames << "\n";
 	cout << "bufferedAttack: " << bufferedAttack << "\n";
@@ -105,7 +107,7 @@ void PState::Print()
 	cout << "slowMultiple: " << slowMultiple << "\n";
 	cout << "slowCounter: " << slowCounter << "\n";
 	cout << "inBubble: " << inBubble << "\n";
-	cout << "oldInBubble: " << oldInBubble << "\n";
+	cout << "oldInBubble: " << oldInBubble << "\n";*/
 	//cout << "hasAirDash: " << hasAirDash << "\n";
 	//cout << "hasAirDash: " << hasAirDash << "\n";
 	//cout << "hasAirDash: " << hasAirDash << "\n";

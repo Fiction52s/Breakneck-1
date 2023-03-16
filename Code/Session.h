@@ -271,6 +271,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<PolyPtr> allPolysVec;
 	std::vector<RailPtr> allRailsVec;
 	std::list<Enemy*> fullEnemyList;
+	std::vector<Enemy*> allEnemiesVec;
 	GateMarkerGroup *gateMarkers;
 	ZoneNode *zoneTree;
 	ZoneNode *currentZoneNode;
@@ -945,6 +946,13 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetView(const sf::View &p_view);
 	const BitField & GetPracticeUpgradeField();
 	Edge *GetEdge(EdgeInfo * ei);
+	PolyPtr GetPolyFromID(int id);
+	RailPtr GetRailFromID(int id);
+	Enemy *GetEnemyFromID(int id);
+	int GetEnemyID(Enemy *e);
+	int GetRailID(TerrainRail *tr);
+	int GetPolyID(PolyPtr poly);
+	int GetPlayerIndex(Actor *p);
 };
 
 #endif

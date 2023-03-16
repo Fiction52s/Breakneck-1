@@ -23,6 +23,7 @@ using namespace sf;
 PracticePlayer::PracticePlayer()
 	:upgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 {
+	syncStateBuf = NULL;
 	Clear();
 }
 
@@ -35,11 +36,27 @@ void PracticePlayer::Clear()
 	action = A_NEEDS_START;
 
 	isConnectedTo = false;
-	
+
+	ClearSyncStateBuf();
 
 	upgradeField.Reset();
 	skinIndex = 0;
 
+	ClearMessages();
+}
+
+void PracticePlayer::ClearSyncStateBuf()
+{
+	if (syncStateBuf != NULL)
+	{
+		delete syncStateBuf;
+	}
+	syncStateBuf = NULL;
+	syncStateBufSize = 0;
+}
+
+void PracticePlayer::ClearMessages()
+{
 	waitingForFrame = 0;
 	currReadIndex = 0;
 	currWriteIndex = 0;
@@ -51,6 +68,7 @@ void PracticePlayer::Clear()
 	}
 }
 
+
 int PracticePlayer::HasInputs()
 {
 	//return 1; //testing
@@ -58,7 +76,7 @@ int PracticePlayer::HasInputs()
 
 	if (nextFrameToRead < waitingForFrame)
 	{
-		//cout << "has input. num frames had: " << waitingForFrame - nextFrameToRead << "\n";
+		cout << "has input. num frames had: " << waitingForFrame - nextFrameToRead << "\n";
 
 		assert(messages[currReadIndex].frame == nextFrameToRead);
 
@@ -120,22 +138,14 @@ void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 {
 	if (pm.frame == 0)
 	{
-		waitingForFrame = 0;
-		currReadIndex = 0;
-		currWriteIndex = 0;
-		nextFrameToRead = 0;
-
-		for (int i = 0; i < MAX_BUFFERED_MESSAGES; ++i)
-		{
-			messages[i].Clear();
-		}
+		ClearMessages();
 
 		action = A_NEEDS_LEVEL_RESTART;
 	}
 
 	if (pm.frame == waitingForFrame)
 	{
-		//cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
+		cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
 
 		++waitingForFrame;
 
@@ -149,7 +159,7 @@ void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 	}
 	else
 	{
-		//cout << "ignoring practicemsg: " << pm.input << ", frame: " << pm.frame << ". waitingForFrame: " << waitingForFrame << "\n";
+		cout << "ignoring practicemsg: " << pm.input << ", frame: " << pm.frame << ". waitingForFrame: " << waitingForFrame << "\n";
 		//ignore the message
 
 		//assert(false);
@@ -167,9 +177,27 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		cout << "processsing practice start msg from connection: " << message->GetConnection() << "\n";
 		PracticeStartMsg *msg = (PracticeStartMsg*)message->GetData();
 		skinIndex = msg->skinIndex;
+
+		cout << "setting waitingforframe and nextreadframe to: " << msg->startFrame << "\n";
+		waitingForFrame = msg->startFrame;
+		nextFrameToRead = msg->startFrame;
+
+		action = A_NEEDS_LEVEL_RESTART;
+
 		for (int i = 0; i < 8; ++i)
 		{
 			upgradeField.optionField[i] = msg->upgradeField[i];
+		}
+
+		if (msg->numSyncBytes > 0)
+		{
+			assert(msg->startFrame > 0);
+			assert(syncStateBuf == NULL);
+			syncStateBuf = new unsigned char[msg->numSyncBytes];
+			unsigned char *msgPtr = (unsigned char*)message->GetData();
+			memcpy(syncStateBuf, msgPtr + sizeof(PracticeStartMsg), msg->numSyncBytes);
+
+			syncStateBufSize = msg->numSyncBytes;
 		}
 		break;
 	}
@@ -723,6 +751,30 @@ void NetplayManager::UpdatePracticePlayers()
 	}
 }
 
+void NetplayManager::PracticeConnect()
+{
+	action = A_PRACTICE_CONNECT;
+
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		practicePlayers[i].Clear();
+	}
+
+	connectionManager->CreateListenSocket();
+
+	UpdatePracticePlayers();
+
+	SteamNetworkingIdentity identity;
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].id.IsValid())
+		{
+			identity.SetSteamID(practicePlayers[i].id);
+			practicePlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+		}
+	}
+}
+
 void NetplayManager::Update()
 {
 	switch (action)
@@ -804,27 +856,12 @@ void NetplayManager::Update()
 
 		if (lobbyManager->IsInLobby())
 		{
-			action = A_PRACTICE_CONNECT;
-
-			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-			{
-				practicePlayers[i].Clear();
-			}
-
-			connectionManager->CreateListenSocket();
-
-			UpdatePracticePlayers();
-
-			SteamNetworkingIdentity identity;
-			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-			{
-				if (practicePlayers[i].id.IsValid())
-				{
-					identity.SetSteamID(practicePlayers[i].id);
-					practicePlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
-				}
-			}
+			action = A_PRACTICE_WAIT_TO_CONNECT;
 		}
+		break;
+	}
+	case A_PRACTICE_WAIT_TO_CONNECT:
+	{
 		break;
 	}
 	case A_PRACTICE_CONNECT:
@@ -2068,7 +2105,7 @@ void NetplayManager::SendFileToConnection(HSteamNetConnection connection, boost:
 
 	//cout << "done building buffer for sending preview" << endl;
 
-	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_EP2PSendReliable, NULL);
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
 	{
@@ -2094,7 +2131,7 @@ void NetplayManager::SendBufferToConnection(HSteamNetConnection connection, unsi
 
 	memcpy(tempBuffer, buf, bufSize);
 
-	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_EP2PSendReliable, NULL);
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
 	{
@@ -2758,8 +2795,21 @@ bool NetplayManager::SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer
 	}
 }
 
-bool NetplayManager::SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeStartMsg &pm)
+bool NetplayManager::SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeStartMsg &pm )
 {
+	/*UdpMsg msg((UdpMsg::MsgType)udpMsgType);
+
+	int bufferSize = sizeof(UdpMsg) + bufSize + 1;
+	char*buffer = new char[bufferSize];
+	char *tempBuffer = buffer;
+	UdpMsg *bufferMsg = (UdpMsg*)buffer;
+	*bufferMsg = msg;
+	tempBuffer += sizeof(UdpMsg);
+
+	memcpy(tempBuffer, buf, bufSize);*/
+
+	assert(pm.numSyncBytes == 0);
+
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
@@ -2768,7 +2818,7 @@ bool NetplayManager::SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer
 
 		assert(!pracPlayer.HasBeenSentStartMessage());
 
-		pracPlayer.action = PracticePlayer::A_NEEDS_LEVEL_RESTART;
+		pracPlayer.action = PracticePlayer::A_RUNNING; //just needs to take it away from waiting for a start msg?
 
 		return true;
 	}
@@ -2779,7 +2829,28 @@ bool NetplayManager::SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer
 	}
 }
 
-void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm)
+bool NetplayManager::SendPracticeStartMessageToPlayerAsBuffer(PracticePlayer &pracPlayer, unsigned char *buf, int bufSize)
+{
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, buf, bufSize, k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice start message to connection " << pracPlayer.connection << " as buffer of size: " << bufSize << "\n";
+
+		assert(!pracPlayer.HasBeenSentStartMessage());
+
+		pracPlayer.action = PracticePlayer::A_RUNNING; //just needs to take it away from waiting for a start msg?
+
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice start message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
+void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm )
 {
 	assert(action == A_PRACTICE_TEST);
 	if (action != A_PRACTICE_TEST)
@@ -2814,30 +2885,91 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 	SteamNetworkingIdentity identity;
 	CSteamID myID = SteamUser()->GetSteamID();
 
+	/*int saveStateLen = GetNumStoredBytes();
+	unsigned char *buffer
+		*buffer = (unsigned char *)malloc(*len);
+	memset(*buffer, 0, *len);
+
+	if (!*buffer) {
+		return false;
+	}
+
+	StoreBytes(*buffer);
+
+	int pSize = sizeof(PState);
+	int offset = 0;
+	int fletchLen = *len;
+	*checksum = fletcher32_checksum((short *)((*buffer) + offset), fletchLen / 2);
+	return true;*/
+
+	Session *sess = Session::GetSession();
+
+	bool needsToSendStartMessage = false;
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
 		if (practicePlayers[i].isConnectedTo && !practicePlayers[i].HasBeenSentStartMessage())
 		{
-			SendPracticeStartMessageToPlayer(practicePlayers[i], pm);
+			needsToSendStartMessage = true;
+			break;
 		}
 	}
+
+	int tempBufferSize = 0;
+	unsigned char *buf = NULL;
+	if (needsToSendStartMessage && pm.startFrame > 0)
+	{
+		pm.numSyncBytes = sess->GetNumStoredBytes();
+
+		tempBufferSize = sizeof(pm) + pm.numSyncBytes;
+
+		buf = new unsigned char[tempBufferSize];
+		memset(buf, 0, tempBufferSize * sizeof(unsigned char));
+		unsigned char *tempBuffer = buf;
+		PracticeStartMsg *bufferMsg = (PracticeStartMsg*)buf;
+		*bufferMsg = pm;
+		tempBuffer += sizeof(pm);
+		sess->StoreBytes(tempBuffer);
+	}
+
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo && !practicePlayers[i].HasBeenSentStartMessage())
+		{
+			if (buf != NULL)
+			{
+				SendPracticeStartMessageToPlayerAsBuffer(practicePlayers[i], buf, tempBufferSize);
+			}
+			else
+			{
+				SendPracticeStartMessageToPlayer(practicePlayers[i], pm);
+			}
+			
+		}
+	}
+
+	if (buf != NULL)
+		delete[] buf;
 }
 
 bool NetplayManager::IsPracticeMode()
 {
 	return action == A_PRACTICE_CONNECT || action == A_PRACTICE_TEST || action == A_PRACTICE_CHECKING_FOR_LOBBIES || action == A_PRACTICE_WAIT_FOR_IN_LOBBY
-		|| action == A_PRACTICE_SETUP;
+		|| action == A_PRACTICE_SETUP || action == A_PRACTICE_WAIT_TO_CONNECT;
 }
 
 bool NetplayManager::TrySetupPractice( GameSession *game )
 {
-	if (action == A_PRACTICE_SETUP)
+	if (action == A_PRACTICE_WAIT_TO_CONNECT)
+	{
+		PracticeConnect();
+	}
+	else if (action == A_PRACTICE_SETUP)
 	{
 		PracticeStartMsg psm;
 		psm.skinIndex = game->GetPlayerNormalSkin(0);
 		psm.SetUpgradeField(game->GetPlayer(0)->bStartHasUpgradeField);
 
-		SendPracticeStartMessageToAllNewPeers(psm);
+		SendPracticeStartMessageToAllNewPeers(psm );
 
 		action = A_PRACTICE_TEST;
 

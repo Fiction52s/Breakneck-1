@@ -245,7 +245,7 @@ void GravityJuggler::PopThrow()
 
 	V2d dir; 
 
-	dir = receivedHit->hDir;//normalize(receivedHit->hDir);
+	dir = receivedHit.hDir;//normalize(receivedHit->hDir);
 
 	V2d hit(0, -20);
 

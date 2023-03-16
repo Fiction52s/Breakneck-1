@@ -204,7 +204,14 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	CollisionBox *GetTipHitbox();
 	void SortNewPoints();
 
-
+	//Rollback
+	/*struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};*/
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

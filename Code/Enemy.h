@@ -184,6 +184,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	int playerIndex; //-1 for all players
 	CollisionBody *currHitboxes;
 	CollisionBody *currHurtboxes;
+	int enemyIndex;
 	
 
 	Enemy(EnemyType t, ActorParams *ap);
@@ -329,7 +330,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual bool CanBeHitByComboer() { return true; }
 	virtual bool CanBeHitByWireTip(bool red) { return false; }
 	virtual bool CanBeAnchoredByWire(bool red) { return true; }
-	virtual void RecordEnemy();
 	virtual void DirectKill();
 	virtual void HandleEntrant(QuadTreeEntrant *qte) {}
 	virtual void UpdatePrePhysics();
@@ -345,7 +345,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual int NumTotalBullets();
 	virtual void HandleQuery(QuadTreeCollider * qtc);
 	virtual bool IsTouchingBox(const sf::Rect<double> &r);
-	void Record(int enemyIndex);
 	bool RightWireHitMe( CollisionBox hurtBox );
 	bool LeftWireHitMe( CollisionBox hurtBox );
 	virtual void EnemyDraw(sf::RenderTarget *target) {}

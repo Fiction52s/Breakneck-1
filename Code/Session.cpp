@@ -2786,6 +2786,9 @@ GameController * Session::GetController(int index)
 
 Actor *Session::GetPlayer(int index)
 {
+	if (index < 0)
+		return NULL; //for savestate stuff
+
 	assert(index >= 0 && index < MAX_PLAYERS);
 	return players[index];
 }
@@ -2950,6 +2953,7 @@ void Session::UpdatePlayerInput(int index)
 			PracticeStartMsg psm;
 			psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
 			psm.SetUpgradeField(player->bStartHasUpgradeField);
+			psm.startFrame = totalGameFrames;
 			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 
 			PracticeInputMsg pm;
@@ -3004,6 +3008,25 @@ void Session::RunFrameForParallelPractice()
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
 		//ppm->ClearUpdateFlags();
+
+		for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				PracticePlayer &prac = netplayManager->practicePlayers[i];
+				if (prac.action == PracticePlayer::A_NEEDS_LEVEL_RESTART)
+				{
+					prac.action = PracticePlayer::A_RUNNING;
+					pm->parallelGames[i]->RestartLevel();
+
+					if (prac.syncStateBufSize > 0)
+					{
+						pm->parallelGames[i]->LoadState(prac.syncStateBuf, prac.syncStateBufSize);
+						prac.ClearSyncStateBuf();
+					}
+				}
+			}
+		}
 
 		int numFramesToRun = 0;
 		for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
@@ -7600,15 +7623,23 @@ void Session::UpdateJustGGPO()
 
 void Session::CleanupGGPO()
 {
-	delete currSaveState;
-	currSaveState = NULL;
+	if (currSaveState != NULL)
+	{
+		delete currSaveState;
+		currSaveState = NULL;
+	}
 
-	delete ngs;
-	ngs = NULL;
+	if (ngs != NULL)
+	{
+		delete ngs;
+		ngs = NULL;
+	}
 
-
-	delete[] ggpoPlayers;
-	ggpoPlayers = NULL;
+	if (ggpoPlayers != NULL)
+	{
+		delete[] ggpoPlayers;
+		ggpoPlayers = NULL;
+	}
 }
 
 GameSession *Session::GetTopParentGame()
@@ -8117,9 +8148,9 @@ int Session::GetNumStoredBytes()
 void Session::StoreBytes(unsigned char *bytes)
 {
 	currSaveState->totalGameFrames = totalGameFrames;
-	currSaveState->activeEnemyList = activeEnemyList;
-	currSaveState->activeEnemyListTail = activeEnemyListTail;
-	currSaveState->inactiveEnemyList = inactiveEnemyList;
+	currSaveState->activeEnemyListID = GetEnemyID(activeEnemyList);
+	currSaveState->activeEnemyListTailID = GetEnemyID(activeEnemyListTail);
+	currSaveState->inactiveEnemyListID = GetEnemyID(inactiveEnemyList);
 	currSaveState->pauseFrames = pauseFrames;
 	currSaveState->currSuperPlayer = currSuperPlayer;
 	currSaveState->gameState = gameState;
@@ -8214,13 +8245,23 @@ void Session::SetFromBytes(unsigned char *bytes)
 	bytes += deathSeq->GetNumStoredBytes();
 
 	totalGameFrames = currSaveState->totalGameFrames;
-	activeEnemyList = currSaveState->activeEnemyList;
-	inactiveEnemyList = currSaveState->inactiveEnemyList;
-	activeEnemyListTail = currSaveState->activeEnemyListTail;
+	activeEnemyList = GetEnemyFromID( currSaveState->activeEnemyListID );
+	inactiveEnemyList = GetEnemyFromID( currSaveState->inactiveEnemyListID );
+	activeEnemyListTail = GetEnemyFromID(currSaveState->activeEnemyListTailID );
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = currSaveState->currSuperPlayer;
 	randomState = currSaveState->randomState;
+
+	//when sent through the network, I shouldn't be storing/sending the sess anyway.
+	//this is a workaround making sure I don't use the pointer from the other side
+	Session *origCamSess = cam.sess;
+	GameSession *origCamGame = cam.game;
+
 	cam = currSaveState->cam;
+
+	cam.sess = origCamSess;
+	cam.game = origCamGame;
+
 
 	gameState = (GameState)currSaveState->gameState;
 	nextFrameRestartGame = currSaveState->nextFrameRestartGame;
@@ -8273,12 +8314,18 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	if ( netplayManager != NULL)
 	{
 		bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
-		assert(ggpoNetplay);
+		//assert(ggpoNetplay);
 
-
-		cout << "rollback of " << rollbackFrames << " from " << oldTotalGameFrames << " back to " << totalGameFrames << endl;
-		//rollback the desync checker system also
-		netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
+		if (ggpoNetplay)
+		{
+			cout << "rollback of " << rollbackFrames << " from " << oldTotalGameFrames << " back to " << totalGameFrames << "\n";
+			//rollback the desync checker system also
+			netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
+		}
+		else
+		{
+			cout << "loading state for practice mode on frame: " << totalGameFrames << "\n";
+		}
 	}
 
 	return true;
@@ -9157,4 +9204,62 @@ Edge *Session::GetEdge(EdgeInfo * ei)
 		assert(0);
 		return NULL;
 	}
+}
+
+PolyPtr Session::GetPolyFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else return allPolysVec[id];
+}
+
+RailPtr Session::GetRailFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else return allRailsVec[id];
+}
+
+Enemy *Session::GetEnemyFromID(int index)
+{
+	if (index < 0)
+		return NULL;
+	else
+	{
+		return allEnemiesVec[index];
+	}
+}
+
+int Session::GetEnemyID(Enemy *e)
+{
+	if (e == NULL)
+		return -1;
+	else
+	{
+		return e->enemyIndex;
+	}
+}
+
+int Session::GetRailID(TerrainRail *tr)
+{
+	if (tr == NULL)
+		return -1;
+	else
+		return tr->railIndex;
+}
+
+int Session::GetPolyID(PolyPtr poly)
+{
+	if (poly == NULL)
+		return -1;
+	else
+		return poly->polyIndex;
+}
+
+int Session::GetPlayerIndex(Actor *p)
+{
+	if (p == NULL)
+		return -1;
+	else
+		return p->actorIndex;
 }

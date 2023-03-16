@@ -141,7 +141,7 @@ void Comboer::ResetEnemy()
 
 void Comboer::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
@@ -154,11 +154,11 @@ void Comboer::ProcessHit()
 
 		V2d dir;
 
-		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
+		comboObj->enemyHitboxInfo->hDir = receivedHit.hDir;
 
-		dir = normalize(receivedHit->hDir);
+		dir = normalize(receivedHit.hDir);
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 
 		/*switch (receivedHit->hDir)
 		{

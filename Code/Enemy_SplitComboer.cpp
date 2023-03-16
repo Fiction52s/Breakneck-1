@@ -307,7 +307,7 @@ void SplitComboer::ResetEnemy()
 
 void SplitComboer::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
@@ -317,7 +317,7 @@ void SplitComboer::ProcessHit()
 		SetHurtboxes(NULL, 0);
 		//comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
-		V2d dir = normalize(receivedHit->hDir);
+		V2d dir = normalize(receivedHit.hDir);
 		/*if (dir.x != 0 && dir.y != 0)
 		{
 			double absX = abs(dir.x);

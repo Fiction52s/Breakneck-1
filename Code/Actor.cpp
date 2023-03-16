@@ -173,7 +173,7 @@ void Actor::PopulateState(PState *ps)
 	ps->currInput = currInput.GetCompressedState();
 	ps->prevInput = prevInput.GetCompressedState();
 
-	ps->ground.InitFromEdge(ground);
+	ps->groundInfo.InitFromEdge(ground);
 	ps->quant = edgeQuantity;
 	ps->xOffset = offsetX;
 	ps->holdDouble = holdDouble;
@@ -210,7 +210,10 @@ void Actor::PopulateState(PState *ps)
 	ps->framesNotGrinding = framesNotGrinding;
 	ps->framesSinceGrindAttempt = framesSinceGrindAttempt;
 	ps->maxFramesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-	ps->grindEdge = grindEdge;
+
+
+	ps->grindEdgeInfo.InitFromEdge( grindEdge );
+
 	ps->grindSpeed = grindSpeed;
 
 	ps->slowMultiple = slowMultiple;
@@ -265,9 +268,12 @@ void Actor::PopulateState(PState *ps)
 	ps->storedBounceVel = storedBounceVel;
 	ps->bounceNorm = bounceNorm;
 	ps->oldBounceNorm = oldBounceNorm;
-	ps->bounceEdge = bounceEdge;
+
+	ps->bounceEdgeInfo.InitFromEdge(bounceEdge);
+
 	ps->storedBounceGroundSpeed = storedBounceGroundSpeed;
-	ps->oldBounceEdge = oldBounceEdge;
+	ps->oldBounceEdgeInfo.InitFromEdge(oldBounceEdge);
+
 	ps->framesSinceBounce = framesSinceBounce;
 	ps->groundedWallBounce = groundedWallBounce;
 	ps->boostBounce = boostBounce;
@@ -308,7 +314,8 @@ void Actor::PopulateState(PState *ps)
 
 	ps->blockstunFrames = blockstunFrames;
 	memcpy(ps->currAttackHitBlock, currAttackHitBlock, sizeof(int) * 4);
-	ps->receivedHitPlayer = receivedHitPlayer;
+
+	ps->receivedHitPlayerIndex = sess->GetPlayerIndex(receivedHitPlayer);
 
 	ps->receivedHitReaction = receivedHitReaction;
 
@@ -324,7 +331,8 @@ void Actor::PopulateState(PState *ps)
 	ps->kinMode = kinMode;
 
 	//new stuff
-	ps->prevRail = prevRail;
+
+	ps->prevRailID = sess->GetRailID(prevRail);
 	ps->specialSlow = specialSlow;
 	ps->frameAfterAttackingHitlagOver = frameAfterAttackingHitlagOver;
 	ps->bouncedFromKill = bouncedFromKill;
@@ -334,8 +342,11 @@ void Actor::PopulateState(PState *ps)
 	ps->gravModifyFrames = gravModifyFrames;
 	ps->extraGravityModifier = extraGravityModifier;
 	ps->waterEntrancePosition = waterEntrancePosition;
-	ps->waterEntranceGround = waterEntranceGround;
-	ps->waterEntranceGrindEdge = waterEntranceGrindEdge;
+
+
+	ps->waterEntranceGroundInfo.InitFromEdge(waterEntranceGround);
+	ps->waterEntranceGrindEdgeInfo.InitFromEdge(waterEntranceGrindEdge);
+
 	ps->waterEntranceQuantity = waterEntranceQuantity;
 	ps->waterEntranceXOffset = waterEntranceXOffset;
 	ps->waterEntrancePhysHeight = waterEntrancePhysHeight;
@@ -356,34 +367,39 @@ void Actor::PopulateState(PState *ps)
 	ps->freeFlightFrames = freeFlightFrames;
 	ps->homingFrames = homingFrames;
 	ps->antiTimeSlowFrames = antiTimeSlowFrames;
-	ps->currTimeBooster = currTimeBooster;
-	ps->currFreeFlightBooster = currFreeFlightBooster;
-	ps->currHomingBooster = currHomingBooster;
-	ps->currAntiTimeSlowBooster = currAntiTimeSlowBooster;
-	ps->currSwordProjectileBooster = currSwordProjectileBooster;
-	ps->currPhaseBooster = currPhaseBooster;
-	ps->currMomentumBooster = currMomentumBooster;
-	ps->currRewindBooster = currRewindBooster;
+
+	ps->currTimeBoosterID = sess->GetEnemyID( currTimeBooster);
+	ps->currFreeFlightBoosterID = sess->GetEnemyID(currFreeFlightBooster);
+	ps->currHomingBoosterID = sess->GetEnemyID(currHomingBooster);
+	ps->currAntiTimeSlowBoosterID = sess->GetEnemyID(currAntiTimeSlowBooster);
+	ps->currSwordProjectileBoosterID = sess->GetEnemyID(currSwordProjectileBooster);
+	ps->currPhaseBoosterID = sess->GetEnemyID(currPhaseBooster);
+	ps->currMomentumBoosterID = sess->GetEnemyID(currMomentumBooster);
+	ps->currRewindBoosterID = sess->GetEnemyID(currRewindBooster);
+
+
 	ps->aimLauncherStunFrames = aimLauncherStunFrames;
 	ps->airBounceCounter = airBounceCounter;
 	ps->airBounceLimit = airBounceLimit;
 	ps->phaseFrames = phaseFrames;
 	ps->momentumBoostFrames = momentumBoostFrames;
-	ps->currAimLauncher = currAimLauncher;
-	ps->currTeleporter = currTeleporter;
-	ps->oldTeleporter = oldTeleporter;
-	ps->currBooster = currBooster;
-	ps->oldBooster = oldBooster;
-	ps->currSwingLauncher = currSwingLauncher;
-	ps->oldSwingLauncher = oldSwingLauncher;
-	ps->currBounceBooster = currBounceBooster;
-	ps->oldBounceBooster = oldBounceBooster;
+
+	ps->currSpringID = sess->GetEnemyID(currSpring);
+	ps->currAimLauncherID = sess->GetEnemyID(currAimLauncher);
+	ps->currTeleporterID = sess->GetEnemyID(currTeleporter);
+	ps->oldTeleporterID = sess->GetEnemyID(oldTeleporter);
+	ps->currBoosterID = sess->GetEnemyID(currBooster);
+	ps->oldBoosterID = sess->GetEnemyID(oldBooster);
+	ps->currSwingLauncherID = sess->GetEnemyID(currSwingLauncher);
+	ps->oldSwingLauncherID = sess->GetEnemyID(oldSwingLauncher);
+	ps->currBounceBoosterID = sess->GetEnemyID(currBounceBooster);
+	ps->oldBounceBoosterID = sess->GetEnemyID(oldBounceBooster);
 
 	ps->springStunFrames = springStunFrames;
 	ps->springStunFramesStart = springStunFramesStart;
 
-	ps->currScorpionLauncher = currScorpionLauncher;
-	ps->oldScorpionLauncher = oldScorpionLauncher;
+	ps->currScorpionLauncherID = sess->GetEnemyID(currScorpionLauncher);
+	ps->oldScorpionLauncherID = sess->GetEnemyID(oldScorpionLauncher);
 
 	ps->directionalInputFreezeFrames = directionalInputFreezeFrames;
 
@@ -399,8 +415,8 @@ void Actor::PopulateState(PState *ps)
 
 	ps->activeComboObjList = activeComboObjList;
 
-	ps->currTutorialObject = currTutorialObject;
-	ps->currGravModifier = currGravModifier;
+	ps->currTutorialObjectID = sess->GetEnemyID(currTutorialObject);
+	ps->currGravModifierID = sess->GetEnemyID(currGravModifier);
 
 	ps->springVel = springVel;
 	ps->glideTurnFactor = glideTurnFactor;
@@ -420,7 +436,7 @@ void Actor::PopulateFromState(PState *ps)
 	prevInput.SetFromCompressedState(ps->prevInput); //relevant for keyboard
 	currInput.SetFromCompressedState(ps->currInput);
 
-	ground = sess->GetEdge(&ps->ground);
+	ground = sess->GetEdge(&ps->groundInfo);
 
 	edgeQuantity = ps->quant;
 	offsetX = ps->xOffset;
@@ -461,7 +477,7 @@ void Actor::PopulateFromState(PState *ps)
 	framesSinceGrindAttempt = ps->framesSinceGrindAttempt;
 	maxFramesSinceGrindAttempt = ps->maxFramesSinceGrindAttempt;
 
-	grindEdge = sess->GetEdge(&ps->grindEdge);
+	grindEdge = sess->GetEdge(&ps->grindEdgeInfo);
 
 	grindSpeed = ps->grindSpeed;
 
@@ -518,11 +534,11 @@ void Actor::PopulateFromState(PState *ps)
 	bounceNorm = ps->bounceNorm;
 	oldBounceNorm = ps->oldBounceNorm;
 
-	bounceEdge = sess->GetEdge(&ps->bounceEdge);
+	bounceEdge = sess->GetEdge(&ps->bounceEdgeInfo);
 
 	storedBounceGroundSpeed = ps->storedBounceGroundSpeed;
 
-	oldBounceEdge = sess->GetEdge(&ps->oldBounceEdge);
+	oldBounceEdge = sess->GetEdge(&ps->oldBounceEdgeInfo);
 
 	framesSinceBounce = ps->framesSinceBounce;
 	groundedWallBounce = ps->groundedWallBounce;
@@ -565,7 +581,9 @@ void Actor::PopulateFromState(PState *ps)
 
 	blockstunFrames = ps->blockstunFrames;
 	memcpy(currAttackHitBlock, ps->currAttackHitBlock, sizeof(int) * 4);
-	receivedHitPlayer = ps->receivedHitPlayer;
+
+	
+	receivedHitPlayer = sess->GetPlayer(ps->receivedHitPlayerIndex);
 
 	receivedHitReaction = (HitResult)ps->receivedHitReaction;
 	hasWallJumpRechargeDoubleJump = ps->hasWallJumpRechargeDoubleJump;
@@ -578,7 +596,8 @@ void Actor::PopulateFromState(PState *ps)
 	superFrame = ps->superFrame;
 	kinMode = (Mode)ps->kinMode;
 
-	prevRail = ps->prevRail;
+	prevRail = sess->GetRailFromID(ps->prevRailID);
+
 	specialSlow = ps->specialSlow;
 	frameAfterAttackingHitlagOver = ps->frameAfterAttackingHitlagOver;
 	bouncedFromKill = ps->bouncedFromKill;
@@ -589,9 +608,9 @@ void Actor::PopulateFromState(PState *ps)
 	extraGravityModifier = ps->extraGravityModifier;
 	waterEntrancePosition = ps->waterEntrancePosition;
 
-	waterEntranceGround = sess->GetEdge(&ps->waterEntranceGround);
+	waterEntranceGround = sess->GetEdge(&ps->waterEntranceGroundInfo);
 
-	waterEntranceGrindEdge = sess->GetEdge(&ps->waterEntranceGrindEdge);
+	waterEntranceGrindEdge = sess->GetEdge(&ps->waterEntranceGrindEdgeInfo);
 
 	waterEntranceQuantity = ps->waterEntranceQuantity;
 	waterEntranceXOffset = ps->waterEntranceXOffset;
@@ -613,31 +632,42 @@ void Actor::PopulateFromState(PState *ps)
 	freeFlightFrames = ps->freeFlightFrames;
 	homingFrames = ps->homingFrames;
 	antiTimeSlowFrames = ps->antiTimeSlowFrames;
-	currTimeBooster = ps->currTimeBooster;
-	currFreeFlightBooster = ps->currFreeFlightBooster;
-	currHomingBooster = ps->currHomingBooster;
-	currAntiTimeSlowBooster = ps->currAntiTimeSlowBooster;
-	currSwordProjectileBooster = ps->currSwordProjectileBooster;
-	currPhaseBooster = ps->currPhaseBooster;
-	currMomentumBooster = ps->currMomentumBooster;
-	currRewindBooster = ps->currRewindBooster;
+
+	currTimeBooster = (TimeBooster*)sess->GetEnemyFromID( ps->currTimeBoosterID );
+	currFreeFlightBooster = (FreeFlightBooster*)sess->GetEnemyFromID( ps->currFreeFlightBoosterID );
+
+	currHomingBooster = (HomingBooster*)sess->GetEnemyFromID( ps->currHomingBoosterID );
+
+	currAntiTimeSlowBooster = (AntiTimeSlowBooster*)sess->GetEnemyFromID( ps->currAntiTimeSlowBoosterID );
+
+	currSwordProjectileBooster = (SwordProjectileBooster*)sess->GetEnemyFromID(ps->currSwordProjectileBoosterID);
+
+	currPhaseBooster = (PhaseBooster*)sess->GetEnemyFromID(ps->currPhaseBoosterID);
+
+	currMomentumBooster = (MomentumBooster*)sess->GetEnemyFromID( ps->currMomentumBoosterID );
+
+	currRewindBooster = (RewindBooster*)sess->GetEnemyFromID(ps->currRewindBoosterID);
+
 	aimLauncherStunFrames = ps->aimLauncherStunFrames;
 	airBounceCounter = ps->airBounceCounter;
 	airBounceLimit = ps->airBounceLimit;
 	phaseFrames = ps->phaseFrames;
 	momentumBoostFrames = ps->momentumBoostFrames;
-	currAimLauncher = ps->currAimLauncher;
-	currTeleporter = ps->currTeleporter;
-	oldTeleporter = ps->oldTeleporter;
-	currBooster = ps->currBooster;
-	oldBooster = ps->oldBooster;
-	currSwingLauncher = ps->currSwingLauncher;
-	oldSwingLauncher = ps->oldSwingLauncher;
-	currBounceBooster = ps->currBounceBooster;
-	oldBounceBooster = ps->oldBounceBooster;
 
-	currScorpionLauncher = ps->currScorpionLauncher;
-	oldScorpionLauncher = ps->oldScorpionLauncher;
+
+	currSpring = (Spring*)sess->GetEnemyFromID(ps->currSpringID);
+	currAimLauncher = (AimLauncher*)sess->GetEnemyFromID(ps->currAimLauncherID);
+	currTeleporter = (Teleporter*)sess->GetEnemyFromID(ps->currTeleporterID);
+	oldTeleporter = (Teleporter*)sess->GetEnemyFromID(ps->oldTeleporterID);
+	currBooster = (Booster*)sess->GetEnemyFromID(ps->currBoosterID);
+	oldBooster = (Booster*)sess->GetEnemyFromID(ps->oldBoosterID);
+	currSwingLauncher = (SwingLauncher*)sess->GetEnemyFromID(ps->currSwingLauncherID);
+	oldSwingLauncher = (SwingLauncher*)sess->GetEnemyFromID(ps->oldSwingLauncherID);
+	currBounceBooster = (BounceBooster*)sess->GetEnemyFromID(ps->currBounceBoosterID);
+	oldBounceBooster = (BounceBooster*)sess->GetEnemyFromID(ps->oldBounceBoosterID);
+
+	currScorpionLauncher = (ScorpionLauncher*)sess->GetEnemyFromID(ps->currScorpionLauncherID);
+	oldScorpionLauncher = (ScorpionLauncher*)sess->GetEnemyFromID(ps->oldScorpionLauncherID);
 
 	springStunFrames = ps->springStunFrames;
 	springStunFramesStart = ps->springStunFramesStart;
@@ -657,8 +687,8 @@ void Actor::PopulateFromState(PState *ps)
 
 	activeComboObjList = ps->activeComboObjList;
 
-	currTutorialObject = ps->currTutorialObject;
-	currGravModifier = ps->currGravModifier;
+	currTutorialObject = (TutorialObject*)sess->GetEnemyFromID(ps->currTutorialObjectID);
+	currGravModifier = (GravityModifier*)sess->GetEnemyFromID(ps->currGravModifierID);
 
 	springVel = ps->springVel;
 	glideTurnFactor = ps->glideTurnFactor;
@@ -4521,6 +4551,11 @@ void Actor::Respawn( bool setStartPos )
 		numFramesToLive = -1;
 	}
 
+	waterEntranceGround = NULL;
+	waterEntranceGrindEdge = NULL;
+
+	receivedHitPlayer = NULL;
+
 	practiceDesyncDetected = false;
 	practiceDesyncPosition = V2d();
 
@@ -4717,9 +4752,11 @@ void Actor::Respawn( bool setStartPos )
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
+	oldTeleporter = NULL;
 	currPhaseBooster = NULL;
 	currMomentumBooster = NULL;
 	currSwingLauncher = NULL;
+	oldSwingLauncher = NULL;
 	currRewindBooster = NULL;
 	currHomingBooster = NULL;
 	oldBooster = NULL;

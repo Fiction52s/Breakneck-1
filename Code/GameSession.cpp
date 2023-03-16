@@ -649,20 +649,35 @@ bool GameSession::RunPreUpdate()
 		return false;
 	}*/
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	/*if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
 	{
 		if (netplayManager->practicePlayers[parallelSessionIndex].action == PracticePlayer::A_NEEDS_LEVEL_RESTART)
 		{
 			nextFrameRestartGame = true;
 			netplayManager->practicePlayers[parallelSessionIndex].action = PracticePlayer::A_RUNNING;
 		}
-	}
+	}*/
 
 
 	if (nextFrameRestartGame)
 	{
 		RestartLevel();
 	}
+
+	//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	//{
+	//	PracticePlayer &prac = netplayManager->practicePlayers[parallelSessionIndex];
+	//	if (prac.action == PracticePlayer::A_RUNNING && prac.syncStateBuf != NULL)
+	//	{
+	//		LoadState(prac.syncStateBuf, prac.syncStateBufSize);
+	//		prac.ClearSyncStateBuf();
+	//		prac.ClearMessages();
+	//		prac.waitingForFrame = totalGameFrames;
+	//		prac.nextFrameToRead = totalGameFrames;
+	//		//nextFrameRestartGame = true;
+	//		//netplayManager->practicePlayers[parallelSessionIndex].action = PracticePlayer::A_RUNNING;
+	//	}
+	//}
 
 	return true;
 }
@@ -902,8 +917,13 @@ void GameSession::Cleanup()
 
 	if (IsParallelSession())
 	{
-		assert(currSaveState != NULL);
-		delete currSaveState;
+		//assert(currSaveState != NULL);
+		if (currSaveState != NULL)
+		{
+			delete currSaveState;
+			currSaveState = NULL;
+		}
+		
 	}
 
 
@@ -1080,26 +1100,6 @@ void GameSession::CheckSinglePlayerInputDefaultKeyboard()
 
 			pauseMenu->UpdateButtonIconsWhenControllerIsChanged();
 		}
-	}
-}
-
-void GameSession::RecordReplayEnemies()
-{
-	Actor *player = GetPlayer( 0 );
-	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
-	{
-		return;
-	}
-
-	int index = 0;
-
-	Enemy *current = activeEnemyList;
-	while( current != NULL )
-	{
-		current->Record( index );
-		//current->UpdatePrePhysics();
-		current = current->next;
-		++index;
 	}
 }
 
@@ -1399,8 +1399,8 @@ void GameSession::ProcessAllTerrain()
 	int polyIndex = 0;
 	for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
 	{
-		poly->polyIndex = polyIndex;
 		poly = (*it);
+		poly->polyIndex = polyIndex;
 		poly->Finalize();
 		poly->grassBufferForAABBOn = true; //so that the quadtree can get a bigger AABB for this
 		poly->AddEdgesToQuadTree(terrainTree);
@@ -1800,6 +1800,15 @@ bool GameSession::Load()
 
 	SetupGameMode();
 	gameMode->Setup();
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession() )
+	{
+		currSaveState = new SaveGameState;
+
+		Actor *p = GetPlayer(0);
+		p->pState = new PState;
+		memset(p->pState, 0, sizeof(PState));
+	}
 
 	/*if (gameModeType == MatchParams::GAME_MODE_FIGHT
 		|| gameModeType == MatchParams::GAME_MODE_RACE)
@@ -3270,9 +3279,10 @@ int GameSession::Run()
 	{
 		cout << "cleaning up ggpo" << endl;
 		ggpo_close_session(ggpo);
-		CleanupGGPO();
 	}
 
+	//also cleans up savestate in other cases
+	CleanupGGPO();
 
 	fader->Clear();
 

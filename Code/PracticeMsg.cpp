@@ -21,7 +21,12 @@ void PracticeStartMsg::Clear()
 {
 	header.Clear();
 
+	startFrame = 0;
+
 	skinIndex = 0;
+
+	numSyncBytes = 0;
+
 	for (int i = 0; i < 8; ++i)
 	{
 		upgradeField[i] = 0;

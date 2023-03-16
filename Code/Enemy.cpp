@@ -501,6 +501,8 @@ void Enemy::OnCreate(ActorParams *ap,
 	editLoopAction = 0;
 	editIdleFrame = 0;
 
+	enemyIndex = -1;
+
 	groundMover = NULL;
 	surfaceMover = NULL;
 	currShield = NULL;
@@ -919,7 +921,7 @@ bool Enemy::ReadBool(std::ifstream &is,
 void Enemy::PlayKeyDeathSound()
 {
 	if (sess->currentZone != NULL
-		&& sess->currentZone->HasKeyGateOfNumber(receivedHitPlayer->numKeysHeld))
+		&& sess->currentZone->HasKeyGateOfNumber(sess->GetPlayer(receivedHitPlayerIndex)->numKeysHeld))
 	{
 		sess->ActivateSound(keyUnlockDeathSound);
 	}
@@ -1031,8 +1033,8 @@ void Enemy::Reset()
 	currHurtboxes = NULL;
 	dead = false;
 	currShield = NULL;
-	receivedHit = NULL;
-	receivedHitPlayer = NULL;
+	receivedHit.SetEmpty();
+	receivedHitPlayerIndex = -1;
 	comboHitEnemy = NULL;
 	action = 0;
 	pauseFrames = 0;
@@ -1179,9 +1181,13 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 
 void Enemy::AddToGame()
 {
+	enemyIndex = sess->allEnemiesVec.size();
+
 	AddToWorldTrees();
 	sess->enemyTree->Insert(this);
 	sess->fullEnemyList.push_back(this);
+
+	sess->allEnemiesVec.push_back(this);
 }
 
 void Enemy::UpdateSpriteFromParams(ActorParams *ap)
@@ -1207,7 +1213,7 @@ void Enemy::DirectKill()
 
 		numHealth = 0;
 		HandleNoHealth();
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 
 		if (cutObject != NULL)
 		{
@@ -1313,37 +1319,6 @@ void Enemy::SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source)
 	dest.setPosition(source.getPosition());
 }
 
-void Enemy::Record( int enemyIndex )
-{
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-
-		//Buf & b = game->testBuf;
-
-		//b.Send(enemyIndex);
-
-	}
-
-	
-
-	//note: in order for this to work I can't send any pointers to the buf
-	//and expect it to work on the next run. just doesnt work
-
-	//need to index the enemies in the list somehow. list changes all the time
-
-	//b.Send( prev );
-	//b.Send( next );
-	//b.Send( spawned );
-	//b.Send( receivedHit );
-	//b.Send( 
-}
-
-void Enemy::RecordEnemy()
-{
-	//stub
-}
-
 void Enemy::CheckSpecters()
 {
 	specterProtected = false;
@@ -1378,7 +1353,7 @@ void Enemy::UpdatePrePhysics()
 		launchers[i]->UpdatePrePhysics();
 	}
 
-	receivedHit = NULL;
+	receivedHit.SetEmpty();
 	pauseBeganThisFrame = false;
 
 	if (pauseFrames > 0)
@@ -1615,7 +1590,7 @@ void Enemy::ProcessShieldHit()
 
 void Enemy::ProcessHit()
 {
-	if (!dead && ReceivedHit())// && numHealth > 0 )
+	if (!dead && HasReceivedHit())// && numHealth > 0 )
 	{
 		numHealth -= 1;
 
@@ -1635,7 +1610,7 @@ void Enemy::ProcessHit()
 			ConfirmHitNoKill();
 		}
 
-		receivedHit = NULL;
+		receivedHit.SetEmpty();
 	}
 }
 void Enemy::MovePos(V2d &vel,
@@ -1657,9 +1632,9 @@ void Enemy::HandleRemove()
 
 void Enemy::ConfirmHitNoKill()
 {
-	assert(receivedHit != NULL);
+	assert(!receivedHit.IsEmpty());
 
-	HitboxInfo::HitboxType hType = receivedHit->hType;
+	HitboxInfo::HitboxType hType = receivedHit.hType;
 	if (hType == HitboxInfo::COMBO)
 	{
 		pauseFrames = 5;
@@ -1674,7 +1649,7 @@ void Enemy::ConfirmHitNoKill()
 		//pauseFrames = 0;
 		//actually gets out of lag a frame after the player
 		//if value is set to receivedHit->hitlagFrames;
-		pauseFrames = receivedHit->hitlagFrames;// -1;//4;//receivedHit->hitlagFrames;
+		pauseFrames = receivedHit.hitlagFrames;// -1;//4;//receivedHit->hitlagFrames;
 	}
 
 	pauseBeganThisFrame = true;
@@ -1709,9 +1684,9 @@ void Enemy::ConfirmKill()
 	HitboxInfo::HitboxType hType;
 	
 	
-	if (receivedHit != NULL)
+	if (!receivedHit.IsEmpty())
 	{
-		hType = receivedHit->hType;
+		hType = receivedHit.hType;
 	}
 	else
 	{
@@ -1752,12 +1727,12 @@ void Enemy::ConfirmKill()
 	if (hasMonitor && !suppressMonitor)
 	{
 		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::DARK,
-			receivedHitPlayer, GetNumDarkAbsorbParticles(), GetPosition());
+			sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
 	}
 	else
 	{
 		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-			receivedHitPlayer, GetNumEnergyAbsorbParticles(), GetPosition());
+			sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
 	}
 
 	dead = true;
@@ -1943,7 +1918,7 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.slowableObjectData.slowCounter = slowCounter;
 	ed.slowableObjectData.isSlowable = isSlowable;
 	ed.hittableObjectData.receivedHit = receivedHit;
-	ed.hittableObjectData.receivedHitPlayer = receivedHitPlayer;
+	ed.hittableObjectData.receivedHitPlayerIndex = receivedHitPlayerIndex;
 	ed.hittableObjectData.comboHitEnemy = comboHitEnemy;
 	ed.hittableObjectData.numHealth = numHealth;
 	ed.currPosInfo = currPosInfo;
@@ -1986,7 +1961,7 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	slowCounter = ed.slowableObjectData.slowCounter;
 	isSlowable = ed.slowableObjectData.isSlowable;
 	receivedHit = ed.hittableObjectData.receivedHit;
-	receivedHitPlayer = ed.hittableObjectData.receivedHitPlayer;
+	receivedHitPlayerIndex = ed.hittableObjectData.receivedHitPlayerIndex;
 	comboHitEnemy = ed.hittableObjectData.comboHitEnemy;
 	numHealth = ed.hittableObjectData.numHealth;
 
@@ -2326,22 +2301,22 @@ V2d Enemy::GetFocusedPlayerDir()
 
 int HittableObject::GetReceivedHitPlayerIndex()
 {
-	return receivedHitPlayer->actorIndex;
+	return receivedHitPlayerIndex;
 }
 
 bool HittableObject::CheckHit( Actor *player, Enemy *e )
 {
-	if (receivedHit == NULL && !specterProtected &&
+	if (receivedHit.IsEmpty() && !specterProtected &&
 		( e->playerIndex < 0 || e->playerIndex == player->actorIndex) )
 	{
 		comboHitEnemy = NULL;
-		receivedHit = IsHit(player->actorIndex);
+		receivedHit = *IsHit(player->actorIndex);
 
-		receivedHitPlayer = player;
-		if (receivedHit == NULL)
+		receivedHitPlayerIndex = player->actorIndex;
+		if (receivedHit.IsEmpty())
 			return false;
 
-		if (receivedHit->hType < HitboxInfo::HitboxType::WIREHITRED)
+		if (receivedHit.hType < HitboxInfo::HitboxType::WIREHITRED)
 		{
 			player->ConfirmHit(e);
 		}
@@ -2718,4 +2693,32 @@ void StoredEnemyData::Print()
 	cout << "currHurtboxFrame: " << currHurtboxFrame << endl;
 	cout << "currHitboxes: " << currHitboxes << endl;
 	cout << "currHurtboxes: " << currHurtboxes << endl;*/
+}
+
+HittableObject::HittableObject()
+{
+	receivedHit.SetEmpty();
+}
+
+HitboxInfo * HittableObject::IsHit(int pIndex) 
+{ 
+	return NULL; 
+}
+
+const bool HittableObject::HasReceivedHit()
+{
+	return !receivedHit.IsEmpty();
+}
+bool HittableObject::CheckHit(Actor *player, Enemy* e)
+{
+
+}
+
+int HittableObject::GetReceivedHitPlayerIndex()
+{
+
+}
+
+void HittableObject::ProcessHit()
+{
 }

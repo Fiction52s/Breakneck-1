@@ -155,11 +155,14 @@ struct HitboxInfo
 		nlohmann::json &j, 
 		HitboxInfo &hi);
 	static HitPosType GetAirType(V2d &dir);
+
 	sf::Vector2<double> hDir;
 	HitboxType hType;
 	double knockback; //0+
 	V2d GetKnockbackDir();
 	V2d GetKnockbackVector();
+	bool IsEmpty();
+	void SetEmpty();
 	sf::Vector2<double> kbDir;
 	//double drain; //0-1
 	double drainX;

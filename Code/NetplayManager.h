@@ -36,7 +36,7 @@ struct DesyncCheckInfo
 
 struct PracticePlayer
 {
-	const static int MAX_BUFFERED_MESSAGES = 60 * 10; //can probably make this way bigger
+	const static int MAX_BUFFERED_MESSAGES = 60 * 60; //can probably make this way bigger
 	const static int MAX_SIM_FRAMES = 2;
 
 
@@ -63,12 +63,17 @@ struct PracticePlayer
 
 	bool isConnectedTo;
 
+	unsigned char *syncStateBuf;
+	int syncStateBufSize;
+
 	//GameSession *myGame;
 
 	PracticeInputMsg messages[MAX_BUFFERED_MESSAGES];
 
 	PracticePlayer();
 	void Clear();
+	void ClearSyncStateBuf();
+	void ClearMessages();
 	int HasInputs();
 	void ReceiveInputMsg(PracticeInputMsg &pm);
 	void ReceiveSteamMessage(SteamNetworkingMessage_t *message);
@@ -132,6 +137,7 @@ struct NetplayManager
 		A_PRACTICE_QUERYING_LOBBIES,
 		A_PRACTICE_CHECKING_FOR_LOBBIES,
 		A_PRACTICE_WAIT_FOR_IN_LOBBY,
+		A_PRACTICE_WAIT_TO_CONNECT,
 		A_PRACTICE_CONNECT,
 		A_PRACTICE_SETUP,
 		A_PRACTICE_TEST,
@@ -327,6 +333,7 @@ struct NetplayManager
 
 	bool SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm);
 	bool SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeStartMsg &pm);
+	bool SendPracticeStartMessageToPlayerAsBuffer(PracticePlayer &pracPlayer, unsigned char *buf, int bufSize);
 	void SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm);
 	void SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm);
 	
@@ -347,6 +354,8 @@ struct NetplayManager
 	bool TrySetupPractice( GameSession *game );
 
 	void QueryPracticeMatches();
+
+	void PracticeConnect();
 };
 
 #endif

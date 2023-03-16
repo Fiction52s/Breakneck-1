@@ -1022,6 +1022,7 @@ void EditSession::TestPlayerMode()
 
 
 	fullEnemyList.clear();
+	allEnemiesVec.clear();
 
 	allRailsVec.clear();
 	int railIndex = 0;

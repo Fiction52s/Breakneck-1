@@ -138,8 +138,6 @@ Wire::Wire( Actor *p, bool r)
 	{
 		assert(0);
 	}
-	
-
 
 	aimingPrimaryAngleRange = 2;
 	hitEnemyFramesTotal = 5;
@@ -2131,4 +2129,35 @@ void Wire::UpdateFuse()
 			}
 		}
 	}
+}
+
+int Wire::GetNumStoredBytes()
+{
+	return 0;
+	//return sizeof(MyData);
+}
+
+void Wire::StoreBytes(unsigned char *bytes)
+{
+	//MyData d;
+	//memset(&d, 0, sizeof(MyData));
+	//StoreBasicEnemyData(d);
+	////d.fireCounter = fireCounter;
+
+	//memcpy(bytes, &d, sizeof(MyData));
+
+	//bytes += sizeof(MyData);
+
+}
+
+void Wire::SetFromBytes(unsigned char *bytes)
+{
+	//MyData d;
+	//memcpy(&d, bytes, sizeof(MyData));
+
+	//SetBasicEnemyData(d);
+
+	////fireCounter = d.fireCounter;
+
+	//bytes += sizeof(MyData);
 }

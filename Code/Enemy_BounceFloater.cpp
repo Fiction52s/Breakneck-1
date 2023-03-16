@@ -94,7 +94,7 @@ void BounceFloater::ProcessHit()
 		action = S_BOUNCE;
 		frame = 0;
 
-		V2d dir = receivedHit->hDir;
+		V2d dir = receivedHit.hDir;
 
 		player->BounceFloaterBoost(dir);
 

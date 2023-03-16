@@ -199,7 +199,7 @@ void Ball::PopThrow()
 {
 	V2d dir;
 
-	dir = receivedHit->hDir;//normalize(receivedHit->hDir);
+	dir = receivedHit.hDir;//normalize(receivedHit->hDir);
 							//cout << "dir: " << dir.x << "," << dir.y << endl;
 	if (dir.x == 0 && dir.y == 0)
 	{

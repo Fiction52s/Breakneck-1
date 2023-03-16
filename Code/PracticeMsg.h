@@ -26,6 +26,8 @@ struct PracticeStartMsg
 	PracticeMsgHeader header;
 	sf::Uint32 skinIndex;
 	sf::Uint32 upgradeField[8];
+	int numSyncBytes;
+	int startFrame;
 
 	PracticeStartMsg();
 	void Clear();

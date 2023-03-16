@@ -100,6 +100,16 @@ V2d HitboxInfo::GetKnockbackVector( )
 	return GetKnockbackDir() * knockback;
 }
 
+bool HitboxInfo::IsEmpty()
+{
+	return (hType == HitboxInfo::NO_HITBOX);
+}
+
+void HitboxInfo::SetEmpty()
+{
+	hType = HitboxInfo::NO_HITBOX;
+}
+
 HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &vel)
 {
 	//assert(vel.x != 0.0 || vel.y != 0.0); //stationary bullet?
