@@ -6630,10 +6630,18 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	{
 		extraScreenTex->setView(view);
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawPracticeGames(extraScreenTex);
+		//pm->DrawPracticeGames(extraScreenTex);
 
-
-		
+		for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				if (netplayManager->practicePlayers[i].isConnectedTo)
+				{
+					pm->parallelGames[i]->DrawPracticeGame(target);
+				}
+			}
+		}
 
 		extraScreenTex->display();
 		const Texture &extraTex = extraScreenTex->getTexture();

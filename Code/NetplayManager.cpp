@@ -1671,7 +1671,10 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 	{
 		cout << "connection closed by peer: " << pCallback->m_info.m_eEndReason << endl;
 
-		action = A_DISCONNECT;
+		//don't need to change state, it doesn't matter while practicing
+		//action = A_DISCONNECT;
+
+
 		//Abort();
 		//for now, just close the match when anyone quits. eventually be able to handle people leaving in certain
 		//game modes, as long as they aren't the host.
@@ -1679,7 +1682,8 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 		//do I still need to close the connection?
 		//SteamNetworkingSockets()->CloseConnection(connection, 0, NULL, false);
 
-		practicePlayers[connectionIndex].isConnectedTo = false;
+		practicePlayers[connectionIndex].Clear();
+		//practicePlayers[connectionIndex].isConnectedTo = false;
 	}
 	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
 		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
@@ -1687,7 +1691,8 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 	{
 		cout << "connection state problem locally detected: " << pCallback->m_info.m_eEndReason << endl;
 
-		practicePlayers[connectionIndex].isConnectedTo = false;
+		practicePlayers[connectionIndex].Clear();
+		//practicePlayers[connectionIndex].isConnectedTo = false;
 	}
 	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_ClosedByPeer
 		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_None)
