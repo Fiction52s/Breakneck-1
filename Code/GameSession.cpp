@@ -4995,6 +4995,8 @@ void GameSession::DrawLeaderboard(sf::RenderTarget *target)
 void GameSession::StartLeaderboard()
 {
 	AdventureManager *adventureManager = mainMenu->adventureManager;
+	CleanupReplaysAndGhosts();
+
 
 	if (adventureManager != NULL)
 	{

@@ -22,7 +22,7 @@ AdventureManager::AdventureManager()
 	currProfile = NULL;
 	//parallelPracticeMode = false;
 
-	parallelPracticeMode = true; //for testing
+	parallelPracticeMode = false; //for testing
 
 	LoadAdventure("tadventure");
 
@@ -282,10 +282,13 @@ void AdventureManager::SetCurrSaveFile(int index)
 
 void AdventureManager::FadeInSaveMenu()
 {
-	MainMenu::GetInstance()->SetMode(MainMenu::SAVEMENU);
+	MainMenu *mainMenu = MainMenu::GetInstance();
+	mainMenu->SetMode(MainMenu::SAVEMENU);
 	saveMenu->Reset();
 	saveMenu->action = SaveMenuScreen::FADEIN;
 	saveMenu->transparency = 1.f;
+
+	saveMenu->SetSelectedIndex(mainMenu->adventureManager->currSaveFileIndex);
 }
 
 std::string AdventureManager::GetLeaderboardNameAnyPowers(GameSession *game)
