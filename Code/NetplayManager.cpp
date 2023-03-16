@@ -731,11 +731,14 @@ void NetplayManager::ConnectToAll()
 
 void NetplayManager::UpdatePracticePlayers()
 {
-	//connect to the members who aren't me
-	SteamNetworkingIdentity identity;
 	CSteamID myID = SteamUser()->GetSteamID();
 
 	int index = 0;
+
+	//for( int i = 0; i < )
+
+	//right now the memberlist is limited to 2 people, but to make it more, you have to be careful
+	//that this doesnt just loop over all members and ignore how many possible spots you have
 	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
 	{
 		if ((*it).id == myID)
@@ -743,11 +746,20 @@ void NetplayManager::UpdatePracticePlayers()
 			continue;
 		}
 
-		identity.SetSteamID((*it).id);
+		if (practicePlayers[index].isConnectedTo)
+		{
+			++index;
+			continue;
+		}
 
 		practicePlayers[index].id = (*it).id;
 		practicePlayers[index].name = (*it).name;
 		++index;
+
+		if (index == MAX_PRACTICE_PLAYERS)
+		{
+			break;
+		}
 	}
 }
 
