@@ -496,6 +496,8 @@ int GameSession::TryToActivateBonus()
 	return bonusReturnVal;
 }
 
+
+//DEPRECIATED
 string GameSession::GetBestTimeGhostPath()
 {
 	assert(saveFile != NULL);
@@ -520,7 +522,11 @@ std::string GameSession::GetBestReplayPath()
 	{
 		stringstream ss;
 
-		ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << level->index << "_best" << REPLAY_EXT;
+		int w, s, m;
+		AdventureFile::GetMapIndexes(level->index, w, s, m);
+
+		//ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << level->index << "_best" << REPLAY_EXT;
+		ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << w+1 << "_" << s+1 << "_" << m+1 << "_best" << REPLAY_EXT;
 		return ss.str();
 	}
 	else
