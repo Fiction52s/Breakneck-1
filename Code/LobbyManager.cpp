@@ -185,6 +185,25 @@ void Lobby::Set(CSteamID p_lobbyId)
 	data.SetLobbyData(m_steamIDLobby);
 }
 
+//this will only get the personal data of the people in the lobby
+//if you are actually in the lobby. but if you aren't in the lobby it will still
+//add members to memberlist. works well enough for now.
+void Lobby::PopulateMemberList()
+{
+	memberList.clear();
+
+	int numMembers = SteamMatchmaking()->GetNumLobbyMembers(m_steamIDLobby);
+	CSteamID currUser;
+	CSteamID myId = SteamUser()->GetSteamID();
+
+	for (int i = 0; i < numMembers; ++i)
+	{
+		currUser = SteamMatchmaking()->GetLobbyMemberByIndex(m_steamIDLobby, i);
+
+		memberList.push_back(LobbyMember(currUser, SteamFriends()->GetFriendPersonaName(currUser)));
+	}
+}
+
 LobbyManager::LobbyManager( NetplayManager *p_netMan)
 {
 	netplayManager = p_netMan;
@@ -550,6 +569,11 @@ void LobbyManager::ProcessLobbyList()
 			if (IsAllLobbyDataReceived())
 			{
 				action = A_FOUND_LOBBIES;
+
+				for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+				{
+					(*it).PopulateMemberList();
+				}
 			}
 			else
 			{

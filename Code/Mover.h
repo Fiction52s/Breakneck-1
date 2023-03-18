@@ -7,7 +7,7 @@
 //#include "GameSession.h"
 
 struct Session;
-struct Rail;
+struct TerrainRail;
 
 //struct SurfaceMoverHandler
 struct GroundMoverHandler
@@ -43,6 +43,29 @@ struct SurfaceRailMoverHandler : SurfaceMoverHandler
 //circle for now
 struct SurfaceMover : QuadTreeCollider
 {
+	struct SurfaceMoverData
+	{
+		EdgeInfo groundInfo;
+		double edgeQuantity;
+		CollisionBox physBody;
+		double groundSpeed;
+		V2d force;
+		int framesInAir;
+		V2d velocity;
+		bool collisionOn;
+		bool roll;
+	};
+
+	SurfaceMoverData surfaceMoverData;
+
+	Session *sess;
+	Edge *ground;
+	Contact minContact;
+	bool col;
+	V2d tempVel;
+	double steal;
+	SurfaceMoverHandler *surfaceHandler;
+
 	//some virtual functions
 	SurfaceMover();
 	SurfaceMover(Edge *startGround,
@@ -65,54 +88,42 @@ struct SurfaceMover : QuadTreeCollider
 	sf::Vector2f GetGroundPointF();
 	void DebugDraw(sf::RenderTarget *target);
 	virtual bool ResolvePhysics( 
-		sf::Vector2<double> &vel );
+		V2d &vel );
+	void SetVelocity(const V2d &vel);
 	bool MoveAlongEdge( double &movement, 
 		double &groundLength, double &q,
 		double &m
 		);
-
 	virtual void HitTerrain( double &q );
 	virtual void HitTerrainAerial();
 	virtual bool StartRoll();
 	virtual void FinishedRoll();
-	void Jump( sf::Vector2<double> &vel );
-
-	Edge *ground;
-	Session *sess;
-	double edgeQuantity;
-	bool roll;
-	CollisionBox physBody;
-	double groundSpeed;
-	Contact minContact;
-	bool col;
-	V2d force;
-	//std::string queryMode;
-	sf::Vector2<double> tempVel;
-	bool collisionOn;
-	double steal;
-
-	//sf::Vector2<double> gravity;
-	//double maxSpeed;
-	sf::Vector2<double> velocity;
-
-	int framesInAir;
-
+	void Jump(V2d &vel );
 	void SetHandler(SurfaceMoverHandler *h);
+	void PopulateFromData(const SurfaceMoverData &sfm);
+	void PopulateData(SurfaceMoverData &sfm);
 
-	/*virtual int GetNumStoredBytes() { return 0; }
-	virtual void StoreBytes(unsigned char *bytes) {
-		assert(0);
-	}
-	virtual void SetFromBytes(unsigned char *bytes) {}*/
-
-	SurfaceMoverHandler *surfaceHandler;
-	//move clockwise or counterclockwise
-	//and receive callbacks for stuff happening
-	//
+	virtual int GetNumStoredBytes();
+	virtual void StoreBytes(unsigned char *bytes);
+	virtual void SetFromBytes(unsigned char *bytes);
 };
 
 struct SurfaceRailMover : SurfaceMover
 {
+	struct RailMoverData
+	{
+		int currRailID;
+		bool railCollisionOn;
+	};
+
+	RailMoverData railMoverData;
+
+	std::string queryMode;
+	TerrainRail *currRail;
+	bool railCollisionOn;
+	double tempQuant;
+	SurfaceRailMoverHandler *surfaceRailHandler;
+
 	SurfaceRailMover(Edge *startGround,
 		double startQuantity,
 		double radius);
@@ -121,49 +132,43 @@ struct SurfaceRailMover : SurfaceMover
 	void Move(int slowMultiple, int numPhysSteps);
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void SetRailSpeed(double s);
-
-	std::string queryMode;
-
-	Rail *currRail;
-
-	bool railCollisionOn;
-	double tempQuant;
-
 	void SetHandler(SurfaceRailMoverHandler *h);
-
-	SurfaceRailMoverHandler *surfaceRailHandler;
-
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct GroundMover : SurfaceMover
 {
+	struct GroundMoverData
+	{
+		bool reverse;
+		bool steeps;
+	};
+
+	GroundMoverData groundMoverData;
+	GroundMoverHandler *handler;
+
 	GroundMover();
 	GroundMover(Edge *startGround,
 		double startQuantity,
 		double radius,
 		bool steeps,
 		GroundMoverHandler *handler);
-	bool steeps;
+	
 	void HitTerrain( double &q );
 	bool IsEdgeViableGround( V2d &en );
-	
-	GroundMoverHandler *handler;
-	bool reverse;
-	//bool startRoll;
-	//bool finishedRoll;
-
-	
 	bool StartRoll();
 	void FinishedRoll();
 	void HitTerrainAerial();
 
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
-
-	//sf::Vector2<double> velocity;
-
-
+	void PopulateFromData(const SurfaceMoverData &sfm, const GroundMoverData &gmd);
+	void PopulateData(SurfaceMoverData &sfm, GroundMoverData &gmd );
 };
-
 
 struct CubicCurve
 {

@@ -22,35 +22,38 @@ SurfaceMover::SurfaceMover()
 	sess = Session::GetSession();
 
 	surfaceHandler = NULL;
-	collisionOn = true;
-	physBody.isCircle = true;
-	physBody.rw = 0;
-	physBody.rh = 0;
-	physBody.offset = V2d(0, 0);
-	force = V2d(0, 0);
+	surfaceMoverData.collisionOn = true;
+	surfaceMoverData.physBody.isCircle = true;
+	surfaceMoverData.physBody.rw = 0;
+	surfaceMoverData.physBody.rh = 0;
+	surfaceMoverData.physBody.offset = V2d(0, 0);
+	surfaceMoverData.force = V2d(0, 0);
 	ground = NULL;
-	edgeQuantity = 0;
-	roll = false;
-	groundSpeed = 0;
+	surfaceMoverData.edgeQuantity = 0;
+	surfaceMoverData.roll = false;
+	surfaceMoverData.groundSpeed = 0;
 	UpdateGroundPos();
 }
 
 SurfaceMover::SurfaceMover(Edge *startGround, 
 	double startQuantity, double radius )// double mSpeed )
-	:ground( startGround ), edgeQuantity( startQuantity ),
-	groundSpeed( 0 ), roll( false )
+	:ground( startGround )
 {
 	sess = Session::GetSession();
 
+	surfaceMoverData.groundSpeed = 0;
+	surfaceMoverData.edgeQuantity = startQuantity;
+	surfaceMoverData.roll = false;
+
 	surfaceHandler = NULL;
-	collisionOn = true;
+	surfaceMoverData.collisionOn = true;
 	//maxSpeed = mSpeed;
 	//gravity = V2d( 0, 0 );
-	physBody.isCircle = true;
-	physBody.rw = radius;
-	physBody.rh = radius;
-	physBody.offset = V2d( 0, 0 );
-	force = V2d(0, 0);
+	surfaceMoverData.physBody.isCircle = true;
+	surfaceMoverData.physBody.rw = radius;
+	surfaceMoverData.physBody.rh = radius;
+	surfaceMoverData.physBody.offset = V2d( 0, 0 );
+	surfaceMoverData.force = V2d(0, 0);
 	UpdateGroundPos();
 }
 
@@ -60,25 +63,25 @@ void SurfaceMover::Set(PositionInfo &pi)
 
 	if (ground == NULL)
 	{
-		physBody.globalPosition = pi.GetPosition();
-		edgeQuantity = 0;
+		surfaceMoverData.physBody.globalPosition = pi.GetPosition();
+		surfaceMoverData.edgeQuantity = 0;
 	}
 	else
 	{
-		edgeQuantity = pi.GetQuant();
+		surfaceMoverData.edgeQuantity = pi.GetQuant();
 	}
 	
-	roll = false;
+	surfaceMoverData.roll = false;
 	UpdateGroundPos();
 }
 
 void SurfaceMover::AddAirForce(V2d &p_force)
 {
-	force += p_force;
+	surfaceMoverData.force += p_force;
 }
 void SurfaceMover::ClearAirForces()
 {
-	force = V2d(0, 0);
+	surfaceMoverData.force = V2d(0, 0);
 }
 
 V2d SurfaceMover::GetGroundPoint()
@@ -86,7 +89,7 @@ V2d SurfaceMover::GetGroundPoint()
 	//assert(ground != NULL);
 	if (ground != NULL)
 	{
-		return ground->GetPosition(edgeQuantity);
+		return ground->GetPosition(surfaceMoverData.edgeQuantity);
 	}
 	else
 	{
@@ -104,21 +107,21 @@ double SurfaceMover::GetAngleRadians()
 	double angle;
 	if (ground != NULL)
 	{
-		if (!roll)
+		if (!surfaceMoverData.roll)
 		{
 			angle = ground->GetNormalAngleRadians();
 		}
 		else
 		{
-			if (edgeQuantity == 0)
+			if (surfaceMoverData.edgeQuantity == 0)
 			{
-				V2d vec = normalize(physBody.globalPosition - ground->v0);
+				V2d vec = normalize(surfaceMoverData.physBody.globalPosition - ground->v0);
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 			}
 			else
 			{
-				V2d vec = normalize(physBody.globalPosition - ground->v1);
+				V2d vec = normalize(surfaceMoverData.physBody.globalPosition - ground->v1);
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 			}
@@ -142,31 +145,31 @@ void SurfaceMover::UpdateGroundPos()
 {
 	if( ground == NULL )
 	{
-		physBody.globalAngle = 0;
+		surfaceMoverData.physBody.globalAngle = 0;
 		return;
 	}
 	
 
-	if( roll )
+	if(surfaceMoverData.roll )
 	{
 		V2d n;
-		if( edgeQuantity < .01 )
+		if(surfaceMoverData.edgeQuantity < .01 )
 		{
 			//basically 0
-			n = normalize( physBody.globalPosition - ground->v0 );
+			n = normalize(surfaceMoverData.physBody.globalPosition - ground->v0 );
 		}
 		else
 		{
-			n = normalize( physBody.globalPosition - ground->v1 );
+			n = normalize(surfaceMoverData.physBody.globalPosition - ground->v1 );
 		}
-		physBody.globalAngle = atan2( n.x, -n.y );
+		surfaceMoverData.physBody.globalAngle = atan2( n.x, -n.y );
 	}
 	else
 	{
 		V2d gn = ground->Normal();
-		physBody.globalPosition = ground->GetPosition( edgeQuantity )
-			+ gn * physBody.rw;
-		physBody.globalAngle = atan2( gn.x, -gn.y );
+		surfaceMoverData.physBody.globalPosition = ground->GetPosition(surfaceMoverData.edgeQuantity )
+			+ gn * surfaceMoverData.physBody.rw;
+		surfaceMoverData.physBody.globalAngle = atan2( gn.x, -gn.y );
 		//cout << "setting grounded position to: " << physBody.globalPosition.x 
 		//	<< ", " << physBody.globalPosition.y << endl;
 	}
@@ -175,38 +178,38 @@ void SurfaceMover::UpdateGroundPos()
 
 void SurfaceMover::SetSpeed( double speed )
 {
-	if( roll )
+	if(surfaceMoverData.roll )
 	{
-		if( groundSpeed > 0 && speed < 0 )
+		if(surfaceMoverData.groundSpeed > 0 && speed < 0 )
 		{
 			Edge *next = ground->edge1;
 			ground = next;
 
-			edgeQuantity = 0;
+			surfaceMoverData.edgeQuantity = 0;
 		}
-		else if( groundSpeed < 0 && speed > 0 )
+		else if(surfaceMoverData.groundSpeed < 0 && speed > 0 )
 		{
 			Edge *prev = ground->edge0;
 			ground = prev;
 
-			edgeQuantity = length( ground->v1 - ground->v0 );
+			surfaceMoverData.edgeQuantity = length( ground->v1 - ground->v0 );
 		}
 	}
 
-	groundSpeed = speed;
+	surfaceMoverData.groundSpeed = speed;
 }
 
 bool SurfaceMover::ResolvePhysics( V2d &vel )
 {
 	//possibleEdgeCount = 0;
 	
-	Rect<double> oldR( physBody.globalPosition.x + physBody.offset.x - physBody.rw, 
-		physBody.globalPosition.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	Rect<double> oldR(surfaceMoverData.physBody.globalPosition.x + surfaceMoverData.physBody.offset.x - surfaceMoverData.physBody.rw,
+		surfaceMoverData.physBody.globalPosition.y + surfaceMoverData.physBody.offset.y - surfaceMoverData.physBody.rh, 2 * surfaceMoverData.physBody.rw, 2 * surfaceMoverData.physBody.rh );
 
-	physBody.globalPosition += vel;
+	surfaceMoverData.physBody.globalPosition += vel;
 	
-	Rect<double> newR( physBody.globalPosition.x + physBody.offset.x - physBody.rw, 
-		physBody.globalPosition.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	Rect<double> newR(surfaceMoverData.physBody.globalPosition.x + surfaceMoverData.physBody.offset.x - surfaceMoverData.physBody.rw,
+		surfaceMoverData.physBody.globalPosition.y + surfaceMoverData.physBody.offset.y - surfaceMoverData.physBody.rh, 2 * surfaceMoverData.physBody.rw, 2 * surfaceMoverData.physBody.rh );
 	//minContact.collisionPriority = 1000000;
 	
 	double oldRight = oldR.left + oldR.width;
@@ -235,7 +238,7 @@ bool SurfaceMover::ResolvePhysics( V2d &vel )
 		surfaceHandler->ExtraQueries(r);
 
 	//queryMode = "resolve";
-	if (collisionOn)
+	if (surfaceMoverData.collisionOn)
 	{
 		sess->terrainTree->Query(this, r);
 	}
@@ -295,7 +298,7 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 	}
 	else
 	{
-		if( groundSpeed > 0 )
+		if(surfaceMoverData.groundSpeed > 0 )
 		{
 			//cout << "t33" << endl;
 			ground = ground->edge1;
@@ -315,6 +318,11 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 	}
 
 	return false;
+}
+
+void SurfaceMover::SetVelocity(const V2d &vel)
+{
+	surfaceMoverData.velocity = vel;
 }
 
 void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
@@ -341,7 +349,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 
 
 
-		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
+		if( ground != NULL && ground->IsClosedGateEdge())
 		{
 			Gate *g = (Gate*)ground->info;
 			Edge *edgeA = g->edgeA;
@@ -373,7 +381,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		if( ground != NULL )
 		{
-			if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+			if( ground->edge0->IsClosedGateEdge())
 			{
 				Gate *g = (Gate*)ground->edge0->info;
 				Edge *e0 = ground->edge0;
@@ -404,7 +412,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			
 			
-			if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+			if( ground->edge1->IsClosedGateEdge())
 			{
 				Gate *g = (Gate*)ground->edge1->info;
 				Edge *e1 = ground->edge1;
@@ -435,7 +443,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 
-		Contact *c = sess->collider.collideEdge( physBody.globalPosition + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+		Contact *c = sess->collider.collideEdge( surfaceMoverData.physBody.globalPosition + surfaceMoverData.physBody.offset, surfaceMoverData.physBody, e, tempVel, V2d( 0, 0 ) );
 
 
 		if( c != NULL )
@@ -446,7 +454,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 
 			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
 			{
-				V2d pVec = normalize( physBody.globalPosition - e->v0 );
+				V2d pVec = normalize(surfaceMoverData.physBody.globalPosition - e->v0 );
 				double pAngle = atan2( -pVec.y, pVec.x );
 
 				if( pAngle < 0 )
@@ -499,7 +507,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
 			{
-				V2d pVec = normalize( physBody.globalPosition - e->v1 );
+				V2d pVec = normalize(surfaceMoverData.physBody.globalPosition - e->v1 );
 				double pAngle = atan2( -pVec.y, pVec.x );
 
 				if( pAngle < 0 )
@@ -596,8 +604,8 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 	V2d gNormal = ground->Normal();
 	V2d e1n = ground->edge1->Normal();
 
-	double angle = m /  physBody.rw;
-	V2d currVec = physBody.globalPosition - ground->v1;
+	double angle = m / surfaceMoverData.physBody.rw;
+	V2d currVec = surfaceMoverData.physBody.globalPosition - ground->v1;
 	V2d newPos;
 	newPos.x = currVec.x * cos( angle ) - 
 		currVec.y * sin( angle ) + ground->v1.x;
@@ -625,10 +633,10 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 	if( rollEnd > rollStart && ( rollNew > rollEnd || rollNew < rollStart ) )
 	{
 		changed = true;
-		newPos = ground->v1 + e1n * physBody.rw;
+		newPos = ground->v1 + e1n * surfaceMoverData.physBody.rw;
 		if (rollNew > rollEnd)
 		{
-			double diff = (rollNew - rollEnd) * physBody.rw;
+			double diff = (rollNew - rollEnd) * surfaceMoverData.physBody.rw;
 			steal = diff;
 		}
 		else if (rollNew < rollStart)
@@ -641,13 +649,13 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 	else if( rollEnd < rollStart && ( rollNew > rollEnd && rollNew < rollStart ) )
 	{
 		changed = true;
-		newPos = ground->v1 + e1n * physBody.rw;
+		newPos = ground->v1 + e1n * surfaceMoverData.physBody.rw;
 
 		//implement this when it comes up too
 		int xxxxxx = 6;
 	}
 
-	bool hit = ResolvePhysics( newPos - physBody.globalPosition );
+	bool hit = ResolvePhysics( newPos - surfaceMoverData.physBody.globalPosition );
 	if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 	{
 		HitTerrain(q);
@@ -674,8 +682,8 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	V2d gNormal = ground->Normal();
 	V2d e0n = ground->edge0->Normal();
 
-	double angle = m / physBody.rw;
-	V2d currVec = physBody.globalPosition - ground->v0;
+	double angle = m / surfaceMoverData.physBody.rw;
+	V2d currVec = surfaceMoverData.physBody.globalPosition - ground->v0;
 	V2d newPos;
 	newPos.x = currVec.x * cos( angle ) - 
 		currVec.y * sin( angle ) + ground->v0.x;
@@ -703,11 +711,11 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	{
 		//cout << "first" << endl;
 		changed = true;
-		newPos = ground->v0 + e0n * physBody.rw;
+		newPos = ground->v0 + e0n * surfaceMoverData.physBody.rw;
 
 		if (rollNew < rollEnd)
 		{
-			double diff = (rollNew - rollEnd) *  physBody.rw;
+			double diff = (rollNew - rollEnd) *  surfaceMoverData.physBody.rw;
 			steal = diff;
 		}
 		else
@@ -720,13 +728,13 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	{
 		//cout << "second: " << rollStart << ", end: " << rollEnd << ", new: " << rollNew << endl;
 		changed = true;
-		newPos = ground->v0 + e0n * physBody.rw;
+		newPos = ground->v0 + e0n * surfaceMoverData.physBody.rw;
 
 		//implement
 		int xxxx = 6;
 	}
 
-	bool hit = ResolvePhysics( newPos - physBody.globalPosition );
+	bool hit = ResolvePhysics( newPos - surfaceMoverData.physBody.globalPosition );
 	if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 	{
 		HitTerrain(q);
@@ -752,8 +760,8 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 	if( ground != NULL )
 	{
 		double movement = 0;
-		double maxMovement = min( physBody.rw, physBody.rh ); //circle so this might be unnecessary
-		movement = groundSpeed;
+		double maxMovement = min(surfaceMoverData.physBody.rw, surfaceMoverData.physBody.rh ); //circle so this might be unnecessary
+		movement = surfaceMoverData.groundSpeed;
 
 		movement /= slowMultiple * numPhysSteps;
 
@@ -933,10 +941,10 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 	else 
 	{
 		double nSteps = numPhysSteps;
-		velocity += force / nSteps / (double)slowMultiple;
+		surfaceMoverData.velocity += surfaceMoverData.force / nSteps / (double)slowMultiple;
 		//cout << "move through the air" << endl;
 
-		V2d movementVec = velocity;
+		V2d movementVec = surfaceMoverData.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		//cout << "before moving air position: " << physBody.globalPosition.x 
@@ -954,7 +962,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 
 
 	
-	framesInAir++;
+	surfaceMoverData.framesInAir++;
 	//PhysicsResponse();
 }
 
@@ -965,36 +973,36 @@ void SurfaceMover::HitTerrainAerial()
 	if( en.x == 0 && en.y == 0 )
 	{
 		corner = true;
-		en = normalize( physBody.globalPosition - minContact.position );
+		en = normalize(surfaceMoverData.physBody.globalPosition - minContact.position );
 	}
 
 	if( corner )
 	{
 		//cout << "cornering" << endl;
-		roll = true;
-		physBody.globalPosition += minContact.resolution;	
+		surfaceMoverData.roll = true;
+		surfaceMoverData.physBody.globalPosition += minContact.resolution;
 		ground = minContact.edge;
 
 		if( minContact.position == ground->v0 )
 		{
 			//ground = ground->edge0;
-			edgeQuantity = 0;//length( ground->v1 - ground->v0 );
+			surfaceMoverData.edgeQuantity = 0;//length( ground->v1 - ground->v0 );
 		}
 		else
 		{
-			edgeQuantity = length( ground->v1 - ground->v0 );
+			surfaceMoverData.edgeQuantity = length( ground->v1 - ground->v0 );
 		}
 	}
 	else
 	{
 		ground = minContact.edge;
-		edgeQuantity = ground->GetQuantity( minContact.position );
+		surfaceMoverData.edgeQuantity = ground->GetQuantity( minContact.position );
 		UpdateGroundPos();
 	}
 
 	if( surfaceHandler != NULL )
 	{
-		surfaceHandler->HitTerrainAerial( ground, edgeQuantity );
+		surfaceHandler->HitTerrainAerial( ground, surfaceMoverData.edgeQuantity );
 	}
 		//surfaceHandler->TransferEdge( ground );
 }
@@ -1002,17 +1010,17 @@ void SurfaceMover::HitTerrainAerial()
 void SurfaceMover::HitTerrain( double &q )
 {
 	//V2d eNorm = minContact.edge->Normal();
-	if( roll )
+	if(surfaceMoverData.roll )
 	{
 		ground = minContact.edge;
 		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
 		{
 			q = ground->GetQuantity( minContact.position );
-			physBody.globalPosition += minContact.resolution;
+			surfaceMoverData.physBody.globalPosition += minContact.resolution;
 		}
 		else
 		{
-			roll = false;
+			surfaceMoverData.roll = false;
 			q = ground->GetQuantity( minContact.position + minContact.resolution );
 		}
 		
@@ -1022,9 +1030,9 @@ void SurfaceMover::HitTerrain( double &q )
 		ground = minContact.edge;
 		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
 		{
-			roll = true;
+			surfaceMoverData.roll = true;
 			q = ground->GetQuantity( minContact.position );
-			physBody.globalPosition += minContact.resolution;
+			surfaceMoverData.physBody.globalPosition += minContact.resolution;
 		}
 		else
 		{
@@ -1040,15 +1048,15 @@ void SurfaceMover::Jump( V2d &vel )
 {
 	//cout << "jumping vel is: " << vel.x << ", " <<
 		//vel.y << endl;
-	framesInAir = 0;
+	surfaceMoverData.framesInAir = 0;
 	//cout << "jumping surface mover: " << vel.x << ", " << vel.y << endl;
-	velocity = vel;
+	surfaceMoverData.velocity = vel;
 	ground = NULL;
 }
 
 bool SurfaceMover::StartRoll()
 {
-	roll = true;
+	surfaceMoverData.roll = true;
 	return false;
 }
 
@@ -1062,37 +1070,67 @@ void SurfaceMover::SetHandler(SurfaceMoverHandler *h)
 	surfaceHandler = h;
 }
 
+void SurfaceMover::PopulateFromData(const SurfaceMoverData &sfm)
+{
+	surfaceMoverData = sfm;
+	ground = sess->GetEdge(&surfaceMoverData.groundInfo);
+}
+
+void SurfaceMover::PopulateData(SurfaceMoverData &sfm)
+{
+	surfaceMoverData.groundInfo.SetFromEdge(ground);
+	sfm = surfaceMoverData;
+}
+
+int SurfaceMover::GetNumStoredBytes()
+{
+	return sizeof(surfaceMoverData);
+}
+
+void SurfaceMover::StoreBytes(unsigned char *bytes)
+{
+	surfaceMoverData.groundInfo.SetFromEdge(ground);
+	memcpy(bytes, &surfaceMoverData, sizeof(surfaceMoverData));
+}
+
+void SurfaceMover::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&surfaceMoverData, bytes, sizeof(surfaceMoverData));
+	ground = sess->GetEdge(&surfaceMoverData.groundInfo);
+}
+
 void SurfaceMover::DebugDraw(RenderTarget *target)
 {
-	physBody.DebugDraw(CollisionBox::Physics, target);
+	surfaceMoverData.physBody.DebugDraw(CollisionBox::Physics, target);
 }
 
 
 GroundMover::GroundMover()
 	:SurfaceMover( NULL, 0, 0 )
 {
-	steeps = false;
+	groundMoverData.steeps = false;
 	handler = NULL;
-	reverse = false;
+	groundMoverData.reverse = false;
 }
 
 GroundMover::GroundMover( Edge *startGround, double startQuantity, 
 	double radius, bool p_steeps, GroundMoverHandler *p_handler )
-	:SurfaceMover( startGround, startQuantity, radius ), steeps( p_steeps )
-	,handler( p_handler ), reverse( false )
+	:SurfaceMover( startGround, startQuantity, radius )
+	,handler( p_handler )
 {
-
+	groundMoverData.reverse = false;
+	groundMoverData.steeps = p_steeps;
 }
 
 bool GroundMover::IsEdgeViableGround(V2d &en)
 {
-	if (reverse)
+	if (groundMoverData.reverse)
 	{
-		return en.y > 0 && !TerrainPolygon::IsWall(en) && (steeps || !TerrainPolygon::IsSteepGround(en));
+		return en.y > 0 && !TerrainPolygon::IsWall(en) && (groundMoverData.steeps || !TerrainPolygon::IsSteepGround(en));
 	}
 	else
 	{
-		return en.y < 0 && !TerrainPolygon::IsWall(en) && (steeps || !TerrainPolygon::IsSteepGround(en));
+		return en.y < 0 && !TerrainPolygon::IsWall(en) && (groundMoverData.steeps || !TerrainPolygon::IsSteepGround(en));
 	}
 }
 
@@ -1103,7 +1141,7 @@ void GroundMover::HitTerrain( double &q )
 	if( en.x == 0 && en.y == 0 )
 	{
 		corner = true;
-		en = normalize( physBody.globalPosition - minContact.position );
+		en = normalize(surfaceMoverData.physBody.globalPosition - minContact.position );
 	}
 
 	
@@ -1115,14 +1153,14 @@ void GroundMover::HitTerrain( double &q )
 		ground = minContact.edge;
 		if( corner )
 		{
-			roll = true;
+			surfaceMoverData.roll = true;
 			q = ground->GetQuantity( minContact.position );
-			physBody.globalPosition += minContact.resolution;
+			surfaceMoverData.physBody.globalPosition += minContact.resolution;
 		}
 		else
 		{
 			//cout << "this transition" << endl;
-			roll = false;
+			surfaceMoverData.roll = false;
 			q = ground->GetQuantity( minContact.position + minContact.resolution );
 		}
 	}
@@ -1130,8 +1168,8 @@ void GroundMover::HitTerrain( double &q )
 	{
 		//might need some extra code for nonsteeps that run into steeps
 		//cout << "this OTHER transition" << endl;
-		physBody.globalPosition += minContact.resolution;
-		q = ground->GetQuantity( physBody.globalPosition );
+		surfaceMoverData.physBody.globalPosition += minContact.resolution;
+		q = ground->GetQuantity(surfaceMoverData.physBody.globalPosition );
 		if( handler != NULL )
 			handler->HitOther();
 	}
@@ -1146,31 +1184,31 @@ void GroundMover::HitTerrainAerial()
 	{
 		//cout << "whaaat " << endl;
 		corner = true;
-		en = normalize( physBody.globalPosition - minContact.position );
+		en = normalize(surfaceMoverData.physBody.globalPosition - minContact.position );
 	}
 
 	
 	//I had this as framesInAir > 100 before. why?
-	if( framesInAir > 10 && IsEdgeViableGround( en ))
+	if(surfaceMoverData.framesInAir > 10 && IsEdgeViableGround( en ))
 	{
 		ground = minContact.edge;
 		if( corner )
 		{
 
-			roll = true;
-			edgeQuantity = ground->GetQuantity( minContact.position );
-			physBody.globalPosition += minContact.resolution;
+			surfaceMoverData.roll = true;
+			surfaceMoverData.edgeQuantity = ground->GetQuantity( minContact.position );
+			surfaceMoverData.physBody.globalPosition += minContact.resolution;
 
 			if (handler != NULL)
 				handler->Land();
 
 			Edge *prev = ground->GetPrevEdge();
 			Edge *next = ground->GetNextEdge();
-			if ( approxEquals(edgeQuantity, 0 ) && !IsEdgeViableGround(prev->Normal()))
+			if ( approxEquals(surfaceMoverData.edgeQuantity, 0 ) && !IsEdgeViableGround(prev->Normal()))
 			{
 				handler->ReachCliff();
 			}
-			else if (approxEquals(edgeQuantity, ground->GetLength()) && !IsEdgeViableGround(next->Normal()))
+			else if (approxEquals(surfaceMoverData.edgeQuantity, ground->GetLength()) && !IsEdgeViableGround(next->Normal()))
 			{
 				handler->ReachCliff();
 			}
@@ -1182,8 +1220,8 @@ void GroundMover::HitTerrainAerial()
 		}
 		else
 		{
-			roll = false;
-			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
+			surfaceMoverData.roll = false;
+			surfaceMoverData.edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
 			//cout << framesInAir << " land non corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
 			UpdateGroundPos();
 
@@ -1196,15 +1234,15 @@ void GroundMover::HitTerrainAerial()
 	{
 		//cout << "collision vel: " << velocity.x << ", " << velocity.y << ", res: " 
 		//	<< minContact.resolution.x << ", " << minContact.resolution.y << endl;
-		physBody.globalPosition += minContact.resolution;
+		surfaceMoverData.physBody.globalPosition += minContact.resolution;
 		if( corner )
 		{
 			if( corner )
 			{
 			//otherwise it swipes by the corner when it moves again
-				physBody.globalPosition += normalize( minContact.resolution ) * .1;
+				surfaceMoverData.physBody.globalPosition += normalize( minContact.resolution ) * .1;
 			}
-			en = normalize( physBody.globalPosition - minContact.position );
+			en = normalize(surfaceMoverData.physBody.globalPosition - minContact.position );
 		}
 
 		
@@ -1214,12 +1252,12 @@ void GroundMover::HitTerrainAerial()
 		//cout << "along: " << along.x << ", " << along.y << endl;
 		if( corner )
 		{
-			velocity = dot( velocity, along ) * along;
+			surfaceMoverData.velocity = dot(surfaceMoverData.velocity, along ) * along;
 			//velocity = V2d( 0, 0 );
 		}
 		else
 		{
-			velocity = dot( velocity, along ) * along;
+			surfaceMoverData.velocity = dot(surfaceMoverData.velocity, along ) * along;
 		}
 
 		
@@ -1236,7 +1274,7 @@ void GroundMover::HitTerrainAerial()
 bool GroundMover::StartRoll()
 {
 	V2d en;
-	if( groundSpeed > 0 )
+	if(surfaceMoverData.groundSpeed > 0 )
 	{
 		en = ground->edge1->Normal();
 	}
@@ -1247,7 +1285,7 @@ bool GroundMover::StartRoll()
 
 	if( IsEdgeViableGround( en ) )
 	{
-		roll = true;
+		surfaceMoverData.roll = true;
 		return false;
 	}
 	else
@@ -1265,12 +1303,49 @@ void GroundMover::FinishedRoll()
 }
 
 
+int GroundMover::GetNumStoredBytes()
+{
+	return sizeof(surfaceMoverData) + sizeof(groundMoverData);
+}
+
+void GroundMover::StoreBytes(unsigned char *bytes)
+{
+	surfaceMoverData.groundInfo.SetFromEdge(ground);
+	memcpy(bytes, &surfaceMoverData, sizeof(surfaceMoverData));
+
+	bytes += sizeof(surfaceMoverData);
+
+	memcpy(bytes, &groundMoverData, sizeof(groundMoverData));
+}
+
+void GroundMover::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&surfaceMoverData, bytes, sizeof(surfaceMoverData));
+	ground = sess->GetEdge(&surfaceMoverData.groundInfo);
+
+	bytes += sizeof(surfaceMoverData);
+
+	memcpy(&groundMoverData, bytes, sizeof(groundMoverData));
+}
+
+void GroundMover::PopulateFromData(const SurfaceMoverData &sfm, const GroundMoverData &gmd)
+{
+	SurfaceMover::PopulateFromData(sfm);
+	groundMoverData = gmd;
+}
+
+void GroundMover::PopulateData(SurfaceMoverData &sfm, GroundMoverData &gmd)
+{
+	SurfaceMover::PopulateData(sfm);
+	gmd = groundMoverData;
+}
+
 SurfaceRailMover::SurfaceRailMover(Edge *startGround,
 	double startQuantity,
 	double radius)
 	:SurfaceMover( startGround, startQuantity, radius )
 {
-	railCollisionOn = true;
+	railMoverData.railCollisionOn = true;
 	surfaceRailHandler = NULL;
 }
 
@@ -1284,13 +1359,13 @@ bool SurfaceRailMover::ResolvePhysics(V2d &vel)
 {
 	//possibleEdgeCount = 0;
 
-	Rect<double> oldR(physBody.globalPosition.x + physBody.offset.x - physBody.rw,
-		physBody.globalPosition.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh);
+	Rect<double> oldR(surfaceMoverData.physBody.globalPosition.x + surfaceMoverData.physBody.offset.x - surfaceMoverData.physBody.rw,
+		surfaceMoverData.physBody.globalPosition.y + surfaceMoverData.physBody.offset.y - surfaceMoverData.physBody.rh, 2 * surfaceMoverData.physBody.rw, 2 * surfaceMoverData.physBody.rh);
 
-	physBody.globalPosition += vel;
+	surfaceMoverData.physBody.globalPosition += vel;
 
-	Rect<double> newR(physBody.globalPosition.x + physBody.offset.x - physBody.rw,
-		physBody.globalPosition.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh);
+	Rect<double> newR(surfaceMoverData.physBody.globalPosition.x + surfaceMoverData.physBody.offset.x - surfaceMoverData.physBody.rw,
+		surfaceMoverData.physBody.globalPosition.y + surfaceMoverData.physBody.offset.y - surfaceMoverData.physBody.rh, 2 * surfaceMoverData.physBody.rw, 2 * surfaceMoverData.physBody.rh);
 	//minContact.collisionPriority = 1000000;
 
 	double oldRight = oldR.left + oldR.width;
@@ -1315,14 +1390,14 @@ bool SurfaceRailMover::ResolvePhysics(V2d &vel)
 	col = false;
 	minContact.edge = NULL;
 
-	if (railCollisionOn)
+	if (railMoverData.railCollisionOn)
 	{
 		queryMode = "rail";
 		sess->railEdgeTree->Query(this, r);
 	}
 	
 
-	if (collisionOn)
+	if (surfaceMoverData.collisionOn)
 	{
 		queryMode = "terrain";
 		sess->terrainTree->Query(this, r);
@@ -1345,9 +1420,9 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 	else
 	{
 		Edge *e = (Edge*)qte;
-		Rail *rail = (Rail*)e->info;
+		TerrainRail *rail = e->rail;
 
-		V2d pos = physBody.globalPosition;
+		V2d pos = surfaceMoverData.physBody.globalPosition;
 
 		//if (IsEdgeTouchingCircle(e->v0, e->v1, mover->physBody.globalPosition, mover->physBody.rw))
 
@@ -1374,7 +1449,7 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 		double c = cross(pos - e->v0, along);
 		double preC = cross((pos - tempVel) - e->v0, along);
 
-		double alongQuantVel = dot(velocity, along);
+		double alongQuantVel = dot(surfaceMoverData.velocity, along);
 
 		bool cStuff = (c >= 0 && preC <= 0) || (c <= 0 && preC >= 0);
 
@@ -1394,10 +1469,10 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			if (!li.parallel)
 			{
 				V2d p = li.position;
-				edgeQuantity = ground->GetQuantity(p);
-				tempQuant = edgeQuantity;
+				surfaceMoverData.edgeQuantity = ground->GetQuantity(p);
+				tempQuant = surfaceMoverData.edgeQuantity;
 
-				physBody.globalPosition = p;
+				surfaceMoverData.physBody.globalPosition = p;
 			}
 			else
 			{
@@ -1417,10 +1492,10 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			//	groundSpeed = 10;
 			//}
 			//groundSpeed = -groundSpeed;
-			groundSpeed = 0;
+			surfaceMoverData.groundSpeed = 0;
 
-			collisionOn = false;
-			railCollisionOn = false;
+			surfaceMoverData.collisionOn = false;
+			railMoverData.railCollisionOn = false;
 
 			if (surfaceRailHandler != NULL)
 			{
@@ -1448,11 +1523,11 @@ void SurfaceRailMover::SetRailSpeed(double s)
 	{
 		if (ceiling)
 		{
-			groundSpeed = -s;
+			surfaceMoverData.groundSpeed = -s;
 		}
 		else
 		{
-			groundSpeed = s;
+			surfaceMoverData.groundSpeed = s;
 		}
 	}
 }
@@ -1462,8 +1537,8 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 	if (ground != NULL)
 	{
 		double movement = 0;
-		double maxMovement = min(physBody.rw, physBody.rh); //circle so this might be unnecessary
-		movement = groundSpeed;
+		double maxMovement = min(surfaceMoverData.physBody.rw, surfaceMoverData.physBody.rh); //circle so this might be unnecessary
+		movement = surfaceMoverData.groundSpeed;
 
 		movement /= slowMultiple * numPhysSteps;
 
@@ -1496,7 +1571,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 			double extra = 0;
 			bool leaveGround = false;
-			tempQuant = edgeQuantity;
+			tempQuant = surfaceMoverData.edgeQuantity;
 
 			V2d gNormal = ground->Normal();
 
@@ -1510,20 +1585,20 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 			else if (approxEquals(tempQuant, groundLength))
 				tempQuant = groundLength;
 
-			if (movement > 0 && roll && tempQuant == 0)
+			if (movement > 0 && surfaceMoverData.roll && tempQuant == 0)
 			{
 				ground = ground->edge0;
 				groundLength = length(ground->v1 - ground->v0);
-				edgeQuantity = groundLength;
-				tempQuant = edgeQuantity;
+				surfaceMoverData.edgeQuantity = groundLength;
+				tempQuant = surfaceMoverData.edgeQuantity;
 				gNormal = ground->Normal();
 			}
-			else if (movement < 0 && roll && tempQuant == groundLength)
+			else if (movement < 0 && surfaceMoverData.roll && tempQuant == groundLength)
 			{
 				ground = ground->edge1;
 				groundLength = length(ground->v1 - ground->v0);
-				edgeQuantity = 0;
-				tempQuant = edgeQuantity;
+				surfaceMoverData.edgeQuantity = 0;
+				tempQuant = surfaceMoverData.edgeQuantity;
 				gNormal = ground->Normal();
 			}
 
@@ -1559,12 +1634,12 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 							surfaceRailHandler->LeaveRail();
 						}
 
-						velocity = ground->Along() * groundSpeed;
+						surfaceMoverData.velocity = ground->Along() * surfaceMoverData.groundSpeed;
 						ground = NULL;
 						currRail = NULL;
-						railCollisionOn = true;
-						collisionOn = true;
-						roll = false;
+						railMoverData.railCollisionOn = true;
+						surfaceMoverData.collisionOn = true;
+						surfaceMoverData.roll = false;
 					}
 					else
 					{
@@ -1587,7 +1662,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 				}
 				else
 				{
-					if (!roll)
+					if (!surfaceMoverData.roll)
 					{
 						bool br = StartRoll();
 						if (br)
@@ -1599,7 +1674,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 					if (br)
 					{
 						//cout << "blah" << endl;
-						edgeQuantity = tempQuant;
+						surfaceMoverData.edgeQuantity = tempQuant;
 						break;
 					}
 					else
@@ -1620,12 +1695,12 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 					if (surfaceRailHandler == NULL || (surfaceRailHandler->CanLeaveRail()))
 					{
-						velocity = ground->Along() * groundSpeed;
+						surfaceMoverData.velocity = ground->Along() * surfaceMoverData.groundSpeed;
 						ground = NULL;
 						currRail = NULL;
-						railCollisionOn = true;
-						collisionOn = true;
-						roll = false;
+						railMoverData.railCollisionOn = true;
+						surfaceMoverData.collisionOn = true;
+						surfaceMoverData.roll = false;
 					}
 					else
 					{
@@ -1645,7 +1720,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 				}
 				else
 				{
-					if (!roll)
+					if (!surfaceMoverData.roll)
 					{
 						bool br = StartRoll();
 						if (br)
@@ -1655,7 +1730,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 					bool br = RollCounterClockwise(tempQuant, m);
 					if (br)
 					{
-						edgeQuantity = tempQuant;
+						surfaceMoverData.edgeQuantity = tempQuant;
 						break;
 					}
 				}
@@ -1665,7 +1740,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 				bool br = MoveAlongEdge(movement, groundLength, tempQuant, m);
 				if (br)
 				{
-					edgeQuantity = tempQuant;
+					surfaceMoverData.edgeQuantity = tempQuant;
 					break;
 				}
 			}
@@ -1675,7 +1750,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 			else
 				movement = steal;
 
-			edgeQuantity = tempQuant;
+			surfaceMoverData.edgeQuantity = tempQuant;
 
 			if (abs(movement) < .0001)
 			{
@@ -1691,10 +1766,10 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 	else
 	{
 		double nSteps = numPhysSteps;
-		velocity += force / nSteps / (double)slowMultiple;
+		surfaceMoverData.velocity += surfaceMoverData.force / nSteps / (double)slowMultiple;
 		//cout << "move through the air" << endl;
 
-		V2d movementVec = velocity;
+		V2d movementVec = surfaceMoverData.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		bool hit = ResolvePhysics(movementVec);
@@ -1704,9 +1779,37 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 		}
 	}
 
-	framesInAir++;
+	surfaceMoverData.framesInAir++;
 }
 
+
+int SurfaceRailMover::GetNumStoredBytes()
+{
+	return sizeof(surfaceMoverData) + sizeof( railMoverData );
+}
+
+void SurfaceRailMover::StoreBytes(unsigned char *bytes)
+{
+	surfaceMoverData.groundInfo.SetFromEdge(ground);
+	memcpy(bytes, &surfaceMoverData, sizeof(surfaceMoverData));
+
+	bytes += sizeof(surfaceMoverData);
+
+	railMoverData.currRailID = sess->GetRailID(currRail);
+	memcpy(bytes, &railMoverData, sizeof(railMoverData));
+}
+
+void SurfaceRailMover::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&surfaceMoverData, bytes, sizeof(surfaceMoverData));
+	ground = sess->GetEdge(&surfaceMoverData.groundInfo);
+
+	bytes += sizeof(surfaceMoverData);
+
+	memcpy(&railMoverData, bytes, sizeof(railMoverData));
+
+	currRail = sess->GetRailFromID(railMoverData.currRailID);
+}
 
 void SpaceMover::Reset()
 {

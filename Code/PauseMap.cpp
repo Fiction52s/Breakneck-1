@@ -206,7 +206,7 @@ void PauseMap::DrawToTex()
 	mapTex->setView(vv);
 	mapTex->clear(Color::Black);//Color(0, 0, 0, 191));
 
-	for (list<Zone*>::iterator it = game->zones.begin(); it != game->zones.end(); ++it)
+	for (auto it = game->zones.begin(); it != game->zones.end(); ++it)
 	{
 		(*it)->Draw(mapTex);
 	}
@@ -272,7 +272,7 @@ void PauseMap::Draw(sf::RenderTarget *target)
 void PauseMap::DrawZones(RenderTarget *target)
 {
 	auto &zones = game->zones;
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->DrawMinimap(target);
 	}

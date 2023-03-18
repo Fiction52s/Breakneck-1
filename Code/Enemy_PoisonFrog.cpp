@@ -547,7 +547,7 @@ void PoisonFrog::HitOtherAerial( Edge *e )
 			//{
 			//	mover->velocity = V2d( .1, 0 );
 			//}
-			groundMover->velocity = V2d( 0, 0 );
+			groundMover->SetVelocity(V2d(0, 0));
 
 		
 			facingRight = !facingRight;

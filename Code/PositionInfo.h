@@ -3,13 +3,28 @@
 
 #include "VectorMath.h"
 #include "ISelectable.h"
-
+#include "Physics.h"
 
 struct TerrainPoint;
 struct Edge;
 
+struct PositionInfoData
+{
+	V2d position;
+	EdgeInfo edgeInfo;
+	V2d offset;
+};
+
+
 struct PositionInfo
 {
+	V2d position;
+	int edgeIndex;
+	double groundQuantity;
+	PolyPtr ground;
+	RailPtr railGround;
+	V2d offset;
+
 	PositionInfo();
 	Edge *GetEdge();
 	double GetGroundAngleRadians();
@@ -32,13 +47,8 @@ struct PositionInfo
 	void SetPosition(V2d &pos);
 	void SetGroundHeight(double raised);
 	void SetGroundOffset(double xOffset);
-
-	V2d position;
-	int edgeIndex;
-	double groundQuantity;
-	PolyPtr ground;
-	RailPtr railGround;
-	V2d offset;
+	void PopulateFromData(const PositionInfoData &data);
+	void PopulateData(PositionInfoData &data);
 };
 
 #endif

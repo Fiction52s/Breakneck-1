@@ -3198,7 +3198,7 @@ void Session::CleanupZones()
 
 void Session::DrawZones(sf::RenderTarget *target)
 {
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->Draw(target);
 	}
@@ -3255,11 +3255,11 @@ void Session::CreateZones()
 					bool okayZone = true;
 
 
-					for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit)
+					for (auto zit = zones.begin(); zit != zones.end() && okayZone; ++zit)
 					{
-						for (list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit)
+						for (auto cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit)
 						{
-							for (list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git)
+							for (auto git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git)
 							{
 								if ((*cit) == (*git))
 								{
@@ -3275,6 +3275,7 @@ void Session::CreateZones()
 					{
 						Zone *z = new Zone(tp);
 						z->gates = currGates;
+						z->zoneIndex = zones.size();
 						zones.push_back(z);
 						//	cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
 						//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
@@ -3438,11 +3439,11 @@ void Session::CreateZones()
 				{
 					//cout << "found a zone bbb!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
 					bool okayZone = true;
-					for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit)
+					for (auto zit = zones.begin(); zit != zones.end() && okayZone; ++zit)
 					{
-						for (list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit)
+						for (auto cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit)
 						{
-							for (list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git)
+							for (auto git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git)
 							{
 								if ((*cit) == (*git))
 								{
@@ -3459,6 +3460,8 @@ void Session::CreateZones()
 						Zone *z = new Zone(tpb);
 						//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
 						z->gates = currGates;
+						z->zoneIndex = zones.size();
+
 						zones.push_back(z);
 						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
 					}
@@ -3607,11 +3610,11 @@ void Session::CreateZones()
 			continue;
 		}
 		//gates[i]->SetLocked( true );
-		for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+		for (auto it = zones.begin(); it != zones.end(); ++it)
 		{
 			//cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
 			//cout << i << ", it gates: " << (*it)->gates.size() << endl;
-			for (list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit)
+			for (auto eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit)
 			{
 				if (gates[i]->edgeA == (*eit))
 				{
@@ -3631,9 +3634,9 @@ void Session::CreateZones()
 	}
 
 
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		for (list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2)
+		for (auto it2 = zones.begin(); it2 != zones.end(); ++it2)
 		{
 			if ((*it) == (*it2))
 				continue;
@@ -3646,9 +3649,9 @@ void Session::CreateZones()
 		}
 	}
 
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		for (list<Zone*>::iterator it2 = (*it)->subZones.begin();
+		for (auto it2 = (*it)->subZones.begin();
 			it2 != (*it)->subZones.end(); ++it2)
 		{
 			if ((*it)->ContainsZoneMostSpecific((*it2)))
@@ -3672,7 +3675,7 @@ void Session::CreateZones()
 		{
 			bool foundZone = false;
 
-			for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+			for (auto zit = zones.begin(); zit != zones.end(); ++zit)
 			{
 				if ((*zit)->ContainsPointMostSpecific((g->edgeA->v0 + g->edgeA->v1) / 2.0) != NULL)
 				{
@@ -3756,9 +3759,10 @@ void Session::CreateZones()
 
 		Zone *z = new Zone(tp);
 		z->gates = outsideGates;
+		z->zoneIndex = zones.size();
 		zones.push_back(z);
 
-		for (list<Edge*>::iterator it = outsideGates.begin(); it != outsideGates.end(); ++it)
+		for (auto it = outsideGates.begin(); it != outsideGates.end(); ++it)
 		{
 			Gate *g = (Gate*)(*it)->info;
 			if (g->zoneA == NULL)
@@ -3774,7 +3778,7 @@ void Session::CreateZones()
 		}
 
 
-		for (list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2)
+		for (auto it2 = zones.begin(); it2 != zones.end(); ++it2)
 		{
 			if (z == (*it2))
 				continue;
@@ -3788,7 +3792,7 @@ void Session::CreateZones()
 
 
 
-		for (list<Zone*>::iterator it2 = z->subZones.begin();
+		for (auto it2 = z->subZones.begin();
 			it2 != z->subZones.end(); ++it2)
 		{
 			if (z->ContainsZoneMostSpecific((*it2)))
@@ -3819,15 +3823,15 @@ int Session::SetupZones()
 		return 0;
 
 	//add enemies to the correct zone.
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
-		for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+		for (auto zit = zones.begin(); zit != zones.end(); ++zit)
 		{
 			bool hasPoint = (*zit)->ContainsPoint((*it)->GetPosition());
 			if (hasPoint)
 			{
 				bool mostSpecific = true;
-				for (list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
+				for (auto zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
 				{
 					if ((*zit2)->ContainsPoint((*it)->GetPosition()))
 					{
@@ -3848,7 +3852,7 @@ int Session::SetupZones()
 	}
 
 	int mapTotalNumKeys = 0; //useful for stats later?
-	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	for (auto zit = zones.begin(); zit != zones.end(); ++zit)
 	{
 		(*zit)->totalNumKeys = 0;
 		//int numTotalKeys = 0;
@@ -3867,13 +3871,13 @@ int Session::SetupZones()
 	{
 		Zone *assignZone = NULL;
 		V2d cPos((*it)->pos.x, (*it)->pos.y);
-		for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+		for (auto zit = zones.begin(); zit != zones.end(); ++zit)
 		{
 			bool hasPoint = (*zit)->ContainsPoint(cPos);
 			if (hasPoint)
 			{
 				bool mostSpecific = true;
-				for (list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
+				for (auto zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
 				{
 					if ((*zit2)->ContainsPoint(cPos))
 					{
@@ -3904,14 +3908,14 @@ int Session::SetupZones()
 
 	cout << "2" << endl;
 	//which zone is the player in?
-	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	for (auto zit = zones.begin(); zit != zones.end(); ++zit)
 	{
 		//Vector2i truePos = Vector2i( player->position.x, player->position.y );
 		bool hasPoint = (*zit)->ContainsPoint(GetPlayer(0)->position);
 		if (hasPoint)
 		{
 			bool mostSpecific = true;
-			for (list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
+			for (auto zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
 			{
 				if ((*zit2)->ContainsPoint(GetPlayer(0)->position))
 				{
@@ -3940,14 +3944,14 @@ int Session::SetupZones()
 
 
 	//std::vector<Zone*> zoneVec(zones.size());
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->hasGoal = false;
 	}
 
 	bool foundGoal = false;
 	Zone *goalZone = NULL;
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		for (auto ait = (*it)->allEnemies.begin(); ait != (*it)->allEnemies.end(); ++ait)
 		{
@@ -3970,7 +3974,7 @@ int Session::SetupZones()
 	}
 
 	Gate *g;
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
 		{
@@ -4005,7 +4009,7 @@ int Session::SetupZones()
 	if (zoneTreeStart == NULL)
 	{
 		cout << "unreachable goal? Black gate bug fix." << endl;
-		for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+		for (auto it = zones.begin(); it != zones.end(); ++it)
 		{
 			(*it)->Init();
 		}
@@ -4045,7 +4049,7 @@ int Session::SetupZones()
 		}
 	}
 
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->Init();
 	}
@@ -4790,7 +4794,7 @@ void Session::DrawHitEnemies(sf::RenderTarget *target)
 
 void Session::ResetZones()
 {
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->Reset();
 	}
@@ -4798,7 +4802,7 @@ void Session::ResetZones()
 
 void Session::UpdateZones()
 {
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->Update();
 	}
@@ -8087,6 +8091,9 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->activeEnemyListID = GetEnemyID(activeEnemyList);
 	currSaveState->activeEnemyListTailID = GetEnemyID(activeEnemyListTail);
 	currSaveState->inactiveEnemyListID = GetEnemyID(inactiveEnemyList);
+	
+	currSaveState->currentZoneID = GetZoneID(currentZone);
+
 	currSaveState->pauseFrames = pauseFrames;
 	currSaveState->currSuperPlayerIndex = GetPlayerIndex(currSuperPlayer);
 	currSaveState->gameState = gameState;
@@ -8208,6 +8215,10 @@ void Session::SetFromBytes(unsigned char *bytes)
 	activeEnemyList = GetEnemyFromID( currSaveState->activeEnemyListID );
 	inactiveEnemyList = GetEnemyFromID( currSaveState->inactiveEnemyListID );
 	activeEnemyListTail = GetEnemyFromID(currSaveState->activeEnemyListTailID );
+
+	currentZone = GetZoneFromID(currSaveState->currentZoneID);
+
+
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = GetPlayer(currSaveState->currSuperPlayerIndex);
 	randomState = currSaveState->randomState;
@@ -9249,4 +9260,26 @@ int Session::GetPlayerIndex(Actor *p)
 		return -1;
 	else
 		return p->actorIndex;
+}
+
+Zone *Session::GetZoneFromID(int id)
+{
+	if (id < 0)
+	{
+		return NULL;
+	}
+	else
+	{
+		return zones[id];
+	}
+}
+
+int Session::GetZoneID(Zone *z)
+{
+	if (z == NULL)
+		return -1;
+	else
+	{
+		return z->zoneIndex;
+	}
 }

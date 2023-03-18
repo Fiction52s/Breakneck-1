@@ -280,7 +280,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	Zone *activatedZoneList;
 	Zone *currentZone;
 	Zone *originalZone;
-	std::list<Zone*> zones;
+	std::vector<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
 	BitField defaultStartingPlayerOptionsField;
 	BitField currShardField;
@@ -953,6 +953,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	int GetRailID(TerrainRail *tr);
 	int GetPolyID(PolyPtr poly);
 	int GetPlayerIndex(Actor *p);
+	Zone *GetZoneFromID(int id);
+	int GetZoneID(Zone *z);
 };
 
 #endif

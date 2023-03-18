@@ -140,7 +140,7 @@ void Minimap::DrawToTex()
 	minimapTex->clear(Color(0, 0, 0, 191));
 
 
-	for (list<Zone*>::iterator it = sess->zones.begin(); it != sess->zones.end(); ++it)
+	for (auto it = sess->zones.begin(); it != sess->zones.end(); ++it)
 	{
 		(*it)->Draw(minimapTex);
 	}
@@ -191,7 +191,7 @@ void Minimap::Draw(sf::RenderTarget *target)
 void Minimap::DrawZones( RenderTarget *target)
 {
 	auto &zones = sess->zones;
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->DrawMinimap(target);
 	}

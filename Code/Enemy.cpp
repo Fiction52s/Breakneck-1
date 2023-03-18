@@ -1923,14 +1923,16 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.hittableObjectData.receivedHitPlayerIndex = receivedHitPlayerIndex;
 	ed.hittableObjectData.comboHitEnemy = comboHitEnemy;
 	ed.hittableObjectData.numHealth = numHealth;
-	ed.currPosInfo = currPosInfo;
+
+	currPosInfo.PopulateData(ed.posInfoData);
+
 	ed.facingRight = facingRight;
 	ed.action = action;
 	ed.frame = frame;
 	ed.active = active;
 
-	ed.prev = prev;
-	ed.next = next;
+	ed.prevEnemyID = sess->GetEnemyID(prev);
+	ed.nextEnemyID = sess->GetEnemyID(next);
 	ed.pauseFrames = pauseFrames;
 	ed.pauseFramesFromAttacking = pauseFramesFromAttacking;
 	ed.dead = dead;
@@ -1943,11 +1945,11 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 
 	if (surfaceMover != NULL)
 	{
-		ed.surfaceMoverData = *surfaceMover;
+		surfaceMover->PopulateData(ed.surfaceMoverData);
 	}
 	else if (groundMover != NULL)
 	{
-		ed.groundMoverData = *groundMover;
+		groundMover->PopulateData(ed.surfaceMoverData, ed.groundMoverData);
 	}
 
 	ed.currHitboxes = currHitboxes;
@@ -1967,15 +1969,15 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	comboHitEnemy = ed.hittableObjectData.comboHitEnemy;
 	numHealth = ed.hittableObjectData.numHealth;
 
-	currPosInfo = ed.currPosInfo;
+	currPosInfo.PopulateData(ed.posInfoData);
 
 	if (surfaceMover != NULL)
 	{
-		*surfaceMover = ed.surfaceMoverData;
+		surfaceMover->PopulateFromData(ed.surfaceMoverData);
 	}
 	else if (groundMover != NULL)
 	{
-		*groundMover = ed.groundMoverData;
+		groundMover->PopulateFromData(ed.surfaceMoverData, ed.groundMoverData);
 	}
 
 	currHitboxes = ed.currHitboxes;
@@ -2000,8 +2002,8 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	frame = ed.frame;
 	active = ed.active;
 
-	prev = ed.prev;
-	next = ed.next;
+	prev = sess->GetEnemyFromID( ed.prevEnemyID );
+	next = sess->GetEnemyFromID(ed.nextEnemyID);
 	pauseFrames = ed.pauseFrames;
 	pauseFramesFromAttacking = ed.pauseFramesFromAttacking;
 	dead = ed.dead;

@@ -99,6 +99,7 @@ void ZoneNode::SetChildrenShouldNotReform()
 
 Zone::Zone( TerrainPolygon &tp )
 {
+	zoneIndex = -2;
 	secretZone = false;
 	parentZone = NULL;
 	showShadow = true;

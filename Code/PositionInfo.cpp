@@ -20,6 +20,7 @@ void PositionInfo::SetGroundOffset(double xOffset)
 	offset.x = xOffset;
 }
 
+
 V2d PositionInfo::GetPosition()
 {
 	Edge *edge = GetEdge();
@@ -242,4 +243,37 @@ TerrainPoint *PositionInfo::GetNextPoint()
 	{
 		return NULL;
 	}
+}
+
+void PositionInfo::PopulateFromData(const PositionInfoData &data)
+{
+	Session *sess = Session::GetSession();
+
+	position = data.position;
+	offset = data.offset;
+	
+	switch (data.edgeInfo.eiType)
+	{
+	case EdgeInfo::ETI_EMPTY:
+		ground = NULL;
+		railGround = NULL;
+		break;
+	case EdgeInfo::ETI_POLY:
+		ground = sess->GetPolyFromID(data.edgeInfo.ownerIndex);
+		break;
+	case EdgeInfo::ETI_RAIL:
+		railGround = sess->GetRailFromID(data.edgeInfo.ownerIndex);
+		break;
+	case EdgeInfo::ETI_GATE:
+		ground = NULL;
+		railGround = NULL;
+		break;
+	}
+}
+
+void PositionInfo::PopulateData(PositionInfoData &data)
+{
+	data.position = position;
+	data.edgeInfo.SetFromEdge(GetEdge());
+	data.offset = offset;
 }

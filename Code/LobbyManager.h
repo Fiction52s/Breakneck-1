@@ -77,6 +77,7 @@ struct Lobby
 	}
 
 	void Set(CSteamID p_lobbyId);
+	void PopulateMemberList();
 
 	CSteamID m_steamIDLobby;
 

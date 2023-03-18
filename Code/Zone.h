@@ -59,6 +59,9 @@ struct Zone
 		bool reexplored;
 	};
 
+
+	int zoneIndex;
+
 	MyData data;
 
 	bool shouldReform;

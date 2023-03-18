@@ -332,6 +332,8 @@ struct SaveGameState
 	int activeEnemyListTailID;
 	int inactiveEnemyListID;
 
+	int currentZoneID;
+
 	int pauseFrames;
 	int currSuperPlayerIndex;
 	int gameState; //game mode such as RUN or FROZEN

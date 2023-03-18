@@ -61,21 +61,26 @@ struct StoredEnemyData
 	HittableObject hittableObjectData;
 
 	//Enemy
-	PositionInfo currPosInfo;
+	//posinfo
+	PositionInfoData posInfoData;
+	//PositionInfo currPosInfo;
+
 	bool facingRight;
 	int action;
 	int frame;
 	bool active;
 
-	Enemy *prev;
-	Enemy *next;
+	int prevEnemyID;
+	int nextEnemyID;
+
 	int pauseFrames;
 	bool pauseFramesFromAttacking;
 	bool dead;
 	bool spawned;
 
-	SurfaceMover surfaceMoverData;
-	GroundMover groundMoverData;
+	SurfaceMover::SurfaceMoverData surfaceMoverData;
+	GroundMover::GroundMoverData groundMoverData;
+	SurfaceRailMover::RailMoverData railMoverData;
 
 	int currHitboxFrame;
 	int currHurtboxFrame;
@@ -88,7 +93,7 @@ struct StoredEnemyData
 	double scale;
 
 	void Print();
-
+	
 };
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
