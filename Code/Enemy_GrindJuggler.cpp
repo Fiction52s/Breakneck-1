@@ -171,7 +171,7 @@ void GrindJuggler::BoardRail()
 
 void GrindJuggler::ResetEnemy()
 {
-	surfaceMover->collisionOn = true;
+	surfaceMover->SetCollisionOn(true);
 	//surfaceMover-> =railCollisionOn = true;
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
@@ -215,12 +215,12 @@ void GrindJuggler::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	surfaceMover->velocity = vel;
+	surfaceMover->SetVelocity(vel);
 }
 
 void GrindJuggler::Throw(V2d vel)
 {
-	surfaceMover->velocity = vel;
+	surfaceMover->SetVelocity(vel);
 }
 
 void GrindJuggler::Return()
@@ -399,7 +399,7 @@ void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 	Edge *e = (Edge*)qte;
 	Rail *rail = (Rail*)e->info;
 
-	V2d pos = surfaceMover->physBody.globalPosition;
+	V2d pos = surfaceMover->GetPosition();
 	V2d tempVel = surfaceMover->tempVel;
 
 	//if (IsEdgeTouchingCircle(e->v0, e->v1, mover->physBody.globalPosition, mover->physBody.rw))
@@ -465,14 +465,16 @@ void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 			railSpeed = 10;
 		}
 
-		surfaceMover->physBody.globalPosition = myPos;
+		
+		//surfaceMover->Set()
+		surfaceMover->surfaceMoverData.physBody.globalPosition = myPos;
 		surfaceMover->ground = railEdge;
-		surfaceMover->edgeQuantity = railQuant;
+		surfaceMover->surfaceMoverData.edgeQuantity = railQuant;
 		surfaceMover->SetSpeed(10);
 		
 		action = S_RAILGRIND;
 		frame = 0;
-		surfaceMover->velocity = along * 10.0;//V2d(0, 0);
+		surfaceMover->SetVelocity(along * 10.0);//V2d(0, 0);
 	}
 	//Enemy *en = (Enemy*)qte;
 	//if (en->type == EnemyType::EN_JUGGLERCATCHER)
@@ -499,7 +501,7 @@ void GrindJuggler::ComboKill(Enemy *e)
 
 		surfaceMover->SetSpeed(0);
 
-		surfaceMover->velocity = surfaceMover->ground->Normal() * flySpeed;
+		surfaceMover->SetVelocity(surfaceMover->ground->Normal() * flySpeed);
 		surfaceMover->ground = NULL;
 
 		++data.numKilled;

@@ -12,6 +12,8 @@ using namespace sf;
 Trailer::Trailer(ActorParams *ap)
 	:Enemy(EnemyType::EN_TRAILER, ap)
 {
+	RegisterCollisionBody(pulseBody);
+
 	SetLevel(ap->GetLevel());
 
 	SetNumActions(A_Count);

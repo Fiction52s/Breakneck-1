@@ -125,7 +125,7 @@ void Copycat::UpdateHitboxes()
 	{
 		V2d knockbackDir(1, -1);
 		knockbackDir = normalize(knockbackDir);
-		if (groundMover->groundSpeed > 0)
+		if (groundMover->GetGroundSpeed() > 0)
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -275,14 +275,16 @@ void Copycat::ProcessState()
 	{
 		if (HoldingLeft())
 		{
-			groundMover->velocity.x += -runAccel;
+			groundMover->SetVelX( groundMover->GetVel().x - runAccel );
 		}
 		else if (HoldingRight())
 		{
-			groundMover->velocity.x += runAccel;
+			groundMover->SetVelX(groundMover->GetVel().x + runAccel);
 		}
 
-		CapQuantityAbs(groundMover->velocity.x, maxGroundSpeed);
+		double x = groundMover->GetVel().x;
+		CapQuantityAbs(x, maxGroundSpeed);
+		groundMover->SetVelX(x);
 		break;
 	}
 	}
@@ -328,7 +330,7 @@ bool Copycat::TryJump()
 			//Jump(0, 20);
 		}
 
-		Jump(groundMover->groundSpeed, 20);
+		Jump(groundMover->GetGroundSpeed(), 20);
 
 		return true;
 	}
@@ -358,11 +360,11 @@ bool Copycat::TryDoubleJump()
 		}
 		else
 		{
-			groundMover->velocity.x = 0;
+			groundMover->SetVelX( 0 );
 			//Jump(0, 20);
 		}
 
-		Jump(groundMover->velocity.x, 20);
+		Jump(groundMover->GetVel().x, 20);
 
 		return true;
 	}
@@ -390,23 +392,25 @@ void Copycat::RunMovement()
 	if (player->currInput.LRight()) //clockwise
 	{
 		double accelFactor = runAccel;
-		if (groundMover->groundSpeed < 0)
+		if (groundMover->GetGroundSpeed() < 0)
 		{
 			accelFactor = runDecel;
 		}
-		groundMover->SetSpeed(groundMover->groundSpeed + accelFactor);
+		groundMover->SetSpeed(groundMover->GetGroundSpeed() + accelFactor);
 	}
 	else if(player->currInput.LLeft())
 	{
 		double accelFactor = runAccel;
-		if (groundMover->groundSpeed > 0)
+		if (groundMover->GetGroundSpeed() > 0)
 		{
 			accelFactor = runDecel;
 		}
-		groundMover->SetSpeed(groundMover->groundSpeed - accelFactor);
+		groundMover->SetSpeed(groundMover->GetGroundSpeed() - accelFactor);
 	}
 
-	CapQuantityAbs(groundMover->groundSpeed, maxGroundSpeed);
+	double gs = groundMover->GetGroundSpeed();
+	CapQuantityAbs(gs, maxGroundSpeed);
+	groundMover->SetSpeed(gs);
 
 }
 
@@ -416,9 +420,9 @@ void Copycat::UpdateEnemyPhysics()
 
 	if (groundMover->ground == NULL)
 	{
-		if (groundMover->velocity.y > maxFallSpeed)
+		if (groundMover->GetVel().y > maxFallSpeed)
 		{
-			groundMover->velocity.y = maxFallSpeed;
+			groundMover->SetVelY(maxFallSpeed);
 		}
 	}
 }
@@ -485,8 +489,8 @@ void Copycat::HitOther()
 void Copycat::ReachCliff()
 {
 	return;
-	if (facingRight && groundMover->groundSpeed < 0
-		|| !facingRight && groundMover->groundSpeed > 0)
+	if (facingRight && groundMover->GetGroundSpeed() < 0
+		|| !facingRight && groundMover->GetGroundSpeed() > 0)
 	{
 		groundMover->SetSpeed(0);
 		return;
@@ -535,7 +539,7 @@ void Copycat::Land()
 	data.hasDoubleJump = true;
 
 
-	groundMover->groundSpeed = groundMover->velocity.x;
+	groundMover->SetSpeed(groundMover->GetVel().x);
 
 	//action = LAND;
 	frame = 0;

@@ -297,18 +297,18 @@ void Badger::ProcessState()
 		double airAccel = .5;
 		if( facingRight )
 		{
-			groundMover->velocity.x += airAccel;
-			if(groundMover->velocity.x > 10 )
+			groundMover->SetVelX( groundMover->GetVel().x + airAccel);
+			if(groundMover->GetVel().x > 10 )
 			{
-				groundMover->velocity.x = 10;
+				groundMover->SetVelX(10);
 			}
 			
 		}
 		else
 		{
-			groundMover->velocity.x -= airAccel;
-			if(groundMover->velocity.x < -10 )
-				groundMover->velocity.x = -10;
+			groundMover->SetVelX(groundMover->GetVel().x - airAccel);
+			if(groundMover->GetVel().x < -10 )
+				groundMover->SetVelX(-10);
 			
 		}
 	}
@@ -326,9 +326,9 @@ void Badger::ProcessState()
 			groundMover->SetSpeed( -10 );//testMover->groundSpeed - .3 );
 		}
 
-		if(groundMover->groundSpeed > maxGroundSpeed )
+		if(groundMover->GetGroundSpeed() > maxGroundSpeed )
 			groundMover->SetSpeed( maxGroundSpeed );
-		else if(groundMover->groundSpeed < -maxGroundSpeed )
+		else if(groundMover->GetGroundSpeed() < -maxGroundSpeed )
 			groundMover->SetSpeed( -maxGroundSpeed );
 		break;
 	case LEDGEJUMP:
@@ -387,9 +387,9 @@ void Badger::UpdateEnemyPhysics()
 
 		if (groundMover->ground == NULL)
 		{
-			if (groundMover->velocity.y > maxFallSpeed)
+			if (groundMover->GetVel().y > maxFallSpeed)
 			{
-				groundMover->velocity.y = maxFallSpeed;
+				groundMover->SetVelY( maxFallSpeed);
 			}
 		}
 
@@ -405,7 +405,7 @@ void Badger::EnemyDraw(sf::RenderTarget *target )
 
 void Badger::UpdateSprite()
 {
-	V2d vel = groundMover->velocity;
+	V2d vel = groundMover->GetVel();
 	
 	float extraVert = 0;
 
@@ -570,8 +570,8 @@ void Badger::HitOther()
 
 void Badger::ReachCliff()
 {
-	if( facingRight && groundMover->groundSpeed < 0 
-		|| !facingRight && groundMover->groundSpeed > 0 )
+	if( facingRight && groundMover->GetGroundSpeed() < 0
+		|| !facingRight && groundMover->GetGroundSpeed() > 0 )
 	{
 		groundMover->SetSpeed( 0 );
 		return;

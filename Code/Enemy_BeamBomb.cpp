@@ -118,7 +118,7 @@ BeamBomb::BeamBomb(/*sf::Vertex *myQuad, */BeamBombPool *pool)
 	maxSpeed = 8;
 
 	CreateSurfaceMover(startPosInfo, 16, this);
-	surfaceMover->collisionOn = false;
+	surfaceMover->SetCollisionOn(false);
 
 	//highResPhysics = true;
 
@@ -300,7 +300,7 @@ void BeamBomb::Throw(int p_bombType, V2d &pos, V2d &dir)
 
 	currRotation = GetVectorAngleCCW(normalize(dir));
 
-	surfaceMover->velocity = V2d(0, 0);//dir * min(10.0, maxSpeed);//maxSpeed;
+	surfaceMover->SetVelocity(V2d(0, 0));//dir * min(10.0, maxSpeed);//maxSpeed;
 
 
 	currPosInfo.position = pos;

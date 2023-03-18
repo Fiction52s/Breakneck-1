@@ -4,6 +4,8 @@
 QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap)
 	:Enemy(EnemyType::EN_QUEENFLOATINGBOMB, NULL)
 {
+	RegisterCollisionBody(explosion);
+
 	SetNumActions(A_Count);
 	SetEditorActions(FLOATING, 0, 0);
 	//preload
@@ -147,7 +149,7 @@ void QueenFloatingBomb::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	if (!dead)
-		surfaceMover->physBody.DebugDraw(CollisionBox::Physics, target);
+		surfaceMover->surfaceMoverData.physBody.DebugDraw(CollisionBox::Physics, target);
 }
 
 void QueenFloatingBomb::HitTerrainAerial(Edge * e, double q)
@@ -162,7 +164,7 @@ void QueenFloatingBomb::ResetEnemy()
 {
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
-	surfaceMover->velocity = initVel;
+	surfaceMover->SetVelocity(initVel);
 	action = FLOATING;
 	frame = 0;
 	DefaultHurtboxesOn();
@@ -182,7 +184,7 @@ void QueenFloatingBomb::Explode()
 {
 	action = EXPLODING;
 	frame = 0;
-	surfaceMover->velocity = V2d(0, 0);
+	surfaceMover->SetVelocity(V2d(0, 0));
 	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		ts_explosion, GetPosition(), false, 0, 10, 3, true);
 	explosion.SetBasicPos(GetPosition());

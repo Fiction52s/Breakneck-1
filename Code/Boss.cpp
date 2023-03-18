@@ -230,13 +230,13 @@ void Boss::UpdateHitboxes()
 
 	double ang = GetGroundedAngleRadians();
 	//can update this with a universal angle at some point
-	if (!hurtBody.Empty())
+	if (!hurtBody.IsEmpty())
 	{
 		hurtBody.SetBasicPos(position, ang);
 		hurtBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
 	}
 
-	if (!hitBody.Empty())
+	if (!hitBody.IsEmpty())
 	{
 		hitBody.SetBasicPos(position, ang);
 		hitBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;

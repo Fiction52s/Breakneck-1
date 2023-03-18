@@ -38,6 +38,8 @@ void Gorilla::SetLevel(int lev)
 Gorilla::Gorilla( ActorParams *ap )
 	:Enemy( EnemyType::EN_GORILLA, ap ),approachAccelBez( 1,.01,.86,.32 ) 
 {
+	RegisterCollisionBody(data.wallHitBody);
+
 	SetNumActions(A_Count);
 	SetEditorActions(ATTACK, ATTACK, 0);
 	SetLevel(ap->GetLevel());
@@ -145,7 +147,7 @@ void Gorilla::ResetEnemy()
 	data.latchStartAngle = 0;
 	data.latchedOn = false;
 	data.totalFrame = 0;
-	data.currWallHitboxes = NULL;
+	currWallHitboxes = NULL;
 	
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -221,7 +223,7 @@ void Gorilla::ActionEnded()
 				V2d offsetDir = normalize(data.offsetPlayer );
 
 				data.basePos = playerPos;
-				data.currWallHitboxes = NULL;
+				currWallHitboxes = NULL;
 
 				action = ALIGN;
 				double currRadius = length(data.offsetPlayer );
@@ -302,7 +304,7 @@ void Gorilla::ProcessState()
 				wallHitbox.globalPosition.y );
 			wallSprite.setRotation( wallHitbox.globalAngle / PI * 180.0 );
 
-			data.currWallHitboxes = &data.wallHitBody;
+			currWallHitboxes = &data.wallHitBody;
 
 			data.latchedOn = false;
 			data.basePos = myPos;
@@ -444,14 +446,14 @@ void Gorilla::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 
-	if (data.currWallHitboxes != NULL)
-		data.currWallHitboxes->DebugDraw(0, target);
+	if (currWallHitboxes != NULL)
+		currWallHitboxes->DebugDraw(0, target);
 }
 
 
 bool Gorilla::CheckHitPlayer(int index)
 {
-	return BasicCheckHitPlayer(currHitboxes, index) || BasicCheckHitPlayer(data.currWallHitboxes, index);
+	return BasicCheckHitPlayer(currHitboxes, index) || BasicCheckHitPlayer(currWallHitboxes, index);
 }
 
 int Gorilla::GetNumStoredBytes()
@@ -461,6 +463,8 @@ int Gorilla::GetNumStoredBytes()
 
 void Gorilla::StoreBytes(unsigned char *bytes)
 {
+	data.currWallHitboxesBodyID = GetCollisionBodyID(currWallHitboxes);
+
 	StoreBasicEnemyData(data);
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
@@ -471,4 +475,6 @@ void Gorilla::SetFromBytes(unsigned char *bytes)
 	memcpy(&data, bytes, sizeof(MyData));
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
+
+	currWallHitboxes = GetCollisionBodyFromID(data.currWallHitboxesBodyID);
 }

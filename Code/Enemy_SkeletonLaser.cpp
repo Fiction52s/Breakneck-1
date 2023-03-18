@@ -207,7 +207,7 @@ void SkeletonLaser::ResetEnemy()
 
 	facingRight = true;
 
-	surfaceMover->collisionOn = true;
+	surfaceMover->SetCollisionOn(true);
 
 	action = THROWN;
 	frame = 0;
@@ -235,13 +235,13 @@ void SkeletonLaser::ClearQuads()
 void SkeletonLaser::RedirectTowards(V2d &pos)
 {
 	V2d newVel = normalize((pos - GetPosition())) 
-		* length( surfaceMover->velocity );
+		* length( surfaceMover->GetVel() );
 	TryBounce(newVel);
 	action = REDIRECTED;
 	frame = 0;
 	timeToLive = 180;
 	//laserWidth = 30;
-	surfaceMover->collisionOn = false;
+	surfaceMover->SetCollisionOn(false);
 }
 
 void SkeletonLaser::Dissipate()
@@ -249,8 +249,8 @@ void SkeletonLaser::Dissipate()
 	action = DISSIPATE;
 	ClearQuads();
 	frame = 0;
-	surfaceMover->velocity = V2d(0, 0);
-	surfaceMover->collisionOn = false;
+	surfaceMover->SetVelocity(V2d(0, 0));
+	surfaceMover->SetCollisionOn(false);
 	HitboxesOff();
 	HurtboxesOff();
 }
@@ -286,8 +286,8 @@ void SkeletonLaser::HitTerrainAerial(Edge *e, double quant)
 	{
 		en = normalize(GetPosition() - pos);
 	}
-	double d = dot(surfaceMover->velocity, en);
-	V2d ref = surfaceMover->velocity - (2.0 * d * en);
+	double d = dot(surfaceMover->GetVel(), en);
+	V2d ref = surfaceMover->GetVel() - (2.0 * d * en);
 	
 	V2d playerDir = PlayerDir();
 
@@ -337,12 +337,12 @@ V2d SkeletonLaser::GetThrowDir(V2d &dir)
 
 void SkeletonLaser::SetSpeed(double speed)
 {
-	surfaceMover->velocity = normalize(surfaceMover->velocity) * speed;
+	surfaceMover->SetVelocity(normalize(surfaceMover->GetVel()) * speed);
 }
 
 void SkeletonLaser::SetSpeedDefault()
 {
-	surfaceMover->velocity = normalize(surfaceMover->velocity) * flySpeed;
+	surfaceMover->SetVelocity(normalize(surfaceMover->GetVel()) * flySpeed);
 }
 
 void SkeletonLaser::SetLaserTypeParams()
@@ -407,7 +407,7 @@ void SkeletonLaser::Throw(int type, V2d &pos, V2d &dir)
 
 	if (type == LT_NO_COLLIDE)
 	{
-		surfaceMover->collisionOn = false;
+		surfaceMover->SetCollisionOn(false);
 	}
 
 	currPosInfo.position = pos;
@@ -415,7 +415,7 @@ void SkeletonLaser::Throw(int type, V2d &pos, V2d &dir)
 
 	surfaceMover->Set(currPosInfo);
 
-	surfaceMover->velocity = dir * flySpeed;
+	surfaceMover->SetVelocity(dir * flySpeed);
 
 	anchorPositions.push_back(pos);
 
@@ -433,7 +433,7 @@ void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
 
 	if (type == LT_NO_COLLIDE)
 	{
-		surfaceMover->collisionOn = false;
+		surfaceMover->SetCollisionOn(false);
 	}
 
 	currPosInfo.position = pos;
@@ -448,8 +448,8 @@ void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
 	V2d diff = pi->edge->GetPosition(pi->edgeQuantity) - GetPosition();
 	V2d dir = normalize(diff);
 
-	surfaceMover->collisionOn = false;
-	surfaceMover->velocity = dir * flySpeed;
+	surfaceMover->SetCollisionOn(false);
+	surfaceMover->SetVelocity(dir * flySpeed);
 
 	framesToArriveToDestPoi = ceil(length(diff) / flySpeed);
 

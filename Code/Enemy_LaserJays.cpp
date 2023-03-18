@@ -12,6 +12,7 @@ using namespace sf;
 LaserJays::LaserJays(ActorParams *ap)
 	:Enemy(EnemyType::EN_LASERJAYS, ap)
 {
+	RegisterCollisionBody(laserBody);
 	secondary = false;
 	Construct(ap);
 }

@@ -152,7 +152,7 @@ void BounceJuggler::ResetEnemy()
 	sprite.setRotation(0);
 	data.currHits = 0;
 	comboObj->Reset();
-	surfaceMover->velocity = V2d(0, 0);
+	surfaceMover->SetVelocity(V2d(0, 0));
 	DefaultHurtboxesOn();
 	//DefaultHitboxesOn();
 	action = S_FLOAT;
@@ -175,12 +175,12 @@ void BounceJuggler::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	surfaceMover->velocity = vel;
+	surfaceMover->SetVelocity(vel);
 }
 
 void BounceJuggler::Throw(V2d vel)
 {
-	surfaceMover->velocity = vel;
+	surfaceMover->SetVelocity(vel);
 }
 
 void BounceJuggler::Return()
@@ -226,7 +226,7 @@ void BounceJuggler::PopThrow()
 		//cout << "dir: " << dir.x << "," << dir.y << endl;
 		if (dir.x == 0 && dir.y == 0)
 		{
-			dir = -normalize(surfaceMover->velocity);
+			dir = -normalize(surfaceMover->GetVel());
 			assert(dir.x != 0 || dir.y != 0);
 			action = S_BOUNCE;
 			frame = 0;
@@ -347,7 +347,7 @@ void BounceJuggler::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(surfaceMover->velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(surfaceMover->GetVel());
 }
 
 void BounceJuggler::FrameIncrement()
@@ -441,9 +441,9 @@ void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 		{
 			en = normalize(GetPosition() - pos);
 		}
-		double d = dot(surfaceMover->velocity, en);
-		V2d ref = surfaceMover->velocity - (2.0 * d * en);
-		surfaceMover->velocity = ref;
+		double d = dot(surfaceMover->GetVel(), en);
+		V2d ref = surfaceMover->GetVel() - (2.0 * d * en);
+		surfaceMover->SetVelocity(ref);
 		surfaceMover->ground = NULL;
 	}
 

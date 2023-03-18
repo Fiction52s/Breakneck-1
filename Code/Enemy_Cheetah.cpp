@@ -228,7 +228,7 @@ void Cheetah::ProcessState()
 		++data.chargeFrame;
 		break;
 	case BOOST:
-		if (groundMover->groundSpeed > 0)
+		if (groundMover->GetGroundSpeed() > 0)
 		{
 			if (xDiff < -boostPastDist)
 			{
@@ -239,7 +239,7 @@ void Cheetah::ProcessState()
 				frame = 0;
 			}
 		}
-		else if (groundMover->groundSpeed < 0)
+		else if (groundMover->GetGroundSpeed() < 0)
 		{
 			if (xDiff > boostPastDist)
 			{
@@ -276,25 +276,25 @@ void Cheetah::RunMovement()
 	if (facingRight) //clockwise
 	{
 		double accelFactor = runAccel;
-		if (groundMover->groundSpeed < 0)
+		if (groundMover->GetGroundSpeed() < 0)
 		{
 			accelFactor = runDecel;
 		}
-		groundMover->SetSpeed(groundMover->groundSpeed + accelFactor);
+		groundMover->SetSpeed(groundMover->GetGroundSpeed() + accelFactor);
 	}
 	else
 	{
 		double accelFactor = runAccel;
-		if (groundMover->groundSpeed > 0)
+		if (groundMover->GetGroundSpeed() > 0)
 		{
 			accelFactor = runDecel;
 		}
-		groundMover->SetSpeed(groundMover->groundSpeed - accelFactor);
+		groundMover->SetSpeed(groundMover->GetGroundSpeed() - accelFactor);
 	}
 
-	if (groundMover->groundSpeed > maxGroundSpeed)
+	if (groundMover->GetGroundSpeed() > maxGroundSpeed)
 		groundMover->SetSpeed(maxGroundSpeed);
-	else if (groundMover->groundSpeed < -maxGroundSpeed)
+	else if (groundMover->GetGroundSpeed() < -maxGroundSpeed)
 		groundMover->SetSpeed(-maxGroundSpeed);
 }
 
@@ -304,9 +304,9 @@ void Cheetah::UpdateEnemyPhysics()
 
 	if (groundMover->ground == NULL)
 	{
-		if (groundMover->velocity.y > maxFallSpeed)
+		if (groundMover->GetVel().y > maxFallSpeed)
 		{
-			groundMover->velocity.y = maxFallSpeed;
+			groundMover->SetVelY(maxFallSpeed);
 		}
 	}
 }
@@ -380,8 +380,8 @@ void Cheetah::HitOther()
 void Cheetah::ReachCliff()
 {
 	return;
-	if (facingRight && groundMover->groundSpeed < 0
-		|| !facingRight && groundMover->groundSpeed > 0)
+	if (facingRight && groundMover->GetGroundSpeed() < 0
+		|| !facingRight && groundMover->GetGroundSpeed() > 0)
 	{
 		groundMover->SetSpeed(0);
 		return;

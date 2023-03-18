@@ -86,15 +86,39 @@ void Enemy::SetGroundOffset(double x)
 	currPosInfo.SetGroundOffset(groundOffset.x);
 }
 
+CollisionBody *Enemy::GetCollisionBodyFromID( int id )
+{
+	if (id < 0)
+	{
+		return NULL;
+	}
+	else
+	{
+		return bodyPtrVec[id];
+	}
+}
+
+int Enemy::GetCollisionBodyID(CollisionBody *cb)
+{
+	if (cb == NULL)
+	{
+		return -1;
+	}
+	else
+	{
+		return cb->bodyID;
+	}
+}
+
 V2d Enemy::GetPosition()
 {
 	if (surfaceMover != NULL)
 	{
-		return surfaceMover->physBody.globalPosition;
+		return surfaceMover->GetPosition();
 	}
 	else if (groundMover != NULL)
 	{
-		return groundMover->physBody.globalPosition;
+		return groundMover->GetPosition();
 	}
 	else
 	{
@@ -481,6 +505,10 @@ void Enemy::OnCreate(ActorParams *ap,
 	{
 		name = ap->GetTypeName();
 	}
+
+	RegisterCollisionBody(hitBody);
+	RegisterCollisionBody(hurtBody);
+	
 
 	pauseFramesFromAttacking = false;
 	active = false;
@@ -971,7 +999,7 @@ std::vector<CollisionBox> * Enemy::GetComboHitboxes()
 	if (comboObj != NULL)
 	{
 		CollisionBody &body = comboObj->enemyHitBody;
-		if (!body.Empty())
+		if (!body.IsEmpty())
 		{
 			return &body.GetCollisionBoxes(comboObj->data.enemyHitboxFrame);
 		}
@@ -1892,13 +1920,13 @@ void Enemy::BasicUpdateHitboxes()
 	
 	double ang = GetGroundedAngleRadians();
 	//can update this with a universal angle at some point
-	if (!hurtBody.Empty())
+	if (!hurtBody.IsEmpty())
 	{
 		hurtBody.SetBasicPos(position, ang);
 		hurtBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
 	}
 
-	if (!hitBody.Empty())
+	if (!hitBody.IsEmpty())
 	{
 		hitBody.SetBasicPos(position, ang);
 		hitBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
@@ -1952,9 +1980,11 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 		groundMover->PopulateData(ed.surfaceMoverData, ed.groundMoverData);
 	}
 
-	ed.currHitboxes = currHitboxes;
+	ed.currHitboxesBodyID = GetCollisionBodyID(currHitboxes);
+	ed.currHurtboxesBodyID = GetCollisionBodyID(currHurtboxes);
+
+	
 	ed.currHitboxFrame = currHitboxFrame;
-	ed.currHurtboxes = currHurtboxes;
 	ed.currHurtboxFrame = currHurtboxFrame;
 
 	ed.currShield = currShield;
@@ -1980,9 +2010,10 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 		groundMover->PopulateFromData(ed.surfaceMoverData, ed.groundMoverData);
 	}
 
-	currHitboxes = ed.currHitboxes;
+
+	currHitboxes = GetCollisionBodyFromID(ed.currHitboxesBodyID);
 	currHitboxFrame = ed.currHitboxFrame;
-	currHurtboxes = ed.currHurtboxes;
+	currHurtboxes = GetCollisionBodyFromID(ed.currHurtboxesBodyID);
 	currHurtboxFrame = ed.currHurtboxFrame;
 
 	scale = ed.scale;
@@ -2301,6 +2332,11 @@ V2d Enemy::GetFocusedPlayerDir()
 	return PlayerDir(GetFocusedPlayer()->actorIndex);
 }
 
+void Enemy::RegisterCollisionBody(CollisionBody &cb)
+{
+	cb.bodyID = bodyPtrVec.size();
+	bodyPtrVec.push_back(&cb);
+}
 
 HittableObject::HittableObject()
 {

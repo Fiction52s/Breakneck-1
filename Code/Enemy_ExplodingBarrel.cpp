@@ -16,6 +16,8 @@ using namespace sf;
 ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	:Enemy(EnemyType::EN_EXPLODINGBARREL, ap)//, false, 1, false)
 {
+	RegisterCollisionBody(explosion);
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_CHARGE, S_CHARGE, 0);
 

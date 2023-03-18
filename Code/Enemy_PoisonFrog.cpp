@@ -366,7 +366,7 @@ void PoisonFrog::UpdateEnemyPhysics()
 			{
 				grav = 0;
 			}
-			groundMover->SetVelY(groundMover->GetVel().y + grav / (numPhysSteps * slowMultiple);
+			groundMover->SetVelY(groundMover->GetVel().y + grav / (numPhysSteps * slowMultiple));
 
 			if (groundMover->GetVel().y >= maxFallSpeed)
 			{

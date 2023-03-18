@@ -25,6 +25,8 @@ using namespace sf;
 PalmTurret::PalmTurret(ActorParams *ap)
 	:Enemy(EnemyType::EN_PALMTURRET, ap)
 {
+	RegisterCollisionBody(laserBody);
+
 	SetNumActions(Count);
 	SetEditorActions(IDLE, 0, 0);
 

@@ -239,6 +239,7 @@ struct SpaceMover
 	void DebugDraw(sf::RenderTarget *target);
 	bool IsIdle();
 
+
 	V2d position;
 	V2d targetPos;
 	V2d startPos;

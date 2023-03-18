@@ -308,12 +308,12 @@ void GravityFaller::UpdateEnemyPhysics()
 		////}
 		//mover->velocity.y += grav / (numPhysSteps * slowMultiple);
 
-		double velLen = length(surfaceMover->velocity);
-		V2d velDir = normalize(surfaceMover->velocity);
+		double velLen = length(surfaceMover->GetVel());
+		V2d velDir = normalize(surfaceMover->GetVel());
 
 		if ( velLen >= maxFallSpeed)
 		{
-			surfaceMover->velocity = velDir * maxFallSpeed;
+			surfaceMover->SetVelocity(velDir * maxFallSpeed);
 		}
 	}
 

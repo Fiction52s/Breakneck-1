@@ -112,7 +112,7 @@ void HitboxInfo::SetEmpty()
 	hType = HitboxInfo::NO_HITBOX;
 }
 
-HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &vel)
+HitboxInfo::HitPosType HitboxInfo::GetAirType(const V2d &vel)
 {
 	//assert(vel.x != 0.0 || vel.y != 0.0); //stationary bullet?
 
@@ -2531,13 +2531,13 @@ sf::Rect<double> CollisionBox::GetAABB()
 }
 
 CollisionBody::CollisionBody()
-	:hitboxInfo( NULL ), numFrames( 0 ), boxType( CollisionBox::Hit )
+	:hitboxInfo( NULL ), numFrames( 0 ), boxType( CollisionBox::Hit ), bodyID(-2)
 {
 
 }
 
 CollisionBody::CollisionBody(CollisionBox::BoxType bType)
-	:hitboxInfo(NULL), numFrames(0)
+	:hitboxInfo(NULL), numFrames(0), bodyID(-2)
 {
 	boxType = bType;
 	//collisionBoxVectors = new std::list<CollisionBox>*[numFrames];
@@ -2614,7 +2614,7 @@ CollisionBody::CollisionBody(int p_numFrames, std::map<int, std::list<CollisionB
 	}
 }
 
-bool CollisionBody::Empty()
+bool CollisionBody::IsEmpty()
 {
 	return collisionBoxVectors.empty();
 }

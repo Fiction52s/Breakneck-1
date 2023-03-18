@@ -132,12 +132,12 @@ void TetheredRusher::UpdateHitboxes()
 
 	double ang = GetGroundedAngleRadians();
 	//can update this with a universal angle at some point
-	if (!hurtBody.Empty())
+	if (!hurtBody.IsEmpty())
 	{
 		hurtBody.SetBasicPos(anchorPos, ang);
 	}
 
-	if (!hitBody.Empty())
+	if (!hitBody.IsEmpty())
 	{
 		hitBody.SetBasicPos(position, ang);
 	}

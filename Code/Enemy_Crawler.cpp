@@ -196,7 +196,7 @@ void Crawler::UpdateHitboxes()
 
 	if (surfaceMover->ground != NULL)
 	{
-		hitboxInfo->knockback = 15 + abs(surfaceMover->groundSpeed) * .3;
+		hitboxInfo->knockback = 15 + abs(surfaceMover->GetGroundSpeed()) * .3;
 	}
 	//if( surfaceMover->ground != NULL )
 	//{
@@ -293,8 +293,8 @@ void Crawler::ProcessState()
 			action = UNDERGROUND;
 			frame = 0;
 			surfaceMover->ground = startPosInfo.GetEdge();
-			surfaceMover->edgeQuantity = startPosInfo.GetQuant();
-			surfaceMover->roll = false;
+			surfaceMover->surfaceMoverData.edgeQuantity = startPosInfo.GetQuant();
+			surfaceMover->surfaceMoverData.roll = false;
 			surfaceMover->UpdateGroundPos();
 			break;
 		case UNDERGROUND:
@@ -344,7 +344,7 @@ void Crawler::ProcessState()
 		V2d gn = surfaceMover->ground->Normal();
 		double rollacc = .08;
 
-		if ((surfaceMover->groundSpeed > 0 && gn.x < 0 && gn.y < 0) || (surfaceMover->groundSpeed < 0 && gn.x > 0 && gn.y < 0))
+		if ((surfaceMover->GetGroundSpeed() > 0 && gn.x < 0 && gn.y < 0) || (surfaceMover->GetGroundSpeed() < 0 && gn.x > 0 && gn.y < 0))
 		{
 			Accelerate(rollacc);
 		break;
@@ -422,8 +422,8 @@ void Crawler::IHitPlayer( int index )
 void Crawler::DecideMovement()
 {
 	V2d en = surfaceMover->ground->Normal();
-	if (surfaceMover->groundSpeed > 0 && (en.x > 0 && en.y < 0)
-		|| (surfaceMover->groundSpeed < 0 && en.x < 0 && en.y < 0))
+	if (surfaceMover->GetGroundSpeed() > 0 && (en.x > 0 && en.y < 0)
+		|| (surfaceMover->GetGroundSpeed() < 0 && en.x < 0 && en.y < 0))
 	{
 		if (action != ROLL)
 		{
@@ -598,7 +598,7 @@ bool Crawler::PlayerInFront()
 	{
 		dir = normalize(surfaceMover->ground->v0 - surfaceMover->ground->v1);
 	}
-	double alongDist = dot(playerPos - surfaceMover->physBody.globalPosition, dir);
+	double alongDist = dot(playerPos - surfaceMover->GetPosition(), dir);
 	if (alongDist > -60)
 		return true;
 	else
@@ -617,7 +617,7 @@ void Crawler::Accelerate(double amount)
 	}
 
 	double max = 20.0;
-	double am = surfaceMover->groundSpeed + amount;
+	double am = surfaceMover->GetGroundSpeed() + amount;
 	if (am > max)
 		am = max;
 	if (am < -max)

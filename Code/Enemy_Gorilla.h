@@ -21,7 +21,8 @@ struct Gorilla : Enemy
 		double latchStartAngle;
 		V2d basePos;
 		int totalFrame;
-		CollisionBody *currWallHitboxes;
+
+		int currWallHitboxesBodyID;
 		V2d offsetPlayer;
 		V2d origOffset;
 		bool latchedOn;
@@ -35,7 +36,7 @@ struct Gorilla : Enemy
 	
 	bool origFacingRight;
 
-	
+	CollisionBody *currWallHitboxes;
 
 	
 	int createWallFrame;
@@ -59,7 +60,6 @@ struct Gorilla : Enemy
 	Tileset *ts_wall;
 	sf::Sprite wallSprite;
 
-	//CollisionBox wallHitbox;
 	int wallHitboxWidth;
 	int wallHitboxHeight;
 	double idealRadius;

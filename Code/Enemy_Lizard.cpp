@@ -226,25 +226,25 @@ void Lizard::ProcessState()
 		if (facingRight) //clockwise
 		{
 			double accelFactor = runAccel;
-			if (groundMover->groundSpeed < 0)
+			if (groundMover->GetGroundSpeed() < 0)
 			{
 				accelFactor = runDecel;
 			}
-			groundMover->SetSpeed(groundMover->groundSpeed + accelFactor);
+			groundMover->SetSpeed(groundMover->GetGroundSpeed() + accelFactor);
 		}
 		else
 		{
 			double accelFactor = runAccel;
-			if (groundMover->groundSpeed > 0)
+			if (groundMover->GetGroundSpeed() > 0)
 			{
 				accelFactor = runDecel;
 			}
-			groundMover->SetSpeed(groundMover->groundSpeed - accelFactor);
+			groundMover->SetSpeed(groundMover->GetGroundSpeed() - accelFactor);
 		}
 
-		if (groundMover->groundSpeed > maxGroundSpeed)
+		if (groundMover->GetGroundSpeed() > maxGroundSpeed)
 			groundMover->SetSpeed(maxGroundSpeed);
-		else if (groundMover->groundSpeed < -maxGroundSpeed)
+		else if (groundMover->GetGroundSpeed() < -maxGroundSpeed)
 			groundMover->SetSpeed(-maxGroundSpeed);
 		break;
 	case JUMP:
@@ -296,13 +296,13 @@ void Lizard::UpdateEnemyPhysics()
 
 		if (groundMover->ground == NULL)
 		{
-			if (groundMover->velocity.y > maxFallSpeed)
+			if (groundMover->GetVel().y > maxFallSpeed)
 			{
-				groundMover->velocity.y = maxFallSpeed;
+				groundMover->SetVelY(maxFallSpeed);
 			}
-			else if (groundMover->velocity.y < -maxFallSpeed)
+			else if (groundMover->GetVel().y < -maxFallSpeed)
 			{
-				groundMover->velocity.y = -maxFallSpeed;
+				groundMover->SetVelY(-maxFallSpeed);
 			}
 		}
 
@@ -386,20 +386,20 @@ void Lizard::HitOther()
 
 	if (action == RUN)
 	{
-		if ((facingRight && groundMover->groundSpeed < 0)
-			|| (!facingRight && groundMover->groundSpeed > 0))
+		if ((facingRight && groundMover->GetGroundSpeed() < 0)
+			|| (!facingRight && groundMover->GetGroundSpeed() > 0))
 		{
 			//cout << "here" << endl;
 			groundMover->SetSpeed(0);
 		}
-		else if (facingRight && groundMover->groundSpeed > 0)
+		else if (facingRight && groundMover->GetGroundSpeed() > 0)
 		{
 			V2d v = V2d(maxGroundSpeed, -10);
 			groundMover->Jump(v);
 			action = JUMP;
 			frame = 0;
 		}
-		else if (!facingRight && groundMover->groundSpeed < 0)
+		else if (!facingRight && groundMover->GetGroundSpeed() < 0)
 		{
 			V2d v = V2d(-maxGroundSpeed, -10);
 			groundMover->Jump(v);
@@ -411,8 +411,8 @@ void Lizard::HitOther()
 
 void Lizard::ReachCliff()
 {
-	if ((facingRight && groundMover->groundSpeed < 0)
-		|| (!facingRight && groundMover->groundSpeed > 0))
+	if ((facingRight && groundMover->GetGroundSpeed() < 0)
+		|| (!facingRight && groundMover->GetGroundSpeed() > 0))
 	{
 		groundMover->SetSpeed(0);
 		return;

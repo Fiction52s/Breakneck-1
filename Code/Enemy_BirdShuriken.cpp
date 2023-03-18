@@ -186,7 +186,7 @@ void BirdShuriken::ResetEnemy()
 
 	currBasePos = startPosInfo.GetPosition();
 
-	surfaceMover->velocity = V2d();
+	surfaceMover->SetVelocity( V2d());
 
 	action = THROWN;
 	frame = 0;
@@ -241,9 +241,9 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 	hitboxInfo->canBeBlocked = true;
 
 	shurType = p_shurType;
-	surfaceMover->collisionOn = true;
+	surfaceMover->SetCollisionOn( true );
 
-	surfaceMover->velocity = dir * thrownSpeed;
+	surfaceMover->SetVelocity(dir * thrownSpeed );
 	framesToLive = 120;
 
 	SetHurtboxes(NULL);
@@ -253,20 +253,20 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 	case UNDODGEABLE:
 	{
 		unDodgeSpeed = startUnDodgeSpeed;
-		surfaceMover->collisionOn = false;
+		surfaceMover->SetCollisionOn(false ); 
 		break;
 	}
 	case UNBLOCKABLE:
 	{
-		surfaceMover->velocity = dir * homingSpeed;
-		surfaceMover->collisionOn = false;
+		surfaceMover->SetVelocity( dir * homingSpeed );
+		surfaceMover->SetCollisionOn(false );
 		hitboxInfo->canBeBlocked = false;
 		DefaultHurtboxesOn();
 		break;
 	}
 	case SLIGHTHOMING:
 	{
-		surfaceMover->collisionOn = false;
+		surfaceMover->SetCollisionOn(false );
 		break;
 	}
 		
@@ -289,23 +289,23 @@ void BirdShuriken::Rethrow()
 	{
 	case SLIGHTHOMING_STICK:
 	{
-		surfaceMover->velocity = pDir * thrownSpeed;
+		surfaceMover->SetVelocity(pDir * thrownSpeed );
 		break;
 	}
 	case SURFACENORMAL_STICK:
 	{
-		surfaceMover->velocity = surfaceMover->ground->Normal() * linearSpeed;
+		surfaceMover->SetVelocity(surfaceMover->ground->Normal() * linearSpeed );
 		break;
 	}
 	case UNDODGEABLE_STICK:
 	{
-		surfaceMover->velocity = pDir * startUnDodgeSpeed;
+		surfaceMover->SetVelocity(pDir * startUnDodgeSpeed );
 		unDodgeSpeed = startUnDodgeSpeed;
 		break;
 	}
 	case UNBLOCKABLE_STICK:
 	{
-		surfaceMover->velocity = surfaceMover->ground->Normal() * homingSpeed;
+		surfaceMover->SetVelocity(surfaceMover->ground->Normal() * homingSpeed );
 		unDodgeSpeed = startUnDodgeSpeed;
 		DefaultHurtboxesOn();
 		break;
@@ -313,7 +313,7 @@ void BirdShuriken::Rethrow()
 	case RETURN_STICK:
 	{
 		V2d parentDir = normalize(pool->parentEnemy->GetPosition() - GetPosition());
-		surfaceMover->velocity = parentDir * startUnDodgeSpeed;
+		surfaceMover->SetVelocity(parentDir * startUnDodgeSpeed);
 		unDodgeSpeed = startUnDodgeSpeed;
 		break;
 	}	
@@ -330,7 +330,7 @@ void BirdShuriken::Rethrow()
 		action = RETHROW;
 		frame = 0;
 		surfaceMover->ground = NULL;
-		surfaceMover->collisionOn = false;
+		surfaceMover->SetCollisionOn(false);
 	}
 }
 
@@ -453,22 +453,29 @@ void BirdShuriken::ProcessState()
 		case MACHINEGUNTURRET_STICK:
 		case RETURN_STICK:
 		{
-			surfaceMover->velocity += pDir * accel;
-			surfaceMover->velocity = normalize(surfaceMover->velocity) * thrownSpeed;
+			V2d vel = surfaceMover->GetVel();
+			vel += pDir * accel;
+			surfaceMover->SetVelocity(normalize(vel) * thrownSpeed);
 			break;
 		}
 		case UNBLOCKABLE:
 		{
-			surfaceMover->velocity += pDir * homingAccel;
-			if (length(surfaceMover->velocity) > homingSpeed)
+			V2d vel = surfaceMover->GetVel();
+
+			vel += pDir * homingAccel;
+			if (length(vel) > homingSpeed)
 			{
-				surfaceMover->velocity = normalize(surfaceMover->velocity) * homingSpeed;
+				surfaceMover->SetVelocity(normalize(vel) * homingSpeed);
+			}
+			else
+			{
+				surfaceMover->SetVelocity(vel);
 			}
 			break;
 		}
 		case UNDODGEABLE:
 		{
-			surfaceMover->velocity = pDir * unDodgeSpeed;
+			surfaceMover->SetVelocity(pDir * unDodgeSpeed);
 			unDodgeSpeed += unDodgeAccel;
 			if (unDodgeSpeed > unDodgeMaxSpeed)
 			{
@@ -484,8 +491,9 @@ void BirdShuriken::ProcessState()
 		{
 		case SLIGHTHOMING_STICK:
 		{
-			surfaceMover->velocity += pDir * accel;
-			surfaceMover->velocity = normalize(surfaceMover->velocity) * thrownSpeed;
+			V2d vel = surfaceMover->GetVel();
+			vel += pDir * accel;
+			surfaceMover->SetVelocity(normalize(vel) * thrownSpeed);
 			break;
 		}
 		case SURFACENORMAL_STICK:
@@ -494,16 +502,22 @@ void BirdShuriken::ProcessState()
 		}
 		case UNBLOCKABLE_STICK:
 		{
-			surfaceMover->velocity += pDir * homingAccel;
-			if (length(surfaceMover->velocity) > homingSpeed)
+			V2d vel = surfaceMover->GetVel();
+
+			vel += pDir * homingAccel;
+			if (length(vel) > homingSpeed)
 			{
-				surfaceMover->velocity = normalize(surfaceMover->velocity) * homingSpeed;
+				surfaceMover->SetVelocity(normalize(vel) * homingSpeed);
+			}
+			else
+			{
+				surfaceMover->SetVelocity(vel);
 			}
 			break;
 		}
 		case UNDODGEABLE_STICK:
 		{
-			surfaceMover->velocity = pDir * unDodgeSpeed;
+			surfaceMover->SetVelocity(pDir * unDodgeSpeed);
 			unDodgeSpeed += unDodgeAccel;
 			if (unDodgeSpeed > unDodgeMaxSpeed)
 			{
@@ -530,7 +544,7 @@ void BirdShuriken::ProcessState()
 		case RETURN_STICK:
 		{
 			V2d parentDir = normalize(pool->parentEnemy->GetPosition() - GetPosition());
-			surfaceMover->velocity = parentDir * unDodgeSpeed;
+			surfaceMover->SetVelocity(parentDir * unDodgeSpeed );
 			unDodgeSpeed += unDodgeAccel;
 			if (unDodgeSpeed > unDodgeMaxSpeed)
 			{
@@ -568,7 +582,7 @@ void BirdShuriken::UpdateEnemyPhysics()
 {
 	Enemy::UpdateEnemyPhysics();
 
-	hitboxInfo->hitPosType = HitboxInfo::GetAirType(surfaceMover->velocity);
+	hitboxInfo->hitPosType = HitboxInfo::GetAirType(surfaceMover->GetVel());
 }
 
 void BirdShuriken::UpdateSprite()
@@ -612,7 +626,7 @@ void BirdShuriken::HandleHitAndSurvive()
 
 bool BirdShuriken::IsHitFacingRight()
 {
-	return surfaceMover->velocity.x > 0;
+	return surfaceMover->GetVel().x > 0;
 }
 
 void BirdShuriken::HitTerrainAerial(Edge *e, double q)

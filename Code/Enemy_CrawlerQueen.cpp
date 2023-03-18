@@ -372,20 +372,20 @@ void CrawlerQueen::HandleAction()
 
 		
 
-		if (facingRight && surfaceMover->groundSpeed < cDashSpeed)
+		if (facingRight && surfaceMover->GetGroundSpeed() < cDashSpeed)
 		{
-			surfaceMover->groundSpeed += currDashAccel;
-			if (surfaceMover->groundSpeed > cDashSpeed)
+			surfaceMover->SetSpeed(surfaceMover->GetGroundSpeed() + currDashAccel);
+			if (surfaceMover->GetGroundSpeed() > cDashSpeed)
 			{
-				surfaceMover->groundSpeed = cDashSpeed;
+				surfaceMover->SetSpeed(cDashSpeed);
 			}
 		}
-		else if (!facingRight && surfaceMover->groundSpeed > -cDashSpeed)
+		else if (!facingRight && surfaceMover->GetGroundSpeed() > -cDashSpeed)
 		{
-			surfaceMover->groundSpeed += -currDashAccel;
-			if (surfaceMover->groundSpeed < -cDashSpeed)
+			surfaceMover->SetSpeed(surfaceMover->GetGroundSpeed() - currDashAccel);
+			if (surfaceMover->GetGroundSpeed() < -cDashSpeed)
 			{
-				surfaceMover->groundSpeed = -cDashSpeed;
+				surfaceMover->SetSpeed(-cDashSpeed);
 			}
 		}
 		break;
@@ -442,7 +442,7 @@ void CrawlerQueen::StartAction()
 
 		if (cw == 0)
 		{
-			if (surfaceMover->groundSpeed == 0)
+			if (surfaceMover->GetGroundSpeed() == 0)
 			{
 				surfaceMover->SetSpeed(cDashSpeed);
 			}
@@ -451,7 +451,7 @@ void CrawlerQueen::StartAction()
 		}
 		else if (cw == 1)
 		{
-			if (surfaceMover->groundSpeed == 0)
+			if (surfaceMover->GetGroundSpeed() == 0)
 			{
 				surfaceMover->SetSpeed(-cDashSpeed);
 			}
@@ -467,7 +467,7 @@ void CrawlerQueen::StartAction()
 		chaseOver = false;
 		if (cw)
 		{
-			if (surfaceMover->groundSpeed == 0)
+			if (surfaceMover->GetGroundSpeed() == 0)
 			{
 				surfaceMover->SetSpeed(cDashSpeed);
 			}
@@ -476,7 +476,7 @@ void CrawlerQueen::StartAction()
 		}
 		else
 		{
-			if (surfaceMover->groundSpeed == 0)
+			if (surfaceMover->GetGroundSpeed() == 0)
 			{
 				surfaceMover->SetSpeed(-cDashSpeed);
 			}

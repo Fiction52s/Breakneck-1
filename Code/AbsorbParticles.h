@@ -27,17 +27,23 @@ struct AbsorbParticles
 			int frame;
 			int lockFrame;
 			float lockDist;
-			SingleEnergyParticle *next;
-			SingleEnergyParticle *prev;
-			Actor *playerTarget;
+			int nextParticleID;
+			int prevParticleID;
+			int playerTargetIndex;
 		};
 
+
 		MyData data;
-		int tileIndex;
+		Actor *playerTarget;
+
+		SingleEnergyParticle *next;
+		SingleEnergyParticle *prev;
+
+		int particleIndex;
 		AbsorbParticles *parent;
 
 		SingleEnergyParticle(AbsorbParticles *parent,
-			int tileIndex );
+			int particleIndex);
 		void UpdateSprite();
 		bool Update();
 		void Activate( Actor *p_playerTarget, sf::Vector2f &pos, sf::Vector2f &vel);
@@ -46,17 +52,18 @@ struct AbsorbParticles
 		void StoreBytes(unsigned char *bytes);
 		void SetFromBytes(unsigned char *bytes);
 		sf::Vector2f GetTargetPos(AbsorbType ab);
-
 	};
 
 	struct MyData
 	{
-		SingleEnergyParticle *activeList;
-		SingleEnergyParticle *inactiveList;
+		int activeListParticleID;
+		int inactiveListParticleID;
 		bool directKilled;
 	};
 	MyData data;
 
+	SingleEnergyParticle *activeList;
+	SingleEnergyParticle *inactiveList;
 
 	std::vector<SingleEnergyParticle*> allParticles;
 	sf::Vertex *va;
@@ -77,6 +84,8 @@ struct AbsorbParticles
 	void Activate( Actor *playerTarget, int storedHits, 
 		V2d &pos,
 		float startAngle = 0 );
+	int GetParticleID(SingleEnergyParticle *sep);
+	SingleEnergyParticle *GetParticleFromID(int id);
 	void Update();
 	void Draw(sf::RenderTarget *rt);
 	SingleEnergyParticle *GetInactiveParticle();

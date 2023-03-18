@@ -181,7 +181,7 @@ struct HitboxInfo
 	static void SetupHitboxLevelInfo(
 		nlohmann::json &j, 
 		HitboxInfo &hi);
-	static HitPosType GetAirType(V2d &dir);
+	static HitPosType GetAirType(const V2d &dir);
 
 	V2d hDir;
 	HitboxType hType;
@@ -275,6 +275,8 @@ struct CollisionBox
 
 struct CollisionBody
 {
+	int bodyID;
+
 	CollisionBody();
 	CollisionBody(CollisionBox::BoxType bType );
 	CollisionBody(int p_numFrames, std::map<int, 
@@ -304,7 +306,7 @@ struct CollisionBody
 	~CollisionBody();
 	void ResetFrames();
 
-	bool Empty();
+	bool IsEmpty();
 
 	void Move(V2d &move);
 

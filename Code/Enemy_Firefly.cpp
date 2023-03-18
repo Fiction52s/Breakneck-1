@@ -12,6 +12,8 @@ using namespace sf;
 Firefly::Firefly(ActorParams *ap)
 	:Enemy(EnemyType::EN_FIREFLY, ap)
 {
+	RegisterCollisionBody(data.pulseBody);
+
 	SetLevel(ap->GetLevel());
 
 	SetNumActions(A_Count);

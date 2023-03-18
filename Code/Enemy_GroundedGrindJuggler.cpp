@@ -311,7 +311,7 @@ void GroundedGrindJuggler::HandleNoHealth()
 
 void GroundedGrindJuggler::Move()
 {
-	surfaceMover->velocity = data.velocity;
+	surfaceMover->SetVelocity(data.velocity);
 	surfaceMover->Move(slowMultiple, numPhysSteps);
 }
 
@@ -334,7 +334,7 @@ void GroundedGrindJuggler::FrameIncrement()
 {
 	if (action == S_SLOW)
 	{
-		double speed = surfaceMover->groundSpeed;
+		double speed = surfaceMover->GetGroundSpeed();
 		if (speed > 0)
 		{
 			speed -= friction;
