@@ -14,6 +14,29 @@ struct TerrainPolygon;
 struct TerrainRail;
 struct GameSession;
 struct EdgeParentNode;
+struct Gate;
+struct Edge;
+
+struct EdgeInfo
+{
+	enum EdgeInfoType
+	{
+		ETI_EMPTY,
+		ETI_POLY,
+		ETI_RAIL,
+		ETI_GATE, //probably needed
+				  //ETI_BORDER,
+				  ETI_Count,
+	};
+
+	EdgeInfoType eiType;
+	int ownerIndex; //poly or rail
+	int edgeIndex;
+
+	EdgeInfo();
+	void Clear();
+	void SetFromEdge(Edge *e);
+};
 
 struct Edge : QuadTreeEntrant
 {
@@ -30,15 +53,15 @@ struct Edge : QuadTreeEntrant
 	Edge();
 	bool IsInvisibleWall();
 	V2d GetReflectionDir(V2d &dir);
-	sf::Vector2<double> Normal();
-	sf::Vector2<double> Along();
-	sf::Vector2<double> FullAlong();
-	sf::Vector2<double> GetPosition( double quantity );
-	sf::Vector2<double> GetRaisedPosition(double quantity, double height );
-	double GetQuantity( sf::Vector2<double> &p );
-	double GetRawQuantity(sf::Vector2<double> &p);
+	V2d Normal();
+	V2d Along();
+	V2d FullAlong();
+	V2d GetPosition( double quantity );
+	V2d GetRaisedPosition(double quantity, double height );
+	double GetQuantity( V2d &p );
+	double GetRawQuantity(V2d &p);
 	double GetQuantityGivenX( double x );
-	double GetDistAlongNormal(sf::Vector2<double> &p);
+	double GetDistAlongNormal(V2d &p);
 	double GetNormalAngleRadians();
 	double GetNormalAngleDegrees();
 	bool IsFlatGround();
@@ -55,8 +78,12 @@ struct Edge : QuadTreeEntrant
 	double GetLengthSqr();
 	void CalcAABB();
 
-	sf::Vector2<double> v0;
-	sf::Vector2<double> v1;
+	bool IsClosedGateEdge();
+	bool IsGateEdge();
+	Gate *GetGate();
+
+	V2d v0;
+	V2d v1;
 	Edge * GetPrevEdge();
 	Edge * GetNextEdge();
 	Edge *edge0;
@@ -156,14 +183,14 @@ struct HitboxInfo
 		HitboxInfo &hi);
 	static HitPosType GetAirType(V2d &dir);
 
-	sf::Vector2<double> hDir;
+	V2d hDir;
 	HitboxType hType;
 	double knockback; //0+
 	V2d GetKnockbackDir();
 	V2d GetKnockbackVector();
 	bool IsEmpty();
 	void SetEmpty();
-	sf::Vector2<double> kbDir;
+	V2d kbDir;
 	//double drain; //0-1
 	double drainX;
 	double drainY;
@@ -218,9 +245,9 @@ struct CollisionBox
 
 	}*/
 	bool Intersects( CollisionBox &c );
-	sf::Vector2<double> GetQuadVertex(int index);
+	V2d GetQuadVertex(int index);
 	//double offsetAngle;
-	sf::Vector2<double> globalPosition;
+	V2d globalPosition;
 	void Scale(double factor);
 	void Move(V2d &move);
 	double globalAngle;
@@ -231,7 +258,7 @@ struct CollisionBox
 	V2d GetOffset();
 	V2d GetTrueCenter();
 
-	sf::Vector2<double> offset;
+	V2d offset;
 	void DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *target );
 	sf::Rect<double> GetAABB();
 
@@ -315,10 +342,10 @@ struct Contact
 	void Reset();
 		
 	double collisionPriority;	
-	sf::Vector2<double> position;
-	sf::Vector2<double> resolution;
+	V2d position;
+	V2d resolution;
 	Edge *edge;
-	sf::Vector2<double> normal;
+	V2d normal;
 	bool weirdPoint;
 
 };
@@ -345,7 +372,7 @@ struct Collider
 struct EdgeQNode
 {
 	EdgeQNode():parent(NULL),debug(NULL){}
-	sf::Vector2<double> pos;
+	V2d pos;
 	double rw;
 	double rh;
 	sf::RenderWindow *debug;
@@ -355,7 +382,7 @@ struct EdgeQNode
 
 struct EdgeParentNode : EdgeQNode
 {
-	EdgeParentNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EdgeParentNode( const V2d &pos, double rw, double rh );
 	EdgeQNode *children[4];
 	// 0    |     1
 	//--------------
@@ -366,7 +393,7 @@ struct EdgeParentNode : EdgeQNode
 struct EdgeLeafNode : EdgeQNode
 {
 	int objCount;
-	EdgeLeafNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EdgeLeafNode( const V2d &pos, double rw, double rh );
 	Edge *edges[4];
 };
 
@@ -483,7 +510,7 @@ bool IsEdgeTouchingCircle(
 	V2d &v1, 
 	V2d &pos, double rad );
 
-bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
+bool IsEdgeTouchingQuad(V2d &v0,
 	V2d &v1,
 	V2d &A,
 	V2d &B,

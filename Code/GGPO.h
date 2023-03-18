@@ -81,72 +81,7 @@ struct GGPONonGameState
 	ChecksumInfo         periodic;
 };
 
-struct EdgeInfo
-{
-	enum EdgeInfoType
-	{
-		ETI_EMPTY,
-		ETI_POLY,
-		ETI_RAIL,
-		ETI_Count,
-	};
 
-	EdgeInfoType eiType;
-	int ownerIndex; //poly or rail
-	int edgeIndex;
-
-	void InitFromEdge(Edge *e);
-};
-
-struct SaveWireInfo
-{
-	float shaderOffset;
-	bool foundPoint;
-	WirePoint anchor;
-	WirePoint points[Wire::MAX_POINTS];
-	Wire::WireState state;
-	sf::Vector2i offset;
-	V2d fireDir;
-	int framesFiring;
-	int frame;
-	int numPoints;
-	V2d realAnchor;
-	bool canRetractGround;
-	V2d closestPoint;
-	double closestDiff;
-	int fusePointIndex;
-	V2d oldPos;
-	V2d storedPlayerPos;
-	V2d retractPlayerPos;
-	V2d currOffset;
-	V2d hitEnemyDelta;
-	V2d anchorVel;
-	V2d quadOldPosA;
-	V2d quadOldWirePosB;
-	V2d quadWirePosC;
-	V2d quadPlayerPosD;
-	double fuseQuantity;
-	double minSideOther;
-	double minSideAlong;
-	double totalLength;
-	double segmentLength;
-	double minSegmentLength;
-	double pullStrength;
-	double dragStrength;
-	int hitEnemyFrame;
-	int hitEnemyFramesTotal;
-	int firingTakingUp;
-	int numVisibleIndexes;
-	int newWirePoints;
-	int aimingPrimaryAngleRange;
-	int hitStallCounter;
-	int antiWireGrassCount;
-	CollisionBox movingHitbox;
-	bool clockwise;
-	EdgeInfo rcEdge;
-	double rcQuant;
-	double rcCancelDist;
-};
 
 struct PState
 {
@@ -235,8 +170,8 @@ struct PState
 	V2d dWireAirDash;
 	V2d dWireAirDashOld;
 
-	SaveWireInfo leftWireInfo;
-	SaveWireInfo rightWireInfo;
+	Wire::MyData leftWireInfo;
+	Wire::MyData rightWireInfo;
 
 	bool scorpOn;
 	int framesFlameOn;
@@ -398,7 +333,7 @@ struct SaveGameState
 	int inactiveEnemyListID;
 
 	int pauseFrames;
-	Actor *currSuperPlayer;
+	int currSuperPlayerIndex;
 	int gameState; //game mode such as RUN or FROZEN
 	bool nextFrameRestartGame;
 	Sequence  *activeSequence;

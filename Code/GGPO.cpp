@@ -8,31 +8,7 @@
 
 using namespace std;
 
-void EdgeInfo::InitFromEdge(Edge *e)
-{
-	if (e == NULL)
-	{
-		eiType = ETI_EMPTY;
-		ownerIndex = -1;
-		edgeIndex = -1;
-	}
-	else if (e->poly != NULL)
-	{
-		eiType = EdgeInfoType::ETI_POLY;
-		ownerIndex = e->poly->polyIndex;
-		edgeIndex = e->edgeIndex;
-	}
-	else if (e->rail != NULL)
-	{
-		eiType = EdgeInfoType::ETI_RAIL;
-		ownerIndex = e->rail->railIndex;
-		edgeIndex = e->edgeIndex;
-	}
-	else
-	{
-		assert(0);
-	}
-}
+
 
 void SaveGameState::Print()
 {

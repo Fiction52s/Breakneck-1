@@ -1223,6 +1223,7 @@ void GameSession::ProcessGate(int gCat,
 	V2d point1 = edge1->v0;
 
 	Gate * gate = new Gate(this, gCat, gVar);
+	gate->gateIndex = gates.size();
 
 	if (gCat == Gate::SHARD)
 	{
@@ -3519,49 +3520,47 @@ void GameSession::DrawActiveEnvPlants()
 
 void GameSession::SoftenGates(int gCat)
 {
-	Gate *g;
 	for (int i = 0; i < numGates; ++i)
 	{
-		g = gates[i];
-		g->gState = Gate::SOFTEN;
-		g->frame = 0;
+		if (gates[i]->category == gCat)
+		{
+			gates[i]->Soften();
+		}
 	}
 }
 
 void GameSession::ReformGates(int gCat)
 {
-	Gate *g;
 	for (int i = 0; i < numGates; ++i)
 	{
-		g = gates[i];
-		g->Reform();
+		if (gates[i]->category == gCat)
+		{
+			gates[i]->Reform();
+		}
 	}
 }
 
 void GameSession::CloseGates(int gCat)
 {
-	Gate *g;
 	for (int i = 0; i < numGates; ++i)
 	{
-		g = gates[i];
-		g->Close();
+		if (gates[i]->category == gCat)
+		{
+			gates[i]->Close();
+		}
 	}
 }
-
-
 
 void GameSession::OpenGates(int gCat)
 {
-	Gate *g;
 	for (int i = 0; i < numGates; ++i)
 	{
-		g = gates[i];
-		g->gState = Gate::OPEN;
-		g->frame = 0;
-		UnlockGate(g);
+		if (gates[i]->category == gCat)
+		{
+			gates[i]->Open();
+		}
 	}
 }
-
 
 void GameSession::SetupPauseMenu()
 {

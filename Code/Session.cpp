@@ -4015,19 +4015,17 @@ int Session::SetupZones()
 	zoneTree->SetZone(zoneTreeStart);
 	currentZoneNode = zoneTree;
 
-	//std::vector<bool> hasNodeVec(zones.size());
-
 	//using shouldreform to test the secret gate stuff
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		(*it)->shouldReform = true;
+		(*it)->SetShouldReform(true);
 	}
 
 	zoneTree->SetChildrenShouldNotReform();
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		if ((*it)->shouldReform)
+		if ((*it)->ShouldReform())
 		{
 			for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
 			{
@@ -4057,46 +4055,18 @@ int Session::SetupZones()
 		SetKeyMarkerToCurrentZone(); //moved this to account for some gates getting set to secret
 	}
 
-
 	return 0;
-	//if (originalZone != NULL)
-	//{
-	//	//CloseOffLimitZones();
-	//	if( gateMarkers != NULL )
-	//		gateMarkers->SetToZone(currentZone);
-	//}
 }
 
 void Session::ActivateZone(Zone * z, bool instant)
 {
 	if (z == NULL)
 		return;
-	//assert( z != NULL );
-	//cout << "ACTIVATE ZONE!!!" << endl;
-	if (!z->active)
+
+	bool didZoneActivateForFirstTime = z->Activate( instant );
+
+	if (didZoneActivateForFirstTime)
 	{
-		if (instant)
-		{
-			z->action = Zone::OPEN;
-		}
-		else
-		{
-			z->action = Zone::OPENING;
-			z->frame = 0;
-		}
-
-		for (list<Enemy*>::iterator it = z->spawnEnemies.begin(); it != z->spawnEnemies.end(); ++it)
-		{
-			assert((*it)->spawned == false);
-
-			(*it)->Init();
-			(*it)->spawned = true;
-			AddEnemy((*it));
-		}
-
-		z->active = true;
-		z->visited = true;
-
 		if (activatedZoneList == NULL)
 		{
 			activatedZoneList = z;
@@ -4107,46 +4077,13 @@ void Session::ActivateZone(Zone * z, bool instant)
 			z->activeNext = activatedZoneList;
 			activatedZoneList = z;
 		}
-
-		//z->ReformHigherIndexGates();
 	}
-	else
-	{
-		z->reexplored = true;
-		{
-			//z->frame = 0;
-			//z->action = Zone::OPEN;
-
-			/*if (z->action == Zone::CLOSING)
-			{
-			z->frame = z->openFrames - z->frame;
-			z->action = Zone::OPENING;
-			}
-			else
-			{
-			z->frame = 0;
-			z->action = Zone::OPEN;
-			}*/
-
-		}
-		//already activated
-		//assert(0);
-	}
-
 
 	if (currentZone != NULL && z->zType != Zone::SECRET && currentZone->zType != Zone::SECRET)
 	{
-		if (currentZone->action == Zone::OPENING)
-		{
-			currentZone->frame = z->openFrames - currentZone->frame;
-		}
-		else
-		{
-			currentZone->frame = 0;
-		}
-		currentZone->action = Zone::CLOSING;
-
-		currentZone->active = false;
+		currentZone->SetClosing(z->openFrames); //this is how it worked before, but openFrames is constant
+		//probably meant this or something like it:
+		//currentZone->SetClosing(z->data.frame);
 
 		bool foundNode = false;
 		for (auto it = currentZoneNode->children.begin();
@@ -4170,26 +4107,11 @@ void Session::ActivateZone(Zone * z, bool instant)
 		currentZone = z;
 
 		CloseOffLimitZones();
-
-		/*Gate *g;
-		for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
-		{
-			g = (Gate*)(*it)->info;
-			if (g->category == Gate::ALLKEY)
-			{
-				g->SetNumToOpen(currentZone->totalNumKeys);
-			}
-		}*/
-
-		
 	}
 	else
 	{
-
 		Zone *oldZone = currentZone;
 		currentZone = z;
-
-		
 
 		if (oldZone == NULL) //for starting the map
 		{
@@ -4226,18 +4148,14 @@ void Session::CloseOffLimitZones()
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		(*it)->shouldReform = true;
+		(*it)->SetShouldReform(true);
 	}
 
 	currentZoneNode->SetChildrenShouldNotReform();
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		if ((*it)->zType != Zone::SECRET && !(*it)->visited && (*it)->shouldReform)
-		{
-			(*it)->visited = true;
-			(*it)->ReformAllGates();
-		}
+		(*it)->CloseOffIfLimited();
 	}
 }
 
@@ -4419,7 +4337,7 @@ void Session::TrySpawnEnemy(QuadTreeEntrant *qte)
 	}
 
 	bool a = e->spawnRect.intersects(tempSpawnRect);
-	bool b = (e->zone == NULL || e->zone->active);
+	bool b = (e->zone == NULL || e->zone->IsActive());
 
 	if (a && b)
 	{
@@ -8124,6 +8042,16 @@ int Session::GetNumStoredBytes()
 
 	totalSize += sizeof(SaveGameState);
 
+	for( auto it = gates.begin(); it != gates.end(); ++it )
+	{
+		totalSize += (*it)->GetNumStoredBytes();
+	}
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		totalSize += (*it)->GetNumStoredBytes();
+	}
+
 	Actor *p = NULL;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -8137,7 +8065,7 @@ int Session::GetNumStoredBytes()
 	totalSize += gameMode->GetNumStoredBytes();
 
 	int enemySize = 0;
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		enemySize += (*it)->GetNumStoredBytes();
 	}
@@ -8160,7 +8088,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->activeEnemyListTailID = GetEnemyID(activeEnemyListTail);
 	currSaveState->inactiveEnemyListID = GetEnemyID(inactiveEnemyList);
 	currSaveState->pauseFrames = pauseFrames;
-	currSaveState->currSuperPlayer = currSuperPlayer;
+	currSaveState->currSuperPlayerIndex = GetPlayerIndex(currSuperPlayer);
 	currSaveState->gameState = gameState;
 	currSaveState->nextFrameRestartGame = nextFrameRestartGame;
 	currSaveState->activeSequence = activeSequence;
@@ -8171,6 +8099,18 @@ void Session::StoreBytes(unsigned char *bytes)
 
 	memcpy(bytes, currSaveState, saveSize);
 	bytes += saveSize;
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		(*it)->StoreBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->StoreBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
 
 	Actor *p = NULL;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -8189,7 +8129,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	bytes += gameMode->GetNumStoredBytes();
 
 	int totalEnemySize = 0;
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->StoreBytes(bytes);
 		totalEnemySize += (*it)->GetNumStoredBytes();
@@ -8220,6 +8160,18 @@ void Session::SetFromBytes(unsigned char *bytes)
 	memcpy(currSaveState, bytes, saveSize);
 	bytes += saveSize;
 
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+
 	Actor *p = NULL;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -8234,7 +8186,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 	gameMode->SetFromBytes(bytes);
 	bytes += gameMode->GetNumStoredBytes();
 
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->SetFromBytes(bytes);
 		bytes += (*it)->GetNumStoredBytes();
@@ -8257,7 +8209,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 	inactiveEnemyList = GetEnemyFromID( currSaveState->inactiveEnemyListID );
 	activeEnemyListTail = GetEnemyFromID(currSaveState->activeEnemyListTailID );
 	pauseFrames = currSaveState->pauseFrames;
-	currSuperPlayer = currSaveState->currSuperPlayer;
+	currSuperPlayer = GetPlayer(currSaveState->currSuperPlayerIndex);
 	randomState = currSaveState->randomState;
 
 	//when sent through the network, I shouldn't be storing/sending the sess anyway.
@@ -8805,7 +8757,7 @@ void Session::SetKeyMarkerToCurrentZone()
 	{
 		g = (Gate*)(*it)->info;
 
-		if (g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER )
+		if (g->IsLockedForever())
 		{
 			continue;
 		}
@@ -8836,7 +8788,7 @@ void Session::SetKeyMarkerToCurrentZone()
 		{
 			g = (Gate*)(*it)->info;
 
-			if (g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER)
+			if (g->IsLockedForever())
 			{
 				continue;
 			}
@@ -9218,6 +9170,23 @@ Edge *Session::GetEdge(EdgeInfo * ei)
 		return allPolysVec[ei->ownerIndex]->GetEdge(ei->edgeIndex);
 	case EdgeInfo::ETI_RAIL:
 		return allRailsVec[ei->ownerIndex]->GetEdge(ei->edgeIndex);
+	case EdgeInfo::ETI_GATE:
+	{
+		Gate *g = gates[ei->ownerIndex];
+		if (ei->edgeIndex == 0)
+		{
+			return g->edgeA;
+		}
+		else if (ei->edgeIndex == 1)
+		{
+			return g->edgeB;
+		}
+		else
+		{
+			assert(0);
+			return  NULL;
+		}
+	}
 	default:
 		assert(0);
 		return NULL;

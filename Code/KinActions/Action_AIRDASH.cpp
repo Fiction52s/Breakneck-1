@@ -56,7 +56,7 @@ void Actor::AIRDASH_Change()
 			frame = 1;
 			holdJump = false;
 
-			if (rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING)
+			if (rightWire->IsPulling() || leftWire->IsPulling() )
 			{
 			}
 			else

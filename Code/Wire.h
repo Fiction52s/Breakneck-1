@@ -16,21 +16,14 @@ struct WirePoint
 	double angleDiff;
 	double quantity;
 	double sortingAngleDist;
-	Edge *e;
-	Enemy *enemy;
+	EdgeInfo edgeInfo;
+	int enemyIndex;
 	int enemyPosIndex;
 	bool start;
 	bool clockwise;
 
-	WirePoint()
-	{
-		Reset();
-	}
-	void Reset()
-	{
-		e = NULL;
-		enemy = NULL;
-	}
+	WirePoint();
+	void Reset();
 };
 
 
@@ -83,55 +76,64 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	const static int MAX_POINTS = 64;
 	const static int MAX_CHARGES = 16;
 
-	float shaderOffset;
-	bool foundPoint;
-	WirePoint anchor;
-	WirePoint points[MAX_POINTS];
-	WireState state;
-	sf::Vector2i offset;
-	V2d fireDir;
-	int framesFiring;
-	int frame;
-	int numPoints;
-	V2d realAnchor;
-	bool canRetractGround;
-	V2d closestPoint;
-	double closestDiff;
-	int fusePointIndex;
-	V2d oldPos;
-	V2d storedPlayerPos;
-	V2d retractPlayerPos;
-	V2d currOffset;
-	V2d hitEnemyDelta;
-	V2d anchorVel;
-	V2d quadOldPosA;
-	V2d quadOldWirePosB;
-	V2d quadWirePosC;
-	V2d quadPlayerPosD;
-	double fuseQuantity;
-	double minSideOther;
-	double minSideAlong;
-	double totalLength;
-	double segmentLength;
-	double minSegmentLength;
-	double pullStrength;
-	double dragStrength;
-	int hitEnemyFrame;
-	int hitEnemyFramesTotal;
-	int firingTakingUp;
-	int numVisibleIndexes;
-	int newWirePoints;
-	int aimingPrimaryAngleRange;
-	int hitStallFrames;
-	int hitStallCounter;
-	int antiWireGrassCount;
-	CollisionBox movingHitbox;
-	bool clockwise;
-	double rcCancelDist;
+	struct MyData
+	{
+		float shaderOffset;
+		bool foundPoint;
+		WirePoint anchor;
+		WirePoint points[MAX_POINTS];
+		WireState state;
+		sf::Vector2i offset;
+		V2d fireDir;
+		int framesFiring;
+		int frame;
+		int numPoints;
+		V2d realAnchor;
+		bool canRetractGround;
+		V2d closestPoint;
+		double closestDiff;
+		int fusePointIndex;
+		V2d oldPos;
+		V2d storedPlayerPos;
+		V2d retractPlayerPos;
+		V2d currOffset;
+		V2d hitEnemyDelta;
+		V2d anchorVel;
+		V2d quadOldPosA;
+		V2d quadOldWirePosB;
+		V2d quadWirePosC;
+		V2d quadPlayerPosD;
+		double fuseQuantity;
+		double minSideOther;
+		double minSideAlong;
+		double totalLength;
+		double segmentLength;
+		double minSegmentLength;
+		double pullStrength;
+		double dragStrength;
+		int hitEnemyFrame;
+		int hitEnemyFramesTotal;
+		int firingTakingUp;
+		int numVisibleIndexes;
+		int newWirePoints;
+		int aimingPrimaryAngleRange;
+		int hitStallCounter;
+		int antiWireGrassCount;
+		CollisionBox movingHitbox;
+		bool clockwise;
+		double rcCancelDist;
+
+		EdgeInfo rcEdge; //used in save states only
+		double rcQuant; //used in save states only
+	};
+	
+	MyData data;
 	
 	Edge *minSideEdge;
 	
+	
 	Actor *player;
+	int hitStallFrames;
 	double retractSpeed;
 	double maxTotalLength;
 	double maxFireLength;
@@ -172,9 +174,9 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	Wire( Actor *player, bool right );
 	~Wire();
 	void PopulateWireInfo(
-		SaveWireInfo *wi);
+		Wire::MyData *wi);
 	void PopulateFromWireInfo(
-	SaveWireInfo *wi );
+		Wire::MyData *wi );
 	void UpdateAnchors( V2d vel );
 	void UpdateEnemyAnchor();
 	bool TryFire();
@@ -203,15 +205,20 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void Retract();
 	CollisionBox *GetTipHitbox();
 	void SortNewPoints();
+	bool IsPulling();
+	bool IsRetracting();
+	void SetStoredPlayerPos(const V2d &p);
+	bool IsHit();
 
 	//Rollback
 	/*struct MyData : StoredEnemyData
 	{
 		int fireCounter;
 	};*/
-	int GetNumStoredBytes();
+
+	/*int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
-	void SetFromBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);*/
 };
 
 #endif

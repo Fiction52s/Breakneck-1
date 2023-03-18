@@ -221,7 +221,7 @@ void KeyMarker::UpdateKeyNumbers()
 		for (auto it = sess->currentZone->gates.begin(); it != sess->currentZone->gates.end(); ++it)
 		{
 			Gate *g = (Gate*)(*it)->info;
-			if (g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER)
+			if (g->IsLockedForever() )
 			{
 				continue;
 			}

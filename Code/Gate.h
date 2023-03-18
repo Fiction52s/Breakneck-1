@@ -61,6 +61,80 @@ struct Gate : public QuadTreeEntrant
 		ORB_GO,
 	};
 
+	struct MyData
+	{
+		GateState gState;
+		int frame;
+		bool locked; //when loading state, make sure to set this using SetLocked
+		int orbState;
+		int orbFrame;
+		int flowFrame;
+		bool secretTimeGateIsOpened;
+		bool timeLocked;
+	};
+
+	MyData data;
+
+	Session *sess;
+	int gateIndex;
+	int seconds;
+	int category;
+	int variation;
+	int numToOpen;
+	bool visible; //I don't think this variable is even used.
+	bool timeGateIsSecret;
+	
+	
+	sf::Color mapLineColor;
+	sf::Vertex hardLine[4];
+	sf::Vertex centerLine[4];
+	sf::Vertex mapLine[4];
+	sf::Vertex nodes[8];
+
+	Tileset *ts_node;
+	Tileset *ts;
+	Tileset *ts_lockedAndHardened;
+	Tileset *ts_glitch;
+	Tileset *ts_wiggle;
+	sf::Vertex *gateQuads;
+	int numGateQuads;
+
+	sf::Shader gateShader;
+	sf::Shader centerShader;
+
+	sf::Rect<double> aabb;
+
+	int stateLength[State_Count];
+
+	Edge *temp0prev;
+	Edge *temp0next;
+	Edge *temp1prev;
+	Edge *temp1next;
+
+	Edge *edgeA;
+	Edge *edgeB;
+
+	Zone *zoneA;//edgeA is part of zoneA
+	Zone *zoneB;
+
+	//temporary for queries
+	Gate *next;
+	Gate *prev;
+
+	//key or pickup
+	
+	Tileset *ts_orb;
+	sf::Vertex orbQuad[4];
+	sf::Text numberText;
+
+	//just for shard stuff
+	sf::Sprite shardSprite;
+	sf::Sprite shardBGSprite;
+	Tileset *ts_shard;
+	int shardWorld;
+	int shardIndex;
+	int shardType;
+
 	Gate(Session *sess, int tcat,
 		int var);
 	~Gate();
@@ -102,79 +176,17 @@ struct Gate : public QuadTreeEntrant
 	void MapDraw(sf::RenderTarget *target);
 	void OpenSecretTimeGate();
 	void SetToTwoWay();
+	bool IsSoft();
+	bool IsLocked();
+	bool IsLockedForever();
+	void Open();
+	bool IsReformable();
+	bool CanBeHitByWire();
+	bool IsSecret();
 
-	Session *sess;
-	GateState gState;
-
-	int seconds;
-
-	int category;
-	int variation;
-	
-	bool visible;
-	bool locked;
-
-	int frame;
-	int flowFrame;
-
-	bool timeGateIsSecret;
-	bool timeLocked;
-	bool secretTimeGateIsOpened;
-
-	sf::Color mapLineColor;
-	sf::Vertex hardLine[4];
-	sf::Vertex centerLine[4];
-	sf::Vertex mapLine[4];
-	sf::Vertex nodes[8];
-
-	Tileset *ts_node;
-	Tileset *ts;
-	Tileset *ts_lockedAndHardened;
-	Tileset *ts_glitch;
-	Tileset *ts_wiggle;
-	sf::Vertex *gateQuads;
-	int numGateQuads;
-
-	sf::Shader gateShader;
-	sf::Shader centerShader;
-
-	sf::Rect<double> aabb;
-
-	int stateLength[State_Count];
-
-	Edge *temp0prev;
-	Edge *temp0next;
-	Edge *temp1prev;
-	Edge *temp1next;
-
-	Edge *edgeA;
-	Edge *edgeB;
-
-	Zone *zoneA;//edgeA is part of zoneA
-	Zone *zoneB;
-
-	Gate *next;
-	Gate *prev;
-
-	
-
-	//key or pickup
-	int numToOpen;
-	Tileset *ts_orb;
-	sf::Vertex orbQuad[4];
-	sf::Text numberText;
-	int orbState;
-	int orbFrame;
-	
-
-	//just for shard stuff
-	sf::Sprite shardSprite;
-	sf::Sprite shardBGSprite;
-	Tileset *ts_shard;
-	int shardWorld;
-	int shardIndex;
-	int shardType;
-	
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

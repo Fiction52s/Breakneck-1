@@ -174,7 +174,7 @@ void Actor::PopulateState(PState *ps)
 	ps->currInput = currInput.GetCompressedState();
 	ps->prevInput = prevInput.GetCompressedState();
 
-	ps->groundInfo.InitFromEdge(ground);
+	ps->groundInfo.SetFromEdge(ground);
 	ps->quant = edgeQuantity;
 	ps->xOffset = offsetX;
 	ps->holdDouble = holdDouble;
@@ -213,7 +213,7 @@ void Actor::PopulateState(PState *ps)
 	ps->maxFramesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
 
-	ps->grindEdgeInfo.InitFromEdge( grindEdge );
+	ps->grindEdgeInfo.SetFromEdge( grindEdge );
 
 	ps->grindSpeed = grindSpeed;
 
@@ -270,10 +270,10 @@ void Actor::PopulateState(PState *ps)
 	ps->bounceNorm = bounceNorm;
 	ps->oldBounceNorm = oldBounceNorm;
 
-	ps->bounceEdgeInfo.InitFromEdge(bounceEdge);
+	ps->bounceEdgeInfo.SetFromEdge(bounceEdge);
 
 	ps->storedBounceGroundSpeed = storedBounceGroundSpeed;
-	ps->oldBounceEdgeInfo.InitFromEdge(oldBounceEdge);
+	ps->oldBounceEdgeInfo.SetFromEdge(oldBounceEdge);
 
 	ps->framesSinceBounce = framesSinceBounce;
 	ps->groundedWallBounce = groundedWallBounce;
@@ -345,8 +345,8 @@ void Actor::PopulateState(PState *ps)
 	ps->waterEntrancePosition = waterEntrancePosition;
 
 
-	ps->waterEntranceGroundInfo.InitFromEdge(waterEntranceGround);
-	ps->waterEntranceGrindEdgeInfo.InitFromEdge(waterEntranceGrindEdge);
+	ps->waterEntranceGroundInfo.SetFromEdge(waterEntranceGround);
+	ps->waterEntranceGrindEdgeInfo.SetFromEdge(waterEntranceGrindEdge);
 
 	ps->waterEntranceQuantity = waterEntranceQuantity;
 	ps->waterEntranceXOffset = waterEntranceXOffset;
@@ -5776,17 +5776,17 @@ void Actor::UpdateBounceFlameOn()
 
 void Actor::UpdateWireStates()
 {
-	if (HasUpgrade(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->state == Wire::RETRACTING))
+	if (HasUpgrade(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
 	{
 		leftWire->ClearDebug();
-		leftWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();
+		leftWire->SetStoredPlayerPos(leftWire->GetPlayerPos());
 		leftWire->UpdateState(touchEdgeWithLeftWire);
 	}
 
-	if (HasUpgrade(UPGRADE_POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->state == Wire::RETRACTING))
+	if (HasUpgrade(UPGRADE_POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
 	{
 		rightWire->ClearDebug();
-		rightWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();
+		rightWire->SetStoredPlayerPos(rightWire->GetPlayerPos());
 		rightWire->UpdateState(touchEdgeWithRightWire);
 	}
 }
@@ -6141,7 +6141,7 @@ void Actor::LimitMaxSpeeds()
 		//&& action != SPRINGSTUNAIRBOUNCE
 		//&& action != SPRINGSTUNTELEPORT)
 	{
-		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD)
+		if (action != AIRDASH && !(rightWire->IsPulling() && leftWire->IsPulling()) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD)
 		{
 			if (!frameAfterAttackingHitlagOver) //hitting enemies was making full hop height lower
 			{
@@ -7091,7 +7091,7 @@ void Actor::WireMovement()
 
 	if (framesInAir > 1)
 	{
-		if (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING)
+		if (rightWire->IsPulling() && leftWire->IsPulling())
 		{
 			bool canDoubleWireBoostParticle = false;
 			if (framesSinceDoubleWireBoost >= doubleWireBoostTiming)
@@ -7100,12 +7100,12 @@ void Actor::WireMovement()
 				framesSinceDoubleWireBoost = 0;
 			}
 
-			V2d rwPos = rightWire->storedPlayerPos;
-			V2d lwPos = rightWire->storedPlayerPos;
+			V2d rwPos = rightWire->data.storedPlayerPos;
+			V2d lwPos = rightWire->data.storedPlayerPos;
 			V2d newVel1, newVel2;
-			V2d wirePoint = wire->anchor.pos;
-			if (wire->numPoints > 0)
-				wirePoint = wire->points[wire->numPoints - 1].pos;
+			V2d wirePoint = wire->data.anchor.pos;
+			if (wire->data.numPoints > 0)
+				wirePoint = wire->data.points[wire->data.numPoints - 1].pos;
 
 			V2d wireDir1 = normalize(wirePoint - rwPos);
 			V2d tes = normalize(rwPos - wirePoint);
@@ -7124,18 +7124,18 @@ void Actor::WireMovement()
 			V2d diff = wirePoint - future;
 
 			//wire->segmentLength -= 10;
-			if (length(diff) > wire->segmentLength)
+			if (length(diff) > wire->data.segmentLength)
 			{
-				future += normalize(diff) * (length(diff) - (wire->segmentLength));
+				future += normalize(diff) * (length(diff) - (wire->data.segmentLength));
 				newVel1 = future - rwPos;
 			}
 
 
 			wire = leftWire;
 
-			wirePoint = wire->anchor.pos;
-			if (wire->numPoints > 0)
-				wirePoint = wire->points[wire->numPoints - 1].pos;
+			wirePoint = wire->data.anchor.pos;
+			if (wire->data.numPoints > 0)
+				wirePoint = wire->data.points[wire->data.numPoints - 1].pos;
 
 			V2d wireDir2 = normalize(wirePoint - lwPos);
 			tes = normalize(lwPos - wirePoint);
@@ -7154,9 +7154,9 @@ void Actor::WireMovement()
 			diff = wirePoint - future;
 
 			//wire->segmentLength -= 10;
-			if (length(diff) > wire->segmentLength)
+			if (length(diff) > wire->data.segmentLength)
 			{
-				future += normalize(diff) * (length(diff) - (wire->segmentLength));
+				future += normalize(diff) * (length(diff) - (wire->data.segmentLength));
 				newVel2 = future - lwPos;
 			}
 
@@ -7327,18 +7327,18 @@ void Actor::WireMovement()
 			//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
 			///velocity += totalVelDir * doubleWirePull / (double)slowMultiple;
 		}
-		else if (rightWire->state == Wire::PULLING)
+		else if (rightWire->IsPulling())
 		{
-			V2d wPos = rightWire->storedPlayerPos;
-			if (position != rightWire->storedPlayerPos)
+			V2d wPos = rightWire->data.storedPlayerPos;
+			if (position != rightWire->data.storedPlayerPos)
 			{
 				//cout << "wPos: " << wPos.x << ", " << wPos.y << endl;
 				//cout << "pp: " << position.x << ", " << position.y << endl;
 				//assert( 0 && "what" );
 			}
-			V2d wirePoint = wire->anchor.pos;
-			if (wire->numPoints > 0)
-				wirePoint = wire->points[wire->numPoints - 1].pos;
+			V2d wirePoint = wire->data.anchor.pos;
+			if (wire->data.numPoints > 0)
+				wirePoint = wire->data.points[wire->data.numPoints - 1].pos;
 
 			V2d tes = normalize(wPos - wirePoint);
 			double temp = tes.x;
@@ -7468,9 +7468,9 @@ void Actor::WireMovement()
 			double segLength = length(seg);
 			V2d diff = wirePoint - future;
 
-			if (length(diff) > wire->segmentLength)
+			if (length(diff) > wire->data.segmentLength)
 			{
-				double pullVel = length(diff) - wire->segmentLength;
+				double pullVel = length(diff) - wire->data.segmentLength;
 				V2d pullDir = normalize(diff);
 				future += pullDir * pullVel;
 				velocity = future - wPos;
@@ -7480,13 +7480,13 @@ void Actor::WireMovement()
 
 			//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 		}
-		else if (leftWire->state == Wire::PULLING)
+		else if (leftWire->IsPulling())
 		{
 			wire = leftWire;
-			V2d wPos = leftWire->storedPlayerPos;
-			V2d wirePoint = wire->anchor.pos;
-			if (wire->numPoints > 0)
-				wirePoint = wire->points[wire->numPoints - 1].pos;
+			V2d wPos = leftWire->data.storedPlayerPos;
+			V2d wirePoint = wire->data.anchor.pos;
+			if (wire->data.numPoints > 0)
+				wirePoint = wire->data.points[wire->data.numPoints - 1].pos;
 
 			V2d tes = normalize(wPos - wirePoint);
 			double temp = tes.x;
@@ -7620,9 +7620,9 @@ void Actor::WireMovement()
 			V2d diff = wirePoint - future;
 
 			//wire->segmentLength -= 10;
-			if (length(diff) > wire->segmentLength)
+			if (length(diff) > wire->data.segmentLength)
 			{
-				future += normalize(diff) * (length(diff) - (wire->segmentLength));
+				future += normalize(diff) * (length(diff) - (wire->data.segmentLength));
 				velocity = future - wPos;
 			}
 		}
@@ -8591,7 +8591,7 @@ V2d Actor::UpdateReversePhysics()
 						}
 					}
 
-					if (!g->locked)
+					if (!g->IsLocked())
 					{
 						unlockedGateJumpOff = true;
 					}
@@ -8883,7 +8883,7 @@ V2d Actor::UpdateReversePhysics()
 						}
 					}
 
-					if (!g->locked)
+					if (!g->IsLocked())
 					{
 						unlockedGateJumpOff = true;
 					}
@@ -11188,7 +11188,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				if ( e1 != NULL && e1->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *gg = (Gate*)e1->info;
-					if (gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN)
+					if (gg->IsSoft())
 					{
 						if (CanUnlockGate(gg))
 						{
@@ -11274,7 +11274,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				if ( e0 != NULL && e0->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *gg = (Gate*)e0->info;
-					if (gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN)
+					if (gg->IsSoft() )
 					{
 						if (CanUnlockGate(gg))
 						{
@@ -12695,7 +12695,7 @@ void Actor::UpdatePhysics()
 			
 			int maxJumpHeightFrame = 10;
 
-			if( leftWire->state == Wire::PULLING || leftWire->state == Wire::HIT )
+			if( leftWire->IsPulling() || leftWire->IsHit() )
 			{
 				touchEdgeWithLeftWire = tempCollision;
 				if( action == WALLCLING )
@@ -12705,7 +12705,7 @@ void Actor::UpdatePhysics()
 			}
 			
 
-			if( rightWire->state == Wire::PULLING || rightWire->state == Wire::HIT )
+			if( rightWire->IsPulling() || rightWire->IsPulling() )
 			{
 				touchEdgeWithRightWire = tempCollision;
 				if( action == WALLCLING )
@@ -13522,7 +13522,7 @@ void Actor::HandleTouchedGate()
 				bool twoWay = g->IsTwoWay();
 				if (!twoWay) //for secret gates
 				{
-					if (oldZone != NULL && oldZone->active)
+					if (oldZone != NULL && oldZone->IsActive())
 					{
 						oldZone->ReformAllGates(g);
 					}
@@ -14521,7 +14521,7 @@ void Actor::PhysicsResponse()
 		}
 
 		if (collision && minContact.normal.y > 0 && !reversed && action != WALLCLING 
-			&& rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING
+			&& !rightWire->IsPulling() && !leftWire->IsPulling()
 			&& action != SEQ_KINFALL && action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != SPRINGSTUNGLIDE
 			&& action != FREEFLIGHT && action != FREEFLIGHTSTUN
 			&& !InWater( TerrainPolygon::WATER_BUOYANCY))
@@ -19125,8 +19125,8 @@ void Actor::UpdateSprite()
 	}
 	else
 	{
-		bool r = rightWire->state == Wire::PULLING;
-		bool l = leftWire->state == Wire::PULLING;
+		bool r = rightWire->IsPulling();
+		bool l = leftWire->IsPulling();
 
 
 		if( r && l && doubleWireBoost )
@@ -19825,7 +19825,7 @@ bool Actor::TryHomingMovement()
 
 void Actor::AirMovement()
 {
-	if( leftWire->state == Wire::PULLING || rightWire->state == Wire::PULLING )
+	if( leftWire->IsPulling() || rightWire->IsPulling())
 	{
 	}
 	else if (freeFlightFrames > 0)
@@ -19910,13 +19910,13 @@ void Actor::DrawWires(sf::RenderTarget *target)
 {
 	if (HasUpgrade(UPGRADE_POWER_LWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
-			|| leftWire->state == Wire::RETRACTING))
+			|| leftWire->IsRetracting()))
 	{
 		leftWire->Draw(target);
 	}
 	if (HasUpgrade(UPGRADE_POWER_RWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
-			|| rightWire->state == Wire::RETRACTING))
+			|| rightWire->IsRetracting()))
 	{
 		rightWire->Draw(target);
 	}
@@ -20589,7 +20589,7 @@ bool Actor::CanDoubleJump()
 
 bool Actor::IsDoubleWirePulling()
 {
-	return ( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
+	return ( rightWire->IsPulling() && leftWire->IsPulling() );
 }
 
 bool Actor::TryDoubleJump()
@@ -20660,9 +20660,9 @@ bool Actor::TryGlide()
 //you can pull with both or neither to return false. pulling with a single wire will return true;
 bool Actor::IsSingleWirePulling()
 {
-	bool pulling = (rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
-	bool hitAndTryingToPull = (rightWire->state == Wire::HIT && currInput.RightTriggerPressed())
-		|| (leftWire->state == Wire::HIT && currInput.LeftTriggerPressed());
+	bool pulling = (rightWire->IsPulling() || leftWire->IsPulling());
+	bool hitAndTryingToPull = (rightWire->IsHit() && currInput.RightTriggerPressed())
+		|| (leftWire->IsHit() && currInput.LeftTriggerPressed());
 	return ( pulling || hitAndTryingToPull ) 
 		&& !IsDoubleWirePulling();
 }

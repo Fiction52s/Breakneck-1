@@ -4,6 +4,8 @@
 #include <assert.h>
 #include "GameSession.h"
 #include <cmath>
+#include "EditorTerrain.h"
+#include "EditorRail.h"
 
 using namespace sf;
 using namespace std;
@@ -209,6 +211,65 @@ HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &vel)
 	}*/
 }
 
+EdgeInfo::EdgeInfo()
+{
+	Clear();
+}
+
+void EdgeInfo::Clear()
+{
+	eiType = ETI_EMPTY;
+	ownerIndex = -1;
+	edgeIndex = -1;
+}
+
+void EdgeInfo::SetFromEdge(Edge *e)
+{
+	if (e == NULL)
+	{
+		Clear();
+	}
+	else if (e->poly != NULL)
+	{
+		eiType = EdgeInfoType::ETI_POLY;
+		ownerIndex = e->poly->polyIndex;
+		edgeIndex = e->edgeIndex;
+	}
+	else if (e->rail != NULL)
+	{
+		eiType = EdgeInfoType::ETI_RAIL;
+		ownerIndex = e->rail->railIndex;
+		edgeIndex = e->edgeIndex;
+	}
+	else
+	{
+		if (e->IsGateEdge())
+		{
+			Gate *g = e->GetGate();
+			ownerIndex = g->gateIndex;
+
+			if (e == g->edgeA)
+			{
+				edgeIndex = 0;
+			}
+			else if (e == g->edgeB)
+			{
+				edgeIndex = 1;
+			}
+			else
+			{
+				assert(0);
+			}
+
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+}
+
+
 //EDGE FUNCTIONS
 Edge::Edge()
 {
@@ -230,7 +291,7 @@ V2d Edge::Along()
 	return normalize(v1 - v0);
 }
 
-sf::Vector2<double> Edge::FullAlong()
+V2d Edge::FullAlong()
 {
 	return v1 - v0;
 }
@@ -250,7 +311,7 @@ V2d Edge::GetReflectionDir(V2d &dir)
 	return normalize(reflX * edgeDir + reflY * norm);
 }
 
-double Edge::GetQuantity(Vector2<double> &p)
+double Edge::GetQuantity(V2d &p)
 {
 	//projects the origin of the line to p onto the edge. if the point is on the edge it will just be 
 	//normal to use dot product to get cos(0) =1
@@ -268,12 +329,12 @@ double Edge::GetQuantity(Vector2<double> &p)
 }
 
 
-sf::Vector2<double> Edge::GetRaisedPosition(double quantity, double height)
+V2d Edge::GetRaisedPosition(double quantity, double height)
 {
 	return GetPosition(quantity) + Normal() * height;
 }
 
-double Edge::GetRawQuantity(sf::Vector2<double> &p)
+double Edge::GetRawQuantity(V2d &p)
 {
 	return dot(p - v0, Along());
 }
@@ -300,7 +361,7 @@ double Edge::GetQuantityGivenX( double x )
 	return 0;
 }
 
-double Edge::GetDistAlongNormal(sf::Vector2<double> &p)
+double Edge::GetDistAlongNormal(V2d &p)
 {
 	return (cross(p - v0, Along()));
 }
@@ -334,7 +395,29 @@ bool Edge::IsInvisibleWall()
 	return edgeType == BORDER || edgeType == BARRIER;
 }
 
-sf::Vector2<double> CollisionBox::GetQuadVertex(int index)
+bool Edge::IsClosedGateEdge()
+{
+	return edgeType == CLOSED_GATE;
+}
+
+bool Edge::IsGateEdge()
+{
+	return edgeType == CLOSED_GATE || edgeType == OPEN_GATE;
+}
+
+Gate *Edge::GetGate()
+{
+	if( IsGateEdge() )
+	{
+		assert(info != NULL);
+		Gate *g = (Gate*)info;
+		return g;
+	}
+
+	return NULL;
+}
+
+V2d CollisionBox::GetQuadVertex(int index)
 {
 	double w = 0;
 	double h = 0;
@@ -832,7 +915,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				}
 
 
-				Vector2<double> intersect = li.position;
+				V2d intersect = li.position;
 
 
 				//double intersectQuantity = e->GetQuantity( intersect );
@@ -953,7 +1036,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 	else
 	{
 		//position += V2d(0, -10);
-		Vector2<double> oldPosition = position - vel;
+		V2d oldPosition = position - vel;
 		double left = position.x - b.rw;
 		double right = position.x + b.rw;
 		double top = position.y - b.rh;
@@ -1455,7 +1538,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		}
 		else
 		{
-			Vector2<double> corner(0,0);
+			V2d corner(0,0);
 			V2d opp;
 			if( en.x > 0 )
 			{
@@ -1869,8 +1952,8 @@ bool IsCircleTouchingCircle( V2d pos0, double rad_0, V2d pos1, double rad_1 )
 	return length( pos1 - pos0 ) <= rad_0 + rad_1;
 }
 
-bool IsEdgeTouchingCircle(sf::Vector2<double> &v0, sf::Vector2<double> &v1, 
-	sf::Vector2<double> &pos, double rad )
+bool IsEdgeTouchingCircle(V2d &v0, V2d &v1, 
+	V2d &pos, double rad )
 {	
 	if (v0 == v1)
 	{
@@ -2051,12 +2134,12 @@ sf::FloatRect GetQuadAABB(sf::Vertex *v)
 	//return (v[0].position + v[1].position + v[2].position + v[3].position) / 4.f;
 }
 
-bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
-	sf::Vector2<double> &v1,
-	sf::Vector2<double> &A,
-	sf::Vector2<double> &B,
-	sf::Vector2<double> &C,
-	sf::Vector2<double> &D)
+bool IsEdgeTouchingQuad(V2d &v0,
+	V2d &v1,
+	V2d &A,
+	V2d &B,
+	V2d &C,
+	V2d &D)
 {
 	LineIntersection li = SegmentIntersect(v0, v1, A, B);
 	if (!li.parallel)
@@ -2273,8 +2356,8 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 	
 }
 
-bool WithinDistance(sf::Vector2<double> &A,
-	sf::Vector2<double> &B, double rad)
+bool WithinDistance(V2d &A,
+	V2d &B, double rad)
 {
 	double lenSqr = lengthSqr(A - B);
 	if (rad * rad > lenSqr)

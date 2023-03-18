@@ -29,40 +29,6 @@ struct ZoneNode
 
 struct Zone
 {
-	Zone( TerrainPolygon & tp );
-	~Zone();
-	
-	void Init();
-	void Draw( sf::RenderTarget *target );
-	void DrawMinimap(sf::RenderTarget *target);
-
-	bool ContainsPoint( V2d point );
-	bool ContainsZone( Zone *z );
-	void Close();
-	void SetShadowColor( sf::Color c );
-	bool HasEnemyGate();
-	bool HasKeyGateOfNumber(int n);
-	//bool ContainsPlayer(); super 
-	Zone * ContainsPointMostSpecific( 
-		V2d point );
-	bool ContainsZoneMostSpecific(
-		Zone *z);
-	void Update( float zoom, sf::Vector2f &topLeft,
-		sf::Vector2f &playertest );
-	void Update();
-	int GetNumRemainingKillableEnemies();
-	int frame;
-	float GetOpeningAlpha();
-	bool secretZone;
-
-	bool shouldReform;
-
-	bool visited;
-	bool reexplored;
-	int openFrames;
-	int closeFrames;
-	int totalNumKeys;
-
 	enum ZoneType : int
 	{
 		NORMAL,
@@ -82,37 +48,80 @@ struct Zone
 		Count
 	};
 
-	Action action;
-	void SetZoneType( int zt );
+	struct MyData
+	{
+		int action;
+		int framesSinceActivation;
+		int frame;
+
+		bool visited;
+		bool active;
+		bool reexplored;
+	};
+
+	MyData data;
+
+	bool shouldReform;
+	bool secretZone;
+	int openFrames;
+	int closeFrames;
 	int zType;
-	void Reset();
-	void ReformAllGates( Gate *ignoreGate = NULL);
-
-	int framesSinceActivation;
 	bool hasGoal;
-
+	int totalNumKeys;
 	sf::VertexArray *definedArea;
 	std::list<Edge*> gates;
 	std::vector<std::vector<sf::Vector2i>> pointVector;
-	std::vector<sf::Vector2i> &PointVector();
-	sf::Vector2i &GetPolyPoint(int index);
 	std::list<Zone*> subZones;
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;
 	std::set<Zone*> connectedSet;
-	bool active;
 	
-	//int goalIndex;
-	//int connectedCount;
-
 	bool showShadow;
 	Zone *activeNext;
-
 	Zone *parentZone;
-
 	sf::Shader *zShader;
 	sf::Shader *miniShader;
 	Tileset *ts_z;
+
+	Zone( TerrainPolygon & tp );
+	~Zone();
+	void Init();
+	void Draw( sf::RenderTarget *target );
+	void DrawMinimap(sf::RenderTarget *target);
+	bool ContainsPoint( V2d point );
+	bool ContainsZone( Zone *z );
+	void Close();
+	void SetShadowColor( sf::Color c );
+	bool HasEnemyGate();
+	bool HasKeyGateOfNumber(int n);
+	Zone * ContainsPointMostSpecific( 
+		V2d point );
+	bool ContainsZoneMostSpecific(
+		Zone *z);
+	void Update( float zoom, sf::Vector2f &topLeft,
+		sf::Vector2f &playertest );
+	void Update();
+	int GetNumRemainingKillableEnemies();
+	float GetOpeningAlpha();
+	void SetZoneType( int zt );
+	void Reset();
+	void ReformAllGates( Gate *ignoreGate = NULL);
+	std::vector<sf::Vector2i> &PointVector();
+	sf::Vector2i &GetPolyPoint(int index);
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	bool Activate(bool instant);
+	bool IsOpening();
+	void SetClosing( int alreadyOpenFrames );
+	void CloseOffIfLimited();
+	void SetShouldReform(bool on);
+	bool ShouldReform();
+	bool IsActive();
+	int GetFramesSinceActivation();
+	bool IsShowingEnemyZoneSprites();
+	bool IsStartingToOpen();
+	int GetFrame();
 };
 
 

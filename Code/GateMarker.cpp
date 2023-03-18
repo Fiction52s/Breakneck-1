@@ -308,8 +308,7 @@ void GateMarkerGroup::SetToZone(Zone *z)
 	for (auto it = z->gates.begin(); it != z->gates.end(); ++it)
 	{
 		g = (Gate*)(*it)->info;
-		if (g->gState != Gate::LOCKFOREVER && g->gState != Gate::REFORM 
-			&& g->category != Gate::SECRET )
+		if (!g->IsLockedForever() && !g->IsSecret() )
 		{
 			markers[counter]->SetGate(g);
 			++counter;

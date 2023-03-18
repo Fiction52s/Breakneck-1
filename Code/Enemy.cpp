@@ -1550,7 +1550,7 @@ void Enemy::UpdateKeySprite()
 
 void Enemy::CheckedMiniDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 {
-	if ( zone == NULL || ( zone != NULL && zone->active ) )
+	if ( zone == NULL || ( zone != NULL && zone->IsActive() ) )
 	{
 		if (rect.intersects(GetAABB()))
 		{
@@ -1561,7 +1561,7 @@ void Enemy::CheckedMiniDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 
 void Enemy::CheckedZoneDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 {
-	if (zone != NULL &&  (zone->action == Zone::UNEXPLORED || (zone->action == Zone::OPENING && zone->frame <= 20 && !zone->reexplored) ) )// && !zone->active )
+	if (zone != NULL && zone->IsShowingEnemyZoneSprites() )
 	{
 		if (rect.intersects(zonedSprite.getGlobalBounds()))
 		{
@@ -1573,7 +1573,7 @@ void Enemy::CheckedZoneDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 
 void Enemy::CheckedZoneUpdate(sf::FloatRect &rect)
 {
-	if (zone != NULL && !zone->active)
+	if (zone != NULL && !zone->IsActive())
 	{
 		if (rect.intersects(zonedSprite.getGlobalBounds()))
 		{
@@ -1795,9 +1795,11 @@ void Enemy::Draw(sf::RenderTarget *target)
 
 void Enemy::UpdateZoneSprite()
 {
-	if (zone != NULL && zone->action == Zone::OPENING && zone->frame <= 20 )
+	//before this didn't include the !data.reexplored line. hopefully no bugs.
+
+	if (zone != NULL && zone->IsStartingToOpen() )//&& zone->data.action == Zone::OPENING && zone->data.frame <= 20 )
 	{
-		float f = 1.f - zone->frame / 20.f;
+		float f = 1.f - zone->GetFrame() / 20.f;
 		zonedSprite.setColor(Color(255, 255, 255, f * 255));
 	}
 	else

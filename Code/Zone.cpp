@@ -19,14 +19,87 @@
 using namespace sf;
 using namespace std;
 
+ZoneNode::~ZoneNode()
+{
+	for (auto it = children.begin(); it != children.end(); ++it)
+	{
+		delete (*it);
+	}
+}
 
+bool ZoneNode::SetZone(Zone *p_myZone)
+{
+	Session *sess = Session::GetSession();
+
+	myZone = p_myZone;
+
+	if (myZone == sess->zoneTreeEnd)
+	{
+		return true;
+	}
+
+
+	children.reserve(myZone->connectedSet.size());
+	for (auto it = myZone->connectedSet.begin(); it != myZone->connectedSet.end(); ++it)
+	{
+		if (!IsInMyBranch((*it)))
+		{
+			ZoneNode *zn = new ZoneNode;
+			zn->parent = this;
+			if (zn->SetZone((*it)))
+			{
+				children.push_back(zn);
+			}
+			else
+			{
+				delete zn;
+			}
+		}
+	}
+
+	if (children.size() == 0)
+		return false;
+
+	/*if( parent != NULL )
+	myZone->leadOutZones.insert(parent->myZone);
+
+	for (auto it = children.begin(); it != children.end(); ++it)
+	{
+	myZone->leadInZones.insert((*it)->myZone);
+	}*/
+
+	return true;
+}
+
+
+bool ZoneNode::IsInMyBranch(Zone *z)
+{
+	ZoneNode *p = parent;
+	while (p != NULL)
+	{
+		if (p->myZone == z)
+		{
+			return true;
+		}
+
+		p = p->parent;
+	}
+	return false;
+}
+
+void ZoneNode::SetChildrenShouldNotReform()
+{
+	myZone->SetShouldReform(false);
+	for (auto it = children.begin(); it != children.end(); ++it)
+	{
+		(*it)->SetChildrenShouldNotReform();
+	}
+}
 
 
 Zone::Zone( TerrainPolygon &tp )
-	:active( false )
 {
 	secretZone = false;
-	reexplored = false;
 	parentZone = NULL;
 	showShadow = true;
 	tp.FixWinding();
@@ -88,8 +161,6 @@ void Zone::SetZoneType( int zt )
 	zType = zt;
 }
 
-
-
 void Zone::ReformAllGates( Gate *ignoreGate)
 {
 	//note: for secret zones, this should put it into a special reform
@@ -101,9 +172,7 @@ void Zone::ReformAllGates( Gate *ignoreGate)
 		Gate *og = (Gate*)(*it)->info;
 		if (ignoreGate == og)
 			continue;
-		if ((og->gState == Gate::HARD
-			|| og->gState == Gate::SOFT
-			|| og->gState == Gate::SOFTEN))
+		if (og->IsReformable())
 		{
 			og->Reform();
 		}
@@ -119,7 +188,7 @@ void Zone::Init()
 	Session *sess = Session::GetSession();
 
 	bool visibleZone = false;
-	if (gates.empty() || action == OPEN )
+	if (gates.empty() || data.action == OPEN )
 	{
 		visibleZone = true;
 	}
@@ -137,7 +206,7 @@ void Zone::Init()
 
 	if (!visibleZone)
 	{
-		action = OPEN;
+		data.action = OPEN;
 	}
 
 	list<Edge*> relGates;
@@ -395,7 +464,7 @@ bool Zone::HasEnemyGate()
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
 		g = (Gate*)((*it)->info);
-		if (g->gState != Gate::REFORM && g->gState != Gate::LOCKFOREVER)
+		if (!g->IsLockedForever())
 		{
 			if (g->category == Gate::ENEMY)
 			{
@@ -413,7 +482,7 @@ bool Zone::HasKeyGateOfNumber(int n)
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
 		g = (Gate*)((*it)->info);
-		if (g->gState != Gate::REFORM && g->gState != Gate::LOCKFOREVER)
+		if (!g->IsLockedForever() )
 		{
 			if (g->category == Gate::ALLKEY && n == totalNumKeys )
 			{
@@ -459,12 +528,12 @@ void Zone::SetShadowColor( sf::Color c )
 
 void Zone::Reset()
 {
-	visited = false;
-	active = false;
-	action = UNEXPLORED;
-	framesSinceActivation = 0;
-	frame = 0;
-	reexplored = false;
+	data.visited = false;
+	data.active = false;
+	data.action = UNEXPLORED;
+	data.framesSinceActivation = 0;
+	data.frame = 0;
+	data.reexplored = false;
 	if( zShader != NULL )
 		zShader->setUniform("alpha", 1.f);
 
@@ -479,15 +548,15 @@ void Zone::Update()
 	VertexArray &va = *definedArea;
 	if (zType == NORMAL || zType == MOMENTA || zType == SECRET)
 	{
-		switch (action)
+		switch (data.action)
 		{
 		case UNEXPLORED:
 			break;
 		case OPENING:
-			if (frame == openFrames)
+			if (data.frame == openFrames)
 			{
-				action = OPEN;
-				frame = 0;
+				data.action = OPEN;
+				data.frame = 0;
 			}
 			else
 			{
@@ -503,7 +572,7 @@ void Zone::Update()
 		case OPEN:
 			break;
 		case CLOSING:
-			if (frame == closeFrames)
+			if (data.frame == closeFrames)
 			{
 				Close();
 			}
@@ -523,12 +592,12 @@ void Zone::Update()
 		}
 	}
 
-	if (action == OPENING || action == OPEN)
+	if (data.action == OPENING || data.action == OPEN)
 	{
-		++framesSinceActivation;
+		++data.framesSinceActivation;
 	}
 	
-	++frame;
+	++data.frame;
 }
 
 void Zone::Update(float zoom, sf::Vector2f &topLeft, sf::Vector2f &playertest)
@@ -536,15 +605,15 @@ void Zone::Update(float zoom, sf::Vector2f &topLeft, sf::Vector2f &playertest)
 	VertexArray &va = *definedArea;
 	if (zType == NORMAL || zType == MOMENTA || zType == SECRET)
 	{
-		switch (action)
+		switch (data.action)
 		{
 		case UNEXPLORED:
 			break;
 		case OPENING:
-			if (frame == openFrames)
+			if (data.frame == openFrames)
 			{
-				action = OPEN;
-				frame = 0;
+				data.action = OPEN;
+				data.frame = 0;
 			}
 			else
 			{
@@ -560,7 +629,7 @@ void Zone::Update(float zoom, sf::Vector2f &topLeft, sf::Vector2f &playertest)
 		case OPEN:
 			break;
 		case CLOSING:
-			if (frame == closeFrames)
+			if (data.frame == closeFrames)
 			{
 				Close();
 			}
@@ -592,7 +661,7 @@ void Zone::Update(float zoom, sf::Vector2f &topLeft, sf::Vector2f &playertest)
 		zShader->setUniform("playertest", playertest);
 		break;
 	}
-	++frame;
+	++data.frame;
 }
 
 int Zone::GetNumRemainingKillableEnemies()
@@ -614,19 +683,122 @@ int Zone::GetNumRemainingKillableEnemies()
 
 float Zone::GetOpeningAlpha()
 {
-	return 1.f - frame / ((float)openFrames);
+	return 1.f - data.frame / ((float)openFrames);
 }
 
 void Zone::Close()
 {
-	action = CLOSED;
-	frame = 0;
+	data.action = CLOSED;
+	data.frame = 0;
 	zShader->setUniform("alpha", 1.f);
+}
+
+//returns true if it wasn't active before, false if its just reexplored
+bool Zone::Activate( bool instant)
+{
+	if (!data.active)
+	{
+		Session *sess = Session::GetSession();
+
+		if (instant)
+		{
+			data.action = Zone::OPEN;
+		}
+		else
+		{
+			data.action = Zone::OPENING;
+			data.frame = 0;
+		}
+
+		for (list<Enemy*>::iterator it = spawnEnemies.begin(); it != spawnEnemies.end(); ++it)
+		{
+			assert((*it)->spawned == false);
+
+			(*it)->Init();
+			(*it)->spawned = true;
+			sess->AddEnemy((*it));
+		}
+
+		data.active = true;
+		data.visited = true;
+
+		return true;
+	}
+	else
+	{
+		data.reexplored = true;
+
+		return false;
+	}
+}
+
+bool Zone::IsOpening()
+{
+	return data.action == OPENING;
+}
+
+void Zone::SetClosing( int alreadyOpenFrames )
+{
+	if (IsOpening())
+	{
+		data.frame = alreadyOpenFrames - data.frame;
+	}
+	else
+	{
+		data.frame = 0;
+	}
+
+	data.action = Zone::CLOSING;
+	data.active = false;
+}
+
+void Zone::CloseOffIfLimited()
+{
+	if (zType != Zone::SECRET && !data.visited && shouldReform)
+	{
+		data.visited = true;
+		ReformAllGates();
+	}
+}
+
+void Zone::SetShouldReform(bool on)
+{
+	shouldReform = on;
+}
+
+bool Zone::ShouldReform()
+{
+	return shouldReform;
+}
+
+bool Zone::IsActive()
+{
+	return data.active;
+}
+
+int Zone::GetFramesSinceActivation()
+{
+	return data.framesSinceActivation;
+}
+
+bool Zone::IsStartingToOpen()
+{
+	return data.action == Zone::OPENING && data.frame <= 20 && !data.reexplored;
+}
+
+bool Zone::IsShowingEnemyZoneSprites()
+{
+	return data.action == Zone::UNEXPLORED || IsStartingToOpen();
+}
+
+int Zone::GetFrame()
+{
+	return data.frame;
 }
 
 void Zone::DrawMinimap(sf::RenderTarget *target)
 {
-	if (action != OPEN)//!active )
+	if (data.action != OPEN)//!active )
 	{
 		if (showShadow)
 		{
@@ -657,7 +829,7 @@ void Zone::Draw(RenderTarget *target)
 {
 	//target->draw( *definedArea );
 	//return;
-	if (action != OPEN)//!active )
+	if (data.action != OPEN)//!active )
 	{
 		if (showShadow)
 		{
@@ -770,79 +942,17 @@ Zone* Zone::ContainsPointMostSpecific( V2d test )
 	}
 }
 
-ZoneNode::~ZoneNode()
+int Zone::GetNumStoredBytes()
 {
-	for (auto it = children.begin(); it != children.end(); ++it)
-	{
-		delete (*it);
-	}
+	return sizeof(MyData);
 }
 
-bool ZoneNode::SetZone(Zone *p_myZone)
+void Zone::StoreBytes(unsigned char *bytes)
 {
-	Session *sess = Session::GetSession();
-
-	myZone = p_myZone;
-
-	if (myZone == sess->zoneTreeEnd)
-	{
-		return true;
-	}
-
-
-	children.reserve(myZone->connectedSet.size());
-	for (auto it = myZone->connectedSet.begin(); it != myZone->connectedSet.end(); ++it)
-	{
-		if (!IsInMyBranch((*it)))
-		{
-			ZoneNode *zn = new ZoneNode;
-			zn->parent = this;
-			if (zn->SetZone((*it)))
-			{
-				children.push_back(zn);
-			}
-			else
-			{
-				delete zn;
-			}
-		}
-	}
-
-	if (children.size() == 0)
-		return false;
-
-	/*if( parent != NULL )
-		myZone->leadOutZones.insert(parent->myZone);
-
-	for (auto it = children.begin(); it != children.end(); ++it)
-	{
-		myZone->leadInZones.insert((*it)->myZone);
-	}*/
-
-	return true;
+	memcpy(bytes, &data, sizeof(MyData));
 }
 
-
-bool ZoneNode::IsInMyBranch(Zone *z)
+void Zone::SetFromBytes(unsigned char *bytes)
 {
-	ZoneNode *p = parent;
-	while (p != NULL)
-	{
-		if (p->myZone == z)
-		{
-			return true;
-		}
-
-		p = p->parent;
-	}
-	return false;
-}
-
-void ZoneNode::SetChildrenShouldNotReform()
-{
-	myZone->shouldReform = false;
-	for (auto it = children.begin(); it != children.end(); ++it)
-	{
-		(*it)->SetChildrenShouldNotReform();
-	}
+	memcpy(&data, bytes, sizeof(MyData));
 }

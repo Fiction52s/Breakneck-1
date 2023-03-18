@@ -28,9 +28,12 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Gate::Gate( Session *p_sess, int p_cat, int p_var )
-	:category( p_cat), variation( p_var ), locked( true ), 
+	:category( p_cat), variation( p_var ),
 	zoneA( NULL ), zoneB( NULL ),sess( p_sess )
 {
+	data.locked = true;
+
+	gateIndex = -1;
 	visible = true;
 	gateQuads = NULL;
 
@@ -44,12 +47,12 @@ Gate::Gate( Session *p_sess, int p_cat, int p_var )
 	
 	ts_orb = sess->GetSizedTileset("Zone/gate_orb_64x64.png");
 	
-	orbFrame = 0;
-	orbState = ORB_RED;
+	data.orbFrame = 0;
+	data.orbState = ORB_RED;
 
 	timeGateIsSecret = false;
-	secretTimeGateIsOpened = false;
-	timeLocked = false;
+	data.secretTimeGateIsOpened = false;
+	data.timeLocked = false;
 
 	seconds = 0;
 
@@ -160,36 +163,36 @@ void Gate::Reset()
 {
 	centerShader.setUniform("breakQuant", 0.f);
 	gateShader.setUniform("fadeQuant", 0.f);
-	flowFrame = 0;
-	frame = 0;
+	data.flowFrame = 0;
+	data.frame = 0;
 
-	secretTimeGateIsOpened = false;
-	timeLocked = false;
+	data.secretTimeGateIsOpened = false;
+	data.timeLocked = false;
 
-	orbState = ORB_RED;
-	orbFrame = 0;
+	data.orbState = ORB_RED;
+	data.orbFrame = 0;
 
 	if (category == BOSS )
 	{
-		gState = OPEN;
+		data.gState = OPEN;
 		SetLocked(false);
 	}
 	else if (category == BLACK)
 	{
-		gState = LOCKFOREVER;
+		data.gState = LOCKFOREVER;
 	}
 	else if (category == SECRET)
 	{
-		gState = SOFT;
+		data.gState = SOFT;
 	}
 	else if (category == TIME_GLOBAL
 		|| category == TIME_ROOM)
 	{
-		gState = SOFT;
+		data.gState = SOFT;
 	}
 	else
 	{
-		gState = HARD;
+		data.gState = HARD;
 		SetLocked(true);
 	}
 }
@@ -198,23 +201,23 @@ void Gate::PassThrough(double alongAmount)
 {
 	if (category == SECRET || timeGateIsSecret )
 	{
-		gState = Gate::GLITCH;
-		frame = 0;
+		data.gState = Gate::GLITCH;
+		data.frame = 0;
 		sess->LockGate(this);
 	}
 	else if (IsReformingType())
 	{
 		sess->LockGate(this);
 
-		gState = Gate::REFORM;
-		frame = 0;
+		data.gState = Gate::REFORM;
+		data.frame = 0;
 		float aa = alongAmount;
 		centerShader.setUniform("breakPosQuant", aa);
 	}
 	else
 	{
-		gState = Gate::DISSOLVE;
-		frame = 0;
+		data.gState = Gate::DISSOLVE;
+		data.frame = 0;
 		float aa = alongAmount;
 		centerShader.setUniform("breakPosQuant", aa);
 	}
@@ -222,65 +225,65 @@ void Gate::PassThrough(double alongAmount)
 
 void Gate::ActionEnded()
 {
-	if (gState == OPEN || gState == LOCKFOREVER)
+	if (data.gState == OPEN || data.gState == LOCKFOREVER)
 		return;
 	
-	if (frame == stateLength[gState])
+	if (data.frame == stateLength[data.gState])
 	{
-		frame = 0;
-		switch (gState)
+		data.frame = 0;
+		switch (data.gState)
 		{
 		case TOTALDISSOLVE:
 		{
-			gState = OPEN;
+			data.gState = OPEN;
 			break;
 		}
 		case SOFTEN:
 		{
-			gState = SOFT;
+			data.gState = SOFT;
 			break;
 		}
 		case DISSOLVE:
 		{
 			if (IsReformingType())
 			{
-				gState = REFORM;
-				frame = 0;
+				data.gState = REFORM;
+				data.frame = 0;
 			}
 			else
 			{
-				gState = OPEN;
-				frame = 0;
+				data.gState = OPEN;
+				data.frame = 0;
 			}
 			break;
 		}
 		case REVERSEDISSOLVE:
 		{
-			gState = HARD;
-			frame = 0;
+			data.gState = HARD;
+			data.frame = 0;
 			break;
 		}
 		case REFORM:
 		{
 			if (IsTwoWay())
 			{
-				gState = SOFT;
-				frame = 0;
+				data.gState = SOFT;
+				data.frame = 0;
 			}
 			else if (category == BOSS)
 			{
-				gState = HARD;
-				frame = 0;
+				data.gState = HARD;
+				data.frame = 0;
 				SetLocked(true);
 			}
 			else
 			{
-				gState = LOCKFOREVER;
+				data.gState = LOCKFOREVER;
 			}
 			break;
 		}
 		case GLITCH:
-			gState = SOFT;
+			data.gState = SOFT;
 			break;
 		}
 	}
@@ -293,19 +296,19 @@ bool Gate::IsZoneType()
 
 void Gate::Reform()
 {
-	gState = Gate::REFORM;
-	frame = 0;
+	data.gState = Gate::REFORM;
+	data.frame = 0;
 	float aa = .5;
 	centerShader.setUniform("breakPosQuant", aa);
 }
 
 void Gate::Close()
 {
-	gState = Gate::HARD;
-	frame = 0;
+	data.gState = Gate::HARD;
+	data.frame = 0;
 	centerShader.setUniform("breakQuant", 0.f);
 	gateShader.setUniform("fadeQuant", 0.f);
-	flowFrame = 0;
+	data.flowFrame = 0;
 	SetLocked(true);
 }
 
@@ -313,7 +316,7 @@ void Gate::UpdateOrb()
 {
 	if (category == NUMBER_KEY || category == ALLKEY)
 	{
-		if (gState == LOCKFOREVER || gState == REFORM)
+		if (data.gState == LOCKFOREVER || data.gState == REFORM)
 		{
 			SetRectColor(mapLine, mapLineColor);
 			return;
@@ -325,28 +328,28 @@ void Gate::UpdateOrb()
 		{
 			bool currZone = (sess->currentZone == zoneA ||
 				sess->currentZone == zoneB);
-			if (orbState != ORB_GO && currZone)
+			if (data.orbState != ORB_GO && currZone)
 			{
-				orbState = ORB_GO;
-				orbFrame = 0;
+				data.orbState = ORB_GO;
+				data.orbFrame = 0;
 			}
 			else if (!currZone)
 			{
-				orbState = ORB_GREEN;
-				orbFrame = 0;
+				data.orbState = ORB_GREEN;
+				data.orbFrame = 0;
 			}
 
-			if (orbState == ORB_GO)
+			if (data.orbState == ORB_GO)
 			{
-				ts_orb->SetQuadSubRect(orbQuad, 2 + orbFrame / 2);
+				ts_orb->SetQuadSubRect(orbQuad, 2 + data.orbFrame / 2);
 
-				orbFrame++;
-				if (orbFrame == 10 * 2)
+				data.orbFrame++;
+				if (data.orbFrame == 10 * 2)
 				{
-					orbFrame = 0;
+					data.orbFrame = 0;
 				}
 
-				int mapLineFrame = (orbFrame / 2) % 3;
+				int mapLineFrame = (data.orbFrame / 2) % 3;
 				switch (mapLineFrame)
 				{
 				case 0:
@@ -378,7 +381,7 @@ void Gate::UpdateOrb()
 	}
 	else if (category == ENEMY )
 	{
-		if (gState == LOCKFOREVER || gState == REFORM)
+		if (data.gState == LOCKFOREVER || data.gState == REFORM)
 		{
 			SetRectColor(mapLine, mapLineColor);
 			return;
@@ -395,28 +398,28 @@ void Gate::UpdateOrb()
 		{
 			bool currZone = (sess->currentZone == zoneA ||
 				sess->currentZone == zoneB);
-			if (orbState != ORB_GO && currZone)
+			if (data.orbState != ORB_GO && currZone)
 			{
-				orbState = ORB_GO;
-				orbFrame = 0;
+				data.orbState = ORB_GO;
+				data.orbFrame = 0;
 			}
 			else if (!currZone)
 			{
-				orbState = ORB_GREEN;
-				orbFrame = 0;
+				data.orbState = ORB_GREEN;
+				data.orbFrame = 0;
 			}
 
-			if (orbState == ORB_GO)
+			if (data.orbState == ORB_GO)
 			{
-				ts_orb->SetQuadSubRect(orbQuad, 2 + orbFrame / 2);
+				ts_orb->SetQuadSubRect(orbQuad, 2 + data.orbFrame / 2);
 
-				orbFrame++;
-				if (orbFrame == 10 * 2)
+				data.orbFrame++;
+				if (data.orbFrame == 10 * 2)
 				{
-					orbFrame = 0;
+					data.orbFrame = 0;
 				}
 
-				int mapLineFrame = (orbFrame / 2) % 3;
+				int mapLineFrame = (data.orbFrame / 2) % 3;
 				switch (mapLineFrame)
 				{
 				case 0:
@@ -444,15 +447,15 @@ void Gate::UpdateOrb()
 	}
 	else if (category == TIME_GLOBAL || category == TIME_ROOM)
 	{
-		if (gState == LOCKFOREVER || gState == REFORM)
+		if (data.gState == LOCKFOREVER || data.gState == REFORM)
 		{
 			SetRectColor(mapLine, mapLineColor);
 		}
 
-		if (!timeLocked)
+		if (!data.timeLocked)
 		{
-			orbState = ORB_GREEN;
-			orbFrame = 0;
+			data.orbState = ORB_GREEN;
+			data.orbFrame = 0;
 			ts_orb->SetQuadSubRect(orbQuad, 1);
 			SetRectColor(mapLine, mapLineColor);
 		}
@@ -480,15 +483,15 @@ void Gate::Update()
 
 	
 
-	if( gState != LOCKFOREVER && gState != OPEN )
-		++frame;
+	if(data.gState != LOCKFOREVER && data.gState != OPEN )
+		++data.frame;
 }
 
 void Gate::UpdateShaders()
 {
-	if (flowFrame > 60)
+	if (data.flowFrame > 60)
 	{
-		flowFrame = 0;
+		data.flowFrame = 0;
 	}
 
 	int tileWidth = ts->tileWidth;
@@ -518,48 +521,48 @@ void Gate::UpdateShaders()
 	Vector2f leftv1f(leftv1.x, leftv1.y);
 	Vector2f rightv1f(rightv1.x, rightv1.y);
 	Vector2f rightv0f(rightv0.x, rightv0.y);
-	int f = frame / 3;
+	int f = data.frame / 3;
 
-	float ff = flowFrame / 60.f;
+	float ff = data.flowFrame / 60.f;
 	gateShader.setUniform("quant", ff);
 	centerShader.setUniform("quant", ff);
 
 	float dLen = stateLength[DISSOLVE] - 1;
 
-	if (gState == DISSOLVE || gState == TOTALDISSOLVE )
+	if (data.gState == DISSOLVE || data.gState == TOTALDISSOLVE )
 	{
-		centerShader.setUniform("breakQuant", (frame / dLen));
+		centerShader.setUniform("breakQuant", (data.frame / dLen));
 	}
-	else if (gState == REVERSEDISSOLVE)
+	else if (data.gState == REVERSEDISSOLVE)
 	{
-		centerShader.setUniform("breakQuant", 1.f - (frame / dLen));
+		centerShader.setUniform("breakQuant", 1.f - (data.frame / dLen));
 	}
-	else if (gState == REFORM)
+	else if (data.gState == REFORM)
 	{
-		if (frame <= dLen)
+		if (data.frame <= dLen)
 		{
-			centerShader.setUniform("breakQuant", ((float)frame / (7 * 3)));
+			centerShader.setUniform("breakQuant", ((float)data.frame / (7 * 3)));
 		}
 	}
 
-	if (gState == SOFTEN || gState == TOTALDISSOLVE)
+	if (data.gState == SOFTEN || data.gState == TOTALDISSOLVE)
 	{
-		float gg = (frame / 60.f);
+		float gg = (data.frame / 60.f);
 		gateShader.setUniform("fadeQuant", gg);
 	}
-	else if( gState == REVERSEDISSOLVE)
+	else if(data.gState == REVERSEDISSOLVE)
 	{
-		float gg = 1.f - (frame / 60.f);
+		float gg = 1.f - (data.frame / 60.f);
 		gateShader.setUniform("fadeQuant", gg);
 	}
 
-	++flowFrame;
+	++data.flowFrame;
 }
 
 void Gate::TotalDissolve()
 {
-	gState = TOTALDISSOLVE;
-	frame = 0;
+	data.gState = TOTALDISSOLVE;
+	data.frame = 0;
 	SetLocked(false);
 	centerShader.setUniform("breakPosQuant", .5f);
 	ResetAttachedWires();
@@ -567,18 +570,18 @@ void Gate::TotalDissolve()
 
 void Gate::ReverseDissolve()
 {
-	gState = REVERSEDISSOLVE;
-	frame = 0;
+	data.gState = REVERSEDISSOLVE;
+	data.frame = 0;
 	SetLocked(true);
 	centerShader.setUniform("breakPosQuant", .5f);
 }
 
 void Gate::Soften()
 {
-	assert(gState == HARD);
+	assert(data.gState == HARD);
 
-	gState = SOFTEN;
-	frame = 0;
+	data.gState = SOFTEN;
+	data.frame = 0;
 	ResetAttachedWires();
 }
 
@@ -586,13 +589,22 @@ void Gate::ResetAttachedWires()
 {
 	Wire *rw = sess->GetPlayer(0)->rightWire;
 	Wire *lw = sess->GetPlayer(0)->leftWire;
-	if (rw != NULL && rw->anchor.e == edgeA || rw->anchor.e == edgeB)
+	if (rw != NULL )
 	{
-		rw->Reset();
+		Edge *e = sess->GetEdge(&rw->data.anchor.edgeInfo);
+		if (e == edgeA || e == edgeB)
+		{
+			rw->Reset();
+		}
 	}
-	if (lw != NULL && lw->anchor.e == edgeA || lw->anchor.e == edgeB)
+
+	if (lw != NULL )
 	{
-		lw->Reset();
+		Edge *e = sess->GetEdge(&lw->data.anchor.edgeInfo);
+		if (e == edgeA || e == edgeB)
+		{
+			lw->Reset();
+		}
 	}
 }
 
@@ -606,7 +618,7 @@ bool Gate::CanSoften()
 	Zone *currZone = sess->currentZone;
 	Actor * player = sess->GetPlayer(0);
 
-	bool correctStateAndZones = gState == HARD && (currZone == NULL
+	bool correctStateAndZones = data.gState == HARD && (currZone == NULL
 		|| (currZone == zoneA || currZone == zoneB));
 
 	bool okayToSoften = false;
@@ -714,7 +726,7 @@ void Gate::CheckTimeLock()
 		return;
 	}
 
-	if (gState == SOFT && !secretTimeGateIsOpened)
+	if (data.gState == SOFT && !data.secretTimeGateIsOpened)
 	{
 		int totalTime = -1;
 		if (category == TIME_GLOBAL)
@@ -723,12 +735,12 @@ void Gate::CheckTimeLock()
 		}
 		else
 		{
-			totalTime = sess->currentZone->framesSinceActivation;
+			totalTime = sess->currentZone->GetFramesSinceActivation();
 		}
 
 		if (totalTime >= seconds * 60)
 		{
-			timeLocked = true;
+			data.timeLocked = true;
 			Reform();
 			numberText.setString(to_string(seconds));
 			auto &bounds = numberText.getLocalBounds();
@@ -739,7 +751,7 @@ void Gate::CheckTimeLock()
 		{
 			if (category == TIME_GLOBAL || category == TIME_ROOM)
 			{
-				if (gState == SOFT )
+				if (data.gState == SOFT )
 				{
 					numberText.setString(to_string(seconds - totalTime / 60));
 					auto &bounds = numberText.getLocalBounds();
@@ -778,25 +790,25 @@ void Gate::CheckTimeLock()
 
 void Gate::UpdateSprite()
 {
-	if (gState == REFORM)
+	if (data.gState == REFORM)
 	{
 		for (int i = 0; i < numGateQuads; ++i)
 		{
-			ts_lockedAndHardened->SetQuadSubRect(gateQuads + i * 4, frame / 3);
+			ts_lockedAndHardened->SetQuadSubRect(gateQuads + i * 4, data.frame / 3);
 		}
 	}
-	else if (gState == SOFT)
+	else if (data.gState == SOFT)
 	{
 		for (int i = 0; i < numGateQuads; ++i)
 		{
-			ts_wiggle->SetQuadSubRect(gateQuads + i * 4, frame / 3);
+			ts_wiggle->SetQuadSubRect(gateQuads + i * 4, data.frame / 3);
 		}
 	}
-	else if (gState == GLITCH)
+	else if (data.gState == GLITCH)
 	{
 		for (int i = 0; i < numGateQuads; ++i)
 		{
-			ts_glitch->SetQuadSubRect(gateQuads + i * 4, frame / 3);
+			ts_glitch->SetQuadSubRect(gateQuads + i * 4, data.frame / 3);
 		}
 	}
 }
@@ -804,7 +816,7 @@ void Gate::UpdateSprite()
 bool Gate::IsTwoWay()
 {
 	return category == SECRET || category == SHARD
-		|| ( (category == TIME_GLOBAL || category == TIME_ROOM) && timeGateIsSecret && !timeLocked);
+		|| ( (category == TIME_GLOBAL || category == TIME_ROOM) && timeGateIsSecret && !data.timeLocked);
 }
 
 bool Gate::IsAlwaysUnlocked()
@@ -819,12 +831,12 @@ bool Gate::IsReformingType()
 
 bool Gate::IsInUnlockableState()
 {
-	return gState == SOFTEN || gState == SOFT || gState == DISSOLVE || gState == TOTALDISSOLVE;
+	return data.gState == SOFTEN || data.gState == SOFT || data.gState == DISSOLVE || data.gState == TOTALDISSOLVE;
 }
 
 bool Gate::CanUnlock()
 {
-	if (gState == Gate::OPEN)
+	if (data.gState == Gate::OPEN)
 	{
 		return false;
 	}
@@ -910,11 +922,11 @@ void Gate::Draw(sf::RenderTarget *target)
 
 	bool isTimeGate = category == TIME_GLOBAL || category == TIME_ROOM;
 
-	if( gState != OPEN )
+	if(data.gState != OPEN )
 	{
-		if (gState == REFORM || gState == LOCKFOREVER)
+		if (data.gState == REFORM || data.gState == LOCKFOREVER)
 		{
-			if (gState == REFORM)
+			if (data.gState == REFORM)
 			{
 				if (category == SECRET || timeGateIsSecret)
 				{
@@ -929,22 +941,22 @@ void Gate::Draw(sf::RenderTarget *target)
 			target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_lockedAndHardened->texture);
 
 			//&& !((gState == REFORM || gState == LOCKFOREVER) && !timeLocked))
-			if (isTimeGate && timeLocked)
+			if (isTimeGate && data.timeLocked)
 			{
 				target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
-				if (!secretTimeGateIsOpened)
+				if (!data.secretTimeGateIsOpened)
 				{
 					target->draw(numberText);
 				}
 			}
 		}
-		else if (gState == GLITCH)
+		else if (data.gState == GLITCH)
 		{
 			target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_glitch->texture);
 		}
 		else
 		{
-			if (gState == SOFT)
+			if (data.gState == SOFT)
 			{
 				target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_wiggle->texture);
 			}
@@ -958,19 +970,19 @@ void Gate::Draw(sf::RenderTarget *target)
 				
 				
 
-				if (gState != SOFT)
+				if (data.gState != SOFT)
 				{
 					target->draw(hardLine, 4, sf::Quads, &gateShader);
 				}
 
-				if (gState != TOTALDISSOLVE)
+				if (data.gState != TOTALDISSOLVE)
 				{
 					if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP
-						|| category == ENEMY || (isTimeGate && !(timeGateIsSecret && secretTimeGateIsOpened)))
+						|| category == ENEMY || (isTimeGate && !(timeGateIsSecret && data.secretTimeGateIsOpened)))
 					{
 						target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
 
-						if (orbState != ORB_GO)
+						if (data.orbState != ORB_GO)
 						{
 							target->draw(numberText);
 						}
@@ -997,7 +1009,7 @@ void Gate::Draw(sf::RenderTarget *target)
 
 void Gate::MapDraw(sf::RenderTarget *target)
 {
-	if( locked && visible && category != SECRET )
+	if(data.locked && visible && category != SECRET )
 		target->draw(mapLine, 4, sf::Quads);
 }
 
@@ -1007,7 +1019,7 @@ void Gate::OpenSecretTimeGate()
 	{
 		if (timeGateIsSecret)
 		{
-			secretTimeGateIsOpened = true;
+			data.secretTimeGateIsOpened = true;
 		}
 	}
 }
@@ -1125,7 +1137,7 @@ void Gate::Init()
 
 	SetMapLineColor();
 
-	frame = 0;
+	data.frame = 0;
 
 
 	
@@ -1344,7 +1356,7 @@ void Gate::SetLocked( bool on )
 {
 	if( on )
 	{
-		locked = true;
+		data.locked = true;
 
 		edgeA->edgeType = Edge::CLOSED_GATE;
 		edgeB->edgeType = Edge::CLOSED_GATE;
@@ -1363,7 +1375,7 @@ void Gate::SetLocked( bool on )
 	}
 	else
 	{
-		locked = false;
+		data.locked = false;
 
 		edgeA->edgeType = Edge::OPEN_GATE;
 		edgeB->edgeType = Edge::OPEN_GATE;
@@ -1385,3 +1397,58 @@ bool Gate::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox(aabb, r);
 }
+
+bool Gate::IsSoft()
+{
+	return data.gState == SOFTEN || data.gState == SOFT;
+}
+
+bool Gate::IsLocked()
+{
+	return data.locked;
+}
+
+bool Gate::IsLockedForever()
+{
+	return data.gState == REFORM || data.gState == LOCKFOREVER;
+}
+
+void Gate::Open()
+{
+	data.gState = Gate::OPEN;
+	data.frame = 0;
+	sess->UnlockGate(this);
+}
+
+bool Gate::IsReformable()
+{
+	return data.gState == Gate::HARD || data.gState == Gate::SOFT || data.gState == Gate::SOFTEN;
+}
+
+bool Gate::CanBeHitByWire()
+{
+	return category == Gate::BLACK || IsLockedForever() || data.gState == HARD;
+}
+
+
+bool Gate::IsSecret()
+{
+	return category == SECRET;
+}
+
+int Gate::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Gate::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+}
+
+void Gate::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetLocked(data.locked);
+}
+
