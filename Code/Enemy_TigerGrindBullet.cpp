@@ -382,7 +382,7 @@ void TigerGrindBullet::Throw( int type, V2d &pos, V2d &dir)
 
 	surfaceMover->Set(currPosInfo);
 
-	surfaceMover->velocity = dir * flySpeed;
+	surfaceMover->SetVelocity(dir * flySpeed);
 }
 
 void TigerGrindBullet::ThrowAt(int type, V2d &pos, PoiInfo *pi)
@@ -404,8 +404,8 @@ void TigerGrindBullet::ThrowAt(int type, V2d &pos, PoiInfo *pi)
 	V2d diff = pi->edge->GetPosition(pi->edgeQuantity) - GetPosition();
 	V2d dir = normalize( diff );
 
-	surfaceMover->collisionOn = false;
-	surfaceMover->velocity = dir * flySpeed;
+	surfaceMover->SetCollisionOn(false);
+	surfaceMover->SetVelocity(dir * flySpeed);
 
 	framesToArriveToDestPoi = ceil(length(diff) / flySpeed);
 }
@@ -505,7 +505,7 @@ void TigerGrindBullet::ProcessState()
 
 	if (action == GRIND && frame == 1 && currBurnFrame < maxBurnFrames)
 	{
-		firePool.Create( gbType, GetPosition(), surfaceMover->ground, surfaceMover->edgeQuantity);
+		firePool.Create( gbType, GetPosition(), surfaceMover->ground, surfaceMover->GetEdgeQuantity());
 	}
 	else if (action == GRIND && currBurnFrame == maxBurnFrames)
 	{

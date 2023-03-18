@@ -94,7 +94,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	{
 		gravity = -gravity;
 		jumpStrength.y = -jumpStrength.y;
-		groundMover->reverse = true;
+		groundMover->SetReverse(true);
 	}
 
 	sprite.setTexture( *ts_test->texture );
@@ -300,18 +300,18 @@ void PoisonFrog::ProcessState()
 					V2d diff = playerPos - GetPosition();
 					if (reverse)
 					{
-						if (groundMover->velocity.y < -3 && length(diff) < 300 && diff.y > 0)
+						if (groundMover->GetVel().y < -3 && length(diff) < 300 && diff.y > 0)
 						{
 							data.hasDoubleJump = false;
-							groundMover->velocity.y = -jumpStrength.y;
+							groundMover->SetVelY(-jumpStrength.y);
 						}
 					}
 					else
 					{
-						if (groundMover->velocity.y > 3 && length(diff) < 300 && diff.y < 0)
+						if (groundMover->GetVel().y > 3 && length(diff) < 300 && diff.y < 0)
 						{
 							data.hasDoubleJump = false;
-							groundMover->velocity.y = -jumpStrength.y;
+							groundMover->SetVelY(-jumpStrength.y);
 						}
 					}
 					
@@ -366,15 +366,15 @@ void PoisonFrog::UpdateEnemyPhysics()
 			{
 				grav = 0;
 			}
-			groundMover->velocity.y += grav / (numPhysSteps * slowMultiple);
+			groundMover->SetVelY(groundMover->GetVel().y + grav / (numPhysSteps * slowMultiple);
 
-			if (groundMover->velocity.y >= maxFallSpeed)
+			if (groundMover->GetVel().y >= maxFallSpeed)
 			{
-				groundMover->velocity.y = maxFallSpeed;
+				groundMover->SetVelY(maxFallSpeed);
 			}
-			else if (groundMover->velocity.y <= -maxFallSpeed)
+			else if (groundMover->GetVel().y <= -maxFallSpeed)
 			{
-				groundMover->velocity.y = -maxFallSpeed;
+				groundMover->SetVelY(-maxFallSpeed);
 			}
 		}
 
@@ -405,7 +405,7 @@ void PoisonFrog::UpdateSprite()
 	case JUMP:
 	{
 		int window = 6;
-		double yVel = groundMover->velocity.y;
+		double yVel = groundMover->GetVel().y;
 		if (reverse)
 		{
 			yVel = -yVel;

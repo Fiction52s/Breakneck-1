@@ -131,7 +131,7 @@ void Spider::SetLevel(int lev)
 void Spider::SetClosestLeft()
 {
 	double movementPossible = 1000;
-	double testq = surfaceMover->edgeQuantity;
+	double testq = surfaceMover->GetEdgeQuantity();
 	V2d testPos;
 	Edge *testEdge = surfaceMover->ground;
 
@@ -160,7 +160,7 @@ void Spider::SetClosestLeft()
 void Spider::SetClosestRight()
 {
 	double movementPossible = 1000;
-	double testq = surfaceMover->edgeQuantity;
+	double testq = surfaceMover->GetEdgeQuantity();
 	V2d testPos;
 	Edge *testEdge = surfaceMover->ground;
 
@@ -250,7 +250,7 @@ void Spider::UpdateHitboxes()
 	{
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
-		if(surfaceMover->groundSpeed > 0 )
+		if(surfaceMover->GetGroundSpeed() > 0 )
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -298,14 +298,14 @@ void Spider::ProcessState()
 
 
 	closestEdge = surfaceMover->ground;
-	closestQuant = surfaceMover->edgeQuantity;
-	closestPos = surfaceMover->physBody.globalPosition;
+	closestQuant = surfaceMover->GetEdgeQuantity();
+	closestPos = surfaceMover->GetPosition();
 
 	V2d playerPos = sess->GetPlayerPos(0);
 
 	SetClosestLeft();
 	SetClosestRight();
-	CheckClosest(surfaceMover->ground, playerPos, true, surfaceMover->edgeQuantity );
+	CheckClosest(surfaceMover->ground, playerPos, true, surfaceMover->GetEdgeQuantity() );
 
 	double len = length(playerPos - GetPosition() );
 	bool outsideRange = len >= 500 && len < 1500;//1200; //bounds
@@ -585,12 +585,12 @@ void Spider::HitTerrain( double &q )
 void Spider::HitOther()
 {
 	V2d v;
-	if( facingRight && surfaceMover->groundSpeed > 0 )
+	if( facingRight && surfaceMover->GetGroundSpeed() > 0 )
 	{
 		v = V2d( 10, -10 );
 		surfaceMover->Jump( v );
 	}
-	else if( !facingRight && surfaceMover->groundSpeed < 0 )
+	else if( !facingRight && surfaceMover->GetGroundSpeed() < 0 )
 	{
 		v = V2d( -10, -10 );
 		surfaceMover->Jump( v );
@@ -602,8 +602,8 @@ void Spider::HitOther()
 
 void Spider::ReachCliff()
 {
-	if( facingRight && surfaceMover->groundSpeed < 0
-		|| !facingRight && surfaceMover->groundSpeed > 0 )
+	if( facingRight && surfaceMover->GetGroundSpeed() < 0
+		|| !facingRight && surfaceMover->GetGroundSpeed() > 0 )
 	{
 		surfaceMover->SetSpeed( 0 );
 		return;

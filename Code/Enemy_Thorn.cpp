@@ -131,7 +131,7 @@ Thorn::Thorn(/*sf::Vertex *myQuad, */ThornPool *pool)
 	startWidth = 50;
 
 	CreateSurfaceMover(startPosInfo, 16, this);
-	surfaceMover->collisionOn = false;
+	surfaceMover->SetCollisionOn(false);
 
 	//highResPhysics = true;
 
@@ -290,7 +290,7 @@ void Thorn::Throw(int p_thornType, V2d &pos, V2d &dir)
 		surfaceMover->collisionOn = false;
 	}*/
 
-	surfaceMover->velocity = dir * min(10.0, maxSpeed);//maxSpeed;
+	surfaceMover->SetVelocity(dir * min(10.0, maxSpeed));//maxSpeed;
 	
 
 	velocity = dir * maxSpeed;//5.0;
@@ -396,10 +396,10 @@ void Thorn::ProcessState()
 
 		if (frame > 0)
 		{
-			surfaceMover->velocity += PlayerDir() * accel;
+			surfaceMover->SetVelocity( surfaceMover->GetVel() + PlayerDir() * accel);
 			//if (length(surfaceMover->velocity) > maxSpeed)
 			{
-				surfaceMover->velocity = normalize(surfaceMover->velocity) * maxSpeed;
+				surfaceMover->SetVelocity(normalize(surfaceMover->GetVel()) * maxSpeed);
 			}
 		}
 	}

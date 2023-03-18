@@ -61,7 +61,7 @@ StagBeetle::StagBeetle( ActorParams *ap )
 
 	if (reverse)
 	{
-		groundMover->reverse = true;
+		groundMover->SetReverse(true);
 	}
 
 	ts_death = GetSizedTileset("Enemies/W2/stag_death_192x176.png");
@@ -253,16 +253,16 @@ void StagBeetle::ProcessState()
 
 		if(facingRight) //clockwise
 		{
-			groundMover->SetSpeed(groundMover->groundSpeed + .3 );
+			groundMover->SetSpeed(groundMover->GetGroundSpeed() + .3 );
 		}
 		else
 		{
-			groundMover->SetSpeed(groundMover->groundSpeed - .3 );
+			groundMover->SetSpeed(groundMover->GetGroundSpeed() - .3 );
 		}
 
-		if(groundMover->groundSpeed > maxGroundSpeed )
+		if(groundMover->GetGroundSpeed() > maxGroundSpeed )
 			groundMover->SetSpeed( maxGroundSpeed );
-		else if(groundMover->groundSpeed < -maxGroundSpeed )
+		else if(groundMover->GetGroundSpeed() < -maxGroundSpeed )
 			groundMover->SetSpeed( -maxGroundSpeed );
 		break;
 	case JUMP:
@@ -287,13 +287,13 @@ void StagBeetle::UpdateEnemyPhysics()
 
 		if (groundMover->ground == NULL)
 		{
-			if (groundMover->velocity.y > maxFallSpeed)
+			if (groundMover->GetVel().y > maxFallSpeed)
 			{
-				groundMover->velocity.y = maxFallSpeed;
+				groundMover->SetVelY(maxFallSpeed);
 			}
-			else if (groundMover->velocity.y < -maxFallSpeed)
+			else if (groundMover->GetVel().y < -maxFallSpeed)
 			{
-				groundMover->velocity.y = -maxFallSpeed;
+				groundMover->SetVelY(-maxFallSpeed);
 			}
 		}
 
@@ -372,8 +372,8 @@ void StagBeetle::UpdateSprite()
 			else
 			{
 				
-				if( (!reverse && groundMover->velocity.y < 0) || 
-					(reverse && groundMover->velocity.y > 0 ))
+				if( (!reverse && groundMover->GetVel().y < 0) || 
+					(reverse && groundMover->GetVel().y > 0 ))
 				{
 					tFrame = 1;
 				}
@@ -440,20 +440,20 @@ void StagBeetle::HitOther()
 	
 	if( action == RUN )
 	{
-	if( (facingRight && groundMover->groundSpeed < 0 )
-		|| ( !facingRight && groundMover->groundSpeed > 0 ) )
+	if( (facingRight && groundMover->GetGroundSpeed() < 0 )
+		|| ( !facingRight && groundMover->GetGroundSpeed() > 0 ) )
 	{
 		//cout << "here" << endl;
 		groundMover->SetSpeed( 0 );
 	}
-	else if( facingRight && groundMover->groundSpeed > 0 )
+	else if( facingRight && groundMover->GetGroundSpeed() > 0 )
 	{
 		V2d v = V2d( maxGroundSpeed, -10 );
 		groundMover->Jump( v );
 		action = JUMP;
 		frame = 0;
 	}
-	else if( !facingRight && groundMover->groundSpeed < 0 )
+	else if( !facingRight && groundMover->GetGroundSpeed() < 0 )
 	{
 		V2d v = V2d( -maxGroundSpeed, -10 );
 		groundMover->Jump( v );
@@ -465,8 +465,8 @@ void StagBeetle::HitOther()
 
 void StagBeetle::ReachCliff()
 {
-	if( (facingRight && groundMover->groundSpeed < 0 )
-		|| (!facingRight && groundMover->groundSpeed > 0) )
+	if( (facingRight && groundMover->GetGroundSpeed() < 0 )
+		|| (!facingRight && groundMover->GetGroundSpeed() > 0) )
 	{
 		groundMover->SetSpeed( 0 );
 		return;

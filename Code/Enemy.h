@@ -61,9 +61,7 @@ struct StoredEnemyData
 	HittableObject hittableObjectData;
 
 	//Enemy
-	//posinfo
 	PositionInfoData posInfoData;
-	//PositionInfo currPosInfo;
 
 	bool facingRight;
 	int action;

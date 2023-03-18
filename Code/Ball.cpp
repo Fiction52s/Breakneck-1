@@ -137,7 +137,7 @@ void Ball::ResetEnemy()
 	sprite.setRotation(0);
 	data.currHits = 0;
 	comboObj->Reset();
-	surfaceMover->velocity = V2d(0, 0);
+	surfaceMover->SetVelocity(V2d(0, 0));
 	DefaultHurtboxesOn();
 	//DefaultHitboxesOn();
 	action = S_FLOAT;
@@ -161,12 +161,12 @@ void Ball::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	surfaceMover->velocity = vel;
+	surfaceMover->SetVelocity(vel);
 }
 
 void Ball::Throw(V2d vel)
 {
-	surfaceMover->velocity = vel;
+	surfaceMover->SetVelocity(vel);
 }
 
 void Ball::Return()
@@ -203,7 +203,7 @@ void Ball::PopThrow()
 							//cout << "dir: " << dir.x << "," << dir.y << endl;
 	if (dir.x == 0 && dir.y == 0)
 	{
-		dir = -normalize(surfaceMover->velocity);
+		dir = -normalize(surfaceMover->GetVel());
 		assert(dir.x != 0 || dir.y != 0);
 		action = S_BOUNCE;
 		frame = 0;
@@ -372,7 +372,7 @@ void Ball::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(surfaceMover->velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(surfaceMover->GetVel());
 }
 
 void Ball::FrameIncrement()
@@ -456,8 +456,8 @@ void Ball::EnemyDraw(sf::RenderTarget *target)
 
 V2d Ball::GetBounceVel(V2d &normal)
 {
-	double d = dot(surfaceMover->velocity, normal);
-	V2d ref = surfaceMover->velocity - (2.0 * d * normal);
+	double d = dot(surfaceMover->GetVel(), normal);
+	V2d ref = surfaceMover->GetVel() - (2.0 * d * normal);
 	return ref;
 }
 
@@ -482,10 +482,10 @@ void Ball::HitTerrainAerial(Edge * edge, double quant)
 		{
 			en = normalize(GetPosition() - pos);
 		}
-		double d = dot(surfaceMover->velocity, en);
+		double d = dot(surfaceMover->GetVel(), en);
 		double damp = 1.0;
 		V2d ref = GetBounceVel(en);
-		surfaceMover->velocity = ref;
+		surfaceMover->SetVelocity(ref);
 		surfaceMover->ground = NULL;
 	}
 

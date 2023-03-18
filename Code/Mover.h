@@ -85,6 +85,7 @@ struct SurfaceMover : QuadTreeCollider
 	double GetAngleRadians();
 	double GetAngleDegrees();
 	V2d GetGroundPoint();
+	const V2d &GetPosition();
 	sf::Vector2f GetGroundPointF();
 	void DebugDraw(sf::RenderTarget *target);
 	virtual bool ResolvePhysics( 
@@ -102,6 +103,12 @@ struct SurfaceMover : QuadTreeCollider
 	void SetHandler(SurfaceMoverHandler *h);
 	void PopulateFromData(const SurfaceMoverData &sfm);
 	void PopulateData(SurfaceMoverData &sfm);
+	const V2d &GetVel();
+	void SetVelX(double x);
+	void SetVelY (double y);
+	double GetGroundSpeed();
+	double GetEdgeQuantity();
+	void SetCollisionOn(bool on);
 
 	virtual int GetNumStoredBytes();
 	virtual void StoreBytes(unsigned char *bytes);
@@ -161,6 +168,7 @@ struct GroundMover : SurfaceMover
 	bool StartRoll();
 	void FinishedRoll();
 	void HitTerrainAerial();
+	void SetReverse(bool r);
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

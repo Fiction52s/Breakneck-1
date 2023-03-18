@@ -97,6 +97,11 @@ V2d SurfaceMover::GetGroundPoint()
 	}
 }
 
+const V2d &SurfaceMover::GetPosition()
+{
+	return surfaceMoverData.physBody.globalPosition;
+}
+
 Vector2f SurfaceMover::GetGroundPointF()
 {
 	return Vector2f(GetGroundPoint());
@@ -667,7 +672,7 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 		//cout << "changed" << endl;
 		ground = ground->edge1;
 		q = 0;
-		roll = false;
+		surfaceMoverData.roll = false;
 		FinishedRoll();
 		if( surfaceHandler != NULL )
 				surfaceHandler->TransferEdge( ground );
@@ -745,7 +750,7 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	{
 		ground = ground->edge0;
 		q = length( ground->v1 - ground->v0 );
-		roll = false;
+		surfaceMoverData.roll = false;
 
 		FinishedRoll();
 		if( surfaceHandler != NULL )
@@ -795,7 +800,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 
 			double extra = 0;
 			bool leaveGround = false;
-			double q = edgeQuantity;
+			double q = surfaceMoverData.edgeQuantity;
 
 			V2d gNormal = ground->Normal();
 
@@ -809,22 +814,22 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 			else if( approxEquals( q, groundLength ) )
 				q = groundLength;
 
-			if( movement > 0 && roll && q == 0 )
+			if( movement > 0 && surfaceMoverData.roll && q == 0 )
 			{
 				ground = ground->edge0;
 				groundLength = length( ground->v1 - ground->v0 );
-				edgeQuantity = groundLength;
-				q = edgeQuantity;
+				surfaceMoverData.edgeQuantity = groundLength;
+				q = surfaceMoverData.edgeQuantity;
 				gNormal = ground->Normal();
 				//cout << "Stuff" << endl;
 			}
-			else if( movement < 0 && roll && q == groundLength )
+			else if( movement < 0 && surfaceMoverData.roll && q == groundLength )
 			{
 				//cout << "A" << endl;
 				ground = ground->edge1;
 				groundLength = length( ground->v1 - ground->v0 );
-				edgeQuantity = 0;
-				q = edgeQuantity;
+				surfaceMoverData.edgeQuantity = 0;
+				q = surfaceMoverData.edgeQuantity;
 				gNormal = ground->Normal();
 			}
 			
@@ -857,7 +862,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 				}
 				else
 				{
-					if (!roll)
+					if (!surfaceMoverData.roll)
 					{
 						bool br = StartRoll();
 						if (br)
@@ -869,7 +874,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 					if( br )
 					{
 						//cout << "blah" << endl;
-						edgeQuantity = q;
+						surfaceMoverData.edgeQuantity = q;
 						break;
 					}
 					else
@@ -893,7 +898,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 				}
 				else
 				{
-					if (!roll)
+					if (!surfaceMoverData.roll)
 					{
 						//cout << "what start roll" << endl;
 						bool br = StartRoll();
@@ -904,7 +909,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 					bool br = RollCounterClockwise(q, m);
 					if (br)
 					{
-						edgeQuantity = q;
+						surfaceMoverData.edgeQuantity = q;
 						break;
 					}
 					
@@ -915,7 +920,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 				bool br = MoveAlongEdge( movement, groundLength, q, m );
 				if( br )
 				{
-					edgeQuantity = q;
+					surfaceMoverData.edgeQuantity = q;
 					break;
 				}
 			}
@@ -925,7 +930,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 			else
 				movement = steal;
 
-			edgeQuantity = q;
+			surfaceMoverData.edgeQuantity = q;
 
 			if( abs( movement ) < .0001 )
 			{
@@ -1080,6 +1085,36 @@ void SurfaceMover::PopulateData(SurfaceMoverData &sfm)
 {
 	surfaceMoverData.groundInfo.SetFromEdge(ground);
 	sfm = surfaceMoverData;
+}
+
+const V2d &SurfaceMover::GetVel()
+{
+	return surfaceMoverData.velocity;
+}
+
+void SurfaceMover::SetVelX(double x)
+{
+	surfaceMoverData.velocity.x = x;
+}
+
+void SurfaceMover::SetVelY(double y)
+{
+	surfaceMoverData.velocity.y = y;
+}
+
+double SurfaceMover::GetGroundSpeed()
+{
+	return surfaceMoverData.groundSpeed;
+}
+
+double SurfaceMover::GetEdgeQuantity()
+{
+	return surfaceMoverData.edgeQuantity;
+}
+
+void SurfaceMover::SetCollisionOn(bool on)
+{
+	surfaceMoverData.collisionOn = on;
 }
 
 int SurfaceMover::GetNumStoredBytes()
@@ -1269,6 +1304,11 @@ void GroundMover::HitTerrainAerial()
 		//if( handler != NULL )
 		//	handler->HitOther();
 	}
+}
+
+void GroundMover::SetReverse(bool r)
+{
+	groundMoverData.reverse = r;
 }
 
 bool GroundMover::StartRoll()

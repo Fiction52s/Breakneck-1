@@ -7671,7 +7671,7 @@ void Actor::RailGrindMovement()
 {
 	V2d along = normalize(grindEdge->v1 - grindEdge->v0);
 
-	Rail *rail = (Rail*)grindEdge->info;
+	//Rail *rail = (Rail*)grindEdge->info;
 
 	if (true )//rail->accelerate)
 	{

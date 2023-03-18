@@ -131,7 +131,7 @@ void Widow::UpdateHitboxes()
 	{
 		V2d knockbackDir(1, -1);
 		knockbackDir = normalize(knockbackDir);
-		if (surfaceMover->groundSpeed > 0)
+		if (surfaceMover->GetGroundSpeed() > 0)
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -181,7 +181,7 @@ void Widow::CheckDist(double dist)
 	//double factor = slowMultiple * (double)numPhysSteps;
 	double movement = dist;
 
-	double quant = surfaceMover->edgeQuantity;
+	double quant = surfaceMover->GetEdgeQuantity();
 
 	while (!approxEquals(movement, 0))
 	{
@@ -371,12 +371,12 @@ void Widow::HitTerrain(double &q)
 void Widow::HitOther()
 {
 	V2d v;
-	if (facingRight && surfaceMover->groundSpeed > 0)
+	if (facingRight && surfaceMover->GetGroundSpeed() > 0)
 	{
 		v = V2d(10, -10);
 		surfaceMover->Jump(v);
 	}
-	else if (!facingRight && surfaceMover->groundSpeed < 0)
+	else if (!facingRight && surfaceMover->GetGroundSpeed() < 0)
 	{
 		v = V2d(-10, -10);
 		surfaceMover->Jump(v);
@@ -388,8 +388,8 @@ void Widow::HitOther()
 
 void Widow::ReachCliff()
 {
-	if (facingRight && surfaceMover->groundSpeed < 0
-		|| !facingRight && surfaceMover->groundSpeed > 0)
+	if (facingRight && surfaceMover->GetGroundSpeed() < 0
+		|| !facingRight && surfaceMover->GetGroundSpeed() > 0)
 	{
 		surfaceMover->SetSpeed(0);
 		return;
