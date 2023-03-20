@@ -7855,6 +7855,11 @@ void Actor::ReverseSteepSlideJump()
 
 void Actor::HandleWaitingScoreDisplay()
 {
+	if (sess->IsParallelSession())
+	{
+		return;
+	}
+
 	if (sess->scoreDisplay != NULL && sess->scoreDisplay->waiting)
 	{
 		bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();

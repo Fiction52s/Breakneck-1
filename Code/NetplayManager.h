@@ -53,6 +53,8 @@ struct PracticePlayer
 	HSteamNetConnection connection;
 	std::string name;
 
+	int indexInLobby;
+
 	int skinIndex;
 	BitField upgradeField;
 
@@ -168,6 +170,8 @@ struct NetplayManager
 
 	ControllerDualStateQueue *myControllerInput;
 	ControlProfile *myCurrProfile;
+
+	int myIndexInPracticeLobby;
 
 	Action action;
 	sf::Vertex quad[4];
@@ -356,6 +360,7 @@ struct NetplayManager
 	void QueryPracticeMatches();
 
 	void PracticeConnect();
+	void PracticePlayersResetAction();
 };
 
 #endif

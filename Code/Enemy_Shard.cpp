@@ -60,7 +60,6 @@ int Shard::GetNumShardsTotal()
 
 void Shard::Setup()
 {
-	caught = false;
 	geoGroup.SetBase(GetPositionF());
 }
 
@@ -181,7 +180,7 @@ void Shard::ResetEnemy()
 	SetCurrPosInfo(startPosInfo);
 
 	geoGroup.Reset();
-	totalFrame = 0;
+	data.totalFrame = 0;
 
 	if (sparklePool != NULL)
 	{
@@ -228,7 +227,7 @@ Tileset *Shard::GetShardTileset(int w, TilesetManager *ttm)
 
 void Shard::FrameIncrement()
 {
-	++totalFrame;
+	++data.totalFrame;
 }
 
 //int Shard::GetShardType(const std::string &str)
@@ -345,7 +344,7 @@ void Shard::ProcessState()
 	{
 		int floatFrames = 240;
 		double floatAmount = 4.0;
-		int t = totalFrame % floatFrames;
+		int t = data.totalFrame % floatFrames;
 		float tf = t;
 		tf /= (floatFrames - 1);
 		double f = cos(2 * PI * tf);
@@ -373,7 +372,7 @@ void Shard::ProcessState()
 
 		Vector2f sparkleCenter(GetPositionF());
 
-		if (totalFrame % 60 == 0)
+		if (data.totalFrame % 60 == 0)
 		{
 			Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
 			EffectInstance ei;
@@ -442,6 +441,25 @@ void Shard::EnemyDraw( sf::RenderTarget *target )
 
 void Shard::DrawMinimap( sf::RenderTarget *target )
 {
+}
+
+int Shard::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Shard::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Shard::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }
 
 ShardPopup::ShardPopup()

@@ -303,6 +303,30 @@ Launcher::~Launcher()
 		delete[] bulletVA;
 }
 
+int Launcher::GetBulletID(BasicBullet *b)
+{
+	if (b == NULL)
+	{
+		return -1;
+	}	
+	else
+	{
+		return b->index;
+	}
+}
+
+BasicBullet *Launcher::GetBulletFromID(int id)
+{
+	if (id < 0)
+	{
+		return NULL;
+	}
+	else
+	{
+		return allBullets[id];
+	}
+}
+
 int Launcher::GetNumStoredBytes()
 {
 	return sizeof(MyData) + bytesStoredPerBullet * totalBullets;
@@ -312,8 +336,9 @@ void Launcher::StoreBytes(unsigned char *bytes)
 {
 	MyData d;
 	memset(&d, 0, sizeof(MyData));
-	d.inactiveBullets = inactiveBullets;
-	d.activeBullets = activeBullets;
+
+	d.inactiveBulletsID = GetBulletID(inactiveBullets);
+	d.activeBulletsID = GetBulletID(activeBullets);
 
 	memcpy(bytes, &d, sizeof(MyData));
 
@@ -334,8 +359,8 @@ void Launcher::SetFromBytes(unsigned char *bytes)
 	MyData d;
 	memcpy(&d, bytes, sizeof(MyData));
 
-	inactiveBullets = d.inactiveBullets;
-	activeBullets = d.activeBullets;
+	inactiveBullets = GetBulletFromID(d.inactiveBulletsID);
+	activeBullets = GetBulletFromID(d.activeBulletsID);
 
 	bytes += sizeof(MyData);
 	for (int i = 0; i < totalBullets; ++i)
@@ -752,8 +777,8 @@ void BasicBullet::SetIndex(int ind)
 
 void BasicBullet::StoreBasicBulletData(BulletData &bd)
 {
-	bd.prev = prev;
-	bd.next = next;
+	bd.prevID = launcher->GetBulletID(prev);
+	bd.nextID = launcher->GetBulletID(next);
 	bd.gravity = gravity;
 	bd.position = position;
 	bd.velocity = velocity;
@@ -767,8 +792,8 @@ void BasicBullet::StoreBasicBulletData(BulletData &bd)
 }
 void BasicBullet::SetBasicBulletData(BulletData &bd)
 {
-	prev = bd.prev;
-	next = bd.next;
+	prev = launcher->GetBulletFromID(bd.prevID);
+	next = launcher->GetBulletFromID(bd.nextID);
 	gravity = bd.gravity;
 	position = bd.position;
 	velocity = bd.velocity;
@@ -1337,7 +1362,7 @@ GrindBullet::GrindBullet(int indexVA, Launcher *launcher)
 
 bool GrindBullet::CanInteractWithTerrain()
 {
-	return launcher->interactWithTerrain && data.grindEdge == NULL;
+	return launcher->interactWithTerrain && grindEdge == NULL;
 }
 
 void GrindBullet::UpdatePrePhysics()
@@ -1349,8 +1374,8 @@ bool GrindBullet::HitTerrain()
 {
 	launcher->handler->BulletHitTerrain(this,
 		minContact.edge, minContact.position);
-	data.grindEdge = minContact.edge;
-	data.edgeQuantity = data.grindEdge->GetQuantity(minContact.position);
+	grindEdge = minContact.edge;
+	data.edgeQuantity = grindEdge->GetQuantity(minContact.position);
 	data.grindSpeed = launcher->bulletSpeed;
 	if (!data.clockwise)
 	{
@@ -1364,7 +1389,7 @@ bool GrindBullet::HitTerrain()
 
 void GrindBullet::UpdatePhysics()
 {
-	if (data.grindEdge != NULL)
+	if (grindEdge != NULL)
 	{
 		double factor = slowMultiple * (double)numPhysSteps;
 		double movement = data.grindSpeed / factor;
@@ -1375,7 +1400,7 @@ void GrindBullet::UpdatePhysics()
 
 		while (!approxEquals(movement, 0))
 		{
-			double gLen = data.grindEdge->GetLength();
+			double gLen = grindEdge->GetLength();
 
 			if (movement > 0)
 			{
@@ -1384,7 +1409,7 @@ void GrindBullet::UpdatePhysics()
 				if (extra > 0)
 				{
 					movement -= gLen - data.edgeQuantity;
-					data.grindEdge = data.grindEdge->GetNextEdge();
+					grindEdge = grindEdge->GetNextEdge();
 					//++grindEdgeIndex;
 					//if (grindEdgeIndex == numPoints)
 					//{
@@ -1406,13 +1431,13 @@ void GrindBullet::UpdatePhysics()
 				if (extra < 0)
 				{
 					movement -= movement - extra;
-					data.grindEdge = data.grindEdge->GetPrevEdge();
+					grindEdge = grindEdge->GetPrevEdge();
 					//--grindEdgeIndex;
 					//if (grindEdgeIndex < 0)
 				//	{
 				//		grindEdgeIndex = numPoints - 1;
 				//	}
-					data.edgeQuantity = data.grindEdge->GetLength();
+					data.edgeQuantity = grindEdge->GetLength();
 				}
 				else
 				{
@@ -1422,8 +1447,8 @@ void GrindBullet::UpdatePhysics()
 			}
 		}
 
-		velocity = data.grindEdge->Along() * data.grindSpeed;
-		position = data.grindEdge->GetPosition(data.edgeQuantity);
+		velocity = grindEdge->Along() * data.grindSpeed;
+		position = grindEdge->GetPosition(data.edgeQuantity);
 		hitBody.globalPosition = position;
 
 		if (!launcher->skipPlayerCollideForSubstep)
@@ -1452,7 +1477,7 @@ void GrindBullet::Reset(V2d &pos,
 	V2d &vel)
 {
 	BasicBullet::Reset(pos, vel);
-	data.grindEdge = NULL;
+	grindEdge = NULL;
 	data.edgeQuantity = -1;
 	data.clockwise = true;
 }
@@ -1467,6 +1492,9 @@ int GrindBullet::GetNumStoredBytes()
 void GrindBullet::StoreBytes(unsigned char *bytes)
 {
 	StoreBasicBulletData(data);
+
+	data.grindEdgeInfo.SetFromEdge(grindEdge);
+
 	memcpy(bytes, &data, sizeof(MyData));
 }
 
@@ -1474,6 +1502,8 @@ void GrindBullet::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
 	SetBasicBulletData(data);
+
+	grindEdge = launcher->sess->GetEdge(&data.grindEdgeInfo);
 }
 
 

@@ -42,6 +42,8 @@ void PracticePlayer::Clear()
 	upgradeField.Reset();
 	skinIndex = 0;
 
+	indexInLobby = -1;
+
 	ClearMessages();
 }
 
@@ -413,6 +415,8 @@ void NetplayManager::Abort()
 
 	numPlayers = -1;
 
+	myIndexInPracticeLobby = -1;
+
 	desyncDetected = false;
 
 	isQuickplay = false;
@@ -731,6 +735,8 @@ void NetplayManager::ConnectToAll()
 
 void NetplayManager::UpdatePracticePlayers()
 {
+	myIndexInPracticeLobby = -1;
+
 	CSteamID myID = SteamUser()->GetSteamID();
 
 	int index = 0;
@@ -739,21 +745,26 @@ void NetplayManager::UpdatePracticePlayers()
 
 	//right now the memberlist is limited to 2 people, but to make it more, you have to be careful
 	//that this doesnt just loop over all members and ignore how many possible spots you have
-	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+
+	int indexInLobby = 0;
+	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it, ++indexInLobby)
 	{
 		if ((*it).id == myID)
 		{
+			myIndexInPracticeLobby = indexInLobby;
 			continue;
 		}
 
 		if (practicePlayers[index].isConnectedTo)
 		{
+			practicePlayers[index].indexInLobby = indexInLobby;
 			++index;
 			continue;
 		}
 
 		practicePlayers[index].id = (*it).id;
 		practicePlayers[index].name = (*it).name;
+		practicePlayers[index].indexInLobby = indexInLobby;
 		++index;
 
 		if (index == MAX_PRACTICE_PLAYERS)
@@ -761,6 +772,8 @@ void NetplayManager::UpdatePracticePlayers()
 			break;
 		}
 	}
+
+	assert(myIndexInPracticeLobby != -1);
 }
 
 void NetplayManager::PracticeConnect()
@@ -779,10 +792,24 @@ void NetplayManager::PracticeConnect()
 	SteamNetworkingIdentity identity;
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].id.IsValid())
+		if (practicePlayers[i].id.IsValid() && practicePlayers[i].indexInLobby < myIndexInPracticeLobby)
 		{
-			identity.SetSteamID(practicePlayers[i].id);
-			practicePlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+			if (practicePlayers[i].isConnectedTo)
+			{
+				cout << "practice player is already connected to!\n";
+				//assert(false);
+			}
+			else
+			{
+				cout << "connectp2p to practiceplayer: " << i << "\n";
+				identity.SetSteamID(practicePlayers[i].id);
+				practicePlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+			}
+		}
+		else if (practicePlayers[i].id.IsValid() && practicePlayers[i].indexInLobby >= myIndexInPracticeLobby)
+		{
+			cout << "THIS WOULD HAVE BEEN A BUG BEFORE. myIndex: " 
+				<< myIndexInPracticeLobby << " and the one I'm deciding to not connect to index: " << practicePlayers[i].indexInLobby << "\n";
 		}
 	}
 }
@@ -1637,43 +1664,47 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 	{
 		if (pCallback->m_info.m_hListenSocket)
 		{
-			EResult result = SteamNetworkingSockets()->AcceptConnection(pCallback->m_hConn);
-
 			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 			{
 				if (practicePlayers[i].id == pCallback->m_info.m_identityRemote.GetSteamID())
 				{
-					cout << "setting practice connection " << i << endl;
+					EResult result = SteamNetworkingSockets()->AcceptConnection(pCallback->m_hConn);
 					practicePlayers[i].connection = pCallback->m_hConn;
 					connectionIndex = i;
+
+					if (result == k_EResultOK)
+					{
+						cout << "accepting practice connection to " << connectionIndex << endl;
+					}
+					else
+					{
+						cout << "failing to accept practice connection to " << connectionIndex << endl;
+					}
 					break;
 				}
-			}
-
-			if (result == k_EResultOK)
-			{
-				cout << "accepting connection to " << connectionIndex << endl;
-			}
-			else
-			{
-				cout << "failing to accept connection to " << connectionIndex << endl;
 			}
 		}
 		else
 		{
-			cout << "connecting but I'm not the one with a listen socket" << endl;
+			cout << "practice connecting but I'm not the one with a listen socket" << endl;
 		}
 	}
 	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
 		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_FindingRoute)
 	{
-		cout << "finding route.." << endl;
+		cout << "finding route.. " << connectionIndex << endl;
 	}
 	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
 		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_FindingRoute)
 		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_Connected)
 	{
 		cout << "connection to " << connectionIndex << " is complete!" << endl;
+
+		if (connectionIndex < 0)
+		{
+			int x = 5;
+			//assert(connectionIndex >= 0);
+		}
 
 		practicePlayers[connectionIndex].isConnectedTo = true;
 	}
@@ -3029,6 +3060,14 @@ void NetplayManager::QueryPracticeMatches()
 	//practiceSearchMapPath = p_mapPath;
 	lobbyManager->QueryPracticeLobbies();
 	//lobbyManager->FindPracticeLobby(p_mapPath);
+}
+
+void NetplayManager::PracticePlayersResetAction()
+{
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		practicePlayers[i].action = PracticePlayer::A_NEEDS_START;
+	}
 }
 
 //void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)

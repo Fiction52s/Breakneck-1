@@ -2895,6 +2895,8 @@ void Session::UpdatePlayerInput(int index)
 		player->practiceDesyncPosition = test.desyncCheckPos;
 		if (player->practiceDesyncPosition != player->position)
 		{
+			cout << "desynced. player pos: " << player->position.x << ", " << player->position.y << ", desync check: "
+				<< test.desyncCheckPos.x << ", " << test.desyncCheckPos.y << "\n";
 			player->practiceDesyncDetected = true;
 		}
 		else
@@ -4642,7 +4644,7 @@ void Session::SetupHUD()
 	}
 	else
 	{
-		if (hud == NULL)
+		if (hud == NULL )//&& !IsParallelSession() )
 		{
 			hud = gameMode->CreateHUD();
 		}
@@ -4685,12 +4687,15 @@ void Session::HitlagUpdate()
 
 	SteamAPI_RunCallbacks();
 
-	fader->Update();
-	swiper->Update();
-	mainMenu->UpdateEffects();
+	if (!IsParallelSession())
+	{
+		fader->Update();
+		swiper->Update();
 
+		mainMenu->UpdateEffects();
 
-	pokeTriangleScreenGroup->Update();
+		pokeTriangleScreenGroup->Update();
+	}
 
 	pauseFrames--;
 
@@ -4880,6 +4885,10 @@ void Session::UnlockLog(int logType, int playerIndex )
 
 void Session::Fade(bool in, int frames, sf::Color c, bool skipKin, EffectLayer layer )
 {
+	if (IsParallelSession())
+	{
+		return;
+	}
 	fader->Fade(in, frames, c, skipKin, layer );
 }
 
@@ -4887,11 +4896,20 @@ void Session::CrossFade(int fadeOutFrames,
 	int pauseFrames, int fadeInFrames,
 	sf::Color c, bool skipKin)
 {
+	if (IsParallelSession())
+	{
+		return;
+	}
 	fader->CrossFade(fadeOutFrames, pauseFrames, fadeInFrames, c, skipKin);
 }
 
 void Session::ClearFade()
 {
+	if (IsParallelSession())
+	{
+		return;
+	}
+
 	fader->Clear();
 }
 
@@ -7000,7 +7018,8 @@ bool Session::RunGameModeUpdate()
 
 		if (IsSessTypeGame() )
 		{
-			background->Update(view.getCenter());
+			if( background != NULL )
+				background->Update(view.getCenter());
 		}
 		UpdateTopClouds();
 
@@ -7810,13 +7829,17 @@ bool Session::OnlineRunGameModeUpdate()
 	if (gateMarkers != NULL)
 		gateMarkers->Update(&cam);
 
-	fader->Update();
-	swiper->Update();
-	pokeTriangleScreenGroup->Update();
+	if (!IsParallelSession())
+	{
+		fader->Update();
+		swiper->Update();
+		pokeTriangleScreenGroup->Update();
+	}
 
 	if (IsSessTypeGame())
 	{
-		background->Update(view.getCenter());
+		if( background != NULL )
+			background->Update(view.getCenter());
 	}
 	UpdateTopClouds();
 

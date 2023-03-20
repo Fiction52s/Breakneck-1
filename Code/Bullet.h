@@ -55,8 +55,8 @@ struct BasicBullet : QuadTreeCollider
 
 	struct BulletData
 	{
-		BasicBullet *prev;
-		BasicBullet *next;
+		int prevID;
+		int nextID;
 		V2d gravity;
 		V2d position;
 		V2d velocity;
@@ -151,11 +151,13 @@ struct GrindBullet : BasicBullet
 	{
 		double grindSpeed;
 		bool clockwise;
-		Edge *grindEdge;
+		EdgeInfo grindEdgeInfo;
 		double edgeQuantity;
 	};
 
 	MyData data;
+	Edge *grindEdge;
+
 
 	GrindBullet(int indexVA, Launcher *launcher);
 	void UpdatePrePhysics();
@@ -203,8 +205,11 @@ struct Launcher
 {
 	struct MyData
 	{
-		BasicBullet *inactiveBullets;
-		BasicBullet *activeBullets;
+		int inactiveBulletsID;
+		int activeBulletsID;
+
+		//BasicBullet *inactiveBullets;
+		//BasicBullet *activeBullets;
 		//sf::Vector2<double> position;
 		//sf::Vector2<double> facingDir;
 	};
@@ -255,6 +260,8 @@ struct Launcher
 	Launcher(LauncherEnemy *handler,
 		int maxFramesToLive);
 	~Launcher();
+	int GetBulletID(BasicBullet *b);
+	BasicBullet *GetBulletFromID(int id);
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	int GetNumStoredBytes();

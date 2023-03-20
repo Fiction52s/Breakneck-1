@@ -70,6 +70,26 @@ struct Shard : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int totalFrame;
+	};
+
+	MyData data;
+
+	Tileset *ts_sparkle;
+	EffectPool *sparklePool;
+	Tileset *ts_explodeCreate;
+	V2d rootPos;
+	int radius;
+
+	GetShardSequence *shardSeq;
+	Tileset *ts;
+
+	int shardType;
+	int shardWorld;
+	int localIndex;
+
 	Shard(ActorParams *ap);//sf::Vector2i pos,
 		//int w, int li);
 	~Shard();
@@ -103,22 +123,11 @@ struct Shard : Enemy
 	void DissipateOnTouch();
 	void Capture();
 	void FrameIncrement();
-	Tileset *ts_sparkle;
-	EffectPool *sparklePool;
-	Tileset *ts_explodeCreate;
-	V2d rootPos;
-	int radius;
 
-	GetShardSequence *shardSeq;
-	Tileset *ts;
-
-	int shardType;
-
-	bool caught;
-	int totalFrame;
-
-	int shardWorld;
-	int localIndex;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	
 };
 
 #endif

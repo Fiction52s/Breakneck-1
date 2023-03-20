@@ -289,6 +289,7 @@ AbsorbParticles::SingleEnergyParticle::SingleEnergyParticle(AbsorbParticles *p_p
 {
 	next = NULL;
 	prev = NULL;
+	playerTarget = NULL;
 	Clear();
 }
 

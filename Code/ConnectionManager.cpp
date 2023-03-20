@@ -22,6 +22,10 @@ void ConnectionManager::CreateListenSocket()
 	{
 		listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, NULL);
 	}
+	else
+	{
+		cout << "trying to create a listening socket but one already exists" << "\n";
+	}
 }
 
 void ConnectionManager::OnMessagesSessionFailedCallback(SteamNetworkingMessagesSessionFailed_t *pCallback)

@@ -567,16 +567,19 @@ GameSession *GameSession::CreateParallelSession( int parIndex )
 	mp = matchParams;
 
 	GameSession *parallelGame = new GameSession(&mp);
+
+	parallelGame->SetParentTilesetManager(this);
+
 	parallelGame->parallelSessionIndex = parIndex;
 
 	parallelGame->level = level;
 	
-
-	parallelGame->SetParentTilesetManager(this);
 	parallelGame->currSaveState = new SaveGameState;
 
 	//parallelGame->SetParentGame(this);
 	parallelGame->Load();
+
+	parallelGame->mapHeader->envWorldType = background->envWorld;
 
 	Actor *p = NULL;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -1115,7 +1118,7 @@ void GameSession::UnlockUpgrade(int upgradeType, int playerIndex )
 	{
 		//replay on
 	}
-	else if (saveFile != NULL)
+	else if (saveFile != NULL && !IsParallelSession())
 	{
 		saveFile->UnlockUpgrade(upgradeType);
 	}
@@ -1130,7 +1133,11 @@ bool GameSession::TrySaveCurrentSaveFile()
 		//replay on
 		return false;
 	}
-	else if (saveFile != NULL)
+	else if (IsParallelSession())
+	{
+		return false;
+	}
+	else if (saveFile != NULL )
 	{
 		saveFile->Save();
 		return true;
@@ -1145,6 +1152,9 @@ void GameSession::UnlockLog(int lType, int playerIndex )
 	if (IsReplayOn())
 	{
 		//replay on
+	}
+	else if (IsParallelSession())
+	{
 	}
 	else if (saveFile != NULL)
 	{
@@ -1802,6 +1812,7 @@ bool GameSession::Load()
 		mainMenu->adventureManager->SetBoards(this);
 	}
 
+	SetupBackground(); //new location above SetupGameMode for parallel backgrounds
 
 	SetupAbsorbParticles();
 
@@ -1894,7 +1905,7 @@ bool GameSession::Load()
 
 	
 
-	SetupBackground();
+	//SetupBackground(); //old location
 	
 
 	//still too far
@@ -2140,6 +2151,12 @@ void GameSession::SetupBackground()
 			return;
 		}
 	}*/
+
+	if (IsParallelSession())
+	{
+		//mapHeader->envWorldType = background->envWorld;
+		return;
+	}
 	
 	CleanupBackground();
 
@@ -2240,6 +2257,10 @@ void GameSession::SetupQuadTrees()
 
 void GameSession::SetupPlayerRecordingManager()
 {
+	if (IsParallelSession())
+		return;
+
+
 	if (parentGame != NULL)
 	{
 		playerRecordingManager = parentGame->playerRecordingManager;
@@ -3717,7 +3738,15 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 	}
 	
 	terrainShader.setUniform("playertest", playertest);
-	terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
+
+	if (background != NULL)
+	{
+		terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
+	}
+	else
+	{
+		terrainShader.setUniform("skyColor", ColorGL(Color::White));
+	}
 	
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
@@ -3842,6 +3871,12 @@ void GameSession::RestartLevel()
 	accumulator = TIMESTEP + .1;
 	frameRateDisplay.Reset();
 
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+	{
+		netplayManager->practicePlayers
+	}
+
+
 	activateBonus = false;
 
 	if( gateMarkers != NULL)
@@ -3920,7 +3955,8 @@ void GameSession::RestartLevel()
 	currStorySequence = NULL;
 	currSuperPlayer = NULL;
 
-	background->Reset();
+	if( background != NULL )
+		background->Reset();
 	//keeps lighting the same when going into bonuses with the same bg
 	if (parentGame != NULL)
 	{
