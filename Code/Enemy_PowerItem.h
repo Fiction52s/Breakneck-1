@@ -72,23 +72,23 @@ struct PowerItem : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		bool alreadyCollected;
+		int totalFrame;
+	};
+
+	MyData data;
 
 	ShapeEmitter *testEmitter;
 	MovingGeoGroup geoGroup;
-	bool alreadyCollected;
-
 	Tileset *ts_sparkle;
 	EffectPool *sparklePool;
 	Tileset *ts_explodeCreate;
 	V2d rootPos;
 	int radius;
-
 	Tileset *ts;
-
 	int powerIndex;
-
-	bool caught;
-	int totalFrame;
 	GetPowerSequence *powerSeq;
 
 	PowerItem(ActorParams *ap);//sf::Vector2i pos,
@@ -111,6 +111,10 @@ struct PowerItem : Enemy
 	void DissipateOnTouch();
 	void Capture();
 	void FrameIncrement();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

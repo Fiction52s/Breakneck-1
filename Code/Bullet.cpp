@@ -151,6 +151,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		}
 	}
 
+	inactiveBullets->bulletID = 0;
 	allBullets[0] = inactiveBullets;
 
 
@@ -177,6 +178,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 			}
 		}
 
+		temp->bulletID = i;
 		allBullets[i] = temp;
 		temp->next = inactiveBullets;
 		inactiveBullets->prev = temp;
@@ -311,7 +313,7 @@ int Launcher::GetBulletID(BasicBullet *b)
 	}	
 	else
 	{
-		return b->index;
+		return b->bulletID;
 	}
 }
 
@@ -743,6 +745,7 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 	hurtBody.rw = rad;
 	hurtBody.rh = rad;*/
 
+	bulletID = -1;
 
 	prev = NULL;
 	next = NULL;

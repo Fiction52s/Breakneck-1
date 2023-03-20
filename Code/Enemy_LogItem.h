@@ -24,12 +24,18 @@ struct LogItem : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int totalFrame;
+		bool alreadyCollected;
+	};
+
+	MyData data;
+
 	LogPreview *logPreview;
 	ShapeEmitter *testEmitter;
-	//MovingGeoGroup geoGroup;
 	MovingGeoGroup geoGroup;
-	bool alreadyCollected;
-
+	
 	Tileset *ts_sparkle;
 	EffectPool *sparklePool;
 	Tileset *ts_explodeCreate;
@@ -45,10 +51,6 @@ struct LogItem : Enemy
 	int localIndex;
 	
 	sf::Sprite shineSprite;
-
-	bool caught;
-	int totalFrame;
-
 	GetLogSequence *logSeq;
 
 	static int GetLogTypeFromWorldAndIndex(int w, int li);
@@ -75,6 +77,10 @@ struct LogItem : Enemy
 	void DissipateOnTouch();
 	void Capture();
 	void FrameIncrement();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct LogPopup

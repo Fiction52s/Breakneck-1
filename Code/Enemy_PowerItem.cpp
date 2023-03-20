@@ -59,7 +59,6 @@ using namespace sf;
 
 void PowerItem::Setup()
 {
-	caught = false;
 	geoGroup.SetBase(GetPositionF());
 }
 
@@ -100,22 +99,22 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	//UpdateParamsSettings();
 
-	alreadyCollected = false;
+	data.alreadyCollected = false;
 
 	//int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
 	/*if (sess->GetPlayer(0)->HasUpgrade(upgradeIndex))
 	{
-		alreadyCollected = true;
+		data.alreadyCollected = true;
 	}*/
 
 	/*if (sess->IsShardCaptured(shardType))
 	{
-		alreadyCollected = true;
+		data.alreadyCollected = true;
 	}*/
 
 	
 
-	/*if (!alreadyCollected)
+	/*if (!data.alreadyCollected)
 	{
 		
 	}*/
@@ -195,12 +194,12 @@ void PowerItem::ResetEnemy()
 {
 	//implement for power
 	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
-	alreadyCollected = sess->GetPlayer(0)->HasUpgrade(upgradeIndex);
+	data.alreadyCollected = sess->GetPlayer(0)->HasUpgrade(upgradeIndex);
 	
 	SetCurrPosInfo(startPosInfo);
 
 	geoGroup.Reset();
-	totalFrame = 0;
+	data.totalFrame = 0;
 
 	if (sparklePool != NULL)
 	{
@@ -215,7 +214,7 @@ void PowerItem::ResetEnemy()
 
 	UpdateSprite();
 
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		SetHitboxes(&hitBody, 0);
 		SetHurtboxes(&hurtBody, 0);
@@ -236,7 +235,7 @@ void PowerItem::ResetEnemy()
 
 void PowerItem::FrameIncrement()
 {
-	++totalFrame;
+	++data.totalFrame;
 }
 
 void PowerItem::IHitPlayer(int index)
@@ -318,7 +317,7 @@ void PowerItem::ProcessState()
 	{
 		int floatFrames = 240;
 		double floatAmount = 4.0;
-		int t = totalFrame % floatFrames;
+		int t = data.totalFrame % floatFrames;
 		float tf = t;
 		tf /= (floatFrames - 1);
 		double f = cos(2 * PI * tf);
@@ -335,7 +334,7 @@ void PowerItem::ProcessState()
 	}
 
 	//testEmitter->Update();
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		sparklePool->Update();
 		if (!geoGroup.Update())
@@ -346,7 +345,7 @@ void PowerItem::ProcessState()
 
 		Vector2f sparkleCenter(GetPositionF());
 
-		if (totalFrame % 60 == 0)
+		if (data.totalFrame % 60 == 0)
 		{
 			Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
 			EffectInstance ei;
@@ -395,7 +394,7 @@ void PowerItem::UpdateSprite()
 
 void PowerItem::EnemyDraw(sf::RenderTarget *target)
 {
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		geoGroup.Draw(target);
 
@@ -415,6 +414,25 @@ void PowerItem::EnemyDraw(sf::RenderTarget *target)
 
 void PowerItem::DrawMinimap(sf::RenderTarget *target)
 {
+}
+
+int PowerItem::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void PowerItem::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void PowerItem::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }
 
 PowerPopup::PowerPopup()

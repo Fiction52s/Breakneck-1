@@ -69,6 +69,8 @@ struct BasicBullet : QuadTreeCollider
 		int bounceCount;
 	};
 
+	int bulletID;
+
 	BasicBullet *prev;
 	BasicBullet *next;
 	V2d gravity;

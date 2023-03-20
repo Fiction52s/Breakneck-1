@@ -3871,16 +3871,16 @@ void GameSession::RestartLevel()
 	accumulator = TIMESTEP + .1;
 	frameRateDisplay.Reset();
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
-	{
-		netplayManager->practicePlayers
-	}
-
-
 	activateBonus = false;
 
 	if( gateMarkers != NULL)
 		gateMarkers->Reset();
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+	{
+		netplayManager->SetPracticePlayersToNeedStartMessage();
+	}
+
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 
 	ClearEmitters();

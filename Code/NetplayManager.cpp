@@ -138,12 +138,12 @@ COMPRESSED_INPUT_TYPE PracticePlayer::AdvanceInput()
 
 void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 {
-	if (pm.frame == 0)
+	/*if (pm.frame == 0)
 	{
 		ClearMessages();
 
 		action = A_NEEDS_LEVEL_RESTART;
-	}
+	}*/
 
 	if (pm.frame == waitingForFrame)
 	{
@@ -176,6 +176,8 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 	{
 	case PracticeMsgHeader::MSG_TYPE_START:
 	{
+		ClearMessages();
+
 		cout << "processsing practice start msg from connection: " << message->GetConnection() << "\n";
 		PracticeStartMsg *msg = (PracticeStartMsg*)message->GetData();
 		skinIndex = msg->skinIndex;
@@ -185,6 +187,8 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		nextFrameToRead = msg->startFrame;
 
 		action = A_NEEDS_LEVEL_RESTART;
+
+		
 
 		for (int i = 0; i < 8; ++i)
 		{
@@ -3062,7 +3066,7 @@ void NetplayManager::QueryPracticeMatches()
 	//lobbyManager->FindPracticeLobby(p_mapPath);
 }
 
-void NetplayManager::PracticePlayersResetAction()
+void NetplayManager::SetPracticePlayersToNeedStartMessage()
 {
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{

@@ -80,25 +80,14 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 
 	UpdateParamsSettings();
 
-	alreadyCollected = false;
-
-	/*if (sess->IsShardCaptured(shardType))
-	{
-		alreadyCollected = true;
-	}*/
+	data.alreadyCollected = false;
 
 	sess->TryCreateShardResources();
 
-	/*if( !alreadyCollected)
-	{
-		
-	}*/
-	
 	testEmitter = NULL;
 	ts_sparkle = NULL;
 	ts_explodeCreate = NULL;
 	sparklePool = NULL;
-
 	
 	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->CreateParticles();
@@ -161,9 +150,9 @@ Shard::~Shard()
 
 void Shard::ResetEnemy()
 {
-	alreadyCollected = sess->IsShardCaptured(shardType);
+	data.alreadyCollected = sess->IsShardCaptured(shardType);
 
-	/*if (!alreadyCollected)
+	/*if (!data.alreadyCollected)
 	{
 		
 	}
@@ -171,7 +160,7 @@ void Shard::ResetEnemy()
 	{
 		if (!sess->IsShardCaptured(shardType))
 		{
-			alreadyCollected = true;
+			data.alreadyCollected = true;
 		}
 	}*/
 	
@@ -195,7 +184,7 @@ void Shard::ResetEnemy()
 
 	UpdateSprite();
 
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		SetHitboxes(&hitBody, 0);
 		SetHurtboxes(&hurtBody, 0);
@@ -361,7 +350,7 @@ void Shard::ProcessState()
 	}
 	
 	//testEmitter->Update();
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		sparklePool->Update();
 		if (!geoGroup.Update())
@@ -421,7 +410,7 @@ void Shard::UpdateSprite()
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		geoGroup.Draw(target);
 

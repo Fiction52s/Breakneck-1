@@ -360,7 +360,7 @@ struct NetplayManager
 	void QueryPracticeMatches();
 
 	void PracticeConnect();
-	void PracticePlayersResetAction();
+	void SetPracticePlayersToNeedStartMessage();
 };
 
 #endif

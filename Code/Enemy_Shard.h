@@ -73,6 +73,7 @@ struct Shard : Enemy
 	struct MyData : StoredEnemyData
 	{
 		int totalFrame;
+		bool alreadyCollected;
 	};
 
 	MyData data;
@@ -101,8 +102,6 @@ struct Shard : Enemy
 
 	static Tileset *GetShardTileset(int w,
 		TilesetManager *ttm);
-	
-	bool alreadyCollected;
 	void Launch();
 	//SpinningTri *triTest[5];
 	//Laser *laser;

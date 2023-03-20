@@ -53,7 +53,6 @@ void LogItem::UpdateParamsSettings()
 
 void LogItem::Setup()
 {
-	caught = false;
 	geoGroup.SetBase(GetPositionF());
 }
 
@@ -72,7 +71,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	ts_shine = GetSizedTileset("Logs/logs_shine_64x64.png");
 	UpdateParamsSettings();
 
-	alreadyCollected = false;
+	data.alreadyCollected = false;
 
 	sess->TryCreateLogResources();
 
@@ -81,10 +80,10 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	/*if (sess->IslogCaptured(logType))
 	{
-	alreadyCollected = true;
+	data.alreadyCollected = true;
 	}*/
 
-	//if (!alreadyCollected)
+	//if (!data.alreadyCollected)
 	//{
 	//	sess->TryCreatePowerItemResources();
 	//}
@@ -174,12 +173,12 @@ LogItem::~LogItem()
 
 void LogItem::ResetEnemy()
 {
-	alreadyCollected = sess->HasLog(logType);
+	data.alreadyCollected = sess->HasLog(logType);
 
 	SetCurrPosInfo(startPosInfo);
 
 	geoGroup.Reset();
-	totalFrame = 0;
+	data.totalFrame = 0;
 
 	if (sparklePool != NULL)
 	{
@@ -194,7 +193,7 @@ void LogItem::ResetEnemy()
 
 	UpdateSprite();
 
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		SetHitboxes(&hitBody, 0);
 		SetHurtboxes(&hurtBody, 0);
@@ -215,7 +214,7 @@ void LogItem::ResetEnemy()
 
 void LogItem::FrameIncrement()
 {
-	++totalFrame;
+	++data.totalFrame;
 }
 
 void LogItem::IHitPlayer(int index)
@@ -290,7 +289,7 @@ void LogItem::ProcessState()
 	{
 		int floatFrames = 240;
 		double floatAmount = 4.0;
-		int t = totalFrame % floatFrames;
+		int t = data.totalFrame % floatFrames;
 		float tf = t;
 		tf /= (floatFrames - 1);
 		double f = cos(2 * PI * tf);
@@ -307,7 +306,7 @@ void LogItem::ProcessState()
 	}
 
 	//testEmitter->Update();
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		sparklePool->Update();
 		if (!geoGroup.Update())
@@ -318,7 +317,7 @@ void LogItem::ProcessState()
 
 		Vector2f sparkleCenter(GetPositionF());
 
-		if (totalFrame % 60 == 0)
+		if (data.totalFrame % 60 == 0)
 		{
 			Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
 			EffectInstance ei;
@@ -363,7 +362,7 @@ void LogItem::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 
 	int shineAnimFactor = 2;
-	int shineTile = (totalFrame / shineAnimFactor) % (32);
+	int shineTile = (data.totalFrame / shineAnimFactor) % (32);
 
 	shineSprite.setTextureRect(ts_shine->GetSubRect(shineTile));
 	shineSprite.setOrigin(shineSprite.getLocalBounds().width / 2, shineSprite.getLocalBounds().height / 2);
@@ -372,7 +371,7 @@ void LogItem::UpdateSprite()
 
 void LogItem::EnemyDraw(sf::RenderTarget *target)
 {
-	if (!alreadyCollected)
+	if (!data.alreadyCollected)
 	{
 		geoGroup.Draw(target);
 
@@ -404,7 +403,24 @@ int LogItem::GetNumLogsTotal()
 	return LogInfo::MAX_LOGS_PER_WORLD * 8;
 }
 
+int LogItem::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
 
+void LogItem::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void LogItem::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
 
 LogPopup::LogPopup()
 {
