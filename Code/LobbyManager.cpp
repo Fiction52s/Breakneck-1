@@ -472,6 +472,7 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 		}
 		else
 		{
+			//this can never happen because you immediately have the metadata after joining
 			SteamMatchmaking()->RequestLobbyData(lobby.m_steamIDLobby);
 		}
 
@@ -640,12 +641,20 @@ void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bI
 		if (lobby.data.Update(steamIDLobby))
 		{
 			lobby.dataIsRetrieved = true;
-			//lobby.name = "Lobby " + to_string(steamIDLobby.GetAccountID());
 		}
 		else
 		{
 			SteamMatchmaking()->RequestLobbyData(steamIDLobby);
 		}
+
+		//to avoid caching of stuff in wrong ways
+		//SteamMatchmaking()->RequestLobbyData(steamIDLobby);
+
+		//this is where I'm working on stuff rn. Basically you have to make sure that the data is not cached,
+		//because it will give you the wrong member indexes if you're the first one in and then leave and then rejoin.
+
+
+
 		//const char *pchLobbyName = SteamMatchmaking()->GetLobbyData(steamIDLobby, "name");
 		//if (pchLobbyName && pchLobbyName[0])
 		//{

@@ -10,6 +10,7 @@ struct PracticeMsgHeader
 {
 	enum MsgType
 	{
+		MSG_TYPE_INIT,
 		MSG_TYPE_START,
 		MSG_TYPE_INPUT,
 		MSG_TYPE_Count,

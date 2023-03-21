@@ -13,7 +13,7 @@ WorldMapShip::WorldMapShip(WorldMap *wm)
 	facingIndex = 0;
 	frame = 0;
 
-	scale = 1.f;
+	scale = .8;
 }
 
 void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)

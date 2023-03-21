@@ -33,7 +33,12 @@ void PracticePlayer::Clear()
 	name = "";
 	connection = 0;
 	id.Clear();
-	action = A_NEEDS_START;
+	action = A_NEEDS_START_MESSAGE;
+	needsSessionRestart = false;
+	alreadySentStartMessage = false;
+	alreadySentInitMessage = false;
+
+	readyToBeSentMessages = false;
 
 	isConnectedTo = false;
 
@@ -76,6 +81,11 @@ int PracticePlayer::HasInputs()
 	//return 1; //testing
 	//return true;//testing
 
+	if (action == A_NEEDS_START_MESSAGE)
+	{
+		return 0;
+	}
+
 	if (nextFrameToRead < waitingForFrame)
 	{
 		//cout << "has input. num frames had: " << waitingForFrame - nextFrameToRead << "\n";
@@ -95,7 +105,7 @@ const PracticeInputMsg & PracticePlayer::GetNextMsg()
 
 bool PracticePlayer::HasBeenSentStartMessage()
 {
-	return action != A_NEEDS_START;
+	return alreadySentStartMessage;
 }
 
 //static int testCounter = 0;
@@ -116,7 +126,7 @@ COMPRESSED_INPUT_TYPE PracticePlayer::AdvanceInput()
 
 	return cs.GetCompressedState();*/
 	//testing^
-
+	assert(action == A_RUNNING);
 	//cout << "advancing input. frame to read: " << nextFrameToRead << "\n";
 
 	assert(messages[currReadIndex].frame == nextFrameToRead);
@@ -138,14 +148,7 @@ COMPRESSED_INPUT_TYPE PracticePlayer::AdvanceInput()
 
 void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 {
-	/*if (pm.frame == 0)
-	{
-		ClearMessages();
-
-		action = A_NEEDS_LEVEL_RESTART;
-	}*/
-
-	if (pm.frame == waitingForFrame)
+	if ( action == A_RUNNING && pm.frame == waitingForFrame)
 	{
 		//cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
 
@@ -174,6 +177,14 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 
 	switch (hdr->msgType)
 	{
+	case PracticeMsgHeader::MSG_TYPE_INIT:
+	{
+		assert(!readyToBeSentMessages);
+		readyToBeSentMessages = true;
+		//assert(action == A_UNINITIALIZED);
+
+		break;
+	}
 	case PracticeMsgHeader::MSG_TYPE_START:
 	{
 		ClearMessages();
@@ -186,9 +197,9 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		waitingForFrame = msg->startFrame;
 		nextFrameToRead = msg->startFrame;
 
-		action = A_NEEDS_LEVEL_RESTART;
+		needsSessionRestart = true;
 
-		
+		action = A_RUNNING;
 
 		for (int i = 0; i < 8; ++i)
 		{
@@ -784,12 +795,14 @@ void NetplayManager::PracticeConnect()
 {
 	action = A_PRACTICE_CONNECT;
 
-	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	/*for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
 		practicePlayers[i].Clear();
-	}
+	}*/
 
-	connectionManager->CreateListenSocket();
+	//connectionManager->CreateListenSocket();
+
+	cout << "practice connect" << "\n";
 
 	UpdatePracticePlayers();
 
@@ -864,11 +877,28 @@ void NetplayManager::Update()
 	{
 		if (lobbyManager->action == LobbyManager::A_FOUND_LOBBIES)
 		{
+			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+			{
+				practicePlayers[i].Clear();
+			}
+
+			connectionManager->CreateListenSocket();
 			lobbyManager->TryJoiningLobby(0);
+			//remember to cover failure cases for stuff like this. you aren't guaranteed to join any lobby,
+			//and you need to gracefully handle failure
 			action = A_PRACTICE_WAIT_FOR_IN_LOBBY;
 		}
 		else if (lobbyManager->action == LobbyManager::A_FOUND_NO_LOBBIES)
 		{
+			//socket needs to be already listening GUARANTEED before someone else can join the lobby.
+			//otherwise they can join, attempt to connect, and fail, before I even try anything.
+			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+			{
+				practicePlayers[i].Clear();
+			}
+
+			connectionManager->CreateListenSocket(); 
+
 			cout << "creating my own practice lobby\n";
 			LobbyData ld;
 			ld.maxMembers = 2;
@@ -1668,24 +1698,25 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 	{
 		if (pCallback->m_info.m_hListenSocket)
 		{
+			EResult result = k_EResultAccessDenied;
 			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 			{
 				if (practicePlayers[i].id == pCallback->m_info.m_identityRemote.GetSteamID())
 				{
-					EResult result = SteamNetworkingSockets()->AcceptConnection(pCallback->m_hConn);
+					result = SteamNetworkingSockets()->AcceptConnection(pCallback->m_hConn);
 					practicePlayers[i].connection = pCallback->m_hConn;
 					connectionIndex = i;
-
-					if (result == k_EResultOK)
-					{
-						cout << "accepting practice connection to " << connectionIndex << endl;
-					}
-					else
-					{
-						cout << "failing to accept practice connection to " << connectionIndex << endl;
-					}
 					break;
 				}
+			}
+
+			if (result == k_EResultOK)
+			{
+				cout << "accepting practice connection to " << connectionIndex << endl;
+			}
+			else
+			{
+				cout << "failing to accept practice connection to " << connectionIndex << endl;
 			}
 		}
 		else
@@ -2848,6 +2879,49 @@ void NetplayManager::PrepareClientForNextQuickplayMap()
 	action = NetplayManager::A_IDLE;//A_WAIT_TO_LOAD_MAP;
 }
 
+bool NetplayManager::SendPracticeInitMessageToPlayer(PracticePlayer &pracPlayer)
+{
+	PracticeMsgHeader pm(PracticeMsgHeader::MSG_TYPE_INIT);
+
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice init message to connection " << pracPlayer.connection << "\n";
+
+		assert(!pracPlayer.alreadySentInitMessage);
+
+		pracPlayer.alreadySentInitMessage = true;
+
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice init message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
+void NetplayManager::SendPracticeInitMessageToAllNewPeers()
+{
+	assert(action == A_PRACTICE_TEST);
+	if (action != A_PRACTICE_TEST)
+	{
+		return;
+	}
+
+	SteamNetworkingIdentity identity;
+	CSteamID myID = SteamUser()->GetSteamID();
+
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo && !practicePlayers[i].alreadySentInitMessage)
+		{
+			SendPracticeInitMessageToPlayer(practicePlayers[i]);
+		}
+	}
+}
+
 bool NetplayManager::SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm)
 {
 	//k_EP2PSendReliable
@@ -2888,7 +2962,7 @@ bool NetplayManager::SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer
 
 		assert(!pracPlayer.HasBeenSentStartMessage());
 
-		pracPlayer.action = PracticePlayer::A_RUNNING; //just needs to take it away from waiting for a start msg?
+		pracPlayer.alreadySentStartMessage = true;
 
 		return true;
 	}
@@ -2909,7 +2983,7 @@ bool NetplayManager::SendPracticeStartMessageToPlayerAsBuffer(PracticePlayer &pr
 
 		assert(!pracPlayer.HasBeenSentStartMessage());
 
-		pracPlayer.action = PracticePlayer::A_RUNNING; //just needs to take it away from waiting for a start msg?
+		pracPlayer.alreadySentStartMessage = true;
 
 		return true;
 	}
@@ -2935,10 +3009,8 @@ void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm )
 
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].isConnectedTo )
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].readyToBeSentMessages && practicePlayers[i].HasBeenSentStartMessage())
 		{
-			assert(practicePlayers[i].HasBeenSentStartMessage());
-
 			SendPracticeInputMessageToPlayer(practicePlayers[i], pm);
 		}
 	}
@@ -2977,7 +3049,7 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 	bool needsToSendStartMessage = false;
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].isConnectedTo && !practicePlayers[i].HasBeenSentStartMessage())
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].readyToBeSentMessages && !practicePlayers[i].HasBeenSentStartMessage())
 		{
 			needsToSendStartMessage = true;
 			break;
@@ -3003,7 +3075,7 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].isConnectedTo && !practicePlayers[i].HasBeenSentStartMessage())
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].readyToBeSentMessages && !practicePlayers[i].HasBeenSentStartMessage())
 		{
 			if (buf != NULL)
 			{
@@ -3035,11 +3107,13 @@ bool NetplayManager::TrySetupPractice( GameSession *game )
 	}
 	else if (action == A_PRACTICE_SETUP)
 	{
-		PracticeStartMsg psm;
+		//would have ended up double sending the start message.
+
+		/*PracticeStartMsg psm;
 		psm.skinIndex = game->GetPlayerNormalSkin(0);
 		psm.SetUpgradeField(game->GetPlayer(0)->bStartHasUpgradeField);
 
-		SendPracticeStartMessageToAllNewPeers(psm );
+		SendPracticeStartMessageToAllNewPeers(psm );*/
 
 		action = A_PRACTICE_TEST;
 
@@ -3068,9 +3142,10 @@ void NetplayManager::QueryPracticeMatches()
 
 void NetplayManager::SetPracticePlayersToNeedStartMessage()
 {
+	cout << "all practice players now need start msg from me" << "\n";
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		practicePlayers[i].action = PracticePlayer::A_NEEDS_START;
+		practicePlayers[i].alreadySentStartMessage = false;
 	}
 }
 

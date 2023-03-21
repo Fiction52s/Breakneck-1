@@ -42,10 +42,16 @@ struct PracticePlayer
 
 	enum Action
 	{
-		A_NEEDS_START,
-		A_NEEDS_LEVEL_RESTART,
+		A_NEEDS_START_MESSAGE,
 		A_RUNNING,
 	};
+
+
+	bool readyToBeSentMessages;
+
+	bool needsSessionRestart;
+	bool alreadySentInitMessage;
+	bool alreadySentStartMessage;
 
 	int action;
 
@@ -335,11 +341,16 @@ struct NetplayManager
 
 	void SendLobbyDataForNextMapToClients(LobbyData *ld);
 
-	bool SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm);
+	
+	bool SendPracticeInitMessageToPlayer(PracticePlayer &pracPlayer);
+	void SendPracticeInitMessageToAllNewPeers();
+
 	bool SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeStartMsg &pm);
 	bool SendPracticeStartMessageToPlayerAsBuffer(PracticePlayer &pracPlayer, unsigned char *buf, int bufSize);
-	void SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm);
 	void SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm);
+
+	bool SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm);
+	void SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);

@@ -1384,7 +1384,7 @@ void Session::AddEnemy(Enemy *e)
 {
 	//do not spawn shards that are already captured in the file.
 	
-	cout << "spawning enemy! of type: " << e->type << endl;
+	//cout << "spawning enemy! of type: " << e->type << endl;
 	if (e->spawned)
 	{
 		assert(e->spawned == false);
@@ -2951,6 +2951,8 @@ void Session::UpdatePlayerInput(int index)
 
 		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession() )//&& playerInd == 0 )
 		{
+			netplayManager->SendPracticeInitMessageToAllNewPeers();
+
 			//sends the start to message to any new peers that join
 			PracticeStartMsg psm;
 			psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
@@ -3016,9 +3018,9 @@ void Session::RunFrameForParallelPractice()
 			if (pm->parallelGames[i] != NULL)
 			{
 				PracticePlayer &prac = netplayManager->practicePlayers[i];
-				if (prac.action == PracticePlayer::A_NEEDS_LEVEL_RESTART)
+				if (prac.needsSessionRestart )
 				{
-					prac.action = PracticePlayer::A_RUNNING;
+					prac.needsSessionRestart = false;
 					pm->parallelGames[i]->RestartLevel();
 
 					if (prac.syncStateBufSize > 0)

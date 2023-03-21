@@ -658,14 +658,6 @@ bool GameSession::RunPreUpdate()
 		return false;
 	}*/
 
-	/*if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
-	{
-		if (netplayManager->practicePlayers[parallelSessionIndex].action == PracticePlayer::A_NEEDS_LEVEL_RESTART)
-		{
-			nextFrameRestartGame = true;
-			netplayManager->practicePlayers[parallelSessionIndex].action = PracticePlayer::A_RUNNING;
-		}
-	}*/
 
 
 	if (nextFrameRestartGame)
