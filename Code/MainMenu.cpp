@@ -2225,9 +2225,16 @@ void MainMenu::HandleMenuMode()
 				delete loadThread;
 				loadThread = NULL;
 
-				if (netplayManager != NULL && netplayManager->IsPracticeMode())
+				if (netplayManager != NULL && netplayManager->IsPracticeMode() )
 				{
-					SetMode(SETUP_PRACTICE_ADVENTURE_MAP);
+					if (netplayManager->TrySetupPractice(currLevel))
+					{
+						SetMode(RUN_ADVENTURE_MAP);
+					}
+					else
+					{
+						SetMode(SETUP_PRACTICE_ADVENTURE_MAP);
+					}
 				}
 				else
 				{

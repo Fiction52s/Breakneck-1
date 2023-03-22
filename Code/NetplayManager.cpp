@@ -796,7 +796,7 @@ void NetplayManager::UpdatePracticePlayers()
 
 void NetplayManager::PracticeConnect()
 {
-	action = A_PRACTICE_CONNECT;
+	action = A_PRACTICE_SETUP;
 
 	/*for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
@@ -948,32 +948,7 @@ void NetplayManager::Update()
 
 		if (lobbyManager->IsInLobby())
 		{
-			action = A_PRACTICE_WAIT_TO_CONNECT;
-		}
-		break;
-	}
-	case A_PRACTICE_WAIT_TO_CONNECT:
-	{
-		break;
-	}
-	case A_PRACTICE_CONNECT:
-	{
-		bool connectedToAll = true;
-		for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-		{
-			if (practicePlayers[i].id.IsValid())
-			{
-				if (!practicePlayers[i].isConnectedTo)
-				{
-					connectedToAll = false;
-					break;
-				}
-			}
-		}
-
-		if (connectedToAll)
-		{
-			action = A_PRACTICE_SETUP;
+			PracticeConnect();
 		}
 		break;
 	}
@@ -3144,17 +3119,13 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 
 bool NetplayManager::IsPracticeMode()
 {
-	return action == A_PRACTICE_CONNECT || action == A_PRACTICE_TEST || action == A_PRACTICE_CHECKING_FOR_LOBBIES || action == A_PRACTICE_WAIT_FOR_IN_LOBBY
-		|| action == A_PRACTICE_SETUP || action == A_PRACTICE_WAIT_TO_CONNECT;
+	return action == A_PRACTICE_TEST || action == A_PRACTICE_CHECKING_FOR_LOBBIES || action == A_PRACTICE_WAIT_FOR_IN_LOBBY
+		|| action == A_PRACTICE_SETUP;
 }
 
 bool NetplayManager::TrySetupPractice( GameSession *game )
 {
-	if (action == A_PRACTICE_WAIT_TO_CONNECT)
-	{
-		PracticeConnect();
-	}
-	else if (action == A_PRACTICE_SETUP)
+	if (action == A_PRACTICE_SETUP)
 	{
 		//would have ended up double sending the start message.
 
