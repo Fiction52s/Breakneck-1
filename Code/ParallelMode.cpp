@@ -23,17 +23,17 @@ ParallelMode::ParallelMode()
 		{
 			if (!game->IsParallelSession())
 			{
-				//int numSessions = 0;
-				//if (game->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
-				//{
-				//	numSessions = game->matchParams.numPlayers - 1;
-				//}
-				//else if (game->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
-				//{
-				//	numSessions = 1; //for now!
-				//}
+				int numSessions = 0;
+				if (game->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+				{
+					numSessions = game->matchParams.numPlayers - 1;
+				}
+				else if (game->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+				{
+					numSessions = NetplayManager::MAX_PRACTICE_PLAYERS;
+				}
 
-				for (int i = 0; i < game->matchParams.numPlayers - 1; ++i)
+				for (int i = 0; i < numSessions; ++i)
 				{
 					parallelGames[i] = game->CreateParallelSession(i);
 				}

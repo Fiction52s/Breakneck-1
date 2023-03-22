@@ -769,7 +769,7 @@ void NetplayManager::UpdatePracticePlayers()
 	{
 		if ((*it).id == myID)
 		{
-			myIndexInPracticeLobby = indexInLobby;
+			//myIndexInPracticeLobby = indexInLobby;
 			continue;
 		}
 
@@ -791,7 +791,7 @@ void NetplayManager::UpdatePracticePlayers()
 		}
 	}
 
-	assert(myIndexInPracticeLobby != -1);
+	//assert(myIndexInPracticeLobby != -1);
 }
 
 void NetplayManager::PracticeConnect()
