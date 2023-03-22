@@ -22,7 +22,7 @@ AdventureManager::AdventureManager()
 	currProfile = NULL;
 	//parallelPracticeMode = false;
 
-	parallelPracticeMode = false; //for testing
+	parallelPracticeMode = true; //for testing
 
 	LoadAdventure("tadventure");
 

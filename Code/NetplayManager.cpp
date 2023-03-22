@@ -920,7 +920,7 @@ void NetplayManager::Update()
 
 			cout << "creating my own practice lobby\n";
 			LobbyData ld;
-			ld.maxMembers = 2;
+			ld.maxMembers = MAX_PRACTICE_PLAYERS + 1;
 			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
 			ld.lobbyType = LobbyData::LOBBYTYPE_PRACTICE;
 			// set the name of the lobby if it's ours
@@ -1829,7 +1829,7 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 	else
 	{
 		//cout << "state is confused" << endl;
-		cout << "confused: " << "old: " << pCallback->m_eOldState << ", new state: " << pCallback->m_info.m_eState << endl;
+		cout << "confused: " << "old: " << pCallback->m_eOldState << ", new state: " << pCallback->m_info.m_eState << "\n";
 	}
 }
 
