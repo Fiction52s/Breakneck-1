@@ -213,7 +213,7 @@ struct NetplayManager
 	std::list<SteamNetworkingMessage_t*> ggpoMessageQueue;
 	std::list<SteamNetworkingMessage_t*> desyncMessageQueue;
 
-	PracticePlayer practicePlayers[MAX_PRACTICE_PLAYERS];
+	std::vector<PracticePlayer> practicePlayers;// [MAX_PRACTICE_PLAYERS];
 
 	bool desyncDetected;
 

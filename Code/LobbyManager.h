@@ -111,6 +111,9 @@ struct LobbyManager
 		A_ERROR,
 	};
 
+
+	std::list<LobbyMember> currLobbyMembersWhenIJoined;
+
 	int currSearchType;
 
 	Action action;
@@ -139,7 +142,7 @@ struct LobbyManager
 
 	LobbyManager( NetplayManager *nm );
 
-	void PopulateLobbyList( CSteamID lobbyID );
+	void UpdateCurrentLobbyMembers();
 	void Update();
 	bool IsAllLobbyDataReceived();
 
@@ -152,6 +155,7 @@ struct LobbyManager
 
 	bool CurrentLobbyHasMaxMembers();
 	int GetNumCurrentLobbyMembers();
+	void FilterLobbyList();
 
 	int GetNumMembers();
 

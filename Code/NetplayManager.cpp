@@ -288,6 +288,7 @@ void NetplayPlayer::DumpDesyncInfo()
 
 NetplayManager::NetplayManager()
 {
+	practicePlayers.resize(MAX_PRACTICE_PLAYERS);
 	myControllerInput = NULL;
 	myCurrProfile = NULL;
 	lobbyManager = NULL;
@@ -742,6 +743,8 @@ void NetplayManager::ConnectToAll()
 		if (netplayPlayers[i].connection == 0)
 		{
 			netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+			//SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+			//dont like that I don't know what is being returned here
 		}
 	}
 
@@ -809,7 +812,7 @@ void NetplayManager::PracticeConnect()
 	SteamNetworkingIdentity identity;
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].id.IsValid() && practicePlayers[i].indexInLobby < myIndexInPracticeLobby)
+		if (practicePlayers[i].id.IsValid() )//practicePlayers[i].indexInLobby < myIndexInPracticeLobby)
 		{
 			if (practicePlayers[i].isConnectedTo)
 			{
@@ -818,17 +821,32 @@ void NetplayManager::PracticeConnect()
 			}
 			else
 			{
-				cout << "connectp2p to practiceplayer: " << i << "\n";
-				identity.SetSteamID(practicePlayers[i].id);
-				practicePlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+				bool tryToConnect = false;
+				for (auto it = lobbyManager->currLobbyMembersWhenIJoined.begin(); it != lobbyManager->currLobbyMembersWhenIJoined.end(); ++it)
+				{
+					if (practicePlayers[i].id == (*it).id)
+					{
+						tryToConnect = true;
+						break;
+					}
+				}
+
+				if (tryToConnect)
+				{
+					cout << "connectp2p to practiceplayer: " << i << "\n";
+					identity.SetSteamID(practicePlayers[i].id);
+					practicePlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+					//this is useful because I know what I'm connecting to.
+				}
 			}
 		}
-		else if (practicePlayers[i].id.IsValid() && practicePlayers[i].indexInLobby >= myIndexInPracticeLobby)
+		/*else if (practicePlayers[i].id.IsValid() && practicePlayers[i].indexInLobby >= myIndexInPracticeLobby)
 		{
 			cout << "THIS WOULD HAVE BEEN A BUG BEFORE. myIndex: " 
 				<< myIndexInPracticeLobby << " and the one I'm deciding to not connect to index: " << practicePlayers[i].indexInLobby << "\n";
-		}
+		}*/
 	}
+
 }
 
 void NetplayManager::Update()
@@ -883,6 +901,7 @@ void NetplayManager::Update()
 			}
 
 			connectionManager->CreateListenSocket();
+
 			lobbyManager->TryJoiningLobby(0);
 			//remember to cover failure cases for stuff like this. you aren't guaranteed to join any lobby,
 			//and you need to gracefully handle failure
@@ -1698,6 +1717,29 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 	{
 		if (pCallback->m_info.m_hListenSocket)
 		{
+			/*for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+			{
+				if (practicePlayers[i].id == pCallback->m_info.m_identityRemote.GetSteamID() && practicePlayers[i].connection != 0)
+				{
+					if (practicePlayers[i].connection == pCallback->m_hConn)
+					{
+						cout << "ive done something very wrong" << "\n";
+						assert(0);
+					}
+					else
+					{
+						cout << "closing the duplicate connection" << "\n";
+					}
+					SteamNetworkingSockets()->CloseConnection(pCallback->m_hConn, 0, NULL, false );
+					return;
+				}
+			}*/
+
+			/*if (connectionIndex >= 0)
+			{
+				SteamNetworkingSockets()->CloseConnection(pCallback->m_hConn);
+			}*/
+
 			EResult result = k_EResultAccessDenied;
 			for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 			{
@@ -1735,11 +1777,8 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 	{
 		cout << "connection to " << connectionIndex << " is complete!" << endl;
 
-		if (connectionIndex < 0)
-		{
-			int x = 5;
-			//assert(connectionIndex >= 0);
-		}
+
+		assert(connectionIndex >= 0);
 
 		practicePlayers[connectionIndex].isConnectedTo = true;
 	}
@@ -1747,7 +1786,7 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
 		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_ClosedByPeer)
 	{
-		cout << "connection closed by peer: " << pCallback->m_info.m_eEndReason << endl;
+		cout << "connection " << pCallback->m_hConn << " at index " << connectionIndex << " closed by peer: " << pCallback->m_info.m_eEndReason << endl;
 
 		//don't need to change state, it doesn't matter while practicing
 		//action = A_DISCONNECT;
@@ -1760,16 +1799,26 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 		//do I still need to close the connection?
 		//SteamNetworkingSockets()->CloseConnection(connection, 0, NULL, false);
 
-		practicePlayers[connectionIndex].Clear();
+		if (connectionIndex >= 0)
+		{
+			practicePlayers[connectionIndex].Clear();
+		}
+
+		
 		//practicePlayers[connectionIndex].isConnectedTo = false;
 	}
 	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
 		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
 		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
 	{
-		cout << "connection state problem locally detected: " << pCallback->m_info.m_eEndReason << endl;
+		cout << "connection state problem locally detected for connection " << pCallback->m_hConn << " at index " 
+			<< connectionIndex << ": " << pCallback->m_info.m_eEndReason << endl;
 
-		practicePlayers[connectionIndex].Clear();
+		if (connectionIndex >= 0)
+		{
+			practicePlayers[connectionIndex].Clear();
+		}
+		
 		//practicePlayers[connectionIndex].isConnectedTo = false;
 	}
 	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_ClosedByPeer

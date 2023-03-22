@@ -196,11 +196,15 @@ void Lobby::PopulateMemberList()
 	CSteamID currUser;
 	CSteamID myId = SteamUser()->GetSteamID();
 
+	cout << "populate member list" << "\n";
+
 	for (int i = 0; i < numMembers; ++i)
 	{
 		currUser = SteamMatchmaking()->GetLobbyMemberByIndex(m_steamIDLobby, i);
 
 		memberList.push_back(LobbyMember(currUser, SteamFriends()->GetFriendPersonaName(currUser)));
+
+		cout << "member " << i << ": " << memberList.back().name << "\n";
 	}
 }
 
@@ -248,7 +252,6 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 
 
-
 		//string test = "test messageeeee";
 		//SteamMatchmaking()->SendLobbyChatMsg(currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
 	}
@@ -293,7 +296,8 @@ void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 {
 	cout << "lobby chat update callback. updated member list" << endl;
 
-	PopulateLobbyList(pCallback->m_ulSteamIDLobby);
+	assert(pCallback->m_ulSteamIDLobby == currentLobby.m_steamIDLobby.ConvertToUint64());
+	UpdateCurrentLobbyMembers();
 
 	if( netplayManager != NULL && netplayManager->IsPracticeMode())
 		netplayManager->OnLobbyChatUpdateCallback(pCallback);
@@ -314,7 +318,9 @@ void LobbyManager::OnLobbyEnterCallback(LobbyEnter_t *pCallback)
 {
 	cout << "lobby enter callback" << endl;
 
-	PopulateLobbyList(pCallback->m_ulSteamIDLobby);
+	assert(pCallback->m_ulSteamIDLobby == currentLobby.m_steamIDLobby.ConvertToUint64());
+	UpdateCurrentLobbyMembers();
+	currLobbyMembersWhenIJoined = currentLobby.memberList;
 }
 
 void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
@@ -347,6 +353,8 @@ void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
 					if (action == A_FOUND_LOBBIES_WAITING_FOR_DATA && IsAllLobbyDataReceived())
 					{
 						action = A_FOUND_LOBBIES;
+						cout << "all data has been received, so I'm filtering now" << "\n";
+						FilterLobbyList();
 					}
 
 					//if (action == A_IN_LOBBY_WAITING_FOR_DATA && (*it).m_steamIDLobby == currentLobby.m_steamIDLobby)
@@ -369,27 +377,14 @@ void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
 	}*/
 }
 
-void LobbyManager::PopulateLobbyList( CSteamID lobbyID )
+void LobbyManager::UpdateCurrentLobbyMembers()
 {
-	currentLobby.memberList.clear();
-
-	int numMembers = SteamMatchmaking()->GetNumLobbyMembers(lobbyID);
-	CSteamID currUser;
-	CSteamID myId = SteamUser()->GetSteamID();
-
-	for (int i = 0; i < numMembers; ++i)
-	{
-		currUser = SteamMatchmaking()->GetLobbyMemberByIndex(lobbyID, i);
-
-		currentLobby.memberList.push_back(LobbyMember(currUser, SteamFriends()->GetFriendPersonaName( currUser )));
-	}
+	currentLobby.PopulateMemberList();
 
 	if (currWaitingRoom != NULL)
 	{
 		currWaitingRoom->UpdateMemberList();
-	}
-
-	
+	}	
 }
 
 
@@ -507,6 +502,62 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 	}*/
 }
 
+void LobbyManager::FilterLobbyList()
+{
+	vector<Lobby> copyVec = lobbyVec;
+	lobbyVec.clear();
+
+	//this is flawed, because you can't get the data until you know you have retrieved it for sure.
+	//for example, data.lobbyType might not have been retrieved yet
+
+	bool addToVec = false;
+	for (auto it = copyVec.begin(); it != copyVec.end(); ++it)
+	{
+		if ((*it).data.lobbyType == searchLobbyType)
+		{
+			addToVec = false;
+			switch (currSearchType)
+			{
+			case SEARCH_GET_ALL_OF_TYPE:
+			{
+				addToVec = true;
+				break;
+			}
+			case SEARCH_MATCH_NAME:
+			{
+				if ((*it).data.mapPath == searchMapPath)
+				{
+					addToVec = true;
+				}
+				break;
+			}
+			case SEARCH_MATCH_WORLD:
+			{
+				break;
+			}
+			case SEARCH_MATCH_WORLD_AND_SECTOR:
+			{
+				break;
+			}
+			case SEARCH_MATCH_WORLD_AND_SECTOR_AND_LEVEL:
+			{
+				break;
+			}
+			}
+
+			if (addToVec)
+				lobbyVec.push_back((*it));
+
+		}
+	}
+
+	if (lobbyVec.size() == 0)
+	{
+		action = A_FOUND_NO_LOBBIES;
+		cout << "no lobbies left after filtering\n";
+	}
+}
+
 void LobbyManager::ProcessLobbyList()
 {
 	if (lobbyVec.empty())
@@ -515,50 +566,6 @@ void LobbyManager::ProcessLobbyList()
 	}
 	else
 	{
-		vector<Lobby> copyVec = lobbyVec;
-		lobbyVec.clear();
-
-		bool addToVec = false;
-		for (auto it = copyVec.begin(); it != copyVec.end(); ++it)
-		{
-			if ((*it).data.lobbyType == searchLobbyType)
-			{
-				addToVec = false;
-				switch (currSearchType)
-				{
-				case SEARCH_GET_ALL_OF_TYPE:
-				{
-					addToVec = true;
-					break;
-				}
-				case SEARCH_MATCH_NAME:
-				{
-					if ((*it).data.mapPath == searchMapPath)
-					{
-						addToVec = true;
-					}
-					break;
-				}
-				case SEARCH_MATCH_WORLD:
-				{
-					break;
-				}
-				case SEARCH_MATCH_WORLD_AND_SECTOR:
-				{
-					break;
-				}
-				case SEARCH_MATCH_WORLD_AND_SECTOR_AND_LEVEL:
-				{
-					break;
-				}
-				}
-
-				if( addToVec )
-					lobbyVec.push_back((*it));
-				
-			}
-		}
-		
 		if (lobbyVec.empty())
 		{
 			action = A_FOUND_NO_LOBBIES;
@@ -570,11 +577,14 @@ void LobbyManager::ProcessLobbyList()
 			if (IsAllLobbyDataReceived())
 			{
 				action = A_FOUND_LOBBIES;
+				cout << "all data received. filtering\n";
+				FilterLobbyList();
 
-				for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+
+				/*for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
 				{
 					(*it).PopulateMemberList();
-				}
+				}*/
 			}
 			else
 			{
@@ -644,6 +654,8 @@ void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bI
 		}
 		else
 		{
+			//assert(false);
+			//all lobbies searched for have their data inherently unless they are made by a friend for some reason.
 			SteamMatchmaking()->RequestLobbyData(steamIDLobby);
 		}
 
