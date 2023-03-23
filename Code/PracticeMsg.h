@@ -13,6 +13,7 @@ struct PracticeMsgHeader
 		MSG_TYPE_INIT,
 		MSG_TYPE_START,
 		MSG_TYPE_INPUT,
+		MSG_TYPE_SEQUENCE_CONFIRM,
 		MSG_TYPE_Count,
 	};
 
@@ -45,6 +46,15 @@ struct PracticeInputMsg
 	
 
 	PracticeInputMsg();
+	void Clear();
+};
+
+struct PracticeSequenceConfirmMsg
+{
+	PracticeMsgHeader header;
+	int frame;
+
+	PracticeSequenceConfirmMsg();
 	void Clear();
 };
 

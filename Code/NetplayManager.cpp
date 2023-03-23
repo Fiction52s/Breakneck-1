@@ -38,6 +38,8 @@ void PracticePlayer::Clear()
 	alreadySentStartMessage = false;
 	alreadySentInitMessage = false;
 
+	numSequenceConfirms = 0;
+
 	readyToBeSentMessages = false;
 
 	isConnectedTo = false;
@@ -223,6 +225,11 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		//cout << "processsing practice input msg from connection: " << message->GetConnection() << "\n";
 		PracticeInputMsg *msg = (PracticeInputMsg*)message->GetData();
 		ReceiveInputMsg(*msg);
+		break;
+	}
+	case PracticeMsgHeader::MSG_TYPE_SEQUENCE_CONFIRM:
+	{
+		++numSequenceConfirms;
 		break;
 	}
 	}
@@ -2949,7 +2956,7 @@ void NetplayManager::SendPracticeInitMessageToAllNewPeers()
 bool NetplayManager::SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm)
 {
 	//k_EP2PSendReliable
-	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable | k_nSteamNetworkingSend_NoNagle, NULL);
 
 	if (res == k_EResultOK)
 	{
@@ -3115,6 +3122,42 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 
 	if (buf != NULL)
 		delete[] buf;
+}
+
+bool NetplayManager::SendPracticeSequenceConfirmMessageToPlayer(PracticePlayer &pracPlayer, PracticeSequenceConfirmMsg &pm)
+{
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		//cout << "send practice input message to connection " << pracPlayer.connection << ". input: " << pm.input << ", frame: " << pm.frame << "\n";
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice sequence confirm message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
+void NetplayManager::SendPracticeSequenceConfirmMessageToAllPeers(PracticeSequenceConfirmMsg &pm)
+{
+	assert(action == A_PRACTICE_TEST);
+	if (action != A_PRACTICE_TEST)
+	{
+		return;
+	}
+
+	SteamNetworkingIdentity identity;
+	CSteamID myID = SteamUser()->GetSteamID();
+
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].readyToBeSentMessages && practicePlayers[i].HasBeenSentStartMessage())
+		{
+			SendPracticeSequenceConfirmMessageToPlayer(practicePlayers[i], pm);
+		}
+	}
 }
 
 bool NetplayManager::IsPracticeMode()

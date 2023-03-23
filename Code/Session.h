@@ -447,6 +447,10 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	bool frameConfirmed;
 
+	bool parallelConfirmPress;
+
+	std::vector<Sequence*> allSequencesVec;
+
 	std::vector<ControllerDualStateQueue*> controllerStates;
 	std::vector<ControlProfile*> controlProfiles;
 
@@ -853,7 +857,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void RecGhostRecordFrame() {}
 	virtual void UpdateReplayGhostSprites() {}
 	bool RunGameModeUpdate();
-	bool GGPOFrozenGameModeUpdate();
+	bool OnlineFrozenGameModeUpdate();
 	bool FrozenGameModeUpdate();
 	virtual bool PopupGameModeUpdate();
 	virtual bool LeaderboardGameModeUpdate();
@@ -955,6 +959,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	int GetPlayerIndex(Actor *p);
 	Zone *GetZoneFromID(int id);
 	int GetZoneID(Zone *z);
+	Sequence *GetSequenceFromID(int id);
+	int GetSequenceID(Sequence *seq);
+	bool TrySendPracticeSequenceConfirmMessage();
 };
 
 #endif

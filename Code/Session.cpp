@@ -1573,6 +1573,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 {
 	activePlayerReplayManagers.reserve(10);
 
+	parallelConfirmPress = false;
+
 	nextFrameRestartGame = false;
 
 	matchPlacings.resize(4);
@@ -3021,6 +3023,7 @@ void Session::RunFrameForParallelPractice()
 				if (prac.needsSessionRestart )
 				{
 					prac.needsSessionRestart = false;
+					//prac.hasSequenceConfirmReady = false;
 					pm->parallelGames[i]->RestartLevel();
 
 					if (prac.syncStateBufSize > 0)
@@ -3031,6 +3034,20 @@ void Session::RunFrameForParallelPractice()
 				}
 			}
 		}
+
+		/*for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				if (netplayManager->practicePlayers[i].numSequenceConfirms > 0)
+				{
+					cout << "sequence confirm ready. confirming for session: " << i << "\n";
+					pm->parallelGames[i]->RunPracticeModeUpdate();
+					--netplayManager->practicePlayers[i].numSequenceConfirms;
+				}
+			}
+		}*/
+
 
 		int numFramesToRun = 0;
 		for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
@@ -3043,7 +3060,19 @@ void Session::RunFrameForParallelPractice()
 				{
 					//cout << "run parallel frame" << endl;
 					pm->parallelGames[i]->UpdatePlayerInput(i);
-					pm->parallelGames[i]->OnlineRunGameModeUpdate();
+
+					switch (gameState)
+					{
+					case GameState::RUN:
+						UpdatePlayerInput(parallelSessionIndex);
+						OnlineRunGameModeUpdate();
+						break;
+					case GameState::FROZEN:
+						OnlineFrozenGameModeUpdate();
+						break;
+					}
+
+					pm->parallelGames[i]->RunPracticeModeUpdate();
 					//ppm->updatePracticeSessions[i] = true;
 
 					//ppm->parallelGames[i]->OnlineRunGameModeUpdate();//RunMainLoopOnce();
@@ -4994,22 +5023,26 @@ void Session::SetGlobalBorders()
 	left->v0 = topLeft;
 	left->v1 = bottomLeft;
 	left->edgeType = Edge::BORDER;
+	left->edgeIndex = 0;
 
 	Edge *right = new Edge;
 	right->v0 = bottomRight;
 	right->v1 = topRight;
 	right->edgeType = Edge::BORDER;
+	right->edgeIndex = 1;
 	//cout << "making new edge at x value: " << right->v0.x << endl;
 
 	Edge *top = new Edge;
 	top->v0 = topRight;
 	top->v1 = topLeft;
 	top->edgeType = Edge::BORDER;
+	top->edgeIndex = 2;
 
 	Edge *bot = new Edge;
 	bot->v0 = bottomLeft;
 	bot->v1 = bottomRight;
 	bot->edgeType = Edge::BORDER;
+	bot->edgeIndex = 3;
 
 	left->edge0 = top;
 	left->edge1 = bot;
@@ -7075,7 +7108,22 @@ bool Session::RunGameModeUpdate()
 	return true;
 }
 
-bool Session::GGPOFrozenGameModeUpdate()
+bool Session::TrySendPracticeSequenceConfirmMessage()
+{
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+	{
+		PracticeSequenceConfirmMsg pscm;
+		pscm.frame = totalGameFrames;
+
+		netplayManager->SendPracticeSequenceConfirmMessageToAllPeers(pscm);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool Session::OnlineFrozenGameModeUpdate()
 {
 	switchGameState = false;
 
@@ -8105,7 +8153,12 @@ int Session::GetNumStoredBytes()
 	totalSize += absorbDarkParticles->GetNumStoredBytes();
 	totalSize += absorbShardParticles->GetNumStoredBytes();
 
-	totalSize += deathSeq->GetNumStoredBytes();
+	for (auto it = allSequencesVec.begin(); it != allSequencesVec.end(); ++it)
+	{
+		totalSize += (*it)->GetNumStoredBytes();
+	}
+
+	//totalSize += deathSeq->GetNumStoredBytes();
 
 	return totalSize;
 }
@@ -8123,7 +8176,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->currSuperPlayerIndex = GetPlayerIndex(currSuperPlayer);
 	currSaveState->gameState = gameState;
 	currSaveState->nextFrameRestartGame = nextFrameRestartGame;
-	currSaveState->activeSequence = activeSequence;
+	currSaveState->activeSequenceID = GetSequenceID(activeSequence);
 	currSaveState->randomState = randomState;
 	currSaveState->cam = cam;
 
@@ -8177,8 +8230,14 @@ void Session::StoreBytes(unsigned char *bytes)
 	absorbShardParticles->StoreBytes(bytes);
 	bytes += absorbShardParticles->GetNumStoredBytes();
 
-	deathSeq->StoreBytes(bytes);
-	bytes += deathSeq->GetNumStoredBytes();
+	for (auto it = allSequencesVec.begin(); it != allSequencesVec.end(); ++it)
+	{
+		(*it)->StoreBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+
+	//deathSeq->StoreBytes(bytes);
+	//bytes += deathSeq->GetNumStoredBytes();
 
 	/*if (IsParallelSession())
 	{
@@ -8233,8 +8292,14 @@ void Session::SetFromBytes(unsigned char *bytes)
 	absorbShardParticles->SetFromBytes(bytes);
 	bytes += absorbShardParticles->GetNumStoredBytes();
 
-	deathSeq->SetFromBytes(bytes);
-	bytes += deathSeq->GetNumStoredBytes();
+	for (auto it = allSequencesVec.begin(); it != allSequencesVec.end(); ++it)
+	{
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+
+	//deathSeq->SetFromBytes(bytes);
+	//bytes += deathSeq->GetNumStoredBytes();
 
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = GetEnemyFromID( currSaveState->activeEnemyListID );
@@ -8261,7 +8326,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 
 	gameState = (GameState)currSaveState->gameState;
 	nextFrameRestartGame = currSaveState->nextFrameRestartGame;
-	activeSequence = currSaveState->activeSequence;
+	activeSequence = GetSequenceFromID(currSaveState->activeSequenceID);
 }
 
 bool Session::SaveState(unsigned char **buffer,
@@ -9103,7 +9168,7 @@ void Session::RunGGPOModeUpdate()
 		OnlineRunGameModeUpdate();
 		break;
 	case GameState::FROZEN:
-		GGPOFrozenGameModeUpdate();
+		OnlineFrozenGameModeUpdate();
 		break;
 	}
 }
@@ -9113,10 +9178,11 @@ void Session::RunPracticeModeUpdate()
 	switch (gameState)
 	{
 	case GameState::RUN:
-		RunGameModeUpdate();
+		UpdatePlayerInput(parallelSessionIndex);
+		OnlineRunGameModeUpdate();
 		break;
 	case GameState::FROZEN:
-		GGPOFrozenGameModeUpdate();
+		OnlineFrozenGameModeUpdate();
 		break;
 	}
 }
@@ -9307,4 +9373,20 @@ int Session::GetZoneID(Zone *z)
 	{
 		return z->zoneIndex;
 	}
+}
+
+Sequence *Session::GetSequenceFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else
+		return allSequencesVec[id];
+}
+
+int Session::GetSequenceID(Sequence *seq)
+{
+	if (seq == NULL)
+		return -1;
+	else
+		return seq->sequenceID;
 }

@@ -241,10 +241,17 @@ void EdgeInfo::SetFromEdge(Edge *e)
 		ownerIndex = e->rail->railIndex;
 		edgeIndex = e->edgeIndex;
 	}
+	else if (e->edgeType == Edge::BORDER)
+	{
+		eiType = EdgeInfoType::ETI_BORDER;
+		ownerIndex = -1;
+		edgeIndex = e->edgeIndex;
+	}
 	else
 	{
 		if (e->IsGateEdge())
 		{
+			eiType = EdgeInfoType::ETI_GATE;
 			Gate *g = e->GetGate();
 			ownerIndex = g->gateIndex;
 
@@ -264,6 +271,8 @@ void EdgeInfo::SetFromEdge(Edge *e)
 		}
 		else
 		{
+			cout << "error in setfromedge. edge type is: " << e->edgeType << "\n";
+			cout << "edge v0: " << e->v0.x << ", " << e->v0.y << ", v1: " << e->v1.x << ", " << e->v1.y << "\n";
 			assert(0);
 		}
 	}

@@ -47,6 +47,8 @@ struct PracticePlayer
 	};
 
 
+	int numSequenceConfirms;
+
 	bool readyToBeSentMessages;
 
 	bool needsSessionRestart;
@@ -349,6 +351,9 @@ struct NetplayManager
 
 	bool SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm);
 	void SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm);
+
+	bool SendPracticeSequenceConfirmMessageToPlayer(PracticePlayer &pracPlayer, PracticeSequenceConfirmMsg &pm);
+	void SendPracticeSequenceConfirmMessageToAllPeers(PracticeSequenceConfirmMsg &pm);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);

@@ -197,11 +197,18 @@ Sequence *Sequence::CreateScene(const std::string &name)
 }
 
 Sequence::Sequence()
-	:frameCount(-1),frame(0),nextSeq(NULL)
+	:nextSeq(NULL)
 {
 	sess = Session::GetSession();
+
+	seqData.frame = 0;
+	seqData.state = 0;
+
+	sequenceID = sess->allSequencesVec.size();
+
+	sess->allSequencesVec.push_back(this);
+	
 	currConvGroup = NULL;
-	state = 0;
 	numStates = 0;
 	stateLength = NULL;
 	barrier = NULL;
@@ -252,8 +259,8 @@ FlashGroup * Sequence::AddFlashGroup(const std::string &n)
 
 void Sequence::Reset()
 {
-	state = 0;
-	frame = 0;
+	seqData.state = 0;
+	seqData.frame = 0;
 	cIndex = 0;
 	currMovie = NULL;
 	currFlashGroup = NULL;
@@ -317,7 +324,7 @@ void Sequence::UpdateMovie()
 	assert(currMovie != NULL);
 
 	sfe::Status movStatus = currMovie->getStatus();
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
 		currMovie->setVolume(sess->mainMenu->config->GetData().musicVolume);
 		currMovie->setPlayingOffset(sf::Time::Zero);
@@ -350,7 +357,7 @@ void Sequence::UpdateMovie()
 			}
 		}
 
-		if (frame == stateLength[state] - 1)
+		if (seqData.frame == stateLength[seqData.state] - 1)
 		{
 			if (sess->originalMusic != NULL)
 			{
@@ -442,7 +449,7 @@ void Sequence::AddMovie(const std::string &movieName)
 void Sequence::ConvUpdate()
 {
 	Conversation *conv = GetCurrentConv();
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
 		conv->Show();
 	}
@@ -503,9 +510,9 @@ void Sequence::SetCameraShot(const std::string &n)
 
 bool Sequence::IsLastFrame()
 {
-	int sLen = stateLength[state];
+	int sLen = stateLength[seqData.state];
 
-	return frame == (sLen - 1);
+	return seqData.frame == (sLen - 1);
 }
 
 bool Sequence::IsCamMoving()
@@ -516,7 +523,7 @@ bool Sequence::IsCamMoving()
 void Sequence::BasicFlashUpdateState(const std::string &flashName)
 {
 	FlashedImage *fi = flashes[flashName];
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
 		Conversation *c = GetCurrentConv();
 		if (c != NULL)
@@ -526,7 +533,7 @@ void Sequence::BasicFlashUpdateState(const std::string &flashName)
 	}
 	else if (fi->IsDone())
 	{
-		frame = stateLength[state] - 1;
+		seqData.frame = stateLength[seqData.state] - 1;
 	}
 }
 
@@ -564,19 +571,27 @@ bool Sequence::IsFlashDone(const std::string &flashName)
 
 bool Sequence::PlayerPressedConfirm()
 {
-	if (sess->IsReplayOn()
-		|| (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A))
+	if (sess->IsParallelSession())
 	{
-		return true;
+		return sess->parallelConfirmPress;
 	}
+	else
+	{
+		if (sess->IsReplayOn()
+			|| (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A) )
+		{
+			return true;
+		}
+	}
+	
 
 	return false;
 }
 
 void Sequence::EndCurrState()
 {
-	int sLen = stateLength[state];
-	frame = sLen - 1;
+	int sLen = stateLength[seqData.state];
+	seqData.frame = sLen - 1;
 }
 
 Conversation *Sequence::GetCurrentConv()
@@ -622,7 +637,7 @@ void Sequence::Rumble(int x, int y, int duration)
 
 void Sequence::RumbleDuringState(int x, int y)
 {
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
 		Rumble(x, y, stateLength[state]);
 	}
@@ -699,22 +714,16 @@ void Sequence::Init()
 
 bool Sequence::StateIncrement()
 {
-	if (frame == stateLength[state] && state != numStates)
+	if (seqData.frame == stateLength[seqData.state] && seqData.state != numStates)
 	{
-		++state;
-		frame = 0;
+		++seqData.state;
+		seqData.frame = 0;
 
 		if (currMovie != NULL)
 			currMovie = NULL;
 	}
 
-	/*if (sess->GetCurrInput(0).PUp())
-	{
-		state = numStates;
-		frame = stateLength[state];
-	}*/
-
-	if ( state == numStates)
+	if (seqData.state == numStates)
 	{
 		ReturnToGame();
 		return false;
@@ -734,9 +743,24 @@ bool Sequence::Update()
 
 	UpdateState();
 
-	++frame;
+	++seqData.frame;
 
 	return true;
+}
+
+int Sequence::GetNumStoredBytes()
+{
+	return sizeof(seqData);
+}
+
+void Sequence::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &seqData, sizeof(seqData));
+}
+
+void Sequence::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&seqData, bytes, sizeof(seqData));
 }
 
 

@@ -253,10 +253,6 @@ struct TextTestSeq : Sequence
 	std::vector<ConversationGroup*> groups;
 	void UpdateSceneLabel();
 	int gIndex;
-	int cIndex;
-
-	Session *sess;
-	int frame;
 
 	sf::Text sceneLabel;
 

@@ -25,8 +25,8 @@ struct EdgeInfo
 		ETI_POLY,
 		ETI_RAIL,
 		ETI_GATE, //probably needed
-				  //ETI_BORDER,
-				  ETI_Count,
+		ETI_BORDER,
+		ETI_Count,
 	};
 
 	EdgeInfoType eiType;

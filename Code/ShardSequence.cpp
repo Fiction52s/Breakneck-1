@@ -99,11 +99,11 @@ GetShardSequence::~GetShardSequence()
 void GetShardSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case GET:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
@@ -111,15 +111,16 @@ void GetShardSequence::UpdateState()
 		}
 
 		int freezeFrame = 100;
-		if (frame == freezeFrame)
+		if (seqData.frame == freezeFrame)
 		{
 			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}
-		else if (frame > freezeFrame)
+		else if (seqData.frame > freezeFrame)
 		{
 			if (PlayerPressedConfirm())
 			{
+				sess->TrySendPracticeSequenceConfirmMessage();
 				sess->SetGameSessionState(GameSession::RUN);
 			}
 		}
@@ -128,7 +129,7 @@ void GetShardSequence::UpdateState()
 		{
 			if (!geoGroup.Update())
 			{
-				frame = stateLength[state] - 1;
+				seqData.frame = stateLength[seqData.state] - 1;
 			}
 		}
 	}
@@ -169,8 +170,8 @@ void GetShardSequence::Reset()
 	if (shard != NULL)
 	{
 		Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
-		frame = 0;
-		state = GET;
+		seqData.frame = 0;
+		seqData.state = GET;
 		geoGroup.SetBase(pPos);
 		geoGroup.Reset();
 		geoGroup.Start();
@@ -185,5 +186,26 @@ void GetShardSequence::Reset()
 		emitter->Reset();
 		sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 	}
+}
 
+int GetShardSequence::GetNumStoredBytes()
+{
+	return sizeof(seqData) + geoGroup.GetNumStoredBytes();
+}
+
+void GetShardSequence::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &seqData, sizeof(seqData));
+	bytes += sizeof(seqData);
+
+	geoGroup.StoreBytes(bytes);
+}
+
+void GetShardSequence::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&seqData, bytes, sizeof(seqData));
+	bytes += sizeof(seqData);
+
+	geoGroup.SetFromBytes(bytes);
+	
 }

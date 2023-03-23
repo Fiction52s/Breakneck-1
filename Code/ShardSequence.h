@@ -13,21 +13,24 @@ struct GetShardSequence : Sequence
 		Count
 	};
 
-	GetShardSequence();
-	~GetShardSequence();
-	void UpdateState();
-	void ReturnToGame();
-	void SetupStates();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
-	void Reset();
-
 	Shard *shard;
 	ShardPopup *shardPop;
 	MovingGeoGroup geoGroup;
 	ShapeEmitter *emitter;
 
 	sf::Vertex overlayRect[4];
+
+	GetShardSequence();
+	~GetShardSequence();
+	void Reset();
+	void UpdateState();
+	void ReturnToGame();
+	void SetupStates();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

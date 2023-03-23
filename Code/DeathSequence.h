@@ -15,12 +15,10 @@ struct DeathSequence : Sequence
 		Count
 	};
 
-	struct MyData
-	{
-		int frameCount;
-		int frame;
-		int state;
-	};
+	MovingGeoGroup *geoGroup;
+	ShapeEmitter *emitter;
+	Session *sess;
+	sf::Vertex overlayRect[4];
 
 	DeathSequence();
 	~DeathSequence();
@@ -33,13 +31,6 @@ struct DeathSequence : Sequence
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
-
-	MyData data;
-	MovingGeoGroup *geoGroup;
-	ShapeEmitter *emitter;
-	Session *sess;
-
-	sf::Vertex overlayRect[4];
 };
 
 #endif

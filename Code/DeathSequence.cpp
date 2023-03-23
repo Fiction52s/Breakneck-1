@@ -92,18 +92,18 @@ void DeathSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	switch (state)
+	switch (seqData.state)
 	{
 	case DIE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
 			//sess->cam.SetRumble(10, 10, 90, 4);
 		}
 
-		if (frame == 60)
+		if (seqData.frame == 60)
 		{
 			sess->Fade(false, 14, Color::White, true);
 		}
@@ -112,7 +112,7 @@ void DeathSequence::UpdateState()
 		if (sess->GetGameSessionState() == Session::RUN)
 			if (!geoGroup->Update())
 			{
-				frame = stateLength[state] - 1;
+				seqData.frame = stateLength[seqData.state] - 1;
 			}
 	}
 	}
@@ -145,8 +145,8 @@ void DeathSequence::Reset()
 {
 	Sequence::Reset();
 	Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
-	frame = 0;
-	state = DIE;
+	seqData.frame = 0;
+	seqData.state = DIE;
 	geoGroup->SetBase(pPos);
 	geoGroup->Reset();
 	geoGroup->Start();
@@ -160,31 +160,23 @@ void DeathSequence::Reset()
 
 int DeathSequence::GetNumStoredBytes()
 {
-	return sizeof(MyData) + geoGroup->GetNumStoredBytes();
+	return sizeof(seqData) + geoGroup->GetNumStoredBytes();
 }
 
 void DeathSequence::StoreBytes(unsigned char *bytes)
 {
-	data.frame = frame;
-	data.frameCount = frameCount;
-	data.state = state;
-
-	memcpy(bytes, &data, sizeof(MyData));
-	bytes += sizeof(MyData);
+	memcpy(bytes, &seqData, sizeof(seqData));
+	bytes += sizeof(seqData);
 
 	geoGroup->StoreBytes(bytes);
-	bytes += geoGroup->GetNumStoredBytes();
+	//bytes += geoGroup->GetNumStoredBytes();
 }
 
 void DeathSequence::SetFromBytes(unsigned char *bytes)
 {
-	memcpy(&data, bytes, sizeof(MyData));
-	bytes += sizeof(MyData);
-
-	frame = data.frame;
-	frameCount = data.frameCount;
-	state = data.state;
+	memcpy(&seqData, bytes, sizeof(seqData));
+	bytes += sizeof(seqData);
 	
 	geoGroup->SetFromBytes(bytes);
-	bytes += geoGroup->GetNumStoredBytes();
+	//bytes += geoGroup->GetNumStoredBytes();
 }

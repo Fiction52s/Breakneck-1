@@ -170,15 +170,30 @@ struct SceneBG
 
 
 struct Sequence
-{	
-	int frameCount;
-	int frame;
-	int state;
+{
+	struct SequenceData
+	{
+		int state;
+		int frame;
+	};
+
+	SequenceData seqData;
+	
+	int sequenceID;
 	Sequence *nextSeq;
 	Barrier *barrier;
+	int cIndex;
+	int movieFadeFrames;
+	sfe::Movie *currMovie;
+	ConversationGroup *currConvGroup;
+	sf::Color movieFadeColor;
+	int movieStopFrame;
+	Session *sess;
+	int *stateLength;
+	int numStates;
+	FlashGroup *currFlashGroup;
 
 	std::map <std::string, FlashGroup*> flashGroups;
-	FlashGroup *currFlashGroup;
 	std::map<std::string, FlashedImage*> flashes;
 	std::map<std::string, sfe::Movie*> movies;
 	std::map<std::string, Enemy *> enemies;
@@ -187,17 +202,6 @@ struct Sequence
 	std::map<std::string, PoiInfo*> points;
 	std::list<FlashedImage*> flashList;
 	std::map<std::string, SceneBG*> bgs;
-	sfe::Movie *currMovie;
-	ConversationGroup *currConvGroup;
-	int cIndex;
-	int movieFadeFrames;
-	sf::Color movieFadeColor;
-	int movieStopFrame;
-	Session *sess;
-	
-	int *stateLength;
-	int numStates;
-	
 
 	static Sequence *CreateScene(const std::string &name);
 	Sequence();
@@ -270,6 +274,9 @@ struct Sequence
 	virtual void AddMovies() {}
 	virtual void Reset();
 	bool StateIncrement();
+	virtual int GetNumStoredBytes();
+	virtual void StoreBytes(unsigned char *bytes);
+	virtual void SetFromBytes(unsigned char *bytes);
 };
 
 struct BasicBossScene : Sequence

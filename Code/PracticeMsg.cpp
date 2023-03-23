@@ -57,3 +57,15 @@ void PracticeInputMsg::Clear()
 	frame = -1;
 	input = 0;
 }
+
+
+PracticeSequenceConfirmMsg::PracticeSequenceConfirmMsg()
+	:header( PracticeMsgHeader::MSG_TYPE_SEQUENCE_CONFIRM )
+{
+	Clear();
+}
+
+void PracticeSequenceConfirmMsg::Clear()
+{
+	frame = -1;
+}
