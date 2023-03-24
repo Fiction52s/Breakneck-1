@@ -1999,7 +1999,7 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	comboHitEnemy = ed.hittableObjectData.comboHitEnemy;
 	numHealth = ed.hittableObjectData.numHealth;
 
-	currPosInfo.PopulateData(ed.posInfoData);
+	currPosInfo.PopulateFromData(ed.posInfoData);
 
 	if (surfaceMover != NULL)
 	{
@@ -2606,6 +2606,16 @@ ComboObject::ComboObject(Enemy *en)
 	data.enemyHitboxFrame = -1;
 	data.nextComboObj = NULL;
 	enemyHitboxInfo = NULL;
+
+	if (en->sess->IsSessTypeGame())
+	{
+		comboObjectID = en->sess->allComboObjectsVec.size();
+		en->sess->allComboObjectsVec.push_back(this);
+	}
+	else
+	{
+		comboObjectID = -1;
+	}
 }
 
 ComboObject::~ComboObject()

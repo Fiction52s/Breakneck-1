@@ -186,6 +186,7 @@ struct ComboObject
 	MyData data;
 	HitboxInfo *enemyHitboxInfo;
 	Enemy *enemy;
+	int comboObjectID;
 
 	ComboObject::ComboObject(Enemy *en);
 	~ComboObject();

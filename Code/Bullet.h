@@ -216,6 +216,8 @@ struct Launcher
 		//sf::Vector2<double> facingDir;
 	};
 
+	int launcherID;
+
 	double bulletSpeed;
 	BasicBullet *inactiveBullets;
 	BasicBullet *activeBullets;

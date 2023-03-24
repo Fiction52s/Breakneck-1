@@ -279,9 +279,6 @@ struct GameSession : RayCastHandler, Session
 	
 	PauseMenu *pauseMenu;
 
-	//does not change during running
-	std::list<PolyPtr> allSpecialTerrain;
-	
 	bool usePolyShader;
 	bool hasGrass[6];
 	bool hasAnyGrass;

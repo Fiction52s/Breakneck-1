@@ -2474,6 +2474,8 @@ bool Session::ReadSpecialTerrain(std::ifstream &is)
 	{
 		PolyPtr poly(new TerrainPolygon());
 
+		poly->polyIndex = specialPolyNum;
+
 		poly->Load(is);
 
 		poly->Finalize();
@@ -9408,6 +9410,22 @@ int Session::GetPolyID(PolyPtr poly)
 		return poly->polyIndex;
 }
 
+int Session::GetSpecialPolyID(PolyPtr poly)
+{
+	if (poly == NULL)
+		return -1;
+	else
+		return poly->polyIndex;
+}
+
+PolyPtr Session::GetSpecialPolyFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else
+		return allSpecialPolysVec[id];
+}
+
 int Session::GetPlayerIndex(Actor *p)
 {
 	if (p == NULL)
@@ -9436,6 +9454,22 @@ int Session::GetZoneID(Zone *z)
 	{
 		return z->zoneIndex;
 	}
+}
+
+int Session::GetComboObjectID(ComboObject *cb)
+{
+	if (cb == NULL)
+		return -1;
+	else
+		return cb->comboObjectID;
+}
+
+ComboObject * Session::GetComboObjectFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else
+		return allComboObjectsVec[id];
 }
 
 Sequence *Session::GetSequenceFromID(int id)

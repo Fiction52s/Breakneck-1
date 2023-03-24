@@ -84,7 +84,7 @@ struct SwingLauncher;
 struct EnemyParams;
 struct SoundNode;
 struct AimLauncher;
-
+struct BasicBullet;
 struct GroundTrigger;
 
 struct KinMask;
@@ -651,10 +651,23 @@ struct Actor : QuadTreeCollider,
 	
 	struct Hitter
 	{
-		void *info;
+		/*enum HitterType
+		{
+			HT_ENEMY,
+			HT_BULLET,
+		};*/
+
+		int id;
+		int launcherID; //launcherID
+
+		//void *info;
 		int framesToStayInArray;
 
-		void Set(void *inf);
+		void SetEnemy( int enemyID );
+		void SetBullet(int bulletID, int launcherID);
+		bool CheckEnemy(Enemy *e);
+		bool CheckBullet(BasicBullet *b);
+
 		void Clear();
 		void Update();
 	};
@@ -1347,8 +1360,10 @@ struct Actor : QuadTreeCollider,
 
 	void ClearRecentHitters();
 	void UpdateRecentHitters();
-	bool RecentlyHitMe(void *hitter);
-	void AddRecentHitter(void *hitter);
+	bool EnemyRecentlyHitMe( Enemy *e );
+	bool BulletRecentlyHitMe(BasicBullet *b);
+	void AddRecentEnemyHitter(Enemy *e);
+	void AddRecentBulletHitter(BasicBullet *b);
 
 	V2d CalcKnockback(HitboxInfo *receivedHit);
 
@@ -1549,14 +1564,14 @@ struct Actor : QuadTreeCollider,
 	bool SteepSlideAttack();
 	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );
-	HitResult CheckIfImHitByEnemy( void *hitter, CollisionBody *hitBody,
+	HitResult CheckIfImHitByEnemy( Enemy *hitter, CollisionBody *hitBody,
 		int hitFrame,
 		HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
 		bool attackFacingRight,
 		bool canBeParried,
 		bool canBeBlocked);
-	HitResult CheckIfImHitByEnemy(void *hitter, CollisionBox &cb, 
+	HitResult CheckIfImHitByBullet(BasicBullet *hitter, CollisionBox &cb,
 		HitboxInfo::HitPosType hpt,
 		V2d &hitPos, bool attackFacingRight,
 		bool canBeParried, bool canBeBlocked);

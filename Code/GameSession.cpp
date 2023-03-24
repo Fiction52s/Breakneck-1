@@ -800,11 +800,11 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	decorLayerMap.clear();
 
-	for (auto it = allSpecialTerrain.begin(); it != allSpecialTerrain.end(); ++it)
+	for (auto it = allSpecialPolysVec.begin(); it != allSpecialPolysVec.end(); ++it)
 	{
 		delete (*it);
 	}
-	allSpecialTerrain.clear();
+	allSpecialPolysVec.clear();
 
 	/*for (auto it = flyTerrain.begin(); it != flyTerrain.end(); ++it)
 	{
@@ -948,11 +948,11 @@ void GameSession::Cleanup()
 	}
 	decorLayerMap.clear();
 
-	for (auto it = allSpecialTerrain.begin(); it != allSpecialTerrain.end(); ++it)
+	for (auto it = allSpecialPolysVec.begin(); it != allSpecialPolysVec.end(); ++it)
 	{
 		delete (*it);
 	}
-	allSpecialTerrain.clear();
+	allSpecialPolysVec.clear();
 
 	for (auto it = allRailsVec.begin(); it != allRailsVec.end(); ++it)
 	{
@@ -1191,14 +1191,14 @@ void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 	int specialType = poly->GetSpecialPolyIndex();
 	if (specialType == 1)
 	{
-		allSpecialTerrain.push_back(poly);
+		allSpecialPolysVec.push_back(poly);
 		specialTerrainTree->Insert(poly);
 	}
 	else if (specialType == 2)
 	{
 		poly->AddFliesToWorldTrees();
 		poly->AddFliesToQuadTree(enemyTree);
-		allSpecialTerrain.push_back(poly);
+		allSpecialPolysVec.push_back(poly);
 		flyTerrainTree->Insert(poly);
 	}
 	//matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));

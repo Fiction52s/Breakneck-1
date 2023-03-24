@@ -262,8 +262,8 @@ struct PState
 	int modifiedDrain;
 	int invertInputFrames;
 	int currPowerMode;
-	PolyPtr oldSpecialTerrain;
-	PolyPtr currSpecialTerrain;
+	int oldSpecialTerrainID;
+	int currSpecialTerrainID;
 	int globalTimeSlowFrames;
 	int freeFlightFrames;
 	int homingFrames;
@@ -310,7 +310,7 @@ struct PState
 
 	Actor::Hitter recentHitters[Actor::MAX_HITTERS];
 
-	ComboObject *activeComboObjList;
+	int activeComboObjListID;
 
 	int currTutorialObjectID;
 	int currGravModifierID;

@@ -251,6 +251,7 @@ void PositionInfo::PopulateFromData(const PositionInfoData &data)
 
 	position = data.position;
 	offset = data.offset;
+	groundQuantity = data.groundQuantity;
 	
 	switch (data.edgeInfo.eiType)
 	{
@@ -276,4 +277,5 @@ void PositionInfo::PopulateData(PositionInfoData &data)
 	data.position = position;
 	data.edgeInfo.SetFromEdge(GetEdge());
 	data.offset = offset;
+	data.groundQuantity = groundQuantity;
 }

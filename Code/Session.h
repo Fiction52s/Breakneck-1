@@ -21,6 +21,7 @@
 #include "steam/steam_api.h"
 #include "MatchParams.h"
 
+struct Launcher;
 struct EdgeInfo;
 struct DeathSequence;
 struct PlayerRecordingManager;
@@ -269,9 +270,12 @@ struct Session : TilesetManager, QuadTreeCollider
 	int numGates;
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;
+	std::vector<PolyPtr> allSpecialPolysVec;
 	std::vector<RailPtr> allRailsVec;
 	std::list<Enemy*> fullEnemyList;
 	std::vector<Enemy*> allEnemiesVec;
+	std::vector<ComboObject*> allComboObjectsVec;
+	std::vector<Launcher*> allLaunchersVec;
 	GateMarkerGroup *gateMarkers;
 	ZoneNode *zoneTree;
 	ZoneNode *currentZoneNode;
@@ -957,6 +961,11 @@ struct Session : TilesetManager, QuadTreeCollider
 	int GetPlayerIndex(Actor *p);
 	Zone *GetZoneFromID(int id);
 	int GetZoneID(Zone *z);
+	int GetComboObjectID(ComboObject *cb);
+	int GetSpecialPolyID(PolyPtr poly);
+
+	PolyPtr GetSpecialPolyFromID(int id);
+	ComboObject * GetComboObjectFromID(int id);
 	Sequence *GetSequenceFromID(int id);
 	int GetSequenceID(Sequence *seq);
 	bool TrySendPracticeSequenceConfirmMessage();

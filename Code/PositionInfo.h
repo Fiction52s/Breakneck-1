@@ -13,6 +13,7 @@ struct PositionInfoData
 	V2d position;
 	EdgeInfo edgeInfo;
 	V2d offset;
+	double groundQuantity;
 };
 
 

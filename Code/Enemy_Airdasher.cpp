@@ -104,6 +104,8 @@ void Airdasher::ResetEnemy()
 	sprite.setRotation(0);
 	facingRight = true;
 
+	data.physStepIndex = 0;
+
 	SetHitboxes(&hitBody, 0);
 	SetHurtboxes(&hurtBody, 0);
 
@@ -142,6 +144,7 @@ void Airdasher::ProcessState()
 {
 	V2d playerPos = GetFocusedPlayerPos();//sess->GetPlayerPos();
 	
+	cout << "state: " << action << ", frame: " << frame << "\n";
 
 	if (frame == actionLength[action] * animFactor[action])
 	{

@@ -42,6 +42,10 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	playerIndex = 0;
 	sess = Session::GetSession();
 
+	launcherID = sess->allLaunchersVec.size();
+	sess->allLaunchersVec.push_back(this);
+	
+
 	ts_bullet = ts;
 	if (ts_bullet != NULL
 		|| sess->specialTempTilesetManager != NULL )
@@ -1024,7 +1028,7 @@ void BasicBullet::UpdatePhysics()
 		{
 			Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 
-			Actor::HitResult res = player->CheckIfImHitByEnemy( this, hitBody,
+			Actor::HitResult res = player->CheckIfImHitByBullet( this, hitBody,
 				HitboxInfo::GetAirType( velocity ),
 				position, velocity.x >= 0,
 				launcher->hitboxInfo->canBeParried,
@@ -1319,7 +1323,7 @@ void SinBullet::UpdatePhysics()
 		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 		//player->CheckIfImHit( )
 
-		Actor::HitResult res = player->CheckIfImHitByEnemy( this, hitBody,
+		Actor::HitResult res = player->CheckIfImHitByBullet( this, hitBody,
 			HitboxInfo::GetAirType( velocity ),
 			position, velocity.x >= 0,
 			launcher->hitboxInfo->canBeParried,
@@ -1458,7 +1462,7 @@ void GrindBullet::UpdatePhysics()
 		{
 			Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 
-			Actor::HitResult res = player->CheckIfImHitByEnemy( this, hitBody,
+			Actor::HitResult res = player->CheckIfImHitByBullet( this, hitBody,
 				HitboxInfo::GetAirType(velocity),
 				position, velocity.x >= 0,
 				launcher->hitboxInfo->canBeParried,

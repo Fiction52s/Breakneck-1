@@ -97,12 +97,66 @@ using namespace std;
 
 void Actor::Hitter::Clear()
 {
-	info = NULL;
+	id = -1;
+	launcherID = -1;
 	framesToStayInArray = -1;
 }
+
+void Actor::Hitter::SetEnemy(int enemyID)
+{
+	id = enemyID;
+	launcherID = -1;
+	framesToStayInArray = 10;
+}
+
+void Actor::Hitter::SetBullet(int bulletID, int p_launcherID)
+{
+	id = bulletID;
+	launcherID = p_launcherID;
+	framesToStayInArray = 10;
+}
+
+bool Actor::Hitter::CheckEnemy(Enemy *e)
+{
+	if (e == NULL)
+	{
+		assert(0);
+		return false;
+	}
+	
+	if (launcherID >= 0)
+		return false;
+
+	if (id == e->enemyIndex)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool Actor::Hitter::CheckBullet(BasicBullet *b)
+{
+	if (b == NULL)
+	{
+		assert(0);
+		return false;
+	}
+
+	if (launcherID < 0)
+		return false;
+
+	if (id == b->bulletID)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void Actor::Hitter::Update()
 {
-	if (info != NULL)
+	if (id >= 0 )
 	{
 		assert(framesToStayInArray > 0);
 		--framesToStayInArray;
@@ -113,13 +167,6 @@ void Actor::Hitter::Update()
 		}
 	}
 }
-
-void Actor::Hitter::Set(void *hi)
-{
-	info = hi;
-	framesToStayInArray = 10;
-}
-
 
 void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
 {
@@ -362,8 +409,8 @@ void Actor::PopulateState(PState *ps)
 	ps->modifiedDrain = modifiedDrain;
 	ps->invertInputFrames = invertInputFrames;
 	ps->currPowerMode = currPowerMode;
-	ps->oldSpecialTerrain = oldSpecialTerrain;
-	ps->currSpecialTerrain = currSpecialTerrain;
+	ps->oldSpecialTerrainID = sess->GetSpecialPolyID(oldSpecialTerrain);
+	ps->currSpecialTerrainID = sess->GetSpecialPolyID(currSpecialTerrain);
 	ps->globalTimeSlowFrames = globalTimeSlowFrames;
 	ps->freeFlightFrames = freeFlightFrames;
 	ps->homingFrames = homingFrames;
@@ -414,7 +461,7 @@ void Actor::PopulateState(PState *ps)
 		ps->recentHitters[i] = recentHitters[i];
 	}
 
-	ps->activeComboObjList = activeComboObjList;
+	ps->activeComboObjListID = sess->GetComboObjectID(activeComboObjList);
 
 	ps->currTutorialObjectID = sess->GetEnemyID(currTutorialObject);
 	ps->currGravModifierID = sess->GetEnemyID(currGravModifier);
@@ -627,8 +674,8 @@ void Actor::PopulateFromState(PState *ps)
 	modifiedDrain = ps->modifiedDrain;
 	invertInputFrames = ps->invertInputFrames;
 	currPowerMode = ps->currPowerMode;
-	oldSpecialTerrain = ps->oldSpecialTerrain;
-	currSpecialTerrain = ps->currSpecialTerrain;
+	oldSpecialTerrain = sess->GetSpecialPolyFromID(ps->oldSpecialTerrainID);
+	currSpecialTerrain = sess->GetSpecialPolyFromID(ps->currSpecialTerrainID);
 	globalTimeSlowFrames = ps->globalTimeSlowFrames;
 	freeFlightFrames = ps->freeFlightFrames;
 	homingFrames = ps->homingFrames;
@@ -686,7 +733,7 @@ void Actor::PopulateFromState(PState *ps)
 		recentHitters[i] = ps->recentHitters[i];
 	}
 
-	activeComboObjList = ps->activeComboObjList;
+	activeComboObjList = sess->GetComboObjectFromID(ps->activeComboObjListID);
 
 	currTutorialObject = (TutorialObject*)sess->GetEnemyFromID(ps->currTutorialObjectID);
 	currGravModifier = (GravityModifier*)sess->GetEnemyFromID(ps->currGravModifierID);
@@ -6196,34 +6243,53 @@ void Actor::UpdateRecentHitters()
 	}
 }
 
-bool Actor::RecentlyHitMe(void *info)
+
+bool Actor::EnemyRecentlyHitMe(Enemy *e)
 {
 	for (int i = 0; i < MAX_HITTERS; ++i)
 	{
-		if (recentHitters[i].info != NULL)
+		if ( recentHitters[i].CheckEnemy( e ) )
 		{
-			if (recentHitters[i].info == info)
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 	return false;
 }
 
-void Actor::AddRecentHitter(void *hitter)
+bool Actor::BulletRecentlyHitMe(BasicBullet *b)
 {
 	for (int i = 0; i < MAX_HITTERS; ++i)
 	{
-		if (recentHitters[i].info == NULL)
+		if (recentHitters[i].CheckBullet( b ) )
 		{
-			recentHitters[i].Set(hitter);
+			return true;
+		}
+	}
+	return false;
+}
+
+void Actor::AddRecentEnemyHitter(Enemy *e)
+{
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		if (recentHitters[i].id < 0 )
+		{
+			recentHitters[i].SetEnemy(e->enemyIndex);
 			return;
 		}
 	}
+}
 
-	//recentHitters[0].Set(hitter);
-	//maybe set up a system later, but i doubt we'll ever hit this number of hitters
+void Actor::AddRecentBulletHitter(BasicBullet *b)
+{
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		if (recentHitters[i].id < 0)
+		{
+			recentHitters[i].SetBullet( b->bulletID, b->launcher->launcherID );
+			return;
+		}
+	}
 }
 
 void Actor::ActivateLauncherEffect(int tile)
@@ -21050,19 +21116,20 @@ bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingR
 }
 
 
-Actor::HitResult Actor::CheckIfImHitByEnemy( void *hitter, CollisionBody *hitBody, int hitFrame,
+
+Actor::HitResult Actor::CheckIfImHitByEnemy( Enemy *hitter, CollisionBody *hitBody, int hitFrame,
 	HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight,
 	bool canBeParried, bool canBeBlocked)
 {
 	if (IntersectMyHurtboxes(hitBody, hitFrame))
 	{
-		if (hitter != NULL && RecentlyHitMe(hitter))
+		if (hitter != NULL && EnemyRecentlyHitMe(hitter))
 		{
 			return HitResult::MISS;
 		}
 
 		if( hitBody->hitboxInfo != NULL && !hitBody->hitboxInfo->sensor )
-			AddRecentHitter(hitter);
+			AddRecentEnemyHitter(hitter);
 
 
 		if (IsInvincible()
@@ -21096,18 +21163,18 @@ Actor::HitResult Actor::CheckIfImHitByEnemy( void *hitter, CollisionBody *hitBod
 	return HitResult::MISS;
 }
 
-Actor::HitResult Actor::CheckIfImHitByEnemy( void *hitter, CollisionBox &cb, HitboxInfo::HitPosType hpt,
+Actor::HitResult Actor::CheckIfImHitByBullet( BasicBullet *hitter, CollisionBox &cb, HitboxInfo::HitPosType hpt,
 	V2d &hitPos, bool attackFacingRight,
 	bool canBeParried, bool canBeBlocked)
 {
 	if (IntersectMyHurtboxes(cb))
 	{
-		if (hitter != NULL && RecentlyHitMe(hitter))
+		if (hitter != NULL && BulletRecentlyHitMe(hitter))
 		{
 			return HitResult::MISS;
 		}
 
-		AddRecentHitter(hitter);
+		AddRecentBulletHitter(hitter);
 
 		if (IsInvincible())
 		{
