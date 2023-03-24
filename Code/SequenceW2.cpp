@@ -92,10 +92,10 @@ void BirdPreFightScene::ReturnToGame()
 void BirdPreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(bird);
 			bird->SeqWait();
@@ -103,17 +103,17 @@ void BirdPreFightScene::UpdateState()
 		EntranceUpdate();
 		break;
 	case BIRDWALK:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			EaseShot("birdstart", 60);
 		}
-		else if (frame == 60)
+		else if (seqData.frame == 60)
 		{
 			EaseShot("birdstop", 60);
 		}
 		break;
 	case BIRDFALL:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			EaseShot("birdland", 60);
 		}
@@ -195,17 +195,17 @@ void BirdPostFightScene::AddGroups()
 void BirdPostFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicNewMapKillFade();
 		}
 		break;
 	case CUT_IMAGE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			Flash("birdcut");
 		}
@@ -218,7 +218,7 @@ void BirdPostFightScene::UpdateState()
 	}
 	case FADE_IN:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			EndBasicNewMapKillFade();
 
@@ -244,7 +244,7 @@ void BirdPostFightScene::UpdateState()
 		ConvUpdate();
 		break;
 	case BIRDLEAVE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Fly(seqBird->GetPosition() + V2d(1000, -1000));
 		}
@@ -316,10 +316,10 @@ void BirdCrawlerAllianceScene::AddGroups()
 void BirdCrawlerAllianceScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -337,7 +337,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 		break;
 	case CRAWLERARRIVE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCrawler->Reset();
 			sess->AddEnemy(seqCrawler);
@@ -356,7 +356,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 	}
 	case FADEOUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(false, 60, Color::Black);
 		}

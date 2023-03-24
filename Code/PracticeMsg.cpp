@@ -69,3 +69,15 @@ void PracticeSequenceConfirmMsg::Clear()
 {
 	frame = -1;
 }
+
+PracticeStateChangeMsg::PracticeStateChangeMsg()
+	:header( PracticeMsgHeader::MSG_TYPE_STATE_CHANGE )
+{
+	Clear();
+}
+
+void PracticeStateChangeMsg::Clear()
+{
+	frame = -1;
+	state = -1;
+}

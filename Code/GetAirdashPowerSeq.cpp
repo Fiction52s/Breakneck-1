@@ -63,12 +63,12 @@ bool GetAirdashPowerSeq::Update()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	if (frame == stateLength[state] && state != END)
+	if (seqData.frame == stateLength[seqData.state] && seqData.state != END)
 	{
-		int s = state;
+		int s = seqData.state;
 		s++;
-		state = (State)s;
-		frame = 0;
+		seqData.state = (State)s;
+		seqData.frame = 0;
 
 		if (state == END)
 		{
@@ -86,7 +86,7 @@ bool GetAirdashPowerSeq::Update()
 	switch (state)
 	{
 	case KIN_KNEELING:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
 			//owner->cam.SetManual(true);
@@ -102,30 +102,30 @@ bool GetAirdashPowerSeq::Update()
 		
 		break;
 	case START_MEDITATE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			player->SeqMeditateMaskOn();
 		}
 		break;
 	case FADE_BACKGROUND:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(false, 60, Color::Black, true);
 		}
-		else if (frame == stateLength[FADE_BACKGROUND]-1)
+		else if (seqData.frame == stateLength[FADE_BACKGROUND]-1)
 		{
 			sess->SetGameSessionState(GameSession::SEQUENCE);
 		}
 		break;
 	case EXPEL_ENERGY:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->ClearFade();
 		}
 
 			int f = 60 - 3 * 10;
-			int ff = frame - f;
+			int ff = seqData.frame - f;
 			if (ff >= 0 && ff < 10 * 3)
 			//if( frame < 10 * 3 )
 			{
@@ -141,14 +141,14 @@ bool GetAirdashPowerSeq::Update()
 	}
 	case WAITAFTEREXPEL:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 		//	player->SetDirtyAura(false);
 		}
 		break;
 	}
 	case MASKOFF:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			player->SeqMaskOffMeditate();
 		}
@@ -158,7 +158,7 @@ bool GetAirdashPowerSeq::Update()
 	{
 
 		sfe::Status movStatus = mov.getStatus();
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			mov.setPlayingOffset(sf::Time::Zero);
 			mov.play();
@@ -170,7 +170,7 @@ bool GetAirdashPowerSeq::Update()
 			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
 			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
 			{
-				frame = stateLength[PLAYMOVIE] - 1;
+				seqData.frame = stateLength[PLAYMOVIE] - 1;
 
 				sess->SetGameSessionState(GameSession::RUN);
 				sess->Fade(true, 60, Color::Black, true);
@@ -184,16 +184,16 @@ bool GetAirdashPowerSeq::Update()
 	}
 	
 	case FADE_BACK:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			
 		}
-		else if (frame == 60)
+		else if (seqData.frame == 60)
 		{
 			player->SeqGetAirdash();
 			
 		}
-		else if (frame == stateLength[FADE_BACK] - 1)
+		else if (seqData.frame == stateLength[FADE_BACK] - 1)
 		{
 			cout << "set easting out of manual" << endl;
 			sess->cam.EaseOutOfManual(120);
@@ -224,7 +224,7 @@ bool GetAirdashPowerSeq::Update()
 	
 
 
-	++frame;
+	++seqData.frame;
 
 	return true;
 }
@@ -270,6 +270,6 @@ void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 }
 void GetAirdashPowerSeq::Reset()
 {
-	state = KIN_KNEELING;
-	frame = 0;
+	seqData.state = KIN_KNEELING;
+	seqData.frame = 0;
 }

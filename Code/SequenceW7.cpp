@@ -66,10 +66,10 @@ void BirdChaseScene::ReturnToGame()
 void BirdChaseScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 
 		}
@@ -142,10 +142,10 @@ void BirdPreFight3Scene::ReturnToGame()
 void BirdPreFight3Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(bird);
 			bird->SeqWait();
@@ -218,14 +218,14 @@ void BirdPostFight3Scene::AddGroups()
 void BirdPostFight3Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		else if (seqData.frame == explosionFadeFrames)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
@@ -312,10 +312,10 @@ void FinalSkeletonPreFightScene::ReturnToGame()
 void FinalSkeletonPreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(greySkeleton);
 			greySkeleton->SeqWait();
@@ -384,14 +384,14 @@ void FinalSkeletonPostFightScene::AddGroups()
 void FinalSkeletonPostFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		else if (seqData.frame == explosionFadeFrames)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand", true);

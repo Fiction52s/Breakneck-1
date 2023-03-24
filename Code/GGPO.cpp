@@ -8,7 +8,26 @@
 
 using namespace std;
 
+SaveGameState::SaveGameState()
+{
+	Clear();
+}
 
+void SaveGameState::Clear()
+{
+	totalGameFrames = 0;
+	activeEnemyListID = -1;
+	activeEnemyListTailID = -1;
+	inactiveEnemyListID = -1;
+	currentZoneID = -1;
+	pauseFrames = 0;
+	currSuperPlayerIndex = -1;
+	gameState = 0; //game mode such as RUN or FROZEN
+	nextFrameRestartGame = false;
+	activeSequenceID = -1;
+	randomState = 0;
+	cam.Reset();
+}
 
 void SaveGameState::Print()
 {

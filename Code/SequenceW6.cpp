@@ -145,14 +145,14 @@ void EnterFortressScene::ReturnToGame()
 void EnterFortressScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			
 		}
-		else if (frame == fadeFrames)
+		else if (seqData.frame == fadeFrames)
 		{
 			prevMusic = sess->mainMenu->musicPlayer->currMusic;
 			sess->TransitionMusic(wind, 120);
@@ -161,7 +161,7 @@ void EnterFortressScene::UpdateState()
 		break;
 	case WAIT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 
 		}
@@ -169,7 +169,7 @@ void EnterFortressScene::UpdateState()
 	}
 	case COYOTE_ENTRANCE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->Reset();
 			sess->AddEnemy(seqCoyote);
@@ -189,7 +189,7 @@ void EnterFortressScene::UpdateState()
 	}
 	case FACES1:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetFlashGroup("group0");
 			sess->TransitionMusic(specialMusic, 120);
@@ -214,7 +214,7 @@ void EnterFortressScene::UpdateState()
 		break;
 	case FACES2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetFlashGroup("group1");
 		}
@@ -235,7 +235,7 @@ void EnterFortressScene::UpdateState()
 	}
 	case SUMMON_SCORPION:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->SummonScorpion();
 		}
@@ -248,7 +248,7 @@ void EnterFortressScene::UpdateState()
 		break;
 	}
 	case SPLITUP:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->Bounce(points["coyotedest"]->pos + V2d(1000, 0));
 		}
@@ -326,10 +326,10 @@ void TigerAndBirdTunnelScene::AddGroups()
 void TigerAndBirdTunnelScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->hud->Hide();
 			sess->cam.SetManual(true);
@@ -341,7 +341,7 @@ void TigerAndBirdTunnelScene::UpdateState()
 	case WAIT:
 		break;
 	case WALK_IN:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -364,7 +364,7 @@ void TigerAndBirdTunnelScene::UpdateState()
 	}
 	case WALK_OUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Walk(GetPointPos("birdwalk2"));
 			seqTiger->Walk(GetPointPos("tigerwalk2"));
@@ -380,7 +380,7 @@ void TigerAndBirdTunnelScene::UpdateState()
 	}
 	case FADEOUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->CrossFade(60, 0, 60, Color::Black);
 		}
@@ -453,10 +453,10 @@ void SkeletonPreFightScene::ReturnToGame()
 void SkeletonPreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(skeleton);
 			skeleton->SeqWait();
@@ -543,14 +543,14 @@ void SkeletonPostFightScene::AddGroups()
 void SkeletonPostFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		else if (seqData.frame == explosionFadeFrames)
 		{
 			SetPlayerStandPoint("kinstand0", true);
 			sess->SetGameSessionState(GameSession::RUN);
@@ -558,7 +558,7 @@ void SkeletonPostFightScene::UpdateState()
 		break;
 	case MOVIE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			//EndCurrState();
 			SetCurrMovie("crawler_slash", 60);
@@ -570,7 +570,7 @@ void SkeletonPostFightScene::UpdateState()
 	}
 	case TOP3TRANSFORMATIONSTART:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 
 			sess->Fade(true, 60, Color::Black);
@@ -582,7 +582,7 @@ void SkeletonPostFightScene::UpdateState()
 	}
 	case TOP3BIRDANDTIGER:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetCameraShot("birdtransformcam");
 		}
@@ -590,7 +590,7 @@ void SkeletonPostFightScene::UpdateState()
 	}
 	case TOP3SKELETON:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetCameraShot("skeletransformcam");
 		}
@@ -598,7 +598,7 @@ void SkeletonPostFightScene::UpdateState()
 	}
 	case SKELETONLEAVES:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->TotalDissolveGates(Gate::BOSS);
 			EaseShot("skeleleavescam", 60 );
@@ -610,7 +610,7 @@ void SkeletonPostFightScene::UpdateState()
 	}
 	case KINMOVE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetCameraShot("kinmovecam");
 			EaseShot("coyotedeathcam", 60);
@@ -621,7 +621,7 @@ void SkeletonPostFightScene::UpdateState()
 	}
 	case COYOTEDEATH:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("coydeath");
 		}
@@ -633,7 +633,7 @@ void SkeletonPostFightScene::UpdateState()
 
 bool SkeletonPostFightScene::IsAutoRunState()
 {
-	return state == KINMOVE;
+	return seqData.state == KINMOVE;
 }
 
 MindControlScene::MindControlScene()
@@ -708,7 +708,7 @@ void MindControlScene::AddFlashes()
 
 bool MindControlScene::IsAutoRunState()
 {
-	if (state == ENTRANCE)
+	if (seqData.state == ENTRANCE)
 	{
 		return true;
 	}
@@ -732,10 +732,10 @@ void MindControlScene::ReturnToGame()
 void MindControlScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -757,7 +757,7 @@ void MindControlScene::UpdateState()
 		break;
 	case CONV1:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv1");
 		}
@@ -770,7 +770,7 @@ void MindControlScene::UpdateState()
 	}
 	case CONV2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv2");
 		}
@@ -783,7 +783,7 @@ void MindControlScene::UpdateState()
 	}
 	case CONV3:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv3");
 		}
@@ -792,7 +792,7 @@ void MindControlScene::UpdateState()
 	}
 	case SKELETON_FACE_PRE_MIND_CONTROL:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			Flash("skeleangry");
 		}
@@ -806,7 +806,7 @@ void MindControlScene::UpdateState()
 	}
 	case SKELETON_MIND_CONTROL:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqSkeleton->MindControl();
 			seqBird->HitByMindControl();
@@ -816,7 +816,7 @@ void MindControlScene::UpdateState()
 	}
 	case CONV4:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv4");
 		}
@@ -829,7 +829,7 @@ void MindControlScene::UpdateState()
 	}
 	case CONV5:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv5");
 		}
@@ -838,7 +838,7 @@ void MindControlScene::UpdateState()
 	}
 	case BIRD_WALK_OVER_TO_SKELETON:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Walk(GetPointPos("birdwalk1"));
 		}
@@ -851,7 +851,7 @@ void MindControlScene::UpdateState()
 	}
 	case ENTRANCE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->FreezePlayer(false);
 			SetEntranceRun();
@@ -860,7 +860,7 @@ void MindControlScene::UpdateState()
 	}
 	case CONV6:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv6");
 		}
@@ -869,7 +869,7 @@ void MindControlScene::UpdateState()
 	}
 	case SKELETON_JUMP_ONTO_BIRD:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqSkeleton->Hop(seqBird->GetPosition(), 5, 20);
 		}
@@ -882,7 +882,7 @@ void MindControlScene::UpdateState()
 	}
 	case TIGER_FACE_KIN:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqTiger->facingRight = false;
 		}
@@ -890,7 +890,7 @@ void MindControlScene::UpdateState()
 	}
 	case SKELETON_BIRD_EXIT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->FlyAwayWithSkeleton(GetPointPos("birdfly1"), 20);
 			seqSkeleton->RideBird(seqBird);
@@ -964,10 +964,10 @@ void TigerPreFight2Scene::ReturnToGame()
 void TigerPreFight2Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(tiger);
 			tiger->SeqWait();
@@ -1037,14 +1037,14 @@ void TigerPostFight2Scene::AddGroups()
 void TigerPostFight2Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		else if (seqData.frame == explosionFadeFrames)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
@@ -1053,7 +1053,7 @@ void TigerPostFight2Scene::UpdateState()
 		}
 		break;
 	case WAIT:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->TotalDissolveGates(Gate::BOSS);
 		}

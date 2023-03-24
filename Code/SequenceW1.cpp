@@ -121,13 +121,13 @@ void CrawlerAttackScene::ReturnToGame()
 void CrawlerAttackScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
 		EntranceUpdate();
 		break;
 	case KINSTOP:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
 			player->SetKinMode(Actor::K_NORMAL);
@@ -139,7 +139,7 @@ void CrawlerAttackScene::UpdateState()
 		break;
 	case CRAWLERSWOOP:
 	{
-		if (frame == 15)
+		if (seqData.frame == 15)
 		{
 			player->SetAction(Actor::SEQ_LOOKUPDISAPPEAR);
 		}
@@ -149,15 +149,15 @@ void CrawlerAttackScene::UpdateState()
 	}
 	case DIGGINGAROUND:
 		RumbleDuringState(10, 10);
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			EaseShot("crawlerdig1", 90);
 		}
-		else if (frame == 90)
+		else if (seqData.frame == 90)
 		{
 			EaseShot("crawlerdig2", 90);
 		}
-		else if (frame == 150)
+		else if (seqData.frame == 150)
 		{
 			GameSession *game = GameSession::GetSession();
 
@@ -173,7 +173,7 @@ void CrawlerAttackScene::UpdateState()
 			EasePoint("crawlerdig3", 1, 60);
 		}*/
 
-		if (frame == 20)
+		if (seqData.frame == 20)
 		{
 			Flash("detailedgrab");
 		}
@@ -184,7 +184,7 @@ void CrawlerAttackScene::UpdateState()
 void CrawlerAttackScene::UpdateCrawlerSwoop()
 {
 	Actor *player = sess->GetPlayer(0);
-	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(frame / 3));
+	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(seqData.frame / 3));
 	queenGrabSprite.setOrigin(queenGrabSprite.getLocalBounds().width / 2,
 		queenGrabSprite.getLocalBounds().height);
 
@@ -202,7 +202,7 @@ void CrawlerAttackScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 		return;
 	}
 
-	if (state == CRAWLERSWOOP)
+	if (seqData.state == CRAWLERSWOOP)
 	{
 		target->draw(queenGrabSprite);
 	}
@@ -294,19 +294,19 @@ bool TextTestSeq::Update()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	if (frame == stateLength[state] && state != END)
+	if (seqData.frame == stateLength[seqData.state] && seqData.state != END)
 	{
-		int s = state;
+		int s = seqData.state;
 		s++;
-		state = (State)s;
-		frame = 0;
+		seqData.state = (State)s;
+		seqData.frame = 0;
 
 		if (state == END)
 		{
 		}
 	}
 
-	if (state == END)
+	if (seqData.state == END)
 	{
 		player->SetAction(Actor::STAND);
 		player->frame = 0;
@@ -321,7 +321,7 @@ bool TextTestSeq::Update()
 	switch (state)
 	{
 	case TALK:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
 			conv->Show();
@@ -369,14 +369,14 @@ bool TextTestSeq::Update()
 				}
 				else
 				{
-					frame = stateLength[TALK] - 1;
+					seqData.frame = stateLength[TALK] - 1;
 				}
 			}
 		}
 		break;
 	}
 
-	++frame;
+	++seqData.frame;
 
 	return true;
 }
@@ -400,8 +400,8 @@ void TextTestSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 }
 void TextTestSeq::Reset()
 {
-	state = TALK;
-	frame = 0;
+	seqData.state = TALK;
+	seqData.frame = 0;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		(*it)->Reset();
@@ -499,12 +499,12 @@ void CrawlerPreFightScene::ReturnToGame()
 void CrawlerPreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case DIGGINGAROUND:
 	{
 		RumbleDuringState(10, 10);
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			//sess->Fade(true, 60, Color::Black;
 			sess->FreezePlayer(true);
@@ -517,12 +517,12 @@ void CrawlerPreFightScene::UpdateState()
 			//EasePoint("crawlerdig1", 1, 60);
 			
 		}
-		else if (frame == 90)
+		else if (seqData.frame == 90)
 		{
 			EaseShot("cavecam", 60);
 		}
 
-		if (frame == 20)
+		if (seqData.frame == 20)
 		{
 			//Flash("detailedgrab");
 		}
@@ -530,13 +530,13 @@ void CrawlerPreFightScene::UpdateState()
 	}
 		
 	case THROWOUT:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			//sess->currentZone->ReformAllGates();
 			sess->FreezePlayer(false);
 			player->StartSeqKinThrown(GetPointPos("crawlersurface"), V2d(-10, -10));
 		}
-		else if (frame == 30)
+		else if (seqData.frame == 30)
 		{
 			queen->StartInitialUnburrow();
 			sess->ReverseDissolveGates(Gate::BOSS);
@@ -544,7 +544,7 @@ void CrawlerPreFightScene::UpdateState()
 		break;
 	case CRAWLERFACE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			queen->StartAngryYelling();
 		}
@@ -651,11 +651,11 @@ void CrawlerPostFightScene::AddShots()
 void CrawlerPostFightScene::UpdateState()
 {
 
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicNewMapKillFade();
 		}
@@ -663,7 +663,7 @@ void CrawlerPostFightScene::UpdateState()
 	}
 	case CRAWLER_SLASHED:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			Flash("crawlercut");
 		}
@@ -728,7 +728,7 @@ void CrawlerPostFightScene::UpdateState()
 	}*/
 	case FADE_IN:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			EndBasicNewMapKillFade();
 			SetPlayerStandPoint("kinstand0", true);
@@ -742,7 +742,7 @@ void CrawlerPostFightScene::UpdateState()
 	}
 	case CRAWLER_GIBBERISH:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("post_crawler");
 		}
@@ -751,7 +751,7 @@ void CrawlerPostFightScene::UpdateState()
 	}
 	case CRAWLER_RETREAT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCrawler->DigIn();
 		}
@@ -760,7 +760,7 @@ void CrawlerPostFightScene::UpdateState()
 	}
 	case KIN_FINAL_FACE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			Flash("k3");
 		}
@@ -844,7 +844,7 @@ void GetAirdashPowerScene::UpdateState()
 	switch (state)
 	{
 	case KIN_KNEELING:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			//owner->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
 			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
@@ -860,30 +860,30 @@ void GetAirdashPowerScene::UpdateState()
 
 		break;
 	case START_MEDITATE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			player->SeqMeditateMaskOn();
 		}
 		break;
 	case FADE_BACKGROUND:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(false, 60, Color::Black, true);
 		}
-		else if (frame == stateLength[FADE_BACKGROUND] - 1)
+		else if (seqData.frame == stateLength[FADE_BACKGROUND] - 1)
 		{
 			sess->SetGameSessionState(GameSession::SEQUENCE);
 		}
 		break;
 	case EXPEL_ENERGY:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->ClearFade();
 		}
 
 		int f = 60 - 3 * 10;
-		int ff = frame - f;
+		int ff = seqData.frame - f;
 		if (ff >= 0 && ff < 10 * 3)
 			//if( frame < 10 * 3 )
 		{
@@ -899,14 +899,14 @@ void GetAirdashPowerScene::UpdateState()
 	}
 	case WAITAFTEREXPEL:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			//player->SetDirtyAura(false);
 		}
 		break;
 	}
 	case MASKOFF:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			player->SeqMaskOffMeditate();
 		}
@@ -914,7 +914,7 @@ void GetAirdashPowerScene::UpdateState()
 
 	case PLAYMOVIE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetCurrMovie("kin_meditate_01", 60);
 		}
@@ -936,15 +936,15 @@ void GetAirdashPowerScene::UpdateState()
 		break;
 	}
 	case FADE_BACK:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 
 		}
-		else if (frame == 60)
+		else if (seqData.frame == 60)
 		{
 			player->SeqGetAirdash();
 		}
-		else if (frame == stateLength[FADE_BACK] - 1)
+		else if (seqData.frame == stateLength[FADE_BACK] - 1)
 		{
 			//cout << "set easting out of manual" << endl;
 			sess->cam.EaseOutOfManual(120);

@@ -35,11 +35,11 @@ void BarrierLevelEndSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 
 		}

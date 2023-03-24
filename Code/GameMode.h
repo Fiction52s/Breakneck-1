@@ -150,8 +150,8 @@ struct FightMode : GameMode
 		int meter[4];
 		int killCounter[4];
 		int deathOrder[4];
-		int endSeqState;
-		int endSeqFrame;
+		//int endSeqState;
+		//int endSeqFrame;
 	};
 
 	MyData data;
@@ -187,8 +187,10 @@ struct RaceMode : GameMode
 	{
 		int done;
 		int test;
-		int endSeqState;
-		int endSeqFrame;
+		//int endSeqState;
+		//int endSeqFrame;
+
+
 		/*int p0Health;
 		int p1Health;
 		int p0Meter;
@@ -220,8 +222,10 @@ struct ParallelRaceMode : ParallelMode
 	{
 		int done;
 		int test;
-		int endSeqState;
-		int endSeqFrame;
+
+		//int endSeqState;
+		//int endSeqFrame;
+
 		/*int p0Health;
 		int p1Health;
 		int p0Meter;
@@ -254,8 +258,10 @@ struct CoopMode : GameMode
 	{
 		int done;
 		int test;
-		int endSeqState;
-		int endSeqFrame;
+
+		//int endSeqState;
+		//int endSeqFrame;
+
 		/*int p0Health;
 		int p1Health;
 		int p0Meter;

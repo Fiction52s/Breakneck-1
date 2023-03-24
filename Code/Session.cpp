@@ -1573,8 +1573,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 {
 	activePlayerReplayManagers.reserve(10);
 
-	parallelConfirmPress = false;
-
 	nextFrameRestartGame = false;
 
 	matchPlacings.resize(4);
@@ -3023,6 +3021,8 @@ void Session::RunFrameForParallelPractice()
 				if (prac.needsSessionRestart )
 				{
 					prac.needsSessionRestart = false;
+					prac.sequenceConfirmMap.clear();
+					prac.stateChangeMap.clear();
 					//prac.hasSequenceConfirmReady = false;
 					pm->parallelGames[i]->RestartLevel();
 
@@ -3035,50 +3035,77 @@ void Session::RunFrameForParallelPractice()
 			}
 		}
 
-		/*for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
-		{
-			if (pm->parallelGames[i] != NULL)
-			{
-				if (netplayManager->practicePlayers[i].numSequenceConfirms > 0)
-				{
-					cout << "sequence confirm ready. confirming for session: " << i << "\n";
-					pm->parallelGames[i]->RunPracticeModeUpdate();
-					--netplayManager->practicePlayers[i].numSequenceConfirms;
-				}
-			}
-		}*/
-
-
+		//can smooth this out later transitioning from frozen to run etc.
 		int numFramesToRun = 0;
 		for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
 		{
 			if (pm->parallelGames[i] != NULL)
 			{
-				numFramesToRun = netplayManager->practicePlayers[i].HasInputs();
-				numFramesToRun = min(numFramesToRun, PracticePlayer::MAX_SIM_FRAMES);
-				for( int j = 0; j < numFramesToRun; ++j )
+				if (pm->parallelGames[i]->gameState == Session::FROZEN)
 				{
-					//cout << "run parallel frame" << endl;
-					pm->parallelGames[i]->UpdatePlayerInput(i);
+					pm->parallelGames[i]->OnlineFrozenGameModeUpdate();
 
-					switch (gameState)
+					/*if (netplayManager->practicePlayers[i].HasSequenceConfirms())
 					{
-					case GameState::RUN:
-						UpdatePlayerInput(parallelSessionIndex);
-						OnlineRunGameModeUpdate();
-						break;
-					case GameState::FROZEN:
-						OnlineFrozenGameModeUpdate();
-						break;
+						assert(pm->parallelGames[i]->gameState == Session::FROZEN);
+
+						cout << "sequence confirm ready. confirming for session: " << i << "\n";
+
+					}*/
+				}
+				else if (netplayManager->practicePlayers[i].HasStateChange())
+				{
+					pm->parallelGames[i]->OnlineRunGameModeUpdate();
+				}
+				else
+				{
+					numFramesToRun = netplayManager->practicePlayers[i].HasInputs();
+
+					if (numFramesToRun > 0)
+					{
+						numFramesToRun = netplayManager->practicePlayers[i].HasInputs();
 					}
+					numFramesToRun = min(numFramesToRun, PracticePlayer::MAX_SIM_FRAMES);
 
-					pm->parallelGames[i]->RunPracticeModeUpdate();
-					//ppm->updatePracticeSessions[i] = true;
-
-					//ppm->parallelGames[i]->OnlineRunGameModeUpdate();//RunMainLoopOnce();
+					for (int j = 0; j < numFramesToRun; ++j)
+					{
+						//pm->parallelGames[i]->UpdatePlayerInput(i);
+						pm->parallelGames[i]->OnlineRunGameModeUpdate();
+					}
 				}
 			}
 		}
+
+		
+		//for (int i = 0; i < pm->MAX_PARALLEL_SESSIONS; ++i)
+		//{
+		//	if (pm->parallelGames[i] != NULL)
+		//	{
+		//		numFramesToRun = netplayManager->practicePlayers[i].HasInputs();
+		//		numFramesToRun = min(numFramesToRun, PracticePlayer::MAX_SIM_FRAMES);
+		//		for( int j = 0; j < numFramesToRun; ++j )
+		//		{
+		//			//cout << "run parallel frame" << endl;
+		//			pm->parallelGames[i]->UpdatePlayerInput(i);
+		//			pm->parallelGames[i]->OnlineRunGameModeUpdate();
+		//			switch (pm->parallelGames[i]->gameState)
+		//			{
+		//			case GameState::RUN:
+		//				UpdatePlayerInput(parallelSessionIndex);
+		//				OnlineRunGameModeUpdate();
+		//				break;
+		//			case GameState::FROZEN:
+		//				OnlineFrozenGameModeUpdate();
+		//				break;
+		//			}
+
+		//			pm->parallelGames[i]->RunPracticeModeUpdate();
+		//			//ppm->updatePracticeSessions[i] = true;
+
+		//			//ppm->parallelGames[i]->OnlineRunGameModeUpdate();//RunMainLoopOnce();
+		//		}
+		//	}
+		//}
 		//assert(netplayManager->practicePlayers[parallelSessionIndex].HasNextInput());
 	}
 }
@@ -5469,6 +5496,7 @@ void Session::ActiveSequenceUpdate()
 				//{
 				//	
 				//}
+
 				gameState = RUN;
 				switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
 				activeSequence = NULL;
@@ -6924,7 +6952,16 @@ bool Session::RunGameModeUpdate()
 
 		ActiveSequenceUpdate();
 		if (switchGameState)
+		{
+			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+			{
+				PracticeStateChangeMsg pm;
+				pm.state = (int)gameState;
+				pm.frame = totalGameFrames;
+				netplayManager->SendPracticeStateChangeMessageToAllPeers(pm);
+			}
 			break;
+		}
 
 		int bonusRes = TryToActivateBonus();
 		if (bonusRes == GameSession::GR_BONUS_RESPAWN)
@@ -7189,6 +7226,21 @@ bool Session::FrozenGameModeUpdate()
 		ActiveSequenceUpdate();
 
 		SteamAPI_RunCallbacks();
+
+		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession())
+		{
+			netplayManager->SendPracticeInitMessageToAllNewPeers();
+
+			//sends the start to message to any new peers that join
+			PracticeStartMsg psm;
+			psm.skinIndex = GetPlayerNormalSkin(0);
+			psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
+			psm.startFrame = totalGameFrames;
+			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+
+			netplayManager->Update();
+		}
+
 		fader->Update();
 		swiper->Update();
 
@@ -7802,6 +7854,12 @@ bool Session::OnlineRunGameModeUpdate()
 	ActiveSequenceUpdate();
 	if (switchGameState)
 	{
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+		{
+			assert(netplayManager->practicePlayers[parallelSessionIndex].HasStateChange());
+			netplayManager->practicePlayers[parallelSessionIndex].ConsumeStateChange();
+		}
+
 		//good chance this will be a problem at some point since I moved ggpo_advance_frame out of the normal function for parallel races
 		cout << "switch game state" << endl;
 		if( ggpo != NULL )
@@ -7814,6 +7872,11 @@ bool Session::OnlineRunGameModeUpdate()
 		AddDesyncCheckInfo(); //netplay only
 
 		ProcessDesyncMessageQueue(); //netplay only
+	}
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	{
+		UpdatePlayerInput(parallelSessionIndex);
 	}
 
 	UpdatePlayersPrePhysics();
@@ -9389,4 +9452,24 @@ int Session::GetSequenceID(Sequence *seq)
 		return -1;
 	else
 		return seq->sequenceID;
+}
+
+bool Session::HasPracticeSequenceConfirm()
+{
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession() )
+	{
+		assert(netplayManager != NULL);
+		return netplayManager->practicePlayers[parallelSessionIndex].HasSequenceConfirms();
+	}
+
+	return false;
+}
+
+void Session::ConsumePracticeSequenceConfirm()
+{
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	{
+		assert(netplayManager != NULL);
+		netplayManager->practicePlayers[parallelSessionIndex].ConsumeSequenceConfirm();
+	}
 }

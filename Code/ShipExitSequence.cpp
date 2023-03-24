@@ -71,7 +71,7 @@ void ShipExitScene::ReturnToGame()
 void ShipExitScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case SHIP_SWOOP:
 	{
@@ -81,7 +81,7 @@ void ShipExitScene::UpdateState()
 		int jumpLength = 6 * 5;
 		int startGrabWire = enterTime - jumpLength;
 
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			
 			shots["shot1"]->centerPos = sess->cam.pos + Vector2f( 0, -400 );
@@ -111,7 +111,7 @@ void ShipExitScene::UpdateState()
 			origPlayer = sess->GetPlayer(0)->position;
 			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
 		}
-		else  if (frame == startGrabWire)
+		else  if (seqData.frame == startGrabWire)
 		{
 			sess->GetPlayer(0)->GrabShipWire();
 		}
@@ -124,18 +124,18 @@ void ShipExitScene::UpdateState()
 		int jumpSquat = startGrabWire + 3 * 5;
 		int startJump = 4 * 5;//60 - jumpSquat;
 
-		if (frame >= enterTime)
+		if (seqData.frame >= enterTime)
 		{
 			sess->GetPlayer(0)->position = V2d(shipMovement.GetPos().x, shipMovement.GetPos().y + 48.0 + 28.0);
-			if (frame == enterTime)
+			if (seqData.frame == enterTime)
 			{
 				EaseShot("shot2", exitTime);
 			}
 			
 		}
-		else if (frame >= jumpSquat && frame <= enterTime)//startJump )
+		else if (seqData.frame >= jumpSquat && seqData.frame <= enterTime)//startJump )
 		{
-			double adjF = frame - jumpSquat;
+			double adjF = seqData.frame - jumpSquat;
 			double eTime = enterTime - jumpSquat;
 			double a = adjF / eTime;//(double)(frame - (60 - (startJump + 1))) / (60 - (startJump - 1));
 									//double a = 
@@ -147,11 +147,11 @@ void ShipExitScene::UpdateState()
 
 		if (!shipMovement.IsMovementActive())
 		{
-			frame = stateLength[SHIP_SWOOP] - 1;
+			seqData.frame = stateLength[SHIP_SWOOP] - 1;
 			sess->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
 		}
 
-		if (frame == (enterTime + exitTime) - 60)
+		if (seqData.frame == (enterTime + exitTime) - 60)
 		{
 			sess->Fade(false, 60, Color::Black);
 		}
@@ -170,7 +170,7 @@ void ShipExitScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 		return;
 	}
 
-	if (state == SHIP_SWOOP)
+	if (seqData.state == SHIP_SWOOP)
 	{
 		target->draw(shipSprite);
 	}

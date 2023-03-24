@@ -28,7 +28,7 @@ void MomentaScene::AddFlashes()
 
 void MomentaScene::UpdateState()
 {
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
 		sess->SetGameSessionState(GameSession::FROZEN);
 	}

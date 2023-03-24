@@ -447,8 +447,6 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	bool frameConfirmed;
 
-	bool parallelConfirmPress;
-
 	std::vector<Sequence*> allSequencesVec;
 
 	std::vector<ControllerDualStateQueue*> controllerStates;
@@ -962,6 +960,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	Sequence *GetSequenceFromID(int id);
 	int GetSequenceID(Sequence *seq);
 	bool TrySendPracticeSequenceConfirmMessage();
+	bool HasPracticeSequenceConfirm();
+	void ConsumePracticeSequenceConfirm();
 };
 
 #endif

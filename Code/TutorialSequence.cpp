@@ -57,11 +57,11 @@ void TutorialSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	switch (state)
+	switch (seqData.state)
 	{
 	case TELL:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 		//	SetConvGroup("pre_crawler");
 		}
@@ -87,6 +87,6 @@ void TutorialSequence::Draw(RenderTarget *target, EffectLayer layer)
 void TutorialSequence::Reset()
 {
 	Sequence::Reset();
-	state = TELL;
-	frame = 0;
+	seqData.state = TELL;
+	seqData.frame = 0;
 }

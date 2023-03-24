@@ -125,14 +125,14 @@ void NexusCoreSeq::ReturnToGame()
 
 void NexusCoreSeq::UpdateState()
 {
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADETOBLACK:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(false, 30, sf::Color::Black);
 		}
-		if (frame == stateLength[FADETOBLACK] - 1)
+		if (seqData.frame == stateLength[FADETOBLACK] - 1)
 		{
 			sess->SetGameSessionState(GameSession::SEQUENCE);
 			
@@ -140,7 +140,7 @@ void NexusCoreSeq::UpdateState()
 		break;
 	case ENTERCORE:
 		
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(true, 30, sf::Color::Black);
 			//sess->cam.SetManual(true);
@@ -153,7 +153,7 @@ void NexusCoreSeq::UpdateState()
 		//sess->ClearFade();
 		if (!geoGroup.Update())
 		{
-			frame = stateLength[state] - 1;
+			seqData.frame = stateLength[seqData.state] - 1;
 			//emitter->SetOn(false);
 		}
 		//sess->Fade(true, 30, sf::Color::White);
@@ -161,7 +161,7 @@ void NexusCoreSeq::UpdateState()
 		break;
 	}
 	case EXITCORE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(false, 30, sf::Color::White);
 			nexus->FinishDestruction();
@@ -177,7 +177,7 @@ void NexusCoreSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 	myView.setCenter(960, 540);
 	myView.setSize(1920, 1080);
 	target->setView(myView);
-	if (state >= ENTERCORE && layer == EffectLayer::BEHIND_ENEMIES)
+	if (seqData.state >= ENTERCORE && layer == EffectLayer::BEHIND_ENEMIES)
 	{
 		target->draw(darkQuad, 4, sf::Quads);
 	}
@@ -194,8 +194,8 @@ void NexusCoreSeq::Reset()
 {
 	Sequence::Reset();
 
-	state = FADETOBLACK;
-	frame = 0;
+	seqData.state = FADETOBLACK;
+	seqData.frame = 0;
 
 	Vector2f pPos(960, 540);
 

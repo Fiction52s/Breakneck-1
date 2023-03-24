@@ -175,10 +175,10 @@ void CoyoteSleepScene::ReturnToGame()
 void CoyoteSleepScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->Reset();
 			sess->AddEnemy(seqCoyote);
@@ -191,7 +191,7 @@ void CoyoteSleepScene::UpdateState()
 		EntranceUpdate();
 		break;
 	case COYOTEWAKE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetFlashGroup("wakegroup");
 		}
@@ -205,7 +205,7 @@ void CoyoteSleepScene::UpdateState()
 		break;
 	case COYOTELEAVE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->Walk(GetPointPos("coyotedest"));
 		}
@@ -296,10 +296,10 @@ void CoyotePreFightScene::ReturnToGame()
 void CoyotePreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(coy);
 			coy->SeqWait();
@@ -311,7 +311,7 @@ void CoyotePreFightScene::UpdateState()
 		break;
 	case COYOTEFACES:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetFlashGroup("staregroup");
 		}
@@ -406,14 +406,14 @@ void CoyotePostFightScene::AddGroups()
 void CoyotePostFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		else if (seqData.frame == explosionFadeFrames)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->FreezePlayer(false);
@@ -431,7 +431,7 @@ void CoyotePostFightScene::UpdateState()
 		}
 		break;
 	case WAIT:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->TotalDissolveGates(Gate::BOSS);
 		}
@@ -448,7 +448,7 @@ void CoyotePostFightScene::UpdateState()
 		//	ConvUpdate();
 		//	break;
 	case COYOTELEAVE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->Run(seqCoyote->GetPosition() + V2d(1000, 0));
 		}
@@ -573,11 +573,11 @@ void CoyoteAndSkeletonScene::ReturnToGame()
 void CoyoteAndSkeletonScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
 
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->Reset();
 			sess->AddEnemy(seqCoyote);
@@ -594,7 +594,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 		break;
 	case SHOWIMAGE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			Flash("screen0");
 			Flash("screen1");
@@ -607,7 +607,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case CONV1:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv1");
 			//Flash("skeleangry");
@@ -617,11 +617,11 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case SKELETONCHARGELASER:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqSkeleton->ChargeLaser();
 		}
-		if (frame == 30)
+		if (seqData.frame == 30)
 		{
 			Flash("skelelaser");
 		}
@@ -629,18 +629,18 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case SKELETONLASER:
 	{
-		if (frame == 20)
+		if (seqData.frame == 20)
 		{
 			seqSkeleton->Laser( seqCoyote->GetPosition() );
 		}
 
-		if (frame == 70)
+		if (seqData.frame == 70)
 		{
 			seqCoyote->HopBack(seqCoyote->GetPosition() + V2d(-100, 0));
 			Flash("coyotedodge");
 		}
 
-		if (frame > 70 && IsFlashDone("coyotedodge") )
+		if (seqData.frame > 70 && IsFlashDone("coyotedodge") )
 		{
 			seqSkeleton->Idle();
 			EndCurrState();
@@ -649,7 +649,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case CONV2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv2");
 		}
@@ -658,7 +658,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case COYOTERETREAT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCoyote->SummonScorpion();
 		}
@@ -671,7 +671,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case SKELETONIMPOSING:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			Flash("skeleimposing");
 		}
@@ -684,7 +684,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case SKELETONHOPDOWN:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqSkeleton->Hop(GetPointPos("skelehop"), 5, 16);
 		}
@@ -697,7 +697,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case SKELETONAPPROACH:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqSkeleton->Walk(GetPointPos("skelestop"));
 		}
@@ -710,7 +710,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case SKELETONPOINT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			Flash("skelepoint");
 		}
@@ -724,7 +724,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	}
 	case CONV3:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv3");
 		}
@@ -734,7 +734,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	case SKELETONEXIT:
 	{
 
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqSkeleton->WireThrow(seqSkeleton->GetPosition() + V2d(1000, -1000));
 		}

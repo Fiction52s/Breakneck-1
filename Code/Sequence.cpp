@@ -345,14 +345,14 @@ void Sequence::UpdateMovie()
 		if (movieStopFrame == -1 && (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped
 			|| movStatus == sfe::Status::Paused))
 		{
-			movieStopFrame = frame;
+			movieStopFrame = seqData.frame;
 			if (movieFadeFrames == 0)
 			{
 				EndCurrState();
 			}
 			else
 			{
-				frame = stateLength[state] - movieFadeFrames;
+				seqData.frame = stateLength[seqData.state] - movieFadeFrames;
 				sess->Fade(false, movieFadeFrames, movieFadeColor);
 			}
 		}
@@ -571,19 +571,29 @@ bool Sequence::IsFlashDone(const std::string &flashName)
 
 bool Sequence::PlayerPressedConfirm()
 {
-	if (sess->IsParallelSession())
+	if (sess->IsParallelSession() && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 	{
-		return sess->parallelConfirmPress;
+		bool hasConfirm = sess->HasPracticeSequenceConfirm();
+		if (hasConfirm)
+		{
+			sess->ConsumePracticeSequenceConfirm();
+		}
+
+		return hasConfirm;
 	}
 	else
 	{
 		if (sess->IsReplayOn()
-			|| (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A) )
+			|| (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A))
 		{
+			if (!sess->IsParallelSession() && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+			{
+				sess->TrySendPracticeSequenceConfirmMessage();
+			}
+
 			return true;
 		}
 	}
-	
 
 	return false;
 }
@@ -639,7 +649,7 @@ void Sequence::RumbleDuringState(int x, int y)
 {
 	if (seqData.frame == 0)
 	{
-		Rumble(x, y, stateLength[state]);
+		Rumble(x, y, stateLength[seqData.state]);
 	}
 }
 
@@ -798,7 +808,7 @@ void StoryScene::UpdateState()
 {
 	story->Update(sess->GetPrevInput(0), sess->GetCurrInput(0));
 
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
 		sess->SetGameSessionState(GameSession::SEQUENCE);
 	}

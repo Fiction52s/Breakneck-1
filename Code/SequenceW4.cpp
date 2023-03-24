@@ -92,10 +92,10 @@ void CrawlerPreFight2Scene::SetEntranceShot()
 void CrawlerPreFight2Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(queen);
 			queen->SeqWait();
@@ -184,14 +184,14 @@ void CrawlerPostFight2Scene::AddGroups()
 void CrawlerPostFight2Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == 10)
+		else if (seqData.frame == 10)
 		{
 			seqCrawler->Reset();
 			sess->AddEnemy(seqCrawler);
@@ -205,14 +205,14 @@ void CrawlerPostFight2Scene::UpdateState()
 		}
 		break;
 	case WAIT:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;
 	case CONV:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("postfight");
 		}
@@ -220,7 +220,7 @@ void CrawlerPostFight2Scene::UpdateState()
 		break;
 	case TIGERRUMBLE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetRumble(3, 3, 30);
 		}
@@ -228,7 +228,7 @@ void CrawlerPostFight2Scene::UpdateState()
 	}
 	case CONV2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("postfight2");
 		}
@@ -237,7 +237,7 @@ void CrawlerPostFight2Scene::UpdateState()
 		break;
 	}
 	case CRAWLERLEAVE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCrawler->DigIn();
 		}
@@ -312,10 +312,10 @@ void CrawlerVSTigerScene::SetEntranceShot()
 void CrawlerVSTigerScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCrawler->Reset();
 			sess->AddEnemy(seqCrawler);
@@ -327,14 +327,14 @@ void CrawlerVSTigerScene::UpdateState()
 		EntranceUpdate();
 		break;
 	case WAIT:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;
 	case CONV1:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv1");
 		}
@@ -343,7 +343,7 @@ void CrawlerVSTigerScene::UpdateState()
 		break;
 	case CRAWLER_FLIP_SWITCH:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCrawler->TriggerBombs();
 		}
@@ -356,11 +356,11 @@ void CrawlerVSTigerScene::UpdateState()
 	}
 	case NEXUS_EXPLODE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetRumble(5, 5, 30);
 		}
-		if (frame == 60)
+		if (seqData.frame == 60)
 		{
 			EndCurrState();
 		}
@@ -368,7 +368,7 @@ void CrawlerVSTigerScene::UpdateState()
 	}
 	case CONV2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv2");
 		}
@@ -378,7 +378,7 @@ void CrawlerVSTigerScene::UpdateState()
 	}
 	case TIGER_LUNGE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqTiger->Lunge(seqCrawler->GetPosition(), 50, 10);
 		}
@@ -391,7 +391,7 @@ void CrawlerVSTigerScene::UpdateState()
 	}
 	case TIGER_KILL_CRAWLER:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqTiger->KillCrawler();
 			seqCrawler->HitByTiger();
@@ -400,7 +400,7 @@ void CrawlerVSTigerScene::UpdateState()
 	}
 	case CONV3:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv3");
 		}
@@ -410,7 +410,7 @@ void CrawlerVSTigerScene::UpdateState()
 	}
 	case CRAWLER_DEATH:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqCrawler->DieByTiger();
 		}
@@ -496,16 +496,16 @@ void TigerPreFightScene::ReturnToGame()
 
 bool TigerPreFightScene::IsAutoRunState()
 {
-	return state == ENTRANCE || state == KINAPPROACH;
+	return seqData.state == ENTRANCE || seqData.state == KINAPPROACH;
 }
 
 void TigerPreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(tiger);
 			tiger->SeqWait();
@@ -514,7 +514,7 @@ void TigerPreFightScene::UpdateState()
 		break;
 	case TIGERENTRANCE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->ReverseDissolveGates(Gate::BOSS);
 			//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
@@ -524,7 +524,7 @@ void TigerPreFightScene::UpdateState()
 	}
 	case TIGERCRAWLERCONV:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("prefight");
 		}
@@ -540,7 +540,7 @@ void TigerPreFightScene::UpdateState()
 	}
 	case KINAPPROACH:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartEntranceRun(true, 10.0, "kinstop0", "kinnext");
 		}
@@ -548,7 +548,7 @@ void TigerPreFightScene::UpdateState()
 	}
 	case TIGERKINCONV:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("tigerkin");
 		}
@@ -630,10 +630,10 @@ void TigerPostFightScene::AddGroups()
 void TigerPostFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			
 			//seqTiger->Breathe();
@@ -641,7 +641,7 @@ void TigerPostFightScene::UpdateState()
 
 			StartBasicKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		else if (seqData.frame == explosionFadeFrames)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -661,14 +661,14 @@ void TigerPostFightScene::UpdateState()
 		}
 		break;
 	case WAIT:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;
 	case CONV1:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("postfight_1");
 		}
@@ -677,7 +677,7 @@ void TigerPostFightScene::UpdateState()
 		break;
 	case BIRD_ENTER:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Fly(GetPointPos("birdfly2"));
 			seqTiger->LookUp();
@@ -686,7 +686,7 @@ void TigerPostFightScene::UpdateState()
 		break;
 	}
 	case CONV2:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("postfight_2");
 		}
@@ -695,14 +695,14 @@ void TigerPostFightScene::UpdateState()
 		break;
 	case BIRD_SWOOP:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Fly(seqTiger->GetPosition() + V2d(0, -50));
 		}
 		break;
 	}
 	case CONV3:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("postfight_3");
 		}
@@ -711,7 +711,7 @@ void TigerPostFightScene::UpdateState()
 		break;
 	case BIRD_EXIT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->FlyAwayWithTiger(GetPointPos("birdfly3") + V2d(0, -50));
 			seqTiger->Carried(GetPointPos("birdfly3"));
@@ -780,10 +780,10 @@ void BirdTigerAllianceScene::AddGroups()
 void BirdTigerAllianceScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -816,7 +816,7 @@ void BirdTigerAllianceScene::UpdateState()
 	}
 	case FADEOUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(false, 60, Color::Black);
 		}
@@ -898,10 +898,10 @@ void BirdVSTigerScene::AddGroups()
 void BirdVSTigerScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -936,7 +936,7 @@ void BirdVSTigerScene::UpdateState()
 	}
 	case FADEOUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->CrossFade( 60, 0, 60, Color::Black);
 		}

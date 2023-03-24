@@ -37,11 +37,11 @@ void GreyWarpSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADEOUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetManual(true);
 			player->Wait();
@@ -50,7 +50,7 @@ void GreyWarpSequence::UpdateState()
 			barrier->Trigger();
 		}
 
-		if (frame == stateLength[state] - 1)
+		if (seqData.frame == stateLength[seqData.state] - 1)
 		{
 			GameSession *game = GameSession::GetSession();
 
@@ -84,6 +84,6 @@ void GreyWarpSequence::Reset()
 {
 	Sequence::Reset();
 	//Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
-	frame = 0;
-	state = FADEOUT;
+	seqData.frame = 0;
+	seqData.state = FADEOUT;
 }

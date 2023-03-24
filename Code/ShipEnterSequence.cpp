@@ -112,7 +112,7 @@ void ShipEnterScene::ReturnToGame()
 
 void ShipEnterScene::UpdateState()
 {
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
 		sess->hud->Hide();
 		//SetFlashGroup("staregroup");
@@ -155,23 +155,23 @@ void ShipEnterScene::UpdateState()
 	
 	//sess->background->Update(sess->view.getCenter());
 
-	if (frame <= 120) //arbitrary, but when kin is in the middle of the clouds
+	if (seqData.frame <= 120) //arbitrary, but when kin is in the middle of the clouds
 	{
-		sess->background->SetExtra(Vector2f(frame * -60.0, 0));
+		sess->background->SetExtra(Vector2f(seqData.frame * -60.0, 0));
 	}
-	else if( frame == 121 )
+	else if(seqData.frame == 121 )
 	{
 		sess->background->SetExtra(Vector2f( 0, 0 ));
 	}
 
-	if (frame >= 90 && frame <= 180)
+	if (seqData.frame >= 90 && seqData.frame <= 180)
 	{
-		int tFrame = frame - 90;
+		int tFrame = seqData.frame - 90;
 		shipSprite.setPosition(shipSprite.getPosition() + relShipVel);
 
 		relShipVel += Vector2f(.3, -.8);
 	}
-	else if (frame == 240)//121 )
+	else if (seqData.frame == 240)//121 )
 	{
 		Actor *player = sess->GetPlayer(0);
 		//cout << "relshipvel: " << relShipVel.x << ", " << relShipVel.y << endl;
@@ -180,7 +180,7 @@ void ShipEnterScene::UpdateState()
 		player->velocity = V2d(20, 10);
 		player->UpdateSprite();
 		//shipSequence = false;
-		state = Count;
+		seqData.state = Count;
 		player->hasDoubleJump = false;
 		player->hasAirDash = false;
 		sess->SetDrainOn(true);

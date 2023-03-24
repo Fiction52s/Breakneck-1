@@ -74,10 +74,10 @@ void BirdPreFight2Scene::ReturnToGame()
 void BirdPreFight2Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(bird);
 			bird->SeqWait();
@@ -162,14 +162,14 @@ void BirdPostFight2Scene::AddGroups()
 void BirdPostFight2Scene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		else if (seqData.frame == explosionFadeFrames)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
@@ -187,7 +187,7 @@ void BirdPostFight2Scene::UpdateState()
 		ConvUpdate();
 		break;
 	case BIRDLEAVE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Fly(seqBird->GetPosition() + V2d(1000, -1000));
 		}
@@ -260,10 +260,10 @@ void BirdTigerApproachScene::AddGroups()
 void BirdTigerApproachScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -290,7 +290,7 @@ void BirdTigerApproachScene::UpdateState()
 	}
 	case WALK_OUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->Walk(GetPointPos("birdwalk1"));
 			seqTiger->Walk(GetPointPos("tigerwalk1"));
@@ -299,7 +299,7 @@ void BirdTigerApproachScene::UpdateState()
 	}
 	case FADEOUT:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->CrossFade(60, 0, 60, Color::Black);
 		}
@@ -372,10 +372,10 @@ void GatorPreFightScene::ReturnToGame()
 void GatorPreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->AddEnemy(gator);
 			gator->SeqWait();
@@ -474,14 +474,14 @@ void GatorPostFightScene::AddGroups()
 void GatorPostFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case FADE:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			StartBasicKillFade();
 		}
-		else if (frame == 10)
+		else if (seqData.frame == 10)
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
@@ -510,14 +510,14 @@ void GatorPostFightScene::UpdateState()
 		}
 		break;
 	case WAIT:
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		break;
 	case GATOR_CONV1:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv");
 		}
@@ -526,7 +526,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case GATOR_THROW_SUPER_ORB:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->SetPlayerInputOn(true);
 			seqGator->ThrowSuperOrb();
@@ -541,7 +541,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case GATOR_FLOAT_WITH_ORB:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqGator->FloatWithOrb(GetPointPos("gatordest"), 10);
 			EaseShot("gatorholdkincam", 60);
@@ -555,7 +555,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case GATOR_CONV2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("conv2");
 		}
@@ -564,7 +564,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case GATOR_SMASH_ORB:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqGator->SmashWithOrb(GetPointPos("gatordest2"), 15);
 			EaseShot("gatordeathcam", 60);
@@ -579,18 +579,18 @@ void GatorPostFightScene::UpdateState()
 	}
 	case GATOR_BEAT_UP_KIN:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqGator->BeatUpKin();
 			sess->cam.SetRumble(5, 5, 10);
 		}
 
-		if (frame == 120)
+		if (seqData.frame == 120)
 		{
 			EaseShot("cagecam", 60);
 		}
 
-		if (frame == 180)
+		if (seqData.frame == 180)
 		{
 			EndCurrState();
 		}
@@ -617,7 +617,7 @@ void GatorPostFightScene::UpdateState()
 	}*/
 	case BIRD_BREAKS_FREE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->BreakFreeFromBubble();
 		}
@@ -635,7 +635,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_FALL:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			EaseShot("birdfallfromcagecam", 60);
 			seqBird->Fall(GetPointPos("birdland").y);
@@ -649,7 +649,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_TRY_TO_GET_UP:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->TryToGetUp();
 		}
@@ -662,7 +662,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_CONV1:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("birdconv1");
 		}
@@ -672,7 +672,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_GET_UP:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->GetUp();
 		}
@@ -685,7 +685,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_CONV2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			SetConvGroup("birdconv2");
 		}
@@ -695,7 +695,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_FLOAT_UP:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->RiseFromGround(150, 1);
 		}
@@ -708,7 +708,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_FLOAT_CHARGE:
 	{
-		if (frame == 30)
+		if (seqData.frame == 30)
 		{
 			EndCurrState();
 		}
@@ -716,7 +716,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_KICK:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->SuperKick(seqGator->GetPosition());
 			EaseShot("gatordeathcam", 30);
@@ -730,7 +730,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case STORY_PAUSE_TEST:
 	{
-		if (frame == 30)
+		if (seqData.frame == 30)
 		{
 			EndCurrState();
 		}
@@ -738,7 +738,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case BIRD_KICK_2:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqGator->KickedByBird();
 			seqBird->SuperKickFollowThrough(GetPointPos("birdkick"));
@@ -755,7 +755,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case TIGERFALL:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqTiger->Fall(GetPointPos("tigerland").y);
 		}
@@ -768,7 +768,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case TIGER_WALK_TO_BIRD:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqTiger->Walk(seqBird->GetPosition());
 		}
@@ -781,7 +781,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case TIGER_ROAR:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqTiger->InjuredRoar();
 		}
@@ -794,7 +794,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case TIGER_PUTS_BIRD_ON_BACK:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqBird->RideTiger(seqTiger);
 			seqTiger->PutBirdOnBack();
@@ -803,7 +803,7 @@ void GatorPostFightScene::UpdateState()
 	}
 	case TIGER_LEAVES_WITH_BIRD:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			seqTiger->CarryBirdAway(seqTiger->GetPosition() + V2d(2000, 0));
 		}

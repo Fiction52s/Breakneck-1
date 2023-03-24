@@ -13,6 +13,13 @@ struct GetPowerSequence : Sequence
 		Count
 	};
 
+	PowerItem *powerItem;
+	PowerPopup *powerPop;
+	MovingGeoGroup geoGroup;
+	ShapeEmitter *emitter;
+
+	sf::Vertex overlayRect[4];
+
 	GetPowerSequence();
 	~GetPowerSequence();
 	void UpdateState();
@@ -22,12 +29,9 @@ struct GetPowerSequence : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	PowerItem *powerItem;
-	PowerPopup *powerPop;
-	MovingGeoGroup geoGroup;
-	ShapeEmitter *emitter;
-
-	sf::Vertex overlayRect[4];
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

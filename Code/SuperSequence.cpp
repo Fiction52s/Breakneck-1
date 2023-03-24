@@ -80,9 +80,9 @@ void SuperSequence::AddEnemies()
 
 void SuperSequence::UpdateState()
 {
-	if (frame == 0)
+	if (seqData.frame == 0)
 	{
-		switch (state)
+		switch (seqData.state)
 		{
 		case SPARK1:
 			superLightningSpr.setTexture(*ts_spark1->texture);
@@ -100,7 +100,7 @@ void SuperSequence::UpdateState()
 		
 	}
 
-	superLightningSpr.setTextureRect(ts_spark1->GetSubRect(frame / animFactor));
+	superLightningSpr.setTextureRect(ts_spark1->GetSubRect(seqData.frame / animFactor));
 	superLightningSpr.setOrigin(superLightningSpr.getLocalBounds().width / 2,
 		superLightningSpr.getLocalBounds().height / 2);
 
@@ -141,15 +141,15 @@ void SuperSequence::Draw(sf::RenderTarget *target, EffectLayer layer)
 
 		//V2d( 960, 540 ) + (sess->GetPlayerPos(0) - V2d(sess->cam.GetPos()));
 
-		if (state == SPARK1 || state == SPARK2)
+		if (seqData.state == SPARK1 || seqData.state == SPARK2)
 		{
 			superLightningSpr.setPosition(playerPixel.x, playerPixel.y);//960, 540);
 		}
-		else if (state == LIT1)
+		else if (seqData.state == LIT1)
 		{
 			superLightningSpr.setPosition(960, playerPixel.y);
 		}
-		else if (state == LIT2)
+		else if (seqData.state == LIT2)
 		{
 			superLightningSpr.setPosition(playerPixel.x, 540);
 		}

@@ -65,8 +65,8 @@ int ParallelRaceMode::GetNumStoredBytes()
 void ParallelRaceMode::StoreBytes(unsigned char *bytes)
 {
 	data.done = (int)done;
-	data.endSeqState = endSeq->state;
-	data.endSeqFrame = endSeq->frame;
+	//data.endSeqState = endSeq->state;
+	//data.endSeqFrame = endSeq->frame;
 	int dataSize = sizeof(MyData);
 	memcpy(bytes, &data, dataSize);
 	bytes += dataSize;
@@ -86,8 +86,8 @@ void ParallelRaceMode::SetFromBytes(unsigned char *bytes)
 	memcpy(&data, bytes, sizeof(MyData));
 
 	done = (bool)data.done;
-	endSeq->state = data.endSeqState;
-	endSeq->frame = data.endSeqFrame;
+	//endSeq->state = data.endSeqState;
+	//endSeq->frame = data.endSeqFrame;
 
 	bytes += sizeof(MyData);
 

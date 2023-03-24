@@ -41,11 +41,11 @@ void FightEndSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	switch (state)
+	switch (seqData.state)
 	{
 	case FREEZE:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetManual(true);
 			sess->cam.SetRumble(10, 10, 90);

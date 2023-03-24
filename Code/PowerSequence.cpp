@@ -92,12 +92,14 @@ GetPowerSequence::~GetPowerSequence()
 
 void GetPowerSequence::UpdateState()
 {
+	cout << "power sequence action: " << seqData.state << ", frame: " << seqData.frame << "\n";
+
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case GET:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
@@ -105,12 +107,13 @@ void GetPowerSequence::UpdateState()
 		}
 
 		int freezeFrame = 100;
-		if (frame == freezeFrame)
+		if (seqData.frame == freezeFrame)
 		{
+			cout << "freezing" << endl;
 			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}
-		else if (frame > freezeFrame)
+		else if (seqData.frame > freezeFrame)
 		{
 			if( PlayerPressedConfirm() )
 			{
@@ -122,7 +125,7 @@ void GetPowerSequence::UpdateState()
 		{
 			if (!geoGroup.Update())
 			{
-				frame = stateLength[state] - 1;
+				seqData.frame = stateLength[seqData.state] - 1;
 			}
 		}
 	}
@@ -163,8 +166,8 @@ void GetPowerSequence::Reset()
 	if (powerItem != NULL)
 	{
 		Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
-		frame = 0;
-		state = GET;
+		seqData.frame = 0;
+		seqData.state = GET;
 		geoGroup.SetBase(pPos);
 		geoGroup.Reset();
 		geoGroup.Start();
@@ -179,5 +182,27 @@ void GetPowerSequence::Reset()
 		emitter->Reset();
 		sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 	}
+
+}
+
+int GetPowerSequence::GetNumStoredBytes()
+{
+	return sizeof(seqData) + geoGroup.GetNumStoredBytes();
+}
+
+void GetPowerSequence::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &seqData, sizeof(seqData));
+	bytes += sizeof(seqData);
+
+	geoGroup.StoreBytes(bytes);
+}
+
+void GetPowerSequence::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&seqData, bytes, sizeof(seqData));
+	bytes += sizeof(seqData);
+
+	geoGroup.SetFromBytes(bytes);
 
 }

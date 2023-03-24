@@ -47,7 +47,7 @@ struct PracticePlayer
 	};
 
 
-	int numSequenceConfirms;
+	
 
 	bool readyToBeSentMessages;
 
@@ -76,9 +76,13 @@ struct PracticePlayer
 	unsigned char *syncStateBuf;
 	int syncStateBufSize;
 
+
+
 	//GameSession *myGame;
 
 	PracticeInputMsg messages[MAX_BUFFERED_MESSAGES];
+	std::map<int, int> sequenceConfirmMap;
+	std::map<int, int> stateChangeMap;
 
 	PracticePlayer();
 	void Clear();
@@ -89,6 +93,11 @@ struct PracticePlayer
 	void ReceiveSteamMessage(SteamNetworkingMessage_t *message);
 	COMPRESSED_INPUT_TYPE AdvanceInput();
 	const PracticeInputMsg &GetNextMsg();
+	bool HasSequenceConfirms();
+	void ConsumeSequenceConfirm();
+
+	bool HasStateChange();
+	void ConsumeStateChange();
 
 	bool HasBeenSentStartMessage();
 };
@@ -354,6 +363,9 @@ struct NetplayManager
 
 	bool SendPracticeSequenceConfirmMessageToPlayer(PracticePlayer &pracPlayer, PracticeSequenceConfirmMsg &pm);
 	void SendPracticeSequenceConfirmMessageToAllPeers(PracticeSequenceConfirmMsg &pm);
+
+	bool SendPracticeStateChangeMessageToPlayer(PracticePlayer &pracPlayer, PracticeStateChangeMsg &pm);
+	void SendPracticeStateChangeMessageToAllPeers(PracticeStateChangeMsg &pm);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);

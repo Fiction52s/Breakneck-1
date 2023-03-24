@@ -273,14 +273,14 @@ void BasicBossScene::EntranceUpdate()
 	sess->FreezePlayer(false);
 	if (entranceType == RUN)
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->Fade(false, fadeFrames, Color::Black);
 			sess->hud->Hide(fadeFrames);
 			player->Wait();
 			sess->cam.SetManual(true);
 		}
-		else if (frame == fadeFrames)
+		else if (seqData.frame == fadeFrames)
 		{
 			//barrier->Trigger();
 			sess->RemoveAllEnemies();
@@ -291,7 +291,7 @@ void BasicBossScene::EntranceUpdate()
 	}
 	else if (entranceType == STARTMAP_RUN)
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 
 
@@ -343,7 +343,7 @@ bool BasicBossScene::IsAutoRunState()
 {
 	if (entranceType == RUN || entranceType == STARTMAP_RUN)
 	{
-		return state == 0;
+		return seqData.state == 0;
 	}
 	else
 	{
@@ -354,8 +354,8 @@ bool BasicBossScene::IsAutoRunState()
 
 void BasicBossScene::Wait()
 {
-	state = 1;
-	frame = 0;
+	seqData.state = 1;
+	seqData.frame = 0;
 }
 
 bool BasicBossScene::Update()
@@ -365,10 +365,10 @@ bool BasicBossScene::Update()
 	if (!StateIncrement())
 		return false;
 
-	if (IsAutoRunState() && !player->IsAutoRunning() && frame > 60)
+	if (IsAutoRunState() && !player->IsAutoRunning() && seqData.frame > 60)
 	{
-		state++;
-		frame = 0;
+		seqData.state++;
+		seqData.frame = 0;
 		//Wait();
 	}
 
@@ -378,7 +378,7 @@ bool BasicBossScene::Update()
 
 	UpdateState();
 
-	++frame;
+	++seqData.frame;
 
 	return true;
 }

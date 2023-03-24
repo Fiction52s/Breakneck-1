@@ -98,6 +98,8 @@ GetShardSequence::~GetShardSequence()
 
 void GetShardSequence::UpdateState()
 {
+
+	
 	Actor *player = sess->GetPlayer(0);
 	switch (seqData.state)
 	{
@@ -120,7 +122,6 @@ void GetShardSequence::UpdateState()
 		{
 			if (PlayerPressedConfirm())
 			{
-				sess->TrySendPracticeSequenceConfirmMessage();
 				sess->SetGameSessionState(GameSession::RUN);
 			}
 		}

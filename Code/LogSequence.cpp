@@ -97,11 +97,11 @@ GetLogSequence::~GetLogSequence()
 void GetLogSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-	switch (state)
+	switch (seqData.state)
 	{
 	case GET:
 	{
-		if (frame == 0)
+		if (seqData.frame == 0)
 		{
 			sess->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
@@ -109,13 +109,13 @@ void GetLogSequence::UpdateState()
 		}
 
 		int freezeFrame = 100;
-		if (frame == freezeFrame)
+		if (seqData.frame == freezeFrame)
 		{
 			logPop->SetInfoInEditor();
 			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}
-		else if (frame > freezeFrame)
+		else if (seqData.frame > freezeFrame)
 		{
 			if (PlayerPressedConfirm())
 			{
@@ -127,7 +127,7 @@ void GetLogSequence::UpdateState()
 		{
 			if (!geoGroup.Update())
 			{
-				frame = stateLength[state] - 1;
+				seqData.frame = stateLength[seqData.state] - 1;
 			}
 		}
 	}
@@ -173,8 +173,8 @@ void GetLogSequence::Reset()
 	if (log != NULL)
 	{
 		Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
-		frame = 0;
-		state = GET;
+		seqData.frame = 0;
+		seqData.state = GET;
 		geoGroup.SetBase(pPos);
 		geoGroup.Reset();
 		geoGroup.Start();

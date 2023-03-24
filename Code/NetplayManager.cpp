@@ -38,7 +38,8 @@ void PracticePlayer::Clear()
 	alreadySentStartMessage = false;
 	alreadySentInitMessage = false;
 
-	numSequenceConfirms = 0;
+	sequenceConfirmMap.clear();
+	stateChangeMap.clear();
 
 	readyToBeSentMessages = false;
 
@@ -66,6 +67,8 @@ void PracticePlayer::ClearSyncStateBuf()
 
 void PracticePlayer::ClearMessages()
 {
+	sequenceConfirmMap.clear();
+	stateChangeMap.clear();
 	waitingForFrame = 0;
 	currReadIndex = 0;
 	currWriteIndex = 0;
@@ -78,6 +81,41 @@ void PracticePlayer::ClearMessages()
 }
 
 
+bool PracticePlayer::HasSequenceConfirms()
+{
+	auto it = sequenceConfirmMap.find(nextFrameToRead);
+	if (it != sequenceConfirmMap.end())
+	{
+		if ((*it).second > 0)
+			return true;
+	}
+
+	return false;
+}
+
+bool PracticePlayer::HasStateChange()
+{
+	auto it = stateChangeMap.find(nextFrameToRead);
+	if (it != stateChangeMap.end())
+	{
+		if ((*it).second)
+			return true;
+	}
+
+	return false;
+}
+
+void PracticePlayer::ConsumeStateChange()
+{
+	assert(HasStateChange());
+
+	auto it = stateChangeMap.find(nextFrameToRead);
+	assert(it != stateChangeMap.end());
+	assert((*it).second);
+
+	stateChangeMap.erase(it);
+}
+
 int PracticePlayer::HasInputs()
 {
 	//return 1; //testing
@@ -88,13 +126,33 @@ int PracticePlayer::HasInputs()
 		return 0;
 	}
 
+	if (HasSequenceConfirms())
+		return 0;
+
+	//if (HasStateChange())
+	//	return 0;
+
 	if (nextFrameToRead < waitingForFrame)
 	{
 		//cout << "has input. num frames had: " << waitingForFrame - nextFrameToRead << "\n";
 
 		assert(messages[currReadIndex].frame == nextFrameToRead);
 
-		return waitingForFrame - nextFrameToRead;
+		int maxTestframe = waitingForFrame;
+		for (int i = nextFrameToRead; i < waitingForFrame; ++i)
+		{
+			auto it = stateChangeMap.find(i);
+			if (it != stateChangeMap.end())
+			{
+				if ((*it).second)
+				{
+					maxTestframe = i;
+					break;
+				}
+			}
+		}
+
+		return maxTestframe - nextFrameToRead;
 	}
 
 	return 0;
@@ -148,11 +206,27 @@ COMPRESSED_INPUT_TYPE PracticePlayer::AdvanceInput()
 	return compressedInput;
 }
 
+void PracticePlayer::ConsumeSequenceConfirm()
+{
+	assert(HasSequenceConfirms());
+
+	auto it = sequenceConfirmMap.find(nextFrameToRead);
+	assert(it != sequenceConfirmMap.end());
+	
+	--((*it).second);
+	assert((*it).second >= 0);
+
+	if ((*it).second == 0)
+	{
+		sequenceConfirmMap.erase(it);
+	}
+}
+
 void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 {
 	if ( action == A_RUNNING && pm.frame == waitingForFrame)
 	{
-		//cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
+		cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
 
 		++waitingForFrame;
 
@@ -229,7 +303,19 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 	}
 	case PracticeMsgHeader::MSG_TYPE_SEQUENCE_CONFIRM:
 	{
-		++numSequenceConfirms;
+		PracticeSequenceConfirmMsg *msg = (PracticeSequenceConfirmMsg*)message->GetData();
+		
+		cout << "received sequence confirm on frame: " << msg->frame << "\n";
+		++sequenceConfirmMap[msg->frame];
+		break;
+	}
+	case PracticeMsgHeader::MSG_TYPE_STATE_CHANGE:
+	{
+		PracticeStateChangeMsg *msg = (PracticeStateChangeMsg*)message->GetData();
+
+		cout << "received state change msg on frame: " << msg->frame << "\n";
+
+		stateChangeMap[msg->frame] = true;
 		break;
 	}
 	}
@@ -3156,6 +3242,42 @@ void NetplayManager::SendPracticeSequenceConfirmMessageToAllPeers(PracticeSequen
 		if (practicePlayers[i].isConnectedTo && practicePlayers[i].readyToBeSentMessages && practicePlayers[i].HasBeenSentStartMessage())
 		{
 			SendPracticeSequenceConfirmMessageToPlayer(practicePlayers[i], pm);
+		}
+	}
+}
+
+bool NetplayManager::SendPracticeStateChangeMessageToPlayer(PracticePlayer &pracPlayer, PracticeStateChangeMsg &pm)
+{
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice state change message to connection " << pracPlayer.connection << ". frame: " << pm.frame << "\n";
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice state change message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
+void NetplayManager::SendPracticeStateChangeMessageToAllPeers(PracticeStateChangeMsg &pm)
+{
+	assert(action == A_PRACTICE_TEST);
+	if (action != A_PRACTICE_TEST)
+	{
+		return;
+	}
+
+	SteamNetworkingIdentity identity;
+	CSteamID myID = SteamUser()->GetSteamID();
+
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].readyToBeSentMessages && practicePlayers[i].HasBeenSentStartMessage())
+		{
+			SendPracticeStateChangeMessageToPlayer(practicePlayers[i], pm);
 		}
 	}
 }

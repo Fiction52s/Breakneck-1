@@ -342,7 +342,10 @@ struct SaveGameState
 	int activeSequenceID;
 	uint32 randomState;
 	Camera cam;
+
+	SaveGameState();
 	void Print();
+	void Clear();
 };
 
 int fletcher32_checksum(short *data, 
