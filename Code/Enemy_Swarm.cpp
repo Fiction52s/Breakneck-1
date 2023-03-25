@@ -390,6 +390,16 @@ void Swarm::ProcessState()
 	}
 }
 
+void Swarm::AddToGame()
+{
+	Enemy::AddToGame();
+
+	for (int i = 0; i < NUM_SWARM; ++i)
+	{
+		members[i]->SetEnemyIDAndAddToAllEnemiesVec();
+	}
+}
+
 void Swarm::HandleNoHealth()
 {
 	dead = false;

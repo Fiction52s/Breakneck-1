@@ -421,6 +421,14 @@ void SplitComboer::SetZoneSpritePosition()
 	Enemy::SetZoneSpritePosition();
 }
 
+void SplitComboer::AddToGame()
+{
+	Enemy::AddToGame();
+
+	pieces[0]->SetEnemyIDAndAddToAllEnemiesVec();
+	pieces[1]->SetEnemyIDAndAddToAllEnemiesVec();
+}
+
 int SplitComboer::GetNumStoredBytes()
 {
 	return sizeof(MyData) + pieces[0]->GetNumStoredBytes() * NUM_PIECES + pathFollower.GetNumStoredBytes();

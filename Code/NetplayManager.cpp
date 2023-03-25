@@ -226,7 +226,7 @@ void PracticePlayer::ReceiveInputMsg(PracticeInputMsg &pm)
 {
 	if ( action == A_RUNNING && pm.frame == waitingForFrame)
 	{
-		cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
+		//cout << "recived practicemsg: " << pm.input << ", frame: " << pm.frame << "\n";
 
 		++waitingForFrame;
 

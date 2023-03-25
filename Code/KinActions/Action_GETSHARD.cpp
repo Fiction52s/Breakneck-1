@@ -38,9 +38,9 @@ void Actor::GETSHARD_Update()
 void Actor::GETSHARD_UpdateSprite()
 {
 	SetSpriteTexture(action);
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
 	SetSpriteTile(0, facingRight);
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 }
 
 void Actor::GETSHARD_TransitionToAction(int a)

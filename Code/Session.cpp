@@ -3028,10 +3028,19 @@ void Session::RunFrameForParallelPractice()
 					//prac.hasSequenceConfirmReady = false;
 					pm->parallelGames[i]->RestartLevel();
 
+					
+
 					if (prac.syncStateBufSize > 0)
 					{
 						pm->parallelGames[i]->LoadState(prac.syncStateBuf, prac.syncStateBufSize);
 						prac.ClearSyncStateBuf();
+					}
+
+
+					if (pm->parallelGames[i]->gameState == FROZEN)
+					{
+						pm->parallelGames[i]->GetPlayer(0)->UpdateActionSprite();
+						pm->parallelGames[i]->GetPlayer(0)->nameTag->SetPos(Vector2f(pm->parallelGames[i]->GetPlayer(0)->position));
 					}
 				}
 			}
@@ -3885,7 +3894,7 @@ int Session::SetupZones()
 		return 0;
 
 	//add enemies to the correct zone.
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		for (auto zit = zones.begin(); zit != zones.end(); ++zit)
 		{
@@ -4621,7 +4630,7 @@ void Session::QueryGateTree(sf::Rect<double>&rect)
 void Session::EnemiesCheckedMiniDraw(RenderTarget *target,
 	sf::FloatRect &rect)
 {
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->CheckedMiniDraw(target, rect);
 	}
@@ -4630,7 +4639,7 @@ void Session::EnemiesCheckedMiniDraw(RenderTarget *target,
 void Session::EnemiesCheckPauseMapDraw(sf::RenderTarget *target,
 	sf::FloatRect &rect)
 {
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		if ((*it)->IsGoalType())
 		{
@@ -4838,7 +4847,7 @@ void Session::DrawEnemies(sf::RenderTarget *target)
 		current = current->next;
 	}
 
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->CheckedZoneDraw(target, FloatRect(screenRect));
 	}
@@ -5720,7 +5729,7 @@ void Session::SetupBarrierScenes()
 
 void Session::SetupEnemyZoneSprites()
 {
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->SetZoneSpritePosition();
 	}
@@ -6084,7 +6093,7 @@ int Session::GetNumTotalEnergyParticles(int absorbType)
 	{
 	case AbsorbParticles::ENERGY:
 	{
-		for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+		for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 		{
 			total += (*it)->GetNumEnergyAbsorbParticles();
 		}
@@ -6092,7 +6101,7 @@ int Session::GetNumTotalEnergyParticles(int absorbType)
 	}
 	case AbsorbParticles::DARK:
 	{
-		for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+		for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 		{
 			total += (*it)->GetNumDarkAbsorbParticles();	
 		}
@@ -6100,7 +6109,7 @@ int Session::GetNumTotalEnergyParticles(int absorbType)
 	}
 	case AbsorbParticles::SHARD:
 	{
-		for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+		for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 		{
 			total += (*it)->GetNumShardAbsorbParticles();
 		}
@@ -8701,7 +8710,7 @@ void Session::PlayerMustSimulateAtLeast(int f, int index )
 
 Enemy * Session::GetEnemy(int enType)
 {
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		if ((*it)->type == enType)
 		{
@@ -8713,7 +8722,7 @@ Enemy * Session::GetEnemy(int enType)
 
 GroundedWarper *Session::GetWarper(const std::string levelWarp)
 {
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		if ((*it)->type == EN_GROUNDEDWARPER)
 		{

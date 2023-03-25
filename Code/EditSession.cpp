@@ -1020,8 +1020,6 @@ void EditSession::TestPlayerMode()
 		specialTerrainTree->Insert((*it));
 	}
 
-
-	fullEnemyList.clear();
 	allEnemiesVec.clear();
 
 	allRailsVec.clear();
@@ -1033,7 +1031,7 @@ void EditSession::TestPlayerMode()
 		{
 			(*it)->AddEnemyChainToWorldTrees();
 			enemyTree->Insert((*it)->enemyChain);
-			fullEnemyList.push_back((*it)->enemyChain);
+			allEnemiesVec.push_back((*it)->enemyChain);
 		}
 		else
 		{
@@ -1192,7 +1190,7 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->Setup();
 	}

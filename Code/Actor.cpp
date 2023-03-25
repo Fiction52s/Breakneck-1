@@ -16074,7 +16074,6 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
-	
 	if (action == DEATH && simulationMode)
 	{
 		return;

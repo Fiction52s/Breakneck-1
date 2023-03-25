@@ -126,6 +126,13 @@ void Shroom::ProcessState()
 	V2d playerPos = sess->GetPlayerPos(0);
 }
 
+void Shroom::AddToGame()
+{
+	Enemy::AddToGame();
+
+	jelly->SetEnemyIDAndAddToAllEnemiesVec();
+}
+
 void Shroom::DirectKill()
 {
 	Enemy::DirectKill();

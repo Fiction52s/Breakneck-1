@@ -297,6 +297,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		currHurtboxes = NULL;
 		currHurtboxFrame = -1;
 	}
+
+	void SetEnemyIDAndAddToAllEnemiesVec();
+
 	void SetHurtboxes(CollisionBody *cb, int frame = 0);
 	void DrawSprite( 
 		sf::RenderTarget *target,

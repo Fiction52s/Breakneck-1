@@ -92,6 +92,7 @@ struct Swarm : Enemy
 	int GetNumEnergyAbsorbParticles();
 	void Launch();
 	void ResetEnemy();
+	void AddToGame();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

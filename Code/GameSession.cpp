@@ -311,7 +311,7 @@ void GameSession::UpdateCamera()
 
 	view.setRotation(cam.GetRotation());
 
-	lastViewCenter = view.getCenter();
+	//lastViewCenter = view.getCenter(); //depreciated completely
 }
 
 void GameSession::DrawShockwaves(sf::RenderTarget *target)
@@ -786,11 +786,11 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	CleanupCameraShots();
 
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		delete (*it);
 	}
-	fullEnemyList.clear();
+	allEnemiesVec.clear();
 
 	CleanupGlobalBorders();
 
@@ -934,11 +934,11 @@ void GameSession::Cleanup()
 	}
 	allPolysVec.clear();
 
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		delete (*it);
 	}
-	fullEnemyList.clear();
+	allEnemiesVec.clear();
 
 	CleanupGoalFlow();
 
@@ -1957,7 +1957,7 @@ bool GameSession::Load()
 	
 	
 	cout << "last one" << endl;
-	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
+	for( auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it )
 	{
 		(*it)->Setup();
 	}
@@ -2701,6 +2701,13 @@ bool GameSession::RunMainLoopOnce()
 		{
 			return false;
 		}
+
+		
+
+		preScreenTex->clear(Color::Red);
+		extraScreenTex->clear(Color::Transparent);
+		postProcessTex2->clear(Color::Red);
+		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
 
 		
 		Sprite preTexSprite;

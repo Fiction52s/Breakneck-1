@@ -272,7 +272,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<PolyPtr> allPolysVec;
 	std::vector<PolyPtr> allSpecialPolysVec;
 	std::vector<RailPtr> allRailsVec;
-	std::list<Enemy*> fullEnemyList;
 	std::vector<Enemy*> allEnemiesVec;
 	std::vector<ComboObject*> allComboObjectsVec;
 	std::vector<Launcher*> allLaunchersVec;

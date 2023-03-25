@@ -1086,6 +1086,14 @@ void Enemy::Reset()
 	UpdateHitboxes();
 }
 
+void Enemy::SetEnemyIDAndAddToAllEnemiesVec()
+{
+	assert(enemyIndex == -1);
+
+	enemyIndex = sess->allEnemiesVec.size();
+	sess->allEnemiesVec.push_back(this);
+}
+
 void Enemy::SetSummonGroup(SummonGroup *p_summonGroup )
 {
 	summonGroup = p_summonGroup;
@@ -1209,13 +1217,10 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 
 void Enemy::AddToGame()
 {
-	enemyIndex = sess->allEnemiesVec.size();
+	SetEnemyIDAndAddToAllEnemiesVec();
 
 	AddToWorldTrees();
 	sess->enemyTree->Insert(this);
-	sess->fullEnemyList.push_back(this);
-
-	sess->allEnemiesVec.push_back(this);
 }
 
 void Enemy::UpdateSpriteFromParams(ActorParams *ap)

@@ -82,6 +82,7 @@ struct SplitComboer : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	void AddToGame();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

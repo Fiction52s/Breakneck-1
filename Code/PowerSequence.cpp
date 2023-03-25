@@ -92,7 +92,7 @@ GetPowerSequence::~GetPowerSequence()
 
 void GetPowerSequence::UpdateState()
 {
-	cout << "power sequence action: " << seqData.state << ", frame: " << seqData.frame << "\n";
+	//cout << "power sequence action: " << seqData.state << ", frame: " << seqData.frame << "\n";
 
 	Actor *player = sess->GetPlayer(0);
 	switch (seqData.state)
@@ -109,7 +109,7 @@ void GetPowerSequence::UpdateState()
 		int freezeFrame = 100;
 		if (seqData.frame == freezeFrame)
 		{
-			cout << "freezing" << endl;
+			//cout << "freezing" << endl;
 			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}

@@ -372,7 +372,7 @@ void Sequence::AddEnemy(const std::string &enName, Enemy *e)
 {
 	assert(enemies.count(enName) == 0);
 
-	sess->fullEnemyList.push_back(e);
+	sess->allEnemiesVec.push_back(e);
 	enemies[enName] = e;
 }
 

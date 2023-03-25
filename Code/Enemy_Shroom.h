@@ -40,6 +40,7 @@ struct Shroom : Enemy
 	void ResetEnemy();
 	void IHitPlayer(int index = 0);
 	void ProcessState();
+	void AddToGame();
 
 	void CheckedMiniDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);
