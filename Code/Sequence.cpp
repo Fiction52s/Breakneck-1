@@ -191,7 +191,11 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	}
 
 	if (bScene != NULL)
+	{
 		bScene->Init();
+		bScene->SetIDAndAddToAllSequencesVec();
+	}
+		
 
 	return bScene;
 }
@@ -204,9 +208,10 @@ Sequence::Sequence()
 	seqData.frame = 0;
 	seqData.state = 0;
 
-	sequenceID = sess->allSequencesVec.size();
-
-	sess->allSequencesVec.push_back(this);
+	/*if (sess->IsSessTypeGame())
+	{
+		SetIDAndAddToAllSequencesVec();
+	}*/
 	
 	currConvGroup = NULL;
 	numStates = 0;
@@ -720,6 +725,12 @@ void Sequence::Init()
 	SetupStates();
 
 	SpecialInit();
+}
+
+void Sequence::SetIDAndAddToAllSequencesVec()
+{
+	sequenceID = sess->allSequencesVec.size();
+	sess->allSequencesVec.push_back(this);
 }
 
 bool Sequence::StateIncrement()

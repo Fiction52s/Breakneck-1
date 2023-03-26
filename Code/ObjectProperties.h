@@ -113,7 +113,7 @@ struct HittableObject
 {
 	HitboxInfo receivedHit;
 	int receivedHitPlayerIndex;
-	Enemy *comboHitEnemy;
+	int comboHitEnemyID;
 	int numHealth;
 	bool specterProtected;
 
@@ -190,6 +190,7 @@ struct ComboObject
 
 	ComboObject::ComboObject(Enemy *en);
 	~ComboObject();
+	void SetIDAndAddToAllComboObjectsVec();
 	void Reset();
 	V2d GetComboPos();
 	void ComboHit();

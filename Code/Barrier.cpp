@@ -115,11 +115,14 @@ void Barrier::SetScene()
 
 			warpSeq = new WarpTransitionSequence;
 			warpSeq->Init();
+			warpSeq->SetIDAndAddToAllSequencesVec();
 
 			warpSeq->bonus = myBonus;
 			warpSeq->barrier = this;
 		}
 	}
+
+	
 }
 
 Barrier::~Barrier()

@@ -113,10 +113,6 @@ void Gate::Setup(GateInfoPtr gi)
 	{
 		SetTime(gi->seconds);
 	}
-	/*else if (category == Gate::ALLKEY)
-	{
-		SetNumToOpen(gi->numToOpen);
-	}*/
 
 	temp0prev = edge0->edge0;
 	temp0next = edge0;
@@ -144,6 +140,7 @@ void Gate::Setup(GateInfoPtr gi)
 
 	CalcAABB();
 
+	gateIndex = sess->gates.size();
 	sess->gates.push_back(this);
 
 	SetLocked(true);

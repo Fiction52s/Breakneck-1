@@ -140,7 +140,7 @@ HitboxInfo * ComboerTarget::IsHit(int pIndex)
 			if (validHit)
 			{
 				co->enemy->ComboHit();
-				comboHitEnemy = co->enemy;
+				comboHitEnemyID = co->enemy->enemyIndex;
 
 				return hi;
 			}

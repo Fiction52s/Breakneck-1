@@ -422,6 +422,11 @@ void LogItem::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
+void LogItem::SetSequenceIDsAndAddThemToAllSequencesVec()
+{
+	logSeq->SetIDAndAddToAllSequencesVec();
+}
+
 LogPopup::LogPopup()
 {
 	//563 x 186

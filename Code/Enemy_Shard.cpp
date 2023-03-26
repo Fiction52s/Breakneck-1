@@ -451,6 +451,11 @@ void Shard::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
+void Shard::SetSequenceIDsAndAddThemToAllSequencesVec()
+{
+	shardSeq->SetIDAndAddToAllSequencesVec();
+}
+
 ShardPopup::ShardPopup()
 {
 	//563 x 186

@@ -3039,6 +3039,7 @@ void Session::RunFrameForParallelPractice()
 
 					if (pm->parallelGames[i]->gameState == FROZEN)
 					{
+						//allows the player and nametag to remain visible if you enter a map while someone is frozen
 						pm->parallelGames[i]->GetPlayer(0)->UpdateActionSprite();
 						pm->parallelGames[i]->GetPlayer(0)->nameTag->SetPos(Vector2f(pm->parallelGames[i]->GetPlayer(0)->position));
 					}
@@ -5453,7 +5454,11 @@ void Session::SetActiveSequence(Sequence *activeSeq)
 		return;
 	}
 
-		
+	if (activeSeq->sequenceID == -1)
+	{
+		assert(0);
+		return;
+	}
 
 	activeSequence = activeSeq;
 

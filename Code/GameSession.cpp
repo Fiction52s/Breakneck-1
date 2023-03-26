@@ -780,6 +780,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	allPolysVec.clear();
 
+	allComboObjectsVec.clear();
+
 	CleanupZones();
 
 	CleanupBarriers();
@@ -844,6 +846,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	CleanupShipExit();
 
 	CleanupShipEntrance();
+
+	allSequencesVec.clear();
 	
 
 	activeEnemyList = NULL;
@@ -1218,67 +1222,20 @@ void GameSession::ProcessGate(int gCat,
 		poly1Index++;
 	}
 
-	Edge *edge0 = allPolysVec[poly0Index]->GetEdge(vertexIndex0);
-	Edge *edge1 = allPolysVec[poly1Index]->GetEdge(vertexIndex1);
-
-	V2d point0 = edge0->v0;
-	V2d point1 = edge1->v0;
+	GateInfo gi;
+	gi.category = gCat;
+	gi.variation = gVar;
+	gi.numToOpen = numToOpen;
+	gi.poly0 = allPolysVec[poly0Index];
+	gi.poly1 = allPolysVec[poly1Index];
+	gi.vertexIndex0 = vertexIndex0;
+	gi.vertexIndex1 = vertexIndex1;
+	gi.shardWorld = shardWorld;
+	gi.shardIndex = shardIndex;
+	gi.seconds = seconds;
 
 	Gate * gate = new Gate(this, gCat, gVar);
-	gate->gateIndex = gates.size();
-
-	if (gCat == Gate::SHARD)
-	{
-		gate->SetShard(shardWorld, shardIndex);
-	}
-	else if (gCat == Gate::NUMBER_KEY || gCat == Gate::ALLKEY || gCat == Gate::PICKUP)
-	{
-		gate->SetNumToOpen(numToOpen);
-	}
-	else if (gCat == Gate::TIME_GLOBAL || gCat == Gate::TIME_ROOM)
-	{
-		gate->seconds = seconds; //do stuff here to set the timer
-	}
-
-	gate->temp0prev = edge0->edge0;
-	gate->temp0next = edge0;
-	gate->temp1prev = edge1->edge0;
-	gate->temp1next = edge1;
-
-	gate->edgeA = new Edge;
-	gate->edgeA->edgeType = Edge::CLOSED_GATE;
-	gate->edgeA->info = gate;
-	gate->edgeB = new Edge;
-	gate->edgeB->edgeType = Edge::CLOSED_GATE;
-	gate->edgeB->info = gate;
-
-	gate->edgeA->v0 = point0;
-	gate->edgeA->v1 = point1;
-
-	gate->edgeB->v0 = point1;
-	gate->edgeB->v1 = point0;
-
-	gate->edgeA->CalcAABB();
-	gate->edgeB->CalcAABB();
-
-	gate->next = NULL;
-	gate->prev = NULL;
-
-	gate->CalcAABB();
-
-	gates.push_back(gate);
-
-	gate->SetLocked(true);
-
-	gate->Init();
-
-	terrainTree->Insert(gate->edgeA);
-	terrainTree->Insert(gate->edgeB);
-
-	cout << "inserting gate: " << gate->edgeA << endl;
-	gateTree->Insert(gate);
-
-	gate->Reset();
+	gate->Setup(&gi);
 }
 
 void GameSession::ProcessRail(RailPtr rail)
@@ -1447,6 +1404,7 @@ void GameSession::ProcessActor(ActorPtr a)
 			{
 				shipExitScene = new ShipExitScene;
 				shipExitScene->Init();
+				shipExitScene->SetIDAndAddToAllSequencesVec();
 			}
 		}
 	}
@@ -1502,6 +1460,7 @@ void GameSession::ProcessActor(ActorPtr a)
 			{
 				shipEnterScene = new ShipEnterScene;
 				shipEnterScene->Init();
+				shipEnterScene->SetIDAndAddToAllSequencesVec();
 				shipEnterScene->shipEntrancePos = a->GetPosition();
 				//shipEnterScene->Reset();
 			}
@@ -1915,6 +1874,10 @@ bool GameSession::Load()
 
 	SetupDeathSequence();
 
+	if (deathSeq != NULL && parentGame == NULL)
+	{
+		deathSeq->SetIDAndAddToAllSequencesVec();
+	}
 	/*for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
 		(*it)->Init();

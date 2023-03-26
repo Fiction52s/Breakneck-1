@@ -162,7 +162,11 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	}
 
 	if (bScene != NULL)
+	{
 		bScene->Init();
+		bScene->SetIDAndAddToAllSequencesVec();
+	}
+		
 
 	return bScene;
 }

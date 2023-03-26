@@ -67,7 +67,7 @@
 
 #include "MapBrowser.h"
 #include "PlayerBox.h"
-
+#include "DeathSequence.h"
 //#define GGPO_ON
 
 using namespace std;
@@ -994,6 +994,18 @@ void EditSession::TestPlayerMode()
 			}
 		}
 	}*/
+
+	allPolysVec.clear();
+	allRailsVec.clear();
+	allEnemiesVec.clear();
+	allSpecialPolysVec.clear();
+	allComboObjectsVec.clear();
+	allSequencesVec.clear();
+
+	if (deathSeq != NULL)
+	{
+		deathSeq->SetIDAndAddToAllSequencesVec();
+	}
 	
 	auto testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
@@ -1002,46 +1014,41 @@ void EditSession::TestPlayerMode()
 		(*it)->ResetState();
 	}
 
+	
 	//auto &testPolys = GetCorrectPolygonList(0);
-	int polyIndex = 0;
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
-		(*it)->polyIndex = polyIndex;
+		(*it)->polyIndex = allPolysVec.size();
+		allPolysVec.push_back((*it));
+
 		borderTree->Insert((*it));
 		(*it)->AddEdgesToQuadTree(terrainTree);
 		(*it)->AddGrassToQuadTree(grassTree);
-
-		++polyIndex;
 	}
 
 	auto &testPolys1 = GetCorrectPolygonList(1);
 	for (auto it = testPolys1.begin(); it != testPolys1.end(); ++it)
 	{
+		(*it)->polyIndex = allSpecialPolysVec.size();
+		allSpecialPolysVec.push_back((*it));
+
 		specialTerrainTree->Insert((*it));
 	}
 
-	allEnemiesVec.clear();
-
-	allRailsVec.clear();
-	int railIndex = 0;
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
-		
 		if ((*it)->enemyChain != NULL)
 		{
-			(*it)->AddEnemyChainToWorldTrees();
-			enemyTree->Insert((*it)->enemyChain);
-			allEnemiesVec.push_back((*it)->enemyChain);
+			(*it)->enemyChain->AddToGame();
 		}
 		else
 		{
-			(*it)->ResetState();
-			(*it)->AddEdgesToQuadTree(railEdgeTree);
-			(*it)->railIndex = railIndex;
-			railDrawTree->Insert((*it));
+			(*it)->railIndex = allRailsVec.size();
 			allRailsVec.push_back((*it));
 
-			++railIndex;
+			(*it)->ResetState();
+			(*it)->AddEdgesToQuadTree(railEdgeTree);
+			railDrawTree->Insert((*it));
 		}
 	}
 
@@ -1057,26 +1064,6 @@ void EditSession::TestPlayerMode()
 			}
 		}
 	}
-
-	/*for (auto it = groups.begin(); it != groups.end(); ++it)
-	{
-		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
-		{
-			currEnemy = (*enit)->myEnemy;
-			if (currEnemy != NULL)
-			{
-				AddEnemy(currEnemy);
-			}
-		}
-	}
-
-	for (auto it = rails.begin(); it != rails.end(); ++it)
-	{
-		if ((*it)->enemyChain != NULL)
-		{
-			AddEnemy((*it)->enemyChain);
-		}
-	}*/
 
 	if (continueTracking)
 	{
@@ -1193,6 +1180,7 @@ void EditSession::TestPlayerMode()
 	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->Setup();
+		(*it)->SetSequenceIDsAndAddThemToAllSequencesVec();
 	}
 
 	SetupAbsorbParticles();
@@ -1226,6 +1214,7 @@ void EditSession::TestPlayerMode()
 		//{
 			CleanupPreLevelScene();
 			preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
+
 			preLevelSceneName = mapHeader->preLevelSceneName;
 		//}
 	}
@@ -1241,7 +1230,9 @@ void EditSession::TestPlayerMode()
 		//{
 			CleanupPostLevelScene();
 			postLevelScene = Sequence::CreateScene(mapHeader->postLevelSceneName);
+
 			postLevelSceneName = mapHeader->postLevelSceneName;
+			
 		//}
 	}
 	else

@@ -237,7 +237,7 @@ void Shield::StoreBytes(unsigned char *bytes)
 {
 	data.hittableObjectData.receivedHit = receivedHit;
 	data.hittableObjectData.receivedHitPlayerIndex = receivedHitPlayerIndex;
-	data.hittableObjectData.comboHitEnemy = comboHitEnemy;
+	data.hittableObjectData.comboHitEnemyID = comboHitEnemyID;
 	data.hittableObjectData.numHealth = numHealth;
 	data.hittableObjectData.specterProtected = specterProtected;
 
@@ -251,7 +251,7 @@ void Shield::SetFromBytes(unsigned char *bytes)
 	
 	receivedHit = data.hittableObjectData.receivedHit;
 	receivedHitPlayerIndex = data.hittableObjectData.receivedHitPlayerIndex;
-	comboHitEnemy = data.hittableObjectData.comboHitEnemy;
+	comboHitEnemyID = data.hittableObjectData.comboHitEnemyID;
 	numHealth = data.hittableObjectData.numHealth;
 	specterProtected = data.hittableObjectData.specterProtected;
 

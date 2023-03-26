@@ -435,6 +435,11 @@ void PowerItem::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
+void PowerItem::SetSequenceIDsAndAddThemToAllSequencesVec()
+{
+	powerSeq->SetIDAndAddToAllSequencesVec();
+}
+
 PowerPopup::PowerPopup()
 {
 	sess = Session::GetSession();

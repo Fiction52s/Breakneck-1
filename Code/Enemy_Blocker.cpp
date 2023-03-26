@@ -330,7 +330,8 @@ void Blocker::ProcessHit()
 
 		if (receivedHit.hType == HitboxInfo::COMBO)
 		{
-			comboHitEnemy->ComboKill(this);
+			Enemy *che = sess->GetEnemyFromID(comboHitEnemyID);
+			che->ComboKill(this);
 		}
 
 		if (IsFastDying())

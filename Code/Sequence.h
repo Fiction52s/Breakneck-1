@@ -274,6 +274,8 @@ struct Sequence
 	virtual void AddMovies() {}
 	virtual void Reset();
 	bool StateIncrement();
+	//SetEnemyIDAndAddToAllEnemiesVec
+	void SetIDAndAddToAllSequencesVec();
 	virtual int GetNumStoredBytes();
 	virtual void StoreBytes(unsigned char *bytes);
 	virtual void SetFromBytes(unsigned char *bytes);

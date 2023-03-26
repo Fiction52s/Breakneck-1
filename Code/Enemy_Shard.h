@@ -29,6 +29,7 @@ struct ShardPopup
 	void SetShard(int w, int li);
 	void SetDescription(const std::string &desc);
 	void Draw(sf::RenderTarget *target);
+	
 
 	TutorialBox *tutBox;
 	sf::Sprite shardSpr;
@@ -107,6 +108,8 @@ struct Shard : Enemy
 	//Laser *laser;
 	//MovingRing *mRing;
 	void DirectKill();
+
+	void SetSequenceIDsAndAddThemToAllSequencesVec();
 
 	static int GetShardTypeFromWorldAndIndex(int w, int li);
 	static int GetNumShardsTotal();

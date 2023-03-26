@@ -52,6 +52,11 @@ bool Enemy::IsGoalType()
 		|| type == EN_NEXUS;
 }
 
+void Enemy::SetSequenceIDsAndAddThemToAllSequencesVec()
+{
+	//empty by default since no sequences are owned
+}
+
 void Enemy::CreateSurfaceMover(PositionInfo &pi,
 	double rad, SurfaceMoverHandler *handler )
 {
@@ -1063,7 +1068,7 @@ void Enemy::Reset()
 	currShield = NULL;
 	receivedHit.SetEmpty();
 	receivedHitPlayerIndex = -1;
-	comboHitEnemy = NULL;
+	comboHitEnemyID = -1;
 	action = 0;
 	pauseFrames = 0;
 	frame = 0;
@@ -1092,6 +1097,11 @@ void Enemy::SetEnemyIDAndAddToAllEnemiesVec()
 
 	enemyIndex = sess->allEnemiesVec.size();
 	sess->allEnemiesVec.push_back(this);
+
+	if (comboObj != NULL)
+	{
+		comboObj->SetIDAndAddToAllComboObjectsVec();
+	}
 }
 
 void Enemy::SetSummonGroup(SummonGroup *p_summonGroup )
@@ -1728,7 +1738,8 @@ void Enemy::ConfirmKill()
 	if (hType == HitboxInfo::COMBO )
 	{
 		pauseFrames = 7;
-		comboHitEnemy->ComboKill(this);
+		Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
+		ce->ComboKill(this);
 
 	}
 	else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
@@ -1954,7 +1965,7 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.slowableObjectData.isSlowable = isSlowable;
 	ed.hittableObjectData.receivedHit = receivedHit;
 	ed.hittableObjectData.receivedHitPlayerIndex = receivedHitPlayerIndex;
-	ed.hittableObjectData.comboHitEnemy = comboHitEnemy;
+	ed.hittableObjectData.comboHitEnemyID = comboHitEnemyID;
 	ed.hittableObjectData.numHealth = numHealth;
 
 	currPosInfo.PopulateData(ed.posInfoData);
@@ -2001,7 +2012,7 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	isSlowable = ed.slowableObjectData.isSlowable;
 	receivedHit = ed.hittableObjectData.receivedHit;
 	receivedHitPlayerIndex = ed.hittableObjectData.receivedHitPlayerIndex;
-	comboHitEnemy = ed.hittableObjectData.comboHitEnemy;
+	comboHitEnemyID = ed.hittableObjectData.comboHitEnemyID;
 	numHealth = ed.hittableObjectData.numHealth;
 
 	currPosInfo.PopulateFromData(ed.posInfoData);
@@ -2183,7 +2194,7 @@ HitboxInfo * Enemy::IsHit(int pIndex )
 				HitboxInfo *hi = co->enemyHitboxInfo;
 
 				co->enemy->ComboHit();
-				comboHitEnemy = co->enemy;
+				comboHitEnemyID = co->enemy->enemyIndex;
 				return hi;
 			}
 		}
@@ -2358,8 +2369,7 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 	if (receivedHit.IsEmpty() && !specterProtected &&
 		( e->playerIndex < 0 || e->playerIndex == player->actorIndex) )
 	{
-		comboHitEnemy = NULL;
-
+		comboHitEnemyID = e->enemyIndex;
 
 		HitboxInfo *hit = IsHit(player->actorIndex);
 		if (hit != NULL)
@@ -2612,15 +2622,7 @@ ComboObject::ComboObject(Enemy *en)
 	data.nextComboObj = NULL;
 	enemyHitboxInfo = NULL;
 
-	if (en->sess->IsSessTypeGame())
-	{
-		comboObjectID = en->sess->allComboObjectsVec.size();
-		en->sess->allComboObjectsVec.push_back(this);
-	}
-	else
-	{
-		comboObjectID = -1;
-	}
+	comboObjectID = -1;
 }
 
 ComboObject::~ComboObject()
@@ -2634,6 +2636,12 @@ void ComboObject::Reset()
 	data.enemyHitboxFrame = 0;
 	data.nextComboObj = NULL;
 	data.active = false;
+}
+
+void ComboObject::SetIDAndAddToAllComboObjectsVec()
+{
+	comboObjectID = enemy->sess->allComboObjectsVec.size();
+	enemy->sess->allComboObjectsVec.push_back(this);
 }
 
 V2d ComboObject::GetComboPos()

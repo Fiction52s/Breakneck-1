@@ -327,21 +327,18 @@ struct Sequence;
 struct SaveGameState
 {
 	int totalGameFrames;
-
 	int activeEnemyListID;
 	int activeEnemyListTailID;
 	int inactiveEnemyListID;
-
 	int currentZoneID;
-
 	int pauseFrames;
 	int currSuperPlayerIndex;
 	int gameState; //game mode such as RUN or FROZEN
-	bool nextFrameRestartGame;
-
 	int activeSequenceID;
 	uint32 randomState;
 	Camera cam;
+
+	bool nextFrameRestartGame;
 
 	SaveGameState();
 	void Print();

@@ -101,6 +101,8 @@ struct PowerItem : Enemy
 	void Launch();
 	void DirectKill();
 
+	void SetSequenceIDsAndAddThemToAllSequencesVec();
+
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
