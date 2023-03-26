@@ -7610,6 +7610,7 @@ void Session::InitGGPO()
 			ggpoPlayers[i].size = sizeof(ggpoPlayers[i]);
 			ggpoPlayers[i].player_num = i + 1;
 			ggpoPlayers[i].type = GGPO_PLAYERTYPE_LOCAL;
+			cout << "setting local player at: " << i << "\n";
 		}
 		else
 		{
@@ -7627,10 +7628,12 @@ void Session::InitGGPO()
 					--realIndex;
 				}
 
+				cout << "setting remote player connection to: " << netplayManager->netplayPlayers[realIndex].connection << "\n";
 				ggpoPlayers[i].u.remote.connection = netplayManager->netplayPlayers[realIndex].connection;
 			}
 			else
 			{
+				cout << "setting remote player but not for parallel race. gamemodetype is: " << gameModeType << "\n";
 				ggpoPlayers[i].u.remote.connection = netplayManager->netplayPlayers[i].connection;
 			}
 			

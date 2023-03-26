@@ -404,7 +404,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -1360,16 +1360,19 @@ void NetplayManager::Update()
 	case A_WAIT_FOR_GGPO_SYNC:
 	{
 		game->UpdateJustGGPO();
+		//cout << "waiting for ggpo sync\n";
 
 		if (game->ggpoReady)
 		{
 			cout << "ggpo is readyy" << endl;
 			if( IsHost())
 			{
+				cout << "waiting for ready" << "\n";
 				action = A_WAIT_FOR_ALL_READY;
 			}
 			else
 			{
+				cout << "sending done loading signal to host" << "\n";
 				action = A_WAITING_FOR_START_MESSAGE;
 				SendSignalToHost(UdpMsg::Game_Client_Done_Loading);
 			}
@@ -3370,24 +3373,13 @@ void NetplayManager::HostStartTestRace()
 
 	LeaveLobby();
 
-	int numOtherPlayers = 0;
-	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-	{
-		if (practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
-		{
-			++numOtherPlayers;
-		}
-	}
-
-	numPlayers = numOtherPlayers + 1; //+1 is me
-
-	matchParams.numPlayers = numPlayers; //always keep this synced up with numPlayers
-
 	playerIndex = 0;
 
 	netplayPlayers[0].Clear();
 	netplayPlayers[0].isMe = true;
 	netplayPlayers[0].isHost = true;
+	netplayPlayers[0].index = 0;
+
 
 	int currNetplayPlayerIndex = 1;
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
@@ -3421,24 +3413,14 @@ void NetplayManager::ClientStartTestRace()
 
 	LeaveLobby();
 
-	int numOtherPlayers = 0;
-	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-	{
-		if (practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
-		{
-			++numOtherPlayers;
-		}
-	}
-
-	numPlayers = numOtherPlayers + 1; //+1 is me
-
-	matchParams.numPlayers = numPlayers; //always keep this synced up with numPlayers
 
 	playerIndex = 1; //will change later for more players
 
 	netplayPlayers[1].Clear();
 	netplayPlayers[1].isMe = true;
 	netplayPlayers[1].isHost = false;
+	netplayPlayers[1].index = 1;
+	//netplayPlayers[1].index = 1;
 
 	int currNetplayPlayerIndex = 1;
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)

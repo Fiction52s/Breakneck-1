@@ -2418,6 +2418,19 @@ void MainMenu::HandleMenuMode()
 			netplayManager->matchParams.controllerStateVec = oldParams.controllerStateVec;
 			netplayManager->matchParams.controlProfiles = oldParams.controlProfiles;		
 
+			int numOtherPlayers = 0;
+			for (int i = 0; i < NetplayManager::MAX_PRACTICE_PLAYERS; ++i)
+			{
+				if (netplayManager->practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
+				{
+					++numOtherPlayers;
+				}
+			}
+
+			netplayManager->numPlayers = numOtherPlayers + 1; //+1 is me
+
+			netplayManager->matchParams.numPlayers = netplayManager->numPlayers; //always keep this synced up with numPlayers
+
 			gameRunType = MainMenu::GRT_QUICKPLAY;
 
 			currLevel->UpdateMatchParams(netplayManager->matchParams);

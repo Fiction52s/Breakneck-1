@@ -205,7 +205,7 @@ int main()
 
 	string commandStr = commandLine;
 
-	cout << "commandStr: " << commandStr << endl;//"\n";//endl;
+	cout << "commandStr: " << commandStr << "\n";//endl;//"\n";//endl;
 
 	MainMenu *mm = new MainMenu();
 	mm->Run();

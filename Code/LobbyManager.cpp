@@ -294,6 +294,9 @@ void LobbyManager::FindPracticeLobby( const std::string &mapPath )
 
 void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 {
+	if (action == A_IDLE) //host might have left, but I'm also leaving if I'm idle
+		return;
+
 	cout << "lobby chat update callback. updated member list" << endl;
 
 	assert(pCallback->m_ulSteamIDLobby == currentLobby.m_steamIDLobby.ConvertToUint64());
@@ -325,6 +328,9 @@ void LobbyManager::OnLobbyEnterCallback(LobbyEnter_t *pCallback)
 
 void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
 {
+	if (action == A_IDLE)//host might have left, but I'm also leaving if I'm idle
+		return;
+
 	cout << "lobby data update callback" << endl;
 
 
