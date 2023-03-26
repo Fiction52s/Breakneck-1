@@ -73,6 +73,8 @@ struct PracticePlayer
 
 	bool isConnectedTo;
 
+	bool isReadyToRace;
+
 	unsigned char *syncStateBuf;
 	int syncStateBufSize;
 
@@ -293,6 +295,8 @@ struct NetplayManager
 	void Draw(sf::RenderTarget *target);
 	void FindQuickplayMatch();
 	void FindPracticeMatch( const std::string &mapPath, int adventureMapIndex );
+	void HostStartTestRace();
+	void ClientStartTestRace();
 	
 	void LoadMap();
 	void HandleLobbyMessage(LobbyMessage &msg);

@@ -35,6 +35,9 @@ struct Shield : HittableObject
 	};
 	MyData data;
 
+	int shieldID;
+
+
 	float radius;
 	Tileset *ts_mask;
 	sf::Vertex *verts;

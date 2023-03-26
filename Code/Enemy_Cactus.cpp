@@ -30,6 +30,7 @@ Cactus::Cactus( ActorParams *ap )
 	sprite.setScale(scale, scale);
 
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
+	RegisterShield(shield);
 
 	ts_shotgun = GetSizedTileset("Enemies/W1/shroom_jelly_160x160.png");
 

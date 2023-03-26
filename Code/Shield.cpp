@@ -16,6 +16,7 @@ Shield::Shield(ShieldType type, float rad, int maxH, Enemy *e, HitboxInfo *hInfo
 	{
 		assert(0 && "needs a hitbox info");
 	}
+	shieldID = -1;
 
 	Reset();
 }

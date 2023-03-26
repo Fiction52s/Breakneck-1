@@ -77,6 +77,7 @@ Owl::Owl(ActorParams *ap)
 	if (level == 2)
 	{
 		shield = new Shield(Shield::ShieldType::T_BLOCK, 70, 4, this);
+		RegisterShield(shield);
 	}
 	else
 	{

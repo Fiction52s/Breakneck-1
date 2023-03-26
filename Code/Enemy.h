@@ -89,7 +89,8 @@ struct StoredEnemyData
 	//CollisionBody *currHitboxes;
 	//CollisionBody *currHurtboxes;
 
-	Shield *currShield;
+	int currShieldID;
+	//Shield *currShield;
 
 	double scale;
 
@@ -108,6 +109,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	virtual CollisionBody *GetCollisionBodyFromID( int id );
 	int GetCollisionBodyID(CollisionBody *cb);
+	virtual Shield *GetShieldFromID(int id);
+	int GetShieldID(Shield *s);
 
 	virtual int GetNumStoredBytes() { return 0; }
 	virtual void StoreBytes(unsigned char *bytes) {
@@ -195,6 +198,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	CollisionBody *currHurtboxes;
 	int enemyIndex;
 	std::vector<CollisionBody*> bodyPtrVec; //for IDs
+	std::vector<Shield*> shieldPtrVec; //for IDs
 	
 
 	Enemy(EnemyType t, ActorParams *ap);
@@ -394,6 +398,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	V2d GetFocusedPlayerDir();
 
 	void RegisterCollisionBody(CollisionBody &cb);
+	void RegisterShield(Shield *s);
 };
 
 

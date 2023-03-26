@@ -55,6 +55,7 @@ Chess::Chess(ActorParams *ap)
 	}
 
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 16 * scale, 3, this);
+	RegisterShield(shield);
 
 	attentionRadius = 800;
 	ignoreRadius = 2000;

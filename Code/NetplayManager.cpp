@@ -43,6 +43,8 @@ void PracticePlayer::Clear()
 
 	readyToBeSentMessages = false;
 
+	isReadyToRace = false;
+
 	isConnectedTo = false;
 
 	ClearSyncStateBuf();
@@ -552,6 +554,8 @@ void NetplayManager::Abort()
 	postMatchOptionReceived = -1;
 }
 
+
+
 void NetplayManager::UpdateNetplayPlayers()
 {
 	cout << "updating netplay players" << endl;
@@ -576,6 +580,7 @@ void NetplayManager::UpdateNetplayPlayers()
 		netplayPlayers[i].Clear();
 	}
 
+	//can't rely on the order of memberlist here to be consistent
 	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
 	{
 		netplayPlayers[memberIndex].Clear();
@@ -3332,6 +3337,105 @@ void NetplayManager::SetPracticePlayersToNeedStartMessage()
 	{
 		practicePlayers[i].alreadySentStartMessage = false;
 	}
+}
+
+void NetplayManager::HostStartTestRace()
+{
+	cout << "host starting test race" << endl;
+
+	LeaveLobby();
+
+	int numOtherPlayers = 0;
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
+		{
+			++numOtherPlayers;
+		}
+	}
+
+	numPlayers = numOtherPlayers + 1; //+1 is me
+
+	matchParams.numPlayers = numPlayers; //always keep this synced up with numPlayers
+
+	playerIndex = 0;
+
+	netplayPlayers[0].Clear();
+	netplayPlayers[0].isMe = true;
+	netplayPlayers[0].isHost = true;
+
+	int currNetplayPlayerIndex = 1;
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (!practicePlayers[i].isConnectedTo)
+			continue;
+		
+		NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
+		np.Clear();
+		np.index = currNetplayPlayerIndex;
+		np.id = practicePlayers[i].id;
+		np.name = practicePlayers[i].name;
+		np.isConnectedTo = true;
+		np.connection = practicePlayers[i].connection;
+
+		++currNetplayPlayerIndex;
+
+		if (currNetplayPlayerIndex == GGPO_MAX_PLAYERS) //can't let too many people in
+			break;
+	}
+
+	game->InitGGPO();
+	action = A_WAIT_FOR_GGPO_SYNC;
+}
+
+void NetplayManager::ClientStartTestRace()
+{
+	//client will just assume they're player 2 for now. can figure out exactly how to signal who is which player in higher player #s later
+
+	cout << "client starting test race" << endl;
+
+	LeaveLobby();
+
+	int numOtherPlayers = 0;
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
+		{
+			++numOtherPlayers;
+		}
+	}
+
+	numPlayers = numOtherPlayers + 1; //+1 is me
+
+	matchParams.numPlayers = numPlayers; //always keep this synced up with numPlayers
+
+	playerIndex = 1; //will change later for more players
+
+	netplayPlayers[1].Clear();
+	netplayPlayers[1].isMe = true;
+
+	int currNetplayPlayerIndex = 1;
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (!practicePlayers[i].isConnectedTo)
+			continue;
+
+		NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
+		np.Clear();
+		np.index = currNetplayPlayerIndex;
+		np.id = practicePlayers[i].id;
+		np.name = practicePlayers[i].name;
+		np.isConnectedTo = true;
+		np.connection = practicePlayers[i].connection;
+
+		++currNetplayPlayerIndex;
+
+		if (currNetplayPlayerIndex == GGPO_MAX_PLAYERS) //can't let too many people in
+			break;
+	}
+
+	game->InitGGPO();
+	action = A_WAIT_FOR_GGPO_SYNC;
 }
 
 //void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)

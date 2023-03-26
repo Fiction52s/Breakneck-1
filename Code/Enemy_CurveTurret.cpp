@@ -53,6 +53,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	sprite.setScale(scale, scale);	
 
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
+	RegisterShield(shield);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 60;

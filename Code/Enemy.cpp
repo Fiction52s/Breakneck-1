@@ -115,6 +115,22 @@ int Enemy::GetCollisionBodyID(CollisionBody *cb)
 	}
 }
 
+Shield *Enemy::GetShieldFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else
+		return shieldPtrVec[id];
+}
+
+int Enemy::GetShieldID(Shield *s)
+{
+	if (s == NULL)
+		return -1;
+	else
+		return s->shieldID;
+}
+
 V2d Enemy::GetPosition()
 {
 	if (surfaceMover != NULL)
@@ -2003,7 +2019,7 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.currHitboxFrame = currHitboxFrame;
 	ed.currHurtboxFrame = currHurtboxFrame;
 
-	ed.currShield = currShield;
+	ed.currShieldID = GetShieldID(currShield);
 }
 void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 {
@@ -2034,7 +2050,7 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 
 	scale = ed.scale;
 
-	currShield = ed.currShield;
+	currShield = GetShieldFromID(ed.currShieldID);
 
 	//cout << "set receivedHit: " << receivedHit << endl;
 
@@ -2352,6 +2368,12 @@ void Enemy::RegisterCollisionBody(CollisionBody &cb)
 {
 	cb.bodyID = bodyPtrVec.size();
 	bodyPtrVec.push_back(&cb);
+}
+
+void Enemy::RegisterShield(Shield *s)
+{
+	s->shieldID = shieldPtrVec.size();
+	shieldPtrVec.push_back(s);
 }
 
 HittableObject::HittableObject()
