@@ -15,6 +15,7 @@ struct PracticeMsgHeader
 		MSG_TYPE_INPUT,
 		MSG_TYPE_SEQUENCE_CONFIRM,
 		MSG_TYPE_STATE_CHANGE,
+		MSG_TYPE_RACE_START,
 		MSG_TYPE_Count,
 	};
 
@@ -65,6 +66,15 @@ struct PracticeStateChangeMsg
 	int frame;
 	int state;
 	PracticeStateChangeMsg();
+	void Clear();
+};
+
+struct PracticeRaceStartMsg
+{
+	PracticeMsgHeader header;
+	sf::Uint64 raceClients[3]; //3 is max_players - 1 since the host doesn't need to send their own ID
+
+	PracticeRaceStartMsg();
 	void Clear();
 };
 

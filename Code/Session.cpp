@@ -7503,8 +7503,8 @@ void Session::InitGGPO()
 			if (p->pState == NULL)
 			{
 				p->pState = new PState;
-				memset(p->pState, 0, sizeof(PState));
 			}
+			memset(p->pState, 0, sizeof(PState));
 		}
 	}
 
@@ -8680,8 +8680,12 @@ void Session::SetupGameMode()
 		gameMode = new RaceMode;
 		break;
 	case MatchParams::GAME_MODE_PARALLEL_RACE:
-		gameMode = new ParallelRaceMode;
+	{
+		ParallelRaceMode *prm = new ParallelRaceMode;
+		prm->CreateParallelSessions();
+		gameMode = prm;
 		break;
+	}
 	case MatchParams::GAME_MODE_COOP:
 		gameMode = new CoopMode;
 		break;
@@ -8689,7 +8693,13 @@ void Session::SetupGameMode()
 		gameMode = new ExploreMode(matchParams.numPlayers);
 		break;
 	case MatchParams::GAME_MODE_PARALLEL_PRACTICE:
-		gameMode = new ParallelPracticeMode;
+	{
+		ParallelPracticeMode *ppm = new ParallelPracticeMode;
+		ppm->CreateParallelSessions();
+		gameMode = ppm;
+		break;
+	}
+		
 	}
 }
 

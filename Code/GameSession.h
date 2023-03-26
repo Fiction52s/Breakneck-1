@@ -205,6 +205,7 @@ struct GameSession : RayCastHandler, Session
 		GR_EXITTITLE,
 		GR_EXITGAME,
 		GR_BONUS_RESPAWN,
+		GR_EXIT_PRACTICE_TO_RACE,
 	};
 
 	enum PopupType
@@ -370,6 +371,7 @@ struct GameSession : RayCastHandler, Session
 		int p_bonusType = BONUSTYPE_DEFAULT);
 
 	GameSession *CreateParallelSession( int parIndex );
+	
 
 	void SetBonus(GameSession *bonus,
 		V2d &returnPos, 
@@ -553,5 +555,7 @@ struct GameSession : RayCastHandler, Session
 	int GetNumPotentialGhosts();
 	bool TryStartGhosts();
 	void RestartWithNoReplayOrGhosts();
+	void SetMatchParams(MatchParams &mp);
+	void UpdateMatchParams(MatchParams &mp);
 };
 #endif

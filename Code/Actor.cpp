@@ -6721,6 +6721,19 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
+	if ( owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
+	{
+		if (SpecialButtonPressed())
+		{
+			cout << "trying to signal practice players to race" << "\n";
+
+			sess->netplayManager->TrySignalPracticePlayersToRace();
+			//sess->netplayManager->TestNewRaceSystem();
+			owner->quit = true;
+			owner->returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
+		}
+	}
+
 	//cout << "game frame: " << sess->totalGameFrames << ", action: " << action << ", " << "frame: " << frame << ", posiiton: " << position.x << ", " << position.y << "\n";
 	/*static int skinTest = 0;
 	SetSkin(skinTest / 3);
@@ -20337,6 +20350,11 @@ bool Actor::PowerButtonHeld()
 bool Actor::PowerButtonPressed()
 {
 	return currInput.PowerButtonDown() && !prevInput.PowerButtonDown();
+}
+
+bool Actor::SpecialButtonPressed()
+{
+	return currInput.BackButtonDown() && !prevInput.BackButtonDown();
 }
 
 void Actor::BounceFloaterBoost( V2d &hitDir )

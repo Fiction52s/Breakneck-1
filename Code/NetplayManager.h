@@ -46,7 +46,8 @@ struct PracticePlayer
 		A_RUNNING,
 	};
 
-
+	bool isReadyToJoinRace;
+	bool isRaceHost;
 	
 
 	bool readyToBeSentMessages;
@@ -73,7 +74,7 @@ struct PracticePlayer
 
 	bool isConnectedTo;
 
-	bool isReadyToRace;
+	
 
 	unsigned char *syncStateBuf;
 	int syncStateBufSize;
@@ -185,6 +186,8 @@ struct NetplayManager
 
 	const static int MAX_PRACTICE_PLAYERS = 3;
 
+	//sf::Uint64 practicePeersToRaceList;
+
 	ControllerDualStateQueue *myControllerInput;
 	ControlProfile *myCurrProfile;
 
@@ -231,6 +234,8 @@ struct NetplayManager
 	int playerIndex;
 
 	bool isQuickplay;
+
+	bool isRaceHost;
 
 	MatchParams matchParams;
 
@@ -295,8 +300,7 @@ struct NetplayManager
 	void Draw(sf::RenderTarget *target);
 	void FindQuickplayMatch();
 	void FindPracticeMatch( const std::string &mapPath, int adventureMapIndex );
-	void HostStartTestRace();
-	void ClientStartTestRace();
+	
 	
 	void LoadMap();
 	void HandleLobbyMessage(LobbyMessage &msg);
@@ -380,7 +384,6 @@ struct NetplayManager
 	void OnConnectStatusChangedGGPO(SteamNetConnectionStatusChangedCallback_t *callback);
 	void OnConnectStatusChangedPractice(SteamNetConnectionStatusChangedCallback_t *callback);
 
-
 	void OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback);
 
 	bool IsPracticeMode();
@@ -391,6 +394,16 @@ struct NetplayManager
 
 	void PracticeConnect();
 	void SetPracticePlayersToNeedStartMessage();
+
+	void HostStartTestRace();
+	void ClientStartTestRace();
+	void TrySignalPracticePlayersToRace();
+
+	bool SendPracticeRaceStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartMsg &pm);
+
+	void TestNewRaceSystem();
+
+	bool HasPracticePlayerStartedRace();
 };
 
 #endif

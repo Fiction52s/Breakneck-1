@@ -2401,6 +2401,38 @@ void MainMenu::HandleMenuMode()
 			break;
 		}
 
+		if (result == GameSession::GR_EXIT_PRACTICE_TO_RACE)
+		{
+			window->setView(oldView);
+
+			const MatchParams &oldParams = currLevel->matchParams;
+			netplayManager->matchParams.Clear();
+
+			netplayManager->matchParams.mapPath = oldParams.mapPath;
+			//netplayManager->matchParams.saveFile = oldParams.saveFile; //savefile should be NULL
+			netplayManager->matchParams.netplayManager = oldParams.netplayManager;
+			netplayManager->matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
+			netplayManager->matchParams.randSeed = oldParams.randSeed;
+
+			netplayManager->matchParams.playerSkins = oldParams.playerSkins;
+			netplayManager->matchParams.controllerStateVec = oldParams.controllerStateVec;
+			netplayManager->matchParams.controlProfiles = oldParams.controlProfiles;		
+
+			gameRunType = MainMenu::GRT_QUICKPLAY;
+
+			currLevel->UpdateMatchParams(netplayManager->matchParams);
+
+			netplayManager->game = currLevel;
+
+			currLevel = NULL;
+			
+			netplayManager->TestNewRaceSystem();
+
+			SetMode(QUICKPLAY_PRE_MATCH);
+			customMatchManager->StartQuickplayPreMatchScreen();
+			break;
+		}
+
 		if (netplayManager != NULL && netplayManager->IsPracticeMode())
 		{
 			netplayManager->Abort();

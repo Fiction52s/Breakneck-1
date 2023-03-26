@@ -573,10 +573,9 @@ GameSession *GameSession::CreateParallelSession( int parIndex )
 	parallelGame->parallelSessionIndex = parIndex;
 
 	parallelGame->level = level;
-	
+
 	parallelGame->currSaveState = new SaveGameState;
 
-	//parallelGame->SetParentGame(this);
 	parallelGame->Load();
 
 	parallelGame->mapHeader->envWorldType = background->envWorld;
@@ -879,35 +878,9 @@ GameSession::GameSession(MatchParams *mp )
 {
 	originalProgressionCompatible = false;
 
-	matchParams = *mp;
-
-	if (matchParams.HasControllerStates())
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			SetControllerStates(i, matchParams.controllerStateVec[i]);
-		}
-	}
-
 	isDefaultKeyboardInputOn = false;
 
-	for (int i = 0; i < 4; ++i)
-	{
-		controlProfiles[i] = matchParams.controlProfiles[i];
-	}
-
-	for (int i = 0; i < 4; ++i)
-	{
-		if (matchParams.playerSkins[i] == -1)
-		{
-			matchParams.playerSkins[i] = i;
-		}
-	}
-
-	SeedRand(matchParams.randSeed);
-	saveFile = matchParams.saveFile;
-	netplayManager = matchParams.netplayManager;
-	gameModeType = matchParams.gameModeType;
+	SetMatchParams(*mp);
 	currSession = this;
 	Init();
 }
@@ -1052,6 +1025,38 @@ GameSession::~GameSession()
 GameSession *GameSession::GetSession()
 {
 	return currSession;
+}
+
+void GameSession::SetMatchParams(MatchParams &mp)
+{
+	matchParams = mp;
+
+
+	if (matchParams.HasControllerStates())
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			SetControllerStates(i, matchParams.controllerStateVec[i]);
+		}
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		controlProfiles[i] = matchParams.controlProfiles[i];
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if (matchParams.playerSkins[i] == -1)
+		{
+			matchParams.playerSkins[i] = i;
+		}
+	}
+
+	SeedRand(matchParams.randSeed);
+	saveFile = matchParams.saveFile;
+	netplayManager = matchParams.netplayManager;
+	gameModeType = matchParams.gameModeType;
 }
 
 void GameSession::CheckSinglePlayerInputDefaultKeyboard()
@@ -2392,6 +2397,18 @@ bool GameSession::RunMainLoopOnce()
 		return true;
 	}
 
+	if (netplayManager != NULL && netplayManager->IsPracticeMode())
+	{
+		if (netplayManager->HasPracticePlayerStartedRace())
+		{
+			cout << "quitting because someone is hosting a race\n";
+			quit = true;
+			returnVal = GR_EXIT_PRACTICE_TO_RACE;
+			return true;
+			//mainMenu->musicPlayer->StopCurrentMusic();
+		}
+	}
+
 	//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 	//{
 	//	ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
@@ -2427,7 +2444,7 @@ bool GameSession::RunMainLoopOnce()
 
 	accumulator += frameTime;
 
-	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();// && ggpo != NULL;
 
 	
 	
@@ -5239,4 +5256,49 @@ void GameSession::RestartWithNoReplayOrGhosts()
 	CleanupReplaysAndGhosts();
 
 	RestartGame();
+}
+
+void GameSession::UpdateMatchParams(MatchParams &mp)
+{
+	int oldGameModeType = gameModeType;
+
+	SetMatchParams(mp);
+
+	/*if (gameModeType == oldGameModeType)
+	{
+		return;
+	}*/
+
+	if (oldGameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE
+		&& gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	{
+		if (!IsParallelSession())
+		{
+			delete currSaveState;
+			currSaveState = NULL;
+
+			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+			ppm->ownsParallelSessions = false;
+
+			ParallelRaceMode *prm = new ParallelRaceMode;
+			for (int i = 0; i < NetplayManager::MAX_PRACTICE_PLAYERS; ++i)
+			{
+				prm->parallelGames[i] = ppm->parallelGames[i];
+				prm->parallelGames[i]->SetMatchParams(mp);
+			}
+
+			delete ppm;
+
+			gameMode = prm;
+
+			gameMode->Setup();
+
+			m_numActivePlayers = matchParams.numPlayers;
+
+			/*for (int i = m_numActivePlayers; i < MAX_PLAYERS; ++i)
+			{
+				delete players[i];
+			}*/
+		}
+	}
 }

@@ -67,6 +67,7 @@ PracticeSequenceConfirmMsg::PracticeSequenceConfirmMsg()
 
 void PracticeSequenceConfirmMsg::Clear()
 {
+	header.Clear();
 	frame = -1;
 }
 
@@ -78,6 +79,22 @@ PracticeStateChangeMsg::PracticeStateChangeMsg()
 
 void PracticeStateChangeMsg::Clear()
 {
+	header.Clear();
 	frame = -1;
 	state = -1;
+}
+
+PracticeRaceStartMsg::PracticeRaceStartMsg()
+	:header( PracticeMsgHeader::MSG_TYPE_RACE_START)
+{
+	Clear();
+}
+
+void PracticeRaceStartMsg::Clear()
+{
+	header.Clear();
+	for (int i = 0; i < 3; ++i)
+	{
+		raceClients[i] = 0;
+	}
 }

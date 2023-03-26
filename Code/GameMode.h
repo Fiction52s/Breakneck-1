@@ -49,8 +49,11 @@ struct ParallelMode : GameMode
 
 	GameSession *parallelGames[MAX_PARALLEL_SESSIONS];
 
+	bool ownsParallelSessions;
+
 	ParallelMode();
 	virtual ~ParallelMode();
+	void CreateParallelSessions();
 	void UpdateParallelPlayerInputs();
 	void DrawParallelWires(sf::RenderTarget *target);
 	void DrawParallelPlayers(sf::RenderTarget *target);

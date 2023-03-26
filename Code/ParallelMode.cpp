@@ -15,7 +15,26 @@ ParallelMode::ParallelMode()
 	{
 		parallelGames[i] = NULL;
 	}
+	ownsParallelSessions = true;
+}
 
+ParallelMode::~ParallelMode()
+{
+	if (ownsParallelSessions)
+	{
+		for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (parallelGames[i] != NULL)
+			{
+				delete parallelGames[i];
+				parallelGames[i] = NULL;
+			}
+		}
+	}
+}
+
+void ParallelMode::CreateParallelSessions()
+{
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
@@ -38,18 +57,6 @@ ParallelMode::ParallelMode()
 					parallelGames[i] = game->CreateParallelSession(i);
 				}
 			}
-		}
-	}
-}
-
-ParallelMode::~ParallelMode()
-{
-	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
-	{
-		if (parallelGames[i] != NULL)
-		{
-			delete parallelGames[i];
-			parallelGames[i] = NULL;
 		}
 	}
 }
