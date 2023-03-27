@@ -57,21 +57,8 @@ void Sdr::SendTo(char *buffer, int len, int flags, HSteamNetConnection p_connect
 	}
 }
 
-#include "MainMenu.h"
-
 bool Sdr::OnLoopPoll(void *cookie)
 {
-	//assert(sess->netplayManager != NULL);
-	
-
-	
-
-	/*cout << "test queue 5" << "\n";
-	for (auto it = nm->ggpoMessageQueue.begin(); it != nm->ggpoMessageQueue.end(); ++it)
-	{
-		cout << (*it) << "\n";
-	}*/
-
 	if (listenConnection > 0) //make cleaner later
 	{
 		SteamNetworkingMessage_t *messages[1];
@@ -124,6 +111,13 @@ bool Sdr::OnLoopPoll(void *cookie)
 			{
 				//Log("recvfrom returned (len:%d from %d).\n", messages[0]->GetSize(), listenConnection);
 				UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
+
+				if (msg->hdr.netType != PACKET_NET_TYPE_GGPO)
+				{
+					cout << "wrong message type getting ignored by ggpo\n";
+					messages[0]->Release();
+					continue;
+				}
 
 				if (msg->IsGameMsg() )
 				{

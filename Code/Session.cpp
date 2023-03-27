@@ -2134,7 +2134,7 @@ void Session::DrawPlayerWires( RenderTarget *target )
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelWires(extraScreenTex);
+		pm->DrawParallelWires(preScreenTex);
 	}
 
 
@@ -2164,7 +2164,7 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelPlayers(extraScreenTex);
+		pm->DrawParallelPlayers(preScreenTex);
 	}
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
@@ -6649,7 +6649,6 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	{
 		extraScreenTex->setView(view);
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		//pm->DrawPracticeGames(extraScreenTex);
 
 		for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
 		{
@@ -8603,7 +8602,7 @@ void Session::DrawPlayerShields(sf::RenderTarget *target)
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelPlayerShields(extraScreenTex);
+		pm->DrawParallelPlayerShields(preScreenTex);
 	}
 
 	Actor *p;

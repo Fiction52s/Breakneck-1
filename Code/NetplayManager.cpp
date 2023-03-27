@@ -1504,11 +1504,12 @@ void NetplayManager::ReceiveMessages()
 					{
 						UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
 
-						/*if (msg->hdr.netType != PACKET_NET_TYPE_GGPO)
+						if (msg->hdr.netType != PACKET_NET_TYPE_GGPO)
 						{
+							cout << "ignoring non-ggpo message" << "\n";
 							messages[0]->Release();
 							continue;
-						}*/
+						}
 
 						//cout << "received messageeee" << endl;
 						if (msg->IsGameMsg())

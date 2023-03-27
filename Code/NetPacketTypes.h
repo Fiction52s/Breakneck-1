@@ -1,0 +1,10 @@
+#ifndef __NETPACKETTYPES_H__
+#define __NETPACKETTYPES_H__
+
+enum PacketNetType
+{
+	PACKET_NET_TYPE_PRACTICE,
+	PACKET_NET_TYPE_GGPO,
+};
+
+#endif

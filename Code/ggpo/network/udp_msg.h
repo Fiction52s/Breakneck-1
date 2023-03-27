@@ -14,13 +14,7 @@
 #pragma pack(push, 1)
 
 #include <assert.h>
-
-
-enum PacketNetType
-{
-	PACKET_NET_TYPE_PRACTICE,
-	PACKET_NET_TYPE_GGPO,
-};
+#include "NetPacketTypes.h"
 
 struct UdpMsg
 {
@@ -76,10 +70,10 @@ struct UdpMsg
    };
 
    struct {
-	  //sf::Uint8			 netType;
+	  uint8			 netType;
+	  uint8          type; /* packet type *///used to be uint8
 	  uint16         magic;
 	  uint16         sequence_number;
-	  uint8          type; /* packet type *///used to be uint8
    } hdr;
    union {
       struct {
@@ -180,8 +174,7 @@ public:
    UdpMsg(MsgType t) 
    {
 	   hdr.type = (uint8)t;
-	   //hdr.type = (sf::Uint8)t; 
-	  // hdr.netType = (sf::Uint8)PACKET_NET_TYPE_GGPO;
+	   hdr.netType = (uint8)PACKET_NET_TYPE_GGPO;	   
    }
 };
 
