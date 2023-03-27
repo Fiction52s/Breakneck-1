@@ -1521,7 +1521,7 @@ void NetplayManager::ReceiveMessages()
 							//ggpo message(s) that we received before our own ggpo is up and running
 							ggpoMessageQueue.push_back(messages[0]);
 
-							cout << "queueing message with type: " << (int)msg->hdr.type << endl;
+							//cout << "queueing message with type: " << (int)msg->hdr.type << endl;
 						}
 
 

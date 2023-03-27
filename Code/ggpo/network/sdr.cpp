@@ -76,10 +76,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 	{
 		SteamNetworkingMessage_t *messages[1];
 
-		if (sess->netplayManager == NULL)
-		{
-			cout << "sessnetplayMan: " << (sf::Uint32)sess->netplayManager << "\n";
-		}
+		assert(sess->netplayManager != NULL); //means the udp_msg header is included somewhere it shouldn't be
 
 		NetplayManager *netplayMan = sess->netplayManager;//sess->matchParams.netplayManager;//sess->netplayManager;//sess->matchParams.netplayManager;
 
@@ -95,7 +92,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 				{
 					UdpMsg *msg = (UdpMsg *)(*it)->GetData();
 
-					cout << "processing queued message: " << (int)msg->hdr.type << " from connection " << listenConnection << endl;
+					//cout << "processing queued message: " << (int)msg->hdr.type << " from connection " << listenConnection << endl;
 
 					if (msg->IsGameMsg())
 					{
@@ -125,7 +122,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 
 			if (numMsges == 1)
 			{
-				Log("recvfrom returned (len:%d from %d).\n", messages[0]->GetSize(), listenConnection);
+				//Log("recvfrom returned (len:%d from %d).\n", messages[0]->GetSize(), listenConnection);
 				UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
 
 				if (msg->IsGameMsg() )
