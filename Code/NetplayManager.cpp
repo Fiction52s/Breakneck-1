@@ -1934,7 +1934,8 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	int r = rand() % 2;
 	cout << "choosing quickplay map: " << r << endl;
 
-	r = 0; //just for testing
+	//r = 0; //just for testing
+	r = 1;
 
 	if (r == 0)
 	{
