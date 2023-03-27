@@ -1243,6 +1243,8 @@ void GameSession::ProcessGate(int gCat,
 	gi.poly1 = allPolysVec[poly1Index];
 	gi.vertexIndex0 = vertexIndex0;
 	gi.vertexIndex1 = vertexIndex1;
+	gi.point0 = gi.poly0->GetPoint(vertexIndex0);
+	gi.point1 = gi.poly1->GetPoint(vertexIndex1);
 	gi.shardWorld = shardWorld;
 	gi.shardIndex = shardIndex;
 	gi.seconds = seconds;

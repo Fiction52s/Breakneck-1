@@ -5,6 +5,12 @@
 using namespace std;
 using namespace sf;
 
+SoundNode::SoundNode()
+{
+	next = NULL;
+	prev = NULL;
+	Stop();
+}
 
 void SoundNode::Play(SoundInfo *p_info, int p_volume, bool p_loop)
 {

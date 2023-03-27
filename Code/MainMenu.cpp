@@ -530,7 +530,11 @@ MainMenu::MainMenu()
 	transFrame = 0;
 
 	config = new Config();
-	config->WaitForLoad();
+	//Config::CreateLoadThread(config);
+	//config->WaitForLoad();
+	config->Load();
+	//config->Load();
+	//config->WaitForLoad();
 	windowWidth = config->GetData().resolutionX;
 	windowHeight = config->GetData().resolutionY;
 	style = config->GetData().windowStyle;

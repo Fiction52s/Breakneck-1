@@ -7534,7 +7534,6 @@ void Session::InitGGPO()
 
 	//bool sync = true;
 
-
 	if (netplayManager->isSyncTest)
 	{
 		result = ggpo_start_synctest(&ggpo, &cb, "breakneck_synctest", numPlayers,
@@ -7544,8 +7543,6 @@ void Session::InitGGPO()
 	{
 		result = ggpo_start_session(&ggpo, &cb, "breakneck", numPlayers, COMPRESSED_INPUT_SIZE );//, localPort);
 	}
-
-
 
 	//ggpo_log(ggpo, "test\n");
 	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport);

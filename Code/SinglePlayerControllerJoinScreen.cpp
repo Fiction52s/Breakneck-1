@@ -25,6 +25,8 @@ SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
 	panel->SetColor(Color::Transparent);
 	panel->SetCenterPos(Vector2i(960, 540));
 
+	selectedMap = NULL;
+
 	//playerBoxGroup = new PlayerBoxGroup(this, 1, 400, 400, 100);
 	playerBoxGroup = new PlayerBoxGroup(this, 1, 450, 450, 100);
 

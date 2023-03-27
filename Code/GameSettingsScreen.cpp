@@ -174,8 +174,9 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 	}
 
 	mainMenu->config->SetData(d);
-	Config::CreateSaveThread(mainMenu->config);
-	mainMenu->config->WaitForSave();
+	mainMenu->config->Save();
+	//Config::CreateSaveThread(mainMenu->config);
+	//mainMenu->config->WaitForSave();
 
 	mainMenu->musicPlayer->Update();
 	mainMenu->musicPlayer->UpdateVolume();

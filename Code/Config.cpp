@@ -39,7 +39,7 @@ Config::Config()
 {
 	t = NULL;
 	SetToDefault();
-	CreateLoadThread( this );
+	//CreateLoadThread( this );
 }
 
 void Config::SetToDefault()

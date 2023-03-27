@@ -38,11 +38,7 @@ struct SoundNode
 	bool loop;
 	int volume;
 
-	SoundNode()
-		:next(NULL),
-		prev(NULL)
-	{
-	}
+	SoundNode();
 	void Play(SoundInfo *info,
 		int volume,
 		bool loop );

@@ -64,7 +64,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 	//assert(sess->netplayManager != NULL);
 	
 
-	NetplayManager *nm = MainMenu::GetInstance()->netplayManager;
+	
 
 	/*cout << "test queue 5" << "\n";
 	for (auto it = nm->ggpoMessageQueue.begin(); it != nm->ggpoMessageQueue.end(); ++it)
@@ -76,11 +76,19 @@ bool Sdr::OnLoopPoll(void *cookie)
 	{
 		SteamNetworkingMessage_t *messages[1];
 
+		if (sess->netplayManager == NULL)
+		{
+			cout << "sessnetplayMan: " << (sf::Uint32)sess->netplayManager << "\n";
+		}
+
+		NetplayManager *netplayMan = sess->netplayManager;//sess->matchParams.netplayManager;//sess->netplayManager;//sess->matchParams.netplayManager;
+
 		for (;;)
 		{
-			cout << "blah failure here every time" << endl;
+			//cout << "blah failure here every time" << endl;
 			//sess->netplay manager is broken i have no idea why
-			for (auto it = nm->ggpoMessageQueue.begin(); it != nm->ggpoMessageQueue.end();)
+			//for (auto it = nm->ggpoMessageQueue.begin(); it != nm->ggpoMessageQueue.end();)
+			for (auto it = netplayMan->ggpoMessageQueue.begin(); it != netplayMan->ggpoMessageQueue.end();)
 			{
 				
 				if ((*it)->GetConnection() == listenConnection)
@@ -103,7 +111,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 					}
 
 					
-					it = nm->ggpoMessageQueue.erase(it);//sess->netplayManager->ggpoMessageQueue.erase(it);
+					it = netplayMan->ggpoMessageQueue.erase(it);//sess->netplayManager->ggpoMessageQueue.erase(it);
 				}
 				else
 				{
@@ -111,7 +119,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 				}
 			}
 
-			cout << "actually made it past lol" << endl;
+			//cout << "actually made it past lol" << endl;
 
 			int numMsges = SteamNetworkingSockets()->ReceiveMessagesOnConnection(listenConnection, messages, 1);
 
