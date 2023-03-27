@@ -1019,7 +1019,10 @@ GameSession::~GameSession()
 {
 	Cleanup();
 
-	currSession = NULL;
+	if (currSession == this)
+	{
+		currSession = NULL;
+	}
 }
 
 GameSession *GameSession::GetSession()
@@ -5302,6 +5305,12 @@ void GameSession::UpdateMatchParams(MatchParams &mp)
 			{
 				prm->parallelGames[i] = ppm->parallelGames[i];
 				prm->parallelGames[i]->SetMatchParams(mp);
+			}
+
+			for (int i = matchParams.numPlayers - 1; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
+			{
+				delete prm->parallelGames[i];
+				prm->parallelGames[i] = NULL;
 			}
 
 			delete ppm;

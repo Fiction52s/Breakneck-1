@@ -12,6 +12,7 @@ using namespace sf;
 RaceMode::RaceMode()
 {
 	endSeq = new FightEndSequence;
+	endSeq->SetIDAndAddToAllSequencesVec();
 	endSeq->Init();
 }
 

@@ -32,7 +32,9 @@ ParallelRaceMode::ParallelRaceMode()
 		}
 	}
 	endSeq = new FightEndSequence;
+	endSeq->SetIDAndAddToAllSequencesVec();
 	endSeq->Init();
+	
 }
 
 ParallelRaceMode::~ParallelRaceMode()

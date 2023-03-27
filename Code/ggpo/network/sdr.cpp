@@ -19,6 +19,7 @@ Sdr::Sdr() :
 	_callbacks(NULL)
 {
 	sess = Session::GetSession();
+	assert(sess != NULL);
 }
 
 Sdr::~Sdr(void)

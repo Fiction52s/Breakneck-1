@@ -2442,7 +2442,7 @@ void MainMenu::HandleMenuMode()
 			netplayManager->game = currLevel;
 
 			currLevel = NULL;
-			
+
 			netplayManager->TestNewRaceSystem();
 
 			SetMode(QUICKPLAY_PRE_MATCH);

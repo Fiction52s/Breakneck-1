@@ -21,6 +21,7 @@ FightMode::FightMode()
 	testBird = (Bird*)birdParams->myEnemy;*/
 
 	endSeq = new FightEndSequence;
+	endSeq->SetIDAndAddToAllSequencesVec();
 	endSeq->Init();
 }
 

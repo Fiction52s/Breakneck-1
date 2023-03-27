@@ -12,6 +12,7 @@ using namespace sf;
 CoopMode::CoopMode()
 {
 	endSeq = new FightEndSequence;
+	endSeq->SetIDAndAddToAllSequencesVec();
 	endSeq->Init();
 }
 
