@@ -1,9 +1,11 @@
 #include "PracticeMsg.h"
 #include <assert.h>
+#include "ggpo\network\udp_msg.h"
 
 PracticeMsgHeader::PracticeMsgHeader(sf::Uint16 mType)
 {
 	msgType = mType;
+	netType = (sf::Uint8)PACKET_NET_TYPE_PRACTICE;
 	Clear();
 }
 

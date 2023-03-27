@@ -1056,7 +1056,15 @@ void GameSession::SetMatchParams(MatchParams &mp)
 	SeedRand(matchParams.randSeed);
 	saveFile = matchParams.saveFile;
 	netplayManager = matchParams.netplayManager;
+
 	gameModeType = matchParams.gameModeType;
+
+	/*assert(netplayManager != NULL);
+	cout << "test queue 1" << "\n";
+	for (auto it = netplayManager->ggpoMessageQueue.begin(); it != netplayManager->ggpoMessageQueue.end(); ++it )
+	{
+		cout << (*it) << "\n";
+	}*/
 }
 
 void GameSession::CheckSinglePlayerInputDefaultKeyboard()
@@ -1974,6 +1982,13 @@ bool GameSession::Load()
 			}
 		}
 	}
+
+	/*assert(netplayManager != NULL);
+	cout << "test queue 2" << "\n";
+	for (auto it = netplayManager->ggpoMessageQueue.begin(); it != netplayManager->ggpoMessageQueue.end(); ++it)
+	{
+		cout << (*it) << "\n";
+	}*/
 
 	return true;
 }

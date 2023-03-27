@@ -57,15 +57,30 @@ void Sdr::SendTo(char *buffer, int len, int flags, HSteamNetConnection p_connect
 	}
 }
 
+#include "MainMenu.h"
+
 bool Sdr::OnLoopPoll(void *cookie)
 {
+	//assert(sess->netplayManager != NULL);
+	
+
+	NetplayManager *nm = MainMenu::GetInstance()->netplayManager;
+
+	/*cout << "test queue 5" << "\n";
+	for (auto it = nm->ggpoMessageQueue.begin(); it != nm->ggpoMessageQueue.end(); ++it)
+	{
+		cout << (*it) << "\n";
+	}*/
+
 	if (listenConnection > 0) //make cleaner later
 	{
 		SteamNetworkingMessage_t *messages[1];
 
 		for (;;)
 		{
-			for (auto it = sess->netplayManager->ggpoMessageQueue.begin(); it != sess->netplayManager->ggpoMessageQueue.end();)
+			cout << "blah failure here every time" << endl;
+			//sess->netplay manager is broken i have no idea why
+			for (auto it = nm->ggpoMessageQueue.begin(); it != nm->ggpoMessageQueue.end();)
 			{
 				
 				if ((*it)->GetConnection() == listenConnection)
@@ -88,7 +103,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 					}
 
 					
-					it = sess->netplayManager->ggpoMessageQueue.erase(it);
+					it = nm->ggpoMessageQueue.erase(it);//sess->netplayManager->ggpoMessageQueue.erase(it);
 				}
 				else
 				{
@@ -96,6 +111,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 				}
 			}
 
+			cout << "actually made it past lol" << endl;
 
 			int numMsges = SteamNetworkingSockets()->ReceiveMessagesOnConnection(listenConnection, messages, 1);
 

@@ -7542,8 +7542,7 @@ void Session::InitGGPO()
 	}
 	else
 	{
-		result = ggpo_start_session(&ggpo, &cb, "breakneck", numPlayers,
-			sizeof(int));//, localPort);
+		result = ggpo_start_session(&ggpo, &cb, "breakneck", numPlayers, COMPRESSED_INPUT_SIZE );//, localPort);
 	}
 
 
@@ -7683,11 +7682,26 @@ void Session::InitGGPO()
 			pm->RespawnParallelPlayers();
 		}
 	}
+
+	//assert(netplayManager != NULL);
+	//cout << "test queue 3: " << (sf::Uint32)netplayManager << "\n";
+	//for (auto it = netplayManager->ggpoMessageQueue.begin(); it != netplayManager->ggpoMessageQueue.end(); ++it)
+	//{
+	//	cout << (*it) << "\n";
+	//}
 }
 
 void Session::UpdateJustGGPO()
 {
+	/*assert(netplayManager != NULL);
+	cout << "test queue 4: " << (sf::Uint32)netplayManager << "\n";
+	for (auto it = netplayManager->ggpoMessageQueue.begin(); it != netplayManager->ggpoMessageQueue.end(); ++it)
+	{
+		cout << (*it) << "\n";
+	}*/
+
 	ggpo_idle(ggpo, 5);
+
 	//ggpo_advance_frame(ggpo);
 }
 

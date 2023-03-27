@@ -19,6 +19,7 @@ struct PracticeMsgHeader
 		MSG_TYPE_Count,
 	};
 
+	sf::Uint8 netType;//to separate it from ggpo
 	sf::Uint16 msgType;
 	
 	PracticeMsgHeader(sf::Uint16 mType);

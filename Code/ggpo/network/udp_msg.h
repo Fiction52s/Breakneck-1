@@ -14,6 +14,14 @@
 #pragma pack(push, 1)
 
 #include <assert.h>
+#include <SFML\Graphics.hpp>
+
+
+enum PacketNetType
+{
+	PACKET_NET_TYPE_PRACTICE,
+	PACKET_NET_TYPE_GGPO,
+};
 
 struct UdpMsg
 {
@@ -69,41 +77,42 @@ struct UdpMsg
    };
 
    struct {
-      uint16         magic;
-      uint16         sequence_number;
-      uint8          type;            /* packet type */
+	  //sf::Uint8			 netType;
+	  sf::Uint16         magic;
+	  sf::Uint16         sequence_number;
+	  sf::Uint8          type; /* packet type *///used to be uint8
    } hdr;
    union {
       struct {
-         uint32      random_request;  /* please reply back with this random data */
-         uint16      remote_magic;
-         uint8       remote_endpoint;
+         sf::Uint32      random_request;  /* please reply back with this random data */
+         sf::Uint16      remote_magic;
+         sf::Uint8       remote_endpoint;
       } sync_request;
       
       struct {
-         uint32      random_reply;    /* OK, here's your random data back */
+         sf::Uint32      random_reply;    /* OK, here's your random data back */
       } sync_reply;
       
       struct {
-         int8        frame_advantage; /* what's the other guy's frame advantage? */
-         uint32      ping;
+         sf::Int8        frame_advantage; /* what's the other guy's frame advantage? */
+         sf::Uint32      ping;
       } quality_report;
       
       struct {
-         uint32      pong;
+         sf::Uint32      pong;
       } quality_reply;
 
       struct {
          connect_status    peer_connect_status[UDP_MSG_MAX_PLAYERS];
 
-         uint32            start_frame;
+         sf::Uint32            start_frame;
 
          int               disconnect_requested:1;
          int               ack_frame:31;
 
-         uint16            num_bits;
-         uint8             input_size; // XXX: shouldn't be in every single packet!
-         uint8             bits[MAX_COMPRESSED_BITS]; /* must be last */
+         sf::Uint16            num_bits;
+		 sf::Uint8             input_size; // XXX: shouldn't be in every single packet!
+		 sf::Uint8             bits[MAX_COMPRESSED_BITS]; /* must be last */
       } input;
 
       struct {
@@ -114,10 +123,10 @@ struct UdpMsg
 	  {
 		  double x;
 		  double y;
-		  uint32 frame_number;
-		  uint32 player_action;
-		  uint32 player_action_frame;
-		  uint32 health; //testing
+		  sf::Uint32 frame_number;
+		  sf::Uint32 player_action;
+		  sf::Uint32 player_action_frame;
+		  sf::Uint32 health; //testing
 	  } desync_info;
 
    } u;
@@ -169,7 +178,11 @@ public:
 	   return(hdr.type > InputAck);
    }
 
-   UdpMsg(MsgType t) { hdr.type = (uint8)t; }
+   UdpMsg(MsgType t) 
+   {
+	   hdr.type = (sf::Uint8)t; 
+	  // hdr.netType = (sf::Uint8)PACKET_NET_TYPE_GGPO;
+   }
 };
 
 #pragma pack(pop)

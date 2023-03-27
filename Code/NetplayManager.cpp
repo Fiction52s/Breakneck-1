@@ -1360,7 +1360,7 @@ void NetplayManager::Update()
 	case A_WAIT_FOR_GGPO_SYNC:
 	{
 		game->UpdateJustGGPO();
-		//cout << "waiting for ggpo sync\n";
+		//cout << "waiting for ggpo sync\n";im 
 
 		if (game->ggpoReady)
 		{
@@ -1466,6 +1466,13 @@ void NetplayManager::ReceiveMessages()
 
 					if (numMsges == 1)
 					{
+						PracticeMsgHeader *hdr = (PracticeMsgHeader*)messages[0]->GetData();
+						if (hdr->netType != PACKET_NET_TYPE_PRACTICE)
+						{
+							messages[0]->Release();
+							continue;
+						}
+
 						practicePlayers[i].ReceiveSteamMessage(messages[0]);
 
 						messages[0]->Release();
@@ -1497,7 +1504,11 @@ void NetplayManager::ReceiveMessages()
 					{
 						UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
 
-
+						/*if (msg->hdr.netType != PACKET_NET_TYPE_GGPO)
+						{
+							messages[0]->Release();
+							continue;
+						}*/
 
 						//cout << "received messageeee" << endl;
 						if (msg->IsGameMsg())
@@ -1510,7 +1521,7 @@ void NetplayManager::ReceiveMessages()
 							//ggpo message(s) that we received before our own ggpo is up and running
 							ggpoMessageQueue.push_back(messages[0]);
 
-							//cout << "queueing message with type: " << (int)msg->hdr.type << endl;
+							cout << "queueing message with type: " << (int)msg->hdr.type << endl;
 						}
 
 
@@ -3375,7 +3386,11 @@ void NetplayManager::HostStartTestRace()
 
 	playerIndex = 0;
 
-	netplayPlayers[0].Clear();
+	for (int i = 0; i < 4; ++i)
+	{
+		netplayPlayers[i].Clear();
+	}
+
 	netplayPlayers[0].isMe = true;
 	netplayPlayers[0].isHost = true;
 	netplayPlayers[0].index = 0;
@@ -3388,7 +3403,6 @@ void NetplayManager::HostStartTestRace()
 			continue;
 		
 		NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
-		np.Clear();
 		np.index = currNetplayPlayerIndex;
 		np.id = practicePlayers[i].id;
 		np.name = practicePlayers[i].name;
@@ -3416,7 +3430,11 @@ void NetplayManager::ClientStartTestRace()
 
 	playerIndex = 1; //will change later for more players
 
-	netplayPlayers[1].Clear();
+	for (int i = 0; i < 4; ++i)
+	{
+		netplayPlayers[i].Clear();
+	}
+
 	netplayPlayers[1].isMe = true;
 	netplayPlayers[1].isHost = false;
 	netplayPlayers[1].index = 1;
@@ -3431,7 +3449,6 @@ void NetplayManager::ClientStartTestRace()
 		NetplayPlayer &np = netplayPlayers[0];
 		if (practicePlayers[i].isRaceHost)
 		{
-			np.Clear();
 			np.index = 0;
 			np.id = practicePlayers[i].id;
 			np.name = practicePlayers[i].name;
