@@ -2435,7 +2435,7 @@ void MainMenu::HandleMenuMode()
 
 			netplayManager->matchParams.numPlayers = netplayManager->numPlayers; //always keep this synced up with numPlayers
 
-			gameRunType = MainMenu::GRT_QUICKPLAY;
+			gameRunType = MainMenu::GRT_FREEPLAY;
 
 			currLevel->UpdateMatchParams(netplayManager->matchParams);
 

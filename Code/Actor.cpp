@@ -3155,7 +3155,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	nameTag = new NameTag;
 
-	pState = NULL;
+	pState = new PState;
+	memset(pState, 0, sizeof(PState));
+
 	preSimulationState = NULL;
 	futurePositions = NULL;
 	soundInfos.resize(PlayerSounds::S_Count);

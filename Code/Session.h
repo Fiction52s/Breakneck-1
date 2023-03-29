@@ -215,6 +215,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		POPUP,
 		MAP,
 		LEADERBOARD,
+		PRACTICE_INVITE,
 	};
 
 	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;
@@ -970,6 +971,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool TrySendPracticeSequenceConfirmMessage();
 	bool HasPracticeSequenceConfirm();
 	void ConsumePracticeSequenceConfirm();
+	void CleanupGameMode();
 };
 
 #endif

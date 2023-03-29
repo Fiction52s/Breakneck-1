@@ -6,17 +6,19 @@
 #include "FightEndSequence.h"
 #include "GameSession.h"
 #include "NetplayManager.h"
+#include "PracticeInviteDisplay.h"
 
 using namespace std;
 using namespace sf;
 
 ParallelPracticeMode::ParallelPracticeMode()
 {
+	practiceInviteDisplay = new PracticeInviteDisplay;
 }
 
 ParallelPracticeMode::~ParallelPracticeMode()
 {
-
+	delete practiceInviteDisplay;
 }
 
 void ParallelPracticeMode::Setup()
@@ -58,6 +60,20 @@ void ParallelPracticeMode::EndGame()
 	cout << "game over" << endl;
 }
 
+void ParallelPracticeMode::ResetInviteDisplay()
+{
+	practiceInviteDisplay->Reset();
+}
+
+void ParallelPracticeMode::UpdateInviteDisplay()
+{
+
+}
+
+void ParallelPracticeMode::DrawInviteDisplay(sf::RenderTarget *target)
+{
+	practiceInviteDisplay->Draw(target);
+}
 
 //bool ParallelPracticeMode::ClearUpdateFlags()
 //{

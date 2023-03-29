@@ -4068,11 +4068,7 @@ void EditSession::SetGameMode(int newMode)
 		return;
 	}
 
-	if (gameMode != NULL)
-	{
-		delete gameMode;
-		gameMode = NULL;
-	}
+	CleanupGameMode();
 
 	gameModeType = newMode;
 

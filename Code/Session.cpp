@@ -69,10 +69,10 @@
 #include "AlertBox.h"
 #include "NameTag.h"
 
+#include "PracticeInviteDisplay.h"
+
 using namespace sf;
 using namespace std;
-
-
 
 
 template <typename X>ActorParams * MakeParams(ActorType *at, int level)
@@ -1579,9 +1579,10 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
 
+	currSaveState = new SaveGameState;
+
 	alertBox = new AlertBox;
 
-	currSaveState = NULL;
 	ngs = NULL;
 	ggpoPlayers = NULL;
 
@@ -2007,11 +2008,7 @@ Session::~Session()
 
 	CleanupScoreDisplay();
 
-	if (gameMode != NULL)
-	{
-		delete gameMode;
-		gameMode = NULL;
-	}
+	CleanupGameMode();
 
 	CleanupSuperSequence();
 
@@ -2019,6 +2016,8 @@ Session::~Session()
 	ggpoCompressedInputs = NULL;
 
 	delete alertBox;
+
+	delete currSaveState;
 
 	//CleanupNetplay();
 }
@@ -6749,7 +6748,11 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawGateMarkers(target);
 
-	
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession() && gameState == PRACTICE_INVITE)
+	{
+		ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+		ppm->DrawInviteDisplay(target);
+	}
 
 	//camera debug grid
 	/*sf::Vertex testGrid[4];
@@ -7481,31 +7484,10 @@ void Session::InitGGPO()
 	cb.log_game_state = log_game_state;
 	cb.confirm_frame = confirm_frame;
 
-	/*for (int i = 0; i < 10; ++i)
-	{
-	saveStates[i] = new SaveGameState;
-	usedSaveState[i] = false;
-	}*/
-	assert(currSaveState == NULL);
-	//assert(ngs == NULL);
+	assert(ngs == NULL);
 
-	currSaveState = new SaveGameState;
 	ngs = new GGPONonGameState;
 	ggpoPlayers = new GGPOPlayer[4];
-
-	Actor *p = NULL;
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			if (p->pState == NULL)
-			{
-				p->pState = new PState;
-			}
-			memset(p->pState, 0, sizeof(PState));
-		}
-	}
 
 	GGPOErrorCode result;
 
@@ -7703,12 +7685,6 @@ void Session::UpdateJustGGPO()
 
 void Session::CleanupGGPO()
 {
-	if (currSaveState != NULL)
-	{
-		delete currSaveState;
-		currSaveState = NULL;
-	}
-
 	if (ngs != NULL)
 	{
 		delete ngs;
@@ -8678,6 +8654,8 @@ void Session::DrawNameTags(sf::RenderTarget *target)
 
 void Session::SetupGameMode()
 {
+	CleanupGameMode();
+
 	switch (gameModeType)
 	{
 	case MatchParams::GAME_MODE_BASIC:
@@ -8695,7 +8673,10 @@ void Session::SetupGameMode()
 	case MatchParams::GAME_MODE_PARALLEL_RACE:
 	{
 		ParallelRaceMode *prm = new ParallelRaceMode;
-		prm->CreateParallelSessions();
+		if (!IsParallelSession())
+		{
+			prm->CreateParallelSessions();
+		}
 		gameMode = prm;
 		break;
 	}
@@ -8708,7 +8689,10 @@ void Session::SetupGameMode()
 	case MatchParams::GAME_MODE_PARALLEL_PRACTICE:
 	{
 		ParallelPracticeMode *ppm = new ParallelPracticeMode;
-		ppm->CreateParallelSessions();
+		if (!IsParallelSession())
+		{
+			ppm->CreateParallelSessions();
+		}
 		gameMode = ppm;
 		break;
 	}
@@ -9542,5 +9526,14 @@ void Session::ConsumePracticeSequenceConfirm()
 	{
 		assert(netplayManager != NULL);
 		netplayManager->practicePlayers[parallelSessionIndex].ConsumeSequenceConfirm();
+	}
+}
+
+void Session::CleanupGameMode()
+{
+	if (gameMode != NULL)
+	{
+		delete gameMode;
+		gameMode = NULL;
 	}
 }

@@ -82,6 +82,7 @@
 #include "UIMouse.h"
 #include "md5.h"
 #include "UIController.h"
+#include "PracticeInviteDisplay.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -183,6 +184,27 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			gameState = PAUSE;
 			pauseMenu->SetTab(PauseMenu::MAP);
 			ActivatePauseSound(GetSound("pause_on"));
+			soundNodeList->Pause(true);
+			return true;
+		}
+	}
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action) && !IsReplayOn())
+	{
+		ControllerState currInput;
+
+		ControllerState prevInput;
+
+		currInput = GetCurrInputFiltered(0);//GetPlayer(0)->currInput;
+		prevInput = GetPrevInputFiltered(0);//GetPlayer(0)->prevInput;
+
+		if (currInput.PUp() && !prevInput.PUp())
+		{
+			gameState = PRACTICE_INVITE;
+
+			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+			ppm->ResetInviteDisplay();
+
 			soundNodeList->Pause(true);
 			return true;
 		}
@@ -574,22 +596,9 @@ GameSession *GameSession::CreateParallelSession( int parIndex )
 
 	parallelGame->level = level;
 
-	parallelGame->currSaveState = new SaveGameState;
-
 	parallelGame->Load();
 
 	parallelGame->mapHeader->envWorldType = background->envWorld;
-
-	Actor *p = NULL;
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		p = parallelGame->GetPlayer(i);
-		if (p != NULL)
-		{
-			p->pState = new PState;
-			memset(p->pState, 0, sizeof(PState));
-		}
-	}
 
 	parallelGame->RestartLevel();
 
@@ -892,18 +901,6 @@ void GameSession::Cleanup()
 		delete bonusGame;
 		bonusGame = NULL;
 	}*/
-
-	if (IsParallelSession())
-	{
-		//assert(currSaveState != NULL);
-		if (currSaveState != NULL)
-		{
-			delete currSaveState;
-			currSaveState = NULL;
-		}
-		
-	}
-
 
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
@@ -1787,15 +1784,6 @@ bool GameSession::Load()
 
 	SetupGameMode();
 	gameMode->Setup();
-
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession() )
-	{
-		currSaveState = new SaveGameState;
-
-		Actor *p = GetPlayer(0);
-		p->pState = new PState;
-		memset(p->pState, 0, sizeof(PState));
-	}
 
 	/*if (gameModeType == MatchParams::GAME_MODE_FIGHT
 		|| gameModeType == MatchParams::GAME_MODE_RACE)
@@ -3049,6 +3037,73 @@ bool GameSession::RunMainLoopOnce()
 		pauseMenuSprite.setPosition(-960 / 2, -540 / 2);//(1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
 		pauseMenuSprite.setScale(.5, .5);
 		window->draw(pauseMenuSprite);
+	}
+	else if (gameState == PRACTICE_INVITE)
+	{
+		window->clear();
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+		}
+
+		while (accumulator >= TIMESTEP)
+		{
+			UpdateControllers();
+
+			RunFrameForParallelPractice();
+
+			ControllerState &curr = GetCurrInputFiltered(0);
+			ControllerState &prev = GetPrevInputFiltered(0);
+
+			if (curr.PUp() && !prev.PUp())
+			{
+				gameState = GameSession::RUN;
+				soundNodeList->Pause(false);
+			}
+
+			RunFrameForParallelPractice();
+
+			SteamAPI_RunCallbacks();
+
+			if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession())
+			{
+				netplayManager->SendPracticeInitMessageToAllNewPeers();
+
+				//sends the start to message to any new peers that join
+				PracticeStartMsg psm;
+				psm.skinIndex = GetPlayerNormalSkin(0);
+				psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
+				psm.startFrame = totalGameFrames;
+				netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+
+				netplayManager->Update();
+			}
+
+			if (gameState != PRACTICE_INVITE)
+			{
+				break;
+			}
+
+			accumulator -= TIMESTEP;
+		}
+
+
+		if (gameState != PRACTICE_INVITE)
+		{
+			return false;
+		}
+
+		preScreenTex->clear(Color::Red);
+		extraScreenTex->clear(Color::Transparent);
+		postProcessTex2->clear(Color::Red);
+		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
+
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
 	}
 	else if (gameState == POPUP)
 	{
@@ -5280,8 +5335,11 @@ void GameSession::RestartWithNoReplayOrGhosts()
 
 void GameSession::UpdateMatchParams(MatchParams &mp)
 {
+	assert(!IsParallelSession());
+
 	int oldGameModeType = gameModeType;
 
+	assert(currSession = this);
 	SetMatchParams(mp);
 
 	/*if (gameModeType == oldGameModeType)
@@ -5294,28 +5352,31 @@ void GameSession::UpdateMatchParams(MatchParams &mp)
 	{
 		if (!IsParallelSession())
 		{
-			delete currSaveState;
-			currSaveState = NULL;
-
 			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
 			ppm->ownsParallelSessions = false;
 
 			ParallelRaceMode *prm = new ParallelRaceMode;
+
+			gameMode = prm;
+
 			for (int i = 0; i < NetplayManager::MAX_PRACTICE_PLAYERS; ++i)
 			{
 				prm->parallelGames[i] = ppm->parallelGames[i];
 				prm->parallelGames[i]->SetMatchParams(mp);
+				currSession = prm->parallelGames[i];
+
+				prm->parallelGames[i]->SetupGameMode();
+				prm->parallelGames[i]->gameMode->Setup();
 			}
+			delete ppm;
+
+			currSession = this;
 
 			for (int i = matchParams.numPlayers - 1; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
 			{
 				delete prm->parallelGames[i];
 				prm->parallelGames[i] = NULL;
 			}
-
-			delete ppm;
-
-			gameMode = prm;
 
 			gameMode->Setup();
 

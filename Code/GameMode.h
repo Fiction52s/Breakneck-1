@@ -14,6 +14,7 @@ struct Bird;
 struct FightEndSequence;
 struct GameSession;
 struct GGPOSession;
+struct PracticeInviteDisplay;
 
 struct GameMode
 {
@@ -84,6 +85,8 @@ struct ParallelPracticeMode : ParallelMode
 {
 	//bool updatePracticeSessions[MAX_PARALLEL_SESSIONS];
 
+	PracticeInviteDisplay *practiceInviteDisplay;
+
 	ParallelPracticeMode();
 	~ParallelPracticeMode();
 
@@ -92,6 +95,10 @@ struct ParallelPracticeMode : ParallelMode
 	void StartGame();
 	bool CheckVictoryConditions();
 	void EndGame();
+	void ResetInviteDisplay();
+	void UpdateInviteDisplay();
+	void DrawInviteDisplay(sf::RenderTarget *target);
+	
 
 	//bool ClearUpdateFlags();
 };
