@@ -214,7 +214,7 @@ void InvitePlayerBox::UpdateButtonIconAndTextPositions()
 		//c.a = 50;
 		SetRectColor(modeQuad, c);
 	}
-	else if (action == A_PLAYER_HAS_INVITED_ME)
+	else if (true)//(action == A_PLAYER_HAS_INVITED_ME)
 	{
 		totalTextAndIconWidth = acceptText.getGlobalBounds().width + spacingBetweenIconAndText + buttonSize;
 		iconX = centerX - totalTextAndIconWidth / 2.f;
@@ -222,7 +222,7 @@ void InvitePlayerBox::UpdateButtonIconAndTextPositions()
 		Color c(Color::Magenta);
 		//c.a = 50;
 		SetRectColor(modeQuad, c);
-
+		SetRectTopLeft(buttonQuads + 4, buttonSize, buttonSize, Vector2f(iconX, iconMiddleY - buttonSize / 2));
 		acceptText.setPosition(iconX + buttonSize + spacingBetweenIconAndText, iconMiddleY);
 	}
 	else if (action == A_READY_TO_RUN)
@@ -317,7 +317,7 @@ void InvitePlayerBox::Draw(sf::RenderTarget *target)
 		{
 			target->draw(waitingText);
 		}
-		else if (action == A_PLAYER_HAS_INVITED_ME)
+		else if (true)//(action == A_PLAYER_HAS_INVITED_ME)
 		{
 			target->draw(acceptText);
 		}

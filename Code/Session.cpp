@@ -3036,7 +3036,7 @@ void Session::RunFrameForParallelPractice()
 					}
 
 
-					if (pm->parallelGames[i]->gameState == FROZEN)
+					if (pm->parallelGames[i]->gameState == FROZEN || pm->parallelGames[i]->gameState == Session::PRACTICE_INVITE)
 					{
 						//allows the player and nametag to remain visible if you enter a map while someone is frozen
 						pm->parallelGames[i]->GetPlayer(0)->UpdateActionSprite();
