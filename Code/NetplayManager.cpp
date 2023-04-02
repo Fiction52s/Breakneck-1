@@ -55,6 +55,11 @@ void PracticePlayer::Clear()
 
 	indexInLobby = -1;
 
+	hasInvitedMe = false;
+	hasBeenInvited = false;
+	hasAcceptedInvite = false;
+	hasInvitedMeAndIAccepted = false;
+
 	ClearMessages();
 }
 
@@ -327,6 +332,17 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		isRaceHost = true;
 		break;
 	}
+	case PracticeMsgHeader::MSG_TYPE_INVITE:
+	{
+		hasInvitedMe = true;
+		break;
+	}
+	case PracticeMsgHeader::MSG_TYPE_ACCEPT_INVITE:
+	{
+		assert(hasBeenInvited);
+		hasAcceptedInvite = true;
+		break;
+	}
 	}
 }
 NetplayPlayer::NetplayPlayer()
@@ -391,6 +407,10 @@ void NetplayPlayer::DumpDesyncInfo()
 NetplayManager::NetplayManager()
 {
 	practicePlayers.resize(MAX_PRACTICE_PLAYERS);
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		practicePlayers[i].practicePlayerIndex = i;
+	}
 	myControllerInput = NULL;
 	myCurrProfile = NULL;
 	lobbyManager = NULL;
@@ -3328,6 +3348,40 @@ bool NetplayManager::SendPracticeRaceStartMessageToPlayer(PracticePlayer &pracPl
 	}
 }
 
+bool NetplayManager::SendPracticeInviteMessageToPlayer(PracticePlayer &pracPlayer, PracticeInviteMsg &pm )
+{
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice invite message to connection " << pracPlayer.connection << "\n";
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice invite message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
+bool NetplayManager::SendPracticeAcceptInviteMessageToPlayer(PracticePlayer &pracPlayer)
+{
+	PracticeAcceptInviteMsg acceptMsg;
+
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &acceptMsg, sizeof(acceptMsg), k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice accept invite message to connection " << pracPlayer.connection << "\n";
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice accept invite message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
 bool NetplayManager::IsPracticeMode()
 {
 	return action == A_PRACTICE_TEST || action == A_PRACTICE_CHECKING_FOR_LOBBIES || action == A_PRACTICE_WAIT_FOR_IN_LOBBY
@@ -3402,6 +3456,9 @@ void NetplayManager::HostStartTestRace()
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
 		if (!practicePlayers[i].isConnectedTo)
+			continue;
+
+		if (!(practicePlayers[i].hasBeenInvited && practicePlayers[i].hasAcceptedInvite))
 			continue;
 		
 		NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
@@ -3485,6 +3542,22 @@ void NetplayManager::TrySignalPracticePlayersToRace()
 	}
 }
 
+bool NetplayManager::TrySignalPracticePlayerToRace(PracticePlayer &pracPlayer)
+{
+	assert(pracPlayer.isConnectedTo);
+
+	PracticeRaceStartMsg pm;
+	bool res = SendPracticeRaceStartMessageToPlayer(pracPlayer, pm);
+
+	if (res)
+	{
+		isRaceHost = true;
+		return true;
+	}
+
+	return false;
+}
+
 void NetplayManager::TestNewRaceSystem()
 {
 	if (isRaceHost)
@@ -3505,8 +3578,38 @@ bool NetplayManager::HasPracticePlayerStartedRace()
 {
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].isConnectedTo && practicePlayers[i].isRaceHost)
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].hasInvitedMeAndIAccepted && practicePlayers[i].isRaceHost)
 		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NetplayManager::TryInvitePracticePlayer(PracticePlayer &pracPlayer)
+{
+	PracticeInviteMsg inviteMsg;
+	if (pracPlayer.isConnectedTo)
+	{
+		if (SendPracticeInviteMessageToPlayer(pracPlayer, inviteMsg))
+		{
+			pracPlayer.hasBeenInvited = true;
+			pracPlayer.hasInvitedMe = false;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NetplayManager::TryAcceptPracticePlayerInvite(PracticePlayer &pracPlayer)
+{
+	if (pracPlayer.isConnectedTo && pracPlayer.hasInvitedMe)
+	{
+		if (SendPracticeAcceptInviteMessageToPlayer(pracPlayer))
+		{
+			pracPlayer.hasInvitedMeAndIAccepted = true;
 			return true;
 		}
 	}

@@ -96,7 +96,7 @@ struct ParallelPracticeMode : ParallelMode
 	bool CheckVictoryConditions();
 	void EndGame();
 	void ResetInviteDisplay();
-	void UpdateInviteDisplay();
+	bool UpdateInviteDisplay( const ControllerState & curr, const ControllerState &prev );
 	void DrawInviteDisplay(sf::RenderTarget *target);
 	
 

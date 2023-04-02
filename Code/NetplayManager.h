@@ -56,6 +56,8 @@ struct PracticePlayer
 	bool alreadySentInitMessage;
 	bool alreadySentStartMessage;
 
+	int practicePlayerIndex;
+
 	int action;
 
 	CSteamID id;
@@ -73,6 +75,12 @@ struct PracticePlayer
 	int nextFrameToRead;
 
 	bool isConnectedTo;
+
+	bool hasInvitedMe;
+	bool hasBeenInvited;
+	bool hasAcceptedInvite;
+	bool hasInvitedMeAndIAccepted;
+//	PracticeInviteMsg inviteInfo;
 
 	
 
@@ -374,6 +382,10 @@ struct NetplayManager
 
 	bool SendPracticeStateChangeMessageToPlayer(PracticePlayer &pracPlayer, PracticeStateChangeMsg &pm);
 	void SendPracticeStateChangeMessageToAllPeers(PracticeStateChangeMsg &pm);
+
+	
+
+
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
@@ -399,11 +411,21 @@ struct NetplayManager
 	void ClientStartTestRace();
 	void TrySignalPracticePlayersToRace();
 
+	bool TrySignalPracticePlayerToRace(PracticePlayer &pracPlayer);
+
 	bool SendPracticeRaceStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartMsg &pm);
+
+	bool SendPracticeInviteMessageToPlayer(PracticePlayer &pracPlayer, PracticeInviteMsg &pm );
+
+	bool SendPracticeAcceptInviteMessageToPlayer(PracticePlayer &pracPlayer);
 
 	void TestNewRaceSystem();
 
 	bool HasPracticePlayerStartedRace();
+
+	bool TryInvitePracticePlayer(PracticePlayer &pracPlayer);
+
+	bool TryAcceptPracticePlayerInvite(PracticePlayer &pracPlayer);
 };
 
 #endif

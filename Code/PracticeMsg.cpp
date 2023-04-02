@@ -101,3 +101,29 @@ void PracticeRaceStartMsg::Clear()
 		raceClients[i] = 0;
 	}
 }
+
+
+PracticeInviteMsg::PracticeInviteMsg()
+	:header( PracticeMsgHeader::MSG_TYPE_INVITE )
+{
+	Clear();
+}
+
+void PracticeInviteMsg::Clear()
+{
+	header.Clear();
+}
+
+
+PracticeAcceptInviteMsg::PracticeAcceptInviteMsg()
+	:header(PracticeMsgHeader::MSG_TYPE_ACCEPT_INVITE)
+{
+	Clear();
+}
+
+void PracticeAcceptInviteMsg::Clear()
+{
+	header.Clear();
+}
+
+

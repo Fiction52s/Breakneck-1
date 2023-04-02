@@ -657,7 +657,14 @@ bool GameSession::RunPreUpdate()
 
 	UpdateDebugModifiers();
 
-
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	{
+		//ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+		////if (ppm->practiceInviteDisplay->IsTryingToStartMatch())
+		//{
+		//	//StartRaceFromPractice();
+		//}
+	}
 
 	/*if (goalDestroyed)
 	{
@@ -3056,7 +3063,25 @@ bool GameSession::RunMainLoopOnce()
 			ControllerState &curr = GetCurrInputFiltered(0);
 			ControllerState &prev = GetPrevInputFiltered(0);
 
-			if (curr.PUp() && !prev.PUp())
+			
+
+			//if (owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
+			//{
+			//	if (currInput.PUp() && !prevInput.PUp())
+			//	{
+			//		cout << "trying to signal practice players to race" << "\n";
+
+			//		sess->netplayManager->TrySignalPracticePlayersToRace();
+			//		//sess->netplayManager->TestNewRaceSystem();
+			//		owner->quit = true;
+			//		owner->returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
+			//	}
+			//}
+
+			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+			bool result = ppm->UpdateInviteDisplay(curr, prev);
+
+			if (!result)
 			{
 				gameState = GameSession::RUN;
 				soundNodeList->Pause(false);
@@ -5388,4 +5413,17 @@ void GameSession::UpdateMatchParams(MatchParams &mp)
 			}*/
 		}
 	}
+}
+
+void GameSession::StartRaceFromPractice()
+{
+	ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+	
+
+	PracticePlayer &pp = netplayManager->practicePlayers[ppm->practiceInviteDisplay->selectedIndex];
+
+	netplayManager->TrySignalPracticePlayerToRace(pp);
+	netplayManager->TestNewRaceSystem();
+	quit = true;
+	returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
 }

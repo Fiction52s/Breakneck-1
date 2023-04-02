@@ -6723,18 +6723,18 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-	if ( owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
-	{
-		if (SpecialButtonPressed())
-		{
-			cout << "trying to signal practice players to race" << "\n";
+	//if ( owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
+	//{
+	//	if (currInput.PUp() && !prevInput.PUp())
+	//	{
+	//		cout << "trying to signal practice players to race" << "\n";
 
-			sess->netplayManager->TrySignalPracticePlayersToRace();
-			//sess->netplayManager->TestNewRaceSystem();
-			owner->quit = true;
-			owner->returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
-		}
-	}
+	//		sess->netplayManager->TrySignalPracticePlayersToRace();
+	//		//sess->netplayManager->TestNewRaceSystem();
+	//		owner->quit = true;
+	//		owner->returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
+	//	}
+	//}
 
 	//cout << "game frame: " << sess->totalGameFrames << ", action: " << action << ", " << "frame: " << frame << ", posiiton: " << position.x << ", " << position.y << "\n";
 	/*static int skinTest = 0;

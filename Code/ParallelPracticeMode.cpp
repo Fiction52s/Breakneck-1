@@ -65,9 +65,9 @@ void ParallelPracticeMode::ResetInviteDisplay()
 	practiceInviteDisplay->Reset();
 }
 
-void ParallelPracticeMode::UpdateInviteDisplay()
+bool ParallelPracticeMode::UpdateInviteDisplay(const ControllerState & curr, const ControllerState &prev)
 {
-
+	return practiceInviteDisplay->Update(curr, prev);
 }
 
 void ParallelPracticeMode::DrawInviteDisplay(sf::RenderTarget *target)

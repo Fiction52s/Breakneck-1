@@ -557,5 +557,6 @@ struct GameSession : RayCastHandler, Session
 	void RestartWithNoReplayOrGhosts();
 	void SetMatchParams(MatchParams &mp);
 	void UpdateMatchParams(MatchParams &mp);
+	void StartRaceFromPractice();
 };
 #endif
