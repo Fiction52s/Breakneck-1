@@ -13,12 +13,17 @@ using namespace sf;
 
 ParallelPracticeMode::ParallelPracticeMode()
 {
-	practiceInviteDisplay = new PracticeInviteDisplay;
+	practiceInviteDisplay = NULL;
+	if (!sess->IsParallelSession())
+	{
+		practiceInviteDisplay = new PracticeInviteDisplay;
+	}
 }
 
 ParallelPracticeMode::~ParallelPracticeMode()
 {
-	delete practiceInviteDisplay;
+	if(practiceInviteDisplay != NULL )
+		delete practiceInviteDisplay;
 }
 
 void ParallelPracticeMode::Setup()

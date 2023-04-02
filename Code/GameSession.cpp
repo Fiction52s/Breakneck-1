@@ -657,13 +657,13 @@ bool GameSession::RunPreUpdate()
 
 	UpdateDebugModifiers();
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
 	{
-		//ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
-		////if (ppm->practiceInviteDisplay->IsTryingToStartMatch())
-		//{
-		//	//StartRaceFromPractice();
-		//}
+		ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+		if (ppm->practiceInviteDisplay->IsTryingToStartMatch())
+		{
+			StartRaceFromPractice();
+		}
 	}
 
 	/*if (goalDestroyed)

@@ -98,6 +98,10 @@ void InvitePlayerBox::Update()
 		{
 			SetAction(A_INVITED_PLAYER);
 		}
+		else if (practicePlayer->hasInvitedMe)
+		{
+			SetAction(A_PLAYER_HAS_INVITED_ME);
+		}
 		break;
 	}
 	case A_INVITED_PLAYER:
@@ -140,6 +144,9 @@ void InvitePlayerBox::SetPlayer(PracticePlayer *pp )//const std::string &name, i
 void InvitePlayerBox::UpdateButtonIconsWhenControllerIsChanged()
 {
 	MainMenu *mainMenu = MainMenu::GetInstance();
+
+	assert(!disp->sess->IsParallelSession());
+	assert(disp->sess->controllerStates[0] != NULL);
 
 	int cType = disp->sess->controllerStates[0]->GetControllerType();
 
