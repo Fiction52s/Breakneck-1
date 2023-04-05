@@ -8,8 +8,8 @@
 using namespace sf;
 using namespace std;
 
-InvitePlayerBox::InvitePlayerBox(PracticeInviteDisplay *p_disp)
-	:playerSkinShader( "player" )
+PracticePlayerDisp::PracticePlayerDisp(PracticeInviteDisplay *p_disp )
+	:playerSkinShader("player")
 {
 	disp = p_disp;
 
@@ -17,70 +17,101 @@ InvitePlayerBox::InvitePlayerBox(PracticeInviteDisplay *p_disp)
 
 	kinSprite.setTexture(*ts_kin->texture);
 	kinSprite.setTextureRect(ts_kin->GetSubRect(0));
-	//kinSprite.setScale(2, 2 );
-	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, 0);
+	//kinSprite.setScale(.5, .5);
+
 	playerSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
 
 	playerSkinShader.SetSkin(0);
 
-	ts_buttons = NULL;
-
 	nameText.setFont(disp->sess->mainMenu->arial);
 	nameText.setFillColor(Color::White);
 	nameText.setCharacterSize(24);
+}
+
+void PracticePlayerDisp::Reset()
+{
+	playerSkinShader.SetSkin(0);
+	SetName("");
+
+	SetName("MBJHAIHETHT");
+}
+
+void PracticePlayerDisp::SetTopLeft(sf::Vector2f p_topLeft)
+{
+	topLeft = p_topLeft;
+
+	//kinSprite.setScale(.5, .5);
+	kinSprite.setOrigin(0, 0);
+	kinSprite.setPosition(topLeft);
+	nameText.setPosition(topLeft + Vector2f( kinSprite.getGlobalBounds().width, 0 ));
+}
+
+void PracticePlayerDisp::SetSkin(int index)
+{
+	playerSkinShader.SetSkin(index);
+}
+
+void PracticePlayerDisp::SetName(const std::string &name)
+{
+	nameText.setString(name);
+}
+
+float PracticePlayerDisp::GetKinBotPos()
+{
+	return kinSprite.getGlobalBounds().top + kinSprite.getGlobalBounds().height;
+}
+
+void PracticePlayerDisp::Draw(sf::RenderTarget *target)
+{
+	target->draw(kinSprite, &playerSkinShader.pShader);
+	target->draw(nameText);
+}
+
+
+PracticeUserBox::PracticeUserBox(PracticeInviteDisplay *p_disp)
+	:playerDisp( p_disp )
+{
+	disp = p_disp;
 
 	Color bottomTextColor = Color::Black;
 
-	inviteText.setFont(disp->sess->mainMenu->arial);
-	inviteText.setFillColor(bottomTextColor);
-	inviteText.setCharacterSize(24);
-	inviteText.setString("Invite");
-	auto lb = inviteText.getLocalBounds();
-	inviteText.setOrigin(0, lb.top + lb.height / 2);
+	ts_raceButton = disp->sess->GetSizedTileset("Menu/practiceracebutton_100x32.png");
 
-	acceptText.setFont(disp->sess->mainMenu->arial);
-	acceptText.setFillColor(bottomTextColor);
-	acceptText.setCharacterSize(24);
-	acceptText.setString("Accept invite");
-	lb = acceptText.getLocalBounds();
-	acceptText.setOrigin(0, lb.top + lb.height / 2);
+	
 
-	runText.setFont(disp->sess->mainMenu->arial);
-	runText.setFillColor(bottomTextColor);
-	runText.setCharacterSize(24);
-	runText.setString("Start\nMatch");
-	lb = runText.getLocalBounds();
-	runText.setOrigin(0, lb.top + lb.height / 2);
+	selected = false;
 
-	waitingText.setFont(disp->sess->mainMenu->arial);
-	waitingText.setFillColor(bottomTextColor);
-	waitingText.setCharacterSize(24);
-	waitingText.setString("Waiting\nfor response...");
-	lb = waitingText.getLocalBounds();
-	waitingText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
-
-	//testing code
-	//SetName("test");
-	UpdateButtonIconsWhenControllerIsChanged();
+	Reset();
 }
 
-void InvitePlayerBox::Reset()
+void PracticeUserBox::Reset()
 {
-	action = A_EMPTY;
+	SetAction(A_EMPTY);
+	
 	practicePlayer = NULL;
-	nameText.setString("");
-
-	//SetName("test");
+	playerDisp.Reset();
 }
 
-void InvitePlayerBox::Update()
+void PracticeUserBox::Update()
 {
-	/*A_EMPTY,
-		A_HAS_PLAYER,
-		A_INVITED_PLAYER,
-		A_PLAYER_HAS_INVITED_ME,
-		A_READY_TO_RUN,
-		A_RUNNING,*/
+	//testing
+	if (true)
+	{
+		if (selected)
+		{
+			int f = (frame / 15) % 2;
+			SetRectSubRect(raceButtonQuad, ts_raceButton->GetSubRect(f));
+		}
+		else
+		{
+			SetRectSubRect(raceButtonQuad, ts_raceButton->GetSubRect(2));
+		}
+	}
+
+	UpdateBGQuad();
+
+	++frame;
+
 	if (action == A_EMPTY)
 		return;
 
@@ -94,203 +125,164 @@ void InvitePlayerBox::Update()
 	{
 	case A_HAS_PLAYER:
 	{
-		if (practicePlayer->hasBeenInvited)
+		if (practicePlayer->wantsToPlay)
 		{
-			SetAction(A_INVITED_PLAYER);
-		}
-		else if (practicePlayer->hasInvitedMe)
-		{
-			SetAction(A_PLAYER_HAS_INVITED_ME);
+			SetAction(A_PLAYER_WANTS_TO_PLAY);
 		}
 		break;
 	}
-	case A_INVITED_PLAYER:
+	}
+
+	//if (action == A_PLAYER_WANTS_TO_PLAY)
+	if( true )
 	{
-		if (practicePlayer->hasBeenInvited && practicePlayer->hasAcceptedInvite)
+		if (selected)
 		{
-			SetAction(A_READY_TO_RUN);
+			int f = (frame / 4) % 2;
+			SetRectSubRect(raceButtonQuad, ts_raceButton->GetSubRect(f));
 		}
-		break;
+		else
+		{
+			SetRectSubRect(raceButtonQuad, ts_raceButton->GetSubRect(2));
+		}
 	}
-	}
+
+	++frame;
 }
 
-bool InvitePlayerBox::IsEmpty()
+bool PracticeUserBox::IsEmpty()
 {
 	return action == A_EMPTY;
 }
 
-void InvitePlayerBox::SetAction(int a)
+void PracticeUserBox::UpdateBGQuad()
 {
-	action = a;
-	UpdateButtonIconAndTextPositions();
+	Color bgColor;
+	switch (action)
+	{
+	case A_EMPTY:
+	{
+		if (selected)
+		{
+			bgColor = Color(100, 100, 100);
+		}
+		else
+		{
+			bgColor = Color(50, 50, 50);
+		}
+
+		break;
+	}
+	case A_HAS_PLAYER:
+	{
+		if (selected)
+		{
+			bgColor = Color(200, 200, 200);
+		}
+		else
+		{
+			bgColor = Color(150, 150, 150);
+		}
+
+		break;
+	}
+	case A_PLAYER_WANTS_TO_PLAY:
+	{
+		if (selected)
+		{
+			bgColor = Color::Green;
+		}
+		else
+		{
+			bgColor = Color::Magenta;
+		}
+		break;
+	}
+	}
+
+	SetRectColor(bgQuad, bgColor);
 }
 
-void InvitePlayerBox::SetPlayer(PracticePlayer *pp )//const std::string &name, int skinIndex)
+void PracticeUserBox::SetAction(int a)
+{
+	action = a;
+
+	frame = 0;
+
+	/*A_EMPTY,
+	A_HAS_PLAYER,
+	A_PLAYER_WANTS_TO_PLAY,
+	A_RUNNING,*/
+
+	
+}
+
+void PracticeUserBox::SetPlayer(PracticePlayer *pp )//const std::string &name, int skinIndex)
 {
 	assert(IsEmpty());
 
-	UpdateButtonIconsWhenControllerIsChanged();
-
-	SetAction(A_HAS_PLAYER);
-
 	practicePlayer = pp;
 
-	SetName(practicePlayer->name);
-	SetSkin(practicePlayer->skinIndex);
-}
-
-
-void InvitePlayerBox::UpdateButtonIconsWhenControllerIsChanged()
-{
-	MainMenu *mainMenu = MainMenu::GetInstance();
-
-	assert(!disp->sess->IsParallelSession());
-	assert(disp->sess->controllerStates[0] != NULL);
-
-	int cType = disp->sess->controllerStates[0]->GetControllerType();
-
-	ts_buttons = disp->sess->GetButtonIconTileset(cType);
-
-	auto button = XBoxButton::XBOX_X;
-	SetRectSubRect(buttonQuads, mainMenu->GetButtonIconTileForMenu(cType, button));
-
-	button = XBoxButton::XBOX_A;
-	SetRectSubRect(buttonQuads + 4, mainMenu->GetButtonIconTileForMenu(cType, button));
-}
-
-void InvitePlayerBox::UpdateButtonIconAndTextPositions()
-{
-	float bottomOfKin = kinSprite.getGlobalBounds().top + kinSprite.getGlobalBounds().height;
-	float bottomOfRect = topLeft.y + disp->boxSize.y;
-
-	float iconMiddleY = (bottomOfKin + bottomOfRect) / 2.f;
-
-	float buttonSize = 48;
-
-	ClearRect(buttonQuads);
-	ClearRect(buttonQuads + 4);
-
-	float spacingBetweenIconAndText = 10;
-	
-	SetRectTopLeft(modeQuad, disp->boxSize.x, bottomOfRect - bottomOfKin, Vector2f(topLeft.x, bottomOfKin));
-
-	float totalTextAndIconWidth = 0, iconX = 0;
-
-	float centerX = topLeft.x + disp->boxSize.x / 2.f;
-
-	totalTextAndIconWidth = inviteText.getGlobalBounds().width + spacingBetweenIconAndText + buttonSize;
-	
-	iconX = centerX - totalTextAndIconWidth / 2.f;
-
-
-	
-	/*A_EMPTY,
-		A_HAS_PLAYER,
-		A_INVITED_PLAYER,
-		A_HAS_ALREADY_BEEN_INVITED,
-		A_HAS_INVITED_ME_AND_I_INVITED_THEM,
-		A_READY_TO_RUN,
-		A_RUNNING,*/
-
-	if (action == A_HAS_PLAYER)
+	if (practicePlayer->wantsToPlay)
 	{
-		totalTextAndIconWidth = inviteText.getGlobalBounds().width + spacingBetweenIconAndText + buttonSize;
-		iconX = centerX - totalTextAndIconWidth / 2.f;
-
-
-		SetRectTopLeft(buttonQuads, buttonSize, buttonSize, Vector2f(iconX, iconMiddleY - buttonSize / 2));
-		inviteText.setPosition(iconX + buttonSize + spacingBetweenIconAndText, iconMiddleY);
-
-		Color c(Color::Cyan);
-		//c.a = 50;
-
-		SetRectColor(modeQuad, c);
+		SetAction(A_PLAYER_WANTS_TO_PLAY);
 	}
-	else if (action == A_INVITED_PLAYER)
+	else
 	{
-		waitingText.setPosition(centerX, iconMiddleY);
-		Color c(Color::Yellow);
-		//c.a = 50;
-		SetRectColor(modeQuad, c);
+		SetAction(A_HAS_PLAYER);
 	}
-	else if (true)//(action == A_PLAYER_HAS_INVITED_ME)
-	{
-		totalTextAndIconWidth = acceptText.getGlobalBounds().width + spacingBetweenIconAndText + buttonSize;
-		iconX = centerX - totalTextAndIconWidth / 2.f;
 
-		Color c(Color::Magenta);
-		//c.a = 50;
-		SetRectColor(modeQuad, c);
-		SetRectTopLeft(buttonQuads + 4, buttonSize, buttonSize, Vector2f(iconX, iconMiddleY - buttonSize / 2));
-		acceptText.setPosition(iconX + buttonSize + spacingBetweenIconAndText, iconMiddleY);
-	}
-	else if (action == A_READY_TO_RUN)
-	{
-		totalTextAndIconWidth = runText.getGlobalBounds().width + spacingBetweenIconAndText + buttonSize;
-		iconX = centerX - totalTextAndIconWidth / 2.f;
-
-		Color c(Color::Green);
-		//c.a = 50;
-		SetRectColor(modeQuad, c);
-		SetRectTopLeft(buttonQuads + 4, buttonSize, buttonSize, Vector2f(iconX, iconMiddleY - buttonSize / 2));
-		runText.setPosition(iconX + buttonSize + spacingBetweenIconAndText, iconMiddleY);
-	}
+	playerDisp.SetName(practicePlayer->name);
+	playerDisp.SetSkin(practicePlayer->skinIndex);
 }
 
-void InvitePlayerBox::SetSkin(int index)
-{
-	playerSkinShader.SetSkin(index);
-}
-
-void InvitePlayerBox::SetName(const std::string &name)
-{
-	nameText.setString(name);
-	auto lb = nameText.getLocalBounds();
-	nameText.setOrigin(lb.left + lb.width / 2, 0);
-}
-
-void InvitePlayerBox::SetTopLeft( sf::Vector2f & p_topLeft)
+void PracticeUserBox::SetTopLeft( sf::Vector2f & p_topLeft)
 {
 	topLeft = p_topLeft;
 
 	Vector2f halfSize(disp->boxSize.x / 2.f, disp->boxSize.y / 2.f);
 
-	kinSprite.setPosition(topLeft + Vector2f(halfSize.x, 24));
-	nameText.setPosition(topLeft + Vector2f(halfSize.x, 0));
+	playerDisp.SetTopLeft( topLeft );
 
-	UpdateButtonIconAndTextPositions();
+	SetRectTopLeft(raceButtonQuad, ts_raceButton->tileWidth, ts_raceButton->tileHeight, Vector2f(playerDisp.nameText.getPosition().x, topLeft.y + 30));
+
+	SetRectTopLeft(bgQuad, disp->boxSize.x, disp->boxSize.y, topLeft);
 	//SetRectTopLeft(buttonQuads, buttonSize, buttonSize, Vector2f( topLeft.x, bottomOfKin + 10));
 	//SetRectTopLeft(buttonQuads + 4, buttonSize, buttonSize, Vector2f(topLeft.x, bottomOfKin + 10 + buttonSize + 10));
 }
 
-void InvitePlayerBox::InvitePlayer()
+void PracticeUserBox::InvitePlayer()
 {
 	assert(!IsEmpty());
-	if (!practicePlayer->hasBeenInvited)
+	//if (!practicePlayer->hasBeenInvited)
 	{
-		disp->sess->netplayManager->TryInvitePracticePlayer(*practicePlayer);
+		//disp->sess->netplayManager->TryInvitePracticePlayer(*practicePlayer);
 	}
-	else
+	//else
 	{
 		//cant invite someone who has already been invited!
 	}
 }
 
-void InvitePlayerBox::Confirm()
+void PracticeUserBox::Confirm()
 {
-	if (practicePlayer->hasInvitedMe && !practicePlayer->hasInvitedMeAndIAccepted )
-	{
-		disp->sess->netplayManager->TryAcceptPracticePlayerInvite(*practicePlayer);
-	}
-	else if ( action == A_READY_TO_RUN )
-	{
-		//practicePlayer->hasBeenInvited && practicePlayer->hasAcceptedInvite
-		action = A_RUNNING;
-	}
+	//if (practicePlayer->hasInvitedMe && !practicePlayer->hasInvitedMeAndIAccepted )
+	//{
+	//	disp->sess->netplayManager->TryAcceptPracticePlayerInvite(*practicePlayer);
+	//}
+	//else if ( action == A_READY_TO_RUN )
+	//{
+	//	//practicePlayer->hasBeenInvited && practicePlayer->hasAcceptedInvite
+	//	action = A_RUNNING;
+	//}
 }
 
-void InvitePlayerBox::Draw(sf::RenderTarget *target)
+void PracticeUserBox::SetSelected(bool sel)
+{
+	selected = sel;
+}
+
+void PracticeUserBox::Draw(sf::RenderTarget *target)
 {
 	/*A_EMPTY,
 	A_HAS_PLAYER,
@@ -302,30 +294,15 @@ void InvitePlayerBox::Draw(sf::RenderTarget *target)
 
 	//if (!IsEmpty())
 	{
-		target->draw(modeQuad, 4, sf::Quads);
+		target->draw( bgQuad, 4, sf::Quads);
 
-		target->draw(kinSprite, &playerSkinShader.pShader);
-		target->draw(nameText);
-		target->draw(buttonQuads, 2 * 4, sf::Quads, ts_buttons->texture);
+		playerDisp.Draw(target);
+
 		
-
-		if( action == A_HAS_PLAYER )
+		//if (action == A_PLAYER_WANTS_TO_PLAY)
 		{
-			target->draw(inviteText);
+			target->draw(raceButtonQuad, 4, sf::Quads, ts_raceButton->texture);
 		}
-		else if (action == A_INVITED_PLAYER)
-		{
-			target->draw(waitingText);
-		}
-		else if (true)//(action == A_PLAYER_HAS_INVITED_ME)
-		{
-			target->draw(acceptText);
-		}
-		else if (true)//(action == A_READY_TO_RUN)
-		{
-			target->draw(runText);
-		}
-
 	}
 }
 
@@ -333,28 +310,44 @@ PracticeInviteDisplay::PracticeInviteDisplay()
 {
 	sess = Session::GetSession();
 
-	boxVec.resize(NUM_BOXES);
+	userBoxVec.resize(NUM_BOXES);
+
+	ts_buttons = NULL;
+
+	boxSize.x = 300;
+	boxSize.y = 70;
+
+	totalSize.x = boxSize.x;
+	totalSize.y = boxSize.y * NUM_BOXES;
 
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		boxVec[i] = new InvitePlayerBox(this);
+		userBoxVec[i] = new PracticeUserBox(this);
 	}
 
-	boxSize.x = 200;
-	boxSize.y = 200;
+	availableText.setFont(sess->mainMenu->arial);
+	availableText.setFillColor(Color::Green);
+	availableText.setCharacterSize(24);
+	availableText.setString("Availability: ON");
+	auto lb = availableText.getLocalBounds();
+	availableText.setOrigin(0, lb.top + lb.height / 2);
 
-	totalSize.x = boxSize.x * NUM_BOXES;
-	totalSize.y = boxSize.y;
-
-	
+	unavailableText.setFont(sess->mainMenu->arial);
+	unavailableText.setFillColor(Color::Red);
+	unavailableText.setCharacterSize(24);
+	unavailableText.setString("Availability: OFF");
+	lb = unavailableText.getLocalBounds();
+	unavailableText.setOrigin(0, lb.top + lb.height / 2);
 
 	selectedIndex = 0;
+	userBoxVec[0]->SetSelected(true);
 
-	SetCenter(Vector2f(960, 540 - 200));
+	SetTopCenter(Vector2f(960, 115));
 
-
-	SetRectColor(selectedQuad, Color(100, 100, 100, 200));
-	SetRectColor(bgQuad, Color(100, 100, 100, 100));
+	isHosting = false;
+	hostMode = -1;
+	hostNumMaxPlayers - 1;
+	hostPowerMode = -1;
 
 	action = A_IDLE;
 }
@@ -363,13 +356,14 @@ PracticeInviteDisplay::~PracticeInviteDisplay()
 {
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		delete boxVec[i];
+		delete userBoxVec[i];
 	}
 }
 
 void PracticeInviteDisplay::Reset()
 {
 	Populate();
+	UpdateButtonIconsWhenControllerIsChanged();
 }
 
 bool PracticeInviteDisplay::Update(const ControllerState & curr, const ControllerState &prev)
@@ -379,64 +373,101 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 		return false;
 	}
 
+	if (curr.start && !prev.start)
+	{
+		sess->netplayManager->SetPracticeWantsToPlayStatus(!sess->netplayManager->wantsToPracticeRace);
+	}
+
+
+	assert(sess->netplayManager != NULL);
+	if (sess->netplayManager->wantsToPracticeRace)
+	{
+		wantsToPlay = true;
+	}
+	else
+	{
+		wantsToPlay = false;
+	}
+
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		boxVec[i]->Update();
+		userBoxVec[i]->Update();
+	}
+
+	if (curr.PUp() && !prev.PUp())
+	{
+		return false;
 	}
 
 	if (action == A_SHOW_PLAYERS)
 	{
-		if ((curr.PUp() && !prev.PUp()) || (curr.B && !prev.B) )
+		if (curr.B && !prev.B)
 		{
 			return false;
 		}
 
-
-		if (curr.LLeft() && !prev.LLeft())
-		{
-			--selectedIndex;
-			if (selectedIndex < 0)
-			{
-				selectedIndex = NUM_BOXES - 1;
-				/*for (int i = NUM_BOXES - 1; i >= 0; --i)
-				{
-					selectedIndex = i;
-
-					if (!boxVec[i]->IsEmpty())
-					{
-						break;
-					}
-				}*/
-			}
-
-			UpdateSelectedQuad();
-		}
-		else if (curr.LRight() && !prev.LRight())
-		{
-			++selectedIndex;
-			if (selectedIndex == NUM_BOXES )//|| boxVec[selectedIndex]->IsEmpty())
-			{
-				selectedIndex = 0;
-			}
-
-			UpdateSelectedQuad();
-		}
 		
+	}
+	else if (action == A_HOST_SETUP)
+	{
+		if (curr.B && !prev.B)
+		{
+			action = A_SHOW_PLAYERS;
+		}
+	}
+	else if (action == A_HOSTING)
+	{
+		if (curr.B && !prev.B)
+		{
+			return false;
+		}
 
-		if (curr.X && !prev.X)
+		/*if (curr.X && !prev.X)
 		{
 			if (!boxVec[selectedIndex]->IsEmpty())
 			{
 				boxVec[selectedIndex]->InvitePlayer();
 			}
+		}*/
+	}
+
+
+	if (action != A_IDLE)
+	{
+		if (curr.LUp() && !prev.LUp())
+		{
+			userBoxVec[selectedIndex]->SetSelected(false);
+
+			--selectedIndex;
+			if (selectedIndex < 0)
+			{
+				selectedIndex = NUM_BOXES - 1;
+			}
+
+			userBoxVec[selectedIndex]->SetSelected(true);
 		}
-		else if (curr.A && !prev.A)
+		else if (curr.LDown() && !prev.LDown())
+		{
+			userBoxVec[selectedIndex]->SetSelected(false);
+
+			++selectedIndex;
+			if (selectedIndex == NUM_BOXES)
+			{
+				selectedIndex = 0;
+			}
+
+			userBoxVec[selectedIndex]->SetSelected(true);
+		}
+
+
+		
+		/*if (curr.A && !prev.A)
 		{
 			if (!boxVec[selectedIndex]->IsEmpty())
 			{
 				boxVec[selectedIndex]->Confirm();
 			}
-		}
+		}*/
 	}
 
 	return true;
@@ -444,8 +475,8 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 
 bool PracticeInviteDisplay::IsTryingToStartMatch()
 {
-	if (boxVec[selectedIndex]->action == InvitePlayerBox::A_RUNNING)
-		return true;
+	//if (boxVec[selectedIndex]->action == InvitePlayerBox::A_RUNNING)
+	//	return true;
 
 	return false;
 }
@@ -454,7 +485,7 @@ void PracticeInviteDisplay::Populate()
 {
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		boxVec[i]->Reset();
+		userBoxVec[i]->Reset();
 	}
 
 	int boxIndex = 0;
@@ -463,7 +494,7 @@ void PracticeInviteDisplay::Populate()
 	{
 		if (sess->netplayManager->practicePlayers[i].isConnectedTo)
 		{
-			boxVec[boxIndex]->SetPlayer(&sess->netplayManager->practicePlayers[i]);
+			userBoxVec[boxIndex]->SetPlayer(&sess->netplayManager->practicePlayers[i]);
 			++boxIndex;
 
 			if (boxIndex == NUM_BOXES)
@@ -471,31 +502,56 @@ void PracticeInviteDisplay::Populate()
 		}
 	}
 
-	action = A_SHOW_PLAYERS;
+	if (isHosting)
+	{
+		action = A_HOSTING;
+	}
+	else
+	{
+		action = A_SHOW_PLAYERS;
+	}
 }
 
 void PracticeInviteDisplay::SetTopLeft(sf::Vector2f & p_topLeft)
 {
 	topLeft = p_topLeft;
-	Vector2f currTopLeft = topLeft;
+
+	Vector2f startHostingQuadSize(boxSize.x, 50);
+	Vector2f startHostingQuadPos(topLeft.x + totalSize.x / 2 - startHostingQuadSize.x / 2, topLeft.y);
+	SetRectTopLeft(startHostingQuad, startHostingQuadSize.x, startHostingQuadSize.y, startHostingQuadPos);
+	SetRectColor(startHostingQuad, Color(100, 100, 100));
+
+	float buttonSize = 48;
+	SetRectTopLeft(buttonQuads, buttonSize, buttonSize, startHostingQuadPos);
+
+	availableText.setPosition(startHostingQuadPos + Vector2f(buttonSize + 10, buttonSize / 2));
+	unavailableText.setPosition(startHostingQuadPos + Vector2f(buttonSize + 10, buttonSize / 2));
+
+
+	Vector2f currBoxtopLeft = topLeft + Vector2f( 0, startHostingQuadSize.y + 15 );
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		boxVec[i]->SetTopLeft(currTopLeft);
-		currTopLeft.x += boxSize.x;
+		userBoxVec[i]->SetTopLeft(currBoxtopLeft);
+		currBoxtopLeft.y += boxSize.y;
 	}
-
-	SetRectTopLeft(bgQuad, totalSize.x, totalSize.y, topLeft);
-
-	UpdateSelectedQuad();
-	
 }
 
-void PracticeInviteDisplay::UpdateSelectedQuad()
+void PracticeInviteDisplay::UpdateButtonIconsWhenControllerIsChanged()
 {
-	auto gb = boxVec[0]->kinSprite.getGlobalBounds();
-	float kinBottom = gb.top + gb.height;
+	MainMenu *mainMenu = MainMenu::GetInstance();
 
-	SetRectTopLeft(selectedQuad, boxSize.x, boxSize.y, boxVec[selectedIndex]->topLeft);
+	assert(!sess->IsParallelSession());
+	assert(sess->controllerStates[0] != NULL);
+
+	int cType = sess->controllerStates[0]->GetControllerType();
+
+	ts_buttons = sess->GetButtonIconTileset(cType);
+
+	auto button = XBoxButton::XBOX_START;
+	SetRectSubRect(buttonQuads, mainMenu->GetButtonIconTileForMenu(cType, button));
+
+	button = XBoxButton::XBOX_A;
+	SetRectSubRect(buttonQuads + 4, mainMenu->GetButtonIconTileForMenu(cType, button));
 }
 
 void PracticeInviteDisplay::SetCenter(sf::Vector2f center)
@@ -503,12 +559,29 @@ void PracticeInviteDisplay::SetCenter(sf::Vector2f center)
 	SetTopLeft(Vector2f(center.x - totalSize.x / 2, center.y - totalSize.y / 2));
 }
 
+void PracticeInviteDisplay::SetTopCenter(sf::Vector2f pos)
+{
+	SetTopLeft(Vector2f(pos.x - totalSize.x / 2, pos.y));
+}
+
 void PracticeInviteDisplay::Draw(sf::RenderTarget *target)
 {
-	target->draw(bgQuad, 4, sf::Quads);
-	target->draw(selectedQuad, 4, sf::Quads );
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		boxVec[i]->Draw(target);
+		userBoxVec[i]->Draw(target);
 	}
+
+	target->draw(startHostingQuad, 4, sf::Quads);
+
+	if (wantsToPlay)
+	{
+		target->draw(availableText);
+	}
+	else
+	{
+		target->draw(unavailableText);
+	}
+	
+
+	target->draw(buttonQuads, 2 * 4, sf::Quads, ts_buttons->texture);
 }

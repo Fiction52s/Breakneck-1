@@ -30,6 +30,7 @@ PracticePlayer::PracticePlayer()
 void PracticePlayer::Clear()
 {
 	//myGame = NULL;
+	isInMyPracticeLobby = false;
 	name = "";
 	connection = 0;
 	id.Clear();
@@ -45,6 +46,7 @@ void PracticePlayer::Clear()
 
 	isReadyToJoinRace = false;
 	isRaceHost = false;
+	isRaceClient = false;
 
 	isConnectedTo = false;
 
@@ -55,10 +57,7 @@ void PracticePlayer::Clear()
 
 	indexInLobby = -1;
 
-	hasInvitedMe = false;
-	hasBeenInvited = false;
-	hasAcceptedInvite = false;
-	hasInvitedMeAndIAccepted = false;
+	wantsToPlay = false;
 
 	ClearMessages();
 }
@@ -326,21 +325,15 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		stateChangeMap[msg->frame] = true;
 		break;
 	}
+	case PracticeMsgHeader::MSG_TYPE_WANTS_TO_PLAY:
+	{
+		wantsToPlay = true;
+		break;
+	}
 	case PracticeMsgHeader::MSG_TYPE_RACE_START:
 	{
 		cout << "received message that race is starting" << "\n";
 		isRaceHost = true;
-		break;
-	}
-	case PracticeMsgHeader::MSG_TYPE_INVITE:
-	{
-		hasInvitedMe = true;
-		break;
-	}
-	case PracticeMsgHeader::MSG_TYPE_ACCEPT_INVITE:
-	{
-		assert(hasBeenInvited);
-		hasAcceptedInvite = true;
 		break;
 	}
 	}
@@ -580,6 +573,7 @@ void NetplayManager::Abort()
 	receivedPostOptionsSignal = false;
 	receivedLeaveNetplaySignal = false;
 	receivedNextMapData = false;
+	wantsToPracticeRace = false;
 	postMatchOptionReceived = -1;
 }
 
@@ -3348,36 +3342,36 @@ bool NetplayManager::SendPracticeRaceStartMessageToPlayer(PracticePlayer &pracPl
 	}
 }
 
-bool NetplayManager::SendPracticeInviteMessageToPlayer(PracticePlayer &pracPlayer, PracticeInviteMsg &pm )
+bool NetplayManager::SendPracticeWantsToPlayMessageToPlayer(PracticePlayer &pracPlayer)
 {
+	PracticeWantsToPlayMsg pm;
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "send practice invite message to connection " << pracPlayer.connection << "\n";
+		cout << "send practice wants to play message to connection " << pracPlayer.connection << "\n";
 		return true;
 	}
 	else
 	{
-		cout << "failed send practice invite message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		cout << "failed send practice wants to play message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
 		return false;
 	}
 }
 
-bool NetplayManager::SendPracticeAcceptInviteMessageToPlayer(PracticePlayer &pracPlayer)
+bool NetplayManager::SendPracticeDoesntWantToPlayMessageToPlayer(PracticePlayer &pracPlayer)
 {
-	PracticeAcceptInviteMsg acceptMsg;
-
-	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &acceptMsg, sizeof(acceptMsg), k_nSteamNetworkingSend_Reliable, NULL);
+	PracticeDoesntWantToPlayMsg pm;
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "send practice accept invite message to connection " << pracPlayer.connection << "\n";
+		cout << "send practice doesn't want to play message to connection " << pracPlayer.connection << "\n";
 		return true;
 	}
 	else
 	{
-		cout << "failed send practice accept invite message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		cout << "failed send practice doesn't want to play message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
 		return false;
 	}
 }
@@ -3451,24 +3445,24 @@ void NetplayManager::HostStartTestRace()
 	netplayPlayers[0].isHost = true;
 	netplayPlayers[0].index = 0;
 
-
 	int currNetplayPlayerIndex = 1;
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
 		if (!practicePlayers[i].isConnectedTo)
 			continue;
 
-		if (!(practicePlayers[i].hasBeenInvited && practicePlayers[i].hasAcceptedInvite))
-			continue;
-		
-		NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
-		np.index = currNetplayPlayerIndex;
-		np.id = practicePlayers[i].id;
-		np.name = practicePlayers[i].name;
-		np.isConnectedTo = true;
-		np.connection = practicePlayers[i].connection;
+		if (practicePlayers[i].wantsToPlay && practicePlayers[i].isRaceClient)
+		{
+			NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
+			np.index = currNetplayPlayerIndex;
+			np.id = practicePlayers[i].id;
+			np.name = practicePlayers[i].name;
+			np.isConnectedTo = true;
+			np.connection = practicePlayers[i].connection;
 
-		++currNetplayPlayerIndex;
+			++currNetplayPlayerIndex;
+			break;
+		}
 
 		if (currNetplayPlayerIndex == GGPO_MAX_PLAYERS) //can't let too many people in
 			break;
@@ -3576,9 +3570,12 @@ void NetplayManager::TestNewRaceSystem()
 
 bool NetplayManager::HasPracticePlayerStartedRace()
 {
+	if (!wantsToPracticeRace)
+		return false;
+
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].isConnectedTo && practicePlayers[i].hasInvitedMeAndIAccepted && practicePlayers[i].isRaceHost)
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].isRaceHost)
 		{
 			return true;
 		}
@@ -3587,35 +3584,49 @@ bool NetplayManager::HasPracticePlayerStartedRace()
 	return false;
 }
 
-bool NetplayManager::TryInvitePracticePlayer(PracticePlayer &pracPlayer)
+void NetplayManager::SignalPracticePeersIWantToPlay()
 {
-	PracticeInviteMsg inviteMsg;
-	if (pracPlayer.isConnectedTo)
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (SendPracticeInviteMessageToPlayer(pracPlayer, inviteMsg))
+		if ( practicePlayers[i].isConnectedTo )
 		{
-			pracPlayer.hasBeenInvited = true;
-			pracPlayer.hasInvitedMe = false;
-			return true;
+			SendPracticeWantsToPlayMessageToPlayer(practicePlayers[i]);
 		}
 	}
-
-	return false;
 }
 
-bool NetplayManager::TryAcceptPracticePlayerInvite(PracticePlayer &pracPlayer)
+void NetplayManager::SignalPracticePeersIDontWantToPlay()
 {
-	if (pracPlayer.isConnectedTo && pracPlayer.hasInvitedMe)
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (SendPracticeAcceptInviteMessageToPlayer(pracPlayer))
+		if (practicePlayers[i].isConnectedTo)
 		{
-			pracPlayer.hasInvitedMeAndIAccepted = true;
-			return true;
+			SendPracticeDoesntWantToPlayMessageToPlayer(practicePlayers[i]);
 		}
 	}
-
-	return false;
 }
+
+void NetplayManager::SetPracticeWantsToPlayStatus(bool p_wantsToPlay)
+{
+	bool oldWants = wantsToPracticeRace;
+
+	
+	wantsToPracticeRace = p_wantsToPlay;
+
+	if (oldWants != wantsToPracticeRace)
+	{
+		if (wantsToPracticeRace)
+		{
+			SignalPracticePeersIWantToPlay();
+		}
+		else
+		{
+			SignalPracticePeersIDontWantToPlay();
+		}
+	}
+}
+
+
 
 //void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)
 //{

@@ -3076,6 +3076,7 @@ void Session::RunFrameForParallelPractice()
 					{
 						numFramesToRun = netplayManager->practicePlayers[i].HasInputs();
 					}
+
 					numFramesToRun = min(numFramesToRun, PracticePlayer::MAX_SIM_FRAMES);
 
 					for (int j = 0; j < numFramesToRun; ++j)

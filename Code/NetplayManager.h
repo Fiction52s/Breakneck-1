@@ -48,6 +48,8 @@ struct PracticePlayer
 
 	bool isReadyToJoinRace;
 	bool isRaceHost;
+
+	bool isRaceClient;
 	
 
 	bool readyToBeSentMessages;
@@ -76,13 +78,9 @@ struct PracticePlayer
 
 	bool isConnectedTo;
 
-	bool hasInvitedMe;
-	bool hasBeenInvited;
-	bool hasAcceptedInvite;
-	bool hasInvitedMeAndIAccepted;
-//	PracticeInviteMsg inviteInfo;
+	bool wantsToPlay;
 
-	
+	bool isInMyPracticeLobby;
 
 	unsigned char *syncStateBuf;
 	int syncStateBufSize;
@@ -236,6 +234,7 @@ struct NetplayManager
 	std::list<SteamNetworkingMessage_t*> desyncMessageQueue;
 
 	std::vector<PracticePlayer> practicePlayers;// [MAX_PRACTICE_PLAYERS];
+	std::list<int> practiceLobbyMembers;
 
 	bool desyncDetected;
 
@@ -244,6 +243,8 @@ struct NetplayManager
 	bool isQuickplay;
 
 	bool isRaceHost;
+
+	bool wantsToPracticeRace;
 
 	MatchParams matchParams;
 
@@ -415,17 +416,19 @@ struct NetplayManager
 
 	bool SendPracticeRaceStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartMsg &pm);
 
-	bool SendPracticeInviteMessageToPlayer(PracticePlayer &pracPlayer, PracticeInviteMsg &pm );
+	bool SendPracticeWantsToPlayMessageToPlayer(PracticePlayer &pracPlayer );
 
-	bool SendPracticeAcceptInviteMessageToPlayer(PracticePlayer &pracPlayer);
+	bool SendPracticeDoesntWantToPlayMessageToPlayer(PracticePlayer &pracPlayer);
 
 	void TestNewRaceSystem();
 
 	bool HasPracticePlayerStartedRace();
 
-	bool TryInvitePracticePlayer(PracticePlayer &pracPlayer);
+	void SignalPracticePeersIWantToPlay();
 
-	bool TryAcceptPracticePlayerInvite(PracticePlayer &pracPlayer);
+	void SignalPracticePeersIDontWantToPlay();
+
+	void SetPracticeWantsToPlayStatus(bool p_wantsToPlay);
 };
 
 #endif

@@ -34,6 +34,8 @@ void PracticeStartMsg::Clear()
 	{
 		upgradeField[i] = 0;
 	}
+
+	wantsToPlay = false;
 }
 
 void PracticeStartMsg::SetUpgradeField(BitField &bf)
@@ -87,6 +89,31 @@ void PracticeStateChangeMsg::Clear()
 	state = -1;
 }
 
+
+PracticeWantsToPlayMsg::PracticeWantsToPlayMsg()
+	:header(PracticeMsgHeader::MSG_TYPE_WANTS_TO_PLAY)
+{
+	Clear();
+}
+
+void PracticeWantsToPlayMsg::Clear()
+{
+	header.Clear();
+}
+
+PracticeDoesntWantToPlayMsg::PracticeDoesntWantToPlayMsg()
+	:header(PracticeMsgHeader::MSG_TYPE_DOESNT_WANT_TO_PLAY)
+{
+	Clear();
+}
+
+void PracticeDoesntWantToPlayMsg::Clear()
+{
+	header.Clear();
+}
+
+
+
 PracticeRaceStartMsg::PracticeRaceStartMsg()
 	:header( PracticeMsgHeader::MSG_TYPE_RACE_START)
 {
@@ -101,29 +128,3 @@ void PracticeRaceStartMsg::Clear()
 		raceClients[i] = 0;
 	}
 }
-
-
-PracticeInviteMsg::PracticeInviteMsg()
-	:header( PracticeMsgHeader::MSG_TYPE_INVITE )
-{
-	Clear();
-}
-
-void PracticeInviteMsg::Clear()
-{
-	header.Clear();
-}
-
-
-PracticeAcceptInviteMsg::PracticeAcceptInviteMsg()
-	:header(PracticeMsgHeader::MSG_TYPE_ACCEPT_INVITE)
-{
-	Clear();
-}
-
-void PracticeAcceptInviteMsg::Clear()
-{
-	header.Clear();
-}
-
-
