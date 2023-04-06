@@ -31,6 +31,7 @@ void PracticePlayer::Clear()
 {
 	//myGame = NULL;
 	isInMyPracticeLobby = false;
+	hasConfirmedRaceStart = false;
 	name = "";
 	connection = 0;
 	id.Clear();
@@ -282,6 +283,8 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 
 		needsSessionRestart = true;
 
+		wantsToPlay = msg->wantsToPlay;
+
 		action = A_RUNNING;
 
 		for (int i = 0; i < 8; ++i)
@@ -330,10 +333,15 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		wantsToPlay = true;
 		break;
 	}
-	case PracticeMsgHeader::MSG_TYPE_RACE_START:
+	case PracticeMsgHeader::MSG_TYPE_RACE_START_REQUEST:
 	{
 		cout << "received message that race is starting" << "\n";
-		isRaceHost = true;
+		isRaceClient = true;
+		break;
+	}
+	case PracticeMsgHeader::MSG_TYPE_RACE_START_CONFIRM:
+	{
+		hasConfirmedRaceStart = true;
 		break;
 	}
 	}
@@ -545,8 +553,6 @@ void NetplayManager::Abort()
 	previewPath = "";
 
 	numPlayers = -1;
-
-	isRaceHost = false;
 
 	myIndexInPracticeLobby = -1;
 
@@ -3326,18 +3332,34 @@ void NetplayManager::SendPracticeStateChangeMessageToAllPeers(PracticeStateChang
 	}
 }
 
-bool NetplayManager::SendPracticeRaceStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartMsg &pm)
+bool NetplayManager::SendPracticeRaceStartRequestMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartRequestMsg &pm)
 {
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "send practice race start message to connection " << pracPlayer.connection << "\n";
+		cout << "send practice race start request message to connection " << pracPlayer.connection << "\n";
 		return true;
 	}
 	else
 	{
-		cout << "failed send practice race start message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		cout << "failed send practice race start request message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
+bool NetplayManager::SendPracticeRaceStartConfirmMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartConfirmMsg &pm)
+{
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		cout << "send practice race start confirm message to connection " << pracPlayer.connection << "\n";
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice race start confirm message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
 		return false;
 	}
 }
@@ -3428,124 +3450,42 @@ void NetplayManager::SetPracticePlayersToNeedStartMessage()
 	}
 }
 
-void NetplayManager::HostStartTestRace()
+void NetplayManager::StartTestRace()
 {
-	cout << "host starting test race" << endl;
+	cout << "starting test race" << endl;
 
 	LeaveLobby();
-
-	playerIndex = 0;
-
-	for (int i = 0; i < 4; ++i)
-	{
-		netplayPlayers[i].Clear();
-	}
-
-	netplayPlayers[0].isMe = true;
-	netplayPlayers[0].isHost = true;
-	netplayPlayers[0].index = 0;
-
-	int currNetplayPlayerIndex = 1;
-	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-	{
-		if (!practicePlayers[i].isConnectedTo)
-			continue;
-
-		if (practicePlayers[i].wantsToPlay && practicePlayers[i].isRaceClient)
-		{
-			NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
-			np.index = currNetplayPlayerIndex;
-			np.id = practicePlayers[i].id;
-			np.name = practicePlayers[i].name;
-			np.isConnectedTo = true;
-			np.connection = practicePlayers[i].connection;
-
-			++currNetplayPlayerIndex;
-			break;
-		}
-
-		if (currNetplayPlayerIndex == GGPO_MAX_PLAYERS) //can't let too many people in
-			break;
-	}
 
 	game->InitGGPO();
 	action = A_WAIT_FOR_GGPO_SYNC;
 }
 
-void NetplayManager::ClientStartTestRace()
+bool NetplayManager::RequestPracticePlayerToRace(PracticePlayer &pracPlayer)
 {
-	//client will just assume they're player 2 for now. can figure out exactly how to signal who is which player in higher player #s later
+	//assert(pracPlayer.isConnectedTo);
 
-	cout << "client starting test race" << endl;
-
-	LeaveLobby();
-
-
-	playerIndex = 1; //will change later for more players
-
-	for (int i = 0; i < 4; ++i)
-	{
-		netplayPlayers[i].Clear();
-	}
-
-	netplayPlayers[1].isMe = true;
-	netplayPlayers[1].isHost = false;
-	netplayPlayers[1].index = 1;
-	//netplayPlayers[1].index = 1;
-
-	int currNetplayPlayerIndex = 1;
-	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-	{
-		if (!practicePlayers[i].isConnectedTo)
-			continue;
-
-		NetplayPlayer &np = netplayPlayers[0];
-		if (practicePlayers[i].isRaceHost)
-		{
-			np.index = 0;
-			np.id = practicePlayers[i].id;
-			np.name = practicePlayers[i].name;
-			np.isConnectedTo = true;
-			np.connection = practicePlayers[i].connection;
-			np.isHost = true;
-			break;
-		}
-
-		++currNetplayPlayerIndex;
-
-		if (currNetplayPlayerIndex == GGPO_MAX_PLAYERS) //can't let too many people in
-			break;
-	}
-
-	game->InitGGPO();
-	action = A_WAIT_FOR_GGPO_SYNC;
-}
-
-void NetplayManager::TrySignalPracticePlayersToRace()
-{
-	isRaceHost = true;
-
-	PracticeRaceStartMsg pm;
-	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
-	{
-		if (practicePlayers[i].isConnectedTo)
-		{
-			SendPracticeRaceStartMessageToPlayer(practicePlayers[i], pm);
-			break;
-		}
-	}
-}
-
-bool NetplayManager::TrySignalPracticePlayerToRace(PracticePlayer &pracPlayer)
-{
-	assert(pracPlayer.isConnectedTo);
-
-	PracticeRaceStartMsg pm;
-	bool res = SendPracticeRaceStartMessageToPlayer(pracPlayer, pm);
+	PracticeRaceStartRequestMsg pm;
+	bool res = SendPracticeRaceStartRequestMessageToPlayer(pracPlayer, pm);
 
 	if (res)
 	{
-		isRaceHost = true;
+		pracPlayer.isRaceHost = true;
+		return true;
+	}
+
+	return false;
+}
+
+bool NetplayManager::ConfirmPracticePlayerRace(PracticePlayer &pracPlayer)
+{
+	//assert(pracPlayer.isConnectedTo);
+
+	PracticeRaceStartConfirmMsg pm;
+	bool res = SendPracticeRaceStartConfirmMessageToPlayer(pracPlayer, pm);
+
+	if (res)
+	{
+		//pracPlayer.isRaceHost = true;
 		return true;
 	}
 
@@ -3554,14 +3494,14 @@ bool NetplayManager::TrySignalPracticePlayerToRace(PracticePlayer &pracPlayer)
 
 void NetplayManager::TestNewRaceSystem()
 {
-	if (isRaceHost)
+	/*if (IsPracticeRaceHost())
 	{
 		HostStartTestRace();
 	}
 	else
 	{
 		ClientStartTestRace();
-	}
+	}*/
 	
 
 	//game->quit = true;
@@ -3575,7 +3515,7 @@ bool NetplayManager::HasPracticePlayerStartedRace()
 
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
 	{
-		if (practicePlayers[i].isConnectedTo && practicePlayers[i].isRaceHost)
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].isRaceClient)
 		{
 			return true;
 		}
@@ -3610,7 +3550,6 @@ void NetplayManager::SetPracticeWantsToPlayStatus(bool p_wantsToPlay)
 {
 	bool oldWants = wantsToPracticeRace;
 
-	
 	wantsToPracticeRace = p_wantsToPlay;
 
 	if (oldWants != wantsToPracticeRace)
@@ -3626,7 +3565,105 @@ void NetplayManager::SetPracticeWantsToPlayStatus(bool p_wantsToPlay)
 	}
 }
 
+bool NetplayManager::IsPracticeRaceHost()
+{
+	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (practicePlayers[i].isConnectedTo && practicePlayers[i].isRaceClient )
+		{
+			return true;
+		}
+	}
 
+	return false;
+}
+
+bool NetplayManager::SetupNetplayPlayersFromPractice(bool host)
+{
+	bool foundClient = false;
+
+	if (host)
+	{
+		playerIndex = 0;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			netplayPlayers[i].Clear();
+		}
+
+		netplayPlayers[0].isMe = true;
+		netplayPlayers[0].isHost = true;
+		netplayPlayers[0].index = 0;
+
+		int currNetplayPlayerIndex = 1;
+		for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+		{
+			if (!practicePlayers[i].isConnectedTo)
+				continue;
+
+			//if (practicePlayers[i].wantsToPlay && practicePlayers[i].isRaceClient)
+			if (practicePlayers[i].isRaceClient)
+			{
+				NetplayPlayer &np = netplayPlayers[currNetplayPlayerIndex];
+				np.index = currNetplayPlayerIndex;
+				np.id = practicePlayers[i].id;
+				np.name = practicePlayers[i].name;
+				np.isConnectedTo = true;
+				np.connection = practicePlayers[i].connection;
+
+				++currNetplayPlayerIndex;
+
+				foundClient = true;
+				break;
+			}
+
+			if (currNetplayPlayerIndex == GGPO_MAX_PLAYERS) //can't let too many people in
+				break;
+		}
+	}
+	else
+	{
+		playerIndex = 1; //will change later for more players
+
+		for (int i = 0; i < 4; ++i)
+		{
+			netplayPlayers[i].Clear();
+		}
+
+		netplayPlayers[1].isMe = true;
+		netplayPlayers[1].isHost = false;
+		netplayPlayers[1].index = 1;
+		//netplayPlayers[1].index = 1;
+
+		int currNetplayPlayerIndex = 1;
+		for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
+		{
+			if (!practicePlayers[i].isConnectedTo)
+				continue;
+
+			NetplayPlayer &np = netplayPlayers[0];
+			if (practicePlayers[i].isRaceHost)
+			{
+				np.index = 0;
+				np.id = practicePlayers[i].id;
+				np.name = practicePlayers[i].name;
+				np.isConnectedTo = true;
+				np.connection = practicePlayers[i].connection;
+				np.isHost = true;
+
+				foundClient = true;
+				break;
+			}
+
+			++currNetplayPlayerIndex;
+
+			if (currNetplayPlayerIndex == GGPO_MAX_PLAYERS) //can't let too many people in
+				break;
+		}
+	}
+
+	return foundClient;
+}
 
 //void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)
 //{

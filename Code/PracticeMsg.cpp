@@ -114,13 +114,13 @@ void PracticeDoesntWantToPlayMsg::Clear()
 
 
 
-PracticeRaceStartMsg::PracticeRaceStartMsg()
-	:header( PracticeMsgHeader::MSG_TYPE_RACE_START)
+PracticeRaceStartRequestMsg::PracticeRaceStartRequestMsg()
+	:header( PracticeMsgHeader::MSG_TYPE_RACE_START_REQUEST)
 {
 	Clear();
 }
 
-void PracticeRaceStartMsg::Clear()
+void PracticeRaceStartRequestMsg::Clear()
 {
 	header.Clear();
 	for (int i = 0; i < 3; ++i)
@@ -128,3 +128,15 @@ void PracticeRaceStartMsg::Clear()
 		raceClients[i] = 0;
 	}
 }
+
+PracticeRaceStartConfirmMsg::PracticeRaceStartConfirmMsg()
+	:header(PracticeMsgHeader::MSG_TYPE_RACE_START_CONFIRM)
+{
+	Clear();
+}
+
+void PracticeRaceStartConfirmMsg::Clear()
+{
+	header.Clear();
+}
+

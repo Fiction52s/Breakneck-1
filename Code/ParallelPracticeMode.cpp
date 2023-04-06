@@ -75,9 +75,19 @@ bool ParallelPracticeMode::UpdateInviteDisplay(const ControllerState & curr, con
 	return practiceInviteDisplay->Update(curr, prev);
 }
 
+void ParallelPracticeMode::SetInviteDisplayPrepareToLeave()
+{
+	practiceInviteDisplay->PrepareToLeave();
+}
+
 void ParallelPracticeMode::DrawInviteDisplay(sf::RenderTarget *target)
 {
 	practiceInviteDisplay->Draw(target);
+}
+
+bool ParallelPracticeMode::IsInviteDisplayReadyToRun()
+{
+	return practiceInviteDisplay->action == PracticeInviteDisplay::A_RUN_GAME;
 }
 
 //bool ParallelPracticeMode::ClearUpdateFlags()

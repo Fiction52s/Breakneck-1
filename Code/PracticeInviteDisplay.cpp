@@ -33,7 +33,7 @@ void PracticePlayerDisp::Reset()
 	playerSkinShader.SetSkin(0);
 	SetName("");
 
-	SetName("MBJHAIHETHT");
+	//SetName("MBJHAIHETHT");
 }
 
 void PracticePlayerDisp::SetTopLeft(sf::Vector2f p_topLeft)
@@ -94,8 +94,10 @@ void PracticeUserBox::Reset()
 
 void PracticeUserBox::Update()
 {
+	UpdateBGQuad();
+
 	//testing
-	if (true)
+	/*if (true)
 	{
 		if (selected)
 		{
@@ -110,7 +112,7 @@ void PracticeUserBox::Update()
 
 	UpdateBGQuad();
 
-	++frame;
+	++frame;*/
 
 	if (action == A_EMPTY)
 		return;
@@ -120,6 +122,12 @@ void PracticeUserBox::Update()
 		SetAction(A_EMPTY);
 		return;
 	}
+
+	if (practicePlayer != NULL && practicePlayer->isRaceClient)
+	{
+		SetAction(A_RUNNING);
+	}
+
 
 	switch (action)
 	{
@@ -131,10 +139,18 @@ void PracticeUserBox::Update()
 		}
 		break;
 	}
+	/*case A_WAITING_FOR_CONFIRM:
+	{
+		if (practicePlayer->hasConfirmedRaceStart)
+		{
+			SetAction(A_RACE_CONFIRMED);
+		}
+		break;
+	}*/
 	}
 
-	//if (action == A_PLAYER_WANTS_TO_PLAY)
-	if( true )
+	if (action == A_PLAYER_WANTS_TO_PLAY)
+	//if( true )
 	{
 		if (selected)
 		{
@@ -264,17 +280,13 @@ void PracticeUserBox::InvitePlayer()
 	}
 }
 
-void PracticeUserBox::Confirm()
+void PracticeUserBox::RequestRace()
 {
-	//if (practicePlayer->hasInvitedMe && !practicePlayer->hasInvitedMeAndIAccepted )
-	//{
-	//	disp->sess->netplayManager->TryAcceptPracticePlayerInvite(*practicePlayer);
-	//}
-	//else if ( action == A_READY_TO_RUN )
-	//{
-	//	//practicePlayer->hasBeenInvited && practicePlayer->hasAcceptedInvite
-	//	action = A_RUNNING;
-	//}
+	if (disp->sess->netplayManager->RequestPracticePlayerToRace(*practicePlayer))
+	{
+		disp->sess->netplayManager->SetupNetplayPlayersFromPractice(false);
+	}
+	//SetAction(A_WAITING_FOR_CONFIRM);
 }
 
 void PracticeUserBox::SetSelected(bool sel)
@@ -292,14 +304,14 @@ void PracticeUserBox::Draw(sf::RenderTarget *target)
 	A_READY_TO_RUN,
 	A_RUNNING,*/
 
-	//if (!IsEmpty())
+	if (!IsEmpty())
 	{
 		target->draw( bgQuad, 4, sf::Quads);
 
 		playerDisp.Draw(target);
 
 		
-		//if (action == A_PLAYER_WANTS_TO_PLAY)
+		if (action == A_PLAYER_WANTS_TO_PLAY)
 		{
 			target->draw(raceButtonQuad, 4, sf::Quads, ts_raceButton->texture);
 		}
@@ -349,7 +361,7 @@ PracticeInviteDisplay::PracticeInviteDisplay()
 	hostNumMaxPlayers - 1;
 	hostPowerMode = -1;
 
-	action = A_IDLE;
+	SetAction(A_IDLE);
 }
 
 PracticeInviteDisplay::~PracticeInviteDisplay()
@@ -362,8 +374,15 @@ PracticeInviteDisplay::~PracticeInviteDisplay()
 
 void PracticeInviteDisplay::Reset()
 {
+	frame = 0;
 	Populate();
 	UpdateButtonIconsWhenControllerIsChanged();
+}
+
+void PracticeInviteDisplay::SetAction(int a)
+{
+	action = a;
+	frame = 0;
 }
 
 bool PracticeInviteDisplay::Update(const ControllerState & curr, const ControllerState &prev)
@@ -373,68 +392,30 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 		return false;
 	}
 
-	if (curr.start && !prev.start)
-	{
-		sess->netplayManager->SetPracticeWantsToPlayStatus(!sess->netplayManager->wantsToPracticeRace);
-	}
-
-
-	assert(sess->netplayManager != NULL);
-	if (sess->netplayManager->wantsToPracticeRace)
-	{
-		wantsToPlay = true;
-	}
-	else
-	{
-		wantsToPlay = false;
-	}
-
-	for (int i = 0; i < NUM_BOXES; ++i)
-	{
-		userBoxVec[i]->Update();
-	}
-
-	if (curr.PUp() && !prev.PUp())
-	{
-		return false;
-	}
-
 	if (action == A_SHOW_PLAYERS)
 	{
-		if (curr.B && !prev.B)
+		if (curr.start && !prev.start)
+		{
+			sess->netplayManager->SetPracticeWantsToPlayStatus(!sess->netplayManager->wantsToPracticeRace);
+		}
+
+		if (curr.PUp() && !prev.PUp())
 		{
 			return false;
 		}
-
-		
-	}
-	else if (action == A_HOST_SETUP)
-	{
-		if (curr.B && !prev.B)
-		{
-			action = A_SHOW_PLAYERS;
-		}
-	}
-	else if (action == A_HOSTING)
-	{
-		if (curr.B && !prev.B)
+		else if (curr.B && !prev.B)
 		{
 			return false;
 		}
-
-		/*if (curr.X && !prev.X)
+		else if (curr.A && !prev.A)
 		{
-			if (!boxVec[selectedIndex]->IsEmpty())
+			if (!userBoxVec[selectedIndex]->IsEmpty() && userBoxVec[selectedIndex]->practicePlayer->wantsToPlay)
 			{
-				boxVec[selectedIndex]->InvitePlayer();
+				userBoxVec[selectedIndex]->RequestRace();
+				SetAction(A_PREPARING_TO_LEAVE);
 			}
-		}*/
-	}
-
-
-	if (action != A_IDLE)
-	{
-		if (curr.LUp() && !prev.LUp())
+		}
+		else if (curr.LUp() && !prev.LUp())
 		{
 			userBoxVec[selectedIndex]->SetSelected(false);
 
@@ -459,22 +440,69 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 			userBoxVec[selectedIndex]->SetSelected(true);
 		}
 
-
-		
-		/*if (curr.A && !prev.A)
+		for (int i = 0; i < NUM_BOXES; ++i)
 		{
-			if (!boxVec[selectedIndex]->IsEmpty())
+			userBoxVec[i]->Update();
+		}
+
+		for (int i = 0; i < NUM_BOXES; ++i)
+		{
+			if (userBoxVec[i]->action == PracticeUserBox::A_RUNNING)
 			{
-				boxVec[selectedIndex]->Confirm();
+				sess->netplayManager->SetupNetplayPlayersFromPractice(true);
+				//sess->netplayManager->ConfirmPracticePlayerRace(*(userBoxVec[i]->practicePlayer));
+				SetAction(A_PREPARING_TO_LEAVE);
+				break;
 			}
-		}*/
+		}
+
+		assert(sess->netplayManager != NULL);
+		if (sess->netplayManager->wantsToPracticeRace)
+		{
+			wantsToPlay = true;
+		}
+		else
+		{
+			wantsToPlay = false;
+		}
+	}
+	/*else if (action == A_REQUESTING_TO_RACE)
+	{
+		for (int i = 0; i < NUM_BOXES; ++i)
+		{
+			userBoxVec[i]->Update();
+		}
+
+		for (int i = 0; i < NUM_BOXES; ++i)
+		{
+			if (userBoxVec[i]->action == PracticeUserBox::A_RACE_CONFIRMED)
+			{
+				SetAction(A_PREPARING_TO_LEAVE);
+				break;
+			}
+		}
+	}*/
+	else if (action == A_PREPARING_TO_LEAVE)
+	{
+		if (frame == 120)
+		{
+			SetAction(A_RUN_GAME);
+		}
 	}
 
+	++frame;
 	return true;
+}
+
+void PracticeInviteDisplay::PrepareToLeave()
+{
+	SetAction(A_PREPARING_TO_LEAVE);
 }
 
 bool PracticeInviteDisplay::IsTryingToStartMatch()
 {
+	if (action == A_RUN_GAME)
+		return true;
 	//if (boxVec[selectedIndex]->action == InvitePlayerBox::A_RUNNING)
 	//	return true;
 
@@ -502,14 +530,7 @@ void PracticeInviteDisplay::Populate()
 		}
 	}
 
-	if (isHosting)
-	{
-		action = A_HOSTING;
-	}
-	else
-	{
-		action = A_SHOW_PLAYERS;
-	}
+	action = A_SHOW_PLAYERS;
 }
 
 void PracticeInviteDisplay::SetTopLeft(sf::Vector2f & p_topLeft)
@@ -566,22 +587,29 @@ void PracticeInviteDisplay::SetTopCenter(sf::Vector2f pos)
 
 void PracticeInviteDisplay::Draw(sf::RenderTarget *target)
 {
-	for (int i = 0; i < NUM_BOXES; ++i)
+	if ( action == A_PREPARING_TO_LEAVE || action == A_RUN_GAME ) //action == A_REQUESTING_TO_RACE || 
 	{
-		userBoxVec[i]->Draw(target);
-	}
-
-	target->draw(startHostingQuad, 4, sf::Quads);
-
-	if (wantsToPlay)
-	{
-		target->draw(availableText);
+		target->draw(startHostingQuad, 4, sf::Quads);
 	}
 	else
 	{
-		target->draw(unavailableText);
-	}
-	
+		for (int i = 0; i < NUM_BOXES; ++i)
+		{
+			userBoxVec[i]->Draw(target);
+		}
 
-	target->draw(buttonQuads, 2 * 4, sf::Quads, ts_buttons->texture);
+		target->draw(startHostingQuad, 4, sf::Quads);
+
+		if (wantsToPlay)
+		{
+			target->draw(availableText);
+		}
+		else
+		{
+			target->draw(unavailableText);
+		}
+
+
+		target->draw(buttonQuads, 2 * 4, sf::Quads, ts_buttons->texture);
+	}
 }

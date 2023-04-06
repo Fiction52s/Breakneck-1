@@ -50,7 +50,7 @@ struct PracticePlayer
 	bool isRaceHost;
 
 	bool isRaceClient;
-	
+	bool hasConfirmedRaceStart;
 
 	bool readyToBeSentMessages;
 
@@ -242,8 +242,6 @@ struct NetplayManager
 
 	bool isQuickplay;
 
-	bool isRaceHost;
-
 	bool wantsToPracticeRace;
 
 	MatchParams matchParams;
@@ -280,6 +278,8 @@ struct NetplayManager
 	int GetPracticeConnectionIndex(HSteamNetConnection &con);
 	void SetHost();
 	bool IsConnectedToHost();
+
+	
 	
 	void HostLoadNextQuickplayMap();
 
@@ -408,13 +408,12 @@ struct NetplayManager
 	void PracticeConnect();
 	void SetPracticePlayersToNeedStartMessage();
 
-	void HostStartTestRace();
-	void ClientStartTestRace();
-	void TrySignalPracticePlayersToRace();
+	
 
-	bool TrySignalPracticePlayerToRace(PracticePlayer &pracPlayer);
+	bool SendPracticeRaceStartRequestMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartRequestMsg &pm);
+	bool SendPracticeRaceStartConfirmMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartConfirmMsg &pm);
 
-	bool SendPracticeRaceStartMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartMsg &pm);
+	
 
 	bool SendPracticeWantsToPlayMessageToPlayer(PracticePlayer &pracPlayer );
 
@@ -429,6 +428,15 @@ struct NetplayManager
 	void SignalPracticePeersIDontWantToPlay();
 
 	void SetPracticeWantsToPlayStatus(bool p_wantsToPlay);
+
+	bool IsPracticeRaceHost();
+
+	bool RequestPracticePlayerToRace(PracticePlayer &pracPlayer);
+	bool ConfirmPracticePlayerRace(PracticePlayer &pracPlayer);
+
+	bool SetupNetplayPlayersFromPractice(bool host);
+
+	void StartTestRace();
 };
 
 #endif

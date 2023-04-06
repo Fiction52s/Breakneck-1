@@ -558,5 +558,6 @@ struct GameSession : RayCastHandler, Session
 	void SetMatchParams(MatchParams &mp);
 	void UpdateMatchParams(MatchParams &mp);
 	void StartRaceFromPractice();
+	//void StartPracticeInviteMode();
 };
 #endif

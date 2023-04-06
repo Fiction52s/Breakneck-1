@@ -2422,16 +2422,18 @@ void MainMenu::HandleMenuMode()
 			netplayManager->matchParams.controllerStateVec = oldParams.controllerStateVec;
 			netplayManager->matchParams.controlProfiles = oldParams.controlProfiles;		
 
-			int numOtherPlayers = 0;
-			for (int i = 0; i < NetplayManager::MAX_PRACTICE_PLAYERS; ++i)
-			{
-				if (netplayManager->practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
-				{
-					++numOtherPlayers;
-				}
-			}
+			
 
-			netplayManager->numPlayers = numOtherPlayers + 1; //+1 is me
+			//int numOtherPlayers = 0;
+			//for (int i = 0; i < NetplayManager::MAX_PRACTICE_PLAYERS; ++i)
+			//{
+			//	if (netplayManager->practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
+			//	{
+			//		++numOtherPlayers;
+			//	}
+			//}
+
+			netplayManager->numPlayers = 2;//numOtherPlayers + 1; //+1 is me
 
 			netplayManager->matchParams.numPlayers = netplayManager->numPlayers; //always keep this synced up with numPlayers
 
@@ -2443,7 +2445,8 @@ void MainMenu::HandleMenuMode()
 
 			currLevel = NULL;
 
-			netplayManager->TestNewRaceSystem();
+			//needs to wait until after game is assigned to work
+			netplayManager->StartTestRace();
 
 			SetMode(QUICKPLAY_PRE_MATCH);
 			customMatchManager->StartQuickplayPreMatchScreen();

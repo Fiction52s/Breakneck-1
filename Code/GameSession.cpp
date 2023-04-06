@@ -213,6 +213,16 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 	return false;
 }
 
+//void GameSession::StartPracticeInviteMode()
+//{
+//	gameState = PRACTICE_INVITE;
+//
+//	ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+//	ppm->ResetInviteDisplay();
+//
+//	soundNodeList->Pause(true);
+//}
+
 void GameSession::UpdateEnvPlants()
 {
 	Actor *p0 = GetPlayer(0);
@@ -657,13 +667,23 @@ bool GameSession::RunPreUpdate()
 
 	UpdateDebugModifiers();
 
+	//if you get a message to play but you're not in the menu already
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
 	{
-		ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+		if (netplayManager->HasPracticePlayerStartedRace())
+		{
+			gameState = PRACTICE_INVITE;
+
+			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+			ppm->SetInviteDisplayPrepareToLeave();
+
+			soundNodeList->Pause(true);
+		}
+		/*ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
 		if (ppm->practiceInviteDisplay->IsTryingToStartMatch())
 		{
 			StartRaceFromPractice();
-		}
+		}*/
 	}
 
 	/*if (goalDestroyed)
@@ -2412,17 +2432,17 @@ bool GameSession::RunMainLoopOnce()
 		return true;
 	}
 
-	if (netplayManager != NULL && netplayManager->IsPracticeMode())
-	{
-		if (netplayManager->HasPracticePlayerStartedRace())
-		{
-			cout << "quitting because someone is hosting a race\n";
-			quit = true;
-			returnVal = GR_EXIT_PRACTICE_TO_RACE;
-			return true;
-			//mainMenu->musicPlayer->StopCurrentMusic();
-		}
-	}
+	//if (netplayManager != NULL && netplayManager->IsPracticeMode())
+	//{
+	//	if (netplayManager->HasPracticePlayerStartedRace())
+	//	{
+	//		cout << "quitting because someone is hosting a race\n";
+	//		quit = true;
+	//		returnVal = GR_EXIT_PRACTICE_TO_RACE;
+	//		return true;
+	//		//mainMenu->musicPlayer->StopCurrentMusic();
+	//	}
+	//}
 
 	//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 	//{
@@ -3063,22 +3083,16 @@ bool GameSession::RunMainLoopOnce()
 			ControllerState &curr = GetCurrInputFiltered(0);
 			ControllerState &prev = GetPrevInputFiltered(0);
 
-			
-
-			//if (owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
-			//{
-			//	if (currInput.PUp() && !prevInput.PUp())
-			//	{
-			//		cout << "trying to signal practice players to race" << "\n";
-
-			//		sess->netplayManager->TrySignalPracticePlayersToRace();
-			//		//sess->netplayManager->TestNewRaceSystem();
-			//		owner->quit = true;
-			//		owner->returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
-			//	}
-			//}
-
 			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+
+			if (ppm->IsInviteDisplayReadyToRun())
+			{
+				cout << "quitting because invite display is ready to run\n";
+				quit = true;
+				returnVal = GR_EXIT_PRACTICE_TO_RACE;
+				return true;
+			}
+			
 			bool result = ppm->UpdateInviteDisplay(curr, prev);
 
 			if (!result)
@@ -3100,6 +3114,7 @@ bool GameSession::RunMainLoopOnce()
 				psm.skinIndex = GetPlayerNormalSkin(0);
 				psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
 				psm.startFrame = totalGameFrames;
+				psm.wantsToPlay = netplayManager->wantsToPracticeRace;
 				netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 
 				netplayManager->Update();
@@ -5422,8 +5437,8 @@ void GameSession::StartRaceFromPractice()
 
 	PracticePlayer &pp = netplayManager->practicePlayers[ppm->practiceInviteDisplay->selectedIndex];
 
-	netplayManager->TrySignalPracticePlayerToRace(pp);
-	netplayManager->TestNewRaceSystem();
+	//netplayManager->TrySignalPracticePlayerToRace(pp);
+	//netplayManager->TestNewRaceSystem();
 	quit = true;
 	returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
 }

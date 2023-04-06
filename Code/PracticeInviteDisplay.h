@@ -36,6 +36,8 @@ struct PracticeUserBox
 		A_EMPTY,
 		A_HAS_PLAYER,
 		A_PLAYER_WANTS_TO_PLAY,
+		//A_WAITING_FOR_CONFIRM,
+		//A_RACE_CONFIRMED,
 		A_RUNNING,
 	};
 
@@ -67,7 +69,7 @@ struct PracticeUserBox
 	void Draw(sf::RenderTarget *target);
 	void SetSelected(bool sel);
 	void InvitePlayer();
-	void Confirm();
+	void RequestRace();
 	void Update();
 	void SetAction(int a);
 };
@@ -78,8 +80,9 @@ struct PracticeInviteDisplay
 	{
 		A_IDLE,
 		A_SHOW_PLAYERS,
-		A_HOST_SETUP,
-		A_HOSTING,
+		//A_REQUESTING_TO_RACE,
+		A_PREPARING_TO_LEAVE,
+		A_RUN_GAME,
 	};
 
 
@@ -113,12 +116,16 @@ struct PracticeInviteDisplay
 	int hostNumMaxPlayers;
 	int hostPowerMode;
 
+	int frame;
+
 	
 
 	PracticeInviteDisplay();
 	~PracticeInviteDisplay();
 	void Reset();
+	void SetAction(int a);
 	bool Update(const ControllerState & curr, const ControllerState &prev);
+	void PrepareToLeave();
 	void UpdateButtonIconsWhenControllerIsChanged();
 
 	void Populate();
