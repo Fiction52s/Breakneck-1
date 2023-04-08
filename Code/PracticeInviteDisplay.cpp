@@ -68,6 +68,10 @@ void PracticePlayerDisp::Draw(sf::RenderTarget *target)
 }
 
 
+
+
+
+
 PracticeUserBox::PracticeUserBox(PracticeInviteDisplay *p_disp)
 	:playerDisp( p_disp )
 {
@@ -123,9 +127,16 @@ void PracticeUserBox::Update()
 		return;
 	}
 
-	if (practicePlayer != NULL && practicePlayer->isRaceClient)
+	if (practicePlayer != NULL )
 	{
-		SetAction(A_RUNNING);
+		if (disp->sess->netplayManager->receivedPracticeRaceStartRequestIndex == practicePlayer->practicePlayerIndex)
+		{
+			SetAction(A_RUNNING);
+		}
+		else if (action == A_RUNNING)
+		{
+			SetAction(A_HAS_PLAYER);
+		}
 	}
 
 
@@ -282,7 +293,7 @@ void PracticeUserBox::InvitePlayer()
 
 void PracticeUserBox::RequestRace()
 {
-	if (disp->sess->netplayManager->RequestPracticePlayerToRace(*practicePlayer))
+	if (disp->sess->netplayManager->SendRequestPracticePlayerToRace(*practicePlayer))
 	{
 		disp->sess->netplayManager->SetupNetplayPlayersFromPractice(false);
 	}
@@ -318,9 +329,190 @@ void PracticeUserBox::Draw(sf::RenderTarget *target)
 	}
 }
 
+
+
+
+
+
+PracticeRaceCountdownBox::PracticeRaceCountdownBox(PracticeInviteDisplay *p_disp)
+{
+	disp = p_disp;
+	totalFrames = 300;
+
+	defaultSize.x = 300;
+	defaultSize.y = 300;
+	size = defaultSize;
+
+	action = A_ACTIVE;
+
+	matchTitleText.setFont(disp->sess->mainMenu->arial);
+	matchTitleText.setFillColor(Color::White);
+	matchTitleText.setCharacterSize(24);
+
+	timerText.setFont(disp->sess->mainMenu->arial);
+	timerText.setFillColor(Color::White);
+	timerText.setCharacterSize(64);
+
+	cancelText.setFont(disp->sess->mainMenu->arial);
+	cancelText.setFillColor(Color::White);
+	cancelText.setCharacterSize(40);
+	cancelText.setString("CANCEL");
+
+	SetRectColor(bgQuad, Color(100, 100, 100, 200));
+
+	SetCenter(Vector2f(960, 540- 200));
+}
+
+void PracticeRaceCountdownBox::Activate(int mode, const std::string &oppName)
+{
+	framesRemaining = totalFrames;
+
+	action = A_ACTIVE;
+
+	string modeStr;
+	switch (mode)
+	{
+	case MatchParams::GAME_MODE_PARALLEL_RACE:
+	{
+		modeStr = "Speedrun race";
+		break;
+	}
+	default:
+	{
+		modeStr = "mode not set";
+		break;
+	}
+	}
+
+	matchTitleText.setString(modeStr + " with\n" + oppName + " starting in...");
+
+	UpdateButtonIconsWhenControllerIsChanged();
+
+	if (matchTitleText.getGlobalBounds().width > defaultSize.x)
+	{
+		size.x = matchTitleText.getGlobalBounds().width + 20;
+	}
+	else
+	{
+		size.x = defaultSize.x;
+	}
+
+	SetCenter(Vector2f(960, 540 - 200));
+}
+
+bool PracticeRaceCountdownBox::IsCancelledByMe()
+{
+	return action == A_CANCELLED_BY_ME;
+}
+
+bool PracticeRaceCountdownBox::IsCancelledByOpponent()
+{
+	return action == A_CANCELLED_BY_OPPONENT;
+}
+
+bool PracticeRaceCountdownBox::IsReadyToStart()
+{
+	return action == A_READY_TO_START;
+}
+
+void PracticeRaceCountdownBox::SetTopLeft(Vector2f p_topLeft)
+{
+	topLeft = p_topLeft;
+
+	SetRectTopLeft(bgQuad, size.x, size.y, topLeft);
+
+	matchTitleText.setPosition(topLeft + Vector2f( 10, 5 ));
+
+	Vector2f center = topLeft + size / 2.f;
+	timerText.setPosition(center);
+
+	float xCenter = topLeft.x + size.x / 2.f;
+	float buttonSize = 48;
+	float textWidth = cancelText.getGlobalBounds().width;
+	float spacing = 10;
+	float textAndButtonWidth = buttonSize + textWidth + spacing;
+
+	Vector2f cancelButtonPos = Vector2f(xCenter - textAndButtonWidth / 2.f, topLeft.y + size.y - 70);
+	SetRectTopLeft(buttonQuads, buttonSize, buttonSize, cancelButtonPos);
+
+	cancelText.setPosition(Vector2f(cancelButtonPos.x + buttonSize + spacing, cancelButtonPos.y));
+}
+
+void PracticeRaceCountdownBox::SetCenter(Vector2f p_center)
+{
+	SetTopLeft(p_center - size / 2.f);
+}
+
+void PracticeRaceCountdownBox::UpdateButtonIconsWhenControllerIsChanged()
+{
+	MainMenu *mainMenu = MainMenu::GetInstance();
+
+	int cType = disp->sess->controllerStates[0]->GetControllerType();
+
+	auto button = XBoxButton::XBOX_B;
+	SetRectSubRect(buttonQuads, mainMenu->GetButtonIconTileForMenu(cType, button));
+
+	//button = XBoxButton::XBOX_A;
+	//SetRectSubRect(buttonQuads + 4, mainMenu->GetButtonIconTileForMenu(cType, button));
+}
+
+void PracticeRaceCountdownBox::Update(const ControllerState & curr, const ControllerState &prev)
+{
+	if (action != A_ACTIVE)
+	{
+		return;
+	}
+
+	int oppIndex = disp->sess->netplayManager->GetPracticeRaceOpponentPracticeIndex();
+	if (oppIndex == -1)
+	{
+		action = A_CANCELLED_BY_OPPONENT;
+	}
+
+	if (framesRemaining == 0)
+	{
+		//framesRemaining = totalFrames;
+		action = A_READY_TO_START;
+	}
+	else if (curr.B && !prev.B)
+	{
+		action = A_CANCELLED_BY_ME;
+	}
+	else
+	{
+		int remainingSecs = ceil(framesRemaining / 60.f);
+
+		timerText.setString(to_string(remainingSecs));
+		auto lb = timerText.getLocalBounds();
+		timerText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+
+		--framesRemaining;
+	}
+}
+
+void PracticeRaceCountdownBox::Draw(sf::RenderTarget *target)
+{
+	target->draw(bgQuad, 4, sf::Quads);
+
+	target->draw(matchTitleText);
+
+	target->draw(timerText);
+	
+	target->draw(buttonQuads, 4, sf::Quads, disp->ts_buttons->texture);
+	target->draw(cancelText);
+}
+
+
+
+
+
+
 PracticeInviteDisplay::PracticeInviteDisplay()
 {
 	sess = Session::GetSession();
+
+	
+
 
 	userBoxVec.resize(NUM_BOXES);
 
@@ -361,6 +553,8 @@ PracticeInviteDisplay::PracticeInviteDisplay()
 	hostNumMaxPlayers - 1;
 	hostPowerMode = -1;
 
+	countdownBox = new PracticeRaceCountdownBox(this);
+
 	SetAction(A_IDLE);
 }
 
@@ -370,6 +564,8 @@ PracticeInviteDisplay::~PracticeInviteDisplay()
 	{
 		delete userBoxVec[i];
 	}
+
+	delete countdownBox;
 }
 
 void PracticeInviteDisplay::Reset()
@@ -389,11 +585,15 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 {
 	if (action == A_IDLE)
 	{
+		//doesn't happen
 		return false;
 	}
 
 	if (action == A_SHOW_PLAYERS)
 	{
+		//PrepareToLeave();
+		//return true;
+
 		if (curr.start && !prev.start)
 		{
 			sess->netplayManager->SetPracticeWantsToPlayStatus(!sess->netplayManager->wantsToPracticeRace);
@@ -412,7 +612,8 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 			if (!userBoxVec[selectedIndex]->IsEmpty() && userBoxVec[selectedIndex]->practicePlayer->wantsToPlay)
 			{
 				userBoxVec[selectedIndex]->RequestRace();
-				SetAction(A_PREPARING_TO_LEAVE);
+				opponentIndex = selectedIndex;
+				PrepareToLeave();
 			}
 		}
 		else if (curr.LUp() && !prev.LUp())
@@ -449,9 +650,10 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 		{
 			if (userBoxVec[i]->action == PracticeUserBox::A_RUNNING)
 			{
+				opponentIndex = i;
 				sess->netplayManager->SetupNetplayPlayersFromPractice(true);
 				//sess->netplayManager->ConfirmPracticePlayerRace(*(userBoxVec[i]->practicePlayer));
-				SetAction(A_PREPARING_TO_LEAVE);
+				PrepareToLeave();
 				break;
 			}
 		}
@@ -484,7 +686,19 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 	}*/
 	else if (action == A_PREPARING_TO_LEAVE)
 	{
-		if (frame == 120)
+		countdownBox->Update( curr, prev );
+
+		if (countdownBox->IsCancelledByMe())
+		{
+			sess->netplayManager->SendCancelPracticePlayerRace();
+			SetAction(A_SHOW_PLAYERS);
+		}
+		else if (countdownBox->IsCancelledByOpponent())
+		{
+			//can also occur if you get disconnected
+			SetAction(A_SHOW_PLAYERS);
+		}
+		else if (countdownBox->IsReadyToStart())
 		{
 			SetAction(A_RUN_GAME);
 		}
@@ -497,6 +711,18 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 void PracticeInviteDisplay::PrepareToLeave()
 {
 	SetAction(A_PREPARING_TO_LEAVE);
+
+
+	int ind = sess->netplayManager->GetPracticeRaceOpponentPracticeIndex();//receivedPracticeRaceStartRequestIndex;
+	assert( ind >= 0);
+
+	PracticePlayer &pracPlayer = sess->netplayManager->practicePlayers[ind];
+
+	assert(pracPlayer.isConnectedTo);
+
+	countdownBox->Activate(MatchParams::GAME_MODE_PARALLEL_RACE, pracPlayer.name);
+	
+	//countdownBox->Activate( MatchParams::GAME_MODE_PARALLEL_RACE, "WWWWWWWWWWWWWWWWWWWW");
 }
 
 bool PracticeInviteDisplay::IsTryingToStartMatch()
@@ -589,7 +815,8 @@ void PracticeInviteDisplay::Draw(sf::RenderTarget *target)
 {
 	if ( action == A_PREPARING_TO_LEAVE || action == A_RUN_GAME ) //action == A_REQUESTING_TO_RACE || 
 	{
-		target->draw(startHostingQuad, 4, sf::Quads);
+		countdownBox->Draw(target);
+		//target->draw(startHostingQuad, 4, sf::Quads);
 	}
 	else
 	{

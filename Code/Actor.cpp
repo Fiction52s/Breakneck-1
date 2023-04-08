@@ -4625,6 +4625,29 @@ void Actor::Respawn( bool setStartPos )
 			nameTag->SetName(pName);
 			nameTag->SetActive(true);
 		}
+		else if( sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && sess->netplayManager != NULL )
+		{
+			int trueIndex = -1;
+			int parIndex = sess->parallelSessionIndex;
+			int playerIndex = sess->netplayManager->playerIndex;
+		
+			if (parIndex == -1)
+			{
+				trueIndex = playerIndex;
+			}
+			else if( parIndex < playerIndex)
+			{
+				trueIndex = parIndex;
+			}
+			else
+			{
+				trueIndex = parIndex + 1;
+			}
+
+			string pName = sess->netplayManager->netplayPlayers[trueIndex].name;
+			nameTag->SetName(pName);
+			nameTag->SetActive(true);
+		}
 		else
 		{
 			nameTag->SetActive(false);

@@ -8626,16 +8626,6 @@ void Session::DrawNameTags(sf::RenderTarget *target)
 		(*it)->DrawGhostNameTags(target);
 	}
 
-	Actor *p;
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->DrawNameTag(target);
-		}
-	}
-
 	if (IsParallelGameModeType() && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
@@ -8649,6 +8639,16 @@ void Session::DrawNameTags(sf::RenderTarget *target)
 					pm->parallelGames[i]->DrawNameTags(target);
 				}
 			}
+		}
+	}
+
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawNameTag(target);
 		}
 	}
 }
@@ -9221,6 +9221,27 @@ int Session::GetPlayerNormalSkin(int index)
 		{
 			assert(netplayManager != NULL);
 			return netplayManager->practicePlayers[parallelSessionIndex].skinIndex;
+		}
+		else if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && netplayManager != NULL )
+		{
+			int trueIndex = -1;
+			int parIndex = parallelSessionIndex;
+			int playerIndex = netplayManager->playerIndex;
+
+			if (parIndex == -1)
+			{
+				trueIndex = playerIndex;
+			}
+			else if (parIndex < playerIndex)
+			{
+				trueIndex = parIndex;
+			}
+			else
+			{
+				trueIndex = parIndex + 1;
+			}
+
+			return matchParams.playerSkins[trueIndex];
 		}
 
 		return matchParams.playerSkins[index];

@@ -74,6 +74,43 @@ struct PracticeUserBox
 	void SetAction(int a);
 };
 
+struct PracticeRaceCountdownBox
+{
+	enum Action
+	{
+		A_ACTIVE,
+		A_CANCELLED_BY_ME,
+		A_CANCELLED_BY_OPPONENT,
+		A_READY_TO_START,
+	};
+
+	int action;
+	int totalFrames;
+	int framesRemaining;
+	sf::Vertex bgQuad[4];
+	sf::Text timerText;
+	PracticeInviteDisplay *disp;
+	sf::Vector2f topLeft;
+	sf::Vector2f size;
+	sf::Vector2f defaultSize;
+	sf::Text matchTitleText;
+
+	sf::Text cancelText;
+
+	sf::Vertex buttonQuads[4];
+
+	PracticeRaceCountdownBox(PracticeInviteDisplay *p_disp);
+	void Activate( int mode, const std::string &oppName );
+	bool IsCancelledByMe();
+	bool IsCancelledByOpponent();
+	bool IsReadyToStart();
+	void UpdateButtonIconsWhenControllerIsChanged();
+	void SetTopLeft(sf::Vector2f p_topLeft);
+	void SetCenter(sf::Vector2f p_center);
+	void Update(const ControllerState & curr, const ControllerState &prev);
+	void Draw(sf::RenderTarget *target);
+};
+
 struct PracticeInviteDisplay
 {
 	enum Action
@@ -87,6 +124,8 @@ struct PracticeInviteDisplay
 
 
 	const static int NUM_BOXES = 3;
+
+	PracticeRaceCountdownBox *countdownBox;
 
 	int action;
 	Session *sess;
@@ -117,6 +156,8 @@ struct PracticeInviteDisplay
 	int hostPowerMode;
 
 	int frame;
+
+	int opponentIndex;
 
 	
 

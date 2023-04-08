@@ -129,13 +129,13 @@ void PracticeRaceStartRequestMsg::Clear()
 	}
 }
 
-PracticeRaceStartConfirmMsg::PracticeRaceStartConfirmMsg()
-	:header(PracticeMsgHeader::MSG_TYPE_RACE_START_CONFIRM)
+PracticeRaceCancelMsg::PracticeRaceCancelMsg()
+	:header(PracticeMsgHeader::MSG_TYPE_RACE_CANCEL)
 {
 	Clear();
 }
 
-void PracticeRaceStartConfirmMsg::Clear()
+void PracticeRaceCancelMsg::Clear()
 {
 	header.Clear();
 }

@@ -18,7 +18,7 @@ struct PracticeMsgHeader
 		MSG_TYPE_WANTS_TO_PLAY,
 		MSG_TYPE_DOESNT_WANT_TO_PLAY,
 		MSG_TYPE_RACE_START_REQUEST,
-		MSG_TYPE_RACE_START_CONFIRM,
+		MSG_TYPE_RACE_CANCEL,
 		MSG_TYPE_Count,
 	};
 
@@ -99,11 +99,13 @@ struct PracticeRaceStartRequestMsg
 	void Clear();
 };
 
-struct PracticeRaceStartConfirmMsg
+
+
+struct PracticeRaceCancelMsg
 {
 	PracticeMsgHeader header;
 
-	PracticeRaceStartConfirmMsg();
+	PracticeRaceCancelMsg();
 	void Clear();
 };
 

@@ -2418,20 +2418,11 @@ void MainMenu::HandleMenuMode()
 			netplayManager->matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
 			netplayManager->matchParams.randSeed = oldParams.randSeed;
 
-			netplayManager->matchParams.playerSkins = oldParams.playerSkins;
+			netplayManager->matchParams.playerSkins[0] = netplayManager->netplayPlayers[0].skinIndex; //= oldParams.playerSkins;
+			netplayManager->matchParams.playerSkins[1] = netplayManager->netplayPlayers[1].skinIndex; //= oldParams.playerSkins;
+
 			netplayManager->matchParams.controllerStateVec = oldParams.controllerStateVec;
-			netplayManager->matchParams.controlProfiles = oldParams.controlProfiles;		
-
-			
-
-			//int numOtherPlayers = 0;
-			//for (int i = 0; i < NetplayManager::MAX_PRACTICE_PLAYERS; ++i)
-			//{
-			//	if (netplayManager->practicePlayers[i].isConnectedTo)//&& practicePlayers[i].isReadyToRace)
-			//	{
-			//		++numOtherPlayers;
-			//	}
-			//}
+			netplayManager->matchParams.controlProfiles = oldParams.controlProfiles;
 
 			netplayManager->numPlayers = 2;//numOtherPlayers + 1; //+1 is me
 

@@ -166,7 +166,25 @@ void QuickplayPreMatchScreen::SetToNetplayMatchParams()
 
 		mapHeader->Load(is);
 
-		modeText.setString("FIGHT"); //implement tomorrow //netplayManager->matchParams.gameModeType);
+		string modeStr;
+		switch (netplayManager->matchParams.gameModeType)
+		{
+		case MatchParams::GAME_MODE_FIGHT:
+			modeStr = "FIGHT";
+			break;
+		case MatchParams::GAME_MODE_PARALLEL_RACE:
+		{
+			modeStr = "SPEEDRUN RACE";
+			break;
+		}
+		default:
+		{
+			modeStr = "Mode not set";
+			break;
+		}
+		}
+
+		modeText.setString(modeStr); //implement tomorrow //netplayManager->matchParams.gameModeType);
 		auto lbModeText = modeText.getLocalBounds();
 		modeText.setOrigin(lbModeText.left + lbModeText.width / 2, 0);
 

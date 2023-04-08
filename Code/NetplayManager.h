@@ -46,11 +46,7 @@ struct PracticePlayer
 		A_RUNNING,
 	};
 
-	bool isReadyToJoinRace;
-	bool isRaceHost;
-
-	bool isRaceClient;
-	bool hasConfirmedRaceStart;
+	bool hasCancelledRace;
 
 	bool readyToBeSentMessages;
 
@@ -192,6 +188,11 @@ struct NetplayManager
 
 	const static int MAX_PRACTICE_PLAYERS = 3;
 
+	int receivedPracticeRaceStartRequestIndex;
+	int sentPracticeRaceStartRequestIndex;
+
+
+
 	//sf::Uint64 practicePeersToRaceList;
 
 	ControllerDualStateQueue *myControllerInput;
@@ -211,6 +212,8 @@ struct NetplayManager
 	bool receivedMap;
 	bool receivedPreview;
 	bool receivedPostOptionsSignal;
+
+	int myPracticeSkinIndex;
 
 	int postMatchOptionReceived;
 
@@ -411,7 +414,7 @@ struct NetplayManager
 	
 
 	bool SendPracticeRaceStartRequestMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartRequestMsg &pm);
-	bool SendPracticeRaceStartConfirmMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartConfirmMsg &pm);
+	bool SendPracticeRaceCancelMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceCancelMsg &pm);
 
 	
 
@@ -421,7 +424,7 @@ struct NetplayManager
 
 	void TestNewRaceSystem();
 
-	bool HasPracticePlayerStartedRace();
+	bool HasBeenInvitedToPracticeRace();
 
 	void SignalPracticePeersIWantToPlay();
 
@@ -431,12 +434,16 @@ struct NetplayManager
 
 	bool IsPracticeRaceHost();
 
-	bool RequestPracticePlayerToRace(PracticePlayer &pracPlayer);
-	bool ConfirmPracticePlayerRace(PracticePlayer &pracPlayer);
+	bool SendRequestPracticePlayerToRace(PracticePlayer &pracPlayer);
+	bool SendCancelPracticePlayerRace();
 
 	bool SetupNetplayPlayersFromPractice(bool host);
 
 	void StartTestRace();
+
+	int GetPracticeRaceOpponentPracticeIndex();
+
+	void ClearPracticeRaceOpponent();
 };
 
 #endif

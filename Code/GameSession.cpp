@@ -670,7 +670,7 @@ bool GameSession::RunPreUpdate()
 	//if you get a message to play but you're not in the menu already
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
 	{
-		if (netplayManager->HasPracticePlayerStartedRace())
+		if (netplayManager->HasBeenInvitedToPracticeRace())
 		{
 			gameState = PRACTICE_INVITE;
 
