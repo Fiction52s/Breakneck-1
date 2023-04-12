@@ -3330,6 +3330,14 @@ int GameSession::Run()
 
 	RestartLevel();
 
+	if (IsParallelGameModeType())
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->RestartParallelSessions();
+		//trying to restart parallel races
+		cout << "restarting parallel sessions" << "\n";
+	}
+
 	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
 
 	if (ggpoNetplay) //testing!

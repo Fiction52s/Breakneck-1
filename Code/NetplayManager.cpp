@@ -1494,6 +1494,7 @@ void NetplayManager::ReceiveMessages()
 							}
 							else
 							{
+								cout << "accepting race request from index: " << i << "\n";
 								receivedPracticeRaceStartRequestIndex = i;
 								SendPracticePlayerRaceStartResponse(practicePlayers[i], true);
 							}

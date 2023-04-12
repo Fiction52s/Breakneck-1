@@ -40,14 +40,6 @@ ParallelRaceMode::ParallelRaceMode()
 ParallelRaceMode::~ParallelRaceMode()
 {
 	delete endSeq;
-
-	for (int i = 0; i < 3; ++i)
-	{
-		if (parallelGames[i] != NULL)
-		{
-			delete parallelGames[i];
-		}
-	}
 }
 
 int ParallelRaceMode::GetNumStoredBytes()
@@ -109,6 +101,7 @@ void ParallelRaceMode::Setup()
 
 void ParallelRaceMode::StartGame()
 {
+	done = false;
 }
 
 HUD *ParallelRaceMode::CreateHUD()

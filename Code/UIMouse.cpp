@@ -110,6 +110,10 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 			sf::Mouse::setPosition(Vector2i(pos), *currWindow);
 		}
 	}
+	else if (cursorOn)
+	{
+		myPos = mousePos;
+	}
 
 	consumed = false;
 }

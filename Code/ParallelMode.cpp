@@ -234,3 +234,13 @@ void ParallelMode::RunParallelMainLoopsOnce()
 	}
 }
 
+void ParallelMode::RestartParallelSessions()
+{
+	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+	{
+		if (parallelGames[i] != NULL)
+		{
+			parallelGames[i]->RestartLevel();
+		}
+	}
+}

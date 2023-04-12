@@ -41,6 +41,8 @@ CustomMatchManager::CustomMatchManager()
 
 	fromWorkshopBrowser = false;
 
+	mapBrowserScreen = NULL;
+
 	preErrorAction = A_IDLE;
 
 	nextMapMode = false;
@@ -145,6 +147,9 @@ void CustomMatchManager::BrowseForNextMap()
 	netplayManager->matchParams.mapPath = "";
 
 	netplayManager->ClearDataForNextMatch();
+
+	//mapBrowserScreen can be NULL here if I came in from the practice invite mode...
+	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
 
 	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME);
 	SetAction(A_CHOOSE_MAP);

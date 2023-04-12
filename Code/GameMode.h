@@ -68,6 +68,7 @@ struct ParallelMode : GameMode
 	void SetParalellGGPOInputs(COMPRESSED_INPUT_TYPE *ggpoCompressedInputs);
 	void RunParallelGGPOModeUpdates();
 	void RunParallelMainLoopsOnce();
+	void RestartParallelSessions();
 	
 	/*virtual HUD *CreateHUD() { return NULL; }
 	virtual void StartGame() = 0;

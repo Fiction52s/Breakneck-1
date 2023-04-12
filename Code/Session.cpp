@@ -7652,6 +7652,7 @@ void Session::InitGGPO()
 	{
 		if (!IsParallelSession())
 		{
+			//allows you to respawn with netplay info in mind
 			ParallelMode *pm = (ParallelMode*)gameMode;
 			pm->SetParallelGGPOSessions(ggpo);
 			
