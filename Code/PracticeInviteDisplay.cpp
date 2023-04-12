@@ -295,7 +295,11 @@ void PracticeUserBox::RequestRace()
 {
 	if (disp->sess->netplayManager->SendRequestPracticePlayerToRace(*practicePlayer))
 	{
-		disp->sess->netplayManager->SetupNetplayPlayersFromPractice(false);
+		bool res = disp->sess->netplayManager->SetupNetplayPlayersFromPractice(false);
+		if (!res)
+		{
+			cout << "failed to set up netplay players from the client end" << "\n";
+		}
 	}
 	//SetAction(A_WAITING_FOR_CONFIRM);
 }
@@ -503,6 +507,43 @@ void PracticeRaceCountdownBox::Draw(sf::RenderTarget *target)
 }
 
 
+PracticeRaceWaitingForConfirmBox::PracticeRaceWaitingForConfirmBox(PracticeInviteDisplay *p_disp)
+{
+	disp = p_disp;
+
+	waitingText.setFont(disp->sess->mainMenu->arial);
+	waitingText.setFillColor(Color::White);
+	waitingText.setCharacterSize(36);
+	waitingText.setString("Waiting for confirmation...");
+	auto lb = waitingText.getLocalBounds();
+	waitingText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+
+	size.x = waitingText.getGlobalBounds().width + 20;
+	size.y = waitingText.getGlobalBounds().height + 20;
+
+	SetRectColor(bgQuad, Color(100, 100, 100));
+
+	SetCenter(Vector2f(960, 540));
+}
+
+void PracticeRaceWaitingForConfirmBox::SetTopLeft(sf::Vector2f p_topLeft)
+{
+	SetRectTopLeft(bgQuad, size.x, size.y, p_topLeft);
+	Vector2f center = p_topLeft + Vector2f(size.x / 2, size.y / 2);
+	waitingText.setPosition(center);
+}
+
+void PracticeRaceWaitingForConfirmBox::SetCenter(sf::Vector2f p_center)
+{
+	SetTopLeft(Vector2f(p_center.x - size.x / 2, p_center.y - size.y / 2));
+}
+
+void PracticeRaceWaitingForConfirmBox::Draw(sf::RenderTarget *target)
+{
+	target->draw(bgQuad, 4, sf::Quads);
+	target->draw(waitingText);
+}
+
 
 
 
@@ -554,6 +595,7 @@ PracticeInviteDisplay::PracticeInviteDisplay()
 	hostPowerMode = -1;
 
 	countdownBox = new PracticeRaceCountdownBox(this);
+	waitingMessage = new PracticeRaceWaitingForConfirmBox(this);
 
 	SetAction(A_IDLE);
 }
@@ -566,6 +608,7 @@ PracticeInviteDisplay::~PracticeInviteDisplay()
 	}
 
 	delete countdownBox;
+	delete waitingMessage;
 }
 
 void PracticeInviteDisplay::Reset()
@@ -612,8 +655,8 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 			if (!userBoxVec[selectedIndex]->IsEmpty() && userBoxVec[selectedIndex]->practicePlayer->wantsToPlay)
 			{
 				userBoxVec[selectedIndex]->RequestRace();
-				opponentIndex = selectedIndex;
-				PrepareToLeave();
+				SetAction(A_WAITING_FOR_RACE_ACCEPT);
+				//PrepareToLeave();
 			}
 		}
 		else if (curr.LUp() && !prev.LUp())
@@ -650,8 +693,14 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 		{
 			if (userBoxVec[i]->action == PracticeUserBox::A_RUNNING)
 			{
-				opponentIndex = i;
-				sess->netplayManager->SetupNetplayPlayersFromPractice(true);
+				bool res = sess->netplayManager->SetupNetplayPlayersFromPractice(true);
+
+				if (!res)
+				{
+					cout << "failed to set up netplay players from the host end" << "\n";
+				}
+				
+
 				//sess->netplayManager->ConfirmPracticePlayerRace(*(userBoxVec[i]->practicePlayer));
 				PrepareToLeave();
 				break;
@@ -701,6 +750,20 @@ bool PracticeInviteDisplay::Update(const ControllerState & curr, const Controlle
 		else if (countdownBox->IsReadyToStart())
 		{
 			SetAction(A_RUN_GAME);
+		}
+	}
+	else if (action == A_WAITING_FOR_RACE_ACCEPT)
+	{
+		if (sess->netplayManager->PracticeRaceRequestHasBeenAccepted())
+		{
+			cout << "preparing to leave because my request to race was accepted" << "\n";
+			PrepareToLeave();
+		}
+		else if (frame == 60 * 10)
+		{
+			cout << "race request timed out" << "\n";
+			//max wait for confirm
+			SetAction(A_SHOW_PLAYERS);
 		}
 	}
 
@@ -816,6 +879,11 @@ void PracticeInviteDisplay::Draw(sf::RenderTarget *target)
 	if ( action == A_PREPARING_TO_LEAVE || action == A_RUN_GAME ) //action == A_REQUESTING_TO_RACE || 
 	{
 		countdownBox->Draw(target);
+		//target->draw(startHostingQuad, 4, sf::Quads);
+	}
+	else if (action == A_WAITING_FOR_RACE_ACCEPT)
+	{
+		waitingMessage->Draw(target);
 		//target->draw(startHostingQuad, 4, sf::Quads);
 	}
 	else

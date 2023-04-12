@@ -1489,8 +1489,37 @@ void NetplayManager::ReceiveMessages()
 							if (receivedPracticeRaceStartRequestIndex >= 0)
 							{
 								cout << "ignoring race start request from " << i << " because we already have one from " << receivedPracticeRaceStartRequestIndex << "\n";
+
+								SendPracticePlayerRaceStartResponse(practicePlayers[i], false);
 							}
-							receivedPracticeRaceStartRequestIndex = i;
+							else
+							{
+								receivedPracticeRaceStartRequestIndex = i;
+								SendPracticePlayerRaceStartResponse(practicePlayers[i], true);
+							}
+							
+						}
+						else if (hdr->msgType == PracticeMsgHeader::MSG_TYPE_RACE_START_RESPONSE)
+						{
+							if (sentPracticeRaceStartRequestIndex == i )
+							{
+								PracticeRaceStartResponseMsg *msg = (PracticeRaceStartResponseMsg*)messages[0]->GetData();
+
+								if (msg->acceptedRequest)
+								{
+									cout << "received race start confirm from " << i << "\n";
+									confirmedPracticeRaceStartIndex = i;
+								}
+								else
+								{
+									cout << "race start rejection from " << i << "\n";
+									ClearPracticeRaceOpponent();
+								}
+							}
+							else
+							{
+								cout << "received a race start response from " << receivedPracticeRaceStartRequestIndex << " but I didn't request it" << "\n";
+							}
 						}
 						else if (hdr->msgType == PracticeMsgHeader::MSG_TYPE_RACE_CANCEL)
 						{
@@ -3489,6 +3518,33 @@ bool NetplayManager::SendRequestPracticePlayerToRace(PracticePlayer &pracPlayer)
 	return false;
 }
 
+bool NetplayManager::SendPracticePlayerRaceStartResponse(PracticePlayer &pracPlayer, bool accept)
+{
+	PracticeRaceStartResponseMsg pm;
+	pm.acceptedRequest = accept;
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		if (accept)
+		{
+			cout << "send practice race start acceptance message to connection " << pracPlayer.connection << "\n";
+		}
+		else
+		{
+			cout << "send practice race start rejection message to connection " << pracPlayer.connection << "\n";
+		}
+		//sentPracticeRaceStartRequestIndex = pracPlayer.practicePlayerIndex;
+
+		return true;
+	}
+	else
+	{
+		cout << "failed send practice race start response message to connection " << pracPlayer.connection << ". Failed with code " << res << "\n";
+		return false;
+	}
+}
+
 bool NetplayManager::SendCancelPracticePlayerRace()
 {
 	//assert(pracPlayer.isConnectedTo);
@@ -3629,6 +3685,8 @@ bool NetplayManager::SetupNetplayPlayersFromPractice(bool host)
 	}
 	else if( !host && sentPracticeRaceStartRequestIndex >= 0)
 	{
+		//use sentPracticeRaceStartRequestIndex because this gets set immediately when sending a request
+
 		playerIndex = 1; //will change later for more players
 
 		netplayPlayers[playerIndex].isMe = true;
@@ -3661,6 +3719,7 @@ void NetplayManager::ClearPracticeRaceOpponent()
 {
 	sentPracticeRaceStartRequestIndex = -1;
 	receivedPracticeRaceStartRequestIndex = -1;
+	confirmedPracticeRaceStartIndex = -1;
 }
 
 int NetplayManager::GetPracticeRaceOpponentPracticeIndex()
@@ -3669,6 +3728,10 @@ int NetplayManager::GetPracticeRaceOpponentPracticeIndex()
 	{
 		return receivedPracticeRaceStartRequestIndex;
 	}
+	/*else if (confirmedPracticeRaceStartIndex >= 0)
+	{
+		return confirmedPracticeRaceStartIndex;
+	}*/
 	else if (sentPracticeRaceStartRequestIndex >= 0)
 	{
 		return sentPracticeRaceStartRequestIndex;
@@ -3677,6 +3740,17 @@ int NetplayManager::GetPracticeRaceOpponentPracticeIndex()
 	{
 		return -1;
 	}
+}
+
+bool NetplayManager::PracticeRaceRequestHasBeenAccepted()
+{
+	if (sentPracticeRaceStartRequestIndex >= 0 && confirmedPracticeRaceStartIndex >= 0
+		&& sentPracticeRaceStartRequestIndex == confirmedPracticeRaceStartIndex)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 //void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)

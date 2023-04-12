@@ -111,12 +111,26 @@ struct PracticeRaceCountdownBox
 	void Draw(sf::RenderTarget *target);
 };
 
+struct PracticeRaceWaitingForConfirmBox
+{
+	PracticeInviteDisplay *disp;
+	sf::Vertex bgQuad[4];
+	sf::Text waitingText;
+	sf::Vector2f size;
+
+	PracticeRaceWaitingForConfirmBox(PracticeInviteDisplay *p_disp);
+	void SetTopLeft(sf::Vector2f p_topLeft);
+	void SetCenter(sf::Vector2f p_center);
+	void Draw(sf::RenderTarget *target);
+};
+
 struct PracticeInviteDisplay
 {
 	enum Action
 	{
 		A_IDLE,
 		A_SHOW_PLAYERS,
+		A_WAITING_FOR_RACE_ACCEPT,
 		//A_REQUESTING_TO_RACE,
 		A_PREPARING_TO_LEAVE,
 		A_RUN_GAME,
@@ -126,6 +140,7 @@ struct PracticeInviteDisplay
 	const static int NUM_BOXES = 3;
 
 	PracticeRaceCountdownBox *countdownBox;
+	PracticeRaceWaitingForConfirmBox *waitingMessage;
 
 	int action;
 	Session *sess;
@@ -156,8 +171,6 @@ struct PracticeInviteDisplay
 	int hostPowerMode;
 
 	int frame;
-
-	int opponentIndex;
 
 	
 

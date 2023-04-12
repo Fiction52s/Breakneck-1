@@ -18,6 +18,7 @@ struct PracticeMsgHeader
 		MSG_TYPE_WANTS_TO_PLAY,
 		MSG_TYPE_DOESNT_WANT_TO_PLAY,
 		MSG_TYPE_RACE_START_REQUEST,
+		MSG_TYPE_RACE_START_RESPONSE,
 		MSG_TYPE_RACE_CANCEL,
 		MSG_TYPE_Count,
 	};
@@ -96,6 +97,15 @@ struct PracticeRaceStartRequestMsg
 	sf::Uint64 raceClients[3]; //3 is max_players - 1 since the host doesn't need to send their own ID
 
 	PracticeRaceStartRequestMsg();
+	void Clear();
+};
+
+struct PracticeRaceStartResponseMsg
+{
+	PracticeMsgHeader header;
+	bool acceptedRequest;
+
+	PracticeRaceStartResponseMsg();
 	void Clear();
 };
 

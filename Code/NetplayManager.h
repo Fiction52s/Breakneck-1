@@ -190,6 +190,7 @@ struct NetplayManager
 
 	int receivedPracticeRaceStartRequestIndex;
 	int sentPracticeRaceStartRequestIndex;
+	int confirmedPracticeRaceStartIndex;
 
 
 
@@ -435,6 +436,7 @@ struct NetplayManager
 	bool IsPracticeRaceHost();
 
 	bool SendRequestPracticePlayerToRace(PracticePlayer &pracPlayer);
+	bool SendPracticePlayerRaceStartResponse(PracticePlayer &pracPlayer, bool accept);
 	bool SendCancelPracticePlayerRace();
 
 	bool SetupNetplayPlayersFromPractice(bool host);
@@ -444,6 +446,8 @@ struct NetplayManager
 	int GetPracticeRaceOpponentPracticeIndex();
 
 	void ClearPracticeRaceOpponent();
+
+	bool PracticeRaceRequestHasBeenAccepted();
 };
 
 #endif

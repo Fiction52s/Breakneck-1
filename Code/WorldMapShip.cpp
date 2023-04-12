@@ -8,12 +8,12 @@ using namespace sf;
 
 WorldMapShip::WorldMapShip(WorldMap *wm)
 {
-	ts = wm->GetSizedTileset("WorldMap/ship_160x160.png");//wm->GetSizedTileset("Menu/ship_mouse_icon_1_172x80.png");
+	ts = wm->GetSizedTileset("WorldMap/ship_128x128.png");//wm->GetSizedTileset("Menu/ship_mouse_icon_1_172x80.png");
 	SetAlpha(1.0);
 	facingIndex = 0;
 	frame = 0;
 
-	scale = .8;
+	scale = 1.f;
 }
 
 void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)

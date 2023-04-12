@@ -129,6 +129,21 @@ void PracticeRaceStartRequestMsg::Clear()
 	}
 }
 
+
+PracticeRaceStartResponseMsg::PracticeRaceStartResponseMsg()
+	:header(PracticeMsgHeader::MSG_TYPE_RACE_START_RESPONSE)
+{
+	Clear();
+}
+
+void PracticeRaceStartResponseMsg::Clear()
+{
+	header.Clear();
+	acceptedRequest = false;
+}
+
+
+
 PracticeRaceCancelMsg::PracticeRaceCancelMsg()
 	:header(PracticeMsgHeader::MSG_TYPE_RACE_CANCEL)
 {
