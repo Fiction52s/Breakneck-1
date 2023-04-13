@@ -325,6 +325,10 @@ struct AllControllers
 	bool ButtonPressed_Start();
 	bool ButtonHeld_Any();
 	bool ButtonPressed_Any();
+	bool DirPressed_Left();
+	bool DirPressed_Right();
+	bool DirPressed_Up();
+	bool DirPressed_Down();
 	bool KeyboardButtonPressed(int key);
 	bool KeyboardButtonHeld(int key);
 	bool KeyboardButtonHeldPrev(int key);

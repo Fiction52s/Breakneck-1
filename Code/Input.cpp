@@ -1912,6 +1912,70 @@ bool AllControllers::ButtonPressed_Any()
 	return false;
 }
 
+bool AllControllers::DirPressed_Left()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->DirPressed_Left())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::DirPressed_Right()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->DirPressed_Right())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::DirPressed_Up()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->DirPressed_Up())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::DirPressed_Down()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->DirPressed_Down())
+				return true;
+		}
+	}
+
+	return false;
+}
+
 bool AllControllers::KeyboardButtonPressed(int key)
 {
 	return (!prevKeyboard.m_state[key] && currKeyboard.m_state[key]);

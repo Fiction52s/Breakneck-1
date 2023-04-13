@@ -16,6 +16,7 @@
 #include "PostMatchClientPopup.h"
 #include "PostMatchQuickplayOptionsPopup.h"
 #include "QuickplayPreMatchScreen.h"
+#include "BasicTextMenu.h"
 //#include "ggpo/network/udp_msg.h"
 
 using namespace sf;
@@ -36,6 +37,9 @@ CustomMatchManager::CustomMatchManager()
 	postMatchQuickplayPopup = new PostMatchQuickplayOptionsPopup;
 
 	postMatchClientPopup = new PostMatchClientPopup;
+
+	vector<string> practiceHostOptions = { "Rematch", "Invite to Custom Lobby", "Leave" };
+	postPracticeMatchMenu = new BasicTextMenu(practiceHostOptions);
 
 	SetAction(A_IDLE);
 
@@ -64,6 +68,8 @@ CustomMatchManager::~CustomMatchManager()
 	delete postMatchClientPopup;
 
 	delete postMatchQuickplayPopup;
+
+	delete postPracticeMatchMenu;
 }
 
 void CustomMatchManager::SetAction(Action a)
@@ -112,12 +118,17 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 void CustomMatchManager::OpenPostMatchPopup()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
-	if (netplayManager->isQuickplay)
+	if (netplayManager->currNetplayType == NetplayManager::NETPLAY_TYPE_QUICKPLAY )
 	{
 		postMatchQuickplayPopup->Start();
 		SetAction(A_POST_MATCH_QUICKPLAY);
 	}
-	else
+	else if (netplayManager->currNetplayType == NetplayManager::NETPLAY_TYPE_PRACTICE)
+	{
+		postPracticeMatchMenu->Reset();
+		SetAction(A_POST_MATCH_PRACTICE_HOST);
+	}
+	else if(netplayManager->currNetplayType == NetplayManager::NETPLAY_TYPE_CUSTOM_LOBBY )
 	{
 		if (netplayManager->IsHost())
 		{
@@ -130,6 +141,10 @@ void CustomMatchManager::OpenPostMatchPopup()
 			postMatchClientPopup->Start();
 			SetAction(A_POST_MATCH_CLIENT);
 		}
+	}
+	else
+	{
+		assert(0);
 	}
 }
 
@@ -205,6 +220,7 @@ void CustomMatchManager::BrowseCustomLobbies()
 	nextMapMode = false;
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 	netplayManager->Init();
+	netplayManager->currNetplayType = NetplayManager::NETPLAY_TYPE_CUSTOM_LOBBY;
 	SetAction(A_LOBBY_BROWSER);
 	lobbyBrowser->OpenPopup();
 }
@@ -215,6 +231,7 @@ void CustomMatchManager::TryEnterLobbyFromInvite( CSteamID lobbyId )
 	nextMapMode = false;
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 	netplayManager->Init();
+	netplayManager->currNetplayType = NetplayManager::NETPLAY_TYPE_CUSTOM_LOBBY;
 
 	lobbyBrowser->ClearSelection();
 	lobbyBrowser->ClearLobbyRects();
@@ -649,6 +666,33 @@ bool CustomMatchManager::Update()
 		}	
 		break;
 	}
+	case A_POST_MATCH_PRACTICE_HOST:
+	{
+		int result = postPracticeMatchMenu->Update();
+
+		if (result == -1)
+		{
+			break;
+		}
+
+		switch (result)
+		{
+		case 0://Rematch
+		{
+			break;
+		}
+		case 1://Invite to Custom Lobby
+		{
+			break;
+		}
+		case 2://Leave
+		{
+			break;
+		}
+		}
+
+		break;
+	}
 	case A_POST_MATCH_CLIENT:
 	{
 		postMatchClientPopup->Update();
@@ -752,6 +796,11 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		break;
 	case A_READY:
 		break;
+	case A_POST_MATCH_PRACTICE_HOST:
+	{
+		postPracticeMatchMenu->Draw(target);
+		break;
+	}
 	case A_POST_MATCH_HOST:
 	{
 		postMatchPopup->Draw(target);

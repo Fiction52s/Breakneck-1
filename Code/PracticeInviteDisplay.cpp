@@ -72,16 +72,16 @@ void PracticePlayerDisp::Draw(sf::RenderTarget *target)
 
 
 
-PracticeUserBox::PracticeUserBox(PracticeInviteDisplay *p_disp)
+PracticeUserBox::PracticeUserBox(PracticeInviteDisplay *p_disp, int p_boxIndex )
 	:playerDisp( p_disp )
 {
+	boxIndex = p_boxIndex;
+
 	disp = p_disp;
 
 	Color bottomTextColor = Color::Black;
 
 	ts_raceButton = disp->sess->GetSizedTileset("Menu/practiceracebutton_100x32.png");
-
-	
 
 	selected = false;
 
@@ -118,12 +118,48 @@ void PracticeUserBox::Update()
 
 	++frame;*/
 
+	/*int boxIndex = 0;
+	assert(sess->netplayManager != NULL);
+	for (int i = 0; i < NetplayManager::MAX_PRACTICE_PLAYERS; ++i)
+	{
+		if (sess->netplayManager->practicePlayers[i].isConnectedTo)
+		{
+			userBoxVec[boxIndex]->SetPlayer(&sess->netplayManager->practicePlayers[i]);
+			++boxIndex;
+
+			if (boxIndex == NUM_BOXES)
+				break;
+		}
+	}*/
+
+
 	if (action == A_EMPTY)
+	{
+		PracticePlayer *testPlayer = &disp->sess->netplayManager->practicePlayers[boxIndex];
+
+		if (testPlayer->isConnectedTo)
+		{
+			//SetPlayer(&disp->sess->netplayManager->practicePlayers[boxIndex]);
+			practicePlayer = testPlayer;
+
+			if (practicePlayer->wantsToPlay)
+			{
+				SetAction(A_PLAYER_WANTS_TO_PLAY);
+			}
+			else
+			{
+				SetAction(A_HAS_PLAYER);
+			}
+
+			playerDisp.SetName(practicePlayer->name);
+			playerDisp.SetSkin(practicePlayer->skinIndex);
+		}
 		return;
+	}
 
 	if (!practicePlayer->isConnectedTo)
 	{
-		SetAction(A_EMPTY);
+		Reset();
 		return;
 	}
 
@@ -332,6 +368,8 @@ void PracticeUserBox::Draw(sf::RenderTarget *target)
 		}
 	}
 }
+
+
 
 
 
@@ -567,7 +605,7 @@ PracticeInviteDisplay::PracticeInviteDisplay()
 
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		userBoxVec[i] = new PracticeUserBox(this);
+		userBoxVec[i] = new PracticeUserBox(this, i);
 	}
 
 	availableText.setFont(sess->mainMenu->arial);
@@ -614,7 +652,8 @@ PracticeInviteDisplay::~PracticeInviteDisplay()
 void PracticeInviteDisplay::Reset()
 {
 	frame = 0;
-	Populate();
+	action = A_SHOW_PLAYERS;
+	//Populate();
 	UpdateButtonIconsWhenControllerIsChanged();
 }
 

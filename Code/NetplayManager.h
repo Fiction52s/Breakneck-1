@@ -146,6 +146,14 @@ struct NetplayManager
 		CHANNEL_SESSION,
 	};
 
+	enum NetplayType
+	{
+		NETPLAY_TYPE_QUICKPLAY,
+		NETPLAY_TYPE_CUSTOM_LOBBY,
+		NETPLAY_TYPE_PRACTICE,
+		//NETPLAY_TYPE_PRACTICE_RACE,
+	};
+
 	enum PostMatchAction
 	{
 		POST_MATCH_A_REMATCH,
@@ -244,7 +252,7 @@ struct NetplayManager
 
 	int playerIndex;
 
-	bool isQuickplay;
+	int currNetplayType;
 
 	bool wantsToPracticeRace;
 
@@ -369,7 +377,7 @@ struct NetplayManager
 	void SendBufferToConnection(HSteamNetConnection connection, unsigned char *buf, int bufSize,
 		int udpMsgType);
 
-	void SendLobbyDataForNextMapToClients(LobbyData *ld);
+	//void SendLobbyDataForNextMapToClients(LobbyData *ld);
 
 	
 	bool SendPracticeInitMessageToPlayer(PracticePlayer &pracPlayer);

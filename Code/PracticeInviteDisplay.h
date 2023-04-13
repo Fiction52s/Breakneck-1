@@ -49,6 +49,8 @@ struct PracticeUserBox
 
 	bool selected;
 
+	int boxIndex;
+
 	int frame;
 
 	Tileset *ts_raceButton;
@@ -60,7 +62,7 @@ struct PracticeUserBox
 
 	sf::Vertex bgQuad[4];
 
-	PracticeUserBox(PracticeInviteDisplay *p_disp);
+	PracticeUserBox(PracticeInviteDisplay *p_disp, int p_boxIndex);
 	bool IsEmpty();
 	void UpdateBGQuad();
 	void Reset();

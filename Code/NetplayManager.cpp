@@ -543,7 +543,7 @@ void NetplayManager::Abort()
 
 	desyncDetected = false;
 
-	isQuickplay = false;
+	currNetplayType = -1;
 
 	action = A_IDLE;
 
@@ -2044,7 +2044,7 @@ void NetplayManager::LoadMap()
 
 	MainMenu *mm = MainMenu::GetInstance();
 
-	if (isQuickplay)
+	if (currNetplayType == NETPLAY_TYPE_QUICKPLAY )
 	{
 		mm->gameRunType = MainMenu::GRT_QUICKPLAY;
 	}
@@ -2128,7 +2128,7 @@ void NetplayManager::FindPracticeMatch(const std::string &p_mapPath, int adventu
 	cout << "searching for practice match\n";
 	Init();
 
-	isQuickplay = false;
+	currNetplayType = NETPLAY_TYPE_PRACTICE;
 
 	action = A_PRACTICE_CHECKING_FOR_LOBBIES;
 
@@ -2145,7 +2145,7 @@ void NetplayManager::FindQuickplayMatch()
 	{
 		Abort();
 
-		isQuickplay = true;
+		currNetplayType = NETPLAY_TYPE_QUICKPLAY;
 
 		playerIndex = 0;
 
@@ -2175,7 +2175,7 @@ void NetplayManager::FindQuickplayMatch()
 	{
 		Init();
 
-		isQuickplay = true;
+		currNetplayType = NETPLAY_TYPE_QUICKPLAY;
 
 		action = A_QUICKPLAY_CHECKING_FOR_LOBBIES;
 
@@ -2435,27 +2435,27 @@ void NetplayManager::SendBufferToConnection(HSteamNetConnection connection, unsi
 	}
 }
 
-void NetplayManager::SendLobbyDataForNextMapToClients(LobbyData *ld)
-{
-	int numBytes = ld->GetNumStoredBytes();
-	unsigned char *bytes = new unsigned char[numBytes];
-	ld->StoreBytes(bytes);
-
-	for (int i = 0; i < numPlayers; ++i)
-	{
-		if (i == playerIndex)
-		{
-			continue;
-		}
-
-		if (netplayPlayers[i].isConnectedTo)
-		{
-			SendBufferToConnection(netplayPlayers[i].connection, bytes, numBytes, UdpMsg::Game_Host_Next_Map_Data);
-		}
-	}
-
-	delete[] bytes;
-}
+//void NetplayManager::SendLobbyDataForNextMapToClients(LobbyData *ld)
+//{
+//	int numBytes = ld->GetNumStoredBytes();
+//	unsigned char *bytes = new unsigned char[numBytes];
+//	ld->StoreBytes(bytes);
+//
+//	for (int i = 0; i < numPlayers; ++i)
+//	{
+//		if (i == playerIndex)
+//		{
+//			continue;
+//		}
+//
+//		if (netplayPlayers[i].isConnectedTo)
+//		{
+//			SendBufferToConnection(netplayPlayers[i].connection, bytes, numBytes, UdpMsg::Game_Host_Next_Map_Data);
+//		}
+//	}
+//
+//	delete[] bytes;
+//}
 
 
 void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *steamMsg)
@@ -2843,6 +2843,7 @@ void NetplayManager::DumpDesyncInfo()
 void NetplayManager::TryCreateCustomLobby(LobbyData &ld)
 {
 	lobbyManager->TryCreatingLobby(ld);
+	currNetplayType = NetplayManager::NETPLAY_TYPE_CUSTOM_LOBBY;
 	action = A_CUSTOM_HOST_GATHERING_USERS;
 }
 
@@ -3475,7 +3476,7 @@ void NetplayManager::QueryPracticeMatches()
 	cout << "querying practice lobbies\n";
 	Init();
 
-	isQuickplay = false;
+	currNetplayType = NETPLAY_TYPE_PRACTICE;
 
 	action = A_PRACTICE_QUERYING_LOBBIES;
 

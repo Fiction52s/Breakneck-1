@@ -5010,7 +5010,7 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 	if (netplayManager != NULL)
 	{
 		stats->netplay = true;
-		if (netplayManager->isQuickplay )//mainMenu->gameRunType == MainMenu::GRT_QUICKPLAY)
+		if (netplayManager->currNetplayType == NetplayManager::NETPLAY_TYPE_QUICKPLAY )//mainMenu->gameRunType == MainMenu::GRT_QUICKPLAY)
 		{
 			stats->quickplay = true;
 		}
