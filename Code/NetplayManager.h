@@ -191,6 +191,8 @@ struct NetplayManager
 		A_MATCH_COMPLETE,
 		A_WAIT_FOR_QUICKPLAY_VOTES_TO_KEEP_PLAYING,
 		A_ALL_VOTED_TO_KEEP_PLAYING,
+		A_WAIT_FOR_PRACTICE_REMATCH_VOTES,
+		A_ALL_VOTED_FOR_PRACTICE_REMATCH,
 		A_DISCONNECT,
 	};
 
@@ -361,6 +363,8 @@ struct NetplayManager
 	void ClearDataForNextMatch();
 
 	void SendPostMatchQuickplayLeaveSignalToHost();
+
+	void SendPostMatchPracticeLeaveSignalToHost();
 
 	void SendPostMatchChooseMapSignalToClients();
 	void SendPostMatchQuickplayKeepPlayingSignalToClients();

@@ -13,6 +13,8 @@ struct ScrollingBackground;
 struct MusicInfo;
 struct CreditsMenuScreen;
 
+struct PostPracticeMatchMenu;
+
 struct TitleScreen : TilesetManager, GUIHandler
 {
 	Panel *panel;
@@ -36,6 +38,8 @@ struct TitleScreen : TilesetManager, GUIHandler
 	Tileset *ts_kinHandEnergy;
 	MainMenu *mainMenu;
 	Background *background;
+
+	//PostPracticeMatchMenu *testMenu;
 
 	CreditsMenuScreen *creditsMenuScreen;
 

@@ -14,7 +14,7 @@ struct MessagePopup;
 struct PostMatchOptionsPopup;
 struct PostMatchClientPopup;
 struct PostMatchQuickplayOptionsPopup;
-struct BasicTextMenu;
+struct PostPracticeMatchMenu;
 
 struct CustomMatchManager
 {
@@ -34,7 +34,7 @@ struct CustomMatchManager
 		A_ERROR_MESSAGE,
 		A_POST_MATCH_HOST,
 		A_POST_MATCH_CLIENT,
-		A_POST_MATCH_PRACTICE_HOST,
+		A_POST_MATCH_PRACTICE,
 		A_POST_MATCH_CLIENT_LEAVE,
 		A_POST_MATCH_HOST_REMATCH,
 		A_POST_MATCH_HOST_CHOOSE_MAP,
@@ -43,6 +43,7 @@ struct CustomMatchManager
 		A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING,
 		A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS,
 		A_POST_MATCH_QUICKPLAY_LEAVE,
+		A_POST_MATCH_PRACTICE_LEAVE,
 	};
 
 	Action action;
@@ -59,7 +60,7 @@ struct CustomMatchManager
 	PostMatchOptionsPopup *postMatchPopup;
 	PostMatchClientPopup *postMatchClientPopup;
 	PostMatchQuickplayOptionsPopup *postMatchQuickplayPopup;
-	BasicTextMenu *postPracticeMatchMenu;
+	PostPracticeMatchMenu *postPracticeMatchMenu;
 
 
 	int preErrorAction;

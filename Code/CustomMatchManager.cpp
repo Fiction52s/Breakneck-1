@@ -17,6 +17,8 @@
 #include "PostMatchQuickplayOptionsPopup.h"
 #include "QuickplayPreMatchScreen.h"
 #include "BasicTextMenu.h"
+#include "KeepPlayingButton.h"
+#include "PostPracticeMatchMenu.h"
 //#include "ggpo/network/udp_msg.h"
 
 using namespace sf;
@@ -38,8 +40,8 @@ CustomMatchManager::CustomMatchManager()
 
 	postMatchClientPopup = new PostMatchClientPopup;
 
-	vector<string> practiceHostOptions = { "Rematch", "Invite to Custom Lobby", "Leave" };
-	postPracticeMatchMenu = new BasicTextMenu(practiceHostOptions);
+	postPracticeMatchMenu = new PostPracticeMatchMenu;
+	
 
 	SetAction(A_IDLE);
 
@@ -126,7 +128,7 @@ void CustomMatchManager::OpenPostMatchPopup()
 	else if (netplayManager->currNetplayType == NetplayManager::NETPLAY_TYPE_PRACTICE)
 	{
 		postPracticeMatchMenu->Reset();
-		SetAction(A_POST_MATCH_PRACTICE_HOST);
+		SetAction(A_POST_MATCH_PRACTICE);
 	}
 	else if(netplayManager->currNetplayType == NetplayManager::NETPLAY_TYPE_CUSTOM_LOBBY )
 	{
@@ -666,7 +668,7 @@ bool CustomMatchManager::Update()
 		}	
 		break;
 	}
-	case A_POST_MATCH_PRACTICE_HOST:
+	case A_POST_MATCH_PRACTICE:
 	{
 		int result = postPracticeMatchMenu->Update();
 
@@ -677,16 +679,13 @@ bool CustomMatchManager::Update()
 
 		switch (result)
 		{
-		case 0://Rematch
+		case 0://Invite to Custom Lobby
 		{
 			break;
 		}
-		case 1://Invite to Custom Lobby
+		case 1://Leave
 		{
-			break;
-		}
-		case 2://Leave
-		{
+			action = A_POST_MATCH_PRACTICE_LEAVE;
 			break;
 		}
 		}
@@ -796,7 +795,12 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		break;
 	case A_READY:
 		break;
-	case A_POST_MATCH_PRACTICE_HOST:
+	case A_POST_MATCH_PRACTICE:
+	{
+		postPracticeMatchMenu->Draw(target);
+		break;
+	}
+	case A_POST_MATCH_PRACTICE_LEAVE:
 	{
 		postPracticeMatchMenu->Draw(target);
 		break;

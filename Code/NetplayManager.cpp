@@ -2743,6 +2743,15 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		cout << "client sent leave quickplay signal" << endl;
 		break;
 	}
+	case UdpMsg::Game_Client_Post_Practice_Leave:
+	{
+		assert(IsHost());
+
+		receivedLeaveNetplaySignal = true;
+
+		cout << "client sent leave quickplay signal" << endl;
+		break;
+	}
 	case UdpMsg::Game_Host_Post_Quickplay_Vote_To_Keep_Playing:
 	{
 		//useful for visuals maybe? needs a rework
@@ -3020,6 +3029,12 @@ void NetplayManager::SendPostMatchQuickplayLeaveSignalToHost()
 {
 	cout << "client sending host message to leave quickplay" << endl;
 	SendSignalToHost(UdpMsg::Game_Client_Post_Quickplay_Leave);
+}
+
+void NetplayManager::SendPostMatchPracticeLeaveSignalToHost()
+{
+	cout << "client sending host message to leave practice race" << endl;
+	SendSignalToHost(UdpMsg::Game_Client_Post_Practice_Leave);
 }
 
 void NetplayManager::HostQuickplayVoteToKeepPlaying()

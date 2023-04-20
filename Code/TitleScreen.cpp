@@ -8,12 +8,17 @@
 #include "VisualEffects.h"
 #include "CreditsMenuScreen.h"
 
+#include "PostPracticeMatchMenu.h"
+
 using namespace std;
 using namespace sf;
 
 TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
+
+	//testMenu = new PostPracticeMatchMenu;
+
 	panel = new Panel("feedbackpanel", 1920, 1080, this);
 	panel->SetColor(Color::Transparent);
 
@@ -94,12 +99,19 @@ TitleScreen::~TitleScreen()
 
 void TitleScreen::Reset()
 {
+	//testMenu->Reset();
+	//return;
+
 	background->Reset();
 	frame = 0;
 }
 
 void TitleScreen::Update()
 {
+	//testMenu->Update();
+	//return;
+
+
 	panel->MouseUpdate();
 
 	if (frame == 60)
@@ -203,6 +215,9 @@ void TitleScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 void TitleScreen::Draw(sf::RenderTarget *target)
 {
+	//testMenu->Draw(target);
+	//return;
+
 	background->Draw(target);
 	target->draw(titleBGSprite);
 

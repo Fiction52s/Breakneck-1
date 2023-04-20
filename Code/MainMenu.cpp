@@ -355,6 +355,14 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 			adventureManager = NULL;
 		}
+		else if (fromMode == POST_MATCH_OPTIONS)
+		{
+			if (adventureManager != NULL)
+			{
+				delete adventureManager;
+				adventureManager = NULL;
+			}
+		}
 
 		assert(titleScreen == NULL);
 		titleScreen = new TitleScreen(this);
@@ -3676,6 +3684,67 @@ void MainMenu::HandleMenuMode()
 				LoadMode(TITLEMENU);
 			}
 			
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_PRACTICE:
+		{
+			if (isHost)
+			{
+				if (netplayManager->receivedLeaveNetplaySignal)
+				{
+					cout << "received signal from client to exit" << endl;
+					netplayManager->CleanupMatch();
+					netplayManager->Abort();
+
+					delete matchResultsScreen;
+					matchResultsScreen = NULL;
+
+					LoadMode(TITLEMENU);
+				}
+				//wait for leaving messages
+			}
+			else
+			{
+				if (!netplayManager->IsConnectedToHost())
+				{
+					cout << "leaving practice to title screen because the host left" << "\n";
+
+					netplayManager->CleanupMatch();
+					netplayManager->Abort();
+
+					delete matchResultsScreen;
+					matchResultsScreen = NULL;
+					//SetMode(TITLEMENU);
+					LoadMode(TITLEMENU);
+				}
+			}
+			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_PRACTICE_LEAVE:
+		{
+			if (!isHost)
+			{
+				netplayManager->SendPostMatchPracticeLeaveSignalToHost();
+
+				netplayManager->CleanupMatch();
+				netplayManager->Abort();
+
+				delete matchResultsScreen;
+				matchResultsScreen = NULL;
+
+				LoadMode(TITLEMENU);
+			}
+			else
+			{
+				netplayManager->CleanupMatch();
+				netplayManager->Abort();
+
+				delete matchResultsScreen;
+				matchResultsScreen = NULL;
+
+				LoadMode(TITLEMENU);
+			}
 			break;
 		}
 		}
