@@ -3417,6 +3417,8 @@ void MainMenu::HandleMenuMode()
 			{
 			case NetplayManager::POST_MATCH_A_REMATCH:
 			{
+				netplayManager->ClearPracticeWantsToKeepPlayingInfo(); //for practice race rematches only
+
 				delete matchResultsScreen;
 				matchResultsScreen = NULL;
 
@@ -3701,6 +3703,21 @@ void MainMenu::HandleMenuMode()
 
 					LoadMode(TITLEMENU);
 				}
+				else if( netplayManager->PeerWantsToKeepPlayingPractice() && netplayManager->wantsToKeepPlayingPractice )
+				{
+					netplayManager->ClearPracticeWantsToKeepPlayingInfo(); //for practice race rematches only
+
+					netplayManager->game->InitGGPO();
+					netplayManager->HostInitiateRematch();
+
+					fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+
+					delete matchResultsScreen;
+					matchResultsScreen = NULL;
+
+					SetMode(QUICKPLAY_PLAY);
+				}
+				
 				//wait for leaving messages
 			}
 			else

@@ -129,6 +129,7 @@ struct NetplayPlayer
 	int skinIndex;
 	bool hasAllData;
 	bool voteToKeepPlaying;
+	bool practiceKeepPlaying;
 
 	NetplayPlayer();
 	void Clear();
@@ -202,7 +203,7 @@ struct NetplayManager
 	int sentPracticeRaceStartRequestIndex;
 	int confirmedPracticeRaceStartIndex;
 
-
+	bool wantsToKeepPlayingPractice;
 
 	//sf::Uint64 practicePeersToRaceList;
 
@@ -364,7 +365,7 @@ struct NetplayManager
 
 	void SendPostMatchQuickplayLeaveSignalToHost();
 
-	void SendPostMatchPracticeLeaveSignalToHost();
+	
 
 	void SendPostMatchChooseMapSignalToClients();
 	void SendPostMatchQuickplayKeepPlayingSignalToClients();
@@ -460,6 +461,15 @@ struct NetplayManager
 	void ClearPracticeRaceOpponent();
 
 	bool PracticeRaceRequestHasBeenAccepted();
+
+	NetplayPlayer *GetNetplayPlayerFromConnection(HSteamNetConnection con);
+
+	void SendPostMatchPracticeLeaveSignalToHost();
+	void SendPostMatchPracticeKeepPlayingSignalToHost(bool keepPlaying);
+	void SendPostMatchPracticeKeepPlayingSignalToClient(bool keepPlaying);
+	void SendPostMatchPracticeKeepPlayingSignal(bool keepPlaying);
+	bool PeerWantsToKeepPlayingPractice();
+	void ClearPracticeWantsToKeepPlayingInfo();
 };
 
 #endif

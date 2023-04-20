@@ -351,6 +351,7 @@ void NetplayPlayer::Clear()
 	voteToKeepPlaying = false;
 	id.Clear();
 	index = -1; //not set up currently
+	practiceKeepPlaying = false;
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
 }
 
@@ -2761,6 +2762,78 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		postMatchOptionReceived = POST_MATCH_A_QUICKPLAY_KEEP_PLAYING;
 		break;
 	}
+	case UdpMsg::Game_Client_Post_Practice_Keep_Playing:
+	{
+		assert(IsHost());
+
+		NetplayPlayer *np = GetNetplayPlayerFromConnection(connection);
+
+		if (np != NULL)
+		{
+			np->practiceKeepPlaying = true;
+		}
+		else
+		{
+			cout << "connection failure Game_Client_Post_Practice_Keep_Playing\n";
+		}
+
+		cout << "handling Game_Client_Post_Practice_Keep_Playing from connection " << connection << endl;
+		break;
+	}
+	case UdpMsg::Game_Client_Post_Practice_Dont_Keep_Playing:
+	{
+		assert(IsHost());
+
+		NetplayPlayer *np = GetNetplayPlayerFromConnection(connection);
+
+		if (np != NULL)
+		{
+			np->practiceKeepPlaying = false;
+		}
+		else
+		{
+			cout << "connection failure Game_Client_Post_Practice_Dont_Keep_Playing\n";
+		}
+
+		cout << "handling Game_Client_Post_Practice_Dont_Keep_Playing from connection " << connection << endl;
+		break;
+	}
+	case UdpMsg::Game_Host_Post_Practice_Keep_Playing:
+	{
+		assert(!IsHost());
+
+		NetplayPlayer *np = GetNetplayPlayerFromConnection(connection);
+
+		if (np != NULL)
+		{
+			np->practiceKeepPlaying = true;
+		}
+		else
+		{
+			cout << "connection failure Game_Host_Post_Practice_Keep_Playing\n";
+		}
+
+		cout << "handling Game_Host_Post_Practice_Keep_Playing from connection " << connection << endl;
+		break;
+	}
+	case UdpMsg::Game_Host_Post_Practice_Dont_Keep_Playing:
+	{
+		assert(!IsHost());
+
+		NetplayPlayer *np = GetNetplayPlayerFromConnection(connection);
+
+		if (np != NULL)
+		{
+			np->practiceKeepPlaying = false;
+		}
+		else
+		{
+			cout << "connection failure Game_Host_Post_Practice_Dont_Keep_Playing\n";
+		}
+
+		cout << "handling Game_Host_Post_Practice_Dont_Keep_Playing from connection " << connection << endl;
+		break;
+	}
 
 	}
 
@@ -3035,6 +3108,47 @@ void NetplayManager::SendPostMatchPracticeLeaveSignalToHost()
 {
 	cout << "client sending host message to leave practice race" << endl;
 	SendSignalToHost(UdpMsg::Game_Client_Post_Practice_Leave);
+}
+
+void NetplayManager::SendPostMatchPracticeKeepPlayingSignalToHost(bool keepPlaying)
+{
+	cout << "client sending practice host message to keep playing" << endl;
+	wantsToKeepPlayingPractice = keepPlaying;
+	if (keepPlaying)
+	{
+		
+		SendSignalToHost(UdpMsg::Game_Client_Post_Practice_Keep_Playing);
+	}
+	else
+	{
+		SendSignalToHost(UdpMsg::Game_Client_Post_Practice_Dont_Keep_Playing);
+	}
+}
+
+void NetplayManager::SendPostMatchPracticeKeepPlayingSignalToClient(bool keepPlaying)
+{
+	wantsToKeepPlayingPractice = keepPlaying;
+	cout << "host sending practice host message to keep playing" << endl;
+	if (keepPlaying)
+	{
+		SendSignalToAllClients(UdpMsg::Game_Host_Post_Practice_Keep_Playing);
+	}
+	else
+	{
+		SendSignalToAllClients(UdpMsg::Game_Host_Post_Practice_Dont_Keep_Playing);
+	}
+}
+
+void NetplayManager::SendPostMatchPracticeKeepPlayingSignal(bool keepPlaying)
+{
+	if (IsHost())
+	{
+		SendPostMatchPracticeKeepPlayingSignalToClient(keepPlaying);
+	}
+	else
+	{
+		SendPostMatchPracticeKeepPlayingSignalToHost(keepPlaying);
+	}
 }
 
 void NetplayManager::HostQuickplayVoteToKeepPlaying()
@@ -3770,6 +3884,51 @@ bool NetplayManager::PracticeRaceRequestHasBeenAccepted()
 	return false;
 }
 
+NetplayPlayer *NetplayManager::GetNetplayPlayerFromConnection(HSteamNetConnection con)
+{
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		if (netplayPlayers[i].connection == con)
+		{
+			return &netplayPlayers[i];
+		}
+	}
+
+	return NULL;
+}
+
+bool NetplayManager::PeerWantsToKeepPlayingPractice()
+{
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		if (netplayPlayers[i].practiceKeepPlaying)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void NetplayManager::ClearPracticeWantsToKeepPlayingInfo()
+{
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		netplayPlayers[i].practiceKeepPlaying = false;
+	}
+
+	wantsToKeepPlayingPractice = false;
+}
+
 //void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)
 //{
 //	auto info = pCallback->m_info;
@@ -3790,4 +3949,4 @@ bool NetplayManager::PracticeRaceRequestHasBeenAccepted()
 //	{
 //		cout << "there is no session witht he user pending or otherwise\n";
 //	}
-//}
+//

@@ -50,6 +50,10 @@ struct UdpMsg
 	  Game_Host_Post_Quickplay_Vote_To_Keep_Playing,
 	  Game_Host_Post_Quickplay_Says_Keep_Playing,
 	  Game_Client_Post_Practice_Leave,
+	  Game_Client_Post_Practice_Keep_Playing,
+	  Game_Client_Post_Practice_Dont_Keep_Playing,
+	  Game_Host_Post_Practice_Keep_Playing,
+	  Game_Host_Post_Practice_Dont_Keep_Playing,
    };
   /* enum MsgType { 
       Invalid       = 0,

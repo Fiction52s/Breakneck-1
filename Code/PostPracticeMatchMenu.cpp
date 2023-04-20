@@ -1,6 +1,8 @@
 #include "PostPracticeMatchMenu.h"
 #include "BasicTextMenu.h"
 #include "KeepPlayingButton.h"
+#include "NetplayManager.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -12,6 +14,8 @@ PostPracticeMatchMenu::PostPracticeMatchMenu()
 
 	keepPlayingButton = new KeepPlayingButton;
 	keepPlayingButton->SetCenter(Vector2f(960, 300));
+
+	SetRectTopLeft(otherPlayerTestQuad, 100, 100, Vector2f(0, 0));
 }
 
 PostPracticeMatchMenu::~PostPracticeMatchMenu()
@@ -24,6 +28,8 @@ void PostPracticeMatchMenu::Reset()
 {
 	textMenu->Reset();
 	keepPlayingButton->Reset();
+
+	SetRectColor(otherPlayerTestQuad, Color::Red);
 }
 
 bool PostPracticeMatchMenu::WantsToKeepPlaying()
@@ -33,7 +39,27 @@ bool PostPracticeMatchMenu::WantsToKeepPlaying()
 
 int PostPracticeMatchMenu::Update()
 {
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+	bool oldKeepPlayingOn = WantsToKeepPlaying();
+
 	keepPlayingButton->Update();
+
+	bool keepPlayingOn = WantsToKeepPlaying();
+
+	if (oldKeepPlayingOn != keepPlayingOn)
+	{
+		netplayManager->SendPostMatchPracticeKeepPlayingSignal(keepPlayingOn);
+	}
+
+	if (netplayManager->PeerWantsToKeepPlayingPractice())
+	{
+		SetRectColor(otherPlayerTestQuad, Color::Green);
+	}
+	else
+	{
+		SetRectColor(otherPlayerTestQuad, Color::Red);
+	}
 
 	int textResult = textMenu->Update();
 
@@ -44,4 +70,5 @@ void PostPracticeMatchMenu::Draw(sf::RenderTarget *target)
 {
 	textMenu->Draw(target);
 	keepPlayingButton->Draw(target);
+	target->draw(otherPlayerTestQuad, 4, sf::Quads);
 }

@@ -11,6 +11,8 @@ struct PostPracticeMatchMenu
 	BasicTextMenu *textMenu;
 	KeepPlayingButton *keepPlayingButton;
 
+	sf::Vertex otherPlayerTestQuad[4];
+
 	PostPracticeMatchMenu();
 	~PostPracticeMatchMenu();
 	void Reset();
