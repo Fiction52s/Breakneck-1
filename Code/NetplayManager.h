@@ -203,6 +203,11 @@ struct NetplayManager
 	int sentPracticeRaceStartRequestIndex;
 	int confirmedPracticeRaceStartIndex;
 
+	bool hasSentPostPracticeRaceCustomLobbyInvite;
+	bool hasReceivedPostPracticeRaceCustomLobbyInvite;
+	bool hasSentPostPracticeRaceCustomLobbyAcceptInvite;
+	bool hasReceivedPostPracticeRaceCustomLobbyAcceptInvite;
+
 	bool wantsToKeepPlayingPractice;
 
 	//sf::Uint64 practicePeersToRaceList;
@@ -469,7 +474,10 @@ struct NetplayManager
 	void SendPostMatchPracticeKeepPlayingSignalToClient(bool keepPlaying);
 	void SendPostMatchPracticeKeepPlayingSignal(bool keepPlaying);
 	bool PeerWantsToKeepPlayingPractice();
-	void ClearPracticeWantsToKeepPlayingInfo();
+	void ClearPostPracticeMatchInfo();
+
+	void SendPostMatchPracticeCustomLobbyInviteSignal();
+	void SendPostMatchPracticeCustomLobbyAcceptSignal();
 };
 
 #endif

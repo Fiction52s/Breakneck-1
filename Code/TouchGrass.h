@@ -19,6 +19,7 @@ struct TouchGrass : QuadTreeEntrant
 	{
 		TYPE_NORMAL,
 		TYPE_TEST,
+		TYPE_TREE,
 	};
 
 	static bool IsPlacementOkay(
@@ -46,7 +47,6 @@ struct TouchGrass : QuadTreeEntrant
 
 	CollisionBody hurtBody;
 	//CollisionBody *hitBody;
-
 
 	V2d center;
 	float angle;
@@ -133,6 +133,29 @@ struct TestTouchGrass : TouchGrass
 	void UpdateSprite();
 
 	int currTile;
+};
+
+struct TouchTree : TouchGrass
+{
+	enum Action
+	{
+		STILL,
+		TOUCHEDLEFT,
+		TOUCHEDRIGHT,
+		TOUCHEDLAND,
+	};
+
+	Action action;
+	int currTile;
+	float treeHeight;
+
+	TouchTree(TouchGrassCollection *coll, int index,
+		Edge *e, double quant);
+	void Reset();
+	void Update();
+	void Touch(Actor *a);
+	void Destroy(Actor *a);
+	void UpdateSprite();
 };
 
 struct PlantInfo

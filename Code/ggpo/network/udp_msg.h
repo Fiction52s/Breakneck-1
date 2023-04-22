@@ -54,6 +54,8 @@ struct UdpMsg
 	  Game_Client_Post_Practice_Dont_Keep_Playing,
 	  Game_Host_Post_Practice_Keep_Playing,
 	  Game_Host_Post_Practice_Dont_Keep_Playing,
+	  Game_Post_Practice_Lobby_Invite,
+	  Game_Post_Practice_Lobby_Accept,
    };
   /* enum MsgType { 
       Invalid       = 0,
@@ -116,6 +118,11 @@ struct UdpMsg
       struct {
          int               ack_frame:31;
       } input_ack;
+
+	  struct
+	  {
+		  uint64 lobbyID;
+	  } lobby_invite;
 
 	  struct
 	  {

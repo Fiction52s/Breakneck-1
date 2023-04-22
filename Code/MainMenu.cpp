@@ -3417,7 +3417,7 @@ void MainMenu::HandleMenuMode()
 			{
 			case NetplayManager::POST_MATCH_A_REMATCH:
 			{
-				netplayManager->ClearPracticeWantsToKeepPlayingInfo(); //for practice race rematches only
+				netplayManager->ClearPostPracticeMatchInfo(); //for practice race rematches only
 
 				delete matchResultsScreen;
 				matchResultsScreen = NULL;
@@ -3705,7 +3705,7 @@ void MainMenu::HandleMenuMode()
 				}
 				else if( netplayManager->PeerWantsToKeepPlayingPractice() && netplayManager->wantsToKeepPlayingPractice )
 				{
-					netplayManager->ClearPracticeWantsToKeepPlayingInfo(); //for practice race rematches only
+					netplayManager->ClearPostPracticeMatchInfo(); //for practice race rematches only
 
 					netplayManager->game->InitGGPO();
 					netplayManager->HostInitiateRematch();

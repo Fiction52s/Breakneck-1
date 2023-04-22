@@ -17,7 +17,7 @@
 #include "PostMatchQuickplayOptionsPopup.h"
 #include "QuickplayPreMatchScreen.h"
 #include "BasicTextMenu.h"
-#include "KeepPlayingButton.h"
+#include "SingleInputMenuButton.h"
 #include "PostPracticeMatchMenu.h"
 //#include "ggpo/network/udp_msg.h"
 
@@ -682,6 +682,10 @@ bool CustomMatchManager::Update()
 		{
 		case 0://Invite to Custom Lobby
 		{
+			/*if (!netplayManager->hasSentPostPracticeRaceCustomLobbyInvite)
+			{
+
+			}*/
 			break;
 		}
 		case 1://Leave

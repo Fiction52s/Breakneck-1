@@ -558,6 +558,11 @@ void NetplayManager::Abort()
 
 	ClearPracticeRaceOpponent();
 
+	hasSentPostPracticeRaceCustomLobbyInvite = false;
+	hasReceivedPostPracticeRaceCustomLobbyInvite = false;
+	hasSentPostPracticeRaceCustomLobbyAcceptInvite = false;
+	hasReceivedPostPracticeRaceCustomLobbyAcceptInvite = false;
+
 	receivedMapLoadSignal = false;
 	receivedMapVerifySignal = false;
 	receivedGameStartSignal = false;
@@ -2834,6 +2839,16 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		cout << "handling Game_Host_Post_Practice_Dont_Keep_Playing from connection " << connection << endl;
 		break;
 	}
+	case UdpMsg::Game_Post_Practice_Lobby_Invite:
+	{
+		hasReceivedPostPracticeRaceCustomLobbyInvite = true;
+		break;
+	}
+	case UdpMsg::Game_Post_Practice_Lobby_Accept:
+	{
+		hasReceivedPostPracticeRaceCustomLobbyAcceptInvite = true;
+		break;
+	}
 
 	}
 
@@ -3916,7 +3931,7 @@ bool NetplayManager::PeerWantsToKeepPlayingPractice()
 	return false;
 }
 
-void NetplayManager::ClearPracticeWantsToKeepPlayingInfo()
+void NetplayManager::ClearPostPracticeMatchInfo()
 {
 	for (int i = 0; i < numPlayers; ++i)
 	{
@@ -3927,7 +3942,47 @@ void NetplayManager::ClearPracticeWantsToKeepPlayingInfo()
 	}
 
 	wantsToKeepPlayingPractice = false;
+
+
+	hasSentPostPracticeRaceCustomLobbyInvite = false;
+	hasReceivedPostPracticeRaceCustomLobbyInvite = false;
+	hasSentPostPracticeRaceCustomLobbyAcceptInvite = false;
+	hasReceivedPostPracticeRaceCustomLobbyAcceptInvite = false;
 }
+
+void NetplayManager::SendPostMatchPracticeCustomLobbyInviteSignal()
+{
+	hasSentPostPracticeRaceCustomLobbyInvite = true;
+	cout << "SendPostMatchPracticeCustomLobbyInviteSignal" << "\n";
+	if (IsHost())
+	{
+		SendSignalToAllClients(UdpMsg::Game_Post_Practice_Lobby_Invite);
+	}
+	else
+	{
+		SendSignalToHost(UdpMsg::Game_Post_Practice_Lobby_Invite);
+	}
+}
+
+void NetplayManager::SendPostMatchPracticeCustomLobbyAcceptSignal()
+{
+	hasSentPostPracticeRaceCustomLobbyAcceptInvite = true;
+	cout << "SendPostMatchPracticeCustomLobbyAcceptSignal" << "\n";
+	if (IsHost())
+	{
+		SendSignalToAllClients(UdpMsg::Game_Post_Practice_Lobby_Accept);
+	}
+	else
+	{
+		SendSignalToHost(UdpMsg::Game_Post_Practice_Lobby_Accept);
+	}
+}
+
+//void NetplayManager::SendPostMatchPracticeLeaveSignalToHost()
+//{
+//	cout << "client sending host message to leave practice race" << endl;
+//	SendSignalToHost(UdpMsg::Game_Client_Post_Practice_Leave);
+//}
 
 //void NetplayManager::OnSteamNetworkingMessagesSessionFailed(SteamNetworkingMessagesSessionFailed_t *pCallback)
 //{

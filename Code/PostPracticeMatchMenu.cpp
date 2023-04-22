@@ -1,6 +1,6 @@
 #include "PostPracticeMatchMenu.h"
 #include "BasicTextMenu.h"
-#include "KeepPlayingButton.h"
+#include "SingleInputMenuButton.h"
 #include "NetplayManager.h"
 #include "MainMenu.h"
 
@@ -12,7 +12,9 @@ PostPracticeMatchMenu::PostPracticeMatchMenu()
 	vector<string> practiceHostOptions = { "Invite to Custom Lobby", "Leave" };
 	textMenu = new BasicTextMenu(practiceHostOptions);
 
-	keepPlayingButton = new KeepPlayingButton;
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+	keepPlayingButton = new SingleInputMenuButton( "Ready", Vector2f( 500, 200 ), XBoxButton::XBOX_START, 64 );
 	keepPlayingButton->SetCenter(Vector2f(960, 300));
 
 	SetRectTopLeft(otherPlayerTestQuad, 100, 100, Vector2f(0, 0));
@@ -34,7 +36,7 @@ void PostPracticeMatchMenu::Reset()
 
 bool PostPracticeMatchMenu::WantsToKeepPlaying()
 {
-	return keepPlayingButton->action == KeepPlayingButton::A_ON;
+	return keepPlayingButton->action == SingleInputMenuButton::A_ON;
 }
 
 int PostPracticeMatchMenu::Update()
@@ -43,7 +45,7 @@ int PostPracticeMatchMenu::Update()
 
 	bool oldKeepPlayingOn = WantsToKeepPlaying();
 
-	keepPlayingButton->Update();
+	keepPlayingButton->Update( CONTROLLERS.ButtonPressed_Start(), CONTROLLERS.ButtonPressed_B() );
 
 	bool keepPlayingOn = WantsToKeepPlaying();
 

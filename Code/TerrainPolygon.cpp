@@ -4010,6 +4010,7 @@ void TerrainPolygon::SetupTouchGrass()
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL);
 		AddTouchGrass(TouchGrass::TYPE_TEST);
+		//AddTouchGrass(TouchGrass::TYPE_TREE);
 	}
 	ResetTouchGrass();
 	UpdateTouchGrass();

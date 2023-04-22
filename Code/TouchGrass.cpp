@@ -76,6 +76,9 @@ void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
 	case TouchGrass::TYPE_TEST:
 		tg = new TestTouchGrass(this, index, edge, quant);
 		break;
+	case TouchGrass::TYPE_TREE:
+		tg = new TouchTree(this, index, edge, quant);
+		break;
 	}
 
 	myGrass.push_back(tg);
@@ -124,6 +127,11 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 	case TouchGrass::TYPE_TEST:
 		t = tm->GetTileset("Env/bushtouch_1_02_128x128.png", 128, 128);
 		break;
+	case TouchGrass::TYPE_TREE:
+		t = tm->GetTileset("Env/trees_128x128.png", 128, 128);
+		break;
+	default:
+		assert(0);
 	}
 	return t;
 }
@@ -139,7 +147,16 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 	case TYPE_TEST:
 		width = 128;
 		break;
+	case TYPE_TREE:
+		width = 128;
+		break;
 	}
+
+	if (width == 0)
+	{
+		assert(0);
+	}
+
 	return width;
 }
 
@@ -228,8 +245,18 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
 		return (r < 15);
 		break;
 	}
-		
+	case TYPE_TREE:
+	{
+		int r = rand() % 100;
+		return (r < 15);
+		break;
 	}
+	default:
+		assert(0);
+		break;
+	}
+
+	return false;
 }
 
 BasicTouchGrass::BasicTouchGrass(TouchGrassCollection *coll, int index,
@@ -451,6 +478,145 @@ void TestTouchGrass::Destroy(Actor *a)
 	{
 		a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
 			6, true, 4);
+
+		ClearRect(myQuad);
+		visible = false;
+	}
+}
+
+
+
+
+
+TouchTree::TouchTree(TouchGrassCollection *coll, int index,
+	Edge *e, double quant)
+	:TouchGrass(coll, index, e, quant)
+{
+	treeHeight = 500.f;
+
+	yOffset = 0;
+	V2d normal = edge->Normal();
+
+	V2d p = edge->GetPosition(quant);
+	center = p;
+	center += normal * yOffset;
+
+	center.y -= treeHeight / 2.f - 20; //arbitrary 20 rn
+
+	V2d hitboxCenter = center;//p + normal * hitboxYOff;
+
+	angle = 0;
+
+	//probably make this a rectangle later.
+	hurtBody.BasicCircleSetup(16, hitboxCenter);
+
+	SetRectRotation(myQuad, angle, coll->ts_grass->tileWidth,
+		treeHeight, Vector2f(center));
+
+	V2d polyCenter = coll->myTerrain->GetDCenter();
+	for (int i = 0; i < 4; ++i)
+	{
+		points[i] = V2d(myQuad[i].position) - polyCenter;
+	}
+
+	Reset();
+}
+
+void TouchTree::Reset()
+{
+	float treeHeight = 500;//coll->ts_grass->tileHeight
+	SetRectRotation(myQuad, angle, coll->ts_grass->tileWidth,
+		treeHeight, Vector2f(center));
+	visible = true;
+	action = STILL;
+	frame = 0;
+	currTile = -1;
+	UpdateSprite();
+}
+
+void TouchTree::UpdateSprite()
+{
+	int tileIndex = 0;
+
+	switch (action)
+	{
+	case TOUCHEDLEFT:
+		tileIndex = 3;
+		break;
+	case TOUCHEDRIGHT:
+		tileIndex = 2;
+		break;
+	case TOUCHEDLAND:
+		tileIndex = 1;
+		break;
+	}
+
+	if (tileIndex != currTile)
+	{
+		currTile = tileIndex;
+		SetRectSubRect(myQuad, coll->ts_grass->GetSubRect(1));
+	}
+
+}
+
+void TouchTree::Update()
+{
+	int time = 40;
+	switch (action)
+	{
+	case TOUCHEDLEFT:
+		if (frame == time)
+		{
+			action = STILL;
+			frame = 0;
+		}
+		break;
+	case TOUCHEDRIGHT:
+		if (frame == time)
+		{
+			action = STILL;
+			frame = 0;
+		}
+		break;
+	case TOUCHEDLAND:
+		if (frame == time)
+		{
+			action = STILL;
+			frame = 0;
+		}
+		break;
+	}
+
+	UpdateSprite();
+
+	++frame;
+}
+
+void TouchTree::Touch(Actor *a)
+{
+	if (a->ground != NULL && a->groundSpeed > 0)
+	{
+		action = TOUCHEDRIGHT;
+	}
+	else if (a->ground != NULL && a->groundSpeed < 0)
+	{
+		action = TOUCHEDLEFT;
+	}
+	else if (a->action == Actor::LAND || a->action == Actor::LAND2)
+	{
+		action = TOUCHEDLAND;
+	}
+
+
+	frame = 0;
+}
+
+void TouchTree::Destroy(Actor *a)
+{
+	if (visible)
+	{
+		//a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+		//	6, true, 4);
 
 		ClearRect(myQuad);
 		visible = false;

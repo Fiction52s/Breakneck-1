@@ -4,12 +4,12 @@
 #include <SFML\Graphics.hpp>
 
 struct BasicTextMenu;
-struct KeepPlayingButton;
+struct SingleInputMenuButton;
 
 struct PostPracticeMatchMenu
 {
 	BasicTextMenu *textMenu;
-	KeepPlayingButton *keepPlayingButton;
+	SingleInputMenuButton *keepPlayingButton;
 
 	sf::Vertex otherPlayerTestQuad[4];
 

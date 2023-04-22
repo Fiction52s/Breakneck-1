@@ -39,7 +39,7 @@ struct TitleScreen : TilesetManager, GUIHandler
 	MainMenu *mainMenu;
 	Background *background;
 
-	//PostPracticeMatchMenu *testMenu;
+	PostPracticeMatchMenu *testMenu;
 
 	CreditsMenuScreen *creditsMenuScreen;
 

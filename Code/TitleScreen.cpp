@@ -17,7 +17,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
 
-	//testMenu = new PostPracticeMatchMenu;
+	testMenu = new PostPracticeMatchMenu;
 
 	panel = new Panel("feedbackpanel", 1920, 1080, this);
 	panel->SetColor(Color::Transparent);
@@ -99,8 +99,8 @@ TitleScreen::~TitleScreen()
 
 void TitleScreen::Reset()
 {
-	//testMenu->Reset();
-	//return;
+	testMenu->Reset();
+	return;
 
 	background->Reset();
 	frame = 0;
@@ -108,8 +108,8 @@ void TitleScreen::Reset()
 
 void TitleScreen::Update()
 {
-	//testMenu->Update();
-	//return;
+	testMenu->Update();
+	return;
 
 
 	panel->MouseUpdate();
@@ -215,8 +215,8 @@ void TitleScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 void TitleScreen::Draw(sf::RenderTarget *target)
 {
-	//testMenu->Draw(target);
-	//return;
+	testMenu->Draw(target);
+	return;
 
 	background->Draw(target);
 	target->draw(titleBGSprite);
