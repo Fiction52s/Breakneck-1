@@ -207,8 +207,14 @@ struct NetplayManager
 	bool hasReceivedPostPracticeRaceCustomLobbyInvite;
 	bool hasSentPostPracticeRaceCustomLobbyAcceptInvite;
 	bool hasReceivedPostPracticeRaceCustomLobbyAcceptInvite;
+	bool hasReceivedPostPracticeRaceCustomLobbyID;
+	uint64 postPracticeRaceLobbyInviteID;
 
 	bool wantsToKeepPlayingPractice;
+
+
+
+	
 
 	//sf::Uint64 practicePeersToRaceList;
 
@@ -478,6 +484,8 @@ struct NetplayManager
 
 	void SendPostMatchPracticeCustomLobbyInviteSignal();
 	void SendPostMatchPracticeCustomLobbyAcceptSignal();
+
+	void SendPostMatchPracticeCustomLobbyRejectSignal();
 };
 
 #endif

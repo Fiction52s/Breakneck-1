@@ -8,7 +8,10 @@ using namespace sf;
 //sf::Vertex buttonQuad[4];
 //sf::Text startText;
 
-SingleInputMenuButton::SingleInputMenuButton(const std::string &actionStr, sf::Vector2f p_size, 
+SingleInputMenuButton::SingleInputMenuButton(const std::string &offStr, const std::string &onStr,
+	sf::Color p_offColor, sf::Color p_onColor, 
+	sf::Color p_offTextColor, sf::Color p_onTextColor,
+	sf::Vector2f p_size,
 	XBoxButton p_button, float p_buttonSize)
 {
 	MainMenu *mainMenu = MainMenu::GetInstance();
@@ -16,12 +19,22 @@ SingleInputMenuButton::SingleInputMenuButton(const std::string &actionStr, sf::V
 	controllerStates = NULL;
 	ts_buttons = NULL;
 
-	actionText.setFont(mainMenu->arial);
-	actionText.setCharacterSize(40);
-	actionText.setString(actionStr);
-	actionText.setFillColor(Color::White);
-	auto lb = actionText.getLocalBounds();
-	actionText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+	onColor = p_onColor;
+	offColor = p_offColor;
+
+	offText.setFont(mainMenu->arial);
+	offText.setCharacterSize(40);
+	offText.setString(offStr);
+	offText.setFillColor(p_offTextColor);
+	auto lb = offText.getLocalBounds();
+	offText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+
+	onText.setFont(mainMenu->arial);
+	onText.setCharacterSize(40);
+	onText.setString(onStr);
+	onText.setFillColor(p_onTextColor);
+	lb = onText.getLocalBounds();
+	onText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
 
 	buttonSize = p_buttonSize;
 
@@ -40,7 +53,7 @@ SingleInputMenuButton::SingleInputMenuButton(const std::string &actionStr, sf::V
 void SingleInputMenuButton::Reset()
 {
 	action = A_OFF;
-	SetRectColor(bgQuad, Color::Red);
+	SetRectColor(bgQuad, offColor);
 }
 
 void SingleInputMenuButton::Update( bool onPress, bool offPress )
@@ -48,12 +61,12 @@ void SingleInputMenuButton::Update( bool onPress, bool offPress )
 	if (onPress)
 	{
 		action = A_ON;
-		SetRectColor(bgQuad, Color::Green);
+		SetRectColor(bgQuad, onColor);
 	}
 	else if (offPress)
 	{
 		action = A_OFF;
-		SetRectColor(bgQuad, Color::Red);
+		SetRectColor(bgQuad, offColor);
 	}
 }
 
@@ -86,11 +99,12 @@ void SingleInputMenuButton::SetTopLeft(sf::Vector2f p_topLeft)
 
 	Vector2f center = topLeft + Vector2f(size.x / 2, size.y / 2);
 
-	actionText.setPosition(center);
+	offText.setPosition(center);
+	onText.setPosition(center);
 
 	SetRectTopLeft(bgQuad, size.x, size.y, topLeft);
 
-	float actionTextBottom = actionText.getGlobalBounds().top + actionText.getGlobalBounds().height;
+	float actionTextBottom = offText.getGlobalBounds().top + offText.getGlobalBounds().height;
 
 	SetRectTopLeft(buttonQuad, buttonSize, buttonSize, Vector2f(center.x - buttonSize / 2, actionTextBottom + 10));
 }
@@ -98,7 +112,16 @@ void SingleInputMenuButton::SetTopLeft(sf::Vector2f p_topLeft)
 void SingleInputMenuButton::Draw(sf::RenderTarget *target)
 {
 	target->draw(bgQuad, 4, sf::Quads);
-	target->draw(actionText);
+
+	if (action == A_ON)
+	{
+		target->draw(onText);
+	}
+	else
+	{
+		target->draw(offText);
+	}
+	
 
 	if (ts_buttons != NULL)
 	{

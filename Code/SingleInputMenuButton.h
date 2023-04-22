@@ -16,7 +16,8 @@ struct SingleInputMenuButton
 
 	sf::Vertex bgQuad[4];
 	sf::Vertex buttonQuad[4];
-	sf::Text actionText;
+	sf::Text offText;
+	sf::Text onText;
 	sf::Vector2f topLeft;
 	sf::Vector2f size;
 	Tileset *ts_buttons;
@@ -24,8 +25,12 @@ struct SingleInputMenuButton
 	ControllerDualStateQueue *controllerStates;
 	int button;
 	float buttonSize;
+	sf::Color offColor;
+	sf::Color onColor;
 
-	SingleInputMenuButton( const std::string &actionStr, sf::Vector2f p_size,
+	SingleInputMenuButton( const std::string &offStr, const std::string &onStr, 
+		sf::Color offColor, sf::Color onColor, 
+		sf::Color offTextColor, sf::Color onTextColor, sf::Vector2f p_size,
 		XBoxButton p_button, float buttonSize );
 	void Reset();
 	void Update( bool onPress, bool offPress );

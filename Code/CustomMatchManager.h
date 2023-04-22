@@ -44,6 +44,7 @@ struct CustomMatchManager
 		A_POST_MATCH_QUICKPLAY_VOTE_KEEP_PLAYING_WAIT_FOR_OTHERS,
 		A_POST_MATCH_QUICKPLAY_LEAVE,
 		A_POST_MATCH_PRACTICE_LEAVE,
+		A_POST_MATCH_WAIT_TO_JOIN_LOBBY,
 	};
 
 	Action action;
@@ -76,6 +77,7 @@ struct CustomMatchManager
 	void CreateCustomLobbyFromWorkshopBrowser();
 	void BrowseCustomLobbies();
 	void TryEnterLobbyFromInvite(CSteamID lobbyId);
+	void TryEnterLobbyFromPostPracticeInvite(CSteamID lobbyId);
 	void TryActivateOptionsPanel( MapNode *mp );
 	void SetAction(Action a);
 	void HandleEvent(sf::Event ev);

@@ -562,6 +562,8 @@ void NetplayManager::Abort()
 	hasReceivedPostPracticeRaceCustomLobbyInvite = false;
 	hasSentPostPracticeRaceCustomLobbyAcceptInvite = false;
 	hasReceivedPostPracticeRaceCustomLobbyAcceptInvite = false;
+	hasReceivedPostPracticeRaceCustomLobbyID = false;
+	postPracticeRaceLobbyInviteID = 0;
 
 	receivedMapLoadSignal = false;
 	receivedMapVerifySignal = false;
@@ -2849,6 +2851,12 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		hasReceivedPostPracticeRaceCustomLobbyAcceptInvite = true;
 		break;
 	}
+	case UdpMsg::Game_Post_Practice_Lobby_ID:
+	{
+		hasReceivedPostPracticeRaceCustomLobbyID = true;
+		postPracticeRaceLobbyInviteID = msg->u.lobby_invite.lobbyID;
+		break;
+	}
 
 	}
 
@@ -3948,6 +3956,9 @@ void NetplayManager::ClearPostPracticeMatchInfo()
 	hasReceivedPostPracticeRaceCustomLobbyInvite = false;
 	hasSentPostPracticeRaceCustomLobbyAcceptInvite = false;
 	hasReceivedPostPracticeRaceCustomLobbyAcceptInvite = false;
+
+	hasReceivedPostPracticeRaceCustomLobbyID = false;
+	postPracticeRaceLobbyInviteID = 0;
 }
 
 void NetplayManager::SendPostMatchPracticeCustomLobbyInviteSignal()
@@ -3975,6 +3986,20 @@ void NetplayManager::SendPostMatchPracticeCustomLobbyAcceptSignal()
 	else
 	{
 		SendSignalToHost(UdpMsg::Game_Post_Practice_Lobby_Accept);
+	}
+}
+
+void NetplayManager::SendPostMatchPracticeCustomLobbyRejectSignal()
+{
+	hasReceivedPostPracticeRaceCustomLobbyInvite = false;
+	cout << "SendPostMatchPracticeCustomLobbyRejectSignal" << "\n";
+	if (IsHost())
+	{
+		SendSignalToAllClients(UdpMsg::Game_Post_Practice_Lobby_Reject);
+	}
+	else
+	{
+		SendSignalToHost(UdpMsg::Game_Post_Practice_Lobby_Reject);
 	}
 }
 

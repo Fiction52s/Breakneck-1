@@ -244,6 +244,20 @@ void CustomMatchManager::TryEnterLobbyFromInvite( CSteamID lobbyId )
 	cout << "TryEnterLobbyFromInvite end" << endl;
 }
 
+void CustomMatchManager::TryEnterLobbyFromPostPracticeInvite(CSteamID lobbyId)
+{
+	cout << "TryEnterLobbyFromPostPracticeInvite" << "\n";
+	nextMapMode = false;
+
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+	netplayManager->currNetplayType = NetplayManager::NETPLAY_TYPE_CUSTOM_LOBBY;
+
+	LobbyManager *lobbyManager = netplayManager->lobbyManager;
+	lobbyManager->TryJoiningLobbyFromInvite(lobbyId);
+
+	SetAction(A_POST_MATCH_WAIT_TO_JOIN_LOBBY);
+}
+
 void CustomMatchManager::TryActivateOptionsPanel( MapNode *mp )
 {
 	if (mapOptionsPopup->Activate(mp) )
@@ -611,6 +625,19 @@ bool CustomMatchManager::Update()
 		}
 		break;
 	}
+	case A_POST_MATCH_WAIT_TO_JOIN_LOBBY:
+	{
+		LobbyManager *lobbyManager = netplayManager->lobbyManager;
+		if (lobbyManager->action == LobbyManager::A_IN_LOBBY)
+		{
+			netplayManager->UpdateNetplayPlayers();
+
+			cout << "joined the invited practice lobby pog!" << endl;
+
+			SetAction(A_CONNECT_TO_HOST);
+		}
+		break;
+	}
 	}
 
 	switch (action)
@@ -674,7 +701,10 @@ bool CustomMatchManager::Update()
 
 		if (result == -1)
 		{
-
+			if (postPracticeMatchMenu->IsReadyToJoinCustomLobby())
+			{
+				TryEnterLobbyFromPostPracticeInvite(netplayManager->postPracticeRaceLobbyInviteID);
+			}
 			break;
 		}
 
@@ -839,6 +869,11 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 	case A_QUICKPLAY_PRE_MATCH_DONE:
 	{
 		quickplayPreMatchScreen->Draw(target);
+		break;
+	}
+	case A_POST_MATCH_WAIT_TO_JOIN_LOBBY:
+	{
+		lobbyBrowser->panel->Draw(target);
 		break;
 	}
 	}

@@ -1109,7 +1109,7 @@ void Enemy::Reset()
 
 void Enemy::SetEnemyIDAndAddToAllEnemiesVec()
 {
-	assert(enemyIndex == -1);
+	//assert(enemyIndex == -1);
 
 	enemyIndex = sess->allEnemiesVec.size();
 	sess->allEnemiesVec.push_back(this);

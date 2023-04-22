@@ -56,6 +56,8 @@ struct UdpMsg
 	  Game_Host_Post_Practice_Dont_Keep_Playing,
 	  Game_Post_Practice_Lobby_Invite,
 	  Game_Post_Practice_Lobby_Accept,
+	  Game_Post_Practice_Lobby_Reject,
+	  Game_Post_Practice_Lobby_ID,
    };
   /* enum MsgType { 
       Invalid       = 0,
@@ -156,22 +158,8 @@ public:
          size = (int)((char *)&u.input.bits - (char *)&u.input);
          size += (u.input.num_bits + 7) / 8;
          return size;
-
-	  case Game_Client_Done_Connecting: return 0;
-	  case Game_Host_Says_Verify_Map: return 0;
-	  case Game_Client_Needs_Map: return 0;
-	  case Game_Client_Done_Verifying: return 0;
-	  case Game_Client_Has_Received_All_Data: return 0;
-	  case Game_Host_Says_Load: return 0;
-	  case Game_Client_Done_Loading: return 0;
-	  case Game_Host_Says_Start: return 0;
 	  case Game_Desync_Check: return sizeof(u.desync_info);
-	  case Game_Map: return 0;
-	  case Game_Preview: return 0;
-	  case Game_Client_Needs_Preview: return 0;
-	  case Game_Host_Rematch: return 0;
-	  case Game_Client_Finished_Results_Screen: return 0;
-	  case Game_Host_Show_Post_Options: return 0;
+	  case Game_Post_Practice_Lobby_ID: return sizeof(u.lobby_invite);
       }
 
       //assert(false);

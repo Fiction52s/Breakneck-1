@@ -5,11 +5,26 @@
 
 struct BasicTextMenu;
 struct SingleInputMenuButton;
+struct GamePopup;
 
 struct PostPracticeMatchMenu
 {
+	enum Action
+	{
+		A_NORMAL,
+		A_ACCEPT_POPUP,
+		A_WAIT_FOR_LOBBY,
+	};
+
+	int action;
+
 	BasicTextMenu *textMenu;
-	SingleInputMenuButton *keepPlayingButton;
+	SingleInputMenuButton *readyButton;
+	SingleInputMenuButton *inviteButton;
+	SingleInputMenuButton *acceptButton;
+	GamePopup *acceptPopup;
+
+	sf::Text waitForLobbyText;
 
 	sf::Vertex otherPlayerTestQuad[4];
 
@@ -18,6 +33,7 @@ struct PostPracticeMatchMenu
 	void Reset();
 	int Update();
 	bool WantsToKeepPlaying();
+	bool IsReadyToJoinCustomLobby();
 	void Draw(sf::RenderTarget *target);
 };
 
