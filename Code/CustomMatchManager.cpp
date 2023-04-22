@@ -152,8 +152,6 @@ void CustomMatchManager::OpenPostMatchPopup()
 
 void CustomMatchManager::BrowseForNextMap()
 {
-	
-
 	nextMapMode = true;
 
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
@@ -174,6 +172,7 @@ void CustomMatchManager::BrowseForNextMap()
 
 void CustomMatchManager::CreateCustomLobby()
 {
+	creatingCustomLobbyPostPracticeMatch = false;
 	nextMapMode = false;
 	fromWorkshopBrowser = false;
 	//assert(action == A_LOBBY_BROWSER);
@@ -185,6 +184,19 @@ void CustomMatchManager::CreateCustomLobby()
 
 	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME);
 	
+	SetAction(A_CHOOSE_MAP);
+}
+
+void CustomMatchManager::CreateCustomLobbyPostPracticeMatch()
+{
+	creatingCustomLobbyPostPracticeMatch = true;
+	nextMapMode = false;
+	fromWorkshopBrowser = false;
+
+	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+
+	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME);
+
 	SetAction(A_CHOOSE_MAP);
 }
 
@@ -508,6 +520,11 @@ bool CustomMatchManager::Update()
 	{
 		if (netplayManager->lobbyManager->IsInLobby())
 		{
+			if (creatingCustomLobbyPostPracticeMatch)
+			{
+				netplayManager->SendPostMatchPracticeCustomLobbyID();
+			}
+
 			SetAction(A_WAITING_ROOM);
 			netplayManager->connectionManager->CreateListenSocket();
 
@@ -684,13 +701,13 @@ bool CustomMatchManager::Update()
 		switch (postMatchPopup->action)
 		{
 		case PostMatchOptionsPopup::A_REMATCH:
-			action = A_POST_MATCH_HOST_REMATCH;
+			SetAction(A_POST_MATCH_HOST_REMATCH);
 			break;
 		case PostMatchOptionsPopup::A_CHOOSE_MAP:
-			action = A_POST_MATCH_HOST_CHOOSE_MAP;
+			SetAction(A_POST_MATCH_HOST_CHOOSE_MAP);
 			break;
 		case PostMatchOptionsPopup::A_LEAVE:
-			action = A_POST_MATCH_HOST_LEAVE;
+			SetAction(A_POST_MATCH_HOST_LEAVE);
 			break;
 		}	
 		break;
@@ -712,17 +729,28 @@ bool CustomMatchManager::Update()
 		{
 		case 0://Invite to Custom Lobby
 		{
-			/*if (!netplayManager->hasSentPostPracticeRaceCustomLobbyInvite)
+			if (!netplayManager->hasSentPostPracticeRaceCustomLobbyInvite)
 			{
-
-			}*/
+				netplayManager->SendPostMatchPracticeCustomLobbyInviteSignal();
+				SetAction(A_POST_MATCH_PRACTICE_WAIT_FOR_INVITE_ACCEPT);
+			}
 			break;
 		}
 		case 1://Leave
 		{
-			action = A_POST_MATCH_PRACTICE_LEAVE;
+			SetAction(A_POST_MATCH_PRACTICE_LEAVE);
 			break;
 		}
+		}
+
+		break;
+	}
+	case A_POST_MATCH_PRACTICE_WAIT_FOR_INVITE_ACCEPT:
+	{
+		if (netplayManager->hasReceivedPostPracticeRaceCustomLobbyAcceptInvite)
+		{
+			//this means we start making the custom lobby!
+			CreateCustomLobbyPostPracticeMatch();
 		}
 
 		break;

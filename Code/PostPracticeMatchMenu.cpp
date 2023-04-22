@@ -112,8 +112,8 @@ int PostPracticeMatchMenu::Update()
 			SetRectColor(otherPlayerTestQuad, Color::Red);
 		}
 
-		inviteButton->Update(CONTROLLERS.ButtonPressed_X(), false);
-		acceptButton->Update(CONTROLLERS.ButtonPressed_Y(), false);
+		//inviteButton->Update(CONTROLLERS.ButtonPressed_X(), false);
+		//acceptButton->Update(CONTROLLERS.ButtonPressed_Y(), false);
 
 		int textResult = textMenu->Update();
 
@@ -139,14 +139,14 @@ int PostPracticeMatchMenu::Update()
 	}
 	else
 	{
-		NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+		//NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 
-		if (netplayManager->hasReceivedPostPracticeRaceCustomLobbyID)
-		{
-			//I have the lobby ID at this point
-			//customMatchManager->TryEnterLobbyFromPostPracticeInvite
-			//how do I get from here to the waiting room
-		}
+		//if (netplayManager->hasReceivedPostPracticeRaceCustomLobbyID)
+		//{
+		//	//I have the lobby ID at this point
+		//	//customMatchManager->TryEnterLobbyFromPostPracticeInvite
+		//	//how do I get from here to the waiting room
+		//}
 	}
 }
 

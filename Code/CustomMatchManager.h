@@ -35,6 +35,7 @@ struct CustomMatchManager
 		A_POST_MATCH_HOST,
 		A_POST_MATCH_CLIENT,
 		A_POST_MATCH_PRACTICE,
+		A_POST_MATCH_PRACTICE_WAIT_FOR_INVITE_ACCEPT,
 		A_POST_MATCH_CLIENT_LEAVE,
 		A_POST_MATCH_HOST_REMATCH,
 		A_POST_MATCH_HOST_CHOOSE_MAP,
@@ -63,6 +64,8 @@ struct CustomMatchManager
 	PostMatchQuickplayOptionsPopup *postMatchQuickplayPopup;
 	PostPracticeMatchMenu *postPracticeMatchMenu;
 
+	bool creatingCustomLobbyPostPracticeMatch;
+
 
 	int preErrorAction;
 	bool fromWorkshopBrowser;
@@ -73,6 +76,7 @@ struct CustomMatchManager
 	~CustomMatchManager();
 	void OpenPostMatchPopup();
 	void CreateCustomLobby();
+	void CreateCustomLobbyPostPracticeMatch();
 	void BrowseForNextMap();
 	void CreateCustomLobbyFromWorkshopBrowser();
 	void BrowseCustomLobbies();

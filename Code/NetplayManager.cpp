@@ -4003,6 +4003,54 @@ void NetplayManager::SendPostMatchPracticeCustomLobbyRejectSignal()
 	}
 }
 
+void NetplayManager::SendPostMatchPracticeCustomLobbyID()
+{
+	cout << "SendPostMatchPracticeCustomLobbyID" << "\n";
+
+
+	if (isSyncTest)
+	{
+		return;
+	}
+
+	UdpMsg msg(UdpMsg::Game_Post_Practice_Lobby_ID);
+	msg.u.lobby_invite.lobbyID = lobbyManager->currentLobby.m_steamIDLobby.ConvertToUint64();
+
+	assert(lobbyManager->IsInLobby());
+
+	HSteamNetConnection con = 0;
+	cout << "sending lobby id to peers" << endl;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (IsHost())
+		{
+			if (!netplayPlayers[i].isHost)
+			{
+				if (i == playerIndex)
+				{
+					cout << "playerIndex: " << playerIndex << "\n";
+					assert(i != playerIndex);
+				}
+
+				cout << "sending lobby id to client at index " << i << " on connection " << netplayPlayers[i].connection << endl;
+				SendUdpMsg(netplayPlayers[i].connection, &msg);
+			}
+		}
+		else
+		{
+			if (netplayPlayers[i].isHost)
+			{
+				if (i != playerIndex)
+				{
+					SendUdpMsg(netplayPlayers[i].connection, &msg);
+					cout << "sending lobby id to host at index " << i << " on connection " << netplayPlayers[i].connection << endl;
+				}
+				break;
+			}
+		}
+	}
+}
+
 //void NetplayManager::SendPostMatchPracticeLeaveSignalToHost()
 //{
 //	cout << "client sending host message to leave practice race" << endl;
@@ -4030,3 +4078,52 @@ void NetplayManager::SendPostMatchPracticeCustomLobbyRejectSignal()
 //		cout << "there is no session witht he user pending or otherwise\n";
 //	}
 //
+
+
+//void NetplayManager::SendSignalToHost(int type)
+//{
+//	assert(!IsHost());
+//	UdpMsg msg((UdpMsg::MsgType)type);
+//
+//	cout << "attempt to send msg to host " << type << endl;
+//	HSteamNetConnection con = 0;
+//	for (int i = 0; i < 4; ++i)
+//	{
+//		if (netplayPlayers[i].isHost)
+//		{
+//			if (i != playerIndex)
+//			{
+//				SendUdpMsg(netplayPlayers[i].connection, &msg);
+//				cout << "sending signal to host at index " << i << " on connection " << netplayPlayers[i].connection << ": " << type << endl;
+//			}
+//			break;
+//		}
+//	}
+//}
+//
+//void NetplayManager::SendSignalToAllClients(int type)
+//{
+//	if (isSyncTest)
+//	{
+//		return;
+//	}
+//
+//	assert(IsHost());
+//	UdpMsg msg((UdpMsg::MsgType)type);
+//
+//	HSteamNetConnection con = 0;
+//	cout << "sending signal to clients: " << type << endl;
+//	for (int i = 0; i < 4; ++i)
+//	{
+//		if (!netplayPlayers[i].isHost)
+//		{
+//			if (i == playerIndex)
+//			{
+//				cout << "playerIndex: " << playerIndex << "\n";
+//				assert(i != playerIndex);
+//			}
+//
+//			SendUdpMsg(netplayPlayers[i].connection, &msg);
+//		}
+//	}
+//}

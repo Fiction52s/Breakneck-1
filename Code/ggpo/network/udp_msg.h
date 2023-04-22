@@ -55,6 +55,7 @@ struct UdpMsg
 	  Game_Host_Post_Practice_Keep_Playing,
 	  Game_Host_Post_Practice_Dont_Keep_Playing,
 	  Game_Post_Practice_Lobby_Invite,
+	  Game_Post_Practice_Lobby_Cancel_Invite,
 	  Game_Post_Practice_Lobby_Accept,
 	  Game_Post_Practice_Lobby_Reject,
 	  Game_Post_Practice_Lobby_ID,

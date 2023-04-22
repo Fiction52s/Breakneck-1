@@ -288,6 +288,8 @@ struct NetplayManager
 	std::string practiceSearchMapPath;
 	int practiceSearchAdventureMapIndex;
 
+	
+
 	int currMapIndex;
 
 
@@ -486,6 +488,8 @@ struct NetplayManager
 	void SendPostMatchPracticeCustomLobbyAcceptSignal();
 
 	void SendPostMatchPracticeCustomLobbyRejectSignal();
+
+	void SendPostMatchPracticeCustomLobbyID();
 };
 
 #endif
