@@ -3933,6 +3933,22 @@ NetplayPlayer *NetplayManager::GetNetplayPlayerFromConnection(HSteamNetConnectio
 	return NULL;
 }
 
+NetplayPlayer *NetplayManager::GetConnectedPeer()
+{
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		if (netplayPlayers[i].isConnectedTo)
+		{
+			return &netplayPlayers[i];
+		}
+	}
+
+	return NULL;
+}
+
 bool NetplayManager::PeerWantsToKeepPlayingPractice()
 {
 	for (int i = 0; i < numPlayers; ++i)

@@ -745,7 +745,15 @@ bool CustomMatchManager::Update()
 			}
 			break;
 		}
-		case 1://Leave
+		case 1: //send friend request
+		{
+			NetplayPlayer *np = netplayManager->GetConnectedPeer();
+			assert(np != NULL);
+
+			SteamFriends()->ActivateGameOverlayToUser("friendadd", np->id);
+			break;
+		}
+		case 2://Leave
 		{
 			SetAction(A_POST_MATCH_PRACTICE_LEAVE);
 			break;

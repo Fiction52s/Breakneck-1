@@ -10,7 +10,7 @@ using namespace sf;
 
 PostPracticeMatchMenu::PostPracticeMatchMenu()
 {
-	vector<string> practiceHostOptions = { "Invite to Custom Lobby", "Leave" };
+	vector<string> practiceHostOptions = { "Invite to Custom Lobby", "Send Friend Request", "Leave" };
 	textMenu = new BasicTextMenu(practiceHostOptions);
 
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;

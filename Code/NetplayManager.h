@@ -476,6 +476,7 @@ struct NetplayManager
 	bool PracticeRaceRequestHasBeenAccepted();
 
 	NetplayPlayer *GetNetplayPlayerFromConnection(HSteamNetConnection con);
+	NetplayPlayer *GetConnectedPeer();
 
 	void SendPostMatchPracticeLeaveSignalToHost();
 	void SendPostMatchPracticeKeepPlayingSignalToHost(bool keepPlaying);
