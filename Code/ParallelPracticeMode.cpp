@@ -77,6 +77,13 @@ bool ParallelPracticeMode::UpdateInviteDisplay(const ControllerState & curr, con
 
 void ParallelPracticeMode::SetInviteDisplayPrepareToLeave()
 {
+	bool res = sess->netplayManager->SetupNetplayPlayersFromPractice(true);
+
+	if (!res)
+	{
+		cout << "failed to set up netplay players from the host end" << "\n";
+	}
+
 	practiceInviteDisplay->PrepareToLeave();
 }
 

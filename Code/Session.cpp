@@ -2959,6 +2959,7 @@ void Session::UpdatePlayerInput(int index)
 			psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
 			psm.SetUpgradeField(player->bStartHasUpgradeField);
 			psm.startFrame = totalGameFrames;
+			psm.wantsToPlay = netplayManager->wantsToPracticeRace;
 			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 
 			PracticeInputMsg pm;
@@ -7255,6 +7256,7 @@ bool Session::FrozenGameModeUpdate()
 			psm.skinIndex = GetPlayerNormalSkin(0);
 			psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
 			psm.startFrame = totalGameFrames;
+			psm.wantsToPlay = netplayManager->wantsToPracticeRace;
 			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 
 			netplayManager->Update();
