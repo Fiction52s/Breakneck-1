@@ -1414,6 +1414,7 @@ void NetplayManager::Update()
 			if (!netplayPlayers[i].readyToRun)
 			{
 				allReady = false;
+				cout << "player: " << i << " is not yet ready to run" << "\n";
 				break;
 			}
 		}
@@ -2048,6 +2049,13 @@ void NetplayManager::LoadMap()
 	matchParams.controllerStateVec[0] = myControllerInput;
 	matchParams.controlProfiles[0] = myCurrProfile;
 
+	//just for the practice custom lobby testing. move this soon
+	if (game != NULL)
+	{
+		delete game;
+		game = NULL;
+	}
+
 	assert(game == NULL);
 
 	MainMenu *mm = MainMenu::GetInstance();
@@ -2621,6 +2629,7 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 
 				if (netplayPlayers[i].connection == connection)
 				{
+					cout << "setting player " << i << "ready to run" << "\n";
 					netplayPlayers[i].readyToRun = true;
 					break;
 				}
@@ -2684,6 +2693,7 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	{
 		assert(!IsHost());
 		receivedPostOptionsSignal = true;
+		cout << "receiving signal from host to show post options" << "\n";
 		break;
 	}
 	case UdpMsg::Game_Host_Next_Map_Data:

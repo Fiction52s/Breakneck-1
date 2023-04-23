@@ -56,7 +56,7 @@ PostPracticeMatchMenu::~PostPracticeMatchMenu()
 
 void PostPracticeMatchMenu::Reset()
 {
-	action = A_ACCEPT_POPUP;
+	action = A_NORMAL;
 	acceptPopup->SetInfo("You are being invited to a custom lobby. Accept?", 2, GamePopup::OPTION_YES);
 
 	textMenu->Reset();
@@ -69,7 +69,7 @@ void PostPracticeMatchMenu::Reset()
 
 bool PostPracticeMatchMenu::WantsToKeepPlaying()
 {
-	return readyButton->action == SingleInputMenuButton::A_ON;
+	return action == A_NORMAL && readyButton->action == SingleInputMenuButton::A_ON;
 }
 
 bool PostPracticeMatchMenu::IsReadyToJoinCustomLobby()
@@ -148,6 +148,8 @@ int PostPracticeMatchMenu::Update()
 		//	//how do I get from here to the waiting room
 		//}
 	}
+
+	return -1;
 }
 
 void PostPracticeMatchMenu::Draw(sf::RenderTarget *target)

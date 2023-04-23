@@ -894,7 +894,7 @@ void PracticeInviteDisplay::UpdateButtonIconsWhenControllerIsChanged()
 
 	int cType = sess->controllerStates[0]->GetControllerType();
 
-	ts_buttons = sess->GetButtonIconTileset(cType);
+	ts_buttons = sess->GetButtonIconTileset(0);
 
 	auto button = XBoxButton::XBOX_START;
 	SetRectSubRect(buttonQuads, mainMenu->GetButtonIconTileForMenu(cType, button));

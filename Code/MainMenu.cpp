@@ -2432,6 +2432,9 @@ void MainMenu::HandleMenuMode()
 			netplayManager->matchParams.controllerStateVec = oldParams.controllerStateVec;
 			netplayManager->matchParams.controlProfiles = oldParams.controlProfiles;
 
+			netplayManager->myControllerInput = netplayManager->matchParams.controllerStateVec[0];
+			netplayManager->myCurrProfile = netplayManager->matchParams.controlProfiles[0];
+
 			netplayManager->numPlayers = 2;//numOtherPlayers + 1; //+1 is me
 
 			netplayManager->matchParams.numPlayers = netplayManager->numPlayers; //always keep this synced up with numPlayers

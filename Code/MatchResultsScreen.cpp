@@ -122,6 +122,7 @@ bool VictoryScreen4Player::Update()
 
 		if (mm->netplayManager->receivedPostOptionsSignal)
 		{
+			cout << "receivedPostOptionSignal, waiting is over" << "\n";
 			return false;
 		}
 	}

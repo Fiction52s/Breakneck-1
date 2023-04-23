@@ -325,9 +325,12 @@ void WaitingRoom::SetMaxPlayers(int n)
 
 void WaitingRoom::OpenPopup()
 {
+	cout << "opening waiting room popup" << "\n";
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 
 	assert(netplayManager->lobbyManager->IsInLobby());
+
+	cout << "past the assert" << "\n";
 
 	netplayManager->lobbyManager->currWaitingRoom = this;
  
@@ -359,6 +362,9 @@ void WaitingRoom::OpenPopup()
 
 	ownerID = netplayManager->GetHostID();
 
+
+	
+
 	/*if (netplayManager->IsHost())
 	{
 		startButton->ShowMember();
@@ -378,6 +384,8 @@ void WaitingRoom::OpenPopup()
 	}*/
 
 	SetAction(A_WAITING_FOR_MEMBERS);
+
+	cout << "finished" << "\n";
 }
 
 void WaitingRoom::Clear()
