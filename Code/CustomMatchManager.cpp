@@ -172,28 +172,34 @@ void CustomMatchManager::BrowseForNextMap()
 
 void CustomMatchManager::CreateCustomLobby()
 {
+	MainMenu *mainMenu = MainMenu::GetInstance();
+
 	creatingCustomLobbyPostPracticeMatch = false;
 	nextMapMode = false;
 	fromWorkshopBrowser = false;
 	//assert(action == A_LOBBY_BROWSER);
 
-	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+	NetplayManager *netplayManager = mainMenu->netplayManager;
 	netplayManager->Init();
 
-	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+	mapBrowserScreen = mainMenu->mapBrowserScreen;
 
 	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME);
+
 	
 	SetAction(A_CHOOSE_MAP);
 }
 
 void CustomMatchManager::CreateCustomLobbyPostPracticeMatch()
 {
+	MainMenu *mainMenu = MainMenu::GetInstance();
+	mainMenu->SetMode(MainMenu::CUSTOM_MATCH_SETUP_FROM_PRACTICE);
+
 	creatingCustomLobbyPostPracticeMatch = true;
 	nextMapMode = false;
 	fromWorkshopBrowser = false;
 
-	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+	mapBrowserScreen = mainMenu->mapBrowserScreen;
 
 	mapBrowserScreen->StartLocalBrowsing(MapBrowser::CREATE_CUSTOM_GAME);
 
@@ -258,6 +264,9 @@ void CustomMatchManager::TryEnterLobbyFromInvite( CSteamID lobbyId )
 
 void CustomMatchManager::TryEnterLobbyFromPostPracticeInvite(CSteamID lobbyId)
 {
+	MainMenu *mainMenu = MainMenu::GetInstance();
+	mainMenu->SetMode(MainMenu::CUSTOM_MATCH_SETUP_FROM_PRACTICE);
+
 	cout << "TryEnterLobbyFromPostPracticeInvite" << "\n";
 	nextMapMode = false;
 

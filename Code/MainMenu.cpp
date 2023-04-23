@@ -3128,6 +3128,27 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	case CUSTOM_MATCH_SETUP_FROM_PRACTICE:
+	{
+		while (window->pollEvent(ev))
+		{
+			customMatchManager->HandleEvent(ev);
+		}
+
+		if (!customMatchManager->Update())
+		{
+			//update this soon
+			SetMode(ONLINE_MENU);
+			break;
+		}
+
+		if (customMatchManager->action == CustomMatchManager::A_READY)
+		{
+			SetMode(QUICKPLAY_TEST);
+		}
+
+		break;
+	}
 	case DOWNLOAD_WORKSHOP_MAP_START:
 	{
 		while (window->pollEvent(ev))
@@ -3465,6 +3486,10 @@ void MainMenu::HandleMenuMode()
 		}
 
 		customMatchManager->Update();
+
+		
+
+		
 
 		bool isHost = netplayManager->IsHost();
 
@@ -4278,6 +4303,7 @@ void MainMenu::DrawMode( Mode m )
 		editorMenuScreen->Draw(preScreenTexture);
 		break;
 	}
+	case CUSTOM_MATCH_SETUP_FROM_PRACTICE:
 	case CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER:
 	case CUSTOM_MATCH_SETUP:
 	{
