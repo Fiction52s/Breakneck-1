@@ -31,6 +31,7 @@ void MatchResultsScreen::Reset()
 VictoryScreen4Player::VictoryScreen4Player( MatchStats *mStats )
 	:MatchResultsScreen( mStats )
 {
+	maxFramesToShowResults = 30 * 60;
 	for (int i = 0; i < 4; ++i)
 	{
 		if (matchStats->playerStats[i] != NULL)
@@ -64,7 +65,7 @@ VictoryScreen4Player::VictoryScreen4Player( MatchStats *mStats )
 	fadeFrames = 60;
 	SetRectColor(fadeQuad, Color(0, 0, 0, 0));
 
-	waitingPopup = new LoadingPopup;
+	//waitingPopup = new LoadingPopup;
 	//player2Bar->SetBottomLeftPos( Vector2f( 0, 128 ) );
 }
 
@@ -76,21 +77,27 @@ VictoryScreen4Player::~VictoryScreen4Player()
 			delete playerBar[i];
 	}
 
-	delete waitingPopup;
+	//delete waitingPopup;
 }
 
 void VictoryScreen4Player::WaitForOthers()
 {
+	//Finish()
+
 	action = A_WAITING_FOR_OTHERS;
 	frame = 0;
-	waitingPopup->Pop("Waiting for other players", "");
+	//waitingPopup->Pop("Waiting for other players", "");
+
 
 	MainMenu *mm = MainMenu::GetInstance();
-	if (!mm->netplayManager->IsHost())
-	{
-		mm->netplayManager->SendFinishedResultsScreenSignalToHost();
-	}
-	else
+
+	assert(mm->netplayManager->playerIndex != -1);
+
+	playerBar[mm->netplayManager->playerIndex]->Finish();
+
+	mm->netplayManager->SendFinishedResultsScreenSignalToPeers();
+
+	if (mm->netplayManager->IsHost())
 	{
 		mm->netplayManager->HostFinishResultsScreen();
 	}
@@ -113,9 +120,30 @@ bool VictoryScreen4Player::Update()
 		opacity = finalOpacity;
 	}
 
+
+	if (action == A_SHOW_RESULTS || action == A_WAITING_FOR_OTHERS)
+	{
+		assert(matchStats->netplay);
+		MainMenu *mm = MainMenu::GetInstance();
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (i == mm->netplayManager->playerIndex)
+			{
+				continue;
+			}
+
+			if (mm->netplayManager->netplayPlayers[i].finishedWithResultsScreen && playerBar[i]->action == PlayerInfoBar::A_READY)
+			{
+				playerBar[i]->Finish();
+			}
+		}
+
+	}
+	
 	if (action == A_WAITING_FOR_OTHERS)
 	{	
-		waitingPopup->Update();
+		//waitingPopup->Update();
 
 		assert(matchStats->netplay);
 		MainMenu *mm = MainMenu::GetInstance();
@@ -138,7 +166,7 @@ bool VictoryScreen4Player::Update()
 		{
 			confirmComplete = CONTROLLERS.ButtonPressed_Start();
 
-			if (frame >= 60 * 5)
+			if (frame >= maxFramesToShowResults)
 			{
 				if (matchStats->quickplay)
 				{
@@ -167,6 +195,8 @@ bool VictoryScreen4Player::Update()
 			}*/
 		}
 
+		
+
 		for (int i = 0; i < 4; ++i)
 		{
 			if (playerBar[i] != NULL)
@@ -180,7 +210,7 @@ bool VictoryScreen4Player::Update()
 		{
 			if (playerBar[i] != NULL)
 			{
-				if (playerBar[i]->action != PlayerInfoBar::A_DONE)
+				if (playerBar[i]->action != PlayerInfoBar::A_READY && playerBar[i]->action != PlayerInfoBar::A_DONE )
 				{
 					done = false;
 					break;
@@ -263,7 +293,7 @@ void VictoryScreen4Player::Draw(sf::RenderTarget *target)
 			playerBar[i]->Draw(target);
 	}
 
-	if (action == A_WAITING_FOR_OTHERS)
+	/*if (action == A_WAITING_FOR_OTHERS)
 	{
 		sf::RectangleShape rect;
 		rect.setFillColor(Color(0, 0, 0, 100));
@@ -271,7 +301,7 @@ void VictoryScreen4Player::Draw(sf::RenderTarget *target)
 		rect.setPosition(0, 0);
 		target->draw(rect);
 		waitingPopup->Draw(target);
-	}
+	}*/
 }
 
 PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
@@ -348,7 +378,7 @@ PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
 	actionLength[A_IDLE] = 1;
 	actionLength[A_RISE] = 30;
 	actionLength[A_WAIT] = 1;
-	actionLength[A_DONE] = 1;
+	actionLength[A_READY] = 1;
 
 	action = A_IDLE;
 	frame = 0;
@@ -364,6 +394,12 @@ PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
 PlayerInfoBar::~PlayerInfoBar()
 {
 	delete skinShader;
+}
+
+void PlayerInfoBar::Finish()
+{
+	SetRectColor(quad, Color::White);
+	action = A_DONE;
 }
 
 void PlayerInfoBar::Draw( sf::RenderTarget *target )
@@ -382,6 +418,10 @@ void PlayerInfoBar::Draw( sf::RenderTarget *target )
 
 void PlayerInfoBar::Activate()
 {
+	sf::Color rectColors[] = { Color::Green, Color::Red, Color::Cyan, Color::Yellow };
+	SetRectColor(quad, rectColors[pIndex]);
+	//^testing changing the color as a temporary indicator
+
 	action = A_RISE;
 	frame = 0;
 	SetHeight(startHeight);
@@ -430,7 +470,7 @@ void PlayerInfoBar::Update( bool pressedA )
 	}
 	case A_WAIT:
 	{
-		action = A_DONE;
+		action = A_READY;
 		frame = 0;
 		break;
 	}

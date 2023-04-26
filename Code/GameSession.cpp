@@ -5015,7 +5015,7 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 		{
 			stats->quickplay = true;
 		}
-	}	
+	}
 
 	stats->gameModeType = gameModeType;
 

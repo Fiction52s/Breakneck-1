@@ -2665,28 +2665,21 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		//action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;
 		break;
 	}
-	case UdpMsg::Game_Client_Finished_Results_Screen:
+	case UdpMsg::Game_Peer_Finished_Results_Screen:
 	{
-		if (IsHost())
+		for (int i = 0; i < numPlayers; ++i)
 		{
-			for (int i = 0; i < numPlayers; ++i)
+			if (i == playerIndex)
+				continue;
+
+			if (netplayPlayers[i].connection == connection)
 			{
-				if (i == playerIndex)
-					continue;
-
-				if (netplayPlayers[i].connection == connection)
-				{
-					netplayPlayers[i].finishedWithResultsScreen = true;
-					break;
-				}
+				netplayPlayers[i].finishedWithResultsScreen = true;
+				break;
 			}
+		}
 
-			cout << "handle client finished with results screen msg: " << connection << endl;
-		}
-		else
-		{
-			assert(0);
-		}
+		cout << "handle peer finished with results screen msg: " << connection << endl;
 		break;
 	}
 	case UdpMsg::Game_Host_Show_Post_Options:
@@ -3030,9 +3023,24 @@ void NetplayManager::SendReceivedAllDataSignalToHost()
 	SendSignalToHost(UdpMsg::Game_Client_Has_Received_All_Data);
 }
 
-void NetplayManager::SendFinishedResultsScreenSignalToHost()
+void NetplayManager::SendFinishedResultsScreenSignalToPeers()
 {
-	SendSignalToHost(UdpMsg::Game_Client_Finished_Results_Screen);
+	//SendSignalToHost(UdpMsg::Game_Client_Finished_Results_Screen);
+	UdpMsg msg(UdpMsg::Game_Peer_Finished_Results_Screen);
+
+	cout << "attempt to send Game_Peer_Finished_Results_Screen to peers" << "\n";
+	HSteamNetConnection con = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		if (netplayPlayers[i].isConnectedTo)
+		{
+			SendUdpMsg(netplayPlayers[i].connection, &msg);
+			cout << "sending signal to host at index " << i << " on connection " << netplayPlayers[i].connection << ": Game_Peer_Finished_Results_Screen" << endl;
+		}
+	}
 }
 
 void NetplayManager::ClearClientsFinishingResultsScreen()

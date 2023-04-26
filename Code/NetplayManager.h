@@ -370,7 +370,7 @@ struct NetplayManager
 
 	MatchResultsScreen *CreateResultsScreen();
 
-	void SendFinishedResultsScreenSignalToHost();
+	void SendFinishedResultsScreenSignalToPeers();
 
 	void ClearClientsFinishingResultsScreen();
 	void HostFinishResultsScreen();

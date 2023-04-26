@@ -40,7 +40,7 @@ struct UdpMsg
 	  Game_Preview,
 	  Game_Client_Needs_Preview,
 	  Game_Host_Rematch,
-	  Game_Client_Finished_Results_Screen,
+	  Game_Peer_Finished_Results_Screen,
 	  Game_Host_Show_Post_Options,
 	  Game_Host_Post_Choose_Map,
 	  Game_Host_Next_Map_Data,

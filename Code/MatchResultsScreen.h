@@ -35,6 +35,7 @@ struct PlayerInfoBar
 		A_IDLE,
 		A_RISE,
 		A_WAIT,
+		A_READY,
 		A_DONE,
 		A_Count
 	};
@@ -63,6 +64,7 @@ struct PlayerInfoBar
 	PlayerInfoBar(MatchResultsScreen *mrs, int playerIndex );
 	~PlayerInfoBar();
 	void Activate();
+	void Finish();
 	void Update( bool pressedA );
 	void SetHeight( int height );
 	void Draw(sf::RenderTarget *target);
@@ -79,6 +81,22 @@ struct VictoryScreen4Player : MatchResultsScreen
 		A_Count
 	};
 
+
+	GameSession *game;
+
+	//LoadingPopup *waitingPopup;
+
+	int fadeFrames;
+
+	sf::Sprite bgSpr;
+	sf::Sprite winSpr;
+	sf::Sprite kinSpr;
+	sf::Vertex fadeQuad[4];
+
+	PlayerInfoBar *playerBar[4];
+
+	int maxFramesToShowResults;
+
 	VictoryScreen4Player(MatchStats *mStats);
 	~VictoryScreen4Player();
 	void Draw( sf::RenderTarget *target );
@@ -88,20 +106,7 @@ struct VictoryScreen4Player : MatchResultsScreen
 	void Reset();
 	void WaitForOthers();
 
-	GameSession *game;
 
-	LoadingPopup *waitingPopup;
-
-	int fadeFrames;
-	
-	sf::Sprite bgSpr;
-	sf::Sprite winSpr;
-	sf::Sprite kinSpr;
-	sf::Vertex fadeQuad[4];
-
-	
-
-	PlayerInfoBar *playerBar[4];
 };
 
 struct Tileset;
