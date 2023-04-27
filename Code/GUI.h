@@ -413,7 +413,9 @@ struct TextBox : PanelMember
 	int GetIndexRow(int index);
 	int GetIndexCol(int index);
 	int GetStringIndexFromCursorIndex(int cursorInd);
-	//std::string currString;
+	int GetCursorLineStartIndex(int lineIndex);
+	bool IsFull();
+	std::string currString;
 	sf::Vector2i pos;
 	int width;
 	int height;

@@ -138,7 +138,15 @@ void TextBox::SetString(const std::string &str)
 	{
 		if (str[currIndex] == '\n')
 		{
+			testText.setString(str.substr(rowStartIndex, (currIndex + 1 )- rowStartIndex));
+			currTextString += testText.getString();
 			lineStartIndexes.push_back(currIndex + 1);
+			rowStartIndex = currIndex + 1;
+
+			if (currIndex + 1 >= strLen)
+			{
+				break;
+			}
 			//newline stuff
 		}
 
@@ -150,12 +158,23 @@ void TextBox::SetString(const std::string &str)
 
 		if (textW >= width - leftBorder * 2)
 		{
-			testText.setString(str.substr(rowStartIndex, (currIndex - 1) - rowStartIndex));
-			currTextString += testText.getString() + "\n";
-			--currIndex;
-			rowStartIndex = currIndex;
-			lineStartIndexes.push_back(rowStartIndex);
-			fakeNewLineIndexes.push_back(rowStartIndex);
+			if (lineStartIndexes.size() == maxRows)
+			{
+				currString = currString.substr(0, currString.size() - 1);
+				testText.setString(str.substr(rowStartIndex, (currIndex - 1) - rowStartIndex));
+				currTextString += testText.getString();
+				break;
+			}
+			else
+			{
+				testText.setString(str.substr(rowStartIndex, (currIndex - 1) - rowStartIndex));
+				currTextString += testText.getString() + "\n";
+				--currIndex;
+				rowStartIndex = currIndex;
+				lineStartIndexes.push_back(rowStartIndex);
+				fakeNewLineIndexes.push_back(rowStartIndex);
+			}
+			
 		}
 
 		if (currIndex >= strLen)
@@ -181,7 +200,7 @@ void TextBox::SetString(const std::string &str)
 
 	for (int i = 0; i < numLines; ++i)
 	{
-		startIndex = lineStartIndexes[i] + i;
+		startIndex = GetCursorLineStartIndex(i);//lineStartIndexes[i];// +i;
 
 		if (i == numLines - 1)
 		{
@@ -189,7 +208,7 @@ void TextBox::SetString(const std::string &str)
 		}
 		else
 		{
-			endIndex = lineStartIndexes[i + 1];
+			endIndex = GetCursorLineStartIndex(i + 1);//lineStartIndexes[i + 1];
 		}
 
 		for (int j = 0; j <= endIndex - startIndex; ++j)
@@ -211,6 +230,21 @@ void TextBox::SetString(const std::string &str)
 			}
 		}	*/
 	}
+}
+
+int TextBox::GetCursorLineStartIndex(int lineIndex)
+{
+	int strIndex = lineStartIndexes[lineIndex];
+
+	for (int i = 0; i < fakeNewLineIndexes.size(); ++i)
+	{
+		if (strIndex >= fakeNewLineIndexes[i])
+		{
+			++strIndex;
+		}
+	}
+
+	return strIndex;
 }
 
 int TextBox::GetIndexRow(int cursorInd)
@@ -360,6 +394,14 @@ void TextBox::SetCursorIndex(Vector2i &localMousePos)
 	SetCursorIndex(chosenIndex);
 	//cursorIndex = chosenIndex;
 	//cursor.setPosition(pos.x + widths[chosenIndex] + leftBorder, pos.y);
+}
+
+bool TextBox::IsFull()
+{
+	if (text.getString().getSize() >= maxLength)
+		return true;
+
+	return false;
 }
 
 int TextBox::GetLineWidth(int lineNumber)
@@ -538,17 +580,12 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		break;
 	case Keyboard::BackSpace:
 	{
-		//text.setString( text.getString().substring( 0, cursorIndex ) + text.getString().substring( cursorIndex + 1 ) );
-
 		if (cursorIndex > 0)
 		{
-
-			//sf::String s = text.getString();
-			//if (s.getSize() > 0)
 			int realStringIndex = cursorIndex;
 			if( currString.length() > 0 )
 			{
-				currString.erase(GetStringIndexFromCursorIndex(cursorIndex) - 1);
+				currString.erase(GetStringIndexFromCursorIndex(cursorIndex) - 1, 1);
 				SetString(currString);
 				SetCursorIndex(cursorIndex - 1);
 			}
@@ -581,9 +618,9 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		}
 		else
 		{
-			int startIndex = lineStartIndexes[row] + row;
+			int startIndex = GetCursorLineStartIndex(row);//lineStartIndexes[row] + row;
 			int colIndex = cursorIndex - startIndex;
-			int prevRowStart = lineStartIndexes[row - 1] + (row-1);
+			int prevRowStart = GetCursorLineStartIndex(row-1);//lineStartIndexes[row - 1] + (row-1);
 
 			int prevRowLength = startIndex - prevRowStart - 1;
 
@@ -611,15 +648,15 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 			int strLen = text.getString().getSize();
 
-			int startIndex = lineStartIndexes[row] + row;
+			int startIndex = GetCursorLineStartIndex(row);//lineStartIndexes[row] + row;
 			int colIndex = cursorIndex - startIndex;
 
-			int nextRowStart = lineStartIndexes[row + 1] + (row + 1);
+			int nextRowStart = GetCursorLineStartIndex(row+1);//lineStartIndexes[row + 1] + (row + 1);
 
 			int nextnextRowStart;
 			if (row < numLines - 2)
 			{
-				nextnextRowStart = lineStartIndexes[row + 2] + (row + 2);
+				nextnextRowStart = GetCursorLineStartIndex(row + 2);//lineStartIndexes[row + 2] + (row + 2);
 			}
 			else
 			{
@@ -644,7 +681,7 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 	{
 		int row = GetIndexRow(cursorIndex);
 
-		int startIndex = lineStartIndexes[row] + row;
+		int startIndex = GetCursorLineStartIndex(row);//lineStartIndexes[row] + row;
 
 		SetCursorIndex(startIndex);
 			
@@ -663,7 +700,7 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		}
 		else
 		{
-			int nextStartIndex = lineStartIndexes[row + 1];
+			int nextStartIndex = GetCursorLineStartIndex(row+1);//lineStartIndexes[row + 1] + (row + 1);
 			SetCursorIndex(nextStartIndex - 1);
 		}
 		break;
@@ -674,7 +711,7 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 	}
 
-	if (c != 0 && text.getString().getSize() < maxLength)
+	if (c != 0 && !IsFull())
 	{
 		if (numbersOnly && !(c >= '0' && c <= '9'))
 		{

@@ -14,7 +14,7 @@ FeedbackForm::FeedbackForm()
 	int textBoxXBorder = 25;
 	Vector2i textBoxSize(size.x - textBoxXBorder * 2, size.y - 100);
 	//feedbackTextBox = panel->AddTextBox("feedbacktextbox", Vector2i(textBoxXBorder, 50), size.x - 2 * textBoxXBorder, 1000, "");
-	feedbackTextBox = panel->AddTextBox("feedbacktextbox", Vector2i(textBoxXBorder, 50), 100, 5, 20, 1000, ""); //,size.x - 2 * textBoxXBorder, 5, 20, 1000, "");
+	feedbackTextBox = panel->AddTextBox("feedbacktextbox", Vector2i(textBoxXBorder, 50), 100, 5, 20, 30, ""); //,size.x - 2 * textBoxXBorder, 5, 20, 1000, "");
 
 	//feedbackName = panel->AddLabel("feedbacktitle", Vector2i(10, 10), 28, "");
 
