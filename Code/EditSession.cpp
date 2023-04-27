@@ -3784,13 +3784,13 @@ void EditSession::SetupNewMapPanel()
 	newMapPanel->SetPosition(Vector2i(960 - newMapPanel->size.x/2, 540 - newMapPanel->size.y/2));
 	
 	newMapPanel->AddLabel("mapnamelabel", Vector2i( 10, 10 ), 28, "Map Name:");
-	newMapPanel->AddTextBox("mapname", Vector2i(200, 10), 200, 30, "");
+	newMapPanel->AddBasicTextBox("mapname", Vector2i(200, 10), 200, 30, "");
 
 	newMapPanel->AddLabel("pathlabel", Vector2i(100, 60), 28, "Resources\\Maps\\CustomMaps");
 	newMapPanel->AddButton("pathbutton", Vector2i(10, 60), sf::Vector2f(30, 30), "");
 
 	newMapPanel->AddLabel("timetolivelabel", Vector2i(10, 120), 28, "Time to Live\n(seconds):");
-	TextBox *ttlBox = newMapPanel->AddTextBox("timetolive", Vector2i(200, 140), 200, 30, "60");
+	TextBox *ttlBox = newMapPanel->AddBasicTextBox("timetolive", Vector2i(200, 140), 200, 30, "60");
 
 	Button *OK = newMapPanel->AddButton("ok", Vector2i(10, 300),
 		Vector2f(50, 30), "OK");
@@ -3811,7 +3811,7 @@ void EditSession::SetupBrushPanels()
 {
 	nameBrushPanel = new Panel("namebrush", 300, 150, this, true);
 	nameBrushPanel->AddLabel("name", Vector2i(10, 10), 28, "Name the Brush:");
-	nameBrushPanel->AddTextBox("text", Vector2i(40, 10), 200, 20, "");
+	nameBrushPanel->AddBasicTextBox("text", Vector2i(40, 10), 200, 20, "");
 	Button *OK = nameBrushPanel->AddButton("ok", Vector2i(250, 10),
 		Vector2f(30, 30), "OK");
 	nameBrushPanel->SetConfirmButton(OK);
@@ -5105,7 +5105,7 @@ void EditSession::InitDecorPanel()
 	decorPanel = new Panel("decorpanel", 650, 800, this);
 	allPopups.push_back(decorPanel);
 	GridSelector *gs = decorPanel->AddGridSelector("decorselector", Vector2i(0, 0), w, h, sw, sh, false, true );
-	decorPanel->AddTextBox("layer", Vector2i( 0, 800), 100, 3, "0");
+	decorPanel->AddBasicTextBox("layer", Vector2i( 0, 800), 100, 3, "0");
 	//decorTileIndexes = new int[w*h];
 	
 
@@ -5141,12 +5141,12 @@ void EditSession::InitDecorPanel()
 	allPopups.push_back(editDecorPanel);
 	editDecorPanel->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 
-	editDecorPanel->AddTextBox("xpos", Vector2i(20, 20), 200, 20, "x");
-	editDecorPanel->AddTextBox("ypos", Vector2i( 200, 20), 200, 20, "y");
-	editDecorPanel->AddTextBox("rotation", Vector2i(20, 100), 200, 20, "r");
-	editDecorPanel->AddTextBox("xscale", Vector2i(20, 180), 200, 20, "x");
-	editDecorPanel->AddTextBox("yscale", Vector2i(200, 180), 200, 20, "y");
-	editDecorPanel->AddTextBox("layer", Vector2i(20, 280), 200, 20, "l");
+	editDecorPanel->AddBasicTextBox("xpos", Vector2i(20, 20), 200, 20, "x");
+	editDecorPanel->AddBasicTextBox("ypos", Vector2i( 200, 20), 200, 20, "y");
+	editDecorPanel->AddBasicTextBox("rotation", Vector2i(20, 100), 200, 20, "r");
+	editDecorPanel->AddBasicTextBox("xscale", Vector2i(20, 180), 200, 20, "x");
+	editDecorPanel->AddBasicTextBox("yscale", Vector2i(200, 180), 200, 20, "y");
+	editDecorPanel->AddBasicTextBox("layer", Vector2i(20, 280), 200, 20, "l");
 	//editDecorPanel->AddTextBox("rotation", Vector2i(200, 100), 200, 20, "r");
 	//editDecorPanel->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
 }

@@ -1249,25 +1249,25 @@ void MainMenu::CustomMapsOption()
 	Panel namePopup( "name popup", 500, 200, &customMapHandler );
 	namePopup.pos = Vector2i( 960 - 250, 540 );
 	namePopup.AddButton( "ok", Vector2i( 300, 0 ), Vector2f( 100, 50 ), "OK" );	
-	namePopup.AddTextBox( "name", Vector2i( 10, 10 ), 300, 40, "test" );
+	namePopup.AddBasicTextBox( "name", Vector2i( 10, 10 ), 300, 40, "test" );
 
 	
 
 	Panel downloadPopup("remove popup", 500, 200, &customMapHandler);
 	downloadPopup.pos = Vector2i(960 - 250, 540);
 	downloadPopup.AddButton("downloadok", Vector2i(300, 0), Vector2f(100, 50), "OK");
-	downloadPopup.AddTextBox("index", Vector2i(10, 10), 300, 40, "0");
+	downloadPopup.AddBasicTextBox("index", Vector2i(10, 10), 300, 40, "0");
 
 	Panel loginPopup("login popup", 800, 200, &customMapHandler);
 	loginPopup.pos = Vector2i(960 - 400, 540);
 	loginPopup.AddButton("loginok", Vector2i(630, 0), Vector2f(100, 50), "OK");
-	loginPopup.AddTextBox("pass", Vector2i(10, 10), 300, 40, "");
-	loginPopup.AddTextBox("user", Vector2i(320, 10), 300, 40, "");
+	loginPopup.AddBasicTextBox("pass", Vector2i(10, 10), 300, 40, "");
+	loginPopup.AddBasicTextBox("user", Vector2i(320, 10), 300, 40, "");
 
 	Panel removePopup("remove popup", 500, 200, &customMapHandler);
 	removePopup.pos = Vector2i(960 - 250, 540);
 	removePopup.AddButton("removeok", Vector2i(300, 0), Vector2f(100, 50), "OK");
-	removePopup.AddTextBox("index", Vector2i(10, 10), 300, 40, "0");
+	removePopup.AddBasicTextBox("index", Vector2i(10, 10), 300, 40, "0");
 	//Panel loginPopup( "login popup")
 	//bool showNamePopup = false;
 

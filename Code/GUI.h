@@ -794,7 +794,7 @@ struct Panel
 		const std::vector<std::string> &p_options );
 	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int pixelWidth, int rows, int charHeight, int lengthLimit, const std::string &initialText );
-	TextBox * AddTextBox(const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText);
+	TextBox * AddBasicTextBox(const std::string &name, sf::Vector2i pos, int pixeWidth, int lengthLimit, const std::string &initialText);
 	Label * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	HyperLink * AddHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
 		const std::string &link );

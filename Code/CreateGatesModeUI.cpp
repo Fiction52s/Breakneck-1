@@ -70,12 +70,12 @@ CreateGatesModeUI::CreateGatesModeUI()
 
 
 	mainPanel->AddLabel("numkeyslabel", Vector2i( 0, labelExtraY ), labelCharHeight, "Number of keys/pickups:");
-	numToOpenTextbox = mainPanel->AddTextBox("numtoopen", Vector2i(0, 0), 50, 5, "");
+	numToOpenTextbox = mainPanel->AddBasicTextBox("numtoopen", Vector2i(0, 0), 50, 5, "");
 	numToOpenTextbox->SetToolTip("Set number of keys/pickups to open a gate");
 	numToOpenTextbox->SetString(to_string(numToOpen));
 
 	mainPanel->AddLabel("secondslabel", Vector2i(0, labelExtraY), labelCharHeight, "Time before lock:");
-	secondsTextbox = mainPanel->AddTextBox("secondsbox", Vector2i(0, 0), 50, 5, "");
+	secondsTextbox = mainPanel->AddBasicTextBox("secondsbox", Vector2i(0, 0), 50, 5, "");
 	secondsTextbox->SetToolTip("Set number of seconds before the gate closes");
 	secondsTextbox->SetString(to_string(seconds));
 

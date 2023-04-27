@@ -314,8 +314,8 @@ Panel *ActorType::CreatePanel()
 	{
 		p = new Panel("flowerpod_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
+		p->AddBasicTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddBasicTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
 
 	else if (name == "limitedgrindjugglercw"
@@ -377,7 +377,7 @@ Panel *ActorType::CreatePanel()
 	else if (name == "narwhal")
 	{
 		p = new Panel("narwhal_options", 200, 600, edit);
-		p->AddTextBox("moveframes", Vector2i(20, 300), 200, 20, "10");
+		p->AddBasicTextBox("moveframes", Vector2i(20, 300), 200, 20, "10");
 		p->AddButton("createpath", Vector2i(20, 350), Vector2f(100, 50), "Create Path");
 
 		p->AddCheckBox("monitor", Vector2i(20, 400));
@@ -385,22 +385,22 @@ Panel *ActorType::CreatePanel()
 	else if (name == "nexus")
 	{
 		p = new Panel("nexus_options", 200, 500, edit);
-		p->AddTextBox("nexusindex", Vector2i(20, 150), 200, 20, "1");
+		p->AddBasicTextBox("nexusindex", Vector2i(20, 150), 200, 20, "1");
 	}
 	else if (name == "groundtrigger")
 	{
 		p = new Panel("groundtrigger_options", 200, 500, edit);
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddBasicTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 
 		p->AddCheckBox("facingright", Vector2i(20, 250));
-		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
+		p->AddBasicTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
 	}
 	else if (name == "airtrigger")
 	{
 		p = new Panel("airtrigger_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
+		p->AddBasicTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddBasicTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
 		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
 	}
 	else if (name == "tutorialobject")
@@ -410,7 +410,7 @@ Panel *ActorType::CreatePanel()
 		p->SetAutoSpacing(true, false, Vector2i(10, 0), Vector2i(20, 0));
 		p->SetColor(Color::Green);
 		//TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 600, 200, "NONE");
-		TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 4, 100, 20, 400, "NONE");
+		TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 300, 4, 20, 400, "NONE");
 	}
 	else
 	{

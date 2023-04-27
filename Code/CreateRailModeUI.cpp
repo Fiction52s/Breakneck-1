@@ -42,7 +42,7 @@ CreateRailModeUI::CreateRailModeUI()
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(0, 0), false);
 	gridCheckbox->SetToolTip("Toggle Grid (G)");
 
-	gridSizeTextbox = mainPanel->AddTextBox("gridsize", Vector2i(0, 0), 50, 5, "");
+	gridSizeTextbox = mainPanel->AddBasicTextBox("gridsize", Vector2i(0, 0), 50, 5, "");
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
 	SetGridSize(edit->graph->GetSpacing());
 

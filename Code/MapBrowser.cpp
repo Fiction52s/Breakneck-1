@@ -609,7 +609,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	Vector2i pageButtonOrigin(750, 990);
 
 	
-	searchBox = panel->AddTextBox("searchtextbox", Vector2i(1000, 10), 1, 20, 30, 20, "");//panel->AddLabeledTextBox("searchtextbox", Vector2i(600, 10), true, 1, 40, 30, 40, "", "Search: ");//panel->AddTextBox("searchtextbox", Vector2i(600, 10), 1, 40, 30, 40, "");
+	searchBox = panel->AddTextBox("searchtextbox", Vector2i(1000, 10), 500, 1, 30, 20, "");//panel->AddLabeledTextBox("searchtextbox", Vector2i(600, 10), true, 1, 40, 30, 40, "", "Search: ");//panel->AddTextBox("searchtextbox", Vector2i(600, 10), 1, 40, 30, 40, "");
 	searchButton = panel->AddButton("searchbutton", Vector2i(searchBox->pos.x + searchBox->width + 20, 10), Vector2f(150, 30), "SEARCH");
 	clearSearchButton = panel->AddButton("clearsearchbutton", Vector2i(searchBox->pos.x, searchBox->pos.y + searchBox->size.y + 20), Vector2f(300, 30), "Clear Search");
 	
