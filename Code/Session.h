@@ -216,6 +216,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP,
 		LEADERBOARD,
 		PRACTICE_INVITE,
+		FEEDBACK_FORM,
 	};
 
 	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;

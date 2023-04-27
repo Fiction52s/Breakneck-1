@@ -65,6 +65,7 @@
 
 #include "RemoteStorageManager.h"
 #include "Leaderboard.h"
+#include "FeedbackForm.h"
 
 using namespace std;
 using namespace sf;
@@ -1098,7 +1099,7 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == TITLEMENU)
 	{
 		selectorAnimFrame = 0;
-		MOUSE.SetControllersOn(true);
+		MOUSE.SetControllersOn(false); //just for testing. change to true again soon
 		MOUSE.Show();
 		customCursor->SetMode(CustomCursor::M_REGULAR);
 		customCursor->Show();
@@ -3873,6 +3874,8 @@ void MainMenu::TitleMenuModeUpdate()
 	sf::Event ev;
 	while (window->pollEvent(ev))
 	{
+		titleScreen->testForm->HandleEvent(ev);
+		continue;
 		switch (ev.type)
 		{
 		case sf::Event::KeyPressed:

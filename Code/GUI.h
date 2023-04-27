@@ -396,8 +396,9 @@ struct GridSelector : PanelMember
 
 struct TextBox : PanelMember
 {
-	TextBox( const std::string &name, int posx, int posy, int rows, int cols, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+	TextBox( const std::string &name, int posx, int posy, int pixelWidth, int rows, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
 	TextBox(const std::string &name, int posx, int posy, int width, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+
 	~TextBox();
 	void SetString(const std::string &str);
 	std::string GetString();
@@ -411,6 +412,8 @@ struct TextBox : PanelMember
 	int GetLineWidth(int lineIndex);
 	int GetIndexRow(int index);
 	int GetIndexCol(int index);
+	int GetStringIndexFromCursorIndex(int cursorInd);
+	//std::string currString;
 	sf::Vector2i pos;
 	int width;
 	int height;
@@ -432,6 +435,7 @@ struct TextBox : PanelMember
 	bool numbersOnly;
 	std::vector<int> widths;
 	std::vector<int> lineStartIndexes;
+	std::vector<int> fakeNewLineIndexes;
 private:
 	void Init( int row, int col, sf::Font &f, const std::string &initialText);
 };
@@ -787,7 +791,7 @@ struct Panel
 		sf::Vector2i &size, int optionWidth,
 		const std::vector<std::string> &p_options );
 	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
-	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int rows, int cols, int charHeight, int lengthLimit, const std::string &initialText );
+	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int pixelWidth, int rows, int charHeight, int lengthLimit, const std::string &initialText );
 	TextBox * AddTextBox(const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText);
 	Label * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	HyperLink * AddHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,

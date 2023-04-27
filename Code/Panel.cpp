@@ -981,11 +981,11 @@ HyperLink * Panel::AddLabeledHyperLink(const std::string &name, sf::Vector2i pos
 	return AddHyperLink(name, pos, characterHeight, text, link);
 }
 
-TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int rows, int cols, int charHeight, int lengthLimit, const std::string &initialText)
+TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int pixelWidth, int rows, int charHeight, int lengthLimit, const std::string &initialText)
 {
 	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );
 	assert(textBoxes.count(name) == 0);
-	TextBox *tb = new TextBox(name, autoStart.x + pos.x, autoStart.y + pos.y, rows, cols, charHeight, lengthLimit, arial, this, initialText);
+	TextBox *tb = new TextBox(name, autoStart.x + pos.x, autoStart.y + pos.y, pixelWidth, rows, charHeight, lengthLimit, arial, this, initialText);
 	textBoxes[name] = tb;
 
 	AddAutoSpaceX(tb->size.x + pos.x);

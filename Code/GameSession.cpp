@@ -83,6 +83,7 @@
 #include "md5.h"
 #include "UIController.h"
 #include "PracticeInviteDisplay.h"
+#include "FeedbackForm.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -187,6 +188,16 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			soundNodeList->Pause(true);
 			return true;
 		}
+		else if (CONTROLLERS.KeyboardButtonPressed(Keyboard::F1))
+		{
+			gameState = FEEDBACK_FORM;
+			mainMenu->adventureManager->feedbackForm->Activate();
+			soundNodeList->Pause(true);
+			MOUSE.SetControllersOn(false);
+			MOUSE.Show();
+			return true;
+		}
+		
 	}
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action) && !IsReplayOn())
@@ -3102,7 +3113,7 @@ bool GameSession::RunMainLoopOnce()
 				soundNodeList->Pause(false);
 			}
 
-			RunFrameForParallelPractice();
+			//RunFrameForParallelPractice(); //i guess I had double this here before? should only be one time obviously. shouldn't change anything though.
 
 			SteamAPI_RunCallbacks();
 
@@ -3139,6 +3150,95 @@ bool GameSession::RunMainLoopOnce()
 		extraScreenTex->clear(Color::Transparent);
 		postProcessTex2->clear(Color::Red);
 		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
+
+		//just noticed that I wasn't displaying the texture so I'm doing that now..not sure what it'll affect
+		preScreenTex->display();
+
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+	}
+	else if (gameState == FEEDBACK_FORM )
+	{
+		window->clear();
+
+		assert(mainMenu->adventureManager != NULL);
+
+		FeedbackForm *feedbackForm = mainMenu->adventureManager->feedbackForm;
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+			feedbackForm->HandleEvent(ev);
+		}
+
+		while (accumulator >= TIMESTEP)
+		{
+			MOUSE.Update(MOUSE.GetRealPixelPos());
+
+			UpdateControllers();
+
+			RunFrameForParallelPractice();
+
+			ControllerState &curr = GetCurrInputFiltered(0);
+			ControllerState &prev = GetPrevInputFiltered(0);
+
+			feedbackForm->Update();
+
+			if (feedbackForm->action == FeedbackForm::A_CANCEL || feedbackForm->action == FeedbackForm::A_CONFIRM)
+			{
+				bool confirmed = feedbackForm->action == FeedbackForm::A_CONFIRM;
+
+				MOUSE.Hide();
+
+				gameState = GameSession::RUN;
+				soundNodeList->Pause(false);
+			}
+
+			//RunFrameForParallelPractice();
+
+			SteamAPI_RunCallbacks();
+
+			if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession())
+			{
+				netplayManager->SendPracticeInitMessageToAllNewPeers();
+
+				//sends the start to message to any new peers that join
+				PracticeStartMsg psm;
+				psm.skinIndex = GetPlayerNormalSkin(0);
+				psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
+				psm.startFrame = totalGameFrames;
+				psm.wantsToPlay = netplayManager->wantsToPracticeRace;
+				netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+
+				netplayManager->Update();
+			}
+
+			if (gameState != FEEDBACK_FORM)
+			{
+				break;
+			}
+
+			accumulator -= TIMESTEP;
+		}
+
+
+		if (gameState != FEEDBACK_FORM)
+		{
+			return false;
+		}
+
+		preScreenTex->clear(Color::Red);
+		extraScreenTex->clear(Color::Transparent);
+		postProcessTex2->clear(Color::Red);
+		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
+
+		preScreenTex->setView(uiView);
+		feedbackForm->Draw(preScreenTex);
+
+		preScreenTex->display();
 
 		Sprite preTexSprite;
 		preTexSprite.setTexture(preScreenTex->getTexture());

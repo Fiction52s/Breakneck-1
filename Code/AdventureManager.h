@@ -12,6 +12,7 @@ struct GameSession;
 struct SaveFile;
 struct ControlProfile;
 struct LeaderboardDisplay;
+struct FeedbackForm;
 
 struct AdventureManager
 {
@@ -33,6 +34,9 @@ struct AdventureManager
 	GameSession *currLevel;
 
 	LeaderboardDisplay *leaderboard;
+	
+	FeedbackForm *feedbackForm;
+
 
 	bool parallelPracticeMode;
 

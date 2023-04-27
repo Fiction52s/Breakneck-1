@@ -13,6 +13,7 @@ struct ScrollingBackground;
 struct MusicInfo;
 struct CreditsMenuScreen;
 
+struct FeedbackForm;
 struct PostPracticeMatchMenu;
 
 struct TitleScreen : TilesetManager, GUIHandler
@@ -40,6 +41,7 @@ struct TitleScreen : TilesetManager, GUIHandler
 	Background *background;
 
 	PostPracticeMatchMenu *testMenu;
+	FeedbackForm *testForm;
 
 	CreditsMenuScreen *creditsMenuScreen;
 

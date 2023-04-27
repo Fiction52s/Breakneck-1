@@ -7,6 +7,7 @@
 #include "PlayerRecord.h"
 #include "Leaderboard.h"
 #include "md5.h"
+#include "FeedbackForm.h"
 
 using namespace std;
 using namespace sf;
@@ -14,6 +15,7 @@ using namespace sf;
 AdventureManager::AdventureManager()
 {
 	leaderboard = new LeaderboardDisplay;
+	feedbackForm = new FeedbackForm;
 	worldMap = NULL;
 	kinBoostScreen = NULL;
 	saveMenu = NULL;
@@ -45,6 +47,12 @@ AdventureManager::~AdventureManager()
 	{
 		delete leaderboard;
 		leaderboard = NULL;
+	}
+
+	if (feedbackForm != NULL)
+	{
+		delete feedbackForm;
+		feedbackForm = NULL;
 	}
 
 	if (worldMap != NULL)

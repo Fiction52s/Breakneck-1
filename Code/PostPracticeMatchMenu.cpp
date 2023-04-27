@@ -19,14 +19,6 @@ PostPracticeMatchMenu::PostPracticeMatchMenu()
 		Color::Red, Color::Green, Color::White, Color::White, Vector2f( 500, 200 ), XBoxButton::XBOX_START, 64 );
 	readyButton->SetCenter(Vector2f(960, 300));
 
-	inviteButton = new SingleInputMenuButton("Invite to Custom Lobby", "Player Invited!",
-		Color::Red, Color::Green, Color::White, Color::White, Vector2f(500, 200), XBoxButton::XBOX_START, 64);
-	inviteButton->SetCenter(Vector2f(1400, 300));
-
-	acceptButton = new SingleInputMenuButton("Accept Custom Lobby Invite", "Invite Accepted",
-		Color::Red, Color::Green, Color::White, Color::White, Vector2f(500, 200), XBoxButton::XBOX_START, 64);
-	acceptButton->SetCenter(Vector2f(1400, 700));
-
 	acceptPopup = new GamePopup;
 
 	MainMenu *mainMenu = MainMenu::GetInstance();
@@ -39,7 +31,6 @@ PostPracticeMatchMenu::PostPracticeMatchMenu()
 	waitForLobbyText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
 	waitForLobbyText.setPosition(960, 540);
 
-
 	SetRectTopLeft(otherPlayerTestQuad, 100, 100, Vector2f(0, 0));
 }
 
@@ -47,9 +38,6 @@ PostPracticeMatchMenu::~PostPracticeMatchMenu()
 {
 	delete textMenu;
 	delete readyButton;
-
-	delete inviteButton;
-	delete acceptButton;
 
 	delete acceptPopup;
 }
@@ -61,8 +49,6 @@ void PostPracticeMatchMenu::Reset()
 
 	textMenu->Reset();
 	readyButton->Reset();
-	inviteButton->Reset();
-	acceptButton->Reset();
 
 	SetRectColor(otherPlayerTestQuad, Color::Red);
 }
@@ -158,8 +144,6 @@ void PostPracticeMatchMenu::Draw(sf::RenderTarget *target)
 	{
 		textMenu->Draw(target);
 		readyButton->Draw(target);
-		inviteButton->Draw(target);
-		acceptButton->Draw(target);
 		target->draw(otherPlayerTestQuad, 4, sf::Quads);
 	}
 
@@ -172,7 +156,4 @@ void PostPracticeMatchMenu::Draw(sf::RenderTarget *target)
 	{
 		target->draw(waitForLobbyText);
 	}
-	
-
-
 }

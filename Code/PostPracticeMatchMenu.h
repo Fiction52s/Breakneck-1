@@ -20,8 +20,6 @@ struct PostPracticeMatchMenu
 
 	BasicTextMenu *textMenu;
 	SingleInputMenuButton *readyButton;
-	SingleInputMenuButton *inviteButton;
-	SingleInputMenuButton *acceptButton;
 	GamePopup *acceptPopup;
 
 	sf::Text waitForLobbyText;

@@ -9,13 +9,42 @@
 using namespace sf;
 using namespace std;
 
-TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
+TextBox::TextBox(const string &n, int posx, int posy, int pixelWidth, int rows, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
 	:PanelMember(p), pos(posx, posy), maxLength(lengthLimit), clickedDown(false), name(n)
 {
 	characterHeight = charHeight;
-	Init(rows, cols, f, initialText);
 
-	char *ws = new char[maxCols + 1];
+	numbersOnly = false;
+	focused = false;
+	leftBorder = 3;
+	verticalBorder = 0;
+
+	maxRows = rows;
+	maxCols = lengthLimit;
+
+	lineSpacing = f.getLineSpacing(characterHeight);
+
+	cursor.setString("|");
+	cursor.setFont(f);
+	cursor.setFillColor(Color::Red);
+	cursor.setCharacterSize(characterHeight);
+
+	text.setFont(f);
+	text.setFillColor(Color::Black);
+	text.setCharacterSize(characterHeight);
+	text.setPosition(pos.x + leftBorder, pos.y);
+
+	testText.setFont(f);
+	testText.setFillColor(Color::Black);
+	testText.setCharacterSize(characterHeight);
+	testText.setPosition(pos.x + leftBorder, pos.y);
+
+	height = maxRows * lineSpacing;
+
+	SetString(initialText);
+	SetCursorIndex(initialText.length());
+
+	/*char *ws = new char[maxCols + 1];
 	for (int i = 0; i < maxCols; ++i)
 	{
 		ws[i] = 'W';
@@ -24,58 +53,11 @@ TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int ch
 
 	testText.setString(ws);
 
-	delete[] ws;
+	delete[] ws;*/
 
-	width = testText.getGlobalBounds().width + leftBorder * 2;
+	width = pixelWidth;//testText.getGlobalBounds().width + leftBorder * 2;
 
 	size = Vector2i(width, height + verticalBorder);
-	
-	
-
-	//numbersOnly = false;
-	//focused = false;
-	//leftBorder = 3;
-	//verticalBorder = 0;
-	//characterHeight = 20;//charHeight
-
-	//maxRows = rows;
-	//maxCols = cols;
-
-	//lineSpacing = f.getLineSpacing(characterHeight);
-
-	//cursor.setString("|");
-	//cursor.setFont(f);
-	//cursor.setFillColor(Color::Red);
-	//cursor.setCharacterSize(characterHeight);
-
-	//text.setFont(f);
-	//text.setFillColor(Color::Black);
-	//text.setCharacterSize(characterHeight);
-	//text.setPosition(pos.x + leftBorder, pos.y);
-
-	//testText.setFont(f);
-	//testText.setFillColor(Color::Black);
-	//testText.setCharacterSize(characterHeight);
-	//testText.setPosition(pos.x + leftBorder, pos.y);
-
-	//char *ws = new char[maxCols+1];
-	//for (int i = 0; i < maxCols; ++i)
-	//{
-	//	ws[i] = 'W';
-	//}
-	//ws[maxCols] = '\0';
-
-	//testText.setString(ws);
-
-	//delete[] ws;
-
-	//width = testText.getGlobalBounds().width + leftBorder * 2;
-	//height = maxRows * lineSpacing;
-
-	//SetString(initialText);
-	//SetCursorIndex(initialText.length());
-
-	//size = Vector2i(width, height + verticalBorder);
 }
 
 TextBox::TextBox(const std::string &n, int posx, int posy, int p_width, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
@@ -131,33 +113,94 @@ TextBox::~TextBox()
 
 void TextBox::SetString(const std::string &str)
 {
-	text.setString(str);
+	currString = str;
+
+	//text.setString(str);
 
 	int strLen = str.length();
 
+	int currIndex = 0;
+
+	int rowStartIndex = 0;
+
+	float textW = -1;
+
+	string currTextString;
+
 	lineStartIndexes.clear();
 	lineStartIndexes.push_back(0);
-	for (int i = 0; i < strLen; ++i)
+
+	
+	fakeNewLineIndexes.clear();
+	
+	if (currString != "")
+	while ( true )
 	{
-		if (str.at(i) == '\n')
+		if (str[currIndex] == '\n')
 		{
-			lineStartIndexes.push_back(i+1);
+			lineStartIndexes.push_back(currIndex + 1);
+			//newline stuff
 		}
+
+		++currIndex;
+
+		testText.setString(str.substr(rowStartIndex, currIndex - rowStartIndex));
+
+		textW = testText.getGlobalBounds().width;
+
+		if (textW >= width - leftBorder * 2)
+		{
+			testText.setString(str.substr(rowStartIndex, (currIndex - 1) - rowStartIndex));
+			currTextString += testText.getString() + "\n";
+			--currIndex;
+			rowStartIndex = currIndex;
+			lineStartIndexes.push_back(rowStartIndex);
+			fakeNewLineIndexes.push_back(rowStartIndex);
+		}
+
+		if (currIndex >= strLen)
+		{
+			currTextString += testText.getString();
+			break;
+		}
+
 	}
 
-	widths.resize(strLen + 1);
+	text.setString(currTextString);
 
 	int lineIndex = 0;
 	int startIndex = 0;
-	for (int i = 0; i <= strLen; ++i)
-	{
-		startIndex = lineStartIndexes[lineIndex];
-		testText.setString(text.getString().substring(startIndex, i - startIndex));
-		widths[i] = testText.getGlobalBounds().width;//testText.getLocalBounds().width;
 
-		if (i < strLen)
+	int numLines = lineStartIndexes.size();
+
+	int currTextStrLen = currTextString.length();
+
+	widths.resize(strLen + numLines); //need this
+
+	int endIndex = 0;
+
+	for (int i = 0; i < numLines; ++i)
+	{
+		startIndex = lineStartIndexes[i] + i;
+
+		if (i == numLines - 1)
 		{
-			if (str.at(i) == '\n')
+			endIndex = currTextStrLen;
+		}
+		else
+		{
+			endIndex = lineStartIndexes[i + 1];
+		}
+
+		for (int j = 0; j <= endIndex - startIndex; ++j)
+		{
+			testText.setString(currTextString.substr(startIndex, j));
+			widths[startIndex + j] = testText.getGlobalBounds().width;
+		}
+
+		/*if (i < strLen)
+		{
+			if (currTextString.at(i) == '\n')
 			{
 				lineIndex++;
 
@@ -166,17 +209,18 @@ void TextBox::SetString(const std::string &str)
 					break;
 				}
 			}
-		}	
+		}	*/
 	}
 }
 
-int TextBox::GetIndexRow(int index)
+int TextBox::GetIndexRow(int cursorInd)
 {
+	int strIndex = GetStringIndexFromCursorIndex(cursorInd);
 	int numLines = lineStartIndexes.size();
 
 	for (int i = 0; i < numLines - 1; ++i)
 	{
-		if (index < lineStartIndexes[i + 1])
+		if (strIndex < lineStartIndexes[i + 1])
 		{
 			return i;
 		}
@@ -190,9 +234,26 @@ int TextBox::GetIndexCol(int index)
 	return 0;
 }
 
+int TextBox::GetStringIndexFromCursorIndex(int cursorInd)
+{
+	int realStringIndex = cursorInd;
+	if (currString.length() > 0)
+	{
+		for (int i = 0; i < fakeNewLineIndexes.size(); ++i)
+		{
+			if (cursorInd >= fakeNewLineIndexes[i])
+			{
+				--realStringIndex;
+			}
+		}
+	}
+
+	return realStringIndex;
+}
+
 std::string TextBox::GetString()
 {
-	return text.getString();
+	return currString;//text.getString();
 }
 
 void TextBox::Deactivate()
@@ -481,11 +542,14 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 		if (cursorIndex > 0)
 		{
-			sf::String s = text.getString();
-			if (s.getSize() > 0)
+
+			//sf::String s = text.getString();
+			//if (s.getSize() > 0)
+			int realStringIndex = cursorIndex;
+			if( currString.length() > 0 )
 			{
-				s.erase(cursorIndex-1);
-				SetString(s);
+				currString.erase(GetStringIndexFromCursorIndex(cursorIndex) - 1);
+				SetString(currString);
 				SetCursorIndex(cursorIndex - 1);
 			}
 		}
@@ -517,9 +581,9 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		}
 		else
 		{
-			int startIndex = lineStartIndexes[row];
+			int startIndex = lineStartIndexes[row] + row;
 			int colIndex = cursorIndex - startIndex;
-			int prevRowStart = lineStartIndexes[row - 1];
+			int prevRowStart = lineStartIndexes[row - 1] + (row-1);
 
 			int prevRowLength = startIndex - prevRowStart - 1;
 
@@ -543,17 +607,19 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		}
 		else
 		{
+			int strCursorIndex = GetStringIndexFromCursorIndex(cursorIndex);
+
 			int strLen = text.getString().getSize();
 
-			int startIndex = lineStartIndexes[row];
+			int startIndex = lineStartIndexes[row] + row;
 			int colIndex = cursorIndex - startIndex;
 
-			int nextRowStart = lineStartIndexes[row + 1];
+			int nextRowStart = lineStartIndexes[row + 1] + (row + 1);
 
 			int nextnextRowStart;
 			if (row < numLines - 2)
 			{
-				nextnextRowStart = lineStartIndexes[row + 2];
+				nextnextRowStart = lineStartIndexes[row + 2] + (row + 2);
 			}
 			else
 			{
@@ -578,7 +644,7 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 	{
 		int row = GetIndexRow(cursorIndex);
 
-		int startIndex = lineStartIndexes[row];
+		int startIndex = lineStartIndexes[row] + row;
 
 		SetCursorIndex(startIndex);
 			
@@ -624,34 +690,62 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 			c = '_';
 		}
 
-		int row = GetIndexRow(cursorIndex);
-		int rowStart = lineStartIndexes[row];
+		int preNumLines = lineStartIndexes.size();
 
-		int rowEnd;
-		if (row == lineStartIndexes.size() - 1)
+		string charStr(1, c);
+
+		int strIndex = GetStringIndexFromCursorIndex(cursorIndex);
+
+		currString.insert(strIndex, sf::String(charStr));
+		SetString(currString);
+
+		if (lineStartIndexes.size() == preNumLines + 1)
 		{
-			rowEnd = text.getString().getSize();
+			SetCursorIndex(cursorIndex + 2);//charStr.size());
 		}
 		else
 		{
-			int nextStart = lineStartIndexes[row + 1];
-			rowEnd = nextStart - 1;
+			SetCursorIndex(cursorIndex + 1);//charStr.size());
 		}
 
-		int rowWidth = rowEnd - rowStart;
+		
 
-		sf::String s = text.getString();
+		//int row = GetIndexRow(cursorIndex);
+		//int rowStart = lineStartIndexes[row];
 
-		string charStr(1, c);
-		if (rowWidth >= maxCols)
-		{
-			charStr = "\n" + charStr;
-		}
+		//int rowEnd;
+		//if (row == lineStartIndexes.size() - 1)
+		//{
+		//	rowEnd = text.getString().getSize();
+		//}
+		//else
+		//{
+		//	int nextStart = lineStartIndexes[row + 1];
+		//	rowEnd = nextStart - 1;
+		//}
 
-		s.insert(cursorIndex, sf::String(charStr));
-		SetString(s);
-		SetCursorIndex(cursorIndex + charStr.size());
-		//cursorIndex++;
+		//int rowWidth = rowEnd - rowStart;
+
+		//sf::String s = text.getString();
+
+		//string rowStr = s.substring(rowStart, rowWidth);
+
+		//string charStr(1, c);
+
+		//rowStr += charStr;
+
+		//testText.setString(rowStr);
+
+		//float rowPixelWidth = testText.getGlobalBounds().width;
+		//
+		//if (rowPixelWidth >= width - leftBorder)//maxCols)
+		//{
+		//	charStr = "\n" + charStr;
+		//}
+
+		//s.insert(cursorIndex, sf::String(charStr));
+		//SetString(s);
+		//SetCursorIndex(cursorIndex + charStr.size());
 	}
 
 	//testText.setString(text.getString().substring(0, cursorIndex));
