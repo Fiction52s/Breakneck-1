@@ -20,7 +20,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	//testMenu = new PostPracticeMatchMenu;
 
-	testForm = new FeedbackForm;
+	//testForm = new FeedbackForm;
 
 	panel = new Panel("feedbackpanel", 1920, 1080, this);
 	panel->SetColor(Color::Transparent);
@@ -102,8 +102,8 @@ TitleScreen::~TitleScreen()
 
 void TitleScreen::Reset()
 {
-	testForm->Activate();
-	return;
+	//testForm->Activate();
+	//return;
 	//testMenu->Reset();
 	//return;
 
@@ -113,8 +113,8 @@ void TitleScreen::Reset()
 
 void TitleScreen::Update()
 {
-	testForm->Update();
-	return;
+	//testForm->Update();
+	//return;
 	//testMenu->Update();
 	//return;
 
@@ -222,8 +222,8 @@ void TitleScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 void TitleScreen::Draw(sf::RenderTarget *target)
 {
-	testForm->Draw(target);
-	return;
+	//testForm->Draw(target);
+	//return;
 	//testMenu->Draw(target);
 	//return;
 

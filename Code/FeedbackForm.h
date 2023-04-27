@@ -23,6 +23,11 @@ struct FeedbackForm : GUIHandler
 
 	TextBox *feedbackTextBox;
 
+	Tileset *ts_star;
+	std::vector<ImageChooseRect *> starRects;
+
+	int rating;
+
 	FeedbackForm();
 	~FeedbackForm();
 	void Activate();
@@ -30,8 +35,10 @@ struct FeedbackForm : GUIHandler
 		const std::string &e);
 	void CancelCallback(Panel *p);
 	void ConfirmCallback(Panel *p);
+	void SetRating(int r);
 	void Update();
 	bool HandleEvent(sf::Event ev);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void Draw(sf::RenderTarget *target);
 };
 

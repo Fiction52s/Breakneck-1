@@ -3874,8 +3874,8 @@ void MainMenu::TitleMenuModeUpdate()
 	sf::Event ev;
 	while (window->pollEvent(ev))
 	{
-		titleScreen->testForm->HandleEvent(ev);
-		continue;
+		//titleScreen->testForm->HandleEvent(ev);
+		//continue;
 		switch (ev.type)
 		{
 		case sf::Event::KeyPressed:

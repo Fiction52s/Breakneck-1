@@ -111,6 +111,12 @@ TextBox::~TextBox()
 {
 }
 
+void TextBox::Clear()
+{
+	SetString("");
+	SetCursorIndex(0);
+}
+
 void TextBox::SetString(const std::string &str)
 {
 	currString = str;
@@ -294,6 +300,7 @@ void TextBox::Deactivate()
 {
 	//focused = false; //recently turned this line back on
 	clickedDown = false;
+	MainMenu::GetInstance()->window->setKeyRepeatEnabled(false); //just in case its left on somehow
 }
 
 void TextBox::SetNumbersOnly(bool b)
@@ -530,53 +537,164 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		c = ' ';
 		break;
 	case Keyboard::Num0:
+		if (shift)
+		{
+			c = ')';
+		}
+		else
+		{
+			c = '0';
+		}
+		break;
 	case Keyboard::Numpad0:
 		c = '0';
 		break;
 	case Keyboard::Num1:
+		if (shift)
+		{
+			c = '!';
+		}
+		else
+		{
+			c = '1';
+		}
+		break;
 	case Keyboard::Numpad1:
 		c = '1';
 		break;
 	case Keyboard::Num2:
+		if (shift)
+		{
+			c = '@';
+		}
+		else
+		{
+			c = '2';
+		}
+		break;
 	case Keyboard::Numpad2:
 		c = '2';
 		break;
 	case Keyboard::Num3:
+		if (shift)
+		{
+			c = '#';
+		}
+		else
+		{
+			c = '3';
+		}
+		break;
 	case Keyboard::Numpad3:
 		c = '3';
 		break;
 	case Keyboard::Num4:
+		if (shift)
+		{
+			c = '$';
+		}
+		else
+		{
+			c = '4';
+		}
+		break;
 	case Keyboard::Numpad4:
 		c = '4';
 		break;
 	case Keyboard::Num5:
+		if (shift)
+		{
+			c = '%';
+		}
+		else
+		{
+			c = '5';
+		}
+		break;
 	case Keyboard::Numpad5:
 		c = '5';
 		break;
 	case Keyboard::Num6:
+		if (shift)
+		{
+			c = '^';
+		}
+		else
+		{
+			c = '6';
+		}
+		break;
 	case Keyboard::Numpad6:
 		c = '6';
 		break;
 	case Keyboard::Num7:
+		if (shift)
+		{
+			c = '&';
+		}
+		else
+		{
+			c = '7';
+		}
+		break;
 	case Keyboard::Numpad7:
 		c = '7';
 		break;
 	case Keyboard::Num8:
+		if (shift)
+		{
+			c = '*';
+		}
+		else
+		{
+			c = '8';
+		}
+		break;
 	case Keyboard::Numpad8:
 		c = '8';
 		break;
 	case Keyboard::Num9:
+		if (shift)
+		{
+			c = '(';
+		}
+		else
+		{
+			c = '9';
+		}
+		break;
 	case Keyboard::Numpad9:
 		c = '9';
 		break;
 	case Keyboard::Hyphen:
-		c = '-';
+		if (shift)
+		{
+			c = '_';
+		}
+		else
+		{
+			c = '-';
+		}
 		break;
 	case Keyboard::Period:
-		c = '.';
+		if (shift)
+		{
+			c = '>';
+		}
+		else
+		{
+			c = '.';
+		}
 		break;
 	case Keyboard::Comma:
-		c = ',';
+		if (shift)
+		{
+			c = '<';
+		}
+		else
+		{
+			c = ',';
+		}
 		break;
 	case Keyboard::BackSpace:
 	{
@@ -706,9 +824,85 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		break;
 	}
 	case Keyboard::BackSlash:
-		c = '\\';
+		if (shift)
+		{
+			c = '|';
+		}
+		else
+		{
+			c = '\\';
+		}
 		break;
-
+	case Keyboard::Slash:
+		if (shift)
+		{
+			c = '?';
+		}
+		else
+		{
+			c = '/';
+		}
+		break;
+	case Keyboard::Quote:
+		if (shift)
+		{
+			c = '\"';
+		}
+		else
+		{
+			c = '\'';
+		}
+		break;
+	case Keyboard::LBracket:
+		if (shift)
+		{
+			c = '{';
+		}
+		else
+		{
+			c = '[';
+		}
+		break;
+	case Keyboard::RBracket:
+		if (shift)
+		{
+			c = '}';
+		}
+		else
+		{
+			c = ']';
+		}
+		break;
+	case Keyboard::Equal:
+		if (shift)
+		{
+			c = '+';
+		}
+		else
+		{
+			c = '=';
+		}
+		break;
+	case Keyboard::Tilde:
+		if (shift)
+		{
+			c = '~';
+		}
+		else
+		{
+			c = '`';
+		}
+		break;
+	case Keyboard::SemiColon:
+		if (shift)
+		{
+			c = ':';
+		}
+		else
+		{
+			c = ';';
+		}
+		break;
 	}
 
 	if (c != 0 && !IsFull())
@@ -721,10 +915,6 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		if (shift && c >= 'a' && c <= 'z')
 		{
 			c -= 32;
-		}
-		else if (shift && c == '-')
-		{
-			c = '_';
 		}
 
 		int preNumLines = lineStartIndexes.size();
@@ -787,6 +977,12 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 	//testText.setString(text.getString().substring(0, cursorIndex));
 	//cursor.setPosition(pos.x + testText.getLocalBounds().width, pos.y);
+}
+
+void TextBox::Focus()
+{
+	focused = true;
+	MainMenu::GetInstance()->window->setKeyRepeatEnabled(true); //just in case its left on somehow
 }
 
 bool TextBox::MouseUpdate()

@@ -1249,14 +1249,14 @@ void MapBrowser::ShowFileNameTextBox()
 	panel->SetFocusedMember(fileNameTextBox);
 	fileNameTextBox->ShowMember();
 	fileNameTextBoxLabel->text.setString("Filename:");
-	fileNameTextBox->SetString("");
+	fileNameTextBox->Clear();
 }
 
 void MapBrowser::HideFileNameTextBox()
 {
 	fileNameTextBox->HideMember();
 	fileNameTextBoxLabel->text.setString("");
-	fileNameTextBox->SetString("");
+	fileNameTextBox->Clear();
 }
 
 void MapBrowser::Init()
@@ -1483,7 +1483,7 @@ void MapBrowser::UpdateSearchCriteria(const std::string &s)
 
 void MapBrowser::ClearSearch()
 {
-	searchBox->SetString("");
+	searchBox->Clear();
 	searchStr = "";
 	//no refresh
 }

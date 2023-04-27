@@ -3803,7 +3803,7 @@ void EditSession::SetupNewMapPanel()
 void EditSession::ActivateNewMapPanel()
 {
 	AddActivePanel(newMapPanel);
-	newMapPanel->textBoxes["mapname"]->SetString("");
+	newMapPanel->textBoxes["mapname"]->Clear();
 	newMapPanel->textBoxes["timetolive"]->SetString("60");
 }
 

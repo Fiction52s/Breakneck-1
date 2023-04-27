@@ -3528,6 +3528,7 @@ int GameSession::Run()
 
 	SetView(oldPreTexView);
 	window->setView(oldWindowView);
+	
 
 	return returnVal;
 }

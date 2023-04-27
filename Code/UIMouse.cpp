@@ -181,6 +181,11 @@ void UIMouse::SetControllersOn(bool on)
 	controllersOn = on;
 }
 
+bool UIMouse::IsControllerModeOn()
+{
+	return controllersOn;
+}
+
 bool UIMouse::IsWindowFocused()
 {
 	if (currWindow == NULL)

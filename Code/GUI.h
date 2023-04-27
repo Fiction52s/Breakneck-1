@@ -99,6 +99,7 @@ struct PanelMember
 	virtual void Draw(sf::RenderTarget *target) = 0;
 	virtual bool MouseUpdate() = 0;
 	virtual void Deactivate() {}
+	virtual void Focus() {}
 	void UpdateToolTip(bool contains);
 
 	//void UpdateToolTip();
@@ -192,6 +193,7 @@ struct ChooseRect : PanelMember
 		I_EDITORMENU_NEW,
 		I_EDITORMENU_OPEN,
 		I_DISCORD_LINK,
+		I_FEEDBACK_RATING,
 	};
 
 	sf::Text nameText;
@@ -402,6 +404,7 @@ struct TextBox : PanelMember
 	~TextBox();
 	void SetString(const std::string &str);
 	std::string GetString();
+	void Focus();
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void Draw( sf::RenderTarget *target );
 	bool MouseUpdate();
@@ -414,6 +417,7 @@ struct TextBox : PanelMember
 	int GetIndexCol(int index);
 	int GetStringIndexFromCursorIndex(int cursorInd);
 	int GetCursorLineStartIndex(int lineIndex);
+	void Clear();
 	bool IsFull();
 	std::string currString;
 	sf::Vector2i pos;

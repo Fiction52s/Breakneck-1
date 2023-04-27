@@ -34,6 +34,7 @@ struct UIMouse
 	void SetRenderWindow(sf::RenderWindow *rw);
 	void SetCustomCursor(CustomCursor *cc);
 	void SetControllersOn(bool on);
+	bool IsControllerModeOn();
 	bool IsWindowFocused();
 	void SetPosition(sf::Vector2i &pos);
 	sf::Vector2i GetRealPixelPos();

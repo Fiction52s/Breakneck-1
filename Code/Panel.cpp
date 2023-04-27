@@ -193,7 +193,10 @@ void Panel::SetFocusedMember(PanelMember*pm)
 		if (focusedMember != NULL)
 			focusedMember->Deactivate();
 		focusedMember = pm;
+		focusedMember->Focus();
 	}
+
+	
 }
 void Panel::RemoveAsFocusedMember(PanelMember *pm)
 {
@@ -512,6 +515,11 @@ bool Panel::MouseUpdate()
 
 void Panel::ControllerUpdate()
 {
+	if (!MOUSE.IsControllerModeOn())
+	{
+		return;
+	}
+
 	if (CONTROLLERS.ButtonPressed_Start())
 	{
 		Confirm();

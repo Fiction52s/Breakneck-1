@@ -41,7 +41,7 @@ struct TitleScreen : TilesetManager, GUIHandler
 	Background *background;
 
 	PostPracticeMatchMenu *testMenu;
-	FeedbackForm *testForm;
+	//FeedbackForm *testForm;
 
 	CreditsMenuScreen *creditsMenuScreen;
 
