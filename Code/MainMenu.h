@@ -319,6 +319,7 @@ struct MainMenu
 	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 
+	sf::IntRect GetKeyboardKeyIconTile(sf::Keyboard::Key key);
 	sf::IntRect GetButtonIconTile(ControllerSettings::ButtonType button, ControlProfile *profile);
 	sf::IntRect GetButtonIconTileForMenu(int controllerType, XBoxButton button);
 	Tileset * GetButtonIconTileset(int controllerType);

@@ -188,16 +188,19 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			soundNodeList->Pause(true);
 			return true;
 		}
-		else if (CONTROLLERS.KeyboardButtonPressed(Keyboard::F1))
+	}
+	else if ((matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+		&& mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && scoreDisplay->waiting)
+	{
+		if (CONTROLLERS.KeyboardButtonPressed(Keyboard::F1))
 		{
 			gameState = FEEDBACK_FORM;
-			mainMenu->adventureManager->feedbackForm->Activate();
+			mainMenu->adventureManager->feedbackForm->Activate(this);
 			soundNodeList->Pause(true);
 			MOUSE.SetControllersOn(false);
 			MOUSE.Show();
 			return true;
 		}
-		
 	}
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action) && !IsReplayOn())

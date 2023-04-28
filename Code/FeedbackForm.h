@@ -3,6 +3,8 @@
 
 #include "GUI.h"
 
+struct GameSession;
+
 struct FeedbackForm : GUIHandler
 {
 	enum Action
@@ -26,11 +28,13 @@ struct FeedbackForm : GUIHandler
 	Tileset *ts_star;
 	std::vector<ImageChooseRect *> starRects;
 
+	GameSession *game;
+
 	int rating;
 
 	FeedbackForm();
 	~FeedbackForm();
-	void Activate();
+	void Activate(GameSession *g);
 	void ButtonCallback(Button *b,
 		const std::string &e);
 	void CancelCallback(Panel *p);
@@ -39,6 +43,7 @@ struct FeedbackForm : GUIHandler
 	void Update();
 	bool HandleEvent(sf::Event ev);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void Submit();
 	void Draw(sf::RenderTarget *target);
 };
 

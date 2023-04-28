@@ -274,7 +274,18 @@ void SteamLeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDow
 	}
 }
 
-
+void SteamLeaderboardManager::DeleteCloudReplay()
+{
+	bool res = SteamRemoteStorage()->FileDelete(cloudReplayPath.c_str());
+	if (res)
+	{
+		cout << "file deleted post-leaderboard update" << "\n";
+	}
+	else
+	{
+		cout << "file tried to delete after leaderboard update but wasn't found\n";
+	}
+}
 
 void SteamLeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool bIOFailure)
 {
@@ -282,16 +293,7 @@ void SteamLeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback,
 
 	if (callback->m_eResult == k_EResultOK)
 	{
-		bool res = SteamRemoteStorage()->FileDelete(cloudReplayPath.c_str());
-		if (res)
-		{
-			cout << "file deleted post-leaderboard update" << "\n";
-		}
-		else
-		{
-			cout << "file tried to delete after leaderboard update but wasn't found\n";
-		}
-
+		DeleteCloudReplay();
 
 		UploadingScoreSucceeded();
 
@@ -302,16 +304,7 @@ void SteamLeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback,
 
 		cout << "leaderboard ugc set failed on  " << cloudReplayPath << ". reason: " << callback->m_eResult << "\n";
 
-		bool res = SteamRemoteStorage()->FileDelete(cloudReplayPath.c_str());
-
-		if (res)
-		{
-			cout << "failure file deleted post-leaderboard update" << "\n";
-		}
-		else
-		{
-			cout << "failure file tried to delete after leaderboard update but wasn't found\n";
-		}
+		DeleteCloudReplay();
 	}
 }
 
@@ -330,6 +323,8 @@ void SteamLeaderboardManager::OnRemoteStorageFileShareResult(RemoteStorageFileSh
 		UploadingScoreFailed();
 
 		cout << "remote file share failed on " << callback->m_rgchFilename << ". reason: " << callback->m_eResult << "\n";
+
+		DeleteCloudReplay();
 	}
 }
 

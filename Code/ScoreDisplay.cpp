@@ -6,6 +6,7 @@
 #include "SaveFile.h"
 #include "MapHeader.h"
 #include "AdventureManager.h"
+#include "FeedbackInputBox.h"
 
 using namespace std;
 using namespace sf;
@@ -14,6 +15,10 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	sf::Font &testFont)
 	:font(testFont)
 {
+	feedbackInputBox = new FeedbackInputBox;
+
+	feedbackInputBox->SetCenter(Vector2f(960, 100));
+
 	sess = Session::GetSession();
 	game = GameSession::GetSession();
 	basePos = position;
@@ -46,6 +51,8 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 
 ScoreDisplay::~ScoreDisplay()
 {
+	delete feedbackInputBox;
+
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		delete bars[i];
@@ -61,6 +68,11 @@ void ScoreDisplay::Draw(RenderTarget *target)
 {
 	if (active)
 	{
+		if (waiting)
+		{
+			feedbackInputBox->Draw(target);
+		}
+
 		for (int i = 0; i < NUM_BARS; ++i)
 		{
 			bars[i]->Draw(target);

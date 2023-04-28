@@ -1463,6 +1463,19 @@ void MainMenu::GGPOOption()
 	delete edit;
 }
 
+sf::IntRect MainMenu::GetKeyboardKeyIconTile( Keyboard::Key key )
+{
+	int buttonIndex = key;//0;//controllerInput->con->keySettings.buttonMap[button];
+	if (buttonIndex == Keyboard::Unknown)
+	{
+		buttonIndex = 75; //blank tile for now
+	}
+
+	Tileset *ts = GetButtonIconTileset(ControllerType::CTYPE_KEYBOARD);
+
+	return ts->GetSubRect(buttonIndex);
+}
+
 sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, ControlProfile *profile)
 {
 	/*CTYPE_XBOX,

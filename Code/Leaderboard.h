@@ -100,6 +100,7 @@ struct SteamLeaderboardManager : RemoteStorageResultHandler
 	void UploadScore(const std::string &name, int score, const std::string &replayPath );
 	int GetNumActiveGhosts();
 	void DownloadBoard(const std::string &name);
+	void DeleteCloudReplay();
 	void UncheckAllGhosts();
 	void RefreshCurrBoard();
 private:

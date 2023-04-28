@@ -1,5 +1,7 @@
 #include "FeedbackForm.h"
 #include "MainMenu.h"
+#include "AdventureManager.h"
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -16,6 +18,8 @@ FeedbackForm::FeedbackForm()
 
 	int textBoxXBorder = 25;
 
+	game = NULL;
+
 	feedbackName = panel->AddLabel("feedbacktitle", Vector2i(textBoxXBorder, 10), 30, "");
 
 	panel->ReserveImageRects(5);
@@ -28,7 +32,6 @@ FeedbackForm::FeedbackForm()
 		starRects[i]->Init();
 		starRects[i]->SetShown(true);
 	}
-
 	
 	//Vector2i textBoxSize(size.x - textBoxXBorder * 2, size.y - 100);
 	Vector2i textBoxPos(textBoxXBorder, 140);
@@ -39,7 +42,7 @@ FeedbackForm::FeedbackForm()
 
 	
 
-	feedbackName->text.setString("Feedback form for");
+	feedbackName->text.setString("Feedback");
 
 	okButton = panel->AddButton("okbutton", textBoxBottomLeft + Vector2i(0, 20), Vector2f(150, 30), "Submit");
 	cancelButton = panel->AddButton("cancelbutton", textBoxBottomLeft + Vector2i( 300, 20 ), Vector2f(200, 30), "Cancel");
@@ -57,8 +60,20 @@ FeedbackForm::~FeedbackForm()
 	delete panel;
 }
 
-void FeedbackForm::Activate()
+void FeedbackForm::Activate( GameSession *p_game )
 {
+	game = p_game;
+
+	MainMenu *mainMenu = MainMenu::GetInstance();
+
+	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+	{
+		feedbackName->text.setString("Feedback for level" + mainMenu->adventureManager->GetLeaderboardDisplayName(game));
+	}
+
+	//"level " + mainMenu->adventureManager->GetLeaderboardDisplayName(this));
+
+	
 	//MainMenu::GetInstance()->window->setKeyRepeatEnabled(true);
 	action = A_SHOW;
 	SetRating(0);
@@ -98,6 +113,12 @@ void FeedbackForm::SetRating(int r)
 void FeedbackForm::ConfirmCallback(Panel *p)
 {
 	action = A_CONFIRM;
+	Submit();
+
+	if (game != NULL)
+	{
+		game->StartAlertBox("Feedback isn't hooked up yet. Try again later.");
+	}
 	//MainMenu::GetInstance()->window->setKeyRepeatEnabled(false);
 }
 
@@ -126,6 +147,13 @@ void FeedbackForm::ChooseRectEvent(ChooseRect *cr, int eventType)
 			}
 		}
 	}
+}
+
+void FeedbackForm::Submit()
+{
+	cout << "submit feedback form (not actually submitting yet" << "\n";
+	cout << "Rating: " << rating << "/ 5" << "\n";
+	cout << "Feedback: " << feedbackTextBox->GetString() << "\n";
 }
 
 bool FeedbackForm::HandleEvent(sf::Event ev)

@@ -8,6 +8,7 @@ struct Session;
 
 struct ScoreDisplay;
 struct GameSession;
+struct FeedbackInputBox;
 
 struct ScoreBar
 {
@@ -84,6 +85,8 @@ struct ScoreDisplay
 {
 	bool active;
 	bool waiting;
+
+	FeedbackInputBox *feedbackInputBox;
 
 	GameSession *game;
 	sf::Sprite score;
