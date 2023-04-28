@@ -101,7 +101,7 @@ bool FeedbackManager::SubmitFeedback()
 		recipients = curl_slist_append(recipients, TO_ADDR);
 		curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
 
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+		//curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
 		curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
 		curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);

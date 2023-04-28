@@ -2,6 +2,9 @@
 #include "MainMenu.h"
 #include "AdventureManager.h"
 #include "GameSession.h"
+#include "FeedbackManager.h"
+#include <sstream>
+#include "steam\steam_api.h"
 
 using namespace std;
 using namespace sf;
@@ -68,7 +71,7 @@ void FeedbackForm::Activate( GameSession *p_game )
 
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 	{
-		feedbackName->text.setString("Feedback for level" + mainMenu->adventureManager->GetLeaderboardDisplayName(game));
+		feedbackName->text.setString("Feedback for Level " + mainMenu->adventureManager->GetLeaderboardDisplayName(game));
 	}
 
 	//"level " + mainMenu->adventureManager->GetLeaderboardDisplayName(this));
@@ -113,11 +116,19 @@ void FeedbackForm::SetRating(int r)
 void FeedbackForm::ConfirmCallback(Panel *p)
 {
 	action = A_CONFIRM;
-	Submit();
+	bool res = Submit();
 
 	if (game != NULL)
 	{
-		game->StartAlertBox("Feedback isn't hooked up yet. Try again later.");
+		if (res)
+		{
+			game->StartAlertBox("Feedback successfully sent!");
+		}
+		else
+		{
+			game->StartAlertBox("Feedback failed to send.");
+		}
+		
 	}
 	//MainMenu::GetInstance()->window->setKeyRepeatEnabled(false);
 }
@@ -149,11 +160,19 @@ void FeedbackForm::ChooseRectEvent(ChooseRect *cr, int eventType)
 	}
 }
 
-void FeedbackForm::Submit()
+bool FeedbackForm::Submit()
 {
-	cout << "submit feedback form (not actually submitting yet" << "\n";
-	cout << "Rating: " << rating << "/ 5" << "\n";
-	cout << "Feedback: " << feedbackTextBox->GetString() << "\n";
+	cout << "submit feedback form" << "\n";// (not actually submitting yet" << "\n";
+
+	stringstream ss;
+
+	ss << "Username: " << SteamFriends()->GetPersonaName() << "\n";
+	ss << "SteamID: " << SteamUser()->GetSteamID().ConvertToUint64() << "\n";
+	ss << "Rating: " << rating << "/5" << "\n";
+	ss << "Feedback: \n\n" << feedbackTextBox->GetString();
+
+	FeedbackManager::SetPayload("1-1-1", ss.str());
+	return FeedbackManager::SubmitFeedback();
 }
 
 bool FeedbackForm::HandleEvent(sf::Event ev)

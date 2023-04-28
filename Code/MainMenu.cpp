@@ -66,6 +66,7 @@
 #include "RemoteStorageManager.h"
 #include "Leaderboard.h"
 #include "FeedbackForm.h"
+#include "FeedbackManager.h"
 
 using namespace std;
 using namespace sf;
@@ -898,6 +899,8 @@ void MainMenu::CreateRenderTextures()
 
 MainMenu::~MainMenu()
 {
+	FeedbackManager::Cleanup();
+
 	assert(currInstance == this);
 	currInstance = NULL;
 
@@ -1010,6 +1013,8 @@ void MainMenu::Init()
 	swiper = new Swiper();
 
 	Swiper::LoadSwipeType( this, Swiper::W1);
+
+	FeedbackManager::Init();
 	
 	indEffectPool = new EffectPool(EffectType::FX_IND, 4);
 	indEffectPool->Reset();

@@ -43,7 +43,7 @@ struct FeedbackForm : GUIHandler
 	void Update();
 	bool HandleEvent(sf::Event ev);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	void Submit();
+	bool Submit();
 	void Draw(sf::RenderTarget *target);
 };
 
