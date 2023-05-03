@@ -114,6 +114,8 @@ struct GameMode;
 
 struct AlertBox;
 
+struct BasicTextMenu;
+
 #define TIMESTEP (1.0 / 60.0)
 
 enum BossFightType
@@ -218,6 +220,9 @@ struct Session : TilesetManager, QuadTreeCollider
 		PRACTICE_INVITE,
 		FEEDBACK_FORM,
 	};
+
+	bool onlinePauseMenuOn;
+	BasicTextMenu *onlinePauseMenu;
 
 	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;
 	//PlayerReplayManager *playerReplayManager;
@@ -894,6 +899,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void InitGGPO();
 	virtual void CleanupGGPO();
 	bool OnlineRunGameModeUpdate();
+	//bool OnlinePauseMenuModeUpdate();
 	virtual void GGPORunFrame();
 	bool SaveState(unsigned char **buffer,
 		int *len, int *checksum, int frame);

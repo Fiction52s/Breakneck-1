@@ -212,8 +212,6 @@ struct NetplayManager
 
 	bool wantsToKeepPlayingPractice;
 
-
-
 	
 
 	//sf::Uint64 practicePeersToRaceList;

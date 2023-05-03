@@ -70,6 +70,7 @@
 #include "NameTag.h"
 
 #include "PracticeInviteDisplay.h"
+#include "BasicTextMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -1571,9 +1572,14 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
+	std::vector<string> onlinePauseOptions = { "Test", "Test2" };
+	onlinePauseMenu = new BasicTextMenu(onlinePauseOptions);
+
 	activePlayerReplayManagers.reserve(10);
 
 	nextFrameRestartGame = false;
+
+	onlinePauseMenuOn = false;
 
 	matchPlacings.resize(4);
 	controllerStates.resize(4);
@@ -1750,6 +1756,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 Session::~Session()
 {
+	delete onlinePauseMenu;
+
 	//new stuff
 	if ( parentGame == NULL && soundManager != NULL)
 	{
@@ -6791,6 +6799,11 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 		activePlayerReplayManagers[0]->replayHUD->Draw(target);
 	}
 
+	if (gameState == GameState::RUN && onlinePauseMenuOn )
+	{
+		onlinePauseMenu->Draw(target);
+	}
+
 	mainMenu->DrawEffects(target);
 
 	target->setView(view); //sets it back to normal for any world -> pixel calcs
@@ -7860,6 +7873,11 @@ bool Session::OnlineRunGameModeUpdate()
 		return true;
 	}	
 
+	/*if (UpdateRunModeBackAndStartButtons())
+	{
+
+	}*/
+
 	ActiveSequenceUpdate();
 	if (switchGameState)
 	{
@@ -7982,6 +8000,7 @@ bool Session::OnlineRunGameModeUpdate()
 	UpdateDecorSprites();
 	UpdateDecorLayers();
 
+	//orig location
 	if (UpdateRunModeBackAndStartButtons())
 	{
 
@@ -8017,6 +8036,11 @@ bool Session::OnlineRunGameModeUpdate()
 	return true;
 }
 
+
+//bool Session::OnlinePauseMenuModeUpdate()
+//{
+//
+//}
 
 //static int frameCC = 0;
 //
@@ -8086,9 +8110,9 @@ void Session::GGPORunFrame()
 
 	
 
-	//UpdateControllers();
+	UpdateControllers();
 
-	CONTROLLERS.Update();
+	//CONTROLLERS.Update(); //using updatecontrollers again for online pause menu
 
 	//just turned this off
 	//Actor *p = NULL;
@@ -8122,7 +8146,16 @@ void Session::GGPORunFrame()
 	ControllerState testInput;
 	Actor *player = GetPlayer(pIndex);
 
-	testInput = GetCurrInputFiltered(0, player);
+	if (onlinePauseMenuOn)
+	{
+		testInput = ControllerState();
+	}
+	else
+	{
+		testInput = GetCurrInputFiltered(0, player);
+	}
+
+	
 
 	COMPRESSED_INPUT_TYPE input = testInput.GetCompressedState();
 	

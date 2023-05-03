@@ -148,7 +148,54 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 	if (IsParallelSession())
 		return false;
 
+	if (simulationMode)
+		return false;
+
 	Actor *p0 = GetPlayer(0);
+
+	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();// && ggpo != NULL;
+
+	if (ggpoNetplay && matchParams.numPlayers > 1 && gameModeType == MatchParams::GAME_MODE_FIGHT)
+	{
+		ControllerState currInput;
+
+		ControllerState prevInput;
+
+		currInput = GetCurrInputFiltered(0);//GetPlayer(0)->currInput;
+		prevInput = GetPrevInputFiltered(0);//GetPlayer(0)->prevInput;
+
+
+		if (currInput.start && !prevInput.start)
+		{
+			onlinePauseMenuOn = !onlinePauseMenuOn;
+			//if (gameState == GameState::RUN)
+			{
+				//onlinePauseMenuOn = true;
+				//gameState = GameState::ONLINE_PAUSE;
+				//cout << "setting mode to online_pause" << "\n";
+				//ActivatePauseSound(GetSound("pause_on"));
+				//switchGameState = true;
+				//UpdateControllers();
+				//CONTROLLERS.Update();
+
+			}
+			//else if (gameState == GameState::ONLINE_PAUSE)
+			//{
+			//	gameState = GameState::RUN;
+			//	cout << "setting mode to run" << "\n";
+			//	//ActivatePauseSound(GetSound("pause_off"));
+			//	//switchGameState = true;
+			//	//CONTROLLERS.Update();
+			//	//UpdateControllers();
+			//}
+
+			
+			
+		}
+
+		return false;
+	}
+
 	//eventually add better logic for when its okay to pause in multiplayer etc
 	if ( (matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE ) && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
 	{

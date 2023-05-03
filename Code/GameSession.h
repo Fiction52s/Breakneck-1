@@ -245,6 +245,8 @@ struct GameSession : RayCastHandler, Session
 		CEILING
 	};
 
+	
+
 	static GameSession *GetSession();
 	static GameSession *currSession;
 
