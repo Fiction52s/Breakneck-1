@@ -155,7 +155,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 
 	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();// && ggpo != NULL;
 
-	if (ggpoNetplay && matchParams.numPlayers > 1 && gameModeType == MatchParams::GAME_MODE_FIGHT)
+	if (ggpoNetplay && matchParams.numPlayers > 1 && (gameModeType == MatchParams::GAME_MODE_FIGHT || gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE) )
 	{
 		ControllerState currInput;
 
@@ -4119,6 +4119,7 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
+	onlinePauseMenuOn = false;
 	gameState = GameSession::RUN;
 	gameClock.restart();
 	currentTime = 0;

@@ -808,7 +808,7 @@ struct Panel
 		int minValue, int maxValue, int defaultValue, int charHeight);
 	ScrollBar *AddScrollBar(const std::string &name, sf::Vector2i &pos, sf::Vector2i &size, int p_numRows, int p_numDisplayedRows);
 	
-	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int rows, int cols, int charHeight, int lengthLimit, 
+	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int pixelWidth, int rows, int charHeight, int lengthLimit, 
 		const std::string &initialText, const std::string &labelText );
 	HyperLink * AddLabeledHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
 		const std::string &link, const std::string &labelText );

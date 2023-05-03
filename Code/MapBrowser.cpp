@@ -640,7 +640,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	//panel->SetAutoSpacing(true, false, belowRects, Vector2i(30, 0));
 	//AddLabel(name + "label", labelStart, 24, labelText);
-	fileNameTextBox = panel->AddLabeledTextBox("filename", belowRects, true, 1, 30, 20, 30, "", "Filename:");
+	fileNameTextBox = panel->AddLabeledTextBox("filename", belowRects, true, 200, 1, 20, 30, "", "Filename:");
 	fileNameTextBoxLabel = panel->labels["filenamelabel"];
 	
 	saveButton = panel->AddButton("save", belowRects + Vector2i(0, 40), Vector2f(60, 30), "Save");

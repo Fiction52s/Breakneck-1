@@ -1572,9 +1572,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
-	std::vector<string> onlinePauseOptions = { "Test", "Test2" };
-	onlinePauseMenu = new BasicTextMenu(onlinePauseOptions);
-
 	activePlayerReplayManagers.reserve(10);
 
 	nextFrameRestartGame = false;
@@ -1756,8 +1753,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 Session::~Session()
 {
-	delete onlinePauseMenu;
-
 	//new stuff
 	if ( parentGame == NULL && soundManager != NULL)
 	{
@@ -6801,7 +6796,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	if (gameState == GameState::RUN && onlinePauseMenuOn )
 	{
-		onlinePauseMenu->Draw(target);
+		assert(gameMode->onlinePauseMenu != NULL);
+		gameMode->onlinePauseMenu->Draw(target);
 	}
 
 	mainMenu->DrawEffects(target);
@@ -8149,13 +8145,64 @@ void Session::GGPORunFrame()
 	if (onlinePauseMenuOn)
 	{
 		testInput = ControllerState();
+
+		if (onlinePauseMenuOn)
+		{
+			//ControllerState pauseInput = GetCurrInputFiltered(0);
+			//ControllerState prevPauseInput = GetPrevInputFiltered(0);
+			assert(gameMode->onlinePauseMenu != NULL);
+
+			int res = gameMode->onlinePauseMenu->Update();
+
+			switch (gameModeType)
+			{
+			case MatchParams::GAME_MODE_FIGHT:
+			{
+				if (res == 0)
+				{
+					onlinePauseMenuOn = false;
+				}
+				else if (res == 1)
+				{
+					if (IsSessTypeGame())
+					{
+						GameSession *game = GameSession::GetSession();
+						game->resType = GameSession::GR_EXITGAME;
+						game->QuitGame();
+					}
+					//quit
+				}
+				break;
+			}
+			case MatchParams::GAME_MODE_PARALLEL_RACE:
+			{
+				if (res == 0)
+				{
+					onlinePauseMenuOn = false;
+				}
+				else if (res == 1)
+				{
+					testInput.respawnTest = true;
+				}
+				else if (res == 2)
+				{
+					if (IsSessTypeGame())
+					{
+						GameSession *game = GameSession::GetSession();
+						game->resType = GameSession::GR_EXITGAME;
+						game->QuitGame();
+					}
+					//quit
+				}
+				break;
+			}
+			}
+		}
 	}
 	else
 	{
 		testInput = GetCurrInputFiltered(0, player);
 	}
-
-	
 
 	COMPRESSED_INPUT_TYPE input = testInput.GetCompressedState();
 	
@@ -8166,6 +8213,8 @@ void Session::GGPORunFrame()
 
 	//static ControllerState lastCurr;
 	
+	
+
 
 	if (GGPO_SUCCEEDED(result))
 	{

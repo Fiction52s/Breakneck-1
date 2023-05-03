@@ -23,6 +23,9 @@ FightMode::FightMode()
 	endSeq = new FightEndSequence;
 	endSeq->SetIDAndAddToAllSequencesVec();
 	endSeq->Init();
+
+	std::vector<string> onlinePauseOptions = { "Resume", "Quit" };
+	onlinePauseMenu = new BasicTextMenu(onlinePauseOptions);
 }
 
 FightMode::~FightMode()

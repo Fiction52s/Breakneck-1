@@ -94,6 +94,8 @@ struct ControllerState
 	unsigned char leftStickPad;
 	unsigned char rightStickPad;
 
+	bool respawnTest;
+
 	ControllerState();
 	void Set(const ControllerState &state);
 	void SetLeftDirection();

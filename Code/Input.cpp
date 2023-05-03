@@ -27,6 +27,8 @@ ControllerState::ControllerState()
 
 void ControllerState::Clear()
 {
+	respawnTest = false;
+
 	leftStickMagnitude = 0;
 	leftStickRadians = 0;
 	rightStickMagnitude = 0;
@@ -70,6 +72,8 @@ void ControllerState::Set( const ControllerState &state )
 	rightStickPad = state.rightStickPad;
 	leftPress = state.leftPress;
 	rightPress = state.rightPress;
+
+	respawnTest = state.respawnTest;
 //	altPad = state.altPad;
 }
 
@@ -132,7 +136,10 @@ COMPRESSED_INPUT_TYPE ControllerState::GetCompressedState()
 	COMPRESSED_INPUT_TYPE shiftedDir = (leftStickDir << bit);
 	s |= shiftedDir;
 
-	bit += sizeof(leftStickDirection);
+	bit += sizeof(leftStickDirection) * 8;//sizeof(leftStickDirection);
+
+
+	s |= respawnTest << bit++;
 
 	/*s |= keyboardStickLeft.oldLeft << bit++;
 	s |= keyboardStickLeft.oldRight << bit++;
@@ -227,7 +234,10 @@ void ControllerState::SetFromCompressedState(COMPRESSED_INPUT_TYPE s)
 
 	COMPRESSED_INPUT_TYPE mask = pow(2, sizeof(leftStickDirection) * 8) - 1;
 	leftStickDirection = (s >> bit) & mask;
-	bit += sizeof(leftStickDirection);
+	bit += sizeof(leftStickDirection) * 8;
+
+	bool rt = s & (1 << bit++);
+	respawnTest = rt;
 
 	/*keyboardStickLeft.oldLeft = s & (1 << bit++);
 	keyboardStickLeft.oldRight = s & (1 << bit++);

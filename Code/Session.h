@@ -222,7 +222,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	};
 
 	bool onlinePauseMenuOn;
-	BasicTextMenu *onlinePauseMenu;
 
 	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;
 	//PlayerReplayManager *playerReplayManager;

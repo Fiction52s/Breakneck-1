@@ -35,6 +35,8 @@ ParallelRaceMode::ParallelRaceMode()
 	endSeq->SetIDAndAddToAllSequencesVec();
 	endSeq->Init();
 	
+	std::vector<string> onlinePauseOptions = { "Resume", "Respawn", "Quit" };
+	onlinePauseMenu = new BasicTextMenu(onlinePauseOptions);
 }
 
 ParallelRaceMode::~ParallelRaceMode()

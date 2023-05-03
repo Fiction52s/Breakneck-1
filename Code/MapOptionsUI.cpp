@@ -15,11 +15,11 @@ MapOptionsUI::MapOptionsUI()
 	mapOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
 	//mapOptionsPanel->AddLabel("mapnamelabel", Vector2i(0, 0), 28, "Map Name: " + edit->filePath.stem().string());
-	mapNameBox = mapOptionsPanel->AddLabeledTextBox("mapname", Vector2i(0, 30), false, 1, 35, 20, 30, "", "Map Name:");
+	mapNameBox = mapOptionsPanel->AddLabeledTextBox("mapname", Vector2i(0, 30), false, 300, 1, 20, 30, "", "Map Name:");
 
-	descriptionBox = mapOptionsPanel->AddLabeledTextBox("description", Vector2i(0, 30), false, 5, 35, 20, 1000, "", "Description:");
+	descriptionBox = mapOptionsPanel->AddLabeledTextBox("description", Vector2i(0, 30), false, 600, 5, 20, 1000, "", "Description:");
 
-	drainTextbox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 20), true, 1, 10, 20, 10, "", "Time to Drain (seconds): ");
+	drainTextbox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 20), true, 300, 1, 20, 10, "", "Time to Drain (seconds): ");
 	drainTextbox->SetNumbersOnly(true);
 	bgButton = mapOptionsPanel->AddButton("bgbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Environment");
 	musicButton = mapOptionsPanel->AddButton("musicbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Music");

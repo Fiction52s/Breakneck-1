@@ -2006,7 +2006,7 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	cout << "choosing quickplay map: " << r << endl;
 
 	//r = 0; //just for testing
-	r = 1;
+	r = 0;
 
 	if (r == 0)
 	{
@@ -2167,7 +2167,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = GetNextQuickplayMapName();//"Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//
+		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//
 		//matchParams.controllerStateVec[0] = myControllerInput;
 		//matchParams.controlProfiles[0] = myCurrProfile;
 

@@ -12,6 +12,13 @@ GameMode::GameMode()
 {
 	sess = Session::GetSession();
 	done = false;
+	onlinePauseMenu = NULL;
+}
+
+GameMode::~GameMode()
+{
+	if (onlinePauseMenu != NULL)
+		delete onlinePauseMenu;
 }
 
 BasicMode::BasicMode()

@@ -6746,6 +6746,11 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
+	if (currInput.respawnTest)
+	{
+		owner->RestartGame();
+	}
+
 	//if ( owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
 	//{
 	//	if (currInput.PUp() && !prevInput.PUp())

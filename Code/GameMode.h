@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Input.h"
+#include "BasicTextMenu.h"
 
 struct Session;
 struct MultiplayerBase;
@@ -19,9 +20,10 @@ struct PracticeInviteDisplay;
 struct GameMode
 {
 	GameMode();
-	virtual ~GameMode() {}
+	virtual ~GameMode();
 	Session *sess;
 	bool done;
+	BasicTextMenu *onlinePauseMenu;
 
 	virtual HUD *CreateHUD() { return NULL; }
 	virtual void StartGame() = 0;

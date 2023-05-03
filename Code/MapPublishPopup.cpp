@@ -19,7 +19,7 @@ MapPublishPopup::MapPublishPopup()
 
 	panel->extraUpdater = this;
 
-	mapNameTextBox = panel->AddLabeledTextBox("name", Vector2i(10, 10), true, 1, 20, 20, 20, "", "Name:");
+	mapNameTextBox = panel->AddLabeledTextBox("name", Vector2i(10, 10), true, 300, 1, 20, 20, "", "Name:");
 
 	panel->SetAutoSpacing(false, true, Vector2i(500, 0), Vector2i(0, 10));
 
@@ -43,7 +43,7 @@ MapPublishPopup::MapPublishPopup()
 
 	//panel->AddLabeledTextBox("description", Vector2i(10, 300), 500, 120, "", "Description:");
 	//panel->AddTextBox("description", Vector2i(10, 300), 5, 35, 20, 1000, "");
-	descriptionTextBox = panel->AddLabeledTextBox("description", Vector2i(10, 320), false, 5, 35, 20, 1000, "", "Description:");
+	descriptionTextBox = panel->AddLabeledTextBox("description", Vector2i(10, 320), false, 300, 10, 20, 1000, "", "Description:");
 
 	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
