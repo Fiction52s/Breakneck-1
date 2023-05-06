@@ -1019,14 +1019,14 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(shardsCapturedText);
 		rt->draw(worldNameText);
 
-		if (adventureManager->parallelPracticeMode)
-		{
-			for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
-			{
-				//enable again later maybe
-				rt->draw(numCurrentPlayersText[i]);
-			}
-		}
+		//if (adventureManager->parallelPracticeMode)
+		//{
+		//	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
+		//	{
+		//		//enable again later maybe
+		//		rt->draw(numCurrentPlayersText[i]);
+		//	}
+		//}
 	}
 
 	rt->display();

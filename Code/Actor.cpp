@@ -6746,7 +6746,8 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-	if (currInput.respawnTest)
+	//if (currInput.B && !prevInput.B && sess->totalGameFrames > 10 )//(currInput.respawnTest)
+	if( currInput.respawnTest )
 	{
 		owner->RestartGame();
 	}

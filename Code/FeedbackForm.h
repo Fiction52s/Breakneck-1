@@ -2,10 +2,11 @@
 #define __FEEDBACKFORM_H__
 
 #include "GUI.h"
+#include "Tileset.h"
 
 struct GameSession;
 
-struct FeedbackForm : GUIHandler
+struct FeedbackForm : GUIHandler//TilesetManager, GUIHandler
 {
 	enum Action
 	{

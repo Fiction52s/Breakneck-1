@@ -168,6 +168,11 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 		if (currInput.start && !prevInput.start)
 		{
 			onlinePauseMenuOn = !onlinePauseMenuOn;
+			if (onlinePauseMenuOn)
+			{
+				assert(gameMode->onlinePauseMenu != NULL);
+				gameMode->onlinePauseMenu->Reset();
+			}
 			//if (gameState == GameState::RUN)
 			{
 				//onlinePauseMenuOn = true;
@@ -1809,6 +1814,7 @@ bool GameSession::Load()
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;
+	totalGameFramesIncludingRespawns = 0;
 	totalFramesBeforeGoal = -1;
 	originalZone = NULL;
 
@@ -2562,7 +2568,8 @@ bool GameSession::RunMainLoopOnce()
 			quit = true;
 			returnVal = GR_EXITLEVEL;
 
-			netplayManager->DumpDesyncInfo();
+			//dont dump for now
+			//netplayManager->DumpDesyncInfo();
 			return true;
 		}
 
@@ -4181,7 +4188,7 @@ void GameSession::RestartLevel()
 		cout << "not compatible \n";
 	}
 
-
+	//cout << "restarting the level on frame: " << totalGameFramesIncludingRespawns << "\n";
 
 	//AddEmitter(testEmit, EffectLayer::IN_FRONT);
 	//testEmit->Reset();
@@ -4226,6 +4233,7 @@ void GameSession::RestartLevel()
 		soundNodeList->Clear();
 	}
 
+	//DONT RESET totalGameFramesIncludingRespawns
 	totalGameFrames = 0;
 	totalFramesBeforeGoal = -1;
 	/*if( GetPlayer->record > 1 )

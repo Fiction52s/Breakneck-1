@@ -43,8 +43,6 @@
 #include "GGPO.h"
 #include "NetplayManager.h"
 
-
-
 #include "ActorParams.h"
 
 #include "ShipPickup.h"
@@ -71,6 +69,9 @@
 
 #include "PracticeInviteDisplay.h"
 #include "BasicTextMenu.h"
+
+
+//#include "ggpo\backends\backend.h"
 
 using namespace sf;
 using namespace std;
@@ -1640,6 +1641,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	frameRateDisplay.InitText(mainMenu->arial);
 	runningTimerDisplay.InitText(mainMenu->arial);
 
+	totalGameFramesIncludingRespawns = 0;
 	totalGameFrames = 0;
 	numGates = 0;
 	drain = true;
@@ -7158,6 +7160,7 @@ bool Session::RunGameModeUpdate()
 		UpdateEnvShaders(); //havent tested at this position. should work fine.
 
 		totalGameFrames++;
+		totalGameFramesIncludingRespawns++;
 
 		accumulator -= TIMESTEP;
 
@@ -7727,76 +7730,28 @@ GameSession *Session::GetTopParentGame()
 void Session::AddDesyncCheckInfo()
 {
 	//cout << "add desync check info: " << totalGameFrames << endl;
-
-	
-
 	if (!desyncCheckerActive)
 		return;
 
 	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
 	assert(ggpoNetplay);
 
+	int totalOnlineFrames = totalGameFramesIncludingRespawns;//ggpo->GetFrameCount();
+
 	if (netplayManager != NULL)
 	{
-		int playerParIndex = -1;
-		int myPlayerIndex = netplayManager->playerIndex;
-
-		//hopefully fixed this desync issue...
 		Actor *p = NULL;
 		for (int i = 0; i < 4; ++i)
 		{
-			if (matchParams.gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
-			{
-				if (i == myPlayerIndex)
-				{
-					playerParIndex = 0;
-				}
-				else if (i > myPlayerIndex)
-				{
-					playerParIndex = i;
-				}
-				else
-				{
-					playerParIndex = i + 1;
-				}
+			p = GetPlayerFromNetplayPlayerIndex(i);
 
-				if (playerParIndex == 0)
-				{
-					p = GetPlayer(0);
-				}
-				else
-				{
-					ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-					if (prm->parallelGames[playerParIndex - 1] != NULL)
-					{
-						p = prm->parallelGames[playerParIndex - 1]->GetPlayer(0);
-					}
-				}
-			}
-			else
-			{
-				p = GetPlayer(i);
-			}
-
-			//p = players[i];
 			if (p != NULL)
 			{
 				DesyncCheckInfo dci;
 				dci.pos = p->position;
 				dci.action = p->action;
 				dci.actionFrame = p->frame;
-				dci.gameFrame = totalGameFrames;
-
-				//just for testing
-				/*if (i == 0)
-				{
-					dci.health = ((FightMode*)gameMode)->data.health[0];
-				}
-				else if (i == 1)
-				{
-					dci.health = ((FightMode*)gameMode)->data.health[1];
-				}*/
+				dci.gameFrame = totalOnlineFrames;//ggpo->//p->sess->totalGameFrames;//totalGameFrames;
 
 				if (!netplayManager->IsHost())
 				{
@@ -7804,15 +7759,23 @@ void Session::AddDesyncCheckInfo()
 						<< ", actionframe: " << dci.actionFrame << endl;*/
 				}
 				
+				
 				netplayManager->AddDesyncCheckInfo(i, dci);
 			}
+
 		}
+
+		/*if (netplayManager->IsHost())
+		{
+			cout << "adding desync checker info for frame: " << totalOnlineFrames << "\n";
+		}*/
+		
 
 		if (!netplayManager->IsHost() && frameConfirmed )
 		{
 			//if (totalGameFrames % 2 == 0 && totalGameFrames > 0)
 			{
-				netplayManager->SendDesyncCheckToHost(totalGameFrames);
+				netplayManager->SendDesyncCheckToHost(totalOnlineFrames);
 			}	
 		}
 	}
@@ -7833,6 +7796,15 @@ bool Session::OnlineRunGameModeUpdate()
 	{
 		//UpdateControllers();
 		return true;
+	}
+
+	//here rn because runpreupdate can restart the game, and you need to send the desync info before that happens
+	//just testing for now
+	if (ggpo != NULL)
+	{
+		AddDesyncCheckInfo(); //netplay only
+
+		ProcessDesyncMessageQueue(); //netplay only
 	}
 
 	if (!RunPreUpdate())
@@ -7859,6 +7831,7 @@ bool Session::OnlineRunGameModeUpdate()
 
 		if (frameConfirmed) //doubt this check needs to be here
 		{
+			//cout << "unintended behavior" << "\n";
 			AddDesyncCheckInfo(); //netplay only
 
 			ProcessDesyncMessageQueue(); //netplay only
@@ -7884,18 +7857,19 @@ bool Session::OnlineRunGameModeUpdate()
 		}
 
 		//good chance this will be a problem at some point since I moved ggpo_advance_frame out of the normal function for parallel races
-		cout << "switch game state" << endl;
+		//cout << "switch game state" << endl;
 		if( ggpo != NULL )
 			ggpo_advance_frame(ggpo);
 		return true;
 	}
 
-	if (ggpo != NULL)
-	{
-		AddDesyncCheckInfo(); //netplay only
+	//original location
+	//if (ggpo != NULL)
+	//{
+	//	AddDesyncCheckInfo(); //netplay only
 
-		ProcessDesyncMessageQueue(); //netplay only
-	}
+	//	ProcessDesyncMessageQueue(); //netplay only
+	//}
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
 	{
@@ -8006,7 +7980,9 @@ bool Session::OnlineRunGameModeUpdate()
 
 	UpdateEnvShaders(); //havent tested at this position. should work fine.
 
+	//cout << "incrementing total frames from " << totalGameFramesIncludingRespawns << " to " << totalGameFramesIncludingRespawns + 1 << "\n";
 	totalGameFrames++;
+	totalGameFramesIncludingRespawns++;
 
 	if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
@@ -8319,6 +8295,7 @@ int Session::GetNumStoredBytes()
 
 void Session::StoreBytes(unsigned char *bytes)
 {
+	currSaveState->totalGameFramesIncludingRespawns = totalGameFramesIncludingRespawns;
 	currSaveState->totalGameFrames = totalGameFrames;
 	currSaveState->activeEnemyListID = GetEnemyID(activeEnemyList);
 	currSaveState->activeEnemyListTailID = GetEnemyID(activeEnemyListTail);
@@ -8455,6 +8432,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 	//deathSeq->SetFromBytes(bytes);
 	//bytes += deathSeq->GetNumStoredBytes();
 
+	totalGameFramesIncludingRespawns = currSaveState->totalGameFramesIncludingRespawns;
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = GetEnemyFromID( currSaveState->activeEnemyListID );
 	inactiveEnemyList = GetEnemyFromID( currSaveState->inactiveEnemyListID );
@@ -8509,11 +8487,11 @@ bool Session::LoadState(unsigned char *bytes, int len)
 {
 	//cout << "loading state: " << currSaveState->totalGameFrames << endl;
 
-	int oldTotalGameFrames = totalGameFrames;
+	int oldTotalGameFrames = totalGameFramesIncludingRespawns;//totalGameFrames;
 
 	SetFromBytes(bytes);
 
-	int rollbackFrames = oldTotalGameFrames - currSaveState->totalGameFrames;
+	int rollbackFrames = oldTotalGameFrames - currSaveState->totalGameFramesIncludingRespawns;
 
 	/*cout << "load state: " << totalGameFrames << endl;
 
@@ -8533,13 +8511,13 @@ bool Session::LoadState(unsigned char *bytes, int len)
 
 		if (ggpoNetplay)
 		{
-			cout << "rollback of " << rollbackFrames << " from " << oldTotalGameFrames << " back to " << totalGameFrames << "\n";
+			cout << "rollback of " << rollbackFrames << " from " << oldTotalGameFrames << " back to " << totalGameFramesIncludingRespawns << "\n";
 			//rollback the desync checker system also
 			netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
 		}
 		else
 		{
-			cout << "loading state for practice mode on frame: " << totalGameFrames << "\n";
+			cout << "loading state for practice mode on frame: " << totalGameFramesIncludingRespawns << "\n";
 		}
 	}
 
@@ -9237,8 +9215,52 @@ void Session::ProcessDesyncMessageQueue()
 	{
 		//cout << "processing desync check" << endl;
 
+		/*UdpMsg *msg = (UdpMsg*)(*it)->GetData();
+
+		int targetPlayerIndex = -1;
+		for (int i = 0; i < 4; ++i)
+		{
+			if (i == netplayManager->playerIndex)
+				continue;
+
+			if ( netplayManager->netplayPlayers[i].connection == (*it)->GetConnection())
+			{
+				targetPlayerIndex = i;
+				break;
+			}
+		}
+
+		assert(targetPlayerIndex >= 0);
+
+		return netplayPlayers[targetPlayerIndex].GetDesyncCheckInfo(framesAgo);*/
+
+		/*int sessTotalFrames = totalGameFrames;
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+		{
+			int parIndex = -1;
+			for (int i = 1; i < GGPO_MAX_PLAYERS; ++i)
+			{
+				assert(ggpoPlayers[i].type == GGPO_PLAYERTYPE_REMOTE);
+				if (ggpoPlayers[i].u.remote.connection == (*it)->GetConnection())
+				{
+					parIndex = i;
+					break;
+				}
+			}
+
+			assert(parIndex >= 0);
+
+			ParallelMode *pm = (ParallelMode*)gameMode;
+			sessTotalFrames = pm->parallelGames[parIndex-1]->totalGameFrames;
+
+			cout << "switching out " << totalGameFrames << " for " << sessTotalFrames << "\n";
+		}*/
+
+		int sessTotalFrames = totalGameFramesIncludingRespawns;//ggpo->GetFrameCount();
+
 		UdpMsg *msg = (UdpMsg*)(*it)->GetData();
-		int frameDifference = totalGameFrames - msg->u.desync_info.frame_number;
+		//int frameDifference = totalGameFrames - msg->u.desync_info.frame_number;
+		int frameDifference = sessTotalFrames - msg->u.desync_info.frame_number;
 
 		if (frameDifference >= 0)
 		{
@@ -9248,6 +9270,7 @@ void Session::ProcessDesyncMessageQueue()
 				&& msg->u.desync_info.player_action_frame == dci.actionFrame )
 			//	&& msg->u.desync_info.health == dci.health )
 			{
+				cout << "no desync comparing: " << sessTotalFrames << " and " << msg->u.desync_info.frame_number << ", action: " << dci.action << "\n";
 				//no desync!
 				/*cout << "no desync comparing: " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
 				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
@@ -9256,7 +9279,8 @@ void Session::ProcessDesyncMessageQueue()
 			}
 			else
 			{
-				cout << "DESYNC DETECTED comparing " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
+				//cout << "DESYNC DETECTED comparing " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
+				cout << "DESYNC DETECTED comparing " << sessTotalFrames << " and " << msg->u.desync_info.frame_number << "\n";
 				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
 				cout << "my action frame: " << dci.actionFrame << ", their action frame: " << msg->u.desync_info.player_action_frame << "\n";
 				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;
@@ -9268,7 +9292,7 @@ void Session::ProcessDesyncMessageQueue()
 		}
 		else
 		{
-			cout << "weird desync check message from the future" << endl;
+			cout << "weird desync check message from the future. sessTotalFrames: " << sessTotalFrames << ", msgnumber: " << msg->u.desync_info.frame_number << endl;
 			
 			//sync message from the future who cares for now LOL
 		}
@@ -9644,3 +9668,56 @@ void Session::CleanupGameMode()
 		gameMode = NULL;
 	}
 }
+
+Actor *Session::GetPlayerFromNetplayPlayerIndex(int index)
+{
+	Actor *p = NULL;
+
+	if (netplayManager != NULL)
+	{
+		int playerParIndex = -1;
+		int myPlayerIndex = netplayManager->playerIndex;
+
+		if (matchParams.gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+		{
+			if (index == myPlayerIndex)
+			{
+				playerParIndex = 0;
+			}
+			else if (index > myPlayerIndex)
+			{
+				playerParIndex = index;
+			}
+			else
+			{
+				playerParIndex = index + 1;
+			}
+
+			if (playerParIndex == 0)
+			{
+				p = GetPlayer(0);
+			}
+			else
+			{
+				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+				if (prm->parallelGames[playerParIndex - 1] != NULL)
+				{
+					p = prm->parallelGames[playerParIndex - 1]->GetPlayer(0);
+				}
+			}
+		}
+		else
+		{
+			p = GetPlayer(index);
+		}
+	}
+
+	return p;
+}
+
+std::string Session::GetMapPreviewPath()
+{
+	return filePath.parent_path().string() + "\\" + filePath.stem().string() + ".png";
+}
+

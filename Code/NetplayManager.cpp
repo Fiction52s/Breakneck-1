@@ -338,6 +338,7 @@ NetplayPlayer::NetplayPlayer()
 
 void NetplayPlayer::Clear()
 {
+	myPlayer = NULL;
 	connection = 0;
 	isMe = false;
 	isConnectedTo = false;
@@ -411,7 +412,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -2005,8 +2006,8 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	int r = rand() % 2;
 	cout << "choosing quickplay map: " << r << endl;
 
-	//r = 0; //just for testing
-	r = 0;
+	r = 0; //just for testing
+	//r = 1;
 
 	if (r == 0)
 	{
@@ -2088,7 +2089,6 @@ int NetplayManager::RunMatch()
 		}
 	}
 
-
 	int gameResult = game->Run();
 
 	resultsScreen = game->CreateResultsScreen(); //netplay always needs a results screen
@@ -2167,7 +2167,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = GetNextQuickplayMapName();//"Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//
+		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//
 		//matchParams.controllerStateVec[0] = myControllerInput;
 		//matchParams.controlProfiles[0] = myCurrProfile;
 
@@ -2911,7 +2911,7 @@ void NetplayManager::SendDesyncCheckToHost( int currGameFrame )
 			if (i != playerIndex)
 			{
 				SendUdpMsg(netplayPlayers[i].connection, &msg);
-				//cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
+				//cout << "adding desynccheckinfo for index: " << i << " on frame " << currGameFrame << " with action " << dci.action << "\n";
 			}
 			break;
 		}

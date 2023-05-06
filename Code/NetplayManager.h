@@ -17,6 +17,7 @@ struct UdpMsg;
 //struct PracticeMsg;
 
 struct MatchResultsScreen;
+struct Actor;
 
 struct DesyncCheckInfo
 {
@@ -111,6 +112,8 @@ struct PracticePlayer
 struct NetplayPlayer
 {
 	const static int MAX_DESYNC_CHECK_INFOS_STORED = 180;
+
+	Actor *myPlayer;
 
 	CSteamID id;
 	bool isConnectedTo;
@@ -211,8 +214,6 @@ struct NetplayManager
 	uint64 postPracticeRaceLobbyInviteID;
 
 	bool wantsToKeepPlayingPractice;
-
-	
 
 	//sf::Uint64 practicePeersToRaceList;
 

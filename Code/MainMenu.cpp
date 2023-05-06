@@ -1104,7 +1104,7 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == TITLEMENU)
 	{
 		selectorAnimFrame = 0;
-		MOUSE.SetControllersOn(false); //just for testing. change to true again soon
+		MOUSE.SetControllersOn(true);
 		MOUSE.Show();
 		customCursor->SetMode(CustomCursor::M_REGULAR);
 		customCursor->Show();

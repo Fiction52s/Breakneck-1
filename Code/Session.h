@@ -221,6 +221,8 @@ struct Session : TilesetManager, QuadTreeCollider
 		FEEDBACK_FORM,
 	};
 
+	int totalGameFramesIncludingRespawns;
+
 	bool onlinePauseMenuOn;
 
 	COMPRESSED_INPUT_TYPE *ggpoCompressedInputs;
@@ -460,6 +462,8 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	std::vector<ControllerDualStateQueue*> controllerStates;
 	std::vector<ControlProfile*> controlProfiles;
+
+	std::string GetMapPreviewPath();
 
 	static Session *GetSession();
 
@@ -978,6 +982,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool HasPracticeSequenceConfirm();
 	void ConsumePracticeSequenceConfirm();
 	void CleanupGameMode();
+
+	Actor *GetPlayerFromNetplayPlayerIndex(int index);
 };
 
 #endif

@@ -14,6 +14,7 @@ FeedbackForm::FeedbackForm()
 	Vector2i size(700, 420);//300 + 20);
 
 	ts_star = MainMenu::GetInstance()->tilesetManager.GetSizedTileset("Menu/ratingstar_64x64.png");
+	//ts_star = GetSizedTileset("Menu/ratingstar_64x64.png");
 
 	panel = new Panel("feedbackpanel", size.x, size.y, this, true);
 	panel->SetCenterPos(Vector2i(960, 540));
@@ -170,6 +171,9 @@ bool FeedbackForm::Submit()
 	ss << "SteamID: " << SteamUser()->GetSteamID().ConvertToUint64() << "\n";
 	ss << "Rating: " << rating << "/5" << "\n";
 	ss << "Feedback: \n\n" << feedbackTextBox->GetString();
+
+	//Tileset *ts_preview = NULL;
+	//ts_preview = GetTileset(game->GetMapPreviewPath());
 
 	FeedbackManager::SetPayload("1-1-1", ss.str());
 	return FeedbackManager::SubmitFeedback();

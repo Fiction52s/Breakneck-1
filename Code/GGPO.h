@@ -1,6 +1,7 @@
 #ifndef __GPPO_H__
 #define __GPPO_H__
 
+
 #include "VectorMath.h"
 #include "ggponet.h"
 #include "Physics.h"
@@ -9,7 +10,6 @@
 #include "Actor.h"
 #include "Camera.h"
 #pragma comment(lib, "wsock32.lib")
-
 
 //struct Edge;
 
@@ -326,6 +326,7 @@ struct PState
 struct Sequence;
 struct SaveGameState
 {
+	int totalGameFramesIncludingRespawns;
 	int totalGameFrames;
 	int activeEnemyListID;
 	int activeEnemyListTailID;

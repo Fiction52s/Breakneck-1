@@ -15,6 +15,7 @@ SaveGameState::SaveGameState()
 
 void SaveGameState::Clear()
 {
+	totalGameFramesIncludingRespawns = 0;
 	totalGameFrames = 0;
 	activeEnemyListID = -1;
 	activeEnemyListTailID = -1;

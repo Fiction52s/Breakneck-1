@@ -32,6 +32,7 @@ public:
    virtual GGPOErrorCode SetFrameDelay(GGPOPlayerHandle player, int delay);
    virtual GGPOErrorCode SetDisconnectTimeout(int timeout);
    virtual GGPOErrorCode SetDisconnectNotifyStart(int timeout);
+   virtual int GetFrameCount();
 
 public:
    virtual void OnMsg(HSteamNetConnection p_connection, UdpMsg *msg, int len);
