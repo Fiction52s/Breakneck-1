@@ -68,7 +68,7 @@ void ScoreDisplay::Draw(RenderTarget *target)
 {
 	if (active)
 	{
-		if (waiting)
+		if (waiting && MainMenu::GetInstance()->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE )
 		{
 			feedbackInputBox->Draw(target);
 		}

@@ -264,8 +264,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 		currInput = GetCurrInputFiltered(0);//GetPlayer(0)->currInput;
 		prevInput = GetPrevInputFiltered(0);//GetPlayer(0)->prevInput;
 
-		//just for testing w/ sleepy
-		if (currInput.B && !prevInput.B )//currInput.PUp() && !prevInput.PUp())
+		if (currInput.PUp() && !prevInput.PUp())
 		{
 			gameState = PRACTICE_INVITE;
 

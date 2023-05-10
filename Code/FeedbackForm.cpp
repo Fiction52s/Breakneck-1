@@ -72,11 +72,16 @@ void FeedbackForm::Activate( GameSession *p_game )
 
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 	{
-		feedbackName->text.setString("Feedback for Level " + mainMenu->adventureManager->GetLeaderboardDisplayName(game));
+		levelName = mainMenu->adventureManager->GetLeaderboardDisplayName(game);
+		feedbackName->text.setString("Feedback for Level " + levelName);
+	}
+	else
+	{
+		//not used yet
+		levelName = game->filePath.stem().string();
 	}
 
-	//"level " + mainMenu->adventureManager->GetLeaderboardDisplayName(this));
-
+	previewPath = game->GetMapPreviewPath();
 	
 	//MainMenu::GetInstance()->window->setKeyRepeatEnabled(true);
 	action = A_SHOW;
@@ -167,16 +172,19 @@ bool FeedbackForm::Submit()
 
 	stringstream ss;
 
+	ss << "Map: " << levelName << "\n";
 	ss << "Username: " << SteamFriends()->GetPersonaName() << "\n";
 	ss << "SteamID: " << SteamUser()->GetSteamID().ConvertToUint64() << "\n";
 	ss << "Rating: " << rating << "/5" << "\n";
+	ss << "File Path: " << game->filePathStr << "\n";
 	ss << "Feedback: \n\n" << feedbackTextBox->GetString();
+
 
 	//Tileset *ts_preview = NULL;
 	//ts_preview = GetTileset(game->GetMapPreviewPath());
 
-	FeedbackManager::SetPayload("1-1-1", ss.str());
-	return FeedbackManager::SubmitFeedback();
+	//FeedbackManager::SetPayload("1-1-1", ss.str());
+	return FeedbackManager::SubmitFeedback(levelName, ss.str(), previewPath);
 }
 
 bool FeedbackForm::HandleEvent(sf::Event ev)

@@ -203,6 +203,15 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
+	case RUN_WORKSHOP_MAP:
+	{
+		if (currFreePlaySession != NULL)
+		{
+			delete currFreePlaySession;
+			currFreePlaySession = NULL;
+		}
+		break;
+	}
 	case FREEPLAY:
 	{
 		if (freeplayScreen != NULL)
@@ -365,6 +374,11 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 				adventureManager = NULL;
 			}
 		}
+		else if (fromMode == RUN_WORKSHOP_MAP)
+		{
+			delete workshopBrowser;
+			workshopBrowser = NULL;
+		}
 
 		assert(titleScreen == NULL);
 		titleScreen = new TitleScreen(this);
@@ -401,6 +415,23 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		adventureManager->DestroyWorldMap();
 		adventureManager->DestroySaveMenu();
+		break;
+	}
+	case RUN_WORKSHOP_MAP:
+	{
+		assert(currFreePlaySession == NULL);
+		//assert(freeplayScreen != NULL);
+
+		/*if (fromMode == BROWSE_WORKSHOP)
+		{
+			delete workshopBrowser;
+			workshopBrowser = NULL;
+		}*/
+
+		//MatchParams mp = freeplayScreen->GetMatchParams();
+		gameRunType = GameRunType::GRT_FREEPLAY;
+		currFreePlaySession = new GameSession(menuMatchParams);
+		GameSession::sLoad(currFreePlaySession);
 		break;
 	}
 	case RUN_FREEPLAY_MAP:
@@ -899,8 +930,6 @@ void MainMenu::CreateRenderTextures()
 
 MainMenu::~MainMenu()
 {
-	FeedbackManager::Cleanup();
-
 	assert(currInstance == this);
 	currInstance = NULL;
 
@@ -1014,7 +1043,7 @@ void MainMenu::Init()
 
 	Swiper::LoadSwipeType( this, Swiper::W1);
 
-	FeedbackManager::Init();
+	//FeedbackManager::SubmitFeedback("memory test", "body test");
 	
 	indEffectPool = new EffectPool(EffectType::FX_IND, 4);
 	indEffectPool->Reset();
@@ -2979,6 +3008,38 @@ void MainMenu::HandleMenuMode()
 
 		break;
 	}
+	case RUN_WORKSHOP_MAP:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		View oldView = window->getView();
+
+		int result = currFreePlaySession->Run();
+
+		window->setView(oldView);
+
+		if (result == GameSession::GR_EXITGAME)
+		{
+			delete currFreePlaySession;
+			currFreePlaySession = NULL;
+
+			SetMode(EXITING);
+			quit = true;
+		}
+		else if (result == GameSession::GR_EXITTITLE)
+		{
+			LoadMode(TITLEMENU);
+		}
+		else
+		{
+			LoadMode(BROWSE_WORKSHOP);
+		}
+
+		break;
+	}
 	case BROWSE_WORKSHOP:
 	{
 		while (window->pollEvent(ev))
@@ -2995,6 +3056,11 @@ void MainMenu::HandleMenuMode()
 
 			SetMode(ONLINE_MENU);
 			break;
+		}
+		else if (workshopBrowser->action == WorkshopBrowser::A_PLAY)
+		{
+			DownloadAndRunWorkshopMap();
+			workshopBrowser->action = WorkshopBrowser::A_POPUP;
 		}
 		else if (workshopBrowser->workshopMapPopup->action == WorkshopMapPopup::A_HOST)
 		{
@@ -3178,6 +3244,7 @@ void MainMenu::HandleMenuMode()
 		if (fader->IsFullyFadedOut())
 		{
 			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+
 			SetMode(DOWNLOAD_WORKSHOP_MAP_LOOP);
 			
 			//loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
@@ -3199,7 +3266,9 @@ void MainMenu::HandleMenuMode()
 		{
 			cout << "map download complete" << endl;
 
-			modeToLoad = FREEPLAY;//RUN_FREEPLAY_MAP;
+			modeToLoad = RUN_WORKSHOP_MAP;//RUN_FREEPLAY_MAP;//FREEPLAY;//RUN_FREEPLAY_MAP;
+
+
 
 			//MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 
@@ -3207,7 +3276,12 @@ void MainMenu::HandleMenuMode()
 			//	assert(0);
 
 			menuMatchParams->Clear();
-			menuMatchParams->mapPath = mapBrowserScreen->browserHandler->confirmedMapFilePath;//selectedNode->filePath.string();
+			menuMatchParams->mapPath = workshopBrowser->workshopMapPopup->currMapNode->filePath;//mapBrowserScreen->browserHandler->confirmedMapFilePath;//selectedNode->filePath.string();
+
+			//should always need to do this since you're always coming from the workshop browser to get to this state.
+			menuMatchParams->controllerStateVec[0] = netplayManager->myControllerInput;
+			menuMatchParams->controlProfiles[0] = netplayManager->myCurrProfile;
+
 			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			SetMode(LOADINGMENULOOP);
 		}
@@ -4336,6 +4410,10 @@ void MainMenu::DrawMode( Mode m )
 	{
 		break;
 	}
+	case RUN_WORKSHOP_MAP:
+	{
+		break;
+	}
 	case FREEPLAY:
 	{
 		freeplayScreen->Draw(preScreenTexture);
@@ -4439,6 +4517,13 @@ void MainMenu::DrawMode( Mode m )
 void MainMenu::DownloadAndRunWorkshopMap()
 {
 	//currWorkshopMap = path;
+
+	/*if (workshopBrowser != NULL)
+	{
+		delete workshopBrowser;
+		workshopBrowser = NULL;
+	}*/
+
 	mapBrowserScreen->browserHandler->SubscribeToItem();
 	modeLoadingFrom = menuMode;	
 	modeToLoad = MainMenu::DOWNLOAD_WORKSHOP_MAP_LOOP;

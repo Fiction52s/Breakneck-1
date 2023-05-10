@@ -1590,6 +1590,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	RegisterAllEnemies();
 
 	Init();
+
 }
 
 PolyPtr EditSession::GetPolygon(int index )

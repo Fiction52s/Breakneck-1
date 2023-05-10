@@ -18,6 +18,7 @@ struct WorkshopBrowser
 		A_POPUP,
 		A_SAVE_POPUP,
 		A_SAVE_MESSAGE,
+		A_PLAY,
 		A_BACK,
 	};
 

@@ -7584,6 +7584,9 @@ void Session::InitGGPO()
 	
 	int myIndex = playerIndex;
 
+
+	
+
 	if (IsParallelGameModeType())
 	{
 		myIndex = 0;
@@ -7662,6 +7665,8 @@ void Session::InitGGPO()
 	}
 
 
+	totalGameFramesIncludingRespawns = 0; //important to reset this whenever you are starting a new ggpo session to avoid desync checker bugs
+
 	if (IsParallelGameModeType())
 	{
 		if (!IsParallelSession())
@@ -7669,6 +7674,8 @@ void Session::InitGGPO()
 			//allows you to respawn with netplay info in mind
 			ParallelMode *pm = (ParallelMode*)gameMode;
 			pm->SetParallelGGPOSessions(ggpo);
+
+			pm->ResetParallelTotalFramesIncludingRespawns();
 			
 			Actor *p = GetPlayer(0);
 			p->Respawn();
@@ -9270,7 +9277,7 @@ void Session::ProcessDesyncMessageQueue()
 				&& msg->u.desync_info.player_action_frame == dci.actionFrame )
 			//	&& msg->u.desync_info.health == dci.health )
 			{
-				cout << "no desync comparing: " << sessTotalFrames << " and " << msg->u.desync_info.frame_number << ", action: " << dci.action << "\n";
+				//cout << "no desync comparing: " << sessTotalFrames << " and " << msg->u.desync_info.frame_number << ", action: " << dci.action << "\n";
 				//no desync!
 				/*cout << "no desync comparing: " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
 				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";

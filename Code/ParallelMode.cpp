@@ -174,6 +174,17 @@ void ParallelMode::SimulateParallelGGPOGameFrames()
 	}
 }
 
+void ParallelMode::ResetParallelTotalFramesIncludingRespawns()
+{
+	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+	{
+		if (parallelGames[i] != NULL)
+		{
+			parallelGames[i]->totalGameFramesIncludingRespawns = 0;
+		}
+	}
+}
+
 void ParallelMode::SetParallelGGPOSessions(GGPOSession *p_ggpo)
 {
 	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)

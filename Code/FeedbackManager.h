@@ -6,16 +6,10 @@
 
 struct FeedbackManager
 {
-	const static int MAX_PAYLOAD_SIZE = 2048;
-	static CURL *curl;
-	static char payload[MAX_PAYLOAD_SIZE];
-
-	static void SetPayload(const std::string &subject, const std::string &body);
-	static bool Init();
-	static void Cleanup();
 	static void Test();
-
-	static bool SubmitFeedback();
+	static bool SubmitFeedback(const std::string &subject, const std::string &body,
+		const std::string &previewPath);
+	static bool SubmitFeedback(const std::string &subject, const std::string &body);
 };
 
 #endif

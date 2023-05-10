@@ -31,6 +31,9 @@ struct FeedbackForm : GUIHandler//TilesetManager, GUIHandler
 
 	GameSession *game;
 
+	std::string levelName;
+	std::string previewPath;
+
 	int rating;
 
 	FeedbackForm();

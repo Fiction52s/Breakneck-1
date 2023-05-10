@@ -66,6 +66,7 @@ struct ParallelMode : GameMode
 	void UpdateParallelNameTagsPixelPos(sf::RenderTarget *target);
 	void SimulateParallelGGPOGameFrames();
 	void SetParallelGGPOSessions(GGPOSession *p_ggpo);
+	void ResetParallelTotalFramesIncludingRespawns();
 	void RespawnParallelPlayers();
 	void SetParalellGGPOInputs(COMPRESSED_INPUT_TYPE *ggpoCompressedInputs);
 	void RunParallelGGPOModeUpdates();

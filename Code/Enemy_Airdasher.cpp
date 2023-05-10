@@ -144,7 +144,7 @@ void Airdasher::ProcessState()
 {
 	V2d playerPos = GetFocusedPlayerPos();//sess->GetPlayerPos();
 	
-	cout << "state: " << action << ", frame: " << frame << "\n";
+	//cout << "state: " << action << ", frame: " << frame << "\n";
 
 	if (frame == actionLength[action] * animFactor[action])
 	{

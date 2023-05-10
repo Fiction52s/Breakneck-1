@@ -137,7 +137,7 @@ void WorkshopBrowser::Update()
 
 			//mapBrowserScreen->browserHandler->chooser->ClearAllPreviewsButSelected();
 			workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
-			mm->DownloadAndRunWorkshopMap();
+			action = A_PLAY;
 			break;
 		}
 			

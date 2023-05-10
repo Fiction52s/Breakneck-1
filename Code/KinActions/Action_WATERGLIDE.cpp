@@ -90,7 +90,7 @@ void Actor::WATERGLIDE_Update()
 		RotateCCW(springVel, -glideTurnFactor);
 	}
 
-	cout << "springVel: " << springVel.x << ", " << springVel.y << endl;
+	//cout << "springVel: " << springVel.x << ", " << springVel.y << endl;
 	velocity = springVel + springExtra;
 }
 
