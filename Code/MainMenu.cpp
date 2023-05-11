@@ -1174,6 +1174,7 @@ void MainMenu::SetMode(Mode m)
 	}
 	else if (menuMode == BROWSE_WORKSHOP)
 	{
+		MOUSE.Show();
 		//SetMouseGrabbed(true);
 		//SetMouseVisible(true);
 	}
@@ -1206,6 +1207,10 @@ void MainMenu::SetMode(Mode m)
 	else if (menuMode == CREDITS)
 	{
 		titleScreen->creditsMenuScreen->Start();
+	}
+	else if (menuMode == RUN_WORKSHOP_MAP)
+	{
+		MOUSE.Hide();
 	}
 
 	if (menuMode == THANKS_FOR_PLAYING)

@@ -76,7 +76,9 @@ struct SteamLeaderboardManager : RemoteStorageResultHandler
 	};
 
 	int action;
+	LeaderboardInfo *boardBeingProcessed;
 	LeaderboardInfo currBoard;
+	LeaderboardInfo uploadBoard;
 	int scoreToUpload;
 	std::string localReplayPath;
 	std::string cloudReplayPath;
@@ -124,7 +126,7 @@ private:
 	void OnLeaderboardScoresDownloaded(LeaderboardScoresDownloaded_t *callback, bool bIOFailure);
 	void OnRemoteStorageFileShareResult(RemoteStorageFileShareResult_t *callback, bool bIOFailure);
 	void OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback, bool bIOFailure);
-	void FindLeaderboard(const std::string &name, int postAction );
+	void FindLeaderboard(const std::string &name, int postAction, bool forUpload = false );
 
 	//from the storage handler, doesnt directly handle the call result
 	void OnRemoteStorageFileWriteAsyncComplete(RemoteStorageFileWriteAsyncComplete_t *callback, bool bIOFailure);

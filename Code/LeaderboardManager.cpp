@@ -48,6 +48,9 @@ void SteamLeaderboardManager::Reset()
 	scoreToUpload = -1;
 
 	currBoard.Clear();
+	uploadBoard.Clear();
+
+	boardBeingProcessed = NULL;
 }
 
 SteamLeaderboardManager::~SteamLeaderboardManager()
@@ -90,7 +93,7 @@ void SteamLeaderboardManager::UploadScore(const std::string &name, int score, co
 
 	cloudReplayPath = userAccountIDStr + "_" + file;//RemoteStorageManager::GetRemotePath(file);
 
-	FindLeaderboard(name, A_DOWNLOADING_MY_SCORE);
+	FindLeaderboard(name, A_DOWNLOADING_MY_SCORE, true );
 
 	//1. download my score
 	//2. if I have the better score, upload my replay
@@ -131,12 +134,20 @@ void SteamLeaderboardManager::UploadingScoreSucceeded()
 	}
 }
 
-void SteamLeaderboardManager::FindLeaderboard(const std::string &name, int p_action)
+void SteamLeaderboardManager::FindLeaderboard(const std::string &name, int p_action, bool forUpload )
 {
 	postFindAction = p_action;
 	action = A_FINDING;
 
-	currBoard.Clear();
+	if (forUpload)
+	{
+		boardBeingProcessed = &uploadBoard;
+	}
+	else
+	{
+		boardBeingProcessed = &currBoard;
+	}
+	boardBeingProcessed->Clear();
 
 	searchBoardName = name;
 
@@ -178,8 +189,8 @@ void SteamLeaderboardManager::OnLeaderboardFound(LeaderboardFindResult_t *callba
 		cout << "found leaderboard " << searchBoardName << "\n";
 		action = postFindAction;
 
-		currBoard.name = searchBoardName;
-		currBoard.leaderboardID = callback->m_hSteamLeaderboard;
+		boardBeingProcessed->name = searchBoardName;
+		boardBeingProcessed->leaderboardID = callback->m_hSteamLeaderboard;
 
 		if (action == A_DOWNLOADING_MY_SCORE )
 		{
@@ -227,15 +238,15 @@ void SteamLeaderboardManager::OnLeaderboardScoresDownloaded(LeaderboardScoresDow
 		int numEntries = callback->m_cEntryCount;
 
 		myEntryIndex = -1;
-		currBoard.entries.resize(numEntries);
+		boardBeingProcessed->entries.resize(numEntries);
 
 		for (int i = 0; i < numEntries; ++i)
 		{
-			SteamUserStats()->GetDownloadedLeaderboardEntry(callback->m_hSteamLeaderboardEntries, i, &(currBoard.entries[i].steamEntry), NULL, 0);
-			currBoard.entries[i].Init();
+			SteamUserStats()->GetDownloadedLeaderboardEntry(callback->m_hSteamLeaderboardEntries, i, &(boardBeingProcessed->entries[i].steamEntry), NULL, 0);
+			boardBeingProcessed->entries[i].Init();
 
 
-			if (currBoard.entries[i].steamEntry.m_steamIDUser == SteamUser()->GetSteamID())
+			if (boardBeingProcessed->entries[i].steamEntry.m_steamIDUser == SteamUser()->GetSteamID())
 			{
 				myEntryIndex = i;
 			}
@@ -306,6 +317,8 @@ void SteamLeaderboardManager::OnLeaderboardUGCSet(LeaderboardUGCSet_t *callback,
 
 		DeleteCloudReplay();
 	}
+
+	uploadBoard.Clear();
 }
 
 
@@ -336,7 +349,7 @@ void SteamLeaderboardManager::StartDownloadingMyScore()
 
 	CSteamID myID = SteamUser()->GetSteamID();
 
-	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntriesForUsers(currBoard.leaderboardID, &myID, 1);
+	SteamAPICall_t call = SteamUserStats()->DownloadLeaderboardEntriesForUsers(boardBeingProcessed->leaderboardID, &myID, 1);
 
 	onLeaderboardScoresDownloadedCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardScoresDownloaded);
 }
@@ -346,7 +359,7 @@ void SteamLeaderboardManager::StartUploadingScore()
 	cout << "Start uploading score" << "\n";
 
 	action = A_UPLOADING_SCORE;
-	SteamAPICall_t call = SteamUserStats()->UploadLeaderboardScore(currBoard.leaderboardID, ELeaderboardUploadScoreMethod::k_ELeaderboardUploadScoreMethodForceUpdate, scoreToUpload, NULL, 0);
+	SteamAPICall_t call = SteamUserStats()->UploadLeaderboardScore(boardBeingProcessed->leaderboardID, ELeaderboardUploadScoreMethod::k_ELeaderboardUploadScoreMethodForceUpdate, scoreToUpload, NULL, 0);
 	onLeaderboardScoreUploadedCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardScoreUploaded);
 }
 
@@ -378,7 +391,7 @@ void SteamLeaderboardManager::StartAttachingReplay()
 	cout << "Start attaching replay" << "\n";
 
 	action = A_ATTACH_REPLAY;
-	SteamAPICall_t call = SteamUserStats()->AttachLeaderboardUGC(currBoard.leaderboardID, replayToUploadHandle);
+	SteamAPICall_t call = SteamUserStats()->AttachLeaderboardUGC(boardBeingProcessed->leaderboardID, replayToUploadHandle);
 	onLeaderboardUGCSetCallResult.Set(call, this, &SteamLeaderboardManager::OnLeaderboardUGCSet);
 }
 

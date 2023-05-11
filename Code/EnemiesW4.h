@@ -17,5 +17,6 @@
 #include "Enemy_TigerSpinTurret.h"
 #include "Enemy_TigerTarget.h"
 #include "Enemy_SequenceTiger.h"
+#include "Enemy_ScorpionTarget.h"
 
 #endif

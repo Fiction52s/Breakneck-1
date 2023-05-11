@@ -61,6 +61,7 @@
 #include "Enemy_RewindBooster.h"
 #include "Enemy_TutorialObject.h"
 #include "Enemy_ScorpionLauncher.h"
+#include "Enemy_ScorpionTarget.h"
 
 #include "GGPO.h"
 
@@ -18250,6 +18251,18 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				gTarget->hitBody.Intersects(gTarget->currHitboxFrame, &hurtBody) )
 			{
 				gTarget->Collect();
+			}
+		}
+		else if (en->type == EnemyType::EN_SCORPIONTARGET)
+		{
+			ScorpionTarget *sTarget = (ScorpionTarget*)qte;
+
+			bool isGlideAction = action == SPRINGSTUNGLIDE || action == WATERGLIDE;
+
+			if (!sTarget->dead && scorpOn &&
+				sTarget->hitBody.Intersects(sTarget->currHitboxFrame, &hurtBody))
+			{
+				sTarget->Collect();
 			}
 		}
 		else if (en->type == EnemyType::EN_FREEFLIGHTTARGET)
