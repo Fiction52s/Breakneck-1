@@ -410,7 +410,9 @@ void Session::RegisterW1Enemies()
 
 	AddBasicAerialWorldEnemy("bluekeyfly", 1, CreateEnemy<KeyFly>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("bluecomboertarget", 1, CreateEnemy<ComboerTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("blueregentarget", 1, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+
+	AddBasicAerialWorldEnemy("bluecomboertarget", 1, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
 	/*AddWorldEnemy("shard", 1, CreateEnemy<Shard>, SetParamsType<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);*/
 
@@ -441,7 +443,7 @@ void Session::RegisterW2Enemies()
 
 	AddBasicGroundWorldEnemy("sequencebird", 2, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
 
-	AddBasicAerialWorldEnemy("glidetarget", 2, CreateEnemy<GlideTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("glidetarget", 2, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddWorldEnemy("greenblocker", 2, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
@@ -454,7 +456,7 @@ void Session::RegisterW2Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
-	AddBasicAerialWorldEnemy("greencomboertarget", 2, CreateEnemy<ComboerTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("greencomboertarget", 2, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
 
 	AddBasicGroundWorldEnemy("nexus2",2, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
@@ -533,7 +535,7 @@ void Session::RegisterW3Enemies()
 	AddWorldEnemy("yellowblocker", 3, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("yellowcomboertarget", 3, CreateEnemy<ComboerTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("yellowcomboertarget", 3, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
 
 	AddBasicGroundWorldEnemy("coyote", 3, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 
@@ -607,7 +609,9 @@ void Session::RegisterW4Enemies()
 
 	AddBasicGroundWorldEnemy("tiger", 4, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
 
-	AddBasicAerialWorldEnemy("scorpiontarget", 4, CreateEnemy<ScorpionTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	
+
+	AddBasicAerialWorldEnemy("scorpiontarget", 4, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1);
 
 	AddBasicGroundWorldEnemy("sequencetiger", 4, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
 	//AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
@@ -773,7 +777,7 @@ void Session::RegisterW6Enemies()
 	AddWorldEnemy("swinglaunchercw", 6, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddWorldEnemy("swinglauncherccw", 6, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
-	AddBasicAerialWorldEnemy("freeflighttarget", 6, CreateEnemy<FreeFlightTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("freeflighttarget", 6, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("bluewirejuggler", 6, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 

@@ -482,18 +482,6 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_KEYFLY:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2, false);
 		break;
-	case EnemyType::EN_GLIDETARGET:
-		hitParams.Set(5, .8, (3 * 60) / 2, 2);
-		break;
-	case EnemyType::EN_SCORPIONTARGET:
-		hitParams.Set(5, .8, (3 * 60) / 2, 2);
-		break;
-	case EnemyType::EN_COMBOERTARGET:
-		hitParams.Set(5, .8, (3 * 60) / 2, 2);
-		break;
-	case EnemyType::EN_FREEFLIGHTTARGET:
-		hitParams.Set(5, .8, (3 * 60) / 2, 2);
-		break;
 	case EnemyType::EN_SPECIALTARGET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 	default:

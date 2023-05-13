@@ -16,11 +16,13 @@ struct SpecialTarget : Enemy
 
 	enum TargetType
 	{
+		TARGET_BLUE,
 		TARGET_GLIDE,
 		TARGET_SCORPION,
 		TARGET_FREEFLIGHT,
 		TARGET_COMBOER_BLUE,
 		TARGET_COMBOER_GREEN,
+		TARGET_COMBOER_YELLOW,
 		//TARGET_ATTACK_BLUE,
 	};
 
@@ -32,6 +34,7 @@ struct SpecialTarget : Enemy
 
 	int targetType;
 	Tileset *ts;
+	bool regenOn;
 
 	bool CountsForEnemyGate() { return false; }
 	SpecialTarget(ActorParams *ap);

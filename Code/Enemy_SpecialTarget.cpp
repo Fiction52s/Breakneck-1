@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_SpecialTarget.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -16,15 +17,25 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
+	regenOn = false;
+	scale = 4.0;
+
 	ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);
 
 	const string &typeName = ap->GetTypeName();
-	if (typeName == "glidetarget")
+	if (typeName == "blueregentarget")
+	{
+		regenOn = true;
+		targetType = TARGET_BLUE;
+		sprite.setColor(Color::Blue);
+	}
+	else if (typeName == "glidetarget")
 	{
 		targetType = TARGET_GLIDE;
+		regenOn = false;
 		sprite.setColor(Color::Green);
 	}
 	else if (typeName == "scorpiontarget")
@@ -40,10 +51,12 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	else if (typeName == "bluecomboertarget")
 	{
 		targetType = TARGET_COMBOER_BLUE;
+		regenOn = false;
 	}
 	else if (typeName == "greencomboertarget")
 	{
 		targetType = TARGET_COMBOER_GREEN;
+		regenOn = false;
 	}
 
 	sprite.setTexture(*ts->texture);
@@ -140,8 +153,16 @@ void SpecialTarget::ProcessState()
 		}
 		case A_DYING:
 		{
-			action = A_WAIT_BEFORE_REGEN;
-			frame = 0;
+			if (regenOn)
+			{
+				action = A_WAIT_BEFORE_REGEN;
+				frame = 0;
+			}
+			else
+			{
+				dead = true;
+				numHealth = 0;
+			}
 			break;
 		}
 		case A_WAIT_BEFORE_REGEN:
@@ -154,6 +175,8 @@ void SpecialTarget::ProcessState()
 		{
 			action = A_IDLE;
 			frame = 0;
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
 		}
 		}
 		
@@ -162,7 +185,29 @@ void SpecialTarget::ProcessState()
 
 void SpecialTarget::UpdateSprite()
 {
-	sprite.setTextureRect(ts->GetSubRect(frame / animFactor[A_IDLE]));
+	switch (action)
+	{
+	case A_IDLE:
+	{
+		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[A_IDLE]));
+		break;
+	}
+	case A_DYING:
+	{
+		sprite.setTextureRect(ts->GetSubRect(0));
+		break;
+	}
+	case A_WAIT_BEFORE_REGEN:
+	{
+		break;
+	}
+	case A_REGENERATING:
+	{
+		sprite.setTextureRect(ts->GetSubRect(0));
+		break;
+	}
+	}
+	
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
@@ -170,66 +215,73 @@ void SpecialTarget::UpdateSprite()
 
 void SpecialTarget::EnemyDraw(sf::RenderTarget *target)
 {
-	if (action != A_WAIT_BEFORE_REGEN)
-	{
-		DrawSprite(target, sprite);
-	}
+	if (action == A_WAIT_BEFORE_REGEN)
+		return;
+
+	DrawSprite(target, sprite);
 }
 
 HitboxInfo * SpecialTarget::IsHit(int pIndex)
 {
 	//this if for comboer mode
 
-	if (currHurtboxes == NULL)
-		return NULL;
-
-	Actor *player = sess->GetPlayer(pIndex);
-
-	if (CanBeHitByComboer())
+	if (targetType == TARGET_COMBOER_BLUE || targetType == TARGET_COMBOER_GREEN || targetType == TARGET_COMBOER_YELLOW )
 	{
-		ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
-		if (co != NULL)
+		if (currHurtboxes == NULL)
+			return NULL;
+
+		Actor *player = sess->GetPlayer(pIndex);
+
+		if (CanBeHitByComboer())
 		{
-			HitboxInfo *hi = co->enemyHitboxInfo;
-
-			Enemy *en = co->enemy;
-
-			bool validHit = false;
-			switch (targetType)
+			ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
+			if (co != NULL)
 			{
-			case BLUE:
-				if (en->type == EN_COMBOER || en->type == EN_SPLITCOMBOER)
-				{
-					validHit = true;
-				}
-				break;
-			case GREEN:
-				if (en->type == EN_GRAVITYJUGGLER)
-				{
-					validHit = true;
-				}
-				break;
-			case YELLOW:
-				if (en->type == EN_BOUNCEJUGGLER)
-				{
-					validHit = true;
-				}
-				break;
-			}
+				HitboxInfo *hi = co->enemyHitboxInfo;
 
-			if (validHit)
-			{
-				co->enemy->ComboHit();
-				comboHitEnemyID = co->enemy->enemyIndex;
+				Enemy *en = co->enemy;
 
-				return hi;
-			}
-			else
-			{
-				return NULL;
-			}
+				bool validHit = false;
+				switch (targetType)
+				{
+				case TARGET_COMBOER_BLUE:
+					if (en->type == EN_COMBOER || en->type == EN_SPLITCOMBOER)
+					{
+						validHit = true;
+					}
+					break;
+				case TARGET_COMBOER_GREEN:
+					if (en->type == EN_GRAVITYJUGGLER)
+					{
+						validHit = true;
+					}
+					break;
+				case TARGET_COMBOER_YELLOW:
+					if (en->type == EN_BOUNCEJUGGLER)
+					{
+						validHit = true;
+					}
+					break;
+				}
 
+				if (validHit)
+				{
+					co->enemy->ComboHit();
+					comboHitEnemyID = co->enemy->enemyIndex;
+
+					return hi;
+				}
+				else
+				{
+					return NULL;
+				}
+
+			}
 		}
+	}
+	else
+	{
+		return Enemy::IsHit(pIndex);
 	}
 
 	return NULL;
@@ -240,18 +292,31 @@ void SpecialTarget::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
-		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-		ConfirmHitNoKill();
+		//sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+		//ConfirmHitNoKill();
+		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+		ConfirmKill();
+		if (hasMonitor)
+		{
+			suppressMonitor = true;
+		}
+		dead = false;
 
 		action = A_DYING;
 		frame = 0;
-		SetHitboxes(NULL, 0);
-		SetHurtboxes(NULL, 0);
+		HitboxesOff();
+		HurtboxesOff();
 
 		numHealth = maxHealth;
 
-		V2d dir;
 		receivedHit.SetEmpty();
+
+		/*if (hasMonitor && !suppressMonitor)
+		{
+			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+				sess->GetPlayer(0), 1, GetPosition());
+			suppressMonitor = true;
+		}*/
 
 		/*switch (receivedHit.hDir)
 		{
