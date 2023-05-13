@@ -104,6 +104,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	static int bloodLengths[8];
 
 	virtual int GetNumEnergyAbsorbParticles();
+	virtual int GetTotalEnergyAbsorbParticles() { return GetNumEnergyAbsorbParticles(); }
 	virtual int GetNumDarkAbsorbParticles();
 	virtual int GetNumShardAbsorbParticles();
 

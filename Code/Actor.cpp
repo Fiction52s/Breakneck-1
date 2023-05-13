@@ -45,9 +45,7 @@
 #include "EditorRail.h"
 #include "MovingGeo.h"
 #include "GateMarker.h"
-#include "Enemy_GlideTarget.h"
-//#include "Enemy_ComboerTarget.h"
-#include "Enemy_FreeFlightTarget.h"
+#include "Enemy_SpecialTarget.h"
 #include "Enemy_AimLauncher.h"
 #include "Enemy_TimeBooster.h"
 #include "Enemy_PhaseBooster.h"
@@ -61,7 +59,6 @@
 #include "Enemy_RewindBooster.h"
 #include "Enemy_TutorialObject.h"
 #include "Enemy_ScorpionLauncher.h"
-#include "Enemy_ScorpionTarget.h"
 
 #include "GGPO.h"
 
@@ -18241,38 +18238,43 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				//some replacement formula later
 			}
 		}
-		else if (en->type == EnemyType::EN_GLIDETARGET)
+		else if (en->type == EnemyType::EN_SPECIALTARGET)
 		{
-			GlideTarget *gTarget = (GlideTarget*)qte;
+			SpecialTarget *spTarget = (SpecialTarget*)qte;
 
-			bool isGlideAction = action == SPRINGSTUNGLIDE || action == WATERGLIDE;
-
-			if ( !gTarget->dead && isGlideAction &&
-				gTarget->hitBody.Intersects(gTarget->currHitboxFrame, &hurtBody) )
+			if (spTarget->IsInteractible())
 			{
-				gTarget->Collect();
-			}
-		}
-		else if (en->type == EnemyType::EN_SCORPIONTARGET)
-		{
-			ScorpionTarget *sTarget = (ScorpionTarget*)qte;
+				switch (spTarget->targetType)
+				{
+				case SpecialTarget::TARGET_GLIDE:
+				{
+					bool isGlideAction = action == SPRINGSTUNGLIDE || action == WATERGLIDE;
 
-			bool isGlideAction = action == SPRINGSTUNGLIDE || action == WATERGLIDE;
-
-			if (!sTarget->dead && scorpOn &&
-				sTarget->hitBody.Intersects(sTarget->currHitboxFrame, &hurtBody))
-			{
-				sTarget->Collect();
-			}
-		}
-		else if (en->type == EnemyType::EN_FREEFLIGHTTARGET)
-		{
-			FreeFlightTarget *ffTarget = (FreeFlightTarget*)qte;
-
-			if (!ffTarget->dead && (action == FREEFLIGHT || action == FREEFLIGHTSTUN )
-				&& ffTarget->hitBody.Intersects(ffTarget->currHitboxFrame, &hurtBody) )
-			{
-				ffTarget->Collect();
+					if (isGlideAction && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
+					{
+						spTarget->Collect();
+					}
+					break;
+				}
+				case SpecialTarget::TARGET_SCORPION:
+				{
+					if (scorpOn && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
+					{
+						spTarget->Collect();
+					}
+					break;
+				}
+				case SpecialTarget::TARGET_FREEFLIGHT:
+				{
+					bool isFreeFlightAction = action == FREEFLIGHT || action == FREEFLIGHTSTUN;
+					
+					if( isFreeFlightAction && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
+					{
+						spTarget->Collect();
+					}
+					break;
+				}
+				}
 			}
 		}
 		else if (en->type == EnemyType::EN_SPRING)

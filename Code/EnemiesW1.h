@@ -38,6 +38,7 @@
 #include "Enemy_TutorialObject.h"
 
 #include "Enemy_SequenceCrawler.h"
+#include "Enemy_SpecialTarget.h"
 
 
 #endif

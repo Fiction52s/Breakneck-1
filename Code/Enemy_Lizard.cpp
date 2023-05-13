@@ -35,10 +35,10 @@ Lizard::Lizard(ActorParams *ap)
 	actionLength[WAKEUP] = 30;
 
 	gravity = .5;
-	maxGroundSpeed = 5;
+	maxGroundSpeed = 10;
 	maxFallSpeed = 20;
-	runAccel = 1.0;
-	runDecel = runAccel * 3.0;
+	runAccel = .3;//1.0;
+	runDecel = .3;//runAccel * 3.0;
 	fireWaitDuration = 60;
 	bulletClockwise = true;
 

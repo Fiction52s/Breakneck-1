@@ -16,10 +16,12 @@ Ghost::Ghost( ActorParams *ap )
 
 	SetLevel(ap->GetLevel());
 
-	detectionRadius = 600;
-	awakeCap = 60;
+	approachSpeed = 5.0;
 
-	actionLength[WAKEUP] = 60;
+	detectionRadius = 600;
+	awakeCap = 30;
+
+	actionLength[WAKEUP] = 30;
 	actionLength[APPROACH] = 2;
 	actionLength[BITE] = 4;
 	actionLength[EXPLODE] = 5;
@@ -40,7 +42,7 @@ Ghost::Ghost( ActorParams *ap )
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 4;
 	hitboxInfo->hType = HitboxInfo::RED;
 
@@ -48,6 +50,9 @@ Ghost::Ghost( ActorParams *ap )
 	BasicCircleHurtBodySetup(32);
 
 	hitBody.hitboxInfo = hitboxInfo;
+
+	cutObject->SetTileset(ts);
+	cutObject->SetScale(scale);
 
 	ResetEnemy();
 }
@@ -59,6 +64,9 @@ void Ghost::ResetEnemy()
 	data.latchStartAngle = 0;
 	data.latchedOn = false;
 	data.totalFrame = 0;
+
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 	
 	facingRight = (sess->GetPlayerPos(0).x - GetPosition().x) >= 0;
 
@@ -97,7 +105,7 @@ void Ghost::Bite()
 	action = BITE;
 	frame = 0;
 	sprite.setColor(Color::White);
-	DefaultHurtboxesOn();
+	
 }
 
 void Ghost::ProcessState()
@@ -110,7 +118,8 @@ void Ghost::ProcessState()
 		if (action == BITE)
 		{
 			action = EXPLODE;
-			DefaultHitboxesOn();
+			HitboxesOff();
+			//DefaultHitboxesOn();
 			HurtboxesOff();
 		}
 		else if( action == EXPLODE )
@@ -119,14 +128,17 @@ void Ghost::ProcessState()
 			data.offsetPlayer = data.origOffset;
 			sprite.setColor(Color(255, 255, 255, 100));
 
-			HitboxesOff();
-			HurtboxesOff();
+			//HitboxesOn();
+			//HitboxesOff();
+			//HurtboxesOff();
 			//numHealth = 0;
 			//dead = true;
 		}
 		else if (action == RETURN)
 		{
 			action = APPROACH;
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
 		}
 		
 	}
@@ -193,7 +205,7 @@ void Ghost::UpdateEnemyPhysics()
 		
 		if (action == APPROACH && data.latchedOn)
 		{
-			data.offsetPlayer += -normalize(data.offsetPlayer) * 1.0 / numPhysSteps;
+			data.offsetPlayer += -normalize(data.offsetPlayer) * 1.0 / numPhysSteps * approachSpeed;
 
 			if (length(data.offsetPlayer) < 1.0)
 			{
@@ -290,4 +302,32 @@ void Ghost::SetFromBytes(unsigned char *bytes)
 	memcpy(&data, bytes, sizeof(MyData));
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
+}
+
+void Ghost::HandleNoHealth()
+{
+	if (action == WAKEUP)
+	{
+		cutObject->SetSubRectFront(15);
+		cutObject->SetSubRectBack(16);
+	}
+	else if (action == APPROACH)
+	{
+		double lenDiff = length(data.offsetPlayer);
+		if (lenDiff > 300)
+		{
+			cutObject->SetSubRectFront(17);
+			cutObject->SetSubRectBack(18);
+		}
+		else
+		{
+			cutObject->SetSubRectFront(19);
+			cutObject->SetSubRectBack(20);
+		}
+	}
+	else
+	{
+		cutObject->SetSubRectFront(19);
+		cutObject->SetSubRectBack(20);
+	}
 }

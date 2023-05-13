@@ -214,8 +214,14 @@ void Shroom::SetFromBytes(unsigned char *bytes)
 
 int Shroom::GetNumEnergyAbsorbParticles()
 {
+	return Enemy::GetNumEnergyAbsorbParticles();
+}
+
+int Shroom::GetTotalEnergyAbsorbParticles()
+{
 	return Enemy::GetNumEnergyAbsorbParticles() + jelly->GetNumEnergyAbsorbParticles();
 }
+
 
 void ShroomJelly::SetLevel(int lev)
 {

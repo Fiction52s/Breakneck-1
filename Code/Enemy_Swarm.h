@@ -42,11 +42,12 @@ struct SwarmMember : Enemy
 	void HandleNoHealth();
 	void FrameIncrement();
 	void Throw(V2d &pos);
-	
+	int GetNumEnergyAbsorbParticles();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
+	
 };
 
 struct Swarm : Enemy
@@ -81,6 +82,8 @@ struct Swarm : Enemy
 	sf::Vector2f spriteSize;
 	double maxSpeed;
 
+
+
 	Swarm(ActorParams *ap);
 	~Swarm();
 	void SetLevel(int lev);
@@ -90,6 +93,7 @@ struct Swarm : Enemy
 	void UpdateSprite();
 	void HandleNoHealth();
 	int GetNumEnergyAbsorbParticles();
+	int GetTotalEnergyAbsorbParticles();
 	void Launch();
 	void ResetEnemy();
 	void AddToGame();

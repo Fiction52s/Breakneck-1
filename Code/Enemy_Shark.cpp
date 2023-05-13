@@ -37,7 +37,7 @@ Shark::Shark( ActorParams *ap )
 	animFactor[CIRCLE] = 1;
 	animFactor[RUSH] = 5;
 
-	
+	approachSpeed = 5;
 
 	//V2d dirFromPlayer = normalize( owner->GetPlayerPos( 0 ) - position );
 	//double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
@@ -50,7 +50,7 @@ Shark::Shark( ActorParams *ap )
 
 
 	rushSeq.AddLineMovement( V2d( 0, 0 ), 
-		V2d( 1, 0 ), CubicBezier( 0, 0, 1, 1 ), actionLength[RUSH] * animFactor[RUSH] );
+		V2d( 1, 0 ), CubicBezier( 0, 0, 1, 1 ), (actionLength[RUSH] * animFactor[RUSH] - 1) * 2 );
 	
 	speed = 20;
 
@@ -121,6 +121,29 @@ void Shark::ResetEnemy()
 	UpdateSprite();
 }
 
+void Shark::StartFinalCircle()
+{
+	V2d playerPos = sess->GetPlayerPos();
+
+	data.circleCounter = 0;
+	action = FINALCIRCLE;
+	frame = 0;
+	data.latchedOn = true;
+	//data.offsetPlayer = data.basePos - playerPos;
+	//data.origOffset = data.offsetPlayer;
+	V2d offsetDir = normalize(data.offsetPlayer);
+	data.latchStartAngle = GetVectorAngleCW(offsetDir);//atan2(offsetDir.y, offsetDir.x);
+
+	circleMovement->Set(V2d(), V2d(1, 0), 2 * PI, true, CubicBezier(), circleFrames);
+	circleMovement->InitDebugDraw();
+	circleSeq.Reset();
+
+	data.attackOffset = data.offsetPlayer;
+
+	circleSeq.Update(slowMultiple);
+	data.basePos = playerPos;
+}
+
 void Shark::ProcessState()
 {
 	double cs = cos(data.latchStartAngle );
@@ -134,38 +157,43 @@ void Shark::ProcessState()
 
 	if (frame == actionLength[action] * animFactor[action])
 	{
-		frame = 0;
+		
 		switch (action)
 		{
 		case NEUTRAL:
-			
+			frame = 0;
 			break;
 		case WAKEUP:
 		{
-			data.circleCounter = 0;
-			action = CIRCLE;
+			action = APPROACH;
 			frame = 0;
-			data.latchedOn = true;
-			data.offsetPlayer = data.basePos - playerPos;
-			data.origOffset = data.offsetPlayer;
-			V2d offsetDir = normalize(data.offsetPlayer);
-			data.latchStartAngle = GetVectorAngleCW(offsetDir);//atan2(offsetDir.y, offsetDir.x);
+			if (playerPos.x < GetPosition().x)
+			{
+				facingRight = false;
+			}
+			else
+			{
+				facingRight = true;
+			}
 
-			circleMovement->Set(V2d(), V2d( 1, 0 ), 2 * PI, true, CubicBezier(), circleFrames );
-			circleMovement->InitDebugDraw();
-			circleSeq.Reset();
+			data.latchedOn = true;
+			data.offsetPlayer = data.basePos - playerPos;//owner->GetPlayer( 0 )->position - basePos;
+			data.origOffset = data.offsetPlayer;//length( offsetPlayer );
+			V2d offsetDir = normalize(data.offsetPlayer);
+			data.basePos = playerPos;
 
 			//circleMovement->radius = 1;//length(origOffset);
 			//circleMovement->start = offsetDir;
 			//testing
 
-			circleSeq.Update(slowMultiple);
-			data.basePos = playerPos;
+			
 			break;
 		}
 		case APPROACH:
+			frame = 0;
 			break;
 		case CIRCLE:
+			frame = 0;
 			circleSeq.Reset();
 			circleSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 			++data.circleCounter;
@@ -182,18 +210,28 @@ void Shark::ProcessState()
 		}
 		case RUSH:
 		{
-			assert(!rushSeq.IsMovementActive());
-			action = CIRCLE;
-			data.circleCounter = 0;
-			truePosOffset = -truePosOffset;
-			data.offsetPlayer = truePosOffset;
-			V2d offsetDir = normalize(truePosOffset);
-			data.latchStartAngle = atan2(offsetDir.y, offsetDir.x);
-			circleSeq.Reset();
-			circleSeq.Update(slowMultiple);
-		}
+			//frame = 0;
 			break;
 		}
+		}
+	}
+
+
+	if (action == APPROACH && length( data.offsetPlayer ) < 400 )
+	{
+		StartFinalCircle();
+	}
+
+	if (action == RUSH && !rushSeq.IsMovementActive() )
+	{
+		action = FINALCIRCLE;
+		data.circleCounter = 0;
+		truePosOffset = -truePosOffset;
+		data.offsetPlayer = truePosOffset;
+		V2d offsetDir = normalize(truePosOffset);
+		data.latchStartAngle = atan2(offsetDir.y, offsetDir.x);
+		circleSeq.Reset();
+		circleSeq.Update(slowMultiple);
 	}
 
 	switch (action)
@@ -284,6 +322,16 @@ void Shark::UpdateEnemyPhysics()
 	{
 		currPosInfo.position = data.basePos + rushSeq.GetPos();
 		rushSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps);
+	}
+	else if (action == APPROACH)
+	{
+		data.basePos = sess->GetPlayerPos(0);
+		data.offsetPlayer += -normalize(data.offsetPlayer) * 1.0 / numPhysSteps * approachSpeed;
+		currPosInfo.position = data.basePos + data.offsetPlayer;
+		/*if (length(data.offsetPlayer) < 300)
+		{
+			StartFinalCircle();
+		}*/
 	}
 }
 
@@ -378,7 +426,13 @@ void Shark::UpdateSprite()
 
 			//int maxFrame = actionLength[RUSH] - 1;
 			//int f = frame / animFactor[RUSH];
-			IntRect ir = ts_bite->GetSubRect( frame / animFactor[RUSH] );
+
+			int f = frame / animFactor[RUSH];
+			if (f > 6)
+			{
+				f = 6;
+			}
+			IntRect ir = ts_bite->GetSubRect( f );
 			
 			if(data.attackOffset.x <= 0 )
 			{

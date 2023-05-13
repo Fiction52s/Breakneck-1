@@ -31,6 +31,8 @@ struct Ghost : Enemy
 	
 	int awakeCap;
 
+	double approachSpeed;
+
 	Tileset *ts;
 
 	Ghost(ActorParams *ap);
@@ -42,6 +44,7 @@ struct Ghost : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void Bite();
+	void HandleNoHealth();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

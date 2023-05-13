@@ -46,6 +46,7 @@ struct Shroom : Enemy
 		sf::FloatRect &rect);
 	void SetZoneSpritePosition();
 	int GetNumEnergyAbsorbParticles();
+	int GetTotalEnergyAbsorbParticles();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

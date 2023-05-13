@@ -494,6 +494,8 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_FREEFLIGHTTARGET:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2);
 		break;
+	case EnemyType::EN_SPECIALTARGET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 	default:
 		return false;
 	}

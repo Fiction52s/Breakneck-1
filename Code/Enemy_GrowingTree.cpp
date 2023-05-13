@@ -22,11 +22,11 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	actionLength[NEUTRAL1] = 2;
 	actionLength[NEUTRAL2] = 2;
 
-	actionLength[ATTACK0] = 30;
+	actionLength[ATTACK0] = 60;
 	actionLength[LEVEL0TO1] = 30;
-	actionLength[ATTACK1] = 30;
+	actionLength[ATTACK1] = 60;
 	actionLength[LEVEL1TO2] = 30;
-	actionLength[ATTACK2] = 30;
+	actionLength[ATTACK2] = 60;
 
 	animFactor[NEUTRAL0] = 1;
 	animFactor[NEUTRAL1] = 1;
@@ -57,23 +57,30 @@ GrowingTree::GrowingTree( ActorParams *ap )
 
 	SetOffGroundHeight(height / 2.f);
 
+	double bulletSpeed0 = 5;
+	double bulletSpeed1 = 15;
+	double bulletSpeed2 = 25;
 	double bulletSpeed = 10;
-	int framesToLive = ( pulseRadius * 2 ) / bulletSpeed + .5;
+
+	int framesToLive = 60 * 3;
+	//int framesToLive0 = ( pulseRadius * 2 ) / bulletSpeed + .5;
+	//int framesToLive1 = (pulseRadius * 2) / bulletSpeed + .5;
+	//int framesToLive2 = (pulseRadius * 2) / bulletSpeed + .5;
 
 	//BasicBullet::GROWING_TREE
 	SetNumLaunchers(3);
-	launchers[0] = new Launcher( this, BasicBullet::PATROLLER, 8, 1, GetPosition(), V2d( 1, 0 ), 0, framesToLive, false );
-	launchers[0]->SetBulletSpeed( bulletSpeed );	
+	launchers[0] = new Launcher( this, BasicBullet::BAT, 8, 1, GetPosition(), V2d( 1, 0 ), 0, framesToLive, false );
+	launchers[0]->SetBulletSpeed(bulletSpeed0);
 	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;
 
-	launchers[1] = new Launcher(this, BasicBullet::BIG_OWL, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
-	launchers[1]->SetBulletSpeed(bulletSpeed);
+	launchers[1] = new Launcher(this, BasicBullet::PATROLLER, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
+	launchers[1]->SetBulletSpeed(bulletSpeed1);
 	launchers[1]->hitboxInfo->damage = 60;
 	launchers[1]->hitboxInfo->hType = HitboxInfo::RED;
 
-	launchers[2] = new Launcher(this, BasicBullet::LOB_TURRET, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
-	launchers[2]->SetBulletSpeed(bulletSpeed);
+	launchers[2] = new Launcher(this, BasicBullet::BIG_OWL, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
+	launchers[2]->SetBulletSpeed(bulletSpeed2);
 	launchers[2]->hitboxInfo->damage = 60;
 	launchers[2]->hitboxInfo->hType = HitboxInfo::RED;
 

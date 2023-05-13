@@ -178,6 +178,11 @@ void SwarmMember::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
+int SwarmMember::GetNumEnergyAbsorbParticles()
+{
+	return 1;
+}
+
 
 Swarm::Swarm( ActorParams *ap )
 	:Enemy( EnemyType::EN_SWARM, ap), swarmVA( sf::Quads, 5 * 4 )
@@ -444,6 +449,11 @@ void Swarm::UpdateSprite()
 }
 
 int Swarm::GetNumEnergyAbsorbParticles()
+{
+	return Enemy::GetNumEnergyAbsorbParticles();// +NUM_SWARM * members[0]->GetNumEnergyAbsorbParticles();
+}
+
+int Swarm::GetTotalEnergyAbsorbParticles()
 {
 	return Enemy::GetNumEnergyAbsorbParticles() + NUM_SWARM * members[0]->GetNumEnergyAbsorbParticles();
 }

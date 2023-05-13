@@ -213,10 +213,6 @@ Panel *ActorType::CreatePanel()
 		|| name == "magentakeyfly"
 		|| name == "greykeyfly"
 		|| name == "blackkeyfly"
-		|| name == "glidetarget"
-		|| name == "freeflighttarget"
-		|| name == "bluecomboertarget"
-		|| name == "greencomboertarget"
 		|| name == "log")
 		//|| name == "yellowcomboertarget"
 		//|| name == "orangecomboertarget"

@@ -6108,7 +6108,7 @@ int Session::GetNumTotalEnergyParticles(int absorbType)
 	{
 		for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 		{
-			total += (*it)->GetNumEnergyAbsorbParticles();
+			total += (*it)->GetTotalEnergyAbsorbParticles();
 		}
 		break;
 	}
@@ -6623,7 +6623,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	if (!firstUpdateHasHappened)
 	{
-		cout << "first update draw" << endl;
+		//cout << "first update draw" << endl;
 		LayeredDraw(EffectLayer::IN_FRONT, target);
 
 		//target->setView(view);

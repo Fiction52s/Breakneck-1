@@ -1,14 +1,27 @@
-#ifndef __ENEMY_GLIDETARGET_H__
-#define __ENEMY_GLIDETARGET_H__
+#ifndef __ENEMY_SPECIALTARGET_H__
+#define __ENEMY_SPECIALTARGET_H__
 
 #include "Enemy.h"
 
-struct GlideTarget : Enemy
+struct SpecialTarget : Enemy
 {
 	enum Action
 	{
-		S_NEUTRAL,
-		S_Count
+		A_IDLE,
+		A_DYING,
+		A_WAIT_BEFORE_REGEN,
+		A_REGENERATING,
+		A_Count
+	};
+
+	enum TargetType
+	{
+		TARGET_GLIDE,
+		TARGET_SCORPION,
+		TARGET_FREEFLIGHT,
+		TARGET_COMBOER_BLUE,
+		TARGET_COMBOER_GREEN,
+		//TARGET_ATTACK_BLUE,
 	};
 
 	struct MyData : StoredEnemyData
@@ -17,10 +30,12 @@ struct GlideTarget : Enemy
 	};
 	MyData data;
 
+	int targetType;
 	Tileset *ts;
 
 	bool CountsForEnemyGate() { return false; }
-	GlideTarget(ActorParams *ap);
+	SpecialTarget(ActorParams *ap);
+	bool IsInteractible();
 	void SetLevel(int lev);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
@@ -28,13 +43,12 @@ struct GlideTarget : Enemy
 	void ResetEnemy();
 	void AddToWorldTrees();
 	void Collect();
+	void ProcessHit();
+	HitboxInfo * IsHit(int pIndex);
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
-
-
-	
 };
 
 #endif

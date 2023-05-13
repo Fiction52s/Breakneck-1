@@ -32,6 +32,7 @@ struct Shark : Enemy
 	int wakeCap;
 	double attackAngle;
 	int circleFrames;
+	double approachSpeed;
 	
 	MovementSequence circleSeq;
 	MovementSequence rushSeq;
@@ -53,6 +54,7 @@ struct Shark : Enemy
 	Shark( ActorParams *ap );
 	void SetLevel(int lev);
 	void ProcessState();
+	void StartFinalCircle();
 	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
