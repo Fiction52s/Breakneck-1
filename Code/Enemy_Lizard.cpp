@@ -25,14 +25,23 @@ Lizard::Lizard(ActorParams *ap)
 {
 	SetLevel(ap->GetLevel());
 
+	scale = 1.25;
+
 	SetNumActions(Count);
 	SetEditorActions(IDLE, 0, 0);
 
 	actionLength[IDLE] = 11 * 5;
 	actionLength[LAND] = 1;
 	actionLength[JUMP] = 2;
-	actionLength[RUN] = 9 * 4;
-	actionLength[WAKEUP] = 30;
+	actionLength[RUN] = 16;
+	//actionLength[JUMPSQ]
+	actionLength[SHOCK] = 20;
+
+	animFactor[IDLE] = 1;
+	animFactor[LAND] = 1;
+	animFactor[JUMP] = 1;
+	animFactor[RUN] = 3;
+	animFactor[SHOCK] = 1;
 
 	gravity = .5;
 	maxGroundSpeed = 10;
@@ -49,7 +58,7 @@ Lizard::Lizard(ActorParams *ap)
 	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed(0);
 
-	ts = GetSizedTileset("Enemies/W3/Roadrunner_256x256.png");
+	ts = GetSizedTileset("Enemies/W5/lizard_192x96.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 
 	SetNumLaunchers(1);
@@ -78,8 +87,8 @@ Lizard::Lizard(ActorParams *ap)
 	hitBody.hitboxInfo = hitboxInfo;
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(0);
-	cutObject->SetSubRectBack(0);
+	cutObject->SetSubRectFront(24);
+	cutObject->SetSubRectBack(25);
 	cutObject->SetScale(scale);
 
 	ResetEnemy();
@@ -108,6 +117,7 @@ void Lizard::SetLevel(int lev)
 void Lizard::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
+	groundMover->DebugDraw(target);
 	//if (!dead)
 	//testMover->physBody.DebugDraw(target);
 }
@@ -134,15 +144,11 @@ void Lizard::ResetEnemy()
 
 void Lizard::ActionEnded()
 {
-	if (frame == actionLength[action])
+	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
 		case IDLE:
-			frame = 0;
-			break;
-		case WAKEUP:
-			action = RUN;
 			frame = 0;
 			break;
 		case RUN:
@@ -152,9 +158,18 @@ void Lizard::ActionEnded()
 			frame = 1;
 			break;
 		case LAND:
+		{
 			action = RUN;
 			frame = 0;
 			break;
+		}
+		case SHOCK:
+		{
+			action = RUN;
+			frame = 0;
+			data.fireWaitCounter = 0;
+			break;
+		}
 		}
 	}
 }
@@ -248,6 +263,14 @@ void Lizard::ProcessState()
 			groundMover->SetSpeed(-maxGroundSpeed);
 		break;
 	case JUMP:
+		if (facingRight)
+		{
+			groundMover->SetVelX(maxGroundSpeed);
+		}
+		else
+		{
+			groundMover->SetVelX(-maxGroundSpeed);
+		}
 		//cout << "jump: " << frame << endl;
 		break;
 		//	case ATTACK:
@@ -266,11 +289,17 @@ void Lizard::ProcessState()
 		break;
 	}
 
-	if (action != IDLE && data.fireWaitCounter == 0 && slowCounter == 1)
+	assert(data.fireWaitCounter <= fireWaitDuration);
+	if (action == RUN && data.fireWaitCounter == fireWaitDuration && slowCounter == 1)
 	{
+		
 		//ground has to be not null.
 		launchers[0]->position = GetPosition();
 
+		action = SHOCK;
+		frame = 0;
+
+		groundMover->SetSpeed(0);
 		
 		if (groundMover->ground != NULL)
 		{
@@ -323,13 +352,13 @@ void Lizard::FireResponse( BasicBullet *b )
 
 void Lizard::FrameIncrement()
 {
-	if (action != IDLE)
+	if (action == RUN )
 	{
 		data.fireWaitCounter++;
-		if (data.fireWaitCounter == fireWaitDuration)
+		/*if (data.fireWaitCounter == fireWaitDuration)
 		{
 			data.fireWaitCounter = 0;
-		}
+		}*/
 	}
 }
 
@@ -349,9 +378,45 @@ void Lizard::EnemyDraw(sf::RenderTarget *target)
 
 void Lizard::UpdateSprite()
 {
-
-	IntRect r = ts->GetSubRect(0);
-	if (!facingRight)
+	int tile = 0;
+	switch (action)
+	{
+	case IDLE:
+	{
+		tile = 0;
+		break;
+	}
+	case RUN:
+	{
+		tile = frame / animFactor[RUN];
+		break;
+	}
+	case JUMP:
+	{
+		if (groundMover->GetVel().y > 0)
+		{
+			tile = 19;
+		}
+		else
+		{
+			tile = 18;
+		}
+		break;
+	}
+	case LAND:
+	{
+		tile = 20;
+		break;
+	}
+	case SHOCK:
+	{
+		tile = 16;
+		break;
+	}
+	}
+	IntRect r = ts->GetSubRect(tile);
+	//if (!facingRight)
+	if (facingRight)
 	{
 		r = sf::IntRect(r.left + r.width, r.top, -r.width, r.height);
 	}
@@ -359,7 +424,7 @@ void Lizard::UpdateSprite()
 	sprite.setTextureRect(r);
 
 
-	int extraVert = 64;
+	int extraVert = 43;
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(groundMover->GetAngleDegrees());
@@ -407,6 +472,7 @@ void Lizard::HitOther()
 			frame = 0;
 		}
 	}
+	
 }
 
 void Lizard::ReachCliff()

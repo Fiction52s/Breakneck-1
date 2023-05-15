@@ -961,8 +961,16 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				V2d nextAlong = normalize( next->v1 - next->v0 );
 				double c = cross( nextAlong, along );
 
+				//original note referring to: if( c < 0 )
 				//probably correct but idk if i even need it
-				if( c < 0 )
+				//new note:
+				//removing this to test. When there are right angle shapes, on the left side,
+				//moving right, you get c == -1, and on the right side moving left you get
+				//c == 1 and it doesn't collide. Feels like it should work in both ways,
+				//but not sure what this case is here to do in the first place.
+
+
+				//if( c < 0 )
 				if( lineQuantity < 0 && lineQuantity > -radius )// && xx >= pr ) //v0
 				{
 					V2d coll = e->v0 - position;// - e->v0;// - position;

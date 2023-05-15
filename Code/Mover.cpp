@@ -299,7 +299,11 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 			//	surfaceHandler->TransferEdge(ground);
 			return true;
 			//return false;
-		}			
+		}
+		else if (hit)
+		{
+			int xx = 5;
+		}
 	}
 	else
 	{
@@ -945,6 +949,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 	}
 	else 
 	{
+		//cout << "surfaceMoverData.velocity:" << surfaceMoverData.velocity.x << ", " << surfaceMoverData.velocity.y << "\n";
 		double nSteps = numPhysSteps;
 		surfaceMoverData.velocity += surfaceMoverData.force / nSteps / (double)slowMultiple;
 		//cout << "move through the air" << endl;

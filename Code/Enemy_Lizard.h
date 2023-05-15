@@ -10,10 +10,11 @@ struct Lizard : Enemy, GroundMoverHandler,
 	enum Action
 	{
 		IDLE,
-		WAKEUP,
 		RUN,
+		//JUMPSQUAT,
 		JUMP,
 		LAND,
+		SHOCK,
 		Count
 	};
 
