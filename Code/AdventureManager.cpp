@@ -24,7 +24,14 @@ AdventureManager::AdventureManager()
 	currProfile = NULL;
 	//parallelPracticeMode = false;
 
-	parallelPracticeMode = true; //for testing
+	if (MainMenu::GetInstance()->steamOn)
+	{
+		parallelPracticeMode = true; //for testing
+	}
+	else
+	{
+		parallelPracticeMode = false;
+	}
 
 	LoadAdventure("tadventure");
 
@@ -186,10 +193,10 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 			//leaderboard->manager.UploadScore(leaderBoardStr,
 			//	totalFrames, bestReplayPath);
 
-			leaderboard->UploadScore(totalFrames, bestReplayPath, game->originalProgressionCompatible);
-
-
-
+			if (MainMenu::GetInstance()->steamOn)
+			{
+				leaderboard->UploadScore(totalFrames, bestReplayPath, game->originalProgressionCompatible);
+			}
 
 			//leaderboardMan->UploadScore(totalFrames);
 			//leaderboard stuff here!

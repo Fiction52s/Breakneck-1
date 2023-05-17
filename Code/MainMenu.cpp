@@ -530,11 +530,15 @@ void MainMenu::UpdateMenuOptionText()
 	selectorSprite.setPosition(selectorSpriteXPos, selectorSpriteYPosBase + selectorSpriteYPosInterval * saSelector->currIndex);
 }
 
-MainMenu::MainMenu()
+MainMenu::MainMenu( bool p_steamOn)
 	:windowWidth(1920), windowHeight(1080)
 {
 	assert(currInstance == NULL);
 	currInstance = this;
+
+	steamOn = p_steamOn;
+
+	steamOn = false;
 
 	adventureManager = NULL;
 
@@ -549,7 +553,15 @@ MainMenu::MainMenu()
 	
 	menuMatchParams = new MatchParams;
 
-	remoteStorageManager = new RemoteStorageManager;
+	if (steamOn)
+	{
+		remoteStorageManager = new RemoteStorageManager;
+	}
+	else
+	{
+		remoteStorageManager = NULL;
+	}
+	
 
 	globalFile = new GlobalSaveFile;
 	if (!globalFile->Load())
@@ -608,7 +620,7 @@ MainMenu::MainMenu()
 
 	activatedMainMenuOptions[0] = true;		//adventure
 	activatedMainMenuOptions[1] = true;		//freeplay
-	activatedMainMenuOptions[2] = true;//false;	//local multiplayer
+	activatedMainMenuOptions[2] = steamOn;//false;	//local multiplayer
 	activatedMainMenuOptions[3] = true;		//level editor
 	activatedMainMenuOptions[4] = true;		//options
 	activatedMainMenuOptions[5] = true;		//tutorial
@@ -935,7 +947,10 @@ MainMenu::~MainMenu()
 
 	window->close();
 
-	delete remoteStorageManager;
+	if (remoteStorageManager != NULL)
+	{
+		delete remoteStorageManager;
+	}
 
 	delete closedBetaScreen;
 

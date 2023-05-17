@@ -619,10 +619,10 @@ void WorldMap::Update()
 			assert(netplayManager != NULL);
 
 			//has a 20 second timeout call
-			if (frame % (60 * 5) == 0)
+			/*if (frame % (60 * 5) == 0)
 			{
 				netplayManager->QueryPracticeMatches();
-			}
+			}*/
 
 			for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
 			{

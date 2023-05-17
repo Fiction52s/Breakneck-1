@@ -194,41 +194,71 @@ int main()
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 	glLoadIdentity();	*/
 
+	bool steamOn = false;
+
 	int result = SteamStartup();
-	if (result != 0)
-		return result;
+	if (result == 0)
+	{
+		steamOn = true;
+	}
+	else
+	{
+		cout << "Steam startup failed! Some features may not work" << "\n";
+	}
+
+	//if (result != 0)
+	//	return result;
 
 	srand(time(0));
 
-	char commandLine[1024];
-	SteamApps()->GetLaunchCommandLine(commandLine, 1024);
+	if (steamOn)
+	{
+		char commandLine[1024];
+		SteamApps()->GetLaunchCommandLine(commandLine, 1024);
 
-	string commandStr = commandLine;
+		string commandStr = commandLine;
 
-	cout << "commandStr: " << commandStr << endl;//"\n";//endl;//"\n";//endl;
+		cout << "commandStr: " << commandStr << endl;//"\n";//endl;//"\n";//endl;
+	}
 
-	MainMenu *mm = new MainMenu();
+	MainMenu *mm = new MainMenu(steamOn);
 	mm->Run();
 	delete mm;
 
-	SteamAPI_Shutdown();
+	if (steamOn)
+	{
+		SteamAPI_Shutdown();
+	}
 	//_CrtDumpMemoryLeaks();
 }
 
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR lpCmdLine, INT nCmdShow)
 {
+	bool steamOn = false;
+
 	int result = SteamStartup();
-	if (result != 0)
-		return result;
+
+	if (result == 0)
+	{
+		steamOn = true;
+	}
+	else
+	{
+		cout << "Steam startup failed! Some features may not work" << "\n";
+	}
 
 	srand(time(0));
 
-	MainMenu *mm = new MainMenu();
+	MainMenu *mm = new MainMenu(steamOn);
 	mm->Run();
 	delete mm;
 
-	SteamAPI_Shutdown();
+	if (steamOn)
+	{
+		SteamAPI_Shutdown();
+	}
+	
 
 	return 0;
 }

@@ -5,6 +5,8 @@
 #include <assert.h>
 #include "Enemy_ExplodingBarrel.h"
 #include "Eye.h"
+#include "AbsorbParticles.h"
+#include "MovingGeo.h"
 
 using namespace std;
 using namespace sf;
@@ -24,11 +26,13 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	actionLength[S_IDLE] = 15;
 	actionLength[S_TINYCHARGE] = 3;
 	actionLength[S_CHARGE] = 12;
+	actionLength[S_ABOUT_TO_EXPLODE] = 60;
 	actionLength[S_EXPLODE] = 20;
 
 	animFactor[S_IDLE] = 1;
 	animFactor[S_CHARGE] = 5;
 	animFactor[S_TINYCHARGE] = 5;
+	animFactor[S_ABOUT_TO_EXPLODE] = 1;
 	animFactor[S_EXPLODE] = 1;
 
 
@@ -42,7 +46,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	SetOffGroundHeight(ts->tileHeight / 2.0 - 20);
+	//SetOffGroundHeight(ts->tileHeight / 2.0 - 20);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 180;
@@ -50,7 +54,16 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	hitboxInfo->knockback = 4;//20;//4;
+
+	explosionInfo.damage = 180;
+	explosionInfo.drainX = 0;
+	explosionInfo.drainY = 0;
+	explosionInfo.hitlagFrames = 0;
+	explosionInfo.hitstunFrames = 15;
+	explosionInfo.knockback = 20;
+	explosionInfo.hitPosType = HitboxInfo::HitPosType::OMNI;
+	//hitboxInfo->hitPosType = HitboxInfo::HitPosType::OMNI;
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);
@@ -58,11 +71,11 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	comboObj = new ComboObject(this);
 
-	double explosionRadius = 300;
+	double explosionRadius = 400;//300;
 
 	//explosion.ResetFrames();
 	explosion.BasicCircleSetup(explosionRadius * scale, 0, V2d());
-	explosion.hitboxInfo = hitboxInfo;
+	explosion.hitboxInfo = &explosionInfo;//hitboxInfo;
 
 	comboObj->enemyHitboxInfo = new HitboxInfo;
 	comboObj->enemyHitboxInfo->damage = 20;
@@ -131,18 +144,68 @@ void ExplodingBarrel::ResetEnemy()
 
 void ExplodingBarrel::ProcessHit()
 {
-	if (!dead && HasReceivedHit() && numHealth > 0)
+	if (numHealth == 1)
 	{
-		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-		ConfirmHitNoKill();
-		action = S_EXPLODE;
-		frame = 0;
-		SetHitboxes(&explosion, 0);
-		HurtboxesOff();
-		
+		if (!dead && HasReceivedHit() && numHealth > 0)
+		{
+			//sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			//ConfirmKill();
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 
-		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+			HitboxInfo::HitboxType hType;
+			if (!receivedHit.IsEmpty())
+			{
+				hType = receivedHit.hType;
+			}
+			else
+			{
+				hType = HitboxInfo::HitboxType::NORMAL;
+			}
+			if (hType == HitboxInfo::COMBO)
+			{
+				pauseFrames = 7;
+				Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
+				ce->ComboKill(this);
+			}
+			else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
+			{
+				pauseFrames = 7;
+			}
+			else
+			{
+				pauseFrames = 7;
+				//sess->Pause(7);
+				//pauseFrames = 0;
+			}
+			pauseBeganThisFrame = true;
+			pauseFramesFromAttacking = false;
+
+			PlayDeathSound();
+
+			if (hasMonitor && !suppressMonitor)
+			{
+				suppressMonitor = true;
+				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+					sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+			}
+			else
+			{
+				//sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
+				//	sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
+			}
+
+			action = S_ABOUT_TO_EXPLODE;
+			frame = 0;
+			//--numHealth;
+			HitboxesOff();
+			HurtboxesOff();
+		}
 	}
+	else
+	{
+		Enemy::ProcessHit();
+	}
+	
 }
 
 void ExplodingBarrel::ProcessState()
@@ -167,12 +230,26 @@ void ExplodingBarrel::ProcessState()
 			{
 				action = S_TINYCHARGE;
 			}
-			
+
 			break;
+		case S_ABOUT_TO_EXPLODE:
+		{
+
+			action = S_EXPLODE;
+			frame = 0;
+			SetHitboxes(&explosion, 0);
+			sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+
+			sess->cam.SetRumble(1.5, 1.5, 7);
+
+			break;
+		}
 		case S_TINYCHARGE:
 		case S_CHARGE:
+		{
 			action = S_IDLE;
 			break;
+		}
 		}
 	}
 }
@@ -220,12 +297,28 @@ void ExplodingBarrel::UpdateSprite()
 		tile = frame / animFactor[S_TINYCHARGE] + 1;
 		break;
 	}
+	case S_ABOUT_TO_EXPLODE:
+	{
+		tile = 0;
+		break;
+	}
 		
 		
 	}
+
+	if (action == S_ABOUT_TO_EXPLODE)
+	{
+
+		sprite.setColor(GetBlendColor(Color::Yellow, Color::Red, (float)frame / (actionLength[S_ABOUT_TO_EXPLODE] * animFactor[S_ABOUT_TO_EXPLODE])));
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
+
 	sprite.setTextureRect(ts->GetSubRect(tile));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+	//sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
 void ExplodingBarrel::EnemyDraw(sf::RenderTarget *target)

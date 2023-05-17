@@ -238,7 +238,7 @@ void GravityFaller::ProcessState()
 			data.fallFrames = 0;
 		}
 	}
-	else if (((action == FALLDOWN || action == FALLUP) && data.fallFrames == 30))
+	else if (((action == FALLDOWN || action == FALLUP) && data.fallFrames == 20))
 		/*|| ( action == FALLDOWN && distY < 0 ) 
 		|| (action == FALLUP && distY > 0 ) )*/
 	{

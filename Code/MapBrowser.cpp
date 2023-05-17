@@ -597,8 +597,13 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	//panel->MouseUpdate();
 
+	MainMenu *mainMenu = MainMenu::GetInstance();
 
-	vector<string> tabNames = { "Local", "Workshop" };
+	vector<string> tabNames = { "Local" };//, "Workshop" };
+	if (mainMenu->steamOn)
+	{
+		tabNames.push_back("Workshop");
+	}
 
 	int tabHeight = 30;
 

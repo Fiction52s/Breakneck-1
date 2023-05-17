@@ -12,6 +12,7 @@ struct ExplodingBarrel : Enemy
 		S_IDLE,
 		S_TINYCHARGE,
 		S_CHARGE,
+		S_ABOUT_TO_EXPLODE,
 		S_EXPLODE,
 		S_Count
 	};
@@ -25,6 +26,7 @@ struct ExplodingBarrel : Enemy
 	sf::CircleShape testCircle;
 	Tileset *ts;
 	CollisionBody explosion;
+	HitboxInfo explosionInfo;
 
 	ExplodingBarrel(ActorParams * ap);
 	~ExplodingBarrel();

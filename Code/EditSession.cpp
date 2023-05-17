@@ -2410,9 +2410,19 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//of << pointCount << endl;
 	mapHeader->numVertices = pointCount;
 
-	mapHeader->creatorID = SteamUser()->GetSteamID().ConvertToUint64();
+	if (mainMenu->steamOn)
+	{
+		mapHeader->creatorID = SteamUser()->GetSteamID().ConvertToUint64();
 
-	mapHeader->creatorName = SteamFriends()->GetPersonaName();
+		mapHeader->creatorName = SteamFriends()->GetPersonaName();
+	}
+	else
+	{
+		mapHeader->creatorID = 0;
+
+		mapHeader->creatorName = "";
+	}
+	
 
 	mapHeader->fullName = filePath.stem().string();
 	//possibleGameModeTypeFlags

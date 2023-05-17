@@ -216,7 +216,7 @@ void LobTurret::BulletHitTerrain(BasicBullet *b,
 	double angle = atan2(norm.y, -norm.x);
 	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
 	b->launcher->DeactivateBullet(b);
-	cout << "hit terrain" << endl;
+	//cout << "hit terrain" << endl;
 
 	//if (b->launcher->def_e == NULL)
 	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
@@ -268,15 +268,27 @@ void LobTurret::ProcessState()
 		//else if (frame >= 4 * animationFactor && frame <= 4 * animationFactor + 10 && slowCounter == 1)
 		else if (frame == 6 * animFactor[ATTACK] && slowCounter == 1)
 		{
-			V2d currLobDir = lobDirs[data.lobTypeCounter];
-			double currLobSpeed = lobSpeeds[data.lobTypeCounter];
+			V2d currLobDir = lobDirs[1];//data.lobTypeCounter];
+			double currLobSpeed = lobSpeeds[1];//[data.lobTypeCounter];
+
+			if (cross(PlayerDir(), startPosInfo.GetEdge()->Normal()) > 0)
+			{
+				/*if (PlayerDistX() < 0)
+				{
+					
+				}*/
+				currLobDir.x = -currLobDir.x;
+				
+			}
+
 			//launchers[0]
+			double rad = startPosInfo.GetGroundAngleRadians();
+			RotateCW(currLobDir, rad);
+
+			
 
 			launchers[0]->bulletSpeed = currLobSpeed;
-			if (PlayerDistX() < 0)
-			{
-				currLobDir.x = -currLobDir.x;
-			}
+			
 			launchers[0]->facingDir = currLobDir;//normalize(playerPos - position);
 			launchers[0]->Fire();
 
@@ -285,6 +297,7 @@ void LobTurret::ProcessState()
 			{
 				data.lobTypeCounter = 0;
 			}
+			
 		}
 		break;
 	}

@@ -8043,7 +8043,7 @@ void Actor::HandleWaitingScoreDisplay()
 		}
 		else if (startPressed && sess->scoreDisplay->includeExtraSelectBars)
 		{
-			if (owner != NULL)
+			if (owner != NULL && owner->mainMenu->steamOn )
 			{
 				owner->StartLeaderboard();
 			}

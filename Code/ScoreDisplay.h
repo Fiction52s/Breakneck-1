@@ -96,6 +96,8 @@ struct ScoreDisplay
 	static const int NUM_SELECT_BARS = 6;
 	SelectBar *selectBars[NUM_SELECT_BARS];
 
+	int numShownSelectBars;
+
 	bool madeRecord;
 
 	int includeExtraSelectBars;

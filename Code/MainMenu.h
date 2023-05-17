@@ -214,7 +214,7 @@ struct MainMenu
 		GRT_QUICKPLAY,
 	};
 
-
+	bool steamOn;
 	RemoteStorageManager *remoteStorageManager;
 	//testing
 	CustomCursor *customCursor;
@@ -299,7 +299,7 @@ struct MainMenu
 	AdventureManager *adventureManager;
 
 	
-	MainMenu();
+	MainMenu(bool p_steamOn);
 	~MainMenu();
 	void Init();
 	MusicPlayer *musicPlayer;

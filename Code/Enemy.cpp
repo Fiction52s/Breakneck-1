@@ -326,6 +326,11 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_LOBTURRET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_EXPLODINGBARREL:
+	{
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
+		break;
+	}
 	case EnemyType::EN_PREDICTTURRET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;

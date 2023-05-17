@@ -30,7 +30,14 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 		bars[i] = new ScoreBar(i, this);
 	}
 
-	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+
+	numShownSelectBars = NUM_SELECT_BARS;
+	if (!MainMenu::GetInstance()->steamOn)
+	{
+		numShownSelectBars = NUM_SELECT_BARS - 1;
+	}
+
+	for (int i = 0; i < numShownSelectBars; ++i)
 	{
 		selectBars[i] = new SelectBar(i, this);
 	}
@@ -58,7 +65,7 @@ ScoreDisplay::~ScoreDisplay()
 		delete bars[i];
 	}
 
-	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	for (int i = 0; i < numShownSelectBars; ++i)
 	{
 		delete selectBars[i];
 	}
@@ -79,7 +86,7 @@ void ScoreDisplay::Draw(RenderTarget *target)
 		}
 		
 		int activeSelectBars = GetNumSelectBars();
-		for (int i = 0; i < NUM_SELECT_BARS; ++i)
+		for (int i = 0; i < numShownSelectBars; ++i)
 		{
 			selectBars[i]->Draw(target);
 		}
@@ -123,7 +130,7 @@ void ScoreDisplay::PopOutSelectBars()
 
 int ScoreDisplay::GetNumSelectBars()
 {
-	int selectBarNum = NUM_SELECT_BARS;
+	int selectBarNum = numShownSelectBars;
 	if (!includeExtraSelectBars)
 	{
 		selectBarNum = 3;
@@ -190,7 +197,7 @@ void ScoreDisplay::Reset()
 		bars[i]->Reset();
 	}
 
-	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	for (int i = 0; i < numShownSelectBars; ++i)
 	{
 		selectBars[i]->Reset();
 	}
@@ -256,7 +263,7 @@ void ScoreDisplay::Deactivate()
 		bars[i]->Retract();
 	}
 
-	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	for (int i = 0; i < numShownSelectBars; ++i)
 	{
 		selectBars[i]->Retract();
 	}
