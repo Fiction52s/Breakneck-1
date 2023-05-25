@@ -345,6 +345,8 @@ void SplitComboer::ProcessHit()
 
 		pieces[0]->Shoot(dir0);
 		pieces[1]->Shoot(dir1);
+
+		receivedHit.SetEmpty();
 	}
 }
 

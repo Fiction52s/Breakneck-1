@@ -54,8 +54,16 @@ Chess::Chess(ActorParams *ap)
 		assert(0);
 	}
 
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 16 * scale, 3, this);
-	RegisterShield(shield);
+	SetNumLaunchers(1);
+	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 16, 1, GetPosition(), V2d(1, 0), 0, 180, false);
+	launchers[0]->SetBulletSpeed(10);
+	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
+	launchers[0]->Reset();
+
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
+
+	//shield = new Shield(Shield::ShieldType::T_BLOCK, 16 * scale, 3, this);
+	//RegisterShield(shield);
 
 	attentionRadius = 800;
 	ignoreRadius = 2000;
@@ -99,7 +107,7 @@ void Chess::HandleNoHealth()
 Chess::~Chess()
 {
 	currShield = NULL;
-	delete shield;
+	//delete shield;
 }
 
 void Chess::SetLevel(int lev)
@@ -130,15 +138,17 @@ void Chess::ResetEnemy()
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
+	data.fireCounter = 0;
+
 	data.velocity = V2d();
 
 	UpdateHitboxes();
 
 	UpdateSprite();
 
-	shield->Reset();
-	shield->SetPosition(GetPosition());
-	currShield = shield;
+	//shield->Reset();
+	//shield->SetPosition(GetPosition());
+	//currShield = shield;
 }
 
 void Chess::ActionEnded()
@@ -183,6 +193,35 @@ void Chess::StartRush()
 	data.velocity = rushDir * speed;
 }
 
+void Chess::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
+{
+	b->launcher->DeactivateBullet(b);
+}
+
+void Chess::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
+{
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+}
+
+void Chess::DirectKill()
+{
+	BasicBullet *b = launchers[0]->activeBullets;
+	while (b != NULL)
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2(b->velocity.y, -b->velocity.x);
+		sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+		b->launcher->DeactivateBullet(b);
+
+		b = next;
+	}
+
+	Enemy::DirectKill();
+}
+
 void Chess::ProcessState()
 {
 	ActionEnded();
@@ -194,9 +233,12 @@ void Chess::ProcessState()
 	double dist = PlayerDist();
 	V2d dir = PlayerDir();
 
+
+
 	switch (action)
 	{
 	case NEUTRAL:
+	{
 		if (dist < attentionRadius)
 		{
 			action = CHASE;
@@ -204,6 +246,15 @@ void Chess::ProcessState()
 			//StartRush();
 		}
 		break;
+	}
+	case CHASE:
+	{
+		break;
+	}
+	case RETURN:
+	{
+		break;
+	}
 	case RUSH:
 		/*if (dist > ignoreRadius)
 		{
@@ -222,6 +273,13 @@ void Chess::ProcessState()
 		break;
 	case CHASE:
 	{
+		if (data.fireCounter == 0 && dist < attentionRadius )
+		{
+			launchers[0]->position = GetPosition();
+			launchers[0]->facingDir = PlayerDir();
+			//launchers[0]->Reset();
+			launchers[0]->Fire();
+		}
 		//V2d futurePos = sess->GetFuturePlayerPos(20);
 		//V2d newPos;
 		//newPos.x = GetPosition().x;
@@ -296,6 +354,18 @@ void Chess::ProcessState()
 	}
 }
 
+void Chess::FrameIncrement()
+{
+	if (action == CHASE && PlayerDist() < attentionRadius )
+	{
+		++data.fireCounter;
+		if (data.fireCounter == 60)
+		{
+			data.fireCounter = 0;
+		}
+	}
+}
+
 void Chess::UpdateEnemyPhysics()
 {
 	if (action == RUSH || action == CHASE)
@@ -304,7 +374,7 @@ void Chess::UpdateEnemyPhysics()
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
-		shield->SetPosition(GetPosition());
+		//shield->SetPosition(GetPosition());
 	}
 }
 
@@ -340,7 +410,7 @@ void Chess::EnemyDraw(sf::RenderTarget *target)
 
 int Chess::GetNumStoredBytes()
 {
-	return sizeof(MyData) + shield->GetNumStoredBytes();
+	return sizeof(MyData);// +shield->GetNumStoredBytes();
 }
 
 void Chess::StoreBytes(unsigned char *bytes)
@@ -349,8 +419,8 @@ void Chess::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 
-	shield->StoreBytes(bytes);
-	bytes += shield->GetNumStoredBytes();
+	//shield->StoreBytes(bytes);
+	//bytes += shield->GetNumStoredBytes();
 }
 
 void Chess::SetFromBytes(unsigned char *bytes)
@@ -359,6 +429,6 @@ void Chess::SetFromBytes(unsigned char *bytes)
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
 
-	shield->SetFromBytes(bytes);
-	bytes += shield->GetNumStoredBytes();
+	//shield->SetFromBytes(bytes);
+	//bytes += shield->GetNumStoredBytes();
 }

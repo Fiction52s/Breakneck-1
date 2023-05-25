@@ -433,6 +433,8 @@ void TigerTarget::ProcessHit()
 
 		//sprite.setTextureRect(ir);
 		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+
+		receivedHit.SetEmpty();
 	}
 }
 

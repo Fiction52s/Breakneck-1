@@ -377,7 +377,7 @@ void BirdShuriken::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit.SetEmpty();
+	Enemy::DirectKill();
 }
 
 void BirdShuriken::Die()

@@ -255,7 +255,8 @@ void BasicTurret::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit.SetEmpty();
+	
+	Enemy::DirectKill();
 }
 
 void BasicTurret::EnemyDraw(sf::RenderTarget *target )

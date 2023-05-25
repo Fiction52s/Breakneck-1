@@ -266,6 +266,16 @@ void Ball::UpdateJuggleRepsText(int reps)
 	}
 }
 
+bool Ball::CanComboHit(Enemy *e)
+{
+	if (e->type == EN_BALL)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void Ball::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)
@@ -305,6 +315,8 @@ void Ball::ProcessHit()
 			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
+
+		receivedHit.SetEmpty();
 	}
 }
 
@@ -494,6 +506,7 @@ void Ball::HitTerrainAerial(Edge * edge, double quant)
 	//SetHitboxes(hitBody, 0);
 	//DefaultHurtboxesOn();
 }
+
 
 int Ball::GetNumStoredBytes()
 {

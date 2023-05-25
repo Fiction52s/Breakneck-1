@@ -231,8 +231,7 @@ void Cactus::Draw(sf::RenderTarget *target)
 
 void Cactus::DirectKill()
 {
-	receivedHit.SetEmpty();
-}
+	Enemy::DirectKill();
 
 void Cactus::ThrowShotgun()
 {

@@ -318,6 +318,8 @@ void GravityJuggler::ProcessHit()
 			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
+
+		receivedHit.SetEmpty();
 	}
 }
 

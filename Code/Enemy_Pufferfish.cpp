@@ -24,17 +24,17 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	actionLength[HOLDPUFF] = 1;
 	actionLength[UNPUFF] = 1;
 	actionLength[BLAST] = 1;
-	actionLength[RECOVER] = 1;
+	actionLength[RECOVER] = 20;
 
 	animFactor[NEUTRAL] = 2;
 	animFactor[PUFF] = 30;
 	animFactor[HOLDPUFF] = 30;
 	animFactor[UNPUFF] = 30;
 	animFactor[BLAST] = 60;
-	animFactor[RECOVER] = 17 * 5;
+	animFactor[RECOVER] = 1;//17 * 5;
 
 	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 24, 24, GetPosition(), V2d(1, 0), 2 * PI, 90, false);
+	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 8, 8, GetPosition(), V2d(0, 1), 2 * PI, 90, false);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
@@ -71,10 +71,10 @@ Pufferfish::Pufferfish(ActorParams *ap)
 
 void Pufferfish::HandleNoHealth()
 {
-	if (action == HOLDPUFF)
+	/*if (action == HOLDPUFF)
 	{
 		Fire();
-	}
+	}*/
 
 	if (action == HOLDPUFF)
 	{
@@ -123,7 +123,7 @@ void Pufferfish::DirectKill()
 		b = next;
 	}
 
-	receivedHit.SetEmpty();
+	Enemy::DirectKill();
 }
 
 void Pufferfish::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
@@ -175,6 +175,12 @@ void Pufferfish::ActionEnded()
 			action = HOLDPUFF;
 			break;
 		case HOLDPUFF:
+			Fire();
+			action = RECOVER;
+			frame = 0;
+			//action = BLAST;
+			//frame = 0;
+			//Fire();
 			break;
 		case UNPUFF:
 			action = NEUTRAL;
@@ -208,14 +214,16 @@ void Pufferfish::ProcessState()
 		break;
 	case HOLDPUFF:
 	{
-		int numEnemiesKilledLastFrame = sess->GetPlayerEnemiesKilledLastFrame(0);
+		/*int numEnemiesKilledLastFrame = sess->GetPlayerEnemiesKilledLastFrame(0);
 
 		if (numEnemiesKilledLastFrame > 0)
 		{
 			action = BLAST;
 			frame = 0;
 		}
-		else if (dist >= unpuffRadius)
+		else */
+	
+		if(dist >= unpuffRadius)
 		{
 			action = UNPUFF;
 			frame = 0;
@@ -255,7 +263,7 @@ void Pufferfish::ProcessState()
 void Pufferfish::Fire()
 {
 	launchers[0]->position = GetPosition();
-	launchers[0]->facingDir = PlayerDir();
+	launchers[0]->facingDir = V2d(1, 0);//PlayerDir();
 	launchers[0]->Reset();
 	launchers[0]->Fire();
 }
@@ -305,7 +313,16 @@ void Pufferfish::UpdateSprite()
 		tile = 2;
 		break;
 	case RECOVER:
-		tile = 3;
+		if (frame < (actionLength[RECOVER] * animFactor[RECOVER]) / 2)
+		{
+			tile = 0;
+			//tile = 3;
+		}
+		else
+		{
+			tile = 0;
+		}
+		
 		break;
 	}
 

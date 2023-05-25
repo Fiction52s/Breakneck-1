@@ -383,8 +383,6 @@ void GrowingTree::UpdateSprite()
 
 void GrowingTree::DirectKill()
 {
-	Enemy::DirectKill();
-
 	for (int i = 0; i < numLaunchers; ++i)
 	{
 		BasicBullet *b = launchers[i]->activeBullets;
@@ -398,7 +396,8 @@ void GrowingTree::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit.SetEmpty();
+
+	Enemy::DirectKill();
 }
 
 void GrowingTree::BulletHitTerrain(BasicBullet *b, 

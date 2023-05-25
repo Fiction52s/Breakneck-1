@@ -280,6 +280,8 @@ void BounceJuggler::ProcessHit()
 			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 			ConfirmHitNoKill();
 		}
+
+		receivedHit.SetEmpty();
 	}
 }
 

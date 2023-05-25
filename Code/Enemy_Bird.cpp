@@ -350,7 +350,7 @@ void Bird::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit.SetEmpty();
+	Enemy::DirectKill();
 }
 
 void Bird::FrameIncrement()

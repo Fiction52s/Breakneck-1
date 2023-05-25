@@ -547,7 +547,21 @@ void Lizard::UpdateBullet(BasicBullet *b)
 
 void Lizard::DirectKill()
 {
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		BasicBullet *b = launchers[i]->activeBullets;
+		while (b != NULL)
+		{
+			BasicBullet *next = b->next;
+			double angle = atan2(b->velocity.y, -b->velocity.x);
+			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+			b->launcher->DeactivateBullet(b);
 
+			b = next;
+		}
+	}
+
+	Enemy::DirectKill();
 }
 
 int Lizard::GetNumStoredBytes()

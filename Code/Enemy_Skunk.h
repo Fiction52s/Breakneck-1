@@ -8,9 +8,9 @@ struct Skunk : Enemy, GroundMoverHandler
 	enum Action
 	{
 		IDLE,
-		WAKEUP,
 		WALK,
 		HOP,
+		CHARGE,
 		EXPLODE,
 		LAND,
 		Count
@@ -19,8 +19,11 @@ struct Skunk : Enemy, GroundMoverHandler
 	struct MyData : StoredEnemyData
 	{
 		CollisionBody explosion;
+		int refreshFrame;
 	};
 	MyData data;
+
+	int maxRefreshFrames;
 
 	Tileset *ts;
 	double gravity;
@@ -55,9 +58,11 @@ struct Skunk : Enemy, GroundMoverHandler
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
+	void FrameIncrement();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
+
 };
 
 #endif

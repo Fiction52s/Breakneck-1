@@ -81,7 +81,11 @@ ActorParams::ActorParams(ActorType *at)
 		|| at->info.name == "scorpiontarget"
 		|| at->info.name == "freeflighttarget"
 		|| at->info.name == "bluecomboertarget"
-		|| at->info.name == "greencomboertarget")
+		|| at->info.name == "greencomboertarget"
+		|| at->info.name == "yellowcomboertarget"
+		|| at->info.name == "orangecomboertarget"
+		|| at->info.name == "redcomboertarget"
+		|| at->info.name == "magentacomboertarget" )
 	{
 		hasMonitor = true;
 	}

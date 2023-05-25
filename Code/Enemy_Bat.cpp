@@ -191,7 +191,8 @@ void Bat::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit.SetEmpty();
+
+	Enemy::DirectKill();
 }
 
 void Bat::FrameIncrement()

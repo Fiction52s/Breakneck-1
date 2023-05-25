@@ -201,6 +201,8 @@ void RemoteComboer::ProcessHit()
 		sprite.setTextureRect(ir);
 
 		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+
+		receivedHit.SetEmpty();
 	}
 }
 

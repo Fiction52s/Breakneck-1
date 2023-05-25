@@ -52,6 +52,7 @@ struct Ball : Enemy, SurfaceMoverHandler
 	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
+	bool CanComboHit(Enemy *e);
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	void ComboHit();

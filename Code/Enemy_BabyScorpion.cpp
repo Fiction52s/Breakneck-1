@@ -89,6 +89,8 @@ void BabyScorpion::ProcessHit()
 		frame = 0;
 		HitboxesOff();
 		HurtboxesOff();
+
+		receivedHit.SetEmpty();
 	}
 }
 

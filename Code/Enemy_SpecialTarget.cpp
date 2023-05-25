@@ -20,6 +20,8 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	regenOn = false;
 	scale = 4.0;
 
+	targetType = -1;
+
 	ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
 	BasicCircleHitBodySetup(32);
@@ -58,6 +60,28 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 		targetType = TARGET_COMBOER_GREEN;
 		regenOn = false;
 	}
+	else if (typeName == "yellowcomboertarget")
+	{
+		targetType = TARGET_COMBOER_YELLOW;
+		regenOn = false;
+	}
+	else if (typeName == "orangecomboertarget")
+	{
+		targetType = TARGET_COMBOER_ORANGE;
+		regenOn = false;
+	}
+	else if (typeName == "redcomboertarget")
+	{
+		targetType = TARGET_COMBOER_RED;
+		regenOn = false;
+	}
+	else if (typeName == "magentacomboertarget")
+	{
+		targetType = TARGET_COMBOER_MAGENTA;
+		regenOn = false;
+	}
+
+	assert(targetType != -1);
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -225,7 +249,14 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 {
 	//this if for comboer mode
 
-	if (targetType == TARGET_COMBOER_BLUE || targetType == TARGET_COMBOER_GREEN || targetType == TARGET_COMBOER_YELLOW )
+	/*TARGET_COMBOER_ORANGE,
+		TARGET_COMBOER_RED,
+		TARGET_COMBOER_MAGENTA,
+		TARGET_COMBOER_GREY,*/
+
+	if (targetType == TARGET_COMBOER_BLUE || targetType == TARGET_COMBOER_GREEN || targetType == TARGET_COMBOER_YELLOW 
+		|| targetType == TARGET_COMBOER_ORANGE || targetType == TARGET_COMBOER_RED || targetType == TARGET_COMBOER_MAGENTA
+		|| targetType == TARGET_COMBOER_GREY)
 	{
 		if (currHurtboxes == NULL)
 			return NULL;
@@ -257,11 +288,25 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 					}
 					break;
 				case TARGET_COMBOER_YELLOW:
-					if (en->type == EN_BOUNCEJUGGLER)
+					if (en->type == EN_BOUNCEJUGGLER || en->type == EN_BALL )
 					{
 						validHit = true;
 					}
 					break;
+				case TARGET_COMBOER_ORANGE:
+					if (en->type == EN_GRINDJUGGLER || en->type == EN_GROUNDEDGRINDJUGGLER)
+					{
+						validHit = true;
+					}
+					break;
+				case TARGET_COMBOER_RED:
+					if (en->type == EN_RELATIVECOMBOER)
+					{
+						validHit = true;
+					}
+					break;
+				//case TARGET_COMBOER_MAGENTA:
+				//	if( en->type == EN_)
 				}
 
 				if (validHit)

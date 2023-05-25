@@ -3,6 +3,7 @@
 #include "LobbyManager.h"
 #include "MapBrowser.h"
 #include "md5.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -202,11 +203,20 @@ void MapOptionsPopup::PanelCallback(Panel *p, const std::string &e)
 
 bool MapOptionsPopup::Activate(MapNode *mp, int numP)
 {
+	bool steamOn = MainMenu::GetInstance()->steamOn;
 	// set the name of the lobby if it's ours
-	string lobbyName = SteamFriends()->GetPersonaName();
-	lobbyName += "'s lobby";
+	if (steamOn)
+	{
+		string lobbyName = SteamFriends()->GetPersonaName();
+		lobbyName += "'s lobby";
 
-	currLobbyData->lobbyName = lobbyName;
+		currLobbyData->lobbyName = lobbyName;
+	}
+	else
+	{
+		currLobbyData->lobbyName = "";
+	}
+	
 	currLobbyData->lobbyType = LobbyData::LOBBYTYPE_CUSTOM;
 
 	if (mp->isWorkshop)
@@ -240,19 +250,27 @@ bool MapOptionsPopup::Activate(MapNode *mp, int numP)
 
 		nameLink->HideMember();
 
-		if (!mp->creatorNameRetrieved)
+		if (steamOn)
 		{
-			bool needsToRequestInfo = SteamFriends()->RequestUserInformation(mp->creatorId, true);
+			if (!mp->creatorNameRetrieved)
+			{
+				bool needsToRequestInfo = SteamFriends()->RequestUserInformation(mp->creatorId, true);
 
-			if (needsToRequestInfo)
-			{
-				mp->checkingForCreatorName = true;
+				if (needsToRequestInfo)
+				{
+					mp->checkingForCreatorName = true;
+				}
+				else
+				{
+					mp->creatorNameRetrieved = true;
+					mp->creatorName = SteamFriends()->GetFriendPersonaName(mp->creatorId);
+				}
 			}
-			else
-			{
-				mp->creatorNameRetrieved = true;
-				mp->creatorName = SteamFriends()->GetFriendPersonaName(mp->creatorId);
-			}
+		}
+		else
+		{
+			//mp->creatorNameRetrieved = true;
+			mp->creatorName = "[Cannot retrieve name. Offline mode]";
 		}
 	}
 

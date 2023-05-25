@@ -389,6 +389,8 @@ void WireJuggler::ProcessHit()
 			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
+
+		receivedHit.SetEmpty();
 	}
 }
 

@@ -4,13 +4,14 @@
 #include "Enemy.h"
 #include "Bullet.h"
 
-struct Chess : Enemy
+struct Chess : Enemy, LauncherEnemy
 {
 	enum Action
 	{
 		NEUTRAL,
 		RUSH,
 		RECOVER,
+		RETURN,
 		CHASE,
 		A_Count
 	};
@@ -26,6 +27,7 @@ struct Chess : Enemy
 	struct MyData : StoredEnemyData
 	{
 		V2d velocity;
+		int fireCounter;
 	};
 	MyData data;
 
@@ -37,8 +39,8 @@ struct Chess : Enemy
 	double maxSpeed;
 	double accel;
 	sf::CircleShape testCircle;
-	Shield *shield;
-
+	//Shield *shield;
+	Tileset *ts_bulletExplode;
 
 	Chess(ActorParams *ap);
 	~Chess();
@@ -49,10 +51,18 @@ struct Chess : Enemy
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
 
+	void FrameIncrement();
 	void SetLevel(int lev);
 
 	void UpdateSprite();
 	void ResetEnemy();
+
+	void BulletHitTerrain(BasicBullet *b,
+		Edge *edge, V2d &pos);
+	void BulletHitPlayer(int playerIndex,
+		BasicBullet *b, int hitResult);
+	void DirectKill();
+
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

@@ -41,6 +41,9 @@ struct Goal : Enemy
 
 	Goal(ActorParams *ap);
 	~Goal();
+	bool CanBeHitByComboer() { return false; }
+	bool CanBeHitByWireTip(bool red) { return false; }
+	bool CanBeAnchoredByWire(bool red) { return false; }
 	void SetMapGoalPos();
 	bool CountsForEnemyGate() { return false; }
 	void DrawMinimap(sf::RenderTarget *target);

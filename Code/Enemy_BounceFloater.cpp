@@ -100,6 +100,8 @@ void BounceFloater::ProcessHit()
 
 		player->ConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
+
+		receivedHit.SetEmpty();
 	}
 }
 

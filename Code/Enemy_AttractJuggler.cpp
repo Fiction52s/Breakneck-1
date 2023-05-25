@@ -275,6 +275,8 @@ void AttractJuggler::ProcessHit()
 			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
+
+		receivedHit.SetEmpty();
 	}
 }
 

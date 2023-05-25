@@ -437,10 +437,10 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SPECTER:
-		hitParams.Set(5, .8, (3 * 60) / 5, 5);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_GORILLA:
-		hitParams.Set(5, .8, (3 * 60) / 5, 5);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_WIRETARGET:
 		hitParams.Set(5, 0, 0, 1);
@@ -476,13 +476,13 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_TURTLE:
-		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_PUFFERFISH:
-		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_FUTURECHECKER:
-		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_KEYFLY:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2, false);
@@ -553,6 +553,8 @@ void Enemy::OnCreate(ActorParams *ap,
 	groundMover = NULL;
 	surfaceMover = NULL;
 	currShield = NULL;
+
+	hasMonitor = false;
 
 	if (ap != NULL)
 	{
@@ -2203,14 +2205,11 @@ HitboxInfo * Enemy::IsHit(int pIndex )
 		ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
 		if (co != NULL)
 		{
-			if (co->enemy->CanComboHit(this))
-			{
-				HitboxInfo *hi = co->enemyHitboxInfo;
+			HitboxInfo *hi = co->enemyHitboxInfo;
 
-				co->enemy->ComboHit();
-				comboHitEnemyID = co->enemy->enemyIndex;
-				return hi;
-			}
+			co->enemy->ComboHit();
+			comboHitEnemyID = co->enemy->enemyIndex;
+			return hi;
 		}
 
 	}

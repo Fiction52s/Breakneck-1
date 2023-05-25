@@ -26,6 +26,8 @@ Skunk::Skunk(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
+	maxRefreshFrames = 60;
+
 	SetNumActions(Count);
 	SetEditorActions(IDLE, 0, 0);
 
@@ -33,8 +35,8 @@ Skunk::Skunk(ActorParams *ap)
 	actionLength[LAND] = 1;
 	actionLength[HOP] = 2;
 	actionLength[WALK] = 60;
-	actionLength[WAKEUP] = 30;
-	actionLength[EXPLODE] = 60;
+	actionLength[CHARGE] = 30;
+	actionLength[EXPLODE] = 15;
 
 	gravity = .8;
 	maxGroundSpeed = 3;
@@ -42,7 +44,7 @@ Skunk::Skunk(ActorParams *ap)
 	runAccel = 1.0;
 	runDecel = runAccel * 3.0;
 
-	explosionRadius = 300;
+	explosionRadius = 325;
 
 
 	attentionRadius = 800;//800;
@@ -139,6 +141,8 @@ void Skunk::ResetEnemy()
 
 	facingRight = true;
 
+	data.refreshFrame = maxRefreshFrames;
+
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
@@ -155,10 +159,6 @@ void Skunk::ActionEnded()
 		switch (action)
 		{
 		case IDLE:
-			frame = 0;
-			break;
-		case WAKEUP:
-			action = WALK;
 			frame = 0;
 			break;
 		case WALK:
@@ -180,9 +180,18 @@ void Skunk::ActionEnded()
 			action = WALK;
 			frame = 0;
 			break;
+		case CHARGE:
+		{
+			action = EXPLODE;
+			frame = 0;
+			data.explosion.SetBasicPos(GetPosition());
+			SetHitboxes(&data.explosion, 0);
+			break;
+		}
 		case EXPLODE:
 			DefaultHurtboxesOn();
 			DefaultHitboxesOn();
+			data.refreshFrame = 0;
 			action = WALK;
 			frame = 0;
 			break;
@@ -220,6 +229,16 @@ void Skunk::ProcessState()
 		{
 			action = IDLE;
 			frame = 0;
+		}
+		else if (dist < explosionRadius && data.refreshFrame == maxRefreshFrames )
+		{
+			action = CHARGE;
+			frame = 0;
+
+			if (groundMover->ground != NULL)
+			{
+				groundMover->SetSpeed(0);
+			}
 		}
 		break;
 	}
@@ -329,43 +348,44 @@ void Skunk::UpdateEnemyPhysics()
 
 void Skunk::ProcessHit()
 {
-	if (!dead && HasReceivedHit() && numHealth > 0)
-	{
-		numHealth -= 1;
+	Enemy::ProcessHit();
+	//if (!dead && HasReceivedHit() && numHealth > 0)
+	//{
+	//	numHealth -= 1;
 
-		if (numHealth <= 0)
-		{
-			if (hasMonitor && !suppressMonitor)
-			{
-				//sess->CollectKey();
-			}
+	//	if (numHealth <= 0)
+	//	{
+	//		if (hasMonitor && !suppressMonitor)
+	//		{
+	//			//sess->CollectKey();
+	//		}
 
-			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-			ConfirmKill();
-		}
-		else
-		{
-			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-			ConfirmHitNoKill();
+	//		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+	//		ConfirmKill();
+	//	}
+	//	else
+	//	{
+	//		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+	//		ConfirmHitNoKill();
 
-			action = EXPLODE;
+	//		action = EXPLODE;
 
-			if (groundMover->ground != NULL)
-			{
-				groundMover->SetSpeed(0);
-			}
-			frame = 0;
-			data.explosion.SetBasicPos(GetPosition());
-			SetHitboxes(&data.explosion, 0);
-			HurtboxesOff();
-			//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+	//		if (groundMover->ground != NULL)
+	//		{
+	//			groundMover->SetSpeed(0);
+	//		}
+	//		frame = 0;
+	//		data.explosion.SetBasicPos(GetPosition());
+	//		SetHitboxes(&data.explosion, 0);
+	//		HurtboxesOff();
+	//		//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 
-		}
+	//	}
 
-		
+	//	
 
-		receivedHit.SetEmpty();
-	}
+	//	receivedHit.SetEmpty();
+	//}
 
 	//if (action != EXPLODE && !dead && ReceivedHit() && numHealth > 0)
 	//{
@@ -406,7 +426,16 @@ void Skunk::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 
-	if (action == EXPLODE)
+	if (action == CHARGE)
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
+
+	if (action == EXPLODE )
 	{
 		target->draw(testCircle);
 	}
@@ -525,6 +554,17 @@ void Skunk::ReachCliff()
 	}
 
 	Hop();
+}
+
+void Skunk::FrameIncrement()
+{
+	if (action == IDLE || action == WALK || action == HOP)
+	{
+		if (data.refreshFrame < maxRefreshFrames)
+		{
+			++data.refreshFrame;
+		}
+	}
 }
 
 void Skunk::HitOtherAerial(Edge *e)

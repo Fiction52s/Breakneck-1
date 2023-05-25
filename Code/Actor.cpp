@@ -10831,7 +10831,7 @@ ComboObject * Actor::IntersectMyComboHitboxes(Enemy *e, CollisionBody *cb,
 	{
 		if (e != curr->enemy)
 		{
-			if (curr->enemyHitBody.Intersects(curr->data.enemyHitboxFrame, cb, cbFrame))
+			if ( curr->enemy->CanComboHit( e ) && curr->enemyHitBody.Intersects(curr->data.enemyHitboxFrame, cb, cbFrame))
 			{
 				return curr;
 			}

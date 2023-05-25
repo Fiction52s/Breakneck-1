@@ -262,6 +262,8 @@ void GroundedGrindJuggler::ProcessHit()
 			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
+
+		receivedHit.SetEmpty();
 	}
 }
 

@@ -238,7 +238,7 @@ void ShotgunTurret::DirectKill()
 			b = next;
 		}
 	}
-	receivedHit.SetEmpty();
+	Enemy::DirectKill();
 }
 
 void ShotgunTurret::UpdateSprite()

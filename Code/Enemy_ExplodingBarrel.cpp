@@ -199,6 +199,8 @@ void ExplodingBarrel::ProcessHit()
 			//--numHealth;
 			HitboxesOff();
 			HurtboxesOff();
+
+			receivedHit.SetEmpty();
 		}
 	}
 	else

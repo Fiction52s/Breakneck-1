@@ -583,7 +583,7 @@ void Copycat::DirectKill()
 		b = next;
 	}
 
-	receivedHit.SetEmpty();
+	Enemy::DirectKill();
 }
 
 int Copycat::GetNumStoredBytes()

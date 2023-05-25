@@ -348,6 +348,8 @@ void Blocker::ProcessHit()
 			SetHitboxes(&hitBody, 0);
 			SetHurtboxes(NULL, 0);
 		}
+
+		receivedHit.SetEmpty();
 	}
 }
 

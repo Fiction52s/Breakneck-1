@@ -276,7 +276,7 @@ void Parrot::DirectKill()
 		b = next;
 	}
 
-	receivedHit.SetEmpty();
+	Enemy::DirectKill();
 }
 
 int Parrot::GetNumStoredBytes()
