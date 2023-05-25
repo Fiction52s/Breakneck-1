@@ -232,6 +232,7 @@ void Cactus::Draw(sf::RenderTarget *target)
 void Cactus::DirectKill()
 {
 	Enemy::DirectKill();
+}
 
 void Cactus::ThrowShotgun()
 {
