@@ -165,6 +165,12 @@ void SwordProjectile::Throw( int playerIndex, V2d &pos, V2d &dir)
 	sess->PlayerAddActiveComboObj(comboObj,playerIndex );
 }
 
+void SwordProjectile::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void SwordProjectile::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])

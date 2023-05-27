@@ -438,6 +438,12 @@ void TigerTarget::ProcessHit()
 	}
 }
 
+void TigerTarget::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void TigerTarget::ComboHit()
 {
 	pauseFrames = 5;

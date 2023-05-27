@@ -85,6 +85,7 @@ struct WireJuggler : Enemy
 	void Throw(V2d vel);
 	bool CanBeHitByWireTip(bool red);
 	bool CanBeHitByComboer();
+	void DirectKill();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

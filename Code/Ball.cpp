@@ -276,6 +276,12 @@ bool Ball::CanComboHit(Enemy *e)
 	return true;
 }
 
+void Ball::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void Ball::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)

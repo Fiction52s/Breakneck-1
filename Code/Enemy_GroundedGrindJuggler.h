@@ -54,6 +54,7 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	void HandleNoHealth();
 	void Move();
 	void Return();
+	void DirectKill();
 	void Push(double strength);
 	void UpdateJuggleRepsText(int reps);
 

@@ -51,6 +51,7 @@ struct RemoteComboer : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
+	void DirectKill();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

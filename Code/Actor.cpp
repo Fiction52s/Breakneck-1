@@ -4577,6 +4577,14 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 	c->data.nextComboObj = NULL;
 }
 
+void Actor::ClearActiveComboObjects()
+{
+	while (activeComboObjList != NULL)
+	{
+		RemoveActiveComboObj(activeComboObjList);
+	}
+}
+
 void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 {
 	ComboObject *curr = activeComboObjList;
@@ -9309,6 +9317,11 @@ V2d Actor::UpdateReversePhysics()
 				
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( -m, 0 ));
+
+					if (hit)
+					{
+						CheckCollisionForTerrainFade();
+					}
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
@@ -9637,6 +9650,11 @@ V2d Actor::UpdateReversePhysics()
 
 					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
 					bool hit = ResolvePhysics( resMove );
+
+					if (hit)
+					{
+						CheckCollisionForTerrainFade();
+					}
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
@@ -11598,6 +11616,12 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 				q += movement;
 				V2d posOld = position;
 				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
+
+				if (col)
+				{
+					CheckCollisionForTerrainFade();
+				}
+
 				if (col)
 				{
 					position = posOld;
@@ -11648,6 +11672,12 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 				q += movement;
 				V2d posOld = position;
 				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
+
+				if (col)
+				{
+					CheckCollisionForTerrainFade();
+				}
+
 				if (col)
 				{
 					position = posOld;
@@ -12226,6 +12256,12 @@ void Actor::UpdatePhysics()
 				{
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( m, 0 ));
+
+					if (hit)
+					{
+						CheckCollisionForTerrainFade();
+					}
+
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
 						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
@@ -12455,6 +12491,11 @@ void Actor::UpdatePhysics()
 					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
 					bool hit = ResolvePhysics( resMove );
 
+					if (hit)
+					{
+						CheckCollisionForTerrainFade();
+					}
+
 
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
 						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -12628,19 +12669,9 @@ void Actor::UpdatePhysics()
 
 			bool tempCollision = ResolvePhysics( movementVec );
 			
-			if (tempCollision && !simulationMode)
+			if (tempCollision)
 			{
-				if (minContact.edge->poly != NULL
-					&& minContact.edge->poly->IsSometimesActiveType())
-					//&& minContact.edge->poly->IsSometimesActiveType())
-				{
-					minContact.edge->poly->FadeOut();
-				}
-				else if (minContact.edge->rail != NULL
-					&& minContact.edge->rail->rType == TerrainRail::FADE)
-				{
-					minContact.edge->rail->FadeOut();
-				}
+				CheckCollisionForTerrainFade();
 			}
 
 			V2d extraVel(0, 0);
@@ -13671,6 +13702,8 @@ void Actor::HandleTouchedGate()
 				}
 
 				RestoreAirOptions();
+
+				ClearActiveComboObjects();
 			}
 		}
 
@@ -22111,6 +22144,24 @@ void Actor::UpdateInHitlag()
 	 }
 
 	 futurePositions = new V2d[numFrames];
+ }
+
+ void Actor::CheckCollisionForTerrainFade()
+ {
+	 if (!simulationMode)
+	 {
+		 assert(minContact.edge != NULL);
+		 if (minContact.edge->poly != NULL
+			 && minContact.edge->poly->IsSometimesActiveType())
+		 {
+			 minContact.edge->poly->FadeOut();
+		 }
+		 else if (minContact.edge->rail != NULL
+			 && minContact.edge->rail->rType == TerrainRail::FADE)
+		 {
+			 minContact.edge->rail->FadeOut();
+		 }
+	 }
  }
 
  int Actor::GetNumStoredBytes()

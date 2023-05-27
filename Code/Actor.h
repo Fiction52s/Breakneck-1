@@ -1709,6 +1709,7 @@ struct Actor : QuadTreeCollider,
 		int p_frame);
 	void AddActiveComboObj(ComboObject *c);
 	void RemoveActiveComboObj(ComboObject *c);
+	void ClearActiveComboObjects();
 	void DebugDrawComboObj(sf::RenderTarget *target);
 	bool IsMovingRight();
 	bool IsMovingLeft();
@@ -1835,7 +1836,7 @@ struct Actor : QuadTreeCollider,
 	void InitPreFrameCalculations();
 	void UpdateNumFuturePositions();
 
-
+	void CheckCollisionForTerrainFade();
 
 	
 	int GetNumStoredBytes();

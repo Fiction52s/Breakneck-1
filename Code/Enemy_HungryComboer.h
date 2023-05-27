@@ -69,6 +69,7 @@ struct HungryComboer : Enemy, EnemyTracker
 	void ComboHit();
 	void ComboKill( Enemy *e );
 	void EnemyDraw(sf::RenderTarget *target);
+	void DirectKill();
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();

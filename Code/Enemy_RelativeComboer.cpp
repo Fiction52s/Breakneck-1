@@ -217,6 +217,12 @@ void RelativeComboer::PopThrow()
 	sess->PlayerAddActiveComboObj(comboObj);
 }
 
+void RelativeComboer::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 bool RelativeComboer::CanBeHitByComboer()
 {
 	return false;

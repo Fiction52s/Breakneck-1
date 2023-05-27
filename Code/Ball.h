@@ -65,6 +65,7 @@ struct Ball : Enemy, SurfaceMoverHandler
 	void Pop();
 	void PopThrow();
 	V2d GetBounceVel(V2d &normal);
+	void DirectKill();
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);

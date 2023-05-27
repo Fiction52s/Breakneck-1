@@ -36,6 +36,7 @@ struct SplitPiece : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void Shoot(V2d dir);
+	void DirectKill();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

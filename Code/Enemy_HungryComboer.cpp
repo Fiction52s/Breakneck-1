@@ -399,6 +399,11 @@ void HungryComboer::ComboKill(Enemy *e)
 	
 }
 
+void HungryComboer::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
 
 V2d HungryComboer::GetTrackPos()
 {

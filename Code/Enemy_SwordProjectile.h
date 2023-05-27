@@ -47,6 +47,7 @@ struct SwordProjectile : Enemy
 	void HandleNoHealth();
 	void ComboKill(Enemy *e);
 	bool IsActive();
+	void DirectKill();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

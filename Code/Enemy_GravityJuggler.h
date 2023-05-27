@@ -56,6 +56,7 @@ struct GravityJuggler : Enemy
 	void Pop();
 	void PopThrow();
 	void UpdateJuggleRepsText( int reps );
+	void DirectKill();
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);

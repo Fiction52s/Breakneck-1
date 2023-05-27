@@ -298,6 +298,12 @@ void GrindJuggler::ProcessHit()
 	}
 }
 
+void GrindJuggler::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void GrindJuggler::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])

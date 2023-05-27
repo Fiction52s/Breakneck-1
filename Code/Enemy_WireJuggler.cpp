@@ -330,6 +330,12 @@ void WireJuggler::PopThrow()
 	sess->PlayerAddActiveComboObj(comboObj);
 }
 
+void WireJuggler::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 bool WireJuggler::CanBeHitByWireTip(bool red)
 {
 	switch (jType)

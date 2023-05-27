@@ -249,14 +249,14 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 {
 	//this if for comboer mode
 
-	/*TARGET_COMBOER_ORANGE,
+	/*TARGET_COMBOER_ORANGE, 
 		TARGET_COMBOER_RED,
 		TARGET_COMBOER_MAGENTA,
 		TARGET_COMBOER_GREY,*/
 
 	if (targetType == TARGET_COMBOER_BLUE || targetType == TARGET_COMBOER_GREEN || targetType == TARGET_COMBOER_YELLOW 
 		|| targetType == TARGET_COMBOER_ORANGE || targetType == TARGET_COMBOER_RED || targetType == TARGET_COMBOER_MAGENTA
-		|| targetType == TARGET_COMBOER_GREY)
+		|| targetType == TARGET_COMBOER_GREY )
 	{
 		if (currHurtboxes == NULL)
 			return NULL;
@@ -323,6 +323,10 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 
 			}
 		}
+	}
+	else if (targetType == TARGET_SCORPION)
+	{
+		return NULL;
 	}
 	else
 	{

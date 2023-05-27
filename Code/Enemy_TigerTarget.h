@@ -55,6 +55,7 @@ struct TigerTarget : Enemy
 	void FrameIncrement();
 	bool IsReadyToThrow();
 	void SetBurnFrames(int f);
+	void DirectKill();
 
 
 	void SetLevel(int lev);

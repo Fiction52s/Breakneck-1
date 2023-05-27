@@ -240,6 +240,12 @@ void AttractJuggler::PopThrow()
 	sess->PlayerAddActiveComboObj(comboObj);
 }
 
+void AttractJuggler::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void AttractJuggler::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)

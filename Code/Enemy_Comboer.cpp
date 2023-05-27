@@ -300,6 +300,12 @@ void Comboer::HandleNoHealth()
 	
 }
 
+void Comboer::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void Comboer::UpdateEnemyPhysics()
 {
 	switch (action)

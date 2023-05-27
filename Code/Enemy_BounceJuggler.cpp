@@ -330,6 +330,12 @@ void BounceJuggler::HandleNoHealth()
 
 }
 
+void BounceJuggler::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 //void BounceJuggler::Move()
 //{
 //	mover->velocity = velocity;

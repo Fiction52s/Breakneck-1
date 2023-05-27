@@ -166,6 +166,12 @@ void SplitPiece::EnemyDraw(sf::RenderTarget *target)
 	DrawSprite(target, sprite);
 }
 
+void SplitPiece::DirectKill()
+{
+	Enemy::DirectKill();
+	sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void SplitPiece::Shoot(V2d dir)
 {
 	comboObj->enemyHitboxInfo->hDir = dir;

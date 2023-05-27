@@ -75,6 +75,7 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	void Return();
 	void Pop();
 	void PopThrow();
+	void DirectKill();
 	void ExtraQueries(sf::Rect<double> &r);
 	void UpdateKilledNumberText(int reps);
 
