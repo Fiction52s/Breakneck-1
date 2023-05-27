@@ -4839,7 +4839,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 {
 	int numP = GetNumPoints();
 
-	if (!IsActive())
+	if (!IsActive() )
 	{
 		rt->draw(lines, numP * 2, sf::Lines);
 		return;

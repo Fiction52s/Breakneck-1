@@ -27,6 +27,7 @@ void SaveGameState::Clear()
 	nextFrameRestartGame = false;
 	activeSequenceID = -1;
 	randomState = 0;
+	phaseOn = false;
 	cam.Reset();
 }
 

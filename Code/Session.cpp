@@ -655,7 +655,7 @@ void Session::RegisterW4Enemies()
 
 	AddWorldEnemy("grindlauncher", 4, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
-	AddBasicAerialWorldEnemy("phasebooster", 4, CreateEnemy<PhaseBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("phasebooster", 4, CreateEnemy<PhaseBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("momentumbooster", 4, CreateEnemy<MomentumBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 	//AddBasicRailWorldEnemy("railtest", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
@@ -1583,6 +1583,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
+	phaseOn = false;
+
 	activePlayerReplayManagers.reserve(10);
 
 	nextFrameRestartGame = false;
@@ -8320,6 +8322,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	
 	currSaveState->currentZoneID = GetZoneID(currentZone);
 
+	currSaveState->phaseOn = phaseOn;
 	currSaveState->pauseFrames = pauseFrames;
 	currSaveState->currSuperPlayerIndex = GetPlayerIndex(currSuperPlayer);
 	currSaveState->gameState = gameState;
@@ -8454,10 +8457,11 @@ void Session::SetFromBytes(unsigned char *bytes)
 	activeEnemyList = GetEnemyFromID( currSaveState->activeEnemyListID );
 	inactiveEnemyList = GetEnemyFromID( currSaveState->inactiveEnemyListID );
 	activeEnemyListTail = GetEnemyFromID(currSaveState->activeEnemyListTailID );
+	
 
 	currentZone = GetZoneFromID(currSaveState->currentZoneID);
 
-
+	phaseOn = currSaveState->phaseOn;
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = GetPlayer(currSaveState->currSuperPlayerIndex);
 	randomState = currSaveState->randomState;

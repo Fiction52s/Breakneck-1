@@ -48,7 +48,6 @@
 #include "Enemy_SpecialTarget.h"
 #include "Enemy_AimLauncher.h"
 #include "Enemy_TimeBooster.h"
-#include "Enemy_PhaseBooster.h"
 #include "Enemy_FreeFlightBooster.h"
 #include "Enemy_HomingBooster.h"
 #include "Enemy_AntiTimeSlowBooster.h"
@@ -419,7 +418,6 @@ void Actor::PopulateState(PState *ps)
 	ps->currHomingBoosterID = sess->GetEnemyID(currHomingBooster);
 	ps->currAntiTimeSlowBoosterID = sess->GetEnemyID(currAntiTimeSlowBooster);
 	ps->currSwordProjectileBoosterID = sess->GetEnemyID(currSwordProjectileBooster);
-	ps->currPhaseBoosterID = sess->GetEnemyID(currPhaseBooster);
 	ps->currMomentumBoosterID = sess->GetEnemyID(currMomentumBooster);
 	ps->currRewindBoosterID = sess->GetEnemyID(currRewindBooster);
 
@@ -427,7 +425,6 @@ void Actor::PopulateState(PState *ps)
 	ps->aimLauncherStunFrames = aimLauncherStunFrames;
 	ps->airBounceCounter = airBounceCounter;
 	ps->airBounceLimit = airBounceLimit;
-	ps->phaseFrames = phaseFrames;
 	ps->momentumBoostFrames = momentumBoostFrames;
 
 	ps->currSpringID = sess->GetEnemyID(currSpring);
@@ -688,8 +685,6 @@ void Actor::PopulateFromState(PState *ps)
 
 	currSwordProjectileBooster = (SwordProjectileBooster*)sess->GetEnemyFromID(ps->currSwordProjectileBoosterID);
 
-	currPhaseBooster = (PhaseBooster*)sess->GetEnemyFromID(ps->currPhaseBoosterID);
-
 	currMomentumBooster = (MomentumBooster*)sess->GetEnemyFromID( ps->currMomentumBoosterID );
 
 	currRewindBooster = (RewindBooster*)sess->GetEnemyFromID(ps->currRewindBoosterID);
@@ -697,7 +692,6 @@ void Actor::PopulateFromState(PState *ps)
 	aimLauncherStunFrames = ps->aimLauncherStunFrames;
 	airBounceCounter = ps->airBounceCounter;
 	airBounceLimit = ps->airBounceLimit;
-	phaseFrames = ps->phaseFrames;
 	momentumBoostFrames = ps->momentumBoostFrames;
 
 
@@ -4732,7 +4726,6 @@ void Actor::Respawn( bool setStartPos )
 	homingFrames = 0;
 	projectileSwordFrames = 0;
 	enemyProjectileSwordFrames = 0;
-	phaseFrames = 0;
 	rewindOnHitFrames = 0;
 	momentumBoostFrames = 0;
 	currSpecialTerrain = NULL;
@@ -4835,7 +4828,6 @@ void Actor::Respawn( bool setStartPos )
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
 	oldTeleporter = NULL;
-	currPhaseBooster = NULL;
 	currMomentumBooster = NULL;
 	currSwingLauncher = NULL;
 	oldSwingLauncher = NULL;
@@ -5941,20 +5933,6 @@ void Actor::ProcessTimeBooster()
 	}
 }
 
-void Actor::ProcessPhaseBooster()
-{
-	if (currPhaseBooster != NULL && currPhaseBooster->IsBoostable())
-	{
-		currPhaseBooster->Boost();
-
-		phaseFrames = currPhaseBooster->strength;
-
-		currPhaseBooster = NULL;
-
-		RestoreAirOptions();
-	}
-}
-
 void Actor::ProcessMomentumBooster()
 {
 	if (currMomentumBooster != NULL && currMomentumBooster->IsBoostable())
@@ -6722,8 +6700,8 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 
 		if (e->poly != NULL)
 		{
-			if ( !e->poly->IsActive() || (e->poly->IsPhaseType() && phaseFrames == 0)
-				|| (e->poly->IsInversePhaseType() && phaseFrames > 0))
+			if ( !e->poly->IsActive() || (e->poly->IsPhaseType() && !sess->phaseOn)
+				|| (e->poly->IsInversePhaseType() && sess->phaseOn))
 			{
 				disappear = true;
 			}
@@ -6731,9 +6709,9 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 		else if (e->rail != NULL)
 		{
 			if ( !e->rail->IsActive() || (e->rail->GetRailType() == TerrainRail::PHASE
-				&& phaseFrames == 0)
+				&& !sess->phaseOn)
 				|| (e->rail->GetRailType() == TerrainRail::INVERSEPHASE
-					&& phaseFrames > 0))
+					&& sess->phaseOn))
 			{
 				disappear = true;
 			}
@@ -7001,8 +6979,6 @@ void Actor::UpdatePrePhysics()
 		ProcessBooster();
 
 		ProcessTimeBooster();
-
-		ProcessPhaseBooster();
 
 		ProcessHomingBooster();
 
@@ -16072,11 +16048,6 @@ void Actor::SlowDependentFrameIncrement()
 				SetSkin(SKIN_NORMAL);
 			}
 		}
-		
-		if (phaseFrames > 0)
-		{
-			--phaseFrames;
-		}
 
 		if (rewindOnHitFrames > 0)
 		{
@@ -16996,11 +16967,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}
-		else if (e->poly != NULL && e->poly->IsPhaseType() && phaseFrames == 0)
+		else if (e->poly != NULL && e->poly->IsPhaseType() && !sess->phaseOn)
 		{
 			return;
 		}
-		else if (e->poly != NULL && e->poly->IsInversePhaseType() && phaseFrames > 0)
+		else if (e->poly != NULL && e->poly->IsInversePhaseType() && sess->phaseOn)
 		{
 			return;
 		}
@@ -17016,11 +16987,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				{
 					return;
 				}
-				else if (e->rail->GetRailType() == TerrainRail::PHASE && phaseFrames == 0)
+				else if (e->rail->GetRailType() == TerrainRail::PHASE && !sess->phaseOn)
 				{
 					return;
 				}
-				else if (e->rail->GetRailType() == TerrainRail::INVERSEPHASE && phaseFrames > 0)
+				else if (e->rail->GetRailType() == TerrainRail::INVERSEPHASE && sess->phaseOn)
 				{
 					return;
 				}
@@ -18180,23 +18151,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					&hurtBody) && atsboost->IsBoostable())
 				{
 					currAntiTimeSlowBooster = atsboost;
-				}
-			}
-			else
-			{
-				//some replacement formula later
-			}
-		}
-		else if (en->type == EnemyType::EN_PHASEBOOSTER)
-		{
-			PhaseBooster *pboost = (PhaseBooster*)qte;
-
-			if (currAntiTimeSlowBooster == NULL)
-			{
-				if (pboost->hitBody.Intersects(pboost->currHitboxFrame,
-					&hurtBody) && pboost->IsBoostable())
-				{
-					currPhaseBooster = pboost;
 				}
 			}
 			else

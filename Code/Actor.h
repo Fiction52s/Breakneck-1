@@ -76,7 +76,6 @@ struct FreeFlightBooster;
 struct HomingBooster;
 struct AntiTimeSlowBooster;
 struct RewindBooster;
-struct PhaseBooster;
 struct SwordProjectileBooster;
 struct Spring;
 struct Teleporter;
@@ -718,13 +717,11 @@ struct Actor : QuadTreeCollider,
 	HomingBooster *currHomingBooster;
 	AntiTimeSlowBooster *currAntiTimeSlowBooster;
 	SwordProjectileBooster *currSwordProjectileBooster;
-	PhaseBooster *currPhaseBooster;
 	MomentumBooster *currMomentumBooster;
 	RewindBooster *currRewindBooster;
 	int aimLauncherStunFrames;
 	int airBounceCounter;
 	int airBounceLimit;
-	int phaseFrames;
 	int momentumBoostFrames;
 
 	Spring *currSpring;
@@ -1464,7 +1461,6 @@ struct Actor : QuadTreeCollider,
 	void UpdateBounceFlameOn();
 	void ProcessBooster();
 	void ProcessTimeBooster();
-	void ProcessPhaseBooster();
 	void ProcessMomentumBooster();
 	void ProcessRewindBooster();
 	void ProcessAntiTimeSlowBooster();

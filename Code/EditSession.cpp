@@ -656,6 +656,8 @@ void EditSession::TestPlayerMode()
 		debugReplayPlayerOn = false;
 	}
 
+	phaseOn = false;
+
 	goalDestroyed = false;
 	gameState = Session::RUN;
 	cam.Reset();

@@ -274,14 +274,12 @@ struct PState
 	int currHomingBoosterID;
 	int currAntiTimeSlowBoosterID;
 	int currSwordProjectileBoosterID;
-	int currPhaseBoosterID;
 	int currMomentumBoosterID;
 	int currRewindBoosterID;
 
 	int aimLauncherStunFrames;
 	int airBounceCounter;
 	int airBounceLimit;
-	int phaseFrames;
 	int momentumBoostFrames;
 
 	int currSpringID;
@@ -340,6 +338,7 @@ struct SaveGameState
 	Camera cam;
 
 	bool nextFrameRestartGame;
+	bool phaseOn; //for phase switches
 
 	SaveGameState();
 	void Print();

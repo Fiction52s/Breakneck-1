@@ -4125,6 +4125,8 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
+	phaseOn = false;
+
 	onlinePauseMenuOn = false;
 	gameState = GameSession::RUN;
 	gameClock.restart();

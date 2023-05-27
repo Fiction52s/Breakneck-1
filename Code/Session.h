@@ -221,6 +221,8 @@ struct Session : TilesetManager, QuadTreeCollider
 		FEEDBACK_FORM,
 	};
 
+	bool phaseOn; //for phase switches
+
 	int totalGameFramesIncludingRespawns;
 
 	bool onlinePauseMenuOn;
