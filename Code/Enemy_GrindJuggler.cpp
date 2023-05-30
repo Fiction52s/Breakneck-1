@@ -85,17 +85,7 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3 * 60;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-
-	BasicCircleHitBodySetup(48);
 	BasicCircleHurtBodySetup(48);
-	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -182,7 +172,6 @@ void GrindJuggler::ResetEnemy()
 	action = S_FLOAT;
 	frame = 0;
 
-	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
 	surfaceMover->Set(startPosInfo);
@@ -231,7 +220,6 @@ void GrindJuggler::Return()
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	HurtboxesOff();
-	HitboxesOff();
 
 	surfaceMover->ground = NULL;
 
@@ -246,7 +234,6 @@ void GrindJuggler::Pop()
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	HurtboxesOff();
-	HitboxesOff();
 	data.waitFrame = 0;
 }
 
@@ -316,7 +303,6 @@ void GrindJuggler::ProcessState()
 		{
 			UpdateKilledNumberText(maxKilled);
 			surfaceMover->Set(startPosInfo);
-			DefaultHitboxesOn();
 			DefaultHurtboxesOn();
 			break;
 			/*case S_EXPLODE:

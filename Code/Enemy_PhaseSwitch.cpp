@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_PhaseSwitch.h"
 #include "Actor.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -13,7 +14,7 @@ PhaseSwitch::PhaseSwitch(ActorParams *ap)
 	:Enemy(EnemyType::EN_PHASESWITCH, ap)
 {
 	SetNumActions(A_Count);
-	SetEditorActions(A_IDLE, A_IDLE, 0);
+	SetEditorActions(A_PHASE_OFF, A_PHASE_OFF, 0);
 
 	SetLevel(ap->GetLevel());
 
@@ -21,14 +22,10 @@ PhaseSwitch::PhaseSwitch(ActorParams *ap)
 
 	ts = GetSizedTileset("Enemies/boosters_384x384.png");
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHurtBodySetup(384/2);
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
-
-	actionLength[A_IDLE] = 5;
-	animFactor[A_IDLE] = 5;
 
 	actionLength[A_PHASE_OFF] = 2;
 	animFactor[A_PHASE_OFF] = 1;
@@ -57,40 +54,13 @@ void PhaseSwitch::AddToWorldTrees()
 
 void PhaseSwitch::ResetEnemy()
 {
-	action = A_IDLE;
+	action = A_PHASE_OFF;
 	frame = 0;
-
-	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
 	UpdateHitboxes();
 	UpdateSprite();
 }
-
-void PhaseSwitch::Collect()
-{
-	if (numHealth > 0)
-	{
-		numHealth = 0;
-		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-		ConfirmKill();
-	}
-}
-
-bool PhaseSwitch::IsInteractible()
-{
-	return action == A_IDLE && !dead;
-}
-
-//void PhaseSwitch::IHitPlayer(int index)
-//{
-//	Actor *p = sess->GetPlayer(index);
-//
-//	if (p->action == Actor::SPRINGSTUNGLIDE)
-//	{
-//		Collect();
-//	}
-//}
 
 void PhaseSwitch::ProcessState()
 {
@@ -100,64 +70,77 @@ void PhaseSwitch::ProcessState()
 	{
 		switch (action)
 		{
-		case A_IDLE:
+		case A_PHASE_OFF:
 		{
 			frame = 0;
 			break;
 		}
-		case A_DYING:
+		case A_SWITCHING_ON:
 		{
-			if (regenOn)
-			{
-				action = A_WAIT_BEFORE_REGEN;
-				frame = 0;
-			}
-			else
-			{
-				dead = true;
-				numHealth = 0;
-			}
-			break;
-		}
-		case A_WAIT_BEFORE_REGEN:
-		{
-			action = A_REGENERATING;
-			frame = 0;
-			break;
-		}
-		case A_REGENERATING:
-		{
-			action = A_IDLE;
-			frame = 0;
-			DefaultHitboxesOn();
 			DefaultHurtboxesOn();
+			action = A_PHASE_ON;
+			frame = 0;
+			break;
+		}
+		case A_PHASE_ON:
+		{
+			frame = 0;
+			break;
+		}
+		case A_SWITCHING_OFF:
+		{
+			DefaultHurtboxesOn();
+			action = A_PHASE_OFF;
+			frame = 0;
+			break;
 		}
 		}
+	}
 
+	if (action == A_PHASE_OFF)
+	{
+		if (sess->phaseOn)
+		{
+			action = A_PHASE_ON;
+			frame = 0;
+		}
+	}
+	else if (action == A_PHASE_ON)
+	{
+		if (!sess->phaseOn)
+		{
+			action = A_PHASE_OFF;
+			frame = 0;
+		}
 	}
 }
 
 void PhaseSwitch::UpdateSprite()
 {
+	int f = 7;
+
+	sprite.setTextureRect(ts->GetSubRect(f));
+
 	switch (action)
 	{
-	case A_IDLE:
+	case A_PHASE_OFF:
 	{
-		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[A_IDLE]));
+		sprite.setColor(Color::Blue);
 		break;
 	}
-	case A_DYING:
+	case A_SWITCHING_ON:
 	{
-		sprite.setTextureRect(ts->GetSubRect(0));
+		sprite.setColor(Color::Yellow);
 		break;
 	}
-	case A_WAIT_BEFORE_REGEN:
+	case A_PHASE_ON:
 	{
+		sprite.setColor(Color::Red);
 		break;
 	}
-	case A_REGENERATING:
+	case A_SWITCHING_OFF:
 	{
-		sprite.setTextureRect(ts->GetSubRect(0));
+		sprite.setColor(Color::Green);
 		break;
 	}
 	}
@@ -169,164 +152,83 @@ void PhaseSwitch::UpdateSprite()
 
 void PhaseSwitch::EnemyDraw(sf::RenderTarget *target)
 {
-	if (action == A_WAIT_BEFORE_REGEN)
-		return;
-
 	DrawSprite(target, sprite);
 }
-
-HitboxInfo * PhaseSwitch::IsHit(int pIndex)
-{
-	//this if for comboer mode
-
-	/*TARGET_COMBOER_ORANGE,
-	TARGET_COMBOER_RED,
-	TARGET_COMBOER_MAGENTA,
-	TARGET_COMBOER_GREY,*/
-
-	if (targetType == TARGET_COMBOER_BLUE || targetType == TARGET_COMBOER_GREEN || targetType == TARGET_COMBOER_YELLOW
-		|| targetType == TARGET_COMBOER_ORANGE || targetType == TARGET_COMBOER_RED || targetType == TARGET_COMBOER_MAGENTA
-		|| targetType == TARGET_COMBOER_GREY)
-	{
-		if (currHurtboxes == NULL)
-			return NULL;
-
-		Actor *player = sess->GetPlayer(pIndex);
-
-		if (CanBeHitByComboer())
-		{
-			ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
-			if (co != NULL)
-			{
-				HitboxInfo *hi = co->enemyHitboxInfo;
-
-				Enemy *en = co->enemy;
-
-				bool validHit = false;
-				switch (targetType)
-				{
-				case TARGET_COMBOER_BLUE:
-					if (en->type == EN_COMBOER || en->type == EN_SPLITCOMBOER)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_GREEN:
-					if (en->type == EN_GRAVITYJUGGLER)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_YELLOW:
-					if (en->type == EN_BOUNCEJUGGLER || en->type == EN_BALL)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_ORANGE:
-					if (en->type == EN_GRINDJUGGLER || en->type == EN_GROUNDEDGRINDJUGGLER)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_RED:
-					if (en->type == EN_RELATIVECOMBOER)
-					{
-						validHit = true;
-					}
-					break;
-					//case TARGET_COMBOER_MAGENTA:
-					//	if( en->type == EN_)
-				}
-
-				if (validHit)
-				{
-					co->enemy->ComboHit();
-					comboHitEnemyID = co->enemy->enemyIndex;
-
-					return hi;
-				}
-				else
-				{
-					return NULL;
-				}
-
-			}
-		}
-	}
-	else if (targetType == TARGET_SCORPION)
-	{
-		return NULL;
-	}
-	else
-	{
-		return Enemy::IsHit(pIndex);
-	}
-
-	return NULL;
-}
-
 
 void PhaseSwitch::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)
 	{
-		//sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-		//ConfirmHitNoKill();
-		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-		ConfirmKill();
+		//sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+
+		HitboxInfo::HitboxType hType;
+
+		if (!receivedHit.IsEmpty())
+		{
+			hType = receivedHit.hType;
+		}
+		else
+		{
+			hType = HitboxInfo::HitboxType::NORMAL;
+		}
+		if (hType == HitboxInfo::COMBO)
+		{
+			pauseFrames = 7;
+			Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
+			ce->ComboKill(this);
+
+		}
+		else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
+		{
+			pauseFrames = 7;
+		}
+		else
+		{
+			pauseFrames = 7;
+		}
+		pauseBeganThisFrame = true;
+
+		pauseFramesFromAttacking = false;
+
+		if (hType != HitboxInfo::COMBO)
+		{
+			sess->cam.SetRumble(1.5, 1.5, 7);
+		}
+
+		if (hasMonitor && !suppressMonitor)
+		{
+			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+				sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+			PlayKeyDeathSound();
+		}
+
 		if (hasMonitor)
 		{
 			suppressMonitor = true;
 		}
-		dead = false;
 
-		action = A_DYING;
-		frame = 0;
-		HitboxesOff();
+		if (action == A_PHASE_OFF)
+		{
+			action = A_SWITCHING_ON;
+			frame = 0;
+		}
+		else if (action == A_PHASE_ON)
+		{
+			action = A_SWITCHING_OFF;
+			frame = 0;
+		}
+		else
+		{
+			assert(0);
+		}
+
 		HurtboxesOff();
 
 		numHealth = maxHealth;
 
 		receivedHit.SetEmpty();
 
-		/*if (hasMonitor && !suppressMonitor)
-		{
-		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-		sess->GetPlayer(0), 1, GetPosition());
-		suppressMonitor = true;
-		}*/
-
-		/*switch (receivedHit.hDir)
-		{
-		case HitboxInfo::LEFT:
-		dir = V2d(-1, 0);
-		break;
-		case HitboxInfo::RIGHT:
-		dir = V2d(1, 0);
-		break;
-		case HitboxInfo::UP:
-		dir = V2d(0, -1);
-		break;
-		case HitboxInfo::DOWN:
-		dir = V2d(0, 1);
-		break;
-		case HitboxInfo::UPLEFT:
-		dir = V2d(-1, -1);
-		break;
-		case HitboxInfo::UPRIGHT:
-		dir = V2d(1, -1);
-		break;
-		case HitboxInfo::DOWNLEFT:
-		dir = V2d(-1, 1);
-		break;
-		case HitboxInfo::DOWNRIGHT:
-		dir = V2d(1, 1);
-		break;
-		default:
-		assert(0);
-
-		}*/
+		sess->phaseOn = !sess->phaseOn;
 	}
 }
 

@@ -4566,7 +4566,31 @@ void TerrainPolygon::FadeOut()
 
 bool TerrainPolygon::IsActive()
 {
-	return state == IDLE || state == FADINGOUT;
+
+	//so that it draws correctly in the editor while editing
+	if (sess->IsSessTypeEdit() )
+	{
+		EditSession *edit = EditSession::GetSession();
+
+		if (edit->mode != EditSession::TEST_PLAYER)
+		{
+			return true;
+		}
+	}
+
+
+	if (IsPhaseType())
+	{
+		return sess->phaseOn;
+	}
+	else if (IsInversePhaseType())
+	{
+		return !sess->phaseOn;
+	}
+	else
+	{
+		return state == IDLE || state == FADINGOUT;
+	}
 }
 
 void TerrainPolygon::ResetState()
@@ -4839,7 +4863,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 {
 	int numP = GetNumPoints();
 
-	if (!IsActive() )
+	if (!IsActive())
 	{
 		rt->draw(lines, numP * 2, sf::Lines);
 		return;

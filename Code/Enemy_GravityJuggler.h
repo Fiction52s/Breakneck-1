@@ -11,6 +11,7 @@ struct GravityJuggler : Enemy
 	{
 		S_FLOAT,
 		S_POP,
+		S_FINAL_POP,
 		S_JUGGLE,
 		S_RETURN,
 		S_Count

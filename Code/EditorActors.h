@@ -32,7 +32,9 @@ typedef bool PositionChecker();
 
 struct ParamsInfo
 {
-	ParamsInfo(const std::string &n,
+	ParamsInfo(
+		const std::string &p_displayName,
+		const std::string &n,
 		EnemyCreator *p_enemyCreator,
 		ParamsCreator *p_paramsCreator,
 		sf::Vector2i &off, sf::Vector2i &p_size,
@@ -42,7 +44,8 @@ struct ParamsInfo
 		bool p_canBeRailGrounded, int p_numLevels = 1,
 		int p_world = -1,
 		Tileset *p_ts = NULL, int imageTile = 0)
-		:name(n), 
+		:displayName(p_displayName),
+		name(n), 
 		enemyCreator( p_enemyCreator ),
 		offset(off), 
 		size(p_size),
@@ -66,6 +69,7 @@ struct ParamsInfo
 	}
 
 	
+	std::string displayName;
 	std::string name;
 
 	EnemyCreator *enemyCreator;

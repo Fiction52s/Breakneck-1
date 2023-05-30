@@ -6700,18 +6700,14 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 
 		if (e->poly != NULL)
 		{
-			if ( !e->poly->IsActive() || (e->poly->IsPhaseType() && !sess->phaseOn)
-				|| (e->poly->IsInversePhaseType() && sess->phaseOn))
+			if ( !e->poly->IsActive() )
 			{
 				disappear = true;
 			}
 		}
 		else if (e->rail != NULL)
 		{
-			if ( !e->rail->IsActive() || (e->rail->GetRailType() == TerrainRail::PHASE
-				&& !sess->phaseOn)
-				|| (e->rail->GetRailType() == TerrainRail::INVERSEPHASE
-					&& sess->phaseOn))
+			if ( !e->rail->IsActive() )
 			{
 				disappear = true;
 			}
@@ -15363,6 +15359,7 @@ void Actor::HandleWaterSituation(int wType,
 			modifiedDrainFrames = 10;
 			modifiedDrain = 1;//drainAmount * 4;
 			ApplyGeneralAcceleration(.2);
+			DrainTimer(10);
 		}
 		break;
 	}
@@ -16967,14 +16964,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}
-		else if (e->poly != NULL && e->poly->IsPhaseType() && !sess->phaseOn)
-		{
-			return;
-		}
-		else if (e->poly != NULL && e->poly->IsInversePhaseType() && sess->phaseOn)
-		{
-			return;
-		}
 		else if (e->rail != NULL )
 		{
 			if (!e->rail->IsActive())
@@ -16984,14 +16973,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			else if (e->rail->IsTerrainType())
 			{
 				if (!e->rail->IsEdgeActive(e))
-				{
-					return;
-				}
-				else if (e->rail->GetRailType() == TerrainRail::PHASE && !sess->phaseOn)
-				{
-					return;
-				}
-				else if (e->rail->GetRailType() == TerrainRail::INVERSEPHASE && sess->phaseOn)
 				{
 					return;
 				}

@@ -7,7 +7,6 @@ struct PhaseSwitch : Enemy
 {
 	enum Action
 	{
-		A_IDLE,
 		A_PHASE_OFF,
 		A_SWITCHING_ON,
 		A_PHASE_ON,
@@ -42,16 +41,13 @@ struct PhaseSwitch : Enemy
 
 	bool CountsForEnemyGate() { return false; }
 	PhaseSwitch(ActorParams *ap);
-	bool IsInteractible();
 	void SetLevel(int lev);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void AddToWorldTrees();
-	void Collect();
 	void ProcessHit();
-	HitboxInfo * IsHit(int pIndex);
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

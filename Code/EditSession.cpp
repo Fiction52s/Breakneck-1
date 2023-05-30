@@ -4188,7 +4188,7 @@ int EditSession::EditRun()
 
 	Tileset *ts_playerType = GetSizedTileset("Kin/jump_64x64.png");
 
-	ParamsInfo playerPI("player", NULL, NULL,
+	ParamsInfo playerPI("Player", "player", NULL, NULL,
 		Vector2i(), Vector2i(22, 42), false, false, false, false, true, false, false, 1, -1, ts_playerType, 
 		11);
 

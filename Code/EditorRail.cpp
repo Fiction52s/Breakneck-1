@@ -1906,7 +1906,18 @@ void TerrainRail::FadeOut()
 
 bool TerrainRail::IsActive()
 {
-	return state == IDLE || state == FADINGOUT;
+	if (rType == PHASE)
+	{
+		return sess->phaseOn;
+	}
+	else if (rType == INVERSEPHASE)
+	{
+		return !sess->phaseOn;
+	}
+	else
+	{
+		return state == IDLE || state == FADINGOUT;
+	}
 }
 
 void TerrainRail::UpdateState()

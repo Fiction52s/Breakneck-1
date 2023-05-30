@@ -23,14 +23,14 @@ Ghost::Ghost( ActorParams *ap )
 
 	actionLength[WAKEUP] = 30;
 	actionLength[APPROACH] = 2;
-	actionLength[BITE] = 4;
-	actionLength[EXPLODE] = 5;
+	actionLength[BITE] = 7;
+	actionLength[EXPLODE] = 12;
 	actionLength[RETURN] = 30;
 
 	animFactor[WAKEUP] = 1;
 	animFactor[APPROACH] = 20;
 	animFactor[BITE] = 5;
-	animFactor[EXPLODE] = 7;
+	animFactor[EXPLODE] = 3;
 	animFactor[RETURN] = 1;
 
 	ts = GetSizedTileset("Enemies/W5/plasmid_192x192.png");
@@ -47,7 +47,7 @@ Ghost::Ghost( ActorParams *ap )
 	hitboxInfo->hType = HitboxInfo::RED;
 
 	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHurtBodySetup(40);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -101,7 +101,7 @@ void Ghost::SetLevel(int lev)
 
 void Ghost::Bite()
 {
-	data.offsetPlayer = V2d(0, 0);
+	//data.offsetPlayer = V2d(0, 0);
 	action = BITE;
 	frame = 0;
 	sprite.setColor(Color::White);
@@ -148,11 +148,11 @@ void Ghost::ProcessState()
 		SetHitboxes(NULL, 0);
 	}
 
-	if( action == APPROACH && data.offsetPlayer.x == 0 && data.offsetPlayer.y == 0 )
-	{
-		assert(0); //should this even bit hit?
-		Bite();
-	}
+	//if( action == APPROACH && data.offsetPlayer.x == 0 && data.offsetPlayer.y == 0 )
+	//{
+	//	assert(0); //should this even bit hit?
+	//	Bite();
+	//}
 
 	/*if (action == APPROACH)
 	{
@@ -202,12 +202,12 @@ void Ghost::UpdateEnemyPhysics()
 	{
 		data.basePos = sess->GetPlayerPos(0);
 
-		
-		if (action == APPROACH && data.latchedOn)
+
+		if (( action == APPROACH || action == BITE ) && data.latchedOn)
 		{
 			data.offsetPlayer += -normalize(data.offsetPlayer) * 1.0 / numPhysSteps * approachSpeed;
 
-			if (length(data.offsetPlayer) < 1.0)
+			if ( action == APPROACH && length(data.offsetPlayer) < 80 )//1.0)
 			{
 				Bite();
 			}
@@ -234,19 +234,15 @@ void Ghost::UpdateSprite()
 		ir = ts->GetSubRect(0);
 		break;
 	case APPROACH:
-		if (lenDiff < 100)
-		{
-			ir = ts->GetSubRect(5);
-		}
-		else if (lenDiff < 200)
+		if (lenDiff < 300)
 		{
 			ir = ts->GetSubRect(4);
 		}
-		else if (lenDiff < 300)
+		else if (lenDiff < 400)
 		{
 			ir = ts->GetSubRect(3);
 		}
-		else if (lenDiff < 400)
+		else if (lenDiff < 500)
 		{
 			ir = ts->GetSubRect(2);
 		}
@@ -256,10 +252,10 @@ void Ghost::UpdateSprite()
 		}
 		break;
 	case BITE:
-		ir = ts->GetSubRect((frame / animFactor[BITE]) + 6);
+		ir = ts->GetSubRect((frame / animFactor[BITE]) + 5);
 		break;
 	case EXPLODE:
-		ir = ts->GetSubRect(frame / animFactor[EXPLODE] + 10);
+		ir = ts->GetSubRect(frame / animFactor[EXPLODE] + 12);
 		break;
 	case RETURN:
 		ir = ts->GetSubRect(0);
@@ -308,26 +304,26 @@ void Ghost::HandleNoHealth()
 {
 	if (action == WAKEUP)
 	{
-		cutObject->SetSubRectFront(15);
-		cutObject->SetSubRectBack(16);
+		cutObject->SetSubRectFront(24);
+		cutObject->SetSubRectBack(25);
 	}
 	else if (action == APPROACH)
 	{
 		double lenDiff = length(data.offsetPlayer);
 		if (lenDiff > 300)
 		{
-			cutObject->SetSubRectFront(17);
-			cutObject->SetSubRectBack(18);
+			cutObject->SetSubRectFront(26);
+			cutObject->SetSubRectBack(27);
 		}
 		else
 		{
-			cutObject->SetSubRectFront(19);
-			cutObject->SetSubRectBack(20);
+			cutObject->SetSubRectFront(28);
+			cutObject->SetSubRectBack(29);
 		}
 	}
 	else
 	{
-		cutObject->SetSubRectFront(19);
-		cutObject->SetSubRectBack(20);
+		cutObject->SetSubRectFront(28);
+		cutObject->SetSubRectBack(29);
 	}
 }

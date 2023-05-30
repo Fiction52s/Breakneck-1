@@ -78,16 +78,6 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3 * 60;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-
-	BasicCircleHitBodySetup(48);
 	BasicCircleHurtBodySetup(48);
 
 	hitBody.hitboxInfo = hitboxInfo;
@@ -165,7 +155,6 @@ void GroundedGrindJuggler::ResetEnemy()
 	comboObj->Reset();
 	
 
-	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
 	action = S_IDLE;
@@ -193,8 +182,7 @@ void GroundedGrindJuggler::Push(double strength)
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++data.currJuggle;
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	HurtboxesOff();	
 	data.waitFrame = 0;
 
 	sess->PlayerAddActiveComboObj(comboObj);
@@ -225,7 +213,6 @@ void GroundedGrindJuggler::Return()
 
 	sess->PlayerRemoveActiveComboer(comboObj);
 
-	HitboxesOff();
 	HurtboxesOff();
 
 	data.currJuggle = 0;
@@ -284,7 +271,6 @@ void GroundedGrindJuggler::ProcessState()
 		case S_RETURN:
 			UpdateJuggleRepsText(juggleReps);
 			surfaceMover->Set(startPosInfo);
-			DefaultHitboxesOn();
 			DefaultHurtboxesOn();
 			break;
 		case S_GRIND:

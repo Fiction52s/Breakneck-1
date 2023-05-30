@@ -489,6 +489,10 @@ bool Enemy::SetHitParams()
 		break;
 	case EnemyType::EN_SPECIALTARGET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
+		break;
+	case EnemyType::EN_PHASESWITCH:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
+		break;
 	default:
 		return false;
 	}

@@ -20,10 +20,17 @@ using namespace sf;
 void GravityJuggler::UpdateParamsSettings()
 {
 	Enemy::UpdateParamsSettings();
-	if (limitedJuggles)
+
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	juggleReps = jParams->numJuggles;
+	
+	if (juggleReps == 0)
 	{
-		JugglerParams *jParams = (JugglerParams*)editParams;
-		juggleReps = jParams->numJuggles;
+		limitedJuggles = false;
+	}
+	else
+	{
+		limitedJuggles = true;
 		UpdateJuggleRepsText(juggleReps);
 	}
 }
@@ -55,13 +62,17 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	SetEditorActions(S_FLOAT, 0, 0);
 
 	actionLength[S_FLOAT] = 18;
+	actionLength[S_FINAL_POP] = 10;
 	actionLength[S_POP] = 10;
 	actionLength[S_JUGGLE] = 10;
+	
 	actionLength[S_RETURN] = 3;
 
 	animFactor[S_FLOAT] = 2;
+	animFactor[S_FINAL_POP] = 1;
 	animFactor[S_POP] = 1;
 	animFactor[S_JUGGLE] = 1;
+	
 	animFactor[S_RETURN] = 6;
 
 	SetLevel(ap->GetLevel());
@@ -77,22 +88,11 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	if (typeName == "downgravityjuggler" )
 	{
 		reversedGrav = false;
-		limitedJuggles = false;
-	}
-	else if (typeName == "limiteddowngravityjuggler")
-	{
-		reversedGrav = false;
-		limitedJuggles = true;
+		
 	}
 	else if (typeName == "upgravityjuggler")
 	{
 		reversedGrav = true;
-		limitedJuggles = false;
-	}
-	else if (typeName == "limitedupgravityjuggler")
-	{
-		reversedGrav = true;
-		limitedJuggles = true;
 	}
 
 	UpdateParamsSettings();
@@ -165,6 +165,7 @@ void GravityJuggler::UpdateJuggleRepsText( int reps )
 			+ numJugglesText.getLocalBounds().width / 2,
 			numJugglesText.getLocalBounds().top
 			+ numJugglesText.getLocalBounds().height / 2);
+		numJugglesText.setPosition(sprite.getPosition());
 	}
 }
 
@@ -180,7 +181,6 @@ void GravityJuggler::ResetEnemy()
 	data.velocity = V2d(0, 0);
 
 	DefaultHurtboxesOn();
-	//DefaultHitboxesOn();
 
 	dead = false;
 	action = S_FLOAT;
@@ -214,8 +214,7 @@ void GravityJuggler::Return()
 
 	sess->PlayerRemoveActiveComboer(comboObj);
 
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	HurtboxesOff();
 
 	data.currJuggle = 0;
 
@@ -231,8 +230,7 @@ void GravityJuggler::Pop()
 	numHealth = maxHealth;
 	++data.currJuggle;
 	
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	HurtboxesOff();
 	data.waitFrame = 0;
 
 	UpdateJuggleRepsText(juggleReps - data.currJuggle);
@@ -312,10 +310,28 @@ void GravityJuggler::ProcessHit()
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
-				Return();
+
+
+				PopThrow();
+
+				action = S_FINAL_POP;
+				//Return();
 			}
 			else
 			{
+				if (!limitedJuggles)
+				{
+					if (hasMonitor && !suppressMonitor)
+					{
+						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+							sess->GetPlayer(0), 1, GetPosition());
+						suppressMonitor = true;
+					}
+
+					sess->PlayerConfirmEnemyNoKill(this);
+					ConfirmHitNoKill();
+				}
+
 				PopThrow();
 			}
 		}
@@ -401,6 +417,7 @@ void GravityJuggler::UpdateEnemyPhysics()
 {
 	switch (action)
 	{
+	case S_FINAL_POP:
 	case S_POP:
 	case S_JUGGLE:
 	{
@@ -414,7 +431,7 @@ void GravityJuggler::UpdateEnemyPhysics()
 
 void GravityJuggler::FrameIncrement()
 {
-	if (action == S_POP || action == S_JUGGLE)
+	if (action == S_POP || action == S_JUGGLE || action == S_FINAL_POP )
 	{
 		if (data.waitFrame == maxWaitFrames)
 		{
@@ -459,6 +476,14 @@ void GravityJuggler::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(3));
 	}
 
+	if (action == S_FINAL_POP)
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
 	
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

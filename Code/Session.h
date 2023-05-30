@@ -550,8 +550,11 @@ struct Session : TilesetManager, QuadTreeCollider
 		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
-	void AddWorldEnemy(const std::string &name,
+	void AddWorldEnemy(
+		const std::string &displayName,
+		const std::string &name, 
 		int w,
+		int row,
 		EnemyCreator *p_enemyCreator,
 		ParamsCreator *p_paramsCreator,
 		sf::Vector2i &off,
@@ -567,7 +570,11 @@ struct Session : TilesetManager, QuadTreeCollider
 		Tileset *ts = NULL,
 		int tileIndex = 0);
 
-	void AddBasicGroundWorldEnemy(const std::string &name, int w,
+	void AddBasicGroundWorldEnemy(
+		const std::string &displayName,
+		const std::string &name,
+		int w,
+		int row,
 		EnemyCreator *p_enemyCreator,
 		sf::Vector2i &off,
 		sf::Vector2i &size,
@@ -578,7 +585,11 @@ struct Session : TilesetManager, QuadTreeCollider
 		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
-	void AddBasicRailWorldEnemy(const std::string &name, int w,
+	void AddBasicRailWorldEnemy(
+		const std::string &displayName,
+		const std::string &name, 
+		int w,
+		int row,
 		EnemyCreator *p_enemyCreator,
 		sf::Vector2i &off,
 		sf::Vector2i &size,
@@ -589,7 +600,10 @@ struct Session : TilesetManager, QuadTreeCollider
 		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
-	void AddBasicAerialWorldEnemy(const std::string &name, int w,
+	void AddBasicAerialWorldEnemy(
+		const std::string &displayName,
+		const std::string &name, int w,
+		int row,
 		EnemyCreator *p_enemyCreator,
 		sf::Vector2i &off,
 		sf::Vector2i &size,
@@ -600,7 +614,10 @@ struct Session : TilesetManager, QuadTreeCollider
 		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
-	void AddExtraEnemy(const std::string &name,
+	void AddExtraEnemy(
+		const std::string &displayName,
+		const std::string &name,
+		int row,
 		EnemyCreator *p_enemyCreator,
 		ParamsCreator *p_paramsCreator,
 		sf::Vector2i &off,

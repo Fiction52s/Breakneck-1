@@ -1541,7 +1541,7 @@ JugglerParams::JugglerParams(ActorType *at, int level)
 	//enemyLevel = level;
 	//PlaceAerial(pos);
 
-	numJuggles = 3;
+	numJuggles = 0;
 }
 
 JugglerParams::JugglerParams(ActorType *at, ifstream &is)
