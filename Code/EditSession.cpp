@@ -1729,6 +1729,15 @@ void EditSession::CleanupForReload()
 
 	gateInfoList.clear();
 
+	//new 4 lines to try to fix rail bug
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		delete(*it).second;
+	}
+	groups.clear();
+
+	rails.clear();
+
 	inversePolygon = NULL;
 	polygons.clear();
 	waterPolygons.clear();
@@ -1741,6 +1750,7 @@ void EditSession::CleanupForReload()
 		players[i] = NULL;
 		playerMarkers[i] = NULL;//->Deactivate();
 	}
+	players[0] = allPlayers[0];
 
 	ClearEffects();
 
@@ -4188,7 +4198,7 @@ int EditSession::EditRun()
 
 	Tileset *ts_playerType = GetSizedTileset("Kin/jump_64x64.png");
 
-	ParamsInfo playerPI("Player", "player", NULL, NULL,
+	ParamsInfo playerPI("Player", "player", 0, NULL, NULL,
 		Vector2i(), Vector2i(22, 42), false, false, false, false, true, false, false, 1, -1, ts_playerType, 
 		11);
 

@@ -1195,53 +1195,6 @@ void AirTriggerParams::Draw(RenderTarget *target)
 	
 }
 
-FlowerPodParams::FlowerPodParams(ActorType *at, ifstream &is)
-	:ActorParams(at)
-{
-	LoadGrounded(is);
-
-	is >> typeStr;
-}
-
-FlowerPodParams::FlowerPodParams(ActorType *at, int level)
-	:ActorParams(at)
-{
-	PlaceAerial(Vector2i(0, 0));
-	//PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-
-	typeStr = "NONE";
-	facingRight = true;
-}
-
-void FlowerPodParams::SetPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["podtype"]->SetString(typeStr);
-}
-
-void FlowerPodParams::SetParams()
-{
-	Panel *p = type->panel;
-
-	string s = p->textBoxes["podtype"]->text.getString().toAnsiString();
-
-	typeStr = s;
-
-	//bool right = p->checkBoxes["facingright"]->checked;
-}
-
-void FlowerPodParams::WriteParamFile(ofstream &of)
-{
-	//of << (int)facingRight << endl;
-	of << typeStr << endl;
-}
-
-ActorParams *FlowerPodParams::Copy()
-{
-	FlowerPodParams *copy = new FlowerPodParams(*this);
-	return copy;
-}
-
 template<typename X> ActorParams *MakeParams(
 	ActorType *type)
 //PolyPtrtp, int edgeIndex,

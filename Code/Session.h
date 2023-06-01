@@ -307,6 +307,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	SessionType sessType;
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
+	std::list<ActorType*> orderedTypeList;
 	std::list<ParamsInfo> worldEnemyNames[8];
 	std::list<ParamsInfo> extraEnemyNames;
 	int keyFrame;

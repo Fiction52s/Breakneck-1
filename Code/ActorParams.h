@@ -96,20 +96,6 @@ struct TutorialObjectParams : public ActorParams
 	std::string tutStr;
 };
 
-struct FlowerPodParams : public ActorParams
-{
-	FlowerPodParams(ActorType *at, int level);
-	FlowerPodParams(ActorType *at,
-		std::ifstream &is);
-	
-	ActorParams *Copy();
-	void SetParams();
-	void SetPanelInfo();
-	void WriteParamFile(std::ofstream &of);
-	std::string typeStr;
-	bool facingRight;
-};
-
 struct AirTriggerParams : public ActorParams
 {
 	AirTriggerParams(ActorType *at, int level);

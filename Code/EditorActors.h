@@ -35,6 +35,7 @@ struct ParamsInfo
 	ParamsInfo(
 		const std::string &p_displayName,
 		const std::string &n,
+		int p_displayRow,
 		EnemyCreator *p_enemyCreator,
 		ParamsCreator *p_paramsCreator,
 		sf::Vector2i &off, sf::Vector2i &p_size,
@@ -59,8 +60,8 @@ struct ParamsInfo
 		world( p_world ),
 		canBeAerial( p_canBeAerial),
 		canBeGrounded( p_canBeGrounded ),
-		canBeRailGrounded( p_canBeRailGrounded)
-
+		canBeRailGrounded( p_canBeRailGrounded),
+		displayRow( p_displayRow )
 	{
 		pLoader = NULL;
 		pMaker = NULL;
@@ -89,6 +90,8 @@ struct ParamsInfo
 
 	int numLevels;
 	int world;
+	int displayRow;
+	int displayOrder;
 
 	bool canBeAerial;
 	bool canBeGrounded;

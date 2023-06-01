@@ -225,655 +225,368 @@ void Session::SetupEnemyType(ParamsInfo &pi, bool unlisted )
 	if (types[pi.name] == NULL)
 	{
 		types[pi.name] = new ActorType(pi, unlisted );
+		orderedTypeList.push_back(types[pi.name]);
 	}
 }
 
 void Session::RegisterGeneralEnemies()
 {
-	/*ParamsInfo basePI("multiplayerbase", CreateEnemy<MultiplayerBase>, NULL,
-		Vector2i(), Vector2i(32, 32), false, false, false, false, true,
-		false, false, 1, 1);
-
-	types["multiplayerbase"] = new ActorType(basePI);*/
-
-	AddExtraEnemy("Multiplayer Progress Target", "multiplayerprogresstarget", 0, CreateEnemy<MultiplayerProgressTarget>, SetParamsType<BasicAirEnemyParams>,
-		Vector2i(), Vector2i(32, 32), false, false, false, false, true, 
-		false, false, 1);
+	int objectRow = 0;
+	int powerRow = 1;
+	int utilityRow = 2;
+	int multiRow = 3;
 
 
-	AddExtraEnemy("Zone Properties", "zoneproperties", 0, NULL, SetParamsType<ZonePropertiesParams>, Vector2i(0, 0),
+	//objects
+	AddExtraEnemy("Shard", "shard", objectRow, CreateEnemy<Shard>, SetParamsType<ShardParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddExtraEnemy("Log", "log", objectRow, CreateEnemy<LogItem>, SetParamsType<LogParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+
+
+	AddExtraEnemy("Airdash", "airdashpoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false );
+	AddExtraEnemy("Gravity\nReverse", "gravpoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddExtraEnemy("Bounce\nScorpion", "bouncepoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddExtraEnemy("Grind\nWheel", "grindpoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddExtraEnemy("Time Slow\nBubbles", "timeslowpoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddExtraEnemy("Double\nWires", "doublewirepoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	/*AddExtraEnemy("Red Wire", "redwirepoweritem", objectRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddExtraEnemy("Blue Wire", "bluewirepoweritem", objectRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);*/
+
+
+
+	AddExtraEnemy("Health Fly", "healthfly", objectRow, CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
+	AddExtraEnemy("Key", "key", objectRow, NULL, SetParamsType<KeyParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, false, false, 1, GetSizedTileset("Enemies/bouncefloater_128x128.png"));
+	AddExtraEnemy("Ship Pickup", "shippickup", objectRow, CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
+	AddExtraEnemy("Entrance Ship", "ship", objectRow, NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
+		GetSizedTileset("Ship/ship_864x400.png"));
+	AddExtraEnemy("Blocker", "blocker", objectRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
+	AddExtraEnemy("Tutorial Object", "tutorialobject", objectRow, CreateEnemy<TutorialObject>, SetParamsType<TutorialObjectParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+
+	//utility
+	AddExtraEnemy("Zone Properties", "zoneproperties", utilityRow, NULL, SetParamsType<ZonePropertiesParams>, Vector2i(0, 0),
 		Vector2i(128, 128), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Editor/zoneproperties_128x128.png"));
-
-	AddExtraEnemy("Shard", "shard", 0, CreateEnemy<Shard>, SetParamsType<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
-
-	AddExtraEnemy("Log", "log", 0, CreateEnemy<LogItem>, SetParamsType<LogParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-
-	AddExtraEnemy("Power Item", "poweritem", 0, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 6);
-
-	AddExtraEnemy("Health Fly", "healthfly", 0, CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-
-	AddExtraEnemy("Sequence Camera", "camerashot", 0, NULL, SetParamsType<CameraShotParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
+	AddExtraEnemy("Sequence Camera", "camerashot", utilityRow, NULL, SetParamsType<CameraShotParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
 		GetTileset("Editor/camera_128x128.png", 128, 128));
-
-	AddExtraEnemy("Key", "key", 0, NULL, SetParamsType<KeyParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, false, false, 1, GetSizedTileset("Enemies/bouncefloater_128x128.png"));
-
-	AddExtraEnemy("Point of Interest", "poi", 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-	false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/rail_32x32.png"), 1);
-
-	AddExtraEnemy("X Barrier", "xbarrier", 0, NULL, SetParamsType<XBarrierParams>,Vector2i(0, 0), Vector2i(64, 64),false, false, false, false, true, false, false, 1,
+	AddExtraEnemy("Point of Interest", "poi", utilityRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/rail_32x32.png"), 1);
+	AddExtraEnemy("X Barrier", "xbarrier", utilityRow, NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/blocker_w1_192x192.png"));
-	AddExtraEnemy("X Warp Barrier", "xbarrierwarp", 0, NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
+	AddExtraEnemy("X Warp Barrier", "xbarrierwarp", utilityRow, NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/Ball_64x64.png"));
-
-	AddExtraEnemy("Ship Pickup", "shippickup", 0, CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
-
-	AddExtraEnemy("Tutorial Object", "tutorialobject", 0, CreateEnemy<TutorialObject>, SetParamsType<TutorialObjectParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-
-	//AddExtraEnemy("groundtrigger", NULL, SetParamsType<GroundTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, true, 1,
-	//	GetSizedTileset("Ship/shipleave_128x128.png" ));
-
-	AddExtraEnemy( "Air Trigger", "airtrigger", NULL, 0, SetParamsType<AirTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
+	AddExtraEnemy("Air Trigger", "airtrigger", utilityRow, NULL, SetParamsType<AirTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/jayshield_128x128.png"));
+	AddExtraEnemy("Grounded Warper", "groundedwarper", utilityRow, CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
+		true, false);
 
-	AddExtraEnemy("Entrance Ship", "ship", 0, NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
-		GetSizedTileset("Ship/ship_864x400.png"));
-
-	AddExtraEnemy("Flower Pod", "flowerpod", 0, CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 	
-	AddExtraEnemy("Grounded Warper", "groundedwarper", 0, CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
-		true, false );
+	//multiplayer
+	AddExtraEnemy("Multiplayer Progress Target", "multiplayerprogresstarget", multiRow, CreateEnemy<MultiplayerProgressTarget>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(), Vector2i(32, 32), false, false, false, false, true,
+		false, false, 1);
 	
-	AddExtraEnemy("Blocker", "blocker", 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 	
-
-	/*AddExtraEnemy("groundedwarper", CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
-		true, false);*/
-
-	//ignore flowerpods until I figure out how I want to change them.
-
-	/*AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
-	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1 );*/
-
-
-	/*AddExtraEnemy("flowerpod", NULL, SetParamsType<FlowerPodParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Momenta/momentaflower_128x128.png", 128, 128);*/
-
-	/*AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1 );*/
-
-	/*AddExtraEnemy("poi", NULL, LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false);
-
-	AddExtraEnemy("xbarrier", NULL, LoadParams<XBarrierParams>, NULL, MakeParamsAerial<XBarrierParams>,
-		Vector2i(0, 0), Vector2i(64, 64),
-		false, false, false, false, 1,
-		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
-
-	AddExtraEnemy("camerashot", NULL, LoadParams<CameraShotParams>, NULL, MakeParamsAerial<CameraShotParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
-
-	AddExtraEnemy("key", NULL, LoadParams<KeyParams>, NULL, MakeParamsAerial<KeyParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false);
-
-	AddExtraEnemy("shippickup", NULL, LoadParams<ShipPickupParams>, MakeParamsGrounded<ShipPickupParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Ship/shipleave_128x128.png", 128, 128));
-
-	AddExtraEnemy("shard", NULL, LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 3,
-		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
-
-	AddExtraEnemy("ship", NULL, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, 1,
-		GetTileset("Ship/ship_864x400.png", 864, 400));
-
-	AddExtraEnemy("healthfly", NULL, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
-		GetTileset("Enemies/healthfly_64x64.png", 64, 64));
-
-	AddExtraEnemy("extrascene", NULL, LoadParams<ExtraSceneParams>, NULL, MakeParamsAerial<ExtraSceneParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, 1,
-		GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
-
-	AddExtraEnemy("racefighttarget", NULL, LoadParams<RaceFightTargetParams>, NULL, MakeParamsAerial<RaceFightTargetParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	AddExtraEnemy("groundtrigger", NULL, LoadParams<GroundTriggerParams>, MakeParamsGrounded<GroundTriggerParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Ship/shipleave_128x128.png", 128, 128));
-
-	AddExtraEnemy("airtrigger", NULL, LoadParams<AirTriggerParams>, NULL, MakeParamsAerial<AirTriggerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
-
-	AddExtraEnemy("flowerpod", NULL, LoadParams<FlowerPodParams>, MakeParamsGrounded<FlowerPodParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Momenta/momentaflower_128x128.png", 128, 128));
-
-	AddExtraEnemy("nexus", NULL, LoadParams<NexusParams>, MakeParamsGrounded<NexusParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 }
 
 void Session::RegisterW1Enemies()
 {
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
+
+	//unlisted
 	AddUnlistedEnemy("queenfloatingbomb", CreateEnemy<QueenFloatingBomb>);
 
-	AddWorldEnemy("Crawler Boss Node", "crawlernode", 1, 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/crawlernode_32x32.png"));
+	//enemy
+	AddBasicGroundWorldEnemy("Goal", "goal", 1, enemyRow, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+	AddBasicGroundWorldEnemy("Crawler", "crawler", 1, enemyRow, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(100, 100), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Patroller", "patroller", 1, enemyRow, CreateEnemy<Patroller>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3);
+	AddBasicAerialWorldEnemy("Bee", "airdasher", 1, enemyRow, CreateEnemy<Airdasher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Jelly Shroom", "shroom", 1, enemyRow, CreateEnemy<Shroom>, Vector2i(0, 0), Vector2i(50, 50), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Basic Turret", "basicturret", 1, enemyRow, CreateEnemy<BasicTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Movement Tester", "movementtester", 1, 0, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
-
-	AddBasicGroundWorldEnemy("Goal", "goal", 1, 0, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
-
-	AddBasicGroundWorldEnemy("Crawler", "crawler", 1, 0, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(100, 100), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Crawler Queen Boss", "crawlerqueen", 1, 0, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
-	
-	AddBasicGroundWorldEnemy("Sequence Crawler Queen", "sequencecrawler", 1, 0, CreateEnemy<SequenceCrawler>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 1);
-
-	AddBasicAerialWorldEnemy("Booster", "booster", 1, 0, CreateEnemy<Booster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
-		//GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
-
-	AddWorldEnemy("Blue Blocker", "blueblocker", 1, 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	//item
+	AddBasicAerialWorldEnemy("Booster", "booster", 1, itemRow, CreateEnemy<Booster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddWorldEnemy("Blue Blocker", "blueblocker", 1, itemRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Split Comboer", "splitcomboer", 1, itemRow, CreateEnemy<SplitComboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3);
+	AddBasicAerialWorldEnemy("Basic Comboer", "comboer", 1, itemRow, CreateEnemy<Comboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3);
+	AddWorldEnemy("Launcher", "spring", 1, itemRow, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Blue Key Fly", "bluekeyfly", 1, itemRow, CreateEnemy<KeyFly>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Blue Regen Target", "blueregentarget", 1, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Blue Comboer Target", "bluecomboertarget", 1, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
 
-	AddBasicAerialWorldEnemy("Patroller", "patroller", 1, 0, CreateEnemy<Patroller>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3 );
-
-	AddBasicGroundWorldEnemy("Blue Nexus", "nexus1", 1, 0, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	AddBasicAerialWorldEnemy("Bee", "airdasher", 1, 0, CreateEnemy<Airdasher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
-
-	AddBasicGroundWorldEnemy("Jelly Shroom", "shroom", 1, 0, CreateEnemy<Shroom>, Vector2i(0, 0), Vector2i(50, 50), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Basic Turret", "basicturret", 1, 0, CreateEnemy<BasicTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
-
-	AddBasicAerialWorldEnemy("Split Comboer", "splitcomboer", 1, 0, CreateEnemy<SplitComboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3 );
-	
-	AddBasicAerialWorldEnemy("Basic Comboer", "comboer", 1, 0, CreateEnemy<Comboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3 );
-
-	AddWorldEnemy("Launcher", "spring", 1, 0, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, false, false, 1 );
-
-	AddBasicAerialWorldEnemy("Blue Key Fly", "bluekeyfly", 1, 0, CreateEnemy<KeyFly>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Blue Regen Target", "blueregentarget", 1, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
-
-	AddBasicAerialWorldEnemy("Blue Comboer Target", "bluecomboertarget", 1, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
-	/*AddWorldEnemy("shard", 1, CreateEnemy<Shard>, SetParamsType<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);*/
-
-	/*AddBasicGroundWorldEnemy("shroom", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/shroom_192x192.png", 192, 192));
-
-	AddBasicGroundWorldEnemy("basicturret", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/basicturret_128x80.png", 128, 80));
-
-	AddBasicAerialWorldEnemy("airdasher", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/dasher_208x144.png", 208, 144));
-
-	AddWorldEnemy("bosscrawler", 1, NULL, LoadParams<BossCrawlerParams>, MakeParamsGrounded<BossCrawlerParams>, NULL,
-		Vector2i(0, 0), Vector2i(128, 144), false, false, false, false, 1,
-		GetTileset("Bosses/Crawler/crawler_queen_256x256.png", 256, 256));
-
-	AddBasicAerialWorldEnemy("booster", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-		GetTileset("Enemies/Booster_512x512.png", 512, 512));
-
-	AddWorldEnemy("spring", 1, NULL, LoadParams<SpringParams>, NULL, MakeParamsAerial<SpringParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));*/
+	//story
+	AddWorldEnemy("Crawler Boss Node", "crawlernode", 1, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/crawlernode_32x32.png"));
+	AddBasicAerialWorldEnemy("Movement Tester", "movementtester", 1, storyRow, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+	AddBasicGroundWorldEnemy("Crawler Queen Boss", "crawlerqueen", 1, storyRow, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
+	AddBasicGroundWorldEnemy("Sequence Crawler Queen", "sequencecrawler", 1, storyRow, CreateEnemy<SequenceCrawler>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 1);
+	AddBasicGroundWorldEnemy("Blue Nexus", "nexus1", 1, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 }
 
 void Session::RegisterW2Enemies()
 {
-	AddBasicAerialWorldEnemy("Bird Boss", "bird", 2, 0, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
 
-	AddBasicGroundWorldEnemy("Sequence Bird", "sequencebird", 2, 0, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
+	//unlisted
 
-	AddBasicAerialWorldEnemy("Glide Target", "glidetarget", 2, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	//enemies
+	AddBasicGroundWorldEnemy("Green Goal", "greengoal", 2, enemyRow, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Bat", "bat", 2, enemyRow, CreateEnemy<Bat>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3);
+	AddBasicGroundWorldEnemy("Lob Turret", "lobturret", 2, enemyRow, CreateEnemy<LobTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Poison Frog", "poisonfrog", 2, enemyRow, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Stag", "stagbeetle", 2, enemyRow, CreateEnemy<StagBeetle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Gravity Faller", "gravityfaller", 2, enemyRow, CreateEnemy<GravityFaller>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddWorldEnemy("Green Blocker", "greenblocker", 2, 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	//items
+	AddBasicAerialWorldEnemy("Glide Target", "glidetarget", 2, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddWorldEnemy("Green Blocker", "greenblocker", 2, itemRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Green Comboer Target", "greencomboertarget", 2, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddWorldEnemy("Gravity Juggler", "downgravityjuggler", 2, itemRow, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Up Gravity Juggler", "upgravityjuggler", 2, itemRow, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Gravity Increaser", "gravityincreaser", 2, itemRow, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddWorldEnemy("Gravity Decreaser", "gravitydecreaser", 2, itemRow, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddWorldEnemy("Glide Launcher", "glidespring", 2, itemRow, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
-	AddBasicGroundWorldEnemy("Green Goal", "greengoal", 2, 0, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
-	//AddBasicGroundWorldEnemy("greengoal", 2, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//	GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
-
-	//AddWorldEnemy("greenblocker", 2, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-	//	GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
-
-	AddBasicAerialWorldEnemy("Green Comboer Target", "greencomboertarget", 2, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
-
-	AddBasicGroundWorldEnemy("Green Nexus", "nexus2",2, 0, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	AddWorldEnemy("Gravity Juggler", "downgravityjuggler", 2, 0, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	AddWorldEnemy("Up Gravity Juggler", "upgravityjuggler", 2, 0, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-
-	//AddBasicAerialWorldEnemy("downgravityjuggler", 2, CreateEnemy<GravityJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-	//AddBasicAerialWorldEnemy("upgravityjuggler", 2, CreateEnemy<GravityJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-
-
-	//AddWorldEnemy("upgravityjuggler", 2, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
-	//	Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
-	//	GetTileset("Enemies/jayshield_128x128.png", 128, 128));
-
-
-	//AddBasicAerialWorldEnemy("airdashjuggler", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, false, 3,
-	//	GetTileset("Enemies/comboer_128x128.png", 128, 128));
-
-	AddWorldEnemy("Bird Boss Node", "birdnode", 2, 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+	//story
+	AddBasicAerialWorldEnemy("Bird Boss", "bird", 2, storyRow, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Sequence Bird", "sequencebird", 2, storyRow, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
+	AddWorldEnemy("Bird Boss Node", "birdnode", 2, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/birdnode_32x32.png"));
+	AddBasicGroundWorldEnemy("Green Nexus", "nexus2", 2, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-	///*AddBasicAerialWorldEnemy("gravdowncomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-	//GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
-
-	///*AddBasicAerialWorldEnemy("gravupcomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-	//GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
-
-	AddBasicAerialWorldEnemy("Bat", "bat", 2, 0, CreateEnemy<Bat>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3);
-
-	//AddBasicGroundWorldEnemy("curveturret", 2, CreateEnemy<CurveTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-
-
-	AddBasicGroundWorldEnemy("Lob Turret", "lobturret", 2, 0, CreateEnemy<LobTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	//AddBasicGroundWorldEnemy("reverselobturret", 2, CreateEnemy<LobTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Poison Frog", "poisonfrog", 2, 0, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicGroundWorldEnemy("reversepoisonfrog", 2, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Stag", "stagbeetle", 2, 0, CreateEnemy<StagBeetle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
-
 	//AddBasicGroundWorldEnemy("reversestagbeetle", 2, CreateEnemy<StagBeetle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Gravity Faller", "gravityfaller", 2, 0, CreateEnemy<GravityFaller>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	//at some point there was a crash creating a default enemy for both of these. Recompiling seemed to fix it. Probably some heap corruption garbage.
-	AddWorldEnemy("Gravity Increaser", "gravityincreaser", 2, 0, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
-	AddWorldEnemy("Gravity Decreaser", "gravitydecreaser", 2, 0, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
-
-	
-
-	//AddBasicAerialWorldEnemy("gravityincreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-	//	GetTileset("Enemies/grav_increase_256x256.png", 256, 256));
-
-	//AddBasicAerialWorldEnemy("gravitydecreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-	//	GetTileset("Enemies/grav_decrease_256x256.png", 256, 256));
-
-	AddWorldEnemy("Glide Launcher", "glidespring", 2, 0, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-
-	
-	
-	//AddWorldEnemy("bossbird", 2, LoadParams<BossBirdParams>, NULL, MakeParamsAerial<BossBirdParams>,
-	//	Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
 }
 
 void Session::RegisterW3Enemies()
 {
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
+
+	//unlisted
 	AddUnlistedWorldEnemy("babyscorpion", 3, CreateEnemy<BabyScorpion>, NULL, Vector2i(), Vector2i(), false, true, false, false, true, false, false, 3);
-	//AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-	//	GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 
-	//AddBasicGroundWorldEnemy("yellowgoal", 3, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+	//enemies
+	AddBasicGroundWorldEnemy("Badger", "badger", 3, enemyRow, CreateEnemy<Badger>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Roadrunner", "roadrunner", 3, enemyRow, CreateEnemy<Roadrunner>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Owl", "owl", 3, enemyRow, CreateEnemy<Owl>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Air Mine", "explodingbarrel", 3, enemyRow, CreateEnemy<ExplodingBarrel>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Firefly", "firefly", 3, enemyRow, CreateEnemy<Firefly>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddWorldEnemy("Yellow Blocker", "yellowblocker", 3, 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	//items
+	AddWorldEnemy("Yellow Blocker", "yellowblocker", 3, itemRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Yellow Comboer Target", "yellowcomboertarget", 3, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
-
-	AddBasicGroundWorldEnemy("Coyote Boss", "coyote", 3, 0, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
-
-	AddBasicGroundWorldEnemy("Sequence Coyote", "sequencecoyote", 3, 0, CreateEnemy<SequenceCoyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
-
-	AddWorldEnemy("Coyote Boss Node", "coyotenode", 3, 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/coyotenode_32x32.png"));
-
-	AddBasicAerialWorldEnemy("Ball", "ball", 3, 0, CreateEnemy<Ball>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	//AddWorldEnemy("limitedball", 3, CreateEnemy<Ball>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Bounce Juggler", "bouncejuggler", 3, 0, CreateEnemy<BounceJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-	//AddWorldEnemy("limitedbouncejuggler", 3, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-
-	//AddWorldEnemy("bouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
-
-	AddWorldEnemy("Aim Launcher", "aimlauncher", 3, 0, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-	
-	AddWorldEnemy("Air Bounce Launcher", "airbouncelauncher", 3, 0, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-
-	AddBasicGroundWorldEnemy("Shotgun Turret", "shotgunturret", 3, 0, CreateEnemy<ShotgunTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	//AddWorldEnemy("airbouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
-
-	AddBasicAerialWorldEnemy("Up Bounce Booster", "upbouncebooster", 3, 0, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
-
-	AddBasicAerialWorldEnemy("Omni Bounce Booster", "omnibouncebooster", 3, 0, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
-
-	AddBasicAerialWorldEnemy("Bounce Floater", "bouncefloater", 3, 0, CreateEnemy<BounceFloater>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	//*AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
-	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
-
-	//AddWorldEnemy("reflectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
-	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));*/
-
-	////AddWorldEnemy("bouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
-	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	////	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
-
-	//AddBasicAerialWorldEnemy("pulser", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3);
-
-	AddBasicGroundWorldEnemy("Badger", "badger", 3, 0, CreateEnemy<Badger>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
-
-	AddBasicGroundWorldEnemy("Roadrunner", "roadrunner", 3, 0, CreateEnemy<Roadrunner>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Owl", "owl", 3, 0, CreateEnemy<Owl>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Air Mine", "explodingbarrel", 3, 0, CreateEnemy<ExplodingBarrel>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 1);
-	//AddBasicGroundWorldEnemy("explodingbarrel", 3, CreateEnemy<ExplodingBarrel>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Yellow Comboer Target", "yellowcomboertarget", 3, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Ball", "ball", 3, itemRow, CreateEnemy<Ball>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Bounce Juggler", "bouncejuggler", 3, itemRow, CreateEnemy<BounceJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+	AddWorldEnemy("Aim Launcher", "aimlauncher", 3, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddWorldEnemy("Air Bounce Launcher", "airbouncelauncher", 3, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddBasicGroundWorldEnemy("Shotgun Turret", "shotgunturret", 3, itemRow, CreateEnemy<ShotgunTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Up Bounce Booster", "upbouncebooster", 3, itemRow, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Omni Bounce Booster", "omnibouncebooster", 3, itemRow, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Bounce Floater", "bouncefloater", 3, itemRow, CreateEnemy<BounceFloater>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 	//AddBasicGroundWorldEnemy("cactus", 3, CreateEnemy<Cactus>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Firefly", "firefly", 3, 0, CreateEnemy<Firefly>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	///*AddWorldEnemy("cactus", 3, LoadParams<CactusParams>, MakeParamsGrounded<CactusParams>, NULL,
-	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
-
-	//AddWorldEnemy("bosscoyote", 3, LoadParams<BossCoyoteParams>, NULL, MakeParamsAerial<BossCoyoteParams>,
-	//	Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	//story
+	AddBasicGroundWorldEnemy("Coyote Boss", "coyote", 3, storyRow, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+	AddBasicGroundWorldEnemy("Sequence Coyote", "sequencecoyote", 3, storyRow, CreateEnemy<SequenceCoyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+	AddWorldEnemy("Coyote Boss Node", "coyotenode", 3, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/coyotenode_32x32.png"));
 }
 
 void Session::RegisterW4Enemies()
 {
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
+
+	//unlisted
 	AddUnlistedWorldEnemy("tigertarget", 4, CreateEnemy<TigerTarget>, NULL, Vector2i(), Vector2i(), false, true, false, false, true, false, false, 3);
-
 	AddUnlistedWorldEnemy("tigerspinturret", 4, CreateEnemy<TigerSpinTurret>, NULL, Vector2i(), Vector2i(), false, true, false, false, true, false, false, 3);
-	//AddBasicGroundWorldEnemy("orangegoal", 4, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
-	AddBasicGroundWorldEnemy("Boss Tiger", "tiger", 4, 0, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
+	//enemies
+	AddBasicGroundWorldEnemy("Spider", "spider", 4, enemyRow, CreateEnemy<Spider>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Widow", "widow", 4, enemyRow, CreateEnemy<Widow>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Turtle", "turtle", 4, enemyRow, CreateEnemy<Turtle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Pufferfish", "pufferfish", 4, enemyRow, CreateEnemy<Pufferfish>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Cheetah", "cheetah", 4, enemyRow, CreateEnemy<Cheetah>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Palm Turret", "palmturret", 4, enemyRow, CreateEnemy<PalmTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Falcon", "falcon", 4, enemyRow, CreateEnemy<Falcon>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Orange Comboer Target", "orangecomboertarget", 4, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
-
-	AddBasicAerialWorldEnemy("Scorpion Target", "scorpiontarget", 4, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1);
-
-	AddBasicGroundWorldEnemy("Sequence Tiger", "sequencetiger", 4, 0, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
-	//AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
-	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
-
-	AddWorldEnemy("Orange Blocker", "orangeblocker", 4, 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	//items
+	AddBasicAerialWorldEnemy("Orange Comboer Target", "orangecomboertarget", 4, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Scorpion Target", "scorpiontarget", 4, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1);
+	AddWorldEnemy("Orange Blocker", "orangeblocker", 4, itemRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-
-	AddWorldEnemy("Boss Tiger Node", "tigernode", 4, 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));
-
-	AddWorldEnemy("Teleport Launcher", "teleporter", 4, 0, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("Teleport Launcher", "teleporter", 4, itemRow, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1);
-
-	AddWorldEnemy("2-way Teleport Launcher", "doubleteleporter", 4, 0, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("2-way Teleport Launcher", "doubleteleporter", 4, itemRow, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1);
-	//AddWorldEnemy("onewayteleporter", 4, LoadParams<TeleporterParams>, NULL, MakeParamsAerial<TeleporterParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
-
-
-	AddBasicAerialWorldEnemy("Grind Juggler CW", "grindjugglercw", 4, 0, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-
-	//AddWorldEnemy("limitedgrindjugglercw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Grind Juggler CCW", "grindjugglerccw", 4, 0, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-
-	//AddWorldEnemy("limitedgrindjugglerccw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 
-	//	true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Grounded Grind Juggler CW", "groundedgrindjugglercw", 4, 0, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-
-	//AddWorldEnemy("limitedgroundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<GroundedJugglerParams>, Vector2i(0, 0), Vector2i(128, 128),
-	//	true, true, false, false, false, true, false, 3);
-
-	AddBasicGroundWorldEnemy("Grounded Grind Juggler CCW", "groundedgrindjugglerccw", 4, 0, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false,3);
-
+	AddBasicAerialWorldEnemy("Grind Juggler CW", "grindjugglercw", 4, itemRow, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Grind Juggler CCW", "grindjugglerccw", 4, itemRow, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Grounded Grind Juggler CW", "groundedgrindjugglercw", 4, itemRow, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Grounded Grind Juggler CCW", "groundedgrindjugglerccw", 4, itemRow, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 	//AddWorldEnemy("limitedgroundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<GroundedJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false,
 	//	false, true, false, 3);
+	AddWorldEnemy("Grind Launcher", "grindlauncher", 4, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Phase Switch", "phaseswitch", 4, itemRow, CreateEnemy<PhaseSwitch>, Vector2i(0, 0), Vector2i(100, 100), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Momentum Booster", "momentumbooster", 4, itemRow, CreateEnemy<MomentumBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
-	AddWorldEnemy("Grind Launcher", "grindlauncher", 4, 0, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-
-	AddBasicAerialWorldEnemy("Phase Switch", "phaseswitch", 4, 0, CreateEnemy<PhaseSwitch>, Vector2i(0, 0), Vector2i(100, 100), true, false, false, false, 1);
-	//AddBasicAerialWorldEnemy("phasebooster", 4, CreateEnemy<PhaseBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Momentum Booster", "momentumbooster", 4, 0, CreateEnemy<MomentumBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	//AddBasicRailWorldEnemy("railtest", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/shroom_192x192.png", 192, 192));
-
-	AddBasicGroundWorldEnemy("Spider", "spider", 4, 0, CreateEnemy<Spider>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Widow", "widow", 4, 0, CreateEnemy<Widow>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Turtle", "turtle", 4, 0, CreateEnemy<Turtle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Pufferfish", "pufferfish", 4, 0, CreateEnemy<Pufferfish>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Cheetah", "cheetah", 4, 0, CreateEnemy<Cheetah>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Palm Turret", "palmturret", 4, 0, CreateEnemy<PalmTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Falcon", "falcon", 4, 0, CreateEnemy<Falcon>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	//AddWorldEnemy("coral", 4, LoadParams<CoralParams>, NULL, MakeParamsAerial<CoralParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	//AddWorldEnemy("bosstiger", 4, LoadParams<BossTigerParams>, NULL, MakeParamsAerial<BossTigerParams>,
-	//	Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
-
-
+	//story
+	AddBasicGroundWorldEnemy("Boss Tiger", "tiger", 4, storyRow, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
+	AddBasicGroundWorldEnemy("Sequence Tiger", "sequencetiger", 4, storyRow, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
+	AddWorldEnemy("Boss Tiger Node", "tigernode", 4, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));
 }
 
 void Session::RegisterW5Enemies()
 {
-	//AddBasicGroundWorldEnemy("redgoal", 5, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
 
-	AddWorldEnemy("Gator Boss Node", "gatornode", 5, 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/gatornode_32x32.png"));
+	//unlisted
 
-	AddBasicAerialWorldEnemy("Red Comboer Target", "redcomboertarget", 5, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	//enemies
+	AddBasicAerialWorldEnemy("Swarm", "swarm", 5, enemyRow, CreateEnemy<Swarm>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Shark", "shark", 5, enemyRow, CreateEnemy<Shark>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Growing Tree", "growingtree", 5, enemyRow, CreateEnemy<GrowingTree>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Plasmid", "ghost", 5, enemyRow, CreateEnemy<Ghost>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Lizard", "lizard", 5, enemyRow, CreateEnemy<Lizard>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Parrot", "parrot", 5, enemyRow, CreateEnemy<Parrot>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Gator Boss", "gator", 5, 0, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-
-	AddBasicAerialWorldEnemy("Sequence Gator", "sequencegator", 5, 0, CreateEnemy<SequenceGator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-
-	AddBasicAerialWorldEnemy("Hungry Comboer", "hungrycomboer", 5, 0, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-
-	//AddWorldEnemy("limitedhungrycomboer", 5, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Hungry Return Comboer", "hungryreturncomboer", 5, 0, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-
+	//items
+	AddBasicAerialWorldEnemy("Red Comboer Target", "redcomboertarget", 5, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Hungry Comboer", "hungrycomboer", 5, itemRow, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Hungry Return Comboer", "hungryreturncomboer", 5, itemRow, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 	//AddWorldEnemy("limitedhungryreturncomboer", 5, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Time Slow Booster", "timebooster", 5, 0, CreateEnemy<TimeBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Homing Booster", "homingbooster", 5, 0, CreateEnemy<HomingBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Anti Time Slow Booster", "antitimeslowbooster", 5, 0, CreateEnemy<AntiTimeSlowBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
+	AddBasicAerialWorldEnemy("Time Slow Booster", "timebooster", 5, itemRow, CreateEnemy<TimeBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Homing Booster", "homingbooster", 5, itemRow, CreateEnemy<HomingBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Anti Time Slow Booster", "antitimeslowbooster", 5, itemRow, CreateEnemy<AntiTimeSlowBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 	AddWorldEnemy("Red Blocker", "redblocker", 5, 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-
-	AddWorldEnemy("Homing Launcher", "hominglauncher", 5, 0, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-	//AddWorldEnemy("hungryreturncomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
-	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
-	//	GetTileset("Enemies/comboer_128x128.png", 128, 128), 2);
-
-	AddBasicAerialWorldEnemy("Relative Comboer", "relativecomboer", 5, 0, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Relative Detach Comboer", "relativecomboerdetach", 5, 0, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-
+	AddWorldEnemy("Homing Launcher", "hominglauncher", 5, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Relative Comboer", "relativecomboer", 5, itemRow, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Relative Detach Comboer", "relativecomboerdetach", 5, itemRow, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 	//AddWorldEnemy("limitedrelativecomboer", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	//AddWorldEnemy("limitedrelativecomboerdetach", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Swarm", "swarm", 5, 0, CreateEnemy<Swarm>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	//AddBasicAerialWorldEnemy("shark", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/shark_circle_256x256.png", 256, 256));
-
-	///*AddWorldEnemy("shark", 5, LoadParams<SharkParams>, NULL, MakeParamsAerial<SharkParams>,
-	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
-
-	AddBasicAerialWorldEnemy("Shark", "shark", 5, 0, CreateEnemy<Shark>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Growing Tree", "growingtree", 5, 0, CreateEnemy<GrowingTree>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	////AddWorldEnemy("overgrowth", 5, LoadParams<OvergrowthParams>, MakeParamsGrounded<OvergrowthParams>, NULL,
-	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	AddBasicAerialWorldEnemy("Plasmid", "ghost", 5, 0, CreateEnemy<Ghost>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Lizard", "lizard", 5, 0, CreateEnemy<Lizard>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Parrot", "parrot", 5, 0, CreateEnemy<Parrot>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	////AddWorldEnemy("ghost", 5, LoadParams<GhostParams>, NULL, MakeParamsAerial<GhostParams>,
-	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	//AddWorldEnemy("bossgator", 5, LoadParams<BossGatorParams>, NULL, MakeParamsAerial<BossGatorParams>,
-	//	Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
+	//story
+	AddWorldEnemy("Gator Boss Node", "gatornode", 5, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/gatornode_32x32.png"));
+	AddBasicAerialWorldEnemy("Gator Boss", "gator", 5, storyRow, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	AddBasicAerialWorldEnemy("Sequence Gator", "sequencegator", 5, storyRow, CreateEnemy<SequenceGator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 }
 
 void Session::RegisterW6Enemies()
 {
-	//AddBasicGroundWorldEnemy("magentagoal", 6, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
 
-	AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeletonnode_32x32.png"));
+	//unlisted
 
-	AddBasicAerialWorldEnemy("Magenta Comboer Target", "magentacomboertarget", 6, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	//enemies
+	AddBasicAerialWorldEnemy("Gorilla", "gorilla", 6, enemyRow, CreateEnemy<Gorilla>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Specter", "specter", 6, enemyRow, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("ChessX", "chessx", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("ChessY", "chessy", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Chess Diag Down Right", "chessdiagdownright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("chess Diag Up Right", "chessdiagupright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Future Checker", "futurechecker", 6, enemyRow, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Laser Jays", "laserjays", 6, enemyRow, CreateEnemy<LaserJays>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Tethered Rusher", "tetheredrusher", 6, enemyRow, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Predict Turret", "predictturret", 6, enemyRow, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Skunk", "skunk", 6, enemyRow, CreateEnemy<Skunk>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Copycat", "copycat", 6, enemyRow, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Free Flight Booster", "freeflightbooster", 6, 0, CreateEnemy<FreeFlightBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
-	AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, 0, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-
-	AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, 0, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-	//w6
-	AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, 0, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
-
-	AddBasicAerialWorldEnemy("Gorilla", "gorilla", 6, 0, CreateEnemy<Gorilla>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddWorldEnemy("Magenta Blocker", "magentablocker", 6, 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	//items
+	AddBasicAerialWorldEnemy("Magenta Comboer Target", "magentacomboertarget", 6, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Free Flight Booster", "freeflightbooster", 6, itemRow, CreateEnemy<FreeFlightBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddWorldEnemy("Magenta Blocker", "magentablocker", 6, itemRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-
-	//AddWorldEnemy("glidespring", 2, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-	AddBasicAerialWorldEnemy("Specter", "specter", 6, 0, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddWorldEnemy("Swing Launcher CW", "swinglaunchercw", 6, 0, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-	AddWorldEnemy("Swing Launcher CCW", "swinglauncherccw", 6, 0, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-
-	AddBasicAerialWorldEnemy("Free Flight Target", "freeflighttarget", 6, 0, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Blue Wire Juggler", "bluewirejuggler", 6, 0, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-
-	//AddWorldEnemy("limitedbluewirejuggler", 6, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Red Wire Juggler", "redwirejuggler", 6, 0, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-
+	AddWorldEnemy("Swing Launcher CW", "swinglaunchercw", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddWorldEnemy("Swing Launcher CCW", "swinglauncherccw", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Free Flight Target", "freeflighttarget", 6, itemRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Blue Wire Juggler", "bluewirejuggler", 6, itemRow, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Red Wire Juggler", "redwirejuggler", 6, itemRow, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 	//AddWorldEnemy("limitedredwirejuggler", 6, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Magenta Wire Juggler", "magentawirejuggler", 6, itemRow, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Magenta Wire Juggler", "magentawirejuggler", 6, 0, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-
-	//AddWorldEnemy("limitedmagentawirejuggler", 6, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("ChessX", "chessx", 6, 0, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("ChessY", "chessy", 6, 0, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Chess Diag Down Right", "chessdiagdownright", 6, 0, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("chess Diag Up Right", "chessdiagupright", 6, 0, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-
-	AddBasicAerialWorldEnemy("Future Checker", "futurechecker", 6, 0, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Laser Jays", "laserjays", 6, 0, CreateEnemy<LaserJays>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Tethered Rusher", "tetheredrusher", 6, 0, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Predict Turret", "predictturret", 6, 0, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Skunk", "skunk", 6, 0, CreateEnemy<Skunk>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddBasicGroundWorldEnemy("Copycat", "copycat", 6, 0, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	AddWorldEnemy("Scorpion Launcher", "scorpionlauncher", 6, 0, CreateEnemy<ScorpionLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
+	//story
+	AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeletonnode_32x32.png"));
+	AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, storyRow, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+	AddWorldEnemy("Scorpion Launcher", "scorpionlauncher", 6, storyRow, CreateEnemy<ScorpionLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1);
-
-	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	/*AddBasicAerialWorldEnemy("wiretarget", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));
-	AddWorldEnemy("wirejuggler", 6, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
-		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
-
-	AddBasicAerialWorldEnemy("specter", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/specter_256x256.png", 256, 256));
-
-	AddWorldEnemy("narwhal", 6, LoadParams<NarwhalParams>, NULL, MakeParamsAerial<NarwhalParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	AddWorldEnemy("copycat", 6, LoadParams<CopycatParams>, NULL, MakeParamsAerial<CopycatParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	AddBasicAerialWorldEnemy("gorilla", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/gorilla_320x256.png", 320, 256));
-
-	AddWorldEnemy("bossskeleton", 6, LoadParams<BossSkeletonParams>, NULL, MakeParamsAerial<BossSkeletonParams>,
-		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);*/
 }
 
 void Session::RegisterW7Enemies()
 {
-	//AddBasicGroundWorldEnemy("greygoal", 7, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
 
-	AddBasicAerialWorldEnemy("Dimension Eye", "dimensioneye", 7, 0, CreateEnemy<DimensionEye>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
-	AddBasicAerialWorldEnemy("Dimension Exit", "dimensionexit", 7, 0, CreateEnemy<DimensionExit>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+	//unlisted
 
-	AddWorldEnemy("Annihilation Launcher", "annihilationspring", 7, 0, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	//enemies
+	AddBasicAerialWorldEnemy("Trailer", "trailer", 7, enemyRow, CreateEnemy<Trailer>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Sword Projectile Booster", "swordprojectilebooster", 7, 0, CreateEnemy<SwordProjectileBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	//items
+	AddBasicAerialWorldEnemy("Dimension Eye", "dimensioneye", 7, itemRow, CreateEnemy<DimensionEye>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Dimension Exit", "dimensionexit", 7, itemRow, CreateEnemy<DimensionExit>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+	AddWorldEnemy("Annihilation Launcher", "annihilationspring", 7, itemRow, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Sword Projectile Booster", "swordprojectilebooster", 7, itemRow, CreateEnemy<SwordProjectileBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Enemy Sword Projectile Booster", "enemyswordprojectilebooster", 7, itemRow, CreateEnemy<SwordProjectileBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Rewind Booster", "rewindbooster", 7, itemRow, CreateEnemy<RewindBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Attract Juggler", "attractjuggler", 7, itemRow, CreateEnemy<AttractJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Remote Comboer", "remotecomboer", 7, itemRow, CreateEnemy<RemoteComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 
-	AddBasicAerialWorldEnemy("Enemy Sword Projectile Booster", "enemyswordprojectilebooster", 7, 0, CreateEnemy<SwordProjectileBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
-	AddWorldEnemy("Grey Skeleton Boss Node", "greyskeletonnode", 7, 0, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+	//story
+	AddWorldEnemy("Grey Skeleton Boss Node", "greyskeletonnode", 7, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));
-
-	AddBasicAerialWorldEnemy("Grey Skeleton Boss", "greyskeleton", 7, 0, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-
-	AddBasicAerialWorldEnemy("Rewind Booster", "rewindbooster", 7, 0, CreateEnemy<RewindBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-
-	//AddWorldEnemy("limitedattractjuggler", 7, CreateEnemy<AttractJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Attract Juggler", "attractjuggler", 7, 0, CreateEnemy<AttractJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Remote Comboer", "remotecomboer", 7, 0, CreateEnemy<RemoteComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-
-	AddBasicAerialWorldEnemy("Trailer", "trailer", 7, 0, CreateEnemy<Trailer>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Grey Skeleton Boss", "greyskeleton", 7, storyRow, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 }
 
 void Session::RegisterW8Enemies()
 {
-	AddWorldEnemy("Black Blocker", "blackblocker", 8, 0, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	int enemyRow = 0;
+	int itemRow = 1;
+	int storyRow = 2;
+
+	//unlisted
+
+	//enemies
+
+	//items
+	AddWorldEnemy("Black Blocker", "blackblocker", 8, itemRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
+
+	//story
+
+	
 	//AddBasicGroundWorldEnemy("blackgoal", 8, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 }
 
@@ -892,7 +605,7 @@ void Session::RegisterAllEnemies()
 
 void Session::AddUnlistedEnemy(const std::string &name, EnemyCreator *p_enemyCreator)
 {
-	ParamsInfo testPI(name, name, p_enemyCreator, NULL,
+	ParamsInfo testPI(name, name, 0, p_enemyCreator, NULL,
 		Vector2i(), Vector2i(), false, false, false, false, false,
 		false, false);
 
@@ -972,7 +685,7 @@ void Session::AddUnlistedWorldEnemy(
 	int tileIndex)
 {
 
-	ParamsInfo pInfo(name, name, p_enemyCreator, p_paramsCreator, off, size,
+	ParamsInfo pInfo(name, name, -1, p_enemyCreator, p_paramsCreator, off, size,
 		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
 		p_canBeRailGrounded, p_numLevels, w, ts, tileIndex);
 
@@ -1010,7 +723,7 @@ void Session::AddWorldEnemy(
 		}
 	}
 
-	worldEnemyNames[w - 1].push_back(ParamsInfo( displayName, name, p_enemyCreator, p_paramsCreator, off, size,
+	worldEnemyNames[w - 1].push_back(ParamsInfo( displayName, name, row, p_enemyCreator, p_paramsCreator, off, size,
 		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
 		p_canBeRailGrounded, p_numLevels, w, ts, tileIndex));
 }
@@ -1042,7 +755,7 @@ void Session::AddExtraEnemy(
 		}
 	}
 
-	extraEnemyNames.push_back(ParamsInfo(displayName, name, p_enemyCreator, p_paramsCreator, off, size,
+	extraEnemyNames.push_back(ParamsInfo(displayName, name, row, p_enemyCreator, p_paramsCreator, off, size,
 		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
 		p_canBeRailGrounded, p_numLevels, 0, ts, tileIndex));
 }

@@ -42,12 +42,15 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 		enemyParams = actorType->defaultParamsVec[level - 1];
 		enemyParams->MoveTo(Vector2i(0, 0));
 		enemy = enemyParams->myEnemy;
+
+		SetName(type->info.displayName);
+
 		if (enemy != NULL)
 		{
 			enemy->SetActionEditLoop();
 			enemy->UpdateFromEditParams(0);
 			//SetName(enemy->name);
-			SetName(enemy->displayName);
+			
 		}
 
 		SetSize(boxSize);

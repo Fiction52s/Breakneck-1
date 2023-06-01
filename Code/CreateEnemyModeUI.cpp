@@ -158,9 +158,9 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	topbarPanel->SetColor(panelColor);
 
 	int enemyCounter = 0;
-	for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
+	for (auto it = edit->orderedTypeList.begin(); it != edit->orderedTypeList.end(); ++it )//edit->types.begin(); it != edit->types.end(); ++it)
 	{
-		if ((*it).second->unlisted)
+		if ((*it)->unlisted )
 			continue;
 		/*if ((*it).first == "player")
 		{
@@ -185,7 +185,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	libPanel = new Panel("libpanel", totalWorldSize + 20, 700, edit, false);
+	libPanel = new Panel("libpanel", totalWorldSize + 20 + 200, 700, edit, false);
 	libPanel->SetPosition(Vector2i(100, 140));
 	libPanel->SetColor(panelColor);
 
@@ -202,17 +202,24 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	{
 		int i = 0;
-		for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
+		//for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
+		for (auto it = edit->orderedTypeList.begin(); it != edit->orderedTypeList.end(); ++it)
 		{
-			if ((*it).second->unlisted)
+			//if ((*it).second->unlisted)
+			//	continue;
+
+			if ((*it)->unlisted)
+			{
 				continue;
+			}
+
 			/*if ((*it).first == "player" || (*it).first == "multiplayerbase")
 			{
 				continue;
 			}*/
 
 			allEnemyRects.push_back(libPanel->AddEnemyRect(
-				ChooseRect::I_ENEMYLIBRARY, Vector2f(0, 0), (*it).second, 1));
+				ChooseRect::I_ENEMYLIBRARY, Vector2f(0, 0), (*it), 1));
 			/*for (int level = 1; level <= (*it).second->info.numLevels; ++level)
 			{
 				allEnemyRects.push_back(libPanel->AddEnemyRect(
@@ -261,25 +268,41 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	}
 
 	int row, col;
-	int maxCol = 9;
+	//int maxCol = 9;
 	EnemyChooseRect *ecRect;
+	int xSpacing = 120;
+	int ySpacing = 150;
+
+	
+	int cols[16]; //max rows is 16 ig
+	
+
 	for (int w = 0; w < 8; ++w)
 	{
+		for (int i = 0; i < 16; ++i)
+		{
+			cols[i] = 0;
+		}
 		counter = 0;
+
 		for (int i = 0; i < allEnemyRects.size(); ++i)
 		{
 			if (allEnemyRects[i]->actorType->info.world == w)
 			{
+				
+
 				libraryEnemiesVec[w][counter] = allEnemyRects[i];
 				ecRect = libraryEnemiesVec[w][counter];
 
-				col = counter % maxCol;
-				row = counter / maxCol;
+				row = allEnemyRects[i]->actorType->info.displayRow;//counter / maxCol;
+				col = cols[row];//counter % maxCol;
+				
 
-				ecRect->SetPosition(Vector2f(10 + col * 120, 240 + row * 120));
+				ecRect->SetPosition(Vector2f(10 + col * xSpacing, 240 + row * ySpacing));
 				//ecRect->SetShown(true);
 				ecRect->Init();
 				++counter;
+				++cols[row];
 			}
 		}
 	}

@@ -538,7 +538,7 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	steamOn = p_steamOn;
 
-	steamOn = false;
+	//steamOn = false;
 
 	adventureManager = NULL;
 

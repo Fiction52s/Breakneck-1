@@ -73,26 +73,29 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	powerIndex = ap->GetLevel() - 1;
 
-	switch (powerIndex)
+	if (ap->GetTypeName() == "airdashpoweritem")
 	{
-	case 0:
-		sprite.setColor(COLOR_BLUE);
-		break;
-	case 1:
-		sprite.setColor(COLOR_GREEN);
-		break;
-	case 2:
-		sprite.setColor(COLOR_YELLOW);
-		break;
-	case 3:
-		sprite.setColor(COLOR_ORANGE);
-		break;
-	case 4:
-		sprite.setColor(COLOR_RED);
-		break;
-	case 5:
-		sprite.setColor(COLOR_MAGENTA);
-		break;
+		powerIndex = 0;
+	}
+	else if (ap->GetTypeName() == "gravpoweritem")
+	{
+		powerIndex = 1;
+	}
+	else if (ap->GetTypeName() == "bouncepoweritem")
+	{
+		powerIndex = 2;
+	}
+	else if (ap->GetTypeName() == "grindpoweritem")
+	{
+		powerIndex = 3;
+	}
+	else if (ap->GetTypeName() == "timeslowpoweritem")
+	{
+		powerIndex = 4;
+	}
+	else if (ap->GetTypeName() == "doublewirepoweritem")
+	{
+		powerIndex = 5;
 	}
 
 	ts = GetSizedTileset("Enemies/poweritem_128x128.png");
