@@ -287,6 +287,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	static int GetWaterWorld(int waterT);
 	static int GetWaterIndexInWorld(int waterT);
 	static int GetWaterIndexFromString(const std::string &s);
+	static std::string GetWaterNameFromType(int waterT);
 	static sf::Color GetWaterColor(int waterT);
 	bool IsSpecialTerrainType(int w, int var);
 	void UpdateWaterType();

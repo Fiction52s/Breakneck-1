@@ -549,6 +549,14 @@ void Background::Draw(sf::RenderTarget *target)
 		(*it)->Draw(target);
 	}
 
+	//target->setView(newView);
+
+	/*sf::Vertex testQuad[4];
+	SetRectCenter(testQuad, 1920, 1080, Vector2f(0, 0));
+	SetRectColor(testQuad, Color(0, 0, 0, 50));
+	target->draw(testQuad, 4, sf::Quads);*/
+
+	//target->setView(oldView);
 	
 }
 

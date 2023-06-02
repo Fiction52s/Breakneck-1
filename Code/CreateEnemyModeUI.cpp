@@ -185,7 +185,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	libPanel = new Panel("libpanel", totalWorldSize + 20 + 200, 700, edit, false);
+	libPanel = new Panel("libpanel", totalWorldSize + 20 + 200, 860, edit, false);
 	libPanel->SetPosition(Vector2i(100, 140));
 	libPanel->SetColor(panelColor);
 
@@ -276,6 +276,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	
 	int cols[16]; //max rows is 16 ig
 	
+	int startX = 10;
+	int startY = 150;//240;
 
 	for (int w = 0; w < 8; ++w)
 	{
@@ -298,7 +300,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 				col = cols[row];//counter % maxCol;
 				
 
-				ecRect->SetPosition(Vector2f(10 + col * xSpacing, 240 + row * ySpacing));
+				ecRect->SetPosition(Vector2f(startX + col * xSpacing, startY + row * ySpacing));
 				//ecRect->SetShown(true);
 				ecRect->Init();
 				++counter;
@@ -424,7 +426,10 @@ void CreateEnemyModeUI::FlipLibraryShown()
 
 void CreateEnemyModeUI::ExpandVariation(EnemyChooseRect *ceRect)
 {
-	edit->AddActivePanel(varSelector->panel);
-	varSelector->SetPosition(ceRect->GetGlobalCenterPos());
-	varSelector->SetType(ceRect->enemyParams->type);
+	if (ceRect->enemyParams->type->info.numLevels > 1)
+	{
+		edit->AddActivePanel(varSelector->panel);
+		varSelector->SetPosition(ceRect->GetGlobalCenterPos());
+		varSelector->SetType(ceRect->enemyParams->type);
+	}
 }

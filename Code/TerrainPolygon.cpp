@@ -3591,6 +3591,47 @@ int TerrainPolygon::GetWaterIndexFromString(const std::string &s)
 	}
 }
 
+std::string TerrainPolygon::GetWaterNameFromType(int waterT)
+{
+	switch (waterT)
+	{
+	case WATER_NORMAL:
+		return "Normal";
+	case WATER_GLIDE:
+		return "Glide";
+	case WATER_LOWGRAV:
+		return "Low Grav";
+	case WATER_HEAVYGRAV:
+		return "High Grav";
+	case WATER_BUOYANCY:
+		return "Buoyancy";
+	case WATER_ACCEL:
+		return "Acceleration";
+	case WATER_ZEROGRAV:
+		return "Zero Grav";
+	case WATER_LAUNCHER:
+		return "Launch";
+	case WATER_MOMENTUM:
+		return "Momentum";
+	case WATER_TIMESLOW:
+		return "Time Slow";
+	case WATER_POISON:
+		return "Poison";
+	case WATER_FREEFLIGHT:
+		return "Freeflight";
+	case WATER_INVERTEDINPUTS:
+		return "Inverted\nInputs";
+	case WATER_REWIND:
+		return "Rewind";
+	case WATER_SWORDPROJECTILE:
+		return "Slash";
+	case WATER_SUPER:
+		return "Super";
+	default:
+		return "";
+	}
+}
+
 bool TerrainPolygon::IsPhaseType()
 {
 	return terrainWorldType == 3 && terrainVariation == 5;

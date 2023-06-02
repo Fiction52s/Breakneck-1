@@ -40,6 +40,7 @@ struct Grass : QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	bool IsTouchingCircle(V2d &pos, double rad);
 	static int GetGrassTypeFromString(const std::string &s);
+	static std::string GetGrassStringFromType(int t);
 
 	GrassType grassType;
 

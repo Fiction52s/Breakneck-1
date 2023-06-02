@@ -50,6 +50,51 @@ int Grass::GetGrassTypeFromString(const std::string &s)
 	}
 }
 
+std::string Grass::GetGrassStringFromType(int t)
+{
+	switch (t)
+	{
+	case DECELERATE:
+		return "Decelerate";
+		break;
+	case JUMP:
+		return "Jump";
+		break;
+	case GRAVREVERSE:
+		return "Grav Reverse";
+		break;
+	case ANTIGRAVREVERSE:
+		return "Anti\nGrav Reverse";
+		break;
+	case BOUNCE:
+		return "Bounce";
+		break;
+	case ACCELERATE:
+		return "Accelerate";
+		break;
+	case ANTIGRIND:
+		return "Anti-Grind";
+		break;
+	case POISON:
+		return "Poison";
+		break;
+	case ANTIWIRE:
+		return "Anti-Wire";
+		break;
+	case SLIPPERY:
+		return "Slippery";
+		break;
+	case HIT:
+		return "Hit";
+		break;
+	case UNTECHABLE:
+		return "Untechable";
+		break;
+	}
+
+	return "";
+}
+
 Grass::Grass(Tileset *p_ts_grass, int p_tileIndex,
 	V2d &p_pos, TerrainPolygon *p_poly, GrassType gType)
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),

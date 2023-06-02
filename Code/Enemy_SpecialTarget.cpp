@@ -28,7 +28,7 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	BasicCircleHurtBodySetup(32);
 
 	const string &typeName = ap->GetTypeName();
-	if (typeName == "blueregentarget")
+	if (typeName == "regentarget")
 	{
 		regenOn = true;
 		targetType = TARGET_BLUE;

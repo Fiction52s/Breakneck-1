@@ -24,12 +24,16 @@ Goal::Goal( ActorParams *ap )
 	ts_explosion1 = NULL;
 	ts_mini = GetSizedTileset("HUD/minimap_icons_64x64.png");
 
-	string tsStr = "Goal/goal_w" + to_string(world) + "_a_512x512.png";
+	//world
+
+	int w = 1;
+
+	string tsStr = "Goal/goal_w" + to_string(w) + "_a_512x512.png";
 	ts = GetSizedTileset(tsStr);
-	string explosionStr = "Goal/goal_w" + to_string(world) + "_b_512x512.png";
+	string explosionStr = "Goal/goal_w" + to_string(w) + "_b_512x512.png";
 	ts_explosion = GetSizedTileset(explosionStr);
 
-	switch (world)
+	switch (w)
 	{
 	case 1:
 		explosionYOffset = 80;

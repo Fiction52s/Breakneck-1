@@ -86,13 +86,19 @@ EditModeUI::EditModeUI()
 	int numGrassTypes = Grass::Count;
 	grassTypePanel->ReserveImageRects(numGrassTypes);
 	grassRects.resize(numGrassTypes);
+
+	int rectSize = 100;
+	int row, col;
 	for (int i = 0; i < numGrassTypes; ++i)
 	{
+		row = i / 4;
+		col = i % 4;
 		grassRects[i] = grassTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_GRASSLIBRARY,
-			Vector2f(0, i * 80), ts_grassTypes, i, 80);
+			Vector2f(col * rectSize, row * rectSize), ts_grassTypes, i, rectSize);
 		grassRects[i]->SetInfo((void*)i);
 		//physRects[i]->Init();
 		grassRects[i]->SetShown(true);
+		grassRects[i]->SetName(Grass::GetGrassStringFromType(i));
 	}
 
 	grassTypePanel->SetPosition(Vector2i(currGrassTypeRect->pos) + Vector2i(0, 120));

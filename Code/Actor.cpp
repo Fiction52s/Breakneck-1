@@ -6152,9 +6152,7 @@ void Actor::ProcessBounceGrassGrounded()
 
 		velocity = GetTrueVel();
 
-		ground = NULL;
-		bounceEdge = NULL;
-		grindEdge = NULL;
+		
 
 		RestoreAirOptions();
 		
@@ -6170,6 +6168,10 @@ void Actor::ProcessBounceGrassGrounded()
 			velocity.y += 25;
 			//velocity.y = 25;
 		}
+
+		ground = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
 		/*else if (gn.x > 0)
 		{
 			velocity.x = 18;

@@ -3551,10 +3551,10 @@ void EditSession::SetBackground(const std::string &bgName)
 void EditSession::SetupTerrainSelectPanel()
 {
 	matTypeRectsCurrLayer = -1;
-	terrainGridSize = 64;
+	terrainGridSize = 100;//64;
 	matTypePanel = new Panel("mattype", 600, 600, this, true);
 	Color c(100, 100, 100);
-	c.a = 180;
+	c.a = 0;//180;
 	matTypePanel->SetColor(c);
 
 	//terrainSelectPanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10));
@@ -3583,6 +3583,21 @@ void EditSession::SetupTerrainSelectPanel()
 				ts_terrain, ts_terrain->GetSubRect( (worldI * maxTerrainVarPerWorld + i) * 4 ),
 				terrainGridSize);
 
+			//TerrainPolygon::IsInversePhaseType()
+
+			if (worldI == 3 && i == 5)
+			{
+				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Phase");
+			}
+			else if (worldI == 3 && i == 6)
+			{
+				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Inverse\nPhase");
+			}
+			else if (worldI == 3 && i == 7)
+			{
+				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Disappearing");
+			}
+
 			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();
 			if (matTypeRects[TERRAINLAYER_NORMAL][ind]->ts != NULL)
 			{
@@ -3602,6 +3617,7 @@ void EditSession::SetupTerrainSelectPanel()
 			ts_water, ts_water->GetSubRect(i * 2),
 			terrainGridSize);
 		matTypeRects[TERRAINLAYER_WATER][i]->Init();
+		matTypeRects[TERRAINLAYER_WATER][i]->SetName(TerrainPolygon::GetWaterNameFromType(i));
 		//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
 	}
 
