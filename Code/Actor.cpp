@@ -6169,7 +6169,7 @@ void Actor::ProcessHitGrass()
 
 void Actor::ProcessBounceGrassGrounded()
 {
-	if ( ground != NULL && touchedGrass[Grass::BOUNCE])
+	if ( ground != NULL && touchedGrass[Grass::BOUNCE] && !bounceFlameOn)
 	{
 		SetAction(JUMP);
 		frame = 1;
@@ -10544,6 +10544,11 @@ void Actor::CheckBounceFlame()
 
 bool Actor::TryWallJump()
 {
+	if (touchedGrass[Grass::BOUNCE])
+	{
+		return false;
+	}
+
 	bool wj = false;
 	if (CheckWall(false))
 	{
@@ -11491,30 +11496,98 @@ void Actor::UpdateGrindPhysics(double movement)
 
 void Actor::HandleBounceGrass()
 {
-	if (minContact.normal.y < 0)
+	//might not work for flat /\ tops of hills like that.
+
+	V2d bn = bounceEdge->Normal();//minContact.normal;
+
+
+	if (ground != NULL)
 	{
-		velocity.y = -25;
+		position = ground->GetPosition(edgeQuantity);
+		position.x += offsetX + b.offset.x;
+
+		if (ground->Normal().y > 0)
+		{
+			{
+				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+			}
+		}
+		else
+		{
+			if (ground->Normal().y < 0)
+			{
+				position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+			}
+		}
 	}
-	else if (minContact.normal.y > 0)
+
+	physicsOver = true;
+
+	double extraBUp = .2;
+	double extraBDown = .2;
+	double currBoostBounceSpeed = GetBounceBoostSpeed();
+	double dSpeed = GetDashSpeed();
+
+	if (ground != NULL && ground != bounceEdge)
 	{
-		velocity.y = 25;
+		velocity = ground->Along() * storedBounceGroundSpeed;//groundSpeed;
 	}
-	else if (minContact.normal.x > 0)
+
+	ground = NULL;
+
+	velocity = sess->CalcBounceReflectionVel(bounceEdge, velocity);//minContact.edge, velocity);
+
+	bounceEdge = NULL;
+
+	V2d vDir = normalize(velocity);
+
+	if (bn.y != 0)
 	{
-		velocity.x = 18;
+		if ((bn.x > 0 && velocity.x > 0) || (bn.x < 0 && velocity.x < 0))
+		{
+			velocity = bn * length(velocity);
+		}
 	}
-	else if (minContact.normal.x < 0)
+	else
 	{
-		velocity.x = -18;
+		if (currInput.LUp())
+		{
+			vDir = normalize(vDir + V2d(0, -extraBUp));
+			velocity = vDir * length(velocity);
+		}
+		else if (currInput.LDown())
+		{
+			vDir = normalize(vDir + V2d(0, extraBDown));
+			velocity = vDir * length(velocity);
+		}
+	}
+
+
+	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
+
+	if (bn.y == 1 || bn.y == -1)
+	{
+		if (velocity.x > 0)
+		{
+			if (currInput.LLeft())
+			{
+				velocity.x = -dSpeed;
+			}
+		}
+		else if (velocity.x < 0)
+		{
+			if (currInput.LRight())
+			{
+				velocity.x = dSpeed;
+			}
+		}
 	}
 
 	RestoreAirOptions();
 
-	if (action == AIRDASH || IsSpringAction(action))
-	{
-		SetAction(JUMP);
-		frame = 1;
-	}
+	SetAction(RAILBOUNCE);
+
+	frame = 0;
 }
 
 void Actor::HandleBounceRail()
@@ -13169,9 +13242,13 @@ void Actor::UpdatePhysics()
 				}*/
 			}
 
-			if (tempCollision && touchedGrass[Grass::BOUNCE])
+			if (tempCollision && touchedGrass[Grass::BOUNCE] && !bounceFlameOn)
 			{
-				HandleBounceGrass();
+				if (bounceEdge == NULL)
+				{
+					bounceEdge = minContact.edge;
+				}
+				//HandleBounceGrass();
 			}
 			else if (tempCollision && minContact.edge->rail != NULL
 				&& minContact.edge->rail->GetRailType() == TerrainRail::BOUNCE)
@@ -14644,7 +14721,14 @@ void Actor::PhysicsResponse()
 		}
 		else
 		{
-			HandleBounceRail();
+			if (bounceEdge->rail != NULL)
+			{
+				HandleBounceRail();
+			}
+			else
+			{
+				HandleBounceGrass();
+			}
 		}
 	}
 	else if( ground != NULL )
