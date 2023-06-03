@@ -61,10 +61,10 @@ std::string Grass::GetGrassStringFromType(int t)
 		return "Jump";
 		break;
 	case GRAVREVERSE:
-		return "Grav Reverse";
+		return "Grav\nReverse";
 		break;
 	case ANTIGRAVREVERSE:
-		return "Anti\nGrav Reverse";
+		return "Anti\nGrav\nReverse";
 		break;
 	case BOUNCE:
 		return "Bounce";
