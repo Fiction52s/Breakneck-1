@@ -54,12 +54,82 @@ void Actor::BOUNCEGROUND_Change()
 		double extraBThresh = .8; //works on almost everything
 		double dSpeed = GetDashSpeed();
 
+		//velocity = bounceEdge->Normal() * 20.0;
+
+		
 
 		velocity = sess->CalcBounceReflectionVel(bounceEdge, storedBounceVel);
-		if (length(velocity) < 10)
+
+		
+		V2d vDir = normalize(velocity);
+
+		if (bn.y != 0)
 		{
-			velocity = normalize(velocity) * 10.0;
+			if ((bn.x > 0 && velocity.x > 0) || (bn.x < 0 && velocity.x < 0))
+			{
+				velocity = bn * length(velocity);
+			}
 		}
+		else
+		{
+			if (currInput.LUp())
+			{
+				vDir = normalize(vDir + V2d(0, -extraBUp));
+				velocity = vDir * length(velocity);
+			}
+			else if (currInput.LDown())
+			{
+				vDir = normalize(vDir + V2d(0, extraBDown));
+				velocity = vDir * length(velocity);
+			}
+		}
+		
+
+		velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
+
+		if (bn.y == 1 || bn.y == -1)
+		{
+			if (velocity.x > 0)
+			{
+				if (currInput.LLeft())
+				{
+					velocity.x = -dSpeed;
+				}
+			}
+			else if (velocity.x < 0)
+			{
+				if (currInput.LRight())
+				{
+					velocity.x = dSpeed;
+				}
+			}
+		}
+
+		//double currSpeed = length(velocity);
+
+		//if (bn.y < 0)
+		//{
+		//	double testVel = 25;
+		//	if (velocity.y > -testVel)
+		//		velocity.y = -testVel;
+
+		//	vDir = normalize(velocity);
+
+		//	velocity = vDir * currSpeed;
+
+		//	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
+
+		//	//velocity.y = -ySpeed;
+		//}
+
+
+
+
+
+
+
+		/*velocity = sess->CalcBounceReflectionVel(bounceEdge, storedBounceVel);
+		
 
 
 		//if (bn.y < 0)
@@ -384,7 +454,7 @@ void Actor::BOUNCEGROUND_Change()
 
 void Actor::BOUNCEGROUND_Update()
 {
-	if (!boostBounce && JumpButtonPressed() )
+	if (!boostBounce && frame == 4 )//&& JumpButtonPressed() )
 	{
 		//ActivateSound( soundBuffers[S_BOUNCEJUMP] );
 		boostBounce = true;

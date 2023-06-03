@@ -24,13 +24,14 @@ void Actor::BOUNCEAIR_Change()
 		//BounceFlameOff();
 	}
 
-	if (TryAirDash()) return;
+	BasicAirAction();
+	//if (TryAirDash()) return;
 
-	if (AirAttack())
-	{
-		BounceFlameOn();
-		//bounceFlameOn = true;
-	}
+	//if (AirAttack())
+	//{
+	//	BounceFlameOn();
+	//	//bounceFlameOn = true;
+	//}
 }
 
 void Actor::BOUNCEAIR_Update()

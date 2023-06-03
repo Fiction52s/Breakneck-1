@@ -2229,6 +2229,30 @@ void Actor::SetupActionFunctions()
 		&Actor::NEXUSKILL_GetActionLength,
 		&Actor::NEXUSKILL_GetTileset);
 
+	SetupFuncsForAction(RAILBOUNCE,
+		&Actor::RAILBOUNCE_Start,
+		&Actor::RAILBOUNCE_End,
+		&Actor::RAILBOUNCE_Change,
+		&Actor::RAILBOUNCE_Update,
+		&Actor::RAILBOUNCE_UpdateSprite,
+		&Actor::RAILBOUNCE_TransitionToAction,
+		&Actor::RAILBOUNCE_TimeIndFrameInc,
+		&Actor::RAILBOUNCE_TimeDepFrameInc,
+		&Actor::RAILBOUNCE_GetActionLength,
+		&Actor::RAILBOUNCE_GetTileset);
+
+	SetupFuncsForAction(RAILBOUNCEGROUND,
+		&Actor::RAILBOUNCEGROUND_Start,
+		&Actor::RAILBOUNCEGROUND_End,
+		&Actor::RAILBOUNCEGROUND_Change,
+		&Actor::RAILBOUNCEGROUND_Update,
+		&Actor::RAILBOUNCEGROUND_UpdateSprite,
+		&Actor::RAILBOUNCEGROUND_TransitionToAction,
+		&Actor::RAILBOUNCEGROUND_TimeIndFrameInc,
+		&Actor::RAILBOUNCEGROUND_TimeDepFrameInc,
+		&Actor::RAILBOUNCEGROUND_GetActionLength,
+		&Actor::RAILBOUNCEGROUND_GetTileset);
+
 	SetupFuncsForAction(RAILDASH,
 		&Actor::RAILDASH_Start,
 		&Actor::RAILDASH_End,
@@ -3469,7 +3493,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	maxDespFrames = 60 * 5;
 	maxSuperFrames = 60 * 5;
 
-	bounceBoostSpeed = 6.0;//8.0;//.5;//1;//6.0;//5.0;//4.7;
+	bounceBoostSpeed = 4;//6.0;//8.0;//.5;//1;//6.0;//5.0;//4.7;
 
 	sprite = new Sprite;
 	if( actorIndex == 1 )
@@ -5784,14 +5808,14 @@ void Actor::UpdateBounceFlameOn()
 
 	if (bounceFlameOn)
 	{
-		if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || BounceButtonPressed())
+		if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || !BounceButtonHeld() )//BounceButtonPressed())
 		{
 			BounceFlameOff();
 		}
 	}
 	else
 	{
-		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && BounceButtonPressed())
+		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && BounceButtonHeld() )//BounceButtonPressed())
 		{
 			BounceFlameOn();
 		}
@@ -9292,10 +9316,7 @@ V2d Actor::UpdateReversePhysics()
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( -m, 0 ));
 
-					if (hit)
-					{
-						CheckCollisionForTerrainFade();
-					}
+					
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
@@ -9321,6 +9342,8 @@ V2d Actor::UpdateReversePhysics()
 
 									edgeQuantity = q;
 									offsetX = -b.rw;
+
+									ProcessGroundedCollision();
 									continue;
 								}
 								else if( m < 0 && eNorm.x > 0 )
@@ -9332,7 +9355,13 @@ V2d Actor::UpdateReversePhysics()
 
 									edgeQuantity = q;
 									offsetX = b.rw;
+
+									ProcessGroundedCollision();
 									continue;
+								}
+								else
+								{
+									ProcessGroundedCollision();
 								}
 								
 
@@ -9343,6 +9372,8 @@ V2d Actor::UpdateReversePhysics()
 								offsetX -= minContact.resolution.x;
 								groundSpeed = 0;
 								offsetX = -offsetX;
+
+								ProcessGroundedCollision();
 								break;
 							}
 						}
@@ -9359,6 +9390,8 @@ V2d Actor::UpdateReversePhysics()
 							offsetX -= minContact.resolution.x;
 							groundSpeed = 0;
 							offsetX = -offsetX;
+
+							ProcessGroundedCollision();
 							break;
 						}
 					}
@@ -9371,6 +9404,9 @@ V2d Actor::UpdateReversePhysics()
 
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+
+
+					
 
 				}
 				else
@@ -9624,11 +9660,7 @@ V2d Actor::UpdateReversePhysics()
 
 					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
 					bool hit = ResolvePhysics( resMove );
-
-					if (hit)
-					{
-						CheckCollisionForTerrainFade();
-					}
+					
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
@@ -9643,6 +9675,8 @@ V2d Actor::UpdateReversePhysics()
 							leftGround = true;
 							reversed = false;
 							ground = NULL;
+
+							ProcessGroundedCollision();
 							break;
 							//return V2d( 0, 0 );
 						}
@@ -9676,6 +9710,8 @@ V2d Actor::UpdateReversePhysics()
 										groundSpeed = 0;
 										edgeQuantity = q;
 										offsetX = -offsetX;
+
+										ProcessGroundedCollision();
 										break;
 									}
 									else
@@ -9689,6 +9725,8 @@ V2d Actor::UpdateReversePhysics()
 										V2d eNorm = minContact.edge->Normal();
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
 										offsetX = -offsetX;
+
+										ProcessGroundedCollision();
 									}
 								}
 								else
@@ -9697,6 +9735,8 @@ V2d Actor::UpdateReversePhysics()
 									groundSpeed = 0;
 									edgeQuantity = q;
 									offsetX = -offsetX;
+
+									ProcessGroundedCollision();
 									break;
 								}
 							}
@@ -9721,6 +9761,8 @@ V2d Actor::UpdateReversePhysics()
 									holdJump = false;
 									frame = 1;
 									reversed = false;
+
+									ProcessGroundedCollision();
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								}
@@ -9742,6 +9784,8 @@ V2d Actor::UpdateReversePhysics()
 									groundSpeed = 0;
 									edgeQuantity = q;
 									offsetX = -offsetX;
+
+									ProcessGroundedCollision();
 									break;
 								}
 
@@ -11475,10 +11519,220 @@ void Actor::HandleBounceGrass()
 
 void Actor::HandleBounceRail()
 {
-	//might not work for flat /\ tops of hills like that.
-	velocity = sess->CalcBounceReflectionVel(minContact.edge, velocity);
 
-	double minVel = 20.0;
+	//might not work for flat /\ tops of hills like that.
+	
+
+	//physicsOver = true;
+	//cout << "BOUNCING HERE" << endl;
+
+	//storedBounceVel = velocity;
+	////scorpOn = false;
+
+	//SetAction(BOUNCEGROUND);
+	//boostBounce = false;
+	//frame = 0;
+	//groundSpeed = 0;
+
+	//if (bn.y <= 0 && bn.y > -steepThresh)
+	//{
+	//	//RestoreAirOptions();
+	//	if (storedBounceVel.x > 0 && bn.x < 0 && facingRight
+	//		|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight)
+	//	{
+	//		facingRight = !facingRight;
+	//	}
+	//}
+	//else if (bn.y >= 0 && -bn.y > -steepThresh)
+	//{
+	//	if (storedBounceVel.x > 0 && bn.x < 0 && facingRight
+	//		|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight)
+	//	{
+	//		facingRight = !facingRight;
+	//	}
+	//}
+	//else if (bn.y == 0)
+	//{
+	//	facingRight = !facingRight;
+	//}
+	//else if (bn.y < 0)
+	//{
+	//	RestoreAirOptions();
+	//}
+
+	//if (bn.y != 0)
+	//{
+	//	if (bounceEdge != NULL)
+	//	{
+	//		V2d oldv0 = bounceEdge->v0;
+	//		V2d oldv1 = bounceEdge->v1;
+
+
+	//		position = bounceEdge->GetPosition(edgeQuantity);
+
+	//	}
+	//	else
+	//	{
+	//		V2d oldv0 = ground->v0;
+	//		V2d oldv1 = ground->v1;
+
+
+	//		position = ground->GetPosition(edgeQuantity);
+	//	}
+
+	//	position.x += offsetX + b.offset.x;
+
+	//	if (bn.y > 0)
+	//	{
+	//		{
+	//			position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+	//		}
+	//	}
+	//	else
+	//	{
+	//		if (bn.y < 0)
+	//		{
+	//			position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+	//		}
+	//	}
+	//}
+
+
+	V2d bn = bounceEdge->Normal();//minContact.normal;
+
+
+	if (ground != NULL)
+	{
+		position = ground->GetPosition(edgeQuantity);
+		position.x += offsetX + b.offset.x;
+
+		if (ground->Normal().y > 0)
+		{
+			{
+				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+			}
+		}
+		else
+		{
+			if (ground->Normal().y < 0)
+			{
+				position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+			}
+		}
+	}
+
+	//position.x += offsetX + b.offset.x;
+	/*if (bn.y == 0)
+	{
+
+	}*/
+	//if (bn.y != 0)
+	//{
+	//	V2d oldv0 = bounceEdge->v0;
+	//	V2d oldv1 = bounceEdge->v1;
+
+
+	//	position = bounceEdge->GetPosition(edgeQuantity);
+
+	//	
+
+	//	if (bn.y > 0)
+	//	{
+	//		{
+	//			position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+	//		}
+	//	}
+	//	else
+	//	{
+	//		if (bn.y < 0)
+	//		{
+	//			position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+	//		}
+	//	}
+	//}
+
+	physicsOver = true;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	double extraBUp = .2;
+	double extraBDown = .2;
+	double currBoostBounceSpeed = GetBounceBoostSpeed();
+	double dSpeed = GetDashSpeed();
+
+	if (ground != NULL && ground != bounceEdge )
+	{
+		//cout << "groundSpeed: " << groundSpeed << "\n";
+		if (groundSpeed == 0)
+		{
+			int xxx = 5;
+		}
+		velocity = ground->Along() * storedBounceGroundSpeed;//groundSpeed;
+	}
+
+	ground = NULL;
+
+	velocity = sess->CalcBounceReflectionVel(bounceEdge, velocity);//minContact.edge, velocity);
+
+	bounceEdge = NULL;
+
+	V2d vDir = normalize(velocity);
+
+	if (bn.y != 0)
+	{
+		if ((bn.x > 0 && velocity.x > 0) || (bn.x < 0 && velocity.x < 0))
+		{
+			velocity = bn * length(velocity);
+		}
+	}
+	else
+	{
+		if (currInput.LUp())
+		{
+			vDir = normalize(vDir + V2d(0, -extraBUp));
+			velocity = vDir * length(velocity);
+		}
+		else if (currInput.LDown())
+		{
+			vDir = normalize(vDir + V2d(0, extraBDown));
+			velocity = vDir * length(velocity);
+		}
+	}
+
+
+	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
+
+	if (bn.y == 1 || bn.y == -1)
+	{
+		if (velocity.x > 0)
+		{
+			if (currInput.LLeft())
+			{
+				velocity.x = -dSpeed;
+			}
+		}
+		else if (velocity.x < 0)
+		{
+			if (currInput.LRight())
+			{
+				velocity.x = dSpeed;
+			}
+		}
+	}
+
+	/*double minVel = 20.0;
 
 	if (minContact.edge->IsFlatGround()
 		|| minContact.edge->IsSlopedGround())
@@ -11515,31 +11769,29 @@ void Actor::HandleBounceRail()
 		{
 			velocity.x = -minVel;
 		}
-	}
-	/*if (minContact.normal.y < 0)
-	{
-		velocity.y = -25;
-	}
-	else if (minContact.normal.y > 0)
-	{
-		velocity.y = 25;
-	}
-	else if (minContact.normal.x > 0)
-	{
-		velocity.x = 18;
-	}
-	else if (minContact.normal.x < 0)
-	{
-		velocity.x = -18;
 	}*/
+
+
+	
+
 
 	RestoreAirOptions();
 
-	if (action == AIRDASH || IsSpringAction(action))
+	/*if (action == AIRDASH || IsSpringAction(action))
 	{
 		SetAction(JUMP);
 		frame = 1;
-	}
+	}*/
+
+	
+	
+	//position.x += offsetX;
+	//offsetX = 0;
+	
+
+	SetAction(RAILBOUNCE);
+	
+	frame = 0;
 }
 
 bool Actor::UpdateGrindRailPhysics(double movement)
@@ -12231,10 +12483,6 @@ void Actor::UpdatePhysics()
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( m, 0 ));
 
-					if (hit)
-					{
-						CheckCollisionForTerrainFade();
-					}
 
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
 						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -12256,6 +12504,7 @@ void Actor::UpdatePhysics()
 
 									edgeQuantity = q;
 									offsetX = -b.rw;
+									ProcessGroundedCollision();
 									continue;
 								}
 								else if( m < 0 && eNorm.x > 0 )
@@ -12266,7 +12515,13 @@ void Actor::UpdatePhysics()
 
 									edgeQuantity = q;
 									offsetX = b.rw;
+									ProcessGroundedCollision();
+
 									continue;
+								}
+								else
+								{
+									ProcessGroundedCollision();
 								}
 								
 
@@ -12274,14 +12529,22 @@ void Actor::UpdatePhysics()
 							else
 							{
 								offsetX += minContact.resolution.x;
+
+								ProcessGroundedCollision();
+
 								groundSpeed = 0;
+								
 								break;
 							}
 						}
 						else
 						{
 								offsetX += minContact.resolution.x;
+
+								ProcessGroundedCollision();
+
 								groundSpeed = 0;
+								
 								break;
 						}
 					}
@@ -12465,12 +12728,6 @@ void Actor::UpdatePhysics()
 					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
 					bool hit = ResolvePhysics( resMove );
 
-					if (hit)
-					{
-						CheckCollisionForTerrainFade();
-					}
-
-
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
 						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
@@ -12523,8 +12780,12 @@ void Actor::UpdatePhysics()
 										//corner border case. hope it doesn't cause problems
 										cout << "CORNER BORDER CASE: " << test << endl;
 										q = ground->GetQuantity( ground->GetPosition( q ) + minContact.resolution);
-										groundSpeed = 0;
+										
 										edgeQuantity = q;
+
+										ProcessGroundedCollision();
+										groundSpeed = 0;
+										
 										break;
 									}
 									else
@@ -12540,6 +12801,7 @@ void Actor::UpdatePhysics()
 										//CHANGED OFFSET
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
 
+										ProcessGroundedCollision();
 									}
 
 									/*if( offsetX < -b.rw || offsetX > b.rw )
@@ -12551,8 +12813,12 @@ void Actor::UpdatePhysics()
 								else
 								{
 									q = ground->GetQuantity( ground->GetPosition( q ) + minContact.resolution);
-									groundSpeed = 0;
+									
 									edgeQuantity = q;
+
+									ProcessGroundedCollision();
+
+									groundSpeed = 0;
 									break;
 								}
 							}
@@ -12576,6 +12842,8 @@ void Actor::UpdatePhysics()
 									SetAction( JUMP );
 									holdJump = false;
 									frame = 1;
+
+									ProcessGroundedCollision();
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								}
@@ -12593,8 +12861,12 @@ void Actor::UpdatePhysics()
 
 									q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
 
-									groundSpeed = 0;
+									
 									edgeQuantity = q;
+
+									ProcessGroundedCollision();
+
+									groundSpeed = 0;
 									break;
 								}
 							}
@@ -12602,8 +12874,12 @@ void Actor::UpdatePhysics()
 						else
 						{
 							q = ground->GetQuantity( ground->GetPosition( q ) + minContact.resolution);
-							groundSpeed = 0;
+							
 							edgeQuantity = q;
+
+							ProcessGroundedCollision();
+
+							groundSpeed = 0;
 							break;
 						}
 						
@@ -12844,7 +13120,10 @@ void Actor::UpdatePhysics()
 
 			if( tempCollision )
 			{
-				if( bounceEdge != NULL )
+				//dont remember why this was here. When doing rail bounces,
+				//there is a case where you land and hit the ground and the rail almost at the same time
+				//you set a bounce edge and then unset it here, never landing or grounding yourself.
+				/*if( bounceEdge != NULL )
 				{
 					bounceOkay = false;
 					bounceEdge = NULL;
@@ -12853,10 +13132,14 @@ void Actor::UpdatePhysics()
 					holdJump = false;
 					frame = 1;
 					break;
-				}
+				}*/
 				V2d en = minContact.normal;
+
+
+
+
 				
-				if( en.y <= 0 && en.y > -steepThresh )
+				/*if( en.y <= 0 && en.y > -steepThresh )
 				{
 					if( en.x < 0 && velocity.x < 0 
 			  		|| en.x > 0 && velocity.x > 0 )
@@ -12883,7 +13166,7 @@ void Actor::UpdatePhysics()
 				{
 					if( velocity.y > 0 )
 						bounceOkay = false;
-				}
+				}*/
 			}
 
 			if (tempCollision && touchedGrass[Grass::BOUNCE])
@@ -12893,7 +13176,11 @@ void Actor::UpdatePhysics()
 			else if (tempCollision && minContact.edge->rail != NULL
 				&& minContact.edge->rail->GetRailType() == TerrainRail::BOUNCE)
 			{
-				HandleBounceRail();
+				if (bounceEdge == NULL)
+				{
+					bounceEdge = minContact.edge;
+				}
+				//HandleBounceRail();
 			}
 			else if (tempCollision && action == FREEFLIGHTSTUN )
 			{
@@ -14276,10 +14563,11 @@ void Actor::PhysicsResponse()
 			SetAction(BOUNCEGROUND);
 			boostBounce = false;
 			frame = 0;
+			groundSpeed = 0;
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				RestoreAirOptions();
+				//RestoreAirOptions();
 				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight 
 					|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
 				{
@@ -14354,7 +14642,10 @@ void Actor::PhysicsResponse()
 				}
 			}
 		}
-
+		else
+		{
+			HandleBounceRail();
+		}
 	}
 	else if( ground != NULL )
 	{
@@ -14423,12 +14714,24 @@ void Actor::PhysicsResponse()
 					
 					//frame = 0;
 				}
+				else if (action == RAILBOUNCE)
+				{
+					int currFrame = frame;
+					SetAction(RAILBOUNCEGROUND);
+					//physicsOver = true;
+
+					//current frame of boosterbounce stays the same, 
+					//just transition the action
+					frame = currFrame;
+				}
 				else if (!IsHitstunAction(action) && action != LAND2 && action != LAND
 					&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 					&& action != SEQ_CRAWLERFIGHT_LAND
 					&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
-					&& action != JUMPSQUAT && action != WATERGLIDE )
+					&& action != JUMPSQUAT && action != WATERGLIDE && action != RAILBOUNCEGROUND  && action != BOOSTERBOUNCEGROUND )
 				{
+					storedBounceVel = velocity;
+					//only testing railbounceground but could probably apply to boosterbounceground too, so added that
 					if (currInput.LLeft() || currInput.LRight())
 					{
 						SetAction(LAND2);
@@ -14560,8 +14863,7 @@ void Actor::PhysicsResponse()
 			{
 				if( length( wallNormal ) > 0 
 					&& (currWall == NULL || !currWall->IsInvisibleWall())
-					&& oldVelocity.y >= 0 /*&& rightWire->state != Wire::PULLING
-					&& leftWire->state != Wire::PULLING*/ )
+					&& oldVelocity.y >= 0 && !( currWall->rail != NULL && currWall->rail->GetRailType() == TerrainRail::BOUNCE ) )
 				{
 					if( wallNormal.x > 0)
 					{
@@ -22081,6 +22383,22 @@ void Actor::UpdateInHitlag()
 	 }
 
 	 futurePositions = new V2d[numFrames];
+ }
+
+ void Actor::ProcessGroundedCollision()
+ {
+	 CheckCollisionForTerrainFade();
+
+	 if (minContact.edge->rail != NULL
+		 && minContact.edge->rail->GetRailType() == TerrainRail::BOUNCE)
+	 {
+		 if (bounceEdge == NULL)
+		 {
+			 bounceEdge = minContact.edge;
+			 storedBounceGroundSpeed = groundSpeed;
+		 }
+		 //HandleBounceRail();
+	 }
  }
 
  void Actor::CheckCollisionForTerrainFade()

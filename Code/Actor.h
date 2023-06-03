@@ -366,6 +366,8 @@ struct Actor : QuadTreeCollider,
 		STEEPCLIMB,
 		BOOSTERBOUNCE,
 		BOOSTERBOUNCEGROUND,
+		RAILBOUNCE,
+		RAILBOUNCEGROUND,
 		AIRHITSTUN,
 		AIRPARRY,
 		GROUNDHITSTUN,
@@ -1834,6 +1836,8 @@ struct Actor : QuadTreeCollider,
 
 	void CheckCollisionForTerrainFade();
 
+	void ProcessGroundedCollision();
+
 	
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -2604,6 +2608,28 @@ struct Actor : QuadTreeCollider,
 	void NEXUSKILL_TimeDepFrameInc();
 	int NEXUSKILL_GetActionLength();
 	Tileset * NEXUSKILL_GetTileset();
+
+	void RAILBOUNCE_Start();
+	void RAILBOUNCE_End();
+	void RAILBOUNCE_Change();
+	void RAILBOUNCE_Update();
+	void RAILBOUNCE_UpdateSprite();
+	void RAILBOUNCE_TransitionToAction(int a);
+	void RAILBOUNCE_TimeIndFrameInc();
+	void RAILBOUNCE_TimeDepFrameInc();
+	int RAILBOUNCE_GetActionLength();
+	Tileset * RAILBOUNCE_GetTileset();
+
+	void RAILBOUNCEGROUND_Start();
+	void RAILBOUNCEGROUND_End();
+	void RAILBOUNCEGROUND_Change();
+	void RAILBOUNCEGROUND_Update();
+	void RAILBOUNCEGROUND_UpdateSprite();
+	void RAILBOUNCEGROUND_TransitionToAction(int a);
+	void RAILBOUNCEGROUND_TimeIndFrameInc();
+	void RAILBOUNCEGROUND_TimeDepFrameInc();
+	int RAILBOUNCEGROUND_GetActionLength();
+	Tileset * RAILBOUNCEGROUND_GetTileset();
 
 	void RAILDASH_Start();
 	void RAILDASH_End();
