@@ -333,6 +333,13 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
 	}
+	else if (name == "grindjuggler")
+	{
+		p = CreateDefaultPanel();
+		AddLabeledSlider(p, "numKills", "required kills:", 0, 9, 0);
+		p->AddLabel("clockwiselabel", Vector2i(0, 0), 28, "Clockwise:");
+		p->AddCheckBox("clockwise", Vector2i(0, 0), true);
+	}
 	else if (name == "spring" || name == "glidespring" || name == "bouncespring"
 		|| name == "airbouncelauncher" || name == "swinglaunchercw"
 		|| name == "swinglauncherccw"

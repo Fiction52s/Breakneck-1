@@ -442,10 +442,24 @@ struct JugglerParams : public BasicAirEnemyParams
 	int numJuggles;
 };
 
-struct GroundedJugglerParams : public BasicGroundEnemyParams
+struct GrindJugglerParams : public BasicAirEnemyParams
 {
-	GroundedJugglerParams(ActorType *at, int level);
-	GroundedJugglerParams(ActorType *at,
+	GrindJugglerParams(ActorType *at, int level);
+	GrindJugglerParams(ActorType *at, std::ifstream &is);
+
+	void SetSpecialParams();
+	void SetSpecialPanelInfo();
+	void WriteSpecialParams(std::ofstream &of);
+	ActorParams *Copy();
+
+	int numKills;
+	bool clockwise;
+};
+
+struct GroundedGrindJugglerParams : public BasicGroundEnemyParams
+{
+	GroundedGrindJugglerParams(ActorType *at, int level);
+	GroundedGrindJugglerParams(ActorType *at,
 		std::ifstream &is);
 	
 
@@ -454,7 +468,8 @@ struct GroundedJugglerParams : public BasicGroundEnemyParams
 	void WriteSpecialParams(std::ofstream &of);
 	ActorParams *Copy();
 
-	int numJuggles;
+	int numKills;
+	bool clockwise;
 };
 
 //still used for crawlerQueen

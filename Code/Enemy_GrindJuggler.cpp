@@ -17,10 +17,19 @@ using namespace sf;
 void GrindJuggler::UpdateParamsSettings()
 {
 	Enemy::UpdateParamsSettings();
-	if (limitedKills)
+
+	GrindJugglerParams *gjParams = (GrindJugglerParams*)editParams;
+	maxKilled = gjParams->numKills;
+
+	clockwise = gjParams->clockwise;
+
+	if (maxKilled == 0)
 	{
-		JugglerParams *jParams = (JugglerParams*)editParams;
-		maxKilled = jParams->numJuggles;
+		limitedKills = false;
+	}
+	else
+	{
+		limitedKills = true;
 		UpdateKilledNumberText(maxKilled);
 	}
 }
@@ -31,39 +40,7 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, 0, 0);
 
-	if (ap->GetTypeName() == "grindjugglercw")
-	{
-		clockwise = true;
-	}
-	else
-	{
-		clockwise = false;
-	}
-
 	SetLevel(ap->GetLevel());
-
-	const string &typeName = ap->GetTypeName();
-
-	if (typeName == "grindjugglercw")
-	{
-		limitedKills = false;
-		clockwise = true;
-	}
-	else if (typeName == "limitedgrindjugglercw")
-	{
-		clockwise = true;
-		limitedKills = true;
-	}
-	else if (typeName == "grindjugglerccw")
-	{
-		clockwise = false;
-		limitedKills = false;
-	}
-	else if (typeName == "limitedgrindjugglerccw")
-	{
-		clockwise = false;
-		limitedKills = true;
-	}
 
 	numKilledText.setFont(sess->mainMenu->arial);
 	numKilledText.setFillColor(Color::White);
@@ -103,12 +80,12 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_FLY] = 10;
 	actionLength[S_GRIND] = 10;
-	actionLength[S_RETURN] = 3;
+	actionLength[S_RETURN] = 30;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_FLY] = 1;
 	animFactor[S_GRIND] = 1;
-	animFactor[S_RETURN] = 6;
+	animFactor[S_RETURN] = 1;
 
 	ResetEnemy();
 }
@@ -197,6 +174,7 @@ void GrindJuggler::UpdateKilledNumberText(int reps)
 			+ numKilledText.getLocalBounds().width / 2,
 			numKilledText.getLocalBounds().top
 			+ numKilledText.getLocalBounds().height / 2);
+		numKilledText.setPosition(sprite.getPosition());
 	}
 }
 

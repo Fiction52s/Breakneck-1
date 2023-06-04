@@ -19,10 +19,17 @@ using namespace sf;
 void Ball::UpdateParamsSettings()
 {
 	Enemy::UpdateParamsSettings();
-	if (limitedJuggles)
+
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	juggleReps = jParams->numJuggles;
+
+	if (juggleReps == 0)
 	{
-		JugglerParams *jParams = (JugglerParams*)editParams;
-		juggleReps = jParams->numJuggles;
+		limitedJuggles = false;
+	}
+	else
+	{
+		limitedJuggles = true;
 		UpdateJuggleRepsText(juggleReps);
 	}
 }
@@ -61,16 +68,6 @@ Ball::Ball(ActorParams *ap)
 
 	flySpeed = 14;
 	maxWaitFrames = 180;
-
-	string &typeName = ap->type->info.name;
-	if (typeName == "ball")
-	{
-		limitedJuggles = false;
-	}
-	else if (typeName == "limitedball")
-	{
-		limitedJuggles = true;
-	}
 
 	UpdateParamsSettings();
 
@@ -116,12 +113,13 @@ Ball::Ball(ActorParams *ap)
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_FLY] = 10;
 	actionLength[S_BOUNCE] = 10;
-	actionLength[S_RETURN] = 3;
+	actionLength[S_RETURN] = 30;
+	
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_FLY] = 1;
 	animFactor[S_BOUNCE] = 1;
-	animFactor[S_RETURN] = 6;
+	animFactor[S_RETURN] = 1;
 
 	ResetEnemy();
 }
@@ -134,8 +132,12 @@ Ball::~Ball()
 
 void Ball::ResetEnemy()
 {
-	sprite.setRotation(0);
 	data.currHits = 0;
+	data.currJuggle = 0;
+	data.doneBeingHittable = false;
+
+	sprite.setRotation(0);
+	
 	comboObj->Reset();
 	surfaceMover->SetVelocity(V2d(0, 0));
 	DefaultHurtboxesOn();
@@ -143,7 +145,7 @@ void Ball::ResetEnemy()
 	action = S_FLOAT;
 	frame = 0;
 	receivedHit.SetEmpty();
-	data.currJuggle = 0;
+	
 
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
@@ -171,14 +173,16 @@ void Ball::Throw(V2d vel)
 
 void Ball::Return()
 {
+	action = S_RETURN;
+	frame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
-
-	UpdateJuggleRepsText(0);
+	HurtboxesOff();
 
 	data.currJuggle = 0;
+
+	UpdateJuggleRepsText(0);
 
 	numHealth = maxHealth;
 }
@@ -189,9 +193,10 @@ void Ball::Pop()
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++data.currJuggle;
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+
+	HurtboxesOff();
 	data.waitFrame = 0;
+
 	UpdateJuggleRepsText(juggleReps - data.currJuggle);
 }
 
@@ -263,6 +268,7 @@ void Ball::UpdateJuggleRepsText(int reps)
 			+ numJugglesText.getLocalBounds().width / 2,
 			numJugglesText.getLocalBounds().top
 			+ numJugglesText.getLocalBounds().height / 2);
+		numJugglesText.setPosition(sprite.getPosition());
 	}
 }
 
@@ -304,16 +310,31 @@ void Ball::ProcessHit()
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
-				action = S_RETURN;
+				PopThrow();
+				action = S_FLY;
 				frame = 0;
 
-				Return();
+				data.doneBeingHittable = true;
+				
 			}
 			else
 			{
+				if (!limitedJuggles)
+				{
+					if (hasMonitor && !suppressMonitor)
+					{
+						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+							sess->GetPlayer(0), 1, GetPosition());
+						suppressMonitor = true;
+					}
+
+					sess->PlayerConfirmEnemyNoKill(this);
+					ConfirmHitNoKill();
+				}
+
+				PopThrow();
 				action = S_FLY;
 				frame = 0;
-				PopThrow();
 			}
 		}
 		else
@@ -339,6 +360,9 @@ void Ball::ProcessState()
 			//DefaultHitboxesOn();
 			DefaultHurtboxesOn();
 			UpdateJuggleRepsText(juggleReps);
+			action = S_FLOAT;
+			frame = 0;
+			data.doneBeingHittable = false;
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -395,12 +419,10 @@ void Ball::UpdateEnemyPhysics()
 
 void Ball::FrameIncrement()
 {
-	if (action == S_FLY || action == S_BOUNCE)
+	if (action == S_FLY || action == S_BOUNCE )
 	{
 		if (data.waitFrame == maxWaitFrames)
 		{
-			action = S_RETURN;
-			frame = 0;
 			Return();
 		}
 		else
@@ -408,7 +430,7 @@ void Ball::FrameIncrement()
 			data.waitFrame++;
 		}
 
-		if (data.waitFrame > 16)
+		if (data.waitFrame > 16 && !data.doneBeingHittable )
 		{
 			DefaultHurtboxesOn();
 		}
@@ -436,7 +458,9 @@ void Ball::ComboKill(Enemy *e)
 
 		action = S_BOUNCE;
 		frame = 0;
-		DefaultHurtboxesOn();
+
+		if (!data.doneBeingHittable)
+			DefaultHurtboxesOn();
 	}
 }
 
@@ -455,6 +479,16 @@ void Ball::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+	if (data.doneBeingHittable)
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
+
 
 	if (limitedJuggles)
 	{
@@ -509,6 +543,7 @@ void Ball::HitTerrainAerial(Edge * edge, double quant)
 
 	action = S_BOUNCE;
 	frame = 0;
+	
 	//SetHitboxes(hitBody, 0);
 	//DefaultHurtboxesOn();
 }

@@ -62,18 +62,16 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	SetEditorActions(S_FLOAT, 0, 0);
 
 	actionLength[S_FLOAT] = 18;
-	actionLength[S_FINAL_POP] = 10;
 	actionLength[S_POP] = 10;
 	actionLength[S_JUGGLE] = 10;
 	
-	actionLength[S_RETURN] = 3;
+	actionLength[S_RETURN] = 30;
 
 	animFactor[S_FLOAT] = 2;
-	animFactor[S_FINAL_POP] = 1;
 	animFactor[S_POP] = 1;
 	animFactor[S_JUGGLE] = 1;
 	
-	animFactor[S_RETURN] = 6;
+	animFactor[S_RETURN] = 1;
 
 	SetLevel(ap->GetLevel());
 	
@@ -172,13 +170,18 @@ void GravityJuggler::UpdateJuggleRepsText( int reps )
 void GravityJuggler::ResetEnemy()
 {
 	data.hitLimit = -1;
+	data.currHits = 0;
+	data.currJuggle = 0;
+	data.velocity = V2d(0, 0);
+	data.doneBeingHittable = false;
+
 	action = S_FLOAT;
 
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
-	data.currHits = 0;
+	
 	comboObj->Reset();
-	data.velocity = V2d(0, 0);
+	
 
 	DefaultHurtboxesOn();
 
@@ -187,8 +190,6 @@ void GravityJuggler::ResetEnemy()
 	frame = 0;
 	receivedHit.SetEmpty();
 	UpdateHitboxes();
-
-	data.currJuggle = 0;
 
 	UpdateJuggleRepsText(juggleReps);
 
@@ -310,12 +311,9 @@ void GravityJuggler::ProcessHit()
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
-
+				data.doneBeingHittable = true;
 
 				PopThrow();
-
-				action = S_FINAL_POP;
-				//Return();
 			}
 			else
 			{
@@ -357,6 +355,9 @@ void GravityJuggler::ProcessState()
 			UpdateJuggleRepsText(juggleReps);
 			SetCurrPosInfo(startPosInfo);
 			DefaultHurtboxesOn();
+			action = S_FLOAT;
+			data.doneBeingHittable = false;
+			frame = 0;
 			//DefaultHitboxesOn();
 			break;
 		/*case S_EXPLODE:
@@ -378,7 +379,12 @@ void GravityJuggler::ProcessState()
 	{
 		action = S_JUGGLE;
 		frame = 0;
-		DefaultHurtboxesOn();
+
+		if (!data.doneBeingHittable)
+		{
+			DefaultHurtboxesOn();
+		}
+		
 	}
 }
 
@@ -417,7 +423,6 @@ void GravityJuggler::UpdateEnemyPhysics()
 {
 	switch (action)
 	{
-	case S_FINAL_POP:
 	case S_POP:
 	case S_JUGGLE:
 	{
@@ -431,7 +436,7 @@ void GravityJuggler::UpdateEnemyPhysics()
 
 void GravityJuggler::FrameIncrement()
 {
-	if (action == S_POP || action == S_JUGGLE || action == S_FINAL_POP )
+	if (action == S_POP || action == S_JUGGLE )
 	{
 		if (data.waitFrame == maxWaitFrames)
 		{
@@ -476,7 +481,7 @@ void GravityJuggler::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(3));
 	}
 
-	if (action == S_FINAL_POP)
+	if (data.doneBeingHittable)
 	{
 		sprite.setColor(Color::Blue);
 	}

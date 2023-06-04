@@ -25,6 +25,7 @@ struct GravityJuggler : Enemy
 		int currJuggle;
 		int juggleTextNumber;
 		int waitFrame;
+		bool doneBeingHittable;
 	};
 	MyData data;
 

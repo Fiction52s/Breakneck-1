@@ -418,8 +418,8 @@ void Session::RegisterW3Enemies()
 	AddBasicAerialWorldEnemy("Bounce\nFloater", "bouncefloater", 3, itemRow, CreateEnemy<BounceFloater>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	//comboers
-	AddBasicAerialWorldEnemy("Ball", "ball", 3, comboerRow, CreateEnemy<Ball>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Bounce\nJuggler", "bouncejuggler", 3, comboerRow, CreateEnemy<BounceJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+	AddWorldEnemy("Ball", "ball", 3, comboerRow, CreateEnemy<Ball>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Bounce\nJuggler", "bouncejuggler", 3, comboerRow, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//targets
 	AddBasicAerialWorldEnemy("Yellow\nComboer\nTarget", "yellowcomboertarget", 3, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
@@ -468,10 +468,8 @@ void Session::RegisterW4Enemies()
 	AddBasicAerialWorldEnemy("Phase\nSwitch", "phaseswitch", 4, itemRow, CreateEnemy<PhaseSwitch>, Vector2i(0, 0), Vector2i(100, 100), true, false, false, false, 1);
 
 	//comboers
-	AddBasicAerialWorldEnemy("Grind\nJuggler\nCW", "grindjugglercw", 4, comboerRow, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Grind\nJuggler\nCCW", "grindjugglerccw", 4, comboerRow, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-	AddBasicGroundWorldEnemy("Grounded\nGrind\nJuggler\nCW", "groundedgrindjugglercw", 4, comboerRow, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-	AddBasicGroundWorldEnemy("Grounded\nGrind\nJuggler\nCCW", "groundedgrindjugglerccw", 4, comboerRow, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddWorldEnemy("Grind\nJuggler", "grindjuggler", 4, comboerRow, CreateEnemy<GrindJuggler>, SetParamsType<GrindJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Grounded\nGrind\nJuggler", "groundedgrindjuggler", 4, comboerRow, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 
 	//targets
 	AddBasicAerialWorldEnemy("Orange\nComboer\nTarget", "orangecomboertarget", 4, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);

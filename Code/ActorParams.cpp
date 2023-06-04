@@ -1524,55 +1524,105 @@ ActorParams *JugglerParams::Copy()
 	return copy;
 }
 
-GroundedJugglerParams::GroundedJugglerParams(ActorType *at, int level)
+GrindJugglerParams::GrindJugglerParams(ActorType *at, int level)
+	:BasicAirEnemyParams(at, level)
+{
+	//enemyLevel = level;
+	//PlaceAerial(pos);
+
+	numKills = 0;
+	clockwise = true;
+}
+
+GrindJugglerParams::GrindJugglerParams(ActorType *at, ifstream &is)
+	: BasicAirEnemyParams(at, is)
+{
+	is >> numKills;
+	int cw;
+	is >> cw;
+	clockwise = cw;
+}
+
+void GrindJugglerParams::WriteSpecialParams(std::ofstream &of)
+{
+	of << numKills << endl;
+	int cw = clockwise;
+	of << cw << endl;
+}
+
+void GrindJugglerParams::SetSpecialPanelInfo()
+{
+	type->panel->sliders["numKills"]->SetCurrValue(numKills);
+	type->panel->checkBoxes["clockwise"]->checked = clockwise;
+}
+
+void GrindJugglerParams::SetSpecialParams()
+{
+	numKills = type->panel->sliders["numKills"]->GetCurrValue();
+	clockwise = type->panel->checkBoxes["clockwise"]->checked;
+}
+
+ActorParams *GrindJugglerParams::Copy()
+{
+	GrindJugglerParams *copy = new GrindJugglerParams(*this);
+	return copy;
+}
+
+GroundedGrindJugglerParams::GroundedGrindJugglerParams(ActorType *at, int level)
 	:BasicGroundEnemyParams(at, level)
 {
 	//enemyLevel = level;
 
 	PlaceAerial(Vector2i(0,0));
 
-	numJuggles = 100;
+	numKills = 0;
+	clockwise = true;
 }
 
-GroundedJugglerParams::GroundedJugglerParams(ActorType *at, ifstream &is)
+GroundedGrindJugglerParams::GroundedGrindJugglerParams(ActorType *at, ifstream &is)
 	: BasicGroundEnemyParams(at, is)
 {
-	is >> numJuggles;
+	is >> numKills;
+	int cw;
+	is >> cw;
+	clockwise = cw;
 }
 
-void GroundedJugglerParams::WriteSpecialParams(std::ofstream &of)
+void GroundedGrindJugglerParams::WriteSpecialParams(std::ofstream &of)
 {
-	of << numJuggles << endl;
+	of << numKills << endl;
+	int cw = clockwise;
+	of << cw << endl;
 }
 
-void GroundedJugglerParams::SetSpecialPanelInfo()
+void GroundedGrindJugglerParams::SetSpecialPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["numjuggles"]->SetString(boost::lexical_cast<string>(numJuggles));
+	p->textBoxes["numKills"]->SetString(boost::lexical_cast<string>(numKills));
 }
 
-void GroundedJugglerParams::SetSpecialParams()
+void GroundedGrindJugglerParams::SetSpecialParams()
 {
 	Panel *p = type->panel;
 
 	stringstream ss;
 
-	string numJuggleStr = p->textBoxes["numjuggles"]->text.getString().toAnsiString();
-	ss << numJuggleStr;
+	string numKillsStr = p->textBoxes["numKills"]->text.getString().toAnsiString();
+	ss << numKillsStr;
 
-	int nJuggles;
-	ss >> nJuggles;
+	int nKills;
+	ss >> nKills;
 
 	if (!ss.fail())
 	{
-		numJuggles = nJuggles;
+		numKills = nKills;
 	}
 }
 
-ActorParams *GroundedJugglerParams::Copy()
+ActorParams *GroundedGrindJugglerParams::Copy()
 {
-	GroundedJugglerParams *copy = new GroundedJugglerParams(*this);
+	GroundedGrindJugglerParams *copy = new GroundedGrindJugglerParams(*this);
 	return copy;
 }
 
