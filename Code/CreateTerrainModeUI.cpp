@@ -31,7 +31,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	Vector2i labelExtra(30, 10);
 
 	realTerrainTool = 0;
-	terrainGridSize = 64;
+	terrainGridSize = 100;
 	
 	
 	mainPanel->AddLabel("snaplabel", Vector2i(0, labelExtra.y), labelCharHeight, "Snap to Points:");
@@ -70,7 +70,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 			mainPanel->UnpauseAutoSpacing();
 
 		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
-			currMatRectPos, NULL, 0, 100);
+			currMatRectPos, NULL, 0, terrainGridSize);
 		currMatRects[i]->Init();
 		//currMatRects[i]->SetImage(edit->GetMatTileset(edit->currTerrainWorld[i],
 		//	edit->currTerrainVar[i]), IntRect(0, 0, 128, 128));

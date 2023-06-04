@@ -14947,7 +14947,7 @@ void Actor::PhysicsResponse()
 			{
 				if( length( wallNormal ) > 0 
 					&& (currWall == NULL || !currWall->IsInvisibleWall())
-					&& oldVelocity.y >= 0 && !( currWall->rail != NULL && currWall->rail->GetRailType() == TerrainRail::BOUNCE ) )
+					&& oldVelocity.y >= 0 && !( currWall != NULL && currWall->rail != NULL && currWall->rail->GetRailType() == TerrainRail::BOUNCE ) )
 				{
 					if( wallNormal.x > 0)
 					{
@@ -18155,6 +18155,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		if (e->rail != NULL)
 		{
 			if (!e->rail->IsTerrainType() && e->rail->IsActive() && e->rail->IsEdgeActive( e ) )
+			{
+				return;
+			}
+			else if (e->rail->GetRailType() == TerrainRail::BOUNCE)
 			{
 				return;
 			}
