@@ -9,6 +9,7 @@
 #include "Enemy_JugglerCatcher.h"
 #include "MainMenu.h"
 #include "AbsorbParticles.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -16,10 +17,17 @@ using namespace sf;
 void HungryComboer::UpdateParamsSettings()
 {
 	Enemy::UpdateParamsSettings();
-	if (limitedEating)
+
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	maxEdible = jParams->numJuggles;
+
+	if (maxEdible == 0)
 	{
-		JugglerParams *jParams = (JugglerParams*)editParams;
-		maxEdible = jParams->numJuggles;
+		limitedEating = false;
+	}
+	else
+	{
+		limitedEating = true;
 		UpdateEatenNumberText(maxEdible);
 	}
 }
@@ -33,37 +41,8 @@ HungryComboer::HungryComboer(ActorParams *ap)
 	SetLevel(ap->GetLevel());
 
 	origScale = scale;
-
-	const string &typeName = ap->GetTypeName();
-	if (typeName == "hungrycomboer")
-	{
-		returnsToPlayer = false;
-		maxWaitFrames = 180;
-		limitedEating = false;
-	}
-	else if (typeName == "limitedhungrycomboer")
-	{
-		returnsToPlayer = false;
-		maxWaitFrames = 180;
-		limitedEating = true;
-		//not implemented, not sure if want
-	}
-	else if ( typeName == "hungryreturncomboer")
-	{
-		//sprite.setColor(Color::Green);
-		returnsToPlayer = true;
-		maxWaitFrames = 360;
-		limitedEating = false;
-	}
-	else if (typeName == "limitedhungryreturncomboer")
-	{
-		//sprite.setColor(Color::Green);
-		returnsToPlayer = true;
-		maxWaitFrames = 360;
-		limitedEating = true;
-		//not implemented, not sure if want
-	}
 	
+	maxWaitFrames = 180;
 
 	numEatenText.setFont(sess->mainMenu->arial);
 	numEatenText.setFillColor(Color::White);
@@ -103,6 +82,7 @@ HungryComboer::HungryComboer(ActorParams *ap)
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -110,7 +90,7 @@ HungryComboer::HungryComboer(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::RED;
 
 	comboObj->enemyHitBody.BasicCircleSetup(origSize, GetPosition());
 
@@ -126,6 +106,9 @@ HungryComboer::HungryComboer(ActorParams *ap)
 	animFactor[S_TRACKPLAYER] = 1;
 	animFactor[S_TRACKENEMY] = 1;
 	animFactor[S_RETURN] = 6;
+
+	//actionLength[S_WAIT] = 10;
+	//animFactor[S_WAIT] = 1;
 
 	ResetEnemy();
 }
@@ -197,6 +180,7 @@ void HungryComboer::UpdateEatenNumberText(int reps)
 			+ numEatenText.getLocalBounds().width / 2,
 			numEatenText.getLocalBounds().top
 			+ numEatenText.getLocalBounds().height / 2);
+		numEatenText.setPosition(sprite.getPosition());
 	}
 }
 
@@ -219,8 +203,10 @@ void HungryComboer::Return()
 
 	sess->PlayerRemoveActiveComboer(comboObj);
 
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	HurtboxesOff();
+	HitboxesOff();
+
+	receivedHit.SetEmpty();
 
 	scale = origScale;
 	UpdateScale();
@@ -236,8 +222,8 @@ void HungryComboer::Pop()
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	HurtboxesOff();
+	HitboxesOff();
 	data.waitFrame = 0;
 }
 
@@ -254,6 +240,14 @@ void HungryComboer::PopThrow()
 	sess->PlayerAddActiveComboObj(comboObj);
 }
 
+void HungryComboer::IHitPlayer(int index)
+{
+	if (action != S_FLOAT)
+	{
+		Eat();
+	}
+}
+
 void HungryComboer::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)
@@ -266,6 +260,21 @@ void HungryComboer::ProcessHit()
 			data.chaseTarget = NULL;
 			frame = 0;
 			PopThrow();
+
+			if (!limitedEating)
+			{
+				if (hasMonitor && !suppressMonitor)
+				{
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
+					suppressMonitor = true;
+					PlayKeyDeathSound();
+				}
+
+				sess->PlayerConfirmEnemyNoKill(this);
+				ConfirmHitNoKill();
+			}
+
 		}
 		else
 		{
@@ -286,20 +295,37 @@ void HungryComboer::ProcessState()
 		switch (action)
 		{
 		case S_FLY:
-			action = S_TRACKENEMY;
+			action = S_TRACKPLAYER;//S_TRACKENEMY;
+			frame = 0;
 			DefaultHurtboxesOn();
+			DefaultHitboxesOn();
 			break;
 		case S_RETURN:
 			UpdateEatenNumberText(maxEdible);
 			SetCurrPosInfo(startPosInfo);
 			DefaultHitboxesOn();
 			DefaultHurtboxesOn();
+			action = S_FLOAT;
+			frame = 0;
 			break;
 		}
 	}
 
+	/*if (action == S_TRACKENEMY)
+	{
+		if (sess->GetPlayer(0)->IsBlockAction(sess->GetPlayer(0)->action))
+		{
+			action = S_WAIT;
+			frame = 0;
+			data.waitFrame = 0;
+			data.chaseTarget = NULL;
+			data.velocity = V2d();
+			DefaultHurtboxesOn();
+		}
+	}*/
 
-	if (action == S_TRACKENEMY)
+
+	if (action == S_TRACKENEMY || action == S_TRACKPLAYER )
 	{
 		if (data.chaseTarget != NULL && data.chaseTarget->dead)
 		{
@@ -310,17 +336,25 @@ void HungryComboer::ProcessState()
 		{
 			Enemy *foundEnemy = NULL;
 			int foundIndex = 0;
-			if (GetClosestEnemyPos(GetPosition(), 1000, foundEnemy, foundIndex))
+			double checkRadius = 300;
+			if (GetClosestEnemyPos(GetPosition(), checkRadius, foundEnemy, foundIndex))
 			{
+				action = S_TRACKENEMY;
 				data.chaseTarget = foundEnemy;
 				data.chaseIndex = foundIndex;
+			}
+			else
+			{
+				action = S_TRACKPLAYER;
+				data.chaseTarget = NULL;
+				//frame = 0;
 			}
 		}
 	}
 
 	if ((action == S_TRACKENEMY && data.chaseTarget != NULL) || action == S_TRACKPLAYER)
 	{
-		double accel = 1;// .5;//.5;
+		double accel = 1.5;//max( 1.0, 3.0 / ((double)data.waitFrame / maxWaitFrames));// / 3;//1.5;// .5;//.5;
 		V2d trackPos = GetTrackPos();
 		V2d trackDir = normalize(trackPos - GetPosition());
 		data.velocity += trackDir * accel;
@@ -355,19 +389,8 @@ bool HungryComboer::IsValidTrackEnemy(Enemy *e)
 	return false;
 }
 
-void HungryComboer::ComboKill(Enemy *e)
+void HungryComboer::Eat()
 {
-	if (data.chaseTarget == e)
-	{
-		data.chaseTarget = NULL;
-	}
-
-	if (returnsToPlayer)
-	{
-		action = S_TRACKPLAYER;
-		frame = 0;
-	}
-
 	++data.numEaten;
 
 	if (limitedEating && data.numEaten == maxEdible)
@@ -375,28 +398,45 @@ void HungryComboer::ComboKill(Enemy *e)
 		if (hasMonitor && !suppressMonitor)
 		{
 			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-				sess->GetPlayer(0), 1, GetPosition());
+			sess->GetPlayer(0), 1, GetPosition());
 			suppressMonitor = true;
+			PlayKeyDeathSound();
 		}
 		Return();
-
-		return;
-	}
-	UpdateEatenNumberText(maxEdible - data.numEaten);
-	
-	if (data.growthLevel < numGrowthLevels)
-	{
-		data.growthLevel++;
-		scale += .2;
-		UpdateScale();
 	}
 	else
 	{
-		//scale = origScale;
-		//growthLevel = 0;
-		//UpdateScale();
+		UpdateEatenNumberText(maxEdible - data.numEaten);
+
+		if (data.growthLevel < numGrowthLevels)
+		{
+			data.growthLevel++;
+			scale += .2;
+			UpdateScale();
+		}
+		else
+		{
+			//scale = origScale;
+			//growthLevel = 0;
+			//UpdateScale();
+		}
 	}
-	
+}
+
+void HungryComboer::ComboKill(Enemy *e)
+{
+	if (data.chaseTarget == e)
+	{
+		data.chaseTarget = NULL;
+	}
+
+	/*if (returnsToPlayer)
+	{
+		action = S_TRACKPLAYER;
+		frame = 0;
+	}*/
+
+	Eat();
 }
 
 void HungryComboer::DirectKill()
@@ -483,7 +523,7 @@ void HungryComboer::UpdateScale()
 
 void HungryComboer::FrameIncrement()
 {
-	if (action == S_FLY || action == S_TRACKENEMY || action == S_TRACKPLAYER)
+	if (action == S_FLY || action == S_TRACKENEMY || action == S_TRACKPLAYER )//|| action == S_WAIT )
 	{
 		if (data.waitFrame == maxWaitFrames)
 		{
@@ -537,15 +577,16 @@ void HungryComboer::UpdateSprite()
 		break;
 	}
 
-	if (returnsToPlayer)
+	sprite.setTextureRect(ts->GetSubRect(8));
+	
+	if (action == S_RETURN)
 	{
-		sprite.setTextureRect(ts->GetSubRect(9));
+		sprite.setColor(Color::Blue);
 	}
 	else
 	{
-		sprite.setTextureRect(ts->GetSubRect(8));
+		sprite.setColor(Color::White);
 	}
-	
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -558,7 +599,16 @@ void HungryComboer::UpdateSprite()
 
 void HungryComboer::EnemyDraw(sf::RenderTarget *target)
 {
+	/*sf::CircleShape cs;
+	cs.setRadius(300);
+	cs.setPosition(sprite.getPosition());
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	cs.setFillColor(Color(255, 0, 0, 100));
+	target->draw(cs);*/
+
 	DrawSprite(target, sprite);
+
+	
 
 	if (limitedEating)
 	{

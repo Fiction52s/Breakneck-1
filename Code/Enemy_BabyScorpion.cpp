@@ -79,7 +79,7 @@ void BabyScorpion::ProcessHit()
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 
-		if (receivedHit.hType == HitboxInfo::COMBO)
+		if (receivedHit.comboer)//hType == HitboxInfo::COMBO)
 		{
 			Enemy *che = sess->GetEnemyFromID(comboHitEnemyID);
 			che->ComboKill(this);

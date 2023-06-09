@@ -16,12 +16,21 @@ using namespace sf;
 void GroundedGrindJuggler::UpdateParamsSettings()
 {
 	Enemy::UpdateParamsSettings();
-	if (limitedJuggles)
+	GroundedGrindJugglerParams *gjParams = (GroundedGrindJugglerParams*)editParams;
+
+	juggleReps = gjParams->numJuggles;
+
+	if (juggleReps == 0)
 	{
-		JugglerParams *jParams = (JugglerParams*)editParams;
-		juggleReps = jParams->numJuggles;
+		limitedJuggles = false;
+	}
+	else
+	{
+		limitedJuggles = true;
 		UpdateJuggleRepsText(juggleReps);
 	}
+
+	clockwise = gjParams->clockwise;
 }
 
 GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
@@ -31,28 +40,6 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	SetEditorActions(S_IDLE, S_IDLE, 0);
 
 	SetLevel(ap->GetLevel());
-
-	const string &typeName = ap->GetTypeName();
-	if (typeName == "groundedgrindjugglercw")
-	{
-		limitedJuggles = false;
-		clockwise = true;
-	}
-	else if (typeName == "limitedgroundedgrindjugglercw")
-	{
-		limitedJuggles = true;
-		clockwise = true;
-	}
-	else if (typeName == "groundedgrindjugglerccw")
-	{
-		limitedJuggles = false;
-		clockwise = false;
-	}
-	else if (typeName == "limitedgroundedgrindjugglerccw")
-	{
-		limitedJuggles = true;
-		clockwise = false;
-	}
 
 	numJugglesText.setFont(sess->mainMenu->arial);
 	numJugglesText.setFillColor(Color::White);
@@ -65,6 +52,9 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	pushStart = 20;
 
 	maxWaitFrames = 180;
+
+	idleTurnDegrees = 1;
+	moveTurnDegrees = 1;
 
 	CreateSurfaceMover(startPosInfo, 10, this);
 
@@ -84,6 +74,7 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -91,7 +82,7 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::ORANGE;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
@@ -121,7 +112,7 @@ void GroundedGrindJuggler::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 1.5;
 		break;
 	case 2:
 		scale = 2.0;
@@ -144,16 +135,20 @@ void GroundedGrindJuggler::UpdateJuggleRepsText(int reps)
 			+ numJugglesText.getLocalBounds().width / 2,
 			numJugglesText.getLocalBounds().top
 			+ numJugglesText.getLocalBounds().height / 2);
+		numJugglesText.setPosition(sprite.getPosition());
 	}
 }
 
 void GroundedGrindJuggler::ResetEnemy()
 {
+	data.doneBeingHittable = false;
+
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 	
 	comboObj->Reset();
 	
+	data.currAngle = 0;
 
 	DefaultHurtboxesOn();
 
@@ -213,6 +208,8 @@ void GroundedGrindJuggler::Return()
 
 	sess->PlayerRemoveActiveComboer(comboObj);
 
+	data.doneBeingHittable = true;
+
 	HurtboxesOff();
 
 	data.currJuggle = 0;
@@ -237,14 +234,35 @@ void GroundedGrindJuggler::ProcessHit()
 					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
 						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
+					PlayKeyDeathSound();
 				}
 
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
-				Return();
+
+				action = S_GRIND;
+				frame = 0;
+				Push(pushStart);
+
+				data.doneBeingHittable = true;
 			}
 			else
 			{
+				if (!limitedJuggles)
+				{
+					if (hasMonitor && !suppressMonitor)
+					{
+						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+							sess->GetPlayer(0), 1, GetPosition());
+						suppressMonitor = true;
+						PlayKeyDeathSound();
+					}
+
+					sess->PlayerConfirmEnemyNoKill(this);
+					ConfirmHitNoKill();
+				}
+
+
 				action = S_GRIND;
 				frame = 0;
 				Push(pushStart);
@@ -272,6 +290,10 @@ void GroundedGrindJuggler::ProcessState()
 			UpdateJuggleRepsText(juggleReps);
 			surfaceMover->Set(startPosInfo);
 			DefaultHurtboxesOn();
+			action = S_IDLE;
+			frame = 0;
+			data.currAngle = 0;
+			data.doneBeingHittable = false;
 			break;
 		case S_GRIND:
 			action = S_SLOW;
@@ -280,7 +302,28 @@ void GroundedGrindJuggler::ProcessState()
 		}
 	}
 
-	
+	if (action == S_IDLE)
+	{
+		if (clockwise)
+		{
+			data.currAngle += idleTurnDegrees;
+		}
+		else
+		{
+			data.currAngle += -idleTurnDegrees;
+		}
+	}
+	else if (action == S_GRIND || action == S_SLOW )
+	{
+		if (clockwise)
+		{
+			data.currAngle += moveTurnDegrees * surfaceMover->GetGroundSpeed();
+		}
+		else
+		{
+			data.currAngle += -moveTurnDegrees * surfaceMover->GetGroundSpeed();
+		}
+	}
 
 
 	/*if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
@@ -464,6 +507,17 @@ void GroundedGrindJuggler::UpdateSprite()
 		}
 		
 	}
+
+	if (data.doneBeingHittable)
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
+
+	sprite.setRotation(data.currAngle);
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

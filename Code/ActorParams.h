@@ -20,6 +20,13 @@ struct BasicGroundEnemyParams : public ActorParams
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	virtual void WriteSpecialParams(std::ofstream &of) {}
+
+
+	void SetPanelInfo();
+	void SetParams();
+	virtual void SetSpecialParams() {}
+	virtual void SetSpecialPanelInfo() {}
+
 	ActorParams *Copy();
 };
 
@@ -452,7 +459,7 @@ struct GrindJugglerParams : public BasicAirEnemyParams
 	void WriteSpecialParams(std::ofstream &of);
 	ActorParams *Copy();
 
-	int numKills;
+	int numJuggles;
 	bool clockwise;
 };
 
@@ -468,7 +475,7 @@ struct GroundedGrindJugglerParams : public BasicGroundEnemyParams
 	void WriteSpecialParams(std::ofstream &of);
 	ActorParams *Copy();
 
-	int numKills;
+	int numJuggles;
 	bool clockwise;
 };
 

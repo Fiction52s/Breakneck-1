@@ -328,7 +328,7 @@ void Blocker::ProcessHit()
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 
-		if (receivedHit.hType == HitboxInfo::COMBO)
+		if (receivedHit.comboer)
 		{
 			Enemy *che = sess->GetEnemyFromID(comboHitEnemyID);
 			che->ComboKill(this);

@@ -15,6 +15,8 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 		S_RAILGRIND,
 		S_GRIND,
 		S_RETURN,
+		S_FLY_FROM_GRIND,
+		S_HITFLY_FROM_GRIND,
 		S_Count
 	};
 
@@ -23,29 +25,32 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	{
 		int currHits;
 		V2d velocity;
-		int numKilled;
+		int juggleTextNumber;
+		int currJuggle;
 		int waitFrame;
-		int numKilledTextNumber;
+		bool doneBeingHittable;
+		float currAngle;
 	};
 
 	MyData data;
 
-	bool limitedKills;
-	sf::Text numKilledText;
+	bool limitedJuggles;
+	sf::Text numJugglesText;
+
+	float idleTurnDegrees;
+	float moveTurnDegrees;
 
 	
 	Edge *railEdge;
 	double railQuant;
 	double railSpeed;
 
-	
+	int juggleReps;
 
 	int hitLimit;
 	
 
 	Tileset *ts;
-
-	int maxKilled;
 	
 
 	double flySpeed;
@@ -58,6 +63,7 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	GrindJuggler(ActorParams *ap);
 	~GrindJuggler();
 	void SetLevel(int lev);
+	void FlyFromGrind();
 	void UpdateParamsSettings();
 	void HitTerrainAerial(Edge * edge, double quant);
 	void HandleEntrant(QuadTreeEntrant *qte);
@@ -77,7 +83,7 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	void PopThrow();
 	void DirectKill();
 	void ExtraQueries(sf::Rect<double> &r);
-	void UpdateKilledNumberText(int reps);
+	void UpdateJuggleRepsText(int reps);
 
 	void LeaveRail();
 	void BoardRail();

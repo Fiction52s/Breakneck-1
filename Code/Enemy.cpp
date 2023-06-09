@@ -1698,7 +1698,7 @@ void Enemy::ConfirmHitNoKill()
 	assert(!receivedHit.IsEmpty());
 
 	HitboxInfo::HitboxType hType = receivedHit.hType;
-	if (hType == HitboxInfo::COMBO)
+	if (receivedHit.comboer)
 	{
 		pauseFrames = 5;
 	}
@@ -1721,7 +1721,7 @@ void Enemy::ConfirmHitNoKill()
 	
 	HandleHitAndSurvive();
 
-	if (hType != HitboxInfo::COMBO)
+	if (!receivedHit.comboer)
 	{
 		sess->cam.SetRumble(.5, .5, pauseFrames);
 	}
@@ -1755,7 +1755,7 @@ void Enemy::ConfirmKill()
 	{
 		hType = HitboxInfo::HitboxType::NORMAL;
 	}
-	if (hType == HitboxInfo::COMBO )
+	if (receivedHit.comboer)
 	{
 		pauseFrames = 7;
 		Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
@@ -1781,7 +1781,7 @@ void Enemy::ConfirmKill()
 		sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
 	}
 
-	if (hType != HitboxInfo::COMBO)
+	if (!receivedHit.comboer)
 	{
 		sess->cam.SetRumble(1.5, 1.5, 7);
 	}
@@ -2398,12 +2398,15 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 		if (hit != NULL)
 		{
 			receivedHit = *hit;
+			if (receivedHit.hDir.x == 0 && receivedHit.hDir.y == 0)
+			{
+				receivedHit.hDir = normalize(e->GetPosition() - player->position);;
+			}
 		}
 		else
 		{
 			receivedHit.SetEmpty();
 		}
-		
 
 		receivedHitPlayerIndex = player->actorIndex;
 		if (receivedHit.IsEmpty())

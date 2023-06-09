@@ -6707,6 +6707,20 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 			currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
 		}
 		break;
+	/*case HOMINGATTACK:
+	case SPRINGSTUNHOMINGATTACK:
+	{
+		if (velocity.x == 0 && velocity.y == 0)
+		{
+			currHitboxInfo->hDir = V2d(0, 0);
+		}
+		else
+		{
+			currHitboxInfo->hDir = normalize(velocity);
+		}
+		
+		break;
+	}*/
 	default:
 		currHitboxInfo->hDir = V2d(0, 0);//HitboxInfo::HitDirection::NONE;
 		break;
@@ -8308,19 +8322,25 @@ bool Actor::CheckWall( bool right )
 
 		if( (one && en.x < 0 && en.y > 0 ) )
 		{
-			V2d te = e1->v1 - e1->v0;
-			if( te.x > 0 )
+			if (e1 != NULL)
 			{
-				return true;
+				V2d te = e1->v1 - e1->v0;
+				if (te.x > 0)
+				{
+					return true;
+				}
 			}
 		}
 
 		if( (zero && en.x > 0 && en.y > 0 ) )
 		{
-			V2d te = e0->v0 - e0->v1;
-			if( te.x < 0 )
+			if (e0 != NULL)
 			{
-				return true;
+				V2d te = e0->v0 - e0->v1;
+				if (te.x < 0)
+				{
+					return true;
+				}
 			}
 		}
 	}

@@ -22,6 +22,7 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 		int juggleTextNumber;
 		int currJuggle;
 		int waitFrame;
+		bool doneBeingHittable;
 	};
 	MyData data;
 

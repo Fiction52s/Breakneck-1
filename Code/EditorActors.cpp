@@ -314,11 +314,7 @@ Panel *ActorType::CreatePanel()
 		p->AddBasicTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
 
-	else if (name == "grindjugglercw"
-		|| name == "grindjugglerccw"
-		|| name == "groundedgrindjugglercw"
-		|| name == "groundedgrindjugglerccw"
-		|| name == "hungrycomboer"
+	else if (name == "hungrycomboer"
 		|| name == "hungryreturncomboer"
 		|| name == "relativecomboer"
 		|| name == "relativecomboerdetach"
@@ -333,10 +329,10 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
 	}
-	else if (name == "grindjuggler")
+	else if (name == "grindjuggler" || name == "groundedgrindjuggler")
 	{
 		p = CreateDefaultPanel();
-		AddLabeledSlider(p, "numKills", "required kills:", 0, 9, 0);
+		AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
 		p->AddLabel("clockwiselabel", Vector2i(0, 0), 28, "Clockwise:");
 		p->AddCheckBox("clockwise", Vector2i(0, 0), true);
 	}

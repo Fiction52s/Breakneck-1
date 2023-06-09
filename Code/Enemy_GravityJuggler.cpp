@@ -133,6 +133,7 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -140,7 +141,8 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::GREEN;
+	
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
@@ -216,6 +218,8 @@ void GravityJuggler::Return()
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	HurtboxesOff();
+
+	data.doneBeingHittable = true;
 
 	data.currJuggle = 0;
 
@@ -306,6 +310,7 @@ void GravityJuggler::ProcessHit()
 					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
 						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
+					PlayKeyDeathSound();
 				}
 
 				sess->PlayerConfirmEnemyNoKill(this);
@@ -324,6 +329,7 @@ void GravityJuggler::ProcessHit()
 						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
 							sess->GetPlayer(0), 1, GetPosition());
 						suppressMonitor = true;
+						PlayKeyDeathSound();
 					}
 
 					sess->PlayerConfirmEnemyNoKill(this);

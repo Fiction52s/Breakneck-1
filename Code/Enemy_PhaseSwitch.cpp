@@ -171,12 +171,11 @@ void PhaseSwitch::ProcessHit()
 		{
 			hType = HitboxInfo::HitboxType::NORMAL;
 		}
-		if (hType == HitboxInfo::COMBO)
+		if (receivedHit.comboer)
 		{
 			pauseFrames = 7;
 			Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
 			ce->ComboKill(this);
-
 		}
 		else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
 		{
@@ -190,7 +189,7 @@ void PhaseSwitch::ProcessHit()
 
 		pauseFramesFromAttacking = false;
 
-		if (hType != HitboxInfo::COMBO)
+		if (!receivedHit.comboer)
 		{
 			sess->cam.SetRumble(1.5, 1.5, 7);
 		}

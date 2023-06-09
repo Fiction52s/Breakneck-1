@@ -113,7 +113,6 @@ struct HitboxInfo
 		WIREHITRED,
 		WIREHITBLUE,
 		SCORPIONSTRIKE,
-		COMBO,
 		NO_HITBOX,
 		Count
 	};
@@ -175,6 +174,7 @@ struct HitboxInfo
 		flipVerticalKB = false;
 		reversableKnockback = true;
 		sensor = false;
+		comboer = false;
 	}
 
 	static bool IsAirType(HitPosType hpt);
@@ -211,6 +211,7 @@ struct HitboxInfo
 	bool flipVerticalKB;
 	bool reversableKnockback;
 	bool sensor; //doesn't register as recent hitter
+	bool comboer;
 	
 };
 

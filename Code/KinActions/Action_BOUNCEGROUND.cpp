@@ -72,6 +72,25 @@ void Actor::BOUNCEGROUND_Change()
 		}
 		else
 		{
+			//dj refresh just like walljump, can turn into a function later
+			if (hasWallJumpRechargeAirDash && !hasAirDash)
+			{
+				hasAirDash = true;
+
+				if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+				{
+					numRemainingExtraAirdashBoosts = 1;
+				}
+
+				hasWallJumpRechargeAirDash = false;
+			}
+			if (hasWallJumpRechargeDoubleJump && !hasDoubleJump)
+			{
+				hasDoubleJump = true;
+				hasWallJumpRechargeDoubleJump = false;
+			}
+
+
 			if (currInput.LUp())
 			{
 				vDir = normalize(vDir + V2d(0, -extraBUp));

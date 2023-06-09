@@ -15,6 +15,7 @@ struct HungryComboer : Enemy, EnemyTracker
 		S_TRACKPLAYER,
 		S_TRACKENEMY,
 		S_RETURN,
+		S_WAIT,
 		A_Count
 	};
 
@@ -39,8 +40,6 @@ struct HungryComboer : Enemy, EnemyTracker
 
 	Tileset *ts;
 
-	bool returnsToPlayer;
-
 	
 	int numGrowthLevels;
 	double origScale;
@@ -64,6 +63,8 @@ struct HungryComboer : Enemy, EnemyTracker
 	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
+	void Eat();
+	void IHitPlayer(int index);
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	void ComboHit();

@@ -78,7 +78,7 @@ void Shield::ConfirmHitNoKill()
 {
 	assert(!receivedHit.IsEmpty());
 
-	if (receivedHit.hType != HitboxInfo::COMBO)
+	if (!receivedHit.comboer)
 	{
 		//parent->sess->Pause(5);
 		data.pauseFrames = receivedHit.hitlagFrames;
@@ -104,7 +104,7 @@ void Shield::ConfirmKill()
 {
 	assert(!receivedHit.IsEmpty());
 
-	if (receivedHit.hType != HitboxInfo::COMBO)
+	if (!receivedHit.comboer)
 	{
 		//parent->sess->Pause(7);
 		data.pauseFrames = 7;
@@ -141,7 +141,7 @@ void Shield::ProcessHit()
 			{
 				data.action = S_HURT;
 			}
-			else if (sType == T_REFLECT && receivedHit.hType != HitboxInfo::HitboxType::COMBO)
+			else if (sType == T_REFLECT && !receivedHit.comboer)
 			{
 				data.action = S_REFLECT;
 				parent->sess->PlayerApplyHit(GetReceivedHitPlayerIndex(),

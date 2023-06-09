@@ -469,7 +469,8 @@ void Session::RegisterW4Enemies()
 
 	//comboers
 	AddWorldEnemy("Grind\nJuggler", "grindjuggler", 4, comboerRow, CreateEnemy<GrindJuggler>, SetParamsType<GrindJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	AddBasicGroundWorldEnemy("Grounded\nGrind\nJuggler", "groundedgrindjuggler", 4, comboerRow, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddWorldEnemy("Grounded\nGrind\nJuggler", "groundedgrindjuggler", 4, comboerRow, CreateEnemy<GroundedGrindJuggler>, SetParamsType<GroundedGrindJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), 
+		true, true, false, false, false, true, false, 3);
 
 	//targets
 	AddBasicAerialWorldEnemy("Orange\nComboer\nTarget", "orangecomboertarget", 4, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
@@ -510,10 +511,12 @@ void Session::RegisterW5Enemies()
 	//AddWorldEnemy("limitedrelativecomboer", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//comboers
-	AddBasicAerialWorldEnemy("Hungry\nComboer", "hungrycomboer", 5, comboerRow, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Hungry\nReturn\nComboer", "hungryreturncomboer", 5, comboerRow, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Relative\nComboer", "relativecomboer", 5, comboerRow, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Relative\nDetach\nComboer", "relativecomboerdetach", 5, comboerRow, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddWorldEnemy("Hungry\nComboer", "hungrycomboer", 5, comboerRow, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	//AddWorldEnemy("Hungry\nReturn\nComboer", "hungryreturncomboer", 5, comboerRow, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+
+
+	AddWorldEnemy("Relative\nComboer", "relativecomboer", 5, comboerRow, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Relative\nDetach\nComboer", "relativecomboerdetach", 5, comboerRow, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//targets
 	AddBasicAerialWorldEnemy("Red\nComboer\nTarget", "redcomboertarget", 5, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);

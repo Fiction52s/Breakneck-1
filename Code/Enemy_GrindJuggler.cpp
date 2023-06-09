@@ -19,19 +19,20 @@ void GrindJuggler::UpdateParamsSettings()
 	Enemy::UpdateParamsSettings();
 
 	GrindJugglerParams *gjParams = (GrindJugglerParams*)editParams;
-	maxKilled = gjParams->numKills;
 
-	clockwise = gjParams->clockwise;
+	juggleReps = gjParams->numJuggles;
 
-	if (maxKilled == 0)
+	if (juggleReps == 0)
 	{
-		limitedKills = false;
+		limitedJuggles = false;
 	}
 	else
 	{
-		limitedKills = true;
-		UpdateKilledNumberText(maxKilled);
+		limitedJuggles = true;
+		UpdateJuggleRepsText(juggleReps);
 	}
+
+	clockwise = gjParams->clockwise;
 }
 
 GrindJuggler::GrindJuggler(ActorParams *ap)
@@ -42,15 +43,15 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	numKilledText.setFont(sess->mainMenu->arial);
-	numKilledText.setFillColor(Color::White);
-	numKilledText.setOutlineColor(Color::Black);
-	numKilledText.setOutlineThickness(3);
-	numKilledText.setCharacterSize(32);
+	numJugglesText.setFont(sess->mainMenu->arial);
+	numJugglesText.setFillColor(Color::White);
+	numJugglesText.setOutlineColor(Color::Black);
+	numJugglesText.setOutlineThickness(3);
+	numJugglesText.setCharacterSize(32);
 
 	flySpeed = 10;
 
-	maxWaitFrames = 100000;//180;
+	maxWaitFrames = 180;//180;
 
 	CreateSurfaceMover(startPosInfo, 10, this);
 
@@ -64,8 +65,12 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 
 	BasicCircleHurtBodySetup(48);
 
+	idleTurnDegrees = 1;
+	moveTurnDegrees = 10;
+
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -73,18 +78,20 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::ORANGE;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_FLY] = 10;
 	actionLength[S_GRIND] = 10;
+	actionLength[S_FLY_FROM_GRIND] = 10;
 	actionLength[S_RETURN] = 30;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_FLY] = 1;
 	animFactor[S_GRIND] = 1;
+	animFactor[S_FLY_FROM_GRIND] = 1;
 	animFactor[S_RETURN] = 1;
 
 	ResetEnemy();
@@ -101,7 +108,7 @@ void GrindJuggler::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 1.5;
 		break;
 	case 2:
 		scale = 2.0;
@@ -138,6 +145,11 @@ void GrindJuggler::BoardRail()
 
 void GrindJuggler::ResetEnemy()
 {
+	data.currHits = 0;
+	data.currJuggle = 0;
+	data.doneBeingHittable = false;
+	data.currAngle = 0;
+
 	surfaceMover->SetCollisionOn(true);
 	//surfaceMover-> =railCollisionOn = true;
 	sprite.setTextureRect(ts->GetSubRect(0));
@@ -155,26 +167,25 @@ void GrindJuggler::ResetEnemy()
 	surfaceMover->SetSpeed(0);
 	surfaceMover->ClearAirForces();
 
-	data.numKilled = 0;
 
-	UpdateKilledNumberText(maxKilled);
+	UpdateJuggleRepsText(juggleReps);
 
 	UpdateHitboxes();
 
 	UpdateSprite();
 }
 
-void GrindJuggler::UpdateKilledNumberText(int reps)
+void GrindJuggler::UpdateJuggleRepsText(int reps)
 {
-	if (limitedKills)
+	if (limitedJuggles)
 	{
-		data.numKilledTextNumber = reps;
-		numKilledText.setString(to_string(reps));
-		numKilledText.setOrigin(numKilledText.getLocalBounds().left
-			+ numKilledText.getLocalBounds().width / 2,
-			numKilledText.getLocalBounds().top
-			+ numKilledText.getLocalBounds().height / 2);
-		numKilledText.setPosition(sprite.getPosition());
+		data.juggleTextNumber = reps;
+		numJugglesText.setString(to_string(reps));
+		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
+			+ numJugglesText.getLocalBounds().width / 2,
+			numJugglesText.getLocalBounds().top
+			+ numJugglesText.getLocalBounds().height / 2);
+		numJugglesText.setPosition(sprite.getPosition());
 	}
 }
 
@@ -199,9 +210,13 @@ void GrindJuggler::Return()
 
 	HurtboxesOff();
 
+	data.doneBeingHittable = true;
+
 	surfaceMover->ground = NULL;
 
-	data.numKilled = 0;
+	data.currJuggle = 0;
+
+	UpdateJuggleRepsText(0);
 
 	numHealth = maxHealth;
 }
@@ -213,31 +228,53 @@ void GrindJuggler::Pop()
 	numHealth = maxHealth;
 	HurtboxesOff();
 	data.waitFrame = 0;
+
+	++data.currJuggle;
+
+	UpdateJuggleRepsText(juggleReps - data.currJuggle);
 }
 
 void GrindJuggler::PopThrow()
 {
-	V2d dir;
-
-	dir = Get8Dir(receivedHit.hDir);//normalize(receivedHit->hDir);
-							//cout << "dir: " << dir.x << "," << dir.y << endl;
-	if (dir.x == 0 && dir.y == 0)
+	if (action == S_GRIND)
 	{
-		dir = normalize(V2d(data.velocity.y, -data.velocity.x));//-normalize(velocity);
-		assert(dir.x != 0 || dir.y != 0);
+		action = S_HITFLY_FROM_GRIND;
+		frame = 0;
+
+		surfaceMover->SetSpeed(0);
+
+		surfaceMover->SetVelocity(surfaceMover->ground->Normal() * flySpeed);
+		surfaceMover->ground = NULL;
+
+		Pop();
+	}
+	else
+	{
+		V2d dir;
+
 		action = S_FLY;
 		frame = 0;
+
+		dir = Get8Dir(receivedHit.hDir);//normalize(receivedHit->hDir);
+										//cout << "dir: " << dir.x << "," << dir.y << endl;
+		if (dir.x == 0 && dir.y == 0)
+		{
+			dir = normalize(V2d(data.velocity.y, -data.velocity.x));//-normalize(velocity);
+			assert(dir.x != 0 || dir.y != 0);
+			action = S_FLY;
+			frame = 0;
+		}
+
+		double speed = 14;
+
+		V2d hit = dir * speed;
+
+		Pop();
+
+		Throw(hit);
+
+		sess->PlayerAddActiveComboObj(comboObj);
 	}
-
-	double speed = 14;
-
-	V2d hit = dir * speed;
-
-	Pop();
-
-	Throw(hit);
-
-	sess->PlayerAddActiveComboObj(comboObj);
 }
 
 void GrindJuggler::ProcessHit()
@@ -246,12 +283,59 @@ void GrindJuggler::ProcessHit()
 	{
 		numHealth -= 1;
 
-		//Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
-		{
-			action = S_FLY;
-			frame = 0;
-			PopThrow();
+		{			
+			if (limitedJuggles && data.currJuggle == juggleReps - 1)
+			{
+				if (hasMonitor && !suppressMonitor)
+				{
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
+					suppressMonitor = true;
+					PlayKeyDeathSound();
+				}
+
+				sess->PlayerConfirmEnemyNoKill(this);
+				ConfirmHitNoKill();
+
+				PopThrow();
+
+
+				data.doneBeingHittable = true;
+
+			}
+			else
+			{
+				if (!limitedJuggles)
+				{
+					if (hasMonitor && !suppressMonitor)
+					{
+						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+							sess->GetPlayer(0), 1, GetPosition());
+						suppressMonitor = true;
+						PlayKeyDeathSound();
+					}
+
+					sess->PlayerConfirmEnemyNoKill(this);
+					ConfirmHitNoKill();
+				}
+
+				PopThrow();
+			}
+			/*if (!!limitedKills)
+			{
+				if (hasMonitor && !suppressMonitor)
+				{
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
+					suppressMonitor = true;
+				}
+
+				sess->PlayerConfirmEnemyNoKill(this);
+				ConfirmHitNoKill();
+			}
+
+			PopThrow();*/
 		}
 		else
 		{
@@ -279,9 +363,13 @@ void GrindJuggler::ProcessState()
 		{
 		case S_RETURN:
 		{
-			UpdateKilledNumberText(maxKilled);
+			UpdateJuggleRepsText(juggleReps);
 			surfaceMover->Set(startPosInfo);
 			DefaultHurtboxesOn();
+			action = S_FLOAT;
+			data.currAngle = 0;
+			frame = 0;
+			data.doneBeingHittable = false;
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -292,7 +380,53 @@ void GrindJuggler::ProcessState()
 		}
 	}
 
-
+	if (action == S_FLOAT)
+	{
+		if (clockwise)
+		{
+			data.currAngle += idleTurnDegrees;
+		}
+		else
+		{
+			data.currAngle += -idleTurnDegrees;
+		}
+	}
+	else if (action == S_FLY || action == S_GRIND || action == S_RAILGRIND )
+	{
+		if (clockwise)
+		{
+			data.currAngle += moveTurnDegrees;
+		}
+		else
+		{
+			data.currAngle += -moveTurnDegrees;
+		}
+	}
+	else if (action == S_FLY_FROM_GRIND || action == S_HITFLY_FROM_GRIND)
+	{
+		if (currHurtboxes == NULL)
+		{
+			if (clockwise)
+			{
+				data.currAngle += moveTurnDegrees;
+			}
+			else
+			{
+				data.currAngle += -moveTurnDegrees;
+			}
+		}
+		else
+		{
+			if (clockwise)
+			{
+				data.currAngle += idleTurnDegrees;
+			}
+			else
+			{
+				data.currAngle += -idleTurnDegrees;
+			}
+		}
+	}
 
 
 	/*if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
@@ -335,6 +469,8 @@ void GrindJuggler::UpdateEnemyPhysics()
 	{
 	case S_FLY:
 	case S_GRIND:
+	case S_FLY_FROM_GRIND:
+	case S_HITFLY_FROM_GRIND:
 	{
 		Move();
 		break;
@@ -353,7 +489,7 @@ void GrindJuggler::UpdateEnemyPhysics()
 
 void GrindJuggler::FrameIncrement()
 {
-	if (action == S_FLY || action == S_GRIND)
+	if (action == S_FLY || action == S_GRIND || action == S_RAILGRIND || action == S_HITFLY_FROM_GRIND || action == S_FLY_FROM_GRIND)
 	{
 		if (data.waitFrame == maxWaitFrames)
 		{
@@ -361,6 +497,24 @@ void GrindJuggler::FrameIncrement()
 		}
 		else
 		{
+			if (action == S_GRIND)
+			{
+				if (data.waitFrame == 30)
+				{
+					if (!data.doneBeingHittable)
+						DefaultHurtboxesOn();
+				}
+			}
+			else if (action == S_HITFLY_FROM_GRIND)
+			{
+				if (data.waitFrame == 30)
+				{
+					if (!data.doneBeingHittable)
+						DefaultHurtboxesOn();
+				}
+			}
+
+
 			data.waitFrame++;
 		}
 	}
@@ -468,43 +622,33 @@ void GrindJuggler::ComboKill(Enemy *e)
 {
 	if (action == S_GRIND)
 	{
-		action = S_FLY;
-		frame = 0;
+		FlyFromGrind();
+	}
+}
 
-		surfaceMover->SetSpeed(0);
+void GrindJuggler::FlyFromGrind()
+{
+	action = S_FLY_FROM_GRIND;
+	frame = 0;
 
-		surfaceMover->SetVelocity(surfaceMover->ground->Normal() * flySpeed);
-		surfaceMover->ground = NULL;
+	surfaceMover->SetSpeed(0);
 
-		++data.numKilled;
+	surfaceMover->SetVelocity(surfaceMover->ground->Normal() * flySpeed);
+	surfaceMover->ground = NULL;
 
-		if (limitedKills && data.numKilled == maxKilled)
-		{
-			if (hasMonitor && !suppressMonitor)
-			{
-				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-					sess->GetPlayer(0), 1, GetPosition());
-				suppressMonitor = true;
-			}
-			Return();
-
-			return;
-		}
-		UpdateKilledNumberText(maxKilled - data.numKilled);
-
+	if (!data.doneBeingHittable)
 		DefaultHurtboxesOn();
 
-		sess->PlayerRemoveActiveComboer(comboObj);
-	}
+	//sess->PlayerRemoveActiveComboer(comboObj);
 }
 
 void GrindJuggler::ComboHit()
 {
 	pauseFrames = 5;
 	++data.currHits;
+	data.waitFrame = 0;
 	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
-		
 		Return();
 	}
 	else
@@ -539,14 +683,25 @@ void GrindJuggler::UpdateSprite()
 		break;
 	}
 
+	if (data.doneBeingHittable)
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
+
+	sprite.setRotation(data.currAngle);
+
 	sprite.setTextureRect(ts->GetSubRect(6));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 
-	if (limitedKills)
+	if (limitedJuggles)
 	{
-		numKilledText.setPosition(sprite.getPosition());
+		numJugglesText.setPosition(sprite.getPosition());
 	}
 }
 
@@ -554,9 +709,9 @@ void GrindJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 
-	if (limitedKills)
+	if (limitedJuggles)
 	{
-		target->draw(numKilledText);
+		target->draw(numJugglesText);
 	}
 }
 
@@ -599,7 +754,7 @@ void GrindJuggler::SetFromBytes(unsigned char *bytes)
 
 	bytes += sizeof(MyData);
 
-	UpdateKilledNumberText(data.numKilledTextNumber);
+	UpdateJuggleRepsText(data.juggleTextNumber);
 
 	comboObj->SetFromBytes(bytes);
 	bytes += comboObj->GetNumStoredBytes();

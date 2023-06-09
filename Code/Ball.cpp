@@ -99,6 +99,7 @@ Ball::Ball(ActorParams *ap)
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -106,7 +107,7 @@ Ball::Ball(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::YELLOW;
 
 	comboObj->enemyHitBody.BasicCircleSetup(32, GetPosition());
 
@@ -180,6 +181,8 @@ void Ball::Return()
 
 	HurtboxesOff();
 
+	data.doneBeingHittable = true;
+
 	data.currJuggle = 0;
 
 	UpdateJuggleRepsText(0);
@@ -203,6 +206,9 @@ void Ball::Pop()
 void Ball::PopThrow()
 {
 	V2d dir;
+
+	action = S_FLY;
+	frame = 0;
 
 	dir = receivedHit.hDir;//normalize(receivedHit->hDir);
 							//cout << "dir: " << dir.x << "," << dir.y << endl;
@@ -305,14 +311,14 @@ void Ball::ProcessHit()
 					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
 						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
+					PlayKeyDeathSound();
 				}
 
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				PopThrow();
-				action = S_FLY;
-				frame = 0;
+				
 
 				data.doneBeingHittable = true;
 				
@@ -326,6 +332,7 @@ void Ball::ProcessHit()
 						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
 							sess->GetPlayer(0), 1, GetPosition());
 						suppressMonitor = true;
+						PlayKeyDeathSound();
 					}
 
 					sess->PlayerConfirmEnemyNoKill(this);
@@ -333,8 +340,6 @@ void Ball::ProcessHit()
 				}
 
 				PopThrow();
-				action = S_FLY;
-				frame = 0;
 			}
 		}
 		else
@@ -440,6 +445,7 @@ void Ball::FrameIncrement()
 void Ball::ComboHit()
 {
 	pauseFrames = 5;
+	data.waitFrame = 0;
 	++data.currHits;
 	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{

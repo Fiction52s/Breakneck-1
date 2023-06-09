@@ -44,23 +44,13 @@ Comboer::Comboer(ActorParams *ap )
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 180;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 3;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-	hitboxInfo->hType = HitboxInfo::BLUE;
-
 	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
-	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);	
 
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
+
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -68,7 +58,7 @@ Comboer::Comboer(ActorParams *ap )
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::BLUE;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
@@ -129,7 +119,6 @@ void Comboer::ResetEnemy()
 	velocity = V2d(0, 0);
 	
 	DefaultHurtboxesOn();
-	DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
 	pathFollower.Reset();
@@ -287,7 +276,6 @@ void Comboer::ProcessState()
 			frame = 0;
 			SetCurrPosInfo(startPosInfo);
 			DefaultHurtboxesOn();
-			DefaultHitboxesOn();
 			break;
 		}
 	}

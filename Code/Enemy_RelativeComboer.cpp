@@ -9,6 +9,7 @@
 #include "Enemy_JugglerCatcher.h"
 #include "MainMenu.h"
 #include "AbsorbParticles.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -42,20 +43,10 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 		limitedKills = false;
 		detachOnKill = false;
 	}
-	else if (typeName == "limitedrelativecomboer")
-	{
-		detachOnKill = false;
-		limitedKills = true;
-	}
 	else if (typeName == "relativecomboerdetach")
 	{
 		detachOnKill = true;
 		limitedKills = false;
-	}
-	else if (typeName == "limitedrelativecomboerdetach")
-	{
-		detachOnKill = true;
-		limitedKills = true;
 	}
 	
 
@@ -91,6 +82,7 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -98,7 +90,7 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::RED;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
@@ -275,6 +267,18 @@ void RelativeComboer::ProcessState()
 			break;
 		}
 	}
+
+	if (action == S_ATTACHEDWAIT)
+	{
+		if (sess->GetPlayer(0)->IsBlockAction(sess->GetPlayer(0)->action))
+		{
+			action = S_WAIT;
+			frame = 0;
+			data.waitFrame = 0;
+			data.latchedOn = false;
+			DefaultHurtboxesOn();
+		}
+	}
 }
 
 void RelativeComboer::HandleNoHealth()
@@ -332,7 +336,7 @@ void RelativeComboer::FrameIncrement()
 	{
 		--data.specialPauseFrames;
 	}
-	if (action == S_FLY )
+	if (action == S_FLY || action == S_WAIT )
 	{
 		if (data.waitFrame == maxWaitFrames)
 		{
@@ -434,7 +438,14 @@ void RelativeComboer::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(11));
 	}
 	
-
+	if (action == S_ATTACHEDWAIT)
+	{
+		sprite.setColor(Color::Yellow);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

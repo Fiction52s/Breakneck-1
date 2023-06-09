@@ -24,6 +24,8 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 		int currHits;
 		int juggleTextNumber;
 		V2d velocity;
+		bool doneBeingHittable;
+		float currAngle;
 	};
 	MyData data;
 
@@ -36,6 +38,8 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	double friction;
 	double pushStart;
 	bool clockwise;
+	float idleTurnDegrees;
+	float moveTurnDegrees;
 
 	GroundedGrindJuggler(ActorParams *ap);
 	bool CountsForEnemyGate() { return false; }

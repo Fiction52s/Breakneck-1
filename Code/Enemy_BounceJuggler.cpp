@@ -16,10 +16,16 @@ using namespace sf;
 void BounceJuggler::UpdateParamsSettings()
 {
 	Enemy::UpdateParamsSettings();
-	if (limitedJuggles )
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	juggleReps = jParams->numJuggles;
+
+	if (juggleReps == 0)
 	{
-		JugglerParams *jParams = (JugglerParams*)editParams;
-		juggleReps = jParams->numJuggles;
+		limitedJuggles = false;
+	}
+	else
+	{
+		limitedJuggles = true;
 		UpdateJuggleRepsText(juggleReps);
 	}
 }
@@ -61,19 +67,6 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 	flySpeed = 14;
 	maxWaitFrames = 180;
 
-	
-	
-
-	string &typeName = ap->type->info.name;
-	if (typeName == "bouncejuggler")
-	{
-		limitedJuggles = false;
-	}
-	else if (typeName == "limitedbouncejuggler")
-	{
-		limitedJuggles = true;
-	}
-
 	UpdateParamsSettings();
 
 	CreateSurfaceMover(startPosInfo, 64, this);
@@ -104,6 +97,7 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -111,19 +105,19 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::YELLOW;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_FLY] = 10;
 	actionLength[S_BOUNCE] = 10;
-	actionLength[S_RETURN] = 3;
+	actionLength[S_RETURN] = 30;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_FLY] = 1;
 	animFactor[S_BOUNCE] = 1;
-	animFactor[S_RETURN] = 6;
+	animFactor[S_RETURN] = 1;
 
 	ResetEnemy();
 }
@@ -144,11 +138,14 @@ void BounceJuggler::UpdateJuggleRepsText(int reps)
 			+ numJugglesText.getLocalBounds().width / 2,
 			numJugglesText.getLocalBounds().top
 			+ numJugglesText.getLocalBounds().height / 2);
+		numJugglesText.setPosition(sprite.getPosition());
 	}
 }
 
 void BounceJuggler::ResetEnemy()
 {
+	data.doneBeingHittable = false;
+
 	sprite.setRotation(0);
 	data.currHits = 0;
 	comboObj->Reset();
@@ -226,6 +223,8 @@ void BounceJuggler::PopThrow()
 		//cout << "dir: " << dir.x << "," << dir.y << endl;
 		if (dir.x == 0 && dir.y == 0)
 		{
+			//dir = receivedHit.
+
 			dir = -normalize(surfaceMover->GetVel());
 			assert(dir.x != 0 || dir.y != 0);
 			action = S_BOUNCE;
@@ -263,15 +262,32 @@ void BounceJuggler::ProcessHit()
 					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
 						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
+					PlayKeyDeathSound();
 				}
 
 				sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 				ConfirmHitNoKill();
 
-				Return();
+				PopThrow();
+
+				data.doneBeingHittable = true;
 			}
 			else
 			{
+				if (!limitedJuggles)
+				{
+					if (hasMonitor && !suppressMonitor)
+					{
+						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+							sess->GetPlayer(0), 1, GetPosition());
+						suppressMonitor = true;
+						PlayKeyDeathSound();
+					}
+
+					sess->PlayerConfirmEnemyNoKill(this);
+					ConfirmHitNoKill();
+				}
+
 				PopThrow();
 			}
 		}
@@ -298,6 +314,9 @@ void BounceJuggler::ProcessState()
 			//DefaultHitboxesOn();
 			DefaultHurtboxesOn();
 			UpdateJuggleRepsText(juggleReps);
+			data.doneBeingHittable = false;
+			action = S_FLOAT;
+			frame =  0;
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -392,7 +411,9 @@ void BounceJuggler::ComboKill(Enemy *e)
 
 		action = S_BOUNCE;
 		frame = 0;
-		DefaultHurtboxesOn();
+
+		if(!data.doneBeingHittable)
+			DefaultHurtboxesOn();
 	}
 }
 
@@ -411,6 +432,15 @@ void BounceJuggler::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+	if (data.doneBeingHittable)
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
 
 	if (limitedJuggles)
 	{
@@ -458,7 +488,13 @@ void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 	action = S_BOUNCE;
 	frame = 0;
 	//SetHitboxes(hitBody, 0);
-	DefaultHurtboxesOn();
+
+	if (!data.doneBeingHittable)
+	{
+		DefaultHurtboxesOn();
+	}
+
+	
 }
 
 int BounceJuggler::GetNumStoredBytes()

@@ -300,7 +300,7 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 					}
 					break;
 				case TARGET_COMBOER_RED:
-					if (en->type == EN_RELATIVECOMBOER)
+					if (en->type == EN_RELATIVECOMBOER || en->type == EN_HUNGRYCOMBOER )
 					{
 						validHit = true;
 					}

@@ -1244,6 +1244,67 @@ BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, ifstream &is)
 	}
 }
 
+void BasicGroundEnemyParams::SetPanelInfo()
+{
+	//SetBasicPanelInfo();
+
+	Panel *p = type->panel;
+
+	ParamsInfo &pi = type->info;
+	/*if (pi.writeLevel)
+	{
+	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+	}*/
+
+	if (pi.writeMonitor)
+	{
+		p->checkBoxes["monitor"]->checked = hasMonitor;
+	}
+
+	if (pi.writePath)
+	{
+		EditSession *edit = EditSession::GetSession();
+		MakeGlobalPath(edit->patrolPath);
+	}
+
+	if (pi.writeLoop)
+	{
+		p->checkBoxes["loop"]->checked = loop;
+	}
+
+	SetSpecialPanelInfo();
+}
+
+void BasicGroundEnemyParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+
+	ParamsInfo &pi = type->info;
+
+	/*if (pi.writeLevel)
+	{
+	int level;
+	string s = p->textBoxes["level"]->text.getString().toAnsiString();
+	ss << s;
+
+	ss >> level;
+
+	if (!ss.fail() && level > 0 && level <= pi.numLevels)
+	{
+	enemyLevel = level;
+	}
+	}*/
+
+	if (pi.writeMonitor)
+	{
+		hasMonitor = p->checkBoxes["monitor"]->checked;
+	}
+
+	SetSpecialParams();
+}
+
 void BasicGroundEnemyParams::WriteParamFile(std::ofstream &of)
 {
 	ParamsInfo &pi = type->info;
@@ -1530,14 +1591,14 @@ GrindJugglerParams::GrindJugglerParams(ActorType *at, int level)
 	//enemyLevel = level;
 	//PlaceAerial(pos);
 
-	numKills = 0;
+	numJuggles = 0;
 	clockwise = true;
 }
 
 GrindJugglerParams::GrindJugglerParams(ActorType *at, ifstream &is)
 	: BasicAirEnemyParams(at, is)
 {
-	is >> numKills;
+	is >> numJuggles;
 	int cw;
 	is >> cw;
 	clockwise = cw;
@@ -1545,20 +1606,20 @@ GrindJugglerParams::GrindJugglerParams(ActorType *at, ifstream &is)
 
 void GrindJugglerParams::WriteSpecialParams(std::ofstream &of)
 {
-	of << numKills << endl;
+	of << numJuggles << endl;
 	int cw = clockwise;
 	of << cw << endl;
 }
 
 void GrindJugglerParams::SetSpecialPanelInfo()
 {
-	type->panel->sliders["numKills"]->SetCurrValue(numKills);
+	type->panel->sliders["numJuggles"]->SetCurrValue(numJuggles);
 	type->panel->checkBoxes["clockwise"]->checked = clockwise;
 }
 
 void GrindJugglerParams::SetSpecialParams()
 {
-	numKills = type->panel->sliders["numKills"]->GetCurrValue();
+	numJuggles = type->panel->sliders["numJuggles"]->GetCurrValue();
 	clockwise = type->panel->checkBoxes["clockwise"]->checked;
 }
 
@@ -1575,14 +1636,14 @@ GroundedGrindJugglerParams::GroundedGrindJugglerParams(ActorType *at, int level)
 
 	PlaceAerial(Vector2i(0,0));
 
-	numKills = 0;
+	numJuggles = 0;
 	clockwise = true;
 }
 
 GroundedGrindJugglerParams::GroundedGrindJugglerParams(ActorType *at, ifstream &is)
 	: BasicGroundEnemyParams(at, is)
 {
-	is >> numKills;
+	is >> numJuggles;
 	int cw;
 	is >> cw;
 	clockwise = cw;
@@ -1590,7 +1651,7 @@ GroundedGrindJugglerParams::GroundedGrindJugglerParams(ActorType *at, ifstream &
 
 void GroundedGrindJugglerParams::WriteSpecialParams(std::ofstream &of)
 {
-	of << numKills << endl;
+	of << numJuggles << endl;
 	int cw = clockwise;
 	of << cw << endl;
 }
@@ -1599,25 +1660,16 @@ void GroundedGrindJugglerParams::SetSpecialPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["numKills"]->SetString(boost::lexical_cast<string>(numKills));
+	p->sliders["numJuggles"]->SetCurrValue(numJuggles);
+	p->checkBoxes["clockwise"]->checked = clockwise;
 }
 
 void GroundedGrindJugglerParams::SetSpecialParams()
 {
 	Panel *p = type->panel;
 
-	stringstream ss;
-
-	string numKillsStr = p->textBoxes["numKills"]->text.getString().toAnsiString();
-	ss << numKillsStr;
-
-	int nKills;
-	ss >> nKills;
-
-	if (!ss.fail())
-	{
-		numKills = nKills;
-	}
+	numJuggles = p->sliders["numJuggles"]->GetCurrValue();
+	clockwise = p->checkBoxes["clockwise"]->checked;
 }
 
 ActorParams *GroundedGrindJugglerParams::Copy()

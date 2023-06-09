@@ -55,6 +55,7 @@ SwordProjectile::SwordProjectile()
 	comboObj = new ComboObject(this);
 
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -62,7 +63,7 @@ SwordProjectile::SwordProjectile()
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::GREY;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 

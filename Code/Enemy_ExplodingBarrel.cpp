@@ -78,6 +78,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	explosion.hitboxInfo = &explosionInfo;//hitboxInfo;
 
 	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->comboer = true;
 	comboObj->enemyHitboxInfo->damage = 20;
 	comboObj->enemyHitboxInfo->drainX = .5;
 	comboObj->enemyHitboxInfo->drainY = .5;
@@ -85,7 +86,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hitstunFrames = 30;
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
-	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::YELLOW;
 	comboObj->enemyHitboxInfo->hitPosType = HitboxInfo::HitPosType::OMNI;
 
 	Color exploColor = Color::Red;
@@ -161,7 +162,7 @@ void ExplodingBarrel::ProcessHit()
 			{
 				hType = HitboxInfo::HitboxType::NORMAL;
 			}
-			if (hType == HitboxInfo::COMBO)
+			if (receivedHit.comboer)
 			{
 				pauseFrames = 7;
 				Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
