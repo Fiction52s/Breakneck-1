@@ -73,6 +73,9 @@ void Actor::UPTILT2_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
+
+		TryThrowSwordProjectileBasic();
+
 	}
 
 	AttackMovement();

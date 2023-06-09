@@ -59,6 +59,12 @@ void Actor::WALLATTACK_Update()
 		SetCurrHitboxes(wallHitboxes[speedLevel], frame / 2);
 	}
 
+	if (frame == 0 && slowCounter == 1)
+	{
+
+		TryThrowSwordProjectileBasic();
+
+	}
 
 	if (frame == 0)
 	{

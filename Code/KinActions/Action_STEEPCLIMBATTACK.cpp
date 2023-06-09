@@ -54,6 +54,12 @@ void Actor::STEEPCLIMBATTACK_Update()
 	{
 	}
 
+	if (frame == 0 && slowCounter == 1)
+	{
+
+		TryThrowSwordProjectileBasic();
+
+	}
 
 	bool boost = TryClimbBoost(currNormal);
 

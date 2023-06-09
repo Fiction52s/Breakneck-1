@@ -71,6 +71,13 @@ void Actor::STEEPSLIDEATTACK_Update()
 	}
 	SetCurrHitboxes(steepSlideHitboxes[speedLevel], frame / 2);
 
+	if (frame == 0 && slowCounter == 1)
+	{
+
+		TryThrowSwordProjectileBasic();
+
+	}
+
 	if (frame == 0)
 	{
 	}

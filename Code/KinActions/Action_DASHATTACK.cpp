@@ -76,6 +76,12 @@ void Actor::DASHATTACK_Update()
 {
 	SetCurrHitboxes(dashHitboxes1[speedLevel], frame / 2);
 
+	if (frame == 0 && slowCounter == 1)
+	{
+		TryThrowSwordProjectileBasic();
+
+	}
+
 	AttackMovement();
 }
 
