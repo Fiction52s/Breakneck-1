@@ -95,6 +95,7 @@ struct ShroomJelly : Enemy
 	void UpdateEnemyPhysics();
 	//void ProcessHit();
 	void ComboHit();
+	bool CountsForEnemyGate() { return false; }
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
