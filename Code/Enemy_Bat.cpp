@@ -26,6 +26,9 @@ Bat::Bat( ActorParams *ap )
 	SetNumActions(A_Count);
 	SetEditorActions(FLY, 0, 0);
 
+	retreatMove = retreatSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 60);
+	returnMove = returnSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 20);
+
 	SetLevel(ap->GetLevel());
 
 	pathFollower.SetParams(ap);
@@ -57,8 +60,7 @@ Bat::Bat( ActorParams *ap )
 	testSeq.InitMovementDebug();
 	testSeq.Reset();
 	
-	retreatMove = retreatSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 60);	
-	returnMove = returnSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 20);
+	
 
 	frame = 0;
 
@@ -102,10 +104,12 @@ void Bat::SetLevel(int lev)
 	{
 	case 1:
 		scale = 1.0;
+		//retreatMove->SetFrameDuration(120);
 		break;
 	case 2:
-		scale = 2.0;
-		maxHealth += 2;
+		scale = 1.2;
+		//retreatMove->SetFrameDuration(60);
+		//maxHealth += 2;
 		break;
 	case 3:
 		scale = 3.0;
@@ -154,6 +158,9 @@ void Bat::ResetEnemy()
 	data.visFrame = 0;
 	data.framesSinceBothered = 0;
 	data.fireCounter = 0;
+
+	data.fireConfirmed = false;
+
 	testSeq.Reset();
 	retreatSeq.Reset();
 	returnSeq.Reset();
@@ -197,7 +204,10 @@ void Bat::DirectKill()
 
 void Bat::FrameIncrement()
 {
-	++data.fireCounter;
+	if (data.fireConfirmed)
+	{
+		++data.fireCounter;
+	}
 	++data.framesSinceBothered;
 	++data.visFrame;
 }
@@ -219,7 +229,11 @@ void Bat::ProcessState()
 	}
 
 	double detectRange = 300;
-	double dodgeRange = 250;
+	double dodgeRange = 250 / 2;
+	if (level == 2)
+	{
+		dodgeRange = 250;
+	}
 
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
@@ -227,6 +241,13 @@ void Bat::ProcessState()
 	
 	V2d startPos = startPosInfo.GetPosition();
 	V2d pDir = normalize(diff);
+
+	double returnSpeedFactor = 200.0;
+	if (level == 2)
+	{
+		returnSpeedFactor = 400;
+	}
+
 	if (action == FLY)
 	{
 		if (data.framesSinceBothered >= 60 && startPos != currBasePos )
@@ -236,7 +257,8 @@ void Bat::ProcessState()
 			V2d diff = startPos - position;
 			returnMove->end = diff;
 			double diffLen = length(diff);
-			returnMove->duration = diffLen / 100.0 * 60 * 10;
+			//returnMove->duration = diffLen / 100.0 * 60 * 10;
+			returnMove->SetFrameDuration(diffLen / returnSpeedFactor * 60);
 			currBasePos = position;
 			returnSeq.Reset();
 		}
@@ -290,18 +312,42 @@ void Bat::ProcessState()
 		}
 	}
 
+	if (data.fireCounter == 90)
+	{
+		data.fireConfirmed = false;
+		data.fireCounter = 0;
+	}
+
+	if (PlayerDist() < 600)
+	{
+		if (data.fireCounter == 0)
+		{
+			data.fireConfirmed = true;
+		}
+	}
+	
 
 	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
 	if( slowCounter == 1 )//&& action == FLY )
 	{
 		int f = data.fireCounter % 90;
 
-		if (f % 5 == 0 && f >= 25 && f < 50)
+		int numBulletsToShoot = 3;
+		if (level == 2)
 		{
-			launchers[0]->position = position;
-			launchers[0]->facingDir = pDir;
-			launchers[0]->Fire();
-		}	
+			numBulletsToShoot = 5;
+		}
+		
+		if (data.fireConfirmed)
+		{
+			//if (f % 5 == 0 && f >= 5 * 5 && f < 5 * (5 + numBulletsToShoot))
+			if (f % 5 == 0 && f >= 5 * 0 && f < 5 * (0 + numBulletsToShoot))
+			{
+				launchers[0]->position = position;
+				launchers[0]->facingDir = pDir;
+				launchers[0]->Fire();
+			}
+		}
 	}
 
 	/*switch (action)

@@ -202,17 +202,7 @@ Panel *ActorType::CreatePanel()
 
 
 	if (name == "shard" || name == "player" || name == "goal"
-		|| name == "greengoal" || name == "yellowgoal"
-		|| name == "orangegoal" || name == "redgoal"
-		|| name == "magentagoal" || name == "greygoal"
-		|| name == "blackgoal" || name == "bluekeyfly"
-		|| name == "greenkeyfly"
-		|| name == "yellowkeyfly"
-		|| name == "orangekeyfly"
-		|| name == "redkeyfly"
-		|| name == "magentakeyfly"
-		|| name == "greykeyfly"
-		|| name == "blackkeyfly"
+		|| name == "key"
 		|| name == "log")
 		//|| name == "yellowcomboertarget"
 		//|| name == "orangecomboertarget"

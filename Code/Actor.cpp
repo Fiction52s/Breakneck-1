@@ -21040,7 +21040,13 @@ void Actor::ExecuteWallJump()
 {
 	wallJumpFrameCounter = 0;
 
-	double strengthX = GetDashSpeed() + 1.0;
+	double strengthX = dashSpeed0 + 1.0;
+	if (currInput.DashButtonDown())
+	{
+		strengthX = GetDashSpeed() + 1.0;
+	}
+
+	
 	double strengthY = wallJumpStrength.y;
 
 	if (touchedGrass[Grass::JUMP])

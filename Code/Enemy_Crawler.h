@@ -7,6 +7,9 @@ struct Crawler : Enemy, SurfaceMoverHandler
 {
 	enum Action : int
 	{
+		IDLE,
+		START_UNDERGROUND,
+		START_UNBURROW,
 		UNBURROW,
 		DECIDE,
 		CRAWL,

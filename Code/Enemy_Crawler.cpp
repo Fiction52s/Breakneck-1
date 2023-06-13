@@ -72,6 +72,9 @@ Crawler::Crawler(ActorParams *ap )
 	actionLength[ATTACK] = 6;
 	actionLength[BURROW] = 19;
 	actionLength[UNDERGROUND] = 20;
+	actionLength[START_UNBURROW] = 20;
+	actionLength[START_UNDERGROUND] = 1;
+	actionLength[IDLE] = 1;
 
 	animFactor[UNBURROW] = 4;
 	animFactor[CRAWL] = 1;
@@ -80,6 +83,9 @@ Crawler::Crawler(ActorParams *ap )
 	animFactor[DASH] = 1;
 	animFactor[BURROW] = 4;
 	animFactor[UNDERGROUND] = 1;
+	animFactor[START_UNBURROW] = 1;
+	animFactor[START_UNDERGROUND] = 1;
+	animFactor[IDLE] = 1;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
@@ -115,15 +121,19 @@ void Crawler::ResetEnemy()
 {
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
+	//HurtboxesOff();
+	//HitboxesOff();
 	data.framesUntilBurrow = maxFramesUntilBurrow;
 	
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
 
-	frame = 0;
+	
 
-	action = UNBURROW;
-	frame = 15 * 4;
+	action = IDLE;
+	frame = 0;
+	//action = UNBURROW;
+	//frame = 15 * 4;
 
 	UpdateHitboxes();
 
@@ -246,7 +256,7 @@ void Crawler::ProcessState()
 
 	V2d en = surfaceMover->ground->Normal();
 
-	if (action != BURROW && action != UNDERGROUND)
+	if (action != BURROW && action != UNDERGROUND && action != START_UNBURROW && action != START_UNDERGROUND)
 	{
 		if (data.framesUntilBurrow == 0)
 		{
@@ -260,6 +270,7 @@ void Crawler::ProcessState()
 	{
 		switch (action)
 		{
+		case START_UNBURROW:
 		case UNBURROW:
 			action = DECIDE;
 			frame = 0;
@@ -285,7 +296,6 @@ void Crawler::ProcessState()
 			break;
 		case DASH:
 			action = DECIDE;
-			action = DECIDE;
 			frame = 0;
 			break;
 		case BURROW:
@@ -304,13 +314,17 @@ void Crawler::ProcessState()
 			frame = 0;
 			DecideDirection();
 			break;
+		case IDLE:
+			frame = 0;
+			break;
 		}
 	}
 
 	switch (action)
 	{
+	case START_UNBURROW:
 	case UNBURROW:
-		if (frame == 4 * 11)
+		if (frame == animFactor[action] * 11)
 		{
 			//SetHitboxes(&hurtBody, 0);
 			DefaultHitboxesOn();
@@ -327,6 +341,39 @@ void Crawler::ProcessState()
 			HitboxesOff();
 		}
 		break;
+	case START_UNDERGROUND:
+	{
+		if (PlayerDist() < 1000)
+		{
+			action = START_UNBURROW;//UNBURROW;
+			frame = 0;
+
+			DefaultHurtboxesOn();
+			//action = UNBURROW;
+			data.framesUntilBurrow = maxFramesUntilBurrow;
+			//frame = 0;
+			DecideDirection();
+			//frame = 15 * 4;
+		}
+	}
+	case IDLE:
+	{
+		if (PlayerDist() < 1000)
+		{
+			action = DECIDE;
+			frame = 0;
+			DecideDirection();
+			if (facingRight)
+			{
+				surfaceMover->SetSpeed(baseSpeed);
+			}
+			else
+			{
+				surfaceMover->SetSpeed(-baseSpeed);
+			}
+		}
+		break;
+	}
 	}
 
 	if (action == DECIDE)
@@ -402,13 +449,16 @@ void Crawler::ProcessState()
 
 void Crawler::FrameIncrement()
 {
-	if (data.framesUntilBurrow > 0)
-		--data.framesUntilBurrow;
+	if (action == CRAWL || action == DASH || action == ROLL || action == ATTACK)
+	{
+		if (data.framesUntilBurrow > 0)
+			--data.framesUntilBurrow;
+	}
 }
 
 void Crawler::EnemyDraw(sf::RenderTarget *target )
 {
-	if (action == UNDERGROUND)
+	if (action == UNDERGROUND || action == START_UNDERGROUND)
 		return; 
 
 	DrawSprite(target, sprite);
@@ -482,8 +532,16 @@ void Crawler::UpdateSprite()
 	case UNBURROW:
 		currTile = frame / animFactor[UNBURROW] + 59;
 		break;
+	case START_UNBURROW:
+	{
+		currTile = frame / animFactor[START_UNBURROW] + 59;
+		break;
+	}
 	case ATTACK:
 		currTile = frame / animFactor[ATTACK] + 80;
+		break;
+	case IDLE:
+		currTile = 0;
 		break;
 	}
 

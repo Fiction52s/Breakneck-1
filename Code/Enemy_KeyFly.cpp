@@ -16,6 +16,9 @@ KeyFly::KeyFly(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
+	hasMonitor = true;
+	SetKey();
+
 	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 	ts = GetSizedTileset("FX/key_128x128.png");
 	ts_container = GetSizedTileset("Enemies/key_container_256x256.png");
@@ -63,6 +66,9 @@ void KeyFly::ResetEnemy()
 {
 	action = S_NEUTRAL;
 	frame = 0;
+
+	hasMonitor = true;
+	suppressMonitor = false;
 
 	SetHurtboxes(&hurtBody, 0);
 

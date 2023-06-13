@@ -27,6 +27,7 @@ struct Bat : Enemy, LauncherEnemy
 		int visFrame;
 		int framesSinceBothered;
 		int fireCounter;
+		bool fireConfirmed;
 	};
 	MyData data;
 
