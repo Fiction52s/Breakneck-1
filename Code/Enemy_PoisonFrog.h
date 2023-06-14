@@ -7,7 +7,8 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 {
 	enum Action
 	{
-
+		IDLE,
+		WALL_IDLE,
 		STAND,
 		JUMPSQUAT,
 		STEEPJUMP,

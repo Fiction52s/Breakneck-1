@@ -46,6 +46,8 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	SetNumActions(Count);
 	SetEditorActions(STAND, STAND, 0);
 	
+	actionLength[IDLE] = 1;
+	actionLength[WALL_IDLE] = 1;
 	actionLength[STAND] = 10;
 	actionLength[JUMPSQUAT] = 4;
 	actionLength[JUMP] = 2;
@@ -53,6 +55,8 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	actionLength[STEEPJUMP] = 2;
 	actionLength[WALLCLING] = 30;
 
+	animFactor[IDLE] = 1;
+	animFactor[WALL_IDLE] = 1;
 	animFactor[STAND] = 1;
 	animFactor[JUMPSQUAT] = 2;
 	animFactor[JUMP] = 1;
@@ -138,10 +142,35 @@ void PoisonFrog::ResetEnemy()
 
 	UpdateHitboxes();
 
-	action = STAND;
-	frame = 0;
+	if (groundMover->ground != NULL && groundMover->ground->Normal().y == 0)
+	{
+		action = WALL_IDLE;
+		frame = 0;
 
-	facingRight = false;
+		if (groundMover->ground->Normal().x > 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+	}
+	else
+	{
+		action = IDLE;
+		frame = 0;
+
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+	}
+
 
 	UpdateSprite();
 }
@@ -166,6 +195,9 @@ void PoisonFrog::ActionEnded()
 	{
 		switch( action )
 		{
+		case IDLE:
+			frame = 0;
+			break;
 		case STAND:
 			{
 				action = JUMPSQUAT;
@@ -228,6 +260,35 @@ void PoisonFrog::ProcessState()
 		{
 			gAlong = -gAlong;
 		}
+	}
+
+	if (action == IDLE || action == WALL_IDLE || action == STAND)
+	{
+		double pDist = PlayerDist();
+		double detectDist = 700;
+		double ignoreDist = 1500;
+
+		if (action == IDLE && pDist < detectDist)
+		{
+			action = STAND;
+			frame = 0;
+		}
+		else if (action == WALL_IDLE && pDist < detectDist)
+		{
+			action = WALLCLING;
+			frame = actionLength[WALLCLING] - 18; //should jump at the same time as grounded idle now
+		}
+		else if (action == STAND && pDist > ignoreDist)
+		{
+			action = IDLE;
+			frame = 0;
+		}
+		else if (action == WALLCLING && pDist > ignoreDist)
+		{
+			action = WALL_IDLE;
+			frame = 0;
+		}
+
 	}
 	
 	switch( action )
@@ -362,7 +423,7 @@ void PoisonFrog::UpdateEnemyPhysics()
 		if (groundMover->ground == NULL)
 		{
 			double grav = gravity;
-			if (action == WALLCLING)
+			if (action == WALLCLING || action == WALL_IDLE)
 			{
 				grav = 0;
 			}
@@ -392,6 +453,11 @@ void PoisonFrog::UpdateSprite()
 	int currTile = 0;
 	switch( action )
 	{
+	case IDLE:
+	{
+		currTile = 0;
+		break;
+	}
 	case STAND:
 	{
 		currTile = 0;
@@ -469,11 +535,16 @@ void PoisonFrog::UpdateSprite()
 		currTile = 15;
 		break;
 	}
+	case WALL_IDLE:
+	{
+		currTile = 15;
+		break;
+	}
 	
 	}
 
 	
-	if (action == STAND || action == JUMPSQUAT || action == LAND)
+	if ( action == IDLE || action == STAND || action == JUMPSQUAT || action == LAND)
 	{
 		bool fr = facingRight;
 		if ( groundMover->ground != NULL && groundMover->ground->Normal().y > 0)
@@ -484,6 +555,16 @@ void PoisonFrog::UpdateSprite()
 		sprite.setRotation(groundMover->GetAngleDegrees());
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 		sprite.setPosition(groundMover->GetGroundPointF());
+	}
+	else if (action == WALLCLING || action == WALL_IDLE )
+	{
+		ts_test->SetSubRect(sprite, currTile, !facingRight, reverse);
+		float extraX = 10;
+		if (!facingRight)
+			extraX = -extraX;
+		sprite.setOrigin(sprite.getLocalBounds().width / 2 - extraX, sprite.getLocalBounds().height / 2);
+		sprite.setRotation(0);
+		sprite.setPosition(GetPositionF());
 	}
 	else
 	{
