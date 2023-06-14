@@ -141,7 +141,15 @@ void StagBeetle::ResetEnemy()
 
 	action = IDLE;
 
-	facingRight = true;
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
+	
 
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -266,6 +274,14 @@ void StagBeetle::ProcessState()
 			groundMover->SetSpeed( -maxGroundSpeed );
 		break;
 	case JUMP:
+		if (facingRight)
+		{
+			groundMover->SetVelX(maxGroundSpeed);
+		}
+		else
+		{
+			groundMover->SetVelX(-maxGroundSpeed);
+		}
 		//cout << "jump: " << frame << endl;
 		break;
 	case LAND:
@@ -407,14 +423,28 @@ void StagBeetle::UpdateSprite()
 		sprite.setTextureRect(r);
 
 		//when you scale this its too large. no idea why
-		float extraVert = 20;// *scale;//8 * scale;
+		float extraVert = 20;//20;// *scale;//8 * scale;
 
 		//extraVert += 2 * (scale-1);
 
 		int originHeight = 144 - (48);
 
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2 + extraVert);
+		//if (groundMover->ground != NULL)
+		//{
+		//	sprite.setRotation(groundMover->GetAngleDegrees());
+		//	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+		//	sprite.setPosition(groundMover->GetGroundPointF());
+		//}
+		//else
+		//{
+		//	sprite.setRotation(0);
+		//	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 + 32);
+		//	sprite.setPosition(GetPositionF());
+		//}
+
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 + extraVert);
 		sprite.setPosition(GetPositionF());
+		////sprite.setPosition(groundMover->GetGroundPointF());
 		sprite.setRotation(groundMover->GetAngleDegrees());
 	}
 }
@@ -497,6 +527,7 @@ void StagBeetle::ReachCliff()
 
 void StagBeetle::HitOtherAerial( Edge *e )
 {
+	
 	//cout << "hit edge" << endl;
 }
 

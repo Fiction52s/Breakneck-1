@@ -864,9 +864,20 @@ void ActorParams::UpdateGroundedSprite()
 		image.setRotation(edge->GetNormalAngleDegrees());
 		image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height);
 	}
-
-	if( myEnemy != NULL )
+	/*if (myEnemy != NULL)
+	{
+		
 		myEnemy->UpdateFromEditParams(0);
+	}*/
+
+	//recently modified so that the grounded enemies will follow the terrain around when moved
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateOnEditPlacement();
+		myEnemy->UpdateFromEditParams(0);
+	}
+		
 }
 
 void ActorParams::AnchorToRail(TerrainRail *rail,
