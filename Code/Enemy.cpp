@@ -2152,7 +2152,42 @@ void Enemy::UpdatePhysics( int substep )
 	}
 
 	if (pauseFrames > 0)
+	{
+		//recently added to fix the issue where a comboer that hits both enemies and player (air mine) would not hit the player
+		//until it was done hitting enemies in the area
+
+		//might change the mine to have no pause frames on combo hit anyway, but this change doesn't seem
+		//to cause any bugs and seems to fix the issue entirely, so I'm leaving it in for now.
+		UpdateHitboxes();
+
+		if (playerIndex == -1)
+		{
+			Actor *a;
+			for (int i = 0; i < Session::MAX_PLAYERS; ++i)
+			{
+				a = sess->GetPlayer(i);
+				if (a != NULL)
+				{
+					if (numPhysSteps < NUM_MAX_STEPS || substep >= minSubstepToCheckHits)
+					{
+						CheckHitPlayer(i);
+					}
+					//CheckPlayerInteractions(substep, i);
+				}
+			}
+		}
+		else
+		{
+			//changed this because you only want to hit the player during pause frames, not be hit
+			if (numPhysSteps < NUM_MAX_STEPS || substep >= minSubstepToCheckHits)
+			{
+				CheckHitPlayer(playerIndex);
+			}
+			//CheckPlayerInteractions(substep, playerIndex);
+		}
 		return;
+	}
+		
 
 	UpdateEnemyPhysics();
 
@@ -2412,7 +2447,7 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 		if (receivedHit.IsEmpty())
 			return false;
 
-		if (receivedHit.hType < HitboxInfo::HitboxType::WIREHITRED)
+		if (receivedHit.hType < HitboxInfo::HitboxType::WIREHITRED && !receivedHit.comboer)
 		{
 			player->ConfirmHit(e);
 		}

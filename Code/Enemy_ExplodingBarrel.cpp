@@ -71,7 +71,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	comboObj = new ComboObject(this);
 
-	double explosionRadius = 400;//300;
+	explosionRadius = 400 * scale;//300;
 
 	//explosion.ResetFrames();
 	explosion.BasicCircleSetup(explosionRadius * scale, 0, V2d());
@@ -113,14 +113,19 @@ void ExplodingBarrel::SetLevel(int lev)
 	{
 	case 1:
 		scale = 1.0;
+		autoTrigger = false;
+		name = "Air Mine";
 		break;
 	case 2:
-		scale = 2.0;
-		maxHealth += 2;
+		scale = 1.0;
+		autoTrigger = true;
+		name = "Air Proximity Mine";
+		//scale = 2.0;
+		//maxHealth += 2;
 		break;
 	case 3:
-		scale = 3.0;
-		maxHealth += 5;
+		//scale = 3.0;
+		//maxHealth += 5;
 		break;
 	}
 }
@@ -143,15 +148,43 @@ void ExplodingBarrel::ResetEnemy()
 	UpdateSprite();
 }
 
+void ExplodingBarrel::StartHeatingUp()
+{
+	sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+
+	action = S_ABOUT_TO_EXPLODE;
+	frame = 0;
+
+	PlayDeathSound();
+
+	if (hasMonitor && !suppressMonitor)
+	{
+		suppressMonitor = true;
+		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+			sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+	}
+	else
+	{
+		//sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
+		//	sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
+	}
+
+	
+	//--numHealth;
+	HitboxesOff();
+	HurtboxesOff();
+
+	receivedHit.SetEmpty();
+}
+
 void ExplodingBarrel::ProcessHit()
 {
 	if (numHealth == 1)
 	{
 		if (!dead && HasReceivedHit() && numHealth > 0)
 		{
+			
 			//sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-			//ConfirmKill();
-			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 
 			HitboxInfo::HitboxType hType;
 			if (!receivedHit.IsEmpty())
@@ -181,27 +214,11 @@ void ExplodingBarrel::ProcessHit()
 			pauseBeganThisFrame = true;
 			pauseFramesFromAttacking = false;
 
-			PlayDeathSound();
-
-			if (hasMonitor && !suppressMonitor)
-			{
-				suppressMonitor = true;
-				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-					sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
-			}
-			else
-			{
-				//sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-				//	sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
-			}
-
-			action = S_ABOUT_TO_EXPLODE;
-			frame = 0;
-			//--numHealth;
-			HitboxesOff();
-			HurtboxesOff();
-
-			receivedHit.SetEmpty();
+			StartHeatingUp();
+		}
+		else
+		{
+			Enemy::ProcessHit();
 		}
 	}
 	else
@@ -255,6 +272,13 @@ void ExplodingBarrel::ProcessState()
 		}
 		}
 	}
+
+	if (autoTrigger 
+		&& (action == S_CHARGE || action == S_TINYCHARGE || action == S_IDLE)
+		&& PlayerDist() < explosionRadius)
+	{
+		StartHeatingUp();
+	}
 }
 
 void ExplodingBarrel::HandleNoHealth()
@@ -272,13 +296,23 @@ void ExplodingBarrel::FrameIncrement()
 
 void ExplodingBarrel::ComboHit()
 {
-	pauseFrames = 5;
+	//pauseFrames = 5;
+
+
 	/*++currHits;
 	if (currHits >= hitLimit)
 	{
 		action = S_EXPLODE;
 		frame = 0;
 	}*/
+}
+
+bool ExplodingBarrel::CountsForEnemyGate()
+{
+	if (action == S_EXPLODE || action == S_ABOUT_TO_EXPLODE )
+		return false;
+	else
+		return true;
 }
 
 void ExplodingBarrel::UpdateSprite()
@@ -316,7 +350,15 @@ void ExplodingBarrel::UpdateSprite()
 	}
 	else
 	{
-		sprite.setColor(Color::White);
+		if (autoTrigger)
+		{
+			sprite.setColor(Color::Blue);
+		}
+		else
+		{
+			sprite.setColor(Color::White);
+		}
+		
 	}
 
 	sprite.setTextureRect(ts->GetSubRect(tile));

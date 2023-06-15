@@ -27,11 +27,15 @@ struct ExplodingBarrel : Enemy
 	Tileset *ts;
 	CollisionBody explosion;
 	HitboxInfo explosionInfo;
+	bool autoTrigger;
+	double explosionRadius;
 
 	ExplodingBarrel(ActorParams * ap);
 	~ExplodingBarrel();
 
+	bool CountsForEnemyGate();
 	void SetLevel(int lev);
+	void StartHeatingUp();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();

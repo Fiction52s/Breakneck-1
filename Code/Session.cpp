@@ -406,7 +406,7 @@ void Session::RegisterW3Enemies()
 	AddBasicGroundWorldEnemy("Badger", "badger", 3, enemyRow, CreateEnemy<Badger>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Roadrunner", "roadrunner", 3, enemyRow, CreateEnemy<Roadrunner>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Owl", "owl", 3, enemyRow, CreateEnemy<Owl>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Air Mine", "explodingbarrel", 3, enemyRow, CreateEnemy<ExplodingBarrel>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Air Mine", "explodingbarrel", 3, enemyRow, CreateEnemy<ExplodingBarrel>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Firefly", "firefly", 3, enemyRow, CreateEnemy<Firefly>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Shotgun\nTurret", "shotgunturret", 3, enemyRow, CreateEnemy<ShotgunTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

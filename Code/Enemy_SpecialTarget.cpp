@@ -288,7 +288,7 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 					}
 					break;
 				case TARGET_COMBOER_YELLOW:
-					if (en->type == EN_BOUNCEJUGGLER || en->type == EN_BALL )
+					if (en->type == EN_BOUNCEJUGGLER || en->type == EN_BALL || en->type == EN_EXPLODINGBARREL)
 					{
 						validHit = true;
 					}
