@@ -155,6 +155,7 @@ void ExplodingBarrel::StartHeatingUp()
 	action = S_ABOUT_TO_EXPLODE;
 	frame = 0;
 
+	//need to set action before playing death sound
 	PlayDeathSound();
 
 	if (hasMonitor && !suppressMonitor)

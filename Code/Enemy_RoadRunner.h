@@ -24,6 +24,7 @@ struct Roadrunner : Enemy, GroundMoverHandler
 	Tileset *ts;
 	double gravity;
 	double maxGroundSpeed;
+	double jumpSpeed;
 	double maxFallSpeed;
 	double runAccel;
 	double runDecel;

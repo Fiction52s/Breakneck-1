@@ -37,8 +37,9 @@ Roadrunner::Roadrunner(ActorParams *ap)
 
 	gravity = .5;
 	maxGroundSpeed = 30;
+	jumpSpeed = 15;
 	maxFallSpeed = 20;
-	runAccel = 1.0;
+	runAccel = .8;//1.0;
 	runDecel = runAccel * 3.0;
 
 	attentionRadius = 800;//800;
@@ -365,14 +366,14 @@ void Roadrunner::HitOther()
 		}
 		else if (facingRight && groundMover->GetGroundSpeed() > 0)
 		{
-			V2d v = V2d(maxGroundSpeed, -10);
+			V2d v = V2d(jumpSpeed, -10);
 			groundMover->Jump(v);
 			action = JUMP;
 			frame = 0;
 		}
 		else if (!facingRight && groundMover->GetGroundSpeed() < 0)
 		{
-			V2d v = V2d(-maxGroundSpeed, -10);
+			V2d v = V2d(-jumpSpeed, -10);
 			groundMover->Jump(v);
 			action = JUMP;
 			frame = 0;
@@ -394,11 +395,11 @@ void Roadrunner::ReachCliff()
 	V2d v;
 	if (facingRight)
 	{
-		v = V2d(maxGroundSpeed, jumpStrength);
+		v = V2d(jumpSpeed, jumpStrength);
 	}
 	else
 	{
-		v = V2d(-maxGroundSpeed, jumpStrength);
+		v = V2d(-jumpSpeed, jumpStrength);
 	}
 
 	groundMover->Jump(v);
