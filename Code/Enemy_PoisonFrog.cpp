@@ -265,25 +265,23 @@ void PoisonFrog::ProcessState()
 	if (action == IDLE || action == WALL_IDLE || action == STAND)
 	{
 		double pDist = PlayerDist();
-		double detectDist = 700;
-		double ignoreDist = 1500;
 
-		if (action == IDLE && pDist < detectDist)
+		if (action == IDLE && pDist < DEFAULT_DETECT_RADIUS)
 		{
 			action = STAND;
 			frame = 0;
 		}
-		else if (action == WALL_IDLE && pDist < detectDist)
+		else if (action == WALL_IDLE && pDist < DEFAULT_DETECT_RADIUS)
 		{
 			action = WALLCLING;
 			frame = actionLength[WALLCLING] - 18; //should jump at the same time as grounded idle now
 		}
-		else if (action == STAND && pDist > ignoreDist)
+		else if (action == STAND && pDist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = IDLE;
 			frame = 0;
 		}
-		else if (action == WALLCLING && pDist > ignoreDist)
+		else if (action == WALLCLING && pDist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = WALL_IDLE;
 			frame = 0;

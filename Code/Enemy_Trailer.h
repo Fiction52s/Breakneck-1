@@ -21,9 +21,6 @@ struct Trailer : Enemy
 	};
 	MyData data;
 
-	double attentionRadius;
-	double ignoreRadius;
-
 	Tileset *ts;
 	
 	double maxSpeed;

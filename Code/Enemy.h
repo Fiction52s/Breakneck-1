@@ -127,6 +127,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	const static int minSubstepToCheckHits;
 
+	const static int DEFAULT_DETECT_RADIUS;//default values
+	const static int DEFAULT_IGNORE_RADIUS;//default values
+
 	bool facingRight;
 	PositionInfo currPosInfo;
 	int action;

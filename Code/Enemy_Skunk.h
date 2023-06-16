@@ -31,8 +31,6 @@ struct Skunk : Enemy, GroundMoverHandler
 	double maxFallSpeed;
 	double runAccel;
 	double runDecel;
-	double attentionRadius;
-	double ignoreRadius;
 	
 	sf::CircleShape testCircle;
 	double explosionRadius;

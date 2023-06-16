@@ -58,8 +58,7 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	attentionRadius = 2000;
-	ignoreRadius = 3000;
+	
 
 	
 
@@ -217,12 +216,14 @@ void PalmTurret::ProcessState()
 
 	ActionEnded();
 	
+	//not implemented
+	//ignoreRadius = 3000;
 
 	switch (action)
 	{
 	case IDLE:
 	{
-		if (length(playerPos - position) < attentionRadius)
+		if (length(playerPos - position) < DEFAULT_DETECT_RADIUS + 1200)
 		{
 			StartCharge();
 		}

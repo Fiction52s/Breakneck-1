@@ -65,9 +65,6 @@ Chess::Chess(ActorParams *ap)
 	//shield = new Shield(Shield::ShieldType::T_BLOCK, 16 * scale, 3, this);
 	//RegisterShield(shield);
 
-	attentionRadius = 800;
-	ignoreRadius = 2000;
-
 	accel = 2.0;//3.0;//1.0;
 
 	maxSpeed = 30;//20;
@@ -239,7 +236,7 @@ void Chess::ProcessState()
 	{
 	case NEUTRAL:
 	{
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = CHASE;
 			frame = 0;
@@ -273,7 +270,7 @@ void Chess::ProcessState()
 		break;
 	case CHASE:
 	{
-		if (data.fireCounter == 0 && dist < attentionRadius )
+		if (data.fireCounter == 0 && dist < DEFAULT_DETECT_RADIUS)
 		{
 			launchers[0]->position = GetPosition();
 			launchers[0]->facingDir = PlayerDir();
@@ -356,7 +353,7 @@ void Chess::ProcessState()
 
 void Chess::FrameIncrement()
 {
-	if (action == CHASE && PlayerDist() < attentionRadius )
+	if (action == CHASE && PlayerDist() < DEFAULT_DETECT_RADIUS)
 	{
 		++data.fireCounter;
 		if (data.fireCounter == 60)

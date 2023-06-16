@@ -42,9 +42,6 @@ Roadrunner::Roadrunner(ActorParams *ap)
 	runAccel = .8;//1.0;
 	runDecel = runAccel * 3.0;
 
-	attentionRadius = 800;//800;
-	ignoreRadius = 2000;
-
 	CreateGroundMover(startPosInfo, 40, true, this);
 	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed(0);
@@ -169,7 +166,7 @@ void Roadrunner::ProcessState()
 	{
 	case IDLE:
 	{
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = RUN;
 			frame = 0;
@@ -180,7 +177,7 @@ void Roadrunner::ProcessState()
 	case RUN:
 	{
 		double dist = length(playerPos - position);
-		if (dist >= ignoreRadius)
+		if (dist >= DEFAULT_IGNORE_RADIUS)
 		{
 			action = IDLE;
 			frame = 0;

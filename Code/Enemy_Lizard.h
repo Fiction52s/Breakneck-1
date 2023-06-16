@@ -34,8 +34,6 @@ struct Lizard : Enemy, GroundMoverHandler,
 	double maxFallSpeed;
 	double runAccel;
 	double runDecel;
-	double attentionRadius;
-	double ignoreRadius;
 
 	Lizard(ActorParams *ap);
 	void FrameIncrement();

@@ -42,9 +42,6 @@ void LaserJays::Construct(ActorParams *ap)
 	animFactor[PULSE] = 1;
 	animFactor[RECOVER] = 1;
 
-	attentionRadius = 800;
-	ignoreRadius = 2000;
-
 	accel = 1.0;//.3;//.1;
 
 	maxSpeed = 20;//5;
@@ -249,7 +246,7 @@ void LaserJays::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = APPROACH;
 			frame = 0;
@@ -261,7 +258,7 @@ void LaserJays::ProcessState()
 			action = CHARGE;
 			frame = 0;
 		}
-		else if (dist > ignoreRadius)
+		else if (dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = NEUTRAL;
 			frame = 0;

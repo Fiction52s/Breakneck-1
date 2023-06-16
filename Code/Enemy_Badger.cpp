@@ -19,6 +19,7 @@ Badger::Badger(ActorParams *ap)
 	maxGroundSpeed = 10;
 	jumpStrength = 5;
 
+	actionLength[IDLE] = 1;
 	actionLength[RUN] = 7 * 2;
 	actionLength[LEDGEJUMP] = 2;
 	actionLength[SHORTJUMP] = 2;
@@ -28,6 +29,7 @@ Badger::Badger(ActorParams *ap)
 	actionLength[LAND] = 3;
 	
 	//runReps = 10;
+	animFactor[IDLE] = 1;
 	animFactor[RUN] = 5;
 	animFactor[LEDGEJUMP] = 1;
 	animFactor[SHORTJUMP] = 1;
@@ -44,6 +46,9 @@ Badger::Badger(ActorParams *ap)
 	dead = false;
 	
 	maxFallSpeed = 25;
+
+	runAccel = .5;
+	runDecel = .5;
 
 	attackMult = 10;
 
@@ -77,8 +82,6 @@ Badger::Badger(ActorParams *ap)
 	cutObject->SetScale(scale);
 
 	hitBody.hitboxInfo = hitboxInfo;
-
-
 
 
 	ResetEnemy();
@@ -115,18 +118,23 @@ void Badger::ResetEnemy()
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
-	facingRight = true;
+	if (PlayerDir().x >= 0 )
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 
-	data.nextAction = SHORTJUMP;
+	data.nextAction = RUN;
 	
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
 
 	data.attackFrame = -1;
-	
-	frame = 0;
 
-	action = RUN;
+	action = IDLE;
 	frame = 0;
 
 	UpdateSprite();
@@ -135,37 +143,75 @@ void Badger::ResetEnemy()
 
 void Badger::UpdateNextAction()
 {
-	switch(data.nextAction )
+	if (PlayerDist() < DEFAULT_IGNORE_RADIUS)
 	{
-	case RUN:
-		data.nextAction = SHORTJUMP;
-		break;
-	case SHORTJUMP:
-		data.nextAction = TALLJUMP;
-		break;
-	case TALLJUMP:
-		data.nextAction = RUN;
-		break;
-	case TALLJUMPSQUAT:
-		{
-		}
-		break;
-	case SHORTJUMPSQUAT:
-		{
-		}
-		break;
-	}
+		int oldAction = action;
+		bool oldFacingRight = facingRight;
 
-	if( sess->GetPlayerPos( 0 ).x > GetPosition().x )
-	{
-		//cout << "facing right" << endl;
-		facingRight = true;
+		action = data.nextAction;
+		frame = 0;
+
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+
+		if (action == RUN && oldAction == LAND )
+		{
+			if (oldFacingRight)
+			{
+				groundMover->SetSpeed(maxGroundSpeed);
+			}
+			else
+			{
+				groundMover->SetSpeed(-maxGroundSpeed);
+			}
+		}
+
+		switch (data.nextAction)
+		{
+		case RUN:
+			data.nextAction = SHORTJUMP;
+			break;
+		case SHORTJUMP:
+			data.nextAction = TALLJUMP;
+			break;
+		case TALLJUMP:
+			data.nextAction = RUN;
+			break;
+		case TALLJUMPSQUAT:
+		{
+		}
+		break;
+		case SHORTJUMPSQUAT:
+		{
+		}
+		break;
+		}
 	}
 	else
 	{
-		//cout << "facing left" << endl;
-		facingRight = false;
+		action = IDLE;
+		frame = 0;
+		data.nextAction = RUN;
+
+
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
 	}
+	
+
+	
 }
 
 void Badger::ActionEnded()
@@ -175,10 +221,7 @@ void Badger::ActionEnded()
 		switch( action )
 		{
 		case RUN:
-			action = data.nextAction;
 			UpdateNextAction();
-			//cout << "run transition to: " << action << endl;
-			frame = 0;
 			break;
 		case LEDGEJUMP:
 			frame = 1;
@@ -203,12 +246,13 @@ void Badger::ActionEnded()
 			break;
 		
 		case LAND:
-			action = data.nextAction;
-			UpdateNextAction();
-			frame = 0;
+			UpdateNextAction();			
 			break;
 		case ATTACK:
 			action = RUN;
+			frame = 0;
+			break;
+		case IDLE:
 			frame = 0;
 			break;
 		}
@@ -259,6 +303,16 @@ void Badger::ProcessState()
 		return;
 
 	ActionEnded();
+
+	if (action == IDLE)
+	{
+		if (PlayerDist() < DEFAULT_DETECT_RADIUS)
+		{
+			action = data.nextAction;
+			UpdateNextAction();
+			frame = 0;
+		}
+	}
 
 	switch( action )
 	{
@@ -317,20 +371,65 @@ void Badger::ProcessState()
 	switch( action )
 	{
 	case RUN:
-		if( facingRight )
+	{
+		//if( facingRight )
+		//{
+		//	groundMover->SetSpeed( 10 );//testMover->groundSpeed + .3 );
+		//}
+		//else
+		//{
+		//	groundMover->SetSpeed( -10 );//testMover->groundSpeed - .3 );
+		//}
+
+		//if(groundMover->GetGroundSpeed() > maxGroundSpeed )
+		//	groundMover->SetSpeed( maxGroundSpeed );
+		//else if(groundMover->GetGroundSpeed() < -maxGroundSpeed )
+		//	groundMover->SetSpeed( -maxGroundSpeed );
+		V2d playerPos = sess->GetPlayerPos(0);
+		V2d pos = GetPosition();
+
+		if (facingRight)
 		{
-			groundMover->SetSpeed( 10 );//testMover->groundSpeed + .3 );
+			if (playerPos.x < pos.x - 50)
+			{
+				facingRight = false;
+			}
 		}
 		else
 		{
-			groundMover->SetSpeed( -10 );//testMover->groundSpeed - .3 );
+			if (playerPos.x > pos.x + 50)
+			{
+				facingRight = true;
+			}
 		}
 
-		if(groundMover->GetGroundSpeed() > maxGroundSpeed )
-			groundMover->SetSpeed( maxGroundSpeed );
-		else if(groundMover->GetGroundSpeed() < -maxGroundSpeed )
-			groundMover->SetSpeed( -maxGroundSpeed );
+		if (facingRight) //clockwise
+		{
+			double accelFactor = runAccel;
+			if (groundMover->GetGroundSpeed() < 0)
+			{
+				accelFactor = runDecel;
+			}
+			groundMover->SetSpeed(groundMover->GetGroundSpeed() + accelFactor);
+		}
+		else
+		{
+			double accelFactor = runAccel;
+			if (groundMover->GetGroundSpeed() > 0)
+			{
+				accelFactor = runDecel;
+			}
+			groundMover->SetSpeed(groundMover->GetGroundSpeed() - accelFactor);
+		}
+
+		if (groundMover->GetGroundSpeed() > maxGroundSpeed)
+			groundMover->SetSpeed(maxGroundSpeed);
+		else if (groundMover->GetGroundSpeed() < -maxGroundSpeed)
+			groundMover->SetSpeed(-maxGroundSpeed);
+
+
 		break;
+	}
 	case LEDGEJUMP:
 		break;
 	case SHORTJUMP:
@@ -417,6 +516,9 @@ void Badger::UpdateSprite()
 	sf::IntRect ir;
 	switch( action )
 	{
+	case IDLE:
+		ir = ts->GetSubRect(0);
+		break;
 	case RUN:
 		{
 			ir = ts->GetSubRect( ( frame / animFactor[RUN] ) % 7 );

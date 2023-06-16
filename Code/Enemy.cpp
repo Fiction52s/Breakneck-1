@@ -44,6 +44,8 @@ int Enemy::bloodLengths[8] = {
 
 const int Enemy::summonDuration = 60;
 const int Enemy::minSubstepToCheckHits = 3;
+const int Enemy::DEFAULT_DETECT_RADIUS = 800; //default values
+const int Enemy::DEFAULT_IGNORE_RADIUS = 2000; //default values
 
 bool Enemy::IsGoalType()
 {
@@ -531,7 +533,6 @@ void Enemy::OnCreate(ActorParams *ap,
 
 	RegisterCollisionBody(hitBody);
 	RegisterCollisionBody(hurtBody);
-	
 
 	pauseFramesFromAttacking = false;
 	active = false;

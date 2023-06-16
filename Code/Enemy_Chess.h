@@ -32,8 +32,6 @@ struct Chess : Enemy, LauncherEnemy
 	MyData data;
 
 	int chessType;
-	double attentionRadius;
-	double ignoreRadius;
 
 	Tileset *ts;
 	double maxSpeed;

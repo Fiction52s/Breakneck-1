@@ -7,6 +7,7 @@ struct Badger : Enemy, GroundMoverHandler
 {
 	enum Action
 	{
+		IDLE,
 		RUN,
 		LEDGEJUMP,
 		SHORTJUMP,
@@ -29,12 +30,14 @@ struct Badger : Enemy, GroundMoverHandler
 	Tileset *ts;
 
 	V2d gravity;
-
 	
 	int attackMult;
 
 	double maxGroundSpeed;
 	double maxFallSpeed;
+
+	double runAccel;
+	double runDecel;
 
 	double jumpStrength;
 

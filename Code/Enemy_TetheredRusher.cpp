@@ -25,9 +25,6 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	animFactor[RUSH] = 1;
 	animFactor[RECOVER] = 1;
 
-	attentionRadius = 800;
-	ignoreRadius = 2000;
-
 	accel = 10.0;
 
 	maxSpeed = 50;
@@ -209,7 +206,7 @@ void TetheredRusher::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = RUSH;
 			frame = 0;

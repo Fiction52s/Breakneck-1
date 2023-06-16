@@ -21,9 +21,6 @@ struct Parrot : Enemy, LauncherEnemy
 	};
 	MyData data;
 
-	double attentionRadius;
-	double ignoreRadius;
-
 	Tileset *ts;
 	
 	double maxSpeed;

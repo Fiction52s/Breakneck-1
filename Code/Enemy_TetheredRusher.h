@@ -23,8 +23,6 @@ struct TetheredRusher : Enemy
 	};
 	MyData data;
 
-	double attentionRadius;
-	double ignoreRadius;
 	double chainRadius;
 
 	Tileset *ts;

@@ -22,8 +22,6 @@ struct LaserJays : Enemy
 	};
 	MyData data;
 
-	double attentionRadius;
-	double ignoreRadius;
 	double activatePulseRadius;
 
 	Tileset *ts;

@@ -23,9 +23,6 @@ struct PalmTurret : Enemy
 
 	Tileset *ts;
 
-	double attentionRadius;
-	double ignoreRadius;
-
 	sf::Vertex laserQuad[4];
 	double laserAngle;
 	V2d laserCenter;

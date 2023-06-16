@@ -21,9 +21,6 @@ struct Falcon : Enemy
 	};
 	MyData data;
 
-	double attentionRadius;
-	double ignoreRadius;
-
 	Tileset *ts;
 	
 	V2d maxSpeed;

@@ -41,8 +41,8 @@ GrowingTree::GrowingTree( ActorParams *ap )
 
 	
 
-	attentionRadius = 1000;
-	ignoreRadius = 1200;
+	//attentionRadius = 1000;
+	//ignoreRadius = 1200;
 
 	totalBullets = 32;
 	startPowerLevel = 0;
@@ -222,25 +222,25 @@ void GrowingTree::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL0:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = ATTACK0;
 		}
 		break;
 	case NEUTRAL1:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = ATTACK1;
 		}
 		break;
 	case NEUTRAL2:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = ATTACK2;
 		}
 		break;
 	case ATTACK0:
-		if (dist > ignoreRadius)
+		if (dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = NEUTRAL0;
 		}
@@ -249,7 +249,7 @@ void GrowingTree::ProcessState()
 		action = ATTACK1;
 		break;
 	case ATTACK1:
-		if (dist > ignoreRadius)
+		if (dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = NEUTRAL1;
 		}
@@ -258,7 +258,7 @@ void GrowingTree::ProcessState()
 		action = ATTACK2;
 		break;
 	case ATTACK2:
-		if (dist > ignoreRadius)
+		if (dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = NEUTRAL2;
 		}

@@ -272,15 +272,23 @@ void Crawler::ProcessState()
 		{
 		case START_UNBURROW:
 		case UNBURROW:
-			action = DECIDE;
-			frame = 0;
-			if (facingRight)
+			if (PlayerDist() > DEFAULT_IGNORE_RADIUS)
 			{
-				surfaceMover->SetSpeed(baseSpeed);
+				action = IDLE;
+				frame = 0;
 			}
 			else
 			{
-				surfaceMover->SetSpeed(-baseSpeed);
+				action = DECIDE;
+				frame = 0;
+				if (facingRight)
+				{
+					surfaceMover->SetSpeed(baseSpeed);
+				}
+				else
+				{
+					surfaceMover->SetSpeed(-baseSpeed);
+				}
 			}
 			break;
 		case CRAWL:
@@ -343,7 +351,7 @@ void Crawler::ProcessState()
 		break;
 	case START_UNDERGROUND:
 	{
-		if (PlayerDist() < 1000)
+		if (PlayerDist() < DEFAULT_DETECT_RADIUS + 200)
 		{
 			action = START_UNBURROW;//UNBURROW;
 			frame = 0;
@@ -358,7 +366,7 @@ void Crawler::ProcessState()
 	}
 	case IDLE:
 	{
-		if (PlayerDist() < 1000)
+		if (PlayerDist() < DEFAULT_DETECT_RADIUS + 200)
 		{
 			action = DECIDE;
 			frame = 0;

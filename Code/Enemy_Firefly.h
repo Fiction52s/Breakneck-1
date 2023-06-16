@@ -22,8 +22,6 @@ struct Firefly : Enemy
 	};
 	MyData data;
 
-	double attentionRadius;
-	double ignoreRadius;
 	double activatePulseRadius;
 
 	Tileset *ts;
@@ -31,6 +29,8 @@ struct Firefly : Enemy
 	double maxSpeed;
 	double accel;
 	double pulseRadius;
+
+	sf::Sprite pulseSprite;
 	
 	sf::CircleShape testCircle;
 

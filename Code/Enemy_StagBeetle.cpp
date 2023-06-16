@@ -209,7 +209,7 @@ void StagBeetle::ProcessState()
 	case IDLE:
 		{
 			double dist = length(playerPos - position );
-			if( dist < 800 )
+			if( dist < DEFAULT_DETECT_RADIUS)
 			{
 				action = RUN;
 				frame = 0;
@@ -220,7 +220,7 @@ void StagBeetle::ProcessState()
 	case RUN:
 		{
 			double dist = length(playerPos - position );
-			if( dist >= 1200 )
+			if( dist >= DEFAULT_IGNORE_RADIUS )
 			{
 				action = IDLE;
 				frame = 0;

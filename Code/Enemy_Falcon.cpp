@@ -28,8 +28,6 @@ Falcon::Falcon(ActorParams *ap)
 	animFactor[RUSH] = 12;//8;
 
 	rushSpeed = 30;
-	attentionRadius = 800;
-	ignoreRadius = 3000;
 
 
 	accel.x = 1.0;//.6;
@@ -189,7 +187,7 @@ void Falcon::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = FLY;
 			data.recoverFrame = 0;
@@ -198,7 +196,7 @@ void Falcon::ProcessState()
 		}
 		break;
 	case FLY:
-		if (dist > ignoreRadius)
+		if (dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = NEUTRAL;
 			frame = 0;

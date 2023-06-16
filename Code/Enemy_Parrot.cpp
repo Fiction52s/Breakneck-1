@@ -26,9 +26,6 @@ Parrot::Parrot(ActorParams *ap)
 	animFactor[FLY] = 4;
 	animFactor[ATTACK] = 4;
 
-	attentionRadius = 800;
-	ignoreRadius = 2000;
-
 	accel = 1.0;
 
 	maxSpeed = 15;
@@ -148,14 +145,14 @@ void Parrot::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = FLY;
 			frame = 0;
 		}
 		break;
 	case FLY:
-		if (dist > ignoreRadius)
+		if (dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = NEUTRAL;
 			frame = 0;

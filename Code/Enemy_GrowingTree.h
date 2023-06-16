@@ -33,8 +33,6 @@ struct GrowingTree : Enemy, LauncherEnemy
 	int totalBullets;
 	Tileset *ts;
 	int startPowerLevel;
-	double attentionRadius;
-	double ignoreRadius;
 	
 	int repsToLevelUp;
 

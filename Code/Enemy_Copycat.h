@@ -25,8 +25,6 @@ struct Copycat : Enemy, GroundMoverHandler,
 	};
 	MyData data;
 
-	double attentionRadius;
-	double ignoreRadius;
 	int preChargeFrames;
 	int preChargeLimit;
 	double boostSpeed;

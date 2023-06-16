@@ -28,8 +28,6 @@ struct Roadrunner : Enemy, GroundMoverHandler
 	double maxFallSpeed;
 	double runAccel;
 	double runDecel;
-	double attentionRadius;
-	double ignoreRadius;
 
 	Roadrunner(ActorParams *ap);
 	void HandleNoHealth();

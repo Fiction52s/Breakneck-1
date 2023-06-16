@@ -41,9 +41,6 @@ Cheetah::Cheetah(ActorParams *ap)
 
 	maxFallSpeed = 25;
 
-	attentionRadius = 800;
-	ignoreRadius = 2000;
-
 	
 
 	runAccel = 1.0;
@@ -163,7 +160,7 @@ void Cheetah::ProcessState()
 	switch (action)
 	{
 	case IDLE:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = RUN;
 			frame = 0;
@@ -172,7 +169,7 @@ void Cheetah::ProcessState()
 		break;
 	case RUN:
 	{
-		if (dist >= ignoreRadius)
+		if (dist >= DEFAULT_IGNORE_RADIUS)
 		{
 			action = IDLE;
 			frame = 0;

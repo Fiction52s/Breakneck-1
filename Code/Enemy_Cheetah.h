@@ -20,9 +20,6 @@ struct Cheetah : Enemy, GroundMoverHandler
 		int chargeFrame;
 	};
 	MyData data;
-
-	double attentionRadius;
-	double ignoreRadius;
 	
 	int preChargeLimit;
 	double boostSpeed;

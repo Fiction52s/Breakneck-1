@@ -27,13 +27,12 @@ Firefly::Firefly(ActorParams *ap)
 
 	animFactor[NEUTRAL] = 5;
 	animFactor[APPROACH] = 5;
+	animFactor[CHARGE] = 1;
 	animFactor[PULSE] = 3;
 	animFactor[RECOVER] = 1;
 
 	pulseRadius = 150;
-	attentionRadius = 800;
-	ignoreRadius = 2000;
-
+	
 	accel = .1;
 
 	maxSpeed = 5;
@@ -72,6 +71,12 @@ Firefly::Firefly(ActorParams *ap)
 	testCircle.setRadius(pulseRadius);
 	testCircle.setOrigin(testCircle.getLocalBounds().width / 2,
 		testCircle.getLocalBounds().height / 2);
+
+	ts->SetSpriteTexture(pulseSprite);
+	ts->SetSubRect(pulseSprite, 0);
+	pulseSprite.setOrigin(pulseSprite.getLocalBounds().width / 2, pulseSprite.getLocalBounds().height / 2);
+	pulseSprite.setScale(2, 2);
+
 
 	ResetEnemy();
 }
@@ -171,7 +176,7 @@ void Firefly::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = APPROACH;
 			frame = 0;
@@ -183,7 +188,7 @@ void Firefly::ProcessState()
 			action = CHARGE;
 			frame = 0;
 		}
-		else if(dist > ignoreRadius)
+		else if(dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = NEUTRAL;
 			frame = 0;
@@ -249,9 +254,15 @@ void Firefly::UpdateSprite()
 		//sprite.setColor(Color::Green);
 		break;
 	case PULSE:
+	{
 		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 5;
+		int f = (frame / 2) % 10;
+		if( f > 7 )
+			f = 7;
+		ts->SetSubRect(pulseSprite, 22 + f);//27);
 		//sprite.setColor(Color::White);
 		break;
+	}
 	case RECOVER:
 		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 15;
 		//sprite.setColor(Color::Blue);
@@ -263,7 +274,7 @@ void Firefly::UpdateSprite()
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 
-
+	pulseSprite.setPosition(GetPositionF());
 	testCircle.setPosition(GetPositionF());
 }
 
@@ -273,7 +284,8 @@ void Firefly::EnemyDraw(sf::RenderTarget *target)
 
 	if (action == PULSE)
 	{
-		target->draw(testCircle);
+		target->draw(pulseSprite);
+		//target->draw(testCircle);
 	}
 }
 

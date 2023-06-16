@@ -28,8 +28,6 @@ Trailer::Trailer(ActorParams *ap)
 	animFactor[PULSE] = 1;
 
 	pulseRadius = 150;
-	attentionRadius = 800;
-	ignoreRadius = 2000;
 
 	accel = .1;
 
@@ -165,14 +163,14 @@ void Trailer::ProcessState()
 	switch (action)
 	{
 	case IDLE:
-		if (dist < attentionRadius)
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
 			action = TRAIL;
 			frame = 0;
 		}
 		break;
 	case TRAIL:
-		if (dist > ignoreRadius)
+		if (dist > DEFAULT_IGNORE_RADIUS)
 		{
 			action = IDLE;
 			frame = 0;
