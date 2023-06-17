@@ -10,6 +10,15 @@
 using namespace std;
 using namespace sf;
 
+
+//0 idle
+//1 wake
+//2-8 flap
+//9-18 block
+//19-26 spin
+//27-36 throw
+//37-38 death
+
 Owl::Owl(ActorParams *ap)
 	:Enemy( EnemyType::EN_OWL, ap ), flyingBez( 0, 0, 1, 1 )
 {
@@ -18,15 +27,16 @@ Owl::Owl(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	ts_death = GetSizedTileset("Enemies/W3/owl_death_160x160.png");
-	ts_flap = GetSizedTileset( "Enemies/W3/owl_flap_160x160.png");
-	ts_spin = GetSizedTileset( "Enemies/W3/owl_spin_160x160.png");
-	ts_throw = GetSizedTileset( "Enemies/W3/owl_throw_160x160.png");
+	ts = GetSizedTileset("Enemies/W3/owl_160x160.png");
 
-	cutObject->SetTileset(ts_death);
-	cutObject->SetSubRectFront(0);
-	cutObject->SetSubRectBack(1);
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(38);
+	cutObject->SetSubRectBack(37);
 	cutObject->SetScale(scale);
+
+	ts->SetSpriteTexture(sprite);
+	ts->SetSubRect(sprite, 0);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	
 	retreatRadius = 400;
 	chaseRadius = 600;
@@ -202,7 +212,7 @@ void Owl::DirectKill()
 
 void Owl::ActionEnded()
 {
-	double dist = 800;
+	double dist = 1200;
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d pos = GetPosition();
 	double len = length( playerPos - pos);
@@ -306,14 +316,14 @@ void Owl::ProcessState()
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d pos = GetPosition();
 
-	double dist = 600;
-	bool lessThanSize = length(playerPos - pos) < dist;
+	
+	double ignoreDistance = 1300;
 	
 	switch( action )
 	{
 	case REST:
 		{
-			if( lessThanSize )
+			if( PlayerDist() < DEFAULT_DETECT_RADIUS )
 			{
 				action = SPIN;
 				frame = 0;
@@ -327,7 +337,7 @@ void Owl::ProcessState()
 		break;
 	case SPIN:
 		{
-			if( !lessThanSize )
+			if(PlayerDist() > ignoreDistance)
 			{
 				action = REST;
 				frame = 0;
@@ -399,33 +409,25 @@ void Owl::UpdateSprite()
 	case REST:
 		{
 			sprite.setRotation( 0 );
-			sprite.setTexture( *ts_flap->texture );
-			sprite.setTextureRect( ts_flap->GetSubRect( (frame / 5) % 7 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			sprite.setTextureRect( ts->GetSubRect( ((frame / 5) % 7) + 2 ) );	
 		}
 		break;
 	case SPIN:
 		{
 			sprite.setRotation( 0 );
-			sprite.setTexture( *ts_spin->texture );
-			sprite.setTextureRect( ts_spin->GetSubRect( (frame / 5) % 8 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			sprite.setTextureRect( ts->GetSubRect( ((frame / 5) % 8) + 19 ) );
 		}
 		break;
 	case GUARD:
 		{
 			sprite.setRotation( 0 );
-			sprite.setTexture( *ts_spin->texture );
-			sprite.setTextureRect( ts_spin->GetSubRect( 0 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			sprite.setTextureRect( ts->GetSubRect( 9 ) ); //needs to animate, the frames are there
 		}
 		break;
 	case FIRE:
 		{
 			sprite.setRotation( ang / PI * 180.f + 90 );
-			sprite.setTexture( *ts_throw->texture );
-			sprite.setTextureRect( ts_throw->GetSubRect( frame / 6 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			sprite.setTextureRect( ts->GetSubRect( frame / 6 + 27 ) );
 		}
 		break;
 	}

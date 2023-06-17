@@ -40,11 +40,6 @@ struct Owl : Enemy, LauncherEnemy
 	
 	double flySpeed;
 
-	Tileset *ts_death;
-	Tileset *ts_flap;
-	Tileset *ts_spin;
-	Tileset *ts_throw;
-
 	Tileset *ts;
 
 	int hitlagFrames;

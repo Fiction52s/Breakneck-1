@@ -257,9 +257,7 @@ void Firefly::UpdateSprite()
 	{
 		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 5;
 		int f = (frame / 2) % 10;
-		if( f > 7 )
-			f = 7;
-		ts->SetSubRect(pulseSprite, 22 + f);//27);
+		ts->SetSubRect(pulseSprite, 25 + f);//27);
 		//sprite.setColor(Color::White);
 		break;
 	}

@@ -8,12 +8,13 @@
 using namespace std;
 using namespace sf;
 
-SwarmMember::SwarmMember(Swarm *p_parent, 
-		sf::VertexArray &p_va, int index, V2d &p_targetOffset, 
+SwarmMember::SwarmMember(Swarm *p_parent, int index, V2d &p_targetOffset, 
 		double p_maxSpeed )
-		:Enemy( EnemyType::EN_SWARMMEMBER, 5 ), va( p_va ), 
+		:Enemy( EnemyType::EN_SWARMMEMBER, 5 ),
 		vaIndex( index ), parent( p_parent ), maxSpeed( p_maxSpeed )
 {
+	SetNumActions(A_Count);
+
 	data.framesToLive = parent->liveFrames;
 	targetOffset = p_targetOffset;
 
@@ -32,7 +33,12 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::RED;
+	
+	actionLength[FLY] = 8;
+	animFactor[FLY] = 2;
 
+
+	
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
@@ -44,6 +50,20 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 
 void SwarmMember::ProcessState()
 {
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		frame = 0;
+	}
+
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
+
 	if (data.framesToLive == 0)
 	{
 		numHealth = 0;
@@ -75,6 +95,7 @@ void SwarmMember::Throw( V2d &pos )
 		sess->RemoveEnemy(this);
 	}
 
+	swarmTypeIndex = 0;
 	spawned = false;
 	sess->AddEnemy(this);
 	currPosInfo.position = pos + targetOffset;
@@ -83,16 +104,17 @@ void SwarmMember::Throw( V2d &pos )
 
 void SwarmMember::ClearSprite()
 {
-	va[vaIndex*4+0].position = Vector2f( 0, 0 );
-	va[vaIndex*4+1].position = Vector2f( 0, 0 );
-	va[vaIndex*4+2].position = Vector2f( 0, 0 );
-	va[vaIndex*4+3].position = Vector2f( 0, 0 );
+	ClearRect(parent->swarmVA + vaIndex * 4);
 }
 
 void SwarmMember::UpdateSprite()
 {
 	IntRect subRect = parent->ts_swarm->GetSubRect( vaIndex * 3 );//frame / animFactor );
-	if( sess->GetPlayerPos( 0 ).x < GetPosition().x )
+
+	SetRectCenter(parent->swarmVA + vaIndex * 4, parent->spriteSize.x, parent->spriteSize.y, GetPositionF());
+	parent->ts_swarm->SetQuadSubRect(parent->swarmVA + vaIndex * 4, (frame / animFactor[FLY]) + swarmTypeIndex * 5, !facingRight );
+
+	/*if( sess->GetPlayerPos( 0 ).x < GetPosition().x )
 	{
 		subRect.left += subRect.width;
 		subRect.width = -subRect.width;
@@ -114,7 +136,7 @@ void SwarmMember::UpdateSprite()
 	va[vaIndex*4+0].position = p + Vector2f( -spriteSize.x, -spriteSize.y );
 	va[vaIndex*4+1].position = p + Vector2f( spriteSize.x, -spriteSize.y );
 	va[vaIndex*4+2].position = p + Vector2f( spriteSize.x, spriteSize.y );
-	va[vaIndex*4+3].position = p + Vector2f( -spriteSize.x, spriteSize.y );
+	va[vaIndex*4+3].position = p + Vector2f( -spriteSize.x, spriteSize.y );*/
 }
 
 void SwarmMember::UpdateEnemyPhysics()
@@ -185,13 +207,15 @@ int SwarmMember::GetNumEnergyAbsorbParticles()
 
 
 Swarm::Swarm( ActorParams *ap )
-	:Enemy( EnemyType::EN_SWARM, ap), swarmVA( sf::Quads, 5 * 4 )
+	:Enemy( EnemyType::EN_SWARM, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	SetLevel(ap->GetLevel());
 	
+
+
 	liveFrames = 420;//600;//300;
 
 	actionLength[NEUTRAL] = 10;
@@ -206,7 +230,7 @@ Swarm::Swarm( ActorParams *ap )
 
 	
 	ts = GetSizedTileset("Enemies/W5/swarm_pod_128x128.png");
-	ts_swarm = GetSizedTileset( "Enemies/W5/swarm_64x64.png");
+	ts_swarm = GetSizedTileset( "Enemies/W5/swarm_80x80.png");
 
 	sprite.setTexture( *ts->texture );
 	
@@ -220,7 +244,7 @@ Swarm::Swarm( ActorParams *ap )
 	{
 		offset = V2d( cos( angle - PI / 2 ), sin( angle - PI / 2 ) ) * radius;
 		//V2d offset( ( rand() % blah ) - blah, (rand() %blah) - blah );
-		members[i] = new SwarmMember( this, swarmVA, i, offset, speed );
+		members[i] = new SwarmMember( this, i, offset, speed );
 		//members[i]->position = position + offset;
 
 
@@ -228,7 +252,7 @@ Swarm::Swarm( ActorParams *ap )
 		speed++;
 	}
 
-	spriteSize = Vector2f(24, 24);
+	spriteSize = Vector2f(80, 80);//24, 24);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 180;
@@ -420,7 +444,7 @@ void Swarm::EnemyDraw(sf::RenderTarget *target )
 	{
 		DrawSprite(target, sprite);
 	}
-	target->draw( swarmVA, ts_swarm->texture );
+	target->draw( swarmVA, NUM_SWARM * 4, sf::Quads, ts_swarm->texture );
 }
 
 void Swarm::UpdateSprite()

@@ -9,7 +9,6 @@ struct SwarmMember : Enemy
 	enum Action
 	{
 		FLY,
-		DIE,
 		A_Count
 	};
 
@@ -25,13 +24,12 @@ struct SwarmMember : Enemy
 	Swarm *parent;
 	double maxSpeed;
 	int vaIndex;
-
-	sf::VertexArray &va;
+	int swarmTypeIndex;
 
 	double bulletSpeed;
 
 	SwarmMember(Swarm *parent,
-		sf::VertexArray &va, int index,
+		int index,
 		V2d &targetOffset,
 		double p_maxSpeed);
 	void ClearSprite();
@@ -74,7 +72,7 @@ struct Swarm : Enemy
 	Tileset *ts_swarm;
 
 	const static int NUM_SWARM = 5;
-	sf::VertexArray swarmVA;
+	sf::Vertex swarmVA[NUM_SWARM * 4];
 	SwarmMember *members[NUM_SWARM];
 
 	Tileset *ts_swarmExplode;
