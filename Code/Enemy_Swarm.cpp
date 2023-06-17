@@ -229,7 +229,7 @@ Swarm::Swarm( ActorParams *ap )
 	animFactor[REFILL] = 1;
 
 	
-	ts = GetSizedTileset("Enemies/W5/swarm_pod_128x128.png");
+	ts = GetSizedTileset("Enemies/W5/swarm_pod_160x160.png");
 	ts_swarm = GetSizedTileset( "Enemies/W5/swarm_80x80.png");
 
 	sprite.setTexture( *ts->texture );
