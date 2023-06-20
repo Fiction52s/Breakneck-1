@@ -19,7 +19,7 @@ struct Pufferfish : Enemy, LauncherEnemy
 
 	struct MyData : StoredEnemyData
 	{
-
+		V2d velocity;
 	};
 	MyData data;
 

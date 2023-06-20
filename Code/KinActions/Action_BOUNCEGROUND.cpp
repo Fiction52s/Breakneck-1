@@ -108,7 +108,18 @@ void Actor::BOUNCEGROUND_Change()
 
 		if (bn.y == 1 || bn.y == -1)
 		{
-			if (velocity.x > 0)
+			if (velocity.x == 0)
+			{
+				if (currInput.LLeft())
+				{
+					velocity.x = -dSpeed;
+				}
+				else if (currInput.LRight())
+				{
+					velocity.x = dSpeed;
+				}
+			}
+			else if (velocity.x > 0)
 			{
 				if (currInput.LLeft())
 				{

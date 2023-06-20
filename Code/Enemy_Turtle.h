@@ -26,6 +26,7 @@ struct Turtle : Enemy, LauncherEnemy
 	Tileset *ts_bulletExplode;
 	int bulletSpeed;
 	Tileset *ts;
+	sf::CircleShape trackTestCircle;
 
 	Turtle(ActorParams *ap);
 	void BulletHitTerrain(BasicBullet *b,

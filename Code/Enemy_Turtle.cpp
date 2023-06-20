@@ -19,19 +19,18 @@ Turtle::Turtle( ActorParams *ap )
 
 	bulletSpeed = 5;
 
-	action = NEUTRAL;
-
-	animFactor[NEUTRAL] = 2;
-	animFactor[FIRE] = 2;
-	animFactor[FADEIN] = 15;
-	animFactor[FADEOUT] = 5;
-	animFactor[INVISIBLE] = 1;
-
 	actionLength[NEUTRAL] = 1;
 	actionLength[FIRE] = 15;
 	actionLength[FADEIN] = 4;//60;
 	actionLength[FADEOUT] = 17;//90;
 	actionLength[INVISIBLE] = 30;
+
+	animFactor[NEUTRAL] = 2;
+	animFactor[FIRE] = 2;
+	animFactor[FADEIN] = 7;//15;
+	animFactor[FADEOUT] = 5;
+	animFactor[INVISIBLE] = 1;
+	
 	
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), PI * .5, 90, false );
@@ -58,9 +57,14 @@ Turtle::Turtle( ActorParams *ap )
 	hitboxInfo->kbDir = V2d( 1, 0 );
 	hitboxInfo->hType = HitboxInfo::ORANGE;
 
+	trackTestCircle.setFillColor(Color(0, 255, 0, 100));
+	trackTestCircle.setRadius(50);
+	trackTestCircle.setOrigin(trackTestCircle.getLocalBounds().width / 2, trackTestCircle.getLocalBounds().height / 2);
 
-	BasicCircleHitBodySetup(16);
-	BasicCircleHurtBodySetup(16);
+
+
+	BasicCircleHitBodySetup(48);
+	BasicCircleHurtBodySetup(48);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -127,10 +131,10 @@ void Turtle::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 
 void Turtle::ResetEnemy()
 {
-	if( GetPosition().x < sess->playerOrigPos[0].x )
-		facingRight = false;
-	else
+	if( PlayerDir().x >= 0 )
 		facingRight = true;
+	else
+		facingRight = false;
 	
 
 	action = NEUTRAL;
@@ -166,14 +170,12 @@ void Turtle::ActionEnded()
 		break;
 	case INVISIBLE:
 		currPosInfo.position = data.playerTrackPos;
-		if (playerPos.x < GetPosition().x)
-		{
-			facingRight = false;
-		}
-		else
-		{
+
+		if (PlayerDir().x >= 0)
 			facingRight = true;
-		}
+		else
+			facingRight = false;
+
 		action = FADEIN;
 		frame = 0;
 		break;
@@ -265,6 +267,9 @@ void Turtle::UpdateSprite()
 		trueFrame = frame / animFactor[FIRE] + 21;
 		break;
 	case INVISIBLE:
+
+		trackTestCircle.setPosition(Vector2f(data.playerTrackPos));
+
 		return;
 		break;
 	case FADEIN:
@@ -272,6 +277,9 @@ void Turtle::UpdateSprite()
 		break;
 	case FADEOUT:
 		trueFrame = frame / animFactor[FADEOUT];
+
+		trackTestCircle.setPosition(Vector2f(sess->GetPlayerPos(0)));
+
 		break;
 	}
 
@@ -288,12 +296,18 @@ void Turtle::UpdateSprite()
 	sprite.setOrigin( sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( GetPositionF());
+
 }
 
-void Turtle::EnemyDraw( sf::RenderTarget *target )
+void Turtle::EnemyDraw(sf::RenderTarget *target)
 {
-	if( action != INVISIBLE )
+	if (action != INVISIBLE)
 		DrawSprite(target, sprite);
+
+	if (action == INVISIBLE || ( action == FADEOUT && frame >= actionLength[FADEOUT] * animFactor[FADEOUT] / 2) )
+	{
+		target->draw(trackTestCircle);
+	}
 }
 
 int Turtle::GetNumStoredBytes()

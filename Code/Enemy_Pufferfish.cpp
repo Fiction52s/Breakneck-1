@@ -141,14 +141,19 @@ void Pufferfish::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 
 void Pufferfish::ResetEnemy()
 {
-	if (GetPosition().x < sess->playerOrigPos[0].x)
-		facingRight = false;
-	else
-		facingRight = true;
-
 	action = NEUTRAL;
 	frame = 0;
 
+	data.velocity = V2d(0, 0);
+
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 
 
 	DefaultHitboxesOn();
@@ -258,6 +263,17 @@ void Pufferfish::ProcessState()
 	{
 		Fire();
 	}
+
+	data.velocity = PlayerDir() * 1.0;
+
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 }
 
 void Pufferfish::Fire()
@@ -270,6 +286,10 @@ void Pufferfish::Fire()
 
 void Pufferfish::UpdateEnemyPhysics()
 {
+	V2d movementVec = data.velocity;
+	movementVec /= slowMultiple * (double)numPhysSteps;
+
+	currPosInfo.position += movementVec;
 }
 
 void Pufferfish::UpdateSprite()
@@ -326,7 +346,7 @@ void Pufferfish::UpdateSprite()
 		break;
 	}
 
-	ts->SetSubRect(sprite, tile, !facingRight);
+	ts->SetSubRect(sprite, tile, facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
