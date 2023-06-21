@@ -34,7 +34,7 @@ SwarmMember::SwarmMember(Swarm *p_parent, int index, V2d &p_targetOffset,
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::RED;
 	
-	actionLength[FLY] = 8;
+	actionLength[FLY] = 2;
 	animFactor[FLY] = 2;
 
 
@@ -43,7 +43,7 @@ SwarmMember::SwarmMember(Swarm *p_parent, int index, V2d &p_targetOffset,
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	cutObject->Setup(parent->ts_swarm, 0, 0, scale);
+	//cutObject->Setup(parent->ts_swarm, 0, 0, scale);
 
 	ResetEnemy();
 }
@@ -96,6 +96,16 @@ void SwarmMember::Throw( V2d &pos )
 	}
 
 	swarmTypeIndex = 0;
+
+	if (swarmTypeIndex == 0 || swarmTypeIndex == 1)
+	{
+		animFactor[FLY] = 4;
+	}
+	else
+	{
+		animFactor[FLY] = 2;
+	}
+
 	spawned = false;
 	sess->AddEnemy(this);
 	currPosInfo.position = pos + targetOffset;
@@ -112,7 +122,7 @@ void SwarmMember::UpdateSprite()
 	IntRect subRect = parent->ts_swarm->GetSubRect( vaIndex * 3 );//frame / animFactor );
 
 	SetRectCenter(parent->swarmVA + vaIndex * 4, parent->spriteSize.x, parent->spriteSize.y, GetPositionF());
-	parent->ts_swarm->SetQuadSubRect(parent->swarmVA + vaIndex * 4, (frame / animFactor[FLY]) + swarmTypeIndex * 5, !facingRight );
+	parent->ts_swarm->SetQuadSubRect(parent->swarmVA + vaIndex * 4, (frame / animFactor[FLY]) + swarmTypeIndex * 2, !facingRight );
 
 	/*if( sess->GetPlayerPos( 0 ).x < GetPosition().x )
 	{

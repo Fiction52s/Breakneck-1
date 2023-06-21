@@ -202,7 +202,16 @@ void PalmTurret::ActionEnded()
 		}
 		case RECOVER:
 		{
-			StartCharge();
+			if (PlayerDist() > DEFAULT_IGNORE_RADIUS)
+			{
+				action = IDLE;
+				frame = 0;
+			}
+			else
+			{
+				StartCharge();
+			}
+			
 			break;
 		}
 		}
@@ -223,7 +232,7 @@ void PalmTurret::ProcessState()
 	{
 	case IDLE:
 	{
-		if (length(playerPos - position) < DEFAULT_DETECT_RADIUS + 1200)
+		if (PlayerDist() < DEFAULT_DETECT_RADIUS )// + 1200)
 		{
 			StartCharge();
 		}
