@@ -59,8 +59,8 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	puffRadius = 800;
 	unpuffRadius = 1000;
 
-	BasicCircleHitBodySetup(16);
-	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(32);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -264,7 +264,15 @@ void Pufferfish::ProcessState()
 		Fire();
 	}
 
-	data.velocity = PlayerDir() * 1.0;
+	if (dist < DEFAULT_DETECT_RADIUS)
+	{
+		data.velocity = PlayerDir() * 1.0;
+	}
+	else if (dist > DEFAULT_IGNORE_RADIUS)
+	{
+		data.velocity = V2d(0, 0);
+	}
+	
 
 	if (PlayerDir().x >= 0)
 	{
@@ -274,6 +282,44 @@ void Pufferfish::ProcessState()
 	{
 		facingRight = false;
 	}
+
+	float rw = -1;
+	switch (action)
+	{
+	case NEUTRAL:
+		rw = 32;
+		//hurtBody.GetCollisionBoxes(0).front().rw = scale * 
+		break;
+	case PUFF:
+		rw = 48;
+		break;
+	case HOLDPUFF:
+		rw = 64;
+		break;
+	case UNPUFF:
+		rw = 48;
+		break;
+	case BLAST:
+		rw = 64;
+		break;
+	case RECOVER:
+		rw = 32;
+		//if (frame < (actionLength[RECOVER] * animFactor[RECOVER]) / 2)
+		//{
+		//	tile = 0;
+		//	//tile = 3;
+		//}
+		//else
+		//{
+		//	tile = 0;
+		//}
+
+		break;
+	}
+	assert(rw != -1);
+
+	hurtBody.GetCollisionBoxes(0).front().rw = rw;
+	hitBody.GetCollisionBoxes(0).front().rw = rw;
 }
 
 void Pufferfish::Fire()

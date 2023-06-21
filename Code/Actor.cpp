@@ -19713,9 +19713,9 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 		//ah->keyMarker->Reset();
 	}
 
-
+	//new bounce physics make killing enemies and bouncing off them a little awkward since you might wanna do that normally without bouncing. I'll find a way to include this.
 	//if (HasUpgrade(UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE))
-	{
+	/*{
 		if (!bouncedFromKill)
 		{
 			if (bounceFlameOn && (action == FAIR || action == UAIR || action == DAIR
@@ -19724,7 +19724,7 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 				bouncedFromKill = true;
 			}
 		}
-	}
+	}*/
 
 	//for the growing tree
 	//wrong
