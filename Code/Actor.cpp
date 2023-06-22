@@ -17627,9 +17627,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			double len0 = length(c->position - e->v0);
 			double len1 = length(c->position - e->v1);
 
-
-			if ( e->edge0 != NULL && e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1)
+			//recently added IsSoft because sometimes you would pass through a soft gate and hit this condition from a wall 
+			//into a steep slope and it would ignore the edge
+			if ( e->edge0 != NULL && e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 && !e->edge0->GetGate()->IsSoft())
 			{
+
 				//cout << "len0: " << len0 << endl;
 				V2d pVec = normalize(position - e->v0);
 				double pAngle = atan2(-pVec.y, pVec.x);
@@ -17694,7 +17696,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 
 			}
-			else if ( e->edge1 != NULL && e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1)
+			else if ( e->edge1 != NULL && e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 && !e->edge1->GetGate()->IsSoft())
 			{
 				//cout << "len1: " << len1 << endl;
 				V2d pVec = normalize(position - e->v1);

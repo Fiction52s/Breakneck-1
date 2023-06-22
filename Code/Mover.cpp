@@ -461,7 +461,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			double len0 = length( c->position - e->v0 );
 			double len1 = length( c->position - e->v1 );
 
-			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
+			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 && !e->edge0->GetGate()->IsSoft())
 			{
 				V2d pVec = normalize(surfaceMoverData.physBody.globalPosition - e->v0 );
 				double pAngle = atan2( -pVec.y, pVec.x );
@@ -514,7 +514,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 					}
 				}
 			}
-			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
+			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 && !e->edge1->GetGate()->IsSoft())
 			{
 				V2d pVec = normalize(surfaceMoverData.physBody.globalPosition - e->v1 );
 				double pAngle = atan2( -pVec.y, pVec.x );
@@ -949,6 +949,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 	}
 	else 
 	{
+		cout << "position: " << surfaceMoverData.physBody.globalPosition.x << ", " << surfaceMoverData.physBody.globalPosition.y << "\n";
 		//cout << "surfaceMoverData.velocity:" << surfaceMoverData.velocity.x << ", " << surfaceMoverData.velocity.y << "\n";
 		double nSteps = numPhysSteps;
 		surfaceMoverData.velocity += surfaceMoverData.force / nSteps / (double)slowMultiple;
