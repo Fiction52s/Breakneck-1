@@ -25,7 +25,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	actionLength[S_IDLE] = 15;
 	actionLength[S_TINYCHARGE] = 3;
-	actionLength[S_CHARGE] = 12;
+	actionLength[S_CHARGE] = 16;
 	actionLength[S_ABOUT_TO_EXPLODE] = 60;
 	actionLength[S_EXPLODE] = 20;
 
@@ -42,7 +42,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	facingRight = true;
 
-	ts = GetSizedTileset("Enemies/W3/barrel_128x128.png");
+	ts = GetSizedTileset("Enemies/W3/mine_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -134,6 +134,8 @@ void ExplodingBarrel::ResetEnemy()
 {
 	comboObj->Reset();
 
+	data.totalFrame = 0;
+
 	testCircle.setPosition(GetPositionF());
 
 	explosion.SetBasicPos(GetPosition());
@@ -146,6 +148,8 @@ void ExplodingBarrel::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
+
+	rootPos = GetPosition();
 }
 
 void ExplodingBarrel::StartHeatingUp()
@@ -274,6 +278,19 @@ void ExplodingBarrel::ProcessState()
 		}
 	}
 
+	//if (action == FLOAT)
+	{
+		int floatFrames = 240;
+		double floatAmount = 2.0;//4.0;
+		int t = data.totalFrame % floatFrames;
+		float tf = t;
+		tf /= (floatFrames - 1);
+		double f = cos(2 * PI * tf);
+		f -= .5;
+		currPosInfo.position = rootPos;
+		currPosInfo.position.y += f * floatAmount;
+	}
+
 	if (autoTrigger 
 		&& (action == S_CHARGE || action == S_TINYCHARGE || action == S_IDLE)
 		&& PlayerDist() < explosionRadius)
@@ -293,6 +310,7 @@ void ExplodingBarrel::UpdateEnemyPhysics()
 
 void ExplodingBarrel::FrameIncrement()
 {
+	++data.totalFrame;
 }
 
 void ExplodingBarrel::ComboHit()

@@ -11,6 +11,8 @@ struct Cheetah : Enemy, GroundMoverHandler
 		RUN,
 		CHARGE,
 		BOOST,
+		JUMP,
+		LAND,
 		A_Count
 	};
 
@@ -29,6 +31,8 @@ struct Cheetah : Enemy, GroundMoverHandler
 	double turnaroundDist;
 	double boostPastDist;
 
+	V2d jumpPower;
+
 	Action landedAction;
 	Action nextAction;
 
@@ -44,8 +48,6 @@ struct Cheetah : Enemy, GroundMoverHandler
 
 	double maxGroundSpeed;
 	double maxFallSpeed;
-
-	double jumpStrength;
 
 	Cheetah(ActorParams *ap);
 	void RunMovement();

@@ -19,10 +19,11 @@ struct ExplodingBarrel : Enemy
 
 	struct MyData : StoredEnemyData
 	{
-
+		int totalFrame;
 	};
 	MyData data;
 
+	V2d rootPos;
 	sf::CircleShape testCircle;
 	Tileset *ts;
 	CollisionBody explosion;

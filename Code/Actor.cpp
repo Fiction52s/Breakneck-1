@@ -9790,8 +9790,8 @@ V2d Actor::UpdateReversePhysics()
 								{
 									if (bounceFlameOn && abs(groundSpeed) > 1)
 									{
-										if (action != STEEPCLIMB
-											&& action != STEEPCLIMBATTACK)
+										//if (action != STEEPCLIMB
+										//	&& action != STEEPCLIMBATTACK)
 										{
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
 											groundedWallBounce = true;
@@ -12944,7 +12944,7 @@ void Actor::UpdatePhysics()
 								{
 									if( bounceFlameOn && abs( groundSpeed ) > 1)
 									{
-										if( action != STEEPCLIMB && action != STEEPCLIMBATTACK)
+										//if( action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 										{
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
 											groundedWallBounce = true;
@@ -13813,28 +13813,57 @@ bool Actor::TryGroundAttack()
 
 	if ( normalSwing || IsGroundAttackAction(pauseBufferedAttack) )
 	{
-		if (currInput.LLeft())
+		V2d groundNorm = ground->Normal();
+		if (ground->IsSteepGround())
 		{
-			facingRight = false;
+			if (groundNorm.x > 0)
+			{
+				if (facingRight)
+				{
+					SetAction(STEEPSLIDEATTACK);
+				}
+				else
+				{
+					SetAction(STEEPCLIMBATTACK);
+				}
+			}
+			else
+			{
+				if (facingRight)
+				{
+					SetAction(STEEPCLIMBATTACK);
+				}
+				else
+				{
+					SetAction(STEEPSLIDEATTACK);
+				}
+			}
 		}
-		else if (currInput.LRight())
-		{
-			facingRight = true;
-		}
-		
-		if (action == DASH || ((action == DASHATTACK
-			|| action == DASHATTACK2 || action == DASHATTACK3) && DashButtonHeld()
-			&& (currInput.LLeft() || currInput.LRight())))
-		{
-			SetAction(GetCurrDashAttack());
-		}
-		//else if (currInput.LUp())
-		//{
-		//	SetAction(GetCurrUpTilt());
-		//}
 		else
 		{
-			SetAction(GetCurrStandAttack());
+			if (currInput.LLeft())
+			{
+				facingRight = false;
+			}
+			else if (currInput.LRight())
+			{
+				facingRight = true;
+			}
+
+			if (action == DASH || ((action == DASHATTACK
+				|| action == DASHATTACK2 || action == DASHATTACK3) && DashButtonHeld()
+				&& (currInput.LLeft() || currInput.LRight())))
+			{
+				SetAction(GetCurrDashAttack());
+			}
+			//else if (currInput.LUp())
+			//{
+			//	SetAction(GetCurrUpTilt());
+			//}
+			else
+			{
+				SetAction(GetCurrStandAttack());
+			}
 		}
 
 		frame = 0;

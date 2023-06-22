@@ -17,7 +17,6 @@ Cheetah::Cheetah(ActorParams *ap)
 	SetLevel(ap->GetLevel());
 
 	maxGroundSpeed = 20;
-	jumpStrength = 5;
 
 	preChargeLimit = 40;
 
@@ -31,13 +30,19 @@ Cheetah::Cheetah(ActorParams *ap)
 	actionLength[CHARGE] = 8;
 	actionLength[BOOST] = 1;
 	actionLength[RUN] = 8;
+	actionLength[LAND] = 1;
+	actionLength[JUMP] = 2;
 
 	animFactor[IDLE] = 16;
 	animFactor[RUN] = 3;
 	animFactor[CHARGE] = 3;
 	animFactor[BOOST] = 30;
+	animFactor[LAND] = 1;
+	animFactor[JUMP] = 1;
 
-	gravity = V2d(0, .6);
+	gravity = V2d(0, 1.2);//V2d(0, .6);
+
+	jumpPower = V2d(12, -20);
 
 	maxFallSpeed = 25;
 
@@ -47,7 +52,7 @@ Cheetah::Cheetah(ActorParams *ap)
 	runDecel = 1.0;//runAccel * 3.0;
 
 	CreateGroundMover(startPosInfo, 32, true, this);
-	groundMover->AddAirForce(V2d(0, .6));
+	groundMover->AddAirForce(gravity);
 
 	ts = GetSizedTileset("Enemies/W4/cheetah_224x96.png");
 
@@ -100,9 +105,17 @@ void Cheetah::SetLevel(int lev)
 
 void Cheetah::ResetEnemy()
 {
-	facingRight = true;
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
+
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -129,6 +142,14 @@ void Cheetah::ActionEnded()
 		case CHARGE:
 			break;
 		case BOOST:
+			action = RUN;
+			data.preChargeFrame = 0;
+			frame = 0;
+			break;
+		case JUMP:
+			frame = 1;
+			break;
+		case LAND:
 			action = RUN;
 			data.preChargeFrame = 0;
 			frame = 0;
@@ -160,7 +181,7 @@ void Cheetah::ProcessState()
 	switch (action)
 	{
 	case IDLE:
-		if (dist < DEFAULT_DETECT_RADIUS)
+		if (dist < DEFAULT_DETECT_RADIUS )//600)
 		{
 			action = RUN;
 			frame = 0;
@@ -217,6 +238,19 @@ void Cheetah::ProcessState()
 		RunMovement();
 
 		++data.preChargeFrame;
+		break;
+	}
+	case JUMP:
+	{
+		if (facingRight)
+		{
+			groundMover->SetVelX(jumpPower.x);
+		}
+		else
+		{
+			groundMover->SetVelX(-jumpPower.x);
+		}
+		//cout << "jump: " << frame << endl;
 		break;
 	}
 	case CHARGE:
@@ -336,6 +370,12 @@ void Cheetah::UpdateSprite()
 	case BOOST:
 		index = 22;//frame / animFactor[BOOST] + 22;
 		break;
+	case JUMP:
+		index = 0;
+		break;
+	case LAND:
+		index = 0;
+		break;
 	}
 
 	ts->SetSubRect(sprite, index, !facingRight, false);
@@ -358,25 +398,41 @@ void Cheetah::FinishedRoll()
 
 void Cheetah::HitOther()
 {
-	/*V2d v;
-	if( facingRight && mover->groundSpeed > 0 )
+	if (action == RUN)
 	{
-	v = V2d( 10, -10 );
-	mover->Jump( v );
+		if ((facingRight && groundMover->GetGroundSpeed() < 0)
+			|| (!facingRight && groundMover->GetGroundSpeed() > 0))
+		{
+			//cout << "here" << endl;
+			groundMover->SetSpeed(0);
+		}
+		else if (facingRight && groundMover->GetGroundSpeed() > 0)
+		{
+			V2d v = jumpPower;
+			groundMover->Jump(v);
+			action = JUMP;
+			frame = 0;
+		}
+		else if (!facingRight && groundMover->GetGroundSpeed() < 0)
+		{
+			V2d v = jumpPower;
+			v.x = -v.x;
+			groundMover->Jump(v);
+			action = JUMP;
+			frame = 0;
+		}
 	}
-	else if( !facingRight && mover->groundSpeed < 0 )
-	{
-	v = V2d( -10, -10 );
-	mover->Jump( v );
-	}*/
-	//cout << "hit other!" << endl;
-	//mover->SetSpeed( 0 );
-	//facingRight = !facingRight;
 }
 
 void Cheetah::ReachCliff()
 {
-	return;
+	if (action == BOOST)
+	{
+		groundMover->SetSpeed(0);
+		return;
+	}
+
+	//return;
 	if (facingRight && groundMover->GetGroundSpeed() < 0
 		|| !facingRight && groundMover->GetGroundSpeed() > 0)
 	{
@@ -386,20 +442,17 @@ void Cheetah::ReachCliff()
 
 	//cout << "reach cliff!" << endl;
 	//ground = NULL;
-	V2d v;
-	if (facingRight)
+	V2d v = jumpPower;
+	if (!facingRight)
 	{
-		v = V2d(10, -10);
+		v.x = -v.x;
 	}
-	else
-	{
-		v = V2d(-10, -10);
-	}
-
+	
 	//action = LEDGEJUMP;
+	action = JUMP;
 	frame = 0;
 
-	Jump(v.x, v.y);
+	groundMover->Jump(v);
 }
 
 void Cheetah::HitOtherAerial(Edge *e)
@@ -409,8 +462,7 @@ void Cheetah::HitOtherAerial(Edge *e)
 
 void Cheetah::Land()
 {
-	return;
-	//action = LAND;
+	action = LAND;
 	frame = 0;
 
 	//cout << "land" << endl;

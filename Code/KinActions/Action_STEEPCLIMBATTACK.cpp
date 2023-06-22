@@ -39,10 +39,15 @@ void Actor::STEEPCLIMBATTACK_Change()
 			return;
 		}
 
-		if (SteepClimbAttack())
+		if (TryGroundAttack())
 		{
 			return;
 		}
+
+		/*if (SteepClimbAttack())
+		{
+			return;
+		}*/
 	}
 }
 

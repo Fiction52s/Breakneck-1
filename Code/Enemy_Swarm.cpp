@@ -95,7 +95,7 @@ void SwarmMember::Throw( V2d &pos )
 		sess->RemoveEnemy(this);
 	}
 
-	swarmTypeIndex = 0;
+	swarmTypeIndex = vaIndex;
 
 	if (swarmTypeIndex == 0 || swarmTypeIndex == 1)
 	{
@@ -103,7 +103,7 @@ void SwarmMember::Throw( V2d &pos )
 	}
 	else
 	{
-		animFactor[FLY] = 2;
+		animFactor[FLY] = 4;
 	}
 
 	spawned = false;

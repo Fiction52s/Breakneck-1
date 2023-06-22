@@ -65,6 +65,7 @@ void Enemy::CreateSurfaceMover(PositionInfo &pi,
 	assert(groundMover == NULL && surfaceMover == NULL);
 	surfaceMover = new SurfaceMover(pi.GetEdge(), pi.GetQuant(), rad * scale);
 	surfaceMover->surfaceHandler = handler;
+	highResPhysics = true;
 }
 
 void Enemy::CreateGroundMover(PositionInfo &pi,
@@ -72,6 +73,7 @@ void Enemy::CreateGroundMover(PositionInfo &pi,
 {
 	assert(groundMover == NULL && surfaceMover == NULL);
 	groundMover = new GroundMover(pi.GetEdge(), pi.GetQuant(), rad * scale, steeps, handler );
+	highResPhysics = true;
 }
 
 void Enemy::SetCurrPosInfo(PositionInfo &pi)
@@ -1443,7 +1445,7 @@ void Enemy::UpdatePrePhysics()
 	}
 
 
-	bool isCloseEnoughForAddedPrecision = false;
+	/*bool isCloseEnoughForAddedPrecision = false;
 
 	Actor *player = NULL;
 	for (int i = 0; i < 4; ++i)
@@ -1466,13 +1468,18 @@ void Enemy::UpdatePrePhysics()
 	else
 	{
 		numPhysSteps = NUM_STEPS;
-		//player->highAccuracyHitboxes = true;
 	}
 
 	if (highResPhysics)
 	{
 		numPhysSteps = NUM_MAX_STEPS;
-	}
+	}*/
+
+	//this optimization causes some issues with surfacemovers (which is why I now made it that any enemy with a surfacemover/groundmover has
+	//highresphysics always turned on). I'm thinking that with comboers and stuff now it might be better to just take the performance hit
+	//in exchange for consistency
+
+	numPhysSteps = NUM_MAX_STEPS;
 	
 }
 

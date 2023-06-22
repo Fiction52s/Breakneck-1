@@ -41,8 +41,10 @@ void Actor::STEEPSLIDEATTACK_Change()
 			return;
 		}
 
-		if (SteepSlideAttack())
+		if (TryGroundAttack())
 			return;
+		//if (SteepSlideAttack())
+		//	return;
 
 		if (DashButtonPressed())
 		{
