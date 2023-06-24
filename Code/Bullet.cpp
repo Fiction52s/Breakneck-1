@@ -473,7 +473,6 @@ void Launcher::SetBulletSpeed(double speed)
 
 void Launcher::Fire()
 {
-
 	V2d dir = facingDir;
 	double dirAngle = atan2(facingDir.x, -facingDir.y);
 	if (dirAngle < 0)
@@ -481,6 +480,7 @@ void Launcher::Fire()
 		dirAngle += PI * 2.0;
 	}
 	dirAngle -= angleSpread / 2;
+
 	for (int i = 0; i < perShot; ++i)
 	{
 		dir = V2d(cos(dirAngle - PI / 2.0), sin(dirAngle - PI / 2.0));
@@ -495,7 +495,10 @@ void Launcher::Fire()
 			handler->FireResponse(b);
 		}
 
-		dirAngle += angleSpread / (perShot);
+		if (perShot > 1)
+		{
+			dirAngle += angleSpread / (perShot - 1);
+		}
 	}
 }
 

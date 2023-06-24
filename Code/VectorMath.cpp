@@ -312,12 +312,12 @@ void lineIntersection( LineIntersection &li,
 {
 	double x= 0,y = 0;
 	bool parallel = false;
-	//if( abs((ax-bx)*(cy - dy) - (ay - by) * (cx - dx )) < .0000001 ) //equals 0
 
 
 	//i had it as == 0 for awhile, but at high pixel values, sometimes the roadrunner would teleport 
 	//really far away. i changed it back to this and now it seems to work without bugging...but
 	//i dont know what I just broke. if you're reading this I'm sorry lmfao
+
 	if (abs((a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x)) < .0000001) //== 0) //equals 0
 	{
 		parallel = true;
@@ -329,6 +329,29 @@ void lineIntersection( LineIntersection &li,
 		y = ((a.x * b.y - a.y * b.x ) * ( c.y - d.y ) - (a.y - b.y ) * ( c.x * d.y - c.y * d.x ))
 			/ ( (a.x-b.x)*(c.y - d.y) - (a.y - b.y) * (c.x - d.x ) );
 	}
+
+
+	//testing new alg, pretty sure its the same exact alg tho with diff formatting...has the same effect
+
+	/*double xab = a.x - b.x;
+	double xcd = c.x - d.x;
+	double yab = a.y - b.y;
+	double ycd = c.y - d.y;
+
+	double check = xab * ycd - yab * xcd;
+
+	if (abs(check) < .0000001)
+	{
+		parallel = true;
+	}
+	else
+	{
+		double i0 = a.x * b.y - a.y * b.x;
+		double i1 = c.x * d.y - c.y * d.x;
+
+		x = (i0 * xcd - i1 * xab) / check;
+		y = (i0 * ycd - i1 * yab) / check;
+	}*/
 
 	li.position.x = x;
 	li.position.y = y;

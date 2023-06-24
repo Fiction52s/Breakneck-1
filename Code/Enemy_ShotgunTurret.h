@@ -8,8 +8,9 @@ struct ShotgunTurret : Enemy, LauncherEnemy
 {
 	enum Action
 	{
-		WAIT,
+		IDLE,
 		ATTACK,
+		WAIT,
 		Count
 	};
 
@@ -22,9 +23,6 @@ struct ShotgunTurret : Enemy, LauncherEnemy
 	Tileset *ts;
 	Tileset *ts_bulletExplode;
 
-	int framesWait;
-
-	int animationFactor;
 	double bulletSpeed;
 
 	ShotgunTurret(ActorParams *ap);

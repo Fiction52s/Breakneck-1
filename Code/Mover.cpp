@@ -949,7 +949,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 	}
 	else 
 	{
-		cout << "position: " << surfaceMoverData.physBody.globalPosition.x << ", " << surfaceMoverData.physBody.globalPosition.y << "\n";
+		//cout << "position: " << surfaceMoverData.physBody.globalPosition.x << ", " << surfaceMoverData.physBody.globalPosition.y << "\n";
 		//cout << "surfaceMoverData.velocity:" << surfaceMoverData.velocity.x << ", " << surfaceMoverData.velocity.y << "\n";
 		double nSteps = numPhysSteps;
 		surfaceMoverData.velocity += surfaceMoverData.force / nSteps / (double)slowMultiple;
@@ -1273,7 +1273,7 @@ void GroundMover::HitTerrainAerial()
 	}
 	else
 	{
-		//cout << "collision vel: " << velocity.x << ", " << velocity.y << ", res: " 
+		//cout << "collision vel: " << surfaceMoverData.velocity.x << ", " << surfaceMoverData.velocity.y << ", res: "
 		//	<< minContact.resolution.x << ", " << minContact.resolution.y << endl;
 		surfaceMoverData.physBody.globalPosition += minContact.resolution;
 		if( corner )

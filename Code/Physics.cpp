@@ -912,8 +912,23 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
 			{
 				LineIntersection li;
-				lineIntersection( li, oldPosition + radius * -edgeNormal, position
-					+ radius * -edgeNormal, e->v0, e->v1 );
+
+				V2d p0 = oldPosition + radius * -edgeNormal;
+				V2d p1 = position + radius * -edgeNormal;
+
+				//this code is to make sure calculations don't change when far from the origin point. Issues would only potentially occur with incredibly long edges
+				//actually seems to fix the issue, at least for now
+				V2d centerTest = (p0 + p1 + e->v0 + e->v1) / 4.0;
+
+				V2d e0 = e->v0;
+				V2d e1 = e->v1;
+
+				p0 -= centerTest;
+				p1 -= centerTest;
+				e0 -= centerTest;
+				e1 -= centerTest;
+
+				lineIntersection( li, p0, p1, e0, e1);
 
 
 				//double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
@@ -924,7 +939,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				}
 
 
-				V2d intersect = li.position;
+				V2d intersect = li.position + centerTest;
 
 
 				//double intersectQuantity = e->GetQuantity( intersect );
@@ -933,6 +948,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				V2d newPosition = intersect + radius * edgeNormal;
 
 				currentContact->resolution = newPosition - position;
+
+				//enemy mover bug diagonally going down into a steep ceiling from the side
+			/*	if (length(currentContact->resolution) > 50)
+				{
+					int xxxx = 5;
+				}*/
+
 				currentContact->edge = e;
 				currentContact->normal= edgeNormal;
 				currentContact->position = e->GetPosition( lineQuantity );

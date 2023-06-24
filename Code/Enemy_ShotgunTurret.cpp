@@ -1,4 +1,5 @@
 #include "Enemy.h"
+
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
@@ -30,8 +31,15 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	bulletSpeed = 10;
-	animationFactor = 3;
+	bulletSpeed = 3;
+
+	actionLength[IDLE] = 1;
+	actionLength[ATTACK] = 120;
+	actionLength[WAIT] = 10;
+	
+	animFactor[IDLE] = 1;
+	animFactor[ATTACK] = 1;
+	animFactor[WAIT] = 1;
 
 	ts = GetSizedTileset("Enemies/W3/cactus_160x160.png");
 
@@ -69,6 +77,9 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	launchers[0] = new Launcher(this,
 		BasicBullet::SHOTGUN, 32, 3, GetPosition(), V2d(0, -1),
 		PI / 6, 180, false);
+	/*launchers[0] = new Launcher(this,
+		BasicBullet::SHOTGUN, 32, 1, GetPosition(), V2d(0, -1),
+		0, 180, false);*/
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::YELLOW;
@@ -100,7 +111,7 @@ void ShotgunTurret::UpdateOnPlacement(ActorParams *ap)
 
 void ShotgunTurret::ResetEnemy()
 {
-	action = WAIT;
+	action = IDLE;
 	frame = 0;
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -149,6 +160,9 @@ void ShotgunTurret::FireResponse(BasicBullet *b)
 
 void ShotgunTurret::UpdateBullet(BasicBullet *b)
 {
+	/*V2d pDir = normalize(sess->GetPlayerPos(0) - b->position);
+
+	b->velocity = pDir * b->launcher->bulletSpeed;*/
 }
 
 void ShotgunTurret::BulletHitTerrain(BasicBullet *b,
@@ -184,11 +198,37 @@ void ShotgunTurret::ProcessState()
 {
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
+
+
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		switch (action)
+		{
+		case IDLE:
+			frame = 0;
+			break;
+		case ATTACK:
+			if (PlayerDist() > 1000)
+			{
+				action = IDLE;
+				frame = 0;
+			}
+			else
+			{
+				frame = 0;
+			}
+			break;
+		case WAIT:
+			action = ATTACK;
+			frame = 0;
+		}
+	}
+
 	switch (action)
 	{
-	case WAIT:
+	case IDLE:
 	{
-		if (length(playerPos - position) < 1000)
+		if (PlayerDist() < DEFAULT_DETECT_RADIUS )//length(playerPos - position) < 1000)
 		{
 			action = ATTACK;
 			frame = 0;
@@ -197,16 +237,18 @@ void ShotgunTurret::ProcessState()
 	}
 	case ATTACK:
 	{
-		if (frame == 13 * animationFactor)
-		{
-			frame = 0;
-			if (length(playerPos - position) >= 500)
-			{
-				action = WAIT;
-				frame = 0;
-			}
-		}
-		else if (frame == 4 * animationFactor && slowCounter == 1)
+		
+		
+		break;
+	}
+	}
+
+	switch (action)
+	{
+	case ATTACK:
+	{
+		if ((frame == 4 * animFactor[ATTACK] && slowCounter == 1))
+			//|| (frame == 1 * animFactor[ATTACK] && slowCounter == 1))
 		{
 			launchers[0]->facingDir = PlayerDir();
 			launchers[0]->Fire();
@@ -249,15 +291,17 @@ void ShotgunTurret::UpdateSprite()
 	}
 	else
 	{
-		if (frame / animationFactor > 12)
-		{
-			sprite.setTextureRect(ts->GetSubRect(0));
-		}
-		else
-		{
-			sprite.setTextureRect(ts->GetSubRect(0));
-			//sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
-		}
+		sprite.setTextureRect(ts->GetSubRect(0));
+
+		//if (frame / animFactor[ATTACK] > 12)
+		//{
+		//	sprite.setTextureRect(ts->GetSubRect(0));
+		//}
+		//else
+		//{
+		//	sprite.setTextureRect(ts->GetSubRect(0));
+		//	//sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
+		//}
 	}
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

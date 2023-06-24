@@ -246,6 +246,7 @@ void Badger::ActionEnded()
 			break;
 		
 		case LAND:
+
 			UpdateNextAction();			
 			break;
 		case ATTACK:
@@ -277,19 +278,8 @@ void Badger::Jump( double strengthx, double strengthy )
 		gAlong = -gAlong;
 
 
-	if( false )//cross( normalize( V2d( strengthx, -strengthy )), gAlong ) < 0 )
-	{
-		gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
-		V2d jumpVec = gAlong * strengthy;
-		groundMover->Jump( jumpVec );
-		//cout << "jump blend: " << jumpVec.x << ", " << jumpVec.y << endl;
-	}
-	else
-	{
-		V2d jumpVec = V2d( strengthx, -strengthy );
-		groundMover->Jump( jumpVec );
-		//cout << "jump: " << jumpVec.x << ", " << jumpVec.y << endl;
-	}
+	V2d jumpVec = V2d(strengthx, strengthy);
+	groundMover->Jump(jumpVec);
 }
 
 void Badger::ProcessState()
@@ -436,9 +426,9 @@ void Badger::ProcessState()
 		if( frame == 0 && slowCounter == 1)
 		{
 			if( facingRight )
-				Jump( 10, 10 );
+				Jump( 10, -10 );
 			else
-				Jump( -10, 10 );
+				Jump( -10, -10 );
 		}
 		break;
 	case SHORTJUMPSQUAT:
@@ -449,9 +439,9 @@ void Badger::ProcessState()
 		if( frame == 0 && slowCounter == 1)
 		{
 			if( facingRight )
-				Jump( 10, 20 );
+				Jump( 10, -20 );
 			else
-				Jump( -10, 20 );
+				Jump( -10, -20 );
 		}
 		break;
 	case TALLJUMPSQUAT:
@@ -524,7 +514,7 @@ void Badger::UpdateSprite()
 			ir = ts->GetSubRect( ( frame / animFactor[RUN] ) % 7 );
 		}
 		break;
-	case LEDGEJUMP:
+	//case LEDGEJUMP:
 	case SHORTJUMP:
 		{
 			if( vel.y > fallRange )
@@ -550,6 +540,7 @@ void Badger::UpdateSprite()
 			ir = ts->GetSubRect( 8 );
 		}
 		break;
+	case LEDGEJUMP:
 	case TALLJUMP:
 		{
 			int div = 2;
@@ -682,13 +673,16 @@ void Badger::ReachCliff()
 	//cout << "reach cliff!" << endl;
 	//ground = NULL;
 	V2d v;
+
+	double vert = 20;
+
 	if( facingRight )
 	{
-		v = V2d( 10, -10 );
+		v = V2d( 10, -vert);
 	}
 	else
 	{
-		v = V2d( -10, -10 );
+		v = V2d( -10, -vert);
 	}
 
 	action = LEDGEJUMP;
