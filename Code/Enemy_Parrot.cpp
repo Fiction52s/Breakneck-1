@@ -49,8 +49,8 @@ Parrot::Parrot(ActorParams *ap)
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::RED;
 
-	BasicCircleHitBodySetup(16);
-	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(32);
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 12, 1, GetPosition(), V2d(1, 0), 0, 90, false);
@@ -96,6 +96,18 @@ void Parrot::ResetEnemy()
 
 	data.velocity = V2d();
 	data.fireCounter = 0;
+
+	
+	
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
+	
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
