@@ -335,7 +335,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void BasicUpdateHitboxes();
 	void BasicUpdateHitboxInfo();
 	virtual void ResetEnemy() = 0;
-	virtual V2d TurretSetup();//return finals pos
 	virtual void Init(){};
 	virtual void Setup();
 	virtual void ProcessHit();

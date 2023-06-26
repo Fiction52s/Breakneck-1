@@ -29,7 +29,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	Tileset *ts_bulletExplode;
 	HitboxInfo *bulletHitboxInfo;
 	CollisionBody *prelimBody;
-	CollisionBox prelimBox[3];
+	CollisionBox prelimBox;
 	double detectRad;
 	int frameTestCounter;
 	SoundInfo *fireSound;
@@ -57,6 +57,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void DirectKill();
 	void SetupPreCollision();
+	V2d SetupPrelimBox();
 	
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

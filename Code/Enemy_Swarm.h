@@ -9,6 +9,7 @@ struct SwarmMember : Enemy
 	enum Action
 	{
 		FLY,
+		EXPLODE,
 		A_Count
 	};
 
@@ -37,9 +38,12 @@ struct SwarmMember : Enemy
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void ResetEnemy();
-	void HandleNoHealth();
+	//void HandleNoHealth();
 	void FrameIncrement();
 	void Throw(V2d &pos);
+	void ProcessHit();
+	void ConfirmKill();
+	void Explode();
 	int GetNumEnergyAbsorbParticles();
 
 	int GetNumStoredBytes();

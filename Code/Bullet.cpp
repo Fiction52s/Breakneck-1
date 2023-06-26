@@ -66,6 +66,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	
 	sizeof(sf::Transform);
 
+	interactWithPlayer = true;
 	skipPlayerCollideForSubstep = false;
 	bulletType = p_bulletType;
 	maxBulletSpeed = 100;
@@ -250,7 +251,7 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 	switch (bt)
 	{
 	case BasicBullet::BASIC_TURRET:
-		return 12;
+		return 32;//12;
 	case BasicBullet::PATROLLER:
 		return 44;
 	case BasicBullet::CURVE_TURRET:
@@ -390,7 +391,11 @@ void Launcher::DeactivateAllBullets()
 
 void Launcher::SetDefaultCollision(int framesToLive, Edge*e, V2d &pos)
 {
-	def_framesToLive = framesToLive;
+	def_framesToLive = framesToLive - 1;
+	if (def_framesToLive < 0)
+	{
+		def_framesToLive = 0;
+	}
 	def_e = e;
 	def_pos = pos;
 }
@@ -1027,7 +1032,7 @@ void BasicBullet::UpdatePhysics()
 
 		hitBody.globalPosition = position;
 
-		if (!launcher->skipPlayerCollideForSubstep)
+		if (!launcher->skipPlayerCollideForSubstep && launcher->interactWithPlayer)
 		{
 			Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 
@@ -1174,6 +1179,10 @@ void BasicBullet::UpdateSprite()
 		break;
 	case LOB_TURRET:
 		dims = Vector2f(42,42 );
+		break;
+	case BASIC_TURRET:
+		dims = Vector2f(64, 64);
+		break;
 	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 	Vector2f offset = Launcher::GetOffset(bulletType);

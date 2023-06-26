@@ -429,7 +429,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SWARMMEMBER:
-		hitParams.Set(5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1,false);
 		break;
 	case EnemyType::EN_GHOST:
 		hitParams.Set(5, .8, (3 * 60) / 3, 1);
@@ -1287,49 +1287,6 @@ void Enemy::DirectKill()
 			cutObject->SetCutRootPos(GetPositionF());
 		}
 	}
-}
-
-V2d Enemy::TurretSetup()
-{
-	for (int li = 0; li < 1; ++li)
-	{
-		launchers[li]->def_e = NULL;
-
-		launchers[li]->interactWithTerrain = true;
-
-		launchers[li]->Reset();
-		launchers[li]->Fire();
-		BasicBullet *bb = launchers[li]->activeBullets;
-		V2d finalPos;
-		bool collide = true;
-		while (launchers[li]->GetActiveCount() > 0)
-		{
-			launchers[li]->UpdatePrePhysics();
-
-
-			launchers[li]->UpdatePhysics(0, true);
-			launchers[li]->UpdatePhysics(1, true);
-
-			if (bb->framesToLive == 0)
-			{
-				finalPos = bb->position;
-				collide = false;
-			}
-
-			launchers[li]->UpdatePostPhysics();
-		}
-
-		if (collide)
-		{
-			finalPos = launchers[li]->def_pos;
-		}
-
-		launchers[li]->interactWithTerrain = false;
-
-		return finalPos;
-	}
-
-	return V2d(0, 0);
 }
 
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )

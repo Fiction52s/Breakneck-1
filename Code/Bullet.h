@@ -228,6 +228,7 @@ struct Launcher
 	int playerIndex;
 	int bulletTilesetIndex;
 	bool interactWithTerrain;
+	bool interactWithPlayer; //useful for simulations etc
 	sf::Vertex *bulletVA;
 	BasicBullet::BType bulletType;
 	LauncherEnemy *handler;

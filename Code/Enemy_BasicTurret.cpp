@@ -201,7 +201,7 @@ void BasicTurret::ProcessState()
 			if (frame == 11 * animationFactor)
 			{
 				frame = 0;
-				if (length(playerPos - GetPosition()) >= detectRad)
+				if (length(playerPos - GetPosition()) >= DEFAULT_IGNORE_RADIUS)
 				{
 					action = WAIT;
 					frame = 0;
@@ -210,7 +210,7 @@ void BasicTurret::ProcessState()
 			else if (frame == 3 * animationFactor && slowCounter == 1)
 			{
 				launchers[0]->Fire();
-				sess->ActivateSoundAtPos(GetPosition(), fireSound);
+				//sess->ActivateSoundAtPos(GetPosition(), fireSound);
 				//launchers[1]->Fire();
 				//launchers[2]->Fire();
 			}
@@ -221,12 +221,9 @@ void BasicTurret::ProcessState()
 
 void BasicTurret::UpdatePreLauncherPhysics()
 {
-	for (int i = 0; i < 1; ++i)
+	if (!prelimBox.Intersects(sess->GetPlayer(0)->hurtBody))
 	{
-		if (!prelimBox[i].Intersects(sess->GetPlayer(i)->hurtBody))
-		{
-			launchers[i]->skipPlayerCollideForSubstep = true;
-		}
+		launchers[0]->skipPlayerCollideForSubstep = true;
 	}
 }
 
@@ -234,10 +231,7 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 
-	for (int i = 0; i < 3; ++i)
-	{
-		prelimBox[i].DebugDraw( CollisionBox::Hit, target);
-	}
+	prelimBox.DebugDraw(CollisionBox::Hit, target);
 }
 
 void BasicTurret::DirectKill()
@@ -285,44 +279,85 @@ void BasicTurret::SetupPreCollision()
 
 }
 
+V2d BasicTurret::SetupPrelimBox()
+{
+	Launcher *launcher = launchers[0];
+
+	launcher->def_e = NULL;
+	V2d finalPos;
+
+	launcher->interactWithTerrain = true;
+	launcher->interactWithPlayer = false;
+
+	launcher->Reset();
+	launcher->Fire();
+	BasicBullet *bb = launcher->activeBullets;
+	bool collide = true;
+
+	while (launcher->GetActiveCount() > 0)
+	{
+		launcher->UpdatePrePhysics();
+
+
+		launcher->UpdatePhysics(0, true);
+		launcher->UpdatePhysics(1, true);
+
+		/*if (slowCounter == slowMultiple && bb->framesToLive == 1 )
+		{
+
+		}*/
+
+		launcher->UpdatePostPhysics();
+
+		if (bb->framesToLive == 0)
+		{
+			finalPos = bb->position;
+			collide = false;
+		}
+	}
+
+	launcher->interactWithTerrain = false;
+	launcher->interactWithPlayer = true;
+
+	if (collide)
+	{
+		finalPos = launcher->def_pos;
+	}
+
+	return finalPos;
+}
+
 void BasicTurret::Setup()
 {
 	Edge *ground = startPosInfo.GetEdge();
 	V2d gn(0, -1);
 	V2d launchPos = GetPosition();
 
+	Launcher *launcher = launchers[0];
+
 	gn = ground->Normal();
 	launchPos = ground->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
 
-	launchers[0]->position = launchPos;
-	launchers[0]->facingDir = gn;
+	launcher->position = launchPos;
+	launcher->facingDir = gn;
 
-	for (int li = 0; li < 1; ++li)
-	{
-		V2d finalPos = TurretSetup();
+	V2d finalPos = SetupPrelimBox();//TurretSetup();
 
-		double rad = Launcher::GetRadius(launchers[li]->bulletType);
-		double width = length(finalPos - launchers[li]->position) + rad * 2;
+	double rad = Launcher::GetRadius(launcher->bulletType);
+	double width = length(finalPos - launcher->position) + rad * 2;
 
-		prelimBox[li].isCircle = false;
-		prelimBox[li].rw = width / 2;
-		prelimBox[li].rh = rad;
+	prelimBox.isCircle = false;
+	prelimBox.rw = width / 2;
+	prelimBox.rh = rad;
 
-		V2d norm = currPosInfo.GetEdge()->Normal();
+	V2d norm = currPosInfo.GetEdge()->Normal();
 
 
-		V2d along = currPosInfo.GetEdge()->Along();//normalize(ground->v1 - ground->v0);
-		if (li == 0)
-		{
-			prelimBox[li].globalAngle = atan2(norm.y, norm.x);
-		}
-		else
-		{
-			prelimBox[li].globalAngle = atan2(along.y, along.x);
-		}
-		
-		prelimBox[li].globalPosition = (finalPos + launchers[li]->position) / 2.0;
-	}
+	V2d along = currPosInfo.GetEdge()->Along();//normalize(ground->v1 - ground->v0);
+
+	prelimBox.globalAngle = atan2(norm.y, norm.x);
+
+	prelimBox.globalPosition = (finalPos + launcher->position) / 2.0;
 
 	cutObject->SetRotation(sprite.getRotation());
 

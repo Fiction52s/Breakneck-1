@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Swarm.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -35,7 +36,10 @@ SwarmMember::SwarmMember(Swarm *p_parent, int index, V2d &p_targetOffset,
 	hitboxInfo->hType = HitboxInfo::RED;
 	
 	actionLength[FLY] = 2;
+	actionLength[EXPLODE] = 8;
+
 	animFactor[FLY] = 2;
+	animFactor[EXPLODE] = 3;
 
 
 	
@@ -52,33 +56,65 @@ void SwarmMember::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
-		frame = 0;
+		switch (action)
+		{
+		case FLY:
+		{
+			frame = 0;
+			break;
+		}
+		case EXPLODE:
+		{
+			active = false;
+			//numHealth = 0;
+			dead = true;
+			ClearSprite();
+			sess->RemoveEnemy(this);
+			break;
+		}
+		}
+		
 	}
 
-	if (PlayerDir().x >= 0)
+	if (action == FLY)
 	{
-		facingRight = true;
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
 	}
-	else
-	{
-		facingRight = false;
-	}
+	
 
-	if (data.framesToLive == 0)
+	if (data.framesToLive == 0 && action == FLY )
 	{
-		numHealth = 0;
+		Explode();
+		
+		/*numHealth = 0;
 		active = false;
 		dead = true;
-		ClearSprite();
+		ClearSprite();*/
 	}
 }
 
-void SwarmMember::HandleNoHealth()
+void SwarmMember::Explode()
 {
-	active = false;
-	dead = true;
-	ClearSprite();
+	action = EXPLODE;
+	frame = 0;
+	HurtboxesOff();
+	HitboxesOff();
+	data.velocity = V2d(0, 0);
 }
+
+//void SwarmMember::HandleNoHealth()
+//{
+//	active = false;
+//	dead = true;
+//	ClearSprite();
+//}
 
 void SwarmMember::FrameIncrement()
 {
@@ -86,6 +122,89 @@ void SwarmMember::FrameIncrement()
 	{
 		--data.framesToLive;
 	}
+}
+
+void SwarmMember::ProcessHit()
+{
+	if (!dead && HasReceivedHit())// && numHealth > 0 )
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			Explode();
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
+
+		receivedHit.SetEmpty();
+	}
+}
+
+void SwarmMember::ConfirmKill()
+{
+	HitboxInfo::HitboxType hType;
+
+	if (!receivedHit.IsEmpty())
+	{
+		hType = receivedHit.hType;
+	}
+	else
+	{
+		hType = HitboxInfo::HitboxType::NORMAL;
+	}
+
+	if (receivedHit.comboer)
+	{
+		pauseFrames = 7;
+		Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
+		ce->ComboKill(this);
+
+	}
+
+	else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
+	{
+		pauseFrames = 7;
+	}
+	else
+	{
+		pauseFrames = 7;
+		//sess->Pause(7);
+		//pauseFrames = 0;
+	}
+	pauseBeganThisFrame = true;
+
+	pauseFramesFromAttacking = false;
+
+	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_swarm, GetPosition(), true, 0, 8, 3, true, 20);
+
+	if (!receivedHit.comboer)
+	{
+		sess->cam.SetRumble(1.5, 1.5, 7);
+	}
+
+	sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
+		sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
+
+	//dead = true;
+
+	if (cutObject != NULL)
+	{
+		SyncCutObject();
+	}
+
+	HandleNoHealth();
+	PlayDeathSound();
 }
 
 void SwarmMember::Throw( V2d &pos )
@@ -106,6 +225,12 @@ void SwarmMember::Throw( V2d &pos )
 		animFactor[FLY] = 4;
 	}
 
+	action = FLY;
+	frame = 0;
+
+	HurtboxesOff();
+	HitboxesOff();
+
 	spawned = false;
 	sess->AddEnemy(this);
 	currPosInfo.position = pos + targetOffset;
@@ -119,10 +244,22 @@ void SwarmMember::ClearSprite()
 
 void SwarmMember::UpdateSprite()
 {
-	IntRect subRect = parent->ts_swarm->GetSubRect( vaIndex * 3 );//frame / animFactor );
-
 	SetRectCenter(parent->swarmVA + vaIndex * 4, parent->spriteSize.x, parent->spriteSize.y, GetPositionF());
-	parent->ts_swarm->SetQuadSubRect(parent->swarmVA + vaIndex * 4, (frame / animFactor[FLY]) + swarmTypeIndex * 2, !facingRight );
+
+	switch (action)
+	{
+	case FLY:
+	{
+		parent->ts_swarm->SetQuadSubRect(parent->swarmVA + vaIndex * 4, (frame / animFactor[FLY]) + swarmTypeIndex * 2, !facingRight);
+		break;
+	}
+	case EXPLODE:
+	{
+		parent->ts_swarm->SetQuadSubRect(parent->swarmVA + vaIndex * 4, 20 + frame / animFactor[EXPLODE], !facingRight);
+		break;
+	}
+	}
+	
 
 	/*if( sess->GetPlayerPos( 0 ).x < GetPosition().x )
 	{
@@ -157,15 +294,18 @@ void SwarmMember::UpdateEnemyPhysics()
 
 	currPosInfo.position += movementVec;
 
-	V2d pPos = sess->GetPlayerPos(0) + targetOffset;
-	V2d dir(pPos - GetPosition());
-	dir = normalize(dir);
-	double gFactor = .5;
-	data.velocity += gFactor * dir / (double)slowMultiple / steps;
-
-	if (length(data.velocity) > maxSpeed)
+	if (action == FLY)
 	{
-		data.velocity = normalize(data.velocity) * maxSpeed;
+		V2d pPos = sess->GetPlayerPos(0) + targetOffset;
+		V2d dir(pPos - GetPosition());
+		dir = normalize(dir);
+		double gFactor = .5;
+		data.velocity += gFactor * dir / (double)slowMultiple / steps;
+
+		if (length(data.velocity) > maxSpeed)
+		{
+			data.velocity = normalize(data.velocity) * maxSpeed;
+		}
 	}
 }
 
@@ -411,9 +551,8 @@ void Swarm::ProcessState()
 			}
 			else if (action == NEUTRAL)
 			{
-				
 				double dist = PlayerDist(0);
-				if (dist < 1200)
+				if (dist < DEFAULT_DETECT_RADIUS )//1200)
 				{
 					action = FIRE;
 					frame = 0;
