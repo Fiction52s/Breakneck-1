@@ -258,6 +258,8 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 		return 20;
 	case BasicBullet::LOB_TURRET:
 		return 16;
+	case BasicBullet::GROWING_TREE:
+		return 20;
 	}
 
 	return 10;
@@ -484,7 +486,13 @@ void Launcher::Fire()
 	{
 		dirAngle += PI * 2.0;
 	}
-	dirAngle -= angleSpread / 2;
+
+	
+
+	if (angleSpread < 2 * PI)
+	{
+		dirAngle -= angleSpread / 2;
+	}
 
 	for (int i = 0; i < perShot; ++i)
 	{
@@ -502,7 +510,14 @@ void Launcher::Fire()
 
 		if (perShot > 1)
 		{
-			dirAngle += angleSpread / (perShot - 1);
+			if (angleSpread < 2 * PI)
+			{
+				dirAngle += angleSpread / (perShot - 1);
+			}
+			else
+			{
+				dirAngle += angleSpread / (perShot);
+			}
 		}
 	}
 }
@@ -677,6 +692,7 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	case PREDICT:
 	case SHOTGUN:
 	case LIZARD:
+	case GROWING_TREE:
 	{
 		transform.rotate(angle);
 		break;
@@ -1183,6 +1199,8 @@ void BasicBullet::UpdateSprite()
 	case BASIC_TURRET:
 		dims = Vector2f(64, 64);
 		break;
+	case GROWING_TREE:
+		dims = Vector2f(40, 40);
 	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 	Vector2f offset = Launcher::GetOffset(bulletType);
@@ -1199,6 +1217,7 @@ void BasicBullet::UpdateSprite()
 	case BAT:
 	case PATROLLER:
 	case OWL:
+	case GROWING_TREE:
 	case BIG_OWL:
 	{
 		double angle = atan2(velocity.y, velocity.x);

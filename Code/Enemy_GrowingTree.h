@@ -8,21 +8,21 @@ struct GrowingTree : Enemy, LauncherEnemy
 {
 	enum Action
 	{
-		NEUTRAL0,
+		IDLE,
+		ATTACK,
+		/*NEUTRAL0,
 		NEUTRAL1,
 		NEUTRAL2,
 		ATTACK0,
 		LEVEL0TO1,
 		ATTACK1,
 		LEVEL1TO2,
-		ATTACK2,
+		ATTACK2,*/
 		A_Count
 	};
 
 	struct MyData : StoredEnemyData
 	{
-		int repCounter;
-		int powerLevel;
 	};
 	MyData data;
 
@@ -44,11 +44,11 @@ struct GrowingTree : Enemy, LauncherEnemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void HandleNoHealth();
-	void Fire();
 	void ResetEnemy();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,
 		V2d &pos);
+	void UpdateBullet(BasicBullet *b);
 	void DirectKill();
 	void BulletHitPlayer(
 		int playerIndex,

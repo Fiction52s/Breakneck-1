@@ -14,28 +14,34 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	
 {
 	SetNumActions(A_Count);
-	SetEditorActions(NEUTRAL0, 0, 0);
+	SetEditorActions(IDLE, 0, 0);
 
 	SetLevel(ap->GetLevel());
 
-	actionLength[NEUTRAL0] = 2;
-	actionLength[NEUTRAL1] = 2;
-	actionLength[NEUTRAL2] = 2;
+	actionLength[IDLE] = 2;
+	actionLength[ATTACK] = 150;
 
-	actionLength[ATTACK0] = 60;
-	actionLength[LEVEL0TO1] = 30;
-	actionLength[ATTACK1] = 60;
-	actionLength[LEVEL1TO2] = 30;
-	actionLength[ATTACK2] = 60;
+	animFactor[IDLE] = 1;
+	animFactor[ATTACK] = 1;
 
-	animFactor[NEUTRAL0] = 1;
-	animFactor[NEUTRAL1] = 1;
-	animFactor[NEUTRAL2] = 1;
-	animFactor[ATTACK0] = 1;
-	animFactor[LEVEL0TO1] = 1;
-	animFactor[ATTACK1] = 1;
-	animFactor[LEVEL1TO2] = 1;
-	animFactor[ATTACK2] = 1;
+	//actionLength[NEUTRAL0] = 2;
+	//actionLength[NEUTRAL1] = 2;
+	//actionLength[NEUTRAL2] = 2;
+
+	//actionLength[ATTACK0] = 150;//60;
+	//actionLength[LEVEL0TO1] = 30;
+	//actionLength[ATTACK1] = 60;
+	//actionLength[LEVEL1TO2] = 30;
+	//actionLength[ATTACK2] = 60;
+
+	//animFactor[NEUTRAL0] = 1;
+	//animFactor[NEUTRAL1] = 1;
+	//animFactor[NEUTRAL2] = 1;
+	//animFactor[ATTACK0] = 1;
+	//animFactor[LEVEL0TO1] = 1;
+	//animFactor[ATTACK1] = 1;
+	//animFactor[LEVEL1TO2] = 1;
+	//animFactor[ATTACK2] = 1;
 
 	//32, 0, 1000
 
@@ -47,7 +53,7 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	totalBullets = 32;
 	startPowerLevel = 0;
 	pulseRadius = 1000;
-	repsToLevelUp = 3;
+	repsToLevelUp = 100;//1;//3;
 
 	ts = GetSizedTileset("Enemies/W5/sprout_160x160.png");
 	sprite.setTexture( *ts->texture );
@@ -57,38 +63,28 @@ GrowingTree::GrowingTree( ActorParams *ap )
 
 	SetOffGroundHeight(height / 2.f);
 
-	double bulletSpeed0 = 5;
-	double bulletSpeed1 = 15;
-	double bulletSpeed2 = 25;
+	double bulletSpeed0 = 13;
+	double bulletSpeed1 = 13;
+	double bulletSpeed2 = 13;
 	double bulletSpeed = 10;
 
-	int framesToLive = 60 * 3;
+	int framesToLive = 30;//60;//60 * 3;
 	//int framesToLive0 = ( pulseRadius * 2 ) / bulletSpeed + .5;
 	//int framesToLive1 = (pulseRadius * 2) / bulletSpeed + .5;
 	//int framesToLive2 = (pulseRadius * 2) / bulletSpeed + .5;
 
 	//BasicBullet::GROWING_TREE
-	SetNumLaunchers(3);
-	launchers[0] = new Launcher( this, BasicBullet::BAT, 8, 1, GetPosition(), V2d( 1, 0 ), 0, framesToLive, false );
+	SetNumLaunchers(1);
+
+	launchers[0] = new Launcher(this, BasicBullet::GROWING_TREE, 8, 3, GetPosition(), V2d(1, 0), /*PI * 2*/ PI * 2, 60, false);
 	launchers[0]->SetBulletSpeed(bulletSpeed0);
 	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;
-
-	launchers[1] = new Launcher(this, BasicBullet::PATROLLER, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
-	launchers[1]->SetBulletSpeed(bulletSpeed1);
-	launchers[1]->hitboxInfo->damage = 60;
-	launchers[1]->hitboxInfo->hType = HitboxInfo::RED;
-
-	launchers[2] = new Launcher(this, BasicBullet::BIG_OWL, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
-	launchers[2]->SetBulletSpeed(bulletSpeed2);
-	launchers[2]->hitboxInfo->damage = 60;
-	launchers[2]->hitboxInfo->hType = HitboxInfo::RED;
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	SetOffGroundHeight(ts->tileHeight / 2.f - 0 * scale);
-	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 180;
@@ -149,14 +145,9 @@ void GrowingTree::ResetEnemy()
 
 	}*/
 	launchers[0]->position = GetPosition();
-	launchers[1]->position = GetPosition();
-	launchers[2]->position = GetPosition();
 
-	action = NEUTRAL0;
-	
-	data.repCounter = 0;
+	action = IDLE;
 
-	data.powerLevel = 0;
 
 	frame = 0;
 
@@ -171,44 +162,23 @@ void GrowingTree::ActionEnded()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
-		frame = 0;
-
 		switch (action)
 		{
-		case NEUTRAL0:
+		case IDLE:
 			break;
-		case NEUTRAL1:
-			break;
-		case NEUTRAL2:
-			break;
-		case ATTACK0:
-			++data.repCounter;
-			if (data.repCounter == repsToLevelUp)
-			{
-				action = ATTACK1;
-				data.repCounter = 0;
-				data.powerLevel = 1;
-			}
-			break;
-		case LEVEL0TO1:
-			action = ATTACK1;
-			break;
-		case ATTACK1:
-			++data.repCounter;
-			if (data.repCounter == repsToLevelUp)
-			{
-				action = ATTACK2;
-				data.repCounter = 0;
-				data.powerLevel = 2;
-			}
-			break;
-		case LEVEL1TO2:
-			action = ATTACK2;
-			break;
-		case ATTACK2:
-			break;
+		case ATTACK:
 
+			if (PlayerDist() > DEFAULT_IGNORE_RADIUS)
+			{
+				action = IDLE;
+				frame = 0;
+			}
+			else
+			{
+				frame = 0;
+			}
 			
+			break;	
 		}
 	}
 }
@@ -221,102 +191,30 @@ void GrowingTree::ProcessState()
 	double dist = PlayerDist();
 	switch (action)
 	{
-	case NEUTRAL0:
-		if (dist < DEFAULT_DETECT_RADIUS)
+	case IDLE:
+		if (dist < DEFAULT_DETECT_RADIUS - 200)
 		{
-			action = ATTACK0;
-		}
-		break;
-	case NEUTRAL1:
-		if (dist < DEFAULT_DETECT_RADIUS)
-		{
-			action = ATTACK1;
-		}
-		break;
-	case NEUTRAL2:
-		if (dist < DEFAULT_DETECT_RADIUS)
-		{
-			action = ATTACK2;
-		}
-		break;
-	case ATTACK0:
-		if (dist > DEFAULT_IGNORE_RADIUS)
-		{
-			action = NEUTRAL0;
-		}
-		break;
-	case LEVEL0TO1:
-		action = ATTACK1;
-		break;
-	case ATTACK1:
-		if (dist > DEFAULT_IGNORE_RADIUS)
-		{
-			action = NEUTRAL1;
-		}
-		break;
-	case LEVEL1TO2:
-		action = ATTACK2;
-		break;
-	case ATTACK2:
-		if (dist > DEFAULT_IGNORE_RADIUS)
-		{
-			action = NEUTRAL2;
+			action = ATTACK;
+			frame = 0;
 		}
 		break;
 	}
 
-	switch (action)
+	if (action == ATTACK && frame == 0 && slowCounter == slowMultiple)
 	{
-	case NEUTRAL0:
-		break;
-	case NEUTRAL1:
-		break;
-	case NEUTRAL2:
-		break;
-		break;
-	case ATTACK0:
-		break;
-	case LEVEL0TO1:
-		action = ATTACK1;
-		break;
-	case ATTACK1:
-		break;
-	case LEVEL1TO2:
-		action = ATTACK2;
-		break;
-	case ATTACK2:
-		break;
+		launchers[0]->facingDir = PlayerDir();
+		//launchers[0]->facingDir = startPosInfo.GetEdge()->Normal();
+		launchers[0]->Fire();
 	}
 
-	if ((action == ATTACK0 || action == ATTACK1 || action == ATTACK2)
-		&& frame == 1 && slowCounter == 1)
-	{
-		launchers[data.powerLevel]->facingDir = PlayerDir();
-		launchers[data.powerLevel]->Fire();
-	}
-}
-
-void GrowingTree::Fire()
-{
-	
-	//powerLevel = startPowerLevel;
-
-
-
-	////launcher->Reset();
-	//Vector2f start( 0, -pulseRadius );
-
-	//Launcher *launcher = launchers[0];
-
-	//Transform t;
-	//for( int i = 0; i < totalBullets; ++i )
+	//if (action == ATTACK0)
 	//{
-	//	Vector2f trans = t.transformPoint( start );
-	//	launcher->position = GetPosition() + V2d( trans.x, trans.y );
-	//	launcher->facingDir = normalize(GetPosition() - launcher->position );
-	//	launcher->Fire();
-	//	
-	//	t.rotate( 360.f / totalBullets );
+	//	//if (frame % 5 == 0 && frame < 30 )
+	//	if( frame == 1 && slowCounter == slowMultiple)
+	//	{
+	//		launchers[data.powerLevel]->facingDir = startPosInfo.GetEdge()->Normal();//PlayerDir();
+	//		launchers[data.powerLevel]->Fire();
+	//	}
 	//}
 }
 
@@ -327,32 +225,13 @@ void GrowingTree::EnemyDraw(sf::RenderTarget *target )
 
 void GrowingTree::UpdateSprite()
 {
-	
 	int tileIndex = 0;
 	switch (action)
 	{
-	case NEUTRAL0:
-		tileIndex = 0;
-		break;
-	case NEUTRAL1:
+	case IDLE:
 		tileIndex = 1;
 		break;
-	case NEUTRAL2:
-		tileIndex = 2;
-		break;
-	case ATTACK0:
-		tileIndex = 0;
-		break;
-	case LEVEL0TO1:
-		tileIndex = 0;
-		break;
-	case ATTACK1:
-		tileIndex = 1;
-		break;
-	case LEVEL1TO2:
-		tileIndex = 1;
-		break;
-	case ATTACK2:
+	case ATTACK:
 		tileIndex = 2;
 		break;
 	}
@@ -362,23 +241,6 @@ void GrowingTree::UpdateSprite()
 	Vector2f posF = GetPositionF();
 	sprite.setPosition(posF);
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-	
-
-	switch(data.powerLevel )
-	{
-	case 0:
-	//	sprite.setColor( Color::White );
-		break;
-	case 1:
-	//	sprite.setColor( Color::Blue );
-		break;
-	case 2:
-	//	sprite.setColor( Color::Green );
-		break;
-	case 3:
-	//	sprite.setColor( Color::Red );
-		break;
-	}
 }
 
 void GrowingTree::DirectKill()
@@ -408,6 +270,20 @@ void GrowingTree::BulletHitTerrain(BasicBullet *b,
 
 	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, -angle, 6, 2, true);
 	b->launcher->DeactivateBullet(b);*/
+}
+
+
+void GrowingTree::UpdateBullet(BasicBullet *b)
+{
+	V2d pDir = normalize(sess->GetPlayerPos(0) - b->position);
+
+	double accel = .7;//.3;//1.0;
+	double maxVel = b->launcher->bulletSpeed;
+	b->velocity += pDir * accel;
+	if (length(b->velocity) > maxVel)
+	{
+		b->velocity = normalize(b->velocity) * maxVel;
+	}
 }
 
 void GrowingTree::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
