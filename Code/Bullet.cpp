@@ -260,6 +260,8 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 		return 16;
 	case BasicBullet::GROWING_TREE:
 		return 20;
+	case BasicBullet::LIZARD:
+		return 32;
 	}
 
 	return 10;
@@ -1201,6 +1203,10 @@ void BasicBullet::UpdateSprite()
 		break;
 	case GROWING_TREE:
 		dims = Vector2f(40, 40);
+		break;
+	case LIZARD:
+		dims = Vector2f(48, 48);
+		break;
 	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 	Vector2f offset = Launcher::GetOffset(bulletType);

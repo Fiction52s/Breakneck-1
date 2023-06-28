@@ -53,6 +53,7 @@ struct Lizard : Enemy, GroundMoverHandler,
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
+	void Shock();
 
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,

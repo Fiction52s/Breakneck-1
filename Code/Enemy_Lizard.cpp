@@ -60,7 +60,7 @@ Lizard::Lizard(ActorParams *ap)
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
-		BasicBullet::LIZARD, 32, 1, GetPosition(), V2d(0, -1), 0, 180, true);
+		BasicBullet::LIZARD, 32, 1, GetPosition(), V2d(0, -1), 0, 120, true);
 	launchers[0]->SetBulletSpeed(10);
 	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;
 	launchers[0]->hitboxInfo->damage = 60;
@@ -124,9 +124,16 @@ void Lizard::ResetEnemy()
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
 
-	action = IDLE;
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 
-	facingRight = true;
+	action = IDLE;
 
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -188,8 +195,7 @@ void Lizard::ProcessState()
 	{
 		if (dist < DEFAULT_DETECT_RADIUS)
 		{
-			action = RUN;
-			frame = 0;
+			Shock();
 		}
 		break;
 	}
@@ -289,28 +295,7 @@ void Lizard::ProcessState()
 	assert(data.fireWaitCounter <= fireWaitDuration);
 	if (action == RUN && data.fireWaitCounter == fireWaitDuration && slowCounter == 1)
 	{
-		
-		//ground has to be not null.
-		launchers[0]->position = GetPosition();
-
-		action = SHOCK;
-		frame = 0;
-
-		groundMover->SetSpeed(0);
-		
-		if (groundMover->ground != NULL)
-		{
-			launchers[0]->facingDir = -groundMover->ground->Normal();
-		}
-		else
-		{
-			launchers[0]->facingDir = V2d(0, 1);
-		}
-		
-		bulletClockwise = true;
-		launchers[0]->Fire();
-		bulletClockwise = false;
-		launchers[0]->Fire();
+		Shock();
 	}
 }
 
@@ -540,6 +525,41 @@ void Lizard::BulletHitPlayer(
 void Lizard::UpdateBullet(BasicBullet *b)
 {
 
+}
+
+void Lizard::Shock()
+{
+	//ground has to be not null.
+
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
+
+	launchers[0]->position = GetPosition();
+
+	action = SHOCK;
+	frame = 0;
+
+	groundMover->SetSpeed(0);
+
+	if (groundMover->ground != NULL)
+	{
+		launchers[0]->facingDir = -groundMover->ground->Normal();
+	}
+	else
+	{
+		launchers[0]->facingDir = V2d(0, 1);
+	}
+
+	bulletClockwise = true;
+	launchers[0]->Fire();
+	bulletClockwise = false;
+	launchers[0]->Fire();
 }
 
 void Lizard::DirectKill()
