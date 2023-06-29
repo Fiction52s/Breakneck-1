@@ -19,14 +19,14 @@ Pufferfish::Pufferfish(ActorParams *ap)
 
 	bulletSpeed = 5;
 
-	actionLength[NEUTRAL] = 1;
+	actionLength[NEUTRAL] = 4;
 	actionLength[PUFF] = 1;
 	actionLength[HOLDPUFF] = 1;
 	actionLength[UNPUFF] = 1;
 	actionLength[BLAST] = 1;
 	actionLength[RECOVER] = 20;
 
-	animFactor[NEUTRAL] = 2;
+	animFactor[NEUTRAL] = 16;//4;
 	animFactor[PUFF] = 30;
 	animFactor[HOLDPUFF] = 30;
 	animFactor[UNPUFF] = 30;
@@ -364,24 +364,57 @@ void Pufferfish::UpdateSprite()
 	switch (action)
 	{
 	case NEUTRAL:
-		tile = 0;
+		tile = frame / animFactor[NEUTRAL];
 		break;
 	case PUFF:
-		tile = 1;
+	{
+		if (frame < 6)
+		{
+			tile = 4;
+		}
+		else if (frame < 15)
+		{
+			tile = 5;
+		}
+		else if (frame < 23)
+		{
+			tile = 6;
+		}
+		else
+		{
+			tile = 7;
+		}
 		break;
+	}
 	case HOLDPUFF:
-		tile = 2;
+		tile = 7;
 		break;
 	case UNPUFF:
-		tile = 3;
+		if (frame < 6)
+		{
+			tile = 7;
+		}
+		else if (frame < 15)
+		{
+			tile = 6;
+		}
+		else if (frame < 23)
+		{
+			tile = 5;
+		}
+		else
+		{
+			tile = 4;
+		}
+		//tile = 9;
 		break;
 	case BLAST:
-		tile = 2;
+		tile = 9;
 		break;
 	case RECOVER:
 		if (frame < (actionLength[RECOVER] * animFactor[RECOVER]) / 2)
 		{
-			tile = 0;
+			tile = 8;
 			//tile = 3;
 		}
 		else

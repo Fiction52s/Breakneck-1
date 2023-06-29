@@ -6083,7 +6083,10 @@ void Actor::ProcessAccelGrass()
 
 void Actor::ProcessDecelGrass()
 {
-	if (ground != NULL && touchedGrass[Grass::DECELERATE])
+	if (!touchedGrass[Grass::DECELERATE])
+		return;
+
+	if (ground != NULL )
 	{
 		double dSpeed = GetDashSpeed();
 		double maxGSpeed = 5;
@@ -6104,6 +6107,15 @@ void Actor::ProcessDecelGrass()
 		else if (groundSpeed < -maxGSpeed)
 		{
 			groundSpeed = -maxGSpeed;
+		}
+	}
+	else if( action == WALLCLING )
+	{
+		double factor = .1;
+		if (velocity.y > clingSpeed * factor)
+		{
+			//cout << "running wallcling" << endl;
+			velocity.y = clingSpeed * factor;
 		}
 	}
 }
@@ -15014,6 +15026,40 @@ void Actor::PhysicsResponse()
 		else if( !IsAirHitstunAction(action) && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE
 			&& action != FREEFLIGHTSTUN && action != DIAGUPATTACK && action != AIRDASHFORWARDATTACK )
 		{
+			if (collision && touchedGrass[Grass::DECELERATE] && length( wallNormal ) > 0 && currWall != NULL )
+			{
+				//if (length(wallNormal) > 0
+					//&& (currWall == NULL || !currWall->IsInvisibleWall())
+					//&& oldVelocity.y >= 0 && !(currWall != NULL && currWall->rail != NULL && currWall->rail->GetRailType() == TerrainRail::BOUNCE))
+				//double velLen = length(velocity);
+				double velY = velocity.y;
+
+				double dSpeed = GetDashSpeed();
+				double maxGSpeed = 5;
+				double decel = 2.0;
+				double maxSlowSpeed = dSpeed + 5;
+				if (velY > maxSlowSpeed)
+				{
+					velY -= decel;
+				}
+				else if (velY < -maxSlowSpeed)
+				{
+					velY += decel * .2;
+				}
+				else if (velY > maxGSpeed)
+				{
+					velY = maxGSpeed;
+				}
+				/*else if (velY < -maxGSpeed)
+				{
+					velY = -maxGSpeed;
+				}*/
+
+				//velocity = normalize(velocity) * velLen;
+				velocity.y = velY;
+			}
+
+
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
 				if( length( wallNormal ) > 0 
@@ -15088,6 +15134,7 @@ void Actor::PhysicsResponse()
 		}
 		else if (!IsAirHitstunAction(action) && action != WALLATTACK && action != AIRDASH)
 		{
+			//not aware of this getting hit at any time but I'll look into it more later
 			if (collision)
 			{
 				if (length(wallNormal) > 0 && oldVelocity.y <= 0)
@@ -16966,6 +17013,7 @@ sf::Vector2<double> Actor::AddAerialGravity( sf::Vector2<double> vel )
 
 	if (wallClimbGravityOn)
 	{
+		//is this still getting used?
 		normalGravity *= wallClimbGravityFactor;
 	}
 

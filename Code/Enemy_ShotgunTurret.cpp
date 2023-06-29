@@ -33,18 +33,21 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 
 	bulletSpeed = 3;
 
-	actionLength[IDLE] = 1;
-	actionLength[ATTACK] = 120;
-	actionLength[WAIT] = 10;
+	actionLength[IDLE] = 9;
+	actionLength[ATTACK] = 14;// * 3;//120;
 	
-	animFactor[IDLE] = 1;
-	animFactor[ATTACK] = 1;
+	
+	animFactor[IDLE] = 10;
+	animFactor[ATTACK] = 3;
+
+	actionLength[WAIT] = 120 - actionLength[ATTACK] * animFactor[ATTACK];
+
 	animFactor[WAIT] = 1;
 
 	ts = GetSizedTileset("Enemies/W3/cactus_160x160.png");
 
 	double width = ts->tileWidth;
-	double height = ts->tileHeight;
+	double height = ts->tileHeight - 24;
 
 	width *= scale;
 	height *= scale;
@@ -85,8 +88,8 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	launchers[0]->hitboxInfo->hType = HitboxInfo::YELLOW;
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(1);
-	cutObject->SetSubRectBack(2);
+	cutObject->SetSubRectFront(23);
+	cutObject->SetSubRectBack(24);
 	cutObject->SetScale(scale);
 	cutObject->rotateAngle = sprite.getRotation();
 
@@ -208,6 +211,22 @@ void ShotgunTurret::ProcessState()
 			frame = 0;
 			break;
 		case ATTACK:
+			action = WAIT;
+			frame = 0;
+			//if (PlayerDist() > 1000)
+			//{
+			//	action = IDLE;
+			//	frame = 0;
+			//}
+			//else
+			//{
+			//	frame = 0;
+			//	//frame = 0;
+			//}
+			break;
+			
+			break;
+		case WAIT:
 			if (PlayerDist() > 1000)
 			{
 				action = IDLE;
@@ -215,12 +234,11 @@ void ShotgunTurret::ProcessState()
 			}
 			else
 			{
+				action = ATTACK;
 				frame = 0;
+				//frame = 0;
 			}
 			break;
-		case WAIT:
-			action = ATTACK;
-			frame = 0;
 		}
 	}
 
@@ -285,24 +303,21 @@ void ShotgunTurret::DirectKill()
 
 void ShotgunTurret::UpdateSprite()
 {
-	if (action == WAIT)
+	int f = 0;
+	switch (action)
 	{
-		sprite.setTextureRect(ts->GetSubRect(0));
+	case IDLE:
+		f = frame / animFactor[IDLE];
+		break;
+	case ATTACK:
+		f = ((frame / animFactor[ATTACK]) % 14) + 9;
+		break;
+	case WAIT:
+		f = 0;
+		break;
 	}
-	else
-	{
-		sprite.setTextureRect(ts->GetSubRect(0));
 
-		//if (frame / animFactor[ATTACK] > 12)
-		//{
-		//	sprite.setTextureRect(ts->GetSubRect(0));
-		//}
-		//else
-		//{
-		//	sprite.setTextureRect(ts->GetSubRect(0));
-		//	//sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
-		//}
-	}
+	sprite.setTextureRect(ts->GetSubRect(f));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
