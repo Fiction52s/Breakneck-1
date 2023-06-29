@@ -78,13 +78,13 @@ void Pufferfish::HandleNoHealth()
 
 	if (action == HOLDPUFF)
 	{
-		cutObject->SetSubRectFront(5);
-		cutObject->SetSubRectBack(4);
+		cutObject->SetSubRectFront(12);
+		cutObject->SetSubRectBack(11);
 	}
 	else
 	{
-		cutObject->SetSubRectFront(7);
-		cutObject->SetSubRectBack(6);
+		cutObject->SetSubRectFront(10);
+		cutObject->SetSubRectBack(9);
 	}
 	cutObject->SetFlipHoriz(facingRight);
 	//cutObject->SetCutRootPos(Vector2f(position));
