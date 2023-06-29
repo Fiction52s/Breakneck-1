@@ -39,7 +39,6 @@ void Actor::UPTILT3_Change()
 {
 	if (CanCancelAttack() || frame > 14)
 	{
-		if (TryPressGrind()) return;
 
 		if (JumpButtonPressed() || pauseBufferedJump)
 		{
@@ -64,6 +63,10 @@ void Actor::UPTILT3_Change()
 			frame = 0;
 			return;
 		}
+
+		if (TryBufferGrind()) return;
+
+		if (TryGroundBlock()) return;
 	}
 }
 

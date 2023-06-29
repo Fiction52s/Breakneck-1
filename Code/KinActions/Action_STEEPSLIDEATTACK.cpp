@@ -32,7 +32,7 @@ void Actor::STEEPSLIDEATTACK_Change()
 {
 	if (CanCancelAttack())//&& frame > 0 )
 	{
-		if (TryPressGrind()) return;
+		if (TryBufferGrind()) return;
 
 		if (JumpButtonPressed() || pauseBufferedJump)
 		{

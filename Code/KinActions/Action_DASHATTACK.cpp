@@ -41,7 +41,8 @@ void Actor::DASHATTACK_Change()
 {
 	if (CanCancelAttack() || frame > 14)
 	{
-		if (TryPressGrind()) return;
+		//if (TryBufferGrind()) return;
+		//if (TryPressGrind()) return;
 
 		if (JumpButtonPressed() || pauseBufferedJump)
 		{
@@ -69,6 +70,11 @@ void Actor::DASHATTACK_Change()
 			frame = 0;
 			return;
 		}
+
+		if (TryBufferGrind()) return;
+
+		if (TryGroundBlock()) return;
+
 	}
 }
 

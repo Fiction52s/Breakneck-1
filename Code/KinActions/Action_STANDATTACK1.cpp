@@ -39,8 +39,6 @@ void Actor::STANDATTACK1_Change()
 {
 	if (CanCancelAttack() || frame > 14)
 	{
-		if (TryPressGrind()) return;
-
 		if (JumpButtonPressed() || pauseBufferedJump)
 		{
 			SetAction(JUMPSQUAT);
@@ -64,6 +62,10 @@ void Actor::STANDATTACK1_Change()
 			frame = 0;
 			return;
 		}
+
+		if (TryBufferGrind()) return;
+
+		if (TryGroundBlock()) return;
 	}
 }
 
@@ -86,7 +88,7 @@ void Actor::STANDATTACK1_UpdateSprite()
 	UpdateGroundedAttackSprite(action, ts_standAttackSword[speedLevel],
 		0, -1, 2, Vector2f(0, 0));
 
-	if (scorpOn)
+	/*if (scorpOn)
 	{
 		scorpSprite.setTexture(*ts_scorpRun->texture);
 
@@ -99,7 +101,7 @@ void Actor::STANDATTACK1_UpdateSprite()
 		scorpSprite.setPosition(position.x, position.y);
 		scorpSprite.setRotation(sprite->getRotation());
 		scorpSet = true;
-	}
+	}*/
 }
 
 void Actor::STANDATTACK1_TransitionToAction(int a)

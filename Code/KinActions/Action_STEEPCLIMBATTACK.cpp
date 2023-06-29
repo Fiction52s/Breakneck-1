@@ -30,8 +30,6 @@ void Actor::STEEPCLIMBATTACK_Change()
 {
 	if (CanCancelAttack())//&& frame > 0 )
 	{
-		if (TryPressGrind()) return;
-
 		if (JumpButtonPressed() || pauseBufferedJump)
 		{
 			SetAction(JUMPSQUAT);
@@ -43,6 +41,10 @@ void Actor::STEEPCLIMBATTACK_Change()
 		{
 			return;
 		}
+
+		if (TryBufferGrind()) return;
+
+		if (TryGroundBlock()) return;
 
 		/*if (SteepClimbAttack())
 		{

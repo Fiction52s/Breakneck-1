@@ -39,8 +39,6 @@ void Actor::STANDATTACK3_Change()
 {
 	if (CanCancelAttack() || frame > 14)
 	{
-		if (TryPressGrind()) return;
-
 		if (JumpButtonPressed() || pauseBufferedJump)
 		{
 			SetAction(JUMPSQUAT);
@@ -64,6 +62,10 @@ void Actor::STANDATTACK3_Change()
 			frame = 0;
 			return;
 		}
+
+		if (TryBufferGrind()) return;
+
+		if (TryGroundBlock()) return;
 	}
 }
 

@@ -69,7 +69,7 @@ void Actor::GRINDBALL_Change()
 				if (!j)
 				{
 					ground = grindEdge;
-					SetAction(LAND);
+					SetAction(LAND2);
 					frame = 0;
 					groundSpeed = grindSpeed;
 

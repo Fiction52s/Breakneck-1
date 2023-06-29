@@ -10396,7 +10396,27 @@ void Actor::TryChangePowerMode()
 		currPowerMode = PMODE_SHIELD;
 	}
 
-	if (currInput.RUp() && noHoriz)
+	if (hasBounce && currInput.RLeft())
+	{
+		currPowerMode = PMODE_BOUNCE;
+	}
+	else if (hasGrind && currInput.RRight())
+	{
+		currPowerMode = PMODE_GRIND;
+	}
+	else if ( hasTimeSlow && currInput.RDown() )
+	{
+		currPowerMode = PMODE_TIMESLOW;
+	}
+	else if (currInput.RUp())
+	{
+		currPowerMode = PMODE_SHIELD;
+	}
+	
+	
+
+
+	/*if (currInput.RUp() && noHoriz)
 	{
 		currPowerMode = PMODE_SHIELD;
 	}
@@ -10411,7 +10431,7 @@ void Actor::TryChangePowerMode()
 	else if (currInput.RLeft() && noVert && hasBounce )
 	{
 		currPowerMode = PMODE_BOUNCE;
-	}
+	}*/
 
 	if (oldPowerMode == PMODE_BOUNCE && currPowerMode != PMODE_BOUNCE)
 	{
@@ -10539,6 +10559,8 @@ bool Actor::BasicAirAttackAction()
 		if (TryDoubleJump()) return true;
 
 		if (AirAttack()) return true;
+
+		if (TryAirBlock()) return true;
 	}
 	
 	return false;
@@ -22248,11 +22270,29 @@ void Actor::UpdateInHitlag()
  void Actor::UpdateGroundedAttackSprite(
 	 int a, Tileset *ts_sword, int startSword, int endSword, int animMult, Vector2f &swordOffset)
  {
+	 int f = frame / animMult;
+
 	 SetSpriteTexture(a);
 	 bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	 SetSpriteTile(frame / animMult, r);
+	 SetSpriteTile(f, r);
 	 SetGroundedSpriteTransform();
 	 UpdateGroundedSwordSprite(ts_sword, startSword, endSword, animMult, swordOffset );
+
+	 //use placeholder tile for now, eventually include parameters to use custom scorp stuff per attack
+	 if (scorpOn)
+	 {
+		 scorpSprite.setTexture(*ts_scorpRun->texture);
+
+		 bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+		 SetSpriteTile(&scorpSprite, ts_scorpDash, 0, r, !reversed);
+
+		 scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			 scorpSprite.getLocalBounds().height / 2 + 20);
+		 scorpSprite.setPosition(position.x, position.y);
+		 scorpSprite.setRotation(sprite->getRotation());
+		 scorpSet = true;
+	 }
  }
 
  bool Actor::IsValidTrackEnemy(Enemy *e)
