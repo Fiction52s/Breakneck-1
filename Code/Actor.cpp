@@ -13347,6 +13347,8 @@ void Actor::UpdatePhysics()
 			}*/
 			else if (tempCollision && action == SPRINGSTUNBOUNCE)
 			{
+				//not sure if this ever even gets called
+
 				//needs work later probably
 				V2d newDir = minContact.edge->GetReflectionDir(normalize(springVel));
 				
@@ -13418,6 +13420,8 @@ void Actor::UpdatePhysics()
 				V2d testVel = velocity;
 
 				groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
+
+				aimLauncherStunFrames = springStunFrames;
 
 				break;
 			}
@@ -14801,6 +14805,10 @@ void Actor::PhysicsResponse()
 					}
 				}
 			}
+		}
+		else if (action == SPRINGSTUNBOUNCEGROUND)
+		{
+
 		}
 		else
 		{

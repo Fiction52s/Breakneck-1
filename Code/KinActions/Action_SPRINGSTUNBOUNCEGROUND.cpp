@@ -34,7 +34,8 @@ void Actor::SPRINGSTUNBOUNCEGROUND_Change()
 	V2d bn = bounceNorm;//bounceEdge->Normal();
 	bool framesDone = frame == GetActionLength(SPRINGSTUNBOUNCEGROUND) - 1;
 
-	if (boostBounce )
+	//if (boostBounce )
+	if( frame == 4 )
 	{
 		springStunFrames = aimLauncherStunFrames;
 		ActivateSound(PlayerSounds::S_BOUNCEJUMP);
