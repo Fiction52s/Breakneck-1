@@ -7191,6 +7191,12 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 
 		if (currInput.LUp())
 		{
+			double extraUpBoost = 3.0;
+			if ((gNorm.x > 0 && groundSpeed <= 0)
+				|| (gNorm.x < 0 && groundSpeed >= 0))
+			{
+				extra += extraUpBoost;
+			}
 			//cout << "boost but better" << endl;
 			//extra = 10;//5.5;
 		}
@@ -7205,9 +7211,9 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 		}
 		else if (gNorm.x < 0)// && currInput.LRight() )
 		{
-			cout << "old groundspeed: " << groundSpeed << " ";
+			//cout << "old groundspeed: " << groundSpeed << " ";
 			groundSpeed = std::max(groundSpeed + extra, sp);
-			cout << "groundSpeed: " << groundSpeed << ", extra: " << extra << endl;
+			//cout << "groundSpeed: " << groundSpeed << ", extra: " << extra << endl;
 		}
 
 		framesSinceClimbBoost = 0;
@@ -18745,6 +18751,17 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					}
 					break;
 				}
+				case SpecialTarget::TARGET_BOUNCE:
+				{
+					bool isValidAction = action == SPRINGSTUNAIM || action == SPRINGSTUNBOUNCEGROUND || action == SPRINGSTUNAIRBOUNCE
+						|| action == SPRINGSTUNAIRBOUNCEPAUSE;
+
+					if (isValidAction && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
+					{
+						spTarget->Collect();
+					}
+					break;
+				}
 				case SpecialTarget::TARGET_SCORPION:
 				{
 					if (scorpOn && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
@@ -20898,16 +20915,37 @@ void Actor::BounceFloaterBoost( V2d &hitDir )
 
 	double minX = 20;
 
+	holdJump = false;
+	holdDouble = false;
+
 	if (player->ground != NULL)
 	{
-		if (player->groundSpeed > 0)
+		if (facingRight)
 		{
-			player->groundSpeed = min(-player->groundSpeed, -minX);
+			player->groundSpeed = -minX;
+		}
+		else
+		{
+			player->groundSpeed = minX;
+		}
+
+		/*if (player->groundSpeed > 0)
+		{
+			player->groundSpeed = min(-player->groundSpeed, );
+		}
+		else if (player->groundSpeed < 0)
+		{
+			player->groundSpeed = max(-player->groundSpeed, minX);
+		}*/
+
+		/*if (player->groundSpeed > 0)
+		{
+			player->groundSpeed = min(-player->groundSpeed, );
 		}
 		else if( player->groundSpeed < 0 )
 		{
 			player->groundSpeed = max(-player->groundSpeed, minX);
-		}
+		}*/
 	}
 	else
 	{
@@ -20915,7 +20953,17 @@ void Actor::BounceFloaterBoost( V2d &hitDir )
 		bool fr = player->facingRight;
 		if (hitDir.x != 0)//&& dir.y == 0)
 		{
-			double velx = player->velocity.x;
+			if (hitDir.x > 0 )
+			{
+				player->velocity.x = -minX;
+			}
+			else
+			{
+				player->velocity.x = minX;
+			}
+
+
+			/*double velx = player->velocity.x;
 			if (fr && velx < minX)
 			{
 				velx = minX;
@@ -20925,14 +20973,22 @@ void Actor::BounceFloaterBoost( V2d &hitDir )
 				velx = -minX;
 			}
 
-			player->velocity.x = -velx;
-			//= -player->velocity.x;
+			player->velocity.x = -velx;*/
 		}
 		if (hitDir.y != 0)//&& dir.x == 0)
 		{
 			double minUp = -20;
 			double minDown = 40;
-			double vely = player->velocity.y;
+
+			if (hitDir.y > 0)
+			{
+				player->velocity.y = -minDown;
+			}
+			else
+			{
+				player->velocity.y = -minUp;
+			}
+			/*double vely = player->velocity.y;
 			if (hitDir.y > 0 && vely < minDown)
 			{
 				vely = -minDown;
@@ -20942,12 +20998,9 @@ void Actor::BounceFloaterBoost( V2d &hitDir )
 				vely = -minUp;
 			}
 
-			//player->velocity.x = -velx;
-			//= -player->velocity.x;
+			player->velocity.y = vely;*/
 
 
-
-			player->velocity.y = vely;//-60;//player->velocity.y;
 		}
 	}
 }

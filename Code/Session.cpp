@@ -414,8 +414,8 @@ void Session::RegisterW3Enemies()
 	AddWorldEnemy("Aim Launcher", "aimlauncher", 3, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddWorldEnemy("Air Bounce\nLauncher", "airbouncelauncher", 3, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddBasicAerialWorldEnemy("Up\nBounce\nBooster", "upbouncebooster", 3, itemRow, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Omni\nBounce\nBooster", "omnibouncebooster", 3, itemRow, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Bounce\nFloater", "bouncefloater", 3, itemRow, CreateEnemy<BounceFloater>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Omni\nBounce\nBooster", "omnibouncebooster", 3, itemRow, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Bounce\nFloater", "bouncefloater", 3, itemRow, CreateEnemy<BounceFloater>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	//comboers
 	AddWorldEnemy("Ball", "ball", 3, comboerRow, CreateEnemy<Ball>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
@@ -423,6 +423,7 @@ void Session::RegisterW3Enemies()
 
 	//targets
 	AddBasicAerialWorldEnemy("Yellow\nComboer\nTarget", "yellowcomboertarget", 3, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Bounce\nLaunch\nTarget", "bouncetarget", 3, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
 	AddWorldEnemy("Yellow\nBlocker", "yellowblocker", 3, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 

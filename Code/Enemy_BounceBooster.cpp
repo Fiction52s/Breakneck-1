@@ -4,6 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -90,6 +91,15 @@ bool BounceBooster::Boost()
 	//no refresh
 	action = BOOST;
 	frame = 0;
+
+	if (hasMonitor && !suppressMonitor)
+	{
+		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+			sess->GetPlayer(0), 1, GetPosition());
+		suppressMonitor = true;
+		PlayKeyDeathSound();
+	}
+
 	return true;
 }
 
@@ -183,7 +193,8 @@ void BounceBooster::UpdateSprite()
 
 void BounceBooster::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	DrawSprite(target, sprite);
+	//target->draw(sprite);
 }
 
 int BounceBooster::GetNumStoredBytes()

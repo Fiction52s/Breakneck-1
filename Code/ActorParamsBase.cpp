@@ -69,15 +69,9 @@ ActorParams::ActorParams(ActorType *at)
 	hasMonitor(false), group(NULL), type(at)
 {
 	//any enemies that default to having a key/monitor
-	if (at->info.name == "bluekeyfly"
-		|| at->info.name == "greenkeyfly"
-		|| at->info.name == "yellowkeyfly"
-		|| at->info.name == "orangekeyfly"
-		|| at->info.name == "redkeyfly"
-		|| at->info.name == "magentakeyfly"
-		|| at->info.name == "greykeyfly"
-		|| at->info.name == "blackkeyfly" 
-		|| at->info.name == "glidetarget"
+	if (//at->info.name == "key"
+		at->info.name == "glidetarget"
+		|| at->info.name == "bouncetarget"
 		|| at->info.name == "scorpiontarget"
 		|| at->info.name == "freeflighttarget"
 		|| at->info.name == "bluecomboertarget"

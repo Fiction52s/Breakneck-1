@@ -7,6 +7,7 @@
 #include "KeyMarker.h"
 #include "Enemy_BounceFloater.h"
 #include "Actor.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -61,8 +62,8 @@ BounceFloater::BounceFloater(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
+	BasicCircleHurtBodySetup(80);
+	BasicCircleHitBodySetup(64);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -100,6 +101,14 @@ void BounceFloater::ProcessHit()
 
 		player->ConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
+
+		if (hasMonitor && !suppressMonitor)
+		{
+			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+				sess->GetPlayer(0), 1, GetPosition());
+			suppressMonitor = true;
+			PlayKeyDeathSound();
+		}
 
 		receivedHit.SetEmpty();
 	}

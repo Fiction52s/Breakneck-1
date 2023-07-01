@@ -164,13 +164,13 @@ void Actor::STEEPSLIDE_Change()
 		if (currNormal.x < 0 && (currInput.LRight() || currInput.LUp()))
 		{
 			SetAction(STEEPCLIMB);
-			groundSpeed = steepClimbBoostStart;
+			groundSpeed = 0;//steepClimbBoostStart;
 			frame = 0;
 		}
 		else if (currNormal.x > 0 && (currInput.LLeft() || currInput.LUp()))
 		{
 			SetAction(STEEPCLIMB);
-			groundSpeed = -steepClimbBoostStart;
+			groundSpeed = 0;//-steepClimbBoostStart;
 			frame = 0;
 		}
 		/*else
