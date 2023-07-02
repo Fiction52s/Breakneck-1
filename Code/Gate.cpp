@@ -577,6 +577,7 @@ void Gate::Soften()
 {
 	assert(data.gState == HARD);
 
+	SetLocked(false);
 	data.gState = SOFTEN;
 	data.frame = 0;
 	ResetAttachedWires();
@@ -1374,8 +1375,11 @@ void Gate::SetLocked( bool on )
 	{
 		data.locked = false;
 
-		edgeA->edgeType = Edge::OPEN_GATE;
-		edgeB->edgeType = Edge::OPEN_GATE;
+		//edgeA->edgeType = Edge::OPEN_GATE;
+		//edgeB->edgeType = Edge::OPEN_GATE;
+
+		edgeA->edgeType = Edge::CLOSED_GATE;
+		edgeB->edgeType = Edge::CLOSED_GATE;
 
 		temp0next->edge0 = temp0prev;
 		temp0prev->edge1 = temp0next;

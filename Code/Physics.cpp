@@ -1074,6 +1074,10 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 	}
 	else
 	{
+
+		//if (e->IsGateEdge())
+		//	return NULL;
+
 		//position += V2d(0, -10);
 		V2d oldPosition = position - vel;
 		double left = position.x - b.rw;
@@ -1099,6 +1103,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		V2d prevFullAlong;
 		V2d prevReverseAlong;
 		V2d nextFullAlong;
+
 		if (e->edge0 != NULL)
 		{
 			prevEn = e->edge0->Normal();
@@ -1620,6 +1625,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//mess up some case, although i haven't figured out what
 			//case that is yet. good luck collision T_T
 			//if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
+
+
+			if (e->v1.y == -7304)
+			{
+				int xxxxxx = 56;
+			}
+
 			if( res < -.001 && oldRes >= -.1 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			
 			{
@@ -1630,7 +1642,6 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
 				if( li.parallel || abs( testing ) == 1 )
 				{
-					//cout << "returning null1" << endl;
 					return NULL;
 				}
 				intersect = li.position;
@@ -1659,6 +1670,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				}
 				else
 				{
+
+					if (e->v1.y == -7304)
+					{
+						int xxxxxx = 56;
+					}
 					bool okay = true;
 					bool a = approxEquals( intersectQuantity, 0 );
 
@@ -1763,8 +1779,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 			//cout << "point: " << time << endl;
 
-			if( time == 100 )
-			return NULL;
+			if (time == 100)
+			{
+				return NULL;
+			}
+			
 
 			/*CircleShape *cs = new CircleShape;
 			cs->setFillColor( Color::Yellow );
@@ -1790,8 +1809,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			progressDraw.push_back( cs );*/
 		}
 
-		if( time == 100 )
+		if (time == 100)
+		{
 			return NULL;
+		}
+			
 		
 		if( time < 0 )
 			time = 0;

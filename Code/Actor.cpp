@@ -9495,7 +9495,7 @@ V2d Actor::UpdateReversePhysics()
 						double yDist = abs( gNormal.x ) * -groundSpeed;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
-						if( next != NULL && !e0->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						if( next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -9588,45 +9588,52 @@ V2d Actor::UpdateReversePhysics()
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
 						double yDist = abs( gNormal.x ) * -groundSpeed;
-						if(next != NULL && !e1->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						if(next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 						{
 
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
-								if( e1->edgeType == Edge::CLOSED_GATE )
-								{
-								//	cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY B" << endl;
-									Gate *g = (Gate*)e1->info;
-
-									if( CanUnlockGate( g ) )
-									{
-										UnlockGate( g );
-
-										if( e1 == g->edgeA )
-										{
-											gateTouched = g->edgeB;
-										}
-										else
-										{
-											gateTouched = g->edgeA;
-											
-										}
-
-										offsetX = -offsetX;
-										break;
-
-									}
-
-								}
-
+								if (TryUnlockOnTransfer(e1))
+									break;
 
 								groundSpeed = 0;
-								offsetX = -offsetX;
+								//offsetX = -offsetX; //this is only in reverse...
 								break;
+								//if( e1->edgeType == Edge::CLOSED_GATE )
+								//{
+								////	cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY B" << endl;
+								//	Gate *g = (Gate*)e1->info;
+
+								//	if( CanUnlockGate( g ) )
+								//	{
+								//		UnlockGate( g );
+
+								//		if( e1 == g->edgeA )
+								//		{
+								//			gateTouched = g->edgeB;
+								//		}
+								//		else
+								//		{
+								//			gateTouched = g->edgeA;
+								//			
+								//		}
+
+								//		offsetX = -offsetX;
+								//		break;
+
+								//	}
+
+								//}
+
+
+								//groundSpeed = 0;
+								//offsetX = -offsetX;
+								//break;
 							}
 							else
 							{
-								cout << "possible other bug reversed. solved secret??" << endl;
+								//cout << "possible other bug reversed. solved secret??" << endl;
+								break;
 								//ground = next;
 								//q = 0;
 							}
@@ -18051,7 +18058,9 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			bool closedGate = (c->edge->edgeType == Edge::CLOSED_GATE);
 			bool minGate = (minContact.edge != NULL && minContact.edge->edgeType == Edge::CLOSED_GATE);
+			//bool testGateSoft = minContact.edge != NULL && minContact.edge->IsGateEdge() && minContact.edge->GetGate()->IsSoft();
 
+			//if( !testGateSoft )
 			if (!col || (minContact.collisionPriority < 0)
 				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0))//|| ( closedGate && !minGate ) )
 			{
