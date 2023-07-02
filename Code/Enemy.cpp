@@ -321,6 +321,7 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_GRINDJUGGLER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
+
 	case EnemyType::EN_POISONFROG:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
@@ -390,7 +391,10 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BOUNCEFLOATER:
-		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
+		break;
+	case EnemyType::EN_BOUNCEBOOSTER:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 		break;
 	case EnemyType::EN_OWL:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);

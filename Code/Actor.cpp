@@ -18417,6 +18417,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			return;
 		}
 
+		if (action == SPRINGSTUNBOUNCE)
+		{
+			return;
+		}
+
 		Contact *c = GetCollider().collideEdge(position + tempVel, b, e, tempVel, V2d(0, 0));
 
 		if (c != NULL)
