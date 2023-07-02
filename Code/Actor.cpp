@@ -17298,6 +17298,7 @@ bool Actor::AimLauncherAim()
 		RestoreAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
+		reversed = false;
 		
 		velocity = V2d(0, 0);
 

@@ -3677,8 +3677,17 @@ int Session::SetupZones()
 {
 	originalZone = NULL;
 
+
+	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
+	{
+		(*it)->zone = NULL;
+	}
+
 	if (zones.size() == 0)
+	{
 		return 0;
+	}
+		
 
 	//add enemies to the correct zone.
 	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)

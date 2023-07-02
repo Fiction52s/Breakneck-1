@@ -424,6 +424,11 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 					return;
 				}
 			}
+			else if (data.rcCancelDist >= 0)
+			{
+				Reset();
+				return;
+			}
 
 			//cout << "framesFiring " << framesFiring << endl;
 
@@ -1007,10 +1012,10 @@ void Wire::SetCanRetractGround()
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
-	if (edge->IsUnlockedGateEdge())
+	/*if (edge->IsUnlockedGateEdge())
 	{
 		return;
-	}
+	}*/
 
 	V2d playerPos = GetPlayerPos();
 	double lengthToPlayer = length(edge->GetPosition(edgeQuantity) - playerPos );
@@ -1026,8 +1031,16 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 		if (data.rcCancelDist < 0 || lengthToPlayer < data.rcCancelDist)
 			data.rcCancelDist = lengthToPlayer;
 	}
-	else if (edge->IsLockedGateEdge())
+	else if (edge->IsGateEdge())
 	{
+		//if (edge->IsUnlockedGateEdge())
+		//{
+		//	if (data.rcCancelDist < 0 || lengthToPlayer < data.rcCancelDist)
+		//		data.rcCancelDist = lengthToPlayer;
+		//	//return;
+		//}
+
+
 		Gate *g = (Gate*)edge->info;
 		if (g->CanBeHitByWire())
 		{
