@@ -1007,8 +1007,10 @@ void Wire::SetCanRetractGround()
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
-	if (edge->edgeType == Edge::OPEN_GATE)
+	if (edge->IsUnlockedGateEdge())
+	{
 		return;
+	}
 
 	V2d playerPos = GetPlayerPos();
 	double lengthToPlayer = length(edge->GetPosition(edgeQuantity) - playerPos );
@@ -1024,7 +1026,7 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 		if (data.rcCancelDist < 0 || lengthToPlayer < data.rcCancelDist)
 			data.rcCancelDist = lengthToPlayer;
 	}
-	else if (edge->edgeType == Edge::CLOSED_GATE)
+	else if (edge->IsLockedGateEdge())
 	{
 		Gate *g = (Gate*)edge->info;
 		if (g->CanBeHitByWire())

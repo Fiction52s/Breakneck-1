@@ -120,10 +120,10 @@ void Gate::Setup(GateInfoPtr gi)
 	temp1next = edge1;
 
 	edgeA = new Edge;
-	edgeA->edgeType = Edge::CLOSED_GATE;
+	edgeA->edgeType = Edge::GATE;
 	edgeA->info = this;
 	edgeB = new Edge;
-	edgeB->edgeType = Edge::CLOSED_GATE;
+	edgeB->edgeType = Edge::GATE;
 	edgeB->info = this;
 
 	edgeA->v0 = point0;
@@ -1354,10 +1354,11 @@ void Gate::SetLocked( bool on )
 {
 	if( on )
 	{
+		//cout << "lock on" << "\n";
 		data.locked = true;
 
-		edgeA->edgeType = Edge::CLOSED_GATE;
-		edgeB->edgeType = Edge::CLOSED_GATE;
+		edgeA->edgeType = Edge::GATE;
+		edgeB->edgeType = Edge::GATE;
 
 		edgeA->edge0 = temp0prev;
 		temp0prev->edge1 = edgeA;
@@ -1373,13 +1374,14 @@ void Gate::SetLocked( bool on )
 	}
 	else
 	{
+		//cout << "lock off" << "\n";
 		data.locked = false;
 
 		//edgeA->edgeType = Edge::OPEN_GATE;
 		//edgeB->edgeType = Edge::OPEN_GATE;
 
-		edgeA->edgeType = Edge::CLOSED_GATE;
-		edgeB->edgeType = Edge::CLOSED_GATE;
+		edgeA->edgeType = Edge::GATE;
+		edgeB->edgeType = Edge::GATE;
 
 		temp0next->edge0 = temp0prev;
 		temp0prev->edge1 = temp0next;

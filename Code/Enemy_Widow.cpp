@@ -427,10 +427,10 @@ void Widow::Land()
 
 void Widow::HandleRayCollision(Edge *edge, double equant, double rayPortion)
 {
-	if (edge->edgeType == Edge::OPEN_GATE)
-	{
-		return;
-	}
+	//if (edge->edgeType == Edge::OPEN_GATE)
+	//{
+	//	return;
+	//}
 
 	RayCastHandler::HandleRayCollision(edge, equant, rayPortion);
 }

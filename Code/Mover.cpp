@@ -340,7 +340,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Edge *e = (Edge*)qte;
 
-		if (e->edgeType == Edge::OPEN_GATE)
+		if (e->IsUnlockedGateEdge())
 		{
 			Gate *g = (Gate*)e->info;
 			if (g->category != Gate::SECRET)
@@ -358,7 +358,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 
 
 
-		if( ground != NULL && ground->IsClosedGateEdge())
+		if( ground != NULL && ground->IsLockedGateEdge())
 		{
 			Gate *g = (Gate*)ground->info;
 			Edge *edgeA = g->edgeA;
@@ -390,7 +390,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		if( ground != NULL )
 		{
-			if( ground->edge0->IsClosedGateEdge())
+			if( ground->edge0->IsLockedGateEdge())
 			{
 				Gate *g = (Gate*)ground->edge0->info;
 				Edge *e0 = ground->edge0;
@@ -421,7 +421,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			
 			
-			if( ground->edge1->IsClosedGateEdge())
+			if( ground->edge1->IsLockedGateEdge())
 			{
 				Gate *g = (Gate*)ground->edge1->info;
 				Edge *e1 = ground->edge1;
@@ -461,7 +461,8 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			double len0 = length( c->position - e->v0 );
 			double len1 = length( c->position - e->v1 );
 
-			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 && !e->edge0->GetGate()->IsSoft())
+			//this might be irrelevant now
+			if( e->edge0->IsGateEdge() && len0 < 1 && !e->edge0->GetGate()->IsSoft())
 			{
 				V2d pVec = normalize(surfaceMoverData.physBody.globalPosition - e->v0 );
 				double pAngle = atan2( -pVec.y, pVec.x );
@@ -514,7 +515,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 					}
 				}
 			}
-			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 && !e->edge1->GetGate()->IsSoft())
+			else if( e->edge1->IsGateEdge() && len1 < 1 && !e->edge1->GetGate()->IsSoft())
 			{
 				V2d pVec = normalize(surfaceMoverData.physBody.globalPosition - e->v1 );
 				double pAngle = atan2( -pVec.y, pVec.x );

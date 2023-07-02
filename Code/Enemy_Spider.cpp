@@ -639,10 +639,10 @@ void Spider::Land()
 
 void Spider::HandleRayCollision( Edge *edge, double equant, double rayPortion )
 {
-	if( edge->edgeType == Edge::OPEN_GATE )
+	/*if( edge->edgeType == Edge::OPEN_GATE )
 	{
 		return;
-	}
+	}*/
 
 	RayCastHandler::HandleRayCollision(edge, equant, rayPortion);
 }

@@ -43,8 +43,7 @@ struct Edge : QuadTreeEntrant
 	enum EdgeType
 	{
 		REGULAR,
-		OPEN_GATE,
-		CLOSED_GATE,
+		GATE,
 		BORDER,
 		BARRIER,
 		Count
@@ -78,7 +77,8 @@ struct Edge : QuadTreeEntrant
 	double GetLengthSqr();
 	void CalcAABB();
 
-	bool IsClosedGateEdge();
+	bool IsLockedGateEdge();
+	bool IsUnlockedGateEdge();
 	bool IsGateEdge();
 	Gate *GetGate();
 

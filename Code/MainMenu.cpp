@@ -733,7 +733,7 @@ MainMenu::MainMenu( bool p_steamOn)
 	menuOptionsBG.setPosition(textBase);
 	menuOptionsBG.setSize(Vector2f(600, (64 + textOptionSpacing) * M_Count));
 
-	soundNodeList = new SoundNodeList( 10 );
+	soundNodeList = new SoundNodeList( 100 );
 	soundNodeList->SetSoundVolume(config->GetData().soundVolume);
 	//soundNodeList->SetGlobalVolume(100);//config->GetData().soundVolume );
 

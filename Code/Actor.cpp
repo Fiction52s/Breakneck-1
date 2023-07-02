@@ -4625,6 +4625,7 @@ void Actor::Respawn( bool setStartPos )
 		numFramesToLive = -1;
 	}
 
+	hitCeilingSoundPlayedThisFrame = false;
 	waterEntranceGround = NULL;
 	waterEntranceGrindEdge = NULL;
 
@@ -6745,10 +6746,10 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 	if (e != NULL )
 	{
 		//Gate *g;
-		if (e->edgeType == Edge::OPEN_GATE)
+		/*if (e->edgeType == Edge::OPEN_GATE)
 		{
 			disappear = true;
-		}
+		}*/
 
 		if (e->poly != NULL)
 		{
@@ -7084,6 +7085,9 @@ void Actor::UpdatePrePhysics()
 	
 
 	touchedCoyoteHelper = false;
+
+	//if updateprephysics gets canceled early for whatever reason this wont get called. doubt its a problem but maybe.
+	hitCeilingSoundPlayedThisFrame = false;
 	
 
 	UpdateHitboxes();
@@ -8730,7 +8734,7 @@ V2d Actor::UpdateReversePhysics()
 			{
 				//cout << "transfer left" << endl;
 				bool unlockedGateJumpOff = false;
-				if( e0->edgeType == Edge::CLOSED_GATE )
+				if( e0->IsGateEdge() )
 				{
 					Gate * g = (Gate*)e0->info;
 					if( CanUnlockGate( g ) )
@@ -9023,7 +9027,7 @@ V2d Actor::UpdateReversePhysics()
 
 				bool jumpOff = false;
 				bool unlockedGateJumpOff = false;
-				if( e1->edgeType == Edge::CLOSED_GATE )
+				if( e1->IsGateEdge() )
 				{
 					Gate * g = (Gate*)e1->info;
 					if( CanUnlockGate( g ) )
@@ -9500,7 +9504,7 @@ V2d Actor::UpdateReversePhysics()
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
 
-								if( e0->edgeType == Edge::CLOSED_GATE )
+								if( e0->IsGateEdge())
 								{
 									cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY A" << endl;
 									Gate *g = (Gate*)e0->info;
@@ -9538,7 +9542,7 @@ V2d Actor::UpdateReversePhysics()
 						}
 						else if(next != NULL && abs( e0n.x ) >= wallThresh && !e0->IsInvisibleWall())
 						{
-							if( e0->edgeType == Edge::CLOSED_GATE )
+							if( e0->IsGateEdge())
 							{
 								Gate *g = (Gate*)e0->info;
 
@@ -9641,7 +9645,7 @@ V2d Actor::UpdateReversePhysics()
 						else if(next != NULL && !e1->IsInvisibleWall() && abs( e1n.x ) >= wallThresh )
 						{
 							//attemping to fix reverse secret issues on gates
-							if( e1->edgeType == Edge::CLOSED_GATE )
+							if( e1->IsGateEdge() )
 							{
 								Gate *g = (Gate*)e1->info;
 
@@ -11405,32 +11409,74 @@ void Actor::UpdateGrindPhysics(double movement)
 				V2d v0 = grindEdge->v0;
 				V2d v1 = grindEdge->v1;
 
-
-				if ( e1 != NULL && e1->edgeType == Edge::CLOSED_GATE)
+				//this is possibly inefficient to just loop through but very little math is done so its probably fine
+				//number of gates should be somewhat low anyway
+				for (auto it = sess->gates.begin(); it != sess->gates.end(); ++it)
 				{
-					Gate *gg = (Gate*)e1->info;
-					if (gg->IsSoft())
+					//if( (*it)->temp0next == e1 || (*it)
+					bool origUnlocked = false;
+					if (!(*it)->IsLocked())
 					{
-						if (CanUnlockGate(gg))
+						origUnlocked = true;
+						(*it)->SetLocked(true);
+					}
+
+					if (grindEdge->edge1->GetGate() == (*it))
+					{
+						if ((*it)->IsSoft())
 						{
-							//cout << "unlock gate" << endl;
-							UnlockGate(gg);
-
-							if (e1 == gg->edgeA)
+							if (CanUnlockGate((*it)))
 							{
-								gateTouched = gg->edgeB;
+								//cout << "unlock gate" << endl;
+								//UnlockGate((*it));
 
+								if (grindEdge->edge1 == (*it)->edgeA)
+								{
+									gateTouched = (*it)->edgeB;
+								}
+								else
+								{
+									gateTouched = (*it)->edgeA;
+
+								}
+
+								//e1 = grindEdge->edge1;
 							}
-							else
-							{
-								gateTouched = gg->edgeA;
-
-							}
-
-							e1 = grindEdge->edge1;
 						}
+						break;
+					}
+
+					if (origUnlocked)
+					{
+						(*it)->SetLocked(false);
 					}
 				}
+
+				//if ( e1 != NULL && e1->IsGateEdge() )
+				//{
+				//	Gate *gg = (Gate*)e1->info;
+				//	if (gg->IsSoft())
+				//	{
+				//		if (CanUnlockGate(gg))
+				//		{
+				//			//cout << "unlock gate" << endl;
+				//			UnlockGate(gg);
+
+				//			if (e1 == gg->edgeA)
+				//			{
+				//				gateTouched = gg->edgeB;
+
+				//			}
+				//			else
+				//			{
+				//				gateTouched = gg->edgeA;
+
+				//			}
+
+				//			e1 = grindEdge->edge1;
+				//		}
+				//	}
+				//}
 				grindEdge = e1;
 
 				if (grindEdge != NULL)
@@ -11488,34 +11534,80 @@ void Actor::UpdateGrindPhysics(double movement)
 				V2d v0 = grindEdge->v0;
 				sf::Rect<double> r(v0.x - 1, v0.y - 1, 2, 2);
 
+				//this is possibly inefficient to just loop through but very little math is done so its probably fine
+				//number of gates should be somewhat low anyway
+				for (auto it = sess->gates.begin(); it != sess->gates.end(); ++it)
+				{
+					//if( (*it)->temp0next == e1 || (*it)
+					bool origUnlocked = false;
+					if (!(*it)->IsLocked())
+					{
+						origUnlocked = true;
+						(*it)->SetLocked(true);
+					}
+
+					if (grindEdge->edge0->GetGate() == (*it))
+					{
+						if ((*it)->IsSoft())
+						{
+							if (CanUnlockGate((*it)))
+							{
+								//cout << "unlock gate" << endl;
+								//UnlockGate((*it));
+
+								if (grindEdge->edge0 == (*it)->edgeA)
+								{
+									gateTouched = (*it)->edgeB;
+								}
+								else
+								{
+									gateTouched = (*it)->edgeA;
+
+								}
+							}
+						}
+
+						if (origUnlocked)
+						{
+							(*it)->SetLocked(false);
+						}
+
+						break;
+					}
+
+					if (origUnlocked)
+					{
+						(*it)->SetLocked(false);
+					}
+				}
 
 				//CheckStandUp();
 				//if( )
 
-				if ( e0 != NULL && e0->edgeType == Edge::CLOSED_GATE)
-				{
-					Gate *gg = (Gate*)e0->info;
-					if (gg->IsSoft() )
-					{
-						if (CanUnlockGate(gg))
-						{
-							//cout << "unlock gate" << endl;
-							UnlockGate(gg);
+				//if ( e0 != NULL && e0->IsGateEdge())
+				//{
+				//	Gate *gg = (Gate*)e0->info;
+				//	if (gg->IsSoft() )
+				//	{
+				//		if (CanUnlockGate(gg))
+				//		{
+				//			//cout << "unlock gate" << endl;
+				//			UnlockGate(gg);
 
-							if (e0 == gg->edgeA)
-							{
-								gateTouched = gg->edgeB;
-							}
-							else
-							{
-								gateTouched = gg->edgeA;
+				//			if (e0 == gg->edgeA)
+				//			{
+				//				gateTouched = gg->edgeB;
+				//			}
+				//			else
+				//			{
+				//				gateTouched = gg->edgeA;
 
-							}
+				//			}
 
-							e0 = grindEdge->edge0;
-						}
-					}
-				}
+				//			e0 = grindEdge->edge0;
+				//		}
+				//	}
+				//}
 				grindEdge = e0;
 
 				if (grindEdge != NULL)
@@ -12073,7 +12165,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 
 bool Actor::TryUnlockOnTransfer( Edge * e)
 {
-	if (e->edgeType == Edge::CLOSED_GATE)
+	if (e->IsGateEdge() )
 	{
 		Gate * g = (Gate*)e->info;
 
@@ -14849,7 +14941,7 @@ void Actor::PhysicsResponse()
 
 		//e = ground;
 		bool leaveGround = false;
-		if( ground->edgeType == Edge::CLOSED_GATE )
+		if( ground->IsGateEdge() )
 		{
 			Gate *g = (Gate*)ground->info;
 				
@@ -14871,7 +14963,15 @@ void Actor::PhysicsResponse()
 				
 				framesInAir = 0;
 				holdJump = false;
-				velocity = groundSpeed * normalize( ground->v1 - ground->v0 );
+				if (reversed)
+				{
+					velocity = -groundSpeed * normalize(ground->v1 - ground->v0);
+				}
+				else
+				{
+					velocity = groundSpeed * normalize(ground->v1 - ground->v0);
+				}
+				
 				//velocity = V2d( 0, 0 );
 				leaveGround = true;
 				ground = NULL;
@@ -15173,7 +15273,12 @@ void Actor::PhysicsResponse()
 			//&& hitCeilingCounter == 0 )
 		{
 			//hitCeilingCounter = hitCeilingLockoutFrames;
-			ActivateSound(PlayerSounds::S_HITCEILING);
+			if (!hitCeilingSoundPlayedThisFrame)
+			{
+				ActivateSound(PlayerSounds::S_HITCEILING);
+				hitCeilingSoundPlayedThisFrame = true;
+			}
+			
 
 			if (action == SEQ_KINTHROWN)
 			{
@@ -17354,7 +17459,10 @@ void Actor::SetBounceBoostVelocity()
 	}
 
 	
-
+	ground = NULL;
+	bounceEdge = NULL;
+	grindEdge = NULL;
+	reversed = false;
 	
 
 	RestoreAirOptions();
@@ -17379,6 +17487,8 @@ void Actor::SetBounceBoostVelocity()
 		V2d dir = normalize(position - currBounceBooster->GetPosition());
 		velocity = dir * s;
 		velocity.x *= .6;
+
+		
 
 		if (velocity.y > 0)
 			velocity.y *= .5;
@@ -17476,11 +17586,12 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 	{
 		Edge *e = (Edge*)qte;
 
-		if (e->edgeType == Edge::OPEN_GATE)
+		//if (e->edgeType == Edge::OPEN_GATE)
+		/*if( e->IsUnlockedGateEdge() )
 		{
 			return;
-		}
-		else if (e->edgeType == Edge::BARRIER)
+		}*/
+		if (e->edgeType == Edge::BARRIER)
 		{
 			Barrier *b = (Barrier*)(e->info);
 			if (!b->edgeActive)
@@ -17621,7 +17732,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		}
 
 		//so you can run on gates without transfer issues hopefully
-		if (ground != NULL && ground->edgeType == Edge::CLOSED_GATE)
+		if (ground != NULL && ground->IsLockedGateEdge() )
 		{
 			Gate *g = (Gate*)ground->info;
 			Edge *edgeA = g->edgeA;
@@ -17651,7 +17762,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			if (groundSpeed > 0)
 			{
-				if (ground->edge0 != NULL && ground->edge0->edgeType == Edge::CLOSED_GATE)
+				if (ground->edge0 != NULL && ground->edge0->IsLockedGateEdge() )
 				{
 					Gate *g = (Gate*)ground->edge0->info;
 					Edge *e0 = ground->edge0;
@@ -17679,7 +17790,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 			else if (groundSpeed < 0)
 			{
-				if (ground->edge1 != NULL && ground->edge1->edgeType == Edge::CLOSED_GATE)
+				if (ground->edge1 != NULL && ground->edge1->IsLockedGateEdge())
 				{
 					Gate *g = (Gate*)ground->edge1->info;
 					Edge *e1 = ground->edge1;
@@ -17720,7 +17831,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			//recently added IsSoft because sometimes you would pass through a soft gate and hit this condition from a wall 
 			//into a steep slope and it would ignore the edge
-			if ( e->edge0 != NULL && e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 && !e->edge0->GetGate()->IsSoft())
+			if ( e->edge0 != NULL && e->edge0->IsGateEdge() && len0 < 1 && !e->edge0->GetGate()->IsSoft())
 			{
 
 				//cout << "len0: " << len0 << endl;
@@ -17787,7 +17898,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 
 			}
-			else if ( e->edge1 != NULL && e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 && !e->edge1->GetGate()->IsSoft())
+			else if ( e->edge1 != NULL && e->edge1->IsGateEdge() && len1 < 1 && !e->edge1->GetGate()->IsSoft())
 			{
 				//cout << "len1: " << len1 << endl;
 				V2d pVec = normalize(position - e->v1);
@@ -17918,16 +18029,14 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			//if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 			//{
-			if (c->edge->edgeType == Edge::OPEN_GATE)
+			//if (c->edge->edgeType == Edge::OPEN_GATE)
+			//{
+			//	//cout << "GATEEEEee" << endl;
+			//	return;
+			//}
+			else if (c->edge->IsGateEdge() )
 			{
-				//cout << "GATEEEEee" << endl;
-				return;
-			}
-			else if (c->edge->edgeType == Edge::CLOSED_GATE)
-			{
-
-				//c->edge->edgeType = Edge::OPEN_GATE;
-				Gate *g = (Gate*)c->edge->info;//owner->gateMap[c->edge];
+				Gate *g = c->edge->GetGate();
 
 				if (CanUnlockGate(g))
 				{
@@ -18056,11 +18165,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				}
 			}
 
-			bool closedGate = (c->edge->edgeType == Edge::CLOSED_GATE);
-			bool minGate = (minContact.edge != NULL && minContact.edge->edgeType == Edge::CLOSED_GATE);
-			//bool testGateSoft = minContact.edge != NULL && minContact.edge->IsGateEdge() && minContact.edge->GetGate()->IsSoft();
-
-			//if( !testGateSoft )
 			if (!col || (minContact.collisionPriority < 0)
 				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0))//|| ( closedGate && !minGate ) )
 			{
@@ -18105,7 +18209,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 	{
 		Edge *e = (Edge*)qte;
 
-		if (e->edgeType == Edge::OPEN_GATE)
+		if (e->IsUnlockedGateEdge())
 		{
 			return;
 		}
@@ -18181,7 +18285,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 
 				//for travelling so you don't hit the other side of the gate on accident
-				if (ground->edgeType == Edge::CLOSED_GATE)
+				if (ground->IsGateEdge() )
 				{
 					Gate *g = (Gate*)ground->info;
 					if (ground == g->edgeA)
@@ -18207,7 +18311,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						return;
 					}
 				}
-				else if ( ground->edge1 != NULL && groundSpeed > 0 && ground->edge1->edgeType == Edge::CLOSED_GATE)
+				else if ( ground->edge1 != NULL && groundSpeed > 0 && ground->edge1->IsGateEdge() )
 				{
 					Edge *e1 = ground->edge1;
 					Gate *g = (Gate*)e1->info;
@@ -18217,7 +18321,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						return;
 					}
 				}
-				else if (ground->edge0 != NULL &&groundSpeed < 0 && ground->edge0->edgeType == Edge::CLOSED_GATE)
+				else if (ground->edge0 != NULL &&groundSpeed < 0 && ground->edge0->IsGateEdge() )
 				{
 					Edge *e0 = ground->edge0;
 					Gate *g = (Gate*)e0->info;
@@ -18232,7 +18336,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		}
 		else
 		{
-			if (grindEdge->edgeType == Edge::CLOSED_GATE)
+			if (grindEdge->IsGateEdge() )
 			{
 				Gate *g = (Gate*)grindEdge->info;
 				if (grindEdge == g->edgeA)
@@ -18258,7 +18362,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					return;
 				}
 			}
-			else if (grindSpeed > 0 && grindEdge->edge1->edgeType == Edge::CLOSED_GATE)
+			else if (grindSpeed > 0 && grindEdge->edge1->IsGateEdge() )
 			{
 				Edge *e1 = grindEdge->edge1;
 				Gate *g = (Gate*)e1->info;
@@ -18268,7 +18372,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					return;
 				}
 			}
-			else if (grindSpeed < 0 && grindEdge->edge0->edgeType == Edge::CLOSED_GATE)
+			else if (grindSpeed < 0 && grindEdge->edge0->IsGateEdge() )
 			{
 				Edge *e0 = grindEdge->edge0;
 				Gate *g = (Gate*)e0->info;
@@ -18308,7 +18412,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 		}
 
-		if (e->edgeType == Edge::OPEN_GATE)
+		if (e->IsUnlockedGateEdge())
 		{
 			return;
 		}

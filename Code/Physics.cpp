@@ -404,14 +404,19 @@ bool Edge::IsInvisibleWall()
 	return edgeType == BORDER || edgeType == BARRIER;
 }
 
-bool Edge::IsClosedGateEdge()
+bool Edge::IsLockedGateEdge()
 {
-	return edgeType == CLOSED_GATE;
+	return edgeType == GATE && GetGate()->IsLocked();
+}
+
+bool Edge::IsUnlockedGateEdge()
+{
+	return edgeType == GATE && !GetGate()->IsLocked();
 }
 
 bool Edge::IsGateEdge()
 {
-	return edgeType == CLOSED_GATE || edgeType == OPEN_GATE;
+	return edgeType == GATE;
 }
 
 Gate *Edge::GetGate()
@@ -1745,33 +1750,6 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 		if( pointMinTime <= time )
 		{
-			if( point == e->v0 )
-			{
-				Edge *e0 = e->edge0;
-				if( e0 != NULL && e0->edgeType == Edge::CLOSED_GATE )
-				{
-
-					//return NULL;
-					/*Gate *g = (Gate*)e0->info;
-					if( e0 == g->edgeA )
-					{
-
-					}
-					else
-					{
-
-					}*/
-				}
-				
-			}
-			else if( point == e->v1 )
-			{
-				Edge *e1 = e->edge1;
-				if( e1 != NULL && e1->edgeType == Edge::CLOSED_GATE )
-				{
-				//	return NULL;
-				}
-			}
 			time = pointMinTime;
 			currentContact->position = point;
 			currentContact->normal = pointNormal;

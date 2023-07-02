@@ -170,8 +170,8 @@ void Session::SetupSoundLists()
 	}
 	else if (soundNodeList == NULL)
 	{
-		soundNodeList = new SoundNodeList(10);
-		pauseSoundNodeList = new SoundNodeList(10);
+		soundNodeList = new SoundNodeList(100);
+		pauseSoundNodeList = new SoundNodeList(100);
 	}
 	else
 	{
@@ -3158,7 +3158,7 @@ void Session::CreateZones()
 
 			tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
-			if (curr->edgeType == Edge::CLOSED_GATE)
+			if (curr->IsLockedGateEdge())
 			{
 				Gate *thisGate = (Gate*)curr->info;
 				//this loop is so both sides of a gate can't be hit in the same zone
@@ -3191,7 +3191,7 @@ void Session::CreateZones()
 
 					while (true)
 					{
-						if (cc->edgeType == Edge::CLOSED_GATE)
+						if (cc->IsLockedGateEdge())
 						{
 							Gate *ccGate = (Gate*)cc->info;
 							if (ccGate == thisGate)
@@ -3343,7 +3343,7 @@ void Session::CreateZones()
 
 			tpb.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
-			if (curr->edgeType == Edge::CLOSED_GATE)
+			if (curr->IsLockedGateEdge())
 			{
 				bool quitLoop = false;
 				bool okayGate = true;
@@ -3370,7 +3370,7 @@ void Session::CreateZones()
 
 					while (true)
 					{
-						if (cc->edgeType == Edge::CLOSED_GATE)
+						if (cc->IsLockedGateEdge())
 						{
 
 							Gate *ccGate = (Gate*)cc->info;
@@ -6008,7 +6008,7 @@ void Session::SetupGoalFlow()
 			if (flowHandler.rayCastInfo.rcEdge != NULL)
 			{
 				//cout << "point list size: " << pointList.size() << endl;
-				if (flowHandler.rayCastInfo.rcEdge->IsInvisibleWall() || flowHandler.rayCastInfo.rcEdge->edgeType == Edge::CLOSED_GATE)
+				if (flowHandler.rayCastInfo.rcEdge->IsInvisibleWall() || flowHandler.rayCastInfo.rcEdge->IsLockedGateEdge())
 				{
 					//	cout << "secret break" << endl;
 					break;
@@ -6131,7 +6131,7 @@ void Session::CleanupGoalFlow()
 
 void Session::FlowHandler::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
 {
-	if (edge->edgeType == Edge::CLOSED_GATE || edge->edgeType == Edge::OPEN_GATE
+	if (edge->IsGateEdge()
 		|| edge->edgeType == Edge::BORDER || edge->edgeType == Edge::BARRIER )
 	{
 		return;

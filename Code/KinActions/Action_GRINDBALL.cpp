@@ -137,14 +137,19 @@ void Actor::GRINDBALL_Change()
 
 
 					framesNotGrinding = 0;
-					if (reversed)
+
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+
+
+					//reversed doesn't matter since we know you're grinding on the ceiling
+					/*if (reversed)
 					{
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
 					}
 					else
 					{
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-					}
+					}*/
 
 					SetAction(JUMP);
 					frame = 1;

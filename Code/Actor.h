@@ -678,6 +678,8 @@ struct Actor : QuadTreeCollider,
 
 	//---
 
+	bool hitCeilingSoundPlayedThisFrame;
+
 	int numFramesToLive;
 
 	TerrainRail * prevRail;

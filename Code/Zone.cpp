@@ -277,7 +277,7 @@ void Zone::Init()
 			bool found = false;
 
 			//if edge is gate type
-			if( curr->edgeType == Edge::CLOSED_GATE || curr->edgeType == Edge::OPEN_GATE )
+			if( curr->IsGateEdge() )
 			{
 				for( list<Edge*>::iterator it = relGates.begin(); it != relGates.end(); )
 				{
