@@ -1062,6 +1062,7 @@ void EditSession::TestPlayerMode()
 			currEnemy = (*enit)->myEnemy;
 			if (currEnemy != NULL)
 			{
+				assert(currEnemy->sess == this);
 				currEnemy->AddToGame();
 			}
 		}
