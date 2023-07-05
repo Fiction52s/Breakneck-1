@@ -11894,7 +11894,7 @@ void Actor::HandleBounceRail()
 
 
 
-
+	double maxBounceBoost = 40;
 
 
 
@@ -11922,9 +11922,10 @@ void Actor::HandleBounceRail()
 
 	V2d vDir = normalize(velocity);
 
+	double testBarelyAngledThresh = .2;
 	if (bn.y != 0)
 	{
-		if ((bn.x > 0 && velocity.x > 0) || (bn.x < 0 && velocity.x < 0))
+		if ((bn.x > testBarelyAngledThresh && velocity.x > 0) || (bn.x < -testBarelyAngledThresh && velocity.x < 0))
 		{
 			velocity = bn * length(velocity);
 		}
@@ -11943,8 +11944,26 @@ void Actor::HandleBounceRail()
 		}
 	}
 
+	/*if (cross(velocity, bn) < maxBounceBoost )
+	{
+		velocity.x += vDir.x * currBoostBounceSpeed / (double)slowMultiple;
+	}
+	if (abs(velocity.x) < maxBounceBoost)
+	{
+		velocity.x += vDir.x * currBoostBounceSpeed / (double)slowMultiple;
+	}
+	else if (abs(velocity.y) < maxBounceBoost)
+	{
+
+	}
+
+	if (length(velocity) < maxBounceBoost)
+	{
+		
+	}*/
 
 	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
+	
 
 	if (bn.y == 1 || bn.y == -1)
 	{
