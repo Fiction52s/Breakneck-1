@@ -17,7 +17,11 @@ TouchGrassCollection::TouchGrassCollection( TerrainPolygon *tp )
 TouchGrassCollection::~TouchGrassCollection()
 {
 	delete touchGrassTree;
-	delete[] touchGrassVA;
+
+	if (touchGrassVA != NULL)
+	{
+		delete[] touchGrassVA;
+	}
 
 	for (auto it = myGrass.begin(); it != myGrass.end(); ++it)
 	{
