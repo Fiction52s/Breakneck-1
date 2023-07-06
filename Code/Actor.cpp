@@ -8550,18 +8550,6 @@ bool Actor::ResolvePhysics( V2d vel )
 			}
 			
 		}
-
-		
-
-		if( false )//if( col )//if( false )////if( col )//
-		{
-			cout << "pos: " << minContact.position.x << ", " << minContact.position.y << endl;
-			cout << "performing: " << endl 
-				<< "normal: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y
-				<< " res: " << minContact.resolution.x << ", " << minContact.resolution.y 
-				<< " realNormal: " << minContact.normal.x << ", " << minContact.normal.y
-				<< "vel: " << tempVel.x << ", " << tempVel.y << endl;
-		}
 	}
 
 //	TryCheckGrass(r);
@@ -9771,7 +9759,6 @@ V2d Actor::UpdateReversePhysics()
 
 										q = ground->GetQuantity(minContact.position);
 
-										V2d eNorm = minContact.edge->Normal();
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
 										offsetX = -offsetX;
 
@@ -12348,6 +12335,11 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
+	//there are some potential bugs with minContact.edge->Normal(), in some cases just use minContact.normal
+	//haven't found other situations where the issue occurs but the remaining instances of the call to Normal
+	//should be an easy fix if it ever comes up
+
+
 	//cout << "update physics " << endl;
 
 	if (IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
@@ -12788,7 +12780,7 @@ void Actor::UpdatePhysics()
 						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 					
-						V2d eNorm = minContact.edge->Normal();
+						V2d eNorm = minContact.normal;//.edge->Normal();
 
 						if( eNorm.y < 0 )
 						{
@@ -13039,7 +13031,6 @@ void Actor::UpdatePhysics()
 							{
 
 							}
-							//minContact.edge->Normal();
 							if( minContact.position.y > position.y + b.offset.y + b.rh - 5 
 								&& minContact.edge->Normal().y >= 0 )
 							{
@@ -13048,17 +13039,8 @@ void Actor::UpdatePhysics()
 									if( minContact.edge->edge0->Normal().y <= 0 )
 									{
 										minContact.edge = minContact.edge->edge0;
-										//eNorm = minContact.edge->Normal();
 									}
 								}
-								/*else if( minContact.position == minContact.edge->v1 )
-								{
-									if( minContact.edge->edge1->Normal().y <= 0 )
-									{
-										minContact.edge = minContact.edge->edge1;
-										eNorm = minContact.edge->Normal();
-									}
-								}*/
 							}
 
 
@@ -13703,7 +13685,6 @@ void Actor::UpdatePhysics()
 				//groundSpeed = 0;
 			//	cout << "bouncing" << endl;
 			}
-			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > -8 || !holdJump ) || action == WALLCLING || action == WALLATTACK ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
 				//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
@@ -13730,7 +13711,6 @@ void Actor::UpdatePhysics()
 
 					if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //stops glitchyness with _\ weird offsets
 					{
-						//assert( minContact.edge->Normal().y == -1 );
 						cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX 
 							<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 						cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;
@@ -13768,11 +13748,6 @@ void Actor::UpdatePhysics()
 
 				//cout << "LANDINGGGGGG------" << endl;
 				assert( !(minContact.normal.x == 0 && minContact.normal.y == 0 ) );
-				//cout << "normal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
-				//if(!( minContact.normal.x == 0 && minContact.normal.y == 0 ) && minContact.edge->Normal().y == 0 )
-				//{
-				//	minContact.edge = minContact.edge->edge0;
-				//}
 				ground = minContact.edge;
 				framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
 				
@@ -18312,10 +18287,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				}
 				else
 				{
-					//cout << "now the min" << endl;
-					//if( minContact.edge != NULL )
-					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
-					//	<< e->Normal().x << ", " << e->Normal().y << endl;
 					minContact.collisionPriority = c->collisionPriority;
 					//cout << "pri: " << c->collisionPriority << endl;
 					minContact.edge = e;

@@ -1021,7 +1021,6 @@ void SurfaceMover::HitTerrainAerial()
 
 void SurfaceMover::HitTerrain( double &q )
 {
-	//V2d eNorm = minContact.edge->Normal();
 	if(surfaceMoverData.roll )
 	{
 		ground = minContact.edge;
