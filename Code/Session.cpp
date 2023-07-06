@@ -460,7 +460,8 @@ void Session::RegisterW4Enemies()
 	AddBasicAerialWorldEnemy("Falcon", "falcon", 4, enemyRow, CreateEnemy<Falcon>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	//items
-	AddWorldEnemy("Grind\nLauncher", "grindlauncher", 4, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	//CreateEnemy<Spring>, SetParamsType<SpringParams>
+	AddWorldEnemy("Grind\nLauncher", "grindlauncher", 4, itemRow, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddWorldEnemy("Teleport\nLauncher", "teleporter", 4, itemRow, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1);
 	AddWorldEnemy("2-way Teleport\nLauncher", "doubleteleporter", 4, itemRow, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
@@ -476,6 +477,8 @@ void Session::RegisterW4Enemies()
 	//targets
 	AddBasicAerialWorldEnemy("Orange\nComboer\nTarget", "orangecomboertarget", 4, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
 	AddBasicAerialWorldEnemy("Scorpion\nTarget", "scorpiontarget", 4, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Grind\nTarget", "grindtarget", 4, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1);
+
 	AddWorldEnemy("Orange\nBlocker", "orangeblocker", 4, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
@@ -3974,6 +3977,8 @@ void Session::ActivateZone(Zone * z, bool instant)
 		}
 
 		KillAllEnemies();
+
+		phaseOn = false; //for phase terrain to reset each gate makes the most sense to me.
 
 		currentZone = z;
 

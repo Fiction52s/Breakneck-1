@@ -140,6 +140,14 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 		recoverStartFrame = 8;
 		startFrame = 5;
 	}
+	else if (typeName == "grindlauncher")
+	{
+		springType = TYPE_GRIND;
+		tilesetChoice = 1;
+		recoverTileseChoice = 1;
+		recoverStartFrame = 8;
+		startFrame = 0;
+	}
 	else if (typeName == "annihilationspring")
 	{
 		springType = TYPE_ANNIHILATION_GLIDE;

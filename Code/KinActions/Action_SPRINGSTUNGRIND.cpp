@@ -229,7 +229,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (DashButtonPressed())
+	else if (false)//DashButtonPressed())
 	{
 		V2d op = position;
 
@@ -392,6 +392,8 @@ void Actor::SPRINGSTUNGRIND_Update()
 	}
 
 	velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+
+	ActivateLauncherEffect(8);
 }
 
 void Actor::SPRINGSTUNGRIND_UpdateSprite()

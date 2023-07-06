@@ -22,7 +22,7 @@ PhaseSwitch::PhaseSwitch(ActorParams *ap)
 
 	ts = GetSizedTileset("Enemies/boosters_384x384.png");
 
-	BasicCircleHurtBodySetup(384/2);
+	BasicCircleHurtBodySetup(100);
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);

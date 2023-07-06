@@ -23,7 +23,7 @@ KeyFly::KeyFly(ActorParams *ap)
 	ts = GetSizedTileset("FX/key_128x128.png");
 	ts_container = GetSizedTileset("Enemies/key_container_256x256.png");
 
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHurtBodySetup(64);
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);

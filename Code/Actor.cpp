@@ -11386,6 +11386,11 @@ void Actor::UpdateGrindPhysics(double movement)
 	double q = edgeQuantity;
 	double hitBorderSpeed = GetDashSpeed() / 2;
 
+
+	V2d oldGrindPos = grindEdge->GetPosition(edgeQuantity);
+	Rect<double> oldR(oldGrindPos.x + b.offset.x - b.rw, oldGrindPos.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+
+
 	while (!approxEquals(movement, 0))
 	{
 		//cout << "movement: " << movement << endl;
@@ -11649,6 +11654,50 @@ void Actor::UpdateGrindPhysics(double movement)
 		}
 	}
 	edgeQuantity = q;
+
+
+	if (!simulationMode)
+	{
+		V2d newGrindPos = grindEdge->GetPosition(edgeQuantity);
+		Rect<double> newR(newGrindPos.x + b.offset.x - b.rw, newGrindPos.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+
+		double oldRight = oldR.left + oldR.width;
+		double right = newR.left + newR.width;
+
+		double oldBottom = oldR.top + oldR.height;
+		double bottom = newR.top + newR.height;
+
+		double maxRight = right;
+		if (oldRight > maxRight)
+		{
+			maxRight = oldRight;
+		}
+
+		double maxBottom = bottom;
+		if (oldBottom > maxBottom)
+		{
+			maxBottom = oldBottom;
+		}
+
+		double minLeft = newR.left;
+		if (oldR.left < minLeft)
+		{
+			minLeft = oldR.left;
+		}
+
+		double minTop = newR.top;
+		if (oldR.top < minTop)
+		{
+			minTop = oldR.top;
+		}
+
+		double ex = 1;
+		Rect<double> r(minLeft - ex, minTop - ex, (maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2);
+
+		queryType = Q_ACTIVEITEM;
+		sess->activeItemTree->Query(this, r);//activeR);
+	}
+
 
 	PhysicsResponse();
 }
@@ -14833,6 +14882,53 @@ void Actor::PhysicsResponse()
 		V2d grindPoint = grindEdge->GetPosition( edgeQuantity );
 
 		position = grindPoint;
+
+		if (SpringLaunch()) return;
+
+		if (ScorpionLaunch()) return;
+
+		if (TeleporterLaunch())return;
+
+		if (SwingLaunch())return;
+
+		if (AimLauncherAim()) return;
+
+
+		bool leaveGround = false;
+		if (grindEdge->IsGateEdge())
+		{
+			Gate *g = (Gate*)grindEdge->info;
+
+			if (CanUnlockGate(g))
+			{
+				if (grindEdge == g->edgeA)
+				{
+					gateTouched = g->edgeB;
+				}
+				else
+				{
+					gateTouched = g->edgeA;
+				}
+
+				UnlockGate(g);
+
+				SetAction(JUMP);
+				frame = 1;
+
+				framesInAir = 0;
+				holdJump = false;
+				
+				velocity = grindSpeed * normalize(grindEdge->v1 - grindEdge->v0);
+
+				//velocity = V2d( 0, 0 );
+				leaveGround = true;
+				ground = NULL;
+				grindEdge = NULL;
+				reversed = false;
+				//return;
+
+			}
+		}
 	}
 	else if( bounceEdge != NULL )
 	{
@@ -17318,6 +17414,7 @@ bool Actor::AimLauncherAim()
 		rightWire->Reset();
 		leftWire->Reset();
 		reversed = false;
+		springStunFrames = 0;
 		
 		velocity = V2d(0, 0);
 
@@ -17419,6 +17516,10 @@ bool Actor::SpringLaunch()
 			//action = SPRINGSTUNGLIDE;
 			SetAction( SPRINGSTUNANNIHILATION);
 		}
+		else if (currSpring->springType == Spring::TYPE_GRIND)
+		{
+			SetAction(SPRINGSTUNGRINDFLY);
+		}
 		/*else if (currSpring->springType == Spring::TYPE_HOMING)
 		{
 			SetAction(SPRINGSTUNHOMING);
@@ -17432,12 +17533,15 @@ bool Actor::SpringLaunch()
 		
 		holdJump = false;
 		holdDouble = false;
+		reversed = false;
 		RestoreAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		frame = 0;
 		UpdateHitboxes();
 		ground = NULL;
+		grindEdge = NULL;
+		bounceEdge = NULL;
 		wallNormal = V2d(0, 0);
 		velocity = V2d(0, 0);
 		currWall = NULL;
@@ -18437,7 +18541,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			return;
 		}
 
-		if (action == SPRINGSTUNBOUNCE)
+		if (action == SPRINGSTUNBOUNCE || action == SPRINGSTUNGRINDFLY )
 		{
 			return;
 		}
@@ -18903,6 +19007,16 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				case SpecialTarget::TARGET_SCORPION:
 				{
 					if (scorpOn && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
+					{
+						spTarget->Collect();
+					}
+					break;
+				}
+				case SpecialTarget::TARGET_GRIND:
+				{
+					bool isValidAction = action == SPRINGSTUNGRINDFLY || action == SPRINGSTUNGRIND;
+
+					if (isValidAction && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
 					{
 						spTarget->Collect();
 					}

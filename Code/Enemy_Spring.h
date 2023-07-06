@@ -17,6 +17,7 @@ struct Spring : Enemy
 	{
 		TYPE_REGULAR,
 		TYPE_GLIDE,
+		TYPE_GRIND,
 		//TYPE_HOMING,
 		TYPE_ANNIHILATION_GLIDE,
 	};

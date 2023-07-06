@@ -46,6 +46,12 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 		regenOn = false;
 		sprite.setColor(Color::Red);
 	}
+	else if (typeName == "grindtarget")
+	{
+		targetType = TARGET_GRIND;
+		regenOn = false;
+		sprite.setColor(Color::Red);
+	}
 	else if (typeName == "scorpiontarget")
 	{
 		targetType = TARGET_SCORPION;
@@ -335,6 +341,10 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 		return NULL;
 	}
 	else if (targetType == TARGET_SCORPION)
+	{
+		return NULL;
+	}
+	else if (targetType == TARGET_GRIND)
 	{
 		return NULL;
 	}

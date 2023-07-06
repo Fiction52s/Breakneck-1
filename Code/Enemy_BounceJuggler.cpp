@@ -202,12 +202,10 @@ void BounceJuggler::Pop()
 	sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++data.currJuggle;
+	
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 	data.waitFrame = 0;
-
-	UpdateJuggleRepsText(juggleReps - data.currJuggle);
 }
 
 void BounceJuggler::PopThrow()
@@ -255,7 +253,7 @@ void BounceJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if ( limitedJuggles && data.currJuggle == juggleReps - 1)
+			if (!limitedJuggles)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
@@ -264,32 +262,12 @@ void BounceJuggler::ProcessHit()
 					suppressMonitor = true;
 					PlayKeyDeathSound();
 				}
-
-				sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-				ConfirmHitNoKill();
-
-				PopThrow();
-
-				data.doneBeingHittable = true;
 			}
-			else
-			{
-				if (!limitedJuggles)
-				{
-					if (hasMonitor && !suppressMonitor)
-					{
-						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-							sess->GetPlayer(0), 1, GetPosition());
-						suppressMonitor = true;
-						PlayKeyDeathSound();
-					}
 
-					sess->PlayerConfirmEnemyNoKill(this);
-					ConfirmHitNoKill();
-				}
+			sess->PlayerConfirmEnemyNoKill(this);
+			ConfirmHitNoKill();
 
-				PopThrow();
-			}
+			PopThrow();
 		}
 		else
 		{
@@ -489,9 +467,23 @@ void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 	frame = 0;
 	//SetHitboxes(hitBody, 0);
 
+	++data.currJuggle;
+	UpdateJuggleRepsText(juggleReps - data.currJuggle);
+
+	if (limitedJuggles && data.currJuggle == juggleReps - 1)
+	{
+		if (hasMonitor && !suppressMonitor)
+		{
+			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+				sess->GetPlayer(0), 1, GetPosition());
+			suppressMonitor = true;
+			PlayKeyDeathSound();
+		}
+	}
+
 	if (!data.doneBeingHittable)
 	{
-		DefaultHurtboxesOn();
+		//DefaultHurtboxesOn();
 	}
 
 	
