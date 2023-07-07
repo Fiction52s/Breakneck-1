@@ -7821,51 +7821,72 @@ void Actor::RailGrindMovement()
 {
 	V2d along = normalize(grindEdge->v1 - grindEdge->v0);
 
-	//Rail *rail = (Rail*)grindEdge->info;
+	TerrainRail *rail = grindEdge->rail;
 
-	if (true )//rail->accelerate)
+	if (rail->GetRailType() == TerrainRail::ACCELERATE)
 	{
-		double ffac = 1.0;
-		double startAccel = .3;
-		V2d grn = grindEdge->Normal();
-
-		bool ceil = false;
-
-		if (grn.y > 0)
-		{
-			along = -along;
-			grn = -grn;
-			ceil = true;
-		}
-
-		double extraAccel = .15;
-		double accel = 0;
-		if (GameSession::IsSteepGround(grn) > 0)
-		{
-			double fac = GetGravity() *steepSlideGravFactor;//gravity * 2.0 / 3.0;
-			accel = dot(V2d(0, fac), along) / slowMultiple;
-			//cout << "steep accel: " << accel << endl;
-		}
-		else if (grn.x != 0)
-		{
-			accel = dot(V2d(0, slideGravFactor * GetGravity()), along) / slowMultiple;
-			//cout << "normal accel: " << accel << endl;
-		}
-
+		double accel = .6;
 		if (grindSpeed > 0)
 		{
-			accel += extraAccel;
+			grindSpeed += accel;
 		}
 		else if (grindSpeed < 0)
 		{
-			accel -= extraAccel;
+			grindSpeed += -accel;
 		}
-
-		if (ceil)
-			accel = -accel;
-
-		if (accel != 0 && abs(grindSpeed + accel) > abs(grindSpeed))
+	}
+	else if( rail->GetRailType() == TerrainRail::GRIND )
+	{
+		double accel = .1;
+		if (grindSpeed > 0)
+		{
 			grindSpeed += accel;
+		}
+		else if (grindSpeed < 0)
+		{
+			grindSpeed += -accel;
+		}
+		//double ffac = 1.0;
+		//double startAccel = .3;
+		//V2d grn = grindEdge->Normal();
+
+		//bool ceil = false;
+
+		//if (grn.y > 0)
+		//{
+		//	along = -along;
+		//	grn = -grn;
+		//	ceil = true;
+		//}
+
+		//double extraAccel = .15;
+		//double accel = 0;
+		//if (GameSession::IsSteepGround(grn) > 0)
+		//{
+		//	double fac = GetGravity() *steepSlideGravFactor;//gravity * 2.0 / 3.0;
+		//	accel = dot(V2d(0, fac), along) / slowMultiple;
+		//	//cout << "steep accel: " << accel << endl;
+		//}
+		//else if (grn.x != 0)
+		//{
+		//	accel = dot(V2d(0, slideGravFactor * GetGravity()), along) / slowMultiple;
+		//	//cout << "normal accel: " << accel << endl;
+		//}
+
+		//if (grindSpeed > 0)
+		//{
+		//	accel += extraAccel;
+		//}
+		//else if (grindSpeed < 0)
+		//{
+		//	accel -= extraAccel;
+		//}
+
+		//if (ceil)
+		//	accel = -accel;
+
+		//if (accel != 0 && abs(grindSpeed + accel) > abs(grindSpeed))
+		//	grindSpeed += accel;
 
 	}
 
@@ -17330,26 +17351,39 @@ bool Actor::TeleporterLaunch()
 		}
 
 		oldTeleporter = currTeleporter;
+
+		//position = currTeleporter->dest;
+		////holdJump = false;
+		////holdDouble = false;
+		//RestoreAirOptions();
+		//rightWire->Reset();
+		//leftWire->Reset();
+		//frame = 0;
+		//UpdateHitboxes();
+		//ground = NULL;
+		//bounceEdge = NULL;
+		//grindEdge = NULL;
+		//wallNormal = V2d(0, 0);
+		////velocity = V2d(0, 0);
+		//currWall = NULL;
+		//currTeleporter = NULL;
+
+		//return true;
+		
 		position = currTeleporter->GetPosition();
 		V2d dir = currTeleporter->dir;
 
 		double s = currTeleporter->speed;
 
 		springVel = currTeleporter->dir * s;
-
 		springExtra = V2d(0, 0);
-
 		springStunFrames = currTeleporter->stunFrames;
 
-		ground = NULL;
-		bounceEdge = NULL;
-		grindEdge = NULL;
+		
 
 		SetAction(SPRINGSTUNTELEPORT);
 		teleportSpringDest = currTeleporter->dest;
 		teleportSpringVel = velocity;
-
-		currTeleporter = NULL;
 
 		holdJump = false;
 		holdDouble = false;
@@ -17359,9 +17393,13 @@ bool Actor::TeleporterLaunch()
 		frame = 0;
 		UpdateHitboxes();
 		ground = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
 		wallNormal = V2d(0, 0);
 		velocity = V2d(0, 0);
 		currWall = NULL;
+		currTeleporter = NULL;
+
 		return true;
 	}
 
@@ -17478,13 +17516,43 @@ bool Actor::SpringLaunch()
 			facingRight = false;
 		}
 		
-
+		/*if (aimLauncherType == AimLauncher::TYPE_BOUNCE)
+		{
+			SetAction(SPRINGSTUNAIM);
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
+		}
+		else if (aimLauncherType == AimLauncher::TYPE_AIRBOUNCE)
+		{
+			SetAction(SPRINGSTUNAIRBOUNCE);
+			airBounceCounter = 0;
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
+		}
+		else if (aimLauncherType == AimLauncher::TYPE_GRIND)
+		{
+			SetAction(SPRINGSTUNGRINDFLY);
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
+		}
+		else if (aimLauncherType == AimLauncher::TYPE_HOMING)
+		{
+			SetAction(SPRINGSTUNHOMING);
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
+		}*/ 
 		springStunFrames = currSpring->stunFrames;
 		springStunFramesStart = springStunFrames;
 
 		if (currSpring->springType == Spring::TYPE_GLIDE)
 		{
 			SetAction(SPRINGSTUNGLIDE);
+		}
+		else if (currSpring->springType == Spring::TYPE_BOUNCE)
+		{
+			SetAction(SPRINGSTUNAIM);
+		}
+		else if (currSpring->springType == Spring::TYPE_AIRBOUNCE)
+		{
+			SetAction(SPRINGSTUNAIRBOUNCE);
+			airBounceCounter = 0;
+			aimLauncherStunFrames = currSpring->stunFrames;
 		}
 		else if (currSpring->springType == Spring::TYPE_ANNIHILATION_GLIDE)
 		{

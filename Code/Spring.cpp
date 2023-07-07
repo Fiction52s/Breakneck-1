@@ -122,6 +122,9 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	animFactor[SPRINGING] = 5;
 	animFactor[RECOVERING] = 4;
 
+	/*AddWorldEnemy("Aim Launcher", "aimlauncher", 3, itemRow, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddWorldEnemy("Air Bounce\nLauncher", "airbouncelauncher", 3,*/
+
 	//potentially temporary
 	string &typeName = ap->type->info.name;
 	if (typeName == "spring")
@@ -139,6 +142,23 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 		recoverTileseChoice = 0;
 		recoverStartFrame = 8;
 		startFrame = 5;
+	}
+	if (typeName == "aimlauncher")
+	{
+		springType = TYPE_BOUNCE;
+		tilesetChoice = 0;
+		recoverTileseChoice = 0;
+		recoverStartFrame = 16;
+		startFrame = 10;
+	}
+	else if (typeName == "airbouncelauncher")
+	{
+		springType = TYPE_AIRBOUNCE;
+
+		tilesetChoice = 0;
+		recoverTileseChoice = 1;
+		recoverStartFrame = 0;
+		startFrame = 15;
 	}
 	else if (typeName == "grindlauncher")
 	{
