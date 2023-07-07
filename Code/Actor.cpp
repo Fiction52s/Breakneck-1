@@ -7909,7 +7909,7 @@ bool Actor::CanRailSlide()
 {
 	bool isAttack = IsAttackAction(action);
 	bool aerialRailSlideTest = ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
-		action != RAILSLIDE && action != LOCKEDRAILSLIDE && velocity.y >= 0 && action != AIRDASH && !isAttack;
+		action != RAILSLIDE && action != LOCKEDRAILSLIDE /*&& velocity.y >= 0*/ && action != AIRDASH && !isAttack;
 
 	bool groundRailSlideTest = ground != NULL && grindEdge == NULL && action != DASH && !isAttack;
 
@@ -18669,6 +18669,18 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			return;
 		}
 
+		V2d eNorm = e->Normal();
+		if (eNorm.y > 0)
+		{
+			eNorm = -eNorm;
+		}
+
+		double velMatchesNormDot = dot(velocity, eNorm);
+		if (velMatchesNormDot >= 0)
+		{
+			return;
+		}
+
 		bool canGrabRail = (rail->RequiresPowerToGrind() && canRailGrind) 
 			|| (!rail->RequiresPowerToGrind() && canRailSlide);
 
@@ -19053,7 +19065,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				}
 				case SpecialTarget::TARGET_GRIND:
 				{
-					bool isValidAction = action == SPRINGSTUNGRINDFLY || action == SPRINGSTUNGRIND;
+					bool isValidAction = action == SPRINGSTUNGRINDFLY || action == SPRINGSTUNGRIND || action == RAILGRIND || action == GRINDBALL
+						|| action == RAILSLIDE;
 
 					if (isValidAction && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
 					{
