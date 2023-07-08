@@ -459,7 +459,6 @@ struct GrindJugglerParams : public BasicAirEnemyParams
 	void WriteSpecialParams(std::ofstream &of);
 	ActorParams *Copy();
 
-	int numJuggles;
 	bool clockwise;
 };
 

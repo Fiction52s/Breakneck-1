@@ -20,18 +20,6 @@ void GrindJuggler::UpdateParamsSettings()
 
 	GrindJugglerParams *gjParams = (GrindJugglerParams*)editParams;
 
-	juggleReps = gjParams->numJuggles;
-
-	if (juggleReps == 0)
-	{
-		limitedJuggles = false;
-	}
-	else
-	{
-		limitedJuggles = true;
-		UpdateJuggleRepsText(juggleReps);
-	}
-
 	clockwise = gjParams->clockwise;
 }
 
@@ -43,15 +31,7 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	numJugglesText.setFont(sess->mainMenu->arial);
-	numJugglesText.setFillColor(Color::White);
-	numJugglesText.setOutlineColor(Color::Black);
-	numJugglesText.setOutlineThickness(3);
-	numJugglesText.setCharacterSize(32);
-
-	flySpeed = 10;
-
-	maxWaitFrames = 180;//180;
+	flySpeed = 25;
 
 	CreateSurfaceMover(startPosInfo, 10, this);
 
@@ -59,14 +39,16 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 
 	hitLimit = -1;
 
+	maxMoveFrames = 90;
+
 	ts = GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	BasicCircleHurtBodySetup(48);
 
-	idleTurnDegrees = 1;
-	moveTurnDegrees = 10;
+	idleTurnDegrees = 4;//1
+	moveTurnDegrees = 15;//10
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -85,13 +67,11 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_FLY] = 10;
 	actionLength[S_GRIND] = 10;
-	actionLength[S_FLY_FROM_GRIND] = 10;
 	actionLength[S_RETURN] = 30;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_FLY] = 1;
 	animFactor[S_GRIND] = 1;
-	animFactor[S_FLY_FROM_GRIND] = 1;
 	animFactor[S_RETURN] = 1;
 
 	ResetEnemy();
@@ -146,9 +126,8 @@ void GrindJuggler::BoardRail()
 void GrindJuggler::ResetEnemy()
 {
 	data.currHits = 0;
-	data.currJuggle = 0;
-	data.doneBeingHittable = false;
 	data.currAngle = 0;
+	data.moveFrame = 0;
 
 	surfaceMover->SetCollisionOn(true);
 	//surfaceMover-> =railCollisionOn = true;
@@ -167,26 +146,9 @@ void GrindJuggler::ResetEnemy()
 	surfaceMover->SetSpeed(0);
 	surfaceMover->ClearAirForces();
 
-
-	UpdateJuggleRepsText(juggleReps);
-
 	UpdateHitboxes();
 
 	UpdateSprite();
-}
-
-void GrindJuggler::UpdateJuggleRepsText(int reps)
-{
-	if (limitedJuggles)
-	{
-		data.juggleTextNumber = reps;
-		numJugglesText.setString(to_string(reps));
-		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
-			+ numJugglesText.getLocalBounds().width / 2,
-			numJugglesText.getLocalBounds().top
-			+ numJugglesText.getLocalBounds().height / 2);
-		numJugglesText.setPosition(sprite.getPosition());
-	}
 }
 
 void GrindJuggler::Throw(double a, double strength)
@@ -210,13 +172,7 @@ void GrindJuggler::Return()
 
 	HurtboxesOff();
 
-	data.doneBeingHittable = true;
-
 	surfaceMover->ground = NULL;
-
-	data.currJuggle = 0;
-
-	UpdateJuggleRepsText(0);
 
 	numHealth = maxHealth;
 }
@@ -227,54 +183,34 @@ void GrindJuggler::Pop()
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	HurtboxesOff();
-	data.waitFrame = 0;
-
-	++data.currJuggle;
-
-	UpdateJuggleRepsText(juggleReps - data.currJuggle);
 }
 
 void GrindJuggler::PopThrow()
 {
-	if (action == S_GRIND)
+	V2d dir;
+
+	action = S_FLY;
+	frame = 0;
+
+	data.moveFrame = 0;
+
+	dir = Get8Dir(receivedHit.hDir);//normalize(receivedHit->hDir);
+									//cout << "dir: " << dir.x << "," << dir.y << endl;
+	if (dir.x == 0 && dir.y == 0)
 	{
-		action = S_HITFLY_FROM_GRIND;
-		frame = 0;
-
-		surfaceMover->SetSpeed(0);
-
-		surfaceMover->SetVelocity(surfaceMover->ground->Normal() * flySpeed);
-		surfaceMover->ground = NULL;
-
-		Pop();
-	}
-	else
-	{
-		V2d dir;
-
+		dir = normalize(V2d(data.velocity.y, -data.velocity.x));//-normalize(velocity);
+		assert(dir.x != 0 || dir.y != 0);
 		action = S_FLY;
 		frame = 0;
-
-		dir = Get8Dir(receivedHit.hDir);//normalize(receivedHit->hDir);
-										//cout << "dir: " << dir.x << "," << dir.y << endl;
-		if (dir.x == 0 && dir.y == 0)
-		{
-			dir = normalize(V2d(data.velocity.y, -data.velocity.x));//-normalize(velocity);
-			assert(dir.x != 0 || dir.y != 0);
-			action = S_FLY;
-			frame = 0;
-		}
-
-		double speed = 14;
-
-		V2d hit = dir * speed;
-
-		Pop();
-
-		Throw(hit);
-
-		sess->PlayerAddActiveComboObj(comboObj);
 	}
+
+	V2d hit = dir * flySpeed;//speed;
+
+	Pop();
+
+	Throw(hit);
+
+	sess->PlayerAddActiveComboObj(comboObj);
 }
 
 void GrindJuggler::ProcessHit()
@@ -285,57 +221,18 @@ void GrindJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{			
-			if (limitedJuggles && data.currJuggle == juggleReps - 1)
+			if (hasMonitor && !suppressMonitor)
 			{
-				if (hasMonitor && !suppressMonitor)
-				{
-					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-						sess->GetPlayer(0), 1, GetPosition());
-					suppressMonitor = true;
-					PlayKeyDeathSound();
-				}
-
-				sess->PlayerConfirmEnemyNoKill(this);
-				ConfirmHitNoKill();
-
-				PopThrow();
-
-
-				data.doneBeingHittable = true;
-
-			}
-			else
-			{
-				if (!limitedJuggles)
-				{
-					if (hasMonitor && !suppressMonitor)
-					{
-						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-							sess->GetPlayer(0), 1, GetPosition());
-						suppressMonitor = true;
-						PlayKeyDeathSound();
-					}
-
-					sess->PlayerConfirmEnemyNoKill(this);
-					ConfirmHitNoKill();
-				}
-
-				PopThrow();
-			}
-			/*if (!!limitedKills)
-			{
-				if (hasMonitor && !suppressMonitor)
-				{
-					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-						sess->GetPlayer(0), 1, GetPosition());
-					suppressMonitor = true;
-				}
-
-				sess->PlayerConfirmEnemyNoKill(this);
-				ConfirmHitNoKill();
+				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+					sess->GetPlayer(0), 1, GetPosition());
+				suppressMonitor = true;
+				PlayKeyDeathSound();
 			}
 
-			PopThrow();*/
+			sess->PlayerConfirmEnemyNoKill(this);
+			ConfirmHitNoKill();
+
+			PopThrow();
 		}
 		else
 		{
@@ -363,13 +260,12 @@ void GrindJuggler::ProcessState()
 		{
 		case S_RETURN:
 		{
-			UpdateJuggleRepsText(juggleReps);
 			surfaceMover->Set(startPosInfo);
 			DefaultHurtboxesOn();
 			action = S_FLOAT;
+			data.moveFrame = 0;
 			data.currAngle = 0;
 			frame = 0;
-			data.doneBeingHittable = false;
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -402,46 +298,6 @@ void GrindJuggler::ProcessState()
 			data.currAngle += -moveTurnDegrees;
 		}
 	}
-	else if (action == S_FLY_FROM_GRIND || action == S_HITFLY_FROM_GRIND)
-	{
-		if (currHurtboxes == NULL)
-		{
-			if (clockwise)
-			{
-				data.currAngle += moveTurnDegrees;
-			}
-			else
-			{
-				data.currAngle += -moveTurnDegrees;
-			}
-		}
-		else
-		{
-			if (clockwise)
-			{
-				data.currAngle += idleTurnDegrees;
-			}
-			else
-			{
-				data.currAngle += -idleTurnDegrees;
-			}
-		}
-	}
-
-
-	/*if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
-	{
-	sf::Rect<double> r(position.x - 50, position.y - 50, 100, 100);
-	owner->activeEnemyItemTree->Query(this, r);
-	}*/
-
-
-	/*if (action == S_POP && ((velocity.y >= 0 && !reversedGrav) || (velocity.y <= 0 && reversedGrav)))
-	{
-	action = S_JUGGLE;
-	frame = 0;
-	SetHurtboxes(hurtBody, 0);
-	}*/
 }
 
 void GrindJuggler::HandleNoHealth()
@@ -469,8 +325,6 @@ void GrindJuggler::UpdateEnemyPhysics()
 	{
 	case S_FLY:
 	case S_GRIND:
-	case S_FLY_FROM_GRIND:
-	case S_HITFLY_FROM_GRIND:
 	{
 		Move();
 		break;
@@ -489,33 +343,15 @@ void GrindJuggler::UpdateEnemyPhysics()
 
 void GrindJuggler::FrameIncrement()
 {
-	if (action == S_FLY || action == S_GRIND || action == S_RAILGRIND || action == S_HITFLY_FROM_GRIND || action == S_FLY_FROM_GRIND)
+	if (action == S_FLY || action == S_GRIND || action == S_RAILGRIND )
 	{
-		if (data.waitFrame == maxWaitFrames)
+		if (data.moveFrame == maxMoveFrames)
 		{
 			Return();
 		}
 		else
 		{
-			if (action == S_GRIND)
-			{
-				if (data.waitFrame == 30)
-				{
-					if (!data.doneBeingHittable)
-						DefaultHurtboxesOn();
-				}
-			}
-			else if (action == S_HITFLY_FROM_GRIND)
-			{
-				if (data.waitFrame == 30)
-				{
-					if (!data.doneBeingHittable)
-						DefaultHurtboxesOn();
-				}
-			}
-
-
-			data.waitFrame++;
+			data.moveFrame++;
 		}
 	}
 }
@@ -620,33 +456,13 @@ void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 
 void GrindJuggler::ComboKill(Enemy *e)
 {
-	if (action == S_GRIND)
-	{
-		FlyFromGrind();
-	}
-}
-
-void GrindJuggler::FlyFromGrind()
-{
-	action = S_FLY_FROM_GRIND;
-	frame = 0;
-
-	surfaceMover->SetSpeed(0);
-
-	surfaceMover->SetVelocity(surfaceMover->ground->Normal() * flySpeed);
-	surfaceMover->ground = NULL;
-
-	if (!data.doneBeingHittable)
-		DefaultHurtboxesOn();
-
-	//sess->PlayerRemoveActiveComboer(comboObj);
 }
 
 void GrindJuggler::ComboHit()
 {
 	pauseFrames = 5;
 	++data.currHits;
-	data.waitFrame = 0;
+	//data.moveFrame = 0;
 	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
 		Return();
@@ -683,36 +499,17 @@ void GrindJuggler::UpdateSprite()
 		break;
 	}
 
-	if (data.doneBeingHittable)
-	{
-		sprite.setColor(Color::Blue);
-	}
-	else
-	{
-		sprite.setColor(Color::White);
-	}
-
 	sprite.setRotation(data.currAngle);
 
 	sprite.setTextureRect(ts->GetSubRect(6));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-
-	if (limitedJuggles)
-	{
-		numJugglesText.setPosition(sprite.getPosition());
-	}
 }
 
 void GrindJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-
-	if (limitedJuggles)
-	{
-		target->draw(numJugglesText);
-	}
 }
 
 void GrindJuggler::HitTerrainAerial(Edge * edge, double quant)
@@ -753,8 +550,6 @@ void GrindJuggler::SetFromBytes(unsigned char *bytes)
 	SetBasicEnemyData(data);
 
 	bytes += sizeof(MyData);
-
-	UpdateJuggleRepsText(data.juggleTextNumber);
 
 	comboObj->SetFromBytes(bytes);
 	bytes += comboObj->GetNumStoredBytes();

@@ -470,7 +470,9 @@ void Session::RegisterW4Enemies()
 	AddBasicAerialWorldEnemy("Phase\nSwitch", "phaseswitch", 4, itemRow, CreateEnemy<PhaseSwitch>, Vector2i(0, 0), Vector2i(100, 100), true, false, false, false, 1);
 
 	//comboers
-	AddWorldEnemy("Grind\nJuggler", "grindjuggler", 4, comboerRow, CreateEnemy<GrindJuggler>, SetParamsType<GrindJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("Grind\nComboer", "grindcomboer", 4, comboerRow, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, false, false, false);
+	//AddWorldEnemy("Grind\nJuggler", "grindjuggler", 4, comboerRow, CreateEnemy<GrindJuggler>, SetParamsType<GrindJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Grind\Comboer", "grindcomboer", 4, comboerRow, CreateEnemy<GrindJuggler>, SetParamsType<GrindJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 	AddWorldEnemy("Grounded\nGrind\nJuggler", "groundedgrindjuggler", 4, comboerRow, CreateEnemy<GroundedGrindJuggler>, SetParamsType<GroundedGrindJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), 
 		true, true, false, false, false, true, false, 3);
 

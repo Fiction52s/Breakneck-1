@@ -319,7 +319,13 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
 	}
-	else if (name == "grindjuggler" || name == "groundedgrindjuggler")
+	else if (name == "grindcomboer")
+	{
+		p = CreateDefaultPanel();
+		p->AddLabel("clockwiselabel", Vector2i(0, 0), 28, "Clockwise:");
+		p->AddCheckBox("clockwise", Vector2i(0, 0), true);
+	}
+	else if (name == "groundedgrindjuggler")
 	{
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);

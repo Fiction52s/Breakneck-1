@@ -1588,17 +1588,12 @@ ActorParams *JugglerParams::Copy()
 GrindJugglerParams::GrindJugglerParams(ActorType *at, int level)
 	:BasicAirEnemyParams(at, level)
 {
-	//enemyLevel = level;
-	//PlaceAerial(pos);
-
-	numJuggles = 0;
 	clockwise = true;
 }
 
 GrindJugglerParams::GrindJugglerParams(ActorType *at, ifstream &is)
 	: BasicAirEnemyParams(at, is)
 {
-	is >> numJuggles;
 	int cw;
 	is >> cw;
 	clockwise = cw;
@@ -1606,20 +1601,17 @@ GrindJugglerParams::GrindJugglerParams(ActorType *at, ifstream &is)
 
 void GrindJugglerParams::WriteSpecialParams(std::ofstream &of)
 {
-	of << numJuggles << endl;
 	int cw = clockwise;
 	of << cw << endl;
 }
 
 void GrindJugglerParams::SetSpecialPanelInfo()
 {
-	type->panel->sliders["numJuggles"]->SetCurrValue(numJuggles);
 	type->panel->checkBoxes["clockwise"]->checked = clockwise;
 }
 
 void GrindJugglerParams::SetSpecialParams()
 {
-	numJuggles = type->panel->sliders["numJuggles"]->GetCurrValue();
 	clockwise = type->panel->checkBoxes["clockwise"]->checked;
 }
 
