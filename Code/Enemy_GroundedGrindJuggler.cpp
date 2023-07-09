@@ -47,9 +47,9 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	numJugglesText.setOutlineThickness(3);
 	numJugglesText.setCharacterSize(32);
 
-	friction = .4;
+	friction = .6;//.4
 
-	pushStart = 20;
+	pushStart = 25;
 
 	maxWaitFrames = 180;
 
@@ -87,7 +87,7 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
 	actionLength[S_IDLE] = 18;
-	actionLength[S_GRIND] = 20;
+	actionLength[S_GRIND] = 30;
 	actionLength[S_SLOW] = 10;
 	actionLength[S_STOPPED] = 10;
 	actionLength[S_RETURN] = 3;

@@ -321,7 +321,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_GRINDJUGGLER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
-
+	case EnemyType::EN_GROUNDEDGRINDJUGGLER:
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
+		break;
 	case EnemyType::EN_POISONFROG:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
