@@ -1757,9 +1757,17 @@ void EditSession::CleanupForReload()
 
 	CleanupTopClouds();
 
+	if (gates.size() > 0)
+	{
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			delete (*it);
+		}
+		gates.clear();
+	}
+
 	DestroyTilesetCategory(TilesetCategory::C_STORY);
 	//destroy backgrounds would be needed but bgs handle their own stuff
-
 	StopCurrentMusic();
 	//StopMusic(originalMusic);
 	//StopMusic(previewMusic);

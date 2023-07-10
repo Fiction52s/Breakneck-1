@@ -9834,16 +9834,106 @@ V2d Actor::UpdateReversePhysics()
 											groundedWallBounce = true;
 										}
 									}
+									else if (minContact.normal.y < 0 && minContact.normal.y > -steepThresh
+										&& (action == STEEPCLIMB || action == STEEPCLIMBATTACK)
+										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0))
+										/*&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
+										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
+										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))*/
+										&& !minContact.edge->IsInvisibleWall())
+									{
+										collision = true;
+										velocity = groundSpeed * ground->Along();
+
+										prevRail = NULL;
+
+										if (b.rh < normalHeight)
+										{
+											b.offset.y = (normalHeight - b.rh);
+										}
+
+										/*if (minContact.edge->Normal().y <= 0)
+										{
+											if (minContact.position == minContact.edge->v0)
+											{
+												if (minContact.edge->edge0->Normal().y >= 0)
+												{
+													minContact.edge = minContact.edge->edge0;
+												}
+											}
+										}*/
+
+										RestoreAirOptions();
+										reversed = false;
+
+										ground = minContact.edge;
+
+										q = edgeQuantity;
+										edgeQuantity = minContact.edge->GetQuantity(minContact.position);
+
+										double groundLength = length(ground->v1 - ground->v0);
+
+										groundSpeed = 0;
+
+										V2d gno = ground->Normal();
 
 
-									q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
+										double angle = atan2(gno.x, -gno.y);
 
-									groundSpeed = 0;
-									edgeQuantity = q;
-									offsetX = -offsetX;
+										if (-gno.y > -steepThresh)
+										{
+											groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+										}
+										else
+										{
+											groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+										}
 
-									ProcessGroundedCollision();
+
+										if (gno.x > 0)
+										{
+											offsetX = b.rw;
+										}
+										else if (gno.x < 0)
+										{
+											offsetX = -b.rw;
+										}
+										else
+										{
+											offsetX = 0;
+										}
+
+										movement = 0;
+										//break;
+
+										//offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+										/*if (gno.x < 0)
+										{
+										facingRight = true;
+										SetAction(STEEPSLIDE);
+										}
+										else if (gno.x > 0)
+										{
+										facingRight = false;
+										SetAction(STEEPSLIDE);
+										}*/
+
+									}
+									else
+									{
+										q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
+
+										groundSpeed = 0;
+										edgeQuantity = q;
+										offsetX = -offsetX;
+
+										ProcessGroundedCollision();
+										//break;
+									}
 									break;
+
+									
 								}
 
 								/*if (bounceFlameOn && abs(groundSpeed) > 1)
@@ -13159,18 +13249,131 @@ void Actor::UpdatePhysics()
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
 											groundedWallBounce = true;
 										}
+
+										break;
+									}
+									else if (minContact.normal.y > 0 && minContact.normal.y < steepThresh 
+										&& ( action == STEEPCLIMB || action == STEEPCLIMBATTACK ) 
+										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0)) 
+										&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
+										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
+										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+										&& !minContact.edge->IsInvisibleWall() )
+									{
+
+									/*else if ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
+										&& tempCollision
+										&& !IsHitstunAction(action)
+										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
+										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+										&& minContact.normal.y > 0
+										&& abs(minContact.normal.x) < wallThresh
+										&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
+										&& !minContact.edge->IsInvisibleWall())*/
+
+
+										collision = true;
+										velocity = groundSpeed * ground->Along();
+
+										prevRail = NULL;
+
+										if (b.rh < normalHeight)
+										{
+											b.offset.y = -(normalHeight - b.rh);
+										}
+
+										if (minContact.edge->Normal().y <= 0)
+										{
+											if (minContact.position == minContact.edge->v0)
+											{
+												if (minContact.edge->edge0->Normal().y >= 0)
+												{
+													minContact.edge = minContact.edge->edge0;
+												}
+											}
+										}
+
+										RestoreAirOptions();
+										reversed = true;
+
+										ground = minContact.edge;
+
+										q = edgeQuantity;
+										edgeQuantity = minContact.edge->GetQuantity(minContact.position);
+
+										double groundLength = length(ground->v1 - ground->v0);
+
+										groundSpeed = 0;
+
+										V2d gno = ground->Normal();
+
+
+										double angle = atan2(gno.x, -gno.y);
+
+										if (-gno.y > -steepThresh)
+										{
+											groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+										}
+										else
+										{
+											groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+										}
+
+
+										if (gno.x > 0)
+										{
+											offsetX = b.rw;
+										}
+										else if (gno.x < 0)
+										{
+											offsetX = -b.rw;
+										}
+										else
+										{
+											offsetX = 0;
+										}
+
+										movement = 0;
+
+										//offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+										/*if (gno.x < 0)
+										{
+											facingRight = true;
+											SetAction(STEEPSLIDE);
+										}
+										else if (gno.x > 0)
+										{
+											facingRight = false;
+											SetAction(STEEPSLIDE);
+										}*/
+
+
+
+										ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
+										ActivateSound(PlayerSounds::S_GRAVREVERSE);
+
+										break;
+										//assert(abs(eNorm.x) > wallThresh);
+										//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
+										
+									}
+									else
+									{
+										q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
+
+
+										edgeQuantity = q;
+
+										ProcessGroundedCollision();
+
+										groundSpeed = 0;
+
+										break;
 									}
 
-
-									q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
-
 									
-									edgeQuantity = q;
-
-									ProcessGroundedCollision();
-
-									groundSpeed = 0;
-									break;
+									
 								}
 							}
 						}
@@ -14953,6 +15156,7 @@ void Actor::PhysicsResponse()
 				{
 					facingRight = !facingRight;
 				}
+				RestoreAirOptions();
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
