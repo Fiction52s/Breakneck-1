@@ -4047,10 +4047,15 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 void TerrainPolygon::SetupTouchGrass()
 {
 	DestroyTouchGrass();
-	if (terrainWorldType < W1_SPECIAL)
+	if (terrainWorldType == JUNGLE)
 	{
-		AddTouchGrass(TouchGrass::TYPE_NORMAL);
-		AddTouchGrass(TouchGrass::TYPE_TEST);
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W5);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W5);
+	}
+	else if (terrainWorldType < W1_SPECIAL)
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W1);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W1);
 		//AddTouchGrass(TouchGrass::TYPE_TREE);
 	}
 	ResetTouchGrass();

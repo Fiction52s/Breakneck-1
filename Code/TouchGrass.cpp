@@ -70,20 +70,22 @@ void TouchGrassCollection::UpdateGrass()
 
 void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
 {
-	TouchGrass *tg; 
+	TouchGrass *tg = NULL;
 	
 	switch (gType)
 	{
-	case TouchGrass::TYPE_NORMAL:
+	case TouchGrass::TYPE_NORMAL_W1:
+	case TouchGrass::TYPE_NORMAL_W5:
+	case TouchGrass::TYPE_LARGE_W1:
+	case TouchGrass::TYPE_LARGE_W5:
 		tg = new BasicTouchGrass(this, index, edge, quant);
-		break;
-	case TouchGrass::TYPE_TEST:
-		tg = new TestTouchGrass(this, index, edge, quant);
 		break;
 	case TouchGrass::TYPE_TREE:
 		tg = new TouchTree(this, index, edge, quant);
 		break;
 	}
+
+	assert(tg != NULL);
 
 	myGrass.push_back(tg);
 	touchGrassTree->Insert(tg);
@@ -125,11 +127,17 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 	Tileset *t = NULL;
 	switch (gt)
 	{
-	case TouchGrass::TYPE_NORMAL:
+	case TouchGrass::TYPE_NORMAL_W1:
 		t = tm->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
 		break;
-	case TouchGrass::TYPE_TEST:
+	case TouchGrass::TYPE_NORMAL_W5:
+		t = tm->GetSizedTileset("Env/bushtouch_5_01_64x64.png");
+		break;
+	case TouchGrass::TYPE_LARGE_W1:
 		t = tm->GetTileset("Env/bushtouch_1_02_128x128.png", 128, 128);
+		break;
+	case TouchGrass::TYPE_LARGE_W5:
+		t = tm->GetSizedTileset("Env/bush_w5_128x128.png");
 		break;
 	case TouchGrass::TYPE_TREE:
 		t = tm->GetTileset("Env/trees_128x128.png", 128, 128);
@@ -145,10 +153,16 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 	int width = 0;
 	switch (gt)
 	{
-	case TYPE_NORMAL:
+	case TYPE_NORMAL_W1:
 		width = 32;
 		break;
-	case TYPE_TEST:
+	case TYPE_NORMAL_W5:
+		width = 32;
+		break;
+	case TYPE_LARGE_W1:
+		width = 128;
+		break;
+	case TYPE_LARGE_W5:
 		width = 128;
 		break;
 	case TYPE_TREE:
@@ -237,13 +251,25 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
 	EdgeAngleType eat = (EdgeAngleType)p_eat;
 	switch (grassType)
 	{
-	case TYPE_NORMAL:
+	case TYPE_NORMAL_W1:
 	{
 		int r = rand() % 100;
 		return (r < 50);
 		break;
 	}
-	case TYPE_TEST:
+	case TYPE_NORMAL_W5:
+	{
+		int r = rand() % 100;
+		return (r < 50);
+		break;
+	}
+	case TYPE_LARGE_W1:
+	{
+		int r = rand() % 100;
+		return (r < 15);
+		break;
+	}
+	case TYPE_LARGE_W5:
 	{
 		int r = rand() % 100;
 		return (r < 15);
@@ -267,7 +293,19 @@ BasicTouchGrass::BasicTouchGrass(TouchGrassCollection *coll, int index,
 	Edge *e, double quant )
 	:TouchGrass( coll, index, e, quant )
 {
-	CommonInit(24, GetVectorAngleCW(e->Along()), 0, 16, 16);
+	double yOff = 0;
+	switch (coll->gType)
+	{
+	case TYPE_NORMAL_W1:
+	case TYPE_NORMAL_W5:
+		yOff = 14;
+		break;
+	case TYPE_LARGE_W1:
+	case TYPE_LARGE_W5:
+		yOff = 29;
+		break;
+	}
+	CommonInit(yOff, GetVectorAngleCW(e->Along()), 0, 16, 16);
 }
 
 void BasicTouchGrass::Reset()
@@ -288,13 +326,13 @@ void BasicTouchGrass::UpdateSprite()
 	switch (action)
 	{
 	case TOUCHEDLEFT:
-		tileIndex = 1;
-		break;
-	case TOUCHEDRIGHT:
 		tileIndex = 2;
 		break;
-	case TOUCHEDLAND:
+	case TOUCHEDRIGHT:
 		tileIndex = 3;
+		break;
+	case TOUCHEDLAND:
+		tileIndex = 1;
 		break;
 	}
 
@@ -374,8 +412,34 @@ void BasicTouchGrass::Destroy(Actor *a)
 {
 	if (visible)
 	{
-		a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
-			6, true, 4);
+		switch (coll->gType)
+		{
+		case TYPE_NORMAL_W1:
+		{
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
+				6, true, 4);
+			break;
+		}
+		case TYPE_LARGE_W1:
+		{
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+				6, true, 4);
+			break;
+		}
+		case TYPE_NORMAL_W5:
+		{
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 12,
+				6, true, 4);
+			break;
+		}
+		case TYPE_LARGE_W5:
+		{
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 17,
+				6, true, 4);
+			break;
+		}
+		}
+
 		ClearRect(myQuad);
 		visible = false;
 	}
@@ -480,8 +544,16 @@ void TestTouchGrass::Destroy(Actor *a)
 {
 	if (visible)
 	{
-		a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
-			6, true, 4);
+		if (coll->gType == TouchGrass::TYPE_LARGE_W1)
+		{
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+				6, true, 4);
+		}
+		else if( coll->gType == TouchGrass::TYPE_LARGE_W5 )
+		{
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 17,
+				6, true, 4);
+		}
 
 		ClearRect(myQuad);
 		visible = false;

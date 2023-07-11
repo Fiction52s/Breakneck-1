@@ -17,8 +17,10 @@ struct TouchGrass : QuadTreeEntrant
 {
 	enum TouchGrassType
 	{
-		TYPE_NORMAL,
-		TYPE_TEST,
+		TYPE_NORMAL_W1,
+		TYPE_NORMAL_W5,
+		TYPE_LARGE_W1,
+		TYPE_LARGE_W5,
 		TYPE_TREE,
 	};
 
