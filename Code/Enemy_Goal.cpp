@@ -21,30 +21,30 @@ Goal::Goal( ActorParams *ap )
 
 	explosionAnimFactor = 3;
 	explosionLength = 16;
-	ts_explosion1 = NULL;
 	ts_mini = GetSizedTileset("HUD/minimap_icons_64x64.png");
 
 	//world
 
+	ts = sess->ts_goal;
+	ts_explosion = sess->ts_goalExplode;
+
 	int w = 1;
 
-	string tsStr = "Goal/goal_w" + to_string(w) + "_a_512x512.png";
-	ts = GetSizedTileset(tsStr);
-	string explosionStr = "Goal/goal_w" + to_string(w) + "_b_512x512.png";
-	ts_explosion = GetSizedTileset(explosionStr);
+	explosionYOffset = 80;
+	initialYOffset = 30;
 
-	switch (w)
-	{
-	case 1:
-		explosionYOffset = 80;
-		initialYOffset = 30;
-		break;
-	case 2:
-	default:
-		explosionYOffset = 0;
-		initialYOffset = 0;
-		break;
-	}
+	//switch (w)
+	//{
+	//case 1:
+	//	explosionYOffset = 80;
+	//	initialYOffset = 30;
+	//	break;
+	//case 2:
+	//default:
+	//	explosionYOffset = 0;
+	//	initialYOffset = 0;
+	//	break;
+	//}
 
 	SetOffGroundHeight(128);
 	SetCurrPosInfo(startPosInfo);
@@ -190,15 +190,13 @@ void Goal::HandleNoHealth()
 	action = A_KINKILLING;
 
 	sess->goalPulse->StartPulse();
-	/*if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		game->goalPulse->StartPulse();
-	}*/
 }
 
 void Goal::UpdateSprite()
 {
+	ts = sess->ts_goal;
+	ts_explosion = sess->ts_goalExplode;
+
 	int trueFrame = 0;
 	if (action == A_SITTING)
 	{
@@ -234,17 +232,8 @@ void Goal::UpdateSprite()
 	{
 		trueFrame = frame / explosionAnimFactor;
 		int numTiles = ts_explosion->GetNumTiles();
-		if (trueFrame >= numTiles)
-		{
-			trueFrame -= numTiles;
-			sprite.setTexture(*ts_explosion1->texture);
-			sprite.setTextureRect(ts_explosion1->GetSubRect(trueFrame));
-		}
-		else
-		{
-			sprite.setTexture(*ts_explosion->texture);
-			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
-		}
+		sprite.setTexture(*ts_explosion->texture);
+		sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// -explosionYOffset - initialYOffset);
 	}
@@ -252,17 +241,8 @@ void Goal::UpdateSprite()
 	{
 		trueFrame = explosionLength - 1;
 		int numTiles = ts_explosion->GetNumTiles();
-		if (trueFrame >= numTiles)
-		{
-			trueFrame -= numTiles;
-			sprite.setTexture(*ts_explosion1->texture);
-			sprite.setTextureRect(ts_explosion1->GetSubRect(trueFrame));
-		}
-		else
-		{
-			sprite.setTexture(*ts_explosion->texture);
-			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
-		}
+		sprite.setTexture(*ts_explosion->texture);
+		sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 
 		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);//- explosionYOffset - initialYOffset);
@@ -274,6 +254,19 @@ void Goal::UpdateSprite()
 
 void Goal::EnemyDraw(sf::RenderTarget *target )
 {
+	ts = sess->ts_goal;
+	ts_explosion = sess->ts_goalExplode;
+
+	int trueFrame = 0;
+	if (action == A_SITTING || action == A_KINKILLING )
+	{
+		sprite.setTexture(*ts->texture);
+	}
+	else if (action == A_EXPLODING || action == A_DESTROYED)
+	{
+		sprite.setTexture(*ts_explosion->texture);
+	}
+
 	DrawSprite(target, sprite);
 	//target->draw( sprite );
 }

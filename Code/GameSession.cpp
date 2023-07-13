@@ -1714,6 +1714,9 @@ bool GameSession::Load()
 
 	//while (true);
 
+	UpdateWorldDependentTileset(0);
+
+
 	originalProgressionModeOn = false; //testing
 
 	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE )
@@ -2248,7 +2251,7 @@ void GameSession::SetupBackground()
 	}
 
 	mapHeader->envWorldType = background->envWorld;
-	UpdateKeyTileset(mapHeader->envWorldType);
+	UpdateWorldDependentTileset(mapHeader->envWorldType);
 }
 
 

@@ -16,6 +16,7 @@ struct GoalFlow
 	void Update( float camZoom,
 		sf::Vector2f &topLeft, float camAngleRad );
 	void Draw(sf::RenderTarget *target);
+	void SetWorld(int worldIndex);
 	
 	sf::Shader flowShader;
 	float flowRadius;
@@ -33,6 +34,7 @@ private:
 		sf::Vector2f &gPos,
 		std::list<std::list<std::pair<V2d, bool>>> &infoList);
 	void SetGoalPos(sf::Vector2f &gPos);
+	
 	Session *sess;
 };
 

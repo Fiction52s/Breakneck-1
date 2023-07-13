@@ -2,6 +2,7 @@
 #include <iostream>
 #include <assert.h>
 #include "Session.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -24,10 +25,15 @@ GoalFlow::GoalFlow(Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 		assert(0);
 	}
 
+	Color fColor(0, 0x66, 0xCC);
+	Color fCloseColor(0, 0xEE, 0xFF);
+
 	flowShader.setUniform("radDiff", radDiff);
 	flowShader.setUniform("Resolution", Vector2f(1920, 1080));// window->getSize().x, window->getSize().y);
 	flowShader.setUniform("flowSpacing", flowSpacing);
 	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
+	
+	SetWorld(0);
 
 	Setup(gPos, infoList);
 }
@@ -90,6 +96,27 @@ void GoalFlow::SetGoalPos(sf::Vector2f &gPos)
 {
 	goalPos = gPos;
 	flowShader.setUniform("goalPos", goalPos );
+}
+
+void GoalFlow::SetWorld(int worldIndex)
+{
+	Color fColor;
+	Color fCloseColor;
+
+	switch (worldIndex)
+	{
+	case 0:
+		fColor = Color(0, 0x66, 0xCC);
+		fCloseColor = Color(0, 0xEE, 0xFF);
+		break;
+	default:
+		fColor = Color::Red;//Color(0, 0x66, 0xCC);
+		fCloseColor = Color::Yellow;//Color(0, 0xEE, 0xFF);
+		break;
+	}
+
+	flowShader.setUniform("flowColor", ColorGL(fColor));
+	flowShader.setUniform("closeFlowColor", ColorGL(fCloseColor));
 }
 
 void GoalFlow::Update( float camZoom, sf::Vector2f &topLeft, float camAngleRad  )

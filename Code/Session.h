@@ -223,6 +223,8 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	Tileset *ts_key;
 	Tileset *ts_keyExplode;
+	Tileset *ts_goal;
+	Tileset *ts_goalExplode;
 
 	bool phaseOn; //for phase switches
 
@@ -1006,7 +1008,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ConsumePracticeSequenceConfirm();
 	void CleanupGameMode();
 
-	void UpdateKeyTileset( int world );
+	void UpdateWorldDependentTileset( int world );
 
 	Actor *GetPlayerFromNetplayPlayerIndex(int index);
 };

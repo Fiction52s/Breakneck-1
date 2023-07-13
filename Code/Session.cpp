@@ -1357,6 +1357,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
 	ts_key = NULL;
+	ts_goal = NULL;
+	ts_goalExplode = NULL;
 
 	phaseOn = false;
 
@@ -6138,6 +6140,7 @@ void Session::SetupGoalFlow()
 	}
 
 	goalFlow = new GoalFlow(Vector2f(goalPos), allInfo);
+	goalFlow->SetWorld(mapHeader->envWorldType);
 }
 
 void Session::CleanupGoalFlow()
@@ -9495,7 +9498,7 @@ void Session::CleanupGameMode()
 	}
 }
 
-void Session::UpdateKeyTileset( int worldIndex)
+void Session::UpdateWorldDependentTileset( int worldIndex)
 {
 	if (ts_key != NULL)
 	{
@@ -9522,6 +9525,32 @@ void Session::UpdateKeyTileset( int worldIndex)
 		ts_key = GetSizedTileset("FX/key_w1_128x128.png");
 		ts_keyExplode = GetSizedTileset("FX/keyexplode_w1_128x128.png");
 	}
+
+	if (ts_goal != NULL)
+	{
+		DestroyTileset(ts_goal);
+		ts_goal = NULL;
+
+		DestroyTileset(ts_goalExplode);
+		ts_goalExplode = NULL;
+	}
+
+	//if (worldIndex < 1)
+	{
+		stringstream ss;
+		ss << "Goal/goal_w" << w << "_a_512x512.png";
+		stringstream ssExplode;
+		ssExplode << "Goal/goal_w" << w << "_b_512x512.png";
+		ts_goal = GetSizedTileset(ss.str());
+		ts_goalExplode = GetSizedTileset(ssExplode.str());
+	}
+	/*else
+	{
+		ts_goal = GetSizedTileset("Goal/goal_w_1_a_512x512.png");
+		ts_goalExplode = GetSizedTileset("Goal/goal_w_1_b_512x512.png");
+	}*/
+
+
 }
 
 Actor *Session::GetPlayerFromNetplayPlayerIndex(int index)
