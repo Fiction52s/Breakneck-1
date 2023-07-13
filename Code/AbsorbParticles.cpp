@@ -43,8 +43,8 @@ AbsorbParticles::AbsorbParticles(Session *p_sess, AbsorbType p_abType )
 	switch (p_abType)
 	{
 	case DARK:
-		ts = sess->GetTileset("FX/key_128x128.png", 128, 128);
-		ts_explodeDestroy = sess->GetSizedTileset("FX/keyexplode_128x128.png");
+		ts = sess->ts_key;
+		ts_explodeDestroy = sess->ts_keyExplode;
 		animFactor = 2;
 		break;
 	case SHARD:
@@ -305,7 +305,6 @@ void AbsorbParticles::SingleEnergyParticle::Clear()
 void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 {
 	IntRect sub;
-	
 
 	sf::Vertex *va = parent->va;
 	
@@ -325,11 +324,12 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	}
 	case DARK:
 	{
+		int keyTurnFrames = 16;
 		sub.width = 128;
 		sub.height = 128;
 		//SetRectColor(va + tileIndex * 4, Color(Color::White));
 		SetRectSubRect(va + particleIndex * 4, parent->ts->GetSubRect(
-			(data.frame % (16 * parent->animFactor)) / parent->animFactor));
+			(data.frame % (keyTurnFrames * parent->animFactor)) / parent->animFactor));
 		/*va[tileIndex * 4 + 0].color = Color::Black;
 		va[tileIndex * 4 + 1].color = Color::Black;
 		va[tileIndex * 4 + 2].color = Color::Black;
@@ -376,9 +376,8 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		{
 		case DARK:
 		{
-			Tileset *tss = parent->sess->GetTileset("FX/keyexplode_128x128.png", 128, 128);
 			parent->sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-				tss, V2d(data.pos), true, 0, 6, 3, true);
+				parent->sess->ts_keyExplode, V2d(data.pos), true, 0, 6, 3, true);
 			break;
 		}
 		}
@@ -543,6 +542,13 @@ void AbsorbParticles::Update()
 {
 	SingleEnergyParticle *sp = activeList;
 	SingleEnergyParticle *tNext = NULL;
+
+	if (abType == DARK)
+	{
+		ts = sess->ts_key;
+		ts_explodeDestroy = sess->ts_keyExplode;
+	}
+
 	while (sp != NULL)
 	{
 		tNext = sp->next;
@@ -567,7 +573,11 @@ void AbsorbParticles::Draw(sf::RenderTarget *target)
 	switch (abType)
 	{
 	case ENERGY:
+		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
+		break;
 	case DARK:
+		ts = sess->ts_key;
+		ts_explodeDestroy = sess->ts_keyExplode;
 		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
 		break;
 	case SHARD:

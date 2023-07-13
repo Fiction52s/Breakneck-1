@@ -19,8 +19,9 @@ KeyFly::KeyFly(ActorParams *ap)
 	hasMonitor = true;
 	SetKey();
 
+	ts = sess->ts_key;
 	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
-	ts = GetSizedTileset("FX/key_128x128.png");
+	//ts = GetSizedTileset("FX/key_128x128.png");
 	ts_container = GetSizedTileset("Enemies/key_container_256x256.png");
 
 	BasicCircleHurtBodySetup(64);
@@ -134,6 +135,10 @@ void KeyFly::PlayDeathSound()
 
 void KeyFly::UpdateSprite()
 {
+	ts = sess->ts_key;
+
+	sess->ts_key->SetSpriteTexture(sprite);
+
 	//cout << "update sprite " << frame << endl;
 	sprite.setTextureRect(ts->GetSubRect(frame / animFactor[S_NEUTRAL]));
 
@@ -150,6 +155,8 @@ void KeyFly::UpdateSprite()
 
 void KeyFly::EnemyDraw(sf::RenderTarget *target)
 {
+	sess->ts_key->SetSpriteTexture(sprite);
+
 	DrawSprite(target, sprite);
 
 	DrawSprite(target, containerSpr);

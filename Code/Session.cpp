@@ -1356,6 +1356,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
+	ts_key = NULL;
+
 	phaseOn = false;
 
 	activePlayerReplayManagers.reserve(10);
@@ -1367,6 +1369,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	matchPlacings.resize(4);
 	controllerStates.resize(4);
 	controlProfiles.resize(4);
+
+	ts_key = NULL;
 
 	currSaveState = new SaveGameState;
 
@@ -8691,15 +8695,32 @@ void Session::DrawQueriedRails(sf::RenderTarget *target)
 	}
 }
 
-V2d Session::CalcBounceReflectionVel(Edge *e, V2d &vel)
+V2d Session::CalcBounceReflectionVel(V2d norm, V2d &vel)
 {
+
+	/*V2d norm = Normal();
+	double reflX = cross(-dir, norm);
+	double reflY = dot(-dir, norm);
+	V2d edgeDir = Along();
+
+	return normalize(reflX * edgeDir + reflY * norm);*/
+
 	double lenVel = length(vel);
 
-	V2d reflectionDir = e->GetReflectionDir(normalize(vel));
+	V2d dir = normalize(vel);
+	double reflX = cross(-dir, norm);
+	double reflY = dot(-dir, norm);
+	
+	V2d along(-norm.y, norm.x);
 
-	V2d edgeDir = e->Along();
+	V2d reflectionDir = normalize(reflX * along + reflY * norm);
 
-	double diffCW = GetVectorAngleDiffCW(reflectionDir, edgeDir);
+	//V2d edgeDir = Along();
+	// e->GetReflectionDir(normalize(vel));
+
+	//V2d edgeDir = e->Along();
+
+	double diffCW = GetVectorAngleDiffCW(reflectionDir, along);
 
 	//these next few lines make sure that you cant
 	//run up the steep slope and then bounce at such a shallow angle
@@ -8710,7 +8731,7 @@ V2d Session::CalcBounceReflectionVel(Edge *e, V2d &vel)
 		RotateCCW(reflectionDir, thresh - diffCW);
 	}
 
-	double diffCCW = GetVectorAngleDiffCCW(reflectionDir, -edgeDir);
+	double diffCCW = GetVectorAngleDiffCCW(reflectionDir, -along);
 
 	if (diffCCW > 0 && diffCCW < thresh)
 	{
@@ -9471,6 +9492,35 @@ void Session::CleanupGameMode()
 	{
 		delete gameMode;
 		gameMode = NULL;
+	}
+}
+
+void Session::UpdateKeyTileset( int worldIndex)
+{
+	if (ts_key != NULL)
+	{
+		DestroyTileset(ts_key);
+		ts_key = NULL;
+
+		DestroyTileset(ts_keyExplode);
+		ts_keyExplode = NULL;
+	}
+
+	int w = worldIndex + 1;
+
+	if (worldIndex < 2)
+	{
+		stringstream ss;
+		ss << "FX/key_w" << w << "_128x128.png";
+		stringstream ssExplode;
+		ssExplode << "FX/keyexplode_w" << w << "_128x128.png";
+		ts_key = GetSizedTileset(ss.str());
+		ts_keyExplode = GetSizedTileset(ssExplode.str());
+	}
+	else
+	{
+		ts_key = GetSizedTileset("FX/key_w1_128x128.png");
+		ts_keyExplode = GetSizedTileset("FX/keyexplode_w1_128x128.png");
 	}
 }
 

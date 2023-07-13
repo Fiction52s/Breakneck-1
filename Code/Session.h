@@ -221,6 +221,9 @@ struct Session : TilesetManager, QuadTreeCollider
 		FEEDBACK_FORM,
 	};
 
+	Tileset *ts_key;
+	Tileset *ts_keyExplode;
+
 	bool phaseOn; //for phase switches
 
 	int totalGameFramesIncludingRespawns;
@@ -940,7 +943,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void PlayerMustSimulateAtLeast(int f, int index = 0);
 	Enemy* GetEnemy(int enType);
 	GroundedWarper *GetWarper(const std::string levelWarp);
-	V2d CalcBounceReflectionVel(Edge *e, V2d &vel);
+	V2d CalcBounceReflectionVel(V2d normal, V2d &vel);
 	bool IsWithinBounds(V2d &p);
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
@@ -1002,6 +1005,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool HasPracticeSequenceConfirm();
 	void ConsumePracticeSequenceConfirm();
 	void CleanupGameMode();
+
+	void UpdateKeyTileset( int world );
 
 	Actor *GetPlayerFromNetplayPlayerIndex(int index);
 };

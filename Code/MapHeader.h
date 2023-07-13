@@ -25,7 +25,7 @@ struct MapHeader
 		leftBounds(0), topBounds(0), boundsWidth(0), boundsHeight(0),
 		numVertices(-1), songLevelsModified(false), numShards(0),
 		numLogs(0),drainSeconds(60), bossFightType(0), envName("w1_01"),
-		envWorldType(0), preLevelSceneName("NONE"),
+		envWorldType(-1), preLevelSceneName("NONE"),
 		postLevelSceneName("NONE"), creatorID( 0 ),
 		possibleGameModeTypeFlags(0),
 		numGameObjects(-1),functionalWidth(-1),functionalHeight(-1)

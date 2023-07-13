@@ -18,11 +18,12 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	SetLevel(ap->GetLevel());
 
 	regenOn = false;
-	scale = 4.0;
+	//scale = 4.0;
 
 	targetType = -1;
 
-	ts = GetSizedTileset("Enemies/healthfly_64x64.png");
+	ts = GetSizedTileset("Enemies/target_256x256.png");
+	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);
@@ -32,30 +33,30 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	{
 		regenOn = true;
 		targetType = TARGET_BLUE;
-		sprite.setColor(Color::Blue);
+		//sprite.setColor(Color::Blue);
 	}
 	else if (typeName == "glidetarget")
 	{
 		targetType = TARGET_GLIDE;
 		regenOn = false;
-		sprite.setColor(Color::Green);
+		//sprite.setColor(Color::Green);
 	}
 	else if (typeName == "bouncetarget")
 	{
 		targetType = TARGET_BOUNCE;
 		regenOn = false;
-		sprite.setColor(Color::Red);
+		//sprite.setColor(Color::Red);
 	}
 	else if (typeName == "grindtarget")
 	{
 		targetType = TARGET_GRIND;
 		regenOn = false;
-		sprite.setColor(Color::Red);
+		//sprite.setColor(Color::Red);
 	}
 	else if (typeName == "scorpiontarget")
 	{
 		targetType = TARGET_SCORPION;
-		sprite.setColor(Color::Yellow);
+		//sprite.setColor(Color::Yellow);
 	}
 	else if (typeName == "freeflighttarget")
 	{
@@ -225,7 +226,7 @@ void SpecialTarget::UpdateSprite()
 	{
 	case A_IDLE:
 	{
-		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[A_IDLE]));
+		sprite.setTextureRect(ts->GetSubRect(0));//ts->GetSubRect(frame / animFactor[A_IDLE]));
 		break;
 	}
 	case A_DYING:

@@ -58,7 +58,7 @@ void Actor::BOUNCEGROUND_Change()
 
 		
 
-		velocity = sess->CalcBounceReflectionVel(bounceEdge, storedBounceVel);
+		velocity = sess->CalcBounceReflectionVel(bn, storedBounceVel);
 
 		
 		V2d vDir = normalize(velocity);

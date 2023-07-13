@@ -1090,12 +1090,12 @@ void Actor::SetupFXTilesets()
 	effectPools[PLAYERFX_GATE_BLACK].Set(sess->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2,
 		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
-	effectPools[PLAYERFX_KEY].Set(sess->GetSizedTileset("FX/key_128x128.png"), EffectType::FX_REGULAR, 32,
+	effectPools[PLAYERFX_KEY].Set(sess->ts_key, EffectType::FX_REGULAR, 32,
 		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false );
 	keyExplodeUpdater = new KeyExplodeUpdater(this);
 	effectPools[PLAYERFX_KEY].pool->SetUpdater(keyExplodeUpdater);
 
-	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->GetSizedTileset("FX/keyexplode_128x128.png"), EffectType::FX_REGULAR, 32,EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32,EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		true, false);
 
 	effectPools[PLAYERFX_DASH_BOOST].Set(sess->GetSizedTileset(folder, "fx_dash_boost_128x256.png"), EffectType::FX_REGULAR, 4);
@@ -4615,6 +4615,9 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
+	effectPools[PLAYERFX_KEY].pool->ts = sess->ts_key;
+	effectPools[PLAYERFX_KEY_EXPLODE].pool->ts = sess->ts_keyExplode;
+
 	if (sess->mapHeader != NULL)
 	{
 		numFramesToLive = min( sess->mapHeader->drainSeconds * 60, 
@@ -11804,7 +11807,7 @@ void Actor::HandleBounceGrass()
 {
 	//might not work for flat /\ tops of hills like that.
 
-	V2d bn = bounceEdge->Normal();//minContact.normal;
+	V2d bn = bounceNorm;//bounceEdge->Normal();//minContact.normal;
 
 
 	if (ground != NULL)
@@ -11841,7 +11844,7 @@ void Actor::HandleBounceGrass()
 
 	ground = NULL;
 
-	velocity = sess->CalcBounceReflectionVel(bounceEdge, velocity);//minContact.edge, velocity);
+	velocity = sess->CalcBounceReflectionVel(bounceNorm, velocity);//minContact.edge, velocity);
 
 	bounceEdge = NULL;
 
@@ -12063,7 +12066,7 @@ void Actor::HandleBounceRail()
 
 	ground = NULL;
 
-	velocity = sess->CalcBounceReflectionVel(bounceEdge, velocity);//minContact.edge, velocity);
+	velocity = sess->CalcBounceReflectionVel(bounceNorm, velocity);//minContact.edge, velocity);
 
 	bounceEdge = NULL;
 
@@ -13680,6 +13683,7 @@ void Actor::UpdatePhysics()
 				if (bounceEdge == NULL)
 				{
 					bounceEdge = minContact.edge;
+					bounceNorm = minContact.normal;
 				}
 				//HandleBounceGrass();
 			}
@@ -13689,6 +13693,7 @@ void Actor::UpdatePhysics()
 				if (bounceEdge == NULL)
 				{
 					bounceEdge = minContact.edge;
+					bounceNorm = minContact.normal;
 				}
 				//HandleBounceRail();
 			}
@@ -13874,7 +13879,7 @@ void Actor::UpdatePhysics()
 
 					//double groundLength = length(ground->v1 - ground->v0);
 
-					V2d bn = bounceEdge->Normal();
+					V2d bn = bounceNorm;//bounceEdge->Normal();
 
 					V2d testVel = velocity;
 					
@@ -15148,6 +15153,11 @@ void Actor::PhysicsResponse()
 			frame = 0;
 			groundSpeed = 0;
 
+			if (bn.y < 0)
+			{
+				RestoreAirOptions();
+			}
+
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
 				//RestoreAirOptions();
@@ -15156,7 +15166,6 @@ void Actor::PhysicsResponse()
 				{
 					facingRight = !facingRight;
 				}
-				RestoreAirOptions();
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
@@ -15170,24 +15179,24 @@ void Actor::PhysicsResponse()
 			{
 				facingRight = !facingRight;
 			}
-			else if( bn.y < 0 )
-			{
-				RestoreAirOptions();
+			//else if( bn.y < 0 )
+			//{
+			//	RestoreAirOptions();
 
 
-				//if( abs( storedBounceVel.y ) < 10 )
-				//{
-				//	//cout << "land: " << abs(storedBounceVel.y) << endl;
-				//	BounceFlameOn();
-				//	
-				//	SetAction(LAND);
-				//	frame = 0;
-				//	//bounceEdge = NULL;
-				//	ground = bounceEdge;
-				//	bounceEdge = NULL;
-				//	//oldBounceEdge = NULL;
-				//}
-			}
+			//	//if( abs( storedBounceVel.y ) < 10 )
+			//	//{
+			//	//	//cout << "land: " << abs(storedBounceVel.y) << endl;
+			//	//	BounceFlameOn();
+			//	//	
+			//	//	SetAction(LAND);
+			//	//	frame = 0;
+			//	//	//bounceEdge = NULL;
+			//	//	ground = bounceEdge;
+			//	//	bounceEdge = NULL;
+			//	//	//oldBounceEdge = NULL;
+			//	//}
+			//}
 
 			if( bn.y != 0 )
 			{

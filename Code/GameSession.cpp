@@ -2248,6 +2248,7 @@ void GameSession::SetupBackground()
 	}
 
 	mapHeader->envWorldType = background->envWorld;
+	UpdateKeyTileset(mapHeader->envWorldType);
 }
 
 

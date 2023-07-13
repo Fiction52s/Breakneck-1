@@ -2403,6 +2403,7 @@ void EditSession::ProcessHeader()
 	cout << "mm usage: " << megsMM << endl;
 	background = Background::SetupFullBG(mapHeader->envName);
 	mapHeader->envWorldType = background->envWorld;
+	UpdateKeyTileset(mapHeader->envWorldType);
 	//background->Hide();
 
 	UpdateFullBounds();
@@ -3554,6 +3555,7 @@ void EditSession::SetBackground(const std::string &bgName)
 		mapHeader->envName = bgName;
 		background = Background::SetupFullBG(bgName);
 		mapHeader->envWorldType = background->envWorld;
+		UpdateKeyTileset(mapHeader->envWorldType);
 	}
 }
 
@@ -3870,6 +3872,8 @@ void EditSession::SetupBrushPanels()
 
 void EditSession::Init()
 {
+	UpdateKeyTileset(0);
+
 	cout << "init1" << endl;
 	frameRateDisplay.showFrameRate = true;
 	runningTimerDisplay.showRunningTimer = true;
@@ -3913,6 +3917,7 @@ void EditSession::Init()
 
 	assert(players[0] == NULL);
 
+	
 
 	//players[0] = new Actor(NULL, this, 0);
 	//allPlayers[0] = players[0];
@@ -4051,6 +4056,7 @@ void EditSession::DefaultInit()
 
 	background = Background::SetupFullBG(mapHeader->envName);
 	mapHeader->envWorldType = background->envWorld;
+	UpdateKeyTileset(mapHeader->envWorldType);
 
 	mapHeader->bossFightType = 0;
 
@@ -4560,6 +4566,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				mapHeader->envWorldType = 0;
 				background = Background::SetupFullBG(mapHeader->envName);
 				mapHeader->envWorldType = background->envWorld;
+				UpdateKeyTileset(mapHeader->envWorldType);
 
 				stringstream ss;
 				ss << newMapPanel->textBoxes["timetolive"]->GetString();

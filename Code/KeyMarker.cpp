@@ -48,7 +48,7 @@ KeyMarker::KeyMarker()
 	ts_enemyNumLight = sess->GetSizedTileset("Menu/keynum_red_light_80x80.png");
 	ts_enemyNumDark = sess->GetSizedTileset("Menu/keynum_red_dark_80x80.png");
 
-	ts_keyIcon = sess->GetSizedTileset("FX/key_128x128.png");
+	ts_keyIcon = sess->ts_key;//sess->GetSizedTileset("FX/key_128x128.png");
 	ts_enemyIcon = sess->GetSizedTileset("HUD/enemy_hud_icon_64x64.png");
 
 	float textSpacingFactor = .7;
@@ -152,6 +152,7 @@ Vector2f KeyMarker::GetPosition()
 
 void KeyMarker::SetMarkerType(int k)
 {
+	ts_keyIcon = sess->ts_key;
 	markerType = (MarkerType)k;
 
 	Tileset *ts_icon = NULL;
@@ -206,6 +207,8 @@ void KeyMarker::UpdateKeyNumbers()
 	//{
 		//SetEnergySprite();
 	//}
+
+	SetMarkerType(markerType);
 
 	VibrateNumbers();
 
