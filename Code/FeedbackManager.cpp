@@ -5,7 +5,8 @@
 
 #define FROM_ADDR "<KineticFeedback@kbal.com>"
 #define TO_ADDR "<fiction52s@gmail.com>"
-#define SERVER "smtp://smtp-relay.sendinblue.com"
+//#define SERVER "smtp://smtp-relay.sendinblue.com"
+#define SERVER "smtp://smtp-relay.brevo.com"
 #define PORT 587L
 #define LOGIN "fiction52s@gmail.com"
 #define PASSWORD "bATsk0YDgNxZLVfS"
