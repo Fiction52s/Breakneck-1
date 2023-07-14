@@ -106,12 +106,40 @@ void GoalFlow::SetWorld(int worldIndex)
 	switch (worldIndex)
 	{
 	case 0:
-		fColor = Color(0, 0x66, 0xCC);
+		fColor = Color(0, 0x44, 0xCC);
 		fCloseColor = Color(0, 0xEE, 0xFF);
 		break;
+	case 1:
+		fColor = Color(0, 0x88, 0x88);
+		fCloseColor = Color(0, 0xFF, 0x44);
+		break;
+	case 2:
+		fColor = Color(0xCC, 0x77, 0);
+		fCloseColor = Color(0xFF, 0xFF, 0);
+		break;
+	case 3:
+		fColor = Color(0xCC, 0x33, 0);
+		fCloseColor = Color(0xFF, 0x99, 0);
+		break;
+	case 4:
+		fColor = Color(0x88, 0, 0x44);
+		fCloseColor = Color(0xFF, 0, 0);
+		break;
+	case 5:
+		fColor = Color(0x88, 0, 0xBB);
+		fCloseColor = Color(0xFF, 0, 0xDD);
+		break;
+	case 6:
+		fColor = Color(0x33, 0x77, 0x99);
+		fCloseColor = Color(0x99, 0xCC, 0xCC);
+		break;
+	case 7:
+		fColor = Color(0x55, 0, 0xFF);
+		fCloseColor = Color(0xAA, 0x55, 0xFF);
+		break;
 	default:
-		fColor = Color::Red;//Color(0, 0x66, 0xCC);
-		fCloseColor = Color::Yellow;//Color(0, 0xEE, 0xFF);
+		fColor = Color(0xa9, 0x00, 0x00);//Color::Red;//Color(0, 0x66, 0xCC);
+		fCloseColor = Color(0xff, 0x24, 0x24); //Color::Yellow;//Color(0, 0xEE, 0xFF);
 		break;
 	}
 
