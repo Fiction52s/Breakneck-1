@@ -14,7 +14,7 @@ struct Dragon : Enemy
 		A_Count
 	};
 
-	const static int MAX_PAST_POSITIONS = 60;
+	const static int MAX_PAST_POSITIONS = 40;//60;
 
 	struct MyData : StoredEnemyData
 	{
@@ -24,7 +24,7 @@ struct Dragon : Enemy
 		int numPastPositions;
 	};
 
-	const static int NUM_SEGMENTS = 60;//6;
+	const static int NUM_SEGMENTS = 40;//60;//6;
 	sf::Vertex segmentQuads[NUM_SEGMENTS * 4];
 
 	MyData data;

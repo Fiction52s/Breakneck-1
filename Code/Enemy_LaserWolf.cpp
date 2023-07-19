@@ -60,8 +60,8 @@ LaserWolf::LaserWolf(ActorParams *ap)
 	hitboxInfo->knockback = 4;
 	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
-	BasicCircleHitBodySetup(16);
-	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(32);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -106,6 +106,15 @@ void LaserWolf::ResetEnemy()
 	frame = 0;
 
 	laserPool.Reset();
+
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();

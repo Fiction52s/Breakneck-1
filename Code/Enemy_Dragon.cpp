@@ -27,14 +27,14 @@ Dragon::Dragon(ActorParams *ap)
 	animFactor[FLY] = 3;
 	animFactor[RUSH] = 3;//12;//8;
 
-	rushSpeed = 30;
+	rushSpeed = 25;//30;
 
 
 	accel.x = 1.0;//.6;
 	accel.y = 2.0;//.7;//.3;
 
-	maxSpeed.x = 20;
-	maxSpeed.y = 10;
+	maxSpeed.x = 17;//20;
+	maxSpeed.y = 17;//10;
 
 	ts = GetSizedTileset("Enemies/W6/rusher_160x160.png");
 	sprite.setTexture(*ts->texture);
@@ -265,8 +265,6 @@ void Dragon::ProcessState()
 	}
 
 	AddPastPosition(GetPosition());
-
-
 }
 
 void Dragon::UpdateEnemyPhysics()
@@ -287,7 +285,7 @@ void Dragon::UpdateSprite()
 	switch (action)
 	{
 	case NEUTRAL:
-		tile = frame / animFactor[NEUTRAL];
+		tile = 0;//frame / animFactor[NEUTRAL];
 		sprite.setRotation(0);
 		break;
 	case FLY:
@@ -327,15 +325,47 @@ void Dragon::UpdateSprite()
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 
-	for (int i = 0; i < data.numPastPositions; ++i)
+	/*for (int i = 0; i < data.numPastPositions; ++i)
 	{
 		SetRectCenter(segmentQuads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(data.pastPositions[i]));
+	}*/
+	int spacer = 4;
+	float testFactor = 1.f;
+	float progress;
+	for (int i = 0; i < data.numPastPositions / spacer; ++i)
+	{
+		progress = 1.f - (i * spacer) / (float)MAX_PAST_POSITIONS;
+		progress += .5;
+		if (progress > 1.f)
+			progress = 1.f;
+		/*if (i * spacer > 45)
+		{
+			testFactor = .5;
+		}
+		else
+		{
+			testFactor = 1.f;
+		}*/
+		SetRectCenter(segmentQuads + i * 4, ts->tileWidth * progress, ts->tileHeight * progress, Vector2f(data.pastPositions[i * spacer]));
 	}
+
+	/*int i = 0;
+	SetRectCenter(segmentQuads + 0 * 4, ts->tileWidth, ts->tileHeight, Vector2f(data.pastPositions[i]));
+	i = 14;
+	SetRectCenter(segmentQuads + 1 * 4, ts->tileWidth, ts->tileHeight, Vector2f(data.pastPositions[i]));
+	i = 29;
+	SetRectCenter(segmentQuads + 2 * 4, ts->tileWidth, ts->tileHeight, Vector2f(data.pastPositions[i]));
+	i = 44;
+	SetRectCenter(segmentQuads + 3 * 4, ts->tileWidth, ts->tileHeight, Vector2f(data.pastPositions[i]));
+	i = 59;
+	SetRectCenter(segmentQuads + 4 * 4, ts->tileWidth, ts->tileHeight, Vector2f(data.pastPositions[i]));*/
+
+
 }
 
 void Dragon::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(segmentQuads, data.numPastPositions * 4, sf::Quads, ts->texture);
+	target->draw(segmentQuads, data.numPastPositions / 4 * 4/*data.numPastPositions * 4*/, sf::Quads, ts->texture);
 
 	DrawSprite(target, sprite);
 }

@@ -739,7 +739,7 @@ bool Wire::TryFire()
 
 		if (data.anchor.enemyIndex >= 0 )
 		{
-			Enemy *enemy = player->sess->GetEnemy(data.anchor.enemyIndex);
+			Enemy *enemy = player->sess->GetEnemyFromID(data.anchor.enemyIndex);
 			enemy->HandleWireUnanchored(this);
 		}
 
@@ -764,7 +764,7 @@ void Wire::UpdateEnemyAnchor()
 {
 	if (data.anchor.enemyIndex >= 0)
 	{
-		Enemy *enemy = player->sess->GetEnemy(data.anchor.enemyIndex);
+		Enemy *enemy = player->sess->GetEnemyFromID(data.anchor.enemyIndex);
 
 		V2d oldPos = data.anchor.pos;
 		data.anchor.pos = enemy->GetCamPoint(data.anchor.enemyPosIndex);
