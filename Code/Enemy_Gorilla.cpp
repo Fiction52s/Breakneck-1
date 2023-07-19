@@ -41,7 +41,7 @@ Gorilla::Gorilla( ActorParams *ap )
 	RegisterCollisionBody(data.wallHitBody);
 
 	SetNumActions(A_Count);
-	SetEditorActions(ATTACK, ATTACK, 0);
+	SetEditorActions(IDLE, IDLE, 0);
 	SetLevel(ap->GetLevel());
 
 	SetSlowable(false);
@@ -53,22 +53,23 @@ Gorilla::Gorilla( ActorParams *ap )
 
 	wallWidth = 600;//400;
 	
-	actionLength[NEUTRAL] = 2;
-	actionLength[WAKEUP] = 20;
-	actionLength[ALIGN] = 60;
-	actionLength[FOLLOW] = followFrames;
-	actionLength[ATTACK] = 4;//60;
-	actionLength[RECOVER] = 2;//60;
+	/*IDLE,
+		FOLLOW,
+		ATTACK,
+		RECOVER,*/
+
+	actionLength[IDLE] = 2;
+	actionLength[FOLLOW] = 30;
+	actionLength[ATTACK] = 4;
+	actionLength[RECOVER] = 2;
 
 
-	animFactor[NEUTRAL] = 1;
-	animFactor[WAKEUP] = 1;
-	animFactor[ALIGN] = 1;
+	animFactor[IDLE] = 1;
 	animFactor[FOLLOW] = 1;
 	animFactor[ATTACK] = 15;
-	animFactor[RECOVER] = 30;
+	animFactor[RECOVER] = 5;
 
-	action = WAKEUP;
+	action = IDLE;
 
 	
 
@@ -121,10 +122,6 @@ Gorilla::Gorilla( ActorParams *ap )
 	wallSprite.setScale(scale * wallWidth / 400.0, scale);
 	wallSprite.setOrigin( wallSprite.getLocalBounds().width / 2, wallSprite.getLocalBounds().height / 2 );
 
-	facingRight = true;
-
-	origFacingRight = facingRight;
-
 	createWallFrame = 20;
 
 	cutObject->SetTileset(ts);
@@ -141,12 +138,19 @@ Gorilla::~Gorilla()
 
 void Gorilla::ResetEnemy()
 {
-	action = WAKEUP;
-	facingRight = origFacingRight;
+	action = IDLE;
 
-	data.latchStartAngle = 0;
-	data.latchedOn = false;
-	data.totalFrame = 0;
+	if (PlayerDir().x >= 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
+
+	data.velocity = V2d(0, 0);
+
 	currWallHitboxes = NULL;
 	
 	DefaultHurtboxesOn();
@@ -154,13 +158,11 @@ void Gorilla::ResetEnemy()
 
 	dead = false;
 	frame = 0;
-	data.basePos = startPosInfo.GetPosition();
 	
 	receivedHit.SetEmpty();
 
 	UpdateHitboxes();
 	UpdateSprite();
-	
 }
 
 //void Gorilla::UpdateHitboxes()
@@ -178,13 +180,22 @@ void Gorilla::ActionEnded()
 	{
 		switch( action )
 		{
-		case WAKEUP:
-		{
-			action = ALIGN;
-			data.alignFrames = 0;
+		case FOLLOW:
+			data.velocity = V2d(0, 0);
+			action = ATTACK;
 			frame = 0;
-			data.physStepIndex = 0;
-			if (playerPos.x < GetPosition().x)
+			break;
+		case ATTACK:
+			currWallHitboxes = NULL;
+			action = RECOVER;
+			frame = 0;
+			break;
+		case RECOVER:
+			{
+			action = FOLLOW;
+			frame = 0;
+
+			if( playerPos.x < GetPosition().x )
 			{
 				facingRight = false;
 			}
@@ -193,55 +204,7 @@ void Gorilla::ActionEnded()
 				facingRight = true;
 			}
 
-			data.latchedOn = true;
-			data.offsetPlayer = data.basePos - playerPos;
-			data.origOffset = data.offsetPlayer;
-			V2d offsetDir = normalize(data.offsetPlayer);
-
-			data.basePos = playerPos;
-
-			double currRadius = length(data.offsetPlayer);
-			data.alignMoveFrames = 60;// *5 * NUM_STEPS;
 			break;
-		}
-		case ALIGN:
-			frame = 0;
-			break;
-		case FOLLOW:
-			action = ATTACK;
-			frame = 0;
-			break;
-		case ATTACK:
-			action = RECOVER;
-			frame = 0;
-			break;
-		case RECOVER:
-			{
-				data.latchedOn = true;
-				data.offsetPlayer = data.basePos - playerPos;
-				data.origOffset = data.offsetPlayer;
-				V2d offsetDir = normalize(data.offsetPlayer );
-
-				data.basePos = playerPos;
-				currWallHitboxes = NULL;
-
-				action = ALIGN;
-				double currRadius = length(data.offsetPlayer );
-				data.alignMoveFrames = 60;
-				frame = 0;
-				data.physStepIndex = 0;
-				data.alignFrames = 0;
-
-				if( playerPos.x < GetPosition().x )
-				{
-					facingRight = false;
-				}
-				else
-				{
-					facingRight = true;
-				}
-
-				break;
 			}
 			
 		}
@@ -254,35 +217,27 @@ void Gorilla::ProcessState()
 
 	V2d playerPos = sess->GetPlayer( 0 )->position;
 	V2d myPos = GetPosition();
+	double dist = PlayerDist();
 
 	switch( action )
 	{
-	case NEUTRAL:
-		if (PlayerDist() < 800)
+	case IDLE:
+		if (dist < DEFAULT_DETECT_RADIUS)
 		{
-			action = WAKEUP;
+			action = ATTACK;
 			frame = 0;
-		}
-		break;
-	case WAKEUP:
-		{
-		}
-		break;
-	case ALIGN:
-		{
-			if(data.alignFrames >= data.alignMoveFrames )
-			{
-				action = FOLLOW;
-				frame = 0;
-			}
-			else
-			{
-				++data.alignFrames;
-			}
 		}
 		break;
 	case FOLLOW:
 		{
+		if (playerPos.x < GetPosition().x)
+		{
+			facingRight = false;
+		}
+		else
+		{
+			facingRight = true;
+		}
 			//cout << "follow" << endl;	
 		}
 		break;
@@ -293,7 +248,7 @@ void Gorilla::ProcessState()
 		{
 			V2d test = myPos - playerPos;
 	
-			V2d playerDir = -normalize(data.origOffset );
+			V2d playerDir = PlayerDir();//-normalize(data.origOffset );
 
 			CollisionBox &wallHitbox = data.wallHitBody.GetCollisionBoxes(0).front();
 
@@ -305,111 +260,62 @@ void Gorilla::ProcessState()
 			wallSprite.setRotation( wallHitbox.globalAngle / PI * 180.0 );
 
 			currWallHitboxes = &data.wallHitBody;
-
-			data.latchedOn = false;
-			data.basePos = myPos;
 		}
 		break;
 	case RECOVER:
 		//cout << "recover" << endl;
 		break;
 	}
+
+	switch (action)
+	{
+	case FOLLOW:
+	{
+		if (dist < DEFAULT_DETECT_RADIUS)
+		{
+			data.velocity = PlayerDir() * 1.0;
+		}
+		else if (dist > DEFAULT_IGNORE_RADIUS)
+		{
+			data.velocity = V2d(0, 0);
+		}
+		break;
+	}
+	case RECOVER:
+	{
+		if (playerPos.x < GetPosition().x)
+		{
+			facingRight = false;
+		}
+		else
+		{
+			facingRight = true;
+		}
+
+		//cout << "follow" << endl;	
+		break;
+	}
+	}
 }
 
 void Gorilla::UpdateEnemyPhysics()
 {
-	V2d playerPos = sess->GetPlayerPos(0);
-	if(data.latchedOn )
-	{
-		data.basePos = playerPos;
-	}
-	else
-	{
-		
-		
-	}
+	V2d movementVec = data.velocity;
+	movementVec /= slowMultiple * (double)numPhysSteps;
 
-	V2d offsetDir = normalize(data.offsetPlayer );
-
-
-
-	switch( action )
-	{
-	case WAKEUP:
-		//frame = 0;
-		break;
-	case ALIGN:
-		{
-		/*double a = (double)physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
-		if (a > 1.0)
-		{
-			action = S_OUT;
-			frame = 0;
-			physStepIndex = 0;
-			break;
-		}
-		double f = dashBez.GetValue(a);
-		double rf = 1.0 - f;
-
-		position = currOrig * rf + dest * f;
-
-
-		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;*/
-
-			CubicBezier b(0, 0, 1, 1);
-			double f = b.GetValue(data.physStepIndex / ((double)data.alignMoveFrames * NUM_MAX_STEPS * 5));
-
-			V2d idealOffset = offsetDir * idealRadius;
-			
-			
-			data.offsetPlayer = data.origOffset * (1.0 - f) + idealOffset * f;
-			//alignFrames += 5 / slowMultiple;
-			int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
-
-			data.physStepIndex += steps;
-		}
-		//frame = 0;
-		break;
-	case FOLLOW:
-		//cout << "follow: " << frame << endl;
-		//frame = 0;
-		break;
-	case ATTACK:
-		//cout << "ATTACK: " << frame << endl;
-		//action = RECOVER;
-		//frame = 0;
-		break;
-	case RECOVER:
-		//cout << "recovery: " << frame << endl;
-		//action = ALIGN;
-		//frame = 0;
-		break;
-	}
-
-	if(data.latchedOn )
-	{
-		currPosInfo.position = data.basePos + data.offsetPlayer;
-	}
+	currPosInfo.position += movementVec;
 }
 
 
 void Gorilla::UpdateSprite()
 {
-	if (data.latchedOn)
-	{
-		currPosInfo.position = data.basePos + data.offsetPlayer;
-	}
-
 	V2d diff = sess->GetPlayerPos(0) - GetPosition();
 	double lenDiff = length(diff);
 	IntRect ir;
 	switch (action)
 	{
-	case WAKEUP:
-		ir = ts->GetSubRect(0);
-		break;
-	case ALIGN:
-		ir = ts->GetSubRect(0);
+	case IDLE:
+		ir = ts->GetSubRect(1);
 		break;
 	case FOLLOW:
 		ir = ts->GetSubRect(1);

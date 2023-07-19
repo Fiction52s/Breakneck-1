@@ -9,12 +9,12 @@ using namespace std;
 using namespace sf;
 
 
-SkeletonLaserPool::SkeletonLaserPool()
+SkeletonLaserPool::SkeletonLaserPool( int maxLasers )
 {
 	Session *sess = Session::GetSession();
 
 	ts = NULL;
-	numLasers = 100;//5;//10;
+	numLasers = maxLasers;//100;//5;//10;
 	laserVec.resize(numLasers);
 	//verts = new Vertex[numLasers * 4];
 	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
@@ -111,6 +111,16 @@ void SkeletonLaserPool::SetAllSpeedDefault()
 		{
 			bs->SetSpeedDefault();
 		}
+	}
+}
+
+void SkeletonLaserPool::SetEnemyIDsAndAddToGame()
+{
+	SkeletonLaser *bs = NULL;
+	for (int i = 0; i < numLasers; ++i)
+	{
+		bs = laserVec[i];
+		bs->SetEnemyIDAndAddToAllEnemiesVec();
 	}
 }
 
@@ -390,6 +400,17 @@ void SkeletonLaser::SetLaserTypeParams()
 		flySpeed = 30;
 		headColor = Color::Cyan;
 		tailColor = Color::Cyan;
+		tailColor.a = 50;
+		break;
+	}
+	case LT_ENEMY_WOLF:
+	{
+		origTimeToLive = 180;//60 * 30;
+		laserWidth = 10;
+		lengthLimit = 400;//1000;//1500;//500;
+		flySpeed = 30;
+		headColor = Color::Magenta;
+		tailColor = Color::Magenta;
 		tailColor.a = 50;
 		break;
 	}

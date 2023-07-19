@@ -1608,6 +1608,7 @@ struct Actor : QuadTreeCollider,
 	bool BasicAirAction();
 	bool GlideAction();
 	bool HomingAction();
+	bool IsHomingAttackAction(int a);
 	bool BasicGroundAction( V2d &gNorm);
 	bool BasicSteepAction(V2d &gNorm);
 	bool BasicAirAttackAction();
@@ -1839,6 +1840,7 @@ struct Actor : QuadTreeCollider,
 	void CheckCollisionForTerrainFade();
 
 	void ProcessGroundedCollision();
+	bool TryLandFromBounceGround();
 
 	
 	int GetNumStoredBytes();

@@ -31,12 +31,19 @@ Skunk::Skunk(ActorParams *ap)
 	SetNumActions(Count);
 	SetEditorActions(IDLE, 0, 0);
 
-	actionLength[IDLE] = 11 * 5;
+	actionLength[IDLE] = 2;
 	actionLength[LAND] = 1;
 	actionLength[HOP] = 2;
-	actionLength[WALK] = 60;
+	actionLength[WALK] = 15;
 	actionLength[CHARGE] = 30;
-	actionLength[EXPLODE] = 15;
+	actionLength[EXPLODE] = 20;
+
+	animFactor[IDLE] = 5;
+	animFactor[LAND] = 1;
+	animFactor[HOP] = 1;
+	animFactor[WALK] = 3;
+	animFactor[CHARGE] = 1;
+	animFactor[EXPLODE] = 1;
 
 	gravity = .8;
 	maxGroundSpeed = 3;
@@ -44,7 +51,7 @@ Skunk::Skunk(ActorParams *ap)
 	runAccel = 1.0;
 	runDecel = runAccel * 3.0;
 
-	explosionRadius = 325;
+	explosionRadius = 325;//325;
 
 	CreateGroundMover(startPosInfo, 40, true, this);
 	groundMover->AddAirForce(V2d(0, gravity));
@@ -52,7 +59,7 @@ Skunk::Skunk(ActorParams *ap)
 
 	
 
-	ts = GetSizedTileset("Enemies/W6/skunk_128x128.png");
+	ts = GetSizedTileset("Enemies/W6/skunk_160x128.png");
 
 	SetOffGroundHeight(128 / 2);
 
@@ -87,8 +94,8 @@ Skunk::Skunk(ActorParams *ap)
 	
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(0);
-	cutObject->SetSubRectBack(0);
+	cutObject->SetSubRectFront(20);
+	cutObject->SetSubRectBack(19);
 	cutObject->SetScale(scale);
 
 	Color exploColor = Color::Red;
@@ -150,7 +157,7 @@ void Skunk::ResetEnemy()
 
 void Skunk::ActionEnded()
 {
-	if (frame == actionLength[action])
+	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
@@ -158,7 +165,8 @@ void Skunk::ActionEnded()
 			frame = 0;
 			break;
 		case WALK:
-			action = HOP;
+			frame = 0; //just for testing the walk
+			/*action = HOP;
 			frame = 0;
 			if (facingRight)
 			{
@@ -167,7 +175,7 @@ void Skunk::ActionEnded()
 			else
 			{
 				groundMover->Jump(V2d(-maxGroundSpeed, -10));
-			}
+			}*/
 			break;
 		case HOP:
 			frame = 1;
@@ -226,7 +234,8 @@ void Skunk::ProcessState()
 			action = IDLE;
 			frame = 0;
 		}
-		else if (dist < explosionRadius && data.refreshFrame == maxRefreshFrames )
+		//else if (dist < explosionRadius && data.refreshFrame == maxRefreshFrames )
+		else if (dist < 500 && data.refreshFrame == maxRefreshFrames)
 		{
 			action = CHARGE;
 			frame = 0;
@@ -469,7 +478,32 @@ void Skunk::IHitPlayer(int index)
 void Skunk::UpdateSprite()
 {
 
-	IntRect r = ts->GetSubRect(0);
+	int tile = 0;
+
+	switch (action)
+	{
+	case IDLE:
+		tile = frame / animFactor[IDLE];
+		break;
+	case WALK:
+		tile = frame / animFactor[WALK] + 2;
+		break;
+	case HOP:
+		tile = 0;
+		break;
+	case CHARGE:
+		tile = 17;
+		break;
+	case EXPLODE:
+		tile = 18;
+		break;
+	case LAND:
+		tile = 0;
+		break;
+	}
+
+
+	IntRect r = ts->GetSubRect(tile);
 	if (!facingRight)
 	{
 		r = sf::IntRect(r.left + r.width, r.top, -r.width, r.height);

@@ -161,13 +161,14 @@ void Actor::STEEPSLIDE_Change()
 
 	if (DashButtonPressed())
 	{
-		if (currNormal.x < 0 && (currInput.LRight() || currInput.LUp()))
+		//up and away from a steep slope shouldn't make you climb out of a slide!
+		if (currNormal.x < 0 && (currInput.LRight() || currInput.LUp()) && !currInput.LLeft() && !currInput.LDown())
 		{
 			SetAction(STEEPCLIMB);
 			groundSpeed = 0;//steepClimbBoostStart;
 			frame = 0;
 		}
-		else if (currNormal.x > 0 && (currInput.LLeft() || currInput.LUp()))
+		else if (currNormal.x > 0 && (currInput.LLeft() || currInput.LUp()) && !currInput.LRight() && !currInput.LDown())
 		{
 			SetAction(STEEPCLIMB);
 			groundSpeed = 0;//-steepClimbBoostStart;

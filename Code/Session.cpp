@@ -526,6 +526,7 @@ void Session::RegisterW5Enemies()
 
 	//targets
 	AddBasicAerialWorldEnemy("Red\nComboer\nTarget", "redcomboertarget", 5, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddBasicAerialWorldEnemy("Homing\nTarget", "homingtarget", 5, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false );
 	AddWorldEnemy("Red\nBlocker", "redblocker", 5, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
@@ -549,13 +550,15 @@ void Session::RegisterW6Enemies()
 	//enemies
 	AddBasicAerialWorldEnemy("Gorilla", "gorilla", 6, enemyRow, CreateEnemy<Gorilla>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Specter", "specter", 6, enemyRow, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Laser Wolf", "laserwolf", 6, enemyRow, CreateEnemy<LaserWolf>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("ChessX", "chessx", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("ChessY", "chessy", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Chess Diag Down Right", "chessdiagdownright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("chess Diag Up Right", "chessdiagupright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Future Checker", "futurechecker", 6, enemyRow, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Laser Jays", "laserjays", 6, enemyRow, CreateEnemy<LaserJays>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Tethered Rusher", "tetheredrusher", 6, enemyRow, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("Tethered Rusher", "tetheredrusher", 6, enemyRow, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Dragon", "dragon", 6, enemyRow, CreateEnemy<Dragon>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Predict Turret", "predictturret", 6, enemyRow, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Skunk", "skunk", 6, enemyRow, CreateEnemy<Skunk>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Copycat", "copycat", 6, enemyRow, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -9511,7 +9514,7 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 
 	int w = worldIndex + 1;
 
-	if (worldIndex < 2)
+	if (worldIndex < 8)
 	{
 		stringstream ss;
 		ss << "FX/key_w" << w << "_128x128.png";

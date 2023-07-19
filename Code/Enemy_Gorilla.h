@@ -7,34 +7,27 @@ struct Gorilla : Enemy
 {
 	enum Action
 	{
-		NEUTRAL,
-		WAKEUP,
-		ALIGN,
+		IDLE,
 		FOLLOW,
 		ATTACK,
 		RECOVER,
+		//NEUTRAL,
+		//WAKEUP,
+		//ALIGN,
+		//FOLLOW,
+		//ATTACK,
+		//RECOVER,
 		A_Count
 	};
 
 	struct MyData : StoredEnemyData
 	{
-		double latchStartAngle;
-		V2d basePos;
-		int totalFrame;
-
-		int currWallHitboxesBodyID;
-		V2d offsetPlayer;
-		V2d origOffset;
-		bool latchedOn;
-		int alignMoveFrames;
-		int alignFrames;
+		int currWallHitboxesBodyID;	
 		CollisionBody wallHitBody;
-		int physStepIndex;
+		V2d velocity;
 	};
 	MyData data;
-	
-	
-	bool origFacingRight;
+
 
 	CollisionBody *currWallHitboxes;
 

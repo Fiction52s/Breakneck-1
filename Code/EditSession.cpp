@@ -3874,7 +3874,7 @@ void EditSession::Init()
 {
 	UpdateWorldDependentTileset(0);
 
-	cout << "init1" << endl;
+	//cout << "init1" << endl;
 	frameRateDisplay.showFrameRate = true;
 	runningTimerDisplay.showRunningTimer = true;
 

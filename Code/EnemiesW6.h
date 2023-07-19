@@ -16,5 +16,7 @@
 #include "Enemy_LaserJays.h"
 #include "Enemy_SequenceSkeleton.h"
 #include "Enemy_ScorpionLauncher.h"
+#include "Enemy_LaserWolf.h"
+#include "Enemy_Dragon.h"
 
 #endif

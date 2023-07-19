@@ -380,7 +380,13 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_TETHEREDRUSHER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_DRAGON:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_CHESS:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_LASERWOLF:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_FALCON:

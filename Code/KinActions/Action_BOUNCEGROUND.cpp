@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Session.h"
 #include "SoundTypes.h"
+#include "EditorTerrain.h"
 
 using namespace std;
 using namespace sf;
@@ -19,6 +20,27 @@ void Actor::BOUNCEGROUND_End()
 
 void Actor::BOUNCEGROUND_Change()
 {
+	//if (TryGroundBlock()) return true;
+
+	//if (TryFloorRailDropThrough()) return true;
+
+	//if (TryPressGrind()) return true;
+
+	//if (TryJumpSquat()) return true;
+
+	//if (TryGroundAttack()) return true;
+
+	//if (TryDash()) return true;
+
+	////control only
+
+	//if (BasicSteepAction(gNorm)) return true;
+
+	//if (TrySprintOrRun(gNorm)) return true;
+
+	//if (TrySlideBrakeOrStand()) return true;
+
+
 	//if (!PowerButtonHeld() || currPowerMode != PMODE_BOUNCE )
 	if( !bounceFlameOn)
 	{
@@ -30,6 +52,106 @@ void Actor::BOUNCEGROUND_Change()
 		return;
 	}
 
+	//if (TryGroundBlock()) return true;
+
+	//if (TryFloorRailDropThrough()) return true;
+
+	//if (TryPressGrind()) return true;
+	if (JumpButtonPressed())
+	{
+		if (TryLandFromBounceGround())
+		{
+			SetAction(JUMPSQUAT);
+			frame = 0;
+			return;
+		}
+		else
+		{
+			if (TryDoubleJump())
+			{
+				bounceEdge = NULL;
+				velocity = storedBounceVel;
+				holdJump = false;
+				return;
+			}
+		}
+		
+	}
+	
+	if (AttackButtonPressed())
+	{
+		if (TryLandFromBounceGround())
+		{
+			if (TryGroundAttack())
+			{
+				return;
+			}
+			else
+			{
+				assert(0);
+			}
+		}
+		else
+		{
+			if (AirAttack())
+			{
+				bounceEdge = NULL;
+				velocity = storedBounceVel;
+				holdJump = false;
+				return;
+			}
+			else
+			{
+				assert(0);
+			}
+		}
+	}
+	
+	if (DashButtonPressed())
+	{
+		if (bounceNorm.y < 0 && TerrainPolygon::IsSteepGround(bounceNorm))
+		{
+			if ((bounceNorm.x < 0 && (currInput.LRight() || currInput.LUp()) && !currInput.LLeft() && !currInput.LDown())
+				|| (bounceNorm.x > 0 && (currInput.LLeft() || currInput.LUp()) && !currInput.LRight() && !currInput.LDown()))
+			{
+				if (!TryLandFromBounceGround())
+				{
+					assert(0);
+				}
+				SetAction(STEEPCLIMB);
+				frame = 0;
+				return;
+			}
+		}
+		else if (TryLandFromBounceGround())
+		{
+			SetAction(DASH);
+			frame = 0;
+			return;
+		}
+		else
+		{
+			if (TryAirDash())
+			{
+				bounceEdge = NULL;
+				velocity = storedBounceVel;
+				holdJump = false;
+				return;
+			}
+		}
+		
+	}
+
+	/*if (TryJumpSquat())
+	{
+		
+		return;
+	}
+	
+
+	if (TryGroundAttack()) return;
+
+	if (TryDash()) return;*/
 
 
 	V2d bn = bounceNorm;//bounceEdge->Normal();
@@ -433,25 +555,7 @@ void Actor::BOUNCEGROUND_Change()
 
 			groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
 
-			/*if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
-			{
-			groundSpeed = dot( testVel, alongVel );
-			}
-			else
-			{
-			if( gNorm.y > -steepThresh )
-			{
-			groundSpeed = dot( testVel, alongVel );
-			}
-			else
-			{
-			groundSpeed = 0;
-			}
-			}*/
 
-			//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
-			//cout << "setting groundSpeed: " << groundSpeed << endl;
-			//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
 			currNormal = ground->Normal();
 
 			//if( gNorm.y <= -steepThresh )

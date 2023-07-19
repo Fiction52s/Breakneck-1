@@ -9,7 +9,7 @@ struct SkeletonLaser;
 
 struct SkeletonLaserPool
 {
-	SkeletonLaserPool();
+	SkeletonLaserPool( int maxLasers );
 	~SkeletonLaserPool();
 	void Reset();
 	SkeletonLaser * Throw(int type, V2d &pos, V2d &dir);
@@ -18,6 +18,7 @@ struct SkeletonLaserPool
 	void RedirectAllTowards(V2d &pos);
 	void SetAllSpeed(double speed);
 	void SetAllSpeedDefault();
+	void SetEnemyIDsAndAddToGame();
 	//void Draw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget * target);
 	std::vector<SkeletonLaser*> laserVec;
@@ -45,6 +46,7 @@ struct SkeletonLaser : Enemy,
 		LT_LONG,
 		LT_HOME,
 		LT_NO_COLLIDE,
+		LT_ENEMY_WOLF,
 		LT_Count,
 	};
 

@@ -115,6 +115,11 @@ void Actor::Hitter::SetBullet(int bulletID, int p_launcherID)
 
 bool Actor::Hitter::CheckEnemy(Enemy *e)
 {
+	if (e->enemyIndex == -1)
+	{
+		assert(0); //enemy index not initialized for this enemy
+	}
+
 	if (e == NULL)
 	{
 		assert(0);
@@ -134,6 +139,11 @@ bool Actor::Hitter::CheckEnemy(Enemy *e)
 
 bool Actor::Hitter::CheckBullet(BasicBullet *b)
 {
+	if (b->bulletID == -1)
+	{
+		assert(0); //bullet not initialized
+	}
+
 	if (b == NULL)
 	{
 		assert(0);
@@ -10696,6 +10706,11 @@ bool Actor::BasicAirAttackAction()
 	return false;
 }
 
+bool Actor::IsHomingAttackAction(int a)
+{
+	return a == HOMINGATTACK || a == SPRINGSTUNHOMINGATTACK;
+}
+
 void Actor::CheckBounceFlame()
 {
 	//currInput.X
@@ -13255,7 +13270,7 @@ void Actor::UpdatePhysics()
 
 										break;
 									}
-									else if (minContact.normal.y > 0 && minContact.normal.y < steepThresh 
+									else if (minContact.normal.y > 0 //&& minContact.normal.y < steepThresh 
 										&& ( action == STEEPCLIMB || action == STEEPCLIMBATTACK ) 
 										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0)) 
 										&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
@@ -15367,6 +15382,7 @@ void Actor::PhysicsResponse()
 						}
 						else
 						{
+							
 							SetAction(LAND);
 							ActivateSound(PlayerSounds::S_LAND);
 						}
@@ -19419,6 +19435,87 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 	}
 	++possibleEdgeCount; //not needed
+}
+
+bool Actor::TryLandFromBounceGround()
+{
+	assert(bounceEdge != NULL);
+	V2d bn = bounceNorm;
+	if (bn.y < 0)
+	{
+		V2d alongVel = V2d(-bn.y, bn.x);
+		ground = bounceEdge;
+		bounceEdge = NULL;
+
+		if (bn.y > -steepThresh)
+		{
+
+		}
+		else
+		{
+		}
+		//SetAction(LAND);
+		//frame = 0;
+
+		bounceFlameOn = true;
+		scorpOn = true;
+
+		V2d testVel = storedBounceVel;
+
+
+		if (testVel.y > 20)
+		{
+			testVel.y *= .7;
+		}
+		else if (testVel.y < -30)
+		{
+
+			testVel.y *= .5;
+		}
+
+		groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
+
+		/*if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
+		{
+		groundSpeed = dot( testVel, alongVel );
+		}
+		else
+		{
+		if( gNorm.y > -steepThresh )
+		{
+		groundSpeed = dot( testVel, alongVel );
+		}
+		else
+		{
+		groundSpeed = 0;
+		}
+		}*/
+
+		//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+		//cout << "setting groundSpeed: " << groundSpeed << endl;
+		//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
+		currNormal = ground->Normal();
+
+		//if( gNorm.y <= -steepThresh )
+		{
+			RestoreAirOptions();
+		}
+
+		if (testVel.x < 0 && currNormal.y <= -steepThresh)
+		{
+			groundSpeed = min(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
+			//cout << "left boost: " << groundSpeed << endl;
+		}
+		else if (testVel.x > 0 && currNormal.y <= -steepThresh)
+		{
+			groundSpeed = max(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
+			//cout << "right boost: " << groundSpeed << endl;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 double Actor::CalcLandingSpeed( V2d &testVel,

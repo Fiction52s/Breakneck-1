@@ -58,6 +58,11 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 		targetType = TARGET_SCORPION;
 		//sprite.setColor(Color::Yellow);
 	}
+	else if (typeName == "homingtarget")
+	{
+		targetType = TARGET_HOMING;
+		regenOn = false;
+	}
 	else if (typeName == "freeflighttarget")
 	{
 		targetType = TARGET_FREEFLIGHT;
@@ -348,6 +353,19 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 	else if (targetType == TARGET_GRIND)
 	{
 		return NULL;
+	}
+	else if (targetType == TARGET_HOMING)
+	{
+		Actor *player = sess->GetPlayer(0);
+
+		if (player->IsHomingAttackAction(player->action))
+		{
+			return Enemy::IsHit(pIndex);
+		}
+		else
+		{
+			return NULL;
+		}
 	}
 	else
 	{

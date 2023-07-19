@@ -12,7 +12,8 @@ using namespace sf;
 
 
 Skeleton::Skeleton(ActorParams *ap)
-	:Boss(EnemyType::EN_SKELETONBOSS, ap)
+	:Boss(EnemyType::EN_SKELETONBOSS, ap),
+	laserPool( 100 )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);

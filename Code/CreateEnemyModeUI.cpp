@@ -131,6 +131,8 @@ void EnemyVariationSelector::Draw(RenderTarget *target)
 
 CreateEnemyModeUI::CreateEnemyModeUI()
 {
+	int x = 5;
+
 	varSelector = new EnemyVariationSelector( true );
 	activeHotbarSize = 0;
 
