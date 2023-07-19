@@ -2,6 +2,7 @@
 #define __ENEMY_SPECTER_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct Specter;
 struct SpecterArea : QuadTreeEntrant
@@ -26,11 +27,13 @@ struct SpecterTester : QuadTreeCollider
 	Enemy *enemy;
 };
 
-struct Specter : Enemy
+struct Specter : Enemy, LauncherEnemy
 {
 	enum Action
 	{
-		IDLE,
+		A_IDLE,
+		A_ATTACK,
+		A_RECOVER,
 		A_Count
 	};
 
@@ -40,19 +43,24 @@ struct Specter : Enemy
 	};
 	MyData data;
 
-	SpecterArea myArea;
+	//SpecterArea myArea;
 
-	int radius;
+	//int radius;
 	Tileset *ts;
 
-	sf::CircleShape radCircle;
+	//sf::CircleShape radCircle;
 
-	int animationFactor;
+	Tileset *ts_bulletExplode;
 
 	Specter(ActorParams *ap );
 	~Specter();
 	void SetLevel(int lev);
-	void AddToWorldTrees();
+	//void AddToWorldTrees();
+	void DirectKill();
+	void BulletHitTerrain(BasicBullet *b,
+		Edge *edge, V2d &pos);
+	void BulletHitPlayer(int playerIndex,
+		BasicBullet *b, int hitResult);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 
