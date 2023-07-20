@@ -50,8 +50,17 @@ void Actor::BOUNCEGROUNDEDWALL_Update()
 	}
 	else if (frame == 6)
 	{
-
-		groundSpeed = -storedBounceGroundSpeed / (double)slowMultiple;
+		double boost = 5;
+		double newSpeed = storedBounceGroundSpeed;
+		if (newSpeed > 0)
+		{
+			newSpeed += boost;
+		}
+		else if( newSpeed < 0 )
+		{
+			newSpeed += -boost;
+		}
+		groundSpeed = -newSpeed / (double)slowMultiple;
 		//cout << "set ground speed to: " << groundSpeed << endl;
 	}
 }

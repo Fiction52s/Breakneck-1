@@ -15662,7 +15662,7 @@ void Actor::PhysicsResponse()
 
 	
 
-	if( groundedWallBounce )
+	if( groundedWallBounce && action != BOUNCEGROUNDEDWALL )
 	{
 		SetAction(BOUNCEGROUNDEDWALL);
 		frame = 0;
