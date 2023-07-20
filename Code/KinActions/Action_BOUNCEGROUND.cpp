@@ -228,6 +228,20 @@ void Actor::BOUNCEGROUND_Change()
 
 		velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
 
+		//minimum bounce along normal. wall minimum bounce is smaller
+		double alongNormal = dot(velocity, bn);
+		double limit = 10.0;
+		if (bn.x == 1.0 || bn.x == -1.0)
+		{
+			limit = 2.0;
+		}
+		if ( alongNormal < limit)
+		{
+			//cout << "heres the test" << endl;
+			double diff = limit - alongNormal;
+			velocity += diff * bn;
+		}
+
 		if (bn.y == 1 || bn.y == -1)
 		{
 			if (velocity.x == 0)
