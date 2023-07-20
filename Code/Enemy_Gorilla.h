@@ -2,6 +2,7 @@
 #define __ENEMY_GORILLA_H__
 
 #include "Enemy.h"
+#include "Enemy_GorillaWall.h"
 
 struct Gorilla : Enemy
 {
@@ -22,47 +23,17 @@ struct Gorilla : Enemy
 
 	struct MyData : StoredEnemyData
 	{
-		int currWallHitboxesBodyID;	
-		CollisionBody wallHitBody;
 		V2d velocity;
 	};
 	MyData data;
-
-
-	CollisionBody *currWallHitboxes;
-
 	
 	int createWallFrame;
-	
-	int followFrames;
 
-	
-
-	HitboxInfo *wallHitboxInfo;
-
-	double wallWidth;
-
-	double acceleration;
-	double speed;
-
-	int approachFrames;
-	
+	GorillaWallPool wallPool;
 
 	Tileset *ts;
 
-	Tileset *ts_wall;
-	sf::Sprite wallSprite;
-
-	int wallHitboxWidth;
-	int wallHitboxHeight;
-	double idealRadius;
 	double wallAmountCloser;
-
-	int hitlagFrames;
-	int hitstunFrames;
-	int animationFactor;
-
-	CubicBezier approachAccelBez;
 
 	Gorilla(ActorParams *ap);
 	~Gorilla();
@@ -79,7 +50,7 @@ struct Gorilla : Enemy
 	
 	void UpdateSprite();
 	void ResetEnemy();
-	bool CheckHitPlayer(int index = 0);
+	void AddToGame();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

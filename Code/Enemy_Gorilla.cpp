@@ -36,22 +36,22 @@ void Gorilla::SetLevel(int lev)
 }
 
 Gorilla::Gorilla( ActorParams *ap )
-	:Enemy( EnemyType::EN_GORILLA, ap ),approachAccelBez( 1,.01,.86,.32 ) 
+	:Enemy( EnemyType::EN_GORILLA, ap )
 {
-	RegisterCollisionBody(data.wallHitBody);
+	//RegisterCollisionBody(data.wallHitBody);
 
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, IDLE, 0);
 	SetLevel(ap->GetLevel());
 
-	SetSlowable(false);
+	//SetSlowable(false);
 
-	followFrames = 60;
+	//followFrames = 60;
 
-	idealRadius = 500;//300;
-	wallAmountCloser = 200;
+	//idealRadius = 500;//300;
+	wallAmountCloser = 50;//200;
 
-	wallWidth = 600;//400;
+	//wallWidth = 300;//600;//400;
 	
 	/*IDLE,
 		FOLLOW,
@@ -60,22 +60,16 @@ Gorilla::Gorilla( ActorParams *ap )
 
 	actionLength[IDLE] = 2;
 	actionLength[FOLLOW] = 30;
-	actionLength[ATTACK] = 4;
+	actionLength[ATTACK] = 7;
 	actionLength[RECOVER] = 2;
 
 
 	animFactor[IDLE] = 1;
 	animFactor[FOLLOW] = 1;
-	animFactor[ATTACK] = 15;
-	animFactor[RECOVER] = 5;
+	animFactor[ATTACK] = 4;
+	animFactor[RECOVER] = 15;//5;
 
 	action = IDLE;
-
-	
-
-	approachFrames = 180 * 3;
-
-	animationFactor = 5;
 
 	ts = GetSizedTileset( "Enemies/W6/gorilla_320x256.png");
 
@@ -97,32 +91,7 @@ Gorilla::Gorilla( ActorParams *ap )
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	wallHitboxWidth = wallWidth;
-	wallHitboxHeight = 50;
-
-	wallHitboxInfo = new HitboxInfo;
-	wallHitboxInfo->damage = 180;
-	wallHitboxInfo->drainX = 0;
-	wallHitboxInfo->drainY = 0;
-	wallHitboxInfo->hitlagFrames = 5;
-	wallHitboxInfo->hitstunFrames = 10;
-	wallHitboxInfo->knockback = 4;
-	wallHitboxInfo->hType = HitboxInfo::MAGENTA;
-
-	data.wallHitBody.SetupNumFrames(1);
-	data.wallHitBody.SetupNumBoxesOnFrame(0, 1);
-	data.wallHitBody.AddBasicRect(0, wallHitboxWidth/2, wallHitboxHeight/2, 0, V2d());
-	
-	data.wallHitBody.hitboxInfo = wallHitboxInfo;
-	
-
-	ts_wall = GetSizedTileset("Enemies/W6/gorillawall_400x50.png");
-	wallSprite.setTexture( *ts_wall->texture );
-	wallSprite.setTextureRect( ts_wall->GetSubRect( 0 ) );
-	wallSprite.setScale(scale * wallWidth / 400.0, scale);
-	wallSprite.setOrigin( wallSprite.getLocalBounds().width / 2, wallSprite.getLocalBounds().height / 2 );
-
-	createWallFrame = 20;
+	createWallFrame = 6 * animFactor[ATTACK];//20;
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectBack(9);
@@ -133,7 +102,6 @@ Gorilla::Gorilla( ActorParams *ap )
 
 Gorilla::~Gorilla()
 {
-	delete wallHitboxInfo;
 }
 
 void Gorilla::ResetEnemy()
@@ -149,9 +117,9 @@ void Gorilla::ResetEnemy()
 		facingRight = false;
 	}
 
-	data.velocity = V2d(0, 0);
+	wallPool.Reset();
 
-	currWallHitboxes = NULL;
+	data.velocity = V2d(0, 0);
 	
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -164,13 +132,6 @@ void Gorilla::ResetEnemy()
 	UpdateHitboxes();
 	UpdateSprite();
 }
-
-//void Gorilla::UpdateHitboxes()
-//{
-//	Enemy::UpdateHitboxes();
-//	wallHitBody.SetBasicPos(pos, 0);
-//	
-//}
 
 void Gorilla::ActionEnded()
 {
@@ -186,7 +147,6 @@ void Gorilla::ActionEnded()
 			frame = 0;
 			break;
 		case ATTACK:
-			currWallHitboxes = NULL;
 			action = RECOVER;
 			frame = 0;
 			break;
@@ -244,22 +204,27 @@ void Gorilla::ProcessState()
 	case ATTACK:
 
 		//cout << "attack" << endl;
-		if( frame == createWallFrame )
+		if( frame == createWallFrame && slowCounter == 1)
 		{
-			V2d test = myPos - playerPos;
+			V2d pDir = PlayerDir();
+			wallPool.Throw(myPos + pDir * wallAmountCloser, pDir);
+
+			//V2d test = myPos - playerPos;
 	
-			V2d playerDir = PlayerDir();//-normalize(data.origOffset );
+			//V2d playerDir = PlayerDir();//-normalize(data.origOffset );
 
-			CollisionBox &wallHitbox = data.wallHitBody.GetCollisionBoxes(0).front();
+			//CollisionBox &wallHitbox = data.wallHitBody.GetCollisionBoxes(0).front();
 
-			wallHitbox.globalPosition = myPos + playerDir * wallAmountCloser;
-			wallHitbox.globalAngle = atan2( playerDir.x, -playerDir.y );
+			//wallHitbox.globalPosition = myPos + playerDir * wallAmountCloser;
+			//wallHitbox.globalAngle = atan2( playerDir.x, -playerDir.y );
 
-			wallSprite.setPosition( wallHitbox.globalPosition.x, 
-				wallHitbox.globalPosition.y );
-			wallSprite.setRotation( wallHitbox.globalAngle / PI * 180.0 );
+			//wallSprite.setPosition( wallHitbox.globalPosition.x, 
+			//	wallHitbox.globalPosition.y );
+			//wallSprite.setRotation( wallHitbox.globalAngle / PI * 180.0 );
 
-			currWallHitboxes = &data.wallHitBody;
+			//currWallHitboxes = &data.wallHitBody;
+
+			//data.wallVel = playerDir * 10.0;//2.0;
 		}
 		break;
 	case RECOVER:
@@ -273,7 +238,7 @@ void Gorilla::ProcessState()
 	{
 		if (dist < DEFAULT_DETECT_RADIUS)
 		{
-			data.velocity = PlayerDir() * 1.0;
+			data.velocity = PlayerDir() * 4.0;
 		}
 		else if (dist > DEFAULT_IGNORE_RADIUS)
 		{
@@ -303,7 +268,7 @@ void Gorilla::UpdateEnemyPhysics()
 	V2d movementVec = data.velocity;
 	movementVec /= slowMultiple * (double)numPhysSteps;
 
-	currPosInfo.position += movementVec;
+	currPosInfo.position += movementVec;	
 }
 
 
@@ -321,10 +286,10 @@ void Gorilla::UpdateSprite()
 		ir = ts->GetSubRect(1);
 		break;
 	case ATTACK:
-		ir = ts->GetSubRect(frame / animFactor[ATTACK] + 2);
+		ir = ts->GetSubRect(frame / animFactor[ATTACK] + 1);
 		break;
 	case RECOVER:
-		ir = ts->GetSubRect(frame / animFactor[RECOVER] + 6);
+		ir = ts->GetSubRect(frame / animFactor[RECOVER] + 8);
 		break;
 	}
 
@@ -342,24 +307,21 @@ void Gorilla::EnemyDraw( sf::RenderTarget *target )
 {
 	DrawSprite(target, sprite);
 
-	if ((action == ATTACK && frame > createWallFrame) || action == RECOVER)
-	{
-		target->draw(wallSprite);
-	}
+	wallPool.Draw(target);
 }
 
 void Gorilla::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 
-	if (currWallHitboxes != NULL)
-		currWallHitboxes->DebugDraw(0, target);
+	wallPool.DebugDraw(target);
 }
 
-
-bool Gorilla::CheckHitPlayer(int index)
+void Gorilla::AddToGame()
 {
-	return BasicCheckHitPlayer(currHitboxes, index) || BasicCheckHitPlayer(currWallHitboxes, index);
+	Enemy::AddToGame();
+
+	wallPool.SetEnemyIDsAndAddToGame();
 }
 
 int Gorilla::GetNumStoredBytes()
@@ -369,8 +331,6 @@ int Gorilla::GetNumStoredBytes()
 
 void Gorilla::StoreBytes(unsigned char *bytes)
 {
-	data.currWallHitboxesBodyID = GetCollisionBodyID(currWallHitboxes);
-
 	StoreBasicEnemyData(data);
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
@@ -381,6 +341,4 @@ void Gorilla::SetFromBytes(unsigned char *bytes)
 	memcpy(&data, bytes, sizeof(MyData));
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
-
-	currWallHitboxes = GetCollisionBodyFromID(data.currWallHitboxesBodyID);
 }

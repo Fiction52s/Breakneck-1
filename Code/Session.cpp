@@ -1359,6 +1359,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
+	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
 	ts_goal = NULL;
 	ts_goalExplode = NULL;
@@ -9503,6 +9504,7 @@ void Session::CleanupGameMode()
 
 void Session::UpdateWorldDependentTileset( int worldIndex)
 {
+	currWorldDependentTilesetWorldIndex = worldIndex;
 	if (ts_key != NULL)
 	{
 		DestroyTileset(ts_key);

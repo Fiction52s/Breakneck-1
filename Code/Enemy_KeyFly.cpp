@@ -68,6 +68,16 @@ void KeyFly::ResetEnemy()
 	action = S_NEUTRAL;
 	frame = 0;
 
+	if (sess->currWorldDependentTilesetWorldIndex == 5)
+	{
+		animFactor[S_NEUTRAL] = 6;
+	}
+	else
+	{
+		animFactor[S_NEUTRAL] = 3;
+	}
+	
+
 	hasMonitor = true;
 	suppressMonitor = false;
 

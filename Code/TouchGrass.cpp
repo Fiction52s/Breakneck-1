@@ -75,9 +75,17 @@ void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
 	switch (gType)
 	{
 	case TouchGrass::TYPE_NORMAL_W1:
+	case TouchGrass::TYPE_NORMAL_W2:
+	case TouchGrass::TYPE_NORMAL_W3:
+	case TouchGrass::TYPE_NORMAL_W4:
 	case TouchGrass::TYPE_NORMAL_W5:
+	case TouchGrass::TYPE_NORMAL_W6:
 	case TouchGrass::TYPE_LARGE_W1:
+	case TouchGrass::TYPE_LARGE_W2:
+	case TouchGrass::TYPE_LARGE_W3:
+	case TouchGrass::TYPE_LARGE_W4:
 	case TouchGrass::TYPE_LARGE_W5:
+	case TouchGrass::TYPE_LARGE_W6:
 		tg = new BasicTouchGrass(this, index, edge, quant);
 		break;
 	case TouchGrass::TYPE_TREE:
@@ -128,17 +136,47 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 	switch (gt)
 	{
 	case TouchGrass::TYPE_NORMAL_W1:
-		t = tm->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
+		t = tm->GetSizedTileset("Env/bushtouch_1_01_64x64.png");
+		break;
+	case TouchGrass::TYPE_NORMAL_W2:
+		t = tm->GetSizedTileset("Env/bushtouch_2_01_64x64.png");
+		break;
+	case TouchGrass::TYPE_NORMAL_W3:
+		t = tm->GetSizedTileset("Env/bushtouch_3_01_64x64.png");
+		break;
+	case TouchGrass::TYPE_NORMAL_W4:
+		t = tm->GetSizedTileset("Env/bushtouch_4_01_64x64.png");
 		break;
 	case TouchGrass::TYPE_NORMAL_W5:
 		t = tm->GetSizedTileset("Env/bushtouch_5_01_64x64.png");
 		break;
+	case TouchGrass::TYPE_NORMAL_W6:
+		t = tm->GetSizedTileset("Env/bushtouch_6_01_64x64.png");
+		break;
+	/*case TouchGrass::TYPE_NORMAL_W7:
+		t = tm->GetSizedTileset("Env/bushtouch_7_01_64x64.png");
+		break;*/
 	case TouchGrass::TYPE_LARGE_W1:
-		t = tm->GetTileset("Env/bushtouch_1_02_128x128.png", 128, 128);
+		t = tm->GetSizedTileset("Env/bushtouch_1_02_128x128.png");
+		break;
+	case TouchGrass::TYPE_LARGE_W2:
+		t = tm->GetSizedTileset("Env/bushtouch_2_02_128x128.png");
+		break;
+	case TouchGrass::TYPE_LARGE_W3:
+		t = tm->GetSizedTileset("Env/bushtouch_3_02_128x128.png");
+		break;
+	case TouchGrass::TYPE_LARGE_W4:
+		t = tm->GetSizedTileset("Env/bushtouch_4_02_128x128.png");
 		break;
 	case TouchGrass::TYPE_LARGE_W5:
-		t = tm->GetSizedTileset("Env/bush_w5_128x128.png");
+		t = tm->GetSizedTileset("Env/bushtouch_5_02_128x128.png");
 		break;
+	case TouchGrass::TYPE_LARGE_W6:
+		t = tm->GetSizedTileset("Env/bushtouch_6_02_128x128.png");
+		break;
+	//case TouchGrass::TYPE_LARGE_W7:
+	//	t = tm->GetSizedTileset("Env/bushtouch_7_02_128x128.png");
+	//	break;
 	case TouchGrass::TYPE_TREE:
 		t = tm->GetTileset("Env/trees_128x128.png", 128, 128);
 		break;
@@ -154,15 +192,19 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 	switch (gt)
 	{
 	case TYPE_NORMAL_W1:
-		width = 32;
-		break;
+	case TYPE_NORMAL_W2:
+	case TYPE_NORMAL_W3:
+	case TYPE_NORMAL_W4:
 	case TYPE_NORMAL_W5:
+	case TYPE_NORMAL_W6:
 		width = 32;
 		break;
 	case TYPE_LARGE_W1:
-		width = 128;
-		break;
+	case TYPE_LARGE_W2:
+	case TYPE_LARGE_W3:
+	case TYPE_LARGE_W4:
 	case TYPE_LARGE_W5:
+	case TYPE_LARGE_W6:
 		width = 128;
 		break;
 	case TYPE_TREE:
@@ -252,24 +294,22 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
 	switch (grassType)
 	{
 	case TYPE_NORMAL_W1:
-	{
-		int r = rand() % 100;
-		return (r < 50);
-		break;
-	}
+	case TYPE_NORMAL_W2:
+	case TYPE_NORMAL_W3:
+	case TYPE_NORMAL_W4:
 	case TYPE_NORMAL_W5:
+	case TYPE_NORMAL_W6:
 	{
 		int r = rand() % 100;
 		return (r < 50);
 		break;
 	}
 	case TYPE_LARGE_W1:
-	{
-		int r = rand() % 100;
-		return (r < 15);
-		break;
-	}
+	case TYPE_LARGE_W2:
+	case TYPE_LARGE_W3:
+	case TYPE_LARGE_W4:
 	case TYPE_LARGE_W5:
+	case TYPE_LARGE_W6:
 	{
 		int r = rand() % 100;
 		return (r < 15);
@@ -297,11 +337,19 @@ BasicTouchGrass::BasicTouchGrass(TouchGrassCollection *coll, int index,
 	switch (coll->gType)
 	{
 	case TYPE_NORMAL_W1:
+	case TYPE_NORMAL_W2:
+	case TYPE_NORMAL_W3:
+	case TYPE_NORMAL_W4:
 	case TYPE_NORMAL_W5:
+	case TYPE_NORMAL_W6:
 		yOff = 14;
 		break;
 	case TYPE_LARGE_W1:
+	case TYPE_LARGE_W2:
+	case TYPE_LARGE_W3:
+	case TYPE_LARGE_W4:
 	case TYPE_LARGE_W5:
+	case TYPE_LARGE_W6:
 		yOff = 29;
 		break;
 	}
@@ -414,7 +462,7 @@ void BasicTouchGrass::Destroy(Actor *a)
 	{
 		switch (coll->gType)
 		{
-		case TYPE_NORMAL_W1:
+		/*case TYPE_NORMAL_W1:
 		{
 			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
 				6, true, 4);
@@ -425,14 +473,24 @@ void BasicTouchGrass::Destroy(Actor *a)
 			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
 				6, true, 4);
 			break;
-		}
+		}*/
+		case TYPE_NORMAL_W1:
+		case TYPE_NORMAL_W2:
+		case TYPE_NORMAL_W3:
+		case TYPE_NORMAL_W4:
 		case TYPE_NORMAL_W5:
+		case TYPE_NORMAL_W6:
 		{
 			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 12,
 				6, true, 4);
 			break;
 		}
+		case TYPE_LARGE_W1:
+		case TYPE_LARGE_W2:
+		case TYPE_LARGE_W3:
+		case TYPE_LARGE_W4:
 		case TYPE_LARGE_W5:
+		case TYPE_LARGE_W6:
 		{
 			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 17,
 				6, true, 4);

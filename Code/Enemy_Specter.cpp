@@ -111,13 +111,6 @@ Specter::Specter( ActorParams *ap )
 	BasicCircleHurtBodySetup(48);
 
 	hitBody.hitboxInfo = hitboxInfo;
-
-	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 12, 1, GetPosition(), V2d(1, 0), 0, 120, false);
-	launchers[0]->SetBulletSpeed(10);
-	launchers[0]->hitboxInfo->hType = HitboxInfo::MAGENTA;
-	launchers[0]->Reset();
-
 	
 	//radCircle.setFillColor(Color(255, 0, 0, 100));
 	//radCircle.setRadius(radius);
@@ -132,6 +125,13 @@ Specter::Specter( ActorParams *ap )
 
 Specter::~Specter()
 {
+}
+
+void Specter::AddToGame()
+{
+	Enemy::AddToGame();
+
+	bulletPool.SetEnemyIDsAndAddToGame();
 }
 
 void Specter::SetLevel(int lev)
@@ -166,6 +166,8 @@ void Specter::ResetEnemy()
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
+	bulletPool.Reset();
+
 	dead = false;
 	frame = 0;
 	receivedHit.SetEmpty();
@@ -175,18 +177,30 @@ void Specter::ResetEnemy()
 	
 }
 
-void Specter::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-{
-	b->launcher->DeactivateBullet(b);
-}
-
-void Specter::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-}
+//void Specter::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
+//{
+//	b->launcher->DeactivateBullet(b);
+//}
+//
+//void Specter::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
+//{
+//	V2d vel = b->velocity;
+//	double angle = atan2(vel.y, vel.x);
+//	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+//	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+//	{
+//		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+//	}
+//
+//	b->launcher->DeactivateBullet(b);
+//}
+//
+//void Specter::UpdateBullet(BasicBullet *b)
+//{
+//	double speed = length(b->velocity);
+//	speed += .1;
+//	b->velocity = normalize(sess->GetPlayerPos() - b->position) * speed;
+//}
 
 void Specter::ProcessState()
 {
@@ -244,17 +258,18 @@ void Specter::ProcessState()
 	case A_ATTACK:
 		if (frame == 10 && slowCounter == 1)
 		{
-			
-			launchers[0]->facingDir = PlayerDir();
-			launchers[0]->Reset();
-
-			V2d offset(80, 0);
+			bulletPool.Throw(GetPosition(), PlayerDir());
+			//launchers[0]->Reset();
+			//launchers[0]->facingDir = PlayerDir();
+			//launchers[0]->position = GetPosition();// +offset;
+			//launchers[0]->Fire();
+			/*V2d offset(80, 0);
 			for (int i = 0; i < 6; ++i)
 			{
 				launchers[0]->position = GetPosition() + offset;
 				launchers[0]->Fire();
 				RotateCW(offset, PI / 3.0);
-			}
+			}*/
 		}
 		break;
 	case A_RECOVER:
@@ -303,8 +318,11 @@ void Specter::DirectKill()
 
 void Specter::EnemyDraw( sf::RenderTarget *target )
 {
-	//target->draw(radCircle);
 	DrawSprite(target, sprite);
+
+	bulletPool.Draw(target);
+	//target->draw(radCircle);
+	
 }
 
 bool Specter::CanTouchSpecter() { return false; }

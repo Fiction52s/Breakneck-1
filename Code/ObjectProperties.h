@@ -68,6 +68,7 @@ struct SlowableObject
 
 	virtual bool IsSlowed(int playerIndex) { return false; }
 	virtual int GetSlowFactor(int playerIndex) { return 1; }
+	virtual void HandleSlowed() {}
 	void ResetSlow()
 	{
 		slowCounter = 1;

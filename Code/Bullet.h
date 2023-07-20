@@ -50,6 +50,7 @@ struct BasicBullet : QuadTreeCollider
 		BOSS_TIGER,
 		GROWING_TREE,
 		COPYCAT,
+		SPECTER,
 		Count
 	};
 

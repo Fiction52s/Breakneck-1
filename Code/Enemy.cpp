@@ -464,6 +464,12 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_BIRDSHURIKEN:
 		hitParams.Set(5, 0, 0, 1, false);
 		break;
+	case EnemyType::EN_SPECTERBULLET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 1, false);
+		break;
+	case EnemyType::EN_GORILLAWALL:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
+		break;
 	case EnemyType::EN_DIMENSIONEYE:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;

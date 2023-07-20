@@ -133,6 +133,9 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::BOSS_BIRD:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::SPECTER:
+		bulletTilesetIndex = 3;
+		break;
 	}
 
 	if (bulletType == BasicBullet::COPYCAT)
@@ -262,6 +265,8 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 		return 20;
 	case BasicBullet::LIZARD:
 		return 32;
+	case BasicBullet::SPECTER:
+		return 44;
 	}
 
 	return 10;
@@ -695,6 +700,7 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	case SHOTGUN:
 	case LIZARD:
 	case GROWING_TREE:
+	case SPECTER:
 	{
 		transform.rotate(angle);
 		break;
@@ -1207,6 +1213,9 @@ void BasicBullet::UpdateSprite()
 	case LIZARD:
 		dims = Vector2f(48, 48);
 		break;
+	case SPECTER:
+		dims = Vector2f(64, 64);
+		break;
 	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 	Vector2f offset = Launcher::GetOffset(bulletType);
@@ -1225,6 +1234,7 @@ void BasicBullet::UpdateSprite()
 	case OWL:
 	case GROWING_TREE:
 	case BIG_OWL:
+	case SPECTER:
 	{
 		double angle = atan2(velocity.y, velocity.x);
 		angle = angle * 180 / PI;

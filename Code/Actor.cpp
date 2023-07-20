@@ -5356,6 +5356,8 @@ void Actor::ProcessReceivedHit()
 				V2d kb = CalcKnockback(&receivedHit) * shieldKBFactor;
 
 				velocity = kb;
+
+				RestoreAirOptions();
 			}
 
 			if (receivedHitReaction == FULLBLOCK)
@@ -6511,9 +6513,37 @@ void Actor::UpdateBubbles()
 	int tempSlowCounter = slowCounter;
 	if (antiTimeSlowFrames == 0 && ( powerSlow || specialSlow)  )
 	{
-		if (!prevInput.PowerButtonDown() && !inBubble && !specialSlow
-			&& GetNumActiveBubbles() < GetMaxBubbles() )
+		if (!prevInput.PowerButtonDown() && !inBubble && !specialSlow )
+			//&& GetNumActiveBubbles() < GetMaxBubbles() )
 		{
+			if (GetNumActiveBubbles() == GetMaxBubbles())
+			{
+				//if (bubbleFramesToLive[currBubble] > 0)
+				{
+					int lowestToLiveIndex = -1;
+					int lowestAmountToLive = -1;
+					for (int i = 0; i < GetMaxBubbles(); ++i)
+					{
+						if (bubbleFramesToLive[i] > 0)
+						{
+							if (lowestToLiveIndex < 0 || bubbleFramesToLive[i] < lowestAmountToLive)
+							{
+								lowestToLiveIndex = i;
+								lowestAmountToLive = bubbleFramesToLive[i];
+							}
+						}
+					}
+					assert(lowestToLiveIndex >= 0);
+					currBubble = lowestToLiveIndex;
+					bubbleFramesToLive[currBubble] = 0;
+				}
+			}
+
+			/*if (currBubble > 0)
+			{
+				int xxx = 56;
+			}*/
+
 			if (bubbleFramesToLive[currBubble] == 0)
 			{
 				inBubble = true;
@@ -6529,7 +6559,7 @@ void Actor::UpdateBubbles()
 				SetFBubblePos(currBubble, Vector2f(position));
 
 				++currBubble;
-				if (currBubble == MAX_BUBBLES)
+				if (currBubble == GetMaxBubbles())
 				{
 					currBubble = 0;
 				}
@@ -11110,8 +11140,8 @@ Wire * Actor::IntersectMyWireHitboxes(Enemy *e, CollisionBody *cb,
 
 bool Actor::IntersectMyHurtboxes(CollisionBox &cb)
 {
-	if (IsInvincible())
-		return false;
+	/*if (IsInvincible()) //handled by invincible hit, not just missing
+		return false;*/
 
 	return cb.Intersects(hurtBody);
 }
@@ -21930,7 +21960,9 @@ bool Actor::TryAirDash()
 {
 	if (HasUpgrade(UPGRADE_POWER_AIRDASH) && !IsSingleWirePulling())
 	{
-		if ((hasAirDash || inBubble) && (DashButtonPressed() || pauseBufferedDash))
+		//removed infinite airdash within bubbles, going to replace it as a shard
+		if (hasAirDash && (DashButtonPressed() || pauseBufferedDash))
+		//if ((hasAirDash || inBubble) && (DashButtonPressed() || pauseBufferedDash))
 		{
 			hasFairAirDashBoost = (action == FAIR || action == AIRDASHFORWARDATTACK );
 			SetAction( AIRDASH );

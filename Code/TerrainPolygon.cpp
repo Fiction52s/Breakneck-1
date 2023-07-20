@@ -4047,17 +4047,53 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 void TerrainPolygon::SetupTouchGrass()
 {
 	DestroyTouchGrass();
-	if (terrainWorldType == JUNGLE)
+
+	switch (terrainWorldType)
 	{
-		AddTouchGrass(TouchGrass::TYPE_NORMAL_W5);
-		AddTouchGrass(TouchGrass::TYPE_LARGE_W5);
-	}
-	else if (terrainWorldType < W1_SPECIAL)
+	case TerrainWorldType::MOUNTAIN:
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL_W1);
 		AddTouchGrass(TouchGrass::TYPE_LARGE_W1);
-		//AddTouchGrass(TouchGrass::TYPE_TREE);
+		break;
 	}
+	case TerrainWorldType::GLADE:
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W2);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W2);
+		break;
+	}
+	case TerrainWorldType::DESERT:
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W3);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W3);
+		break;
+	}
+	case TerrainWorldType::COVE:
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W4);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W4);
+		break;
+	}
+	case TerrainWorldType::JUNGLE:
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W5);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W5);
+		break;
+	}
+	case TerrainWorldType::FORTRESS:
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W6);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W6);
+		break;
+	}
+	default:
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL_W1);
+		AddTouchGrass(TouchGrass::TYPE_LARGE_W1);
+		break;
+	}
+	}
+	
 	ResetTouchGrass();
 	UpdateTouchGrass();
 }
