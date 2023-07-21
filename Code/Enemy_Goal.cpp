@@ -46,7 +46,7 @@ Goal::Goal( ActorParams *ap )
 	//	break;
 	//}
 
-	SetOffGroundHeight(160);//128);
+	SetOffGroundHeight(180);//160);//128);
 	SetCurrPosInfo(startPosInfo);
 
 	BasicRectHurtBodySetup(80, 100, currPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
@@ -210,29 +210,23 @@ void Goal::UpdateSprite()
 		if (frame / 2 < 12)
 		{
 			trueFrame = 1;
-			sprite.setTexture(*ts->texture);
-			sprite.setTextureRect(ts->GetSubRect(trueFrame));
+			
 		}
 		else if (frame / 2 < 18)
 		{
 			trueFrame = 2;
-			sprite.setTexture(*ts->texture);
-			sprite.setTextureRect(ts->GetSubRect(trueFrame));
 		}
 		else if (frame / 2 < 30)
 		{
 			trueFrame = 3;
-			sprite.setTexture(*ts->texture);
-			sprite.setTextureRect(ts->GetSubRect(trueFrame));
 		}
 		else
 		{
-			//trueFrame = 4;
-			trueFrame = 0;
-			sprite.setTexture(*ts_explosion->texture);
-			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
-
+			trueFrame = 3;
 		}
+
+		sprite.setTexture(*ts->texture);
+		sprite.setTextureRect(ts->GetSubRect(trueFrame));
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 		
 	}
@@ -266,11 +260,11 @@ void Goal::EnemyDraw(sf::RenderTarget *target )
 	ts_explosion = sess->ts_goalExplode;
 
 	int trueFrame = 0;
-	if (action == A_SITTING || (action == A_KINKILLING && frame / 2 < 30))
+	if (action == A_SITTING || action == A_KINKILLING )
 	{
 		sprite.setTexture(*ts->texture);
 	}
-	else if (action == A_EXPLODING || action == A_DESTROYED || action == A_KINKILLING )
+	else if (action == A_EXPLODING || action == A_DESTROYED )
 	{
 		sprite.setTexture(*ts_explosion->texture);
 	}
