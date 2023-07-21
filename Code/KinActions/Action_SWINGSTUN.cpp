@@ -42,7 +42,14 @@ void Actor::SWINGSTUN_Update()
 	double rad = oldSwingLauncher->swingRadius;
 	double speed = oldSwingLauncher->speed;
 
+	
+
 	V2d anchor = oldSwingLauncher->anchor;
+
+	V2d dirToAnchor = normalize( position - anchor );
+
+	oldSwingLauncher->data.currAngle = GetVectorAngleCW(dirToAnchor);
+
 	V2d future = position + normalize(springVel) * speed;//velocity;
 
 	V2d diff = anchor - future;
@@ -69,7 +76,7 @@ void Actor::SWINGSTUN_UpdateSprite()
 
 void Actor::SWINGSTUN_TransitionToAction(int a)
 {
-
+	oldSwingLauncher->Recover();
 }
 
 void Actor::SWINGSTUN_TimeIndFrameInc()

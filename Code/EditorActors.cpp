@@ -333,8 +333,7 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("clockwise", Vector2i(0, 0), true);
 	}
 	else if (name == "spring" || name == "glidespring" || name == "bouncespring"
-		|| name == "airbouncelauncher" || name == "swinglaunchercw"
-		|| name == "swinglauncherccw"
+		|| name == "airbouncelauncher"
 		|| name == "aimlauncher"
 		|| name == "hominglauncher"
 		|| name == "grindlauncher"
@@ -343,6 +342,14 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);
 		AddLabeledSlider(p, "speed", "launch speed:", 5, 60, 30);
+	}
+	else if (name == "swinglauncher")
+	{
+		p = CreateDefaultPanel();
+		AddSetDirectionButton(p);
+		AddLabeledSlider(p, "speed", "launch speed:", 5, 60, 30);
+		p->AddLabel("clockwiselabel", Vector2i(0, 0), 28, "Clockwise:");
+		p->AddCheckBox("clockwise", Vector2i(0, 0), true);
 	}
 	else if (name == "annihilationspring")
 	{

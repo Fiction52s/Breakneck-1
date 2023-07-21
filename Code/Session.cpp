@@ -566,8 +566,8 @@ void Session::RegisterW6Enemies()
 
 	//items
 	AddBasicAerialWorldEnemy("Free Flight Booster", "freeflightbooster", 6, itemRow, CreateEnemy<FreeFlightBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	AddWorldEnemy("Swing Launcher CW", "swinglaunchercw", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-	AddWorldEnemy("Swing Launcher CCW", "swinglauncherccw", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddWorldEnemy("Swing Launcher", "swinglauncher", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SwingLauncherParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	//AddWorldEnemy("Swing Launcher CCW", "swinglauncherccw", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	
 	//comboers
 	AddWorldEnemy("Blue Wire Juggler", "bluewirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);

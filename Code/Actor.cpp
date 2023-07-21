@@ -17049,6 +17049,15 @@ void Actor::UpdatePostPhysics()
 		return;
 	}
 
+	if (action == SWINGSTUN)
+	{
+		V2d anchor = oldSwingLauncher->anchor;
+		V2d dirToAnchor = normalize(position - anchor);
+		oldSwingLauncher->data.currAngle = GetVectorAngleCW(dirToAnchor);
+	}
+	
+
+
 	ProcessHitGoal();
 
 	
@@ -17382,6 +17391,12 @@ bool Actor::SwingLaunch()
 {
 	if (currSwingLauncher != NULL)
 	{
+		/*if (oldSwingLauncher != NULL)
+		{
+			oldSwingLauncher->Recover();
+		}*/
+		SetAction(SWINGSTUN);
+
 		currSwingLauncher->Launch();
 
 		oldSwingLauncher = currSwingLauncher;
@@ -17400,7 +17415,7 @@ bool Actor::SwingLaunch()
 		ground = NULL;
 		bounceEdge = NULL;
 		grindEdge = NULL;
-		SetAction(SWINGSTUN);
+		
 
 		currSwingLauncher = NULL;
 

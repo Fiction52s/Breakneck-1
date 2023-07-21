@@ -15,16 +15,27 @@ struct SwingLauncher : Enemy
 
 	struct MyData : StoredEnemyData
 	{
-
+		double currAngle;
+		double recoverAngDist;
+		double recoverSpeed;
 	};
 	MyData data;
 
 	SoundInfo *launchSoundBuf;
-	Tileset *ts_idle;
-	Tileset *ts_recover;
-	Tileset *ts_springing;
+	Tileset *ts;
+
+	sf::Shader armShader;
+
+	sf::Vertex quads[2 * 4];
+	sf::Vertex armQuad[4];
 
 	double swingRadius;
+
+	double origAngle;
+
+	double recoverBaseSpeed;
+	double recoverAccel;
+	double recoverMaxSpeed;
 
 	int animationFactor;
 
@@ -43,6 +54,7 @@ struct SwingLauncher : Enemy
 	void AddToWorldTrees();
 	void UpdateParamsSettings();
 	void UpdatePath();
+	void Recover();
 	void UpdateOnPlacement(ActorParams *ap);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
@@ -51,6 +63,8 @@ struct SwingLauncher : Enemy
 	void ActionEnded();
 	void Launch();
 	void DebugDraw(sf::RenderTarget *target);
+	sf::FloatRect GetAABB();
+	
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

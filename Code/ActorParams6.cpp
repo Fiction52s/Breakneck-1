@@ -295,3 +295,123 @@ ActorParams *BossSkeletonParams::Copy()
 	BossSkeletonParams *copy = new BossSkeletonParams( *this );
 	return copy;
 }
+
+SwingLauncherParams::SwingLauncherParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	is >> speed;
+	int cw;
+	is >> cw;
+	clockwise = cw;
+
+	lines = NULL;
+
+	Vector2i other;
+	is >> other.x;
+	is >> other.y;
+
+	vector<Vector2i> globalPath;
+	globalPath.reserve(2);
+	Vector2i intPos = GetIntPos();
+	globalPath.push_back(intPos);
+	globalPath.push_back(intPos + other);
+	SetPath(globalPath);
+}
+
+SwingLauncherParams::SwingLauncherParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	PlaceAerial(Vector2i(0, 0));
+
+	if (at->panel != NULL) //create for log
+	{
+		speed = at->panel->sliders["speed"]->defaultValue;
+	}
+
+	clockwise = true;
+
+	lines = NULL;
+}
+
+void SwingLauncherParams::WriteParamFile(std::ofstream &of)
+{
+	of << speed << "\n";
+	int cw = clockwise;
+	of << cw << "\n";
+	of << localPath.front().x << " " << localPath.front().y << endl;
+}
+
+void SwingLauncherParams::SetPath(std::vector<sf::Vector2i> &globalPath)
+{
+	ActorParams::SetPath(globalPath);
+	if (globalPath.size() > 1)
+	{
+		VertexArray &li = *lines;
+		Vector2f diff = li[1].position - li[0].position;
+		float f = GetVectorAngleCW(diff);
+		float rot = f / PI * 180.f + 90;
+		image.setRotation(rot);
+	}
+}
+
+void SwingLauncherParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	speed = p->sliders["speed"]->GetCurrValue();
+	clockwise = p->checkBoxes["clockwise"]->checked;
+
+	hasMonitor = false;
+
+}
+
+void SwingLauncherParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->sliders["speed"]->SetCurrValue(speed);
+	p->checkBoxes["clockwise"]->checked = clockwise;
+
+	//EditSession *edit = EditSession::GetSession();
+	//MakeGlobalPath(edit->patrolPath);
+}
+ActorParams *SwingLauncherParams::Copy()
+{
+	SwingLauncherParams *copy = new SwingLauncherParams(*this);
+	copy->DeepCopyPathLines();
+	return copy;
+}
+
+void SwingLauncherParams::OnCreate()
+{
+	EditSession *edit = EditSession::GetSession();
+	edit->SetDirectionButton(this);
+}
+
+void SwingLauncherParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+		Vector2f fPos = GetFloatPos();
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += fPos;
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= fPos;
+		}
+	}
+
+	ActorParams::Draw(target);
+}

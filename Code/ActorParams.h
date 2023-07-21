@@ -419,6 +419,25 @@ struct SpringParams : public ActorParams
 	int speed;
 };
 
+struct SwingLauncherParams : public ActorParams
+{
+	SwingLauncherParams(ActorType *at, int level);
+	SwingLauncherParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void SetSpecialPanelInfo();
+	void Draw(sf::RenderTarget *target);
+	void SetPath(std::vector<sf::Vector2i> &globalPath);
+	void OnCreate();
+	ActorParams *Copy();
+
+	void SetParams();
+	void SetPanelInfo();
+
+	int speed;
+	bool clockwise;
+};
+
 struct TeleporterParams : public ActorParams
 {
 	TeleporterParams(ActorType *at, int level );
