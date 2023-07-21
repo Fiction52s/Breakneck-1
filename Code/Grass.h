@@ -20,7 +20,7 @@ struct Grass : QuadTreeEntrant
 		ANTIGRIND,
 		POISON,
 		ANTIWIRE,
-		SLIPPERY,
+		BOOST,
 		HIT,
 		UNTECHABLE,
 		Count

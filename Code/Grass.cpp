@@ -39,7 +39,7 @@ int Grass::GetGrassTypeFromString(const std::string &s)
 	else if (s == "ANTIGRIND") { return ANTIGRIND; }
 	else if (s == "POISON") { return POISON; }
 	else if (s == "ANTIWIRE") { return ANTIWIRE; }
-	else if (s == "SLIPPERY") { return SLIPPERY; }
+	else if (s == "BOOST") { return BOOST; }
 	else if (s == "HIT") { return HIT; }
 	else if (s == "UNTECHABLE") { return UNTECHABLE; }
 	else
@@ -81,8 +81,8 @@ std::string Grass::GetGrassStringFromType(int t)
 	case ANTIWIRE:
 		return "Anti-Wire";
 		break;
-	case SLIPPERY:
-		return "Slippery";
+	case BOOST:
+		return "Boost";
 		break;
 	case HIT:
 		return "Hit";

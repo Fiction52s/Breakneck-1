@@ -1479,6 +1479,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateWireStates();
 	void ProcessAccelGrass();
 	void ProcessDecelGrass();
+	void ProcessBoostGrass();
 	void ProcessHitGrass();
 	void ProcessBounceGrassGrounded();
 	void ProcessPoisonGrass();

@@ -6136,6 +6136,46 @@ void Actor::ProcessDecelGrass()
 	}
 }
 
+void Actor::ProcessBoostGrass()
+{
+	if (!touchedGrass[Grass::BOOST])
+		return;
+
+	if (ground != NULL)
+	{
+		double boostSpeed = 40;
+		if (groundSpeed > 0)
+		{
+			groundSpeed = max(groundSpeed, boostSpeed);
+		}
+		else if (groundSpeed < 0)
+		{
+			groundSpeed = min(groundSpeed, -boostSpeed);
+		}
+
+		if (action == JUMPSQUAT)
+		{
+			if (storedGroundSpeed > 0)
+			{
+				storedGroundSpeed = max(groundSpeed, boostSpeed);
+			}
+			else if (storedGroundSpeed < 0)
+			{
+				storedGroundSpeed = min(groundSpeed, -boostSpeed);
+			}
+		}
+	}
+	//else if (action == WALLCLING)
+	//{
+	//	double factor = .1;
+	//	if (velocity.y > clingSpeed * factor)
+	//	{
+	//		//cout << "running wallcling" << endl;
+	//		velocity.y = clingSpeed * factor;
+	//	}
+	//}
+}
+
 void Actor::ProcessPoisonGrass()
 {
 	if (ground != NULL && touchedGrass[Grass::POISON])
@@ -7089,6 +7129,8 @@ void Actor::UpdatePrePhysics()
 	ProcessAccelGrass();
 
 	ProcessDecelGrass();
+
+	ProcessBoostGrass();
 
 	ProcessPoisonGrass();
 
@@ -21906,6 +21948,12 @@ void Actor::ExecuteWallJump()
 	if (touchedGrass[Grass::JUMP])
 	{
 		strengthY += strengthX;//10;
+	}
+
+	
+	if (touchedGrass[Grass::BOOST])
+	{
+		strengthX = max(strengthX, 40.0);
 	}
 
 	if (facingRight)
