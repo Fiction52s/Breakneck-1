@@ -210,28 +210,36 @@ void Goal::UpdateSprite()
 		if (frame / 2 < 12)
 		{
 			trueFrame = 1;
+			sprite.setTexture(*ts->texture);
+			sprite.setTextureRect(ts->GetSubRect(trueFrame));
 		}
 		else if (frame / 2 < 18)
 		{
 			trueFrame = 2;
+			sprite.setTexture(*ts->texture);
+			sprite.setTextureRect(ts->GetSubRect(trueFrame));
 		}
 		else if (frame / 2 < 30)
 		{
 			trueFrame = 3;
+			sprite.setTexture(*ts->texture);
+			sprite.setTextureRect(ts->GetSubRect(trueFrame));
 		}
 		else
 		{
-			trueFrame = 4;
+			//trueFrame = 4;
+			trueFrame = 0;
+			sprite.setTexture(*ts_explosion->texture);
+			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
+
 		}
-		sprite.setTexture(*ts->texture);
-		sprite.setTextureRect(ts->GetSubRect(trueFrame));
-		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// -initialYOffset);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		
 	}
 	else if (action == A_EXPLODING)
 	{
 		trueFrame = frame / explosionAnimFactor;
-		int numTiles = ts_explosion->GetNumTiles();
+		//int numTiles = //ts_explosion->GetNumTiles();
 		sprite.setTexture(*ts_explosion->texture);
 		sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
@@ -240,7 +248,7 @@ void Goal::UpdateSprite()
 	else if (action == A_DESTROYED)
 	{
 		trueFrame = explosionLength - 1;
-		int numTiles = ts_explosion->GetNumTiles();
+		//int numTiles = ts_explosion->GetNumTiles();
 		sprite.setTexture(*ts_explosion->texture);
 		sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 
@@ -258,11 +266,11 @@ void Goal::EnemyDraw(sf::RenderTarget *target )
 	ts_explosion = sess->ts_goalExplode;
 
 	int trueFrame = 0;
-	if (action == A_SITTING || action == A_KINKILLING )
+	if (action == A_SITTING || (action == A_KINKILLING && frame / 2 < 30))
 	{
 		sprite.setTexture(*ts->texture);
 	}
-	else if (action == A_EXPLODING || action == A_DESTROYED)
+	else if (action == A_EXPLODING || action == A_DESTROYED || action == A_KINKILLING )
 	{
 		sprite.setTexture(*ts_explosion->texture);
 	}

@@ -65,6 +65,7 @@ struct WireJuggler : Enemy
 	void ProcessHit();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
+	HitboxInfo * IsHit(int pIndex);
 	void ComboHit();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

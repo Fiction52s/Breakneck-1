@@ -17,6 +17,13 @@ void SwingLauncher::UpdateParamsSettings()
 	stunFrames = 600;//ceil(swingRadius / speed);
 }
 
+void SwingLauncher::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	UpdatePath(); //assuming that ap is editparams here
+}
+
 void SwingLauncher::UpdatePath()
 {
 	Vector2i other = Vector2i(0, -10);
@@ -182,6 +189,14 @@ void SwingLauncher::UpdateSprite()
 void SwingLauncher::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
+
+	sf::CircleShape testCircle;
+	testCircle.setFillColor(Color(255, 0, 0, 100));
+	testCircle.setRadius(swingRadius);
+	testCircle.setOrigin(testCircle.getLocalBounds().width / 2, testCircle.getLocalBounds().height / 2);
+	testCircle.setPosition(Vector2f(anchor));
+
+	target->draw(testCircle);
 }
 
 int SwingLauncher::GetNumStoredBytes()

@@ -16,6 +16,9 @@ struct GorillaWallPool
 	void Draw(sf::RenderTarget *target);
 	void SetEnemyIDsAndAddToGame();
 	void DebugDraw(sf::RenderTarget *target);
+	/*int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);*/
 	std::vector<GorillaWall*> bulletVec;
 	sf::Vertex *verts;
 	Tileset *ts;

@@ -342,7 +342,8 @@ BasicTouchGrass::BasicTouchGrass(TouchGrassCollection *coll, int index,
 	case TYPE_NORMAL_W4:
 	case TYPE_NORMAL_W5:
 	case TYPE_NORMAL_W6:
-		yOff = 14;
+		yOff = 29;
+		//yOff = 14;
 		break;
 	case TYPE_LARGE_W1:
 	case TYPE_LARGE_W2:

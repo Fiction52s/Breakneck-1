@@ -1636,8 +1636,10 @@ void Wire::UpdateQuads()
 			temp = otherDir.x;
 			otherDir.x = otherDir.y;
 			otherDir.y = -temp;
-			currWirePos = playerPos + data.hitEnemyDelta;//playerPos + fireDir * fireRate * (double)(framesFiring + 1);
-			currWireStart = playerPos;// +V2d(player->GetWireOffset().x, player->GetWireOffset().y);
+			//currWirePos = playerPos + data.hitEnemyDelta;//playerPos + fireDir * fireRate * (double)(framesFiring + 1);
+			//currWireStart = playerPos;// +V2d(player->GetWireOffset().x, player->GetWireOffset().y);
+			currWirePos = playerPos + data.fireDir * length(data.hitEnemyDelta);//* fireRate * (double)(data.framesFiring + 1);
+			currWireStart = playerPos + V2d(player->GetWireOffset().x, player->GetWireOffset().y);
 		}
 		
 		if (pointI == 0)

@@ -177,8 +177,6 @@ void GravityJuggler::ResetEnemy()
 	data.velocity = V2d(0, 0);
 	data.doneBeingHittable = false;
 
-	action = S_FLOAT;
-
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 	

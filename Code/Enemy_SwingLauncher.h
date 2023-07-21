@@ -43,6 +43,7 @@ struct SwingLauncher : Enemy
 	void AddToWorldTrees();
 	void UpdateParamsSettings();
 	void UpdatePath();
+	void UpdateOnPlacement(ActorParams *ap);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void DirectKill();

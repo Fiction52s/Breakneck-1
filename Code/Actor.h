@@ -1337,6 +1337,10 @@ struct Actor : QuadTreeCollider,
 		json &j, const std::string &name,
 		HitboxInfo *hi);
 
+	void DefaultGroundLanding( double &movement );
+	bool DefaultGravReverseCheck();
+	void DefaultCeilingLanding( double &movement );
+
 	bool IsVisibleAction(int a);
 	void SetAuraColor(sf::Color c);
 

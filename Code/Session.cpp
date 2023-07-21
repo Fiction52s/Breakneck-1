@@ -551,17 +551,17 @@ void Session::RegisterW6Enemies()
 	AddBasicAerialWorldEnemy("Gorilla", "gorilla", 6, enemyRow, CreateEnemy<Gorilla>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Specter", "specter", 6, enemyRow, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Laser Wolf", "laserwolf", 6, enemyRow, CreateEnemy<LaserWolf>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("ChessX", "chessx", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("ChessY", "chessy", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Chess Diag Down Right", "chessdiagdownright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("chess Diag Up Right", "chessdiagupright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Future Checker", "futurechecker", 6, enemyRow, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Laser Jays", "laserjays", 6, enemyRow, CreateEnemy<LaserJays>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("ChessX", "chessx", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("ChessY", "chessy", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("Chess Diag Down Right", "chessdiagdownright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("chess Diag Up Right", "chessdiagupright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("Future Checker", "futurechecker", 6, enemyRow, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("Laser Jays", "laserjays", 6, enemyRow, CreateEnemy<LaserJays>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicAerialWorldEnemy("Tethered Rusher", "tetheredrusher", 6, enemyRow, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Dragon", "dragon", 6, enemyRow, CreateEnemy<Dragon>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicGroundWorldEnemy("Predict Turret", "predictturret", 6, enemyRow, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicGroundWorldEnemy("Predict Turret", "predictturret", 6, enemyRow, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Skunk", "skunk", 6, enemyRow, CreateEnemy<Skunk>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	AddBasicGroundWorldEnemy("Copycat", "copycat", 6, enemyRow, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicGroundWorldEnemy("Copycat", "copycat", 6, enemyRow, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 
 	//items
@@ -570,9 +570,9 @@ void Session::RegisterW6Enemies()
 	AddWorldEnemy("Swing Launcher CCW", "swinglauncherccw", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	
 	//comboers
-	AddBasicAerialWorldEnemy("Blue Wire Juggler", "bluewirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Red Wire Juggler", "redwirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Magenta Wire Juggler", "magentawirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddWorldEnemy("Blue Wire Juggler", "bluewirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Red Wire Juggler", "redwirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Magenta Wire Juggler", "magentawirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//targets
 	AddBasicAerialWorldEnemy("Free Flight Target", "freeflighttarget", 6, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);

@@ -108,6 +108,37 @@ void GorillaWallPool::DebugDraw(sf::RenderTarget *target)
 	}
 }
 
+//int GorillaWallPool::GetNumStoredBytes()
+//{
+//	int total = 0;
+//	GorillaWall *sb = NULL;
+//	for (int i = 0; i < numBullets; ++i)
+//	{
+//		sb = bulletVec[i];
+//		total += sb->GetNumStoredBytes();
+//	}
+//
+//	return total;
+//}
+//
+//void GorillaWallPool::StoreBytes(unsigned char *bytes)
+//{
+//	GorillaWall *sb = NULL;
+//	for (int i = 0; i < numBullets; ++i)
+//	{
+//		sb = bulletVec[i];
+//		sb->StoreBytes(bytes);
+//		bytes += sb->GetNumStoredBytes();
+//	}
+//}
+//
+//void GorillaWallPool::SetFromBytes(unsigned char *bytes)
+//{
+//	memcpy(&data, bytes, sizeof(MyData));
+//	SetBasicEnemyData(data);
+//	bytes += sizeof(MyData);
+//}
+
 GorillaWall::GorillaWall(GorillaWallPool *p_pool, sf::Vertex *myQuad)
 	:Enemy(EnemyType::EN_GORILLAWALL, NULL)
 {
