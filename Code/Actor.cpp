@@ -14219,45 +14219,58 @@ void Actor::HandleTouchedGate()
 	Edge *edge = gateTouched;
 	Gate *g = (Gate*)gateTouched->info;
 
-	
+	bool activate = false;
 
 	V2d A = b.GetQuadVertex(0);//(b.globalPosition.x - b.rw, b.globalPosition.y - b.rh);
 	V2d B = b.GetQuadVertex(1);//(b.globalPosition.x + b.rw, b.globalPosition.y - b.rh);
 	V2d C = b.GetQuadVertex(2);// (b.globalPosition.x + b.rw, b.globalPosition.y + b.rh);
 	V2d D = b.GetQuadVertex(3);// (b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
 
-	//double dd = dot(b.GetTrueCenter() - edge->v0, edge->Along());
-	//if (dd < 0 || dd > edge->GetLength())
-	//{
-	//	//player center is not lined up with gate
-	//	gateTouched = NULL;
-	//	sess->LockGate(g);
-	//}
 
+	
 	V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
 	double ang = atan2(nEdge.x, -nEdge.y);
 
-	double crossA = dot(A - edge->v0, nEdge);
-	double crossB = dot(B - edge->v0, nEdge);
-	double crossC = dot(C - edge->v0, nEdge);
-	double crossD = dot(D - edge->v0, nEdge);
-
-	//double crossCenter = cross(b.globalPosition - edge->v0, nEdge);
+	//double crossA = dot(A - edge->v0, nEdge);
+	//double crossB = dot(B - edge->v0, nEdge);
+	//double crossC = dot(C - edge->v0, nEdge);
+	//double crossD = dot(D - edge->v0, nEdge);
 	double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
 	alongAmount /= length(edge->v1 - edge->v0);
-	//alongAmount = 1.0 - alongAmount;
-	//alongAmount = 1.0 - alongAmount;
-	V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
+	//
+	//V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
 
-	double thresh = .01;//1.0;//.01;
+	//double thresh = .01;//1.0;//.01;
 
-	bool activate = false;
-	bool pointsAcrossGate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
-	//cout << "a: " << crossA << ", b: " << crossB << ", c: " << crossC << ", d: " << crossD << "\n";
+	//bool pointsAcrossGate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
 
-	if (pointsAcrossGate)
+	Zone *currZone = sess->currentZone;
+	Zone *newZone = NULL;
+
+	if (currZone == g->zoneA)
 	{
-		Zone *currZone = sess->currentZone;
+		newZone = g->zoneB;
+	}
+	else
+	{
+		newZone = g->zoneA;
+	}
+
+	bool pointsInNewZone = false;
+
+	bool aNewZone = newZone->ContainsPoint(A);
+	bool bNewZone = newZone->ContainsPoint(B);
+	bool cNewZone = newZone->ContainsPoint(C);
+	bool dNewZone = newZone->ContainsPoint(D);
+
+	if (aNewZone && bNewZone && cNewZone && dNewZone )
+	{
+		pointsInNewZone = true;
+	}
+
+	if (pointsInNewZone)
+	{
+		/*Zone *currZone = sess->currentZone;
 		Zone *newZone = NULL;
 
 		if (currZone == g->zoneA)
@@ -14267,7 +14280,7 @@ void Actor::HandleTouchedGate()
 		else
 		{
 			newZone = g->zoneA;
-		}
+		}*/
 
 		bool isInNewZone = newZone->ContainsPoint(position);
 		bool isInCurrZone = currZone->ContainsPoint(position);
@@ -14430,16 +14443,32 @@ void Actor::HandleTouchedGate()
 		//it only enters this state if you already unlock it though
 		gateTouched = NULL;
 	}
-	else if (crossA < -thresh && crossB < -thresh && crossC < -thresh && crossD < -thresh)
-	{
-		//cout << "went back" << endl;
-		gateTouched = NULL;
-		sess->LockGate(g);
-
-	}
 	else
 	{
-		//cout << "not clear" << endl;
+		//if( g->edgeA->)
+		if (!aNewZone && !bNewZone && !cNewZone && !dNewZone)
+		{
+			//if( IsEdgeTouchingBox( g->edgeA, )
+
+			/*bool aCurrZone = currZone->ContainsPoint(A);
+			bool bCurrZone = currZone->ContainsPoint(B);
+			bool cCurrZone = currZone->ContainsPoint(C);
+			bool dCurrZone = currZone->ContainsPoint(D);*/
+
+			/*if ( aCurrZone && bCurrZone && 
+			{
+				gateTouched = NULL;
+				sess->LockGate(g);
+			}*/
+
+			//might need extra checks at some point
+
+			gateTouched = NULL;
+			sess->LockGate(g);
+		}
+		//cout << "went back" << endl;
+		
+
 	}
 }
 
@@ -22884,6 +22913,13 @@ void Actor::UpdateInHitlag()
 	}
 
 	UpdateDrain();
+
+	UpdateBubbles();
+
+	TryChangePowerMode();
+
+	//might be more stuff missing here?
+
 	//if (flashFrames > 0)
 	//{
 	//	//not having the >0 thing caused a desync here at some point and I don't know why

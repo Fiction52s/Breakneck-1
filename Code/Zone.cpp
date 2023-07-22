@@ -97,19 +97,23 @@ void ZoneNode::SetChildrenShouldNotReform()
 }
 
 
-Zone::Zone( TerrainPolygon &tp )
+Zone::Zone( TerrainPolygon *tp )
 {
+	zonePoly = tp;
+	assert(!zonePoly->finalized);
+	zonePoly->FinalizeJustEdges();
+
 	zoneIndex = -2;
 	secretZone = false;
 	parentZone = NULL;
 	showShadow = true;
-	tp.FixWinding();
+	zonePoly->FixWinding();
 
 	openFrames = 60;
 	closeFrames = 60;
 
 	TerrainPoint * curr;
-	int tpNumP = tp.GetNumPoints();
+	int tpNumP = zonePoly->GetNumPoints();
 
 	definedArea = NULL;
 
@@ -119,7 +123,7 @@ Zone::Zone( TerrainPolygon &tp )
 	mainPoly.resize(tpNumP);
 	for (int i = 0; i < tpNumP; ++i)
 	{
-		curr = tp.GetPoint(i);
+		curr = zonePoly->GetPoint(i);
 		mainPoly[i] = curr->pos;
 		//points.push_back(curr->pos);
 	}
@@ -133,11 +137,15 @@ Zone::Zone( TerrainPolygon &tp )
 
 	ts_z = NULL;
 
+	
+
 	Reset();
 }
 
 Zone::~Zone()
 {
+	delete zonePoly;
+
 	if (definedArea != NULL)
 	{
 		delete definedArea;
@@ -854,31 +862,32 @@ void Zone::Draw(RenderTarget *target)
 
 bool Zone::ContainsPoint(V2d test)
 {
-	bool c = false;
+	return zonePoly->IsInsideArea(test);
+	//bool c = false;
 
-	vector<Vector2i> &pVec = PointVector();
+	//vector<Vector2i> &pVec = PointVector();
 
-	int pCount = pVec.size();
-	
-	V2d curr,prev;
-	for (int i = 0; i < pCount; ++i)
-	{
-		curr = V2d(pVec[i]);
-		if (i == 0)
-			prev = V2d(pVec[pCount - 1]);
-		else
-			prev = V2d(pVec[i - 1]);
+	//int pCount = pVec.size();
+	//
+	//V2d curr,prev;
+	//for (int i = 0; i < pCount; ++i)
+	//{
+	//	curr = V2d(pVec[i]);
+	//	if (i == 0)
+	//		prev = V2d(pVec[pCount - 1]);
+	//	else
+	//		prev = V2d(pVec[i - 1]);
 
-		if (((curr.y >= test.y) != (prev.y >= test.y)) &&
-			(test.x <= (prev.x - curr.x) * (test.y - curr.y) / (prev.y - curr.y) + curr.x))
-			c = !c;
-	}
+	//	if (((curr.y >= test.y) != (prev.y >= test.y)) &&
+	//		(test.x <= (prev.x - curr.x) * (test.y - curr.y) / (prev.y - curr.y) + curr.x))
+	//		c = !c;
+	//}
 
-	//I changed all of these to less than or equals and greater than or equals
-	//to fix issues where the border touches the edge of another zone.
-	//might cause issues later, so leaving this note here just in case.
+	////I changed all of these to less than or equals and greater than or equals
+	////to fix issues where the border touches the edge of another zone.
+	////might cause issues later, so leaving this note here just in case.
 
-	return c;
+	//return c;
 }
 
 bool Zone::ContainsZone(Zone *z)

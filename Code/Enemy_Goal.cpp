@@ -26,6 +26,7 @@ Goal::Goal( ActorParams *ap )
 	//world
 
 	ts = sess->ts_goal;
+	ts_crack = sess->ts_goalCrack;
 	ts_explosion = sess->ts_goalExplode;
 
 	int w = 1;
@@ -195,6 +196,7 @@ void Goal::HandleNoHealth()
 void Goal::UpdateSprite()
 {
 	ts = sess->ts_goal;
+	ts_crack = sess->ts_goalCrack;
 	ts_explosion = sess->ts_goalExplode;
 
 	int trueFrame = 0;
@@ -209,24 +211,24 @@ void Goal::UpdateSprite()
 	{
 		if (frame / 2 < 12)
 		{
-			trueFrame = 1;
+			trueFrame = 0;
 			
 		}
 		else if (frame / 2 < 18)
 		{
-			trueFrame = 2;
+			trueFrame = 1;
 		}
 		else if (frame / 2 < 30)
 		{
-			trueFrame = 3;
+			trueFrame = 2;
 		}
 		else
 		{
 			trueFrame = 3;
 		}
 
-		sprite.setTexture(*ts->texture);
-		sprite.setTextureRect(ts->GetSubRect(trueFrame));
+		sprite.setTexture(*ts_crack->texture);
+		sprite.setTextureRect(ts_crack->GetSubRect(trueFrame));
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 		
 	}
@@ -257,12 +259,17 @@ void Goal::UpdateSprite()
 void Goal::EnemyDraw(sf::RenderTarget *target )
 {
 	ts = sess->ts_goal;
+	ts_crack = sess->ts_goalCrack;
 	ts_explosion = sess->ts_goalExplode;
 
 	int trueFrame = 0;
-	if (action == A_SITTING || action == A_KINKILLING )
+	if (action == A_SITTING )
 	{
 		sprite.setTexture(*ts->texture);
+	}
+	else if (action == A_KINKILLING)
+	{
+		sprite.setTexture(*ts_crack->texture);
 	}
 	else if (action == A_EXPLODING || action == A_DESTROYED )
 	{

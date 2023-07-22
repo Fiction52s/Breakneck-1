@@ -52,6 +52,8 @@ void Actor::STEEPSLIDE_Change()
 {
 	if (TryPressGrind()) return;
 
+	if (TryGroundBlock()) return;
+
 	if (JumpButtonPressed())
 	{
 		if (reversed)

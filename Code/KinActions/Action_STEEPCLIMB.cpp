@@ -27,6 +27,8 @@ void Actor::STEEPCLIMB_Change()
 {
 	if (TryPressGrind()) return;
 
+	if (TryGroundBlock()) return;
+
 	if (JumpButtonPressed())
 	{
 		SetAction(JUMPSQUAT);

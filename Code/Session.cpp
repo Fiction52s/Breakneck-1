@@ -565,19 +565,19 @@ void Session::RegisterW6Enemies()
 
 
 	//items
-	AddBasicAerialWorldEnemy("Free Flight Booster", "freeflightbooster", 6, itemRow, CreateEnemy<FreeFlightBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	AddWorldEnemy("Swing Launcher", "swinglauncher", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SwingLauncherParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddBasicAerialWorldEnemy("Free\nFlight\nBooster", "freeflightbooster", 6, itemRow, CreateEnemy<FreeFlightBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddWorldEnemy("Swing\nLauncher", "swinglauncher", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SwingLauncherParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	//AddWorldEnemy("Swing Launcher CCW", "swinglauncherccw", 6, itemRow, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	
 	//comboers
-	AddWorldEnemy("Blue Wire Juggler", "bluewirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	AddWorldEnemy("Red Wire Juggler", "redwirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	AddWorldEnemy("Magenta Wire Juggler", "magentawirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Blue\nWire\nJuggler", "bluewirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Red\nWire\nJuggler", "redwirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("Magenta\nWire\nJuggler", "magentawirejuggler", 6, comboerRow, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//targets
-	AddBasicAerialWorldEnemy("Free Flight Target", "freeflighttarget", 6, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
-	AddBasicAerialWorldEnemy("Magenta Comboer Target", "magentacomboertarget", 6, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
-	AddWorldEnemy("Magenta Blocker", "magentablocker", 6, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	AddBasicAerialWorldEnemy("Free\nFlight\nTarget", "freeflighttarget", 6, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Magenta\nComboer\nTarget", "magentacomboertarget", 6, targetRow, CreateEnemy<SpecialTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
+	AddWorldEnemy("Magenta\nBlocker", "magentablocker", 6, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	//story
@@ -3104,7 +3104,7 @@ void Session::CreateZones()
 
 		Edge *curr = g->edgeA;
 
-		TerrainPolygon tp;
+		TerrainPolygon *tp = new TerrainPolygon;
 		V2d v0 = curr->v0;
 		V2d v1 = curr->v1;
 		list<Edge*> currGates;
@@ -3113,7 +3113,7 @@ void Session::CreateZones()
 		currGates.push_back(curr);
 
 
-		tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+		tp->AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
 		curr = curr->edge1;
 		while (true)
@@ -3122,7 +3122,7 @@ void Session::CreateZones()
 			{
 				//we found a zone!
 
-				if (!tp.IsClockwise())
+				if (!tp->IsClockwise())
 				{
 					//cout << "found a zone aaa!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
 					bool okayZone = true;
@@ -3153,11 +3153,18 @@ void Session::CreateZones()
 						//	cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
 						//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
 					}
+					else
+					{
+						delete tp;
+						tp = NULL;
+					}
 
 
 				}
 				else
 				{
+					delete tp;
+					tp = NULL;
 					//cout << "woulda been a zone" << endl;
 				}
 
@@ -3165,13 +3172,15 @@ void Session::CreateZones()
 			}
 			else if (curr == g->edgeB)
 			{
+				delete tp;
+				tp = NULL;
 				//currGates.push_back( curr );
 				//cout << "not a zone even" << endl;
 				break;
 			}
 
 
-			tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+			tp->AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
 			if (curr->IsLockedGateEdge())
 			{
@@ -3197,7 +3206,7 @@ void Session::CreateZones()
 					currGates.push_back(curr);
 					Edge *cc = curr->edge0;
 
-					tp.RemoveLastPoint();
+					tp->RemoveLastPoint();
 					//TerrainPoint *tempPoint = NULL;
 					//TerrainPoint *tempPoint = tp.pointEnd;
 					//tp.RemovePoint( tempPoint );
@@ -3238,10 +3247,10 @@ void Session::CreateZones()
 						if (true)
 							//if( tp.pointStart != NULL )
 						{
-							tp.RemoveLastPoint();
+							tp->RemoveLastPoint();
 
 							//if( tp.pointStart == tp.pointEnd )
-							if (tp.GetNumPoints() == 0)
+							if (tp->GetNumPoints() == 0)
 							{
 								quitLoop = true;
 								break;
@@ -3258,6 +3267,8 @@ void Session::CreateZones()
 
 					if (quitLoop)
 					{
+						delete tp;
+						tp = NULL;
 						//cout << "quitloop a" << endl;
 						break;
 					}
@@ -3297,9 +3308,9 @@ void Session::CreateZones()
 		currGates.push_back(curr);
 
 
-		TerrainPolygon tpb;
+		TerrainPolygon *tpb = new TerrainPolygon;
 
-		tpb.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+		tpb->AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
 		curr = curr->edge1;
 		while (true)
@@ -3308,7 +3319,7 @@ void Session::CreateZones()
 			{
 				//we found a zone!
 
-				if (!tpb.IsClockwise())
+				if (!tpb->IsClockwise())
 				{
 					//cout << "found a zone bbb!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
 					bool okayZone = true;
@@ -3338,11 +3349,18 @@ void Session::CreateZones()
 						zones.push_back(z);
 						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
 					}
-
+					else
+					{
+						delete tpb;
+						tpb = NULL;
+					}
+					
 
 				}
 				else
 				{
+					delete tpb;
+					tpb = NULL;
 					//cout << "woulda been a zone" << endl;
 				}
 
@@ -3356,7 +3374,7 @@ void Session::CreateZones()
 			}
 
 
-			tpb.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+			tpb->AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
 			if (curr->IsLockedGateEdge())
 			{
@@ -3379,7 +3397,7 @@ void Session::CreateZones()
 				{
 					currGates.push_back(curr);
 
-					tpb.RemoveLastPoint();
+					tpb->RemoveLastPoint();
 
 					Edge *cc = curr->edge0;
 
@@ -3427,9 +3445,9 @@ void Session::CreateZones()
 
 						if (true)
 						{
-							tpb.RemoveLastPoint();
+							tpb->RemoveLastPoint();
 							//if( tpb.pointStart == tpb.pointEnd )
-							if (tpb.GetNumPoints() == 0)
+							if (tpb->GetNumPoints() == 0)
 							{
 								quitLoop = true;
 								break;
@@ -3451,6 +3469,8 @@ void Session::CreateZones()
 
 					if (quitLoop)
 					{
+						delete tpb;
+						tpb = NULL;
 						//cout << "quitloop b" << endl;
 						break;
 					}
@@ -3597,7 +3617,7 @@ void Session::CreateZones()
 	{
 		//assert(inverseEdgeTree != NULL);
 
-		TerrainPolygon tp;
+		TerrainPolygon *tp = new TerrainPolygon;
 		Edge *startEdge;
 		
 		//this is p ugly. just testing.
@@ -3617,18 +3637,18 @@ void Session::CreateZones()
 		
 		Edge *curr = startEdge;
 
-		tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+		tp->AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
 		curr = curr->edge1;
 
 		while (curr != startEdge)
 		{
-			tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+			tp->AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
 
 			curr = curr->edge1;
 		}
 
-		tp.FixWinding();
+		tp->FixWinding();
 
 		Zone *z = new Zone(tp);
 		z->gates = outsideGates;
@@ -9536,6 +9556,9 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 		DestroyTileset(ts_goal);
 		ts_goal = NULL;
 
+		DestroyTileset(ts_goalCrack);
+		ts_goalCrack = NULL;
+
 		DestroyTileset(ts_goalExplode);
 		ts_goalExplode = NULL;
 	}
@@ -9544,9 +9567,12 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 	{
 		stringstream ss;
 		ss << "Goal/goal_w" << w << "_a_512x512.png";
+		stringstream ssCrack;
+		ssCrack << "Goal/goal_w" << w << "_b_512x512.png";
 		stringstream ssExplode;
-		ssExplode << "Goal/goal_w" << w << "_b_512x512.png";
+		ssExplode << "Goal/goal_w" << w << "_c_512x512.png";
 		ts_goal = GetSizedTileset(ss.str());
+		ts_goalCrack = GetSizedTileset(ssCrack.str());
 		ts_goalExplode = GetSizedTileset(ssExplode.str());
 	}
 	/*else

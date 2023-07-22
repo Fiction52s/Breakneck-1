@@ -4098,6 +4098,16 @@ void TerrainPolygon::SetupTouchGrass()
 	UpdateTouchGrass();
 }
 
+void TerrainPolygon::FinalizeJustEdges()
+{
+	finalized = true;
+	SetupEdges();
+	myTerrainTree->Clear();
+	AddEdgesToQuadTree(myTerrainTree);
+
+	UpdateBounds();
+}
+
 void TerrainPolygon::Finalize()
 {
 	if (inverse)

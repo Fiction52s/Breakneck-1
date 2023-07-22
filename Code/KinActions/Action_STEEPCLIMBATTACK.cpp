@@ -44,7 +44,9 @@ void Actor::STEEPCLIMBATTACK_Change()
 
 		if (TryBufferGrind()) return;
 
+
 		if (TryGroundBlock()) return;
+
 
 		/*if (SteepClimbAttack())
 		{

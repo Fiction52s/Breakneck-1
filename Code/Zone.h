@@ -45,7 +45,7 @@ struct Zone
 		OPEN,
 		CLOSING,
 		CLOSED,
-		Count
+		CountZ
 	};
 
 	struct MyData
@@ -62,6 +62,8 @@ struct Zone
 
 	int zoneIndex;
 
+	TerrainPolygon *zonePoly; //for raycasts to check if I'm inside it etc
+
 	MyData data;
 
 	bool shouldReform;
@@ -77,6 +79,7 @@ struct Zone
 	std::list<Zone*> subZones;
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;
+	
 	std::set<Zone*> connectedSet;
 	
 	bool showShadow;
@@ -86,7 +89,7 @@ struct Zone
 	sf::Shader *miniShader;
 	Tileset *ts_z;
 
-	Zone( TerrainPolygon & tp );
+	Zone( TerrainPolygon * tp );
 	~Zone();
 	void Init();
 	void Draw( sf::RenderTarget *target );

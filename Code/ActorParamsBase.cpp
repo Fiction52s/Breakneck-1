@@ -594,7 +594,7 @@ void ActorParams::DrawMonitor(sf::RenderTarget *target)
 		double h = image.getLocalBounds().height;
 
 		sf::CircleShape cs;
-		cs.setRadius(max(w, h));
+		cs.setRadius(64);//max(w, h));
 
 		cs.setFillColor(Color::White);
 

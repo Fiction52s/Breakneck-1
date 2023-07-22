@@ -543,6 +543,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//std::string material;
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
+	void FinalizeJustEdges();//for use by zones
 	//void MovePointsFinalize();
 	void FinalizeInverse();
 	void Reset();

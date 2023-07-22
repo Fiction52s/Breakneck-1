@@ -375,10 +375,10 @@ void BasicTouchGrass::UpdateSprite()
 	switch (action)
 	{
 	case TOUCHEDLEFT:
-		tileIndex = 2;
+		tileIndex = 3;
 		break;
 	case TOUCHEDRIGHT:
-		tileIndex = 3;
+		tileIndex = 2;
 		break;
 	case TOUCHEDLAND:
 		tileIndex = 1;

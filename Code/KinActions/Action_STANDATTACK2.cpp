@@ -45,6 +45,7 @@ void Actor::STANDATTACK2_Change()
 			return;
 		}
 
+
 		if (TryGroundAttack())
 		{
 			return;

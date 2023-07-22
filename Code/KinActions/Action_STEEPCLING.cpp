@@ -16,6 +16,8 @@ void Actor::STEEPCLING_Change()
 {
 	if (TryPressGrind()) return;
 
+	if (TryGroundBlock()) return;
+
 	if (JumpButtonPressed())
 	{
 		SetAction(JUMPSQUAT);

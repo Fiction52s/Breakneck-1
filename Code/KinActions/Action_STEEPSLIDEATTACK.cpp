@@ -34,6 +34,8 @@ void Actor::STEEPSLIDEATTACK_Change()
 	{
 		if (TryBufferGrind()) return;
 
+		if (TryGroundBlock()) return;
+
 		if (JumpButtonPressed() || pauseBufferedJump)
 		{
 			SetAction(JUMPSQUAT);

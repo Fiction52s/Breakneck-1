@@ -94,8 +94,8 @@ Gorilla::Gorilla( ActorParams *ap )
 	createWallFrame = 6 * animFactor[ATTACK];//20;
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectBack(9);
-	cutObject->SetSubRectFront(8);
+	cutObject->SetSubRectBack(11);
+	cutObject->SetSubRectFront(10);
 
 	ResetEnemy();
 }

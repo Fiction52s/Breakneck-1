@@ -226,6 +226,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	Tileset *ts_key;
 	Tileset *ts_keyExplode;
 	Tileset *ts_goal;
+	Tileset *ts_goalCrack;
 	Tileset *ts_goalExplode;
 
 	bool phaseOn; //for phase switches
