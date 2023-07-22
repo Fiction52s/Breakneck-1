@@ -2421,8 +2421,14 @@ void RayCast(RayCastHandler *handler, QNode *node,Edge &e)
 				LineIntersection li = SegmentIntersect(e.v0, e.v1, ((Edge*)(n->entrants[i]))->v0, ((Edge*)(n->entrants[i]))->v1);
 				if (!li.parallel)
 				{
-					handler->HandleRayCollision(((Edge*)(n->entrants[i])), ((Edge*)(n->entrants[i]))->GetQuantity(li.position),
-						dot(V2d(li.position - e.v0), e.Along()));
+					double portion = dot(V2d(li.position - e.v0), e.Along());
+
+					//for precision cases, when testing inside of zones. shouldn't trigger if portion < 0 regardless
+					if (portion >= 0)
+					{
+						handler->HandleRayCollision(((Edge*)(n->entrants[i])), ((Edge*)(n->entrants[i]))->GetQuantity(li.position),
+							portion);
+					}
 				}
 			}
 		}
@@ -2443,8 +2449,18 @@ void RayCast(RayCastHandler *handler, QNode *node,Edge &e)
 				LineIntersection li = SegmentIntersect(e.v0, e.v1, currEdge->v0, (currEdge->v1));
 				if (!li.parallel)
 				{
-					handler->HandleRayCollision(currEdge, currEdge->GetQuantity(li.position),
-						dot(V2d(li.position - e.v0), e.Along()));
+					double portion = dot(V2d(li.position - e.v0), e.Along());
+
+					//recently added this check to avoid super close cases
+					//when checking if a point is within a zone. should never
+					//count on the ray if portion is negative regardless
+					if (portion >= 0)
+					{
+						handler->HandleRayCollision(currEdge, currEdge->GetQuantity(li.position),
+							portion);
+					}
+
+					
 				}
 			}
 

@@ -1120,6 +1120,12 @@ void TerrainPolygon::HandleRayCollision(Edge *edge,
 		return;
 	}
 
+	//now handled in the original raycast code in physics.cpp
+	//in certain positions when checking if a point is inside terrain, I could get a negative value here
+	//and trigger when it wasn't supposed to.
+	//if (rayPortion < 0) 
+	//	return;
+
 	double len = length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart);
 	if (rayCastInfo.rcEdge == NULL || len < rayCastInfo.rcPortion)
 	{

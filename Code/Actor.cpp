@@ -14226,8 +14226,22 @@ void Actor::HandleTouchedGate()
 	V2d C = b.GetQuadVertex(2);// (b.globalPosition.x + b.rw, b.globalPosition.y + b.rh);
 	V2d D = b.GetQuadVertex(3);// (b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
 
+	/*V2d innerA = A;
+	V2d innerB = B;
+	V2d innerC = C;
+	V2d innerD = D;
 
-	
+	double test = .01;
+	innerA += V2d(test, test);
+	innerB += V2d(-test, test);
+	innerC += V2d(test, -test);
+	innerD += V2d(-test, -test);*/
+
+	//when adding an offset it somehow pokes through the bottom with the raycast. any slight movement up fixes it.
+	//V2d test = V2d(0, -.01);//-.00000001);
+	//C += test;
+	//D += test;
+
 	V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
 	double ang = atan2(nEdge.x, -nEdge.y);
 
@@ -14256,6 +14270,7 @@ void Actor::HandleTouchedGate()
 		newZone = g->zoneA;
 	}
 
+	bool pointsInCurrZone = false;
 	bool pointsInNewZone = false;
 
 	bool aNewZone = newZone->ContainsPoint(A);
@@ -14263,12 +14278,22 @@ void Actor::HandleTouchedGate()
 	bool cNewZone = newZone->ContainsPoint(C);
 	bool dNewZone = newZone->ContainsPoint(D);
 
+	/*bool aCurrZone = currZone->ContainsPoint(A);
+	bool bCurrZone = currZone->ContainsPoint(B);
+	bool cCurrZone = currZone->ContainsPoint(C);
+	bool dCurrZone = currZone->ContainsPoint(D);
+
+	if (aCurrZone && bCurrZone && cCurrZone && dCurrZone)
+	{
+		pointsInCurrZone = true;
+	}*/
+
 	if (aNewZone && bNewZone && cNewZone && dNewZone )
 	{
 		pointsInNewZone = true;
 	}
 
-	if (pointsInNewZone)
+	if (pointsInNewZone )//&& !pointsInCurrZone )
 	{
 		/*Zone *currZone = sess->currentZone;
 		Zone *newZone = NULL;
@@ -14465,6 +14490,7 @@ void Actor::HandleTouchedGate()
 
 			gateTouched = NULL;
 			sess->LockGate(g);
+
 		}
 		//cout << "went back" << endl;
 		
