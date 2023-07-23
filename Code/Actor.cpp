@@ -14226,37 +14226,13 @@ void Actor::HandleTouchedGate()
 	V2d C = b.GetQuadVertex(2);// (b.globalPosition.x + b.rw, b.globalPosition.y + b.rh);
 	V2d D = b.GetQuadVertex(3);// (b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
 
-	/*V2d innerA = A;
-	V2d innerB = B;
-	V2d innerC = C;
-	V2d innerD = D;
-
-	double test = .01;
-	innerA += V2d(test, test);
-	innerB += V2d(-test, test);
-	innerC += V2d(test, -test);
-	innerD += V2d(-test, -test);*/
-
-	//when adding an offset it somehow pokes through the bottom with the raycast. any slight movement up fixes it.
-	//V2d test = V2d(0, -.01);//-.00000001);
-	//C += test;
-	//D += test;
+	
 
 	V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
 	double ang = atan2(nEdge.x, -nEdge.y);
 
-	//double crossA = dot(A - edge->v0, nEdge);
-	//double crossB = dot(B - edge->v0, nEdge);
-	//double crossC = dot(C - edge->v0, nEdge);
-	//double crossD = dot(D - edge->v0, nEdge);
 	double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
 	alongAmount /= length(edge->v1 - edge->v0);
-	//
-	//V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
-
-	//double thresh = .01;//1.0;//.01;
-
-	//bool pointsAcrossGate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
 
 	Zone *currZone = sess->currentZone;
 	Zone *newZone = NULL;
@@ -14270,7 +14246,7 @@ void Actor::HandleTouchedGate()
 		newZone = g->zoneA;
 	}
 
-	bool pointsInCurrZone = false;
+	
 	bool pointsInNewZone = false;
 
 	bool aNewZone = newZone->ContainsPoint(A);
@@ -14278,15 +14254,7 @@ void Actor::HandleTouchedGate()
 	bool cNewZone = newZone->ContainsPoint(C);
 	bool dNewZone = newZone->ContainsPoint(D);
 
-	/*bool aCurrZone = currZone->ContainsPoint(A);
-	bool bCurrZone = currZone->ContainsPoint(B);
-	bool cCurrZone = currZone->ContainsPoint(C);
-	bool dCurrZone = currZone->ContainsPoint(D);
-
-	if (aCurrZone && bCurrZone && cCurrZone && dCurrZone)
-	{
-		pointsInCurrZone = true;
-	}*/
+	
 
 	if (aNewZone && bNewZone && cNewZone && dNewZone )
 	{
@@ -14306,8 +14274,41 @@ void Actor::HandleTouchedGate()
 		{
 			newZone = g->zoneA;
 		}*/
+		bool currIsSubOfNew = false;
+		for (auto it = newZone->subZones.begin(); it != newZone->subZones.end(); ++it)
+		{
+			if ((*it) == currZone)
+			{
+				currIsSubOfNew = true;
+				break;
+			}
+		}
 
-		bool isInNewZone = newZone->ContainsPoint(position);
+		if (currIsSubOfNew)
+		{
+			bool anyPointsInCurrZone = false;
+			bool aCurrZone = currZone->ContainsPoint(A);
+			bool bCurrZone = currZone->ContainsPoint(B);
+			bool cCurrZone = currZone->ContainsPoint(C);
+			bool dCurrZone = currZone->ContainsPoint(D);
+
+			if (aCurrZone || bCurrZone || cCurrZone || dCurrZone)
+			{
+				anyPointsInCurrZone = true;
+			}
+
+			if (!anyPointsInCurrZone)
+			{
+				activate = true;
+			}
+		}
+		else
+		{
+			activate = true;
+		}
+		
+
+		/*bool isInNewZone = newZone->ContainsPoint(position);
 		bool isInCurrZone = currZone->ContainsPoint(position);
 
 		bool newIsSubOfOld = false;
@@ -14341,7 +14342,7 @@ void Actor::HandleTouchedGate()
 			{
 				activate = false;
 			}
-		}
+		}*/
 	}
 
 
