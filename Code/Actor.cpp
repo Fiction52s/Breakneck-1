@@ -14487,11 +14487,23 @@ void Actor::HandleTouchedGate()
 				sess->LockGate(g);
 			}*/
 
+			bool allPointsInCurrZone = false;
+			bool aCurrZone = currZone->ContainsPoint(A);
+			bool bCurrZone = currZone->ContainsPoint(B);
+			bool cCurrZone = currZone->ContainsPoint(C);
+			bool dCurrZone = currZone->ContainsPoint(D);
+
+			if (aCurrZone && bCurrZone && cCurrZone && dCurrZone)
+			{
+				allPointsInCurrZone = true;
+			}
+
+			if (allPointsInCurrZone)
+			{
+				gateTouched = NULL;
+				sess->LockGate(g);
+			}
 			//might need extra checks at some point
-
-			gateTouched = NULL;
-			sess->LockGate(g);
-
 		}
 		//cout << "went back" << endl;
 		
