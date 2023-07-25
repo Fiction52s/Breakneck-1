@@ -84,7 +84,7 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	framesBetween = 60;
 	maxFramesToLive = 180 * 2;
 
-	Tileset *ts_basicBullets = GetSizedTileset("Enemies/bullet_64x64.png");
+	Tileset *ts_basicBullets = GetSizedTileset("Enemies/bullet_80x80.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 2, GetPosition(),

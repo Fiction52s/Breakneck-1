@@ -92,16 +92,16 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		bulletTilesetIndex = 0;
 		break;
 	case BasicBullet::BAT:
-		bulletTilesetIndex = 2;
+		bulletTilesetIndex = 6;
 		break;
 	case BasicBullet::PATROLLER:
-		bulletTilesetIndex = 3;
+		bulletTilesetIndex = 1;
 		break;
 	case BasicBullet::CURVE_TURRET:
-		bulletTilesetIndex = 1;
+		bulletTilesetIndex = 2;
 		break;
 	case BasicBullet::LOB_TURRET:
-		bulletTilesetIndex = 1;
+		bulletTilesetIndex = 2;
 		break;
 	case BasicBullet::PREDICT:
 		bulletTilesetIndex = 1;
@@ -117,13 +117,13 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		break;
 	case BasicBullet::OWL:
 	case BasicBullet::BIG_OWL:
-		bulletTilesetIndex = 1;
+		bulletTilesetIndex = 4;
 		break;
 	case BasicBullet::TURTLE:
-		bulletTilesetIndex = 1;
+		bulletTilesetIndex = 7;
 		break;
 	case BasicBullet::GROWING_TREE:
-		bulletTilesetIndex = 1;
+		bulletTilesetIndex = 8;
 		break;
 	case BasicBullet::COPYCAT:
 		bulletTilesetIndex = 1;
@@ -134,7 +134,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		bulletTilesetIndex = 1;
 		break;
 	case BasicBullet::SPECTER:
-		bulletTilesetIndex = 3;
+		bulletTilesetIndex = 8;
 		break;
 	}
 

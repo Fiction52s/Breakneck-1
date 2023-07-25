@@ -1335,7 +1335,7 @@ void Session::CreateBulletQuads()
 		{
 			bigBulletVA[i].position = Vector2f(0, 0);
 		}
-		ts_basicBullets = GetTileset("Enemies/bullet_64x64.png", 64, 64);
+		ts_basicBullets = GetSizedTileset("Enemies/bullet_80x80.png");
 	}
 	else
 	{

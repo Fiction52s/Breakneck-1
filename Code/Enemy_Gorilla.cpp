@@ -86,8 +86,8 @@ Gorilla::Gorilla( ActorParams *ap )
 	hitboxInfo->knockback = 4;
 	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
+	BasicCircleHurtBodySetup(75,0, V2d( -16, 20 ), V2d());
+	BasicCircleHitBodySetup(60, 0, V2d( -10, 0 ), V2d());
 
 	hitBody.hitboxInfo = hitboxInfo;
 

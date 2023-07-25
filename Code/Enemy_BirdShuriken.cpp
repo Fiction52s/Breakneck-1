@@ -131,7 +131,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 
 	CreateSurfaceMover(startPosInfo, 12, this);
 
-	Tileset *ts_basicBullets = sess->GetTileset("Enemies/bullet_64x64.png", 64, 64);
+	Tileset *ts_basicBullets = sess->GetSizedTileset("Enemies/bullet_80x80.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 16, 1, GetPosition(),
