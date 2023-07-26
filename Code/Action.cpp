@@ -1481,7 +1481,10 @@ void MoveBrushAction::Perform()
 			poly->SoftReset();
 			poly->Finalize();
 
-			poly->SetGrassFromPointMoveInfoVectors(pVec);
+			poly->SetGrassFromStoredInfo(pointMover->newGrassInfo[poly]);
+			//poly->
+
+			//poly->SetGrassFromPointMoveInfoVectors(pVec);
 
 			/*int prevIndex;
 			for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
@@ -1571,11 +1574,13 @@ void MoveBrushAction::Undo()
 			poly->SoftReset();
 			poly->Finalize();
 
+			poly->SetGrassFromStoredInfo(pointMover->oldGrassInfo[poly]);
+
 			/*for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 			{
 				(*pit).poly->SetGrassVecOn((*pit).pointIndex, (*pit).grassVec);
 			}*/
-			poly->SetGrassFromPointMoveInfoVectors(pVec);
+			//poly->SetGrassFromPointMoveInfoVectors(pVec);
 
 			poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 

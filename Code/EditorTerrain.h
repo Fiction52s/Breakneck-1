@@ -186,6 +186,12 @@ struct BorderSizeInfo
 	int startLen;
 };
 
+struct GrassPosInfo
+{
+	sf::Vector2i grassCenter;
+	int gType;
+};
+
 struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	QuadTreeEntrant
 {
@@ -693,11 +699,18 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//enemymap
 	std::map<TerrainPoint*, std::list<ActorPtr>> enemies;
 	std::vector<std::pair<ActorPtr, PositionInfo>> enemyPosBackups;
+
+
+	std::vector<GrassPosInfo> grassPosBackups; //for moving point grass backups
 	void BackupEnemyPositions();
 	void StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b);
 	void BackupGrass();
+	void StoreAllGrassInfo(std::vector<GrassInfo> &infoVec);
+	void SetGrassFromStoredInfo(std::vector<GrassInfo> &infoVec);
 	bool isGrassBackedUp;
 	int NumGrassChanged();
+	void BackupGrassPositions();
+	void SetGrassFromBackupPositions();
 	bool grassChanged;
 	std::vector<GrassInfo> grassStateVecBackup;
 
@@ -713,10 +726,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 
 
-
-
-
 typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
+typedef std::map<PolyPtr, std::vector<GrassInfo>> PolyGrassInfoMap;
 
 
 
@@ -728,6 +739,11 @@ struct PointMover
 	//PointVectorMap myMap;
 	//std::map<ActorPtr, PositionInfo> enemyBackups;
 	//std::map<ActorPtr, PositionInfo> newEnemyPos;
+
+	//std::map<PolyPtr, std::vector<GrassInfo>> grassInfo;
+	PolyGrassInfoMap oldGrassInfo;
+	PolyGrassInfoMap newGrassInfo;
+
 	std::map<PolyPtr,std::vector<PointMoveInfo>> movePoints;
 	std::map < RailPtr, std::vector<PointMoveInfo>> railMovePoints;
 	std::vector <std::pair<ActorPtr, PositionInfo>> oldEnemyPosInfo;

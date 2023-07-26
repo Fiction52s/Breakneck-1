@@ -4256,11 +4256,80 @@ void TerrainPolygon::FinalizeInverse()
 	//GenerateDecor();
 }
 
+void TerrainPolygon::BackupGrassPositions()
+{
+	int numActive = 0;
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		if (grassStateVec[i].gState == G_ON)
+		{
+			++numActive;
+		}
+	}
+
+	grassPosBackups.clear();
+	grassPosBackups.reserve(numActive);
+	GrassPosInfo temp;
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		if (grassStateVec[i].gState == G_ON)
+		{
+			temp.grassCenter = Vector2i(GetGrassCenter(i));
+			temp.gType = grassStateVec[i].gType;
+			grassPosBackups.push_back(temp);
+		}
+	}
+}
+
+void TerrainPolygon::SetGrassFromBackupPositions()
+{
+	int numBackups = grassPosBackups.size();
+	for (int i = 0; i < numBackups; ++i)
+	{
+		SwitchGrass(V2d(grassPosBackups[i].grassCenter), true, false, grassPosBackups[i].gType);
+	}
+}
+
 void TerrainPolygon::BackupGrass()
 {
 	isGrassBackedUp = true;
 	grassChanged = false;
 	grassStateVecBackup = grassStateVec;
+}
+
+void TerrainPolygon::StoreAllGrassInfo(std::vector<GrassInfo> &infoVec)
+{
+	int numActive = 0;
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		if (grassStateVec[i].gState == G_ON)
+		{
+			++numActive;
+		}
+	}
+
+	infoVec.clear();
+	infoVec.reserve(numActive);
+	//GrassPosInfo temp;
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		if (grassStateVec[i].gState == G_ON)
+		{
+			//even though index represents the point index, it is used here to represent the grass index. just saves a little space.
+			grassStateVec[i].index = i;
+			infoVec.push_back(grassStateVec[i]);
+		}
+	}
+	//infoVec = grassStateVec;
+}
+
+void TerrainPolygon::SetGrassFromStoredInfo(std::vector<GrassInfo> &infoVec)
+{
+	for (auto it = infoVec.begin(); it != infoVec.end(); ++it)
+	{
+		//even though index represents the point index, it is used here to represent the grass index. just saves a little space.
+		SetGrassState((*it).index, G_ON, (*it).gType);
+	}
 }
 
 int TerrainPolygon::NumGrassChanged()

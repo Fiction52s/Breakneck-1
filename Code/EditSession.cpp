@@ -5246,6 +5246,7 @@ void EditSession::ClearSelectedPoints()
 	}
 
 	selectedPoints.clear();
+	selectedPointsPolyGrassMap.clear();
 	selectedRailPoints.clear();
 }
 
@@ -6180,6 +6181,8 @@ bool EditSession::PerformMovePointsAction()
 		adjList.clear();
 		poly = (*mit).first;
 
+		pm->oldGrassInfo[poly] = selectedPointsPolyGrassMap[poly];
+
 		 //adjust this later!!! need to take this into account
 
 		poly->AlignExtremes((*mit).second, adjList);
@@ -6208,14 +6211,19 @@ bool EditSession::PerformMovePointsAction()
 		poly->StoreEnemyPositions(pm->newEnemyPosInfo);
 
 		poly->SoftReset();
+
 		poly->Finalize();
+
+		poly->SetGrassFromBackupPositions();
+
+		poly->StoreAllGrassInfo(pm->newGrassInfo[poly]);
 
 		/*for (auto pit = pmVec.begin(); pit != pmVec.end(); ++pit)
 		{
 			(*pit).poly->SetGrassVecOn((*pit).pointIndex, (*pit).grassVec);
 		}*/
 
-		poly->SetGrassFromPointMoveInfoVectors(pmVec);
+	//	poly->SetGrassFromPointMoveInfoVectors(pmVec);
 
 		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 
@@ -6435,6 +6443,8 @@ void EditSession::StartMoveSelectedPoints()
 		poly = (*it).first;
 
 		poly->BackupEnemyPositions();
+		poly->BackupGrassPositions();
+		poly->StoreAllGrassInfo(selectedPointsPolyGrassMap[poly]);
 		TerrainPoint *point;
 		bool rem;
 		int numGrass = 0;
@@ -6443,10 +6453,12 @@ void EditSession::StartMoveSelectedPoints()
 			point = (*pit).GetPolyPoint();
 			(*pit).origPos = point->pos;
 
-			poly->FillGrassVec(point, (*pit).grassVec);
-			poly->FillGrassVec(poly->GetPrevPoint(point->index), (*pit).prevGrassVec);
+			//poly->FillGrassVec(point, (*pit).grassVec);
+			//poly->FillGrassVec(poly->GetPrevPoint(point->index), (*pit).prevGrassVec);
 		}
 	}
+
+	//BackupGrassPositions()
 
 	RailPtr rail;
 	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)

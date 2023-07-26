@@ -320,6 +320,8 @@ struct EditSession : GUIHandler, Session
 	Brush *copiedBrush;
 	Brush *freeActorCopiedBrush;
 	PointMap selectedPoints;
+	PolyGrassInfoMap selectedPointsPolyGrassMap;
+
 	RailPointMap selectedRailPoints;
 	EnemyVariationSelector *variationSelector;
 	sf::Vertex border[8];
