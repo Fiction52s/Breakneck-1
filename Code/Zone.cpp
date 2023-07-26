@@ -894,10 +894,15 @@ bool Zone::ContainsZone(Zone *z)
 {
 	//midpoint on the gate
 
+	//I use the polygon containsPoint here because it includes things being "on the line" or shared points.
+	//the IsInsideArea function is only for points that are actually inside the area, not shared by it.
+	//might cause other bugs later, not sure, definitely fixes the current issue though
+
+
 	vector<Vector2i> &pVec = z->PointVector();
 	for (auto it = pVec.begin(); it != pVec.end(); ++it)
 	{
-		if (!ContainsPoint(V2d((*it))))
+		if (!zonePoly->ContainsPoint( Vector2f((*it)) ) )//!ContainsPoint(V2d((*it))))
 		{
 			return false;
 		}

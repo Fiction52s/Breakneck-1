@@ -5363,12 +5363,22 @@ void TerrainPolygon::SetupEdges()
 
 bool TerrainPolygon::IsInsideArea(V2d &point)
 {
-	sf::Rect<double> drect(GetAABB());
+	//sf::Rect<double> drect(GetAABB());
+	//double aabbExtra = 0;//.01;
+	//drect.left -= aabbExtra;
+	//drect.top -= aabbExtra;
+	//drect.width += aabbExtra * 2;
+	//drect.height += aabbExtra * 2;
 
-	if (!drect.contains(point))
+	//bool pointInRect = point.x >= left- ex  && point.x <= max(right, oldRight) + ex && point.y >= min(top, oldTop) - ex && point.y <= max(bottom, oldBottom) + ex;
+
+	//if (!drect.contains(point))
+	if(!PointIsInsideAABB(point ))
 	{
 		return false;
 	}
+
+	sf::Rect<double> drect(GetAABB());
 
 	V2d insideQueryPoint = point;
 
@@ -6228,6 +6238,11 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 sf::IntRect TerrainPolygon::GetAABB()
 {
 	return IntRect(left, top, right - left, bottom - top);
+}
+
+bool TerrainPolygon::PointIsInsideAABB(V2d point)
+{
+	return point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;
 }
 
 sf::IntRect TerrainPolygon::GetAABBWithEnemies()

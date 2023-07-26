@@ -235,6 +235,11 @@ void SpecterBullet::FrameIncrement()
 		{
 			Die();
 		}
+
+		if (slowMultiple > 1 )//&& currHurtboxes == NULL)
+		{
+			Die();
+		}
 	}
 }
 
@@ -283,12 +288,7 @@ void SpecterBullet::UpdateEnemyPhysics()
 		currPosInfo.position += movementVec;
 	}
 
-	if (slowMultiple > 1 && currHurtboxes == NULL )
-	{
-		DefaultHurtboxesOn();
-		action = THROWN_VULNERABLE;
-		frame = 0;
-	}
+	
 	//Enemy::UpdateEnemyPhysics();
 
 	//hitboxInfo->hitPosType = HitboxInfo::GetAirType(surfaceMover->GetVel());

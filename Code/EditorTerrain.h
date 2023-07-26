@@ -589,6 +589,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void SetLayer(int p_layer);
 	bool IsInternallyValid();
+
+	bool PointIsInsideAABB(V2d point);
 	sf::IntRect GetAABB();
 	sf::IntRect GetAABBWithEnemies();
 	sf::FloatRect GetAngledAABB(float rotation);
