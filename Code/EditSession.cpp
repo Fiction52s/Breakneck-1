@@ -8608,7 +8608,7 @@ bool EditSession::ExecuteTerrainCompletion()
 
 	bool applyOkay = true;
 
-	int liRes;
+	int liRes = 0;
 
 	bool tryMakeInverse = 
 		createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_SETINVERSE;
@@ -9899,14 +9899,14 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
 	auto &testPolygons = GetCorrectPolygonList(terrainLayer);
-	bool removeBrush;
-	int liRes;
+	bool removeBrush = false;
+	int liRes = 0;
 
 	list<PolyPtr> inverseBrushes;
 	map<PolyPtr, list<PolyPtr>> nonInverseIntersections;
 	list<PolyPtr> tempContained;
 	list<PolyPtr> containedPolys;
-	int i;
+	int i = 0;
 
 
 	//Brush orig;
@@ -9920,7 +9920,7 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 	ClipperLib::Paths solution;
 	ClipperLib::Path clipperIntersections;
 
-	bool sliverResult;
+	//bool sliverResult;
 
 	for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end();)
 	{
@@ -10143,9 +10143,12 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 				newPoly->TryFixPointsTouchingLines();
 				//assert(0);
 			}
+			//newPoly->FixWinding();
 
 			newPoly->SetMaterialType(inversePolygon->terrainWorldType,
 				inversePolygon->terrainVariation);
+
+			newPoly->UpdateBounds();
 
 			inverseResults.push_back(newPoly);
 			resultBrush.AddObject(newPoly);
@@ -10155,7 +10158,8 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 		//figure out which polygon should be the new inverse polygon
 		bool madeInverse = false;
 
-		bool isOuter;
+		cout << "finding outer. inverse results: " << inverseResults.size() << endl;
+		bool isOuter = false;
 		for (auto it = inverseResults.begin(); it != inverseResults.end(); ++it)
 		{
 			isOuter = true;
@@ -10180,6 +10184,7 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 
 		if (!madeInverse)
 		{
+			cout << "inverse not made" << endl;
 			//when you've subtracted and you have a polygon touching a point on the inverse.
 			resultBrush.Destroy();
 			return false;
@@ -10240,8 +10245,8 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	set<PolyPtr> inverseConnectedPolys;
 	list<PolyPtr> inverseConnectedInters;
 
-	bool removeBrush;
-	int liRes;
+	bool removeBrush = false;
+	int liRes = 0;
 
 	int numIntersections;
 	bool intersectsInverse;

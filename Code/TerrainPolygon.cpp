@@ -1237,6 +1237,11 @@ TerrainPolygon::TerrainPolygon()
 	ts_grass = NULL;
 	pointVector.resize(2);
 
+	left = 0;
+	right = 0;
+	top = 0;
+	bottom = 0;
+
 	if (sess != NULL)
 	{
 		ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
@@ -6570,11 +6575,12 @@ bool TerrainPolygon::Contains( PolyPtr poly )
 
 
 	int polyNumP = poly->GetNumPoints();
-	TerrainPoint *polyCurr;
+	TerrainPoint *polyCurr = NULL;
 	for (int i = 0; i < polyNumP; ++i)
 	{
 		polyCurr = poly->GetPoint(i);
-		if (!ContainsPoint(Vector2f(polyCurr->pos.x, polyCurr->pos.y)))
+		//!IsInsideArea(V2d(polyCurr->pos.x, polyCurr->pos.y) ))//ContainsPoint(Vector2f(polyCurr->pos.x, polyCurr->pos.y)))
+		if (!ContainsPoint(Vector2f(polyCurr->pos.x, polyCurr->pos.y) ) )
 		{
 			return false;
 		}
