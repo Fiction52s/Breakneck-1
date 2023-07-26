@@ -1482,6 +1482,8 @@ void MoveBrushAction::Perform()
 			poly->Finalize();
 
 			poly->SetGrassFromStoredInfo(pointMover->newGrassInfo[poly]);
+
+			poly->UpdateAttachedGateLines();
 			//poly->
 
 			//poly->SetGrassFromPointMoveInfoVectors(pVec);
@@ -1575,6 +1577,8 @@ void MoveBrushAction::Undo()
 			poly->Finalize();
 
 			poly->SetGrassFromStoredInfo(pointMover->oldGrassInfo[poly]);
+
+			poly->UpdateAttachedGateLines();
 
 			/*for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 			{

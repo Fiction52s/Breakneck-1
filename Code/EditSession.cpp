@@ -6216,6 +6216,8 @@ bool EditSession::PerformMovePointsAction()
 
 		poly->SetGrassFromBackupPositions();
 
+		poly->UpdateAttachedGateLines();
+
 		poly->StoreAllGrassInfo(pm->newGrassInfo[poly]);
 
 		/*for (auto pit = pmVec.begin(); pit != pmVec.end(); ++pit)
@@ -7542,6 +7544,8 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	pi.newPos = point->pos + adjust;
 
 	poly->BackupEnemyPositions();
+	poly->BackupGrassPositions();
+	poly->StoreAllGrassInfo(pmap->oldGrassInfo[poly]);
 
 	pmap->oldEnemyPosInfo.insert(pmap->oldEnemyPosInfo.end(),
 		poly->enemyPosBackups.begin(), poly->enemyPosBackups.end());
@@ -7567,6 +7571,9 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	}
 
 	poly->StoreEnemyPositions(pmap->newEnemyPosInfo);
+	poly->SetGrassFromBackupPositions();
+
+	poly->StoreAllGrassInfo(pmap->newGrassInfo[poly]);
 	
 	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap);
 	//action->performed = true;

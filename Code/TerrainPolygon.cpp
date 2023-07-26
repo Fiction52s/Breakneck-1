@@ -3099,6 +3099,20 @@ void TerrainPolygon::Rotate( Vector2f &fCenter, float f)
 	//AlignExtremes(); happens after rotation is totally done
 }
 
+void TerrainPolygon::UpdateAttachedGateLines()
+{
+	int numP = GetNumPoints();
+	TerrainPoint *curr = NULL;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (curr->gate != NULL)
+		{
+			curr->gate->UpdateLine();
+		}
+	}
+}
+
 void TerrainPolygon::Move(Vector2i move )
 {
 	assert( finalized );
