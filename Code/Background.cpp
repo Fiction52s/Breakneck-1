@@ -176,8 +176,8 @@ Background::Background( int envLevel, int envType)
 	ts_shape = GetTileset(shapeFile, 960, 540);
 	ts_sky = GetTileset(skyFile, 960, 540);
 	//Image im(rtt->getTexture().copyToImage());
-	bool loadPalette = palette.loadFromFile(paletteFile);
-	assert(loadPalette);
+	paletteLoaded = palette.loadFromFile(paletteFile);
+	//assert(loadPalette);
 
 	background.setTexture(*ts_bg->texture);
 	background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
@@ -191,10 +191,14 @@ Background::Background( int envLevel, int envType)
 		ts_sky->SetQuadSubRect(backgroundSky, 0);
 	}
 	
-	shape.setTexture(*ts_shape->texture);
-	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
-	shape.setPosition(0, 0);
-	shape.setScale(2, 2);
+	if (ts_shape != NULL)
+	{
+		shape.setTexture(*ts_shape->texture);
+		shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
+		shape.setPosition(0, 0);
+		shape.setScale(2, 2);
+	}
+	
 
 	transFrames = 60 * 20;
 
@@ -317,8 +321,8 @@ Background::Background(const string &bgName)
 	ts_sky = GetTileset(skyFile, 960, 540);
 
 	//Image im(rtt->getTexture().copyToImage());
-	bool loadPalette = palette.loadFromFile(paletteFile);
-	assert(loadPalette);
+	paletteLoaded = palette.loadFromFile(paletteFile);
+	//assert(loadPalette);
 
 	if (ts_bg != NULL)
 	{
@@ -335,10 +339,14 @@ Background::Background(const string &bgName)
 		ts_sky->SetQuadSubRect(backgroundSky, 0);
 	}
 
-	shape.setTexture(*ts_shape->texture);
-	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
-	shape.setPosition(0, 0);
-	shape.setScale(2, 2);
+	if (ts_shape != NULL)
+	{
+		shape.setTexture(*ts_shape->texture);
+		shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
+		shape.setPosition(0, 0);
+		shape.setScale(2, 2);
+	}
+	
 
 	transFrames = 60 * 20;
 
@@ -373,8 +381,8 @@ Background::Background()
 
 	ts_bg = NULL;
 	ts_shape = GetTileset(shapeSourceName, 1920, 1080);
-	bool loadPalette = palette.loadFromFile(paletteFile);
-	assert(loadPalette);
+	paletteLoaded = palette.loadFromFile(paletteFile);
+	//assert(loadPalette);
 
 	//background.setTexture(*ts_bg->texture);
 	//background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
@@ -382,10 +390,14 @@ Background::Background()
 
 	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
 
-	shape.setTexture(*ts_shape->texture);
-	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
-	shape.setPosition(0, 0);
-	shape.setScale(2, 2);
+	if (ts_shape != NULL)
+	{
+		shape.setTexture(*ts_shape->texture);
+		shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
+		shape.setPosition(0, 0);
+		shape.setScale(2, 2);
+	}
+	
 
 	transFrames = 60 * 3;
 
@@ -436,6 +448,11 @@ void Background::UpdateSky()
 
 sf::Color Background::GetSkyColor()
 {
+	if (!paletteLoaded)
+	{
+		return Color::White;
+	}
+
 	int ind = frame / transFrames;
 	Color startColor = palette.getPixel(ind, 0);
 	Color endColor;
@@ -459,6 +476,11 @@ sf::Color Background::GetSkyColor()
 
 sf::Color Background::GetShapeColor()
 {
+	if (!paletteLoaded)
+	{
+		return Color::White;
+	}
+
 	int ind = frame / transFrames;
 	Color startColor = palette.getPixel(ind, 1);
 	Color endColor;
@@ -482,7 +504,10 @@ sf::Color Background::GetShapeColor()
 
 void Background::UpdateShape()
 {
-	shape.setColor(GetShapeColor());
+	if (ts_shape != NULL)
+	{
+		shape.setColor(GetShapeColor());
+	}
 }
 
 void Background::Update( const Vector2f &camPos, int updateFrames )
@@ -533,7 +558,11 @@ void Background::Draw(sf::RenderTarget *target)
 		target->draw(backgroundSky, 4, sf::Quads);
 	}
 	
-	target->draw(shape);
+	if (ts_shape != NULL)
+	{
+		target->draw(shape);
+	}
+	
 	if (ts_bg != NULL)
 	{
 		target->draw(background);

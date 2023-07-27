@@ -74,6 +74,8 @@ struct Background : TilesetManager
 	void Hide();
 	void FlipShown();
 
+	bool paletteLoaded;
+
 	sf::Image palette;
 	Tileset *ts_bg;
 	Tileset *ts_shape;
