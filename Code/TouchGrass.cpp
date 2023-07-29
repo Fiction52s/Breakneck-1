@@ -482,7 +482,7 @@ void BasicTouchGrass::Destroy(Actor *a)
 		case TYPE_NORMAL_W5:
 		case TYPE_NORMAL_W6:
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 12,
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 14,
 				6, true, 4);
 			break;
 		}
@@ -493,7 +493,7 @@ void BasicTouchGrass::Destroy(Actor *a)
 		case TYPE_LARGE_W5:
 		case TYPE_LARGE_W6:
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 17,
+			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 14,
 				6, true, 4);
 			break;
 		}

@@ -196,7 +196,7 @@ void GravityFaller::ProcessState()
 	
 	//Actor *player = owner->GetPlayer(0);
 
-	double distY = PlayerDistY();
+	double distY = PlayerDiff().y;
 
 	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == IDLE)

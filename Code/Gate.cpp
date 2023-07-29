@@ -613,6 +613,16 @@ bool Gate::CanSoften()
 		return false;
 	}
 
+	if (data.gState != HARD)
+	{
+		return false;
+	}
+
+	if (zoneA == zoneB)
+	{
+		return true;
+	}
+
 	Zone *currZone = sess->currentZone;
 	Actor * player = sess->GetPlayer(0);
 

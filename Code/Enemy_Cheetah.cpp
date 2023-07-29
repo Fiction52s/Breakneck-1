@@ -170,7 +170,7 @@ void Cheetah::ProcessState()
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
 
-	double xDiff = PlayerDistX();
+	double xDiff = PlayerDiff().x;
 	double dist = PlayerDist();
 
 	if (dead)
@@ -291,14 +291,14 @@ void Cheetah::RunMovement()
 {
 	if (facingRight)
 	{
-		if (PlayerDistX() < -turnaroundDist)
+		if (PlayerDiff().x < -turnaroundDist)
 		{
 			facingRight = false;
 		}
 	}
 	else
 	{
-		if (PlayerDistX() > turnaroundDist)
+		if (PlayerDiff().x > turnaroundDist)
 		{
 			facingRight = true;
 		}

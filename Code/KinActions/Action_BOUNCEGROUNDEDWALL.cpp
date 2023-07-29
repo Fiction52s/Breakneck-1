@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::BOUNCEGROUNDEDWALL_Start()
 {
+	groundSpeed = 0;
 }
 
 void Actor::BOUNCEGROUNDEDWALL_End()
@@ -42,13 +43,7 @@ void Actor::BOUNCEGROUNDEDWALL_Change()
 
 void Actor::BOUNCEGROUNDEDWALL_Update()
 {
-	if (frame == 0)
-	{
-		//cout << "storedBounceGround: " << groundSpeed << endl;
-		//storedBounceGroundSpeed = groundSpeed;
-		groundSpeed = 0;
-	}
-	else if (frame == 6)
+	if (frame == 6 && slowCounter == 1)
 	{
 		double boost = 5;
 		double newSpeed = storedBounceGroundSpeed;

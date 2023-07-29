@@ -55,8 +55,8 @@ Dragon::Dragon(ActorParams *ap)
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(50);
+	BasicCircleHurtBodySetup(70);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -220,11 +220,12 @@ void Dragon::ProcessState()
 
 	double dist = PlayerDist();
 	V2d dir = PlayerDir();
+	
 
 	switch (action)
 	{
 	case NEUTRAL:
-		if (dist < DEFAULT_DETECT_RADIUS)
+		if (abs(PlayerDiff().x) < DEFAULT_DETECT_RADIUS && abs(PlayerDiff().y) < 400 )//dist < 400 )//DEFAULT_DETECT_RADIUS)
 		{
 			action = FLY;
 			data.recoverFrame = 0;

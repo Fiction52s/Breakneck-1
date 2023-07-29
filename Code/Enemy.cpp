@@ -178,21 +178,16 @@ double Enemy::PlayerDistSqr(int index)
 	return lengthSqr(GetPosition() - sess->GetPlayerPos(index));
 }
 
-double Enemy::PlayerDistX(int index)
-{
-	return sess->GetPlayerPos(index).x - GetPosition().x;
-}
-
-double Enemy::PlayerDistY(int index)
-{
-	return sess->GetPlayerPos(index).y - GetPosition().y;
-}
-
 V2d Enemy::PlayerDir( V2d myOffset, V2d playerOffset, int index)
 {
 	return normalize( 
 		( sess->GetPlayerPos(index) + playerOffset) 
 		- ( GetPosition() + myOffset ));
+}
+
+V2d Enemy::PlayerDiff(int index)
+{
+	return sess->GetPlayerPos(index) - GetPosition();
 }
 
 V2d Enemy::PlayerDir(int index)

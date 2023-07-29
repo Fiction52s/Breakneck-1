@@ -9507,7 +9507,7 @@ V2d Actor::UpdateReversePhysics()
 								//cout << "c2:" << speedTransfer << endl;
 								offsetX -= minContact.resolution.x;
 								groundSpeed = 0;
-								offsetX = -offsetX;
+								//offsetX = -offsetX;
 
 								ProcessGroundedCollision();
 								break;
@@ -9525,7 +9525,7 @@ V2d Actor::UpdateReversePhysics()
 							//cout << "d" << endl;
 							offsetX -= minContact.resolution.x;
 							groundSpeed = 0;
-							offsetX = -offsetX;
+							//offsetX = -offsetX; 
 
 							ProcessGroundedCollision();
 							break;
@@ -9915,8 +9915,11 @@ V2d Actor::UpdateReversePhysics()
 										//if (action != STEEPCLIMB
 										//	&& action != STEEPCLIMBATTACK)
 										{
+
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
+											groundSpeed = 0;
 											groundedWallBounce = true;
+											offsetX = -offsetX;
 										}
 									}
 									else if (minContact.normal.y < 0 && minContact.normal.y > -steepThresh

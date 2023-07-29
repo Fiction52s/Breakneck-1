@@ -273,7 +273,7 @@ void LobTurret::ProcessState()
 
 			if (cross(PlayerDir(), startPosInfo.GetEdge()->Normal()) > 0)
 			{
-				/*if (PlayerDistX() < 0)
+				/*if (PlayerDiff().x < 0)
 				{
 					
 				}*/

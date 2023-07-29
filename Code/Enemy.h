@@ -226,10 +226,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void UpdateKeySprite();
 	void SetKey();
 	virtual int GetNumSimulationFramesRequired() { return 0; }
-	double PlayerDistX( int index = 0);
-	double PlayerDistY( int index = 0);
 	double PlayerDist(int index = 0);
 	double PlayerDistSqr(int index = 0);
+	V2d PlayerDiff(int index = 0);
 	V2d PlayerDir( V2d myOffset,
 		V2d playerOffset,
 		int index = 0);

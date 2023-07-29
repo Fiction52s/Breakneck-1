@@ -238,6 +238,8 @@ void Zone::Init()
 		}
 	}
 
+	sf::FloatRect borderRect(Vector2f(sess->mapHeader->leftBounds, sess->mapHeader->topBounds), Vector2f(sess->mapHeader->boundsWidth, sess->mapHeader->boundsHeight));
+
 	for (list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it)
 	{
 		if ((*it)->parentZone != this)
@@ -249,10 +251,103 @@ void Zone::Init()
 		vector<Vector2i> &currHoleVector = pointVector.back();
 
 		int subPoints = (*it)->PointVector().size();
-		for (int i = 0; i < subPoints; ++i)
+		//sf::Vector2i testPoint;
+
+		ClipperLib::Path subPath;
+		(*it)->zonePoly->CopyPointsToClipperPath(subPath);
+		
+		ClipperLib::Paths solution;
+		ClipperLib::Clipper c;
+
+		ClipperLib::Path myPath;
+		zonePoly->CopyPointsToClipperPath(myPath);
+
+		c.AddPath(subPath, ClipperLib::PolyType::ptSubject, true);
+		c.AddPath(myPath, ClipperLib::PolyType::ptClip, true);
+
+		c.Execute(ClipperLib::ClipType::ctIntersection, solution, ClipperLib::PolyFillType::pftEvenOdd);
+
+		if (solution.size() > 0)
 		{
-			currHoleVector.push_back((*it)->GetPolyPoint(i));
+			subPoints = solution[0].size();
+
+			for (int i = 0; i < subPoints; ++i)
+			{
+				currHoleVector.push_back(Vector2i( solution[0][i].X, solution[0][i].Y ) );
+			}
 		}
+		else
+		{
+			for (int i = 0; i < subPoints; ++i)
+			{
+				currHoleVector.push_back((*it)->GetPolyPoint(i));
+			}
+		}
+		
+		/*(*it)->zonePoly->
+		ClipperLib::Paths nonInverseInterPaths(nonInverseInters.size());
+		for (auto it = nonInverseInters.begin(); it != nonInverseInters.end(); ++it)
+		{
+			(*it)->CopyPointsToClipperPath(nonInverseInterPaths[i]);
+
+		}
+		c.AddPaths(nonInverseInterPaths, ClipperLib::PolyType::ptSubject, true);
+
+		i = 0;
+		ClipperLib::Paths nonInverseBrushPaths(nonInverseBrushes.size());
+		for (auto it = nonInverseBrushes.begin(); it != nonInverseBrushes.end(); ++it)
+		{
+			(*it)->CopyPointsToClipperPath(nonInverseBrushPaths[i]);
+			(*it)->CopyPointsToClipperPath(clipperIntersections);
+			++i;
+		}
+		c.AddPaths(nonInverseBrushPaths, ClipperLib::PolyType::ptClip, true);
+
+		c.Execute(ClipperLib::ClipType::ctUnion, solution, ClipperLib::PolyFillType::pftEvenOdd);
+
+		ClipperLib::Path &intersectPath = c.GetIntersectPath();
+		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
+		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
+
+		vector<pair<PolyPtr, bool>> finalCheckVec;
+		finalCheckVec.reserve(solution.size());*/
+
+		//for (int i = 0; i < subPoints; ++i)
+		//{
+			//testPoint = (*it)->GetPolyPoint(i);
+			//if (testPoint.x < borderRect.left || testPoint.x > borderRect.left + borderRect.width || testPoint.y < borderRect.top || testPoint.y > borderRect.top + borderRect.height)
+			//{
+			//	V2d curr(testPoint);
+			//	V2d prev;
+			//	V2d next;
+
+			//	if (i == 0)
+			//	{
+			//		prev = V2d((*it)->GetPolyPoint(subPoints - 1));
+			//	}
+			//	else
+			//	{
+			//		prev = V2d((*it)->GetPolyPoint(i - 1));
+			//	}
+
+			//	if (i == subPoints - 1)
+			//	{
+			//		next = V2d((*it)->GetPolyPoint(0));
+			//	}
+			//	else
+			//	{
+			//		next = V2d((*it)->GetPolyPoint(i + 1));
+			//	}
+
+			//	if( prev )
+
+			//	
+			//	//ignore points outside of the global bounds
+			//	continue;
+			//}
+
+		//	currHoleVector.push_back((*it)->GetPolyPoint(i));
+		//}
 	}
 
 
@@ -898,11 +993,28 @@ bool Zone::ContainsZone(Zone *z)
 	//the IsInsideArea function is only for points that are actually inside the area, not shared by it.
 	//might cause other bugs later, not sure, definitely fixes the current issue though
 
+	Session *sess = Session::GetSession();
+
+	/*V2d topLeft(mapHeader->leftBounds, mapHeader->topBounds);
+	V2d topRight(mapHeader->leftBounds + mapHeader->boundsWidth, mapHeader->topBounds);
+	V2d bottomRight(mapHeader->leftBounds + mapHeader->boundsWidth, mapHeader->topBounds + mapHeader->boundsHeight);
+	V2d bottomLeft(mapHeader->leftBounds, mapHeader->topBounds + mapHeader->boundsHeight);*/
+
+	sf::FloatRect borderRect(Vector2f(sess->mapHeader->leftBounds, sess->mapHeader->topBounds), Vector2f(sess->mapHeader->boundsWidth, sess->mapHeader->boundsHeight));
 
 	vector<Vector2i> &pVec = z->PointVector();
+	Vector2f currPoint;
 	for (auto it = pVec.begin(); it != pVec.end(); ++it)
 	{
-		if (!zonePoly->ContainsPoint( Vector2f((*it)) ) )//!ContainsPoint(V2d((*it))))
+		currPoint = Vector2f((*it));
+
+		if (currPoint.x < borderRect.left || currPoint.x > borderRect.left + borderRect.width || currPoint.y < borderRect.top || currPoint.y > borderRect.top + borderRect.height)
+		{
+			//ignore points outside of the global bounds
+			continue;
+		}
+
+		if (!zonePoly->ContainsPoint(currPoint))//!ContainsPoint(V2d((*it))))
 		{
 			return false;
 		}
