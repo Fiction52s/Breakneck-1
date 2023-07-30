@@ -79,6 +79,7 @@ struct Edge : QuadTreeEntrant
 
 	bool IsLockedGateEdge();
 	bool IsUnlockedGateEdge();
+	bool IsOpenGateEdge();
 	bool IsGateEdge();
 	Gate *GetGate();
 

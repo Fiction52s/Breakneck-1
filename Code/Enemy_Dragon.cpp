@@ -225,7 +225,7 @@ void Dragon::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (abs(PlayerDiff().x) < DEFAULT_DETECT_RADIUS && abs(PlayerDiff().y) < 400 )//dist < 400 )//DEFAULT_DETECT_RADIUS)
+		if (abs(PlayerDiff().x) < 600 && abs(PlayerDiff().y) < 400 )//dist < 400 )//DEFAULT_DETECT_RADIUS)
 		{
 			action = FLY;
 			data.recoverFrame = 0;

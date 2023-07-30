@@ -107,8 +107,8 @@ Specter::Specter( ActorParams *ap )
 	hitboxInfo->knockback = 4;
 	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
-	BasicCircleHitBodySetup(48);
-	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(64);
+	BasicCircleHurtBodySetup(64);
 
 	hitBody.hitboxInfo = hitboxInfo;
 	
@@ -218,7 +218,7 @@ void Specter::ProcessState()
 			frame = 0;
 			break;
 		case A_RECOVER:
-			if (dist > DEFAULT_IGNORE_RADIUS)
+			if (dist > 800)
 			{
 				action = A_IDLE;
 				frame = 0;
@@ -238,7 +238,7 @@ void Specter::ProcessState()
 	switch (action)
 	{
 	case A_IDLE:
-		if (dist < DEFAULT_DETECT_RADIUS)
+		if (dist < 600)
 		{
 			action = A_ATTACK;
 			frame = 0;
@@ -302,16 +302,17 @@ void Specter::UpdateSprite()
 
 void Specter::DirectKill()
 {
-	BasicBullet *b = launchers[0]->activeBullets;
-	while (b != NULL)
-	{
-		BasicBullet *next = b->next;
-		double angle = atan2(b->velocity.y, -b->velocity.x);
-		sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-		b->launcher->DeactivateBullet(b);
+	bulletPool.Reset();
+	//BasicBullet *b = launchers[0]->activeBullets;
+	//while (b != NULL)
+	//{
+	//	BasicBullet *next = b->next;
+	//	double angle = atan2(b->velocity.y, -b->velocity.x);
+	//	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+	//	b->launcher->DeactivateBullet(b);
 
-		b = next;
-	}
+	//	b = next;
+	//}
 
 	Enemy::DirectKill();
 }

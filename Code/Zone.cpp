@@ -1014,7 +1014,8 @@ bool Zone::ContainsZone(Zone *z)
 			continue;
 		}
 
-		if (!zonePoly->ContainsPoint(currPoint))//!ContainsPoint(V2d((*it))))
+		//if (!zonePoly->ContainsPoint(currPoint))//!ContainsPoint(V2d((*it))))
+		if( !zonePoly->IsInsideArea( V2d(currPoint) ))
 		{
 			return false;
 		}

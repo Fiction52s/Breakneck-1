@@ -5435,6 +5435,10 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 		if (((point.y > test.y) != (pointJ.y > test.y)) &&
 			(test.x < (pointJ.x - point.x) * (test.y - point.y) / (pointJ.y - point.y) + point.x))
 			c = !c;
+
+		/*if (((point.y >= test.y) != (pointJ.y >= test.y)) &&
+			(test.x <= (pointJ.x - point.x) * (test.y - point.y) / (pointJ.y - point.y) + point.x))
+			c = !c;*/
 	}
 
 

@@ -315,7 +315,7 @@ void Gate::UpdateOrb()
 	{
 		if (data.gState == LOCKFOREVER || data.gState == REFORM)
 		{
-			SetRectColor(mapLine, mapLineColor);
+			SetRectColor(mapLine, Color(100, 100, 100));//Color::Black);//mapLineColor);
 			return;
 		}
 
@@ -1017,7 +1017,8 @@ void Gate::Draw(sf::RenderTarget *target)
 
 void Gate::MapDraw(sf::RenderTarget *target)
 {
-	if(data.locked && visible && category != SECRET )
+	//if(data.locked && visible && category != SECRET )
+	if (data.gState != OPEN && visible && category != SECRET)
 		target->draw(mapLine, 4, sf::Quads);
 }
 
@@ -1113,6 +1114,7 @@ void Gate::SetMapLineColor()
 			mapLineColor = COLOR_MAGENTA;
 			break;
 		}*/
+		break;
 	}
 	case ENEMY:
 	{

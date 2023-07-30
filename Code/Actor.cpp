@@ -17967,6 +17967,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}*/
+		if (e->IsOpenGateEdge())
+		{
+			return;
+		}
 		if (e->edgeType == Edge::BARRIER)
 		{
 			Barrier *b = (Barrier*)(e->info);

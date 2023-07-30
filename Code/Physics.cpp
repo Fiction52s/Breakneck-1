@@ -419,6 +419,11 @@ bool Edge::IsGateEdge()
 	return edgeType == GATE;
 }
 
+bool Edge::IsOpenGateEdge()
+{
+	return edgeType == GATE && GetGate()->data.gState == Gate::OPEN;
+}
+
 Gate *Edge::GetGate()
 {
 	if( IsGateEdge() )
