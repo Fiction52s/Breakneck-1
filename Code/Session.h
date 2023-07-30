@@ -523,8 +523,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SimulateGameFrame();
 	void CleanupGates();
 	void SetupGateMarkers();
-	void SetupNetplay();
-	void CleanupNetplay();
 	void CloseOffLimitZones();
 	void CleanupZones();
 	void DrawZones(sf::RenderTarget *target);

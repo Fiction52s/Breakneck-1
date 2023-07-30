@@ -3911,9 +3911,9 @@ void EditSession::Init()
 	SetupShardMenu();
 	SetupLogMenu();
 
-#ifdef GGPO_ON
-	SetupNetplay();
-#endif
+//#ifdef GGPO_ON
+//	SetupNetplay();
+//#endif
 
 	assert(players[0] == NULL);
 

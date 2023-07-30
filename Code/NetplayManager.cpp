@@ -414,9 +414,9 @@ NetplayManager::NetplayManager()
 
 	isSyncTest = false;
 
-	Abort();
-
 	numPlayers = -1;
+
+	Abort();
 
 	matchParams.netplayManager = this;
 }
@@ -492,8 +492,6 @@ void NetplayManager::Abort()
 		CleanupMatch();
 	}
 	
-
-	//there might be something off with this, i keep getting exit crashes right after this
 	for (int i = 0; i < numPlayers; ++i)
 	{
 		if (i == playerIndex)

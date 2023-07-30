@@ -4223,7 +4223,12 @@ void Actor::CheckHoldJump()
 		return;
 	}
 
-
+	if (freeFlightFrames > 0)
+	{
+		holdJump = false;
+		holdDouble = false;
+		return;
+	}
 	
 	/*if (InWater(TerrainPolygon::WATER_NORMAL))
 	{
@@ -6076,6 +6081,7 @@ void Actor::ProcessFreeFlightBooster()
 		currWall = NULL;
 		bounceEdge = NULL;
 		grindEdge = NULL;
+		reversed = false;
 
 		currFreeFlightBooster = NULL;
 	}
@@ -6867,6 +6873,8 @@ void Actor::UpdatePrePhysics()
 	{
 		owner->RestartGame();
 	}
+
+	cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
 
 	//if ( owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
 	//{
@@ -21208,37 +21216,83 @@ void Actor::SetupAction(int a)
 
 void Actor::FreeFlightMovement()
 {
-	double driftFactor = 1.0;
-	double maxAccelSpeed = 15;
+	double accelFactor = 1.0;
+	double accelFactorFast = .3;
+	double maxAccelSpeed = 40;// 15;
+	double decelFactor = 2.0;//1.5;
+	double highSpeedThresh = 15;
 
 	if (currInput.LUp())
 	{
-		if (velocity.y > -maxAccelSpeed)
+		if (velocity.y > 0)
 		{
-			velocity.y -= driftFactor;
+			velocity.y += -decelFactor;
 		}
+		else if (velocity.y > -highSpeedThresh)
+		{
+			velocity.y += -accelFactor;
+		}
+		else if( velocity.y > -maxAccelSpeed )
+		{
+			velocity.y += -accelFactorFast;
 
+			if (velocity.y < -maxAccelSpeed)
+				velocity.y = -maxAccelSpeed;
+		}
 	}
 	if (currInput.LDown())
 	{
-		if (velocity.y < maxAccelSpeed)
+		if (velocity.y < 0)
 		{
-			velocity.y += driftFactor;
+			velocity.y += decelFactor;
+		}
+		else if (velocity.y < highSpeedThresh)
+		{
+			velocity.y += accelFactor;
+		}
+		else if (velocity.y < maxAccelSpeed)
+		{
+			velocity.y += accelFactorFast;
+
+			if (velocity.y > maxAccelSpeed)
+				velocity.y = maxAccelSpeed;
 		}
 	}
 	if (currInput.LLeft())
 	{
-		if (velocity.x > -maxAccelSpeed)
+		if (velocity.x > 0)
 		{
-			velocity.x -= driftFactor;
+			velocity.x += -decelFactor;
+		}
+		else if (velocity.x > -highSpeedThresh)
+		{
+			velocity.x += -accelFactor;
+		}
+		else if (velocity.x > -maxAccelSpeed)
+		{
+			velocity.x += -accelFactorFast;
+
+			if (velocity.x < -maxAccelSpeed)
+				velocity.x = -maxAccelSpeed;
 		}
 
 	}
 	if (currInput.LRight())
 	{
-		if (velocity.x < maxAccelSpeed)
+		if (velocity.x < 0)
 		{
-			velocity.x += driftFactor;
+			velocity.x += decelFactor;
+		}
+		else if (velocity.y < highSpeedThresh)
+		{
+			velocity.x += accelFactor;
+		}
+		else if (velocity.x < maxAccelSpeed)
+		{
+			velocity.x += accelFactorFast;
+
+			if (velocity.x > maxAccelSpeed)
+				velocity.x = maxAccelSpeed;
 		}
 	}
 }
@@ -21933,8 +21987,15 @@ void Actor::ExecuteDoubleJump()
 		currStrength += scorpionExtra;
 	}
 	
-
-	velocity.y = -currStrength;
+	if (freeFlightFrames > 0)
+	{
+		velocity.y += -currStrength;
+	}
+	else
+	{
+		velocity.y = -currStrength;
+	}
+	
 
 	extraDoubleJump = false;
 	hasDoubleJump = false;

@@ -1818,8 +1818,6 @@ Session::~Session()
 	delete alertBox;
 
 	delete currSaveState;
-
-	//CleanupNetplay();
 }
 
 void Session::UpdateDecorLayers()
@@ -4064,23 +4062,6 @@ void Session::CloseOffLimitZones()
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->CloseOffIfLimited();
-	}
-}
-
-void Session::SetupNetplay()
-{
-	if (netplayManager == NULL)
-	{
-		netplayManager = new NetplayManager;
-	}
-}
-
-void Session::CleanupNetplay()
-{
-	if (netplayManager != NULL)
-	{
-		delete netplayManager;
-		netplayManager = NULL;
 	}
 }
 
