@@ -429,6 +429,7 @@ struct SwingLauncherParams : public ActorParams
 	void Draw(sf::RenderTarget *target);
 	void SetPath(std::vector<sf::Vector2i> &globalPath);
 	void OnCreate();
+	void DrawWhileSettingPath(sf::Vector2i mousePos, sf::RenderTarget *target );
 	ActorParams *Copy();
 
 	void SetParams();

@@ -390,6 +390,21 @@ void SwingLauncherParams::OnCreate()
 	edit->SetDirectionButton(this);
 }
 
+void SwingLauncherParams::DrawWhileSettingPath(sf::Vector2i mousePos, sf::RenderTarget *target )
+{
+	Vector2f diff = Vector2f(mousePos) - posInfo.GetPositionF();
+	float len = length(diff);
+	sf::CircleShape cs;
+	cs.setFillColor(Color::Transparent);
+	cs.setRadius(len);
+	cs.setOutlineColor(Color::Red);
+	cs.setOutlineThickness(10);
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	Vector2f circleCenter = posInfo.GetPositionF() + diff;
+	cs.setPosition(circleCenter);
+	target->draw(cs);
+}
+
 void SwingLauncherParams::Draw(sf::RenderTarget *target)
 {
 	int localPathSize = localPath.size();
@@ -411,7 +426,21 @@ void SwingLauncherParams::Draw(sf::RenderTarget *target)
 		{
 			li[i].position -= fPos;
 		}
+
+		Vector2f diff = Vector2f(localPath[0]);
+		float len = length(diff);
+		sf::CircleShape cs;
+		cs.setFillColor(Color::Transparent);
+		cs.setRadius(len);
+		cs.setOutlineColor(Color::Red);
+		cs.setOutlineThickness(10);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+		Vector2f circleCenter = posInfo.GetPositionF() + diff;
+		cs.setPosition(circleCenter);
+		target->draw(cs);
 	}
+
+	
 
 	ActorParams::Draw(target);
 }

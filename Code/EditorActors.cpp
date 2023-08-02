@@ -347,7 +347,7 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);
-		AddLabeledSlider(p, "speed", "launch speed:", 5, 60, 30);
+		AddLabeledSlider(p, "speed", "launch speed:", 40, 60, 50);
 		p->AddLabel("clockwiselabel", Vector2i(0, 0), 28, "Clockwise:");
 		p->AddCheckBox("clockwise", Vector2i(0, 0), true);
 	}

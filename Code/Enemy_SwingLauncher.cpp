@@ -285,11 +285,11 @@ void SwingLauncher::UpdateSprite()
 	auto ir = ts->GetSubRect(1);
 	Vector2f texSize(ts->texture->getSize());
 
-
-	float left = ir.left / texSize.x;
+	float extra = .001;
+	float left = ir.left / texSize.x + extra;
 	float top = ir.top / texSize.y;
-	float right = (ir.left + ir.width) / texSize.x;
-	float bot = swingRadius / texSize.y;;//(ir.top + ir.height) / texSize.y;
+	float right = (ir.left + ir.width) / texSize.x - extra * 2;
+	float bot = swingRadius / texSize.y;//(ir.top + ir.height) / texSize.y;
 	armQuad[0].texCoords = Vector2f(left, top);
 	armQuad[1].texCoords = Vector2f(right, top);
 	armQuad[2].texCoords = Vector2f(right, bot);

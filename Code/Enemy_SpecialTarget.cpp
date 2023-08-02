@@ -38,30 +38,29 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	else if (typeName == "glidetarget")
 	{
 		targetType = TARGET_GLIDE;
-		regenOn = false;
 		//sprite.setColor(Color::Green);
 	}
 	else if (typeName == "bouncetarget")
 	{
 		targetType = TARGET_BOUNCE;
-		regenOn = false;
 		//sprite.setColor(Color::Red);
 	}
 	else if (typeName == "grindtarget")
 	{
 		targetType = TARGET_GRIND;
-		regenOn = false;
 		//sprite.setColor(Color::Red);
+	}
+	else if (typeName == "swingtarget")
+	{
+		targetType = TARGET_SWING;
 	}
 	else if (typeName == "scorpiontarget")
 	{
 		targetType = TARGET_SCORPION;
-		//sprite.setColor(Color::Yellow);
 	}
 	else if (typeName == "homingtarget")
 	{
 		targetType = TARGET_HOMING;
-		regenOn = false;
 	}
 	else if (typeName == "freeflighttarget")
 	{
@@ -76,27 +75,22 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	else if (typeName == "greencomboertarget")
 	{
 		targetType = TARGET_COMBOER_GREEN;
-		regenOn = false;
 	}
 	else if (typeName == "yellowcomboertarget")
 	{
 		targetType = TARGET_COMBOER_YELLOW;
-		regenOn = false;
 	}
 	else if (typeName == "orangecomboertarget")
 	{
 		targetType = TARGET_COMBOER_ORANGE;
-		regenOn = false;
 	}
 	else if (typeName == "redcomboertarget")
 	{
 		targetType = TARGET_COMBOER_RED;
-		regenOn = false;
 	}
 	else if (typeName == "magentacomboertarget")
 	{
 		targetType = TARGET_COMBOER_MAGENTA;
-		regenOn = false;
 	}
 
 	assert(targetType != -1);
@@ -351,6 +345,10 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 		return NULL;
 	}
 	else if (targetType == TARGET_GRIND)
+	{
+		return NULL;
+	}
+	else if (targetType == TARGET_SWING)
 	{
 		return NULL;
 	}

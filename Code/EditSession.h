@@ -159,6 +159,7 @@ struct EditSession : GUIHandler, Session
 
 	PlayerBoxGroup *playerInputBoxGroup;
 
+	ActorParams *setDirectionOrPathActorParams;
 	WorkshopUploader *workshopUploader;
 	MusicInfo *previewMusic;
 	MusicSelectorUI *musicSelectorUI;

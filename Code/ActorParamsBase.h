@@ -69,6 +69,7 @@ struct ActorParams : ISelectable
 	virtual std::vector<sf::Vector2i> & GetLocalPath();
 	virtual void SetPath(std::vector<sf::Vector2i> &globalPath);
 	virtual void SetPath(TerrainRail *rail);
+	
 
 	/*virtual bool CanBeGrounded() { return false; }
 	virtual bool CanBeAerial() { return false; }
@@ -110,6 +111,7 @@ struct ActorParams : ISelectable
 	virtual void Draw(sf::RenderTarget *target);
 	virtual void DrawEnemy(sf::RenderTarget *target);
 	virtual void DrawPreview(sf::RenderTarget *target);
+	virtual void DrawWhileSettingPath(sf::Vector2i mousePos, sf::RenderTarget *target) {}
 	virtual void Deactivate();
 	virtual void Activate();
 	//for copying the lines by allocating more

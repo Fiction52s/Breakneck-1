@@ -1340,6 +1340,7 @@ struct Actor : QuadTreeCollider,
 	void DefaultGroundLanding( double &movement );
 	bool DefaultGravReverseCheck();
 	void DefaultCeilingLanding( double &movement );
+	void BounceCollision(double &movement);
 
 	bool IsVisibleAction(int a);
 	void SetAuraColor(sf::Color c);

@@ -1282,10 +1282,9 @@ void Actor::UpdateGroundedShieldSprite( int tile)
 	Vector2f test = sprite->getPosition() + norm * 32.f;
 
 
-
+	ts_blockShield->SetSubRect(shieldSprite, tile, !facingRight, reversed);
 	shieldSprite.setOrigin(shieldSprite.getLocalBounds().width / 2, shieldSprite.getLocalBounds().height / 2);//sprite->getOrigin());
 	shieldSprite.setPosition(test);//position.x, position.y - 10);//sprite->getPosition());
-	ts_blockShield->SetSubRect(shieldSprite, tile, !r, false);
 	shieldSprite.setRotation(0);//sprite->getRotation());
 }
 
@@ -6874,7 +6873,7 @@ void Actor::UpdatePrePhysics()
 		owner->RestartGame();
 	}
 
-	cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
+	//cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
 
 	//if ( owner != NULL && !simulationMode && sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !sess->IsParallelSession())
 	//{
@@ -13715,8 +13714,6 @@ void Actor::UpdatePhysics()
 				}
 			}
 
-			bool bounceOkay = true;
-
 			//note: when reversed you won't cancel on a jump onto a small ceiling. i hope this mechanic is okay
 			//also theres a jump && false condition that would need to be changed back
 			
@@ -13741,39 +13738,6 @@ void Actor::UpdatePhysics()
 					break;
 				}*/
 				V2d en = minContact.normal;
-
-
-
-
-				
-				/*if( en.y <= 0 && en.y > -steepThresh )
-				{
-					if( en.x < 0 && velocity.x < 0 
-			  		|| en.x > 0 && velocity.x > 0 )
-						bounceOkay = false;
-				}
-				else if( en.y >= 0 && -en.y > -steepThresh )
-				{
-					if( en.x < 0 && velocity.x < 0 
-			  		|| en.x > 0 && velocity.x > 0 )
-						bounceOkay = false;
-				}
-				else if( en.y == 0  )
-				{
-					if( en.x < 0 && velocity.x < 0 
-			  		|| en.x > 0 && velocity.x > 0 )
-						bounceOkay = false;
-				}
-				else if( en.y < 0 )
-				{
-					if( velocity.y < 0 )
-						bounceOkay = false;
-				}
-				else if( en.y > 0 )
-				{
-					if( velocity.y > 0 )
-						bounceOkay = false;
-				}*/
 			}
 
 			if (tempCollision && touchedGrass[Grass::BOUNCE] && !bounceFlameOn)
@@ -13858,26 +13822,32 @@ void Actor::UpdatePhysics()
 			}
 			else if (tempCollision && action == SWINGSTUN)
 			{
-				velocity = newVel;
-
-				if (minContact.normal.y >= 0)
+				if (action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn)
 				{
-					if (minContact.normal.y > 0 && DefaultGravReverseCheck())
-					{
-						DefaultCeilingLanding(movement);
-					}
-					else
-					{
-						SetAction(JUMP);
-						frame = 1;
-					}
+					BounceCollision(movement);
+					break;
 				}
 				else
 				{
-					DefaultGroundLanding(movement);
-				}
+					velocity = newVel;
 
-				
+					if (minContact.normal.y >= 0)
+					{
+						if (minContact.normal.y > 0 && DefaultGravReverseCheck())
+						{
+							DefaultCeilingLanding(movement);
+						}
+						else
+						{
+							SetAction(JUMP);
+							frame = 1;
+						}
+					}
+					else
+					{
+						DefaultGroundLanding(movement);
+					}
+				}
 			}
 			else if (tempCollision && action == SPRINGSTUNAIM)
 			{
@@ -13964,76 +13934,10 @@ void Actor::UpdatePhysics()
 
 				SetActionGrind();
 			}
-			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
+			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision )
 			{
-				prevRail = NULL;
-				//this condition might only work when not reversed? does it matter?
-				if( bounceEdge == NULL )
-				{
-					bounceEdge = minContact.edge;
-					bounceNorm = minContact.normal;
-					framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
-				
-
-					V2d oldv0 = bounceEdge->v0;
-					V2d oldv1 = bounceEdge->v1;
-
-					edgeQuantity = bounceEdge->GetQuantity( minContact.position );
-
-					offsetX = ( position.x + b.offset.x ) - minContact.position.x;
-
-					if( b.rh < normalHeight )
-					{
-						if( minContact.normal.y > 0 )
-							b.offset.y = -(normalHeight - b.rh);
-						else if( minContact.normal.y < 0 )
-							b.offset.y = (normalHeight - b.rh);
-					}
-					else
-					{
-						b.offset.y = 0;
-					}
-
-					movement = 0;
-
-					V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
-
-					//double groundLength = length(ground->v1 - ground->v0);
-
-					V2d bn = bounceNorm;//bounceEdge->Normal();
-
-					V2d testVel = velocity;
-					
-					groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
-					break;
-				}
-				else
-				{
-					//if( oldBounceEdge != NULL && minContact.edge != oldBounceEdge && action == BOUNCEAIR && framesInAir < 11 )
-					//if( bounceEdge != NULL && minContact.edge != bounceEdge )
-					{
-						if( action == BOUNCEAIR )
-						{
-							cout << "bounce air" << endl;
-						}
-						else
-						{
-							cout << "bounce ground" << endl;
-						}
-						bounceEdge = NULL;
-						oldBounceEdge = NULL;
-						SetAction( JUMP );
-						holdJump = false;
-						frame = 1;
-						break;
-					}
-					
-				}
-				
-				
-			//	cout << "offset now!: " << offsetX << endl;
-				//groundSpeed = 0;
-			//	cout << "bouncing" << endl;
+				BounceCollision(movement);
+				break;
 			}
 			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > -8 || !holdJump ) || action == WALLCLING || action == WALLATTACK ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
@@ -19295,6 +19199,16 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					}
 					break;
 				}
+				case SpecialTarget::TARGET_SWING:
+				{
+					bool isValidAction = action == SWINGSTUN || rightWire->IsPulling() || leftWire->IsPulling();
+
+					if (isValidAction && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
+					{
+						spTarget->Collect();
+					}
+					break;
+				}
 				case SpecialTarget::TARGET_FREEFLIGHT:
 				{
 					bool isFreeFlightAction = action == FREEFLIGHT || action == FREEFLIGHTSTUN;
@@ -19881,6 +19795,74 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
 	ActivateSound(PlayerSounds::S_GRAVREVERSE);
+}
+
+void Actor::BounceCollision( double &movement )
+{
+	//if (action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn)
+
+	assert(action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn);
+
+	prevRail = NULL;
+	//this condition might only work when not reversed? does it matter?
+	if (bounceEdge == NULL)
+	{
+		bounceEdge = minContact.edge;
+		bounceNorm = minContact.normal;
+		framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
+
+
+		V2d oldv0 = bounceEdge->v0;
+		V2d oldv1 = bounceEdge->v1;
+
+		edgeQuantity = bounceEdge->GetQuantity(minContact.position);
+
+		offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+		if (b.rh < normalHeight)
+		{
+			if (minContact.normal.y > 0)
+				b.offset.y = -(normalHeight - b.rh);
+			else if (minContact.normal.y < 0)
+				b.offset.y = (normalHeight - b.rh);
+		}
+		else
+		{
+			b.offset.y = 0;
+		}
+
+		movement = 0;
+
+		V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
+
+		//double groundLength = length(ground->v1 - ground->v0);
+
+		V2d bn = bounceNorm;//bounceEdge->Normal();
+
+		V2d testVel = velocity;
+
+		groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
+	}
+	else
+	{
+		//if( oldBounceEdge != NULL && minContact.edge != oldBounceEdge && action == BOUNCEAIR && framesInAir < 11 )
+		//if( bounceEdge != NULL && minContact.edge != bounceEdge )
+		{
+			if (action == BOUNCEAIR)
+			{
+				cout << "bounce air" << endl;
+			}
+			else
+			{
+				cout << "bounce ground" << endl;
+			}
+			bounceEdge = NULL;
+			oldBounceEdge = NULL;
+			SetAction(JUMP);
+			holdJump = false;
+			frame = 1;
+		}
+	}
 }
 
 bool Actor::IsVisibleAction(int a)
@@ -21219,7 +21201,7 @@ void Actor::FreeFlightMovement()
 	double accelFactor = 1.0;
 	double accelFactorFast = .3;
 	double maxAccelSpeed = 40;// 15;
-	double decelFactor = 2.0;//1.5;
+	double decelFactor = 4.0;//1.5;
 	double highSpeedThresh = 15;
 
 	if (currInput.LUp())
@@ -21283,7 +21265,7 @@ void Actor::FreeFlightMovement()
 		{
 			velocity.x += decelFactor;
 		}
-		else if (velocity.y < highSpeedThresh)
+		else if (velocity.x < highSpeedThresh)
 		{
 			velocity.x += accelFactor;
 		}

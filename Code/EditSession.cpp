@@ -1442,6 +1442,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	ggpoStatsPanel = NULL;
 	currGrassType = 0;
 
+	setDirectionOrPathActorParams = NULL;
+
 	for (int i = 0; i < 4; ++i)
 	{
 		//if (matchParams.playerSkins[i] == -1)
@@ -6052,6 +6054,8 @@ void EditSession::CreatePathButton(ActorParams *ap)
 		ap = selectedBrush->objects.front()->GetAsActor();
 	}
 
+	setDirectionOrPathActorParams = ap;
+
 	SetMode(CREATE_PATROL_PATH);
 	patrolPath.clear();
 	patrolPath.push_back(ap->GetIntPos());
@@ -6081,6 +6085,7 @@ void EditSession::SetDirectionButton( ActorParams *ap )
 		ap = selectedBrush->objects.front()->GetAsActor();
 	}
 
+	setDirectionOrPathActorParams = ap;
 	SetMode(SET_DIRECTION);
 	patrolPath.clear();
 	patrolPath.push_back(ap->GetIntPos());
@@ -11544,6 +11549,12 @@ void EditSession::SetMode(Emode m)
 		}
 		break;
 	}
+	case SET_DIRECTION:
+	case CREATE_PATROL_PATH:
+	{
+		setDirectionOrPathActorParams = NULL;
+		break;
+	}
 		
 	case CREATE_TERRAIN:
 		break;
@@ -12895,6 +12906,9 @@ void EditSession::DrawPatrolPathInProgress()
 			preScreenTex->draw(cs);
 		}
 	}
+
+	Vector2i worldi(testPoint.x, testPoint.y);
+	setDirectionOrPathActorParams->DrawWhileSettingPath(worldi, preScreenTex);
 }
 
 double EditSession::GetZoomedPointSize()

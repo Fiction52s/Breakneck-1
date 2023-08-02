@@ -73,7 +73,7 @@ void Ghost::ResetEnemy()
 	frame = 0;
 	data.basePos = startPosInfo.position;
 
-	sprite.setColor(Color( 255, 255, 255, 100 ));
+	//sprite.setColor(Color( 255, 255, 255, 100 ));
 
 	UpdateHitboxes();
 	UpdateSprite();
@@ -104,7 +104,7 @@ void Ghost::Bite()
 	//data.offsetPlayer = V2d(0, 0);
 	action = BITE;
 	frame = 0;
-	sprite.setColor(Color::White);
+	//sprite.setColor(Color::White);
 	
 }
 
@@ -126,7 +126,7 @@ void Ghost::ProcessState()
 		{
 			action = RETURN;
 			data.offsetPlayer = data.origOffset;
-			sprite.setColor(Color(255, 255, 255, 100));
+			//sprite.setColor(Color(255, 255, 255, 100));
 
 			//HitboxesOn();
 			//HitboxesOff();

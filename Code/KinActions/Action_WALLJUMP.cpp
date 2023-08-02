@@ -93,6 +93,9 @@ void Actor::WALLJUMP_UpdateSprite()
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
+
+	if (scorpOn)
+		SetAerialScorpSprite();
 }
 
 void Actor::WALLJUMP_TransitionToAction(int a)
