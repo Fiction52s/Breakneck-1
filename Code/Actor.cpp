@@ -10817,6 +10817,10 @@ bool Actor::TryWallJump()
 	{
 		return false;
 	}
+	if (bounceFlameOn)
+	{
+		return false;
+	}
 
 	bool wj = false;
 	if (CheckWall(false))
