@@ -402,9 +402,11 @@ void WireJuggler::ProcessHit()
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
-				HurtboxesOff();
+				//HurtboxesOff();
 
-				PopThrow();
+				Return();
+
+				//PopThrow();
 			}
 			else
 			{
@@ -420,6 +422,7 @@ void WireJuggler::ProcessHit()
 
 					sess->PlayerConfirmEnemyNoKill(this);
 					ConfirmHitNoKill();
+
 				}
 
 				PopThrow();

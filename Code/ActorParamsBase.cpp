@@ -81,7 +81,8 @@ ActorParams::ActorParams(ActorType *at)
 		|| at->info.name == "yellowcomboertarget"
 		|| at->info.name == "orangecomboertarget"
 		|| at->info.name == "redcomboertarget"
-		|| at->info.name == "magentacomboertarget" )
+		|| at->info.name == "magentacomboertarget"
+		|| at->info.name == "key")
 	{
 		hasMonitor = true;
 	}
@@ -587,7 +588,9 @@ void ActorParams::DrawPreview(sf::RenderTarget *target)
 
 void ActorParams::DrawMonitor(sf::RenderTarget *target)
 {
-
+	//dont draw the monitor on a regular key
+	if (type->info.name == "key")
+		return;
 
 	if (hasMonitor)
 	{
