@@ -310,7 +310,9 @@ void WireJuggler::PopThrow()
 
 	V2d hit(0, -20);
 
-	double extraX = 8;
+	hit = dir * 20.0;
+
+	/*double extraX = 8;
 
 	if (dir.x != 0)
 	{
@@ -337,7 +339,7 @@ void WireJuggler::PopThrow()
 	if (reversedGrav)
 	{
 		hit.y = -hit.y;
-	}
+	}*/
 
 	Pop();
 
