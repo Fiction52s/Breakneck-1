@@ -19,10 +19,11 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	SetLevel(ap->GetLevel());
 
 	actionLength[IDLE] = 2;
-	actionLength[ATTACK] = 150;
+	actionLength[ATTACK] = 11;//150;
 
 	animFactor[IDLE] = 1;
-	animFactor[ATTACK] = 1;
+	animFactor[ATTACK] = 3;
+	actionLength[RECOVER] = 150 - actionLength[ATTACK] * animFactor[ATTACK];
 
 	//actionLength[NEUTRAL0] = 2;
 	//actionLength[NEUTRAL1] = 2;
@@ -55,7 +56,7 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	pulseRadius = 1000;
 	repsToLevelUp = 100;//1;//3;
 
-	ts = GetSizedTileset("Enemies/W5/sprout_160x160.png");
+	ts = GetSizedTileset("Enemies/W5/claw_128x160.png");
 	sprite.setTexture( *ts->texture );
 
 	double height = 160 * scale;
@@ -125,7 +126,8 @@ void GrowingTree::SetLevel( int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 2.0;
+		//scale = 1.0;
 		break;
 	case 2:
 		scale = 2.0;
@@ -167,7 +169,13 @@ void GrowingTree::ActionEnded()
 		case IDLE:
 			break;
 		case ATTACK:
-
+		{
+			action = RECOVER;
+			frame = 0;
+			break;
+		}
+		case RECOVER:
+		{
 			if (PlayerDist() > DEFAULT_IGNORE_RADIUS)
 			{
 				action = IDLE;
@@ -175,11 +183,13 @@ void GrowingTree::ActionEnded()
 			}
 			else
 			{
+				action = ATTACK;
 				frame = 0;
 			}
-			
-			break;	
+			break;
 		}
+		}
+	
 	}
 }
 
@@ -229,10 +239,13 @@ void GrowingTree::UpdateSprite()
 	switch (action)
 	{
 	case IDLE:
-		tileIndex = 1;
+		tileIndex = 0;
 		break;
 	case ATTACK:
-		tileIndex = 2;
+		tileIndex = frame / animFactor[ATTACK] + 1;
+		break;
+	case RECOVER:
+		tileIndex = 11;
 		break;
 	}
 

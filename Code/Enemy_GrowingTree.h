@@ -10,6 +10,7 @@ struct GrowingTree : Enemy, LauncherEnemy
 	{
 		IDLE,
 		ATTACK,
+		RECOVER,
 		/*NEUTRAL0,
 		NEUTRAL1,
 		NEUTRAL2,

@@ -78,7 +78,7 @@ void Actor::BOUNCEGROUND_Change()
 		
 	}
 	
-	if (AttackButtonPressed())
+	/*if (AttackButtonPressed())
 	{
 		if (TryLandFromBounceGround())
 		{
@@ -105,7 +105,7 @@ void Actor::BOUNCEGROUND_Change()
 				assert(0);
 			}
 		}
-	}
+	}*/
 	
 	if (DashButtonPressed())
 	{
