@@ -559,6 +559,7 @@ struct Actor : QuadTreeCollider,
 	std::vector<FXInfo> effectPools;
 	PaletteShader *fxPaletteShader;
 
+
 	enum AirTriggerBehavior
 	{
 		AT_NONE,
@@ -931,6 +932,8 @@ struct Actor : QuadTreeCollider,
 
 	PlayerSkinShader skinShader;
 	PlayerSkinShader exitAuraShader;
+
+	PlayerSkinShader swordShader;
 
 	int superActiveLimit;
 	int attackLevelCounterLimit;

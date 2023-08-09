@@ -3168,10 +3168,10 @@ void Actor::UpdateActionSprite()
 	}
 }
 
-Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
-	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
+	:dead(false), actorIndex(p_actorIndex), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	skinShader("player"), exitAuraShader( "boostplayer" ),
+	skinShader("player"), exitAuraShader("boostplayer"), swordShader("aura"),
 	originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 	{
@@ -20179,7 +20179,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			}
 			else
 			{
-				target->draw(swordSprite);
+				target->draw(swordSprite);// , &swordShader.pShader);
 			}
 
 		}
@@ -23214,15 +23214,26 @@ void Actor::UpdateInHitlag()
 
 	 if (showSword)
 	 {
+		 int tile = frame / 2 - startFrame;
 		 if (r)
 		 {
-			 swordSprite.setTextureRect(ts->GetSubRect(frame / 2 - startFrame));
+			 
+			 swordSprite.setTextureRect(ts->GetSubRect(tile));
+
+			 //swordShader.SetQuad(ts, tile);
+			 //swordShader.SetAuraColor(Color::White);
+			 
 		 }
 		 else
 		 {
-			 sf::IntRect irSword = ts->GetSubRect(frame / 2 - startFrame);
-			 swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
-				 irSword.top, -irSword.width, irSword.height));
+			 sf::IntRect irSword = ts->GetSubRect(tile);
+			 sf::IntRect ir(irSword.left + irSword.width, irSword.top, -irSword.width, irSword.height);
+			 //swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			//	 irSword.top, -irSword.width, irSword.height));
+			 swordSprite.setTextureRect(ir);
+
+			 //swordShader.SetQuad(ts, tile);
+			 //swordShader.SetAuraColor(Color::White);
 
 			 offset.x = -offset.x;
 		 }

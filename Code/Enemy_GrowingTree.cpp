@@ -62,7 +62,7 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	double height = 160 * scale;
 
 
-	SetOffGroundHeight(height / 2.f);
+	//SetOffGroundHeight(400 * scale);
 
 	double bulletSpeed0 = 13;
 	double bulletSpeed1 = 13;
@@ -85,7 +85,7 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	SetOffGroundHeight(ts->tileHeight / 2.f - 0 * scale);
+	SetOffGroundHeight(50 * scale);//ts->tileHeight / 2.f - 20 * scale);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 180;
@@ -96,8 +96,11 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	hitboxInfo->knockback = 0;
 	hitboxInfo->hType = HitboxInfo::RED;
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	/*BasicCircleHurtBodySetup(48, 0, V2d(0, -30), GetPosition());
+	BasicCircleHitBodySetup(48, 0, V2d(0, -30), GetPosition());*/
+
+	BasicCircleHitBodySetup(32, 0, V2d( 0, 15 ), GetPosition());
+	BasicCircleHurtBodySetup(32, 0, V2d( 0, 15 ), GetPosition() );
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -146,7 +149,8 @@ void GrowingTree::ResetEnemy()
 	{
 
 	}*/
-	launchers[0]->position = GetPosition();
+
+	
 
 	action = IDLE;
 
@@ -176,7 +180,7 @@ void GrowingTree::ActionEnded()
 		}
 		case RECOVER:
 		{
-			if (PlayerDist() > DEFAULT_IGNORE_RADIUS)
+			if (PlayerDist() > 1500)
 			{
 				action = IDLE;
 				frame = 0;
@@ -212,6 +216,9 @@ void GrowingTree::ProcessState()
 
 	if (action == ATTACK && frame == 0 && slowCounter == slowMultiple)
 	{
+		V2d gNorm = currPosInfo.GetEdge()->Normal();
+		launchers[0]->position = GetPosition() + gNorm * 60.0;
+
 		launchers[0]->facingDir = PlayerDir();
 		//launchers[0]->facingDir = startPosInfo.GetEdge()->Normal();
 		launchers[0]->Fire();

@@ -99,6 +99,9 @@ void Actor::FAIR_UpdateSprite()
 				irSword.top, -irSword.width, irSword.height));
 		}
 
+		//swordShader.SetQuad(curr_ts, frame - startFrame);
+		//swordShader.SetAuraColor(Color::White);
+
 		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
 		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
 		swordSprite.setRotation(0);
