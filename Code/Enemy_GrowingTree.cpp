@@ -180,7 +180,7 @@ void GrowingTree::ActionEnded()
 		}
 		case RECOVER:
 		{
-			if (PlayerDist() > 1500)
+			if (PlayerDist() > 1000)
 			{
 				action = IDLE;
 				frame = 0;
