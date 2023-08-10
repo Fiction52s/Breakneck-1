@@ -172,6 +172,7 @@ struct ShapeEmitter
 	virtual void ActivateParticle(int index);
 	virtual ShapeParticle * CreateParticle(int index);
 
+	bool active; //in session
 	PosSpawner *posSpawner;
 	ColorSpawner *colorSpawner;
 	RadiusSpawner *radiusSpawner;
@@ -198,6 +199,7 @@ struct ShapeEmitter
 
 	float lastCreationTime;
 
+	ShapeEmitter *prev;
 	ShapeEmitter *next;
 };
 

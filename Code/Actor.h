@@ -625,6 +625,8 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
+	ShapeEmitter *boosterTrailEmitter;
+
 	V2d practiceDesyncPosition;
 	bool practiceDesyncDetected;
 

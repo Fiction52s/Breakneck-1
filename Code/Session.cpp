@@ -69,7 +69,7 @@
 
 #include "PracticeInviteDisplay.h"
 #include "BasicTextMenu.h"
-
+#include <assert.h>
 
 //#include "ggpo\backends\backend.h"
 
@@ -1365,6 +1365,11 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	ts_key = NULL;
 	ts_goal = NULL;
 	ts_goalExplode = NULL;
+
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	{
+		emitterLists[i] = NULL;
+	}
 
 	phaseOn = false;
 
@@ -5377,19 +5382,90 @@ bool Session::IsShardCaptured(int s)
 void Session::AddEmitter(ShapeEmitter *emit,
 	EffectLayer layer)
 {
+	if (emit->active)
+	{
+		//cout << "shouldn't add emitter that is already active again" << "\n";
+		//assert(0);
+		return;
+	}
+
+	emit->active = true;
+
 	ShapeEmitter *&currList = emitterLists[layer];
+
+	ShapeEmitter *c = currList;
+
+	//just double checking for debug purposes
+	while (c != NULL)
+	{
+		assert(c != emit);
+		c = c->next;
+	}
+
 	if (currList == NULL)
 	{
-		currList = emit;
+		emit->prev = NULL;
 		emit->next = NULL;
+
+		currList = emit;
 	}
 	else
 	{
+		emit->prev = NULL;
 		emit->next = currList;
+		currList->prev = emit;
+		
 		currList = emit;
 	}
 }
 
+void Session::RemoveEmitter(ShapeEmitter *emit, EffectLayer layer)
+{
+	if (!emit->active)
+		return;
+
+	assert(emit->active);
+
+	ShapeEmitter *&currList = emitterLists[layer];
+
+	if (currList == NULL)
+	{
+		assert(false);
+		return;
+	}
+
+	emit->active = false;
+
+	ShapeEmitter *prev = emit->prev;
+	ShapeEmitter *next = emit->next;
+
+	if (prev == NULL && next == NULL)
+	{
+		currList = NULL;
+	}
+	else
+	{
+		if (emit == currList)
+		{
+			assert(next != NULL);
+
+			next->prev = NULL;
+			currList = next;
+		}
+		else
+		{
+			if (next != NULL)
+			{
+				next->prev = prev;
+			}
+
+			if (prev != NULL)
+			{
+				prev->next = next;
+			}
+		}
+	}
+}
 
 void Session::DrawEmitters(EffectLayer layer, sf::RenderTarget *target)
 {
@@ -5403,32 +5479,31 @@ void Session::DrawEmitters(EffectLayer layer, sf::RenderTarget *target)
 
 void Session::UpdateEmitters()
 {
-	ShapeEmitter *prev = NULL;
-	ShapeEmitter *curr;
+	ShapeEmitter *curr = NULL;
+	ShapeEmitter *next = NULL;
 	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		curr = emitterLists[i];
-		prev = NULL;
 		while (curr != NULL)
 		{
+			next = curr->next;
 			if (curr->IsDone())
 			{
-				if (curr == emitterLists[i])
+				RemoveEmitter(curr, (EffectLayer)i );
+				/*if (curr == emitterLists[i])
 				{
 					emitterLists[i] = curr->next;
 				}
 				else
 				{
 					prev->next = curr->next;
-				}
-				curr = curr->next;
+				}*/
+				curr = next;
 			}
 			else
 			{
 				curr->Update();
-
-				prev = curr;
-				curr = curr->next;
+				curr = next;
 			}
 		}
 	}
@@ -5438,6 +5513,15 @@ void Session::ClearEmitters()
 {
 	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
+		ShapeEmitter *curr = emitterLists[i];
+
+		while (curr != NULL)
+		{
+			ShapeEmitter *next = curr->next;
+			curr->Reset();
+			curr = next;
+		}
+
 		emitterLists[i] = NULL;
 	}
 }

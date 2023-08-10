@@ -3247,7 +3247,9 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		motionGhostsEffects[i] = new MotionGhostEffect(4, 1);
 	}
 
-	
+	boosterTrailEmitter = new LeafEmitter;
+	boosterTrailEmitter->SetTileset(sess->GetSizedTileset("Env/leaves_128x128.png"));
+	boosterTrailEmitter->CreateParticles();
 
 	motionGhostBuffer = new VertexBuf(80, sf::Quads);
 	motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
@@ -4629,6 +4631,10 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
+	boosterTrailEmitter->Reset();
+	//testEmit->Reset();
+
+
 	effectPools[PLAYERFX_KEY].pool->ts = sess->ts_key;
 	effectPools[PLAYERFX_KEY_EXPLODE].pool->ts = sess->ts_keyExplode;
 
@@ -6053,6 +6059,8 @@ void Actor::ProcessHomingBooster()
 		currHomingBooster->Boost();
 
 		homingFrames = currHomingBooster->strength;
+		boosterTrailEmitter->SetOn(true);
+		sess->AddEmitter(boosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		RestoreAirOptions();
 		//ground = NULL;
 		//wallNormal = V2d(0, 0);
@@ -6866,6 +6874,14 @@ void Actor::UpdatePrePhysics()
 
 	if (action == HIDDEN)
 		return;
+
+	/*if (homingFrames > 0)
+	{
+		if (!boosterTrailEmitter->active)
+		{
+			sess->AddEmitter(boosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		}
+	}*/
 
 	//if (currInput.B && !prevInput.B && sess->totalGameFrames > 10 )//(currInput.respawnTest)
 	if( currInput.respawnTest )
@@ -16888,6 +16904,11 @@ void Actor::SlowDependentFrameIncrement()
 		if (homingFrames > 0)
 		{
 			--homingFrames;
+
+			if (homingFrames == 0)
+			{
+				boosterTrailEmitter->SetOn(false);
+			}
 		}
 
 		if (antiTimeSlowFrames > 0)
@@ -16970,6 +16991,8 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
+	boosterTrailEmitter->SetPos(Vector2f(position));
+
 	if (action == DEATH && simulationMode)
 	{
 		return;

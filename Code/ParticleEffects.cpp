@@ -311,7 +311,7 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape, int p_numShapes)
 	particles = new ShapeParticle*[numShapesTotal];
 
 	//pType = FADE;
-	
+	active = false;
 
 	//Color r = Color::White;
 	//SetColor(r);
@@ -325,6 +325,11 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape, int p_numShapes)
 	radiusSpawner = NULL;
 	angleSpawner = NULL;
 	ttlSpawner = NULL;
+
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		particles[i] = NULL;
+	}
 }
 
 void ShapeEmitter::CreateParticles()
@@ -384,14 +389,20 @@ void ShapeEmitter::SetTileset(Tileset *p_ts)
 
 void ShapeEmitter::Reset()
 {
+	active = false;
 	emitting = true;
-	for (int i = 0; i < numShapesTotal; ++i)
+	if (particles[0] != NULL)
 	{
-		particles[i]->Clear();
+		for (int i = 0; i < numShapesTotal; ++i)
+		{
+			particles[i]->Clear();
+		}
 	}
 	frame = 0;
 	lastCreationTime = 0;
 	numActive = 0;
+	prev = NULL;
+	next = NULL;
 }
 
 void ShapeEmitter::ActivateParticle(int index)

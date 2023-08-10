@@ -815,6 +815,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ActiveSequenceUpdate();
 	void AddEmitter(ShapeEmitter *emit,
 		EffectLayer layer);
+	void RemoveEmitter(ShapeEmitter *emit,
+		EffectLayer layer);
 	void UpdateEmitters();
 	void ClearEmitters();
 	void DrawActiveSequence(EffectLayer layer,
