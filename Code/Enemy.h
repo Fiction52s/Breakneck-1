@@ -98,7 +98,7 @@ struct StoredEnemyData
 	
 };
 
-struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
+struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	SlowableObject, HittableObject
 {
 	static int bloodLengths[8];
@@ -108,7 +108,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual int GetNumDarkAbsorbParticles();
 	virtual int GetNumShardAbsorbParticles();
 
-	virtual CollisionBody *GetCollisionBodyFromID( int id );
+	virtual CollisionBody *GetCollisionBodyFromID(int id);
 	int GetCollisionBodyID(CollisionBody *cb);
 	virtual Shield *GetShieldFromID(int id);
 	int GetShieldID(Shield *s);
@@ -121,6 +121,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void StoreBasicEnemyData(StoredEnemyData &ed);
 	void SetBasicEnemyData(StoredEnemyData &ed);
 	virtual bool CountsForEnemyGate() { return true; }
+
+	virtual bool IsValidTrackEnemy() { return !dead; }
+	virtual bool IsHomingTarget() { return true; }
 
 	int summonFrame;
 	const static int summonDuration;

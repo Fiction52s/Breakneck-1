@@ -25,6 +25,7 @@ struct BounceBooster : Enemy
 	bool upOnly;
 
 	bool CountsForEnemyGate() { return false; }
+	bool IsHomingTarget() { return false; }
 	BounceBooster(ActorParams *ap);	
 	void ProcessState();
 	void SetLevel(int lev);

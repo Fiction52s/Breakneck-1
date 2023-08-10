@@ -66,6 +66,7 @@ struct Spring : Enemy
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
+	bool IsHomingTarget() { return false; }
 	SoundInfo *launchSoundBuf;
 	
 	void UpdateSprite();

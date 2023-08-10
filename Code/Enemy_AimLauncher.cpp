@@ -275,7 +275,6 @@ void AimLauncher::ProcessState()
 	ActionEnded();
 }
 
-
 void AimLauncher::UpdateSprite()
 {
 	switch (action)

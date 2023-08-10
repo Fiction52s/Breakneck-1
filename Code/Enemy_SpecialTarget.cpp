@@ -32,7 +32,7 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	if (typeName == "regentarget")
 	{
 		regenOn = true;
-		targetType = TARGET_BLUE;
+		targetType = TARGET_REGEN;
 		//sprite.setColor(Color::Blue);
 	}
 	else if (typeName == "glidetarget")
@@ -162,6 +162,22 @@ void SpecialTarget::Collect()
 bool SpecialTarget::IsInteractible()
 {
 	return action == A_IDLE && !dead;
+}
+
+bool SpecialTarget::IsValidTrackEnemy()
+{
+	return IsInteractible();
+}
+
+bool SpecialTarget::IsHomingTarget()
+{
+	if (targetType == TARGET_HOMING || targetType == TARGET_REGEN)
+	{
+		return true;
+	}
+
+	return false;
+
 }
 
 //void SpecialTarget::IHitPlayer(int index)
@@ -336,19 +352,11 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 			}
 		}
 	}
-	else if (targetType == TARGET_BOUNCE)
-	{
-		return NULL;
-	}
-	else if (targetType == TARGET_SCORPION)
-	{
-		return NULL;
-	}
-	else if (targetType == TARGET_GRIND)
-	{
-		return NULL;
-	}
-	else if (targetType == TARGET_SWING)
+	else if (targetType == TARGET_BOUNCE
+		|| targetType == TARGET_GLIDE
+		|| targetType == TARGET_SCORPION
+		|| targetType == TARGET_GRIND
+		|| targetType == TARGET_SWING)
 	{
 		return NULL;
 	}

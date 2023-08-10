@@ -23288,19 +23288,7 @@ void Actor::UpdateInHitlag()
 
  bool Actor::IsValidTrackEnemy(Enemy *e)
  {
-	 //need more rules here
-	 if (e->type == EN_SPRING || e->type == EN_AIMLAUNCHER
-		 || e->type == EN_HOMINGBOOSTER )
-	 {
-		 return false;
-		 /*Spring *spr = (Spring*)e;
-		 if (spr->springType == Spring::HOMING)
-		 {
-
-		 }*/
-	 }
-
-	 return EnemyTracker::IsValidTrackEnemy(e);
+	 return e->IsHomingTarget() && EnemyTracker::IsValidTrackEnemy(e);
  }
 
  void Actor::SetSkin(int skinIndex)

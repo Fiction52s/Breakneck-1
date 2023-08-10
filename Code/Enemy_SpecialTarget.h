@@ -16,7 +16,7 @@ struct SpecialTarget : Enemy
 
 	enum TargetType
 	{
-		TARGET_BLUE,
+		TARGET_REGEN,
 		TARGET_GLIDE,
 		TARGET_SCORPION,
 		TARGET_HOMING,
@@ -47,6 +47,8 @@ struct SpecialTarget : Enemy
 	bool CountsForEnemyGate() { return false; }
 	SpecialTarget(ActorParams *ap);
 	bool IsInteractible();
+	bool IsValidTrackEnemy();
+	bool IsHomingTarget();
 	void SetLevel(int lev);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
