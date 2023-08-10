@@ -53,7 +53,7 @@ struct HungryComboer : Enemy, EnemyTracker
 	
 	int maxWaitFrames;
 
-	
+	//bool IsHomingTarget() { return false; }
 	bool CountsForEnemyGate() { return false; }
 	HungryComboer(ActorParams *ap);
 	~HungryComboer();

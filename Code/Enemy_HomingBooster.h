@@ -26,6 +26,8 @@ struct HomingBooster : Enemy
 
 	HomingBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 	void ProcessState();
+	bool CountsForEnemyGate() { return false; }
+	bool IsHomingTarget() { return false; }
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

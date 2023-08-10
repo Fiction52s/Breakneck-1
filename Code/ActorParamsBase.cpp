@@ -75,6 +75,7 @@ ActorParams::ActorParams(ActorType *at)
 		|| at->info.name == "scorpiontarget"
 		|| at->info.name == "grindtarget"
 		|| at->info.name == "swingtarget"
+		|| at->info.name == "homingtarget"
 		|| at->info.name == "freeflighttarget"
 		|| at->info.name == "bluecomboertarget"
 		|| at->info.name == "greencomboertarget"

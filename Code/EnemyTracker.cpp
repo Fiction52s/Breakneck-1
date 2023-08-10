@@ -21,7 +21,7 @@ bool EnemyTracker::GetClosestEnemyPos(V2d &pos,
 	bool enemyCanBeAnchored;
 	while (curr != NULL)
 	{
-		if (curr->IsValidTrackEnemy() )
+		if (IsValidTrackEnemy(curr))
 		{
 			numPoints = curr->GetNumCamPoints();
 			for (i = 0; i < numPoints; ++i)

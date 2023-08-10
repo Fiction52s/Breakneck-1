@@ -57,7 +57,7 @@ void Actor::SPRINGSTUNHOMINGATTACK_Update()
 		{
 			V2d eDir = normalize(foundEnemy->GetPosition() - position);
 			double len = length(springVel);
-			springVel += eDir * len * .5;//10.0;//eDir * 4.0;//eDir * length(springVel);
+			springVel += eDir * 5.0;//len * .1;//len * .5;//10.0;//eDir * 4.0;//eDir * length(springVel);
 			springVel = normalize(springVel) * len;
 		}
 

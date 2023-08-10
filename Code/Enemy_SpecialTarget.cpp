@@ -372,6 +372,7 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 		{
 			return NULL;
 		}
+
 	}
 	else
 	{
