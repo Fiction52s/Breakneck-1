@@ -91,6 +91,7 @@ struct RisingParticleUpdater;
 struct EffectPool;
 struct KeyExplodeUpdater;
 struct ShapeEmitter;
+struct PlayerBoosterEffectEmitter;
 
 struct BasicEffect;
 struct PlayerEffect;
@@ -625,7 +626,14 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
-	ShapeEmitter *boosterTrailEmitter;
+	
+	PlayerBoosterEffectEmitter *gravityIncreaserTrailEmitter;
+	PlayerBoosterEffectEmitter *gravityDecreaserTrailerEmitter;
+	PlayerBoosterEffectEmitter *momentumBoosterTrailEmitter;
+	//PlayerBoosterEffectEmitter *timeSlowBoosterTrailEmitter;
+	PlayerBoosterEffectEmitter *homingBoosterTrailEmitter;
+	PlayerBoosterEffectEmitter *antiTimeSlowBoosterTrailEmitter;
+	PlayerBoosterEffectEmitter *freeFlightBoosterTrailEmitter;
 
 	V2d practiceDesyncPosition;
 	bool practiceDesyncDetected;
@@ -695,6 +703,7 @@ struct Actor : QuadTreeCollider,
 	int projectileSwordFrames;
 	int enemyProjectileSwordFrames;
 	int gravModifyFrames;
+	int boosterGravModifyFrames;
 	V2d waterEntrancePosition;
 	Edge *waterEntranceGround;
 	Edge *waterEntranceGrindEdge;
@@ -715,6 +724,13 @@ struct Actor : QuadTreeCollider,
 	int currPowerMode;
 	PolyPtr oldSpecialTerrain;
 	PolyPtr currSpecialTerrain;
+	int startGlobalTimeSlowFrames;
+	int startFreeFlightFrames;
+	int startHomingFrames;
+	int startAntiTimeSlowFrames;
+	int startMomentumBoostFrames;
+	int startBoosterGravModifyFrames;
+
 	int globalTimeSlowFrames;
 	int freeFlightFrames;
 	int homingFrames;
@@ -1221,6 +1237,7 @@ struct Actor : QuadTreeCollider,
 	double maxFallSpeedSlow;
 	double gravity;
 	double extraGravityModifier;
+	double boosterExtraGravityModifier;
 	double jumpStrength;
 	double airAccel;
 	double maxAirXControl;

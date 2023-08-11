@@ -781,10 +781,13 @@ void Enemy::SetKey()
 				cout << "couldnt load enemy key shader" << endl;
 				assert(false);
 			}
+			
 			keyShaderLoaded = true;
 		}
 
 		keyShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
+
+		keyShader.setUniform("auraColor", ColorGL(Color::Transparent));
 		//keyShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 
 		int w = world;
@@ -1756,7 +1759,11 @@ void Enemy::ConfirmKill()
 
 	if (world >= 1)
 	{
-		sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+		if (type != EN_COMBOERTARGET) //exception list to having blood
+		{
+			sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+		}
+		
 	}
 
 	if (!receivedHit.comboer)

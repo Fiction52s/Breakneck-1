@@ -244,7 +244,9 @@ struct PState
 	int projectileSwordFrames;
 	int enemyProjectileSwordFrames;
 	int gravModifyFrames;
+	int boosterGravModifyFrames;
 	double extraGravityModifier;
+	double boosterExtraGravityModifier;
 	V2d waterEntrancePosition;
 	EdgeInfo waterEntranceGroundInfo;
 	EdgeInfo waterEntranceGrindEdgeInfo;
@@ -282,6 +284,13 @@ struct PState
 	int airBounceCounter;
 	int airBounceLimit;
 	int momentumBoostFrames;
+
+	int startGlobalTimeSlowFrames;
+	int startFreeFlightFrames;
+	int startHomingFrames;
+	int startAntiTimeSlowFrames;
+	int startMomentumBoostFrames;
+	int startBoosterGravModifyFrames;
 
 	int currSpringID;
 	int currAimLauncherID;

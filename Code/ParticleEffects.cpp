@@ -2,112 +2,25 @@
 #include "Tileset.h"
 #include "MovingGeo.h"
 #include "GameSession.h"
+#include "Actor.h"
 
 
 using namespace std;
 using namespace sf;
-
-FadingParticle::FadingParticle(int numPoints,
-	sf::Vertex *v,
-	ShapeEmitter *emit)
-	:ShapeParticle(numPoints, v, emit)
-{
-	fadeOutThresh = 40;
-	fadeInThresh = 40;
-}
-
-void FadingParticle::SpecialActivate()
-{
-	action = FADEIN;
-	if (ttl < fadeOutThresh)
-	{
-		action = FADEOUT;
-	}
-
-	startAlpha = color.a;
-	SetColor(sf::Color(color.r, color.g, color.b, 0));
-
-	maxTimeToLive = ttl;
-}
-
-void FadingParticle::SpecialUpdate()
-{
-	switch (action)
-	{
-	case FADEIN:
-		if (ttl <= maxTimeToLive - fadeInThresh)
-		{
-			action = NORMAL;
-		}
-	case NORMAL:
-		if (ttl <= fadeOutThresh)
-		{
-			action = FADEOUT;
-			startAlpha = color.a;
-		}
-		break;
-	case FADEOUT:
-		break;
-	}
-
-	switch (action)
-	{
-	case FADEIN:
-	{
-		float fttl = maxTimeToLive - ttl;
-		color.a = startAlpha * fttl / fadeInThresh;
-		SetColor(color);
-		break;
-	}
-	case NORMAL:
-		break;
-	case FADEOUT:
-	{
-		float fttl = ttl;
-		color.a = startAlpha * fttl / fadeOutThresh;
-		SetColor(color);
-		break;
-	}
-	}
-}
-
-void FadingParticle::SetColorShift(sf::Color &start,
-	sf::Color &end, int p_fadeInFrames, int p_fadeOutFrames)
-{
-	fadeInThresh = p_fadeInFrames;
-	fadeOutThresh = p_fadeOutFrames;
-	startColor = start;
-	endColor = end;
-	SetColor(startColor);
-}
-
-void FadingParticle::UpdateColor()
-{
-	if (action == NORMAL)
-	{
-		float portion = GetNormalPortion();
-		SetColor(GetBlendColor(startColor, endColor, 1.f - portion));
-	}
-}
-
-float FadingParticle::GetNormalPortion()
-{
-	int nStart = (maxTimeToLive - fadeInThresh);
-	int nFrame = nStart - ttl;
-	int nLength = nStart - fadeOutThresh;
-
-	return (float)nFrame / nLength;
-}
 
 
 ShapeParticle::ShapeParticle(int p_numPoints, sf::Vertex *v,
 	ShapeEmitter *p_emit)
 	:numPoints(p_numPoints), points(v), emit(p_emit)
 {
+	fadeOutThresh = 0;
+	fadeInThresh = 0;
 	sizeUpdater = NULL;
 	colorUpdater = NULL;
 	angleUpdater = NULL;
 	posUpdater = NULL;
+	startColor = Color::White;
+	endColor = Color::White;
 }
 
 ShapeParticle::~ShapeParticle()
@@ -133,8 +46,6 @@ ShapeParticle::~ShapeParticle()
 	}
 }
 
-
-
 void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 	float p_angle, int p_ttl, sf::Color c, int tIndex )
 {
@@ -148,6 +59,25 @@ void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 	{
 		SetTileIndex(tIndex);
 	}
+
+	if (fadeInThresh == 0)
+	{
+		action = NORMAL;
+	}
+	else
+	{
+		action = FADEIN;
+	}
+
+	if (ttl < fadeOutThresh)
+	{
+		action = FADEOUT;
+	}
+
+	startAlpha = color.a;
+	SetColor(sf::Color(color.r, color.g, color.b, 0));
+
+	maxTimeToLive = ttl;
 
 	//SpecialActivate();
 
@@ -203,10 +133,31 @@ void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 void ShapeParticle::SetColor(sf::Color &c)
 {
 	color = c;
+	//startColor = color;
+	//endColor = color;
 	for (int i = 0; i < numPoints; ++i)
 	{
 		points[i].color = c;
 	}
+}
+
+void ShapeParticle::SetColorShift(sf::Color start,
+	sf::Color end, int p_fadeInFrames, int p_fadeOutFrames)
+{
+	fadeInThresh = p_fadeInFrames;
+	fadeOutThresh = p_fadeOutFrames;
+	startColor = start;
+	endColor = end;
+	SetColor(startColor);
+}
+
+float ShapeParticle::GetNormalPortion()
+{
+	int nStart = (maxTimeToLive - fadeInThresh);
+	int nFrame = nStart - ttl;
+	int nLength = nStart - fadeOutThresh;
+
+	return (float)nFrame / nLength;
 }
 
 void ShapeParticle::SetTileIndex(int ti)
@@ -254,6 +205,58 @@ bool ShapeParticle::Update()
 	}
 
 	//UpdateColor();
+	
+	
+
+	switch (action)
+	{
+	case FADEIN:
+		if (ttl <= maxTimeToLive - fadeInThresh)
+		{
+			action = NORMAL;
+		}
+	case NORMAL:
+		if (ttl <= fadeOutThresh)
+		{
+			action = FADEOUT;
+			startAlpha = color.a;
+		}
+		break;
+	case FADEOUT:
+		break;
+	}
+
+
+	float portion = 1.f - (ttl / (float)maxTimeToLive);
+	Color currColor = GetBlendColor(startColor, endColor, portion);
+	SetColor(currColor);
+
+	switch (action)
+	{
+	case FADEIN:
+	{
+		float fttl = maxTimeToLive - ttl;
+		currColor.a = startAlpha * fttl / fadeInThresh;
+		SetColor(currColor);
+		break;
+	}
+	case NORMAL:
+	{
+		/*float portion = 0.f;
+		portion = 1.f - (ttl / (float)maxTimeToLive);
+		
+		SetColor(GetBlendColor(startColor, endColor, portion));*/
+		break;
+	}
+	case FADEOUT:
+	{
+		float fttl = ttl;
+		currColor.a = startAlpha * fttl / fadeOutThresh;
+		SetColor(currColor);
+		break;
+	}
+	}
+
 
 	//SpecialUpdate();
 
@@ -409,6 +412,8 @@ void ShapeEmitter::ActivateParticle(int index)
 {
 	particles[index]->Activate(GetSpawnRadius(), GetSpawnPos(), GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(),
 		GetSpawnTile());
+
+	
 
 	/*float a = angle;
 	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
@@ -770,3 +775,67 @@ void FeatherPosUpdater::PUpdatePos(ShapeParticle* p)
 	p->pos += vel;
 }
 
+
+PlayerBoosterEffectEmitter::PlayerBoosterEffectEmitter( Actor *p_player, int p_boosterType )
+	:ShapeEmitter(4, 500)
+{
+	boosterType = p_boosterType;
+	player = p_player;
+	posSpawner = new BoxPosSpawner(20, 20);
+	SetRatePerSecond(120);
+}
+
+ShapeParticle *PlayerBoosterEffectEmitter::CreateParticle(int index)
+{
+	ShapeParticle *sp = new ShapeParticle(pointsPerShape, points + index * pointsPerShape, this);
+	sp->posUpdater = new LinearVelPPosUpdater;
+	return sp;
+}
+
+void PlayerBoosterEffectEmitter::ActivateParticle(int index)
+{
+	ShapeParticle *sp = particles[index];
+	Vector2f sPos = GetSpawnPos();
+
+	int minRad = 10;
+	int maxRad = 32;
+
+	int r = rand() % ((maxRad - minRad) + 1) + minRad;
+	float rad = r;
+
+	int angI = rand() % 360;
+	float ang = angI;
+
+	
+	Color aColor = Color::Red;
+	Color bColor = Color::Yellow;//Color( 40, 0, 0 );
+
+	
+	Color sColor = GetBlendColor(aColor, bColor, boostPortion);
+
+	sp->Activate(rad, sPos, ang, GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
+
+	//360
+
+	Color sColorTransParent = sColor;
+	sColorTransParent.a = 70;
+
+	sp->SetColorShift(sColor, sColorTransParent, 20, 20);
+
+	LinearVelPPosUpdater * velUpdater = (LinearVelPPosUpdater*)sp->posUpdater;
+
+	velUpdater->vel = normalize(sPos - pos) * .1f;//10.f;
+}
+
+int PlayerBoosterEffectEmitter::GetSpawnTTL()
+{
+	int variation = 40;
+	int r = (rand() % variation) - variation / 2;
+
+	return 90 + r;
+}
+
+int PlayerBoosterEffectEmitter::GetSpawnTile()
+{
+	return 0;//rand() % 5;
+}

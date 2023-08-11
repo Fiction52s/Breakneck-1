@@ -36,6 +36,13 @@ struct PPosUpdater
 
 struct ShapeParticle
 {
+	enum Action
+	{
+		FADEIN,
+		NORMAL,
+		FADEOUT,
+	};
+
 	ShapeParticle(int numPoints, sf::Vertex *v,
 		ShapeEmitter *emit);
 	~ShapeParticle();
@@ -49,12 +56,17 @@ struct ShapeParticle
 	bool Update();
 	void SetTileIndex(int ti);
 	void SetColor(sf::Color &c);
+	void SetColorShift(sf::Color start,
+		sf::Color end, int fadeInFrames,
+		int fadeOutFrames);
+	float GetNormalPortion();
 
 	PPosUpdater *posUpdater;
 	PSizeUpdater *sizeUpdater;
 	PColorUpdater *colorUpdater;
 	PAngleUpdater *angleUpdater;
 	
+	int action;
 
 	sf::Vector2f pos;
 	float angle;
@@ -66,37 +78,14 @@ struct ShapeParticle
 	int tileIndex;
 	ShapeEmitter *emit;
 
-};
-
-struct FadingParticle : ShapeParticle
-{
-	enum Action
-	{
-		FADEIN,
-		NORMAL,
-		FADEOUT,
-	};
-	FadingParticle(int numPoints,
-		sf::Vertex *v,
-		ShapeEmitter *emit);
-	void SpecialUpdate();
-	void SpecialActivate();
-	void SetColorShift(sf::Color &start,
-		sf::Color &end, int fadeInFrames,
-		int fadeOutFrames);
-	float GetNormalPortion();
-	//void SetSizeShift( )
-
-	Action action;
 	int fadeOutThresh;
 	int fadeInThresh;
 	int startAlpha;
+	int maxTimeToLive;
 
-	void UpdateColor();
+	
 	sf::Color startColor;
 	sf::Color endColor;
-
-	int maxTimeToLive;
 
 };
 
@@ -244,6 +233,32 @@ struct LeafEmitter : ShapeEmitter
 	ShapeParticle * CreateParticle(int index);
 	void ActivateParticle(int index);
 	int GetSpawnTile();
+};
+
+struct Actor;
+struct PlayerBoosterEffectEmitter : ShapeEmitter
+{
+	enum BoosterType
+	{
+		BOOSTER_GRAVITY_INCREASER,
+		BOOSTER_GRAVITY_DECREASER,
+		BOOSTER_MOMENTUM,
+		BOOSTER_TIMESLOW,
+		BOOSTER_HOMING,
+		BOOSTER_ANTITIMESLOW,
+		BOOSTER_FREEFLIGHT,
+		BOOSTER_Count,
+	};
+
+	PlayerBoosterEffectEmitter( Actor *p_player, int p_boosterType );
+	ShapeParticle * CreateParticle(int index);
+	void ActivateParticle(int index);
+	int GetSpawnTTL();
+	int GetSpawnTile();
+
+	int boosterType;
+	float boostPortion;
+	Actor *player;
 };
 
 struct GlideEmitter : ShapeEmitter

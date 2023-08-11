@@ -19,6 +19,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+
+
 HomingBooster::HomingBooster(ActorParams *ap)
 	:Enemy(EnemyType::EN_HOMINGBOOSTER, ap)
 {
@@ -27,8 +29,6 @@ HomingBooster::HomingBooster(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	strength = 360;
-
 	SetCurrPosInfo(startPosInfo);
 
 	ts = GetSizedTileset("Enemies/boosters_384x384.png");
@@ -36,6 +36,8 @@ HomingBooster::HomingBooster(ActorParams *ap)
 	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
+
+	strength = 360;
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);

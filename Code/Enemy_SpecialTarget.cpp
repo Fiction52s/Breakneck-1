@@ -22,7 +22,7 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 
 	targetType = -1;
 
-	ts = GetSizedTileset("Enemies/target_256x256.png");
+	//ts = GetSizedTileset("Enemies/target_256x256.png");
 	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
 	BasicCircleHitBodySetup(32);
@@ -93,16 +93,43 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 		targetType = TARGET_COMBOER_MAGENTA;
 	}
 
+
+	if (targetType == TARGET_COMBOER_BLUE
+		|| targetType == TARGET_COMBOER_GREEN
+		|| targetType == TARGET_COMBOER_YELLOW
+		|| targetType == TARGET_COMBOER_ORANGE
+		|| targetType == TARGET_COMBOER_RED
+		|| targetType == TARGET_COMBOER_MAGENTA)
+	{
+		ts = GetSizedTileset("Enemies/key_comboer_256x256.png");
+
+		actionLength[A_IDLE] = 1;
+		animFactor[A_IDLE] = 5;
+
+		actionLength[A_DYING] = 11;//30
+		animFactor[A_DYING] = 3;
+
+	}
+	else
+	{
+		ts = GetSizedTileset("Enemies/target_256x256.png");
+
+		actionLength[A_IDLE] = 5;
+		animFactor[A_IDLE] = 5;
+
+		actionLength[A_DYING] = 30;
+		animFactor[A_DYING] = 1;
+
+	}
+
 	assert(targetType != -1);
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	actionLength[A_IDLE] = 5;
-	animFactor[A_IDLE] = 5;
+	
 
-	actionLength[A_DYING] = 30;
-	animFactor[A_DYING] = 1;
+	
 
 	actionLength[A_WAIT_BEFORE_REGEN] = 60;
 	animFactor[A_WAIT_BEFORE_REGEN] = 1;
@@ -246,7 +273,19 @@ void SpecialTarget::UpdateSprite()
 	}
 	case A_DYING:
 	{
-		sprite.setTextureRect(ts->GetSubRect(0));
+		if (targetType == TARGET_COMBOER_BLUE
+			|| targetType == TARGET_COMBOER_GREEN
+			|| targetType == TARGET_COMBOER_YELLOW
+			|| targetType == TARGET_COMBOER_ORANGE
+			|| targetType == TARGET_COMBOER_RED
+			|| targetType == TARGET_COMBOER_MAGENTA)
+		{
+			sprite.setTextureRect(ts->GetSubRect(frame / animFactor[A_DYING] + 1));
+		}
+		else
+		{
+			sprite.setTextureRect(ts->GetSubRect(0));
+		}
 		break;
 	}
 	case A_WAIT_BEFORE_REGEN:

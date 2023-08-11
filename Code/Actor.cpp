@@ -46,6 +46,7 @@
 #include "MovingGeo.h"
 #include "GateMarker.h"
 #include "Enemy_SpecialTarget.h"
+#include "Enemy_ComboerTarget.h"
 #include "Enemy_AimLauncher.h"
 #include "Enemy_TimeBooster.h"
 #include "Enemy_FreeFlightBooster.h"
@@ -395,7 +396,9 @@ void Actor::PopulateState(PState *ps)
 	ps->projectileSwordFrames = projectileSwordFrames;
 	ps->enemyProjectileSwordFrames = enemyProjectileSwordFrames;
 	ps->gravModifyFrames = gravModifyFrames;
+	ps->boosterGravModifyFrames = boosterGravModifyFrames;
 	ps->extraGravityModifier = extraGravityModifier;
+	ps->boosterExtraGravityModifier = boosterExtraGravityModifier;
 	ps->waterEntrancePosition = waterEntrancePosition;
 
 
@@ -422,6 +425,13 @@ void Actor::PopulateState(PState *ps)
 	ps->freeFlightFrames = freeFlightFrames;
 	ps->homingFrames = homingFrames;
 	ps->antiTimeSlowFrames = antiTimeSlowFrames;
+
+	ps->startGlobalTimeSlowFrames = startGlobalTimeSlowFrames;
+	ps->startFreeFlightFrames = startFreeFlightFrames;
+	ps->startHomingFrames = startHomingFrames;
+	ps->startAntiTimeSlowFrames = startAntiTimeSlowFrames;
+	ps->startMomentumBoostFrames = startMomentumBoostFrames;
+	ps->startBoosterGravModifyFrames = startBoosterGravModifyFrames;
 
 	ps->currTimeBoosterID = sess->GetEnemyID( currTimeBooster);
 	ps->currFreeFlightBoosterID = sess->GetEnemyID(currFreeFlightBooster);
@@ -658,7 +668,13 @@ void Actor::PopulateFromState(PState *ps)
 	projectileSwordFrames = ps->projectileSwordFrames;
 	enemyProjectileSwordFrames = ps->enemyProjectileSwordFrames;
 	gravModifyFrames = ps->gravModifyFrames;
+	boosterGravModifyFrames = ps->boosterGravModifyFrames;
 	extraGravityModifier = ps->extraGravityModifier;
+	boosterExtraGravityModifier = ps->boosterExtraGravityModifier;
+	
+
+
+
 	waterEntrancePosition = ps->waterEntrancePosition;
 
 	waterEntranceGround = sess->GetEdge(&ps->waterEntranceGroundInfo);
@@ -685,6 +701,13 @@ void Actor::PopulateFromState(PState *ps)
 	freeFlightFrames = ps->freeFlightFrames;
 	homingFrames = ps->homingFrames;
 	antiTimeSlowFrames = ps->antiTimeSlowFrames;
+
+	startGlobalTimeSlowFrames = ps->startGlobalTimeSlowFrames;
+	startFreeFlightFrames = ps->startFreeFlightFrames;
+	startHomingFrames = ps->startHomingFrames;
+	startAntiTimeSlowFrames = ps->startAntiTimeSlowFrames;
+	startMomentumBoostFrames = ps->startMomentumBoostFrames;
+	startBoosterGravModifyFrames = ps->startBoosterGravModifyFrames;
 
 	currTimeBooster = (TimeBooster*)sess->GetEnemyFromID( ps->currTimeBoosterID );
 	currFreeFlightBooster = (FreeFlightBooster*)sess->GetEnemyFromID( ps->currFreeFlightBoosterID );
@@ -3247,9 +3270,33 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		motionGhostsEffects[i] = new MotionGhostEffect(4, 1);
 	}
 
-	boosterTrailEmitter = new LeafEmitter;
-	boosterTrailEmitter->SetTileset(sess->GetSizedTileset("Env/leaves_128x128.png"));
-	boosterTrailEmitter->CreateParticles();
+	gravityIncreaserTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_GRAVITY_INCREASER);
+	gravityIncreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	gravityIncreaserTrailEmitter->CreateParticles();
+
+	gravityDecreaserTrailerEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_GRAVITY_DECREASER);
+	gravityDecreaserTrailerEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	gravityDecreaserTrailerEmitter->CreateParticles();
+
+	momentumBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_MOMENTUM);
+	momentumBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	momentumBoosterTrailEmitter->CreateParticles();
+
+	//timeSlowBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_TIMESLOW);
+	//timeSlowBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	//timeSlowBoosterTrailEmitter->CreateParticles();
+
+	homingBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_HOMING);
+	homingBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	homingBoosterTrailEmitter->CreateParticles();
+
+	antiTimeSlowBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_ANTITIMESLOW);
+	antiTimeSlowBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	antiTimeSlowBoosterTrailEmitter->CreateParticles();
+
+	freeFlightBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_FREEFLIGHT);
+	freeFlightBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	freeFlightBoosterTrailEmitter->CreateParticles();
 
 	motionGhostBuffer = new VertexBuf(80, sf::Quads);
 	motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
@@ -4631,8 +4678,13 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
-	boosterTrailEmitter->Reset();
-	//testEmit->Reset();
+	gravityIncreaserTrailEmitter->Reset();
+	gravityDecreaserTrailerEmitter->Reset();
+	momentumBoosterTrailEmitter->Reset();
+	//timeSlowBoosterTrailEmitter->Reset();
+	homingBoosterTrailEmitter->Reset();
+	antiTimeSlowBoosterTrailEmitter->Reset();
+	freeFlightBoosterTrailEmitter->Reset();
 
 
 	effectPools[PLAYERFX_KEY].pool->ts = sess->ts_key;
@@ -4837,6 +4889,7 @@ void Actor::Respawn( bool setStartPos )
 	activeComboObjList = NULL;
 
 	gravModifyFrames = 0;
+	boosterGravModifyFrames = 0;
 
 	velocity.x = 0;
 	velocity.y = 0;
@@ -4890,6 +4943,7 @@ void Actor::Respawn( bool setStartPos )
 
 	currGravModifier = NULL;
 	extraGravityModifier = 1.0;
+	boosterExtraGravityModifier = 1.0;
 	
 	slowMultiple = baseSlowMultiple;
 	slowCounter = 1;
@@ -5915,8 +5969,25 @@ void Actor::ProcessGravModifier()
 {
 	if (currGravModifier != NULL)
 	{
-		gravModifyFrames = currGravModifier->duration;
-		extraGravityModifier = currGravModifier->gravFactor;
+		boosterGravModifyFrames = currGravModifier->duration;
+		boosterExtraGravityModifier = currGravModifier->gravFactor;
+
+		startBoosterGravModifyFrames = boosterGravModifyFrames;
+
+		if (boosterExtraGravityModifier > 1.0)
+		{
+			gravityIncreaserTrailEmitter->SetOn(true);
+			sess->AddEmitter(gravityIncreaserTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		}
+		else if (boosterExtraGravityModifier < 1.0)
+		{
+			gravityDecreaserTrailerEmitter->SetOn(true);
+			sess->AddEmitter(gravityDecreaserTrailerEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		}
+		else
+		{
+			assert(0);
+		}
 
 		currGravModifier->Modify();
 
@@ -5976,6 +6047,10 @@ void Actor::ProcessTimeBooster()
 		currTimeBooster->Boost();
 
 		globalTimeSlowFrames = currTimeBooster->strength;
+		startGlobalTimeSlowFrames = globalTimeSlowFrames;
+
+		//timeSlowBoosterTrailEmitter->SetOn(true);
+		//sess->AddEmitter(timeSlowBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 		currTimeBooster = NULL;
 
@@ -5990,6 +6065,11 @@ void Actor::ProcessMomentumBooster()
 		currMomentumBooster->Boost();
 
 		momentumBoostFrames = currMomentumBooster->strength;
+		startMomentumBoostFrames = momentumBoostFrames;
+
+
+		momentumBoosterTrailEmitter->SetOn(true);
+		sess->AddEmitter(momentumBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 		currMomentumBooster = NULL;
 
@@ -6020,6 +6100,11 @@ void Actor::ProcessAntiTimeSlowBooster()
 		currAntiTimeSlowBooster->Boost();
 
 		antiTimeSlowFrames = currAntiTimeSlowBooster->strength;
+		startAntiTimeSlowFrames = antiTimeSlowFrames;
+
+		antiTimeSlowBoosterTrailEmitter->SetOn(true);
+		sess->AddEmitter(antiTimeSlowBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+
 		currAntiTimeSlowBooster = NULL;
 
 		SetSkin(SKIN_NORMAL);
@@ -6058,9 +6143,12 @@ void Actor::ProcessHomingBooster()
 	{
 		currHomingBooster->Boost();
 
+		
 		homingFrames = currHomingBooster->strength;
-		boosterTrailEmitter->SetOn(true);
-		sess->AddEmitter(boosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		startHomingFrames = homingFrames;
+
+		homingBoosterTrailEmitter->SetOn(true);
+		sess->AddEmitter(homingBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		RestoreAirOptions();
 		//ground = NULL;
 		//wallNormal = V2d(0, 0);
@@ -6079,7 +6167,11 @@ void Actor::ProcessFreeFlightBooster()
 		currFreeFlightBooster->Boost();
 
 		SetAction(FREEFLIGHT);
-		freeFlightFrames = currFreeFlightBooster->strength;;
+		freeFlightFrames = currFreeFlightBooster->strength;
+		startFreeFlightFrames = freeFlightFrames;
+
+		freeFlightBoosterTrailEmitter->SetOn(true);
+		sess->AddEmitter(freeFlightBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		extraGravityModifier = 0;
 		gravModifyFrames = freeFlightFrames;
 		RestoreAirOptions();
@@ -16888,6 +16980,11 @@ void Actor::SlowDependentFrameIncrement()
 		if( globalTimeSlowFrames > 0 )
 		{
 			--globalTimeSlowFrames;
+
+			if (globalTimeSlowFrames == 0)
+			{
+				//timeSlowBoosterTrailEmitter->SetOn(false);
+			}
 		}
 
 		if (freeFlightFrames > 0)
@@ -16898,6 +16995,8 @@ void Actor::SlowDependentFrameIncrement()
 			{
 				gravModifyFrames = 0; //this might be unnecessary
 				//grav is already turned off for freeflightframes > 0
+
+				freeFlightBoosterTrailEmitter->SetOn(false);
 			}
 		}
 
@@ -16907,7 +17006,7 @@ void Actor::SlowDependentFrameIncrement()
 
 			if (homingFrames == 0)
 			{
-				boosterTrailEmitter->SetOn(false);
+				homingBoosterTrailEmitter->SetOn(false);
 			}
 		}
 
@@ -16917,6 +17016,7 @@ void Actor::SlowDependentFrameIncrement()
 			if (antiTimeSlowFrames == 0)
 			{
 				SetSkin(SKIN_NORMAL);
+				antiTimeSlowBoosterTrailEmitter->SetOn(false);
 			}
 		}
 
@@ -16928,6 +17028,11 @@ void Actor::SlowDependentFrameIncrement()
 		if (momentumBoostFrames > 0)
 		{
 			--momentumBoostFrames;
+
+			if (momentumBoostFrames == 0)
+			{
+				momentumBoosterTrailEmitter->SetOn(false);
+			}
 		}
 
 		if (projectileSwordFrames > 0)
@@ -16991,7 +17096,44 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
-	boosterTrailEmitter->SetPos(Vector2f(position));
+	gravityIncreaserTrailEmitter->SetPos(Vector2f(position));
+	gravityDecreaserTrailerEmitter->SetPos(Vector2f(position));
+	if (startBoosterGravModifyFrames > 0)
+	{
+		gravityIncreaserTrailEmitter->boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
+		gravityDecreaserTrailerEmitter->boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
+	}
+	
+	momentumBoosterTrailEmitter->SetPos(Vector2f(position));
+	if (startMomentumBoostFrames > 0)
+	{
+		momentumBoosterTrailEmitter->boostPortion = 1.f - (momentumBoostFrames / (float)startMomentumBoostFrames);
+	}
+	
+	//timeSlowBoosterTrailEmitter->SetPos(Vector2f(position));
+	//if (startGlobalTimeSlowFrames > 0)
+	//{
+	//	timeSlowBoosterTrailEmitter->boostPortion = 1.f - (globalTimeSlowFrames / (float)startGlobalTimeSlowFrames);
+	//}
+	
+	homingBoosterTrailEmitter->SetPos(Vector2f(position));
+	if (startHomingFrames > 0)
+	{
+		homingBoosterTrailEmitter->boostPortion = 1.f - (homingFrames / (float)startHomingFrames);
+	}
+
+	antiTimeSlowBoosterTrailEmitter->SetPos(Vector2f(position));
+	if (startAntiTimeSlowFrames > 0)
+	{
+		antiTimeSlowBoosterTrailEmitter->boostPortion = 1.f - (antiTimeSlowFrames / (float)startAntiTimeSlowFrames);
+	}
+
+	freeFlightBoosterTrailEmitter->SetPos(Vector2f(position));
+	if (startFreeFlightFrames > 0)
+	{
+		freeFlightBoosterTrailEmitter->boostPortion = 1.f - (freeFlightFrames / (float)startFreeFlightFrames);
+	}
+
 
 	if (action == DEATH && simulationMode)
 	{
@@ -17355,6 +17497,31 @@ void Actor::UpdateModifiedGravity()
 			extraGravityModifier = 1.0;
 		}
 	}
+
+	if (boosterGravModifyFrames > 0)
+	{
+		--boosterGravModifyFrames;
+		if (boosterGravModifyFrames == 0)
+		{
+			if (boosterExtraGravityModifier > 1.0)
+			{
+				gravityIncreaserTrailEmitter->SetOn(false);
+			}
+			else if (boosterExtraGravityModifier < 1.0)
+			{
+				gravityDecreaserTrailerEmitter->SetOn(false);
+			}
+			else
+			{
+				assert(0);
+			}
+
+
+			boosterExtraGravityModifier = 1.0;
+
+
+		}
+	}
 }
 
 double Actor::GetGravity()
@@ -17402,6 +17569,8 @@ sf::Vector2<double> Actor::AddAerialGravity( sf::Vector2<double> vel )
 	}
 
 	normalGravity *= extraGravityModifier;
+
+	normalGravity *= boosterExtraGravityModifier;
 
 	vel += V2d(0, normalGravity );
 
