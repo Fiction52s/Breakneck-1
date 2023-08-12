@@ -167,9 +167,37 @@ void KeyFly::EnemyDraw(sf::RenderTarget *target)
 {
 	sess->ts_key->SetSpriteTexture(sprite);
 
+	//DrawSprite(target, sprite);
+
+	//DrawSprite(target, containerSpr);
+
+	bool drawHurtShader = (pauseFrames >= 2 && !pauseFramesFromAttacking) && currShield == NULL;
+	if (hasMonitor && !suppressMonitor)
+	{
+		if (drawHurtShader)
+		{
+			target->draw(containerSpr, &hurtShader);
+		}
+		else
+		{
+			target->draw(containerSpr);
+		}
+		target->draw(keySprite);
+	}
+	else
+	{
+		if (drawHurtShader)
+		{
+			target->draw(containerSpr, &hurtShader);
+		}
+		else
+		{
+			target->draw(containerSpr);
+		}
+	}
+
 	DrawSprite(target, sprite);
 
-	DrawSprite(target, containerSpr);
 	//target->draw(containerSpr);
 }
 

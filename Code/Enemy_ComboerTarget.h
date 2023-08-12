@@ -32,7 +32,7 @@ struct ComboerTarget : Enemy
 
 	int targetType;
 	Tileset *ts;
-	sf::Sprite keySprite;
+	sf::Sprite keyObjectSprite;
 	int keyIdleLength;
 	
 	int keyAnimFactor;

@@ -27,7 +27,7 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 	hasMonitor = true;
 	SetKey();
 
-	keySprite.setTexture(*sess->ts_key->texture);
+	keyObjectSprite.setTexture(*sess->ts_key->texture);
 
 	const string &typeName = ap->GetTypeName();
 	if (typeName == "bluecomboertarget")
@@ -178,7 +178,7 @@ void ComboerTarget::ProcessState()
 
 void ComboerTarget::UpdateSprite()
 {
-	sess->ts_key->SetSpriteTexture(keySprite);
+	sess->ts_key->SetSpriteTexture(keyObjectSprite);
 
 	switch (action)
 	{
@@ -198,15 +198,15 @@ void ComboerTarget::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 
 
-	keySprite.setTextureRect(sess->ts_key->GetSubRect(data.keyFrame / keyAnimFactor));
+	keyObjectSprite.setTextureRect(sess->ts_key->GetSubRect(data.keyFrame / keyAnimFactor));
 
-	keySprite.setOrigin(keySprite.getLocalBounds().width / 2, keySprite.getLocalBounds().height / 2);
-	keySprite.setPosition(GetPositionF());
+	keyObjectSprite.setOrigin(keyObjectSprite.getLocalBounds().width / 2, keyObjectSprite.getLocalBounds().height / 2);
+	keyObjectSprite.setPosition(GetPositionF());
 }
 
 void ComboerTarget::EnemyDraw(sf::RenderTarget *target)
 {
-	sess->ts_key->SetSpriteTexture(keySprite);
+	sess->ts_key->SetSpriteTexture(keyObjectSprite);
 
 	bool drawHurtShader = (pauseFrames >= 2 && !pauseFramesFromAttacking) && currShield == NULL;
 	if (hasMonitor && !suppressMonitor)
@@ -235,7 +235,7 @@ void ComboerTarget::EnemyDraw(sf::RenderTarget *target)
 
 	if (action == A_IDLE)
 	{
-		DrawSprite(target, keySprite);
+		DrawSprite(target, keyObjectSprite);
 	}
 }
 
