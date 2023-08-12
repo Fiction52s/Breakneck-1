@@ -468,6 +468,16 @@ EnemyChain::~EnemyChain()
 	delete[] va;
 }
 
+void EnemyChain::AddToGame()
+{
+	Enemy::AddToGame();
+
+	for (int i = 0; i < numEnemies; ++i)
+	{
+		enemies[i]->SetEnemyIDAndAddToAllEnemiesVec();
+	}
+}
+
 void EnemyChain::ResetEnemy()
 {
 	for (int i = 0; i < numEnemies; ++i)

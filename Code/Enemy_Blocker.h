@@ -80,6 +80,7 @@ struct Blocker : Enemy, QuadTreeEntrant
 	void ClearSprite();
 	void UpdateSprite();
 	void ResetEnemy();
+	
 	void ProcessHit();
 	void IHitPlayer(int index);
 	void SetStartPosition(V2d &pos);

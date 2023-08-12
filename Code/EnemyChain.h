@@ -69,6 +69,7 @@ struct EnemyChain : Enemy
 	void UpdateStartPositions(V2d &pos);
 	void ResetCheckCollisions();
 	void UpdateFromPath(ActorParams *ap);
+	void AddToGame();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
