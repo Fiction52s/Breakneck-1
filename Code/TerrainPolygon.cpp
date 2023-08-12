@@ -4113,8 +4113,8 @@ void TerrainPolygon::SetupTouchGrass()
 	}
 	default:
 	{
-		AddTouchGrass(TouchGrass::TYPE_NORMAL_W1);
-		AddTouchGrass(TouchGrass::TYPE_LARGE_W1);
+		//AddTouchGrass(TouchGrass::TYPE_NORMAL_W1);
+		//AddTouchGrass(TouchGrass::TYPE_LARGE_W1);
 		break;
 	}
 	}
