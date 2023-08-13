@@ -4,6 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "AbsorbParticles.h"
 
 
 using namespace std;
@@ -66,6 +67,15 @@ bool GravityModifier::Modify()
 	{
 		action = MODIFY;
 		frame = 0;
+
+		if (hasMonitor && !suppressMonitor)
+		{
+			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+				sess->GetPlayer(0), 1, GetPosition());
+			suppressMonitor = true;
+			PlayKeyDeathSound();
+		}
+
 		return true;
 	}
 	return false;
@@ -157,7 +167,8 @@ void GravityModifier::UpdateSprite()
 
 void GravityModifier::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	DrawSprite(target, sprite);
+	//target->draw(sprite);
 }
 
 int GravityModifier::GetNumStoredBytes()
