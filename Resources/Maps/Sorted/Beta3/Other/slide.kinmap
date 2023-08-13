@@ -2014,23 +2014,23 @@ spring 16238 5485
 60
 4448 -2384
 gravitydecreaser 36475 28267
-5
-0.5
+0
+1
 gravitydecreaser 37060 29294
-5
-0.5
+0
+1
 gravitydecreaser 35943 27004
-5
-0.5
+0
+1
 gravitydecreaser 35300 25516
-5
-0.5
+0
+1
 gravitydecreaser 37299 22958
-5
-0.5
+0
+1
 gravitydecreaser 35451 20542
-5
-0.5
+0
+1
 spring 33730 19707
 60
 -3712 -2720
@@ -2047,22 +2047,22 @@ antitimeslowbooster 21888 27173
 antitimeslowbooster 16139 22604
 1
 gravitydecreaser 21337 22928
-5
-0.5
+0
+1
 gravitydecreaser 21247 20382
-5
-0.5
+0
+1
 antitimeslowbooster 17226 23267
 1
 gravitydecreaser 21380 17725
-5
-0.5
+0
+1
 gravitydecreaser 18679 18115
-5
-0.5
+0
+1
 gravitydecreaser 15647 18085
-5
-0.5
+0
+1
 spring 14231 18021
 30
 -1716 -1408
@@ -2076,11 +2076,11 @@ spring 3717 15334
 30
 -1893 -584
 gravitydecreaser -2383 20158
-5
-0.5
+0
+1
 gravitydecreaser -2372 17696
-5
-0.5
+0
+1
 goal 25 2 421
 booster 23637 20295
 1

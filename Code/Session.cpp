@@ -366,8 +366,10 @@ void Session::RegisterW2Enemies()
 
 	//items
 	AddWorldEnemy("Glide\nLauncher", "glidespring", 2, itemRow, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-	AddWorldEnemy("Gravity\nIncreaser", "gravityincreaser", 2, itemRow, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
-	AddWorldEnemy("Gravity\nDecreaser", "gravitydecreaser", 2, itemRow, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddBasicAerialWorldEnemy("Gravity/nIncreaser", "gravityincreaser", 2, itemRow, CreateEnemy<GravityModifier>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Gravity/nDecreaser", "gravitydecreaser", 2, itemRow, CreateEnemy<GravityModifier>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddWorldEnemy("Gravity\nIncreaser", "gravityincreaser", 2, itemRow, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, true, false, false);
+	//AddWorldEnemy("Gravity\nDecreaser", "gravitydecreaser", 2, itemRow, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, true, false, false);
 
 	//comboers
 

@@ -570,14 +570,14 @@ no_borderpoly
 1
 -- 5
 gravitydecreaser 4378 -1060
-5
-0.5
+0
+1
 gravitydecreaser 3956 -2764
-5
-0.5
+0
+1
 goal 9 0 409
 gravitydecreaser 4736 -4941
-5
-0.5
+0
+1
 airdashpoweritem 2478 2532
 0

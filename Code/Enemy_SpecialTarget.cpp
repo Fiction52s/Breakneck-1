@@ -25,8 +25,8 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	//ts = GetSizedTileset("Enemies/target_256x256.png");
 	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(80);
+	BasicCircleHurtBodySetup(80);
 
 	const string &typeName = ap->GetTypeName();
 	if (typeName == "regentarget")

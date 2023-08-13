@@ -363,7 +363,7 @@ Panel *ActorType::CreatePanel()
 		AddSetDirectionButton(p);
 		//p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 	}
-	else if (name == "gravityincreaser")
+	/*else if (name == "gravityincreaser")
 	{
 		p = CreateDefaultPanel();
 		p->AddFloatSlider("gravfactor", Vector2i(0, 0), 200, 1.25f, 5.f, 1.5f, .25);
@@ -374,7 +374,7 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		p->AddFloatSlider("gravfactor", Vector2i(0, 0), 200, .125f, .875f, .5f, .125f);
 		p->AddSlider("duration", Vector2i(0, 0), 200, 1, 60, 5);
-	}
+	}*/
 	//w5
 	else if (name == "narwhal")
 	{
