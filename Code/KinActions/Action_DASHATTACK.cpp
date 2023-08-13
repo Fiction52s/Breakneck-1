@@ -39,6 +39,8 @@ void Actor::DASHATTACK_End()
 
 void Actor::DASHATTACK_Change()
 {
+	if (TryFloorRailDropThrough()) return;
+
 	if (CanCancelAttack() || frame > 14)
 	{
 		//if (TryBufferGrind()) return;
@@ -77,6 +79,21 @@ void Actor::DASHATTACK_Change()
 
 	}
 }
+
+
+////button-based inputs
+//
+//if (TryGroundBlock()) return true;
+//
+//if (TryFloorRailDropThrough()) return true;
+//
+//if (TryPressGrind()) return true;
+//
+//if (TryJumpSquat()) return true;
+//
+//if (TryGroundAttack()) return true;
+//
+//if (TryDash()) return true;
 
 void Actor::DASHATTACK_Update()
 {

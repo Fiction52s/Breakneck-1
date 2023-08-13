@@ -37,6 +37,8 @@ void Actor::STANDATTACK1_End()
 
 void Actor::STANDATTACK1_Change()
 {
+	if (TryFloorRailDropThrough()) return;
+
 	if (CanCancelAttack() || frame > 14)
 	{
 		if (JumpButtonPressed() || pauseBufferedJump)

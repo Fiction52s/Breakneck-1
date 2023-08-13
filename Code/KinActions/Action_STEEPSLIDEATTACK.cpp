@@ -30,6 +30,8 @@ void Actor::STEEPSLIDEATTACK_End()
 
 void Actor::STEEPSLIDEATTACK_Change()
 {
+	if (TryFloorRailDropThrough()) return;
+
 	if (CanCancelAttack())//&& frame > 0 )
 	{
 		if (TryBufferGrind()) return;

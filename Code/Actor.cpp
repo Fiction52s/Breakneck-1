@@ -18117,12 +18117,27 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						return;
 					}
 				}
-				else if ( ground == NULL && e->rail->GetRailType() == TerrainRail::FLOOR)
+				else if ( e->rail->GetRailType() == TerrainRail::FLOOR)
 				{
-					if (currInput.LDown() && !IsAttackAction(action) && !currInput.LLeft() && !currInput.LRight())
+					if (ground == NULL)
 					{
-						return;
+						if (currInput.LDown() && !IsAttackAction(action) && !currInput.LLeft() && !currInput.LRight())
+						{
+							return;
+						}
 					}
+					else
+					{
+						if (ground->GetNextEdge() == e || ground->GetPrevEdge() == e)
+						{
+
+						}
+						else if (currInput.LDown())
+						{
+							return;
+						}
+					}
+					
 				}
 			}
 			else

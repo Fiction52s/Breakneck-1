@@ -28,6 +28,8 @@ void Actor::STEEPCLIMBATTACK_End()
 
 void Actor::STEEPCLIMBATTACK_Change()
 {
+	if (TryFloorRailDropThrough()) return;
+
 	if (CanCancelAttack())//&& frame > 0 )
 	{
 		if (JumpButtonPressed() || pauseBufferedJump)
