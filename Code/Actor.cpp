@@ -5834,6 +5834,11 @@ void Actor::HealTimer(int healFrames)
 
 void Actor::ProcessGravityGrass()
 {
+	if (ground != NULL && ground->rail != NULL && ground->rail->GetRailType() == TerrainRail::CEILING)
+	{
+		return;
+	}
+
 	//drop out of reverse from gravity grass
 	if (ground != NULL && reversed
 		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
@@ -13467,9 +13472,10 @@ void Actor::UpdatePhysics()
 									else if (minContact.normal.y > 0 //&& minContact.normal.y < steepThresh 
 										//&& ( action == STEEPCLIMB || action == STEEPCLIMBATTACK ) 
 										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0)) 
-										&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
+										&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] 
+											|| (minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+										&& (((DashButtonHeld() && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 										&& !minContact.edge->IsInvisibleWall() )
 									{
 
@@ -19943,11 +19949,11 @@ void Actor::DefaultGroundLanding( double &movement )
 
 bool Actor::DefaultGravReverseCheck()
 {
-	return ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
+	return ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+		&& (((DashButtonHeld() && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -19989,13 +19995,24 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	double angle = atan2(gno.x, -gno.y);
 
-	if (-gno.y > -steepThresh)
+	V2d along = ground->Along();
+	if (-gno.y > -steepThresh) //is steep
 	{
-		groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+		groundSpeed = -dot(velocity, along);
 	}
 	else
 	{
-		groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+		groundSpeed = -dot(velocity, along);
+
+		if (velocity.x > 0 && groundSpeed > 0 && groundSpeed < velocity.x)
+		{
+			groundSpeed = velocity.x;
+		}
+		else if (velocity.x < 0 && groundSpeed < 0 && groundSpeed > velocity.x)
+		{
+			groundSpeed = velocity.x;
+		}
+		
 	}
 
 	movement = 0;
