@@ -3126,6 +3126,18 @@ void Actor::SetupActionFunctions()
 		&Actor::WATERGLIDE_GetActionLength,
 		&Actor::WATERGLIDE_GetTileset);
 
+	SetupFuncsForAction(WATERGLIDECHARGE,
+		&Actor::WATERGLIDECHARGE_Start,
+		&Actor::WATERGLIDECHARGE_End,
+		&Actor::WATERGLIDECHARGE_Change,
+		&Actor::WATERGLIDECHARGE_Update,
+		&Actor::WATERGLIDECHARGE_UpdateSprite,
+		&Actor::WATERGLIDECHARGE_TransitionToAction,
+		&Actor::WATERGLIDECHARGE_TimeIndFrameInc,
+		&Actor::WATERGLIDECHARGE_TimeDepFrameInc,
+		&Actor::WATERGLIDECHARGE_GetActionLength,
+		&Actor::WATERGLIDECHARGE_GetTileset);
+
 	SetupFuncsForAction(WATERGLIDE_HITSTUN,
 		&Actor::WATERGLIDE_HITSTUN_Start,
 		&Actor::WATERGLIDE_HITSTUN_End,
@@ -4251,7 +4263,9 @@ void Actor::SetupHitboxInfo( json &j, const std::string &name,
 
 void Actor::ActionEnded()
 {
-	if (frame >= GetActionLength(action))
+	int actionLength = GetActionLength(action);
+
+	if (frame >= actionLength && actionLength >= 0)
 	{
 		EndAction();
 	}
@@ -13881,7 +13895,7 @@ void Actor::UpdatePhysics()
 			{
 				velocity = newVel;
 			}
-			else if (tempCollision && ( action == WATERGLIDE || action == WATERGLIDE_HITSTUN ))
+			else if (tempCollision && ( action == WATERGLIDE || action == WATERGLIDE_HITSTUN || action == WATERGLIDECHARGE ))
 			{
 				velocity = newVel;
 			}
@@ -14852,7 +14866,7 @@ void Actor::HitWhileAerial()
 	if (TryHandleHitWhileRewindBoosted())
 		return;
 
-	if (action == WATERGLIDE)
+	if (action == WATERGLIDE || action == WATERGLIDECHARGE)
 	{
 		SetAction(WATERGLIDE_HITSTUN);
 	}
@@ -15350,7 +15364,8 @@ void Actor::PhysicsResponse()
 					&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 					&& action != SEQ_CRAWLERFIGHT_LAND
 					&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
-					&& action != JUMPSQUAT && action != WATERGLIDE && action != RAILBOUNCEGROUND  && action != BOOSTERBOUNCEGROUND )
+					&& action != JUMPSQUAT && action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != WATERGLIDECHARGE 
+					&& action != RAILBOUNCEGROUND  && action != BOOSTERBOUNCEGROUND )
 				{
 					storedBounceVel = velocity;
 					//only testing railbounceground but could probably apply to boosterbounceground too, so added that
@@ -15480,6 +15495,7 @@ void Actor::PhysicsResponse()
 			}
 		}
 		else if( !IsAirHitstunAction(action) && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE
+			&& action != WATERGLIDE_HITSTUN && action != WATERGLIDECHARGE
 			&& action != FREEFLIGHTSTUN && action != DIAGUPATTACK && action != AIRDASHFORWARDATTACK )
 		{
 			if (collision && touchedGrass[Grass::DECELERATE] && length( wallNormal ) > 0 && currWall != NULL )
@@ -15602,7 +15618,7 @@ void Actor::PhysicsResponse()
 
 		if (collision && minContact.normal.y > 0 && !reversed && action != WALLCLING 
 			&& !rightWire->IsPulling() && !leftWire->IsPulling()
-			&& action != SEQ_KINFALL && action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != SPRINGSTUNGLIDE
+			&& action != SEQ_KINFALL && action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != WATERGLIDECHARGE && action != SPRINGSTUNGLIDE
 			&& action != FREEFLIGHT && action != FREEFLIGHTSTUN
 			&& !InWater( TerrainPolygon::WATER_BUOYANCY))
 			//&& hitCeilingCounter == 0 )
@@ -16117,6 +16133,7 @@ void Actor::HandleWaterSituation(int wType,
 				facingRight = true;
 
 			SetAction(WATERGLIDE);
+			
 			holdJump = false;
 			holdDouble = false;
 			RestoreAirOptions();
@@ -16140,7 +16157,7 @@ void Actor::HandleWaterSituation(int wType,
 			//if i add glide attack, adjust this
 			//this makes sure that you don't
 			//get hit and then hitstun cancels the glide.
-			if (action != WATERGLIDE && action != WATERGLIDE_HITSTUN)
+			if (action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != WATERGLIDECHARGE)
 			{
 				SetAction(WATERGLIDE);
 			}
@@ -19378,7 +19395,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				{
 				case SpecialTarget::TARGET_GLIDE:
 				{
-					bool isGlideAction = action == SPRINGSTUNGLIDE || action == WATERGLIDE;
+					bool isGlideAction = action == SPRINGSTUNGLIDE || action == WATERGLIDE || action == WATERGLIDECHARGE;
 
 					if (isGlideAction && spTarget->hitBody.Intersects(spTarget->currHitboxFrame, &hurtBody))
 					{

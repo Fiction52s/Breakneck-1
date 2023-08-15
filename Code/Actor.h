@@ -353,6 +353,7 @@ struct Actor : QuadTreeCollider,
 		WALLTECH,
 		WATERGLIDE,
 		WATERGLIDE_HITSTUN,
+		WATERGLIDECHARGE,
 		STEEPSLIDE,
 		GRAVREVERSE,
 		GRINDBALL,
@@ -3435,6 +3436,17 @@ struct Actor : QuadTreeCollider,
 	void WATERGLIDE_TimeDepFrameInc();
 	int WATERGLIDE_GetActionLength();
 	Tileset * WATERGLIDE_GetTileset();
+
+	void WATERGLIDECHARGE_Start();
+	void WATERGLIDECHARGE_End();
+	void WATERGLIDECHARGE_Change();
+	void WATERGLIDECHARGE_Update();
+	void WATERGLIDECHARGE_UpdateSprite();
+	void WATERGLIDECHARGE_TransitionToAction(int a);
+	void WATERGLIDECHARGE_TimeIndFrameInc();
+	void WATERGLIDECHARGE_TimeDepFrameInc();
+	int WATERGLIDECHARGE_GetActionLength();
+	Tileset * WATERGLIDECHARGE_GetTileset();
 
 	void WATERGLIDE_HITSTUN_Start();
 	void WATERGLIDE_HITSTUN_End();

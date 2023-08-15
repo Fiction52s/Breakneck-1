@@ -3,16 +3,16 @@
 using namespace sf;
 using namespace std;
 
-void Actor::WATERGLIDE_Start()
+void Actor::WATERGLIDECHARGE_Start()
 {
 }
 
-void Actor::WATERGLIDE_End()
+void Actor::WATERGLIDECHARGE_End()
 {
 	frame = 0;
 }
 
-void Actor::WATERGLIDE_Change()
+void Actor::WATERGLIDECHARGE_Change()
 {
 	if (springStunFrames == 0)
 	{
@@ -26,38 +26,19 @@ void Actor::WATERGLIDE_Change()
 		{
 			facingRight = true;
 		}
+
 		return;
 	}
 
-	if (DashButtonPressed())
+	if (!currInput.DashButtonDown())
 	{
-		SetAction(WATERGLIDECHARGE);
+		SetAction(WATERGLIDE);
 		frame = 0;
 	}
-
-	/*if (!GlideAction())
-	{
-		if (springStunFrames == 0)
-		{
-			SetAction(JUMP);
-			frame = 1;
-			if (velocity.x < 0)
-			{
-				facingRight = false;
-			}
-			else if (velocity.x > 0)
-			{
-				facingRight = true;
-			}
-		}
-	}
-	else
-	{
-		springStunFrames = 0;
-	}*/
+	
 }
 
-void Actor::WATERGLIDE_Update()
+void Actor::WATERGLIDECHARGE_Update()
 {
 	if (currInput.LUp())
 	{
@@ -97,11 +78,25 @@ void Actor::WATERGLIDE_Update()
 		RotateCCW(springVel, -glideTurnFactor);
 	}
 
+	double startSlowFactor = 1.0;
+	double minSlowSpeed = 10.0;
+	//double minSlowFactor = .5;
+	double factor = startSlowFactor - .02 * frame;
+
+	double len = length(springVel + springExtra) * factor;
+	if (len < minSlowSpeed)
+	{
+		velocity = normalize(springVel + springExtra) * minSlowSpeed;
+	}
+	else
+	{
+		velocity = (springVel + springExtra) * factor;
+	}
 	//cout << "springVel: " << springVel.x << ", " << springVel.y << endl;
-	velocity = springVel + springExtra;
+	//velocity = (springVel + springExtra) * factor;
 }
 
-void Actor::WATERGLIDE_UpdateSprite()
+void Actor::WATERGLIDECHARGE_UpdateSprite()
 {
 	SetSpriteTexture(action);
 
@@ -126,27 +121,27 @@ void Actor::WATERGLIDE_UpdateSprite()
 		SetAerialScorpSprite();
 }
 
-void Actor::WATERGLIDE_TransitionToAction(int a)
+void Actor::WATERGLIDECHARGE_TransitionToAction(int a)
 {
 
 }
 
-void Actor::WATERGLIDE_TimeIndFrameInc()
+void Actor::WATERGLIDECHARGE_TimeIndFrameInc()
 {
 
 }
 
-void Actor::WATERGLIDE_TimeDepFrameInc()
+void Actor::WATERGLIDECHARGE_TimeDepFrameInc()
 {
 
 }
 
-int Actor::WATERGLIDE_GetActionLength()
+int Actor::WATERGLIDECHARGE_GetActionLength()
 {
-	return 8;
+	return -1; //infinite frames so I can count how long I'm in it
 }
 
-Tileset * Actor::WATERGLIDE_GetTileset()
+Tileset * Actor::WATERGLIDECHARGE_GetTileset()
 {
 	return SPRINGSTUN_GetTileset();
 }
