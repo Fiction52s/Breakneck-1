@@ -3282,15 +3282,15 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		motionGhostsEffects[i] = new MotionGhostEffect(4, 1);
 	}
 
-	gravityIncreaserTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_GRAVITY_INCREASER);
+	gravityIncreaserTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_INCREASER);
 	gravityIncreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
 	gravityIncreaserTrailEmitter->CreateParticles();
 
-	gravityDecreaserTrailerEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_GRAVITY_DECREASER);
+	gravityDecreaserTrailerEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_DECREASER);
 	gravityDecreaserTrailerEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
 	gravityDecreaserTrailerEmitter->CreateParticles();
 
-	momentumBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_MOMENTUM);
+	momentumBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_MOMENTUM);
 	momentumBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
 	momentumBoosterTrailEmitter->CreateParticles();
 
@@ -3298,15 +3298,15 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	//timeSlowBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
 	//timeSlowBoosterTrailEmitter->CreateParticles();
 
-	homingBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_HOMING);
+	homingBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_HOMING);
 	homingBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
 	homingBoosterTrailEmitter->CreateParticles();
 
-	antiTimeSlowBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_ANTITIMESLOW);
+	antiTimeSlowBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_ANTITIMESLOW);
 	antiTimeSlowBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
 	antiTimeSlowBoosterTrailEmitter->CreateParticles();
 
-	freeFlightBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_FREEFLIGHT);
+	freeFlightBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_FREEFLIGHT);
 	freeFlightBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
 	freeFlightBoosterTrailEmitter->CreateParticles();
 
@@ -17123,14 +17123,14 @@ void Actor::UpdatePostPhysics()
 	gravityDecreaserTrailerEmitter->SetPos(Vector2f(position));
 	if (startBoosterGravModifyFrames > 0)
 	{
-		gravityIncreaserTrailEmitter->boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
-		gravityDecreaserTrailerEmitter->boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
+		gravityIncreaserTrailEmitter->data.boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
+		gravityDecreaserTrailerEmitter->data.boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
 	}
 	
 	momentumBoosterTrailEmitter->SetPos(Vector2f(position));
 	if (startMomentumBoostFrames > 0)
 	{
-		momentumBoosterTrailEmitter->boostPortion = 1.f - (momentumBoostFrames / (float)startMomentumBoostFrames);
+		momentumBoosterTrailEmitter->data.boostPortion = 1.f - (momentumBoostFrames / (float)startMomentumBoostFrames);
 	}
 	
 	//timeSlowBoosterTrailEmitter->SetPos(Vector2f(position));
@@ -17142,19 +17142,19 @@ void Actor::UpdatePostPhysics()
 	homingBoosterTrailEmitter->SetPos(Vector2f(position));
 	if (startHomingFrames > 0)
 	{
-		homingBoosterTrailEmitter->boostPortion = 1.f - (homingFrames / (float)startHomingFrames);
+		homingBoosterTrailEmitter->data.boostPortion = 1.f - (homingFrames / (float)startHomingFrames);
 	}
 
 	antiTimeSlowBoosterTrailEmitter->SetPos(Vector2f(position));
 	if (startAntiTimeSlowFrames > 0)
 	{
-		antiTimeSlowBoosterTrailEmitter->boostPortion = 1.f - (antiTimeSlowFrames / (float)startAntiTimeSlowFrames);
+		antiTimeSlowBoosterTrailEmitter->data.boostPortion = 1.f - (antiTimeSlowFrames / (float)startAntiTimeSlowFrames);
 	}
 
 	freeFlightBoosterTrailEmitter->SetPos(Vector2f(position));
 	if (startFreeFlightFrames > 0)
 	{
-		freeFlightBoosterTrailEmitter->boostPortion = 1.f - (freeFlightFrames / (float)startFreeFlightFrames);
+		freeFlightBoosterTrailEmitter->data.boostPortion = 1.f - (freeFlightFrames / (float)startFreeFlightFrames);
 	}
 
 
@@ -23555,6 +23555,8 @@ void Actor::UpdateInHitlag()
 	 fxPaletteShader->SetPaletteIndex(currSkinIndex);
  }
 
+ 
+
  void Actor::BlendSkins(int first, int second, float progress)
  {
 	skinShader.BlendSkins( first, second, progress );
@@ -23822,6 +23824,16 @@ void Actor::UpdateInHitlag()
 			 minContact.edge->rail->FadeOut();
 		 }
 	 }
+ }
+
+ void Actor::InitEmitters()
+ {
+	 gravityIncreaserTrailEmitter->SetIDAndAddToAllEmittersVec();
+	 gravityDecreaserTrailerEmitter->SetIDAndAddToAllEmittersVec();
+	 momentumBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+	 homingBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+	 antiTimeSlowBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+	 freeFlightBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
  }
 
  int Actor::GetNumStoredBytes()

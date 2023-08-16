@@ -291,6 +291,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<PolyPtr> allSpecialPolysVec;
 	std::vector<RailPtr> allRailsVec;
 	std::vector<Enemy*> allEnemiesVec;
+	std::vector<ShapeEmitter*> allEmittersVec;
 	std::vector<ComboObject*> allComboObjectsVec;
 	std::vector<Launcher*> allLaunchersVec;
 	GateMarkerGroup *gateMarkers;
@@ -993,7 +994,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	PolyPtr GetPolyFromID(int id);
 	RailPtr GetRailFromID(int id);
 	Enemy *GetEnemyFromID(int id);
+	ShapeEmitter *GetEmitterFromID(int id);
 	int GetEnemyID(Enemy *e);
+	int GetEmitterID(ShapeEmitter *emit);
 	int GetRailID(TerrainRail *tr);
 	int GetPolyID(PolyPtr poly);
 	int GetPlayerIndex(Actor *p);

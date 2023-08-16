@@ -339,6 +339,7 @@ struct SaveGameState
 	int activeEnemyListID;
 	int activeEnemyListTailID;
 	int inactiveEnemyListID;
+	int emitterListIDs[EffectLayer::EFFECTLAYER_Count];
 	int currentZoneID;
 	int pauseFrames;
 	int currSuperPlayerIndex;
@@ -346,6 +347,8 @@ struct SaveGameState
 	int activeSequenceID;
 	uint32 randomState;
 	Camera cam;
+
+	
 
 	bool nextFrameRestartGame;
 	bool phaseOn; //for phase switches

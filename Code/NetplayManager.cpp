@@ -412,7 +412,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = false;
+	isSyncTest = true;
 
 	numPlayers = -1;
 
@@ -2009,7 +2009,8 @@ std::string NetplayManager::GetNextQuickplayMapName()
 
 	if (r == 0)
 	{
-		return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
+		//return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
+		return "Resources/Maps/Sorted/W2/Multiplayer/afighting6" + string(MAP_EXT);
 	}
 	else
 	{

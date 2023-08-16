@@ -5384,14 +5384,18 @@ bool Session::IsShardCaptured(int s)
 void Session::AddEmitter(ShapeEmitter *emit,
 	EffectLayer layer)
 {
-	if (emit->active)
+	if (emit->data.active)
 	{
 		//cout << "shouldn't add emitter that is already active again" << "\n";
 		//assert(0);
+
+		//RemoveEmitter(emit, layer);
+		//emit->Reset();
+
 		return;
 	}
 
-	emit->active = true;
+	emit->data.active = true;
 
 	ShapeEmitter *&currList = emitterLists[layer];
 
@@ -5423,10 +5427,10 @@ void Session::AddEmitter(ShapeEmitter *emit,
 
 void Session::RemoveEmitter(ShapeEmitter *emit, EffectLayer layer)
 {
-	if (!emit->active)
+	if (!emit->data.active)
 		return;
 
-	assert(emit->active);
+	assert(emit->data.active);
 
 	ShapeEmitter *&currList = emitterLists[layer];
 
@@ -5436,7 +5440,7 @@ void Session::RemoveEmitter(ShapeEmitter *emit, EffectLayer layer)
 		return;
 	}
 
-	emit->active = false;
+	emit->data.active = false;
 
 	ShapeEmitter *prev = emit->prev;
 	ShapeEmitter *next = emit->next;
@@ -8191,6 +8195,11 @@ int Session::GetNumStoredBytes()
 		totalSize += (*it)->GetNumStoredBytes();
 	}
 
+	for (auto it = allEmittersVec.begin(); it != allEmittersVec.end(); ++it)
+	{
+		totalSize += (*it)->GetNumStoredBytes();
+	}
+
 	//totalSize += deathSeq->GetNumStoredBytes();
 
 	return totalSize;
@@ -8204,7 +8213,14 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->activeEnemyListTailID = GetEnemyID(activeEnemyListTail);
 	currSaveState->inactiveEnemyListID = GetEnemyID(inactiveEnemyList);
 	
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	{
+		currSaveState->emitterListIDs[i] = GetEmitterID(emitterLists[i]);
+	}
+
 	currSaveState->currentZoneID = GetZoneID(currentZone);
+
+
 
 	currSaveState->phaseOn = phaseOn;
 	currSaveState->pauseFrames = pauseFrames;
@@ -8214,6 +8230,8 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->activeSequenceID = GetSequenceID(activeSequence);
 	currSaveState->randomState = randomState;
 	currSaveState->cam = cam;
+
+
 
 	int saveSize = sizeof(SaveGameState);
 
@@ -8266,6 +8284,12 @@ void Session::StoreBytes(unsigned char *bytes)
 	bytes += absorbShardParticles->GetNumStoredBytes();
 
 	for (auto it = allSequencesVec.begin(); it != allSequencesVec.end(); ++it)
+	{
+		(*it)->StoreBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+
+	for (auto it = allEmittersVec.begin(); it != allEmittersVec.end(); ++it)
 	{
 		(*it)->StoreBytes(bytes);
 		bytes += (*it)->GetNumStoredBytes();
@@ -8333,6 +8357,12 @@ void Session::SetFromBytes(unsigned char *bytes)
 		bytes += (*it)->GetNumStoredBytes();
 	}
 
+	for (auto it = allEmittersVec.begin(); it != allEmittersVec.end(); ++it)
+	{
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+
 	//deathSeq->SetFromBytes(bytes);
 	//bytes += deathSeq->GetNumStoredBytes();
 
@@ -8341,7 +8371,11 @@ void Session::SetFromBytes(unsigned char *bytes)
 	activeEnemyList = GetEnemyFromID( currSaveState->activeEnemyListID );
 	inactiveEnemyList = GetEnemyFromID( currSaveState->inactiveEnemyListID );
 	activeEnemyListTail = GetEnemyFromID(currSaveState->activeEnemyListTailID );
-	
+
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	{
+		emitterLists[i] = GetEmitterFromID(currSaveState->emitterListIDs[i]);
+	}
 
 	currentZone = GetZoneFromID(currSaveState->currentZoneID);
 
@@ -9465,6 +9499,28 @@ int Session::GetEnemyID(Enemy *e)
 	else
 	{
 		return e->enemyIndex;
+	}
+}
+
+ShapeEmitter *Session::GetEmitterFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else
+	{
+		return allEmittersVec[id];
+	}
+}
+
+int Session::GetEmitterID(ShapeEmitter *emit)
+{
+	if (emit == NULL)
+	{
+		return -1;
+	}
+	else
+	{
+		return emit->emitterID;
 	}
 }
 

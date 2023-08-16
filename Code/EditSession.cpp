@@ -1003,6 +1003,9 @@ void EditSession::TestPlayerMode()
 	allSpecialPolysVec.clear();
 	allComboObjectsVec.clear();
 	allSequencesVec.clear();
+	allEmittersVec.clear();
+
+	GetPlayer(0)->InitEmitters();
 
 	if (deathSeq != NULL)
 	{

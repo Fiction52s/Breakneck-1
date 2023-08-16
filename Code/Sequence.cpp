@@ -782,6 +782,7 @@ void Sequence::StoreBytes(unsigned char *bytes)
 void Sequence::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&seqData, bytes, sizeof(seqData));
+	//nextSeq = sess->GetEnemyFromID(seqData.); //needs implementing if I want 2 sequences in a row to not mess up in rollback
 }
 
 

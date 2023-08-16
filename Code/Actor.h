@@ -631,10 +631,11 @@ struct Actor : QuadTreeCollider,
 	PlayerBoosterEffectEmitter *gravityIncreaserTrailEmitter;
 	PlayerBoosterEffectEmitter *gravityDecreaserTrailerEmitter;
 	PlayerBoosterEffectEmitter *momentumBoosterTrailEmitter;
-	//PlayerBoosterEffectEmitter *timeSlowBoosterTrailEmitter;
 	PlayerBoosterEffectEmitter *homingBoosterTrailEmitter;
 	PlayerBoosterEffectEmitter *antiTimeSlowBoosterTrailEmitter;
 	PlayerBoosterEffectEmitter *freeFlightBoosterTrailEmitter;
+
+	//PlayerBoosterEffectEmitter *timeSlowBoosterTrailEmitter;
 
 	V2d practiceDesyncPosition;
 	bool practiceDesyncDetected;
@@ -1811,6 +1812,8 @@ struct Actor : QuadTreeCollider,
 
 	void SetSkin(int skinIndex);
 	void BlendSkins(int first, int second, float progress);
+
+	void InitEmitters();
 
 	V2d GetKnockbackDirFromVel();
 

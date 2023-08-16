@@ -8,31 +8,7 @@ struct ShapeEmitter;
 struct Tileset;
 struct ShapeParticle;
 struct GameSession;
-
-struct PSizeUpdater
-{
-	virtual void PUpdateSize(ShapeParticle*) = 0;
-};
-
-struct PColorUpdater
-{
-	virtual void PUpdateColor(ShapeParticle*) = 0;
-};
-
-struct PAngleUpdater
-{
-	virtual void PUpdateAngle(ShapeParticle*) = 0;
-};
-
-struct PTileUpdater
-{
-	virtual void PUpdateTile(ShapeParticle*) = 0;
-};
-
-struct PPosUpdater
-{
-	virtual void PUpdatePos(ShapeParticle*) = 0;
-};
+struct Session;
 
 struct ShapeParticle
 {
@@ -43,6 +19,30 @@ struct ShapeParticle
 		FADEOUT,
 	};
 
+	struct MyData
+	{
+		int action;
+		sf::Vector2f pos;
+		sf::Vector2f vel;
+		float angle;
+		float radius;
+		int ttl;
+		sf::Color color;
+		int tileIndex;
+		int fadeOutThresh;
+		int fadeInThresh;
+		int startAlpha;
+		int maxTimeToLive;
+		sf::Color startColor;
+		sf::Color endColor;
+	};
+
+	MyData data;
+
+	sf::Vertex *points;
+	int numPoints;
+	ShapeEmitter *emit;
+
 	ShapeParticle(int numPoints, sf::Vertex *v,
 		ShapeEmitter *emit);
 	~ShapeParticle();
@@ -51,7 +51,6 @@ struct ShapeParticle
 		float angle, int ttl,
 		sf::Color c = sf::Color::White,
 		int tileIndex = 0 );
-
 	void Clear();
 	bool Update();
 	void SetTileIndex(int ti);
@@ -61,80 +60,66 @@ struct ShapeParticle
 		int fadeOutFrames);
 	float GetNormalPortion();
 
-	PPosUpdater *posUpdater;
-	PSizeUpdater *sizeUpdater;
-	PColorUpdater *colorUpdater;
-	PAngleUpdater *angleUpdater;
-	
-	int action;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
-	sf::Vector2f pos;
-	float angle;
-	sf::Vertex *points;
-	int numPoints;
-	float radius;
-	int ttl;
-	sf::Color color;
-	int tileIndex;
-	ShapeEmitter *emit;
-
-	int fadeOutThresh;
-	int fadeInThresh;
-	int startAlpha;
-	int maxTimeToLive;
 
 	
-	sf::Color startColor;
-	sf::Color endColor;
-
-};
-
-struct PosSpawner
-{
-	virtual sf::Vector2f GetSpawnPos(ShapeEmitter *emit) = 0;
-};
-
-struct ColorSpawner
-{
-	virtual sf::Color GetSpawnColor(ShapeEmitter *emit) = 0;
-};
-
-struct AngleSpawner
-{
-	virtual float GetSpawnAngle(ShapeEmitter *emit) = 0;
-};
-
-struct RadiusSpawner
-{
-	virtual float GetSpawnRadius(ShapeEmitter *emit) = 0;
-};
-
-struct TTLSpawner
-{
-	virtual int GetSpawnTTL(ShapeEmitter *emit) = 0;
-};
-
-struct PosUpdater
-{
-
-};
-
-struct ColorUpdater
-{
-
 };
 
 struct ShapeEmitter
 {
 	enum ParticleType
 	{
-		NORMAL,
-		FADE
+		PARTICLE_BOOSTER_GRAVITY_INCREASER,
+		PARTICLE_BOOSTER_GRAVITY_DECREASER,
+		PARTICLE_BOOSTER_MOMENTUM,
+		PARTICLE_BOOSTER_TIMESLOW,
+		PARTICLE_BOOSTER_HOMING,
+		PARTICLE_BOOSTER_ANTITIMESLOW,
+		PARTICLE_BOOSTER_FREEFLIGHT,
+		PARTICLE_BOOSTER_Count,
 	};
 
+	struct MyData
+	{
+		bool active; //in session
+		int prevID;
+		int nextID;
+		float lastCreationTime;
+		sf::Vector2f pos;
+		int ratePerSecond;
+		int frame;
+		int numActive;
+		//bool active; //in session
+		bool emitting;
 
-	ShapeEmitter(int pointsPerShape,
-		int numShapes);
+
+		float boostPortion; //for booster particles. seems easiest to just store it here for now
+	};
+
+	MyData data;
+	ShapeEmitter *prev;
+	ShapeEmitter *next;
+	int emitterID;
+	int particleType;
+	Tileset *ts;
+	sf::Vertex *points;
+	ShapeParticle **particles;
+	int numShapesTotal;
+	int numPoints;
+	int pointsPerShape;
+	Session *sess;
+
+
+
+	
+	
+	ShapeEmitter(int p_particleType);
+	ShapeEmitter(int p_particleType, int p_maxParticles );//int pointsPerShape,
+		//int numShapes);
+	
 	void CreateParticles();
 	~ShapeEmitter();
 
@@ -147,73 +132,25 @@ struct ShapeEmitter
 
 	void SetRatePerSecond(int rate);
 
-	sf::Vector2f GetSpawnPos();
-	virtual sf::Vector2f GetSpawnVel();
-	virtual sf::Color GetSpawnColor();
-	virtual float GetSpawnAngle();
-	virtual float GetSpawnRadius();
-	virtual int GetSpawnTTL();
-	virtual int GetSpawnTile();
+	void SetIDAndAddToAllEmittersVec();
+
+	sf::Vector2f GetBoxSpawnPos(int width, int height);
 
 	static float GetRandomAngle(float baseAngle,
 		float angleRange);
 
 	virtual void ActivateParticle(int index);
-	virtual ShapeParticle * CreateParticle(int index);
+	ShapeParticle * CreateParticle(int index);
 
-	bool active; //in session
-	PosSpawner *posSpawner;
-	ColorSpawner *colorSpawner;
-	RadiusSpawner *radiusSpawner;
-	AngleSpawner *angleSpawner;
-	TTLSpawner *ttlSpawner;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 	void SetOn(bool on);
 	virtual bool IsDone();
 
-	int pointsPerShape;
-	int numShapesTotal;
-	int numPoints;
-	sf::Vector2f pos;
-	sf::Vertex *points;
-	ShapeParticle **particles;
-	int frame;
-	int numActive;
-	bool emitting;
-
-	int ratePerSecond;
-	Tileset *ts;
-
-	ParticleType pType;
-
-	float lastCreationTime;
-
-	ShapeEmitter *prev;
-	ShapeEmitter *next;
-};
-
-struct BoxPosSpawner : PosSpawner
-{
-	BoxPosSpawner(int w, int h);
-	virtual sf::Vector2f GetSpawnPos(ShapeEmitter *emit);
-	void SetRect(int w, int h);
-	int width;
-	int height;
-};
-
-struct LinearVelPPosUpdater : PPosUpdater
-{
-	LinearVelPPosUpdater();
-	virtual void PUpdatePos(ShapeParticle*);
-	sf::Vector2f vel;
-};
-
-struct FeatherPosUpdater : PPosUpdater
-{
-	FeatherPosUpdater();
-	virtual void PUpdatePos(ShapeParticle*);
-	sf::Vector2f startVel;
-	sf::Vector2f vel;
+private:
+	void Init();
 };
 
 //struct LimitedAngleSpawner : 
@@ -229,47 +166,15 @@ struct FeatherPosUpdater : PPosUpdater
 struct LeafEmitter : ShapeEmitter
 {
 	LeafEmitter();
-	int GetSpawnTTL();
-	ShapeParticle * CreateParticle(int index);
 	void ActivateParticle(int index);
-	int GetSpawnTile();
 };
 
 struct Actor;
 struct PlayerBoosterEffectEmitter : ShapeEmitter
 {
-	enum BoosterType
-	{
-		BOOSTER_GRAVITY_INCREASER,
-		BOOSTER_GRAVITY_DECREASER,
-		BOOSTER_MOMENTUM,
-		BOOSTER_TIMESLOW,
-		BOOSTER_HOMING,
-		BOOSTER_ANTITIMESLOW,
-		BOOSTER_FREEFLIGHT,
-		BOOSTER_Count,
-	};
-
-	PlayerBoosterEffectEmitter( Actor *p_player, int p_boosterType );
-	ShapeParticle * CreateParticle(int index);
-	void ActivateParticle(int index);
-	int GetSpawnTTL();
-	int GetSpawnTile();
-
-	int boosterType;
-	float boostPortion;
 	Actor *player;
-};
 
-struct GlideEmitter : ShapeEmitter
-{
-	GlideEmitter(GameSession *p_owner);
-	int GetSpawnTTL();
-	int GetSpawnTile();
-	GameSession *owner;
-	ShapeParticle * CreateParticle(int index);
+	PlayerBoosterEffectEmitter( Actor *p_player, int p_particleType );
 	void ActivateParticle(int index);
-	bool IsDone();
 };
-
 #endif

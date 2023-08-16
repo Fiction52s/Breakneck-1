@@ -13,46 +13,23 @@ ShapeParticle::ShapeParticle(int p_numPoints, sf::Vertex *v,
 	ShapeEmitter *p_emit)
 	:numPoints(p_numPoints), points(v), emit(p_emit)
 {
-	fadeOutThresh = 0;
-	fadeInThresh = 0;
-	sizeUpdater = NULL;
-	colorUpdater = NULL;
-	angleUpdater = NULL;
-	posUpdater = NULL;
-	startColor = Color::White;
-	endColor = Color::White;
+	data.fadeOutThresh = 0;
+	data.fadeInThresh = 0;
+	data.startColor = Color::White;
+	data.endColor = Color::White;
 }
 
 ShapeParticle::~ShapeParticle()
 {
-	if (sizeUpdater != NULL)
-	{
-		delete sizeUpdater;
-	}
-
-	if (colorUpdater != NULL)
-	{
-		delete colorUpdater;
-	}
-
-	if (angleUpdater != NULL)
-	{
-		delete angleUpdater;
-	}
-
-	if (posUpdater != NULL)
-	{
-		delete posUpdater;
-	}
 }
 
 void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 	float p_angle, int p_ttl, sf::Color c, int tIndex )
 {
-	pos = p_pos;
-	ttl = p_ttl;
-	radius = p_radius;
-	angle = p_angle;
+	data.pos = p_pos;
+	data.ttl = p_ttl;
+	data.radius = p_radius;
+	data.angle = p_angle;
 	SetColor(c);
 	
 	if (emit->ts != NULL)
@@ -60,24 +37,24 @@ void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 		SetTileIndex(tIndex);
 	}
 
-	if (fadeInThresh == 0)
+	if (data.fadeInThresh == 0)
 	{
-		action = NORMAL;
+		data.action = NORMAL;
 	}
 	else
 	{
-		action = FADEIN;
+		data.action = FADEIN;
 	}
 
-	if (ttl < fadeOutThresh)
+	if (data.ttl < data.fadeOutThresh)
 	{
-		action = FADEOUT;
+		data.action = FADEOUT;
 	}
 
-	startAlpha = color.a;
-	SetColor(sf::Color(color.r, color.g, color.b, 0));
+	data.startAlpha = data.color.a;
+	SetColor(sf::Color(data.color.r, data.color.g, data.color.b, 0));
 
-	maxTimeToLive = ttl;
+	data.maxTimeToLive = data.ttl;
 
 	//SpecialActivate();
 
@@ -89,39 +66,39 @@ void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 	sf::Transform tr;
 
 	//int extraAngle = rand() % 360;
-	tr.rotate(angle);
+	tr.rotate(data.angle);
 
 	sf::Vector2f dir(0, -1);
 
 
 	if (numPoints == 3)
 	{
-		points[0].position = pos + tr.transformPoint(dir * radius);
+		points[0].position = data.pos + tr.transformPoint(dir * data.radius);
 		tr.rotate(360.f / numPoints);
-		points[1].position = pos + tr.transformPoint(dir * radius);
+		points[1].position = data.pos + tr.transformPoint(dir * data.radius);
 		tr.rotate(360.f / numPoints);
-		points[2].position = pos + tr.transformPoint(dir * radius);
+		points[2].position = data.pos + tr.transformPoint(dir * data.radius);
 	}
 	else if (numPoints == 4)
 	{
 		tr.rotate(-45);
-		points[0].position = pos + tr.transformPoint(dir * radius);
+		points[0].position = data.pos + tr.transformPoint(dir * data.radius);
 		tr.rotate(90);
-		points[1].position = pos + tr.transformPoint(dir * radius);
+		points[1].position = data.pos + tr.transformPoint(dir * data.radius);
 		tr.rotate(90);
-		points[2].position = pos + tr.transformPoint(dir * radius);
+		points[2].position = data.pos + tr.transformPoint(dir * data.radius);
 		tr.rotate(90);
-		points[3].position = pos + tr.transformPoint(dir * radius);
+		points[3].position = data.pos + tr.transformPoint(dir * data.radius);
 	}
 	else if (numPoints > 4)
 	{
 		int numOuterPoints = numPoints / 3;
 		for (int i = 0; i < numOuterPoints; ++i)
 		{
-			points[i * 3].position = pos;
-			points[i * 3 + 1].position = pos + tr.transformPoint(dir * radius);
+			points[i * 3].position = data.pos;
+			points[i * 3 + 1].position = data.pos + tr.transformPoint(dir * data.radius);
 			tr.rotate(360.f / numOuterPoints);
-			points[i * 3 + 2].position = pos + tr.transformPoint(dir * radius);
+			points[i * 3 + 2].position = data.pos + tr.transformPoint(dir * data.radius);
 		}
 	}
 	else
@@ -132,7 +109,7 @@ void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 
 void ShapeParticle::SetColor(sf::Color &c)
 {
-	color = c;
+	data.color = c;
 	//startColor = color;
 	//endColor = color;
 	for (int i = 0; i < numPoints; ++i)
@@ -144,18 +121,18 @@ void ShapeParticle::SetColor(sf::Color &c)
 void ShapeParticle::SetColorShift(sf::Color start,
 	sf::Color end, int p_fadeInFrames, int p_fadeOutFrames)
 {
-	fadeInThresh = p_fadeInFrames;
-	fadeOutThresh = p_fadeOutFrames;
-	startColor = start;
-	endColor = end;
-	SetColor(startColor);
+	data.fadeInThresh = p_fadeInFrames;
+	data.fadeOutThresh = p_fadeOutFrames;
+	data.startColor = start;
+	data.endColor = end;
+	SetColor(data.startColor);
 }
 
 float ShapeParticle::GetNormalPortion()
 {
-	int nStart = (maxTimeToLive - fadeInThresh);
-	int nFrame = nStart - ttl;
-	int nLength = nStart - fadeOutThresh;
+	int nStart = (data.maxTimeToLive - data.fadeInThresh);
+	int nFrame = nStart - data.ttl;
+	int nLength = nStart - data.fadeOutThresh;
 
 	return (float)nFrame / nLength;
 }
@@ -167,59 +144,45 @@ void ShapeParticle::SetTileIndex(int ti)
 	if (emit->ts == NULL)
 		return;
 
-	tileIndex = ti;
+	data.tileIndex = ti;
 	SetRectSubRect(points, emit->ts->GetSubRect(ti));
 }
 
 bool ShapeParticle::Update()
 {
-	if (ttl < 0)
+	if (data.ttl < 0)
 	{
 		return false;
 	}
 
-	Vector2f oldPos = pos;
+	Vector2f oldPos = data.pos;
 
 	/*if (emit->handler != NULL)
 	{
 	emit->handler->UpdateShapeParticle(this);
 	}*/
 
-	
-	if (posUpdater != NULL)
-	{
-		posUpdater->PUpdatePos(this);
-	}
-	if (sizeUpdater != NULL)
-	{
-		sizeUpdater->PUpdateSize(this);
-	}
-	if (colorUpdater != NULL )
-	{
-		colorUpdater->PUpdateColor(this);
-	}
+	data.pos += data.vel;
 
-	if (angleUpdater != NULL)
-	{
-		angleUpdater->PUpdateAngle(this);
-	}
-
-	//UpdateColor();
+	//update pos
+	//update size
+	//update color
+	//update angle
 	
 	
 
-	switch (action)
+	switch (data.action)
 	{
 	case FADEIN:
-		if (ttl <= maxTimeToLive - fadeInThresh)
+		if (data.ttl <= data.maxTimeToLive - data.fadeInThresh)
 		{
-			action = NORMAL;
+			data.action = NORMAL;
 		}
 	case NORMAL:
-		if (ttl <= fadeOutThresh)
+		if (data.ttl <= data.fadeOutThresh)
 		{
-			action = FADEOUT;
-			startAlpha = color.a;
+			data.action = FADEOUT;
+			data.startAlpha = data.color.a;
 		}
 		break;
 	case FADEOUT:
@@ -227,16 +190,16 @@ bool ShapeParticle::Update()
 	}
 
 
-	float portion = 1.f - (ttl / (float)maxTimeToLive);
-	Color currColor = GetBlendColor(startColor, endColor, portion);
+	float portion = 1.f - (data.ttl / (float)data.maxTimeToLive);
+	Color currColor = GetBlendColor(data.startColor, data.endColor, portion);
 	SetColor(currColor);
 
-	switch (action)
+	switch (data.action)
 	{
 	case FADEIN:
 	{
-		float fttl = maxTimeToLive - ttl;
-		currColor.a = startAlpha * fttl / fadeInThresh;
+		float fttl = data.maxTimeToLive - data.ttl;
+		currColor.a = data.startAlpha * fttl / data.fadeInThresh;
 		SetColor(currColor);
 		break;
 	}
@@ -250,8 +213,8 @@ bool ShapeParticle::Update()
 	}
 	case FADEOUT:
 	{
-		float fttl = ttl;
-		currColor.a = startAlpha * fttl / fadeOutThresh;
+		float fttl = data.ttl;
+		currColor.a = data.startAlpha * fttl / data.fadeOutThresh;
 		SetColor(currColor);
 		break;
 	}
@@ -265,15 +228,15 @@ bool ShapeParticle::Update()
 
 	for (int i = 0; i < numPoints; ++i)
 	{
-		points[i].position += (pos - oldPos);
+		points[i].position += (data.pos - oldPos);
 	}
 	//UpdatePoints();
 
 	
 
-	--ttl;
+	--data.ttl;
 
-	if (ttl < 0)
+	if (data.ttl < 0)
 	{
 
 		Clear();
@@ -289,8 +252,26 @@ void ShapeParticle::Clear()
 	{
 		points[i].position = Vector2f(0, 0);
 	}
-	ttl = -1;
+	data.ttl = -1;
 }
+
+int ShapeParticle::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void ShapeParticle::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(data));
+	bytes += sizeof(data);
+}
+
+void ShapeParticle::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(data));
+	bytes += sizeof(data);
+}
+
 
 float ShapeEmitter::GetRandomAngle(float baseAngle,
 	float angleRange)
@@ -302,9 +283,67 @@ float ShapeEmitter::GetRandomAngle(float baseAngle,
 	return a;
 }
 
-ShapeEmitter::ShapeEmitter(int p_pointsPerShape, int p_numShapes)
-	:pointsPerShape(p_pointsPerShape), numShapesTotal(p_numShapes)
+ShapeEmitter::ShapeEmitter(int p_particleType)
 {
+	particleType = p_particleType;
+
+	numShapesTotal = -1;
+
+	switch (particleType)
+	{
+	case PARTICLE_BOOSTER_GRAVITY_INCREASER:
+	case PARTICLE_BOOSTER_GRAVITY_DECREASER:
+	case PARTICLE_BOOSTER_MOMENTUM:
+	case PARTICLE_BOOSTER_TIMESLOW:
+	case PARTICLE_BOOSTER_HOMING:
+	case PARTICLE_BOOSTER_ANTITIMESLOW:
+	case PARTICLE_BOOSTER_FREEFLIGHT:
+		numShapesTotal = 200;
+		break;
+	default:
+		numShapesTotal = 500;
+		break;
+	}
+
+	Init();
+}
+
+ShapeEmitter::ShapeEmitter(int p_particleType, int p_maxParticles )
+{
+	particleType = p_particleType;
+
+	numShapesTotal = p_maxParticles;
+	
+
+	Init();
+}
+
+void ShapeEmitter::Init()
+{
+	sess = Session::GetSession();
+
+	pointsPerShape = -1;
+
+
+	//can easily set this up to do triangles or other shapes
+	switch (particleType)
+	{
+	case PARTICLE_BOOSTER_GRAVITY_INCREASER:
+	case PARTICLE_BOOSTER_GRAVITY_DECREASER:
+	case PARTICLE_BOOSTER_MOMENTUM:
+	case PARTICLE_BOOSTER_TIMESLOW:
+	case PARTICLE_BOOSTER_HOMING:
+	case PARTICLE_BOOSTER_ANTITIMESLOW:
+	case PARTICLE_BOOSTER_FREEFLIGHT:
+		pointsPerShape = 4;
+		break;
+	default:
+		pointsPerShape = 4;
+		break;
+	}
+
+	assert(pointsPerShape >= 0);
+
 	if (pointsPerShape > 4)
 	{
 		pointsPerShape *= 3;
@@ -313,21 +352,15 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape, int p_numShapes)
 	points = new Vertex[numPoints];
 	particles = new ShapeParticle*[numShapesTotal];
 
-	//pType = FADE;
-	active = false;
+	data.active = false;
 
-	//Color r = Color::White;
-	//SetColor(r);
-	ratePerSecond = 10; //just for testing defaults
+	data.ratePerSecond = 10; //just for testing defaults
+
+	data.prevID = -1; //initializing here prob does nothing, but its good practice anyway
+	data.nextID = -1;
 
 	next = NULL;
 	ts = NULL;
-
-	posSpawner = NULL;
-	colorSpawner = NULL;
-	radiusSpawner = NULL;
-	angleSpawner = NULL;
-	ttlSpawner = NULL;
 
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
@@ -356,32 +389,11 @@ ShapeEmitter::~ShapeEmitter()
 		delete particles[i];
 	}
 	delete[] particles;
-
-	if (posSpawner != NULL)
-	{
-		delete posSpawner;
-	}
-	if (colorSpawner != NULL)
-	{
-		delete colorSpawner;
-	}
-	if (radiusSpawner != NULL)
-	{
-		delete radiusSpawner;
-	}
-	if (angleSpawner != NULL)
-	{
-		delete angleSpawner;
-	}
-	if (ttlSpawner != NULL)
-	{
-		delete ttlSpawner;
-	}
 }
 
 void ShapeEmitter::SetPos(sf::Vector2f &p_pos)
 {
-	pos = p_pos;
+	data.pos = p_pos;
 }
 
 void ShapeEmitter::SetTileset(Tileset *p_ts)
@@ -392,8 +404,8 @@ void ShapeEmitter::SetTileset(Tileset *p_ts)
 
 void ShapeEmitter::Reset()
 {
-	active = false;
-	emitting = true;
+	data.active = false;
+	data.emitting = true;
 	if (particles[0] != NULL)
 	{
 		for (int i = 0; i < numShapesTotal; ++i)
@@ -401,166 +413,53 @@ void ShapeEmitter::Reset()
 			particles[i]->Clear();
 		}
 	}
-	frame = 0;
-	lastCreationTime = 0;
-	numActive = 0;
+	data.frame = 0;
+	data.lastCreationTime = 0;
+	data.numActive = 0;
 	prev = NULL;
 	next = NULL;
 }
 
 void ShapeEmitter::ActivateParticle(int index)
 {
-	particles[index]->Activate(GetSpawnRadius(), GetSpawnPos(), GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(),
-		GetSpawnTile());
-
-	
-
-	/*float a = angle;
-	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
-	a += angleRange * f;
-
-	float s = minSpeed;
-	float f1 = (float)rand() / RAND_MAX;
-	s += (maxSpeed - minSpeed) * f1;*/
-
-	/*Vector2f vel(1, 0);
-	vel *= s;
-	RotateCCW(vel, a);*/
-
-	//int rad = 2 + rand() % 15;
-	//int rad = 20 + rand() % 30;
-
-	//int extraAngle = rand() % 360;
-
-	//sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
-	//sf::Color randColor1(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
-
-
-	//switch (pType)
-	//{
-	//case NORMAL:
-	//{
-	//	sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
-	//	particles[index]->SetColor(randColor);
-	//	break;
-	//}
-	//case FADE:
-	//{
-	//	FadingParticle *fp = (FadingParticle*)particles[index];
-	//	sf::Color leafColor(255, 255, 255, 150);
-	//	fp->SetColorShift(leafColor, leafColor, 40, 40);
-	//	particles[index]->SetTileIndex(rand() % 5);
-	//	//fp->SetColorShift(Color( Color::Blue ), Color(Color::Cyan), 0, 40);
-
-	//	//particles[index]->SetColor(randColor);
-	//	break;
-	//}
-	//}
-
-	//particles[index]->//->Activate( GetSpawnRadius(), GetSpawnPos(),, extraAngle, 200 );
-
-	//cout << "activating: " << index << endl;
-}
-
-sf::Vector2f ShapeEmitter::GetSpawnPos()
-{
-	if (posSpawner != NULL)
-	{
-		return posSpawner->GetSpawnPos(this);
-	}
-	else
-	{
-		return pos;
-	}
-}
-
-sf::Vector2f ShapeEmitter::GetSpawnVel()
-{
-	return Vector2f(0, 0);
-}
-
-float ShapeEmitter::GetSpawnAngle()
-{
-	if (angleSpawner != NULL)
-	{
-		return angleSpawner->GetSpawnAngle(this);
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-int ShapeEmitter::GetSpawnTile() 
-{ 
-	return 0; 
-}
-
-int ShapeEmitter::GetSpawnTTL()
-{
-	if (ttlSpawner != NULL)
-	{
-		return ttlSpawner->GetSpawnTTL(this);
-	}
-	else
-	{
-		return 120;
-	}
-}
-
-float ShapeEmitter::GetSpawnRadius()
-{
-	if (radiusSpawner != NULL)
-	{
-		radiusSpawner->GetSpawnRadius(this);
-	}
-	else
-	{
-		return 20.f;
-	}
-}
-
-sf::Color ShapeEmitter::GetSpawnColor()
-{
-	if (colorSpawner != NULL)
-	{
-		return colorSpawner->GetSpawnColor(this);
-	}
-	else
-	{
-		return Color::White;
-	}
+	particles[index]->Activate(20, data.pos, 0, 120, Color::White, 0);
 }
 
 void ShapeEmitter::SetRatePerSecond(int rate)
 {
-	ratePerSecond = rate;
+	data.ratePerSecond = rate;
 }
 
 bool ShapeEmitter::IsDone()
 {
-	return numActive == 0 && !emitting;
+	return data.numActive == 0 && !data.emitting;
+}
+
+void ShapeEmitter::SetIDAndAddToAllEmittersVec()
+{
+	emitterID = sess->allEmittersVec.size();
+	sess->allEmittersVec.push_back(this);
 }
 
 void ShapeEmitter::Update()
 {
 	int numActivateThisFrame = 0;
 
-	float rf = 1.f / ratePerSecond;
-	float cTime = frame / 60.f;
-	float diff = cTime - lastCreationTime;
+	float rf = 1.f / data.ratePerSecond;
+	float cTime = data.frame / 60.f;
+	float diff = cTime - data.lastCreationTime;
 	float num = diff / rf;
 
 	numActivateThisFrame = floor(num);
 	if (numActivateThisFrame > 0)
 	{
-		lastCreationTime = cTime;
+		data.lastCreationTime = cTime;
 	}
 
-	numActive = 0;
+	data.numActive = 0;
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
-		if (particles[i]->ttl < 0 && numActivateThisFrame > 0 && emitting)
+		if (particles[i]->data.ttl < 0 && numActivateThisFrame > 0 && data.emitting)
 		{
 			ActivateParticle(i);
 			numActivateThisFrame--;
@@ -569,16 +468,16 @@ void ShapeEmitter::Update()
 		{
 			bool on = particles[i]->Update();
 			if (on)
-				numActive++;
+				data.numActive++;
 		}
 	}
 
-	++frame;
+	++data.frame;
 }
 
 void ShapeEmitter::SetOn(bool on)
 {
-	emitting = on;
+	data.emitting = on;
 }
 
 void ShapeEmitter::Draw(sf::RenderTarget *target)
@@ -601,19 +500,7 @@ void ShapeEmitter::Draw(sf::RenderTarget *target)
 	}
 }
 
-BoxPosSpawner::BoxPosSpawner(int w, int h)
-	:width( w ), height( h )
-{
-
-}
-
-void BoxPosSpawner::SetRect(int w, int h)
-{
-	width = w;
-	height = h;
-}
-
-sf::Vector2f BoxPosSpawner::GetSpawnPos(ShapeEmitter *emit)
+sf::Vector2f ShapeEmitter::GetBoxSpawnPos(int width, int height)
 {
 	int rw, rh;
 
@@ -623,7 +510,11 @@ sf::Vector2f BoxPosSpawner::GetSpawnPos(ShapeEmitter *emit)
 	}
 	else
 	{
-		rw = (rand() % width) - width / 2;
+		
+		//use rand() if you don't want this included in rollback
+
+		//rw = (rand() % width) - width / 2;
+		rw = (sess->GetRand() % width) - width / 2;
 	}
 
 	if (height == 0)
@@ -632,178 +523,116 @@ sf::Vector2f BoxPosSpawner::GetSpawnPos(ShapeEmitter *emit)
 	}
 	else
 	{
-		rh = (rand() % height) - height / 2;
+		//rh = (rand() % height) - height / 2;
+		rh = (sess->GetRand() % height) - height / 2;
 	}
 
-	return emit->pos + Vector2f(rw, rh);
+	return data.pos + Vector2f(rw, rh);
 }
 
-LinearVelPPosUpdater::LinearVelPPosUpdater()
+int ShapeEmitter::GetNumStoredBytes()
 {
+	//return sizeof(bool);
 
+	int total = sizeof(data);
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		total += particles[i]->GetNumStoredBytes();
+	}
+	return total;
 }
 
-void LinearVelPPosUpdater::PUpdatePos(ShapeParticle* p)
+void ShapeEmitter::StoreBytes(unsigned char *bytes)
 {
-	p->pos += vel;
+	//memcpy(bytes, &data, sizeof(bool));
+	//return;
+
+	data.prevID = sess->GetEmitterID(prev);
+	data.nextID = sess->GetEmitterID(next);
+
+	memcpy(bytes, &data, sizeof(data));
+
+	bytes += sizeof(data);
+
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		particles[i]->StoreBytes(bytes);
+		bytes += particles[i]->GetNumStoredBytes();
+	}
+	//StoreBasicEnemyData(data);
+	//memcpy(bytes, &data, sizeof(MyData));
+	//bytes += sizeof(MyData);
 }
 
-//LimitedAngleSpawner::LimitedAngleSpawner( float p_angle, float range)
-//	:angle( p_angle ), angleRange( range )
-//{
-//
-//}
-//
-//float LimitedAngleSpawner::GetSpawnAngle(ShapeEmitter *emit)
-//{
-//	float a = angle;
-//	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
-//	a += angleRange * f;
-//
-//	return a;
-//}
+void ShapeEmitter::SetFromBytes(unsigned char *bytes)
+{
+	//memcpy(&data, bytes, sizeof(bool));
+	//return;
 
-//void LimitedAngleSpawner::SetAngleRange(float p_angle, float range)
-//{
-//	angle = p_angle;
-//	angleRange = range;
-//}
+	memcpy(&data, bytes, sizeof(data));
+	prev = sess->GetEmitterFromID(data.prevID);
+	next = sess->GetEmitterFromID(data.nextID);
 
+	bytes += sizeof(data);
+
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		particles[i]->SetFromBytes(bytes);
+		bytes += particles[i]->GetNumStoredBytes();
+	}
+}
 
 LeafEmitter::LeafEmitter()
 	:ShapeEmitter( 4, 500)
 {
-	posSpawner = new BoxPosSpawner(400, 400);
+	//posSpawner = new BoxPosSpawner(400, 400);
 	SetRatePerSecond(120);
-}
-
-ShapeParticle *LeafEmitter::CreateParticle(int index)
-{
-	ShapeParticle *sp = new ShapeParticle(pointsPerShape, points + index * pointsPerShape, this);
-	sp->posUpdater = new LinearVelPPosUpdater;
-	return sp;
 }
 
 void LeafEmitter::ActivateParticle(int index)
 {
-	ShapeParticle *sp = particles[index];
+	/*ShapeParticle *sp = particles[index];
 	Vector2f sPos = GetSpawnPos();
 	sp->Activate(GetSpawnRadius(), sPos, GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
 	LinearVelPPosUpdater * velUpdater = (LinearVelPPosUpdater*)sp->posUpdater;
 
-	velUpdater->vel = normalize(sPos - pos) * 10.f;
+	velUpdater->vel = normalize(sPos - pos) * 10.f;*/
 }
 
-int LeafEmitter::GetSpawnTTL()
+//int LeafEmitter::GetSpawnTTL()
+//{
+//	int variation = 40;
+//	int r = (rand() % variation) - variation / 2;
+//
+//	return 90 + r;
+//}
+//
+//int LeafEmitter::GetSpawnTile()
+//{
+//	return rand() % 5;
+//}
+
+PlayerBoosterEffectEmitter::PlayerBoosterEffectEmitter( Actor *p_player, int p_particleType )
+	:ShapeEmitter(p_particleType)
 {
-	int variation = 40;
-	int r = (rand() % variation) - variation / 2;
-
-	return 90 + r;
-}
-
-int LeafEmitter::GetSpawnTile()
-{
-	return rand() % 5;
-}
-
-
-GlideEmitter::GlideEmitter(GameSession *p_owner)
-	:ShapeEmitter( 4, 1000 ), owner(p_owner)
-{
-	SetTileset(owner->GetTileset("Env/feathers_128x128.png", 128, 128));
-	SetRatePerSecond(500);
-	posSpawner = new BoxPosSpawner(50, 50);
-}
-
-int GlideEmitter::GetSpawnTTL()
-{
-	return 20;
-}
-
-ShapeParticle * GlideEmitter::CreateParticle(int index)
-{
-	ShapeParticle *sp = new ShapeParticle(pointsPerShape, points + index * pointsPerShape, this);
-	sp->posUpdater = new FeatherPosUpdater;
-	return sp;
-}
-
-void GlideEmitter::ActivateParticle(int index)
-{
-	ShapeParticle *sp = particles[index];
-	Vector2f sPos = GetSpawnPos();
-
-	sp->Activate(GetSpawnRadius(), sPos, GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
-
-	FeatherPosUpdater * velUpdater = (FeatherPosUpdater*)sp->posUpdater;
-
-	V2d dirD = normalize(owner->GetPlayerTrueVel(0));
-	V2d diffDir = normalize(V2d(sPos) - owner->GetPlayerPos(0));
-
-	if (cross(diffDir, dirD) < 0)
-	{
-		dirD = -dirD;
-	}
-
-	Vector2f dirF = Vector2f(dirD.y, -dirD.x);
-	
-
-	//float f = GetRandValue();
-
-	//RotateCCW(dir, PI / 12.f * f);
-
-	velUpdater->vel = dirF * 1.5f;
-}
-
-int GlideEmitter::GetSpawnTile()
-{
-	return 0;
-}
-
-bool GlideEmitter::IsDone()
-{
-	return false;
-}
-
-FeatherPosUpdater::FeatherPosUpdater()
-{
-
-}
-
-void FeatherPosUpdater::PUpdatePos(ShapeParticle* p)
-{
-	p->pos += vel;
-}
-
-
-PlayerBoosterEffectEmitter::PlayerBoosterEffectEmitter( Actor *p_player, int p_boosterType )
-	:ShapeEmitter(4, 500)
-{
-	boosterType = p_boosterType;
 	player = p_player;
-	posSpawner = new BoxPosSpawner(20, 20);
 	SetRatePerSecond(120);
-}
-
-ShapeParticle *PlayerBoosterEffectEmitter::CreateParticle(int index)
-{
-	ShapeParticle *sp = new ShapeParticle(pointsPerShape, points + index * pointsPerShape, this);
-	sp->posUpdater = new LinearVelPPosUpdater;
-	return sp;
 }
 
 void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 {
 	ShapeParticle *sp = particles[index];
-	Vector2f sPos = GetSpawnPos();
+	Vector2f sPos = GetBoxSpawnPos(20, 20);
 
 	int minRad = 10;
 	int maxRad = 32;
 
-	int r = rand() % ((maxRad - minRad) + 1) + minRad;
+	//int r = rand() % ((maxRad - minRad) + 1) + minRad;
+	int r = sess->GetRand() % ((maxRad - minRad) + 1) + minRad;
 	float rad = r;
 
-	int angI = rand() % 360;
+	int angI = sess->GetRand() % 360;
+	//int angI = rand() % 360;
 	float ang = angI;
 
 	
@@ -811,10 +640,16 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 	Color bColor = Color::Yellow;//Color( 40, 0, 0 );
 
 	
-	Color sColor = GetBlendColor(aColor, bColor, boostPortion);
+	Color sColor = GetBlendColor(aColor, bColor, data.boostPortion);
 
-	sp->Activate(rad, sPos, ang, GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
 
+	int ttlVariation = 40;
+	//int ttlValue = (rand() % ttlVariation) - ttlVariation / 2;
+	int ttlValue = (sess->GetRand() % ttlVariation) - ttlVariation / 2;
+	int finalTimeToLive = 90 + ttlValue;
+
+	sp->Activate(rad, sPos, ang, finalTimeToLive, Color::White, 0);
+	sp->data.vel = normalize(sPos - data.pos) * .1f;//10.f;
 	//360
 
 	Color sColorTransParent = sColor;
@@ -822,20 +657,4 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 
 	sp->SetColorShift(sColor, sColorTransParent, 20, 20);
 
-	LinearVelPPosUpdater * velUpdater = (LinearVelPPosUpdater*)sp->posUpdater;
-
-	velUpdater->vel = normalize(sPos - pos) * .1f;//10.f;
-}
-
-int PlayerBoosterEffectEmitter::GetSpawnTTL()
-{
-	int variation = 40;
-	int r = (rand() % variation) - variation / 2;
-
-	return 90 + r;
-}
-
-int PlayerBoosterEffectEmitter::GetSpawnTile()
-{
-	return 0;//rand() % 5;
 }

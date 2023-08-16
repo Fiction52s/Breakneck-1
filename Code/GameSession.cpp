@@ -949,6 +949,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	CleanupShipEntrance();
 
 	allSequencesVec.clear();
+
+	allEmittersVec.clear();
 	
 
 	activeEnemyList = NULL;
@@ -2118,6 +2120,8 @@ void GameSession::SetupPlayers()
 		if (p != NULL)
 		{
 			p->position = V2d(playerOrigPos[i]);
+
+			p->InitEmitters();
 		}
 	}
 }
