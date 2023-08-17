@@ -1169,6 +1169,24 @@ void Actor::SetupFXTilesets()
 		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
 	enoughKeysToExitRingGroup->Init();
 
+
+	gravityDecreaserOnRingGroup = new MovingGeoGroup;
+	gravityDecreaserOnRingGroup->AddGeo(new MovingRing(32, 120, 1, 8, 8, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Green, Color(0, 255, 0, 0),
+		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
+	gravityDecreaserOnRingGroup->Init();
+
+
+	gravityDecreaserOffRingGroup = new MovingGeoGroup;
+	gravityDecreaserOffRingGroup->AddGeo(new MovingRing(32, 1, 120, 8, 8, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Green, Color(0, 255, 0, 0),
+		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
+	gravityDecreaserOffRingGroup->Init();
+
+
+	
+
+
 	for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
 	{
 		if ((*it).pool != NULL && (*it).usesPlayerSkinShader )
@@ -3283,11 +3301,11 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	}
 
 	gravityIncreaserTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_INCREASER);
-	gravityIncreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	gravityIncreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/booster_particles_32x32.png"));//"Env/leaves_128x128.png"));
 	gravityIncreaserTrailEmitter->CreateParticles();
 
 	gravityDecreaserTrailerEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_DECREASER);
-	gravityDecreaserTrailerEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	gravityDecreaserTrailerEmitter->SetTileset(sess->GetSizedTileset("FX/booster_particles_32x32.png"));//"Env/leaves_128x128.png"));
 	gravityDecreaserTrailerEmitter->CreateParticles();
 
 	momentumBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_MOMENTUM);
@@ -4069,6 +4087,9 @@ Actor::~Actor()
 	delete enemyExplodeRingGroup;
 	delete enemiesClearedRingGroup;
 	delete enoughKeysToExitRingGroup;
+
+	delete gravityDecreaserOnRingGroup;
+	delete gravityDecreaserOffRingGroup;
 	
 	delete sprite;
 
@@ -4485,6 +4506,23 @@ void Actor::CreateEnoughKeysRing()
 	enoughKeysToExitRingGroup->Start();
 }
 
+void Actor::CreateGravityDecreaserOnRing()
+{
+	Vector2f floatPos(position);
+	gravityDecreaserOnRingGroup->SetBase(floatPos);
+	gravityDecreaserOnRingGroup->Reset();
+	gravityDecreaserOnRingGroup->Start();
+}
+
+
+void Actor::CreateGravityDecreaserOffRing()
+{
+	Vector2f floatPos(position);
+	gravityDecreaserOffRingGroup->SetBase(floatPos);
+	gravityDecreaserOffRingGroup->Reset();
+	gravityDecreaserOffRingGroup->Start();
+}
+
 void Actor::CreateGateExplosion( int gateCategory )
 {
 	Vector2f floatPos(position);
@@ -4883,6 +4921,8 @@ void Actor::Respawn( bool setStartPos )
 	enemyExplodeRingGroup->Reset();
 	enemiesClearedRingGroup->Reset();
 	enoughKeysToExitRingGroup->Reset();
+	gravityDecreaserOnRingGroup->Reset();
+	gravityDecreaserOffRingGroup->Reset();
 	numKeysHeld = 0;
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
@@ -6002,6 +6042,7 @@ void Actor::ProcessGravModifier()
 		{
 			gravityDecreaserTrailerEmitter->SetOn(true);
 			sess->AddEmitter(gravityDecreaserTrailerEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+			CreateGravityDecreaserOnRing();
 		}
 		else
 		{
@@ -17119,6 +17160,9 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
+	gravityDecreaserOnRingGroup->SetBase(Vector2f(position));
+	gravityDecreaserOffRingGroup->SetBase(Vector2f(position));
+
 	gravityIncreaserTrailEmitter->SetPos(Vector2f(position));
 	gravityDecreaserTrailerEmitter->SetPos(Vector2f(position));
 	if (startBoosterGravModifyFrames > 0)
@@ -17533,6 +17577,7 @@ void Actor::UpdateModifiedGravity()
 			else if (boosterExtraGravityModifier < 1.0)
 			{
 				gravityDecreaserTrailerEmitter->SetOn(false);
+				CreateGravityDecreaserOffRing();
 			}
 			else
 			{
@@ -20452,6 +20497,8 @@ void Actor::Draw( sf::RenderTarget *target )
 	enemyExplodeRingGroup->Draw(target);
 	enemiesClearedRingGroup->Draw(target);
 	enoughKeysToExitRingGroup->Draw(target);
+	gravityDecreaserOnRingGroup->Draw(target);
+	gravityDecreaserOffRingGroup->Draw(target);
 	//keyExplodePool->Draw(target);
 }
 
@@ -20754,6 +20801,8 @@ void Actor::UpdateSprite()
 
 	enemiesClearedRingGroup->Update();
 	enoughKeysToExitRingGroup->Update();
+	gravityDecreaserOnRingGroup->Update();
+	gravityDecreaserOffRingGroup->Update();
 
 	UpdateSmallLightning();
 

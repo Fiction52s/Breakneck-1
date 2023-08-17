@@ -1008,6 +1008,8 @@ struct Actor : QuadTreeCollider,
 	MovingGeoGroup *enemyExplodeRingGroup;
 	MovingGeoGroup *enemiesClearedRingGroup;
 	MovingGeoGroup *enoughKeysToExitRingGroup;
+	MovingGeoGroup *gravityDecreaserOnRingGroup;
+	MovingGeoGroup *gravityDecreaserOffRingGroup;
 
 	EffectPool *dustParticles;
 	RisingParticleUpdater *rpu;
@@ -1406,6 +1408,8 @@ struct Actor : QuadTreeCollider,
 	void CreateGateExplosion( int gateCategory );
 	void CreateEnemiesClearedRing();
 	void CreateEnoughKeysRing();
+	void CreateGravityDecreaserOnRing();
+	void CreateGravityDecreaserOffRing();
 	void CollectFly(HealthFly *hf);
 	void SetupActionFunctions();
 	void StartAction();

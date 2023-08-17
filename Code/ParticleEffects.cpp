@@ -627,17 +627,15 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 	int minRad = 10;
 	int maxRad = 32;
 
-	//int r = rand() % ((maxRad - minRad) + 1) + minRad;
-	int r = sess->GetRand() % ((maxRad - minRad) + 1) + minRad;
-	float rad = r;
+	
 
-	int angI = sess->GetRand() % 360;
+	int angI = 0;//sess->GetRand() % 360;
 	//int angI = rand() % 360;
 	float ang = angI;
 
 	
-	Color aColor = Color::Red;
-	Color bColor = Color::Yellow;//Color( 40, 0, 0 );
+	Color aColor = Color::White;
+	Color bColor = Color::White;//Color( 40, 0, 0 );
 
 	
 	Color sColor = GetBlendColor(aColor, bColor, data.boostPortion);
@@ -648,7 +646,56 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 	int ttlValue = (sess->GetRand() % ttlVariation) - ttlVariation / 2;
 	int finalTimeToLive = 90 + ttlValue;
 
-	sp->Activate(rad, sPos, ang, finalTimeToLive, Color::White, 0);
+	int tile = 0;
+
+	switch (particleType)
+	{
+	case PARTICLE_BOOSTER_GRAVITY_INCREASER:
+	{
+		maxRad = 64;
+		minRad = 20;
+		tile = 0;
+		ang = 0;
+
+		int tileR = sess->GetRand() % 3;
+		if (tileR == 0)
+		{
+			tile += 1;
+			maxRad = 32;
+			minRad = 20;
+		}
+
+		break;
+	}
+	case PARTICLE_BOOSTER_GRAVITY_DECREASER:
+	{
+		maxRad = 64;
+		minRad = 20;
+		tile = 5;
+		ang = 0;
+
+		int tileR = sess->GetRand() % 3;
+		if (tileR == 0)
+		{
+			tile += 1;
+			maxRad = 32;
+			minRad = 20;
+		}
+		//int tileR = sess->GetRand() % 2;
+		
+		break;
+	}
+	default:
+		tile = 0;
+		ang = 0;
+		break;
+	}
+
+	//int r = rand() % ((maxRad - minRad) + 1) + minRad;
+	int r = sess->GetRand() % ((maxRad - minRad) + 1) + minRad;
+	float rad = r;
+
+	sp->Activate(rad, sPos, ang, finalTimeToLive, Color::White, tile);
 	sp->data.vel = normalize(sPos - data.pos) * .1f;//10.f;
 	//360
 
