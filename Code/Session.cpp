@@ -421,7 +421,8 @@ void Session::RegisterW3Enemies()
 
 	//comboers
 	AddWorldEnemy("Ball", "ball", 3, comboerRow, CreateEnemy<Ball>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	AddWorldEnemy("Bounce\nJuggler", "bouncejuggler", 3, comboerRow, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Bounce\Comboer", "bouncecomboer", 3, comboerRow, CreateEnemy<BounceJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+	//AddWorldEnemy("Bounce\Comboer", "bouncecomboer", 3, comboerRow, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//targets
 	AddBasicAerialWorldEnemy("Yellow\nComboer\nTarget", "yellowcomboertarget", 3, targetRow, CreateEnemy<ComboerTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);

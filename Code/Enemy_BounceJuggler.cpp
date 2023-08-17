@@ -13,23 +13,6 @@
 using namespace std;
 using namespace sf;
 
-void BounceJuggler::UpdateParamsSettings()
-{
-	Enemy::UpdateParamsSettings();
-	JugglerParams *jParams = (JugglerParams*)editParams;
-	juggleReps = jParams->numJuggles;
-
-	if (juggleReps == 0)
-	{
-		limitedJuggles = false;
-	}
-	else
-	{
-		limitedJuggles = true;
-		UpdateJuggleRepsText(juggleReps);
-	}
-}
-
 void BounceJuggler::SetLevel(int lev)
 {
 	level = lev;
@@ -58,26 +41,19 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, 0, 0);
 
-	numJugglesText.setFont(sess->mainMenu->arial);
-	numJugglesText.setFillColor(Color::White);
-	numJugglesText.setOutlineColor(Color::Black);
-	numJugglesText.setOutlineThickness(3);
-	numJugglesText.setCharacterSize(32);
-
-	flySpeed = 14;
-	maxWaitFrames = 180;
+	flySpeed = 22;
+	maxFlyFrames = 90;
 
 	UpdateParamsSettings();
 
 	CreateSurfaceMover(startPosInfo, 64, this);
 
-	guidedDir = NULL;
-
 	hitLimit = -1;
 
 	action = S_FLOAT;
 
-	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	//ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/W3/bouncecomboer_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -124,30 +100,13 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 
 BounceJuggler::~BounceJuggler()
 {
-	if (guidedDir != NULL)
-		delete[] guidedDir;
 }
-
-void BounceJuggler::UpdateJuggleRepsText(int reps)
-{
-	if (limitedJuggles)
-	{
-		data.juggleTextNumber = reps;
-		numJugglesText.setString(to_string(reps));
-		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
-			+ numJugglesText.getLocalBounds().width / 2,
-			numJugglesText.getLocalBounds().top
-			+ numJugglesText.getLocalBounds().height / 2);
-		numJugglesText.setPosition(sprite.getPosition());
-	}
-}
-
 void BounceJuggler::ResetEnemy()
 {
-	data.doneBeingHittable = false;
+	facingRight = true;
 
+	data.flyFrame = 0;
 	sprite.setRotation(0);
-	data.currHits = 0;
 	comboObj->Reset();
 	surfaceMover->SetVelocity(V2d(0, 0));
 	DefaultHurtboxesOn();
@@ -155,15 +114,12 @@ void BounceJuggler::ResetEnemy()
 	action = S_FLOAT;
 	frame = 0;
 	receivedHit.SetEmpty();
-	data.currJuggle = 0;
 
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
 	surfaceMover->ClearAirForces();
 
 	UpdateHitboxes();
-
-	UpdateJuggleRepsText(juggleReps);
 
 	UpdateSprite();
 }
@@ -185,14 +141,14 @@ void BounceJuggler::Return()
 	action = S_RETURN;
 	frame = 0;
 
+	facingRight = true;
+
+	data.flyFrame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
-
-	UpdateJuggleRepsText(0);
-
-	data.currJuggle = 0;
+	HurtboxesOff();
+	HitboxesOff();
 
 	numHealth = maxHealth;
 }
@@ -203,9 +159,8 @@ void BounceJuggler::Pop()
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
-	data.waitFrame = 0;
+	HurtboxesOff();
+	HitboxesOff();
 }
 
 void BounceJuggler::PopThrow()
@@ -213,28 +168,32 @@ void BounceJuggler::PopThrow()
 	action = S_FLY;
 	frame = 0;
 
+	data.flyFrame = 0;
+
 	V2d dir;
 
-	if (guidedDir == NULL)
+	dir = receivedHit.hDir;//normalize(receivedHit->hDir);
+						   //cout << "dir: " << dir.x << "," << dir.y << endl;
+	if (dir.x == 0 && dir.y == 0)
 	{
-		dir = receivedHit.hDir;//normalize(receivedHit->hDir);
-		//cout << "dir: " << dir.x << "," << dir.y << endl;
-		if (dir.x == 0 && dir.y == 0)
-		{
-			//dir = receivedHit.
+		//dir = receivedHit.
 
-			dir = -normalize(surfaceMover->GetVel());
-			assert(dir.x != 0 || dir.y != 0);
-			action = S_BOUNCE;
-			frame = 0;
-		}
-	}
-	else
-	{
-		dir = guidedDir[data.currJuggle];
+		dir = -normalize(surfaceMover->GetVel());
+		assert(dir.x != 0 || dir.y != 0);
+		action = S_BOUNCE;
+		frame = 0;
 	}
 
 	V2d hit = dir * flySpeed;
+
+	if (dir.x < 0)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		facingRight = true;
+	}
 	
 	Pop();
 
@@ -253,17 +212,6 @@ void BounceJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (!limitedJuggles)
-			{
-				if (hasMonitor && !suppressMonitor)
-				{
-					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-						sess->GetPlayer(0), 1, GetPosition());
-					suppressMonitor = true;
-					PlayKeyDeathSound();
-				}
-			}
-
 			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 
@@ -291,35 +239,11 @@ void BounceJuggler::ProcessState()
 			surfaceMover->Set(startPosInfo);
 			//DefaultHitboxesOn();
 			DefaultHurtboxesOn();
-			UpdateJuggleRepsText(juggleReps);
-			data.doneBeingHittable = false;
 			action = S_FLOAT;
 			frame =  0;
 			break;
-			/*case S_EXPLODE:
-			numHealth = 0;
-			dead = true;
-			owner->PlayerRemoveActiveComboer(comboObj);
-			break;*/
 		}
 	}
-
-
-
-	
-	/*if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
-	{
-	sf::Rect<double> r(position.x - 50, position.y - 50, 100, 100);
-	owner->activeEnemyItemTree->Query(this, r);
-	}*/
-
-
-	/*if (action == S_POP && ((velocity.y >= 0 && !reversedGrav) || (velocity.y <= 0 && reversedGrav)))
-	{
-		action = S_JUGGLE;
-		frame = 0;
-		SetHurtboxes(hurtBody, 0);
-	}*/
 }
 
 void BounceJuggler::HandleNoHealth()
@@ -340,6 +264,16 @@ void BounceJuggler::DirectKill()
 //	position = mover->physBody.globalPosition;
 //}
 
+bool BounceJuggler::CanComboHit(Enemy *e)
+{
+	if (e->type == EN_BOUNCEJUGGLER)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void BounceJuggler::UpdateEnemyPhysics()
 {
 	switch (action)
@@ -359,13 +293,13 @@ void BounceJuggler::FrameIncrement()
 {
 	if (action == S_FLY || action == S_BOUNCE)
 	{
-		if (data.waitFrame == maxWaitFrames)
+		if (data.flyFrame == maxFlyFrames)
 		{
 			Return();
 		}
 		else
 		{
-			data.waitFrame++;
+			data.flyFrame++;
 		}
 	}
 }
@@ -373,26 +307,23 @@ void BounceJuggler::FrameIncrement()
 void BounceJuggler::ComboHit()
 {
 	pauseFrames = 5;
-	++data.currHits;
+	/*++data.currHits;
 	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
 		Return();
-	}
+	}*/
 }
 
 void BounceJuggler::ComboKill(Enemy *e)
 {
-	if (level == 2)
+	/*if (level == 2)
 	{
 		V2d playerDir = normalize(sess->GetPlayerPos(0) - GetPosition());
 		Throw(playerDir * flySpeed);
 
 		action = S_BOUNCE;
 		frame = 0;
-
-		if(!data.doneBeingHittable)
-			DefaultHurtboxesOn();
-	}
+	}*/
 }
 
 void BounceJuggler::UpdateSprite()
@@ -406,87 +337,61 @@ void BounceJuggler::UpdateSprite()
 		break;
 	}
 
-	sprite.setTextureRect(ts->GetSubRect(5));
+
+	sprite.setTextureRect(ts->GetSubRect(0));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 
-	if (data.doneBeingHittable)
+	if (action == S_FLOAT)
 	{
-		sprite.setColor(Color::Blue);
+		sprite.setRotation(0);
+	}
+	else if (action == S_RETURN)
+	{
+
 	}
 	else
 	{
-		sprite.setColor(Color::White);
-	}
+		V2d vel = normalize(surfaceMover->GetVel());
 
-	if (limitedJuggles)
-	{
-		numJugglesText.setPosition(sprite.getPosition());
-	}
+		double ang = GetVectorAngleCW(vel);
+		if (facingRight)
+		{
+			sprite.setRotation(ang / PI * 180.0);
+		}
+		else
+		{
+			sprite.setRotation(ang / PI * 180.0 + 180);
+		}
+	}	
 }
 
 void BounceJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-
-	if (limitedJuggles)
-	{
-		target->draw(numJugglesText);
-	}
 }
 
 void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 {
 	V2d pos = edge->GetPosition(quant);
-	/*if (b->bounceCount == 2)
+
+	V2d en = edge->Normal();
+	if (pos == edge->v0)
 	{
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
+		en = normalize(GetPosition() - pos);
 	}
-	else*/
+	else if (pos == edge->v1)
 	{
-		V2d en = edge->Normal();
-		if (pos == edge->v0)
-		{
-			en = normalize(GetPosition() - pos);
-		}
-		else if (pos == edge->v1)
-		{
-			en = normalize(GetPosition() - pos);
-		}
-		double d = dot(surfaceMover->GetVel(), en);
-		V2d ref = surfaceMover->GetVel() - (2.0 * d * en);
-		surfaceMover->SetVelocity(ref);
-		surfaceMover->ground = NULL;
+		en = normalize(GetPosition() - pos);
 	}
+	double d = dot(surfaceMover->GetVel(), en);
+	V2d ref = surfaceMover->GetVel() - (2.0 * d * en);
+	surfaceMover->SetVelocity(ref);
+	surfaceMover->ground = NULL;
 
 	action = S_BOUNCE;
 	frame = 0;
-	//SetHitboxes(hitBody, 0);
-
-	++data.currJuggle;
-	UpdateJuggleRepsText(juggleReps - data.currJuggle);
-
-	if (limitedJuggles && data.currJuggle == juggleReps - 1)
-	{
-		if (hasMonitor && !suppressMonitor)
-		{
-			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-				sess->GetPlayer(0), 1, GetPosition());
-			suppressMonitor = true;
-			PlayKeyDeathSound();
-		}
-	}
-
-	if (!data.doneBeingHittable)
-	{
-		//DefaultHurtboxesOn();
-	}
-
-	
 }
 
 int BounceJuggler::GetNumStoredBytes()
@@ -509,7 +414,6 @@ void BounceJuggler::SetFromBytes(unsigned char *bytes)
 	memcpy(&data, bytes, sizeof(MyData));
 	SetBasicEnemyData(data);
 
-	UpdateJuggleRepsText(data.juggleTextNumber);
 	bytes += sizeof(MyData);
 
 	comboObj->SetFromBytes(bytes);

@@ -18,16 +18,14 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 
 	struct MyData : StoredEnemyData
 	{
-		int currHits;
-		int juggleTextNumber;
-		int currJuggle;
-		int waitFrame;
-		bool doneBeingHittable;
+		int flyFrame;
+		//int currHits;
+		//int juggleTextNumber;
+		//int currJuggle;
+		//int waitFrame;
+		//bool doneBeingHittable;
 	};
 	MyData data;
-
-	sf::Text numJugglesText;
-	bool limitedJuggles;
 
 	double flySpeed;
 
@@ -37,16 +35,13 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 
 	int juggleReps;
 
-	V2d *guidedDir;
-
-	int maxWaitFrames;
+	int maxFlyFrames;
 
 	bool CountsForEnemyGate() { return false; }
 	BounceJuggler(ActorParams *ap);
 	~BounceJuggler();
 	void SetLevel(int lev);
 	void HitTerrainAerial(Edge * edge, double quant);
-	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -60,8 +55,8 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 	void Return();
 	void Pop();
 	void PopThrow();
-	void UpdateJuggleRepsText(int reps);
 	void DirectKill();
+	bool CanComboHit(Enemy *e);
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
