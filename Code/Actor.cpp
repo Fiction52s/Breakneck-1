@@ -6402,10 +6402,15 @@ void Actor::ProcessHitGrass()
 
 void Actor::ProcessBounceGrassGrounded()
 {
-	if ( ground != NULL && touchedGrass[Grass::BOUNCE] && !bounceFlameOn)
+	if ( ground != NULL && touchedGrass[Grass::BOUNCE] && !bounceFlameOn)//ground != NULL && touchedGrass[Grass::BOUNCE] && !bounceFlameOn)
 	{
 		SetAction(JUMP);
 		frame = 1;
+
+		if (action != FAIR && action != DAIR && action != UAIR)
+		{
+			
+		}
 
 		velocity = GetTrueVel();
 
@@ -6425,6 +6430,8 @@ void Actor::ProcessBounceGrassGrounded()
 			velocity.y += 25;
 			//velocity.y = 25;
 		}
+
+		reversed = false;
 
 		ground = NULL;
 		bounceEdge = NULL;
@@ -12101,6 +12108,8 @@ void Actor::HandleBounceGrass()
 
 	physicsOver = true;
 
+	V2d oldVel = velocity;
+
 	double extraBUp = .2;
 	double extraBDown = .2;
 	double currBoostBounceSpeed = GetBounceBoostSpeed();
@@ -12143,9 +12152,55 @@ void Actor::HandleBounceGrass()
 
 	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
 
+	if (bounceNorm.y != 0)
+	{
+		/*if (oldVel.x > 0 && bounceNorm.x > 0 && velocity.x < oldVel.x)
+		{
+			velocity.x = oldVel.x;
+		}
+		else if (oldVel.x < 0 && bounceNorm.x < 0 && velocity.x < oldVel.x)
+		{
+			velocity.x = oldVel.x;
+		}*/
+
+		if (oldVel.x > 0 && velocity.x > 0 && velocity.x < oldVel.x)
+		{
+			velocity.x = oldVel.x;
+		}
+		else if (oldVel.x < 0 && velocity.x < 0 && velocity.x > oldVel.x)
+		{
+			velocity.x = oldVel.x;
+		}
+	}
+
+	//minimum bounce along normal. wall minimum bounce is smaller
+	double alongNormal = dot(velocity, bn);
+	double limit = 10.0;
+	if (bn.x == 1.0 || bn.x == -1.0)
+	{
+		limit = 2.0;
+	}
+	if (alongNormal < limit)
+	{
+		//cout << "heres the test" << endl;
+		double diff = limit - alongNormal;
+		velocity += diff * bn;
+	}
+
 	if (bn.y == 1 || bn.y == -1)
 	{
-		if (velocity.x > 0)
+		if (velocity.x == 0)
+		{
+			if (currInput.LLeft())
+			{
+				velocity.x = -dSpeed;
+			}
+			else if (currInput.LRight())
+			{
+				velocity.x = dSpeed;
+			}
+		}
+		else if (velocity.x > 0)
 		{
 			if (currInput.LLeft())
 			{
@@ -12170,85 +12225,6 @@ void Actor::HandleBounceGrass()
 
 void Actor::HandleBounceRail()
 {
-
-	//might not work for flat /\ tops of hills like that.
-	
-
-	//physicsOver = true;
-	//cout << "BOUNCING HERE" << endl;
-
-	//storedBounceVel = velocity;
-	////scorpOn = false;
-
-	//SetAction(BOUNCEGROUND);
-	//boostBounce = false;
-	//frame = 0;
-	//groundSpeed = 0;
-
-	//if (bn.y <= 0 && bn.y > -steepThresh)
-	//{
-	//	//RestoreAirOptions();
-	//	if (storedBounceVel.x > 0 && bn.x < 0 && facingRight
-	//		|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight)
-	//	{
-	//		facingRight = !facingRight;
-	//	}
-	//}
-	//else if (bn.y >= 0 && -bn.y > -steepThresh)
-	//{
-	//	if (storedBounceVel.x > 0 && bn.x < 0 && facingRight
-	//		|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight)
-	//	{
-	//		facingRight = !facingRight;
-	//	}
-	//}
-	//else if (bn.y == 0)
-	//{
-	//	facingRight = !facingRight;
-	//}
-	//else if (bn.y < 0)
-	//{
-	//	RestoreAirOptions();
-	//}
-
-	//if (bn.y != 0)
-	//{
-	//	if (bounceEdge != NULL)
-	//	{
-	//		V2d oldv0 = bounceEdge->v0;
-	//		V2d oldv1 = bounceEdge->v1;
-
-
-	//		position = bounceEdge->GetPosition(edgeQuantity);
-
-	//	}
-	//	else
-	//	{
-	//		V2d oldv0 = ground->v0;
-	//		V2d oldv1 = ground->v1;
-
-
-	//		position = ground->GetPosition(edgeQuantity);
-	//	}
-
-	//	position.x += offsetX + b.offset.x;
-
-	//	if (bn.y > 0)
-	//	{
-	//		{
-	//			position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-	//		}
-	//	}
-	//	else
-	//	{
-	//		if (bn.y < 0)
-	//		{
-	//			position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-	//		}
-	//	}
-	//}
-
-
 	V2d bn = bounceEdge->Normal();//minContact.normal;
 
 
@@ -12272,45 +12248,10 @@ void Actor::HandleBounceRail()
 		}
 	}
 
-	//position.x += offsetX + b.offset.x;
-	/*if (bn.y == 0)
-	{
 
-	}*/
-	//if (bn.y != 0)
-	//{
-	//	V2d oldv0 = bounceEdge->v0;
-	//	V2d oldv1 = bounceEdge->v1;
-
-
-	//	position = bounceEdge->GetPosition(edgeQuantity);
-
-	//	
-
-	//	if (bn.y > 0)
-	//	{
-	//		{
-	//			position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-	//		}
-	//	}
-	//	else
-	//	{
-	//		if (bn.y < 0)
-	//		{
-	//			position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-	//		}
-	//	}
-	//}
+	V2d oldVel = velocity;
 
 	physicsOver = true;
-
-
-
-
-
-
-
-
 
 
 	double maxBounceBoost = 40;
@@ -12383,10 +12324,32 @@ void Actor::HandleBounceRail()
 
 	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
 	
+	if (bounceNorm.y != 0)
+	{
+		if (oldVel.x > 0 && bounceNorm.x > 0 && velocity.x < oldVel.x)
+		{
+			velocity.x = oldVel.x;
+		}
+		else if (oldVel.x < 0 && bounceNorm.x < 0 && velocity.x < oldVel.x)
+		{
+			velocity.x = oldVel.x;
+		}
+	}
 
 	if (bn.y == 1 || bn.y == -1)
 	{
-		if (velocity.x > 0)
+		if (velocity.x == 0)
+		{
+			if (currInput.LLeft())
+			{
+				velocity.x = -dSpeed;
+			}
+			else if (currInput.LRight())
+			{
+				velocity.x = dSpeed;
+			}
+		}
+		else if (velocity.x > 0)
 		{
 			if (currInput.LLeft())
 			{
