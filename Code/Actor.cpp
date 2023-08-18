@@ -7110,7 +7110,7 @@ void Actor::UpdatePrePhysics()
 		SetAirPos(position, facingRight);
 	}
 	
-	TryCheckGrass();
+	//TryCheckGrass();
 
 	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
 	{
@@ -8840,7 +8840,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		}
 	}
 
-//	TryCheckGrass(r);
+	TryCheckGrass();
 
 	
 	
