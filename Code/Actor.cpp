@@ -16282,6 +16282,7 @@ void Actor::HandleWaterSituation(int wType,
 					springStunFramesStart = springStunFrames;
 
 					//make into function soon
+					reversed = false;
 					holdJump = false;
 					holdDouble = false;
 					RestoreAirOptions();
@@ -16434,6 +16435,8 @@ void Actor::HandleSpecialTerrain()
 	{
 		return;
 	}
+
+	//cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
 
 	int wType;
 	int oldWType; 
@@ -17215,6 +17218,14 @@ void Actor::UpdatePostPhysics()
 		frameAfterAttackingHitlagOver = false;
 	}
 
+	if (ground != NULL) //doesn't work when grinding or bouncing yet
+	{
+		double g = groundSpeed;
+		if (reversed)
+			g = -g;
+		velocity = normalize(ground->v1 - ground->v0) * g;
+	}
+
 	KinModeUpdate();
 	
 	QueryTouchGrass();
@@ -17327,10 +17338,21 @@ void Actor::UpdatePostPhysics()
 	if( kinMask != NULL)
 		kinMask->Update(speedLevel, kinMode == K_DESPERATION );
 
-	if( ground != NULL ) //doesn't work when grinding or bouncing yet
+
+	//needed before and after water does stuff
+	if (ground != NULL) //doesn't work when grinding or bouncing yet
 	{
-		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
+		double g = groundSpeed;
+		if (reversed)
+			g = -g;
+		velocity = normalize(ground->v1 - ground->v0) * g;
 	}
+
+	//moving this before the water so it'll be accurate. also fixing for reversed
+	//if( ground != NULL ) //doesn't work when grinding or bouncing yet
+	//{
+	//	velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
+	//}
 
 	nameTag->SetPos(Vector2f( position ) );
 

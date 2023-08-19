@@ -176,7 +176,7 @@ void Actor::BOUNCEGROUND_Change()
 		double extraBThresh = .8; //works on almost everything
 		double dSpeed = GetDashSpeed();
 
-		V2d oldVel = velocity;
+		V2d oldVel = storedBounceVel;
 
 		//velocity = bounceEdge->Normal() * 20.0;
 
@@ -232,14 +232,25 @@ void Actor::BOUNCEGROUND_Change()
 
 		if (bounceNorm.y != 0)
 		{
-			if (oldVel.x > 0 && bounceNorm.x > 0 && velocity.x < oldVel.x)
+			/*if (oldVel.x > 0 && bounceNorm.x > 0 && velocity.x < oldVel.x)
 			{
 				velocity.x = oldVel.x;
 			}
 			else if (oldVel.x < 0 && bounceNorm.x < 0 && velocity.x < oldVel.x)
 			{
 				velocity.x = oldVel.x;
+			}*/
+
+
+			if (oldVel.x > 0 && velocity.x > 0 && velocity.x < oldVel.x)
+			{
+				velocity.x = oldVel.x;
 			}
+			else if (oldVel.x < 0 && velocity.x < 0 && velocity.x > oldVel.x)
+			{
+				velocity.x = oldVel.x;
+			}
+			
 		}
 		
 
