@@ -22,10 +22,21 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);
 
+	if (!myShader.loadFromFile("Resources/Shader/comboertarget_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "couldnt load comboer target shader" << endl;
+		assert(false);
+	}
+
 	ts = GetSizedTileset("Enemies/key_comboer_256x256.png");
+
+	ts_palette = GetSizedTileset("Enemies/key_comboer_palette_17x8.png");
+	sf::Image paletteImage = ts_palette->texture->copyToImage();
 
 	hasMonitor = true;
 	SetKey();
+
+	int skinIndex = 0;
 
 	keyObjectSprite.setTexture(*sess->ts_key->texture);
 
@@ -33,27 +44,39 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 	if (typeName == "bluecomboertarget")
 	{
 		targetType = TARGET_COMBOER_BLUE;
+		skinIndex = 0;
 	}
 	else if (typeName == "greencomboertarget")
 	{
 		targetType = TARGET_COMBOER_GREEN;
+		skinIndex = 1;
 	}
 	else if (typeName == "yellowcomboertarget")
 	{
 		targetType = TARGET_COMBOER_YELLOW;
+		skinIndex = 2;
 	}
 	else if (typeName == "orangecomboertarget")
 	{
 		targetType = TARGET_COMBOER_ORANGE;
+		skinIndex = 3;
 	}
 	else if (typeName == "redcomboertarget")
 	{
 		targetType = TARGET_COMBOER_RED;
+		skinIndex = 4;
 	}
 	else if (typeName == "magentacomboertarget")
 	{
 		targetType = TARGET_COMBOER_MAGENTA;
+		skinIndex = 5;
 	}
+
+	for (int i = 0; i < 17; ++i)
+	{
+		paletteArray[i] = sf::Glsl::Vec4(paletteImage.getPixel(i, skinIndex));
+	}
+	myShader.setUniformArray("u_palette", paletteArray, 17);
 
 	keyIdleLength = 16;
 	keyAnimFactor = 3;
@@ -206,36 +229,32 @@ void ComboerTarget::UpdateSprite()
 
 void ComboerTarget::EnemyDraw(sf::RenderTarget *target)
 {
+	myShader.setUniform("u_texture", *ts->texture);
+
 	sess->ts_key->SetSpriteTexture(keyObjectSprite);
 
 	bool drawHurtShader = (pauseFrames >= 2 && !pauseFramesFromAttacking) && currShield == NULL;
-	if (hasMonitor && !suppressMonitor)
+
+
+	if(drawHurtShader)
 	{
-		if (drawHurtShader)
-		{
-			target->draw(sprite, &hurtShader);
-		}
-		else
-		{
-			target->draw(sprite);// , &keyShader);
-		}
-		target->draw(keySprite);
+		myShader.setUniform("u_hurt", 1);
+		target->draw(sprite, &myShader);
 	}
 	else
 	{
-		if (drawHurtShader)
-		{
-			target->draw(sprite, &hurtShader);
-		}
-		else
-		{
-			target->draw(sprite);
-		}
+		myShader.setUniform("u_hurt", 0);
+		target->draw(sprite, &myShader);// , &keyShader);
 	}
 
 	if (action == A_IDLE)
 	{
 		DrawSprite(target, keyObjectSprite);
+	}
+
+	if (hasMonitor && !suppressMonitor)
+	{
+		target->draw(keySprite);
 	}
 }
 

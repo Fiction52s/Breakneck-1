@@ -30,8 +30,14 @@ struct ComboerTarget : Enemy
 	};
 	MyData data;
 
+
+	sf::Shader myShader;
+	sf::Glsl::Vec4 paletteArray[17];
+	Tileset *ts_palette;
+
 	int targetType;
 	Tileset *ts;
+	
 	sf::Sprite keyObjectSprite;
 	int keyIdleLength;
 	
