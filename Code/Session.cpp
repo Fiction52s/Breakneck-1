@@ -520,7 +520,8 @@ void Session::RegisterW5Enemies()
 	//AddWorldEnemy("limitedrelativecomboer", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//comboers
-	AddWorldEnemy("Hungry\nComboer", "hungrycomboer", 5, comboerRow, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	//AddWorldEnemy("Hungry\nComboer", "hungrycomboer", 5, comboerRow, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Hungry\nComboer", "hungrycomboer", 5, comboerRow, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 	//AddWorldEnemy("Hungry\nReturn\nComboer", "hungryreturncomboer", 5, comboerRow, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 

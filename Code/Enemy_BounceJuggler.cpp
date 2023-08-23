@@ -337,8 +337,7 @@ void BounceJuggler::UpdateSprite()
 		break;
 	}
 
-
-	sprite.setTextureRect(ts->GetSubRect(0));
+	ts->SetSubRect(sprite, tile, !facingRight);
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

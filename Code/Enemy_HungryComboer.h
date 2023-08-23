@@ -12,7 +12,6 @@ struct HungryComboer : Enemy, EnemyTracker
 	{
 		S_FLOAT,
 		S_FLY,
-		S_TRACKPLAYER,
 		S_TRACKENEMY,
 		S_RETURN,
 		S_WAIT,
@@ -21,10 +20,7 @@ struct HungryComboer : Enemy, EnemyTracker
 
 	struct MyData : StoredEnemyData
 	{
-		int numEatenTextNumber;
-		int currHits;
 		V2d velocity;
-		int growthLevel;
 		Enemy *chaseTarget;
 		int chaseIndex;
 		int waitFrame;
@@ -32,16 +28,8 @@ struct HungryComboer : Enemy, EnemyTracker
 	};
 	MyData data;
 
-	bool limitedEating;
-	sf::Text numEatenText;
-
-	int hitLimit;
-	
-
 	Tileset *ts;
-
 	
-	int numGrowthLevels;
 	double origScale;
 	double origSize;
 
@@ -49,18 +37,18 @@ struct HungryComboer : Enemy, EnemyTracker
 
 	int maxEdible;
 	
-
-	
 	int maxWaitFrames;
+
+	double homingRadius;
 
 	//bool IsHomingTarget() { return false; }
 	bool CountsForEnemyGate() { return false; }
 	HungryComboer(ActorParams *ap);
 	~HungryComboer();
+	
 	void SetLevel(int lev);
 	//void HandleEntrant(QuadTreeEntrant *qte);
 	bool IsValidTrackEnemy(Enemy *e);
-	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
 	void Eat();
@@ -70,6 +58,7 @@ struct HungryComboer : Enemy, EnemyTracker
 	void ComboHit();
 	void ComboKill( Enemy *e );
 	void EnemyDraw(sf::RenderTarget *target);
+	void DebugDraw(sf::RenderTarget *target);
 	void DirectKill();
 	void UpdateSprite();
 	void ResetEnemy();
@@ -79,7 +68,6 @@ struct HungryComboer : Enemy, EnemyTracker
 	void Pop();
 	void PopThrow();
 	void UpdateScale();
-	void UpdateEatenNumberText(int reps);
 
 	double GetFlySpeed();
 	V2d GetTrackPos();
