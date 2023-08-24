@@ -1938,6 +1938,17 @@ void TerrainRail::FadeOut()
 
 bool TerrainRail::IsActive()
 {
+	//so that it draws correctly in the editor while editing
+	if (sess->IsSessTypeEdit())
+	{
+		EditSession *edit = EditSession::GetSession();
+
+		if (edit->mode != EditSession::TEST_PLAYER)
+		{
+			return true;
+		}
+	}
+
 	if (rType == PHASE)
 	{
 		return sess->phaseOn;

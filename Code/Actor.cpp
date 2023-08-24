@@ -18954,7 +18954,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 		if (e->rail != NULL)
 		{
-			if (!e->rail->IsTerrainType() && e->rail->IsActive() && e->rail->IsEdgeActive( e ) )
+			if (!e->rail->IsActive())
+			{
+				return;
+			}
+			else if (!e->rail->IsTerrainType())// && e->rail->IsActive() && e->rail->IsEdgeActive( e ) )
 			{
 				return;
 			}
