@@ -40,6 +40,7 @@ void WireJuggler::UpdateParamsSettings()
 WireJuggler::WireJuggler( ActorParams *ap )
 	:Enemy(EnemyType::EN_WIREJUGGLER, ap )
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
 	//jType = juggleType;
 
 	SetNumActions(S_Count);

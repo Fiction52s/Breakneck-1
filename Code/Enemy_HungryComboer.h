@@ -48,13 +48,14 @@ struct HungryComboer : Enemy, EnemyTracker
 	
 	void SetLevel(int lev);
 	//void HandleEntrant(QuadTreeEntrant *qte);
-	bool IsValidTrackEnemy(Enemy *e);
+	bool CheckIfEnemyIsTrackable(Enemy *e);
 	void ProcessState();
 	void ProcessHit();
 	void Eat();
 	void IHitPlayer(int index);
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
+	bool CanComboHit(Enemy *e);
 	void ComboHit();
 	void ComboKill( Enemy *e );
 	void EnemyDraw(sf::RenderTarget *target);

@@ -546,6 +546,8 @@ void Enemy::OnCreate(ActorParams *ap,
 		name = ap->GetTypeName();
 	}
 
+	enemyDrawLayer = ENEMYDRAWLAYER_DEFAULT;
+
 	RegisterCollisionBody(hitBody);
 	RegisterCollisionBody(hurtBody);
 
@@ -1810,8 +1812,13 @@ void Enemy::ComboKill(Enemy *e)
 	//empty default
 }
 
-void Enemy::Draw(sf::RenderTarget *target)
+void Enemy::Draw(int p_enemyDrawLayer, sf::RenderTarget *target)
 {
+	if (enemyDrawLayer != p_enemyDrawLayer)
+	{
+		return;
+	}
+
 	if (cutObject != NULL)
 	{
 		if (dead && cutObject->active )

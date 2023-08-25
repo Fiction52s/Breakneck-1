@@ -26,6 +26,8 @@ void GrindJuggler::UpdateParamsSettings()
 GrindJuggler::GrindJuggler(ActorParams *ap)
 	:Enemy(EnemyType::EN_GRINDJUGGLER, ap)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, 0, 0);
 

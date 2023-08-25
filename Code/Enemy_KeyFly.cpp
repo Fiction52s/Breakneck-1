@@ -11,6 +11,8 @@ using namespace sf;
 KeyFly::KeyFly(ActorParams *ap)
 	:Enemy(EnemyType::EN_KEYFLY, ap)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_KEY;
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_NEUTRAL, S_NEUTRAL, 0);
 

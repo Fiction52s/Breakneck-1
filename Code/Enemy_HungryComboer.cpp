@@ -17,6 +17,8 @@ using namespace sf;
 HungryComboer::HungryComboer(ActorParams *ap)
 	:Enemy(EnemyType::EN_HUNGRYCOMBOER, ap)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(A_Count);
 	SetEditorActions(S_FLY, S_FLY, 0);
 
@@ -40,21 +42,21 @@ HungryComboer::HungryComboer(ActorParams *ap)
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	hitboxInfo = new HitboxInfo;
+	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
-	hitboxInfo->hType = HitboxInfo::RED;
+	hitboxInfo->hType = HitboxInfo::RED;*/
 
 	origSize = 48;
 
 	BasicCircleHurtBodySetup(origSize);
-	BasicCircleHitBodySetup(origSize);
+	//BasicCircleHitBodySetup(origSize);
 
-	hitBody.hitboxInfo = hitboxInfo;
+	//hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -109,7 +111,7 @@ void HungryComboer::ResetEnemy()
 
 	data.velocity = V2d(0, 0);
 	
-	DefaultHitboxesOn();
+//	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
 	action = S_FLOAT;
@@ -182,7 +184,7 @@ void HungryComboer::Pop()
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	HurtboxesOff();
-	//HitboxesOff();
+	HitboxesOff();
 	data.waitFrame = 0;
 }
 
@@ -191,6 +193,12 @@ void HungryComboer::PopThrow()
 	V2d dir;
 
 	dir = Get8Dir(receivedHit.hDir);
+
+
+	if (action == S_TRACKENEMY)
+	{
+		Eat();
+	}
 
 	Pop();
 
@@ -261,11 +269,13 @@ void HungryComboer::ProcessState()
 		{
 		case S_FLY:
 			action = S_TRACKENEMY;
+			//HurtboxesOff();
+			//DefaultHurtboxesOn();
 			frame = 0;
 			break;
 		case S_RETURN:
 			SetCurrPosInfo(startPosInfo);
-			DefaultHitboxesOn();
+			//DefaultHitboxesOn();
 			DefaultHurtboxesOn();
 			action = S_FLOAT;
 			frame = 0;
@@ -285,7 +295,7 @@ void HungryComboer::ProcessState()
 
 	if (action == S_TRACKENEMY )
 	{
-		if (data.chaseTarget != NULL && data.chaseTarget->dead)
+		if (data.chaseTarget != NULL && !data.chaseTarget->IsValidTrackEnemy())
 		{
 			data.chaseTarget = NULL;
 		}
@@ -331,7 +341,7 @@ double HungryComboer::GetFlySpeed()
 }
 
 //checks to see if it can home on
-bool HungryComboer::IsValidTrackEnemy(Enemy *e)
+bool HungryComboer::CheckIfEnemyIsTrackable(Enemy *e)
 {
 	if (e != this && e->numHealth > 0 )
 	{
@@ -340,7 +350,7 @@ bool HungryComboer::IsValidTrackEnemy(Enemy *e)
 			return false;
 		}
 
-		return true;
+		return e->IsValidTrackEnemy();
 	}
 
 	return false;
@@ -445,8 +455,8 @@ void HungryComboer::UpdateEnemyPhysics()
 void HungryComboer::UpdateScale()
 {
 	sprite.setScale(scale, scale);
-	hitBody.GetCollisionBoxes(0).front().rw = scale * origSize;
-	hitBody.GetCollisionBoxes(0).front().rh = scale * origSize;
+	//hitBody.GetCollisionBoxes(0).front().rw = scale * origSize;
+	//hitBody.GetCollisionBoxes(0).front().rh = scale * origSize;
 	hurtBody.GetCollisionBoxes(0).front().rw = scale * origSize;
 	hurtBody.GetCollisionBoxes(0).front().rh = scale * origSize;
 }
@@ -464,6 +474,16 @@ void HungryComboer::FrameIncrement()
 			data.waitFrame++;
 		}
 	}
+}
+
+bool HungryComboer::CanComboHit(Enemy *e)
+{
+	if (e->type == EN_HUNGRYCOMBOER)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void HungryComboer::ComboHit()

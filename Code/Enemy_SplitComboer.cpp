@@ -35,6 +35,8 @@ void SplitPiece::SetLevel(int lev)
 SplitPiece::SplitPiece( SplitComboer *splitComb )
 	:Enemy( EnemyType::EN_SPLITCOMBOER, NULL )//, false, 1, false)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(S_Count);
 
 	actionLength[S_FLY] = 120;
@@ -240,6 +242,8 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 	//int p_level)
 	:Enemy(EnemyType::EN_SPLITCOMBOER, ap )//false, 1, false)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, S_FLOAT, 0);
 

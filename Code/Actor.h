@@ -1850,7 +1850,7 @@ struct Actor : QuadTreeCollider,
 	int GetCurrUpTilt();
 	int GetCurrDownTilt();
 
-	bool IsValidTrackEnemy(Enemy *e);
+	bool CheckIfEnemyIsTrackable(Enemy *e);
 
 	void RevertAfterSimulating();
 	void ForwardSimulate(int frames, bool storePositions);

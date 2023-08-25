@@ -23565,9 +23565,9 @@ void Actor::UpdateInHitlag()
 	 }
  }
 
- bool Actor::IsValidTrackEnemy(Enemy *e)
+ bool Actor::CheckIfEnemyIsTrackable(Enemy *e)
  {
-	 return e->IsHomingTarget() && EnemyTracker::IsValidTrackEnemy(e);
+	 return e->IsHomingTarget() && EnemyTracker::CheckIfEnemyIsTrackable(e);
  }
 
  void Actor::SetSkin(int skinIndex)

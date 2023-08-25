@@ -16,6 +16,8 @@ using namespace sf;
 Comboer::Comboer(ActorParams *ap )
 	:Enemy(EnemyType::EN_COMBOER, ap )//, false, 1, false)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, S_FLOAT, 0);
 

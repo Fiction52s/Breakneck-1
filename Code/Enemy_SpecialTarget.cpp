@@ -12,6 +12,8 @@ using namespace sf;
 SpecialTarget::SpecialTarget(ActorParams *ap)
 	:Enemy(EnemyType::EN_SPECIALTARGET, ap)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_TARGET;
+
 	SetNumActions(A_Count);
 	SetEditorActions(A_IDLE, A_IDLE, 0);
 

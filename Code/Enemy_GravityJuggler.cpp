@@ -58,6 +58,8 @@ void GravityJuggler::SetLevel(int lev)
 GravityJuggler::GravityJuggler(ActorParams *ap)
 	:Enemy(EnemyType::EN_GRAVITYJUGGLER, ap)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, 0, 0);
 

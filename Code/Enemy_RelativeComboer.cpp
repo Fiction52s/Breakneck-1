@@ -31,6 +31,8 @@ void RelativeComboer::UpdateParamsSettings()
 RelativeComboer::RelativeComboer(ActorParams *ap )
 	:Enemy(EnemyType::EN_RELATIVECOMBOER, ap )
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLY, S_FLY, 0);
 

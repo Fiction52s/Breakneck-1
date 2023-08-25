@@ -925,7 +925,7 @@ void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
 	Enemy *currentEffect = effectListVec[layer];
 	while (currentEffect != NULL)
 	{
-		currentEffect->Draw(target);
+		currentEffect->Draw( Enemy::ENEMYDRAWLAYER_DEFAULT, target);
 		currentEffect = currentEffect->next;
 	}
 
@@ -4662,15 +4662,21 @@ void Session::ResetAbsorbParticles()
 
 void Session::DrawEnemies(sf::RenderTarget *target)
 {
-	Enemy *current = activeEnemyList;
-	while (current != NULL)
+	Enemy *current = NULL;//activeEnemyList;
+
+	for (int i = 0; i < Enemy::ENEMYDRAWLAYER_Count; ++i)
 	{
-		if (current->type != EnemyType::EN_BASICEFFECT && (pauseFrames < 2 || current->receivedHit.IsEmpty()))
+		current = activeEnemyList;
+		while (current != NULL)
 		{
-			current->Draw(preScreenTex);
+			if (current->type != EnemyType::EN_BASICEFFECT && (pauseFrames < 2 || current->receivedHit.IsEmpty()))
+			{
+				current->Draw( i, preScreenTex);
+			}
+			current = current->next;
 		}
-		current = current->next;
 	}
+	
 
 	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
@@ -4680,14 +4686,18 @@ void Session::DrawEnemies(sf::RenderTarget *target)
 
 void Session::DrawHitEnemies(sf::RenderTarget *target)
 {
-	Enemy *current = activeEnemyList;
-	while (current != NULL)
+	Enemy *current = NULL;
+	for (int i = 0; i < Enemy::ENEMYDRAWLAYER_Count; ++i)
 	{
-		if ((pauseFrames >= 2 && !current->receivedHit.IsEmpty() ))
+		current = activeEnemyList;
+		while (current != NULL)
 		{
-			current->Draw(target);
+			if ((pauseFrames >= 2 && !current->receivedHit.IsEmpty()))
+			{
+				current->Draw(i, target);
+			}
+			current = current->next;
 		}
-		current = current->next;
 	}
 }
 

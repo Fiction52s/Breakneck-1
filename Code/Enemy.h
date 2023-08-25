@@ -101,6 +101,16 @@ struct StoredEnemyData
 struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	SlowableObject, HittableObject
 {
+	//add more layers as necessary
+	enum EnemyDrawLayer
+	{
+		ENEMYDRAWLAYER_TARGET,
+		ENEMYDRAWLAYER_DEFAULT,
+		ENEMYDRAWLAYER_KEY,
+		ENEMYDRAWLAYER_COMBOER,
+		ENEMYDRAWLAYER_Count
+	};
+
 	static int bloodLengths[8];
 
 	virtual int GetNumEnergyAbsorbParticles();
@@ -133,6 +143,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	const static int DEFAULT_DETECT_RADIUS;//default values
 	const static int DEFAULT_IGNORE_RADIUS;//default values
 
+	int enemyDrawLayer; //0 is default, higher numbers are in back, lower numbers are in front
 	bool facingRight;
 	PositionInfo currPosInfo;
 	int action;
@@ -371,7 +382,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool RightWireHitMe( CollisionBox hurtBox );
 	bool LeftWireHitMe( CollisionBox hurtBox );
 	virtual void EnemyDraw(sf::RenderTarget *target) {}
-	virtual void Draw(sf::RenderTarget *target);
+	virtual void Draw(int p_enemyDrawLayer, sf::RenderTarget *target);
 	virtual void UpdateZoneSprite();
 	virtual void ZoneDraw(sf::RenderTarget *target);
 	void BasicCircleHurtBodySetup(double radius, 

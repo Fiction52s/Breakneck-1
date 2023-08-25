@@ -36,6 +36,8 @@ void BounceJuggler::SetLevel(int lev)
 BounceJuggler::BounceJuggler(ActorParams *ap)
 	:Enemy(EnemyType::EN_BOUNCEJUGGLER, ap)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetLevel(ap->GetLevel());
 
 	SetNumActions(S_Count);

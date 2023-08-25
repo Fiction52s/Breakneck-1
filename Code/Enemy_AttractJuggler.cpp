@@ -53,6 +53,8 @@ void AttractJuggler::SetLevel(int lev)
 AttractJuggler::AttractJuggler(ActorParams *ap)
 	:Enemy(EnemyType::EN_ATTRACTJUGGLER, ap)
 {
+	enemyDrawLayer = ENEMYDRAWLAYER_COMBOER;
+
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, 0, 0);
 

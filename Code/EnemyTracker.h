@@ -12,7 +12,7 @@ struct EnemyTracker
 		double radius,
 		Enemy *&foundEnemy,
 		int &foundIndex );
-	virtual bool IsValidTrackEnemy( Enemy *e );
+	virtual bool CheckIfEnemyIsTrackable( Enemy *e );
 };
 
 #endif

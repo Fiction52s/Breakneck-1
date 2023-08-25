@@ -555,7 +555,7 @@ void ActorParams::Draw(sf::RenderTarget *target)
 void ActorParams::DrawEnemy(sf::RenderTarget *target)
 {
 	if (myEnemy != NULL)
-		myEnemy->Draw(target);
+		myEnemy->Draw( myEnemy->enemyDrawLayer, target);
 	else
 	{
 		target->draw(image);
@@ -574,7 +574,7 @@ void ActorParams::DrawPreview(sf::RenderTarget *target)
 		if (myEnemy->GetAABB().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
 			viewSize.x, viewSize.y)))
 		{
-			myEnemy->Draw(target);
+			myEnemy->Draw(myEnemy->enemyDrawLayer, target);
 		}
 	}
 	else
