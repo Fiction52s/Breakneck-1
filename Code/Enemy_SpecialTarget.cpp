@@ -69,60 +69,15 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 		targetType = TARGET_FREEFLIGHT;
 		sprite.setColor(Color::Magenta);
 	}
-	else if (typeName == "bluecomboertarget")
-	{
-		targetType = TARGET_COMBOER_BLUE;
-		regenOn = false;
-	}
-	else if (typeName == "greencomboertarget")
-	{
-		targetType = TARGET_COMBOER_GREEN;
-	}
-	else if (typeName == "yellowcomboertarget")
-	{
-		targetType = TARGET_COMBOER_YELLOW;
-	}
-	else if (typeName == "orangecomboertarget")
-	{
-		targetType = TARGET_COMBOER_ORANGE;
-	}
-	else if (typeName == "redcomboertarget")
-	{
-		targetType = TARGET_COMBOER_RED;
-	}
-	else if (typeName == "magentacomboertarget")
-	{
-		targetType = TARGET_COMBOER_MAGENTA;
-	}
+	
 
+	ts = GetSizedTileset("Enemies/target_256x256.png");
 
-	if (targetType == TARGET_COMBOER_BLUE
-		|| targetType == TARGET_COMBOER_GREEN
-		|| targetType == TARGET_COMBOER_YELLOW
-		|| targetType == TARGET_COMBOER_ORANGE
-		|| targetType == TARGET_COMBOER_RED
-		|| targetType == TARGET_COMBOER_MAGENTA)
-	{
-		ts = GetSizedTileset("Enemies/key_comboer_256x256.png");
+	actionLength[A_IDLE] = 5;
+	animFactor[A_IDLE] = 5;
 
-		actionLength[A_IDLE] = 1;
-		animFactor[A_IDLE] = 5;
-
-		actionLength[A_DYING] = 11;//30
-		animFactor[A_DYING] = 3;
-
-	}
-	else
-	{
-		ts = GetSizedTileset("Enemies/target_256x256.png");
-
-		actionLength[A_IDLE] = 5;
-		animFactor[A_IDLE] = 5;
-
-		actionLength[A_DYING] = 30;
-		animFactor[A_DYING] = 1;
-
-	}
+	actionLength[A_DYING] = 30;
+	animFactor[A_DYING] = 1;
 
 	assert(targetType != -1);
 

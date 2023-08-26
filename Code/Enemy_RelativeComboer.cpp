@@ -66,21 +66,16 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 
 	hitLimit = -1;
 
+	lineMovement = flySeq.AddLineMovement(V2d(), V2d(), CubicBezier(), 30);
+	flySeq.InitMovementDebug();
+
+	
+
 	ts = GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3 * 60;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-
-	BasicCircleHitBodySetup(48);
 	BasicCircleHurtBodySetup(48);
-	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -120,6 +115,9 @@ RelativeComboer::~RelativeComboer()
 void RelativeComboer::ResetEnemy()
 {
 	data.latchFrame = 0;
+
+
+	flySeq.Reset();
 	
 	//sprite.setColor(Color::White);
 	data.specialPauseFrames = 0;
@@ -129,7 +127,6 @@ void RelativeComboer::ResetEnemy()
 	comboObj->Reset();
 	data.velocity = V2d(0, 0);
 	DefaultHurtboxesOn();
-	DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
 	
@@ -178,8 +175,8 @@ void RelativeComboer::Return()
 {
 	sess->PlayerRemoveActiveComboer(comboObj);
 
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	HurtboxesOff();
+	//SetHitboxes(NULL, 0);
 
 	data.numKilled = 0;
 
@@ -193,20 +190,32 @@ void RelativeComboer::Pop()
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	HurtboxesOff();
 	data.waitFrame = 0;
 }
 
 void RelativeComboer::PopThrow()
 {
+	action = S_FLY;
+	frame = 0;
+	data.latchedOn = true;
+	data.latchFrame = 0;
+	data.offsetPos = GetPosition() - sess->GetPlayerPos(0);
+	
+
 	V2d dir;
 
-	dir = Get8Dir(receivedHit.hDir);	
+	dir = receivedHit.hDir;
+
+	data.offsetDest = receivedHit.hDir * 250.0;
+
+	lineMovement->start = data.offsetPos;
+	lineMovement->end = data.offsetDest;
+	flySeq.Reset();
 
 	Pop();
 
-	Throw(dir * flySpeed);
+	//Throw(dir * flySpeed);
 
 	sess->PlayerAddActiveComboObj(comboObj);
 }
@@ -230,11 +239,7 @@ void RelativeComboer::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			action = S_FLY;
-			frame = 0;
-			data.latchedOn = true;
-			data.latchFrame = 0;
-			data.offsetPos = GetPosition() - sess->GetPlayerPos(0);
+			
 			PopThrow();
 		}
 		else
@@ -263,7 +268,6 @@ void RelativeComboer::ProcessState()
 			UpdateKilledNumberText(maxKilled);
 			SetCurrPosInfo(startPosInfo);
 			DefaultHurtboxesOn();
-			DefaultHitboxesOn();
 			data.latchedOn = false;
 			//basePos = origPos;
 			break;
@@ -317,7 +321,11 @@ void RelativeComboer::UpdateEnemyPhysics()
 		{
 		case S_FLY:
 		{
-			Move();
+			//Move();
+			//double factor = 
+			//data.offsetPos = 
+			data.offsetPos = flySeq.GetPos();
+			flySeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 			break;
 		}
 		}

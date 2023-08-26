@@ -427,10 +427,10 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 2, 2);
 		break;
 	case EnemyType::EN_HUNGRYCOMBOER:
-		hitParams.Set(5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1, false);
 		break;
 	case EnemyType::EN_RELATIVECOMBOER:
-		hitParams.Set(5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1, false);
 		break;
 	case EnemyType::EN_SWARM:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);

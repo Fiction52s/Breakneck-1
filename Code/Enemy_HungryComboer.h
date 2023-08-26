@@ -15,6 +15,7 @@ struct HungryComboer : Enemy, EnemyTracker
 		S_TRACKENEMY,
 		S_RETURN,
 		S_WAIT,
+		S_DIE, //for directkills
 		A_Count
 	};
 

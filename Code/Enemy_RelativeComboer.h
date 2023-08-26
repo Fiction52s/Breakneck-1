@@ -29,9 +29,12 @@ struct RelativeComboer : Enemy
 		bool latchedOn;
 		V2d basePos;
 		V2d offsetPos;
+		V2d offsetDest;
 	};
 	MyData data;
 
+	LineMovement *lineMovement;
+	MovementSequence flySeq;
 	bool limitedKills;
 	sf::Text numKilledText;
 
@@ -42,6 +45,8 @@ struct RelativeComboer : Enemy
 	int maxKilled;
 	int maxWaitFrames;
 	double flySpeed;
+
+	CubicBezier flyBez;
 	
 	bool CountsForEnemyGate() { return false; }
 	RelativeComboer(

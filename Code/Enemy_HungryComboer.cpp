@@ -76,11 +76,13 @@ HungryComboer::HungryComboer(ActorParams *ap)
 	actionLength[S_FLY] = 20;//13;
 	actionLength[S_TRACKENEMY] = 13;
 	actionLength[S_RETURN] = 7;
+	actionLength[S_DIE] = 7;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_FLY] = 1;
 	animFactor[S_TRACKENEMY] = 3;
 	animFactor[S_RETURN] = 5;
+	animFactor[S_DIE] = 5;
 
 	//actionLength[S_WAIT] = 10;
 	//animFactor[S_WAIT] = 1;
@@ -91,6 +93,7 @@ HungryComboer::HungryComboer(ActorParams *ap)
 HungryComboer::~HungryComboer()
 {
 }
+
 void HungryComboer::ResetEnemy()
 {
 	data.waitFrame = 0;
@@ -290,6 +293,12 @@ void HungryComboer::ProcessState()
 				facingRight = false;
 			}
 			break;
+		case S_DIE:
+		{
+			numHealth = 0;
+			dead = true;
+			break;
+		}
 		}
 	}
 
@@ -382,8 +391,9 @@ void HungryComboer::ComboKill(Enemy *e)
 
 void HungryComboer::DirectKill()
 {
-	Enemy::DirectKill();
 	sess->PlayerRemoveActiveComboer(comboObj);
+	action = S_DIE;
+	frame = 0;
 }
 
 V2d HungryComboer::GetTrackPos()
@@ -507,6 +517,7 @@ void HungryComboer::UpdateSprite()
 		tile = frame / animFactor[action];
 		break;
 	case S_RETURN:
+	case S_DIE:
 		tile = frame / animFactor[action] + 13;
 		break;
 	}
