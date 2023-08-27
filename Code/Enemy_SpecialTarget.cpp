@@ -230,19 +230,7 @@ void SpecialTarget::UpdateSprite()
 	}
 	case A_DYING:
 	{
-		if (targetType == TARGET_COMBOER_BLUE
-			|| targetType == TARGET_COMBOER_GREEN
-			|| targetType == TARGET_COMBOER_YELLOW
-			|| targetType == TARGET_COMBOER_ORANGE
-			|| targetType == TARGET_COMBOER_RED
-			|| targetType == TARGET_COMBOER_MAGENTA)
-		{
-			sprite.setTextureRect(ts->GetSubRect(frame / animFactor[A_DYING] + 1));
-		}
-		else
-		{
-			sprite.setTextureRect(ts->GetSubRect(0));
-		}
+		sprite.setTextureRect(ts->GetSubRect(0));
 		break;
 	}
 	case A_WAIT_BEFORE_REGEN:
@@ -278,77 +266,7 @@ HitboxInfo * SpecialTarget::IsHit(int pIndex)
 		TARGET_COMBOER_MAGENTA,
 		TARGET_COMBOER_GREY,*/
 
-	if (targetType == TARGET_COMBOER_BLUE || targetType == TARGET_COMBOER_GREEN || targetType == TARGET_COMBOER_YELLOW 
-		|| targetType == TARGET_COMBOER_ORANGE || targetType == TARGET_COMBOER_RED || targetType == TARGET_COMBOER_MAGENTA
-		|| targetType == TARGET_COMBOER_GREY )
-	{
-		if (currHurtboxes == NULL)
-			return NULL;
-
-		Actor *player = sess->GetPlayer(pIndex);
-
-		if (CanBeHitByComboer())
-		{
-			ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
-			if (co != NULL)
-			{
-				HitboxInfo *hi = co->enemyHitboxInfo;
-
-				Enemy *en = co->enemy;
-
-				bool validHit = false;
-				switch (targetType)
-				{
-				case TARGET_COMBOER_BLUE:
-					if (en->type == EN_COMBOER || en->type == EN_SPLITCOMBOER)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_GREEN:
-					if (en->type == EN_GRAVITYJUGGLER)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_YELLOW:
-					if (en->type == EN_BOUNCEJUGGLER || en->type == EN_BALL || en->type == EN_EXPLODINGBARREL)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_ORANGE:
-					if (en->type == EN_GRINDJUGGLER || en->type == EN_GROUNDEDGRINDJUGGLER)
-					{
-						validHit = true;
-					}
-					break;
-				case TARGET_COMBOER_RED:
-					if (en->type == EN_RELATIVECOMBOER || en->type == EN_HUNGRYCOMBOER )
-					{
-						validHit = true;
-					}
-					break;
-				//case TARGET_COMBOER_MAGENTA:
-				//	if( en->type == EN_)
-				}
-
-				if (validHit)
-				{
-					co->enemy->ComboHit();
-					comboHitEnemyID = co->enemy->enemyIndex;
-
-					return hi;
-				}
-				else
-				{
-					return NULL;
-				}
-
-			}
-		}
-	}
-	else if (targetType == TARGET_BOUNCE
+	if (targetType == TARGET_BOUNCE
 		|| targetType == TARGET_GLIDE
 		|| targetType == TARGET_SCORPION
 		|| targetType == TARGET_GRIND
