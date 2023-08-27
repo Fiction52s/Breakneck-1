@@ -4021,6 +4021,16 @@ void Session::ActivateZone(Zone * z, bool instant)
 
 		phaseOn = false; //for phase terrain to reset each gate makes the most sense to me.
 
+		Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->ResetBoosterEffects();
+			}
+		}
+
 		currentZone = z;
 
 		CloseOffLimitZones();

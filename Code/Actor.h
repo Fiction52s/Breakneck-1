@@ -629,7 +629,7 @@ struct Actor : QuadTreeCollider,
 
 	
 	PlayerBoosterEffectEmitter *gravityIncreaserTrailEmitter;
-	PlayerBoosterEffectEmitter *gravityDecreaserTrailerEmitter;
+	PlayerBoosterEffectEmitter *gravityDecreaserTrailEmitter;
 	PlayerBoosterEffectEmitter *momentumBoosterTrailEmitter;
 	PlayerBoosterEffectEmitter *homingBoosterTrailEmitter;
 	PlayerBoosterEffectEmitter *antiTimeSlowBoosterTrailEmitter;
@@ -1813,6 +1813,8 @@ struct Actor : QuadTreeCollider,
 	bool IsInHistunAction( int a );
 	bool IsActionGroundBlock(int a);
 	bool IsActionAirBlock(int a);
+
+	void ResetBoosterEffects();
 
 	void SetSkin(int skinIndex);
 	void BlendSkins(int first, int second, float progress);

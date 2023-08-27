@@ -3304,9 +3304,9 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	gravityIncreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/booster_particles_32x32.png"));//"Env/leaves_128x128.png"));
 	gravityIncreaserTrailEmitter->CreateParticles();
 
-	gravityDecreaserTrailerEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_DECREASER);
-	gravityDecreaserTrailerEmitter->SetTileset(sess->GetSizedTileset("FX/booster_particles_32x32.png"));//"Env/leaves_128x128.png"));
-	gravityDecreaserTrailerEmitter->CreateParticles();
+	gravityDecreaserTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_DECREASER);
+	gravityDecreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/booster_particles_32x32.png"));//"Env/leaves_128x128.png"));
+	gravityDecreaserTrailEmitter->CreateParticles();
 
 	momentumBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_MOMENTUM);
 	momentumBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
@@ -4731,7 +4731,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn( bool setStartPos )
 {
 	gravityIncreaserTrailEmitter->Reset();
-	gravityDecreaserTrailerEmitter->Reset();
+	gravityDecreaserTrailEmitter->Reset();
 	momentumBoosterTrailEmitter->Reset();
 	//timeSlowBoosterTrailEmitter->Reset();
 	homingBoosterTrailEmitter->Reset();
@@ -5420,6 +5420,34 @@ bool Actor::IsActionAirBlock(int a)
 		|| a == AIRBLOCKFORWARD || a == AIRBLOCKUPFORWARD || a == AIRBLOCKUP;
 }
 
+void Actor::ResetBoosterEffects()
+{
+	boosterExtraGravityModifier = 1.0;
+	boosterGravModifyFrames = 0;
+	startBoosterGravModifyFrames = 0;
+	gravityIncreaserTrailEmitter->SetOn(false);
+	gravityDecreaserTrailEmitter->SetOn(false);
+
+	homingFrames = 0;
+	startHomingFrames = 0;
+	homingBoosterTrailEmitter->SetOn(false);
+
+	freeFlightFrames = 0;
+	startFreeFlightFrames = 0;
+	freeFlightBoosterTrailEmitter->SetOn(false);
+	
+	momentumBoostFrames = 0;
+	startMomentumBoostFrames = 0;
+	momentumBoosterTrailEmitter->SetOn(false);
+
+	antiTimeSlowFrames = 0;
+	startAntiTimeSlowFrames = 0;
+	antiTimeSlowBoosterTrailEmitter->SetOn(false);
+
+	globalTimeSlowFrames = 0;
+	startGlobalTimeSlowFrames = 0;
+}
+
 void Actor::ProcessReceivedHit()
 {
 	if (receivedHit.hType != HitboxInfo::NO_HITBOX)
@@ -6040,8 +6068,8 @@ void Actor::ProcessGravModifier()
 		}
 		else if (boosterExtraGravityModifier < 1.0)
 		{
-			gravityDecreaserTrailerEmitter->SetOn(true);
-			sess->AddEmitter(gravityDecreaserTrailerEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+			gravityDecreaserTrailEmitter->SetOn(true);
+			sess->AddEmitter(gravityDecreaserTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 			CreateGravityDecreaserOnRing();
 		}
 		else
@@ -13487,112 +13515,36 @@ void Actor::UpdatePhysics()
 
 										break;
 									}
-									else if (minContact.normal.y > 0 //&& minContact.normal.y < steepThresh 
-										//&& ( action == STEEPCLIMB || action == STEEPCLIMBATTACK ) 
-										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0)) 
-										&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] 
-											|| (minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
-										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-										&& (((DashButtonHeld() && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
-										&& !minContact.edge->IsInvisibleWall() )
+									else if (minContact.normal.y > 0 )//&& DefaultGravReverseCheck() )
 									{
+										//this is so that DefaultGravReverseCheck() and DefaultCeilingLanding() are accurate
+										position += minContact.resolution;
 
-									/*else if ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
-										&& tempCollision
-										&& !IsHitstunAction(action)
-										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
-										&& minContact.normal.y > 0
-										&& abs(minContact.normal.x) < wallThresh
-										&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
-										&& !minContact.edge->IsInvisibleWall())*/
-
-
-										collision = true;
-										velocity = groundSpeed * ground->Along();
-
-										prevRail = NULL;
-
-										if (b.rh < normalHeight)
+										if (DefaultGravReverseCheck())
 										{
-											b.offset.y = -(normalHeight - b.rh);
-										}
+											collision = true;
+											velocity = groundSpeed * ground->Along();
 
-										if (minContact.edge->Normal().y <= 0)
-										{
-											if (minContact.position == minContact.edge->v0)
-											{
-												if (minContact.edge->edge0->Normal().y >= 0)
-												{
-													minContact.edge = minContact.edge->edge0;
-												}
-											}
-										}
+											DefaultCeilingLanding(movement);
 
-										RestoreAirOptions();
-										reversed = true;
-
-										ground = minContact.edge;
-
-										q = edgeQuantity;
-										edgeQuantity = minContact.edge->GetQuantity(minContact.position);
-
-										double groundLength = length(ground->v1 - ground->v0);
-
-										groundSpeed = 0;
-
-										V2d gno = ground->Normal();
-
-
-										double angle = atan2(gno.x, -gno.y);
-
-										if (-gno.y > -steepThresh)
-										{
-											groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+											break;
 										}
 										else
 										{
-											groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+											//position -= minContact.resolution; //doubt I need this
+											//don't need to move the position back because it gets instantly corrected
+											//within PhysicsResponse anyway
+											q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
+
+
+											edgeQuantity = q;
+
+											ProcessGroundedCollision();
+
+											groundSpeed = 0;
+
+											break;
 										}
-
-
-										if (gno.x > 0)
-										{
-											offsetX = b.rw;
-										}
-										else if (gno.x < 0)
-										{
-											offsetX = -b.rw;
-										}
-										else
-										{
-											offsetX = 0;
-										}
-
-										movement = 0;
-
-										//offsetX = (position.x + b.offset.x) - minContact.position.x;
-
-										/*if (gno.x < 0)
-										{
-											facingRight = true;
-											SetAction(STEEPSLIDE);
-										}
-										else if (gno.x > 0)
-										{
-											facingRight = false;
-											SetAction(STEEPSLIDE);
-										}*/
-
-
-
-										ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
-										ActivateSound(PlayerSounds::S_GRAVREVERSE);
-
-										break;
-										//assert(abs(eNorm.x) > wallThresh);
-										//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
-										
 									}
 									else
 									{
@@ -17130,11 +17082,11 @@ void Actor::UpdatePostPhysics()
 	gravityDecreaserOffRingGroup->SetBase(Vector2f(position));
 
 	gravityIncreaserTrailEmitter->SetPos(Vector2f(position));
-	gravityDecreaserTrailerEmitter->SetPos(Vector2f(position));
+	gravityDecreaserTrailEmitter->SetPos(Vector2f(position));
 	if (startBoosterGravModifyFrames > 0)
 	{
 		gravityIncreaserTrailEmitter->data.boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
-		gravityDecreaserTrailerEmitter->data.boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
+		gravityDecreaserTrailEmitter->data.boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
 	}
 	
 	momentumBoosterTrailEmitter->SetPos(Vector2f(position));
@@ -17561,7 +17513,7 @@ void Actor::UpdateModifiedGravity()
 			}
 			else if (boosterExtraGravityModifier < 1.0)
 			{
-				gravityDecreaserTrailerEmitter->SetOn(false);
+				gravityDecreaserTrailEmitter->SetOn(false);
 				CreateGravityDecreaserOffRing();
 			}
 			else
@@ -20055,11 +20007,11 @@ void Actor::DefaultCeilingLanding(double &movement)
 	{
 		groundSpeed = -dot(velocity, along);
 
-		if (velocity.x > 0 && groundSpeed > 0 && groundSpeed < velocity.x)
+		if (velocity.x > 0 && groundSpeed < velocity.x)//groundSpeed > 0 && groundSpeed < velocity.x)
 		{
 			groundSpeed = velocity.x;
 		}
-		else if (velocity.x < 0 && groundSpeed < 0 && groundSpeed > velocity.x)
+		else if (velocity.x < 0 && groundSpeed > velocity.x)//groundSpeed < 0 && groundSpeed > velocity.x)
 		{
 			groundSpeed = velocity.x;
 		}
@@ -20068,8 +20020,11 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	movement = 0;
 
+	
+	//offsetX is always correct if the math is right for the case I'm in.
 	offsetX = (position.x + b.offset.x) - minContact.position.x;
 
+	//cout << "actual landing offsetX: " << offsetX << endl;
 
 
 	ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
@@ -23867,7 +23822,7 @@ void Actor::UpdateInHitlag()
  void Actor::InitEmitters()
  {
 	 gravityIncreaserTrailEmitter->SetIDAndAddToAllEmittersVec();
-	 gravityDecreaserTrailerEmitter->SetIDAndAddToAllEmittersVec();
+	 gravityDecreaserTrailEmitter->SetIDAndAddToAllEmittersVec();
 	 momentumBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
 	 homingBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
 	 antiTimeSlowBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
