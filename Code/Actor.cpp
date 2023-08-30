@@ -6277,15 +6277,34 @@ void Actor::ProcessFreeFlightBooster()
 
 void Actor::ProcessAccelGrass()
 {
-	if (ground != NULL && touchedGrass[Grass::ACCELERATE])
+	if (touchedGrass[Grass::ACCELERATE])
 	{
-		if (groundSpeed > 0)
+		if (ground != NULL)
 		{
-			groundSpeed += accelGrassAccel;
+			if (groundSpeed > 0)
+			{
+				groundSpeed += accelGrassAccel;
+			}
+			else if (groundSpeed < 0)
+			{
+				groundSpeed -= accelGrassAccel;
+			}
 		}
-		else if (groundSpeed < 0)
+		else if (grindEdge != NULL)
 		{
-			groundSpeed -= accelGrassAccel;
+			if (grindSpeed > 0)
+			{
+				grindSpeed += accelGrassAccel;
+			}
+			else if (groundSpeed < 0)
+			{
+				grindSpeed -= accelGrassAccel;
+			}
+		}
+		else
+		{
+			double len = length(velocity);
+			velocity = normalize(velocity) * (len + accelGrassAccel);
 		}
 	}
 }
@@ -6371,10 +6390,44 @@ void Actor::ProcessBoostGrass()
 
 void Actor::ProcessPoisonGrass()
 {
-	if (ground != NULL && touchedGrass[Grass::POISON])
+	//if (ground != NULL && touchedGrass[Grass::POISON])
+	if (touchedGrass[Grass::POISON])
 	{
-		modifiedDrainFrames = 10;
-		modifiedDrain = 1;//drainAmount * 4;
+		RestoreAirOptions();
+		//modifiedDrainFrames = 10;
+		//modifiedDrain = 1;//drainAmount * 4;
+		DrainTimer(10);
+
+		double poisonAccel = .2;
+
+		if (ground != NULL)
+		{
+			if (groundSpeed > 0)
+			{
+				groundSpeed += poisonAccel;
+			}
+			else if (groundSpeed < 0)
+			{
+				groundSpeed -= poisonAccel;
+			}
+		}
+		else if (grindEdge != NULL)
+		{
+			if (grindSpeed > 0)
+			{
+				grindSpeed += poisonAccel;
+			}
+			else if (groundSpeed < 0)
+			{
+				grindSpeed -= poisonAccel;
+			}
+		}
+		else
+		{
+			double len = length(velocity);
+			velocity = normalize(velocity) * (len + poisonAccel);
+		}
+
 	}
 }
 
@@ -12115,6 +12168,9 @@ void Actor::UpdateGrindPhysics(double movement)
 
 		queryType = Q_RAIL;
 		sess->railEdgeTree->Query(this, r);
+
+		queryType = Q_GRASS;
+		sess->grassTree->Query(this, r);
 	}
 
 
@@ -19062,33 +19118,35 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			return;
 		}
 
-		Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
-		if (IsEdgeTouchingBox(e, r))
+		if (e->rail->GetRailType() == TerrainRail::LOCKED )
 		{
-			RestoreAirOptions();
-			frame = 0;
-			framesGrinding = 0;
-			grindEdge = e;
-			prevRail = grindEdge->rail;//->info;
-			ground = NULL;
-			bounceEdge = NULL;
-			grindSpeed = 0;
-			currWall = NULL;
+			Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+			if (IsEdgeTouchingBox(e, r))
+			{
+				RestoreAirOptions();
+				frame = 0;
+				framesGrinding = 0;
+				grindEdge = e;
+				prevRail = grindEdge->rail;//->info;
+				ground = NULL;
+				bounceEdge = NULL;
+				grindSpeed = 0;
+				currWall = NULL;
 
-			//leftGround = true;
-			reversed = false;
+				//leftGround = true;
+				reversed = false;
 
 
 
 
-			edgeQuantity = e->GetQuantity(position);
+				edgeQuantity = e->GetQuantity(position);
 
-			//cout << "position: " << position.x << ", " << position.y << endl;
-			//cout << "edgeQuant: " << edgeQuantity << endl;
-
-			SetAction(LOCKEDRAILSLIDE);
-			return;
+				
+				SetAction(LOCKEDRAILSLIDE);
+				return;
+			}
 		}
+		
 
 
 		V2d eNorm = e->Normal();
@@ -19097,11 +19155,17 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			eNorm = -eNorm;
 		}
 
-		double velMatchesNormDot = dot(velocity, eNorm);
-		if (velMatchesNormDot >= 0)
+		if (e->rail->GetRailType() != TerrainRail::ANTITIMESLOW)
 		{
-			return;
+			//test this if you only wanna be able to grab from one side
+
+			double velMatchesNormDot = dot(velocity, eNorm);
+			if (velMatchesNormDot >= 0)
+			{
+				return;
+			}
 		}
+		
 
 		bool canGrabRail = (rail->RequiresPowerToGrind() && canRailGrind) 
 			|| (!rail->RequiresPowerToGrind() && canRailSlide);
@@ -19148,11 +19212,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			bool cStuff = (c >= 0 && preC <= 0) || (c <= 0 && preC >= 0);
 
-			if ( cStuff && q >= 0 && q <= lenR )//&& alongQuantVel != 0)
+			if (cStuff && q >= 0 && q <= lenR)//&& alongQuantVel != 0)
 			{
 				V2d rn(along.y, -along.x);
-			
-				
+
+
 				double railSpeed;
 				double minRailCurr = GetMinRailGrindSpeed();
 
@@ -19185,9 +19249,9 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				{
 					if (groundSpeed > 0)
 					{
-						railSpeed = max(groundSpeed, minRailCurr );
+						railSpeed = max(groundSpeed, minRailCurr);
 					}
-					else if( groundSpeed < 0 )
+					else if (groundSpeed < 0)
 					{
 						railSpeed = min(groundSpeed, -minRailCurr);
 					}
@@ -19204,9 +19268,35 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					}
 				}
 
-			
+				double oldDist = e->GetDistAlongNormal(position - tempVel);
+				double newDist = e->GetDistAlongNormal(position);
 
+
+				//this makes it so that jumping off of the rail doesn't accidentally catch you and put you back on
+				if (abs(oldDist) < .00000001)
+				{
+					oldDist = 0;
+					
+				}
+
+				if ((oldDist >= 0 && newDist >= 0)
+					|| (oldDist <= 0 && newDist <= 0))
+				{
+					return;
+				}
 				
+				LineIntersection li;
+				lineIntersection( li, position, position - tempVel, e->v0, e->v1);
+				if (!li.parallel)
+				{
+					V2d p = li.position;
+					edgeQuantity = e->GetQuantity(p);
+				}
+				else
+				{
+					cout << "parallel with rail issue. Already checked to avoid this" << endl;
+					assert(0);
+				}
 
 				RestoreAirOptions();
 				frame = 0;
@@ -19215,18 +19305,25 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				prevRail = grindEdge->rail;//->info;
 				ground = NULL;
 				bounceEdge = NULL;
-				LineIntersection li;
-				lineIntersection( li, position, position - tempVel, grindEdge->v0, grindEdge->v1);
-				if (!li.parallel)
-				{
-					V2d p = li.position;
-					edgeQuantity = grindEdge->GetQuantity(p);
-				}
-				else
-				{
-					cout << "parallel with rail issue" << endl;
-					assert(0);
-				}
+
+				
+
+				
+
+				//SegmentIntersect()
+				//LineIntersection li;
+				////lineIntersection( li, position, testPos, grindEdge->v0, grindEdge->v1);
+				//li = SegmentIntersect(position, testPos, grindEdge->v0, grindEdge->v1);
+				//if (!li.parallel)
+				//{
+				//	V2d p = li.position;
+				//	edgeQuantity = grindEdge->GetQuantity(p);
+				//}
+				//else
+				//{
+				//	cout << "parallel with rail issue" << endl;
+				//	assert(0);
+				//}
 
 				if (ceiling) //ceiling rail
 				{
