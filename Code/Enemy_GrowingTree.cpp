@@ -214,7 +214,7 @@ void GrowingTree::ProcessState()
 		break;
 	}
 
-	if (action == ATTACK && frame == 0 && slowCounter == slowMultiple)
+	if (action == ATTACK && frame == 0 && slowCounter == 1)
 	{
 		V2d gNorm = currPosInfo.GetEdge()->Normal();
 		launchers[0]->position = GetPosition() + gNorm * 60.0;

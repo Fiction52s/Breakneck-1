@@ -8204,7 +8204,7 @@ bool Actor::CanRailSlide()
 {
 	bool isAttack = IsAttackAction(action);
 	bool aerialRailSlideTest = ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
-		action != RAILSLIDE && action != LOCKEDRAILSLIDE /*&& velocity.y >= 0*/ && action != AIRDASH && !isAttack;
+		action != RAILSLIDE && action != LOCKEDRAILSLIDE && action != AIRDASH && !isAttack;
 
 	bool groundRailSlideTest = ground != NULL && grindEdge == NULL && action != DASH && !isAttack;
 
@@ -8886,12 +8886,13 @@ bool Actor::ResolvePhysics( V2d vel )
 	}
 
 	canRailGrind = CanRailGrind();
-	canRailSlide = CanRailSlide();
+	canRailSlide = true;//CanRailSlide();
 
+	//moved canrailslide calculation to after querying, for locked rails
 
 	//if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && (canRailGrind || canRailSlide ) )
 	//if( owner != NULL && owner->totalRails > 0 && (canRailGrind || canRailSlide) )
-	if( canRailGrind || canRailSlide )
+	//if( canRailGrind || canRailSlide )
 	{
 		queryType = Q_RAIL;
 		sess->railEdgeTree->Query(this, r);
@@ -9662,6 +9663,10 @@ V2d Actor::UpdateReversePhysics()
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( -m, 0 ));
 
+					if (IsOnRailAction(action))
+					{
+						break;
+					}
 					
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -10014,6 +10019,12 @@ V2d Actor::UpdateReversePhysics()
 					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
 					bool hit = ResolvePhysics( resMove );
 					
+
+					if (IsOnRailAction(action))
+					{
+						break;
+					}
+
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
@@ -12101,6 +12112,9 @@ void Actor::UpdateGrindPhysics(double movement)
 
 		queryType = Q_ACTIVEITEM;
 		sess->activeItemTree->Query(this, r);//activeR);
+
+		queryType = Q_RAIL;
+		sess->railEdgeTree->Query(this, r);
 	}
 
 
@@ -12504,6 +12518,11 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 				V2d posOld = position;
 				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
 
+				if (IsOnRailAction(action))
+				{
+					break;
+				}
+
 				if (col)
 				{
 					CheckCollisionForTerrainFade();
@@ -12559,6 +12578,11 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 				q += movement;
 				V2d posOld = position;
 				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
+
+				if (IsOnRailAction(action))
+				{
+					break;
+				}
 
 				if (col)
 				{
@@ -12786,6 +12810,7 @@ void Actor::UpdatePhysics()
 	if (grindEdge == NULL && movement == 0 && movementVec.x == 0 && movementVec.y == 0)
 	{
 		ResolvePhysics(V2d(0, 0));
+
 		PhysicsResponse();
 		return;
 	}
@@ -13149,6 +13174,10 @@ void Actor::UpdatePhysics()
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( m, 0 ));
 
+					if (IsOnRailAction(action))
+					{
+						break;
+					}
 
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
 						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -13394,6 +13423,11 @@ void Actor::UpdatePhysics()
 					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
 					bool hit = ResolvePhysics( resMove );
 
+					if (IsOnRailAction(action))
+					{
+						break;
+					}
+
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
 						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
@@ -13612,6 +13646,12 @@ void Actor::UpdatePhysics()
 			V2d oldPos = position;
 
 			bool tempCollision = ResolvePhysics( movementVec );
+
+
+			if (IsOnRailAction(action))
+			{
+				break;
+			}
 			
 			if (tempCollision)
 			{
@@ -15037,7 +15077,7 @@ void Actor::PhysicsResponse()
 
 	
 
-	if (IsOnRailAction(action) && collision )
+	if (IsOnRailAction(action) && action != LOCKEDRAILSLIDE && collision )
 	{
 		grindEdge = NULL;
 		SetAction(JUMP);
@@ -15452,7 +15492,7 @@ void Actor::PhysicsResponse()
 		}
 		else if( !IsAirHitstunAction(action) && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE
 			&& action != WATERGLIDE_HITSTUN && action != WATERGLIDECHARGE
-			&& action != FREEFLIGHTSTUN && action != DIAGUPATTACK && action != AIRDASHFORWARDATTACK )
+			&& action != FREEFLIGHTSTUN && action != DIAGUPATTACK && action != AIRDASHFORWARDATTACK && action != LOCKEDRAILSLIDE )
 		{
 			if (collision && touchedGrass[Grass::DECELERATE] && length( wallNormal ) > 0 && currWall != NULL )
 			{
@@ -19001,7 +19041,15 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		Edge *e = (Edge*)qte;
 		RailPtr rail = e->rail;
 
+		if (action == LOCKEDRAILSLIDE)
+			return;
+
 		if ( grindEdge != NULL && grindEdge->rail == rail)
+		{
+			return;
+		}
+
+		if (e->rail->GetRailType() != TerrainRail::LOCKED && !CanRailSlide() )
 		{
 			return;
 		}
@@ -19013,6 +19061,35 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}
+
+		Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+		if (IsEdgeTouchingBox(e, r))
+		{
+			RestoreAirOptions();
+			frame = 0;
+			framesGrinding = 0;
+			grindEdge = e;
+			prevRail = grindEdge->rail;//->info;
+			ground = NULL;
+			bounceEdge = NULL;
+			grindSpeed = 0;
+			currWall = NULL;
+
+			//leftGround = true;
+			reversed = false;
+
+
+
+
+			edgeQuantity = e->GetQuantity(position);
+
+			//cout << "position: " << position.x << ", " << position.y << endl;
+			//cout << "edgeQuant: " << edgeQuantity << endl;
+
+			SetAction(LOCKEDRAILSLIDE);
+			return;
+		}
+
 
 		V2d eNorm = e->Normal();
 		if (eNorm.y > 0)

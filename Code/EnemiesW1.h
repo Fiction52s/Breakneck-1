@@ -39,6 +39,7 @@
 #include "Enemy_SequenceCrawler.h"
 #include "Enemy_SpecialTarget.h"
 #include "Enemy_ComboerTarget.h"
+#include "Enemy_RegenTarget.h"
 
 
 #endif

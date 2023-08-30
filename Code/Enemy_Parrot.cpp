@@ -197,7 +197,7 @@ void Parrot::ProcessState()
 	}
 
 	int throwFrame = 3;
-	if (action == ATTACK && frame == throwFrame * animFactor[ATTACK])
+	if (action == ATTACK && frame == throwFrame * animFactor[ATTACK] && slowCounter == 1 )
 	{
 		V2d shootOffset(70, 20);
 		if (!facingRight)

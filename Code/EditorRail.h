@@ -89,6 +89,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	Session *sess;
 	int rType;
 	Tileset *ts_rail;
+	Tileset *ts_arrow;
 	RailPtr queryNext;
 	sf::Rect<double> aabb;
 	ActorParams *enemyParams;
@@ -105,11 +106,14 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	CircleGroup *coloredNodeCircles;
 	sf::Vertex *coloredQuads;
 	sf::Vertex *texturedQuads;
+	sf::Vertex *arrowQuads;
 	int numTexturedQuads;
+	int numArrowQuads;
 	sf::Vertex *lines;
 	int numLineVerts;
 	int numColoredQuads;
 	float quadHalfWidth;
+	double arrowSpacing;
 
 	sf::Vertex *quads;
 
@@ -135,6 +139,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	TerrainRail(TerrainRail &r);
 	~TerrainRail();
 	void UpdateTexturedQuads();
+	void UpdateArrowQuads();
 	void SetRenderMode(RenderMode rm);
 	int GetRailType();
 	const std::string &GetRailTypeName();

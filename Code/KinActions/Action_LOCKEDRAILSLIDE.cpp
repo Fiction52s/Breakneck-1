@@ -20,6 +20,11 @@ void Actor::LOCKEDRAILSLIDE_Start()
 	//}
 
 	double minLockedRailSlideVel = 30;
+
+	grindSpeed = minLockedRailSlideVel;
+	return;
+
+	
 	if (abs(grindSpeed < minLockedRailSlideVel))
 	{
 		if (grindSpeed > 0)

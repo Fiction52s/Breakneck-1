@@ -244,7 +244,7 @@ void Session::RegisterGeneralEnemies()
 		false, false, false, false, true, false, false);
 	AddExtraEnemy("Booster", "booster", normalRow, CreateEnemy<Booster>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-	AddExtraEnemy("Regenerating\nTarget", "regentarget", normalRow, CreateEnemy<SpecialTarget>, SetParamsType<BasicAirEnemyParams>,
+	AddExtraEnemy("Regenerating\nTarget", "regentarget", normalRow, CreateEnemy<RegenTarget>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, true, false, false);
 	AddExtraEnemy("Health Fly", "healthfly", normalRow, CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);

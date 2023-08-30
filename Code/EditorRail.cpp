@@ -239,7 +239,7 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 bool TerrainRail::IsTerrainType()
 {
 	return rType == FLOORANDCEILING || rType == FLOOR || rType == CEILING
-		|| rType == BOUNCE || rType == SCORPIONONLY || rType == PHASE 
+		|| rType == BOUNCE || rType == SCORPIONONLY || rType == PHASE
 		|| rType == INVERSEPHASE || rType == FADE;
 }
 
@@ -248,6 +248,7 @@ void TerrainRail::Init()
 	sess = Session::GetSession();
 	railIndex = -1;
 	ts_rail = sess->GetSizedTileset("Env/rails_128x64.png");
+	ts_arrow = sess->GetSizedTileset("Enemies/W3/bouncecomboer_128x128.png");
 	queryNext = NULL;
 	quadHalfWidth = 6;
 	renderMode = RENDERMODE_NORMAL;
@@ -256,9 +257,12 @@ void TerrainRail::Init()
 	coloredQuads = NULL;
 	coloredNodeCircles = NULL;
 	texturedQuads = NULL;
+	arrowQuads = NULL;
 	numTexturedQuads = 0;
+	numArrowQuads = 0;
 	selected = false;
 	railRadius = 20;
+	arrowSpacing = 50;
 	
 	rType = FLOORANDCEILING;
 	
@@ -578,6 +582,14 @@ void TerrainRail::Move(Vector2i move)
 		texturedQuads[i * 4 + 3].position += moveF;
 	}
 
+	for (int i = 0; i < numArrowQuads; ++i)
+	{
+		arrowQuads[i * 4 + 0].position += moveF;
+		arrowQuads[i * 4 + 1].position += moveF;
+		arrowQuads[i * 4 + 2].position += moveF;
+		arrowQuads[i * 4 + 3].position += moveF;
+	}
+
 	for (auto it = enemies.begin(); it != enemies.end(); ++it)
 	{
 		list<ActorPtr> &actorList = (*it).second;
@@ -721,6 +733,8 @@ sf::Color TerrainRail::GetRailColor()
 
 void TerrainRail::UpdateTexturedQuads()
 {
+	UpdateArrowQuads();
+
 	double startQuant = 0;
 	double endQuant = 0;
 	int startIndex = 0;
@@ -851,6 +865,90 @@ void TerrainRail::UpdateTexturedQuads()
 	}
 }
 
+void TerrainRail::UpdateArrowQuads()
+{
+	double startQuant = 0;
+	double endQuant = 0;
+	int startIndex = 0;
+	V2d startCenter;
+	V2d endCenter;
+	V2d eNorm;
+	IntRect subRect = ts_arrow->GetSubRect(0);
+	Edge *curr, *next;
+	int numQuadsForEdge;
+
+	int numSmoothQuads = 3;
+	int numP = GetNumPoints();
+
+	double railTileWidth = ts_arrow->tileWidth / 2.0;
+	double railTileHeight = ts_arrow->tileHeight / 2.0;
+
+	double out = ts_arrow->tileHeight / 2.0;
+	double in = ts_arrow->tileHeight / 2.0;
+
+	double currQuant = railTileWidth / 2;
+	int currEdgeIndex = 0;
+	double currLen = 0;
+	//double arrowSpacing = 128;
+
+	int arrowIndex = 0;
+
+	curr = GetEdge(currEdgeIndex);
+	currLen = curr->GetLength();
+	double ang = GetVectorAngleCW(curr->Along());
+	V2d pos;// = curr->GetPosition(currQuant);
+
+	while (arrowIndex < numArrowQuads )//currEdgeIndex < numP - 1)
+	{
+		pos = curr->GetPosition(currQuant);
+
+		SetRectRotation(arrowQuads + 4 * arrowIndex, ang, railTileWidth, railTileHeight, Vector2f(pos));
+		ts_arrow->SetQuadSubRect(arrowQuads + 4 * arrowIndex, 0);
+
+		currQuant += arrowSpacing;
+
+		while (currQuant > currLen)
+		{
+			currQuant -= currLen;
+			++currEdgeIndex;
+
+			curr = GetEdge(currEdgeIndex);
+			currLen = curr->GetLength();
+			ang = GetVectorAngleCW(curr->Along());
+		}
+
+		++arrowIndex;
+
+		//if (arrowIndex == numArrowQuads)
+		//	break;
+	}
+
+	//for (int i = 0; i < numP - 1; ++i)
+	//{
+	//	curr = GetEdge(i);
+	//	next = curr->GetNextEdge();
+
+	//	eNorm = curr->Normal();
+
+	//	startCenter = (curr->v1 + curr->v0 ) / 2.0;
+
+
+	//	double ang = GetVectorAngleCW(curr->Along());
+	//	/*if (facingRight)
+	//	{
+	//		sprite.setRotation(ang / PI * 180.0);
+	//	}
+	//	else
+	//	{
+	//		sprite.setRotation(ang / PI * 180.0 + 180);
+	//	}*/
+
+
+	//	SetRectRotation(arrowQuads + 4 * i, ang, railTileWidth, railTileHeight, Vector2f(startCenter));
+	//	ts_arrow->SetQuadSubRect(arrowQuads + 4 * i, 0);
+	//}
+}
+
 void TerrainRail::Finalize()
 {
 	finalized = true;
@@ -867,6 +965,10 @@ void TerrainRail::Finalize()
 
 	SetupEdges();
 
+	//numArrowQuads = numP;
+
+	//arrowQuads = new Vertex[numArrowQuads * 4];
+
 	Edge *curr, *next;
 	numTexturedQuads = 0;
 
@@ -876,6 +978,18 @@ void TerrainRail::Finalize()
 	double railTileHeight = ts_rail->tileHeight;
 
 	int numSmoothQuads = 3;
+
+	double totalLength = 0;
+	for (int i = 0; i < numP - 1; ++i)
+	{
+		curr = GetEdge(i);
+		totalLength += curr->GetLength();
+	}
+
+	numArrowQuads = totalLength / arrowSpacing;
+
+	arrowQuads = new Vertex[numArrowQuads * 4];
+
 
 	for (int i = 0; i < numP - 1; ++i)
 	{
@@ -1002,6 +1116,8 @@ void TerrainRail::Finalize()
 
 		startIndex += numQuadsForEdge * 4;
 	}
+
+	UpdateArrowQuads();
 
 	UpdateLines();
 
@@ -1427,6 +1543,11 @@ void TerrainRail::SoftReset()
 	if (texturedQuads != NULL)
 	{
 		delete[] texturedQuads;
+	}
+
+	if (arrowQuads != NULL)
+	{
+		delete[] arrowQuads;
 	}
 
 	lines = NULL;
@@ -2061,7 +2182,7 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 		case GRIND:
 		case ACCELERATE:
 		case FADE:
-		case LOCKED:
+		
 		case PHASE:
 		case INVERSEPHASE:
 		case ANTITIMESLOW:
@@ -2081,6 +2202,12 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 			enemyParams->Draw(target);
 			//blockerParams->Draw(target);
 			break;
+		}
+		case LOCKED:
+		{
+			target->draw(texturedQuads, numTexturedQuads * 4,
+				sf::Quads, ts_rail->texture);
+			target->draw(arrowQuads, numArrowQuads * 4, sf::Quads, ts_arrow->texture);
 		}
 		}
 	}
