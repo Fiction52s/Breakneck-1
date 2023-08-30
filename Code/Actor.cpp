@@ -12574,10 +12574,10 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 				V2d posOld = position;
 				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
 
-				if (IsOnRailAction(action))
+				/*if (IsOnRailAction(action))
 				{
 					break;
-				}
+				}*/
 
 				if (col)
 				{
@@ -12635,10 +12635,10 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 				V2d posOld = position;
 				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
 
-				if (IsOnRailAction(action))
+				/*if (IsOnRailAction(action))
 				{
 					break;
-				}
+				}*/
 
 				if (col)
 				{
@@ -19222,8 +19222,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 				if (ground == NULL)
 				{
-
-
 					double landingSpeed = CalcLandingSpeed(velocity, along, rn, true);
 					if (landingSpeed == 0)
 					{
@@ -19243,6 +19241,22 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					else if (landingSpeed < 0)
 					{
 						railSpeed = min(landingSpeed, -minRailCurr);
+					}
+
+
+					if (!e->IsSteepGround())
+					{
+						if (velocity.x > 0 && railSpeed < velocity.x)//groundSpeed > 0 && groundSpeed < velocity.x)
+						{
+							//cout << "railspeed a from " << railSpeed << " to : " << velocity.x << "\n";
+							railSpeed = velocity.x;
+
+						}
+						else if (velocity.x < 0 && railSpeed > velocity.x)//groundSpeed < 0 && groundSpeed > velocity.x)
+						{
+							//cout << "railspeed b from " << railSpeed << " to : " << velocity.x << "\n";
+							railSpeed = velocity.x;
+						}
 					}
 				}
 				else
@@ -19267,6 +19281,9 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						}
 					}
 				}
+
+
+				
 
 				double oldDist = e->GetDistAlongNormal(position - tempVel);
 				double newDist = e->GetDistAlongNormal(position);
