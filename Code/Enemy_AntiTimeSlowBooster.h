@@ -28,6 +28,7 @@ struct AntiTimeSlowBooster : Enemy
 	bool CountsForEnemyGate() { return false; }
 	bool IsHomingTarget() { return false; }
 	void ProcessState();
+	bool IsSlowed(int index);
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

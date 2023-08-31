@@ -514,7 +514,7 @@ void Session::RegisterW5Enemies()
 
 	//items
 	AddWorldEnemy("Homing\nLauncher", "hominglauncher", 5, itemRow, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-	AddBasicAerialWorldEnemy("Time Slow\nBooster", "timebooster", 5, itemRow, CreateEnemy<TimeBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Time Slow\nBooster", "timebooster", 5, itemRow, CreateEnemy<TimeBooster>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Homing\nBooster", "homingbooster", 5, itemRow, CreateEnemy<HomingBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Anti\nTime Slow\nBooster", "antitimeslowbooster", 5, itemRow, CreateEnemy<AntiTimeSlowBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 	//AddWorldEnemy("limitedrelativecomboer", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);

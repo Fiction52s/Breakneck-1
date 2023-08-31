@@ -25,7 +25,7 @@ Lizard::Lizard(ActorParams *ap)
 {
 	SetLevel(ap->GetLevel());
 
-	scale = 1.25;
+	scale = 1.75;//2.0;//1.25;
 
 	SetNumActions(Count);
 	SetEditorActions(IDLE, 0, 0);
@@ -79,8 +79,10 @@ Lizard::Lizard(ActorParams *ap)
 	hitboxInfo->knockback = 12;
 	hitboxInfo->hType = HitboxInfo::RED;
 
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
+	//BasicCircleHurtBodySetup(48);
+	BasicRectHitBodySetup(70, 25, 0, V2d(0, 15), V2d());
+	BasicRectHurtBodySetup(80, 27, 0, V2d(0, 15), V2d());
+	//BasicCircleHitBodySetup(48);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	cutObject->SetTileset(ts);

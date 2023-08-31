@@ -519,7 +519,7 @@ void Swarm::ProcessState()
 		break;
 	case FIRE:
 		//cout << "fire: " << frame << endl;
-		if( frame == ( actionLength[FIRE] - 2 ) * animFactor[FIRE] )
+		if( frame == 3 * animFactor[FIRE] && slowCounter == 1 )
 			Launch();
 		break;
 	case USED:

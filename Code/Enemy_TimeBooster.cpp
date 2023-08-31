@@ -4,7 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -29,7 +29,7 @@ TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	SetCurrPosInfo(startPosInfo);
 
-	strength = 180;
+	strength = 300;//180
 
 	ts = GetSizedTileset("Enemies/boosters_384x384.png");
 
@@ -42,12 +42,12 @@ TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
 
-	actionLength[NEUTRAL] = 6;
-	actionLength[BOOST] = 8;
+	actionLength[NEUTRAL] = 1;
+	actionLength[BOOST] = 10;
 	actionLength[REFRESH] = 7;
 
 	animFactor[NEUTRAL] = 3;
-	animFactor[BOOST] = 3;
+	animFactor[BOOST] = 5;
 	animFactor[REFRESH] = 5;
 
 	ResetEnemy();
@@ -98,6 +98,17 @@ bool TimeBooster::Boost()
 	{
 		action = BOOST;
 		frame = 0;
+
+		if (hasMonitor && !suppressMonitor )
+		{	
+			PlayKeyDeathSound();
+			if (hasMonitor && !suppressMonitor)
+			{
+				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+					sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+			}
+			suppressMonitor = true;
+		}
 		return true;
 	}
 	return false;
@@ -138,6 +149,11 @@ void TimeBooster::ProcessState()
 	}
 }
 
+bool TimeBooster::IsSlowed(int index)
+{
+	return false;
+}
+
 void TimeBooster::UpdateSprite()
 {
 	int tile = 0;
@@ -146,14 +162,17 @@ void TimeBooster::UpdateSprite()
 	{
 	case NEUTRAL:
 		tile = frame / animFactor[NEUTRAL];
+		sprite.setColor(Color::White);
 		//ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
 		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
+		sprite.setColor(Color::Blue);
 		//ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
 		tile = frame / animFactor[REFRESH];
+		sprite.setColor(Color::Green);
 		//ir = ts_refresh->GetSubRect(tile);
 		break;
 	}
@@ -166,19 +185,32 @@ void TimeBooster::UpdateSprite()
 
 void TimeBooster::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	DrawSprite(target, sprite);
+	//target->draw(sprite);
 }
 
 void TimeBooster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)
 	{
-		CircleShape enemyCircle;
-		enemyCircle.setFillColor(COLOR_BLUE);
-		enemyCircle.setRadius(50);
-		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
-		enemyCircle.setPosition(GetPositionF());
-		target->draw(enemyCircle);
+		if (hasMonitor && !suppressMonitor)
+		{
+			CircleShape cs;
+			cs.setRadius(50);
+			cs.setFillColor(Color::White);
+			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+			cs.setPosition(GetPositionF());
+			target->draw(cs);
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius(40);
+			cs.setFillColor(COLOR_BLUE);
+			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+			cs.setPosition(GetPositionF());
+			target->draw(cs);
+		}
 	}
 }
 

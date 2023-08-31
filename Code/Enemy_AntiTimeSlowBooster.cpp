@@ -107,7 +107,10 @@ bool AntiTimeSlowBooster::IsBoostable()
 	return action == NEUTRAL;
 }
 
-
+bool AntiTimeSlowBooster::IsSlowed(int index)
+{
+	return false;
+}
 
 void AntiTimeSlowBooster::ProcessState()
 {

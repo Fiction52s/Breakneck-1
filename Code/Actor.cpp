@@ -6134,6 +6134,7 @@ void Actor::ProcessTimeBooster()
 	{
 		currTimeBooster->Boost();
 
+		cout << "boost" << endl;
 		globalTimeSlowFrames = currTimeBooster->strength;
 		startGlobalTimeSlowFrames = globalTimeSlowFrames;
 

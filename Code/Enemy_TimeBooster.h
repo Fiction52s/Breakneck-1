@@ -29,6 +29,7 @@ struct TimeBooster : Enemy
 	bool IsHomingTarget() { return false; }
 	void ProcessState();
 	void SetLevel(int lev);
+	bool IsSlowed(int index);
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();

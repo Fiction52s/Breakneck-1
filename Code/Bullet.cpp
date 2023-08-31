@@ -1421,7 +1421,41 @@ bool GrindBullet::CanInteractWithTerrain()
 
 void GrindBullet::UpdatePrePhysics()
 {
+	if (PlayerSlowingMe())
+	{
+		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
+		int currSlowMult = player->GetBubbleTimeFactor();
+		if (slowMultiple == 1)
+		{
+			slowCounter = 1;
+			slowMultiple = currSlowMult;
+		}
+	}
+	else
+	{
+		slowMultiple = 1;
+		slowCounter = 1;
+	}
 
+	V2d playerPos = launcher->sess->GetPlayerPos(launcher->playerIndex);
+
+	if (launcher->handler != NULL)
+	{
+		launcher->handler->UpdateBullet(this);
+	}
+
+	double len = length(position - playerPos);
+	if (len > MAX_VELOCITY * 2)
+	{
+		numPhysSteps = NUM_STEPS;
+	}
+	else
+	{
+		numPhysSteps = NUM_MAX_STEPS;
+		launcher->sess->GetPlayer(launcher->playerIndex)->highAccuracyHitboxes = true;
+	}
+
+	col = false;
 }
 
 bool GrindBullet::HitTerrain()
