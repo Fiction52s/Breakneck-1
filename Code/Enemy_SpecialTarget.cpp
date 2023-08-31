@@ -69,7 +69,6 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	else if (typeName == "freeflighttarget")
 	{
 		targetType = TARGET_FREEFLIGHT;
-		sprite.setColor(Color::Magenta);
 	}
 	
 
