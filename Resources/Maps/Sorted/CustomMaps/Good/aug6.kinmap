@@ -1086,27 +1086,36 @@ hominglauncher -25 32
 30
 3194 -539
 homingtarget 836 -346
+1
 homingtarget -78 -566
+1
 hominglauncher 4384 652
 30
 0 -3140
 homingtarget 3447 -286
+1
 homingtarget 4391 -746
+1
 homingtarget 4891 -1978
+1
 hominglauncher 5199 -974
 30
 -3237 -2294
 homingtarget 3727 -2782
+1
 hominglauncher 1312 -2789
 30
 -2879 0
 homingtarget -337 -3548
+1
 key 844 -4127
 hominglauncher 3059 -4171
 30
 -3373 -3373
 homingtarget 3001 -5320
+1
 homingtarget 2970 -6464
+1
 hominglauncher 4238 -6572
 30
 -1461 -699
@@ -1114,40 +1123,55 @@ hominglauncher 6153 -4092
 30
 1757 -1757
 homingtarget 7603 -5103
+1
 hominglauncher 8296 -4635
 30
 1847 1848
 homingtarget 9779 -4691
+1
 key 11072 -5190
 hominglauncher 11747 -5559
 30
 0 -2854
 homingtarget 12467 -6686
+1
 key 13004 -5911
 hominglauncher 13054 -4816
 30
 3111 -3111
 homingtarget 14889 -5484
+1
 hominglauncher 12891 -2188
 30
 0 4307
 homingtarget 12891 -1464
+1
 homingtarget 13463 -1852
+1
 homingtarget 13163 -2696
+1
 homingtarget 12403 -2728
+1
 homingtarget 12055 -2012
+1
 hominglauncher 9878 1585
 30
 5835 0
 homingtarget 10673 1494
+1
 homingtarget 10771 924
+1
 homingtarget 10393 455
+1
 homingtarget 9826 640
+1
 hominglauncher 12263 569
 30
 0 2472
 homingtarget 12736 1543
+1
 homingtarget 15619 799
+1
 hominglauncher 14780 -433
 30
 4372 0

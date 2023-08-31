@@ -24,6 +24,14 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 
 	targetType = -1;
 
+	hasMonitor = true;
+	SetKey();
+
+	keyObjectSprite.setTexture(*sess->ts_key->texture);
+
+	keyIdleLength = 16;
+	keyAnimFactor = 3;
+
 	//ts = GetSizedTileset("Enemies/target_256x256.png");
 	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
@@ -31,13 +39,7 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	BasicCircleHurtBodySetup(80);
 
 	const string &typeName = ap->GetTypeName();
-	if (typeName == "regentarget")
-	{
-		regenOn = true;
-		targetType = TARGET_REGEN;
-		//sprite.setColor(Color::Blue);
-	}
-	else if (typeName == "glidetarget")
+	if (typeName == "glidetarget")
 	{
 		targetType = TARGET_GLIDE;
 		//sprite.setColor(Color::Green);
@@ -71,13 +73,13 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	}
 	
 
-	ts = GetSizedTileset("Enemies/target_256x256.png");
+	ts = GetSizedTileset("Enemies/specialtarget_320x320.png");
 
 	actionLength[A_IDLE] = 5;
 	animFactor[A_IDLE] = 5;
 
-	actionLength[A_DYING] = 30;
-	animFactor[A_DYING] = 1;
+	actionLength[A_DYING] = 17;
+	animFactor[A_DYING] = 2;
 
 	assert(targetType != -1);
 
@@ -125,6 +127,16 @@ void SpecialTarget::ResetEnemy()
 {
 	action = A_IDLE;
 	frame = 0;
+	data.keyFrame = 0;
+
+	if (sess->currWorldDependentTilesetWorldIndex == 5)
+	{
+		keyAnimFactor = 6;
+	}
+	else
+	{
+		keyAnimFactor = 3;
+	}
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -155,7 +167,7 @@ bool SpecialTarget::IsValidTrackEnemy()
 
 bool SpecialTarget::IsHomingTarget()
 {
-	if (targetType == TARGET_HOMING || targetType == TARGET_REGEN)
+	if (targetType == TARGET_HOMING )
 	{
 		return true;
 	}
@@ -176,6 +188,11 @@ bool SpecialTarget::IsHomingTarget()
 
 void SpecialTarget::ProcessState()
 {
+	if (data.keyFrame == keyIdleLength * keyAnimFactor)
+	{
+		data.keyFrame = 0;
+	}
+
 	V2d playerPos = sess->GetPlayerPos(0);
 
 	if (frame == actionLength[action] * animFactor[action])
@@ -219,18 +236,23 @@ void SpecialTarget::ProcessState()
 	}
 }
 
+void SpecialTarget::FrameIncrement()
+{
+	++data.keyFrame;
+}
+
 void SpecialTarget::UpdateSprite()
 {
 	switch (action)
 	{
 	case A_IDLE:
 	{
-		sprite.setTextureRect(ts->GetSubRect(0));//ts->GetSubRect(frame / animFactor[A_IDLE]));
+		sprite.setTextureRect(ts->GetSubRect(targetType));//ts->GetSubRect(frame / animFactor[A_IDLE]));
 		break;
 	}
 	case A_DYING:
 	{
-		sprite.setTextureRect(ts->GetSubRect(0));
+		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[A_DYING] + 7));
 		break;
 	}
 	case A_WAIT_BEFORE_REGEN:
@@ -247,6 +269,12 @@ void SpecialTarget::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+
+	sess->ts_key->SetSpriteTexture(keyObjectSprite);
+	keyObjectSprite.setTextureRect(sess->ts_key->GetSubRect(data.keyFrame / keyAnimFactor));
+	keyObjectSprite.setOrigin(keyObjectSprite.getLocalBounds().width / 2, keyObjectSprite.getLocalBounds().height / 2);
+	keyObjectSprite.setPosition(GetPositionF());
 }
 
 void SpecialTarget::EnemyDraw(sf::RenderTarget *target)
@@ -254,7 +282,28 @@ void SpecialTarget::EnemyDraw(sf::RenderTarget *target)
 	if (action == A_WAIT_BEFORE_REGEN)
 		return;
 
-	DrawSprite(target, sprite);
+	sess->ts_key->SetSpriteTexture(keyObjectSprite);
+
+	bool drawHurtShader = (pauseFrames >= 2 && !pauseFramesFromAttacking) && currShield == NULL;
+
+	if (drawHurtShader)
+	{
+		target->draw(sprite, &hurtShader);
+	}
+	else
+	{
+		target->draw(sprite);
+	}
+
+	if (action == A_IDLE)
+	{
+		DrawSprite(target, keyObjectSprite);
+	}
+
+	if (hasMonitor && !suppressMonitor)
+	{
+		target->draw(keySprite);
+	}
 }
 
 HitboxInfo * SpecialTarget::IsHit(int pIndex)

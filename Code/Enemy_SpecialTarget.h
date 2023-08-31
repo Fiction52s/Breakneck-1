@@ -16,20 +16,18 @@ struct SpecialTarget : Enemy
 
 	enum TargetType
 	{
-		TARGET_REGEN,
 		TARGET_GLIDE,
-		TARGET_SCORPION,
-		TARGET_HOMING,
-		TARGET_FREEFLIGHT,
 		TARGET_BOUNCE,
+		TARGET_SCORPION,
 		TARGET_GRIND,
+		TARGET_HOMING,
 		TARGET_SWING,
-		//TARGET_ATTACK_BLUE,
+		TARGET_FREEFLIGHT,
 	};
 
 	struct MyData : StoredEnemyData
 	{
-
+		int keyFrame;
 	};
 	MyData data;
 
@@ -37,11 +35,16 @@ struct SpecialTarget : Enemy
 	Tileset *ts;
 	bool regenOn;
 
+	sf::Sprite keyObjectSprite;
+	int keyIdleLength;
+	int keyAnimFactor;
+
 	bool CountsForEnemyGate() { return false; }
 	SpecialTarget(ActorParams *ap);
 	bool IsInteractible();
 	bool IsValidTrackEnemy();
 	bool IsHomingTarget();
+	void FrameIncrement();
 	void SetLevel(int lev);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);

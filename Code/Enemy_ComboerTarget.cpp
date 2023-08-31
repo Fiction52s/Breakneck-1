@@ -203,7 +203,7 @@ void ComboerTarget::ProcessState()
 
 void ComboerTarget::UpdateSprite()
 {
-	sess->ts_key->SetSpriteTexture(keyObjectSprite);
+	
 
 	switch (action)
 	{
@@ -222,9 +222,8 @@ void ComboerTarget::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 
-
+	sess->ts_key->SetSpriteTexture(keyObjectSprite);
 	keyObjectSprite.setTextureRect(sess->ts_key->GetSubRect(data.keyFrame / keyAnimFactor));
-
 	keyObjectSprite.setOrigin(keyObjectSprite.getLocalBounds().width / 2, keyObjectSprite.getLocalBounds().height / 2);
 	keyObjectSprite.setPosition(GetPositionF());
 }

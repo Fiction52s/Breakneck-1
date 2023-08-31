@@ -964,7 +964,9 @@ borderpoly
 homingbooster 236 -38
 1
 homingtarget 752 -418
+1
 homingtarget -239 -666
+1
 key -3417 -2019
 key -3086 -3521
 key -1857 -2924
@@ -972,11 +974,14 @@ homingbooster -121 -1952
 1
 key -61 -3677
 homingtarget 1168 -2383
+1
 key 1366 -3828
 homingbooster -1526 -5039
 1
 homingtarget -3087 -5660
+1
 homingtarget -2412 -5663
+1
 key -4775 -5690
 key -4808 -6424
 key -4412 -6711
@@ -984,8 +989,11 @@ key -3963 -6952
 homingbooster -712 -8749
 1
 homingtarget 1953 -7745
+1
 homingtarget 1117 -8213
+1
 homingtarget 2271 -8678
+1
 homingbooster 1591 -6744
 1
 homingbooster 3096 -8659
@@ -994,30 +1002,41 @@ key 697 -9086
 homingbooster 2255 -11024
 1
 homingtarget 2699 -11815
+1
 homingtarget 2906 -12627
+1
 homingtarget 2538 -13488
+1
 homingtarget 3119 -14531
+1
 homingbooster 6069 -13944
 1
 homingtarget 5094 -13610
+1
 homingtarget 5113 -14758
+1
 key 4904 -15745
 homingbooster 4467 -16746
 1
 homingbooster 5022 -16770
 1
 homingtarget 4677 -17874
+1
 key 4389 -19314
 key 4953 -19305
 homingtarget 4668 -18753
+1
 key 4402 -20184
 key 5062 -20172
 key 4705 -20754
 homingbooster 8087 -21469
 1
 homingtarget 8299 -19967
+1
 homingtarget 8750 -18182
+1
 homingtarget 8339 -16355
+1
 key 11794 -12186
 homingbooster 9448 -15081
 1
