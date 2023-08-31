@@ -256,6 +256,11 @@ void Goal::UpdateSprite()
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
+bool Goal::IsSlowed(int index)
+{
+	return false;
+}
+
 void Goal::EnemyDraw(sf::RenderTarget *target )
 {
 	ts = sess->ts_goal;

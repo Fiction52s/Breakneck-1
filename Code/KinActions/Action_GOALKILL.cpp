@@ -24,6 +24,7 @@ void Actor::GOALKILL_Start()
 	rightWire->Reset();
 	leftWire->Reset();
 	hitGoal = false;
+	slowMultiple = 1;
 
 	bool setRecord = false;
 	if (owner != NULL)

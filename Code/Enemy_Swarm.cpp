@@ -369,12 +369,12 @@ Swarm::Swarm( ActorParams *ap )
 	liveFrames = 420;//600;//300;
 
 	actionLength[NEUTRAL] = 10;
-	actionLength[FIRE] = 6;
+	actionLength[FIRE] = 9;
 	actionLength[USED] = 10;
 	actionLength[REFILL] = 30;
 
 	animFactor[NEUTRAL] = 2;
-	animFactor[FIRE] = 10;
+	animFactor[FIRE] = 7;
 	animFactor[USED] = 1;
 	animFactor[REFILL] = 1;
 
@@ -417,8 +417,8 @@ Swarm::Swarm( ActorParams *ap )
 	BasicCircleHurtBodySetup(48);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(7);
-	cutObject->SetSubRectBack(8);
+	cutObject->SetSubRectFront(10);
+	cutObject->SetSubRectBack(11);
 	cutObject->SetScale(scale);
 
 	hitBody.hitboxInfo = hitboxInfo;

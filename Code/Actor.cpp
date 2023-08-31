@@ -6786,7 +6786,7 @@ void Actor::UpdateBubbles()
 		}
 	}
 
-	if (timeSlowTerrain)
+	if (timeSlowTerrain )
 	{
 		specialSlow = true;
 	}
@@ -6800,6 +6800,13 @@ void Actor::UpdateBubbles()
 	if (specialSlow)
 	{
 		inBubble = true;
+	}
+
+	if (IsGoalKillAction(action))
+	{
+		inBubble = false;
+		specialSlow = false;
+		powerSlow = false;
 	}
 
 	//currInput.leftShoulder before

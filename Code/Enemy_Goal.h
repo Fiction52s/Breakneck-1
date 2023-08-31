@@ -49,6 +49,7 @@ struct Goal : Enemy
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
+	bool IsSlowed(int index);
 	void ResetEnemy();
 	void HandleNoHealth();
 	void ProcessState();
