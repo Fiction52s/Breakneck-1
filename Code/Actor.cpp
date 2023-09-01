@@ -21636,10 +21636,12 @@ void Actor::SetupAction(int a)
 void Actor::FreeFlightMovement()
 {
 	double accelFactor = 1.0;
-	double accelFactorFast = .3;
+	double accelFactorFast = .3;//.1;//.3;
 	double maxAccelSpeed = 40;// 15;
-	double decelFactor = 4.0;//1.5;
+	double decelFactor = 2.0;//1.0;//1.5;
 	double highSpeedThresh = 15;
+
+	double neutralDecelFactor = .02;//2.0;
 
 	if (currInput.LUp())
 	{
@@ -21712,6 +21714,46 @@ void Actor::FreeFlightMovement()
 
 			if (velocity.x > maxAccelSpeed)
 				velocity.x = maxAccelSpeed;
+		}
+	}
+
+	if (!currInput.LLeft() && !currInput.LRight())
+	{
+		if (velocity.x > 0)
+		{
+			velocity.x -= neutralDecelFactor;
+			if (velocity.x < 0)
+			{
+				velocity.x = 0;
+			}
+		}
+		else if (velocity.x < 0)
+		{
+			velocity.x += neutralDecelFactor;
+			if (velocity.x > 0)
+			{
+				velocity.x = 0;
+			}
+		}
+	}
+
+	if (!currInput.LUp() && !currInput.LDown())
+	{
+		if (velocity.y > 0)
+		{
+			velocity.y -= neutralDecelFactor;
+			if (velocity.y < 0)
+			{
+				velocity.y = 0;
+			}
+		}
+		else if (velocity.y < 0)
+		{
+			velocity.y += neutralDecelFactor;
+			if (velocity.y > 0)
+			{
+				velocity.y = 0;
+			}
 		}
 	}
 }
