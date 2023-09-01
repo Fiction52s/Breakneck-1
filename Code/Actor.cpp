@@ -14141,6 +14141,7 @@ void Actor::UpdatePhysics()
 			}
 			else if(!touchedGrass[Grass::ANTIGRIND] 
 				&& tempCollision //&& currPowerMode == PMODE_GRIND 
+				&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
 				&& HasUpgrade(UPGRADE_POWER_GRIND) 
 				&& CanBufferGrind()//PowerButtonHeld()
 				&& velocity.y != 0 //remove this soon
@@ -21640,7 +21641,7 @@ void Actor::FreeFlightMovement()
 	double maxAccelSpeed = 40;// 15;
 	double decelFactor = 2.0;//1.0;//1.5;
 	double highSpeedThresh = 15;
-
+	 
 	double neutralDecelFactor = .02;//2.0;
 
 	if (currInput.LUp())
@@ -22137,6 +22138,7 @@ void Actor::AttackMovement()
 bool Actor::CanBufferGrind()
 {
 	return !touchedGrass[Grass::ANTIGRIND]
+		&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
 		&& currPowerMode == PMODE_GRIND 
 		&& HasUpgrade(UPGRADE_POWER_GRIND) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
 }

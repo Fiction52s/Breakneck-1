@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "SoundTypes.h"
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -18,7 +19,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	bool j = JumpButtonPressed();
 
-	if (j || touchedGrass[Grass::ANTIGRIND] || springStunFrames == 0 )
+	if (j || touchedGrass[Grass::ANTIGRIND] || springStunFrames == 0 || InWater( TerrainPolygon::WATER_INVERTEDINPUTS ) )
 	{
 		V2d op = position;
 

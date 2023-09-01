@@ -20,7 +20,8 @@ void Actor::GRINDBALL_Change()
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	bool j = JumpButtonPressed();
 	//bool isntWall = grindEdge->Normal().y != 0;
-	if ((framesGrinding > 0 && !GrindButtonHeld() ) || j || touchedGrass[Grass::ANTIGRIND] || InWater( TerrainPolygon::WATER_FREEFLIGHT ))//&& grindEdge->Normal().y < 0 )
+	if ((framesGrinding > 0 && !GrindButtonHeld() ) || j || touchedGrass[Grass::ANTIGRIND] || InWater( TerrainPolygon::WATER_FREEFLIGHT ) 
+		|| InWater( TerrainPolygon::WATER_INVERTEDINPUTS ) || InWater( TerrainPolygon::WATER_GLIDE ) )
 	{
 		V2d op = position;
 
