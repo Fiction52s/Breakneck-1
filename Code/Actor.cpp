@@ -11939,13 +11939,22 @@ void Actor::UpdateGrindPhysics(double movement)
 								//e1 = grindEdge->edge1;
 							}
 						}
+
+						if (origUnlocked)
+						{
+							(*it)->SetLocked(false);
+						}
+
 						break;
 					}
-
-					if (origUnlocked)
+					else
 					{
-						(*it)->SetLocked(false);
+						if (origUnlocked)
+						{
+							(*it)->SetLocked(false);
+						}
 					}
+					
 				}
 
 				//if ( e1 != NULL && e1->IsGateEdge() )
@@ -12070,10 +12079,12 @@ void Actor::UpdateGrindPhysics(double movement)
 
 						break;
 					}
-
-					if (origUnlocked)
+					else
 					{
-						(*it)->SetLocked(false);
+						if (origUnlocked)
+						{
+							(*it)->SetLocked(false);
+						}
 					}
 				}
 
@@ -18521,52 +18532,51 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				V2d startVec = normalize(e0->v0 - e->v0);
 				V2d endVec = normalize(e->v1 - e->v0);
 
-				double startAngle = atan2(-startVec.y, startVec.x);
-				if (startAngle < 0)
+				double diff = GetVectorAngleDiffCW(startVec, endVec);
+				double pDiff = GetVectorAngleDiffCW(startVec, pVec);
+
+				if (pDiff > diff)
 				{
-					startAngle += 2 * PI;
-				}
-				double endAngle = atan2(-endVec.y, endVec.x);
-				if (endAngle < 0)
-				{
-					endAngle += 2 * PI;
+					return;
 				}
 
-				double temp = startAngle;
-				startAngle = endAngle;
-				endAngle = temp;
 
-				if (endAngle < startAngle)
-				{
-					if (pAngle >= endAngle || pAngle <= startAngle)
-					{
+				//double startAngle = atan2(-startVec.y, startVec.x);
+				//if (startAngle < 0)
+				//{
+				//	startAngle += 2 * PI;
+				//}
+				//double endAngle = atan2(-endVec.y, endVec.x);
+				//if (endAngle < 0)
+				//{
+				//	endAngle += 2 * PI;
+				//}
 
-					}
-					else
-					{
-						//	cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;
-					}
-				}
-				else
-				{
-					if (pAngle >= startAngle && pAngle <= endAngle)
-					{
+				//double temp = startAngle;
+				//startAngle = endAngle;
+				//endAngle = temp;
 
-						//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-						//	", p: " << pVec.x << ", " << pVec.y << endl;
+				//if (endAngle < startAngle)
+				//{
+				//	if (pAngle >= endAngle || pAngle <= startAngle)
+				//	{
 
-					}
-					else
-					{
-						//	cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;
-						/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-							", p: " << pVec.x << ", " << pVec.y << endl;
-						cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;*/
-					}
-				}
+				//	}
+				//	else
+				//	{
+				//		//return;
+				//	}
+				//}
+				//else
+				//{
+				//	if (pAngle >= startAngle && pAngle <= endAngle)
+				//	{
+				//	}
+				//	else
+				//	{
+				//	//	return;
+				//	}
+				//}
 
 
 			}
@@ -18587,125 +18597,53 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				V2d startVec = normalize(e->v0 - e->v1);
 				V2d endVec = normalize(e1->v1 - e->v1);
 
-				double startAngle = atan2(-startVec.y, startVec.x);
-				if (startAngle < 0)
+				double diff = GetVectorAngleDiffCW(startVec, endVec);
+				double pDiff = GetVectorAngleDiffCW(startVec, pVec);
+
+				if (pDiff > diff)
 				{
-					startAngle += 2 * PI;
-				}
-				double endAngle = atan2(-endVec.y, endVec.x);
-				if (endAngle < 0)
-				{
-					endAngle += 2 * PI;
+					return;
 				}
 
-				double temp = startAngle;
-				startAngle = endAngle;
-				endAngle = temp;
+
+				//double startAngle = atan2(-startVec.y, startVec.x);
+				//if (startAngle < 0)
+				//{
+				//	startAngle += 2 * PI;
+				//}
+				//double endAngle = atan2(-endVec.y, endVec.x);
+				//if (endAngle < 0)
+				//{
+				//	endAngle += 2 * PI;
+				//}
 
 				//double temp = startAngle;
 				//startAngle = endAngle;
 				//endAngle = temp;
 
-				if (endAngle < startAngle)
-				{
-					if (pAngle >= endAngle || pAngle <= startAngle)
-					{
+				//if (endAngle < startAngle)
+				//{
+				//	if (pAngle >= endAngle || pAngle <= startAngle)
+				//	{
 
-					}
-					else
-					{
-						//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;
-					}
-				}
-				else
-				{
-					if (pAngle >= startAngle && pAngle <= endAngle)
-					{
-						//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-						//	", p: " << pVec.x << ", " << pVec.y << endl;
-
-					}
-					else
-					{
-						//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;
-
-						/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-							", p: " << pVec.x << ", " << pVec.y << endl;
-						cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;*/
-					}
-				}
+				//	}
+				//	else
+				//	{
+				//	//	return;
+				//	}
+				//}
+				//else
+				//{
+				//	if (pAngle >= startAngle && pAngle <= endAngle)
+				//	{
+				//	}
+				//	else
+				//	{
+				//		//return;
+				//	
+				//	}
+				//}
 			}
-
-
-			/*if( e->edge0->edgeType == Edge::CLOSED_GATE )
-			{
-				double q =
-				Edge *e0 = e->edge0;
-				Gate *g = (Gate*)e0->info;
-				Edge *ea = g->edgeA;
-				double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
-				if( ca > 0 )
-				{
-					if( e0 == g->edgeB )
-					{
-						return;
-					}
-				}
-				else if( ca < 0 )
-				{
-					if( e0 == g->edgeA )
-					{
-						return;
-					}
-				}
-				else
-				{
-					assert( 0 && "gate collision stuff" );
-				}
-			}
-			else if( e->edge1->edgeType == Edge::CLOSED_GATE )
-			{
-				Edge *e1 = e->edge1;
-				Gate *g = (Gate*)e1->info;
-				Edge *ea = g->edgeA;
-				double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
-				if( ca > 0 )
-				{
-					if( e1 == g->edgeB )
-					{
-						return;
-					}
-				}
-				else if( ca < 0 )
-				{
-					if( e1 == g->edgeA )
-					{
-						return;
-					}
-				}
-				else
-				{
-					assert( 0 && "gate collision stuff" );
-				}
-			}*/
-
-
-
-
-
-
-
-
-			//if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
-			//{
-			//if (c->edge->edgeType == Edge::OPEN_GATE)
-			//{
-			//	//cout << "GATEEEEee" << endl;
-			//	return;
-			//}
 			else if (c->edge->IsGateEdge() )
 			{
 				Gate *g = c->edge->GetGate();
