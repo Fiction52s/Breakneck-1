@@ -32,7 +32,7 @@ struct ComboerTarget : Enemy
 
 
 	sf::Shader myShader;
-	sf::Glsl::Vec4 paletteArray[17];
+	sf::Glsl::Vec4 paletteArray[18];
 	Tileset *ts_palette;
 
 	int targetType;

@@ -9723,6 +9723,8 @@ V2d Actor::UpdateReversePhysics()
 				
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( -m, 0 ));
+					
+					//cout << "check offsetX: " << xOffset << "\n";
 
 					if (IsOnRailAction(action))
 					{
@@ -9782,6 +9784,7 @@ V2d Actor::UpdateReversePhysics()
 							{
 								//cout << "c2:" << speedTransfer << endl;
 								offsetX -= minContact.resolution.x;
+								offsetX = -offsetX;
 								groundSpeed = 0;
 								//offsetX = -offsetX;
 
@@ -9798,8 +9801,11 @@ V2d Actor::UpdateReversePhysics()
 								groundedWallBounce = true;
 							}
 
-							//cout << "d" << endl;
 							offsetX -= minContact.resolution.x;
+							offsetX = -offsetX;
+
+							//cout << "m: " << m << "\n";
+							//cout << "setting offsetX: " << offsetX << "\n";
 							groundSpeed = 0;
 							//offsetX = -offsetX; 
 
@@ -13616,10 +13622,50 @@ void Actor::UpdatePhysics()
 									else if (minContact.normal.y > 0 )//&& DefaultGravReverseCheck() )
 									{
 										//this is so that DefaultGravReverseCheck() and DefaultCeilingLanding() are accurate
-										position += minContact.resolution;
+										//position += minContact.resolution;
 
-										if (DefaultGravReverseCheck())
+
+
+
+
+
+
+										/*q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
+										edgeQuantity = q;
+
+										Vector2<double> groundPoint = ground->GetPosition(edgeQuantity);
+
+										position = groundPoint;
+
+										position.x += offsetX + b.offset.x;
+										position.y += normalHeight;*/
+
+
+
+
+
+										//offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+										
+
+										//if (reversed)
+										//{
+										//	if (gn.y > 0 || abs(offsetX) != b.rw)
+										//	{
+										//		position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+										//	}
+										//}
+										//else
+										//{
+										//	if (gn.y < 0 || abs(offsetX) != b.rw)
+										//	{
+										//		position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+										//	}
+										//}
+
+										if (false)//DefaultGravReverseCheck())
 										{
+											//position -= minContact.resolution;
 											collision = true;
 											velocity = groundSpeed * ground->Along();
 
@@ -13725,8 +13771,10 @@ void Actor::UpdatePhysics()
 			V2d extraVel(0, 0);
 			if( tempCollision  )
 			{
-				collision = true;			
+				collision = true;
+				//cout << "movementvec: " << movementVec.x << ", " << movementVec.y << "\n";
 				position += minContact.resolution;
+				//cout << "resolution: " << minContact.resolution.x << ", " << minContact.resolution.y << "\n";
 				
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
@@ -14137,7 +14185,10 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision && DefaultGravReverseCheck() )
 			{
+				//position += minContact.resolution;
+
 				DefaultCeilingLanding(movement);
+				break;
 			}
 			else if(!touchedGrass[Grass::ANTIGRIND] 
 				&& tempCollision //&& currPowerMode == PMODE_GRIND 
@@ -14454,7 +14505,7 @@ void Actor::HandleTouchedGate()
 	}
 
 
-	g->SetLocked(true);
+	//g->SetLocked(true);
 
 	if (grindEdge != NULL)
 	{
@@ -14472,7 +14523,7 @@ void Actor::HandleTouchedGate()
 		}
 	}
 
-	g->SetLocked(false);
+	//g->SetLocked(false);
 
 	if (activate)
 	{
@@ -14609,7 +14660,7 @@ void Actor::HandleTouchedGate()
 			if (allPointsInCurrZone)
 			{
 				gateTouched = NULL;
-				sess->LockGate(g);
+				//sess->LockGate(g);
 			}
 			//might need extra checks at some point
 		}
@@ -20220,9 +20271,15 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	movement = 0;
 
+
 	
-	//offsetX is always correct if the math is right for the case I'm in.
+	//offsetX = -10;//(position.x + b.offset.x) - minContact.position.x;
 	offsetX = (position.x + b.offset.x) - minContact.position.x;
+	//offsetX = -offsetX;
+
+	//cout << "offsetX: " << offsetX << "\n";
+	//offsetX is always correct if the math is right for the case I'm in.
+	
 
 	//cout << "actual landing offsetX: " << offsetX << endl;
 
