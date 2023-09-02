@@ -6,26 +6,49 @@
 using namespace std;
 using namespace sf;
 
-sf::Color Grass::GetColor( int gType )
+sf::Color Grass::GetColor()
 {
-	Color c = Color::White;
-	/*switch (gType)
+	switch (grassType)
 	{
-	case Grass::JUMP:
-		c = Color::White;
+	case DECELERATE:
+		return Color::White;
 		break;
-	case Grass::BOUNCE:
-		c = Color::Red;
+	case JUMP:
+		return Color::White;
 		break;
-	case Grass::GrassType::UNTECHABLE:
-		c = Color::Yellow;
+	case GRAVREVERSE:
+		return Color::White;
 		break;
-	case Grass::GrassType::KILL:
-		c = Color::Black;
+	case ANTIGRAVREVERSE:
+		return Color::White;
 		break;
-	}*/
+	case BOUNCE:
+		return Color::White;
+		break;
+	case ACCELERATE:
+		return Color::White;
+		break;
+	case ANTIGRIND:
+		return Color::White;
+		break;
+	case POISON:
+		return Color::White;
+		break;
+	case ANTIWIRE:
+		return Color::Magenta;
+		break;
+	case BOOST:
+		return Color::White;
+		break;
+	case HIT:
+		return Color::White;
+		break;
+	case UNTECHABLE:
+		return Color::White;
+		break;
+	}
 
-	return c;
+	return Color::White;
 }
 
 int Grass::GetGrassTypeFromString(const std::string &s)

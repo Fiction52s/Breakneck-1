@@ -18,5 +18,6 @@
 #include "Enemy_ScorpionLauncher.h"
 #include "Enemy_LaserWolf.h"
 #include "Enemy_Dragon.h"
+#include "Enemy_WireBall.h"
 
 #endif

@@ -148,10 +148,29 @@ void SpecialTarget::Collect()
 {
 	if (numHealth > 0)
 	{
-		numHealth = 0;
 		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 		ConfirmKill();
+		if (hasMonitor)
+		{
+			suppressMonitor = true;
+		}
+		dead = false;
+
+		action = A_DYING;
+		frame = 0;
+		HitboxesOff();
+		HurtboxesOff();
+
+		numHealth = 0;//maxHealth;
 	}
+
+
+	//if (numHealth > 0)
+	//{
+	//	numHealth = 0;
+	//	sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+	//	ConfirmKill();
+	//}
 }
 
 bool SpecialTarget::IsInteractible()
@@ -351,22 +370,10 @@ void SpecialTarget::ProcessHit()
 	{
 		//sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		//ConfirmHitNoKill();
-		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-		ConfirmKill();
-		if (hasMonitor)
-		{
-			suppressMonitor = true;
-		}
-		dead = false;
 
-		action = A_DYING;
-		frame = 0;
-		HitboxesOff();
-		HurtboxesOff();
-
-		numHealth = maxHealth;
-
+		Collect();
 		receivedHit.SetEmpty();
+		
 
 		/*if (hasMonitor && !suppressMonitor)
 		{

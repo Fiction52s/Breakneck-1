@@ -303,7 +303,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void FadeOut();
 	bool IsActive();
 
-
 	void MakeGlobalPath(
 		V2d &startPos,
 		std::vector<sf::Vector2i> &path);

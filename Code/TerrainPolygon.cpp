@@ -6990,7 +6990,37 @@ void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
 		{
 			target->draw(*va);
 		}
-		
+
+		//DrawGrass(target);
+		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
+		{
+			SetRectColor(grassVA + (*it).tileIndex * 4, (*it).GetColor());	
+		}
+		/*for (int i = 0; i < numGrassTotal; ++i)
+		{
+			if (grassStateVec[i].gState == G_ON)
+			{
+				SetRectColor(grassVA + i * 4, (*it).
+			}
+		}*/
+		if (grassVA != NULL)
+		{
+			target->draw(grassVA, numGrassTotal * 4, sf::Quads );
+		}
+
+		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
+		{
+			SetRectColor(grassVA + (*it).tileIndex * 4, Color::White );
+		}
+
+		/*for (int i = 0; i < numGrassTotal; ++i)
+		{
+			if (grassStateVec[i].gState == G_ON)
+			{
+				SetRectColor(grassVA + i * 4, Color::White);
+			}
+			
+		}*/
 	}
 }
 

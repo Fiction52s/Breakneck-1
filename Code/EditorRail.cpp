@@ -248,7 +248,7 @@ void TerrainRail::Init()
 	sess = Session::GetSession();
 	railIndex = -1;
 	ts_rail = sess->GetSizedTileset("Env/rails_128x64.png");
-	ts_arrow = sess->GetSizedTileset("Enemies/W3/bouncecomboer_128x128.png");
+	ts_arrow = sess->GetSizedTileset("Env/rail_arrow_64x64.png");
 	queryNext = NULL;
 	quadHalfWidth = 6;
 	renderMode = RENDERMODE_NORMAL;
@@ -880,8 +880,8 @@ void TerrainRail::UpdateArrowQuads()
 	int numSmoothQuads = 3;
 	int numP = GetNumPoints();
 
-	double railTileWidth = ts_arrow->tileWidth / 2.0;
-	double railTileHeight = ts_arrow->tileHeight / 2.0;
+	double railTileWidth = ts_arrow->tileWidth;
+	double railTileHeight = ts_arrow->tileHeight;
 
 	double out = ts_arrow->tileHeight / 2.0;
 	double in = ts_arrow->tileHeight / 2.0;

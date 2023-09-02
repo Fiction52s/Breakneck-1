@@ -32,7 +32,7 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 
 	ts = GetSizedTileset("Enemies/key_comboer_256x256.png");
 
-	ts_palette = GetSizedTileset("Enemies/key_comboer_palette_17x8.png");
+	ts_palette = GetSizedTileset("Enemies/key_comboer_palette_18x8.png");
 	sf::Image paletteImage = ts_palette->texture->copyToImage();
 
 	hasMonitor = true;
@@ -74,11 +74,11 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 		skinIndex = 5;
 	}
 
-	for (int i = 0; i < 17; ++i)
+	for (int i = 0; i < 18; ++i)
 	{
 		paletteArray[i] = sf::Glsl::Vec4(paletteImage.getPixel(i, skinIndex));
 	}
-	myShader.setUniformArray("u_palette", paletteArray, 17);
+	myShader.setUniformArray("u_palette", paletteArray, 18);
 
 	keyIdleLength = 16;
 	keyAnimFactor = 3;
