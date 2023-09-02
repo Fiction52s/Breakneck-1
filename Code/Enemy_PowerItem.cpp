@@ -294,6 +294,16 @@ void PowerItem::Launch()
 	frame = 0;
 }
 
+bool PowerItem::CountsForPowerGate()
+{
+	if (data.alreadyCollected)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void PowerItem::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -521,7 +531,8 @@ void PowerPopup::SetPower(int index)
 		SetName("Airdash");
 		tutBox->SetText("You unlocked Airdash!\n"
 			"-Hold DASH in the air to hover!\n"
-			"-Hold DASH and a direction to airdash in any of the 8 directions!");
+			"-Hold DASH and a direction to airdash in any of the 8 directions!\n"
+			"-Press ATTACK while Airdashing diagonally for a special attack!");
 		break;
 	case 1:
 		SetName("Reverse Gravity Cling");

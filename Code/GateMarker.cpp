@@ -94,6 +94,16 @@ void GateMarker::Update( Camera *cam )
 		numText.setOrigin(bounds.left + bounds.width / 2,
 			bounds.top + bounds.height / 2);
 	}
+	else if (currGate->category == Gate::POWER)
+	{
+		Session *sess = Session::GetSession();
+		int numRemaining = sess->currentZone->GetNumRemainingCollectiblePowers();
+
+		numText.setString(to_string(numRemaining));
+		auto bounds = numText.getLocalBounds();
+		numText.setOrigin(bounds.left + bounds.width / 2,
+			bounds.top + bounds.height / 2);
+	}
 
 	if (state == HIDE)
 	{
@@ -170,6 +180,17 @@ void GateMarker::Update( Camera *cam )
 	else if (currGate->category == Gate::ENEMY)
 	{
 		if (sess->currentZone->GetNumRemainingKillableEnemies() == 0)
+		{
+			tile = 1;
+		}
+		else
+		{
+			tile = 2;
+		}
+	}
+	else if (currGate->category == Gate::POWER)
+	{
+		if (sess->currentZone->GetNumRemainingCollectiblePowers() == 0)
 		{
 			tile = 1;
 		}

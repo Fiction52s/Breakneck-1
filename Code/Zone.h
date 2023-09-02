@@ -108,6 +108,7 @@ struct Zone
 		sf::Vector2f &playertest );
 	void Update();
 	int GetNumRemainingKillableEnemies();
+	int GetNumRemainingCollectiblePowers();
 	float GetOpeningAlpha();
 	void SetZoneType( int zt );
 	void Reset();

@@ -11,34 +11,34 @@ sf::Color Grass::GetColor()
 	switch (grassType)
 	{
 	case DECELERATE:
-		return Color::White;
+		return Color( 0x00, 0x66, 0xFF );
 		break;
 	case JUMP:
-		return Color::White;
+		return Color( 0x00, 0x66, 0xAA );
 		break;
 	case GRAVREVERSE:
-		return Color::White;
+		return Color(0x33, 0x99, 0x44);
 		break;
 	case ANTIGRAVREVERSE:
-		return Color::White;
+		return Color(0x44, 0x66, 0x66);
 		break;
 	case BOUNCE:
-		return Color::White;
+		return Color( 0xDD, 0x99, 0x33 );
 		break;
 	case ACCELERATE:
-		return Color::White;
+		return Color(0xAA, 0xFF, 0xBB);
 		break;
 	case ANTIGRIND:
-		return Color::White;
+		return Color(0xEE, 0x44, 0x00);
 		break;
 	case POISON:
-		return Color::White;
+		return Color(0x00, 0xAA, 0x44);
 		break;
 	case ANTIWIRE:
-		return Color::Magenta;
+		return Color(0x88, 0x11, 0x55);
 		break;
 	case BOOST:
-		return Color::White;
+		return Color(0xEE, 0x55, 0xAA);
 		break;
 	case HIT:
 		return Color::White;

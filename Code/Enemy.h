@@ -131,6 +131,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void StoreBasicEnemyData(StoredEnemyData &ed);
 	void SetBasicEnemyData(StoredEnemyData &ed);
 	virtual bool CountsForEnemyGate() { return true; }
+	virtual bool CountsForPowerGate() { return false; }
 
 	virtual bool IsValidTrackEnemy() { return !dead; }
 	virtual bool IsHomingTarget() { return true; }

@@ -22,6 +22,7 @@ struct Gate : public QuadTreeEntrant
 		SECRET,
 		PICKUP,
 		BLACK,
+		POWER,
 		Count
 	};
 

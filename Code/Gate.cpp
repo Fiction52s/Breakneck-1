@@ -442,6 +442,72 @@ void Gate::UpdateOrb()
 			SetRectColor(mapLine, mapLineColor);
 		}
 	}
+	else if (category == POWER)
+	{
+		if (data.gState == LOCKFOREVER || data.gState == REFORM)
+		{
+			SetRectColor(mapLine, mapLineColor);
+			return;
+		}
+
+		int numRemainingPowers = sess->currentZone->GetNumRemainingCollectiblePowers();
+
+		numberText.setString(to_string(numRemainingPowers));
+		auto &bounds = numberText.getLocalBounds();
+		numberText.setOrigin(bounds.left + bounds.width / 2,
+			bounds.top + bounds.height / 2);
+		if (sess->currentZone != NULL
+			&& sess->currentZone->GetNumRemainingCollectiblePowers() == 0)
+		{
+			bool currZone = (sess->currentZone == zoneA ||
+				sess->currentZone == zoneB);
+			if (data.orbState != ORB_GO && currZone)
+			{
+				data.orbState = ORB_GO;
+				data.orbFrame = 0;
+			}
+			else if (!currZone)
+			{
+				data.orbState = ORB_GREEN;
+				data.orbFrame = 0;
+			}
+
+			if (data.orbState == ORB_GO)
+			{
+				ts_orb->SetQuadSubRect(orbQuad, 2 + data.orbFrame / 2);
+
+				data.orbFrame++;
+				if (data.orbFrame == 10 * 2)
+				{
+					data.orbFrame = 0;
+				}
+
+				int mapLineFrame = (data.orbFrame / 2) % 3;
+				switch (mapLineFrame)
+				{
+				case 0:
+					SetRectColor(mapLine, mapLineColor);
+					break;
+				case 1:
+					SetRectColor(mapLine, Color::Red);
+					break;
+				case 2:
+					SetRectColor(mapLine, Color::Yellow);
+					break;
+				}
+			}
+			else
+			{
+				ts_orb->SetQuadSubRect(orbQuad, 1);
+				SetRectColor(mapLine, mapLineColor);
+			}
+		}
+		else
+		{
+			ts_orb->SetQuadSubRect(orbQuad, 0);
+			SetRectColor(mapLine, mapLineColor);
+		}
+	}
 	else if (category == TIME_GLOBAL || category == TIME_ROOM)
 	{
 		if (data.gState == LOCKFOREVER || data.gState == REFORM)

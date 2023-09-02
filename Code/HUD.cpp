@@ -133,6 +133,7 @@ void AdventureHUD::CheckForGo()
 
 		int numKeys = sess->GetPlayer(0)->numKeysHeld;
 		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
+		int numPowersRemaining = sess->currentZone->GetNumRemainingCollectiblePowers();
 
 		for (auto it = sess->currentZone->gates.begin(); it != sess->currentZone->gates.end(); ++it)
 		{
@@ -153,6 +154,14 @@ void AdventureHUD::CheckForGo()
 			else if (g->category == Gate::ENEMY)
 			{
 				if (numEnemiesRemaining > 0 )
+				{
+					allGatesSatisfied = false;
+					break;
+				}
+			}
+			else if (g->category == Gate::POWER)
+			{
+				if (numPowersRemaining > 0)
 				{
 					allGatesSatisfied = false;
 					break;

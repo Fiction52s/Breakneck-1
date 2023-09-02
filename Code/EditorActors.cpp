@@ -407,12 +407,13 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "tutorialobject")
 	{
-		p = new Panel("tutorialobject_options", 700, 120, edit);
+		p = new Panel("tutorialobject_options", 700, 300, edit);
 		p->SetPosition(Vector2i(0, 300));
 		p->SetAutoSpacing(true, false, Vector2i(10, 0), Vector2i(20, 0));
 		p->SetColor(Color::Green);
 		//TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 600, 200, "NONE");
-		TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 300, 4, 20, 400, "NONE");
+		//TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 300, 4, 20, 400, "NONE");
+		TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 500, 8, 20, 400, "NONE");
 	}
 	else
 	{

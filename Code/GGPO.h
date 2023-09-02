@@ -261,8 +261,6 @@ struct PState
 	int currSkinIndex;
 
 	V2d waterEntranceVelocity;
-	int modifiedDrainFrames;
-	int modifiedDrain;
 	int invertInputFrames;
 	int currPowerMode;
 	int oldSpecialTerrainID;

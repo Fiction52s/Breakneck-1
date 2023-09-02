@@ -720,8 +720,6 @@ struct Actor : QuadTreeCollider,
 	int currSkinIndex;
 
 	V2d waterEntranceVelocity;
-	int modifiedDrainFrames;
-	int modifiedDrain;
 	int invertInputFrames;
 	int currPowerMode;
 	PolyPtr oldSpecialTerrain;

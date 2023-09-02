@@ -415,8 +415,6 @@ void Actor::PopulateState(PState *ps)
 	ps->rewindOnHitFrames = rewindOnHitFrames;
 	ps->currSkinIndex = currSkinIndex;
 	ps->waterEntranceVelocity = waterEntranceVelocity;
-	ps->modifiedDrainFrames = modifiedDrainFrames;
-	ps->modifiedDrain = modifiedDrain;
 	ps->invertInputFrames = invertInputFrames;
 	ps->currPowerMode = currPowerMode;
 	ps->oldSpecialTerrainID = sess->GetSpecialPolyID(oldSpecialTerrain);
@@ -691,8 +689,6 @@ void Actor::PopulateFromState(PState *ps)
 	rewindOnHitFrames = ps->rewindOnHitFrames;
 	currSkinIndex = ps->currSkinIndex;
 	waterEntranceVelocity = ps->waterEntranceVelocity;
-	modifiedDrainFrames = ps->modifiedDrainFrames;
-	modifiedDrain = ps->modifiedDrain;
 	invertInputFrames = ps->invertInputFrames;
 	currPowerMode = ps->currPowerMode;
 	oldSpecialTerrain = sess->GetSpecialPolyFromID(ps->oldSpecialTerrainID);
@@ -777,55 +773,6 @@ void Actor::SetSession(Session *p_sess,
 	owner = game;
 	editOwner = edit;
 }
-
-//void Actor::SetupDrain()
-//{
-//	float numSecondsToDrain = sess->mapHeader->drainSeconds;
-//
-//	int numDrainUpgrades = 0;
-//	switch (sess->mapHeader->envWorldType)
-//	{
-//	case 0:
-//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DRAIN_1, 3);
-//		break;
-//	case 1:
-//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W2_DECREASE_DRAIN_1, 3);
-//		break;
-//	case 2:
-//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W3_DECREASE_DRAIN_1, 3);
-//		break;
-//	case 3:
-//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W4_DECREASE_DRAIN_1, 3);
-//		break;
-//	case 4:
-//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W5_DECREASE_DRAIN_1, 3);
-//		break;
-//	case 5:
-//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W6_DECREASE_DRAIN_1, 3);
-//		break;
-//	case 6:
-//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W7_DECREASE_DRAIN_1, 3);
-//		break;
-//	}
-//
-//	float changePerUpgrade = .2;
-//	float upgradeFactor = numDrainUpgrades * changePerUpgrade;
-//	numSecondsToDrain += numSecondsToDrain * upgradeFactor;
-//
-//	float drainPerSecond = totalHealth / numSecondsToDrain;
-//	float drainPerFrame = drainPerSecond / 60.f;
-//	float drainFrames = 1.f;
-//	if (drainPerFrame < 1.f)
-//	{
-//		drainFrames = floor(1.f / drainPerFrame);
-//	}
-//	drainCounterMax = drainFrames;
-//	if (drainPerFrame < 1.0)
-//		drainPerFrame = 1.0;
-//	drainAmount = drainPerFrame;
-//	drainCounter = 0;
-//}
-
 
 SoundInfo * Actor::GetSound(const std::string &name)
 {
@@ -4868,7 +4815,6 @@ void Actor::Respawn( bool setStartPos )
 	ClearRecentHitters();
 	directionalInputFreezeFrames = 0;
 	frameAfterAttackingHitlagOver = false;
-	modifiedDrainFrames = 0;
 	invertInputFrames = 0;
 	airBounceCounter = 0;
 	//fallThroughDuration = 0;
@@ -6395,8 +6341,6 @@ void Actor::ProcessPoisonGrass()
 	if (touchedGrass[Grass::POISON])
 	{
 		RestoreAirOptions();
-		//modifiedDrainFrames = 10;
-		//modifiedDrain = 1;//drainAmount * 4;
 		DrainTimer(10);
 
 		double poisonAccel = .2;
@@ -16472,8 +16416,6 @@ void Actor::HandleWaterSituation(int wType,
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
 			RestoreAirOptions();
-			modifiedDrainFrames = 10;
-			modifiedDrain = 1;//drainAmount * 4;
 			ApplyGeneralAcceleration(.2);
 			DrainTimer(10);
 		}
@@ -17060,11 +17002,6 @@ void Actor::SlowDependentFrameIncrement()
 		if (invertInputFrames > 0)
 		{
 			--invertInputFrames;
-		}
-
-		if (modifiedDrainFrames > 0)
-		{
-			--modifiedDrainFrames;
 		}
 
 		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)

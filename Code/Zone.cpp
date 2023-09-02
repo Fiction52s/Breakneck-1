@@ -785,6 +785,24 @@ int Zone::GetNumRemainingKillableEnemies()
 	return numLeft;
 }
 
+int Zone::GetNumRemainingCollectiblePowers()
+{
+	int numLeft = 0;
+	for (auto it = allEnemies.begin(); it != allEnemies.end(); ++it)
+	{
+		if ((*it)->CountsForPowerGate())
+		{
+			/*if (!(*it)->spawned || (!(*it)->dead && (*it)->numHealth > 0))
+			{
+				++numLeft;
+			}*/
+			++numLeft;
+		}
+	}
+
+	return numLeft;
+}
+
 float Zone::GetOpeningAlpha()
 {
 	return 1.f - data.frame / ((float)openFrames);

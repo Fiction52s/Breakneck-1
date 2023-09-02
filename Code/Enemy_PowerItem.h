@@ -101,6 +101,8 @@ struct PowerItem : Enemy
 	void Launch();
 	void DirectKill();
 
+	bool CountsForPowerGate();
+
 	void SetSequenceIDsAndAddThemToAllSequencesVec();
 
 	void ProcessState();
