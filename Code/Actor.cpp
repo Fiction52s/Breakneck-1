@@ -9728,6 +9728,7 @@ V2d Actor::UpdateReversePhysics()
 
 					if (IsOnRailAction(action))
 					{
+						offsetX = -offsetX;
 						break;
 					}
 					
@@ -9974,8 +9975,12 @@ V2d Actor::UpdateReversePhysics()
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
 								if (TryUnlockOnTransfer(e1))
+								{
+									offsetX = -offsetX;
 									break;
-
+								}
+									
+								offsetX = -offsetX;
 								groundSpeed = 0;
 								//offsetX = -offsetX; //this is only in reverse...
 								break;
@@ -10012,6 +10017,7 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else
 							{
+								offsetX = -offsetX;
 								//cout << "possible other bug reversed. solved secret??" << endl;
 								break;
 								//ground = next;
@@ -10068,6 +10074,7 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else
 					{
+						offsetX = -offsetX;
 						break;
 					}
 					//groundSpeed = 0;
@@ -10089,6 +10096,7 @@ V2d Actor::UpdateReversePhysics()
 
 					if (IsOnRailAction(action))
 					{
+						offsetX = -offsetX;
 						break;
 					}
 
