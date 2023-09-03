@@ -543,7 +543,8 @@ void PowerPopup::SetPower(int index)
 	case 2:
 		SetName("Bounce Scorpion");
 		tutBox->SetText("You unlocked Bounce Scorpion!\n"
-			"Use RLEFT to change modes, and SHIELD to toggle!");
+			"-Use RLEFT to change to scorpion mode, and hold SHIELD to activate.\n"
+			"-While activated, you will bounce off of any surface you collide with!");
 		break;
 	case 3:
 		SetName("Surface Grind");
