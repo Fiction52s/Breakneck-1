@@ -554,10 +554,11 @@ void PowerPopup::SetPower(int index)
 			"-Press ATTACK while grinding for a grind attack!");
 		break;
 	case 4:
-		SetName("Time Slow Bubbles");
+		SetName("Time Slow Bubble");
 		tutBox->SetText(
-			"Use RDOWN to change modes, then press SHIELD to create time bubbles.\n"
-			"Enemies are slowed down while in the bubbles. Hold SHIELD to slow down yourself too!");
+			"-Use RDOWN to enter time slow mode, and press SHIELD to create a bubble!\n"
+			"-Enemies and bullets are slowed down while in a bubble.\n"
+			"-Hold SHIELD while in a bubble to slow yourself down too!");
 		break;
 	case 5:
 		SetName("Double Wires");
