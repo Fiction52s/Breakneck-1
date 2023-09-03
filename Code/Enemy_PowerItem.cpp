@@ -529,37 +529,39 @@ void PowerPopup::SetPower(int index)
 	{
 	case 0:
 		SetName("Airdash");
-		tutBox->SetText("You unlocked Airdash!\n"
+		tutBox->SetText(
 			"-Hold DASH in the air to hover!\n"
 			"-Hold DASH and a direction to airdash in any of the 8 directions!\n"
 			"-Press ATTACK while Airdashing diagonally for a special attack!");
 		break;
 	case 1:
 		SetName("Gravity Reverse");
-		tutBox->SetText("You unlocked Gravity Reverse!\n"
+		tutBox->SetText(
 			"-Hold DASH and up while touching a ceiling to reverse your gravity!\n"
 			"-Gravity will remain reversed until you leave the ceiling you are on.");
 		break;
 	case 2:
 		SetName("Bounce Scorpion");
-		tutBox->SetText("You unlocked Bounce Scorpion!\n"
-			"-Use RLEFT to change to scorpion mode, and hold SHIELD to activate.\n"
-			"-While activated, you will bounce off of any surface you collide with!");
+		tutBox->SetText(
+			"-Use RLEFT to enter scorpion mode, and hold SHIELD to activate.\n"
+			"-While on, you will bounce off of any surface you collide with!");
 		break;
 	case 3:
-		SetName("Surface Grind");
-		tutBox->SetText("You unlocked Surface Grind!\n"
-			"Use RRIGHT to change modes, then hold SHIELD to move on any surface!");
+		SetName("Grind Wheel");
+		tutBox->SetText(
+			"-Use RRIGHT to enter grind mode, and hold SHIELD to activate!\n"
+			"-While on, you will move along your current surface regardless of slope.\n"
+			"-Press ATTACK while grinding for a grind attack!");
 		break;
 	case 4:
 		SetName("Time Slow Bubbles");
-		tutBox->SetText("You unlocked Time Slow Bubbles!\n"
+		tutBox->SetText(
 			"Use RDOWN to change modes, then press SHIELD to create time bubbles.\n"
 			"Enemies are slowed down while in the bubbles. Hold SHIELD to slow down yourself too!");
 		break;
 	case 5:
 		SetName("Double Wires");
-		tutBox->SetText("You unlocked Double Wires!\n"
+		tutBox->SetText(
 			"Use the triggers to swing and move around anywhere!");
 		break;
 	}
