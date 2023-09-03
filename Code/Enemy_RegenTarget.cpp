@@ -28,13 +28,13 @@ RegenTarget::RegenTarget(ActorParams *ap)
 	animFactor[A_IDLE] = 5;
 
 	actionLength[A_DYING] = 5;
-	animFactor[A_DYING] = 6;
+	animFactor[A_DYING] = 3;
 
-	actionLength[A_WAIT_BEFORE_REGEN] = 60;
+	actionLength[A_WAIT_BEFORE_REGEN] = 30;
 	animFactor[A_WAIT_BEFORE_REGEN] = 1;
 
 	actionLength[A_REGENERATING] = 5;
-	animFactor[A_REGENERATING] = 6;
+	animFactor[A_REGENERATING] = 3;
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -159,13 +159,14 @@ void RegenTarget::UpdateSprite()
 	}
 	case A_REGENERATING:
 	{
-		tile = (actionLength[A_REGENERATING]-1) - (frame / animFactor[A_DYING]) + 10;
+		tile = (actionLength[A_REGENERATING]-1) - (frame / animFactor[A_REGENERATING]) + 10;
 		break;
 	}
 	}
 
 
 	ts->SetSubRect(sprite, tile);
+	sprite.setScale(3, 3);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 }

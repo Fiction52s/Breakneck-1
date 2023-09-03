@@ -507,6 +507,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_SPECIALTARGET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 		break;
+	case EnemyType::EN_REGENTARGET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
+		break;
 	case EnemyType::EN_PHASESWITCH:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 		break;
@@ -1761,7 +1764,7 @@ void Enemy::ConfirmKill()
 
 	if (world >= 1)
 	{
-		if (type != EN_COMBOERTARGET) //exception list to having blood
+		if (type != EN_COMBOERTARGET && type != EN_REGENTARGET ) //exception list to having blood
 		{
 			sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
 		}

@@ -244,8 +244,6 @@ void Session::RegisterGeneralEnemies()
 		false, false, false, false, true, false, false);
 	AddExtraEnemy("Booster", "booster", normalRow, CreateEnemy<Booster>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-	AddExtraEnemy("Regenerating\nTarget", "regentarget", normalRow, CreateEnemy<RegenTarget>, SetParamsType<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, true, false, false);
 	AddExtraEnemy("Health Fly", "healthfly", normalRow, CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 	AddExtraEnemy("Blocker", "blocker", normalRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
@@ -336,6 +334,8 @@ void Session::RegisterW1Enemies()
 	AddBasicAerialWorldEnemy("Blue\nComboer\nTarget", "bluecomboertarget", 1, targetRow, CreateEnemy<ComboerTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);
 	AddWorldEnemy("Blue\nBlocker", "blueblocker", 1, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Regenerating\nTarget", "regentarget", 1, targetRow, CreateEnemy<RegenTarget>,
+		Vector2i(0, 0), Vector2i(32, 32), true, false, false, false);
 
 	//story
 	AddWorldEnemy("Crawler Boss Node", "crawlernode", 1, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
@@ -3121,6 +3121,7 @@ void Session::CreateZones()
 		list<Gate*> ignoreGates;
 
 		currGates.push_back(curr);
+
 
 
 		tp->AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
