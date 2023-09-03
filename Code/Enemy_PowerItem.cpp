@@ -535,9 +535,10 @@ void PowerPopup::SetPower(int index)
 			"-Press ATTACK while Airdashing diagonally for a special attack!");
 		break;
 	case 1:
-		SetName("Reverse Gravity Cling");
-		tutBox->SetText("You unlocked Reverse Gravity Cling!\n"
-			"-Hold DASH and up while touching a ceiling to reverse gravity and stick!");
+		SetName("Gravity Reverse");
+		tutBox->SetText("You unlocked Gravity Reverse!\n"
+			"-Hold DASH and up while touching a ceiling to reverse your gravity!\n"
+			"-Gravity will remain reversed until you leave the ceiling you are on.");
 		break;
 	case 2:
 		SetName("Bounce Scorpion");

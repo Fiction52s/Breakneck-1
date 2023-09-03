@@ -13586,7 +13586,7 @@ void Actor::UpdatePhysics()
 									else if (minContact.normal.y > 0 )//&& DefaultGravReverseCheck() )
 									{
 										//this is so that DefaultGravReverseCheck() and DefaultCeilingLanding() are accurate
-										//position += minContact.resolution;
+										position += minContact.resolution;
 
 
 
@@ -13627,7 +13627,7 @@ void Actor::UpdatePhysics()
 										//	}
 										//}
 
-										if (false)//DefaultGravReverseCheck())
+										if (DefaultGravReverseCheck())
 										{
 											//position -= minContact.resolution;
 											collision = true;
