@@ -8596,6 +8596,7 @@ bool Actor::CheckWall( bool right )
 	//test.collisionPriority = 10000;
 	//test.edge = NULL;
 
+	//(minContact.normal.y > 0 && abs(minContact.normal.x) > .9) )
 
 	minContact.collisionPriority = 10000;
 	minContact.edge = NULL;
@@ -8625,7 +8626,8 @@ bool Actor::CheckWall( bool right )
 	bool wally = false;
 	if( minContact.edge != NULL && !minContact.edge->IsInvisibleWall() )
 	{
-		double quant = minContact.edge->GetQuantity( test.position );
+		//double quant = minContact.edge->GetQuantity( test.position );
+		double quant = minContact.edge->GetQuantity(minContact.position);
 
 		bool zero = false;
 		bool one = false;
