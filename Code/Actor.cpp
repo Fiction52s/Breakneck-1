@@ -8592,7 +8592,6 @@ bool Actor::CheckWall( bool right )
 		vel.x = -wThresh;
 	}
 	V2d newPos = (position) + vel;
-	Contact test;
 	//test.collisionPriority = 10000;
 	//test.edge = NULL;
 
