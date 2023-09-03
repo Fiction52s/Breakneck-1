@@ -744,6 +744,21 @@ bool Gate::CanSoften()
 			okayToSoften = true;
 			break;
 		}
+		case POWER:
+		{
+			if (currZone != NULL)
+			{
+				if (currZone->GetNumRemainingCollectiblePowers() == 0)
+				{
+					okayToSoften = true;
+				}
+			}
+			else
+			{
+				okayToSoften = false;
+			}
+			break;
+		}
 		}
 	}
 
@@ -953,6 +968,10 @@ bool Gate::CanUnlock()
 		{
 			return true;
 			break;
+		}
+		case POWER:
+		{
+			return true;
 		}
 		}
 

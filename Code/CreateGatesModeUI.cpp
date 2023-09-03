@@ -40,7 +40,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 	ts_bossGateTypes = edit->GetSizedTileset("Editor/bossgatetypes_128x128.png");
 	ts_pickupGateTypes = edit->GetSizedTileset("Editor/pickupgatetypes_128x128.png");
 
-	std::vector<string> gateCatOptions = { "All keys", "Number of keys", "Enemy", "Global time", "Room time", "Shard", "Boss", "Secret", "Pickup", "Black" };
+	std::vector<string> gateCatOptions = { "All keys", "Number of keys", "Enemy", "Global time", "Room time", "Shard", "Boss", "Secret", "Pickup", "Black", "Power" };
 	gateCategoryDropdown = mainPanel->AddDropdown(
 		"catdrop", Vector2i(0, 0), Vector2i(200, 28), gateCatOptions, 0);
 	gateCategoryDropdown->SetToolTip("Choose the gate category\n(E to expand types)");

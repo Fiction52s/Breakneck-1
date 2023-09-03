@@ -296,7 +296,7 @@ void PowerItem::Launch()
 
 bool PowerItem::CountsForPowerGate()
 {
-	if (data.alreadyCollected)
+	if (data.alreadyCollected || dead )
 	{
 		return false;
 	}

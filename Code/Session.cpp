@@ -5944,6 +5944,19 @@ void Session::UpdatePhysics()
 		}
 
 
+		if (currentZone != NULL)
+		{
+			Gate *g = NULL;
+			for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
+			{
+				 g = (*it)->GetGate();
+				 if (g->IsSoft())
+				 {
+					 g->SetLocked(true);
+				 }
+			}
+		}
+
 		Enemy *current = activeEnemyList;
 		while (current != NULL)
 		{
@@ -5951,6 +5964,18 @@ void Session::UpdatePhysics()
 			current = current->next;
 		}
 
+		if (currentZone != NULL)
+		{
+			Gate *g = NULL;
+			for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
+			{
+				g = (*it)->GetGate();
+				if (g->IsSoft())
+				{
+					g->SetLocked(false);
+				}
+			}
+		}
 
 	}
 }
