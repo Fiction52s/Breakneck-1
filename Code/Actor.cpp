@@ -5911,6 +5911,20 @@ void Actor::UpdateCanStandUp()
 		{
 			b.rh = normalHeight;
 			b.offset.y = 0;
+
+
+
+
+			minContact.collisionPriority = 10000;
+			minContact.edge = NULL;
+			minContact.resolution = V2d(0, 0);
+			col = false;
+			queryType = Q_CHECK_GATE;
+			Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+
+			GetTerrainTree()->Query(this, r);
+
+
 		}
 	}
 }
@@ -9052,15 +9066,7 @@ V2d Actor::UpdateReversePhysics()
 					{
 						UnlockGate( g );
 
-						if( e0 == g->edgeA )
-						{
-							gateTouched = g->edgeB;
-						
-						}
-						else
-						{
-							gateTouched = g->edgeA;
-						}
+						SetTouchedGate(g);
 					}
 
 					if (!g->IsLocked())
@@ -9345,14 +9351,7 @@ V2d Actor::UpdateReversePhysics()
 					{
 						UnlockGate( g );
 
-						if( e1 == g->edgeA )
-						{
-							gateTouched = g->edgeB;
-						}
-						else
-						{
-							gateTouched = g->edgeA;
-						}
+						SetTouchedGate(g);
 					}
 
 					if (!g->IsLocked())
@@ -9835,14 +9834,7 @@ V2d Actor::UpdateReversePhysics()
 									{
 										UnlockGate( g );
 
-										if( e0 == g->edgeA )
-										{
-											gateTouched = g->edgeB;
-										}
-										else
-										{
-											gateTouched = g->edgeA;
-										}
+										SetTouchedGate(g);
 
 										offsetX = -offsetX;
 										break;
@@ -9872,15 +9864,7 @@ V2d Actor::UpdateReversePhysics()
 								{
 									UnlockGate( g );
 
-									if( e0 == g->edgeA )
-									{
-										gateTouched = g->edgeB;
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-										
-									}
+									SetTouchedGate(g);
 
 									offsetX = -offsetX;
 									break;
@@ -9980,15 +9964,7 @@ V2d Actor::UpdateReversePhysics()
 								{
 									UnlockGate( g );
 
-									if( e1 == g->edgeA )
-									{
-										gateTouched = g->edgeB;
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-										
-									}
+									SetTouchedGate(g);
 
 									offsetX = -offsetX;
 									break;
@@ -11871,15 +11847,7 @@ void Actor::UpdateGrindPhysics(double movement)
 								//cout << "unlock gate" << endl;
 								//UnlockGate((*it));
 
-								if (grindEdge->edge1 == (*it)->edgeA)
-								{
-									gateTouched = (*it)->edgeB;
-								}
-								else
-								{
-									gateTouched = (*it)->edgeA;
-
-								}
+								SetTouchedGate((*it));
 
 								//e1 = grindEdge->edge1;
 							}
@@ -12005,15 +11973,7 @@ void Actor::UpdateGrindPhysics(double movement)
 								//cout << "unlock gate" << endl;
 								//UnlockGate((*it));
 
-								if (grindEdge->edge0 == (*it)->edgeA)
-								{
-									gateTouched = (*it)->edgeB;
-								}
-								else
-								{
-									gateTouched = (*it)->edgeA;
-
-								}
+								SetTouchedGate((*it));
 							}
 						}
 
@@ -12660,16 +12620,7 @@ bool Actor::TryUnlockOnTransfer( Edge * e)
 		{
 			UnlockGate(g);
 
-			if (e == g->edgeA)
-			{
-				gateTouched = g->edgeB;
-			}
-			else
-			{
-				gateTouched = g->edgeA;
-
-			}
-
+			SetTouchedGate(g);
 			return true;
 		}
 	}
@@ -14339,8 +14290,10 @@ void Actor::HandleTouchedGate()
 		return;
 	}
 
-	Edge *edge = gateTouched;
-	Gate *g = (Gate*)gateTouched->info;
+	if (gateTouched == NULL)
+		return;
+
+	Gate *g = gateTouched;
 
 	bool activate = false;
 
@@ -14350,15 +14303,30 @@ void Actor::HandleTouchedGate()
 	V2d D = b.GetQuadVertex(3);// (b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
 
 	
-
-	V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
-	double ang = atan2(nEdge.x, -nEdge.y);
-
-	double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
-	alongAmount /= length(edge->v1 - edge->v0);
-
+	Edge *myZoneEdge = NULL;
 	Zone *currZone = sess->currentZone;
 	Zone *newZone = NULL;
+	
+	if (currZone == g->zoneA)
+	{
+		myZoneEdge = g->edgeA;
+	}
+	else if (currZone == g->zoneB)
+	{
+		myZoneEdge = g->edgeB;
+	}
+	else
+	{
+		assert(0);
+	}
+
+	V2d nEdge = myZoneEdge->Normal();//normalize( edge->v1 - edge->v0 );
+	double ang = atan2(nEdge.x, -nEdge.y);
+
+	double alongAmount = dot(b.globalPosition - myZoneEdge->v0, normalize(myZoneEdge->v1 - myZoneEdge->v0));
+	alongAmount /= length(myZoneEdge->v1 - myZoneEdge->v0);
+
+	
 
 	if (currZone == g->zoneA)
 	{
@@ -14473,13 +14441,16 @@ void Actor::HandleTouchedGate()
 
 	if (grindEdge != NULL)
 	{
+		
+
 		Edge *otherEdge;
-		if (edge == g->edgeA)
+		if (myZoneEdge == g->edgeA)
 			otherEdge = g->edgeB;
 		else
 			otherEdge = g->edgeA;
 
-		if (grindEdge == edge->edge0 || grindEdge == edge->edge1)
+			//this could be buggy, as it seems like myZoneEdge used to be the opposite edge for some reason?
+		if (grindEdge == otherEdge->edge0 || grindEdge == otherEdge->edge1)
 		{
 			//this could be flawed. needs more testing
 
@@ -14520,17 +14491,17 @@ void Actor::HandleTouchedGate()
 
 			//owner->SuppressEnemyKeys(g);
 
-			Zone *oldZone;
-			Zone *newZone;
-			if (edge == g->edgeA)
-			{
-				oldZone = g->zoneB;
-				newZone = g->zoneA;
-			}
-			else
+			Zone *oldZone = NULL;
+			Zone *newZone = NULL;
+			if (myZoneEdge == g->edgeA)
 			{
 				oldZone = g->zoneA;
 				newZone = g->zoneB;
+			}
+			else
+			{
+				oldZone = g->zoneB;
+				newZone = g->zoneA;
 			}
 
 			if (oldZone != newZone)
@@ -14582,7 +14553,7 @@ void Actor::HandleTouchedGate()
 
 		//V2d gEnterPos = alongPos;// +nEdge;// *32.0;
 
-		V2d enterPos = edge->v1 + normalize(edge->v0 - edge->v1) * (1.0-alongAmount) * edge->GetLength()
+		V2d enterPos = myZoneEdge->v1 + normalize(myZoneEdge->v0 - myZoneEdge->v1) * (1.0-alongAmount) * myZoneEdge->GetLength()
 			+ nEdge * 0.0; //could change this for offset along the normal
 
 		ActivateEffect(PLAYERFX_GATE_ENTER, Vector2f(enterPos), RadiansToDegrees(ang), 8, 3, true);
@@ -14590,7 +14561,11 @@ void Actor::HandleTouchedGate()
 		//set gate action to disperse
 		//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
 		//it only enters this state if you already unlock it though
+
+		cout << "gatetouched is null from passing through a gate. was " << (int)gateTouched << "\n";
+
 		gateTouched = NULL;
+		
 	}
 	else
 	{
@@ -14623,6 +14598,7 @@ void Actor::HandleTouchedGate()
 
 			if (allPointsInCurrZone)
 			{
+				cout << "gatetouched is null from all points in curr zone. was " << (int)gateTouched << "\n";
 				gateTouched = NULL;
 				//sess->LockGate(g);
 			}
@@ -15069,6 +15045,17 @@ void Actor::HitGroundWhileInAirHitstun()
 	}
 }
 
+void Actor::SetTouchedGate(Gate *g)
+{
+	if (gateTouched == g)
+	{
+		return;
+	}
+
+	cout << "setting gate touched to: " << (int)g << "\n";
+	gateTouched = g;
+}
+
 void Actor::TryHitPlayer(int targetIndex)
 {
 	if (targetIndex == actorIndex)
@@ -15205,14 +15192,7 @@ void Actor::PhysicsResponse()
 
 			if (CanUnlockGate(g))
 			{
-				if (grindEdge == g->edgeA)
-				{
-					gateTouched = g->edgeB;
-				}
-				else
-				{
-					gateTouched = g->edgeA;
-				}
+				SetTouchedGate(g);
 
 				UnlockGate(g);
 
@@ -15371,14 +15351,7 @@ void Actor::PhysicsResponse()
 				
 			if( CanUnlockGate( g ) )
 			{
-				if( ground == g->edgeA )
-				{
-					gateTouched = g->edgeB;
-				}
-				else
-				{
-					gateTouched = g->edgeA;
-				}
+				SetTouchedGate(g);
 
 				UnlockGate( g );
 
@@ -15739,10 +15712,7 @@ void Actor::PhysicsResponse()
 
 	UpdateHitboxes();
 
-	if( gateTouched != NULL )
-	{
-		HandleTouchedGate();
-	}
+	HandleTouchedGate();
 	
 	//multiplayer
 	for (int i = 0; i < 4; ++i)
@@ -16177,6 +16147,7 @@ void Actor::HandleWaterSituation(int wType,
 		else if (sit == SPECIALT_EXIT)
 		{
 			SetSkin(SKIN_NORMAL);
+			RestoreAirOptions();
 		}
 		break;
 	}
@@ -18589,14 +18560,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				if (CanUnlockGate(g))
 				{
 
-					if (c->edge == g->edgeA)
-					{
-						gateTouched = g->edgeB;
-					}
-					else
-					{
-						gateTouched = g->edgeA;
-					}
+					SetTouchedGate(g);
 
 					UnlockGate(g);
 
@@ -18996,6 +18960,33 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 				}
 			}
+	}
+	else if (queryType == Q_CHECK_GATE)
+	{
+		Edge *e = (Edge*)qte;
+		if (!e->IsUnlockedGateEdge())
+		{
+			return;
+		}
+
+		Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+		if (e->IsTouchingBox(r))
+		{
+			Gate *g = e->GetGate();
+			if (gateTouched == NULL)
+			{
+				cout << "set touched gate from check gate\n";
+				SetTouchedGate(g);
+			}
+			else if (gateTouched != NULL && gateTouched != g)
+			{
+				//this means gates are both getting touched by you at once which is a problem in the engine anyway
+				//assuming its not going to happen in any normal levels
+				//assert(0);
+				SetTouchedGate(g);
+				
+			}
+		}
 	}
 	else if (queryType == Q_GRASS)
 	{
@@ -22383,6 +22374,11 @@ void Actor::ExecuteDoubleJump()
 	else
 	{
 		currStrength = doubleJumpStrength;
+	}
+
+	if (touchedGrass[Grass::JUMP])
+	{
+		currStrength += jumpGrassExtra;
 	}
 
 	double scorpionExtra = 10;

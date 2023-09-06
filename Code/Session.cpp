@@ -327,8 +327,8 @@ void Session::RegisterW1Enemies()
 		false, false, false, false, true, false, false, 1);
 
 	//comboer
-	AddBasicAerialWorldEnemy("Basic\nComboer", "comboer", 1, comboerRow, CreateEnemy<Comboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3);
-	AddBasicAerialWorldEnemy("Split\nComboer", "splitcomboer", 1, comboerRow, CreateEnemy<SplitComboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3);
+	AddBasicAerialWorldEnemy("Basic\nComboer", "comboer", 1, comboerRow, CreateEnemy<Comboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	//AddBasicAerialWorldEnemy("Split\nComboer", "splitcomboer", 1, comboerRow, CreateEnemy<SplitComboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3);
 
 	//target
 	AddBasicAerialWorldEnemy("Blue\nComboer\nTarget", "bluecomboertarget", 1, targetRow, CreateEnemy<ComboerTarget>, Vector2i(0, 0), Vector2i(32, 32), true, false, false, false, 1);

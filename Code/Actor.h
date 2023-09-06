@@ -308,6 +308,7 @@ struct Actor : QuadTreeCollider,
 		Q_RESOLVE,
 		Q_CHECK,
 		Q_CHECKWALL,
+		Q_CHECK_GATE,
 		Q_GRASS,
 		Q_ENVPLANT,
 		Q_RAIL,
@@ -1044,7 +1045,7 @@ struct Actor : QuadTreeCollider,
 	Nexus *hitNexus;
 
 	sf::Sprite dodecaSprite;
-	Edge *gateTouched;
+	Gate *gateTouched;
 	double level1SpeedThresh;
 	double level2SpeedThresh;
 	double speedChangeUp;
@@ -1623,6 +1624,7 @@ struct Actor : QuadTreeCollider,
 		bool canBeBlocked);
 	HitResult CheckHitByEnemy(Enemy *e);
 	void TryHitPlayer(int targetIndex);
+	void SetTouchedGate(Gate *g);
 	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
 	void ShipPickupPoint( double eq,
 		bool facingRight );

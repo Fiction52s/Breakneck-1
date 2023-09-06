@@ -30,6 +30,8 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	ts = GetSizedTileset("Enemies/W1/patroller_256x256.png");
 	shootSound = GetSound("Enemies/patroller_shoot");
 
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode1_64x64.png");
+
 	eye = new PatrollerEye(this);
 	eye->SetPosition(GetPositionF());
 	
@@ -313,6 +315,25 @@ void Patroller::FrameIncrement()
 sf::FloatRect Patroller::GetAABB()
 {
 	return GetQuadAABB(bodyVA);
+}
+
+void Patroller::DirectKill()
+{
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		BasicBullet *b = launchers[i]->activeBullets;
+		while (b != NULL)
+		{
+			BasicBullet *next = b->next;
+			double angle = atan2(b->velocity.y, -b->velocity.x);
+			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+			b->launcher->DeactivateBullet(b);
+
+			b = next;
+		}
+	}
+
+	Enemy::DirectKill();
 }
 
 void Patroller::UpdateSprite()

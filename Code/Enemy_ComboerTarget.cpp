@@ -337,27 +337,60 @@ void ComboerTarget::FrameIncrement()
 
 void ComboerTarget::ProcessHit()
 {
-	if (!dead && HasReceivedHit() && numHealth > 0)
+	if (!dead && HasReceivedHit())// && numHealth > 0 )
 	{
-		//sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-		//ConfirmHitNoKill();
-		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-		ConfirmKill();
-		if (hasMonitor)
+		numHealth -= 1;
+
+		if (numHealth <= 0)
 		{
-			suppressMonitor = true;
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+
+			action = A_DYING;
+			frame = 0;
+			HitboxesOff();
+			HurtboxesOff();
 		}
-		dead = false;
-
-		action = A_DYING;
-		frame = 0;
-		HitboxesOff();
-		HurtboxesOff();
-
-		numHealth = maxHealth;
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
 
 		receivedHit.SetEmpty();
 	}
+
+
+
+
+
+
+	//if (!dead && HasReceivedHit() && numHealth > 0)
+	//{
+	//	//sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+	//	//ConfirmHitNoKill();
+	//	sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+	//	ConfirmKill();
+	//	if (hasMonitor)
+	//	{
+	//		suppressMonitor = true;
+	//	}
+	//	dead = false;
+
+	//	action = A_DYING;
+	//	frame = 0;
+	//	HitboxesOff();
+	//	HurtboxesOff();
+
+	//	numHealth = maxHealth;
+
+	//	receivedHit.SetEmpty();
+	//}
 }
 
 int ComboerTarget::GetNumStoredBytes()

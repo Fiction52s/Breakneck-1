@@ -504,6 +504,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_KEYFLY:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2, false);
 		break;
+	case EnemyType::EN_COMBOERTARGET:
+		hitParams.Set(5, .8, (3 * 60) / 2, 2, false);
+		break;
 	case EnemyType::EN_SPECIALTARGET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 		break;

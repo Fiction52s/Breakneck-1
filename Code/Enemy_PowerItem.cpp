@@ -563,7 +563,9 @@ void PowerPopup::SetPower(int index)
 	case 5:
 		SetName("Double Wires");
 		tutBox->SetText(
-			"Use the triggers to swing and move around anywhere!");
+			"-Use the double wires to swing and move around with total freedom!"
+			"-Use LEFTWIRE to use the blue wire, and RIGHTWIRE to use the red wire!\n"
+			"-Press a direction when launching the wire to aim it!");
 		break;
 	}
 }
