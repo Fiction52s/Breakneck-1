@@ -9667,6 +9667,24 @@ int Session::GetSequenceID(Sequence *seq)
 		return seq->sequenceID;
 }
 
+int Session::GetGateID(Gate *g)
+{
+	if (g == NULL)
+		return -1;
+	else
+	{
+		return g->gateIndex;
+	}
+}
+
+Gate *Session::GetGateFromID(int id)
+{
+	if (id < 0)
+		return NULL;
+	else
+		return gates[id];
+}
+
 bool Session::HasPracticeSequenceConfirm()
 {
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession() )

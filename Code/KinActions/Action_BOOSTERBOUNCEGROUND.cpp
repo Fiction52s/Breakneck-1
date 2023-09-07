@@ -16,7 +16,10 @@ void Actor::BOOSTERBOUNCEGROUND_End()
 
 void Actor::BOOSTERBOUNCEGROUND_Change()
 {
+	if (CheckSetToAerialFromNormalWater()) return;
+
 	if (TryGroundBlock()) return;
+
 
 	if (TryFloorRailDropThrough()) return;
 

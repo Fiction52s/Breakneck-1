@@ -17,7 +17,7 @@ AdventureMapHeaderInfo::AdventureMapHeaderInfo()
 	Clear();
 }
 
-bool AdventureMapHeaderInfo::IsLoaded() 
+bool AdventureMapHeaderInfo::IsLoaded()
 { 
 	return mapType >= 0; 
 }
@@ -32,6 +32,7 @@ void AdventureMapHeaderInfo::Clear()
 	
 
 	hasShardField.Reset();
+	hasLogField.Reset();
 }
 
 void AdventureMapHeaderInfo::Set(AdventureMapHeaderInfo &info)

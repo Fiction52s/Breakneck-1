@@ -17,6 +17,9 @@ void Actor::GRAVREVERSE_End()
 
 void Actor::GRAVREVERSE_Change()
 {
+	if (CheckSetToAerialFromNormalWater()) return;
+
+
 	if (CanBufferGrind())
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.

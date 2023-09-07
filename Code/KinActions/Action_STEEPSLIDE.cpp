@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "SoundTypes.h"
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -50,6 +51,8 @@ void Actor::STEEPSLIDE_End()
 
 void Actor::STEEPSLIDE_Change()
 {
+	//if (CheckSetToAerialFromNormalWater()) return;
+
 	if (TryPressGrind()) return;
 
 	if (TryGroundBlock()) return;
@@ -213,6 +216,39 @@ void Actor::STEEPSLIDE_Update()
 
 
 	groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
+
+	if (InWater(TerrainPolygon::WATER_NORMAL))
+	{
+		V2d vel;
+		if (reversed)
+		{
+			vel = ground->Along() * -groundSpeed;
+
+			if (vel.y < -normalWaterMaxFallSpeed)
+			{
+				vel.y = -normalWaterMaxFallSpeed;
+			}
+		}
+		else
+		{
+			vel = ground->Along() * groundSpeed;
+
+			if (vel.y > normalWaterMaxFallSpeed)
+			{
+				vel.y = normalWaterMaxFallSpeed;
+			}
+		}
+
+		double len = length(vel);
+		if (groundSpeed > 0)
+		{
+			groundSpeed = len;
+		}
+		else
+		{
+			groundSpeed = -len;
+		}
+	}
 }
 
 void Actor::STEEPSLIDE_UpdateSprite()

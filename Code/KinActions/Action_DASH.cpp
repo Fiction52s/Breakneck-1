@@ -18,6 +18,9 @@ void Actor::DASH_End()
 
 void Actor::DASH_Change()
 {
+	if (CheckSetToAerialFromNormalWater())
+		return;
+
 	if (TryGroundBlock()) return;
 
 	CheckBounceFlame();

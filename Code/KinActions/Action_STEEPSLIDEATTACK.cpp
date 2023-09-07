@@ -30,6 +30,8 @@ void Actor::STEEPSLIDEATTACK_End()
 
 void Actor::STEEPSLIDEATTACK_Change()
 {
+	if (CheckSetToAerialFromNormalWater()) return;
+
 	if (TryFloorRailDropThrough()) return;
 
 	if (CanCancelAttack())//&& frame > 0 )

@@ -16,6 +16,8 @@ void Actor::RAILBOUNCEGROUND_End()
 
 void Actor::RAILBOUNCEGROUND_Change()
 {
+	if (CheckSetToAerialFromNormalWater()) return;
+
 	if (TryGroundBlock()) return;
 
 	if (TryFloorRailDropThrough()) return;

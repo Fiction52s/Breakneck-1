@@ -100,6 +100,7 @@ AdventureCreator::AdventureCreator()
 
 	sectorLabel = panel->AddLabel("sectorlabel", sectorLabelPos, 40, "Sector 1");
 
+	Clear();
 	//Vector2i sliderPos(rightSideStart + 300, 350 - 20);
 	//sectorRequirementsSlider = panel->AddSlider("requirements", sliderPos, 200, 0, 7, 0);
 
@@ -119,6 +120,7 @@ void AdventureCreator::Clear()
 	for (int i = 0; i < 512; ++i)
 	{
 		adventureNodes[i].Clear();
+		adventureNodes[i].index = i;
 	}
 }
 

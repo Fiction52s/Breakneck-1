@@ -1005,9 +1005,14 @@ struct Session : TilesetManager, QuadTreeCollider
 	int GetComboObjectID(ComboObject *cb);
 	int GetSpecialPolyID(PolyPtr poly);
 
+	
+
 	PolyPtr GetSpecialPolyFromID(int id);
 	ComboObject * GetComboObjectFromID(int id);
 	Sequence *GetSequenceFromID(int id);
+
+	int GetGateID(Gate *g);
+	Gate *GetGateFromID(int id);
 	int GetSequenceID(Sequence *seq);
 	bool TrySendPracticeSequenceConfirmMessage();
 	bool HasPracticeSequenceConfirm();

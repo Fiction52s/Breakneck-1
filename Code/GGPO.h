@@ -321,6 +321,8 @@ struct PState
 	int currTutorialObjectID;
 	int currGravModifierID;
 
+	int currTouchedGateID;
+
 	V2d springVel;
 	double glideTurnFactor;
 

@@ -483,6 +483,8 @@ void Actor::PopulateState(PState *ps)
 	ps->glideTurnFactor = glideTurnFactor;
 
 	ps->hitGoal = hitGoal;
+
+	ps->currTouchedGateID = sess->GetGateID(gateTouched);
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -763,6 +765,8 @@ void Actor::PopulateFromState(PState *ps)
 	glideTurnFactor = ps->glideTurnFactor;
 
 	hitGoal = ps->hitGoal;
+
+	gateTouched = sess->GetGateFromID(ps->currTouchedGateID);
 }
 
 void Actor::SetSession(Session *p_sess,
@@ -3186,6 +3190,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	preSimulationState = NULL;
 	futurePositions = NULL;
 	soundInfos.resize(PlayerSounds::S_Count);
+
+	normalWaterMaxFallSpeed = 4.0;
 
 	maxFallSpeedWhileHitting = 4.0;
 	hitGrassHitInfo.damage = 60;//3 * 60;
@@ -6497,7 +6503,7 @@ void Actor::LimitMaxSpeeds()
 		&& freeFlightFrames == 0
 		&& action != HOMINGATTACK)
 		//&& action != INVERSEINPUTSTUN )
-		//&& action != SPRINGSTUN
+		//&& action != SPRINGSTUN:
 		//&& action != SPRINGSTUNGLIDE
 		//&& action != SPRINGSTUNBOUNCE
 		//&& action != SPRINGSTUNAIRBOUNCE
@@ -6514,9 +6520,9 @@ void Actor::LimitMaxSpeeds()
 		if (InWater( TerrainPolygon::WATER_NORMAL))//make this into a cleaner function very soon.
 		{
 			//cout << "running wallcling" << endl;
-			if (velocity.y > 4)
+			if (velocity.y > normalWaterMaxFallSpeed)
 			{
-				velocity.y = 4;
+				velocity.y = normalWaterMaxFallSpeed;
 			}
 		}
 
@@ -10871,11 +10877,56 @@ void Actor::TryChangePowerMode()
 	}
 }
 
+bool Actor::CheckSetToAerialFromNormalWater()
+{
+	if (InWater(TerrainPolygon::WATER_NORMAL))// && velocity.y > normalWaterMaxFallSpeed)//make this into a cleaner function very soon.
+	{
+		bool overVelLimit = false;
+		if (reversed)
+		{
+			if (velocity.y < -normalWaterMaxFallSpeed)
+			{
+				velocity.y = -normalWaterMaxFallSpeed;
+				overVelLimit = true;
+			}
+		}
+		else
+		{
+			if (velocity.y > normalWaterMaxFallSpeed)
+			{
+				velocity.y = normalWaterMaxFallSpeed;
+				overVelLimit = true;
+			}
+		}
+
+		if (overVelLimit)
+		{
+			SetAction(JUMP);
+			frame = 1;
+			RestoreAirOptions();
+			ground = NULL;
+			wallNormal = V2d(0, 0);
+			currWall = NULL;
+			bounceEdge = NULL;
+			grindEdge = NULL;
+			reversed = false;
+			//velocity.y = normalWaterMaxFallSpeed;//min(normalWaterMaxFallSpeed, velocity.y);
+			return true;
+		}
+		
+	}
+
+	return false;
+}
+
 bool Actor::BasicGroundAction( V2d &gNorm)
 {
 	CheckBounceFlame();
 
-	
+	if (CheckSetToAerialFromNormalWater())
+	{
+		return true;
+	}
 
 	//button-based inputs
 
@@ -14562,7 +14613,7 @@ void Actor::HandleTouchedGate()
 		//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
 		//it only enters this state if you already unlock it though
 
-		cout << "gatetouched is null from passing through a gate. was " << (int)gateTouched << "\n";
+		//cout << "gatetouched is null from passing through a gate. was " << (int)gateTouched << "\n";
 
 		gateTouched = NULL;
 		
@@ -14598,7 +14649,7 @@ void Actor::HandleTouchedGate()
 
 			if (allPointsInCurrZone)
 			{
-				cout << "gatetouched is null from all points in curr zone. was " << (int)gateTouched << "\n";
+				//cout << "gatetouched is null from all points in curr zone. was " << (int)gateTouched << "\n";
 				gateTouched = NULL;
 				//sess->LockGate(g);
 			}
@@ -15052,7 +15103,7 @@ void Actor::SetTouchedGate(Gate *g)
 		return;
 	}
 
-	cout << "setting gate touched to: " << (int)g << "\n";
+	//cout << "setting gate touched to: " << (int)g << "\n";
 	gateTouched = g;
 }
 
@@ -18975,7 +19026,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			Gate *g = e->GetGate();
 			if (gateTouched == NULL)
 			{
-				cout << "set touched gate from check gate\n";
+				//cout << "set touched gate from check gate\n";
 				SetTouchedGate(g);
 			}
 			else if (gateTouched != NULL && gateTouched != g)

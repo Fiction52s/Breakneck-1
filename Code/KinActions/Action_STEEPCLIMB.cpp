@@ -25,6 +25,8 @@ void Actor::STEEPCLIMB_End()
 
 void Actor::STEEPCLIMB_Change()
 {
+	if (CheckSetToAerialFromNormalWater()) return;
+
 	if (TryPressGrind()) return;
 
 	if (TryGroundBlock()) return;

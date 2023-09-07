@@ -37,6 +37,8 @@ void Actor::STANDATTACK3_End()
 
 void Actor::STANDATTACK3_Change()
 {
+	if (CheckSetToAerialFromNormalWater()) return;
+
 	if (TryFloorRailDropThrough()) return;
 
 	if (CanCancelAttack() || frame > 14)

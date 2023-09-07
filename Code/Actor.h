@@ -641,6 +641,8 @@ struct Actor : QuadTreeCollider,
 	V2d practiceDesyncPosition;
 	bool practiceDesyncDetected;
 
+	double normalWaterMaxFallSpeed;
+
 	NameTag *nameTag;
 
 	const static int SHARD_START_INDEX = UPGRADE_POWER_LWIRE + 1;
@@ -1410,6 +1412,7 @@ struct Actor : QuadTreeCollider,
 	void CreateGravityDecreaserOnRing();
 	void CreateGravityDecreaserOffRing();
 	void CollectFly(HealthFly *hf);
+	bool CheckSetToAerialFromNormalWater();
 	void SetupActionFunctions();
 	void StartAction();
 	void EndAction();

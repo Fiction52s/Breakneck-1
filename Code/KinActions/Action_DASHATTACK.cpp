@@ -39,6 +39,8 @@ void Actor::DASHATTACK_End()
 
 void Actor::DASHATTACK_Change()
 {
+	if (CheckSetToAerialFromNormalWater()) return;
+
 	if (TryFloorRailDropThrough()) return;
 
 	if (CanCancelAttack() || frame > 14)
