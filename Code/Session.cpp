@@ -1343,6 +1343,7 @@ void Session::CreateBulletQuads()
 			bigBulletVA[i].position = Vector2f(0, 0);
 		}
 		ts_basicBullets = GetSizedTileset("Enemies/bullet_80x80.png");
+		ts_basicBulletExplode = GetSizedTileset("FX/bullet_explode_128x128.png");
 	}
 	else
 	{

@@ -29,7 +29,6 @@ struct GrowingTree : Enemy, LauncherEnemy
 
 	double pulseRadius;
 	int pulseFrame;
-	Tileset *ts_bulletExplode;
 	
 	int totalBullets;
 	Tileset *ts;
@@ -42,19 +41,10 @@ struct GrowingTree : Enemy, LauncherEnemy
 	void SetLevel( int lev );
 	void ActionEnded();
 	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void HandleNoHealth();
 	void ResetEnemy();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge,
-		V2d &pos);
 	void UpdateBullet(BasicBullet *b);
-	void DirectKill();
-	void BulletHitPlayer(
-		int playerIndex,
-		BasicBullet *b,
-		int hitResult);
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

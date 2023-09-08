@@ -322,13 +322,6 @@ void GravityFaller::UpdateEnemyPhysics()
 	Enemy::UpdateEnemyPhysics();
 }
 
-
-
-void GravityFaller::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void GravityFaller::UpdateSprite()
 {
 	int tIndex = 0;

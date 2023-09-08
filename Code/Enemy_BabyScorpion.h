@@ -18,7 +18,6 @@ struct BabyScorpion : Enemy, LauncherEnemy
 
 	Tileset *ts;
 	CoyoteBulletPool *stopStartPool;
-	Tileset *ts_bulletExplode;
 
 	BabyScorpion(ActorParams *ap);
 
@@ -27,10 +26,8 @@ struct BabyScorpion : Enemy, LauncherEnemy
 	void UpdateEnemyPhysics();
 	void ProcessHit();
 	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
-	void BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult);
 
 	void SetLevel(int lev);
 

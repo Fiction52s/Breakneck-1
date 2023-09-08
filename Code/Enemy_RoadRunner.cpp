@@ -294,13 +294,6 @@ void Roadrunner::HandleNoHealth()
 }
 
 
-void Roadrunner::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
-
-
 void Roadrunner::UpdateSprite()
 {
 

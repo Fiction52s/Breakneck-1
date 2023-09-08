@@ -74,8 +74,6 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 
 	bulletSpeed = 7;
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
-
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
 		BasicBullet::SHOTGUN, 32, 3, GetPosition(), V2d(0, -1),
@@ -168,34 +166,6 @@ void ShotgunTurret::UpdateBullet(BasicBullet *b)
 	b->velocity = pDir * b->launcher->bulletSpeed;*/
 }
 
-void ShotgunTurret::BulletHitTerrain(BasicBullet *b,
-	Edge *edge,
-	sf::Vector2<double> &pos)
-{
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
-
-	//if (b->launcher->def_e == NULL)
-	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
-}
-
-void ShotgunTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-
-	b->launcher->DeactivateBullet(b);
-	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
-}
-
 
 void ShotgunTurret::ProcessState()
 {
@@ -277,30 +247,6 @@ void ShotgunTurret::ProcessState()
 
 }
 
-void ShotgunTurret::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
-
-void ShotgunTurret::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[i]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-	Enemy::DirectKill();
-}
-
 void ShotgunTurret::UpdateSprite()
 {
 	int f = 0;
@@ -324,14 +270,9 @@ void ShotgunTurret::UpdateSprite()
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
-void ShotgunTurret::DebugDraw(sf::RenderTarget *target)
-{
-	Enemy::DebugDraw(target);
-}
-
 int ShotgunTurret::GetNumStoredBytes()
 {
-	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData) + GetNumStoredLauncherBytes();
 }
 
 void ShotgunTurret::StoreBytes(unsigned char *bytes)
@@ -340,8 +281,8 @@ void ShotgunTurret::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 
-	launchers[0]->StoreBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void ShotgunTurret::SetFromBytes(unsigned char *bytes)
@@ -350,7 +291,7 @@ void ShotgunTurret::SetFromBytes(unsigned char *bytes)
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
 
-	launchers[0]->SetFromBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 

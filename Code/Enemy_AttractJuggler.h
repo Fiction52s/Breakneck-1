@@ -50,7 +50,6 @@ struct AttractJuggler : Enemy
 	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
-	void DirectKill();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	void ComboHit();

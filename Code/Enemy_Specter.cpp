@@ -116,8 +116,6 @@ Specter::Specter( ActorParams *ap )
 	//radCircle.setRadius(radius);
 	//radCircle.setOrigin(radCircle.getLocalBounds().width / 2,
 	//	radCircle.getLocalBounds().height / 2);
-	
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 
 	ResetEnemy();
@@ -176,31 +174,6 @@ void Specter::ResetEnemy()
 	UpdateSprite();
 	
 }
-
-//void Specter::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-//{
-//	b->launcher->DeactivateBullet(b);
-//}
-//
-//void Specter::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-//{
-//	V2d vel = b->velocity;
-//	double angle = atan2(vel.y, vel.x);
-//	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-//	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-//	{
-//		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-//	}
-//
-//	b->launcher->DeactivateBullet(b);
-//}
-//
-//void Specter::UpdateBullet(BasicBullet *b)
-//{
-//	double speed = length(b->velocity);
-//	speed += .1;
-//	b->velocity = normalize(sess->GetPlayerPos() - b->position) * speed;
-//}
 
 void Specter::ProcessState()
 {
@@ -303,16 +276,6 @@ void Specter::UpdateSprite()
 void Specter::DirectKill()
 {
 	bulletPool.Reset();
-	//BasicBullet *b = launchers[0]->activeBullets;
-	//while (b != NULL)
-	//{
-	//	BasicBullet *next = b->next;
-	//	double angle = atan2(b->velocity.y, -b->velocity.x);
-	//	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	//	b->launcher->DeactivateBullet(b);
-
-	//	b = next;
-	//}
 
 	Enemy::DirectKill();
 }

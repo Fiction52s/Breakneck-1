@@ -26,7 +26,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 	MyData data;
 
 	Tileset *ts;
-	Tileset *ts_bulletExplode;
 	HitboxInfo *bulletHitboxInfo;
 	CollisionBody *prelimBody;
 	CollisionBox prelimBox;
@@ -44,18 +43,13 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void SetLevel(int lev);
 	void UpdateOnPlacement(ActorParams *ap);
 	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void Setup();
 	void UpdatePreLauncherPhysics();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
-	void BulletHitPlayer( int playerIndex,
-		BasicBullet *b,
-		int hitResult );
 	void ResetEnemy();
-	void DirectKill();
 	void SetupPreCollision();
 	V2d SetupPrelimBox();
 	

@@ -24,7 +24,6 @@ struct DimensionEye : Enemy
 	void ProcessState();
 	void HandleHitAndSurvive();
 
-	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessHit();
 	void UpdateSprite();
 	void ResetEnemy();

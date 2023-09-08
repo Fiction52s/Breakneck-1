@@ -272,11 +272,6 @@ void Ghost::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void Ghost::EnemyDraw( sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
 void Ghost::DrawMinimap( sf::RenderTarget *target )
 {
 }

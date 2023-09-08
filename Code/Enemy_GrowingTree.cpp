@@ -108,8 +108,6 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	cutObject->SetTileset(ts);
 	cutObject->SetScale(scale);
 
-	ts_bulletExplode = GetSizedTileset( "FX/bullet_explode3_64x64.png");
-
 	ResetEnemy();
 }
 
@@ -235,11 +233,6 @@ void GrowingTree::ProcessState()
 	//}
 }
 
-void GrowingTree::EnemyDraw(sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
 void GrowingTree::UpdateSprite()
 {
 	int tileIndex = 0;
@@ -263,36 +256,6 @@ void GrowingTree::UpdateSprite()
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
-void GrowingTree::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[i]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-
-	Enemy::DirectKill();
-}
-
-void GrowingTree::BulletHitTerrain(BasicBullet *b, 
-	Edge *edge, V2d &pos)
-{
-	/*V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-
-	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);*/
-}
-
-
 void GrowingTree::UpdateBullet(BasicBullet *b)
 {
 	V2d pDir = normalize(sess->GetPlayerPos(0) - b->position);
@@ -306,28 +269,9 @@ void GrowingTree::UpdateBullet(BasicBullet *b)
 	}
 }
 
-void GrowingTree::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-
-	b->launcher->DeactivateBullet(b);
-}
-
 int GrowingTree::GetNumStoredBytes()
 {
-	int totalLauncherBytes = 0;
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		totalLauncherBytes += launchers[i]->GetNumStoredBytes();
-	}
-
-	return sizeof(MyData) + totalLauncherBytes;
+	return sizeof(MyData) + GetNumStoredLauncherBytes();;
 }
 
 void GrowingTree::StoreBytes(unsigned char *bytes)
@@ -336,12 +280,8 @@ void GrowingTree::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		launchers[i]->StoreBytes(bytes);
-		bytes += launchers[i]->GetNumStoredBytes();
-	}
-	
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void GrowingTree::SetFromBytes(unsigned char *bytes)
@@ -350,9 +290,6 @@ void GrowingTree::SetFromBytes(unsigned char *bytes)
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
 
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		launchers[i]->SetFromBytes(bytes);
-		bytes += launchers[i]->GetNumStoredBytes();
-	}
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }

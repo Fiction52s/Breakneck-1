@@ -68,8 +68,6 @@ Turtle::Turtle( ActorParams *ap )
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
-
 	ResetEnemy();
 }
 
@@ -98,36 +96,6 @@ void Turtle::SetLevel(int lev)
 		break;
 	}
 }
-
-void Turtle::DirectKill()
-{
-	BasicBullet *b = launchers[0]->activeBullets;
-	while( b != NULL )
-	{
-		BasicBullet *next = b->next;
-		double angle = atan2( b->velocity.y, -b->velocity.x );
-		sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-		b->launcher->DeactivateBullet( b );
-
-		b = next;
-	}
-
-	Enemy::DirectKill();
-}
-
-void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
-{
-	b->launcher->DeactivateBullet( b );
-}
-
-void Turtle::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-}
-
 
 void Turtle::ResetEnemy()
 {
@@ -312,7 +280,7 @@ void Turtle::EnemyDraw(sf::RenderTarget *target)
 
 int Turtle::GetNumStoredBytes()
 {
-	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData) + GetNumStoredLauncherBytes();
 }
 
 void Turtle::StoreBytes(unsigned char *bytes)
@@ -321,8 +289,8 @@ void Turtle::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 
-	launchers[0]->StoreBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void Turtle::SetFromBytes(unsigned char *bytes)
@@ -331,6 +299,6 @@ void Turtle::SetFromBytes(unsigned char *bytes)
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
 
-	launchers[0]->SetFromBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }

@@ -29,7 +29,6 @@ struct BounceFloater : Enemy
 	void ProcessHit();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();

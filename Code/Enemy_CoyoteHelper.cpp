@@ -58,8 +58,6 @@ CoyoteHelper::CoyoteHelper(ActorParams *ap)
 
 	sprite.setColor(Color::Black);
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
-
 	ResetEnemy();
 }
 
@@ -139,24 +137,6 @@ void CoyoteHelper::DebugDraw(sf::RenderTarget *target)
 {
 	enemyMover.DebugDraw(target);
 	Enemy::DebugDraw(target);
-}
-
-void CoyoteHelper::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[0]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-	receivedHit.SetEmpty();
 }
 
 void CoyoteHelper::FrameIncrement()

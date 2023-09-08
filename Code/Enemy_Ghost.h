@@ -39,7 +39,6 @@ struct Ghost : Enemy
 	void SetLevel(int lev);
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();

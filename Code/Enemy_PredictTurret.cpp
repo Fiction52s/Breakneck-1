@@ -67,8 +67,6 @@ PredictTurret::PredictTurret(ActorParams *ap)
 
 	bulletSpeed = 10;
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
-
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
 		BasicBullet::PREDICT, 32, 1, GetPosition(), V2d(0, -1), 0, 180, false);
@@ -155,35 +153,6 @@ void PredictTurret::UpdateBullet(BasicBullet *b)
 {
 }
 
-void PredictTurret::BulletHitTerrain(BasicBullet *b,
-	Edge *edge,
-	sf::Vector2<double> &pos)
-{
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
-
-	//if (b->launcher->def_e == NULL)
-	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
-}
-
-void PredictTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-
-	b->launcher->DeactivateBullet(b);
-	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
-}
-
-
 void PredictTurret::ProcessState()
 {
 	V2d playerPos = sess->GetPlayerPos(0);
@@ -239,24 +208,6 @@ void PredictTurret::EnemyDraw(sf::RenderTarget *target)
 	target->draw(testCircle);
 }
 
-
-void PredictTurret::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[i]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-	Enemy::DirectKill();
-}
 
 void PredictTurret::UpdateSprite()
 {

@@ -62,8 +62,6 @@ FutureChecker::FutureChecker(ActorParams *ap)
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
-
 	ResetEnemy();
 }
 

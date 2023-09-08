@@ -150,11 +150,6 @@ void PhaseSwitch::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void PhaseSwitch::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void PhaseSwitch::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)

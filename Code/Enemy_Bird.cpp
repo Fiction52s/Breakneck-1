@@ -151,7 +151,6 @@ Bird::Bird(ActorParams *ap)
 	ts_punch = GetSizedTileset("Bosses/Bird/bird_punch_256x256.png");
 	ts_punch2 = GetSizedTileset("Bosses/Bird/bird_punch_2_256x256.png");
 	ts_kick = GetSizedTileset("Bosses/Bird/kick_256x256.png");
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 	ts_charge = GetSizedTileset("Bosses/Bird/bird_charge_160x256.png");
 	ts_throw = GetSizedTileset("Bosses/Bird/bird_throw_256x256.png");
 
@@ -333,24 +332,6 @@ void Bird::DebugDraw(sf::RenderTarget *target)
 	Enemy::DebugDraw(target);
 	enemyMover.DebugDraw(target);
 	nodeGroupA.Draw(target);
-}
-
-void Bird::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[0]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-	Enemy::DirectKill();
 }
 
 void Bird::FrameIncrement()

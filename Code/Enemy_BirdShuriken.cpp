@@ -157,8 +157,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
-
+	
 	//cutObject->Setup(ts, 53, 52, scale);
 	rotSpeed = PI * .1;
 
@@ -332,52 +331,6 @@ void BirdShuriken::Rethrow()
 		surfaceMover->ground = NULL;
 		surfaceMover->SetCollisionOn(false);
 	}
-}
-
-void BirdShuriken::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-{
-	//V2d vel = b->velocity;
-	//double angle = atan2( vel.y, vel.x );
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
-}
-
-void BirdShuriken::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	//if you dont deactivate the bullet it will hit constantly and make weird fx
-
-	//cout << "hit player??" << endl;
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-	
-	b->launcher->DeactivateBullet(b);
-}
-
-void BirdShuriken::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[0]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-	Enemy::DirectKill();
 }
 
 void BirdShuriken::Die()

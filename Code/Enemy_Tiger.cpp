@@ -67,7 +67,6 @@ Tiger::Tiger(ActorParams *ap)
 	animFactor[FLAME_STUN] = 1;
 
 	ts_move = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	ts_grind = GetSizedTileset("Bosses/Tiger/tiger_grind_256x256.png");
 	ts_roar = GetSizedTileset("Bosses/Tiger/tiger_roar_256x160.png");
 	//sprite.setColor(Color::Red);
@@ -753,23 +752,6 @@ void Tiger::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 	snakePool.Draw(target);
-}
-
-void Tiger::BulletHitPlayer(
-	int playerIndex,
-	BasicBullet *b,
-	int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-
-	b->launcher->DeactivateBullet(b);
 }
 
 void Tiger::InitEnemyForSummon(SummonGroup *group,

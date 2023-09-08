@@ -424,12 +424,6 @@ void Copycat::UpdateEnemyPhysics()
 	}
 }
 
-void Copycat::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite );
-}
-
-
 void Copycat::UpdateSprite()
 {
 	int airRange = 3;
@@ -554,38 +548,9 @@ bool Copycat::HoldingRight()
 	return player->currInput.LRight();
 }
 
-void Copycat::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-{
-	b->launcher->DeactivateBullet(b);
-}
-
-void Copycat::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-}
-
-void Copycat::DirectKill()
-{
-	BasicBullet *b = launchers[0]->activeBullets;
-	while (b != NULL)
-	{
-		BasicBullet *next = b->next;
-		double angle = atan2(b->velocity.y, -b->velocity.x);
-		//sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-		b->launcher->DeactivateBullet(b);
-
-		b = next;
-	}
-
-	Enemy::DirectKill();
-}
-
 int Copycat::GetNumStoredBytes()
 {
-	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData) + GetNumStoredLauncherBytes();
 }
 
 void Copycat::StoreBytes(unsigned char *bytes)
@@ -594,8 +559,8 @@ void Copycat::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 
-	launchers[0]->StoreBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void Copycat::SetFromBytes(unsigned char *bytes)
@@ -604,6 +569,6 @@ void Copycat::SetFromBytes(unsigned char *bytes)
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
 
-	launchers[0]->SetFromBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }

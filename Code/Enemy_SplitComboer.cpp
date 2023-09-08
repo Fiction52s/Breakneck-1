@@ -148,30 +148,6 @@ void SplitPiece::UpdateSprite()
 	sprite.setTextureRect(sc->ts->GetSubRect(1));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-	/*int tIndex = 0;
-	switch (action)
-	{
-	case S_FLOAT:
-	tIndex = 0;
-	break;
-	case S_SHOT:
-
-	break;
-	case S_EXPLODE:
-	break;
-	}
-	sprite.setTextureRect(ts->GetSubRect(frame));*/
-}
-
-void SplitPiece::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
-void SplitPiece::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
 }
 
 void SplitPiece::Shoot(V2d dir)
@@ -397,11 +373,6 @@ void SplitComboer::UpdateSprite()
 	break;
 	}
 	sprite.setTextureRect(ts->GetSubRect(frame));*/
-}
-
-void SplitComboer::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
 }
 
 void SplitComboer::CheckedMiniDraw(sf::RenderTarget *target,

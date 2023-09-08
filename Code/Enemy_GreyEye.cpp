@@ -142,11 +142,6 @@ void GreyEye::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
-void GreyEye::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void GreyEye::HandleHitAndSurvive()
 {
 	/*GameSession *game = GameSession::GetSession();

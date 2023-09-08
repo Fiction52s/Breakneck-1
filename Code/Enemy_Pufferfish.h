@@ -23,24 +23,17 @@ struct Pufferfish : Enemy, LauncherEnemy
 	};
 	MyData data;
 
-	Tileset *ts_bulletExplode;
 	int bulletSpeed;
 	Tileset *ts;
 	double puffRadius;
 	double unpuffRadius;
 
 	Pufferfish(ActorParams *ap);
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(int playerIndex,
-		BasicBullet *b, int hitResult);
 	void HandleNoHealth();
 	void Fire();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void DirectKill();
 	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void SetLevel(int lev);

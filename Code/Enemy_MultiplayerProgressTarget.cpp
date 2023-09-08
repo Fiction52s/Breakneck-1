@@ -187,8 +187,3 @@ void MultiplayerProgressTarget::UpdateSprite()
 	}
 	sprite.setTextureRect(ts->GetSubRect(frame));*/
 }
-
-void MultiplayerProgressTarget::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}

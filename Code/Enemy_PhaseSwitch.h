@@ -43,7 +43,6 @@ struct PhaseSwitch : Enemy
 	PhaseSwitch(ActorParams *ap);
 	void SetLevel(int lev);
 	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void AddToWorldTrees();

@@ -118,11 +118,6 @@ void DimensionEye::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
-void DimensionEye::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void DimensionEye::HandleHitAndSurvive()
 {
 	/*GameSession *game = GameSession::GetSession();

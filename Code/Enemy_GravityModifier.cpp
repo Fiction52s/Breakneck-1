@@ -165,12 +165,6 @@ void GravityModifier::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void GravityModifier::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-	//target->draw(sprite);
-}
-
 int GravityModifier::GetNumStoredBytes()
 {
 	return sizeof(MyData);

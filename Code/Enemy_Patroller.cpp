@@ -30,8 +30,6 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	ts = GetSizedTileset("Enemies/W1/patroller_256x256.png");
 	shootSound = GetSound("Enemies/patroller_shoot");
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode1_64x64.png");
-
 	eye = new PatrollerEye(this);
 	eye->SetPosition(GetPositionF());
 	
@@ -147,8 +145,6 @@ void Patroller::ResetEnemy()
 	data.targetAngle = 0;
 	data.currentAngle = data.targetAngle;
 }
-
-
 
 void Patroller::ProcessState()
 {
@@ -317,25 +313,6 @@ sf::FloatRect Patroller::GetAABB()
 	return GetQuadAABB(bodyVA);
 }
 
-void Patroller::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[i]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-
-	Enemy::DirectKill();
-}
-
 void Patroller::UpdateSprite()
 {
 	Vector2f posF = GetPositionF();
@@ -457,37 +434,6 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 	}	
 }
 
-void Patroller::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-{
-	//V2d vel = b->velocity;
-	//double angle = atan2( vel.y, vel.x );
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-
-	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
-}
-
-void Patroller::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	//if you dont deactivate the bullet it will hit constantly and make weird fx
-
-	//cout << "hit player??" << endl;
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-
-	//launchers[0]->hitboxInfo->kbDir = normalize( b->velocity );
-	//launchers[0]->hitboxInfo->knockback = 10;
-	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-	
-	b->launcher->DeactivateBullet(b);
-}
-
 void Patroller::UpdateHitboxes()
 {
 	hurtBody.SetBasicPos(GetPosition(), data.currentAngle);
@@ -499,7 +445,7 @@ void Patroller::UpdateHitboxes()
 int Patroller::GetNumStoredBytes()
 {
 	//return 0;
-	return sizeof(MyData) +eye->GetNumStoredBytes() + pathFollower.GetNumStoredBytes() + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData) +eye->GetNumStoredBytes() + pathFollower.GetNumStoredBytes() + GetNumStoredLauncherBytes();
 }
 
 void Patroller::StoreBytes(unsigned char *bytes)
@@ -516,9 +462,8 @@ void Patroller::StoreBytes(unsigned char *bytes)
 
 	bytes += pathFollower.GetNumStoredBytes();
 
-	launchers[0]->StoreBytes(bytes);
-
-	bytes += launchers[0]->GetNumStoredBytes();
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void Patroller::SetFromBytes(unsigned char *bytes)
@@ -536,7 +481,6 @@ void Patroller::SetFromBytes(unsigned char *bytes)
 
 	bytes += pathFollower.GetNumStoredBytes();
 
-	launchers[0]->SetFromBytes(bytes);
-
-	bytes += launchers[0]->GetNumStoredBytes();
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }

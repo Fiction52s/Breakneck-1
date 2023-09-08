@@ -290,12 +290,6 @@ void Comboer::HandleNoHealth()
 	
 }
 
-void Comboer::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 void Comboer::UpdateEnemyPhysics()
 {
 	switch (action)
@@ -366,11 +360,6 @@ void Comboer::UpdateSprite()
 		break;
 	}
 	sprite.setTextureRect(ts->GetSubRect(frame));*/
-}
-
-void Comboer::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
 }
 
 int Comboer::GetNumStoredBytes()

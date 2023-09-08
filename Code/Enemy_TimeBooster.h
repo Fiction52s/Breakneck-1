@@ -30,7 +30,6 @@ struct TimeBooster : Enemy
 	void ProcessState();
 	void SetLevel(int lev);
 	bool IsSlowed(int index);
-	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();

@@ -32,11 +32,9 @@ struct SplitPiece : Enemy
 	void ComboHit();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void Shoot(V2d dir);
-	void DirectKill();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -80,7 +78,6 @@ struct SplitComboer : Enemy
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void AddToGame();

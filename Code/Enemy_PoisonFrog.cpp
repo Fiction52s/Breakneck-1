@@ -441,11 +441,6 @@ void PoisonFrog::UpdateEnemyPhysics()
 	}
 }
 
-void PoisonFrog::EnemyDraw(sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
 void PoisonFrog::UpdateSprite()
 {	
 	int currTile = 0;

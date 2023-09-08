@@ -321,17 +321,6 @@ void RemoteComboer::UpdateSprite()
 	sprite.setTextureRect(ts->GetSubRect(frame));*/
 }
 
-void RemoteComboer::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
-void RemoteComboer::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 int RemoteComboer::GetNumStoredBytes()
 {
 	return sizeof(MyData) + comboObj->GetNumStoredBytes();

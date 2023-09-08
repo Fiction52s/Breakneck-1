@@ -49,7 +49,6 @@ struct Badger : Enemy, GroundMoverHandler
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void HandleNoHealth();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void Jump(double strengthx,
 		double strengthy);

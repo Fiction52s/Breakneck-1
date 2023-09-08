@@ -44,7 +44,6 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 	void FrameIncrement();
 	void ProcessState();
 	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();

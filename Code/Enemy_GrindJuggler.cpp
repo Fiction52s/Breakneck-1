@@ -246,12 +246,6 @@ void GrindJuggler::ProcessHit()
 	}
 }
 
-void GrindJuggler::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 void GrindJuggler::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -455,7 +449,6 @@ void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 	//}
 }
 
-
 void GrindJuggler::ComboKill(Enemy *e)
 {
 }
@@ -507,11 +500,6 @@ void GrindJuggler::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-}
-
-void GrindJuggler::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
 }
 
 void GrindJuggler::HitTerrainAerial(Edge * edge, double quant)

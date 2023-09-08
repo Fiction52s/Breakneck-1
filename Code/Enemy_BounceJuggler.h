@@ -48,14 +48,12 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 	void FrameIncrement();
 	void ComboHit();
 	void ComboKill(Enemy *e);
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
 	void Return();
 	void Pop();
 	void PopThrow();
-	void DirectKill();
 	bool CanComboHit(Enemy *e);
 
 	void Throw(double a, double strength);

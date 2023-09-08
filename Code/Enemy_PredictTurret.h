@@ -20,7 +20,6 @@ struct PredictTurret : Enemy, LauncherEnemy
 	MyData data;
 
 	Tileset *ts;
-	Tileset *ts_bulletExplode;
 
 	sf::CircleShape testCircle;
 	int framesWait;
@@ -38,14 +37,6 @@ struct PredictTurret : Enemy, LauncherEnemy
 	void SetLevel(int lev);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
-	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge,
-		sf::Vector2<double> &pos);
-	void BulletHitPlayer(
-		int playerIndex,
-		BasicBullet *b,
-		int hitResult);
 	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
 	void FireResponse(BasicBullet *b);

@@ -28,8 +28,6 @@ struct LaserWolf : Enemy//, LauncherEnemy
 	double maxSpeed;
 	double accel;
 	sf::CircleShape testCircle;
-	//Shield *shield;
-	Tileset *ts_bulletExplode;
 
 	LaserWolf(ActorParams *ap);
 	~LaserWolf();
@@ -37,7 +35,6 @@ struct LaserWolf : Enemy//, LauncherEnemy
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
 
 	void FrameIncrement();
 	void SetLevel(int lev);

@@ -385,12 +385,6 @@ void ExplodingBarrel::UpdateSprite()
 	//sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
-void ExplodingBarrel::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 void ExplodingBarrel::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);

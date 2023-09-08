@@ -83,7 +83,6 @@ struct SequenceBird : Enemy
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);
 
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();

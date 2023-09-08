@@ -290,12 +290,6 @@ bool WireBall::CanComboHit(Enemy *e)
 	return true;
 }
 
-void WireBall::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 void WireBall::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)
@@ -558,30 +552,21 @@ V2d WireBall::GetBounceVel(V2d &normal)
 void WireBall::HitTerrainAerial(Edge * edge, double quant)
 {
 	V2d pos = edge->GetPosition(quant);
-	/*if (b->bounceCount == 2)
+	
+	V2d en = edge->Normal();
+	if (pos == edge->v0)
 	{
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
+		en = normalize(GetPosition() - pos);
 	}
-	else*/
+	else if (pos == edge->v1)
 	{
-		V2d en = edge->Normal();
-		if (pos == edge->v0)
-		{
-			en = normalize(GetPosition() - pos);
-		}
-		else if (pos == edge->v1)
-		{
-			en = normalize(GetPosition() - pos);
-		}
-		double d = dot(surfaceMover->GetVel(), en);
-		double damp = 1.0;
-		V2d ref = GetBounceVel(en);
-		surfaceMover->SetVelocity(ref);
-		surfaceMover->ground = NULL;
+		en = normalize(GetPosition() - pos);
 	}
+	double d = dot(surfaceMover->GetVel(), en);
+	double damp = 1.0;
+	V2d ref = GetBounceVel(en);
+	surfaceMover->SetVelocity(ref);
+	surfaceMover->ground = NULL;
 
 	action = S_BOUNCE;
 	frame = 0;

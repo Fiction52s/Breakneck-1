@@ -72,9 +72,6 @@ CurveTurret::CurveTurret( ActorParams *ap )
 
 	double size = 400;//max( width, height );
 
-
-	ts_bulletExplode = GetSizedTileset( "FX/bullet_explode2_64x64.png");
-
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, 32, 1, GetPosition(), V2d( 0,-1), 
 		0, 90, false, 30, 50 );
@@ -198,35 +195,6 @@ void CurveTurret::UpdateBullet(BasicBullet *b)
 
 }
 
-void CurveTurret::BulletHitTerrain(BasicBullet *b, 
-		Edge *edge, 
-		sf::Vector2<double> &pos)
-{
-	V2d norm = edge->Normal();
-	double angle = atan2( norm.y, -norm.x );
-	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
-	b->launcher->DeactivateBullet( b );
-
-	//if (b->launcher->def_e == NULL)
-	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
-}
-
-void CurveTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2( vel.y, vel.x );
-	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-	
-	b->launcher->DeactivateBullet( b );
-	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
-}
-
-
 void CurveTurret::ProcessState()
 {
 	V2d playerPos = sess->GetPlayerPos(0);
@@ -264,30 +232,6 @@ void CurveTurret::ProcessState()
 	
 }
 
-void CurveTurret::EnemyDraw(sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
-
-void CurveTurret::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[i]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-	Enemy::DirectKill();
-}
-
 void CurveTurret::UpdateSprite()
 {
 	if (action == WAIT)
@@ -318,7 +262,7 @@ void CurveTurret::DebugDraw(sf::RenderTarget *target)
 
 int CurveTurret::GetNumStoredBytes()
 {
-	return sizeof(MyData) + shield->GetNumStoredBytes() + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData) + shield->GetNumStoredBytes() + GetNumStoredLauncherBytes();
 }
 
 void CurveTurret::StoreBytes(unsigned char *bytes)
@@ -330,8 +274,8 @@ void CurveTurret::StoreBytes(unsigned char *bytes)
 	shield->StoreBytes(bytes);
 	bytes += shield->GetNumStoredBytes();
 
-	launchers[0]->StoreBytes(bytes);
-	bytes + launchers[0]->GetNumStoredBytes();
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void CurveTurret::SetFromBytes(unsigned char *bytes)
@@ -343,6 +287,6 @@ void CurveTurret::SetFromBytes(unsigned char *bytes)
 	shield->SetFromBytes(bytes);
 	bytes += shield->GetNumStoredBytes();
 
-	launchers[0]->SetFromBytes(bytes);
-	bytes + launchers[0]->GetNumStoredBytes();
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }

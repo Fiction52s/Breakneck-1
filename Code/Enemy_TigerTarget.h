@@ -48,14 +48,12 @@ struct TigerTarget : Enemy
 	void AttackPlayer();
 	//void ProcessHit();
 	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessHit();
 	void ComboHit();
 	bool CanComboHit( Enemy *e );
 	void FrameIncrement();
 	bool IsReadyToThrow();
 	void SetBurnFrames(int f);
-	void DirectKill();
 
 
 	void SetLevel(int lev);

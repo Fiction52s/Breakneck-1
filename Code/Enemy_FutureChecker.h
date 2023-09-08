@@ -24,7 +24,6 @@ struct FutureChecker : Enemy
 	};
 	MyData data;
 
-	Tileset *ts_bulletExplode;
 	int bulletSpeed;
 	const static int predictFrames;
 	Tileset *ts;

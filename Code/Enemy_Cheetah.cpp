@@ -342,12 +342,6 @@ void Cheetah::UpdateEnemyPhysics()
 	}
 }
 
-void Cheetah::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
-
 void Cheetah::UpdateSprite()
 {
 	int airRange = 3;

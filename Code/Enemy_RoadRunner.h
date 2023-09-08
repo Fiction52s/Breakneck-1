@@ -34,7 +34,6 @@ struct Roadrunner : Enemy, GroundMoverHandler
 	void ActionEnded();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();

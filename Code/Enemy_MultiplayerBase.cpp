@@ -155,8 +155,3 @@ void MultiplayerBase::UpdateSprite()
 	}
 	sprite.setTextureRect(ts->GetSubRect(frame));*/
 }
-
-void MultiplayerBase::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}

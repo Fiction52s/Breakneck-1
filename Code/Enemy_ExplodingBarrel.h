@@ -45,7 +45,6 @@ struct ExplodingBarrel : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
-	void DirectKill();
 	void HandleNoHealth();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

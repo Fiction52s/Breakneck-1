@@ -27,13 +27,6 @@ LaserWolf::LaserWolf(ActorParams *ap)
 	animFactor[ATTACK] = 3;
 	animFactor[RECOVER] = 1;
 
-	/*SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 16, 1, GetPosition(), V2d(1, 0), 0, 180, false);
-	launchers[0]->SetBulletSpeed(10);
-	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
-	launchers[0]->Reset();
-
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");*/
 
 	//shield = new Shield(Shield::ShieldType::T_BLOCK, 16 * scale, 3, this);
 	//RegisterShield(shield);
@@ -328,11 +321,6 @@ void LaserWolf::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-}
-
-void LaserWolf::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
 }
 
 int LaserWolf::GetNumStoredBytes()

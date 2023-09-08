@@ -373,11 +373,6 @@ void TigerTarget::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void TigerTarget::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void TigerTarget::IHitPlayer(int index)
 {
 	if (action == ATTACK_PLAYER)
@@ -437,12 +432,6 @@ void TigerTarget::ProcessHit()
 
 		receivedHit.SetEmpty();
 	}
-}
-
-void TigerTarget::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
 }
 
 void TigerTarget::ComboHit()

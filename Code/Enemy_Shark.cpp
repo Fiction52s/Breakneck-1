@@ -468,11 +468,6 @@ void Shark::UpdateSprite()
 	sprite.setPosition( GetPositionF() );
 }
 
-void Shark::EnemyDraw( sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
 int Shark::GetNumStoredBytes()
 {
 	return sizeof(MyData) + circleSeq.GetNumStoredBytes() + rushSeq.GetNumStoredBytes();

@@ -38,20 +38,11 @@ struct CurveTurret : Enemy, LauncherEnemy
 	int animationFactor;
 
 	CurveTurret(ActorParams *ap);
-	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessState();
 	void Setup();
 	void SetLevel(int lev);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
-	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge,
-		sf::Vector2<double> &pos);
-	void BulletHitPlayer(
-		int playerIndex,
-		BasicBullet *b,
-		int hitResult );
 	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
 	void FireResponse(BasicBullet *b);	

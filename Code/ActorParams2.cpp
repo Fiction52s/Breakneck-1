@@ -501,9 +501,6 @@ ActorParams *PoisonFrogParams::Copy()
 	return copy;
 }
 
-
-
-
 CurveTurretParams::CurveTurretParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor, bool relative )
 	:ActorParams(at ), bulletPathQuads( sf::Quads, 100 * 4 )

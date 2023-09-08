@@ -39,7 +39,6 @@ struct MultiplayerProgressTarget : Enemy
 	~MultiplayerProgressTarget();
 
 	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();

@@ -128,6 +128,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		assert(0);
 	}
 	virtual void SetFromBytes(unsigned char *bytes) {}
+	void SetLaunchersFromBytes(unsigned char *bytes);
+	void StoreBytesForLaunchers(unsigned char *bytes);
+	int GetNumStoredLauncherBytes();
+
+
 	void StoreBasicEnemyData(StoredEnemyData &ed);
 	void SetBasicEnemyData(StoredEnemyData &ed);
 	virtual bool CountsForEnemyGate() { return true; }
@@ -382,7 +387,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual bool IsTouchingBox(const sf::Rect<double> &r);
 	bool RightWireHitMe( CollisionBox hurtBox );
 	bool LeftWireHitMe( CollisionBox hurtBox );
-	virtual void EnemyDraw(sf::RenderTarget *target) {}
+	virtual void EnemyDraw(sf::RenderTarget *target);
 	virtual void Draw(int p_enemyDrawLayer, sf::RenderTarget *target);
 	virtual void UpdateZoneSprite();
 	virtual void ZoneDraw(sf::RenderTarget *target);

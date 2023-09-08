@@ -338,6 +338,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	int totalNumberBullets;
 	sf::Vertex *bigBulletVA;
 	Tileset *ts_basicBullets;
+	Tileset *ts_basicBulletExplode;
 	TilesetManager *specialTempTilesetManager;
 	SoundManager *specialTempSoundManager;
 	bool skipped;

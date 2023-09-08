@@ -54,7 +54,6 @@ Coyote::Coyote(ActorParams *ap)
 	
 
 	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	pulsePool = new PulseAttackPool(5);
 
@@ -699,10 +698,7 @@ void Coyote::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 {
 	if (b->bounceCount == 1)
 	{
-		V2d norm = edge->Normal();
-		double angle = atan2(norm.y, -norm.x);
-		sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-		b->launcher->DeactivateBullet(b);
+		b->Kill(-edge->Normal());
 	}
 	else
 	{
@@ -723,21 +719,6 @@ void Coyote::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 		b->bounceCount++;
 		b->framesToLive = b->launcher->maxFramesToLive;
 	}
-}
-
-
-void Coyote::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-
-	b->launcher->DeactivateBullet(b);
 }
 
 int Coyote::SetLaunchersStartIndex(int ind)

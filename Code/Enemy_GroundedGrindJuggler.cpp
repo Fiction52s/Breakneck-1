@@ -195,12 +195,6 @@ void GroundedGrindJuggler::Push(double strength)
 	
 }
 
-void GroundedGrindJuggler::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 void GroundedGrindJuggler::Return()
 {
 	action = S_RETURN;

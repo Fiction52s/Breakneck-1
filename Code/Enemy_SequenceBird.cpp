@@ -317,11 +317,6 @@ void SequenceBird::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
-void SequenceBird::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void SequenceBird::Wait()
 {
 	action = IDLE;

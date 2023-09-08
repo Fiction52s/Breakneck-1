@@ -191,12 +191,6 @@ void BounceBooster::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void BounceBooster::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-	//target->draw(sprite);
-}
-
 int BounceBooster::GetNumStoredBytes()
 {
 	return sizeof(MyData);

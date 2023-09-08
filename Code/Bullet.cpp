@@ -23,6 +23,22 @@ using namespace sf;
 //	return NULL;
 //}
 
+void LauncherEnemy::BulletHitTerrain(BasicBullet *b,
+	Edge *edge, V2d &pos)
+{
+	b->Kill(-edge->Normal());
+}
+
+void LauncherEnemy::BulletHitPlayer( int playerIndex, BasicBullet *b, int hitResult)
+{
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		b->launcher->sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+
+	b->Kill(b->velocity);
+}
+
 Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	int numTotalBullets,
 	int bulletsPerShot,
@@ -236,6 +252,19 @@ void Launcher::Draw(sf::RenderTarget *target)
 	if (drawOwnBullets && ts_bullet != NULL )
 	{
 		target->draw(bulletVA, 4 * totalBullets, sf::Quads, ts_bullet->texture);
+	}
+}
+
+void Launcher::KillAllBullets()
+{
+	BasicBullet *b = activeBullets;
+	while (b != NULL)
+	{
+		BasicBullet *next = b->next;
+
+		b->Kill(b->velocity);
+
+		b = next;
 	}
 }
 
@@ -869,6 +898,15 @@ void BasicBullet::SetFromBytes(unsigned char *bytes)
 void BasicBullet::DebugDraw(sf::RenderTarget *target)
 {
 	hitBody.DebugDraw( CollisionBox::Hit, target);
+}
+
+void BasicBullet::Kill( V2d facingDir )
+{
+	int frames = 6;
+
+	double angle = GetVectorAngleCW(facingDir);//atan2(facingDir.y, -facingDir.x);
+	launcher->sess->ActivateEffect(EffectLayer::IN_FRONT, launcher->sess->ts_basicBulletExplode, position, true, angle, frames, 2, true, launcher->bulletTilesetIndex * frames);
+	launcher->DeactivateBullet(this);
 }
 
 void BasicBullet::ResetSprite()

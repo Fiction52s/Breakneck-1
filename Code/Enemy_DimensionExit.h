@@ -20,8 +20,6 @@ struct DimensionExit : Enemy
 	void ProcessState();
 	void HandleNoHealth();
 	void ProcessHit();
-
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();

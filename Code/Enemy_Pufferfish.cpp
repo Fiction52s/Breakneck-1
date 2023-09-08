@@ -64,8 +64,6 @@ Pufferfish::Pufferfish(ActorParams *ap)
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
-
 	ResetEnemy();
 }
 
@@ -107,35 +105,6 @@ void Pufferfish::SetLevel(int lev)
 		scale = 3.0;
 		maxHealth += 5;
 		break;
-	}
-}
-
-void Pufferfish::DirectKill()
-{
-	BasicBullet *b = launchers[0]->activeBullets;
-	while (b != NULL)
-	{
-		BasicBullet *next = b->next;
-		double angle = atan2(b->velocity.y, -b->velocity.x);
-		sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-		b->launcher->DeactivateBullet(b);
-
-		b = next;
-	}
-
-	Enemy::DirectKill();
-}
-
-void Pufferfish::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-{
-	b->launcher->DeactivateBullet(b);
-}
-
-void Pufferfish::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
 	}
 }
 
@@ -431,14 +400,9 @@ void Pufferfish::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void Pufferfish::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 int Pufferfish::GetNumStoredBytes()
 {
-	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData) + GetNumStoredLauncherBytes();
 }
 
 void Pufferfish::StoreBytes(unsigned char *bytes)
@@ -447,8 +411,8 @@ void Pufferfish::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 
-	launchers[0]->StoreBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void Pufferfish::SetFromBytes(unsigned char *bytes)
@@ -457,6 +421,6 @@ void Pufferfish::SetFromBytes(unsigned char *bytes)
 	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
 
-	launchers[0]->SetFromBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }

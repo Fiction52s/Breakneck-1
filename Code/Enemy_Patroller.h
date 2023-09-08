@@ -41,7 +41,6 @@ struct Patroller : Enemy, LauncherEnemy
 	BasicPathFollower pathFollower;
 	sf::Vertex bodyVA[4 * 2];
 	Tileset *ts;
-	Tileset *ts_bulletExplode;
 
 	void UpdateOnPlacement(ActorParams *ap);
 	Patroller(ActorParams *ap);//bool hasMonitor,
@@ -51,17 +50,10 @@ struct Patroller : Enemy, LauncherEnemy
 	void SetLevel(int lev);
 
 	sf::FloatRect GetAABB();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(
-		int playerIndex, 
-		BasicBullet *b,
-		int hitResult);
 	void ProcessState();
 	void HandleHitAndSurvive();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
-	void DirectKill();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();

@@ -288,12 +288,6 @@ void GravityJuggler::PopThrow()
 	sess->PlayerAddActiveComboObj(comboObj);
 }
 
-void GravityJuggler::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 void GravityJuggler::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)

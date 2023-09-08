@@ -67,7 +67,6 @@ struct Bird : Summoner, Boss
 	Tileset *ts_punch2;
 	Tileset *ts_kick;
 	Tileset *ts_idle;
-	Tileset *ts_bulletExplode;
 	Tileset *ts_charge;
 	Tileset *ts_throw;
 
@@ -87,7 +86,6 @@ struct Bird : Summoner, Boss
 
 	//Enemy functions
 	int SetLaunchersStartIndex(int ind);
-	void DirectKill();
 	void DebugDraw(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();

@@ -31,7 +31,6 @@ struct GravityModifier : Enemy
 	GravityModifier(ActorParams *ap);
 	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	void AddToWorldTrees();
 	//void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();

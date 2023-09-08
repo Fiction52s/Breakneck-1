@@ -43,7 +43,6 @@ struct CoyoteHelper : Enemy
 
 	int fireCounter;
 
-	Tileset *ts_bulletExplode;
 	int comboMoveFrames;
 
 	int reachPointOnFrame[A_Count];
@@ -69,7 +68,6 @@ struct CoyoteHelper : Enemy
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
-	void DirectKill();
 	//void SetCommand(int index, BirdCommand &bc);
 	void ProcessState();
 	void UpdateHitboxes();

@@ -51,7 +51,6 @@ struct Widow : Enemy, RayCastHandler, SurfaceMoverHandler,
 	void ActionEnded();
 	void SetLevel(int lev);
 	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
@@ -65,13 +64,6 @@ struct Widow : Enemy, RayCastHandler, SurfaceMoverHandler,
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
-
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(int playerIndex,
-		BasicBullet *b, int hitResult);
-	void DirectKill();
-
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

@@ -374,11 +374,6 @@ void Airdasher::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void Airdasher::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 int Airdasher::GetNumStoredBytes()
 {
 	return sizeof(MyData);

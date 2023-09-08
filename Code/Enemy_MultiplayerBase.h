@@ -35,7 +35,6 @@ struct MultiplayerBase : Enemy
 	~MultiplayerBase();
 
 	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();

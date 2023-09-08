@@ -29,7 +29,6 @@ struct BounceBooster : Enemy
 	BounceBooster(ActorParams *ap);	
 	void ProcessState();
 	void SetLevel(int lev);
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void AddToWorldTrees();

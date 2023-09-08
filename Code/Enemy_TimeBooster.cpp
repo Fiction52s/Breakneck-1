@@ -183,12 +183,6 @@ void TimeBooster::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void TimeBooster::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-	//target->draw(sprite);
-}
-
 void TimeBooster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)

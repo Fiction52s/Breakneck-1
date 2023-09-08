@@ -161,11 +161,6 @@ void Booster::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void Booster::EnemyDraw(sf::RenderTarget *target)
-{
-	target->draw(sprite);
-}
-
 void Booster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)

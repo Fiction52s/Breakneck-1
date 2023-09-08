@@ -166,12 +166,6 @@ void SwordProjectile::Throw( int playerIndex, V2d &pos, V2d &dir)
 	sess->PlayerAddActiveComboObj(comboObj,playerIndex );
 }
 
-void SwordProjectile::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
 void SwordProjectile::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -248,11 +242,6 @@ void SwordProjectile::UpdateSprite()
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setRotation(0);
-}
-
-void SwordProjectile::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
 }
 
 int SwordProjectile::GetNumStoredBytes()

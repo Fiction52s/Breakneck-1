@@ -167,11 +167,6 @@ void BounceFloater::UpdateSprite()
 	sprite.setRotation(0);
 }
 
-void BounceFloater::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 int BounceFloater::GetNumStoredBytes()
 {
 	return sizeof(MyData);

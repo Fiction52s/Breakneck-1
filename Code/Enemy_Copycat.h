@@ -53,7 +53,6 @@ struct Copycat : Enemy, GroundMoverHandler,
 	void SetLevel(int lev);
 	void UpdateEnemyPhysics();
 	void HandleNoHealth();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
@@ -65,12 +64,6 @@ struct Copycat : Enemy, GroundMoverHandler,
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
-
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(int playerIndex,
-		BasicBullet *b, int hitResult);
-	void DirectKill();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

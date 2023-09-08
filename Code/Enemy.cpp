@@ -1291,9 +1291,13 @@ void Enemy::UpdateSpriteFromParams(ActorParams *ap)
 	}
 }
 
-
 void Enemy::DirectKill()
 {
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->KillAllBullets();
+	}
+
 	if (!dead)
 	{
 
@@ -1311,6 +1315,9 @@ void Enemy::DirectKill()
 			cutObject->SetCutRootPos(GetPositionF());
 		}
 	}
+
+	if (comboObj != NULL)
+		sess->PlayerRemoveActiveComboer(comboObj);
 }
 
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
@@ -1855,6 +1862,11 @@ void Enemy::Draw(int p_enemyDrawLayer, sf::RenderTarget *target)
 	}
 }
 
+void Enemy::EnemyDraw(sf::RenderTarget *target)
+{
+	DrawSprite(target, sprite);
+}
+
 void Enemy::UpdateZoneSprite()
 {
 	//before this didn't include the !data.reexplored line. hopefully no bugs.
@@ -2073,6 +2085,35 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	pauseFramesFromAttacking = ed.pauseFramesFromAttacking;
 	dead = ed.dead;
 	spawned = ed.spawned;
+}
+
+void Enemy::SetLaunchersFromBytes(unsigned char *bytes)
+{
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->SetFromBytes(bytes);
+		bytes += launchers[i]->GetNumStoredBytes();
+	}
+}
+
+void Enemy::StoreBytesForLaunchers(unsigned char *bytes)
+{
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->StoreBytes(bytes);
+		bytes += launchers[i]->GetNumStoredBytes();
+	}
+}
+
+int Enemy::GetNumStoredLauncherBytes()
+{
+	int total = 0;
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		total += launchers[i]->GetNumStoredBytes();
+	}
+
+	return total;
 }
 
 void Enemy::BasicUpdateHitboxInfo()

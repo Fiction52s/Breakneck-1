@@ -26,8 +26,6 @@ BabyScorpion::BabyScorpion(ActorParams *ap)
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
@@ -189,19 +187,12 @@ void BabyScorpion::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void BabyScorpion::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
 
 void BabyScorpion::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 {
 	if (b->bounceCount == 0)
 	{
-		V2d norm = edge->Normal();
-		double angle = atan2(norm.y, -norm.x);
-		sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-		b->launcher->DeactivateBullet(b);
+		b->Kill(-edge->Normal());
 	}
 	else
 	{
@@ -222,19 +213,4 @@ void BabyScorpion::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 		b->bounceCount++;
 		b->framesToLive = b->launcher->maxFramesToLive;
 	}
-}
-
-
-void BabyScorpion::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-
-	b->launcher->DeactivateBullet(b);
 }

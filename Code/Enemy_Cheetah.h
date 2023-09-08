@@ -56,7 +56,6 @@ struct Cheetah : Enemy, GroundMoverHandler
 	void SetLevel(int lev);
 	void UpdateEnemyPhysics();
 	//void HandleNoHealth();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void Jump(double strengthx,

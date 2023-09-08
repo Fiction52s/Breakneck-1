@@ -285,11 +285,6 @@ void Falcon::UpdateSprite()
 
 }
 
-void Falcon::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 int Falcon::GetNumStoredBytes()
 {
 	return sizeof(MyData);

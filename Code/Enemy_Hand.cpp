@@ -154,11 +154,6 @@ void Hand::UpdateSprite()
 	}
 }
 
-void Hand::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void Hand::HitTerrainAerial(Edge *e, double quant)
 {
 

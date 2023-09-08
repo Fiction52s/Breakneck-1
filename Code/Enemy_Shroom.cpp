@@ -139,11 +139,6 @@ void Shroom::DirectKill()
 	data.jellySpawnable = false;
 }
 
-void Shroom::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void Shroom::UpdateSprite()
 {
 	switch (action)

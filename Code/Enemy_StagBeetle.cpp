@@ -32,23 +32,12 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	actionLength[JUMP] = 2;
 	actionLength[RUN] = 9 * 4;
 	
-	gravity = .5;
+	origGravity = .5;
+	gravity = origGravity;
 	maxGroundSpeed = 10;
 	maxFallSpeed = 40;
 
-
-	const string &typeName = ap->GetTypeName();
-	if (typeName == "reversestagbeetle")
-	{
-		reverse = true;
-		sprite.setColor(Color::Blue);
-		gravity = -gravity;
-	}
-	else
-	{
-		reverse = false;
-		
-	}
+	reverse = false;
 	
 	attackMult = 3;
 
@@ -56,7 +45,7 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	//SetOffGroundHeight(200 * scale);
 
 	CreateGroundMover(startPosInfo, 40, true, this);
-	groundMover->AddAirForce(V2d(0, gravity));
+	
 	groundMover->SetSpeed( 0 );
 
 	if (reverse)
@@ -138,17 +127,46 @@ void StagBeetle::ResetEnemy()
 {
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
+	groundMover->ClearAirForces();
 
-	action = IDLE;
-
-	if (PlayerDir().x >= 0)
+	Edge *e = startPosInfo.GetEdge();
+	if( e != NULL && e->Normal().y > 0 )
 	{
-		facingRight = true;
+		reverse = true;
+		sprite.setColor(Color::Blue);
+		gravity = -origGravity;
+
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = false;
+		}
+		else
+		{
+			facingRight = true;
+		}
 	}
 	else
 	{
-		facingRight = false;
+		reverse = false;
+		sprite.setColor(Color::White);
+		gravity = origGravity;
+
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
 	}
+
+	groundMover->AddAirForce(V2d(0, gravity));
+
+
+	action = IDLE;
+
+	
 	
 
 	DefaultHurtboxesOn();
@@ -330,14 +348,6 @@ void StagBeetle::HandleNoHealth()
 	cutObject->SetFlipHoriz(!facingRight);
 	cutObject->rotateAngle = sprite.getRotation();
 }
-
-
-void StagBeetle::EnemyDraw(sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
-
 
 void StagBeetle::UpdateSprite()
 {

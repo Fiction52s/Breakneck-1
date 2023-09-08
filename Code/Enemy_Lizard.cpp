@@ -56,7 +56,6 @@ Lizard::Lizard(ActorParams *ap)
 	groundMover->SetSpeed(0);
 
 	ts = GetSizedTileset("Enemies/W5/lizard_192x96.png");
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
@@ -352,14 +351,6 @@ void Lizard::HandleNoHealth()
 	cutObject->rotateAngle = sprite.getRotation();
 }
 
-
-void Lizard::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
-
-
 void Lizard::UpdateSprite()
 {
 	int tile = 0;
@@ -501,27 +492,7 @@ void Lizard::BulletHitTerrain(BasicBullet *b,
 	Edge *edge,
 	V2d &pos)
 {
-	/*V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);*/
-}
-
-void Lizard::BulletHitPlayer(
-	int playerIndex,
-	BasicBullet *b,
-	int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-
-	b->launcher->DeactivateBullet(b);
+	//no behavior when hitting terrain, since it grinds. That is my guess...
 }
 
 void Lizard::UpdateBullet(BasicBullet *b)
@@ -562,25 +533,6 @@ void Lizard::Shock()
 	launchers[0]->Fire();
 	bulletClockwise = false;
 	launchers[0]->Fire();
-}
-
-void Lizard::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[i]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-
-	Enemy::DirectKill();
 }
 
 int Lizard::GetNumStoredBytes()

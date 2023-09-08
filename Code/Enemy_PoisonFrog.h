@@ -52,7 +52,6 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 
 	void ProcessState();
 	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HitTerrain(double &q);

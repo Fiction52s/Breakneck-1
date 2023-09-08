@@ -33,7 +33,6 @@ struct Shroom : Enemy
 	~Shroom();
 	
 	void SetLevel(int lev);
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void HandleNoHealth();
 	void DirectKill();

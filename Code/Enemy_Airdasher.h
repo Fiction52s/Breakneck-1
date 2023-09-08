@@ -45,7 +45,6 @@ struct Airdasher : Enemy
 	void SetLevel(int lev);
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	double SetFacingPlayerAngle();

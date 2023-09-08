@@ -28,7 +28,6 @@ struct Booster : Enemy
 	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void SetLevel(int lev);
-	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();

@@ -75,7 +75,6 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	Tileset *ts_dig_in;
 	Tileset *ts_dig_out;
 	Tileset *ts_jump;
-	Tileset *ts_bulletExplode;
 	Tileset *ts_boostCharge;
 
 	SummonGroup crawlerSummonGroup;

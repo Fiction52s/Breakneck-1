@@ -14,10 +14,10 @@ struct Session;
 struct LauncherEnemy
 {
 	virtual void BulletHitTerrain(BasicBullet *b,
-		Edge *edge,V2d &pos) {};
-	virtual void BulletHitPlayer(
+		Edge *edge, V2d &pos);
+	void BulletHitPlayer(
 		int playerIndex, BasicBullet *b,
-		int hitResult ) {};
+		int hitResult);
 	virtual void BulletHitTarget(BasicBullet *b) {};
 	virtual void BulletTTLDeath(BasicBullet *b) {};
 	virtual int GetAttackIndex() { return -1; };
@@ -109,6 +109,7 @@ struct BasicBullet : QuadTreeCollider
 	virtual void UpdatePrePhysics();
 	virtual void Reset(V2d &pos,V2d &vel);
 
+	void Kill( V2d facingDir );
 	void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdatePhysics();
 	virtual void UpdateSprite();
@@ -295,7 +296,8 @@ struct Launcher
 	void Draw(sf::RenderTarget *target);
 	void DebugDraw(sf::RenderTarget *target);
 	void SetDefaultCollision(int framesToLive,
-		Edge *e, sf::Vector2<double> &pos);
+		Edge *e, V2d &pos);
+	void KillAllBullets();
 };
 
 

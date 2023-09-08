@@ -486,12 +486,6 @@ void Badger::UpdateEnemyPhysics()
 	}
 }
 
-void Badger::EnemyDraw(sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
-
 void Badger::UpdateSprite()
 {
 	V2d vel = groundMover->GetVel();

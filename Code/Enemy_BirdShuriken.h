@@ -53,8 +53,6 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 	int bulletSpeed;
 	int framesBetween;
 
-	Tileset *ts_bulletExplode;
-
 	V2d currBasePos;
 	V2d retreatPos;
 	V2d startRetreatPos;
@@ -99,13 +97,6 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 		int shurType );
 	void Rethrow();
 	void SetLevel(int lev);
-	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(
-		int playerIndex,
-		BasicBullet *b,
-		int hitResult);
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);

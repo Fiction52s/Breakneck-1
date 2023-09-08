@@ -82,7 +82,6 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	ts_jump = GetSizedTileset("Bosses/Crawler/crawler_queen_jump_320x320.png");
 	ts_lunge = GetSizedTileset("Bosses/Crawler/crawler_queen_lunge_320x320.png");
 	ts_boostCharge = GetSizedTileset("Bosses/Crawler/crawler_queen_charge_320x320.png");
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;

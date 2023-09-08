@@ -32,6 +32,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 
 	V2d tempVel;
 	double gravity;
+	double origGravity;
 
 	
 	int attackMult;
@@ -47,7 +48,6 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void ActionEnded();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();

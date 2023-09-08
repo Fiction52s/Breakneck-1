@@ -23,20 +23,14 @@ struct Turtle : Enemy, LauncherEnemy
 	};
 	MyData data;
 
-	Tileset *ts_bulletExplode;
 	int bulletSpeed;
 	Tileset *ts;
 	sf::CircleShape trackTestCircle;
 
 	Turtle(ActorParams *ap);
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(int playerIndex, 
-		BasicBullet *b, int hitResult);
 	void HandleNoHealth();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void DirectKill();
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
 	

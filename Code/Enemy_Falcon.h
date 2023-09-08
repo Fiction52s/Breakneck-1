@@ -38,7 +38,6 @@ struct Falcon : Enemy
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
 
 	void SetLevel(int lev);
 

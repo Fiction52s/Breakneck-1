@@ -16261,6 +16261,11 @@ void Actor::HandleWaterSituation(int wType,
 			}
 			springStunFrames = 2;
 		}
+
+		if (sit == SPECIALT_EXIT)
+		{
+			RestoreAirOptions();
+		}
 		break;
 	}
 	case TerrainPolygon::WATER_LOWGRAV:
@@ -16331,9 +16336,14 @@ void Actor::HandleWaterSituation(int wType,
 			{
 				if (exitEdge->Normal().y < 0)
 				{
-					cout << "boost" << endl;
+					//cout << "boost" << endl;
 					velocity.y -= 10.0;
 				}
+			}
+
+			if (sit == SPECIALT_EXIT)
+			{
+				RestoreAirOptions();
 			}
 		}
 		break;

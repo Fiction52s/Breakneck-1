@@ -82,8 +82,6 @@ Owl::Owl(ActorParams *ap)
 
 	sprite.setScale(scale, scale);
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
-
 	if (level == 2)
 	{
 		shield = new Shield(Shield::ShieldType::T_BLOCK, 70, 4, this);
@@ -128,10 +126,7 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
 	if( b->bounceCount == 2 )
 	{
-		V2d norm = edge->Normal();
-		double angle = atan2( norm.y, -norm.x );
-		sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
-		b->launcher->DeactivateBullet( b );
+		LauncherEnemy::BulletHitTerrain(b, edge, pos);
 	}
 	else
 	{
@@ -147,26 +142,9 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 		double d = dot( b->velocity, en );
 		V2d ref = b->velocity - (2.0 * d * en);
 		b->velocity = ref;
-		//cout << "ref: " << ref.x << ", " << ref.y << endl;
-		//b->velocity = -b->velocity;
 		b->bounceCount++;
 		b->framesToLive = b->launcher->maxFramesToLive;
 	}
-}
-
-
-void Owl::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2( vel.y, vel.x );
-	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-	
-	b->launcher->DeactivateBullet( b );
 }
 
 void Owl::ResetEnemy()
@@ -193,21 +171,6 @@ void Owl::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-}
-
-void Owl::DirectKill()
-{
-	BasicBullet *b = launchers[0]->activeBullets;
-	while( b != NULL )
-	{
-		BasicBullet *next = b->next;
-		double angle = atan2( b->velocity.y, -b->velocity.x );
-		sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-		b->launcher->DeactivateBullet( b );
-
-		b = next;
-	}
-	Enemy::DirectKill();
 }
 
 void Owl::ActionEnded()
@@ -435,11 +398,6 @@ void Owl::UpdateSprite()
 	sprite.setPosition( GetPositionF() );
 }
 
-void Owl::EnemyDraw( sf::RenderTarget *target )
-{
-	DrawSprite(target, sprite);
-}
-
 int Owl::GetNumStoredBytes()
 {
 	int totalSize = sizeof(MyData);
@@ -449,7 +407,7 @@ int Owl::GetNumStoredBytes()
 		totalSize += shield->GetNumStoredBytes();
 	}
 
-	totalSize += launchers[0]->GetNumStoredBytes() + launchers[1]->GetNumStoredBytes();
+	totalSize += GetNumStoredLauncherBytes();
 	return totalSize;
 }
 
@@ -465,11 +423,8 @@ void Owl::StoreBytes(unsigned char *bytes)
 		bytes += shield->GetNumStoredBytes();
 	}
 
-	launchers[0]->StoreBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
-
-	launchers[1]->StoreBytes(bytes);
-	bytes += launchers[1]->GetNumStoredBytes();
+	StoreBytesForLaunchers(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }
 
 void Owl::SetFromBytes(unsigned char *bytes)
@@ -484,9 +439,6 @@ void Owl::SetFromBytes(unsigned char *bytes)
 		bytes += shield->GetNumStoredBytes();
 	}
 
-	launchers[0]->SetFromBytes(bytes);
-	bytes += launchers[0]->GetNumStoredBytes();
-
-	launchers[1]->SetFromBytes(bytes);
-	bytes += launchers[1]->GetNumStoredBytes();
+	SetLaunchersFromBytes(bytes);
+	bytes += GetNumStoredLauncherBytes();
 }

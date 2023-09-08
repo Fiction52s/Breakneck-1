@@ -26,8 +26,6 @@ struct Owl : Enemy, LauncherEnemy
 
 	Shield *shield;
 
-	Tileset *ts_bulletExplode;
-
 	int bulletSpeed;
 	int movementRadius;
 	int retreatRadius;
@@ -48,16 +46,13 @@ struct Owl : Enemy, LauncherEnemy
 	Owl(ActorParams *ap);
 	~Owl();
 	void SetLevel(int lev);
-	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
-	void BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult);
 	void ActionEnded();
 	void ShieldDestroyed(Shield *shield);
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 

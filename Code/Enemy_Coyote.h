@@ -54,7 +54,6 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	CoyotePostFightScene *postFightScene;
 
 	Tileset *ts_move;
-	Tileset *ts_bulletExplode;
 
 	CoyoteBulletPool stopStartPool;
 
@@ -73,7 +72,6 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	//launcher functions
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
-	void BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult);
 	//summoner functions
 	void InitEnemyForSummon(SummonGroup *group, Enemy *e);
 

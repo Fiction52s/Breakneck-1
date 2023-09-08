@@ -56,7 +56,6 @@ struct Shark : Enemy
 	void ProcessState();
 	void StartFinalCircle();
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	V2d GetCircleOffset();

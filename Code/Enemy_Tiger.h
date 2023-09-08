@@ -50,7 +50,6 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	int defaultMoveOnlyFrames;
 
 	Tileset *ts_move;
-	Tileset *ts_bulletExplode;
 	Tileset *ts_grind;
 	Tileset *ts_roar;
 
@@ -84,8 +83,6 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 		Enemy *e);
 
 	//Launcher functions
-	void BulletHitPlayer(int playerIndex,
-		BasicBullet *b, int hitResult);
 
 	//Enemy functions
 	void DebugDraw(sf::RenderTarget *target);

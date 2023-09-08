@@ -33,8 +33,6 @@ struct Bat : Enemy, LauncherEnemy
 
 	BasicPathFollower pathFollower; //not used rn
 
-	Tileset *ts_bulletExplode;
-
 	V2d currBasePos;
 	V2d retreatPos;
 	V2d startRetreatPos;
@@ -68,16 +66,8 @@ struct Bat : Enemy, LauncherEnemy
 
 	void SetActionEditLoop();
 	void SetLevel(int lev);
-	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos);
-	void BulletHitPlayer(
-		int playerIndex, 
-		BasicBullet *b,
-		int hitResult);
 	void ProcessState();
 	bool physicsOver;
-	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 	void IHitPlayer(int index = 0);
 	//void DebugDraw(sf::RenderTarget *target);

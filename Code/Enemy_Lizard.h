@@ -27,7 +27,6 @@ struct Lizard : Enemy, GroundMoverHandler,
 	int fireWaitDuration;
 	bool bulletClockwise;
 
-	Tileset *ts_bulletExplode;
 	Tileset *ts;
 	double gravity;
 	double maxGroundSpeed;
@@ -41,7 +40,6 @@ struct Lizard : Enemy, GroundMoverHandler,
 	void ActionEnded();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
@@ -58,13 +56,8 @@ struct Lizard : Enemy, GroundMoverHandler,
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,
 		sf::Vector2<double> &pos);
-	void BulletHitPlayer(
-		int playerIndex,
-		BasicBullet *b,
-		int hitResult);
 	void UpdateBullet(BasicBullet *b);
 	void FireResponse(BasicBullet *b);
-	void DirectKill();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

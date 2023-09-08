@@ -51,8 +51,6 @@ struct Specter : Enemy
 	double bulletAccel;
 	double bulletMaxSpeed;
 
-	Tileset *ts_bulletExplode;
-
 	Specter(ActorParams *ap );
 	~Specter();
 	void AddToGame();

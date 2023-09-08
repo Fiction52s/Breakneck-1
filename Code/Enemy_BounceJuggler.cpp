@@ -253,19 +253,6 @@ void BounceJuggler::HandleNoHealth()
 
 }
 
-void BounceJuggler::DirectKill()
-{
-	Enemy::DirectKill();
-	sess->PlayerRemoveActiveComboer(comboObj);
-}
-
-//void BounceJuggler::Move()
-//{
-//	mover->velocity = velocity;
-//	mover->Move(slowMultiple, numPhysSteps);
-//	position = mover->physBody.globalPosition;
-//}
-
 bool BounceJuggler::CanComboHit(Enemy *e)
 {
 	if (e->type == EN_BOUNCEJUGGLER)
@@ -367,12 +354,6 @@ void BounceJuggler::UpdateSprite()
 		}
 	}	
 }
-
-void BounceJuggler::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 {
 	V2d pos = edge->GetPosition(quant);

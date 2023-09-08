@@ -548,11 +548,6 @@ void HungryComboer::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
-void HungryComboer::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void HungryComboer::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);

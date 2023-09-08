@@ -60,8 +60,6 @@ Chess::Chess(ActorParams *ap)
 	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
 
-	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
-
 	//shield = new Shield(Shield::ShieldType::T_BLOCK, 16 * scale, 3, this);
 	//RegisterShield(shield);
 
@@ -188,35 +186,6 @@ void Chess::StartRush()
 	//testCircle.setPosition(Vector2f(futurePos));
 
 	data.velocity = rushDir * speed;
-}
-
-void Chess::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-{
-	b->launcher->DeactivateBullet(b);
-}
-
-void Chess::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-}
-
-void Chess::DirectKill()
-{
-	BasicBullet *b = launchers[0]->activeBullets;
-	while (b != NULL)
-	{
-		BasicBullet *next = b->next;
-		double angle = atan2(b->velocity.y, -b->velocity.x);
-		sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-		b->launcher->DeactivateBullet(b);
-
-		b = next;
-	}
-
-	Enemy::DirectKill();
 }
 
 void Chess::ProcessState()
@@ -398,11 +367,6 @@ void Chess::UpdateSprite()
 
 
 	//testCircle.setPosition(GetPositionF());
-}
-
-void Chess::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
 }
 
 int Chess::GetNumStoredBytes()

@@ -64,7 +64,6 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	void FrameIncrement();
 	void ComboHit();
 	void ComboKill(Enemy *e);
-	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
@@ -72,7 +71,6 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	void Return();
 	void Pop();
 	void PopThrow();
-	void DirectKill();
 	void ExtraQueries(sf::Rect<double> &r);
 
 	void LeaveRail();

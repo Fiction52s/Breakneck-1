@@ -86,11 +86,6 @@ void DimensionExit::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
-void DimensionExit::EnemyDraw(sf::RenderTarget *target)
-{
-	DrawSprite(target, sprite);
-}
-
 void DimensionExit::ProcessHit()
 {
 	if (!dead && HasReceivedHit() && numHealth > 0)
