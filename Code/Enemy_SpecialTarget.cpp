@@ -35,8 +35,8 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	//ts = GetSizedTileset("Enemies/target_256x256.png");
 	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
-	BasicCircleHitBodySetup(80);
-	BasicCircleHurtBodySetup(80);
+	BasicCircleHitBodySetup(100);
+	BasicCircleHurtBodySetup(100);
 
 	const string &typeName = ap->GetTypeName();
 	if (typeName == "glidetarget")

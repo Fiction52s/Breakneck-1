@@ -84,7 +84,7 @@ void Cheetah::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 1.25;
 		break;
 	case 2:
 		scale = 2.0;

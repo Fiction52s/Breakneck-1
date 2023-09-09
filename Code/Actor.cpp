@@ -19859,7 +19859,7 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 	{
 		gSpeed = alongSpeed;
 	}
-	else if( ( currInput.LLeft() && testVel.x < 0 ) || ( currInput.LRight() && testVel.x > 0 ))// || currInput.LDown() || currInput.LUp() )
+	else if( ( currInput.LLeft() && testVel.x <= 0 ) || ( currInput.LRight() && testVel.x >= 0 ))// || currInput.LDown() || currInput.LUp() )
 	{
 		double res = dot( testVel, alongVel );
 

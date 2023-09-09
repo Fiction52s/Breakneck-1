@@ -21,8 +21,8 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 
 	targetType = -1;
 
-	BasicCircleHitBodySetup(80);
-	BasicCircleHurtBodySetup(80);
+	BasicCircleHitBodySetup(100);
+	BasicCircleHurtBodySetup(100);
 
 	if (!myShader.loadFromFile("Resources/Shader/comboertarget_shader.frag", sf::Shader::Fragment))
 	{
