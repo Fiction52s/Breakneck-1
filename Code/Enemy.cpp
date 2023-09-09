@@ -330,7 +330,7 @@ bool Enemy::SetHitParams()
 		break;
 	case EnemyType::EN_EXPLODINGBARREL:
 	{
-		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
+		hitParams.Set(5, .8, (1 * 60) / 1, 1, false);
 		break;
 	}
 	case EnemyType::EN_PREDICTTURRET:

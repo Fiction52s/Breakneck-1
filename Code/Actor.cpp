@@ -6468,11 +6468,22 @@ void Actor::ProcessBounceGrassGrounded()
 		V2d gn = ground->Normal();
 		if (gn.y < 0)
 		{
+			if (velocity.y > 0)
+			{
+				velocity.y = 0;
+			}
+
 			velocity.y -= 25;
 			//velocity.y = -25;
 		}
 		else if (gn.y > 0)
 		{
+			if (velocity.y < 0)
+			{
+				velocity.y = 0;
+			}
+
+
 			velocity.y += 25;
 			//velocity.y = 25;
 		}
