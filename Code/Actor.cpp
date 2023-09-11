@@ -5395,6 +5395,8 @@ void Actor::ResetBoosterEffects()
 	antiTimeSlowFrames = 0;
 	startAntiTimeSlowFrames = 0;
 	antiTimeSlowBoosterTrailEmitter->SetOn(false);
+	//hopefully this doesn't mess with water stuff. test it.
+	SetSkin(SKIN_NORMAL);
 
 	globalTimeSlowFrames = 0;
 	startGlobalTimeSlowFrames = 0;
@@ -19256,13 +19258,13 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						if (velocity.x > 0 && railSpeed < velocity.x)//groundSpeed > 0 && groundSpeed < velocity.x)
 						{
 							//cout << "railspeed a from " << railSpeed << " to : " << velocity.x << "\n";
-							railSpeed = velocity.x;
+							railSpeed = max( minRailCurr, velocity.x );
 
 						}
 						else if (velocity.x < 0 && railSpeed > velocity.x)//groundSpeed < 0 && groundSpeed > velocity.x)
 						{
 							//cout << "railspeed b from " << railSpeed << " to : " << velocity.x << "\n";
-							railSpeed = velocity.x;
+							railSpeed = min( -minRailCurr, velocity.x );
 						}
 					}
 				}

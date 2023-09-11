@@ -54,8 +54,8 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 
 	action = S_FLOAT;
 
-	//t//s = GetSizedTileset("Enemies/comboers_128x128.png");
-	ts = GetSizedTileset("Enemies/W3/bounce_comboer_160x128.png");
+	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	//ts = GetSizedTileset("Enemies/W3/bounce_comboer_160x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -321,7 +321,7 @@ void BounceJuggler::UpdateSprite()
 	switch (action)
 	{
 	case S_FLOAT:
-		tile = 0;
+		tile = 5;
 		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}

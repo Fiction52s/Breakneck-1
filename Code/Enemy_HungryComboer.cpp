@@ -30,7 +30,7 @@ HungryComboer::HungryComboer(ActorParams *ap)
 
 	maxEdible = 3;
 
-	flySpeed = 12;
+	flySpeed = 15;//12;
 
 	homingRadius = 800;
 
@@ -330,7 +330,7 @@ void HungryComboer::ProcessState()
 
 	if (action == S_TRACKENEMY && data.chaseTarget != NULL)
 	{
-		double accel = 1.5;//max( 1.0, 3.0 / ((double)data.waitFrame / maxWaitFrames));// / 3;//1.5;// .5;//.5;
+		double accel = 1.75;//1.5;//max( 1.0, 3.0 / ((double)data.waitFrame / maxWaitFrames));// / 3;//1.5;// .5;//.5;
 		V2d trackPos = GetTrackPos();
 		V2d trackDir = normalize(trackPos - GetPosition());
 		data.velocity += trackDir * accel;
