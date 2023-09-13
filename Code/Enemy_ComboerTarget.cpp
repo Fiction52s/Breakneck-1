@@ -308,6 +308,12 @@ HitboxInfo * ComboerTarget::IsHit(int pIndex)
 					validHit = true;
 				}
 				break;
+			case TARGET_COMBOER_MAGENTA:
+				if (en->type == EN_WIREJUGGLER || en->type == EN_WIREBALL)
+				{
+					validHit = true;
+				}
+				break;
 				//case TARGET_COMBOER_MAGENTA:
 				//	if( en->type == EN_)
 			}

@@ -27,36 +27,22 @@ struct WireJuggler : Enemy
 
 	struct MyData : StoredEnemyData
 	{
-		int juggleTextNumber;
 		V2d velocity;
 		int currHits;
-		int currJuggle;
 		int waitFrame;
 	};
 	MyData data;
 
 	JuggleType jType;
-	sf::Text numJugglesText;
 
-	
-	bool limitedJuggles;
-	bool reversedGrav;
 	double gravFactor;
 	V2d gDir;
 	double maxFallSpeed;
-
-	int hitLimit;
 	
-
 	Tileset *ts;
-
-	bool reversed;
-
-	int juggleReps;
-	
-
 	
 	int maxWaitFrames;
+
 	bool CountsForEnemyGate() { return false; }
 	WireJuggler( ActorParams *ap );
 	~WireJuggler();
@@ -79,8 +65,6 @@ struct WireJuggler : Enemy
 	void HandleWireAnchored(Wire *w);
 	void HandleWireUnanchored(Wire *w);
 	bool CanBeAnchoredByWire(bool red);
-	void UpdateParamsSettings();
-	void UpdateJuggleRepsText(int reps);
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);

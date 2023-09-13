@@ -5386,6 +5386,8 @@ void Actor::ResetBoosterEffects()
 
 	freeFlightFrames = 0;
 	startFreeFlightFrames = 0;
+	gravModifyFrames = 0;
+	extraGravityModifier = 1.0;
 	freeFlightBoosterTrailEmitter->SetOn(false);
 	
 	momentumBoostFrames = 0;
@@ -21271,11 +21273,11 @@ void Actor::UnlockGate(Gate *g)
 {
 	owner->UnlockGate(g);
 	
-	if (rightWire != NULL)
-		rightWire->Retract();
+	//if (rightWire != NULL)
+	//	rightWire->Retract();
 
-	if (leftWire != NULL)
-		leftWire->Retract();
+	//if (leftWire != NULL)
+	//	leftWire->Retract();
 }
 
 void Actor::HandleRayCollision( Edge *edge, double p_edgeQuantity, double rayPortion )

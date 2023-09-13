@@ -628,7 +628,7 @@ void Gate::TotalDissolve()
 	data.frame = 0;
 	SetLocked(false);
 	centerShader.setUniform("breakPosQuant", .5f);
-	ResetAttachedWires();
+	//ResetAttachedWires();
 }
 
 void Gate::ReverseDissolve()
@@ -646,7 +646,7 @@ void Gate::Soften()
 	SetLocked(false);
 	data.gState = SOFTEN;
 	data.frame = 0;
-	ResetAttachedWires();
+	//ResetAttachedWires();
 }
 
 void Gate::ResetAttachedWires()

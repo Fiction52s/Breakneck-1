@@ -317,7 +317,7 @@ void BounceJuggler::ComboKill(Enemy *e)
 
 void BounceJuggler::UpdateSprite()
 {
-	int tile = 0;
+	int tile = 5;
 	switch (action)
 	{
 	case S_FLOAT:

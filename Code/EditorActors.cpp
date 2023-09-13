@@ -317,7 +317,7 @@ Panel *ActorType::CreatePanel()
 		|| name == "ball")
 	{
 		p = CreateDefaultPanel();
-		AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
+		//AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
 	}
 	else if (name == "grindcomboer")
 	{

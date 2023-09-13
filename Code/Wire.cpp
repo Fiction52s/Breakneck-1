@@ -1052,10 +1052,10 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 		}
 		else
 		{
-			if (data.rcCancelDist < 0 || lengthToPlayer < data.rcCancelDist)
+			/*if (data.rcCancelDist < 0 || lengthToPlayer < data.rcCancelDist)
 			{
 				data.rcCancelDist = lengthToPlayer;
-			}
+			}*/
 		}
 	}
 	else
