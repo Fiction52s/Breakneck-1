@@ -972,7 +972,9 @@ struct Actor : QuadTreeCollider,
 	sf::Shader shieldShader;
 	sf::Sprite shieldSprite;
 	sf::Sprite grindAttackSprite;
+	sf::Sprite homingAttackBallSprite;
 	Tileset *ts_blockShield;
+	Tileset *ts_homingAttackBall;
 	
 	std::vector<SoundInfo*> soundInfos;
 	Tileset *ts_exitAura;
@@ -1334,6 +1336,7 @@ struct Actor : QuadTreeCollider,
 	void GatorStun();
 	std::string GetDisplayName();
 	void DrawShield(sf::RenderTarget *target);
+	void DrawHomingBall(sf::RenderTarget *target);
 	void DrawNameTag(sf::RenderTarget *target);
 	bool CanParry(HitboxInfo::HitPosType hpt,
 		V2d &hitPos,

@@ -61,6 +61,7 @@ struct ParallelMode : GameMode
 	void DrawParallelWires(sf::RenderTarget *target);
 	void DrawParallelPlayers(sf::RenderTarget *target);
 	void DrawParallelPlayerShields(sf::RenderTarget *target);
+	void DrawParallelPlayerHomingBalls(sf::RenderTarget *target);
 	void DrawParallelNameTags(sf::RenderTarget *target);
 	void DrawPracticeGames(sf::RenderTarget *target);
 	void UpdateParallelNameTagsPixelPos(sf::RenderTarget *target);

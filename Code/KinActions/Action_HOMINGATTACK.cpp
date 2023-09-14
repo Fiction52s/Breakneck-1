@@ -127,7 +127,7 @@ void Actor::HOMINGATTACK_UpdateSprite()
 {
 	SetSpriteTexture(action);
 
-	SetSpriteTile(0, facingRight);
+	SetSpriteTile(frame / 2, facingRight);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
@@ -143,6 +143,11 @@ void Actor::HOMINGATTACK_UpdateSprite()
 		double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
 		sprite->setRotation(-a + 180);
 	}
+
+
+	ts_homingAttackBall->SetSubRect(homingAttackBallSprite, frame / 2, !facingRight);
+	homingAttackBallSprite.setOrigin(homingAttackBallSprite.getLocalBounds().width / 2, homingAttackBallSprite.getLocalBounds().height / 2);
+	homingAttackBallSprite.setPosition(position.x, position.y);
 
 	if (scorpOn)
 		SetAerialScorpSprite();
@@ -165,10 +170,11 @@ void Actor::HOMINGATTACK_TimeDepFrameInc()
 
 int Actor::HOMINGATTACK_GetActionLength()
 {
-	return 8;
+	return 15 * 2;
 }
 
 Tileset * Actor::HOMINGATTACK_GetTileset()
 {
-	return SPRINGSTUN_GetTileset();
+	return GetActionTileset("homing_att_64x64.png");
+	//return SPRINGSTUN_GetTileset();
 }

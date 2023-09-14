@@ -130,6 +130,25 @@ void ParallelMode::DrawParallelPlayerShields(sf::RenderTarget *target)
 	}
 }
 
+void ParallelMode::DrawParallelPlayerHomingBalls(sf::RenderTarget *target)
+{
+	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
+	{
+		if (parallelGames[i] != NULL)
+		{
+			Actor *p = NULL;
+			for (int j = 0; j < 4; ++j)
+			{
+				p = parallelGames[i]->GetPlayer(j);
+				if (p != NULL)
+				{
+					p->DrawHomingBall(target);
+				}
+			}
+		}
+	}
+}
+
 void ParallelMode::DrawParallelNameTags(sf::RenderTarget *target)
 {
 	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)

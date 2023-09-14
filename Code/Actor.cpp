@@ -1253,6 +1253,9 @@ void Actor::SetupExtraTilesets()
 	ts_blockShield = sess->GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	ts_blockShield->SetSpriteTexture(shieldSprite);
 
+	ts_homingAttackBall = sess->GetSizedTileset("Kin/FX/homing_att_ball_256x256.png");
+	ts_homingAttackBall->SetSpriteTexture(homingAttackBallSprite);
+
 	ts_antiTimeSlowRing = sess->GetSizedTileset("Kin/FX/low_grav_ring_128x128.png");
 
 	if (owner != NULL)
@@ -20666,6 +20669,14 @@ void Actor::DrawShield(sf::RenderTarget *target)
 		{
 			target->draw(shieldSprite);
 		}
+	}
+}
+
+void Actor::DrawHomingBall(sf::RenderTarget *target)
+{
+	if (action == HOMINGATTACK)
+	{
+		target->draw(homingAttackBallSprite);
 	}
 }
 

@@ -710,6 +710,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateControllers();
 	void RunFrameForParallelPractice();
 	void UpdateControllersOneFrameMode();
+	void DrawPlayersHomingBall(sf::RenderTarget *target );
 	void DrawPlayers(sf::RenderTarget *target);
 	void DrawPlayerWires(sf::RenderTarget *target);
 	void UpdatePlayerWireQuads();

@@ -6665,9 +6665,9 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	absorbParticles->Draw(target);
 	absorbDarkParticles->Draw(target);
 
-	DrawPlayers(target);
+	DrawPlayersHomingBall(target);
 
-	
+	DrawPlayers(target);
 
 	DrawPlayerShields(target);
 
@@ -6765,6 +6765,8 @@ void Session::DrawPracticeGame(sf::RenderTarget *target)
 	//target->setView(view);
 
 	DrawPlayerWires(target);
+
+	DrawPlayersHomingBall(target);
 
 	DrawPlayers(target);
 
@@ -8643,6 +8645,26 @@ void Session::DrawPlayerShields(sf::RenderTarget *target)
 		if (p != NULL)
 		{
 			p->DrawShield(target);
+		}
+	}
+}
+
+
+void Session::DrawPlayersHomingBall(sf::RenderTarget *target)
+{
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->DrawParallelPlayerHomingBalls(preScreenTex);
+	}
+
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawHomingBall(target);
 		}
 	}
 }
