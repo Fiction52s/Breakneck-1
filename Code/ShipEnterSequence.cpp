@@ -33,6 +33,8 @@ void ShipEnterScene::Reset()
 {
 	Sequence::Reset();
 
+	shipEnterData.extraBackgroundOffset = 0;
+
 	Actor *player = sess->GetPlayer(0);
 	sess->SetDrainOn(false);
 	player->action = Actor::RIDESHIP;
@@ -137,9 +139,6 @@ void ShipEnterScene::UpdateState()
 
 	middleClouds.move(Vector2f(0, cl.y));// + Vector2f( allDiff, 0 ) );
 
-
-
-
 	for (int i = 0; i < 3 * 4; ++i)
 	{
 		cloud0[i].position = cl + Vector2f(cloud0[i].position.x + allDiff, cloud0[i].position.y);
@@ -154,15 +153,31 @@ void ShipEnterScene::UpdateState()
 	
 	
 	//sess->background->Update(sess->view.getCenter());
+	sess->background->SetExtra(Vector2f(shipEnterData.extraBackgroundOffset, 0));
 
-	if (seqData.frame <= 120) //arbitrary, but when kin is in the middle of the clouds
+	if (seqData.frame >= 121)
 	{
-		sess->background->SetExtra(Vector2f(seqData.frame * -60.0, 0));
+		CubicBezier cb(0, 0, 1, 1);
+		float f = ((float)seqData.frame - 121) / (240 - 121);
+		float change = 20.f * f + 60.f * (1.f - f);
+		//double blend = cb.GetValue()
+
+		shipEnterData.extraBackgroundOffset -= change;
 	}
-	else if(seqData.frame == 121 )
+	else
 	{
-		sess->background->SetExtra(Vector2f( 0, 0 ));
+		shipEnterData.extraBackgroundOffset -= 60.f;
 	}
+
+
+	//if (seqData.frame <= 120) //arbitrary, but when kin is in the middle of the clouds
+	//{
+	//	sess->background->SetExtra(Vector2f(seqData.frame * -60.0, 0));
+	//}
+	//else if(seqData.frame == 121 )
+	//{
+	//	sess->background->SetExtra(Vector2f( 0, 0 ));
+	//}
 
 	if (seqData.frame >= 90 && seqData.frame <= 180)
 	{
@@ -208,4 +223,24 @@ void ShipEnterScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 	}
 
 	Sequence::Draw(target, layer);
+}
+
+int ShipEnterScene::GetNumStoredBytes()
+{
+	return sizeof(seqData) + sizeof( shipEnterData );
+}
+
+void ShipEnterScene::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &seqData, sizeof(seqData));
+	bytes += sizeof(seqData);
+	memcpy(bytes, &shipEnterData, sizeof(shipEnterData));
+}
+
+void ShipEnterScene::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&seqData, bytes, sizeof(seqData));
+	bytes += sizeof(seqData);
+	memcpy(&shipEnterData, bytes, sizeof(shipEnterData));
+	//nextSeq = sess->GetEnemyFromID(seqData.); //needs implementing if I want 2 sequences in a row to not mess up in rollback
 }

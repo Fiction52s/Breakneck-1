@@ -65,7 +65,7 @@ MultiplayerProgressTarget::MultiplayerProgressTarget(ActorParams *ap)
 
 	facingRight = true;
 
-	ts = GetSizedTileset("Enemies/comboer_128x128.png");
+	ts = GetSizedTileset("Enemies/target_224x224.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 	

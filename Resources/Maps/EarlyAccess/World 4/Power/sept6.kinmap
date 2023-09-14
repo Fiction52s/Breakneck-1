@@ -532,7 +532,8 @@ tutorialobject -647 -509
 Press ATTACK while grinding to use a grind attack!
 key -150 40
 key -58 541
-goal -1 356 144.231
+shippickup -1 356 99.7808
+1
 2
 0 0 0 -1 456 -1 220
 10 0 -1 12 -1 49

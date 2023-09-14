@@ -31,8 +31,7 @@ FreeFlightBooster::FreeFlightBooster(ActorParams *ap)//Vector2i &pos, int p_leve
 
 	strength = 360;
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");//sess->GetSizedTileset("Enemies/Booster_512x512.png");
-	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
+	ts = GetSizedTileset("Enemies/boosters_384x384.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 	//sprite.setColor(Color::Magenta);

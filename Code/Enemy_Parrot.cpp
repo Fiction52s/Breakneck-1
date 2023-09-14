@@ -53,7 +53,7 @@ Parrot::Parrot(ActorParams *ap)
 	BasicCircleHurtBodySetup(32);
 
 	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 12, 1, GetPosition(), V2d(1, 0), 0, 90, false);
+	launchers[0] = new Launcher(this, BasicBullet::PARROT, 12, 1, GetPosition(), V2d(1, 0), 0, 90, false);
 	launchers[0]->SetBulletSpeed(15);
 	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;
 	launchers[0]->Reset();

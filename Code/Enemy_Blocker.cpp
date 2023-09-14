@@ -126,33 +126,6 @@ void BlockerChain::EnemyDraw(sf::RenderTarget *target)
 Tileset *BlockerChain::GetTileset(int variation)
 {
 	return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-	/*switch (variation)
-	{
-	case Blocker::GREY:
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;														 
-	case Blocker::BLUE:											 
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;														 
-	case Blocker::GREEN:											 
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;														 
-	case Blocker::YELLOW:											 
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;														 
-	case Blocker::ORANGE:											 
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;						 
-	case Blocker::RED:												 
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;														 
-	case Blocker::MAGENTA:											 
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;														 
-	case Blocker::BLACK:											 
-		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		break;
-	}*/
 }
 
 Enemy *BlockerChain::CreateEnemy(V2d &pos, int ind)

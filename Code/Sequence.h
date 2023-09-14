@@ -338,6 +338,13 @@ struct ShipEnterScene : Sequence
 		Count
 	};
 
+	struct ShipEnterData
+	{
+		float extraBackgroundOffset;
+	};
+
+	ShipEnterData shipEnterData;
+
 	//ship sequence. should be in its own structure
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
@@ -368,6 +375,9 @@ struct ShipEnterScene : Sequence
 	void SetupStates();
 	void ReturnToGame();
 	void AddFlashes();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 	//void Draw(sf::RenderTarget *target);
 };
 

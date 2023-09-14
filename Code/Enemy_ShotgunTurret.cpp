@@ -76,7 +76,7 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
-		BasicBullet::SHOTGUN, 32, 3, GetPosition(), V2d(0, -1),
+		BasicBullet::CACTUS, 32, 3, GetPosition(), V2d(0, -1),
 		PI / 6, 180, false);
 	/*launchers[0] = new Launcher(this,
 		BasicBullet::SHOTGUN, 32, 1, GetPosition(), V2d(0, -1),

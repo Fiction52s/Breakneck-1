@@ -3609,9 +3609,9 @@ void EditSession::SetupTerrainSelectPanel()
 			{
 				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Inverse\nPhase");
 			}
-			else if (worldI == 3 && i == 7)
+			else if (worldI == 5 && i == 7)
 			{
-				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Disappearing");
+				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Fade");
 			}
 
 			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();

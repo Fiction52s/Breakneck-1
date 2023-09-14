@@ -107,11 +107,11 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::BASIC_TURRET:
 		bulletTilesetIndex = 0;
 		break;
-	case BasicBullet::BAT:
-		bulletTilesetIndex = 6;
-		break;
 	case BasicBullet::PATROLLER:
 		bulletTilesetIndex = 1;
+		break;
+	case BasicBullet::BAT:
+		bulletTilesetIndex = 6;
 		break;
 	case BasicBullet::CURVE_TURRET:
 		bulletTilesetIndex = 2;
@@ -119,38 +119,41 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::LOB_TURRET:
 		bulletTilesetIndex = 2;
 		break;
-	case BasicBullet::PREDICT:
-		bulletTilesetIndex = 1;
-		break;
-	case BasicBullet::CACTUS_SHOTGUN:
-		bulletTilesetIndex = 1;
-		break;
-	case BasicBullet::SHOTGUN:
-		bulletTilesetIndex = 1;
-		break;
-	case BasicBullet::LIZARD:
-		bulletTilesetIndex = 1;
+	case BasicBullet::CACTUS:
+		bulletTilesetIndex = 5;
 		break;
 	case BasicBullet::OWL:
+		bulletTilesetIndex = 4;
+		break;
 	case BasicBullet::BIG_OWL:
 		bulletTilesetIndex = 4;
 		break;
 	case BasicBullet::TURTLE:
 		bulletTilesetIndex = 7;
 		break;
+	case BasicBullet::LIZARD:
+		bulletTilesetIndex = 10;
+		break;
+	case BasicBullet::PARROT:
+		bulletTilesetIndex = 8;
+		break;
 	case BasicBullet::GROWING_TREE:
 		bulletTilesetIndex = 8;
 		break;
 	case BasicBullet::COPYCAT:
 		bulletTilesetIndex = 1;
+		break;
+	case BasicBullet::SPECTER:
+		bulletTilesetIndex = 8;
+		break;
+	case BasicBullet::PREDICT:
+		bulletTilesetIndex = 1;
+		break;
 	case BasicBullet::BOSS_CRAWLER:
 		bulletTilesetIndex = 2;
 		break;
 	case BasicBullet::BOSS_BIRD:
 		bulletTilesetIndex = 1;
-		break;
-	case BasicBullet::SPECTER:
-		bulletTilesetIndex = 8;
 		break;
 	}
 
@@ -283,18 +286,34 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 	switch (bt)
 	{
 	case BasicBullet::BASIC_TURRET:
-		return 32;//12;
+		return 28;//12;	
 	case BasicBullet::PATROLLER:
-		return 44;
+		return 32;//44;
+	case BasicBullet::BAT:
+		return 20;
 	case BasicBullet::CURVE_TURRET:
 		return 20;
 	case BasicBullet::LOB_TURRET:
-		return 16;
-	case BasicBullet::GROWING_TREE:
 		return 20;
+	case BasicBullet::CACTUS:
+		return 20;
+	case BasicBullet::OWL:
+		return 20;
+	case BasicBullet::BIG_OWL:
+		return 10;
+	case BasicBullet::TURTLE:
+		return 16;
 	case BasicBullet::LIZARD:
 		return 32;
+	case BasicBullet::PARROT:
+		return 20;
+	case BasicBullet::GROWING_TREE:
+		return 20;
+	case BasicBullet::COPYCAT:
+		return 20;
 	case BasicBullet::SPECTER:
+		return 44;
+	case BasicBullet::PREDICT:
 		return 44;
 	}
 
@@ -303,11 +322,12 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 
 Vector2f Launcher::GetOffset(BasicBullet::BType bt)
 {
-	if (bt == BasicBullet::CURVE_TURRET)
+	if (bt == BasicBullet::PATROLLER)
 	{
-		return Vector2f(0, 0);
+		return Vector2f(-12, 0);
 	}
-	else if (bt == BasicBullet::LOB_TURRET)
+	else if (bt == BasicBullet::LIZARD
+		|| bt == BasicBullet::BAT)
 	{
 		return Vector2f(0, 0);
 	}
@@ -315,10 +335,8 @@ Vector2f Launcher::GetOffset(BasicBullet::BType bt)
 	{
 		return Vector2f(0, 0);
 	}*/
-	else
-	{
-		return Vector2f(-20, 0);
-	}
+	
+	return Vector2f(-6, 0);//Vector2f(-20, 0);
 
 }
 
@@ -721,19 +739,6 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	transform = transform.Identity;
 	switch (bulletType)
 	{
-	case PATROLLER:
-	case BAT:
-	case BIG_OWL:
-	case LOB_TURRET:
-	case PREDICT:
-	case SHOTGUN:
-	case LIZARD:
-	case GROWING_TREE:
-	case SPECTER:
-	{
-		transform.rotate(angle);
-		break;
-	}
 	case CURVE_TURRET:
 	{
 		double gangle = atan2(gravity.y, gravity.x);
@@ -741,15 +746,9 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 		transform.rotate(gangle);
 		break;
 	}
-	case BASIC_TURRET:
+	default:
 		transform.rotate(angle);
 		break;
-	case BOSS_BIRD:
-	{
-		transform.rotate(angle);
-		break;
-	}
-
 	}
 
 	frame = 0;
@@ -1229,27 +1228,15 @@ void BasicBullet::UpdateSprite()
 		VA = launcher->sess->bigBulletVA;
 	}
 	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
-	Vector2f dims(32, 32);
+	Vector2f dims(48, 48);
 
 	switch (bulletType)
 	{
 	case PATROLLER:
 		dims = Vector2f(64, 64);
 		break;
-	case BIG_OWL:
-		dims = Vector2f(48, 48);
-		break;
-	case LOB_TURRET:
-		dims = Vector2f(42,42 );
-		break;
 	case BASIC_TURRET:
 		dims = Vector2f(64, 64);
-		break;
-	case GROWING_TREE:
-		dims = Vector2f(40, 40);
-		break;
-	case LIZARD:
-		dims = Vector2f(48, 48);
 		break;
 	case SPECTER:
 		dims = Vector2f(64, 64);
@@ -1265,7 +1252,33 @@ void BasicBullet::UpdateSprite()
 	Vector2f botLeft = Vector2f(-dims.x, dims.y) + offset;
 
 	int animFactor = 2;
+
 	switch (bulletType)
+	{
+	case BAT:
+	case PATROLLER:
+	case OWL:
+	case GROWING_TREE:
+	case BIG_OWL:
+	case SPECTER:
+		animFactor = 4;
+		break;
+	}
+
+	switch (bulletType)
+	{
+	default:
+		double angle = atan2(velocity.y, velocity.x);
+		angle = angle * 180 / PI;
+		transform = transform.Identity;
+		transform.rotate(angle);
+		break;
+	}
+
+
+	
+
+	/*switch (bulletType)
 	{
 	case BAT:
 	case PATROLLER:
@@ -1289,7 +1302,7 @@ void BasicBullet::UpdateSprite()
 		transform = transform.Identity;
 		transform.rotate(angle);
 		break;
-	}
+	}*/
 	/*case CURVE_TURRET:
 	{
 	double gangle = atan2(gravity.y, gravity.x);
@@ -1306,7 +1319,7 @@ void BasicBullet::UpdateSprite()
 	break;
 	}*/
 
-	}
+	//}
 
 	VA[index * 4 + 0].position = center + transform.transformPoint(topLeft);
 	VA[index * 4 + 1].position = center + transform.transformPoint(topRight);

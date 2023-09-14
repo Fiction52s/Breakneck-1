@@ -286,11 +286,12 @@ void Session::RegisterGeneralEnemies()
 	AddExtraEnemy("Sequence Camera", "camerashot", utilityRow, NULL, SetParamsType<CameraShotParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
 		GetTileset("Editor/camera_128x128.png", 128, 128));
 	AddExtraEnemy("Point of Interest", "poi", utilityRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/rail_32x32.png"), 1);
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/pointofinterest_32x32.png"));
+
 	AddExtraEnemy("X Barrier", "xbarrier", utilityRow, NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/blocker_w1_192x192.png"));
 	AddExtraEnemy("X Warp Barrier", "xbarrierwarp", utilityRow, NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
-		GetSizedTileset("Enemies/Ball_64x64.png"));
+		GetSizedTileset("Enemies/target_224x224.png"));
 	AddExtraEnemy("Air Trigger", "airtrigger", utilityRow, NULL, SetParamsType<AirTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/jayshield_128x128.png"));
 	AddExtraEnemy("Grounded Warper", "groundedwarper", utilityRow, CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
@@ -339,7 +340,7 @@ void Session::RegisterW1Enemies()
 
 	//story
 	AddWorldEnemy("Crawler Boss Node", "crawlernode", 1, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/crawlernode_32x32.png"));
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/crawlernode_32x32.png"));
 	AddBasicAerialWorldEnemy("Movement Tester", "movementtester", 1, storyRow, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
 	AddBasicGroundWorldEnemy("Crawler Queen Boss", "crawlerqueen", 1, storyRow, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
 	AddBasicGroundWorldEnemy("Sequence Crawler Queen", "sequencecrawler", 1, storyRow, CreateEnemy<SequenceCrawler>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 1);
@@ -386,7 +387,7 @@ void Session::RegisterW2Enemies()
 	AddBasicAerialWorldEnemy("Bird Boss", "bird", 2, storyRow, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Sequence Bird", "sequencebird", 2, storyRow, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
 	AddWorldEnemy("Bird Boss Node", "birdnode", 2, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/birdnode_32x32.png"));
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/birdnode_32x32.png"));
 	AddBasicGroundWorldEnemy("Green Nexus", "nexus2", 2, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	//AddBasicGroundWorldEnemy("reversepoisonfrog", 2, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -438,7 +439,7 @@ void Session::RegisterW3Enemies()
 	AddBasicGroundWorldEnemy("Coyote Boss", "coyote", 3, storyRow, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	AddBasicGroundWorldEnemy("Sequence Coyote", "sequencecoyote", 3, storyRow, CreateEnemy<SequenceCoyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	AddWorldEnemy("Coyote Boss Node", "coyotenode", 3, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/coyotenode_32x32.png"));
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/coyotenode_32x32.png"));
 }
 
 void Session::RegisterW4Enemies()
@@ -491,7 +492,7 @@ void Session::RegisterW4Enemies()
 	AddBasicGroundWorldEnemy("Boss Tiger", "tiger", 4, storyRow, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
 	AddBasicGroundWorldEnemy("Sequence Tiger", "sequencetiger", 4, storyRow, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
 	AddWorldEnemy("Boss Tiger Node", "tigernode", 4, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/tigernode_32x32.png"));
 }
 
 void Session::RegisterW5Enemies()
@@ -536,7 +537,7 @@ void Session::RegisterW5Enemies()
 
 	//story
 	AddWorldEnemy("Gator Boss Node", "gatornode", 5, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/gatornode_32x32.png"));
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/gatornode_32x32.png"));
 	AddBasicAerialWorldEnemy("Gator Boss", "gator", 5, storyRow, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicAerialWorldEnemy("Sequence Gator", "sequencegator", 5, storyRow, CreateEnemy<SequenceGator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 }
@@ -590,7 +591,7 @@ void Session::RegisterW6Enemies()
 
 	//story
 	AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeletonnode_32x32.png"));
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/skeletonnode_32x32.png"));
 	AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, storyRow, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
@@ -621,7 +622,7 @@ void Session::RegisterW7Enemies()
 
 	//story
 	AddWorldEnemy("Grey Skeleton Boss Node", "greyskeletonnode", 7, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/skeleton2node_32x32.png"));
 	AddBasicAerialWorldEnemy("Grey Skeleton Boss", "greyskeleton", 7, storyRow, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 }
 

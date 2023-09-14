@@ -3669,7 +3669,8 @@ bool TerrainPolygon::IsInversePhaseType()
 
 bool TerrainPolygon::IsSometimesActiveType()
 {
-	return terrainWorldType == 3 && terrainVariation == 7;
+	//return terrainWorldType == 3 && terrainVariation == 7;
+	return terrainWorldType == 5 && terrainVariation == 7;
 }
 
 void TerrainPolygon::UpdateWaterType()
