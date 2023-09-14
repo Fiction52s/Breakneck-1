@@ -228,8 +228,8 @@ void LogItem::DissipateOnTouch()
 	action = DISSIPATE;
 	frame = 0;
 
-	sess->ActivateEffect(EffectLayer::IN_FRONT,
-		ts_explodeCreate, GetPosition(), true, 0, 12, 3, true);
+	/*sess->ActivateEffect(EffectLayer::IN_FRONT,
+		ts_explodeCreate, GetPosition(), true, 0, 12, 3, true);*/
 
 	HitboxesOff();
 	HurtboxesOff();

@@ -110,6 +110,7 @@ void GetShardSequence::UpdateState()
 			sess->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
 			sess->cam.SetRumble(10, 10, 90);
+			//sess->SetGameSessionState(GameSession::FROZEN);
 		}
 
 		int freezeFrame = 100;

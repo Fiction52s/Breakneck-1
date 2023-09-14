@@ -13,6 +13,8 @@ struct GetLogSequence : Sequence
 		Count
 	};
 
+
+	int freezeFrame;
 	GetLogSequence();
 	~GetLogSequence();
 	void UpdateState();
