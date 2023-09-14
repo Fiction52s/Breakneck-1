@@ -486,18 +486,18 @@ void AdventureFile::GetMapIndexes( int index, int &w, int &s, int &m)
 
 std::string AdventureFile::GetLeaderboardName(int mIndex)
 {
-	int w, s, m;
-	GetMapIndexes(mIndex, w, s, m);
-
-	return to_string(w+1) + "_" + to_string(s+1) + "_" + to_string(m+1);
+	//int w, s, m;
+	//GetMapIndexes(mIndex, w, s, m);
+	return GetMap(mIndex).name;//to_string(w+1) + "_" + to_string(s+1) + "_" + to_string(m+1);
 }
 
 std::string AdventureFile::GetLeaderboardDisplayName(int mIndex)
 {
-	int w, s, m;
+	/*int w, s, m;
 	GetMapIndexes(mIndex, w, s, m);
 
-	return to_string(w + 1) + "-" + to_string(s + 1) + "-" + to_string(m + 1);
+	return to_string(w + 1) + "-" + to_string(s + 1) + "-" + to_string(m + 1);*/
+	return GetMap(mIndex).name;
 }
 
 AdventureMapHeaderInfo &AdventureFile::GetMapHeaderInfo(int index)
