@@ -131,7 +131,7 @@ void TimerHUD::SetColor(sf::Color c)
 
 void TimerHUD::SetModifiedPlus(int frames)
 {
-	if (action == SHOW_MODIFIER)
+	if (action == SHOW_MODIFIER && timer->symbolType == ImageText::SYMBOL_PLUS)
 	{
 		frames += currNumFrames;
 	}
@@ -148,7 +148,7 @@ void TimerHUD::SetModifiedPlus(int frames)
 
 void TimerHUD::SetModifiedMinus(int frames)
 {
-	if (action == SHOW_MODIFIER)
+	if (action == SHOW_MODIFIER && timer->symbolType == ImageText::SYMBOL_MINUS)
 	{
 		frames += currNumFrames;
 	}
