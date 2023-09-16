@@ -383,7 +383,7 @@ void MapSector::SetXCenter(float x)
 	
 
 
-	levelNameText.setPosition(x, 100);
+	levelNameText.setPosition(x, mapPreviewHeight - 492/2 - 43);
 	
 
 
