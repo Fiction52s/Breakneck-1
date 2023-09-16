@@ -103,7 +103,7 @@ struct PowerItem : Enemy
 
 	bool CountsForPowerGate();
 
-	void SetSequenceIDsAndAddThemToAllSequencesVec();
+	void SetExtraIDsAndAddToVectors();
 
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);

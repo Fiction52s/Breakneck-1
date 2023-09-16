@@ -165,18 +165,42 @@ void Session::SetupSoundLists()
 		soundNodeList = parentGame->soundNodeList;
 		pauseSoundNodeList = parentGame->pauseSoundNodeList;
 
-		soundNodeList->Clear();
-		pauseSoundNodeList->Clear();
+		if (soundNodeList != NULL)
+		{
+			soundNodeList->Clear();
+		}
+		
+		if (pauseSoundNodeList != NULL)
+		{
+			pauseSoundNodeList->Clear();
+		}
 	}
 	else if (soundNodeList == NULL)
 	{
-		soundNodeList = new SoundNodeList(100);
-		pauseSoundNodeList = new SoundNodeList(100);
+		//parallel sessions shouldn't use sounds at all. making a pool for each session overloads the system resources.
+		if (IsParallelSession())
+		{
+
+		}
+		else
+		{
+			//want plenty of available sounds but don't overload the system. used to be 100 and 100 and that was too much
+			soundNodeList = new SoundNodeList(20);
+			pauseSoundNodeList = new SoundNodeList(20);
+		}
+		
 	}
 	else
 	{
-		soundNodeList->Clear();
-		pauseSoundNodeList->Clear();
+		if (soundNodeList != NULL)
+		{
+			soundNodeList->Clear();
+		}
+
+		if (pauseSoundNodeList != NULL)
+		{
+			pauseSoundNodeList->Clear();
+		}
 	}
 }
 
@@ -957,6 +981,13 @@ SoundInfo *Session::GetSound(const std::string &name)
 
 SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundInfo *si, bool loop)
 {
+	/*if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	{
+		return NULL;
+	}*/
+	if (soundNodeList == NULL)
+		return NULL;
+
 	sf::Rect<double> soundRect = screenRect;
 	double soundExtra = 300;
 	soundRect.left -= soundExtra;
@@ -976,16 +1007,27 @@ SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundInfo *si, bool loop)
 
 SoundNode *Session::ActivateSound(SoundInfo *si, bool loop)
 {
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	/*if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
 	{
 		return NULL;
-	}
+	}*/
+	if (soundNodeList == NULL)
+		return NULL;
 
 	return soundNodeList->ActivateSound(si, loop);
 }
 
 SoundNode *Session::ActivatePauseSound(SoundInfo *si, bool loop)
 {
+	//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
+	//{
+	//	return NULL;
+	//}
+	if (pauseSoundNodeList == NULL)
+	{
+		return NULL;
+	}
+
 	return pauseSoundNodeList->ActivateSound(si, loop);
 }
 
@@ -1919,8 +1961,8 @@ void Session::SetupWaterShader(sf::Shader &waterShader, int waterIndex )
 	waterShader.setUniform("u_slide", 0.f);
 	waterShader.setUniform("u_texture", *ts_water->texture);
 	waterShader.setUniform("Resolution", Vector2f(1920, 1080));
-	waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-	waterShader.setUniform("skyColor", ColorGL(Color::White));
+	//waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+	//waterShader.setUniform("skyColor", ColorGL(Color::White));
 
 	Color wColor = TerrainPolygon::GetWaterColor(waterIndex);
 	wColor.a = 200;
@@ -5362,8 +5404,11 @@ void Session::ActiveSequenceUpdate()
 				//	
 				//}
 
-				gameState = RUN;
-				switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
+				if (gameState != RUN)
+				{
+					gameState = RUN;
+					switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
+				}
 				activeSequence = NULL;
 			}
 		}
@@ -6817,7 +6862,10 @@ void Session::UpdateRunningTimerText()
 
 void Session::UpdateSoundNodeLists()
 {
-	soundNodeList->Update();
+	if (soundNodeList != NULL)
+	{
+		soundNodeList->Update();
+	}
 }
 
 void Session::UpdateScoreDisplay()

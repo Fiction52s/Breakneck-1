@@ -93,6 +93,7 @@ struct MapSector
 	sf::Sprite sectorShardIconSpr;
 	sf::Sprite lockSpr;
 
+	sf::Text levelNameText;
 	sf::Text bestTimeText;
 	sf::Text shardsCollectedText;
 	sf::Text levelsBeatenText;
@@ -346,7 +347,7 @@ struct WorldMap : TilesetManager
 	sf::Text currLevelTimeText;
 	sf::Text * text;
 
-	sf::Font font;
+	sf::Font &font;
 	std::string * localPaths;
 
 	sf::RectangleShape bgRect;

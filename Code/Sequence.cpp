@@ -727,6 +727,11 @@ void Sequence::Init()
 	SpecialInit();
 }
 
+void Sequence::SetIDs()
+{
+	SetIDAndAddToAllSequencesVec();
+}
+
 void Sequence::SetIDAndAddToAllSequencesVec()
 {
 	sequenceID = sess->allSequencesVec.size();

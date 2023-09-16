@@ -211,6 +211,7 @@ void ControlProfile::CopyTo(ControlProfile *cp)
 ControlProfileMenu::ControlProfileMenu( PlayerBox *pb)
 	:font( MainMenu::GetInstance()->arial ), topIndex( 0 ), action( A_SELECTED ), oldCurrIndex( 0 )
 {
+	//font = MainMenu::GetInstance()->arial;
 	playerBox = pb;
 
 	actionButtonGroup = new ActionButtonGroup(this);

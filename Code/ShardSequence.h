@@ -19,6 +19,7 @@ struct GetShardSequence : Sequence
 	ShapeEmitter *emitter;
 
 	sf::Vertex overlayRect[4];
+	int freezeFrame;
 
 	GetShardSequence();
 	~GetShardSequence();
@@ -26,6 +27,7 @@ struct GetShardSequence : Sequence
 	void UpdateState();
 	void ReturnToGame();
 	void SetupStates();
+	void SetIDs();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	int GetNumStoredBytes();

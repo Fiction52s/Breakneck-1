@@ -154,3 +154,22 @@ void ShipPickup::UpdateSprite()
 void ShipPickup::DebugDraw(sf::RenderTarget *target)
 {
 }
+
+int ShipPickup::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void ShipPickup::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void ShipPickup::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

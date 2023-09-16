@@ -131,6 +131,12 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	sectorNameText.setString("Sector " + to_string( index + 1 ));
 	sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
 
+	levelNameText.setFillColor(Color::White);
+	levelNameText.setCharacterSize(40);
+	levelNameText.setFont(mainMenu->arial);
+	//sectorNameText.setString("Sector " + to_string(index + 1));
+	//sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
+
 	bool blank = mapSASelector == NULL;
 	bool diffNumLevels = false;
 
@@ -301,6 +307,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 				target->draw(mapPreviewSpr);
 
+				target->draw( levelNameText );
+
 				target->draw(levelStatsBG, 4, sf::Quads);
 				target->draw(mapBestTimeIconSpr);
 				target->draw(bestTimeText);
@@ -375,7 +383,7 @@ void MapSector::SetXCenter(float x)
 	
 
 
-
+	levelNameText.setPosition(x, 100);
 	
 
 
@@ -587,7 +595,11 @@ void MapSector::UpdateLevelStats()
 	AdventureMapHeaderInfo &headerInfo = 
 		saveFile->adventureFile->GetMapHeaderInfo(level->index);
 
-	
+	string levelName = saveFile->adventureFile->GetMap(level->index).name;
+
+	levelNameText.setString(levelName);
+	auto lb = levelNameText.getLocalBounds();
+	levelNameText.setOrigin(lb.left + lb.width / 2, 0);
 
 	int totalNumShards = headerInfo.shardInfoVec.size();
 

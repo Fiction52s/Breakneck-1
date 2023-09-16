@@ -29,7 +29,7 @@ struct Barrier
 	void SetScene();
 	int GetCamPos();
 	void SetWarpSeq();
-	void SetSequenceIDsAndAddThemToAllSequencesVec();
+	void SetExtraIDsAndAddToVectors();
 	//void SetSequence( )
 	std::string name;
 	BarrierCallback *callback;

@@ -1186,7 +1186,7 @@ void EditSession::TestPlayerMode()
 	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		(*it)->Setup();
-		(*it)->SetSequenceIDsAndAddThemToAllSequencesVec();
+		(*it)->SetExtraIDsAndAddToVectors();
 	}
 
 	SetupAbsorbParticles();

@@ -451,9 +451,9 @@ void Shard::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
-void Shard::SetSequenceIDsAndAddThemToAllSequencesVec()
+void Shard::SetExtraIDsAndAddToVectors()
 {
-	shardSeq->SetIDAndAddToAllSequencesVec();
+	shardSeq->SetIDs();
 }
 
 ShardPopup::ShardPopup()

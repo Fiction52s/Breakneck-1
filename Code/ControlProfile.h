@@ -192,7 +192,7 @@ struct ControlProfileMenu
 	sf::Vertex buttonIconQuadsModifyControls[4 * 2];
 
 	std::list<ControlProfile*> profiles;
-	sf::Font font;
+	sf::Font &font;
 
 	VertSlider vSlider;
 

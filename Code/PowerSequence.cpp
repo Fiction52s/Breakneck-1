@@ -12,6 +12,8 @@ GetPowerSequence::GetPowerSequence()
 {
 	//sess = Session::GetSession();
 
+	freezeFrame = 100;
+
 	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
@@ -104,36 +106,58 @@ void GetPowerSequence::UpdateState()
 			sess->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
 			sess->cam.SetRumble(10, 10, 90);
+
+			player->UpdatePrePhysics();
+			player->UpdatePostPhysics();
+			sess->SetGameSessionState(GameSession::FROZEN);
 		}
 
-		int freezeFrame = 100;
+		if (seqData.frame < freezeFrame)
+		{
+			sess->UpdateCamera();
+
+			if (!geoGroup.Update())
+			{
+				//shouldn't happen
+				assert(0);
+				seqData.frame = stateLength[seqData.state] - 1;
+			}
+		}
 		if (seqData.frame == freezeFrame)
 		{
 			//cout << "freezing" << endl;
-			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}
 		else if (seqData.frame > freezeFrame)
 		{
-			if( PlayerPressedConfirm() )
+			if (PlayerPressedConfirm() && sess->GetGameSessionState() == GameSession::FROZEN)
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 			}
-		}
 
-		if (sess->GetGameSessionState() == GameSession::RUN)
-		{
-			if (!geoGroup.Update())
+			if (sess->GetGameSessionState() == GameSession::RUN)
 			{
-				seqData.frame = stateLength[seqData.state] - 1;
+				if (!geoGroup.Update())
+				{
+					seqData.frame = stateLength[seqData.state] - 1;
+				}
 			}
+
 		}
 	}
+	}
+
+	if (sess->GetGameSessionState() == GameSession::FROZEN)
+	{
+		player->UpdateAllEffects();
 	}
 	//++frame; //i think this skips frames
 
 	//emitter->Update();
-
+	if (seqData.frame >= freezeFrame && sess->GetGameSessionState() == GameSession::FROZEN)
+	{
+		powerPop->Update();
+	}
 }
 
 void GetPowerSequence::Draw(RenderTarget *target, EffectLayer layer)
@@ -148,15 +172,17 @@ void GetPowerSequence::Draw(RenderTarget *target, EffectLayer layer)
 	}
 	else
 	{
-		if (layer == EffectLayer::UI_FRONT)
+		if (seqData.frame >= freezeFrame && sess->GetGameSessionState() == GameSession::FROZEN)
 		{
-			if (target == sess->pauseTex)
+			if (layer == EffectLayer::UI_FRONT)
 			{
-				target->draw(overlayRect, 4, sf::Quads);
-				powerPop->Draw(target);
+				if (target == sess->pauseTex)
+				{
+					target->draw(overlayRect, 4, sf::Quads);
+					powerPop->Draw(target);
+				}
 			}
 		}
-
 	}
 }
 
@@ -183,6 +209,13 @@ void GetPowerSequence::Reset()
 		sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 	}
 
+}
+
+void GetPowerSequence::SetIDs()
+{
+	SetIDAndAddToAllSequencesVec();
+
+	emitter->SetIDAndAddToAllEmittersVec();
 }
 
 int GetPowerSequence::GetNumStoredBytes()

@@ -13,8 +13,14 @@ struct GetLogSequence : Sequence
 		Count
 	};
 
+	LogItem *log;
+	LogPopup *logPop;
+	MovingGeoGroup geoGroup;
+	ShapeEmitter *emitter;
 
+	sf::Vertex overlayRect[4];
 	int freezeFrame;
+
 	GetLogSequence();
 	~GetLogSequence();
 	void UpdateState();
@@ -23,13 +29,10 @@ struct GetLogSequence : Sequence
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
-
-	LogItem *log;
-	LogPopup *logPop;
-	MovingGeoGroup geoGroup;
-	ShapeEmitter *emitter;
-
-	sf::Vertex overlayRect[4];
+	void SetIDs();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

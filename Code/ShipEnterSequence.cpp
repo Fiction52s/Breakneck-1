@@ -153,7 +153,11 @@ void ShipEnterScene::UpdateState()
 	
 	
 	//sess->background->Update(sess->view.getCenter());
-	sess->background->SetExtra(Vector2f(shipEnterData.extraBackgroundOffset, 0));
+	if (sess->background != NULL)
+	{
+		sess->background->SetExtra(Vector2f(shipEnterData.extraBackgroundOffset, 0));
+	}
+	
 
 	if (seqData.frame >= 121)
 	{

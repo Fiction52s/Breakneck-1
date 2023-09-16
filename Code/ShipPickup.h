@@ -13,6 +13,14 @@ struct ShipPickup : Enemy
 		Count
 	};
 
+	//Rollback
+	struct MyData : StoredEnemyData
+	{
+	};
+
+	Tileset *ts;
+	MyData data;
+
 	ShipPickup(ActorParams *ap);
 	void ProcessState();
 	void UpdateEnemyPhysics();
@@ -23,7 +31,10 @@ struct ShipPickup : Enemy
 	void UpdateSpriteFromParams(ActorParams *ap);
 
 	void ResetEnemy();
-	Tileset *ts;
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 };
 

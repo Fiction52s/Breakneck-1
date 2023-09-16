@@ -72,6 +72,7 @@ using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
 
+#define TUTORIAL_PATH "Resources/Maps/EarlyAccess/Tutorial/tut1" + string(MAP_EXT)
 #define TIMESTEP (1.0 / 60.0)
 
 sf::RenderTexture *MainMenu::preScreenTexture = NULL;
@@ -733,7 +734,7 @@ MainMenu::MainMenu( bool p_steamOn)
 	menuOptionsBG.setPosition(textBase);
 	menuOptionsBG.setSize(Vector2f(600, (64 + textOptionSpacing) * M_Count));
 
-	soundNodeList = new SoundNodeList( 100 );
+	soundNodeList = new SoundNodeList( 20 );
 	soundNodeList->SetSoundVolume(config->GetData().soundVolume);
 	//soundNodeList->SetGlobalVolume(100);//config->GetData().soundVolume );
 
@@ -2747,7 +2748,7 @@ void MainMenu::HandleMenuMode()
 			if (adventureManager->saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
 			{
 				MatchParams mp;
-				mp.mapPath = "Resources/Maps/Beta3/tut1" + string(MAP_EXT);
+				mp.mapPath = TUTORIAL_PATH;//"Resources/Maps/EarlyAccess/tut1" + string(MAP_EXT);
 				//mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
 				//fix this soon!
 				mp.randSeed = time(0);
@@ -3340,7 +3341,7 @@ void MainMenu::HandleMenuMode()
 		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
 		{
 			MatchParams mp;
-			mp.mapPath = "Resources/Maps/Beta3/tut1" + string(MAP_EXT);
+			mp.mapPath = TUTORIAL_PATH;
 			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
 			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
 			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);

@@ -229,7 +229,11 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			gameState = PAUSE;
 			ActivatePauseSound(GetSound("pause_on"));
 			pauseMenu->SetTab(PauseMenu::PAUSE);
-			soundNodeList->Pause(true);
+			if (soundNodeList != NULL)
+			{
+				soundNodeList->Pause(true);
+			}
+			
 			return true;
 		}
 		else if (currInput.back && !prevInput.back) //|| CONTROLLERS.KeyboardButtonHeld(Keyboard::G))
@@ -237,7 +241,11 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			gameState = PAUSE;
 			pauseMenu->SetTab(PauseMenu::MAP);
 			ActivatePauseSound(GetSound("pause_on"));
-			soundNodeList->Pause(true);
+			if (soundNodeList != NULL)
+			{
+				soundNodeList->Pause(true);
+			}
+			
 			return true;
 		}
 	}
@@ -248,7 +256,10 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 		{
 			gameState = FEEDBACK_FORM;
 			mainMenu->adventureManager->feedbackForm->Activate(this);
-			soundNodeList->Pause(true);
+			if (soundNodeList != NULL)
+			{
+				soundNodeList->Pause(true);
+			}
 			MOUSE.SetControllersOn(false);
 			MOUSE.Show();
 			return true;
@@ -271,7 +282,10 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
 			ppm->ResetInviteDisplay();
 
-			soundNodeList->Pause(true);
+			if (soundNodeList != NULL)
+			{
+				soundNodeList->Pause(true);
+			}
 			return true;
 		}
 	}
@@ -623,8 +637,9 @@ std::string GameSession::GetBestReplayPath()
 		int w, s, m;
 		AdventureFile::GetMapIndexes(level->index, w, s, m);
 
+		
 		//ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << level->index << "_best" << REPLAY_EXT;
-		ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << w+1 << "_" << s+1 << "_" << m+1 << "_best" << REPLAY_EXT;
+		ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << saveFile->adventureFile->GetMap(level->index).name << "_" << myHash << "_best" << REPLAY_EXT;//<< w+1 << "_" << s+1 << "_" << m+1 << "_best" << REPLAY_EXT;
 		return ss.str();
 	}
 	else
@@ -743,7 +758,10 @@ bool GameSession::RunPreUpdate()
 			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
 			ppm->SetInviteDisplayPrepareToLeave();
 
-			soundNodeList->Pause(true);
+			if (soundNodeList != NULL)
+			{
+				soundNodeList->Pause(true);
+			}
 		}
 		/*ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
 		if (ppm->practiceInviteDisplay->IsTryingToStartMatch())
@@ -1767,8 +1785,15 @@ bool GameSession::Load()
 
 
 	const ConfigData &cd = mainMenu->config->GetData();
-	soundNodeList->SetSoundVolume(cd.soundVolume);
-	pauseSoundNodeList->SetSoundVolume(cd.soundVolume);
+
+	if (soundNodeList != NULL)
+	{
+		soundNodeList->SetSoundVolume(cd.soundVolume);
+	}
+	if (pauseSoundNodeList != NULL )
+	{
+		pauseSoundNodeList->SetSoundVolume(cd.soundVolume);
+	}
 
 	//SetupScoreDisplay();
 
@@ -2028,6 +2053,7 @@ bool GameSession::Load()
 	for( auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it )
 	{
 		(*it)->Setup();
+		(*it)->SetExtraIDsAndAddToVectors();
 	}
 
 	//need this after the whole level is setup in case of warp barriers
@@ -3035,7 +3061,11 @@ bool GameSession::RunMainLoopOnce()
 			{
 				gameState = GameSession::RUN;
 				ActivatePauseSound(GetSound("pause_off"));
-				soundNodeList->Pause(false);
+
+				if (soundNodeList != NULL)
+				{
+					soundNodeList->Pause(false);
+				}
 
 				//UpdateControllers();
 				if (IsReplayHUDOn())
@@ -3174,7 +3204,11 @@ bool GameSession::RunMainLoopOnce()
 			if (!result)
 			{
 				gameState = GameSession::RUN;
-				soundNodeList->Pause(false);
+
+				if (soundNodeList != NULL)
+				{
+					soundNodeList->Pause(false);
+				}
 			}
 
 			//RunFrameForParallelPractice(); //i guess I had double this here before? should only be one time obviously. shouldn't change anything though.
@@ -3258,7 +3292,11 @@ bool GameSession::RunMainLoopOnce()
 				MOUSE.Hide();
 
 				gameState = GameSession::RUN;
-				soundNodeList->Pause(false);
+
+				if (soundNodeList != NULL)
+				{
+					soundNodeList->Pause(false);
+				}
 			}
 
 			//RunFrameForParallelPractice();
@@ -3557,8 +3595,16 @@ int GameSession::Run()
 		}
 	}
 
-	soundNodeList->Reset();
-	pauseSoundNodeList->Reset();
+	if (soundNodeList != NULL)
+	{
+		soundNodeList->Reset();
+	}
+
+	if (pauseSoundNodeList != NULL)
+	{
+		pauseSoundNodeList->Reset();
+	}
+	
 	
 	if (parentGame == NULL)
 	{
@@ -4239,7 +4285,11 @@ void GameSession::RestartLevel()
 
 	if (parentGame == NULL)
 	{
-		soundNodeList->Clear();
+		if (soundNodeList != NULL)
+		{
+			soundNodeList->Clear();
+		}
+		
 	}
 
 	//DONT RESET totalGameFramesIncludingRespawns
@@ -4399,11 +4449,7 @@ void GameSession::RestartLevel()
 
 	activeSequence = NULL;
 
-	if (shipEnterScene != NULL)
-	{
-		shipEnterScene->Reset();
-		SetActiveSequence(shipEnterScene);
-	}
+	
 
 	gameMode->StartGame();
 	//later can have a setting for this if needed
@@ -4415,6 +4461,11 @@ void GameSession::RestartLevel()
 	else
 	{
 		activeSequence = NULL;
+		if (shipEnterScene != NULL)
+		{
+			shipEnterScene->Reset();
+			SetActiveSequence(shipEnterScene);
+		}
 	}
 
 	pokeTriangleScreenGroup->Reset();
@@ -5071,8 +5122,15 @@ void GameSession::CleanupDecor()
 
 void GameSession::UpdateSoundNodeLists()
 {
-	soundNodeList->Update();
-	pauseSoundNodeList->Update();
+	if (soundNodeList != NULL)
+	{
+		soundNodeList->Update();
+	}
+	
+	if (pauseSoundNodeList != NULL)
+	{
+		pauseSoundNodeList->Update();
+	}
 }
 
 void GameSession::RecGhostRecordFrame()

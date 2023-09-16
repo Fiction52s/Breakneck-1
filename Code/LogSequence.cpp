@@ -111,7 +111,6 @@ void GetLogSequence::UpdateState()
 			player->UpdatePrePhysics();
 			player->UpdatePostPhysics();
 			sess->SetGameSessionState(GameSession::FROZEN);
-			//sess->FreezePlayerAndEnemies(true);
 		}
 
 		if (seqData.frame < freezeFrame)
@@ -120,19 +119,19 @@ void GetLogSequence::UpdateState()
 
 			if (!geoGroup.Update())
 			{
+				//shouldn't happen
+				assert(0);
 				seqData.frame = stateLength[seqData.state] - 1;
 			}
 		}
 		if (seqData.frame == freezeFrame)
 		{
 			logPop->SetInfoInEditor();
-			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
-			//sess->FreezePlayerAndEnemies(false);
 		}
 		else if (seqData.frame > freezeFrame)
 		{
-			if (PlayerPressedConfirm())
+			if (PlayerPressedConfirm() && sess->GetGameSessionState() == GameSession::FROZEN)
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 			}
@@ -147,9 +146,10 @@ void GetLogSequence::UpdateState()
 
 		}
 
-		player->UpdateAllEffects();
-
-
+		if (sess->GetGameSessionState() == GameSession::FROZEN)
+		{
+			player->UpdateAllEffects();
+		}
 		/*if (sess->GetGameSessionState() == GameSession::RUN)
 		{
 			
@@ -226,4 +226,36 @@ void GetLogSequence::Reset()
 		sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 	}
 
+}
+
+void GetLogSequence::SetIDs()
+{
+	SetIDAndAddToAllSequencesVec();
+
+	emitter->SetIDAndAddToAllEmittersVec();
+}
+
+int GetLogSequence::GetNumStoredBytes()
+{
+	return sizeof(seqData) + geoGroup.GetNumStoredBytes();
+}
+
+//emitters already get stored
+void GetLogSequence::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &seqData, sizeof(seqData));
+	bytes += sizeof(seqData);
+
+	geoGroup.StoreBytes(bytes);
+	bytes += geoGroup.GetNumStoredBytes();
+}
+
+void GetLogSequence::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&seqData, bytes, sizeof(seqData));
+	bytes += sizeof(seqData);
+
+	geoGroup.SetFromBytes(bytes);
+
+	bytes += geoGroup.GetNumStoredBytes();
 }

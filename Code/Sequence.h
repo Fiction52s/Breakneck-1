@@ -275,6 +275,7 @@ struct Sequence
 	virtual void Reset();
 	bool StateIncrement();
 	//SetEnemyIDAndAddToAllEnemiesVec
+	virtual void SetIDs();
 	void SetIDAndAddToAllSequencesVec();
 	virtual int GetNumStoredBytes();
 	virtual void StoreBytes(unsigned char *bytes);

@@ -448,9 +448,9 @@ void PowerItem::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
-void PowerItem::SetSequenceIDsAndAddThemToAllSequencesVec()
+void PowerItem::SetExtraIDsAndAddToVectors()
 {
-	powerSeq->SetIDAndAddToAllSequencesVec();
+	powerSeq->SetIDs();//SetIDAndAddToAllSequencesVec();
 }
 
 PowerPopup::PowerPopup()

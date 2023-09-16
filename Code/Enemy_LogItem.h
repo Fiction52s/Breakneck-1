@@ -67,7 +67,7 @@ struct LogItem : Enemy
 	void Launch();
 	void DirectKill();
 
-	void SetSequenceIDsAndAddThemToAllSequencesVec();
+	void SetExtraIDsAndAddToVectors();
 
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);

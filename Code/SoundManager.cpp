@@ -27,7 +27,8 @@ void SoundNode::Play(SoundInfo *p_info, int p_volume, bool p_loop)
 
 void SoundNode::Stop()
 {
-	sound.stop();
+	if( info != NULL )
+		sound.stop();
 	info = NULL;
 	volume = -1;
 	loop = false;

@@ -4046,6 +4046,13 @@ Actor::~Actor()
 
 	delete gravityDecreaserOnRingGroup;
 	delete gravityDecreaserOffRingGroup;
+
+	delete gravityIncreaserTrailEmitter;
+	delete gravityDecreaserTrailEmitter;
+	delete momentumBoosterTrailEmitter;
+	delete homingBoosterTrailEmitter;
+	delete antiTimeSlowBoosterTrailEmitter;
+	delete freeFlightBoosterTrailEmitter;
 	
 	delete sprite;
 

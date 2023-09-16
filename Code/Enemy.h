@@ -253,7 +253,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		V2d playerOffset,
 		int index = 0);
 	V2d PlayerDir(int index = 0);
-	virtual void SetSequenceIDsAndAddThemToAllSequencesVec();
+	virtual void SetExtraIDsAndAddToVectors();
 	
 	bool IsGoalType();
 	virtual void AddToGame();

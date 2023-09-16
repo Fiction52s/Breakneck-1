@@ -422,9 +422,9 @@ void LogItem::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
-void LogItem::SetSequenceIDsAndAddThemToAllSequencesVec()
+void LogItem::SetExtraIDsAndAddToVectors()
 {
-	logSeq->SetIDAndAddToAllSequencesVec();
+	logSeq->SetIDs();//SetIDAndAddToAllSequencesVec();
 }
 
 LogPopup::LogPopup()
@@ -503,7 +503,11 @@ void LogPopup::Reset()
 void LogPopup::Update()
 {
 	tutBox->UpdateButtonIconsWhenControllerIsChanged();
-	logPreview->Update();
+
+	if (logPreview != NULL)
+	{
+		logPreview->Update();
+	}
 
 	++frame;
 }
@@ -548,7 +552,11 @@ void LogPopup::SetTopLeft(sf::Vector2f &pos)
 
 	SetRectTopLeft(previewBGQuad, previewBGWidth, previewBGHeight, previewQuadPos);
 
-	logPreview->SetCenter(previewQuadPos + Vector2f(previewBGWidth / 2, previewBGHeight / 2));
+	if (logPreview != NULL)
+	{
+		logPreview->SetCenter(previewQuadPos + Vector2f(previewBGWidth / 2, previewBGHeight / 2));
+	}
+	
 
 	SetRectTopLeft(bgQuad, width, height, topLeft);
 	SetRectTopLeft(topBorderQuad, width, borderHeight, topLeft + Vector2f(0, nameHeight));
@@ -576,7 +584,11 @@ void LogPopup::Draw(RenderTarget *target)
 	target->draw(bgQuad, 4, sf::Quads);
 	target->draw(topBorderQuad, 4, sf::Quads);
 	
-	logPreview->Draw(target);
+	if (logPreview != NULL)
+	{
+		logPreview->Draw(target);
+	}
+	
 
 	target->draw(logSpr);
 	target->draw(nameText);

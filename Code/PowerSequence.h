@@ -17,7 +17,7 @@ struct GetPowerSequence : Sequence
 	PowerPopup *powerPop;
 	MovingGeoGroup geoGroup;
 	ShapeEmitter *emitter;
-
+	int freezeFrame;
 	sf::Vertex overlayRect[4];
 
 	GetPowerSequence();
@@ -28,6 +28,7 @@ struct GetPowerSequence : Sequence
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
+	void SetIDs();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

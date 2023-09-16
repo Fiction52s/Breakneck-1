@@ -109,7 +109,7 @@ struct Shard : Enemy
 	//MovingRing *mRing;
 	void DirectKill();
 
-	void SetSequenceIDsAndAddThemToAllSequencesVec();
+	void SetExtraIDsAndAddToVectors();
 
 	static int GetShardTypeFromWorldAndIndex(int w, int li);
 	static int GetNumShardsTotal();

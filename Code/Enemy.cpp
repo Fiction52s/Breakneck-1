@@ -54,7 +54,7 @@ bool Enemy::IsGoalType()
 		|| type == EN_NEXUS;
 }
 
-void Enemy::SetSequenceIDsAndAddThemToAllSequencesVec()
+void Enemy::SetExtraIDsAndAddToVectors()
 {
 	//empty by default since no sequences are owned
 }
