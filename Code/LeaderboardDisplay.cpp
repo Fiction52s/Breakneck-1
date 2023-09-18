@@ -8,6 +8,7 @@
 #include <sstream>
 #include "UIController.h"
 #include "GameSession.h"
+#include "ReplayHUD.h"
 
 using namespace std;
 using namespace sf;
@@ -547,7 +548,7 @@ void LeaderboardDisplay::PopulateRows()
 	}
 }
 
-void LeaderboardDisplay::Update()
+void LeaderboardDisplay::Update( ControllerState prevInput, ControllerState currInput )
 {
 	if (action == A_HIDDEN)
 		return;
@@ -619,12 +620,7 @@ void LeaderboardDisplay::Update()
 		}
 	}
 
-	Session *sess = Session::GetSession();
-
-	ControllerState currState = sess->GetCurrInput(0);
-	ControllerState prevState = sess->GetPrevInput(0);
-
-	if (currState.start && !prevState.start)
+	if (currInput.start && !prevInput.start)
 	{
 		Hide();
 	}
@@ -754,6 +750,8 @@ void LeaderboardDisplay::AddGhostsToVec(std::vector<ReplayGhost*> &vec, PlayerRe
 			if ((*it).playerReplayManager == ignore)
 				continue;
 
+			(*it).playerReplayManager->replayHUD->SetSession();
+			(*it).playerReplayManager->SetPlayers();
 			(*it).playerReplayManager->AddGhostsToVec(vec, IsUsingPlayerGhostSkins());
 			(*it).playerReplayManager->ghostsActive = true;
 		}

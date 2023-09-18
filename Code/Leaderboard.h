@@ -7,6 +7,7 @@
 #include "GUI.h"
 #include "RemoteStorageManager.h"
 #include <vector>
+#include "Input.h"
 
 struct PlayerReplayManager;
 struct ReplayGhost;
@@ -275,7 +276,7 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	void Start();
 	void SetTopLeft(const sf::Vector2f &p_pos);
 	void HandleEvent(sf::Event ev);
-	void Update();
+	void Update( ControllerState prevInput, ControllerState currInput );
 	void UploadScore(int score, const std::string &replayPath, bool origCompatible);
 	void Show();
 	void Hide();

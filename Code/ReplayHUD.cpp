@@ -9,21 +9,17 @@ using namespace sf;
 
 ReplayHUD::ReplayHUD()
 {
-	sess = Session::GetSession();
+	
 	//game = GameSession::GetSession();
 	//SetRectTopLeft( bgQuad, )
 	goingToNextFrame = false;
 
-	Session *sess = Session::GetSession();
+	sess = NULL;
+	//Session *sess = Session::GetSession();
 
 	MainMenu *mainMenu = MainMenu::GetInstance();
 
-	ts_buttons = sess->GetButtonIconTileset(0);
-
-	int cType = sess->controllerStates[0]->GetControllerType();
-
-	SetRectSubRect(buttonIconQuads, mainMenu->GetButtonIconTileForMenu(cType, XBOX_A));
-	SetRectSubRect(buttonIconQuads + 4, mainMenu->GetButtonIconTileForMenu(cType, XBOX_X));
+	SetSession();
 
 	//sf::Text playText;
 	//sf::Text advanceFrameText;
@@ -54,6 +50,22 @@ ReplayHUD::~ReplayHUD()
 void ReplayHUD::Reset()
 {
 	goingToNextFrame = false;
+}
+
+void ReplayHUD::SetSession()
+{
+	if (sess != NULL)
+		return;
+
+	sess = Session::GetSession();
+	if (sess != NULL)
+	{
+		MainMenu *mainMenu = MainMenu::GetInstance();
+		ts_buttons = sess->GetButtonIconTileset(0);
+		int cType = sess->controllerStates[0]->GetControllerType();
+		SetRectSubRect(buttonIconQuads, mainMenu->GetButtonIconTileForMenu(cType, XBOX_A));
+		SetRectSubRect(buttonIconQuads + 4, mainMenu->GetButtonIconTileForMenu(cType, XBOX_X));
+	}
 }
 
 void ReplayHUD::SetTopLeft(sf::Vector2f pos)

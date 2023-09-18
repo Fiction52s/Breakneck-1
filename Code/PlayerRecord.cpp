@@ -419,10 +419,10 @@ void PlayerRecordHeader::Write(std::ofstream &of)
 	bLogField.SaveBinary(of);
 }
 
-PlayerReplayer::PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager)
+PlayerReplayer::PlayerReplayer(PlayerReplayManager *p_replayManager)
 {
 	replayManager = p_replayManager;
-	player = p;
+	player = NULL;
 	replayGhost = new ReplayGhost(this);
 	replayPlayer = new ReplayPlayer(this);
 }
@@ -431,6 +431,16 @@ PlayerReplayer::~PlayerReplayer()
 {
 	delete replayGhost;
 	delete replayPlayer;
+}
+
+void PlayerReplayer::SetPlayer(Actor *p)
+{
+	if (player == NULL)
+	{
+		player = p;
+
+		assert(player != NULL);
+	}
 }
 
 void PlayerReplayer::SetDisplayName(const std::string &n)
@@ -629,22 +639,7 @@ bool PlayerReplayManager::LoadFromFile(const boost::filesystem::path &fileName)
 	is.open(fileName.string(), ios::binary);
 	if (is.is_open())
 	{
-		//init = true;
-		//frame = 0;
-
 		LoadFromStream(is);
-
-		/*header.Read(is);
-
-		repVec.resize(header.numberOfPlayers);
-
-		Session *sess = Session::GetSession();
-
-		for (int i = 0; i < header.numberOfPlayers; ++i)
-		{
-			repVec[i] = new PlayerReplayer(sess->GetPlayer(i), this);
-			repVec[i]->Read(is);
-		}*/
 
 		is.close();
 		return true;
@@ -659,15 +654,30 @@ bool PlayerReplayManager::LoadFromStream( std::istream &is)
 
 	repVec.resize(header.numberOfPlayers);
 
-	Session *sess = Session::GetSession();
-
 	for (int i = 0; i < header.numberOfPlayers; ++i)
 	{
-		repVec[i] = new PlayerReplayer(sess->GetPlayer(i), this);
+		repVec[i] = new PlayerReplayer(this);
 		repVec[i]->Read(is);
 	}
 
+	Session *sess = Session::GetSession();
+	if (sess != NULL)
+	{
+		SetPlayers();
+	}
+
 	return true;
+}
+
+void PlayerReplayManager::SetPlayers()
+{
+	Session *sess = Session::GetSession();
+
+	assert(sess != NULL);
+	for (int i = 0; i < header.numberOfPlayers; ++i)
+	{
+		repVec[i]->SetPlayer(sess->GetPlayer(i));
+	}
 }
 
 void PlayerReplayManager::AddGhostsToVec(std::vector<ReplayGhost*> &ghosts, bool useReplaySkins)

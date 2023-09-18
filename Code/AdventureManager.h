@@ -46,6 +46,7 @@ struct AdventureManager
 	bool CompleteCurrentMap(GameSession *game );
 	void DrawWorldMap(sf::RenderTarget *target);
 	void SetBoards(GameSession *game );
+	void SetBoards(int levelIndex, const std::string &myHash );
 	void CreateWorldMap();
 	void CreateWorldMapOnLevel(int w, int s, int m);
 	void CreateWorldMapOnCurrLevel();
@@ -61,6 +62,10 @@ struct AdventureManager
 	std::string GetLeaderboardNameAnyPowers(GameSession *game);
 	std::string GetLeaderboardNameOriginalPowers(GameSession *game);
 	std::string GetLeaderboardDisplayName(GameSession *game);
+
+	std::string GetLeaderboardNameAnyPowers(int levelIndex, const std::string &myHash );
+	std::string GetLeaderboardNameOriginalPowers(int levelIndex, const std::string &myHash);
+	std::string GetLeaderboardDisplayName(int levelIndex);
 	
 };
 

@@ -156,12 +156,7 @@ void MapSelector::Draw(sf::RenderTarget *target)
 {
 	FocusedSector()->Draw(target);
 
-	target->draw(rockSprite);
-
-	if (kinState != K_HIDE)
-	{
-		target->draw(kinSprite, &playerSkinShader.pShader);
-	}
+	
 
 	//recordGhostMenu->Draw(target);
 }

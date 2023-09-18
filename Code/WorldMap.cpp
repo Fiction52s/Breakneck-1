@@ -16,6 +16,7 @@
 #include "WorldMapShip.h"
 #include "AdventureManager.h"
 #include "NetplayManager.h"
+#include "Leaderboard.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -465,6 +466,15 @@ void WorldMap::SetToLevel(int selColony, int sec, int m)
 	Update();
 
 	//CurrSelector()->FocusedSector();
+}
+
+void WorldMap::HandleEvent(sf::Event ev)
+{
+	MapSector *currSector = CurrSelector()->FocusedSector();
+	if (currSector->state == MapSector::LEADERBOARD)
+	{
+		adventureManager->leaderboard->HandleEvent(ev);
+	}
 }
 
 void WorldMap::Update()

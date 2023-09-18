@@ -1,9 +1,13 @@
+#include "globals.h"
 #include "WorldMap.h"
 #include "MainMenu.h"
 #include "Background.h"
 #include "VectorMath.h"
 #include "Enemy_Shard.h"
 #include "AdventureManager.h"
+#include "Leaderboard.h"
+#include "md5.h"
+#include "UIMouse.h"
 
 using namespace std;
 using namespace sf;
@@ -123,7 +127,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	
 	string worldStr = to_string(sec->worldIndex + 1);
 	string secStr = to_string(index + 1);
-	bgName = "w" + worldStr + "_0" + secStr;
+	bgName = "w" + worldStr + "_01";// + secStr;
 
 	sectorNameText.setFillColor(Color::White);
 	sectorNameText.setCharacterSize(60);
@@ -168,6 +172,9 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads+4, 0, true );
 
 	mapPreviewHeight = 500 + 50;
+
+	bestTimeGhostOn = false;
+	bestReplayOn = false;
 
 	//mapPreviewSpr.setPosition(960, 500);
 
@@ -329,6 +336,28 @@ void MapSector::Draw(sf::RenderTarget *target)
 				target->draw(levelSelectOptionButtonQuads, numOptionsShown * 4, sf::Quads, ts_buttons->texture);
 
 				target->draw(levelNumberQuads, numLevels * 4, sf::Quads, ts_levelSelectNumbers->texture);
+
+				target->draw(ms->rockSprite);
+
+				if (ms->kinState != MapSelector::K_HIDE)
+				{
+					target->draw(ms->kinSprite, &ms->playerSkinShader.pShader);
+				}
+
+				if (state == LEADERBOARD)
+				{
+					auto *pauseTex = ms->mainMenu->pauseTexture;
+					pauseTex->clear(Color::Transparent);
+					AdventureManager *adventureManager = ms->mainMenu->adventureManager;
+					adventureManager->leaderboard->Draw(pauseTex);
+
+					pauseTex->display();
+					Sprite pauseMenuSprite;
+					pauseMenuSprite.setTexture(pauseTex->getTexture());
+					pauseMenuSprite.setPosition(0, 0);//960 / 2, 540 / 2);//(1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2)
+					target->draw(pauseMenuSprite);
+
+				}
 			}
 		}
 	}
@@ -339,6 +368,13 @@ void MapSector::Draw(sf::RenderTarget *target)
 		target->draw(endSpr);
 		target->draw(sectorArrowQuads, 2 * 4, sf::Quads, ts_sectorArrows->texture);
 		target->draw(lockSpr);
+
+		target->draw(ms->rockSprite);
+
+		if (ms->kinState != MapSelector::K_HIDE)
+		{
+			target->draw(ms->kinSprite, &ms->playerSkinShader.pShader);
+		}
 	}
 }
 
@@ -758,6 +794,68 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 
 	UpdateNodes();
 
+	if (state == NORMAL)
+	{
+		if (controllerInput->ButtonPressed_Start())
+		{
+			state = LEADERBOARD;
+
+			AdventureManager *adventureManager = ms->mainMenu->adventureManager;
+
+			Level *level = GetSelectedLevel();
+
+			string filePathStr = string("Resources\\Maps\\") + saveFile->adventureFile->GetMap(level->index).GetFilePath() + string(MAP_EXT);
+
+			string myHash = md5file(filePathStr);
+
+			adventureManager->SetBoards(level->index, myHash);
+
+			adventureManager->leaderboard->SetAnyPowersMode(true);
+			/*if (originalProgressionCompatible)
+			{
+				adventureManager->leaderboard->SetAnyPowersMode(false);
+			}
+			else
+			{
+				adventureManager->leaderboard->SetAnyPowersMode(true);
+			}*/
+
+			adventureManager->leaderboard->Start();//adventureManager->GetLeaderboardNameOriginalPowers(this), 
+												   //adventureManager->GetLeaderboardNameAnyPowers(this));
+		}
+	}
+	else if (state == LEADERBOARD)
+	{
+		if (controllerInput->ButtonPressed_Start())
+		{
+			state = NORMAL;
+			ms->mainMenu->adventureManager->leaderboard->Hide();
+		}
+		else
+		{
+			ms->mainMenu->adventureManager->leaderboard->Update( controllerInput->GetPrevState(), controllerInput->GetCurrState() );
+
+			if (ms->mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
+			{
+				state = LEADERBOARD_STARTING;
+				//currLevel->TryStartLeaderboardReplay(adventureManager->leaderboard->replayChosen);
+				//ms->mainMenu->adventureManager->leaderboard->Hide();
+
+				//this is because the Hide() call for leaderboard happens in the other thread while loading, so the mouse won't disappear
+				MOUSE.Hide();
+				MOUSE.SetControllersOn(false);
+				return false;
+			}
+			else if (ms->mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
+			{
+				state = LEADERBOARD_STARTING;
+				MOUSE.Hide();
+				MOUSE.SetControllersOn(false);
+				return false;
+			}
+		}
+	}
+
 	if (state == NORMAL || state == COMPLETE 
 		|| (state == LEVELJUSTCOMPLETE && stateFrame >= 3 * 7))
 	{
@@ -823,7 +921,7 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 			return false;
 		}
 	}
-
+	
 	//UpdateHighlight();
 
 	if (state == LEVELJUSTCOMPLETE)//unlockedIndex != -1)

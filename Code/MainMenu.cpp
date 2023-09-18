@@ -2041,8 +2041,10 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	gameRunType = GameRunType::GRT_ADVENTURE;
 	SetModeAdventureLoadingMap(wIndex);
 
-
-	adventureManager->leaderboard->Reset();	
+	if (adventureManager->leaderboard->IsHidden())
+	{
+		adventureManager->leaderboard->Reset();
+	}
 
 	MatchParams mp;
 	mp.saveFile = adventureManager->currSaveFile;
@@ -2064,6 +2066,14 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	currLevel->SetBestGhostOn(loadParams.bestTimeGhostOn);
 	currLevel->SetBestReplayOn(loadParams.bestReplayOn);
 	currLevel->level = loadParams.level;
+
+	/*if (adventureManager->leaderboard->IsTryingToStartReplay())
+	{
+		currLevel->TryStartLeaderboardReplay(adventureManager->leaderboard->replayChosen);
+		adventureManager->leaderboard->Hide();
+	}*/
+
+	
 
 	adventureManager->currLevel = currLevel;
 
@@ -2267,6 +2277,8 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
+			adventureManager->worldMap->HandleEvent(ev);
+
 			switch (ev.type)
 			{
 			case sf::Event::KeyPressed:
@@ -2481,6 +2493,8 @@ void MainMenu::HandleMenuMode()
 			//currFile->Save();
 			break;
 		}
+
+		adventureManager->leaderboard->Reset();
 
 		if (result == GameSession::GR_EXIT_PRACTICE_TO_RACE)
 		{

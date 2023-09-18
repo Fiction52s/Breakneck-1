@@ -157,8 +157,9 @@ struct PlayerReplayer
 
 	Actor *player;
 
-	PlayerReplayer(Actor *p, PlayerReplayManager *p_replayManager);
+	PlayerReplayer(PlayerReplayManager *p_replayManager);
 	~PlayerReplayer();
+	void SetPlayer(Actor *p);
 	void SetGhostSkin(int ind);
 	int GetFramesBeforeGoal();
 	void SetDisplayName(const std::string &n);
@@ -184,6 +185,7 @@ struct PlayerReplayManager
 	PlayerReplayer *GetReplayer(int pIndex);
 	void Reset();
 	void SetToStart();
+	void SetPlayers();
 	bool LoadFromFile(const boost::filesystem::path &fileName);
 	bool LoadFromStream(std::istream &is);
 	void AddGhostsToVec(std::vector<ReplayGhost*> &vec, bool useReplaySkins );

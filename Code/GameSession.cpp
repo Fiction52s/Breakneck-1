@@ -84,6 +84,8 @@
 #include "UIController.h"
 #include "PracticeInviteDisplay.h"
 #include "FeedbackForm.h"
+#include "Leaderboard.h"
+#include "ReplayHUD.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -1918,6 +1920,7 @@ bool GameSession::Load()
 
 	SetupPlayers();
 
+
 	
 
 	
@@ -3415,11 +3418,6 @@ bool GameSession::RunMainLoopOnce()
 
 
 		DrawLeaderboard(pauseTex);
-		/*if (mainMenu->adventureManager != NULL)
-		{
-			mainMenu->adventureManager->leaderboard->Draw( )
-		}*/
-		//->Draw(pauseTex);
 
 		pauseTex->display();
 		Sprite pauseMenuSprite;
@@ -3551,6 +3549,39 @@ int GameSession::Run()
 	if (parentGame != NULL && parentGame->bonusHandler != NULL)
 	{
 		parentGame->bonusHandler->InitBonus();
+	}
+
+	if (mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
+	{
+		PlayerReplayManager *prm = mainMenu->adventureManager->leaderboard->replayChosen;
+		//TryStartLeaderboardReplay(mainMenu->adventureManager->leaderboard->replayChosen);
+		CleanupReplaysAndGhosts();
+
+		bestTimeGhostOn = true; //for desyncs
+		bestReplayOn = true;
+
+		activePlayerReplayManagers.push_back(prm);
+		prm->replayHUD->SetSession();
+
+		prm->SetPlayers();
+
+		prm->AddGhostsToVec(replayGhosts, mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins());
+		prm->replaysActive = bestReplayOn;
+		prm->ghostsActive = bestTimeGhostOn;
+
+		prm->Reset();
+
+		bool res = AddGhostsForReplay(prm);
+
+		mainMenu->adventureManager->leaderboard->Hide();
+	}
+	else if (mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
+	{
+		CleanupReplaysAndGhosts();
+
+		AddGhosts();
+
+		mainMenu->adventureManager->leaderboard->Hide();
 	}
 
 	quit = false;
@@ -4575,7 +4606,9 @@ bool GameSession::LeaderboardGameModeUpdate()
 
 		if (mainMenu->adventureManager != NULL)
 		{
-			mainMenu->adventureManager->leaderboard->Update();
+			Session *sess = Session::GetSession();
+
+			mainMenu->adventureManager->leaderboard->Update(GetPrevInput(0), GetCurrInput(0));
 
 			if (mainMenu->adventureManager->leaderboard->IsHidden())
 			{
@@ -5352,7 +5385,6 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 }
 
 
-#include "Leaderboard.h"
 void GameSession::DrawLeaderboard(sf::RenderTarget *target)
 {
 	AdventureManager *adventureManager = mainMenu->adventureManager;
@@ -5440,6 +5472,9 @@ bool GameSession::TryStartLeaderboardReplay(PlayerReplayManager *prm)
 	bestReplayOn = true;
 
 	activePlayerReplayManagers.push_back(prm);
+	prm->replayHUD->SetSession();
+
+	prm->SetPlayers();
 
 	prm->AddGhostsToVec(replayGhosts, mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins());
 	prm->replaysActive = bestReplayOn;
@@ -5575,6 +5610,11 @@ bool GameSession::AddGhosts()
 
 	if (useLeaderboardGhosts)
 	{
+		/*for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
+		{
+			(*it)->SetPlayers();
+		}*/
+
 		mainMenu->adventureManager->leaderboard->AddGhostsToVec(replayGhosts);
 		mainMenu->adventureManager->leaderboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers);
 		mainMenu->adventureManager->leaderboard->SetActive(false, bestTimeGhostOn);

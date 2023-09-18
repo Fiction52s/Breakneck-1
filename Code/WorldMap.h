@@ -38,7 +38,9 @@ struct MapSector
 		LEVELCOMPLETEDWAIT,
 		JUSTCOMPLETE,
 		EXPLODECOMPLETE,
-		COMPLETE
+		COMPLETE,
+		LEADERBOARD,
+		LEADERBOARD_STARTING,
 	};
 
 
@@ -380,6 +382,7 @@ struct WorldMap : TilesetManager
 	sf::Vector2f GetColonyCenter(int index);
 	void SetToColony(int selColony);
 	void SetToLevel(int selColony, int sec, int m);
+	void HandleEvent(sf::Event ev );
 private:
 	void SetupAsteroids();
 	void LoadAdventure(const std::string &adventureName);

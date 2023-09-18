@@ -321,6 +321,21 @@ std::string AdventureManager::GetLeaderboardDisplayName(GameSession *game)
 	return adventureFile.GetLeaderboardDisplayName(game->level->index);
 }
 
+std::string AdventureManager::GetLeaderboardNameAnyPowers(int levelIndex, const std::string &myHash)
+{
+	return adventureFile.GetLeaderboardName(levelIndex) + "_" + myHash;
+}
+
+std::string AdventureManager::GetLeaderboardNameOriginalPowers(int levelIndex, const std::string &myHash)
+{
+	return adventureFile.GetLeaderboardName(levelIndex) + "_orig_" + myHash;
+}
+
+std::string AdventureManager::GetLeaderboardDisplayName(int levelIndex)
+{
+	return adventureFile.GetLeaderboardDisplayName(levelIndex);
+}
+
 void AdventureManager::DrawWorldMap(sf::RenderTarget *target)
 {
 	worldMap->Draw(target);
@@ -332,5 +347,13 @@ void AdventureManager::SetBoards(GameSession *game)
 
 	leaderboard->SetBoards( GetLeaderboardDisplayName( game ), GetLeaderboardNameOriginalPowers( game ), 
 		GetLeaderboardNameAnyPowers( game ));
+}
+
+void AdventureManager::SetBoards(int levelIndex, const std::string &myHash )
+{
+	assert(leaderboard != NULL);
+
+	leaderboard->SetBoards(GetLeaderboardDisplayName(levelIndex), GetLeaderboardNameOriginalPowers(levelIndex, myHash),
+		GetLeaderboardNameAnyPowers(levelIndex, myHash));
 }
 

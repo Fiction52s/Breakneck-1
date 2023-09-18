@@ -23,6 +23,7 @@ struct ReplayHUD
 	~ReplayHUD();
 
 	void SetTopLeft(sf::Vector2f pos);
+	void SetSession();
 	void Reset();
 	void Update();
 	bool IsGoingToNextFrame();
