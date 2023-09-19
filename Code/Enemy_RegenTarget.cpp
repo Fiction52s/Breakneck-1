@@ -166,7 +166,7 @@ void RegenTarget::UpdateSprite()
 
 
 	ts->SetSubRect(sprite, tile);
-	sprite.setScale(3, 3);
+	//sprite.setScale(3, 3);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 }

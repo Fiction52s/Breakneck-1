@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "MainMenu.h"
 #include "MusicPlayer.h"
+#include "Session.h"
 
 using namespace sf;
 using namespace std;
@@ -181,6 +182,19 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 	mainMenu->musicPlayer->Update();
 	mainMenu->musicPlayer->UpdateVolume();
 	mainMenu->soundNodeList->SetSoundVolume(sVol);
+
+	Session *sess = Session::GetSession();
+	if (sess != NULL)
+	{
+		if (sess->soundNodeList != NULL)
+		{
+			sess->soundNodeList->SetSoundVolume(sVol);
+		}
+		if (sess->pauseSoundNodeList != NULL)
+		{
+			sess->pauseSoundNodeList->SetSoundVolume(sVol);
+		}
+	}
 
 	if (windowNeedsReset)
 	{

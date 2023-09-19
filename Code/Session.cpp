@@ -7043,9 +7043,7 @@ bool Session::RunGameModeUpdate()
 			UpdatePhysics();
 		}
 
-		//RecordReplayEnemies();
-
-		if (!playerAndEnemiesFrozen)
+		/*if (!playerAndEnemiesFrozen)
 		{
 			if (!playerFrozen)
 			{
@@ -7057,13 +7055,6 @@ bool Session::RunGameModeUpdate()
 
 		UpdateReplayGhostSprites();
 
-		//old location
-		/*if (gameMode->CheckVictoryConditions())
-		{
-			gameMode->EndGame();
-			break;
-		}*/
-
 		if (!RunPostUpdate())
 		{
 			break;
@@ -7074,6 +7065,28 @@ bool Session::RunGameModeUpdate()
 		if (!playerAndEnemiesFrozen)
 		{
 			UpdateEnemiesPostPhysics();
+		}*/
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPostPhysics();
+		}
+
+		if (!playerAndEnemiesFrozen)
+		{
+			if (!playerFrozen)
+			{
+				UpdatePlayersPostPhysics();
+			}
+		}
+		UpdatePlayerWireQuads();
+
+		RecGhostRecordFrame();
+		UpdateReplayGhostSprites();
+
+		if (!RunPostUpdate())
+		{
+			break;
 		}
 
 		UpdateGates();

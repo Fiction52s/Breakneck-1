@@ -19,6 +19,7 @@
 #include "PauseMap.h"
 #include "UIMouse.h"
 #include "UIController.h"
+#include "MusicPlayer.h"
 //#include "Actor.h"
 
 using namespace sf;
@@ -625,6 +626,7 @@ void PauseMenu::ApplyVideoSettings()
 	
 }
 
+//depreciated for gamesettingsscreen
 void PauseMenu::ApplySoundSettings()
 {
 	/* masterVolume 
@@ -663,21 +665,34 @@ void PauseMenu::ApplySoundSettings()
 	else if( enableMusic == "off" )
 		enMusic = false;
 
+	Session *sess = Session::GetSession();
 
-	//owner->soundNodeList->SetGlobalVolume( master );
-	//mainMenu->soundNodeList->SetGlobalVolume( master );
+	if (sess != NULL)
+	{
+		if (sess->soundNodeList != NULL)
+		{
+			sess->soundNodeList->SetSoundVolume(sound);
+		}
+		if (sess->pauseSoundNodeList != NULL)
+		{
+			sess->pauseSoundNodeList->SetSoundVolume(sound);
+		}
+	}
 
-	//owner->soundNodeList->SetSoundsEnable( enSounds );
-	//mainMenu->soundNodeList->SetSoundsEnable( enSounds );
+	ConfigData cd = mainMenu->config->GetData();
 
-	//owner->soundNodeList->SetMusicEnable( enMusic );
-	//owner->mainMenu->soundNodeList->SetMusicEnable( enMusic );
+	cd.soundVolume = sound;
+	cd.musicVolume = music;
 
-	//owner->soundNodeList->SetRelativeSoundVolume( sound );
-	//mainMenu->soundNodeList->SetRelativeSoundVolume( sound );
+	mainMenu->config->SetData(cd);
+	mainMenu->config->Save();
 
-	//owner->soundNodeList->SetRelativeMusicVolume( music );
-	//owner->mainMenu->soundNodeList->SetRelativeMusicVolume( music );
+	mainMenu->musicPlayer->UpdateVolume();
+
+	if (mainMenu->soundNodeList != NULL)
+	{
+		mainMenu->soundNodeList->SetSoundVolume(sound);
+	}
 }
 
 //run this in a loop
