@@ -250,9 +250,9 @@ void GravityJuggler::PopThrow()
 
 	dir = receivedHit.hDir;//normalize(receivedHit->hDir);
 
-	V2d hit(0, -20);
+	V2d hit(0, -25);//-20);
 
-	double extraX = 8;
+	double extraX = 10;//8;
 
 	if (dir.x != 0)
 	{
@@ -374,8 +374,8 @@ void GravityJuggler::ProcessState()
 	owner->activeEnemyItemTree->Query(this, r);
 	}*/
 
-
-	if (action == S_POP && ( (data.velocity.y >= 0 && !reversedGrav) || (data.velocity.y <= 0 && reversedGrav ) ) )
+	double verticalLimitToBeHittable = -6;
+	if (action == S_POP && ( (data.velocity.y >= verticalLimitToBeHittable && !reversedGrav) || (data.velocity.y <= -verticalLimitToBeHittable && reversedGrav ) ) )
 	{
 		action = S_JUGGLE;
 		frame = 0;

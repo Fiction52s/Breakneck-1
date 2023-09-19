@@ -304,21 +304,20 @@ Panel *ActorType::CreatePanel()
 		p->AddBasicTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
 
-	else if (name == "hungrycomboer"
-		|| name == "hungryreturncomboer"
-		|| name == "relativecomboer"
+	else if (name == "relativecomboer"
 		|| name == "relativecomboerdetach"
 		|| name == "downgravityjuggler"
 		|| name == "upgravityjuggler"
-		|| name == "bouncejuggler"
-		|| name == "bluewirejuggler"
-		|| name == "redwirejuggler"
-		|| name == "magentawirejuggler"
 		|| name == "ball")
 	{
 		p = CreateDefaultPanel();
-		//AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
+		AddLabeledSlider(p, "numJuggles", "required juggles:", 0, 9, 0);
 	}
+	/*else if (name == "bouncejuggler" || name == "hungrycomboer" || name == "bluewirejuggler"
+		|| name == "redwirejuggler")
+	{
+		p = CreateDefaultPanel();
+	}*/
 	else if (name == "grindcomboer")
 	{
 		p = CreateDefaultPanel();
