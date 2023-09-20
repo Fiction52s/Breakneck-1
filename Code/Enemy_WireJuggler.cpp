@@ -82,7 +82,8 @@ WireJuggler::WireJuggler( ActorParams *ap )
 	}*/
 	maxFallSpeed = 15;
 
-	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	//ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/W6/wire_juggler_320x320.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
@@ -95,7 +96,7 @@ WireJuggler::WireJuggler( ActorParams *ap )
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;*/
 
-	BasicCircleHurtBodySetup(48);
+	BasicCircleHurtBodySetup(140);
 	//BasicCircleHitBodySetup(48);
 
 	//hitBody.hitboxInfo = hitboxInfo;
@@ -128,7 +129,7 @@ void WireJuggler::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 2.5;
+		scale = 1.0;//2.5;
 		break;
 	case 2:
 		scale = 3.0;
@@ -464,13 +465,13 @@ void WireJuggler::UpdateSprite()
 	switch (jType)
 	{
 	case T_BLUE:
-		tile = 12;
+		tile = 0;
 		break;
 	case T_RED:
-		tile = 13;
+		tile = 1;
 		break;
 	case T_MAGENTA:
-		tile = 14;
+		tile = 2;
 		break;
 	}
 
