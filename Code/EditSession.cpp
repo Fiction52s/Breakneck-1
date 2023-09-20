@@ -1760,6 +1760,14 @@ void EditSession::CleanupForReload()
 
 	ClearEffects();
 
+	/*for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	{
+		ShapeEmitter *curr = emitterLists[i];
+		emitterLists[i] = NULL;
+	}*/
+	//calling reset is probably unncecessary
+	ClearEmitters();
+
 	CleanupTopClouds();
 
 	if (gates.size() > 0)
