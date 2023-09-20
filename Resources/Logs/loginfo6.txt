@@ -20,10 +20,10 @@ Can be hit into other enemies. Blue and red versions can only be
 hit with the blue and red wire respectively. The magenta version
 can be hit by either wire. Also has a limited version.
 
-Chess Piece
+Laser Wolf
 Enemy
-chessx
-Moves to your current position quickly, but only a certain axis.
+laserwolf
+Shoots a bouncing laser!
 
 Future Checker
 Enemy
@@ -37,11 +37,10 @@ A 2-part enemy composed of a red and blue jay. They fire a laser between
 them as they chase you. If you kill one but not the other, it will switch
 to shooting bullets.
 
-Tethered Rusher
+Dragon
 Enemy
-tetheredrusher
-Will dash at you but is stuck to its origin position. The head cannot be harmed,
-you can only kill it by hitting the base.
+dragon
+Dashes and flies at you!
 
 Skunk
 Enemy

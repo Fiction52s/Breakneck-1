@@ -40,21 +40,16 @@ comboer
 It will fly off in whichever of the 4 primary directions you hit it,
 and hit any enemies along the way.
 
-Split Comboer
+Regenerating Target
 Enemy
-splitcomboer
-It will split and fly at 2 angles similar to the angle you hit it at.
+regentarget
+Regenerates quickly after dying!
 
 Launcher
 Enemy
 spring
 Shoots you off at a set speed in a set direction. You can cancel the
 launch stun with any action.
-
-Blue Comboer Target
-Enemy
-bluecomboertarget
-An enemy that can only be killed by being hit by a Comboer or Split Comboer.
 
 Normal Water
 Water

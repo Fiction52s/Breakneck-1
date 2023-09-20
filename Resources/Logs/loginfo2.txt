@@ -3,11 +3,6 @@ Enemy
 glidetarget
 Can only be killed by running into it while gliding.
 
-Green Comboer Target
-Enemy
-greencomboertarget
-Can only be killed by being hit by a Gravity Juggler.
-
 Gravity Juggler
 Enemy
 downgravityjuggler

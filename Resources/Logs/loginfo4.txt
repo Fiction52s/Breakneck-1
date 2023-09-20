@@ -1,8 +1,7 @@
-Teleporter
+Cheetah
 Enemy
-teleporter
-Sends you a set distance in a certain direction. You will pass through all
-enemies and terrain in the way. Has a one-way and two-way version.
+cheetah
+Fastest on the ground!
 
 Grind Juggler
 Enemy
