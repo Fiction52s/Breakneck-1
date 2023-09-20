@@ -13,6 +13,12 @@ struct GetLogSequence : Sequence
 		Count
 	};
 
+	struct MyData
+	{
+		int confirmFrame;
+	};
+
+	MyData myData;
 	LogItem *log;
 	LogPopup *logPop;
 	MovingGeoGroup geoGroup;

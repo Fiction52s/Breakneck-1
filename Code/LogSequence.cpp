@@ -66,6 +66,8 @@ GetLogSequence::GetLogSequence()
 
 	logPop = sess->logPop;
 
+	myData.confirmFrame = 0;
+
 	SetRectColor(overlayRect, Color(100, 100, 100, 100));
 	SetRectCenter(overlayRect, 1920, 1080, Vector2f(960, 540));
 }
@@ -80,14 +82,14 @@ void GetLogSequence::SetupStates()
 void GetLogSequence::ReturnToGame()
 {
 
-	Actor *player = sess->GetPlayer(0);
-	//the shard might have changed
-	//your drain rate
+	//Actor *player = sess->GetPlayer(0);
+	////the shard might have changed
+	////your drain rate
 
-	sess->cam.EaseOutOfManual(60);
-	player->SetAction(Actor::JUMP);
-	player->frame = 1;
-	sess->cam.StopRumble();
+	//sess->cam.EaseOutOfManual(60);
+	//player->SetAction(Actor::JUMP);
+	//player->frame = 1;
+	//sess->cam.StopRumble();
 }
 
 
@@ -134,7 +136,20 @@ void GetLogSequence::UpdateState()
 			if (PlayerPressedConfirm() && sess->GetGameSessionState() == GameSession::FROZEN)
 			{
 				sess->SetGameSessionState(GameSession::RUN);
+
+				myData.confirmFrame = seqData.frame;
 			}
+
+			if (seqData.frame == myData.confirmFrame + 2)
+			{
+				Actor *player = sess->GetPlayer(0);
+				sess->cam.EaseOutOfManual(60);
+				//player->SetAirPos(player->position, player->facingRight);
+				player->SetAction(Actor::JUMP);
+				player->frame = 1;
+				sess->cam.StopRumble();
+			}
+
 
 			if (sess->GetGameSessionState() == GameSession::RUN)
 			{
@@ -205,6 +220,8 @@ void GetLogSequence::Reset()
 		geoGroup.Reset();
 		geoGroup.Start();
 
+		myData.confirmFrame = 0;
+
 		assert(log != NULL);
 
 		if (sess->IsSessTypeGame())
@@ -237,7 +254,7 @@ void GetLogSequence::SetIDs()
 
 int GetLogSequence::GetNumStoredBytes()
 {
-	return sizeof(seqData) + geoGroup.GetNumStoredBytes();
+	return sizeof(seqData) + geoGroup.GetNumStoredBytes() + sizeof( myData );
 }
 
 //emitters already get stored
@@ -248,6 +265,9 @@ void GetLogSequence::StoreBytes(unsigned char *bytes)
 
 	geoGroup.StoreBytes(bytes);
 	bytes += geoGroup.GetNumStoredBytes();
+
+	memcpy(bytes, &myData, sizeof(myData));
+	bytes += sizeof(myData);
 }
 
 void GetLogSequence::SetFromBytes(unsigned char *bytes)
@@ -256,6 +276,9 @@ void GetLogSequence::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(seqData);
 
 	geoGroup.SetFromBytes(bytes);
-
 	bytes += geoGroup.GetNumStoredBytes();
+
+	memcpy(&myData, bytes, sizeof(myData));
+	bytes += sizeof(myData);
+
 }

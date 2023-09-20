@@ -225,7 +225,9 @@ void Dragon::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (abs(PlayerDiff().x) < 600 && abs(PlayerDiff().y) < 400 )//dist < 400 )//DEFAULT_DETECT_RADIUS)
+	{
+		double yDiff = PlayerDiff().y;
+		if (abs(PlayerDiff().x) < 700 && ((yDiff >=0 && yDiff < 400) || ( yDiff <= 0 && yDiff > -700)) )//dist < 400 )//DEFAULT_DETECT_RADIUS)
 		{
 			action = FLY;
 			data.recoverFrame = 0;
@@ -233,6 +235,7 @@ void Dragon::ProcessState()
 			testOffsetDir = -dir;
 		}
 		break;
+	}	
 	case FLY:
 		if (dist > DEFAULT_IGNORE_RADIUS)
 		{

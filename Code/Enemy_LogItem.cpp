@@ -240,6 +240,14 @@ void LogItem::DissipateOnTouch()
 	sess->SetActiveSequence(logSeq);
 
 	Actor *player = sess->GetPlayer(0);
+
+	bool fr = player->facingRight;
+	if (player->reversed)
+	{
+		fr = !fr;
+	}
+
+	player->SetAirPos(player->position, fr);
 	player->SetAction(Actor::GETSHARD);
 	player->frame = 0;
 	player->velocity = V2d(0, 0);
