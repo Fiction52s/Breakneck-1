@@ -115,6 +115,8 @@ struct PowerItem : Enemy
 	void DissipateOnTouch();
 	void Capture();
 	void FrameIncrement();
+	bool IsHomingTarget() { return false; }
+	bool IsValidTrackEnemy() { return false; }
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

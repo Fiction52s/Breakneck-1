@@ -20,7 +20,7 @@ PhaseSwitch::PhaseSwitch(ActorParams *ap)
 
 	scale = 1.0;
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/W4/phase_switch_192x192.png");
 
 	BasicCircleHurtBodySetup(100);
 
@@ -117,35 +117,33 @@ void PhaseSwitch::ProcessState()
 
 void PhaseSwitch::UpdateSprite()
 {
-	int f = 7;
-
-	sprite.setTextureRect(ts->GetSubRect(f));
+	int f = 0;
 
 	switch (action)
 	{
 	case A_PHASE_OFF:
 	{
-		sprite.setColor(Color::Blue);
+		f = 0;
 		break;
 	}
 	case A_SWITCHING_ON:
 	{
-		sprite.setColor(Color::Yellow);
+		f = 8;
 		break;
 	}
 	case A_PHASE_ON:
 	{
-		sprite.setColor(Color::Red);
+		f = 12;
 		break;
 	}
 	case A_SWITCHING_OFF:
 	{
-		sprite.setColor(Color::Green);
+		f = 21;
 		break;
 	}
 	}
 
-
+	sprite.setTextureRect(ts->GetSubRect(f));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 }

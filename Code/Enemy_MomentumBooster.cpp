@@ -31,22 +31,21 @@ MomentumBooster::MomentumBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	strength = 300;
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/W4/momentum_booster_192x192.png");
 
 	sprite.setTexture(*ts->texture);
 	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
-	sprite.setColor(Color::Magenta);
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
 
-	actionLength[NEUTRAL] = 6;
+	actionLength[NEUTRAL] = 32;//6;
 	actionLength[BOOST] = 8;
 	actionLength[REFRESH] = 7;
 
-	animFactor[NEUTRAL] = 3;
+	animFactor[NEUTRAL] = 2;
 	animFactor[BOOST] = 3;
 	animFactor[REFRESH] = 5;
 
@@ -149,16 +148,16 @@ void MomentumBooster::UpdateSprite()
 		//ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
-		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
+		tile = 0;//frame / animFactor[BOOST] + actionLength[NEUTRAL];
 		//ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
-		tile = frame / animFactor[REFRESH];
+		tile = 0;//frame / animFactor[REFRESH];
 		//ir = ts_refresh->GetSubRect(tile);
 		break;
 	}
 
-	sprite.setTextureRect(ts->GetSubRect(8));
+	sprite.setTextureRect(ts->GetSubRect(tile));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
