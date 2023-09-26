@@ -554,6 +554,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void Reset();
 	void SoftReset();
 	void Draw(bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow);
+	void DrawAsSecretCover(sf::RenderTarget *target);
 	void DrawFlies(sf::RenderTarget *target);
 	void DrawGrass(sf::RenderTarget *target);
 	void FixWinding();

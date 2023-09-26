@@ -101,7 +101,7 @@ Zone::Zone( TerrainPolygon *tp )
 {
 	zonePoly = tp;
 	assert(!zonePoly->finalized);
-	zonePoly->FinalizeJustEdges();
+	zonePoly->Finalize();//FinalizeJustEdges();
 
 	zoneIndex = -2;
 	secretZone = false;
@@ -133,6 +133,8 @@ Zone::Zone( TerrainPolygon *tp )
 	zShader = NULL;
 	miniShader = NULL;
 
+	secretPreviewShader = NULL;
+
 	zType = NORMAL;
 
 	ts_z = NULL;
@@ -156,6 +158,12 @@ Zone::~Zone()
 	{
 		delete zShader;
 		zShader = NULL;
+	}
+
+	if (secretPreviewShader != NULL)
+	{
+		delete secretPreviewShader;
+		secretPreviewShader = NULL;
 	}
 
 	if (miniShader != NULL)
@@ -532,6 +540,19 @@ void Zone::Init()
 
 		miniShader->setUniform("shadowColor", ColorGL(Minimap::terrainColor));
 		miniShader->setUniform("alpha", 1.f);
+
+		/*if (secretPreviewShader != NULL)
+		{
+			delete secretPreviewShader;
+		}
+
+		secretPreviewShader = new sf::Shader;
+
+		if (!miniShader->loadFromFile("Resources/Shader/normalzone.frag", sf::Shader::Fragment))
+		{
+			cout << "mini zone shader not loading correctly!" << endl;
+			assert(false);
+		}*/
 	}
 
 	/*totalNumKeys = 0;

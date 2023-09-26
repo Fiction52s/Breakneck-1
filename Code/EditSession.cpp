@@ -595,7 +595,7 @@ void EditSession::TryTestPlayerMode()
 
 void EditSession::TestPlayerMode()
 {
-	assert(controlProfiles[0] != NULL);
+	//assert(controlProfiles[0] != NULL);
 	if (mode != TEST_PLAYER)
 	{
 #ifdef GGPO_ON
@@ -609,9 +609,12 @@ void EditSession::TestPlayerMode()
 
 	nextFrameRestartGame = false; //for respawning after triggering a score display
 
-	if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
+	if (controlProfiles[0] != NULL)
 	{
-		CONTROLLERS.SetKeyboardActiveAsController(true);
+		if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
+		{
+			CONTROLLERS.SetKeyboardActiveAsController(true);
+		}
 	}
 	
 
@@ -1095,7 +1098,6 @@ void EditSession::TestPlayerMode()
 	CreateZones();
 
 	int setupZoneStatus = SetupZones();
-	
 
 	SetupGateMarkers();
 
@@ -3043,8 +3045,8 @@ bool EditSession::WriteFile()
 	boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
 	boost::filesystem::remove(from);
 
-	CreatePreview(false);
-	CreatePreview(true);
+	CreatePreview(false, true);
+	CreatePreview(true, true);
 
 
 	return true;
@@ -8031,7 +8033,7 @@ void EditSession::CreateDecorImage(DecorPtr dec)
 //top
 //bot
 
-void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int width, int left, int right, int top, int bot)
+void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int width, int left, int right, int top, int bot, bool hideSecret )
 {
 	target->clear(Color::Black);
 
@@ -8084,9 +8086,36 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		(*it)->Draw(target);
 	}
 
+	
+	/*SetupGates();
+	CreateZones();
+	int setupZoneStatus = SetupZones();*/
+
+	TestPlayerMode();
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		if ((*it)->zType == Zone::SECRET)
+		{
+			(*it)->zonePoly->DrawAsSecretCover(target);
+		}
+	}
+
+	CleanupTestPlayerMode();
+
+	/*CleanupGates();
+	CleanupZones();*/
+
 	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
-		(*it)->DrawPreview(target);
+		if (hideSecret && (*it)->category == Gate::SECRET)
+		{
+			(*it)->DrawSecretPreview(target);
+		}
+		else
+		{
+			(*it)->DrawPreview(target);
+		}
 	}
 
 	sf::RectangleShape borderRect;
@@ -8110,6 +8139,10 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		for (list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
 			it2 != (*it).second->actors.end(); ++it2)
 		{
+			if ((*it2)->myEnemy != NULL && (*it2)->myEnemy->zone != NULL && (*it2)->myEnemy->zone->zType == Zone::SECRET)
+			{
+				continue;
+			}
 			/*if ((*it2)->type->IsGoalType())
 			{
 			goalCS.setPosition((*it2)->GetFloatPos());
@@ -8162,7 +8195,7 @@ void EditSession::SavePreviewThumbnail()
 }
 
 
-void EditSession::CreatePreview(bool thumbnail)
+void EditSession::CreatePreview(bool thumbnail, bool hideSecret )
 {
 	Vector2i imageSize = Vector2i(mapPreviewTex->getSize());//912, 492
 	if (thumbnail)
@@ -8301,11 +8334,11 @@ void EditSession::CreatePreview(bool thumbnail)
 
 	if (thumbnail)
 	{
-		DrawPreview(mapPreviewThumbnailTex, pView, width, left, right, top, bot);
+		DrawPreview(mapPreviewThumbnailTex, pView, width, left, right, top, bot, true);
 	}
 	else
 	{
-		DrawPreview(mapPreviewTex, pView, width, left, right, top, bot);
+		DrawPreview(mapPreviewTex, pView, width, left, right, top, bot, true);
 	}
 
 	Image img;

@@ -26,11 +26,13 @@ struct GateInfo : ISelectable
 	PolyPtr poly1;
 	int vertexIndex1;
 	sf::Vertex thickLine[4];
+	sf::Vertex line[2];
 	EditSession *edit;
 	void UpdateLine();
 	void WriteFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
 	void DrawPreview(sf::RenderTarget *target);
+	void DrawSecretPreview(sf::RenderTarget *target);
 	bool IsTouchingEnemy(ActorParams * a);
 	sf::Color color;
 	int category;

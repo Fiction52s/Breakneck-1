@@ -472,7 +472,7 @@ struct EditSession : GUIHandler, Session
 	void WriteGates(std::ofstream &of);
 	void WriteDecor(std::ofstream &of);
 	void WriteMapHeader(std::ofstream &of);
-	void CreatePreview(bool thumbnail);
+	void CreatePreview(bool thumbnail, bool hideSecrets);
 	void WriteInversePoly(std::ofstream &of);
 	void WritePlayerOptions(std::ofstream &of);
 	void ClearSelectedPolys();
@@ -697,7 +697,7 @@ struct EditSession : GUIHandler, Session
 	void DrawGateInfos();
 	void DrawDecor( EffectLayer ef, sf::RenderTarget *target);
 	void Draw();
-	void DrawPreview(sf::RenderTarget *target, sf::View &v, int width, int left, int right, int top, int bot);
+	void DrawPreview(sf::RenderTarget *target, sf::View &v, int width, int left, int right, int top, int bot, bool hideSecret);
 	void SavePreview();
 	void SavePreviewThumbnail();
 	void DrawUI();

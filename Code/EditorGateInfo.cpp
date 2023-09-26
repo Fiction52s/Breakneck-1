@@ -204,6 +204,8 @@ void GateInfo::UpdateLine()
 	V2d leftv1 = dv1 - other * halfWidth;
 	V2d rightv1 = dv1 + other * halfWidth;
 
+	
+
 	/*if (category == Gate::BLACK)
 	{
 		color = Color(200, 200, 200);
@@ -247,6 +249,39 @@ void GateInfo::UpdateLine()
 
 	V2d center = (dv0 + dv1) / 2.0;
 	shardSpr.setPosition(Vector2f(center));
+
+	line[0].position = Vector2f(point0->pos.x, point0->pos.y);
+	line[1].position = Vector2f(point1->pos.x, point1->pos.y);
+	
+	TerrainPolygon::EdgeAngleType eat = TerrainPolygon::GetEdgeAngleType(other);
+	Color edgeColor;
+	switch (eat)
+	{
+	case TerrainPolygon::EDGE_FLAT:
+		edgeColor = Color::Red;
+		break;
+	case TerrainPolygon::EDGE_SLOPED:
+		edgeColor = Color::Green;
+		break;
+	case TerrainPolygon::EDGE_STEEPSLOPE:
+		edgeColor = Color::White;
+		break;
+	case TerrainPolygon::EDGE_WALL:
+		edgeColor = Color::Magenta;
+		break;
+	case TerrainPolygon::EDGE_STEEPCEILING:
+		edgeColor = Color::Yellow;
+		break;
+	case TerrainPolygon::EDGE_SLOPEDCEILING:
+		edgeColor = Color::Cyan;
+		break;
+	case TerrainPolygon::EDGE_FLATCEILING:
+		edgeColor = Color::Red;
+		break;
+	}
+
+	line[0].color = edgeColor;
+	line[1].color = edgeColor;
 }
 
 void GateInfo::Draw(sf::RenderTarget *target)
@@ -308,4 +343,15 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 	thickerLine[3].position = Vector2f(rightv0.x, rightv0.y);
 
 	target->draw(thickerLine, 4, sf::Quads, edit->createGatesModeUI->ts_gateCategories->texture);
+}
+
+void GateInfo::DrawSecretPreview(sf::RenderTarget *target)
+{
+	Vector2f p0(point0->pos.x, point0->pos.y);
+	Vector2f p1(point1->pos.x, point1->pos.y);
+
+	line[0].position = p0;
+	line[1].position = p1;
+
+	target->draw(line, 2, sf::Lines);
 }

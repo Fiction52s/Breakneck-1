@@ -147,11 +147,19 @@ void Gate::Setup(GateInfoPtr gi)
 
 	Init();
 
-	sess->terrainTree->Insert(edgeA);
-	sess->terrainTree->Insert(edgeB);
+	//added the conditionals for calling SetupGates when drawing the preview
+	if (sess->terrainTree != NULL)
+	{
+		sess->terrainTree->Insert(edgeA);
+		sess->terrainTree->Insert(edgeB);
+	}
+	if (sess->gateTree != NULL)
+	{
+		//cout << "inserting gate: " << gate->edgeA << endl;
+		sess->gateTree->Insert(this);
+	}
 
-	//cout << "inserting gate: " << gate->edgeA << endl;
-	sess->gateTree->Insert(this);
+	
 
 	Reset();
 }
