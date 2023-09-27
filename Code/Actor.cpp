@@ -13746,6 +13746,15 @@ void Actor::UpdatePhysics()
 			V2d newVel( 0, 0 );
 			V2d oldPos = position;
 
+			/*UpdateHitboxes();
+			V2d B = b.GetQuadVertex(1);
+			Zone *currZone = sess->currentZone;
+			bool inZone = currZone->ContainsPoint(B);
+			if (!inZone)
+			{
+				int x = 5;
+			}*/
+
 			bool tempCollision = ResolvePhysics( movementVec );
 
 
@@ -13767,6 +13776,15 @@ void Actor::UpdatePhysics()
 				position += minContact.resolution;
 				//cout << "resolution: " << minContact.resolution.x << ", " << minContact.resolution.y << "\n";
 				
+				UpdateHitboxes();
+				//V2d B = b.GetQuadVertex(1);
+				//Zone *currZone = sess->currentZone;
+				//bool inZone = currZone->ContainsPoint(B);
+				//if (!inZone)
+				//{
+				//	int x = 5;
+				//}
+
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
 				Edge *e0 = e->edge0;

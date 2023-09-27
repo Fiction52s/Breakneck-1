@@ -1796,7 +1796,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		{
 			return NULL;
 		}
-			
+		//time -= .00001;
 		
 		if( time < 0 )
 			time = 0;
@@ -1805,7 +1805,16 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		currentContact->collisionPriority = time;
 		currentContact->edge = e;
 		
-		currentContact->resolution = -vel * ( 1 - time );
+		V2d testRes = -vel * (1 - time);
+		if (length(testRes) > 0)
+		{
+			currentContact->resolution = testRes + normalize( testRes ) * .00001;
+		}
+		else
+		{
+			currentContact->resolution = V2d(0, 0);
+		}
+		
 		//currentContact->resolution += normalize( currentContact->resolution ) * .0001;
 
 	//	cout << "pri: " << currentContact->collisionPriority << " normal: " << en.x << ", " << en.y << 
@@ -2429,7 +2438,7 @@ void RayCast(RayCastHandler *handler, QNode *node,Edge &e)
 					double portion = dot(V2d(li.position - e.v0), e.Along());
 
 					//for precision cases, when testing inside of zones. shouldn't trigger if portion < 0 regardless
-					if (portion >= 0)
+					if (portion >= 0 )
 					{
 						handler->HandleRayCollision(((Edge*)(n->entrants[i])), ((Edge*)(n->entrants[i]))->GetQuantity(li.position),
 							portion);

@@ -1126,6 +1126,16 @@ void TerrainPolygon::HandleRayCollision(Edge *edge,
 	//if (rayPortion < 0) 
 	//	return;
 
+	V2d dir = normalize(rayCastInfo.rayEnd - rayCastInfo.rayStart);
+
+	//if (rayPortion < .0000001 && dot(dir, edge->Normal()) < 0)
+	//{
+	//	cout << "ignoring thing here!" << endl;
+	//	return;
+	//	//to fix edge cases where a point is juuuuust in the wrong spot behind an edge. happens with buoyancy water
+	//	//pushing you up into the ceiling
+	//}
+
 	double len = length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart);
 	if (rayCastInfo.rcEdge == NULL || len < rayCastInfo.rcPortion)
 	{
@@ -5453,6 +5463,8 @@ bool TerrainPolygon::IsInsideArea(V2d &point)
 	}
 
 	rayCastInfo.rcEdge = NULL;
+	rayCastInfo.rayStart = insideQueryPoint;
+	rayCastInfo.rayEnd = closest;
 	numEdgesHitByRay = 0;
 
 	RayCast(this, myTerrainTree->startNode, insideQueryPoint, closest);
