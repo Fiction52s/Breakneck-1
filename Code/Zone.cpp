@@ -541,6 +541,21 @@ void Zone::Init()
 		miniShader->setUniform("shadowColor", ColorGL(Minimap::terrainColor));
 		miniShader->setUniform("alpha", 1.f);
 
+
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			Edge *start = (*it);
+			Edge *curr = start->edge1;
+
+			while (curr != start)
+			{
+				if (!curr->IsGateEdge())
+				{
+					curr->secretZoneEdge = true;
+				}
+				curr = curr->edge1;
+			}
+		}
 		/*if (secretPreviewShader != NULL)
 		{
 			delete secretPreviewShader;
@@ -554,6 +569,8 @@ void Zone::Init()
 			assert(false);
 		}*/
 	}
+
+
 
 	/*totalNumKeys = 0;
 	for (auto it = allEnemies.begin(); it != allEnemies.end(); ++it)

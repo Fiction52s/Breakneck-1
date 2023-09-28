@@ -5056,8 +5056,70 @@ void TerrainPolygon::DrawGrass(sf::RenderTarget *target)
 	}
 }
 
+void TerrainPolygon::DrawInnerArea(RenderTarget *target)
+{
+	if (va != NULL)
+	{
+		if (pShader != NULL)
+		{
+			/*if (terrainWorldType > SECRETCORE)
+			{
+			Vector2f vSize = sess->view.getSize();
+			float zoom = vSize.x / 960;
+			Vector2f botLeft(sess->view.getCenter().x - vSize.x / 2, sess->view.getCenter().y + vSize.y / 2);
+
+			waterShader.setUniform("zoom", zoom);
+			waterShader.setUniform("topLeft", botLeft);
+			waterShader.setUniform("u_slide", waterShaderCounter);
+			waterShaderCounter += .01;
+			}*/
+
+			if (terrainWorldType <= SECRETCORE)
+			{
+				Tileset *ts = sess->ts_terrain;
+
+
+				int tile = (8 * terrainWorldType + terrainVariation) * 4;
+				IntRect ir;//rand() % 8);//tile + rand() % 2);
+
+				float width = ts->texture->getSize().x;
+				float height = ts->texture->getSize().y;
+
+
+				sess->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
+
+				for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
+				{
+					ir = ts->GetSubRect(tile + i);
+					tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
+				}
+
+				sess->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
+
+				/*sess->terrainShader.setUniform("u_quad",
+				Glsl::Vec4(ir.left / width, ir.top / height,
+				(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+
+				IntRect ir_alt = ts->GetSubRect(tile+1);
+
+				sess->terrainShader.setUniform("u_alt_quad",
+				Glsl::Vec4(ir_alt.left / width, ir_alt.top / height,
+				(ir_alt.left + ir_alt.width) / width, (ir_alt.top + ir_alt.height) / height));*/
+			}
+
+			target->draw(*va, pShader);
+		}
+		else
+		{
+			target->draw(*va);
+		}
+	}
+}
+
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
+	
+
 	int numP = GetNumPoints();
 
 	if (!IsActive())
@@ -5132,67 +5194,26 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		return;
 	}
+	else if (renderMode == RENDERMODE_PREVIEW)
+	{
+		UpdatePreviewLineColors();
 
+		DrawInnerArea(rt);
+
+		DrawDecor(rt);
+
+		DrawGrass(rt);
+
+		rt->draw(lines, numP * 2, sf::Lines);
+
+		UpdateLineColors();
+
+		return;
+	}
 
 	DrawGrass(rt);
 
-	if (va != NULL)
-	{
-		if (pShader != NULL)
-		{
-			/*if (terrainWorldType > SECRETCORE)
-			{
-				Vector2f vSize = sess->view.getSize();
-				float zoom = vSize.x / 960;
-				Vector2f botLeft(sess->view.getCenter().x - vSize.x / 2, sess->view.getCenter().y + vSize.y / 2);
-
-				waterShader.setUniform("zoom", zoom);
-				waterShader.setUniform("topLeft", botLeft);
-				waterShader.setUniform("u_slide", waterShaderCounter);
-				waterShaderCounter += .01;
-			}*/
-
-			if (terrainWorldType <= SECRETCORE)
-			{
-				Tileset *ts = sess->ts_terrain;
-				
-
-				int tile = (8 * terrainWorldType + terrainVariation) * 4;
-				IntRect ir;//rand() % 8);//tile + rand() % 2);
-
-				float width = ts->texture->getSize().x;
-				float height = ts->texture->getSize().y;
-				
-				
-				sess->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
-
-				for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
-				{
-					ir = ts->GetSubRect(tile + i);
-					tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
-				}
-
-				sess->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
-
-				/*sess->terrainShader.setUniform("u_quad",
-					Glsl::Vec4(ir.left / width, ir.top / height,
-					(ir.left + ir.width) / width, (ir.top + ir.height) / height));
-
-				IntRect ir_alt = ts->GetSubRect(tile+1);
-
-				sess->terrainShader.setUniform("u_alt_quad",
-					Glsl::Vec4(ir_alt.left / width, ir_alt.top / height,
-					(ir_alt.left + ir_alt.width) / width, (ir_alt.top + ir_alt.height) / height));*/
-			}
-
-			rt->draw(*va, pShader);
-		}
-		else
-		{
-			rt->draw(*va);
-		}
-	}
-		
+	DrawInnerArea(rt);
 
 	DrawBorderQuads(rt);
 
@@ -5569,7 +5590,7 @@ void TerrainPolygon::UpdateLineColor( int i)
 		next = GetNextPoint(i);
 
 		diff = Vector2f(next->pos - curr->pos);
-	}
+	}	
 	
 	V2d dir = normalize(V2d(diff));
 	V2d norm = V2d(dir.y, -dir.x);
@@ -5606,12 +5627,92 @@ void TerrainPolygon::UpdateLineColor( int i)
 	lines[nextIndex].color = edgeColor;
 }
 
+
+
 void TerrainPolygon::UpdateLineColors()
 {
 	int numP = GetNumPoints();
 	for (int i = 0; i < numP; ++i)
 	{
 		UpdateLineColor(i);
+	}
+}
+
+void TerrainPolygon::UpdatePreviewLineColor(int i)
+{
+	TerrainPoint *curr, *next;
+
+	Vector2f diff;
+
+	int index = i * 2;
+	int nextIndex = index + 1;
+	/*if (i == GetNumPoints() - 1)
+	{
+	nextIndex = 0;
+	}*/
+
+	if (renderMode == RENDERMODE_TRANSFORM)
+	{
+		Vector2f roundedNextPos(round(lines[nextIndex].position.x), round(lines[nextIndex].position.y));
+		Vector2f roundedPos(round(lines[index].position.x), round(lines[index].position.y));
+
+		diff = roundedNextPos - roundedPos;
+
+	}
+	else
+	{
+		curr = GetPoint(i);
+		next = GetNextPoint(i);
+
+		diff = Vector2f(next->pos - curr->pos);
+	}
+
+	V2d dir = normalize(V2d(diff));
+	V2d norm = V2d(dir.y, -dir.x);
+
+	EdgeAngleType eat = GetEdgeAngleType(norm);
+
+	Color edgeColor;
+	switch (eat)
+	{
+	case EDGE_FLAT:
+		edgeColor = Color::Red;
+		break;
+	case EDGE_SLOPED:
+		edgeColor = Color::Green;
+		break;
+	case EDGE_STEEPSLOPE:
+		edgeColor = Color::White;
+		break;
+	case EDGE_WALL:
+		edgeColor = Color::Magenta;
+		break;
+	case EDGE_STEEPCEILING:
+		edgeColor = Color::Yellow;
+		break;
+	case EDGE_SLOPEDCEILING:
+		edgeColor = Color::Cyan;
+		break;
+	case EDGE_FLATCEILING:
+		edgeColor = Color::Red;
+		break;
+	}
+
+	if (GetEdge(i)->secretZoneEdge)
+	{
+		edgeColor = Color::Transparent;
+	}
+
+	lines[index].color = edgeColor;
+	lines[nextIndex].color = edgeColor;
+}
+
+void TerrainPolygon::UpdatePreviewLineColors()
+{
+	int numP = GetNumPoints();
+	for (int i = 0; i < numP; ++i)
+	{
+		UpdatePreviewLineColor(i);
 	}
 }
 

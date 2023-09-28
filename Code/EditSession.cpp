@@ -8077,7 +8077,13 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 	{
 		oldSelected = (*it)->selected;
 		(*it)->SetSelected(false);
+
+		TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
+		(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
+
 		(*it)->Draw(false, 1, target, false, NULL);
+
+		(*it)->SetRenderMode(oldPolyMode);
 		(*it)->SetSelected(oldSelected);
 	}
 

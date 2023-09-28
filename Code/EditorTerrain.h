@@ -209,6 +209,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_TRANSFORM,
 		RENDERMODE_FLIES,
 		RENDERMODE_PHASED,
+		RENDERMODE_PREVIEW,
 	};
 
 	enum WaterType
@@ -503,7 +504,9 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	~TerrainPolygon();
 	void SetupTilePattern();
 	void UpdateLineColor(int i);
+	void UpdatePreviewLineColor(int i);
 	void UpdateLineColors();
+	void UpdatePreviewLineColors();
 	static sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle, bool cw);
@@ -554,6 +557,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void Reset();
 	void SoftReset();
 	void Draw(bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow);
+	void DrawInnerArea(sf::RenderTarget *target);
 	void DrawAsSecretCover(sf::RenderTarget *target);
 	void DrawFlies(sf::RenderTarget *target);
 	void DrawGrass(sf::RenderTarget *target);
