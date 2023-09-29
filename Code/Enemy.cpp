@@ -1276,6 +1276,8 @@ void Enemy::AddToGame()
 {
 	SetEnemyIDAndAddToAllEnemiesVec();
 
+	sess->allSpawnableEnemiesVec.push_back(this);
+
 	AddToWorldTrees();
 	sess->enemyTree->Insert(this);
 }

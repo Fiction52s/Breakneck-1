@@ -1049,8 +1049,41 @@ void MapSector::UpdateMapPreview()
 {
 	DestroyMapPreview();
 
+
+	bool allSecretsCollected = false;
+
+	Level *level = GetSelectedLevel();
+	AdventureMapHeaderInfo &headerInfo =
+		saveFile->adventureFile->GetMapHeaderInfo(level->index);
+
+	int totalNumShards = headerInfo.shardInfoVec.size();
+
+	int numCollected = 0;
+	for (auto it = headerInfo.shardInfoVec.begin(); it !=
+		headerInfo.shardInfoVec.end(); ++it)
+	{
+		if (saveFile->IsShardCaptured((*it).GetTrueIndex()))
+		{
+			numCollected++;
+		}
+	}
+
+	if (numCollected == totalNumShards)
+	{
+		allSecretsCollected = true;
+	}
+
 	string fPath = adventureFile.GetAdventureSector(sec).maps[GetSelectedIndex()].GetFilePath();
-	string previewPath = "Maps\\" + fPath + ".png";
+	string previewPath;
+	if (allSecretsCollected)
+	{
+		previewPath = "Maps\\" + fPath + ".png";
+	}
+	else
+	{
+		previewPath = "Maps\\" + fPath + "_basic.png";
+	}
+	
 
 	ts_mapPreview = ms->worldMap->GetTileset(previewPath, 912, 492);
 	mapPreviewSpr.setTexture(*ts_mapPreview->texture);

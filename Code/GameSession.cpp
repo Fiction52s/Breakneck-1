@@ -909,11 +909,20 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	CleanupCameraShots();
 
-	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
+	for (auto it = allSpawnableEnemiesVec.begin(); it != allSpawnableEnemiesVec.end(); ++it)
 	{
 		delete (*it);
 	}
+	allSpawnableEnemiesVec.clear();
+
+
 	allEnemiesVec.clear();
+
+	/*for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
+	{
+		delete (*it);
+	}
+	allEnemiesVec.clear();*/
 
 	CleanupGlobalBorders();
 
@@ -1023,11 +1032,19 @@ void GameSession::Cleanup()
 	}
 	allPolysVec.clear();
 
-	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
+	/*for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
 	{
 		delete (*it);
 	}
+	allEnemiesVec.clear();*/
+	for (auto it = allSpawnableEnemiesVec.begin(); it != allSpawnableEnemiesVec.end(); ++it)
+	{
+		delete (*it);
+	}
+	allSpawnableEnemiesVec.clear();
+
 	allEnemiesVec.clear();
+
 
 	CleanupGoalFlow();
 

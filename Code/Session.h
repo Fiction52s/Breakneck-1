@@ -291,6 +291,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<PolyPtr> allSpecialPolysVec;
 	std::vector<RailPtr> allRailsVec;
 	std::vector<Enemy*> allEnemiesVec;
+	std::vector<Enemy*> allSpawnableEnemiesVec;
 	std::vector<ShapeEmitter*> allEmittersVec;
 	std::vector<ComboObject*> allComboObjectsVec;
 	std::vector<Launcher*> allLaunchersVec;

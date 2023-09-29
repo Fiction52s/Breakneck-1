@@ -101,7 +101,9 @@ Zone::Zone( TerrainPolygon *tp )
 {
 	zonePoly = tp;
 	assert(!zonePoly->finalized);
-	zonePoly->Finalize();//FinalizeJustEdges();
+
+	zonePoly->FinalizeJustEdges();
+	//zonePoly->Finalize();//FinalizeJustEdges();
 
 	zoneIndex = -2;
 	secretZone = false;
@@ -198,6 +200,18 @@ void Zone::ReformAllGates( Gate *ignoreGate)
 
 void Zone::Init()
 {
+	if (zType == MOMENTA || zType == SECRET)
+	{
+		secretZone = true;
+	}	
+
+	if (secretZone)
+	{
+		//can do a special finalization where I ignore the borders, since I only need the inner area to be finalized.
+		//zonePoly->Finalize();
+		zonePoly->FinalizeSecret();
+	}
+
 	list<Zone*> possibleSubs = subZones;
 
 	list<list<Zone*>> groupedZones;
@@ -452,7 +466,6 @@ void Zone::Init()
 	{
 	case MOMENTA:
 	case SECRET:
-		secretZone = true;
 	case NORMAL:
 	{
 		if (zShader != NULL)

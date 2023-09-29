@@ -3045,8 +3045,9 @@ bool EditSession::WriteFile()
 	boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
 	boost::filesystem::remove(from);
 
+	CreatePreview(false, false);
 	CreatePreview(false, true);
-	CreatePreview(true, true);
+	CreatePreview(true, false );
 
 
 	return true;
@@ -8073,19 +8074,43 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		(*it)->SetSelected(oldSelected);
 	}
 
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	TestPlayerModeForPreview();
+
+	//TestPlayerMode();
+
+	if (hideSecret)
 	{
-		oldSelected = (*it)->selected;
-		(*it)->SetSelected(false);
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			oldSelected = (*it)->selected;
+			(*it)->SetSelected(false);
 
-		TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
-		(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
+			TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
+			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
 
-		(*it)->Draw(false, 1, target, false, NULL);
+			(*it)->Draw(false, 1, target, false, NULL);
 
-		(*it)->SetRenderMode(oldPolyMode);
-		(*it)->SetSelected(oldSelected);
+			(*it)->SetRenderMode(oldPolyMode);
+			(*it)->SetSelected(oldSelected);
+		}
 	}
+	else
+	{
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			oldSelected = (*it)->selected;
+			(*it)->SetSelected(false);
+
+			//TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
+			//(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
+
+			(*it)->Draw(false, 1, target, false, NULL);
+
+			//(*it)->SetRenderMode(oldPolyMode);
+			(*it)->SetSelected(oldSelected);
+		}
+	}
+	
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
@@ -8097,13 +8122,16 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 	CreateZones();
 	int setupZoneStatus = SetupZones();*/
 
-	TestPlayerMode();
+	
 
-	for (auto it = zones.begin(); it != zones.end(); ++it)
+	if (hideSecret)
 	{
-		if ((*it)->zType == Zone::SECRET)
+		for (auto it = zones.begin(); it != zones.end(); ++it)
 		{
-			(*it)->zonePoly->DrawAsSecretCover(target);
+			if ((*it)->zType == Zone::SECRET)
+			{
+				(*it)->zonePoly->DrawAsSecretCover(target);
+			}
 		}
 	}
 
@@ -8180,6 +8208,210 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 	rs.setSize(Vector2f(pView.getSize().x, top - (pView.getCenter().y - pView.getSize().y / 2)));
 	rs.setFillColor(Color::Cyan);
 	target->draw(rs);
+}
+
+void EditSession::TestPlayerModeForPreview()
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		auto & pList = GetCorrectPolygonList(i);
+		for (auto it = pList.begin(); it != pList.end(); ++it)
+		{
+			if ((*it)->renderMode == TerrainPolygon::RENDERMODE_TRANSFORM)
+			{
+				(*it)->CancelTransformation();
+			}
+		}
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		(*it)->CancelTransformation();
+	}
+
+	terrainTree = new QuadTree(1000000, 1000000);
+	specialTerrainTree = new QuadTree(1000000, 1000000);
+	borderTree = new QuadTree(1000000, 1000000);
+	grassTree = new QuadTree(1000000, 1000000);
+
+	railEdgeTree = new QuadTree(1000000, 1000000);
+	barrierTree = new QuadTree(1000000, 1000000);
+
+	staticItemTree = new QuadTree(1000000, 1000000);
+
+	activeItemTree = new QuadTree(1000000, 1000000);
+
+	gateTree = new QuadTree(1000000, 1000000);
+
+	enemyTree = new QuadTree(1000000, 1000000);
+
+	railDrawTree = new QuadTree(1000000, 1000000);
+
+	specterTree = new QuadTree(1000000, 1000000);
+
+	Enemy *currEnemy = NULL;
+
+	allPolysVec.clear();
+	allRailsVec.clear();
+	allEnemiesVec.clear();
+	allSpecialPolysVec.clear();
+	allComboObjectsVec.clear();
+	allSequencesVec.clear();
+	allEmittersVec.clear();
+
+	auto testPolys = GetCorrectPolygonList(0);
+	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
+	{
+		(*it)->ResetTouchGrass();
+		(*it)->ResetState();
+	}
+
+	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
+	{
+		(*it)->polyIndex = allPolysVec.size();
+		allPolysVec.push_back((*it));
+
+		borderTree->Insert((*it));
+		(*it)->AddEdgesToQuadTree(terrainTree);
+		(*it)->AddGrassToQuadTree(grassTree);
+	}
+
+	auto &testPolys1 = GetCorrectPolygonList(1);
+	for (auto it = testPolys1.begin(); it != testPolys1.end(); ++it)
+	{
+		(*it)->polyIndex = allSpecialPolysVec.size();
+		allSpecialPolysVec.push_back((*it));
+
+		specialTerrainTree->Insert((*it));
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->enemyChain != NULL)
+		{
+			(*it)->enemyChain->AddToGame();
+		}
+		else
+		{
+			(*it)->railIndex = allRailsVec.size();
+			allRailsVec.push_back((*it));
+
+			(*it)->ResetState();
+			(*it)->AddEdgesToQuadTree(railEdgeTree);
+			railDrawTree->Insert((*it));
+		}
+	}
+
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
+				assert(currEnemy->sess == this);
+				currEnemy->AddToGame();
+			}
+		}
+	}
+
+	SetupGates();
+
+	CleanupZones();
+
+	CleanupGlobalBorders();
+
+	bool blackBorder[2];
+	bool topBorderOn = false;
+
+	realLeftBounds = mapHeader->leftBounds;
+	realTopBounds = mapHeader->topBounds;
+	realBoundsWidth = mapHeader->boundsWidth;
+	realBoundsHeight = mapHeader->boundsHeight;
+
+	SetupGlobalBorderQuads(blackBorder, topBorderOn);
+
+	CreateZones();
+
+	int setupZoneStatus = SetupZones();
+
+	hasGoal = false;
+
+	bool foundShipEnter = false;
+	bool foundShipExit = false;
+
+	CleanupCameraShots();
+	CleanupPoi();
+	CleanupBossNodes();
+	CleanupBarriers();
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			if ((*enit)->type == types["camerashot"])
+			{
+				CameraShotParams *csp = (CameraShotParams*)(*enit);
+				//tempCameraShots.push_back(csp);
+				AddCameraShot(csp);
+			}
+			else if ((*enit)->type == types["poi"])
+			{
+				PoiParams *pp = (PoiParams*)(*enit);
+				//tempPoiParams.push_back(pp);
+				AddPoi(pp);
+			}
+
+			else if ((*enit)->type == types["ship"])
+			{
+				if (shipEnterScene == NULL)
+				{
+					shipEnterScene = new ShipEnterScene;
+					shipEnterScene->Init();
+				}
+				foundShipEnter = true;
+				shipEnterScene->shipEntrancePos = (*enit)->GetPosition();
+
+			}
+			else if (((*enit)->type == types["shippickup"]))
+			{
+				if (shipExitScene == NULL)
+				{
+					shipExitScene = new ShipExitScene;
+					shipExitScene->Init();
+				}
+				foundShipExit = true;
+			}
+			else if ((*enit)->type == types["goal"] && !hasGoal)
+			{
+				Goal *g = (Goal*)((*enit)->myEnemy);
+				g->SetMapGoalPos();
+			}
+		}
+	}
+
+	/*for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
+	{
+		(*it)->Setup();
+		(*it)->SetExtraIDsAndAddToVectors();
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->enemyChain != NULL)
+		{
+			(*it)->enemyChain->Setup();
+		}
+	}*/
+
+	if (setupZoneStatus == -1) //couldnt find goal in a zone based map
+	{
+		SetMode(EDIT);
+		CreateError(ERR_CANT_MAKE_ZONE_STRUCTURE_WITHOUT_GOAL);
+		ShowMostRecentError();
+		return;
+	}
 }
 
 void EditSession::SavePreview()
@@ -8340,11 +8572,11 @@ void EditSession::CreatePreview(bool thumbnail, bool hideSecret )
 
 	if (thumbnail)
 	{
-		DrawPreview(mapPreviewThumbnailTex, pView, width, left, right, top, bot, true);
+		DrawPreview(mapPreviewThumbnailTex, pView, width, left, right, top, bot, hideSecret);
 	}
 	else
 	{
-		DrawPreview(mapPreviewTex, pView, width, left, right, top, bot, true);
+		DrawPreview(mapPreviewTex, pView, width, left, right, top, bot, hideSecret);
 	}
 
 	Image img;
@@ -8358,6 +8590,11 @@ void EditSession::CreatePreview(bool thumbnail, bool hideSecret )
 	}
 	std::stringstream ssPrev;
 	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string();
+
+	if (hideSecret)
+	{
+		ssPrev << "_basic";
+	}
 
 	if (thumbnail)
 	{

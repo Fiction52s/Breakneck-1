@@ -698,6 +698,7 @@ struct EditSession : GUIHandler, Session
 	void DrawDecor( EffectLayer ef, sf::RenderTarget *target);
 	void Draw();
 	void DrawPreview(sf::RenderTarget *target, sf::View &v, int width, int left, int right, int top, int bot, bool hideSecret);
+	void TestPlayerModeForPreview();
 	void SavePreview();
 	void SavePreviewThumbnail();
 	void DrawUI();

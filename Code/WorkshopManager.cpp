@@ -481,6 +481,18 @@ void WorkshopUploader::TryUpdateItem( bool agreementSigned, PublishedFileId_t up
 	boost::filesystem::path previewPath = edit->filePath.parent_path().string() 
 		+ "\\" + edit->filePath.stem().string() + ".png";
 
+	boost::filesystem::path basicPreviewUploadPath = uploadFolder.string()
+		+ "\\" + mapName + "_basic.png";
+
+	boost::filesystem::path basicPreviewPath = edit->filePath.parent_path().string()
+		+ "\\" + edit->filePath.stem().string() + "_basic.png";
+
+	boost::filesystem::path thumbnailPreviewUploadPath = uploadFolder.string()
+		+ "\\" + mapName + "_thumbnail.png";
+
+	boost::filesystem::path thumbnailPreviewPath = edit->filePath.parent_path().string()
+		+ "\\" + edit->filePath.stem().string() + "_thumbnail.png";
+
 
 	boost::filesystem::path uploadFilePath = uploadFolder.string() + "\\" + mapName + MAP_EXT;
 
@@ -490,6 +502,9 @@ void WorkshopUploader::TryUpdateItem( bool agreementSigned, PublishedFileId_t up
 	{
 		boost::filesystem::copy_file(edit->filePath, uploadFilePath);
 		boost::filesystem::copy_file(previewPath, previewUploadPath);
+
+		boost::filesystem::copy_file(basicPreviewPath, basicPreviewUploadPath);
+		boost::filesystem::copy_file(thumbnailPreviewPath, thumbnailPreviewUploadPath);
 	}
 	catch (const boost::filesystem::filesystem_error& e)
 	{

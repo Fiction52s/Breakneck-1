@@ -4209,6 +4209,61 @@ void TerrainPolygon::Finalize()
 	//GenerateDecor();
 }
 
+void TerrainPolygon::FinalizeSecret()
+{
+	assert(!inverse);
+	assert(finalized);
+
+	//finalized = true;
+
+	isGrassBackedUp = false;
+
+	FixWinding();
+
+	int numP = GetNumPoints();
+	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
+	vaSize = indices.size();
+
+	lines = new sf::Vertex[numP * 2 + 1];
+	va = new VertexArray(sf::Triangles, vaSize);
+
+	VertexArray & v = *va;
+	Color testColor(0x75, 0x70, 0x90);
+	Color selectCol(0x77, 0xBB, 0xDD);
+
+	if (selected)
+	{
+		testColor = selectCol;
+	}
+
+	int numTris = vaSize / 3;
+	for (int i = 0; i < numTris; ++i)
+	{
+		v[i * 3] = Vertex(Vector2f(GetPoint(indices[i * 3])->pos), testColor);
+		v[i * 3 + 1] = Vertex(Vector2f(GetPoint(indices[i * 3 + 1])->pos), testColor);
+		v[i * 3 + 2] = Vertex(Vector2f(GetPoint(indices[i * 3 + 2])->pos), testColor);
+	}
+
+	//UpdateLinePositions();
+	//UpdateLineColors();
+
+	/*if (grassType == -1)
+	{
+	grassType = GetDefaultGrassType();
+	}*/
+
+	//SetupGrass();
+
+	SetMaterialType(terrainWorldType, terrainVariation);
+
+
+
+
+
+	//SetupTouchGrass();
+	//GenerateDecor();
+}
+
 void TerrainPolygon::FinalizeInverse()
 {
 	finalized = true;
@@ -5118,8 +5173,6 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
-	
-
 	int numP = GetNumPoints();
 
 	if (!IsActive())

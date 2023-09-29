@@ -1328,6 +1328,7 @@ void MainMenu::CustomMapsOption()
 
 	ls.UpdateMapList();
 
+	ls.LoadAndRewriteAllMaps();
 	//ls.LoadAndRewriteAllMaps();
 
 	//empty map. fix this later
