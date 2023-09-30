@@ -671,19 +671,24 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 					//AdventureMap &grabbedAdventureMap = adventure->GetMap(grabbedIndex);
 					currAdventureMap.Set(tempGrabbedAdventureMap);
 
-					grabbedMap.Set(currCopy);
-
-					grabbedFileSource->CopyContent(&currNodeCopy);
-
-					if (currSector == grabbedSector)
+					if (currWorld == grabbedWorld && currSector == grabbedSector && currM == grabbedM)
 					{
-						SetRectNode(mapRects[grabbedM], GetCurrNode(grabbedM));
+
 					}
 					else
 					{
-						UpdateSectorMapCounts();
-					}
+						grabbedMap.Set(currCopy);
+						grabbedFileSource->CopyContent(&currNodeCopy);
 
+						if (currSector == grabbedSector)
+						{
+							SetRectNode(mapRects[grabbedM], GetCurrNode(grabbedM));
+						}
+						else
+						{
+							UpdateSectorMapCounts();
+						}
+					}
 					//SetRectNode(grabbedFileSource->chooseRect, grabbedFileSource);
 					//grabbedFileSource->CopyContent
 				}

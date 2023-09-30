@@ -28,7 +28,9 @@ WorldMap::WorldMap()
 	mainMenu = MainMenu::GetInstance();
 	adventureManager = mainMenu->adventureManager;
 	
-	allUnlocked = true;
+	allUnlocked = false;
+
+	UpdateButtonIconsWhenControllerIsChanged();
 
 	ship = new WorldMapShip(this);
 
@@ -64,7 +66,25 @@ WorldMap::WorldMap()
 	}
 
 	
+	ts_parallelPlayMarker = GetSizedTileset("HUD/score_384x96.png");
+	ts_parallelPlayMarker->SetSpriteTexture(parallelPlayMarkerSpr);
+	ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 15);
 
+	Vector2f parallelPlayMarkerPos(1450, 850);
+
+	parallelPlayMarkerSpr.setPosition(parallelPlayMarkerPos);
+
+	Vector2f buttonIconOffset(320, 2);
+	SetRectTopLeft(parallelPlayButtonQuad, 64, 64, parallelPlayMarkerPos + buttonIconOffset);
+
+	if (adventureManager->parallelPracticeMode)
+	{
+		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 15);
+	}
+	else
+	{
+		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 17);
+	}
 	
 	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
 	ts_colonyActive[0] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
@@ -470,11 +490,25 @@ void WorldMap::SetToLevel(int selColony, int sec, int m)
 
 void WorldMap::HandleEvent(sf::Event ev)
 {
-	MapSector *currSector = CurrSelector()->FocusedSector();
-	if (currSector->state == MapSector::LEADERBOARD)
+	if (state == COLONY)
 	{
-		adventureManager->leaderboard->HandleEvent(ev);
+		MapSector *currSector = CurrSelector()->FocusedSector();
+		if (currSector->state == MapSector::LEADERBOARD)
+		{
+			adventureManager->leaderboard->HandleEvent(ev);
+		}
 	}
+}
+
+void WorldMap::UpdateButtonIconsWhenControllerIsChanged()
+{
+	ts_buttons = mainMenu->GetButtonIconTileset(mainMenu->adventureManager->controllerInput->GetControllerType());
+
+	int cType = mainMenu->adventureManager->controllerInput->GetControllerType();
+
+	auto button = XBOX_START;
+	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(parallelPlayButtonQuad, ir);
 }
 
 void WorldMap::Update()
@@ -558,12 +592,16 @@ void WorldMap::Update()
 		}
 		else if (controllerInput->ButtonPressed_Start())
 		{
-			/*adventureManager->parallelPracticeMode = !adventureManager->parallelPracticeMode;
+			adventureManager->parallelPracticeMode = !adventureManager->parallelPracticeMode;
+		}
 
-			if (adventureManager->parallelPracticeMode)
-			{
-				frame = 0;
-			}*/
+		if (adventureManager->parallelPracticeMode)
+		{
+			ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 15);
+		}
+		else
+		{
+			ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 17);
 		}
 
 		int numUnlockedWorlds = -1;
@@ -1019,6 +1057,12 @@ void WorldMap::Draw( RenderTarget *target )
 	ship->Draw(rt);
 
 	DrawAsteroids(rt, false);
+
+	if (state == PLANET)
+	{
+		rt->draw(parallelPlayMarkerSpr);
+		rt->draw(parallelPlayButtonQuad, 4, sf::Quads, ts_buttons->texture);
+	}
 
 	if (state != COLONY && state != PlANET_TO_COLONY
 		&& state != COLONY_TO_PLANET && selectedColony >= 0 )

@@ -8229,25 +8229,98 @@ void EditSession::TestPlayerModeForPreview()
 		(*it)->CancelTransformation();
 	}
 
-	terrainTree = new QuadTree(1000000, 1000000);
-	specialTerrainTree = new QuadTree(1000000, 1000000);
-	borderTree = new QuadTree(1000000, 1000000);
-	grassTree = new QuadTree(1000000, 1000000);
+	if (terrainTree != NULL)
+	{
+		terrainTree->Clear();
+		specialTerrainTree->Clear();
+		borderTree->Clear();
+		grassTree->Clear();
+		activeItemTree->Clear();
+		railEdgeTree->Clear();
+		gateTree->Clear();
+		enemyTree->Clear();
+		railDrawTree->Clear();
+		specterTree->Clear();
 
-	railEdgeTree = new QuadTree(1000000, 1000000);
-	barrierTree = new QuadTree(1000000, 1000000);
 
-	staticItemTree = new QuadTree(1000000, 1000000);
+		Enemy *currEnemy;
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end();
+				++enit)
+			{
+				currEnemy = (*enit)->myEnemy;
+				if (currEnemy != NULL)
+				{
+					currEnemy->Reset();
+					RemoveEnemy(currEnemy);
+				}
+			}
+		}
 
-	activeItemTree = new QuadTree(1000000, 1000000);
+		for (auto it = rails.begin(); it != rails.end(); ++it)
+		{
+			if ((*it)->enemyChain != NULL)
+			{
+				(*it)->enemyChain->Reset();
+				RemoveEnemy((*it)->enemyChain);
+			}
+		}
 
-	gateTree = new QuadTree(1000000, 1000000);
+		//reset enemies
+	}
+	else
+	{
+		terrainTree = new QuadTree(1000000, 1000000);
+		specialTerrainTree = new QuadTree(1000000, 1000000);
+		borderTree = new QuadTree(1000000, 1000000);
+		grassTree = new QuadTree(1000000, 1000000);
 
-	enemyTree = new QuadTree(1000000, 1000000);
+		railEdgeTree = new QuadTree(1000000, 1000000);
+		barrierTree = new QuadTree(1000000, 1000000);
 
-	railDrawTree = new QuadTree(1000000, 1000000);
+		staticItemTree = new QuadTree(1000000, 1000000);
 
-	specterTree = new QuadTree(1000000, 1000000);
+		activeItemTree = new QuadTree(1000000, 1000000);
+
+		gateTree = new QuadTree(1000000, 1000000);
+
+		enemyTree = new QuadTree(1000000, 1000000);
+
+		railDrawTree = new QuadTree(1000000, 1000000);
+
+		specterTree = new QuadTree(1000000, 1000000);
+		//Actor *p;
+
+		/*for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+		p = GetPlayer(i);
+		if (p != NULL)
+		p->SetToOriginalPos();
+		}*/
+
+
+	}
+
+	//terrainTree = new QuadTree(1000000, 1000000);
+	//specialTerrainTree = new QuadTree(1000000, 1000000);
+	//borderTree = new QuadTree(1000000, 1000000);
+	//grassTree = new QuadTree(1000000, 1000000);
+
+	//railEdgeTree = new QuadTree(1000000, 1000000);
+	//barrierTree = new QuadTree(1000000, 1000000);
+
+	//staticItemTree = new QuadTree(1000000, 1000000);
+
+	//activeItemTree = new QuadTree(1000000, 1000000);
+
+	//gateTree = new QuadTree(1000000, 1000000);
+
+	//enemyTree = new QuadTree(1000000, 1000000);
+
+	//railDrawTree = new QuadTree(1000000, 1000000);
+
+	//specterTree = new QuadTree(1000000, 1000000);
 
 	Enemy *currEnemy = NULL;
 

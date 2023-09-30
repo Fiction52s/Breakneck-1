@@ -301,6 +301,7 @@ struct WorldMap : TilesetManager
 	sf::Sprite spaceSpr;
 	sf::Sprite colonySelectSpr;
 	sf::Sprite colonySelectSprZoomed;
+	sf::Sprite parallelPlayMarkerSpr;
 
 	float colonyRadius;
 
@@ -312,6 +313,9 @@ struct WorldMap : TilesetManager
 
 	TreeNode **dirNode;
 	TreeNode *entries;
+
+	
+	sf::Vertex parallelPlayButtonQuad[4 * 1];
 
 	sf::Vertex infoNameBG[4];
 	sf::Vertex infoQuadBG[4];
@@ -335,6 +339,7 @@ struct WorldMap : TilesetManager
 	int leftBorder;
 	int yspacing;
 
+	Tileset *ts_buttons;
 	Tileset *ts_space;
 	Tileset *ts_planet;
 	Tileset *ts_asteroids[4];
@@ -343,6 +348,7 @@ struct WorldMap : TilesetManager
 	Tileset * ts_colony[ADVENTURE_MAX_NUM_WORLDS];
 	Tileset *ts_colonySelect;
 	Tileset *ts_selectableRing;
+	Tileset *ts_parallelPlayMarker;
 
 	AdventureManager *adventureManager;
 
@@ -383,6 +389,7 @@ struct WorldMap : TilesetManager
 	void SetToColony(int selColony);
 	void SetToLevel(int selColony, int sec, int m);
 	void HandleEvent(sf::Event ev );
+	void UpdateButtonIconsWhenControllerIsChanged();
 private:
 	void SetupAsteroids();
 	void LoadAdventure(const std::string &adventureName);

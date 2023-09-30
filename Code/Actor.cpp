@@ -7112,6 +7112,8 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
+
+	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
 	/*if (homingFrames > 0)
 	{
 		if (!boosterTrailEmitter->active)
@@ -7258,6 +7260,9 @@ void Actor::UpdatePrePhysics()
 
 	TryChangePowerMode();
 
+
+	bool isParallelPracticeAndParallel = sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && sess->IsParallelSession();
+
 	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) || action == EXITBOOST )
@@ -7266,19 +7271,22 @@ void Actor::UpdatePrePhysics()
 
 		if( action == WAITFORSHIP )
 		{ 
-			HandleWaitingScoreDisplay();
+			if (!isParallelPracticeAndParallel)
+			{
+				HandleWaitingScoreDisplay();
 
-			if (sess->IsSessTypeEdit() && sess->nextFrameRestartGame)
-			{
-				editOwner->TestPlayerMode();
-			}
-			else if ( (sess->scoreDisplay == NULL || !sess->scoreDisplay->active) && sess->activeSequence == NULL)
-			{
-				sess->SetActiveSequence(sess->shipExitScene);
-				sess->shipExitScene->Reset();
-				sess->shipExitScene->Update();
-				//owner->SetActiveSequence(owner->shipExitSeq);
-				//owner->shipExitSeq->Reset();
+				if (sess->IsSessTypeEdit() && sess->nextFrameRestartGame)
+				{
+					editOwner->TestPlayerMode();
+				}
+				else if ((sess->scoreDisplay == NULL || !sess->scoreDisplay->active) && sess->activeSequence == NULL)
+				{
+					sess->SetActiveSequence(sess->shipExitScene);
+					sess->shipExitScene->Reset();
+					sess->shipExitScene->Update();
+					//owner->SetActiveSequence(owner->shipExitSeq);
+					//owner->shipExitSeq->Reset();
+				}
 			}
 		}
 		if( action == INTRO && frame == 0 )
@@ -7313,25 +7321,28 @@ void Actor::UpdatePrePhysics()
 	}
 	else if( action == GOALKILLWAIT )
 	{
-		HandleWaitingScoreDisplay();
-		
-		if (sess->IsSessTypeEdit() && sess->nextFrameRestartGame)
+		if (!isParallelPracticeAndParallel)
 		{
-			editOwner->TestPlayerMode();
-		}
-		else if( !sess->scoreDisplay->active )
-		{
-			if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
+			HandleWaitingScoreDisplay();
+
+			if (sess->IsSessTypeEdit() && sess->nextFrameRestartGame)
 			{
-				SetAction(EXITBOOST);
-				owner->Fade(false, 30, Color::Black, true);
+				editOwner->TestPlayerMode();
 			}
-			else
+			else if (!sess->scoreDisplay->active)
 			{
-				SetAction(EXIT);
-				sess->Fade(false, 30, Color::Black, true);
+				if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
+				{
+					SetAction(EXITBOOST);
+					owner->Fade(false, 30, Color::Black, true);
+				}
+				else
+				{
+					SetAction(EXIT);
+					sess->Fade(false, 30, Color::Black, true);
+				}
+				frame = 0;
 			}
-			frame = 0;
 		}
 		return;
 	}
@@ -20768,6 +20779,23 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 		if( ground->Normal().y == -1 )
 		{
 			offsetX = 0;
+		}
+
+		bool setRecord = false;
+		if (owner != NULL)
+		{
+			if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			{
+				if (!owner->IsReplayOn() && !owner->IsParallelSession())
+				{
+					setRecord = adventureManager->CompleteCurrentMap(owner);//owner->GetTopParentGame());
+				}
+			}
+		}
+
+		if (setRecord)
+		{
+			owner->scoreDisplay->madeRecord = true;
 		}
 	}
 }
