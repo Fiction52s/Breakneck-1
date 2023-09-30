@@ -24,7 +24,7 @@ RegenTarget::RegenTarget(ActorParams *ap)
 
 	ts = GetSizedTileset("Enemies/W1/respawner_192x192.png");
 
-	actionLength[A_IDLE] = 10;
+	actionLength[A_IDLE] = 9;
 	animFactor[A_IDLE] = 5;
 
 	actionLength[A_DYING] = 5;

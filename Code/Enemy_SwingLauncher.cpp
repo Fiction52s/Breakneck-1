@@ -88,7 +88,7 @@ SwingLauncher::SwingLauncher(ActorParams *ap)
 	debugSpeed.setFillColor(Color::White);
 	debugSpeed.setCharacterSize(30);
 
-	ts = GetSizedTileset("Enemies/W6/swinglauncher_128x128.png");
+	ts = GetSizedTileset("Enemies/W6/swing_launcher_128x128.png");
 
 	if (!armShader.loadFromFile("Resources/Shader/swinglauncherarm_shader.frag", sf::Shader::Fragment))
 	{

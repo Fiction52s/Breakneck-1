@@ -15,13 +15,21 @@ struct MomentumBooster : Enemy
 
 	struct MyData : StoredEnemyData
 	{
-
+		int flameFrame;
+		float spinnerAngle;
 	};
 	MyData data;
 
 	Tileset *ts;
 	Tileset *ts_refresh;
 	int strength;
+	sf::Vertex quads[4 * 3];
+
+	//flame
+	//shine
+	//rotating part
+
+	int flameAnimFactor;
 
 	MomentumBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 
@@ -36,6 +44,8 @@ struct MomentumBooster : Enemy
 	bool Boost();
 	bool IsBoostable();
 	void AddToWorldTrees();
+	sf::FloatRect GetAABB();
+	void FrameIncrement();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

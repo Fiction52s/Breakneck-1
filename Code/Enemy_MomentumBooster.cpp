@@ -4,6 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Actor.h"
 
 
 using namespace std;
@@ -31,21 +32,22 @@ MomentumBooster::MomentumBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	strength = 300;
 
-	ts = GetSizedTileset("Enemies/W4/momentum_booster_192x192.png");
+	ts = GetSizedTileset("Enemies/W4/momentum_booster_192x256.png");
 
-	sprite.setTexture(*ts->texture);
 	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 
-	sprite.setScale(scale, scale);
+	//sprite.setScale(scale, scale);
+
+	flameAnimFactor = 3;
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
 
-	actionLength[NEUTRAL] = 32;//6;
-	actionLength[BOOST] = 8;
+	actionLength[NEUTRAL] = 2;//6;
+	actionLength[BOOST] = 6;
 	actionLength[REFRESH] = 7;
 
-	animFactor[NEUTRAL] = 2;
+	animFactor[NEUTRAL] = 1;
 	animFactor[BOOST] = 3;
 	animFactor[REFRESH] = 5;
 
@@ -61,6 +63,10 @@ void MomentumBooster::ResetEnemy()
 
 	SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
+
+	data.spinnerAngle = 0;
+
+	data.flameFrame = 0;
 
 
 	UpdateSprite();
@@ -102,6 +108,11 @@ bool MomentumBooster::Boost()
 	return false;
 }
 
+sf::FloatRect MomentumBooster::GetAABB()
+{ 
+	return GetQuadAABB(quads);
+}
+
 bool MomentumBooster::IsBoostable()
 {
 	return action == NEUTRAL;
@@ -135,6 +146,31 @@ void MomentumBooster::ProcessState()
 		}
 		}
 	}
+
+	/*if (action == NEUTRAL)
+	{
+		data.spinnerAngle += .02 * PI;
+	}*/
+
+	if (sess->GetPlayer(0)->momentumBoostFrames > 0)
+	{
+		data.spinnerAngle += .1 * PI;
+	}
+	else
+	{
+		data.spinnerAngle += .02 * PI;
+	}
+	
+}
+
+void MomentumBooster::FrameIncrement()
+{
+	++data.flameFrame;
+
+	if (data.flameFrame == 8 * flameAnimFactor)
+	{
+		data.flameFrame = 0;
+	}
 }
 
 void MomentumBooster::UpdateSprite()
@@ -148,7 +184,7 @@ void MomentumBooster::UpdateSprite()
 		//ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
-		tile = 0;//frame / animFactor[BOOST] + actionLength[NEUTRAL];
+		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
 		//ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
@@ -157,15 +193,45 @@ void MomentumBooster::UpdateSprite()
 		break;
 	}
 
-	sprite.setTextureRect(ts->GetSubRect(tile));
 
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(GetPositionF());
+	SetRectCenter(quads, ts->tileWidth * scale, ts->tileHeight * scale, GetPositionF());
+	SetRectCenter(quads + 8, ts->tileWidth * scale, ts->tileHeight * scale, GetPositionF());
+
+	ts->SetQuadSubRect(quads, 8 + data.flameFrame / flameAnimFactor); //flame
+
+	
+	if (action == REFRESH)
+	{
+		ts->SetQuadSubRect(quads + 4, 1); //spinner
+	}
+	else
+	{
+		ts->SetQuadSubRect(quads + 4, 0); //spinner
+	}
+	
+	SetRectRotation(quads + 4, data.spinnerAngle - PI / 2, ts->tileWidth * scale, ts->tileHeight * scale, GetPositionF());
+
+
+
+	if (action == BOOST)
+	{
+		int tile = frame / animFactor[BOOST] + 2;
+		ts->SetQuadSubRect(quads + 8, tile); //shine	
+	}
+	else
+	{
+		ClearRect(quads + 8);
+	}
+	//sprite.setTextureRect(ts->GetSubRect(tile));
+
+	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	//sprite.setPosition(GetPositionF());
 }
 
 void MomentumBooster::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	target->draw(quads, 3 * 4, sf::Quads, ts->texture);
+	//target->draw(sprite);
 }
 
 void MomentumBooster::DrawMinimap(sf::RenderTarget *target)

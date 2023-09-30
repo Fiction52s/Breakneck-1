@@ -3021,6 +3021,23 @@ bool GameSession::RunMainLoopOnce()
 
 			RunFrameForParallelPractice();
 
+			SteamAPI_RunCallbacks();
+
+			if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession())
+			{
+				netplayManager->SendPracticeInitMessageToAllNewPeers();
+
+				//sends the start to message to any new peers that join
+				PracticeStartMsg psm;
+				psm.skinIndex = GetPlayerNormalSkin(0);
+				psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
+				psm.startFrame = totalGameFrames;
+				psm.wantsToPlay = netplayManager->wantsToPracticeRace;
+				netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+
+				netplayManager->Update();
+			}
+
 			//if (pauseMenu->currentTab == PauseMenu::PAUSE)
 			//{
 			//	if (curr.Y && !prev.Y && !bestTimeGhostOn)

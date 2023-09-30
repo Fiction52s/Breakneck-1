@@ -17,7 +17,7 @@ void Actor::SWINGSTUN_Change()
 {
 	if (!GlideAction())
 	{
-		if (springStunFrames == 0)
+		/*if (springStunFrames == 0)
 		{
 			SetAction(JUMP);
 			frame = 1;
@@ -29,7 +29,7 @@ void Actor::SWINGSTUN_Change()
 			{
 				facingRight = true;
 			}
-		}
+		}*/
 	}
 	else
 	{
@@ -48,7 +48,7 @@ void Actor::SWINGSTUN_Update()
 
 	V2d dirToAnchor = normalize( position - anchor );
 
-	oldSwingLauncher->data.currAngle = GetVectorAngleCW(dirToAnchor);
+	//oldSwingLauncher->data.currAngle = GetVectorAngleCW(dirToAnchor);
 
 	V2d future = position + normalize(springVel) * speed;//velocity;
 
@@ -61,6 +61,10 @@ void Actor::SWINGSTUN_Update()
 		springVel = future - position;
 	}
 
+	V2d futureToAnchor = normalize(future - anchor);
+
+	oldSwingLauncher->data.currAngle = GetVectorAngleCW(futureToAnchor);
+
 	velocity = springVel; //* speed;
 }
 
@@ -72,6 +76,8 @@ void Actor::SWINGSTUN_UpdateSprite()
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
+
+	sprite->setRotation((oldSwingLauncher->data.currAngle - PI / 2) * 180 / PI);
 }
 
 void Actor::SWINGSTUN_TransitionToAction(int a)
@@ -96,5 +102,5 @@ int Actor::SWINGSTUN_GetActionLength()
 
 Tileset * Actor::SWINGSTUN_GetTileset()
 {
-	return SPRINGSTUN_GetTileset();
+	return GetActionTileset("swing_kin_64x64.png");
 }

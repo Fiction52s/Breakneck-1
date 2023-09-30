@@ -17144,7 +17144,7 @@ void Actor::SlowDependentFrameIncrement()
 			downTiltLevel = 0;
 		}
 
-		if (springStunFrames > 0 && action != SPRINGSTUNANNIHILATIONATTACK)
+		if (springStunFrames > 0 && action != SPRINGSTUNANNIHILATIONATTACK )
 			--springStunFrames;
 
 		if (directionalInputFreezeFrames > 0)
@@ -17835,7 +17835,7 @@ bool Actor::SwingLaunch()
 
 		springExtra = V2d(0, 0);
 
-		springStunFrames = currSwingLauncher->stunFrames;
+		springStunFrames = 0;//currSwingLauncher->stunFrames;
 
 		ground = NULL;
 		bounceEdge = NULL;

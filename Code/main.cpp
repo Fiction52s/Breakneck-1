@@ -149,6 +149,11 @@ int main()
 	//_CrtSetReportMode ( _CRT_ERROR,
 	//     _CRTDBG_MODE_DEBUG);
 
+#ifndef _DEBUG
+	freopen("output.txt", "w", stdout);
+	freopen("erroroutput.txt", "w", stderr);
+#endif
+
 	std::cout << "starting program" << endl;
 
 	//return 0;
