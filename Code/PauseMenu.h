@@ -119,6 +119,7 @@ struct PauseMenu
 	void SetTopLeft(sf::Vector2f &pos);
 
 	sf::Text debugText;
+	sf::Text mapNameText;
 
 	Tileset *ts_buttons;
 

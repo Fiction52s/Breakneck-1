@@ -34,10 +34,10 @@ ShipPickup::ShipPickup(ActorParams * ap)
 	ShipPickupParams *sParams = (ShipPickupParams*)ap;
 	facingRight = sParams->facingRight;
 
-	ts = sess->GetSizedTileset( "Ship/shipleave_128x128.png");
+	ts = sess->GetSizedTileset( "Ship/ship_pickup_256x180.png");
 	sprite.setTexture( *ts->texture );
 	
-	SetOffGroundHeight(ts->tileHeight / 2.0 - 58);
+	SetOffGroundHeight(67);
 
 	//SetCurrPosInfo(startPosInfo);
 	
@@ -45,11 +45,11 @@ ShipPickup::ShipPickup(ActorParams * ap)
 	SetEditorActions(IDLE, IDLE, 0);
 
 
-	actionLength[IDLE] = 20;
-	actionLength[FOUND] = 6;
+	actionLength[IDLE] = 16;
+	actionLength[FOUND] = 16;
 
-	animFactor[IDLE] = 2;
-	animFactor[FOUND] = 3;
+	animFactor[IDLE] = 4;
+	animFactor[FOUND] = 4;
 
 	ResetEnemy();
 
@@ -82,7 +82,7 @@ void ShipPickup::ProcessState()
 			frame = 0;
 			break;
 		case FOUND:
-			action = DONE;
+			//action = DONE;
 			frame = 0;
 			break;
 		}
@@ -103,7 +103,7 @@ void ShipPickup::UpdateEnemyPhysics()
 			{
 				player->ShipPickupPoint( edgeQuantity, facingRight );
 				action = FOUND;
-				frame = 0;
+				//frame = 0; //keeps the same value since its just looping the same anim atm
 			}
 		}
 		else
@@ -112,7 +112,7 @@ void ShipPickup::UpdateEnemyPhysics()
 			{
 				player->ShipPickupPoint( edgeQuantity, facingRight );
 				action = FOUND;
-				frame = 0;
+				//frame = 0;
 			}
 		}
 	}
@@ -121,8 +121,8 @@ void ShipPickup::UpdateEnemyPhysics()
 
 void ShipPickup::EnemyDraw(sf::RenderTarget *target )
 {
-	if( action != DONE )
-		target->draw(sprite);
+	//if( action != DONE )
+	target->draw(sprite);
 }
 
 void ShipPickup::DrawMinimap( sf::RenderTarget *target )
@@ -141,7 +141,7 @@ void ShipPickup::UpdateSprite()
 		f = frame / animFactor[IDLE];
 		break;
 	case FOUND:
-		f = ( frame / animFactor[FOUND] ) + actionLength[IDLE];
+		f = frame / animFactor[FOUND];//( frame / animFactor[FOUND] ) + actionLength[IDLE];
 		break;
 	}
 	sprite.setTextureRect( ts->GetSubRect( f ) );

@@ -518,6 +518,8 @@ void WorldMap::Update()
 	bool keyboardBack = controllerInput->GetControllerType() != CTYPE_KEYBOARD && (CONTROLLERS.KeyboardButtonPressed(Keyboard::BackSpace)
 		|| CONTROLLERS.KeyboardButtonPressed(Keyboard::Escape));
 
+	bool keyboardAllLevelsUnlockedCheat = CONTROLLERS.KeyboardButtonPressed(Keyboard::F1);
+
 	int trans = 20;
 	switch( state )
 	{
@@ -525,6 +527,11 @@ void WorldMap::Update()
 		break;
 	case PLANET:
 	{
+		if (keyboardAllLevelsUnlockedCheat)
+		{
+			allUnlocked = !allUnlocked;
+		}
+
 		UpdateSelectedColony();
 
 		UpdateColonySelect();

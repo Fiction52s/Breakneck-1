@@ -14,6 +14,63 @@
 using namespace std;
 using namespace sf;
 
+StartBox::StartBox()
+{
+	mm = MainMenu::GetInstance();
+
+	startText.setFont(mm->arial);
+	startText.setFillColor(Color::White);
+	startText.setOutlineColor(Color::Black);
+	startText.setOutlineThickness(1);
+	startText.setCharacterSize(48);
+	startText.setString("GO!");
+	startText.setOrigin(startText.getLocalBounds().left + startText.getLocalBounds().width / 2, 0);
+
+	SetRectColor(bgQuad, Color::Green);
+
+	width = 400;
+	height = 200;
+
+	ts_buttons = NULL;
+}
+
+void StartBox::Update()
+{
+
+}
+
+void StartBox::SetControllerType(int cType)
+{
+	ts_buttons = mm->GetButtonIconTileset(cType);
+
+	auto button = XBOX_START;
+	IntRect ir = mm->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(startButtonQuad, ir);
+}
+
+void StartBox::SetTopLeft(sf::Vector2f pos)
+{
+	SetRectTopLeft(bgQuad, width, height, pos);
+
+	startText.setPosition(pos + Vector2f(width / 2, 0));
+
+	float size = 128;
+	SetRectTopLeft(startButtonQuad, size, size, pos + Vector2f(width / 2 - size / 2, height - (size + 10)));
+}
+
+void StartBox::SetCenter(sf::Vector2f pos)
+{
+	SetTopLeft(pos - Vector2f(width / 2, height / 2));
+}
+
+void StartBox::Draw(sf::RenderTarget *target)
+{
+	target->draw(bgQuad, 4, sf::Quads);
+	target->draw(startText);
+
+	assert(ts_buttons != NULL);
+	target->draw(startButtonQuad, 4, sf::Quads, ts_buttons->texture);
+}
 
 SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
 {
@@ -24,6 +81,8 @@ SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
 	panel = new Panel("SinglePlayerControllerJoinScreen", 1920, 1080, this, true);
 	panel->SetColor(Color::Transparent);
 	panel->SetCenterPos(Vector2i(960, 540));
+
+	startBox.SetCenter(Vector2f(960, 150));
 
 	selectedMap = NULL;
 
@@ -104,6 +163,7 @@ void SinglePlayerControllerJoinScreen::Update()
 		if (playerBoxGroup->CheckControllerJoins())
 		{
 			SetAction(A_READY);
+			startBox.SetControllerType(playerBoxGroup->GetControllerStates(0)->GetControllerType());
 			//SetRectColor(bgQuad, Color(83, 102, 188));
 		}
 
@@ -203,6 +263,11 @@ void SinglePlayerControllerJoinScreen::Draw(sf::RenderTarget *target)
 
 		playerBoxGroup->Draw(target);
 		panel->Draw(target);
+
+		if (action == A_READY)
+		{
+			startBox.Draw(target);
+		}
 		break;
 	}
 	/*case A_CONTROL_PROFILE:

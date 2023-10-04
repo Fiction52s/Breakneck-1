@@ -19,6 +19,25 @@ struct PlayerSkinShader;
 struct ControlProfileMenu;
 struct PlayerBoxGroup;
 
+struct SinglePlayerControllerJoinScreen;
+struct StartBox
+{
+	sf::Vertex startButtonQuad[4];
+	sf::Text startText;
+	sf::Vertex bgQuad[4];
+	MainMenu *mm;
+	Tileset *ts_buttons;
+	float width;
+	float height;
+
+	StartBox();
+	void Update();
+	void SetTopLeft(sf::Vector2f pos);
+	void SetCenter(sf::Vector2f pos);
+	void SetControllerType(int cType);
+	void Draw(sf::RenderTarget *target);
+};
+
 struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 {
 	enum Action
@@ -30,10 +49,14 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 		A_BACK,
 	};
 
+	StartBox startBox;
 	int action;
 	int frame;
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
+
+	sf::Vertex startButtonQuad[4];
+	sf::Text startText;
 
 	Panel *panel;
 

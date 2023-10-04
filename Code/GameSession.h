@@ -279,6 +279,7 @@ struct GameSession : RayCastHandler, Session
 	Config *config;
 
 	sf::Text replayText;
+	sf::Text mapNameText;
 	
 	PauseMenu *pauseMenu;
 

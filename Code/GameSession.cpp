@@ -1767,6 +1767,16 @@ bool GameSession::Load()
 		saveFile->adventureFile->GetOriginalProgressionLogField(level->index, originalProgressionLogField);
 	}
 
+
+	
+	mapNameText.setFont(mainMenu->arial);
+	mapNameText.setCharacterSize(24);
+	mapNameText.setFillColor(Color::White);
+	mapNameText.setOutlineColor(Color::Black);
+	mapNameText.setOutlineThickness(3);
+	mapNameText.setPosition(20, 20);
+
+
 	replayText.setFont(mainMenu->arial);
 	replayText.setCharacterSize(24);
 	replayText.setFillColor(Color(255, 0, 0, 150));
@@ -1918,6 +1928,7 @@ bool GameSession::Load()
 
 	myHash = md5file(filePathStr);
 
+	mapNameText.setString(mapHeader->fullName);
 
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 	{
@@ -2800,6 +2811,10 @@ bool GameSession::RunMainLoopOnce()
 			SetView(view);
 		}
 
+		/*SetView(uiView);
+		preScreenTex->draw(mapNameText);
+		SetView(view);*/
+
 		preScreenTex->display();
 
 		const Texture &preTex0 = preScreenTex->getTexture();
@@ -3190,6 +3205,13 @@ bool GameSession::RunMainLoopOnce()
 
 		if (gameState != PAUSE)
 		{
+			/*if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+			{
+				PracticeStateChangeMsg pm;
+				pm.state = (int)gameState;
+				pm.frame = totalGameFrames;
+				netplayManager->SendPracticeStateChangeMessageToAllPeers(pm);
+			}*/
 			return false;
 		}
 

@@ -150,8 +150,8 @@ int main()
 	//     _CRTDBG_MODE_DEBUG);
 
 #ifndef _DEBUG
-	freopen("output.txt", "w", stdout);
-	freopen("erroroutput.txt", "w", stderr);
+	//freopen("output.txt", "w", stdout);
+	//freopen("erroroutput.txt", "w", stderr);
 #endif
 
 	std::cout << "starting program" << endl;

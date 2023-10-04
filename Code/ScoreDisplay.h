@@ -88,6 +88,9 @@ struct ScoreDisplay
 
 	FeedbackInputBox *feedbackInputBox;
 
+	sf::Vertex nameBGQuad[4];
+	sf::Text levelNameText;
+
 	GameSession *game;
 	sf::Sprite score;
 	static const int NUM_BARS = 3;

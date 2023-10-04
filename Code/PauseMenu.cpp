@@ -148,9 +148,10 @@ PauseMenu::PauseMenu( GameSession *p_game)
 {
 	game = p_game;
 	mainMenu = game->mainMenu;
-
-
 	
+	mapNameText.setFont(game->mainMenu->arial);
+	mapNameText.setCharacterSize(40);
+	mapNameText.setFillColor(Color::White);
 
 	debugText.setFont(game->mainMenu->arial);
 	debugText.setCharacterSize(28);
@@ -384,6 +385,7 @@ void PauseMenu::SetTab( Tab t )
 	switch( t )
 	{
 	case MAP:
+		mapNameText.setString(game->mapHeader->fullName);
 		pauseMap->Reset();
 		break;
 	case KIN:
@@ -437,6 +439,7 @@ void PauseMenu::SetTopLeft(sf::Vector2f &pos)
 	bgSprite.setPosition(pos);//50, 50 );
 	tabSprite.setPosition(pos);
 
+	mapNameText.setPosition(100 + 10, 100 + 10);
 	pauseMap->SetCenter(Vector2f(960, 540));
 
 	Vector2f startOffset(1820 / 2, 128 / 2 + 100);
@@ -486,6 +489,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	else if (currentTab == MAP)
 	{
 		pauseMap->Draw(target);
+		target->draw(mapNameText);
 	}
 	else if( currentTab == OPTIONS )
 	{

@@ -23,6 +23,8 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	game = GameSession::GetSession();
 	basePos = position;
 
+	basePos += Vector2f(0, 80); //for name box
+
 	ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
 
 	for (int i = 0; i < NUM_BARS; ++i)
@@ -42,6 +44,11 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 		selectBars[i] = new SelectBar(i, this);
 	}
 
+	levelNameText.setFont(sess->mainMenu->arial);
+	levelNameText.setFillColor(Color::White);
+	levelNameText.setCharacterSize(40);
+
+	SetRectColor(nameBGQuad, Color::Black);
 
 	//bars[0]->SetText("", Color::White);
 	//bars[1]->SetText("", Color::White);
@@ -75,6 +82,10 @@ void ScoreDisplay::Draw(RenderTarget *target)
 {
 	if (active)
 	{
+		target->draw(nameBGQuad, 4, sf::Quads);
+		target->draw(levelNameText);
+
+
 		if (waiting && MainMenu::GetInstance()->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE )
 		{
 			feedbackInputBox->Draw(target);
@@ -209,6 +220,18 @@ void ScoreDisplay::Activate()
 	waiting = false;
 
 	GameSession *game = GameSession::GetSession();
+
+	levelNameText.setString(game->mapHeader->fullName);
+
+	auto lb = levelNameText.getLocalBounds();
+	//if( levelNameText.getGlobalBounds().)
+	levelNameText.setOrigin(lb.left + lb.width, lb.top + lb.height / 2);
+	//levelNameText.setOrigin(levelNameText.getLocalBounds().left + levelNameText.getLocalBounds().width / 2, 
+	//	levelNameText.getLocalBounds().top + levelNameText.getLocalBounds().height / 2 );
+	levelNameText.setPosition(basePos + Vector2f( -20, -40 ));
+
+	auto gb = levelNameText.getGlobalBounds();
+	SetRectTopLeft(nameBGQuad, gb.width + 20, gb.height + 20, Vector2f( gb.left - 10, gb.top - 10 ));
 
 	/*if (game != NULL && game->saveFile != NULL)
 	{
