@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include "PlayerRecord.h"
 #include "AdventureManager.h"
+#include "Leaderboard.h"
 
 using namespace std;
 using namespace sf;
@@ -246,6 +247,13 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 		{
 			if (controllerInput->ButtonPressed_B() || keyboardBack)
 			{
+				if (FocusedSector()->state == MapSector::LEADERBOARD || FocusedSector()->state == MapSector::LEADERBOARD_STARTING)
+				{
+					FocusedSector()->state = MapSector::NORMAL;
+					mainMenu->adventureManager->leaderboard->Hide();
+					break;
+				}
+
 				if (world->numSectors == 1)
 				{
 					return false;

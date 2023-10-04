@@ -1755,8 +1755,11 @@ bool GameSession::Load()
 
 	UpdateWorldDependentTileset(0);
 
-
-	originalProgressionModeOn = false; //testing
+	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	{
+		originalProgressionModeOn = mainMenu->adventureManager->originalProgressionMode;//false; //testing
+	}
+	
 
 	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE )
 	{
@@ -3713,6 +3716,8 @@ int GameSession::Run()
 void GameSession::Init()
 {
 	nexus = NULL;
+
+	resType = GR_BONUS_RETURN; //better than being unset, just makes it 0
 
 	continueLoading = true;
 	bestTimeGhostOn = false;

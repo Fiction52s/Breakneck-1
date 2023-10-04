@@ -115,6 +115,11 @@ void TutorialObject::AddToWorldTrees()
 	sess->activeItemTree->Insert(this);
 }
 
+void TutorialObject::SetExtraIDsAndAddToVectors()
+{
+	tutorialSeq->SetIDs();
+}
+
 bool TutorialObject::ShowTutorial()
 {
 	if (action == NEUTRAL)

@@ -80,8 +80,11 @@ struct MapSector
 	sf::Vertex lockedOverlayQuad[4];
 	sf::Vertex sectorArrowQuads[4 * 2];
 
-	sf::Vertex levelSelectOptionQuads[4 * 3];
-	sf::Vertex levelSelectOptionButtonQuads[4 * 3];
+	sf::Vertex levelSelectOptionQuads[4 * 4];
+	sf::Vertex levelSelectOptionButtonQuads[5 * 4];
+
+	sf::Vertex origPowersOptionQuad[4];
+	sf::Vertex origPowersOptionButtonQuad[4];
 
 	sf::Vertex levelNumberQuads[8 * 4];
 
@@ -107,6 +110,8 @@ struct MapSector
 	Tileset *ts_buttons;
 	Tileset *ts_levelSelectNumbers;
 	Tileset *ts_mapSelectOptions;
+	Tileset *ts_origPowersOptions;
+
 	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;

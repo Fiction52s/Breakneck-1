@@ -54,15 +54,28 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
 	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
 	ts_mapSelectOptions = worldMap->GetSizedTileset("HUD/score_384x96.png");
+	ts_origPowersOptions = worldMap->GetSizedTileset("Menu/parallel_play_384x128.png");
 	ts_lock = worldMap->GetSizedTileset("Menu/LevelSelect/sector_lock_256x256.png");
 	//ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
 
 	ts_levelSelectNumbers = worldMap->GetSizedTileset("Menu/LevelSelect/level_select_number_32x32.png");
 
+	if (ms->mainMenu->adventureManager->originalProgressionMode)
+	{
+		ts_origPowersOptions->SetQuadSubRect(origPowersOptionQuad, 2);
+	}
+	else
+	{
+		ts_origPowersOptions->SetQuadSubRect(origPowersOptionQuad, 3);
+	}
+
 	int playTileIndex = 21;
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads, playTileIndex);
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 4, playTileIndex + 2);
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 8, playTileIndex + 4);
+
+	//leaderboard
+	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 12, playTileIndex + 6);
 
 	for (int i = 0; i < 8; ++i)
 	{
@@ -325,7 +338,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 				int numOptionsShown = 0;
 				if (ghostAndReplayOn)
 				{
-					numOptionsShown = 3;
+					numOptionsShown = 4;
 				}
 				else
 				{
@@ -334,6 +347,9 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 				target->draw(levelSelectOptionQuads, numOptionsShown * 4, sf::Quads, ts_mapSelectOptions->texture);
 				target->draw(levelSelectOptionButtonQuads, numOptionsShown * 4, sf::Quads, ts_buttons->texture);
+
+				target->draw(origPowersOptionQuad, 4, sf::Quads, ts_origPowersOptions->texture);
+				target->draw(origPowersOptionButtonQuad, 4, sf::Quads, ts_buttons->texture);
 
 				target->draw(levelNumberQuads, numLevels * 4, sf::Quads, ts_levelSelectNumbers->texture);
 
@@ -477,9 +493,18 @@ void MapSector::SetXCenter(float x)
 	SetRectTopLeft(levelSelectOptionQuads + 8, 384, 96, levelSelectOptionsTopLeft + Vector2f( 0, 200 ));
 	SetRectTopLeft(levelSelectOptionButtonQuads + 8, 64, 64, levelSelectOptionsTopLeft + Vector2f(0, 200) + buttonIconOffset);
 
-	
+	Vector2f extraOptionsTopLeft = Vector2f(50, 305);
 
-	SetRectTopLeft(levelStatsBG, 256 + 48, 192, levelStatsTopLeft); 
+	SetRectTopLeft(levelSelectOptionQuads + 12, 384, 96, extraOptionsTopLeft);
+	SetRectTopLeft(levelSelectOptionButtonQuads + 12, 64, 64, extraOptionsTopLeft + buttonIconOffset);
+
+	Vector2f origPowersOptionPos = extraOptionsTopLeft + Vector2f(0, 100);
+	
+	
+	SetRectTopLeft(origPowersOptionQuad, 384, 128, origPowersOptionPos);
+	SetRectTopLeft(origPowersOptionButtonQuad, 64, 64, origPowersOptionPos + buttonIconOffset);
+
+	SetRectTopLeft(levelStatsBG, 256 + 48, 192, levelStatsTopLeft);
 
 	mapShardIconSpr.setPosition(levelStatsTopLeft + Vector2f( -15, 96 ));
 	mapBestTimeIconSpr.setPosition(levelStatsTopLeft + Vector2f( -20, 0 ) );
@@ -753,6 +778,9 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 {
 	UpdateUnlockedLevelCount();
 
+
+	
+
 	if (unlockedLevelCount != GetNumLevels())
 	{
 		//saSelector->SetTotalSize(unlockedLevelCount);
@@ -794,7 +822,7 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 
 	UpdateNodes();
 
-	if (state == NORMAL)
+	if (state == NORMAL || state == COMPLETE)
 	{
 		if (controllerInput->ButtonPressed_Start())
 		{
@@ -822,6 +850,10 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 
 			adventureManager->leaderboard->Start();//adventureManager->GetLeaderboardNameOriginalPowers(this), 
 												   //adventureManager->GetLeaderboardNameAnyPowers(this));
+		}
+		else if (controllerInput->ButtonPressed_X())
+		{
+			ms->mainMenu->adventureManager->originalProgressionMode = !ms->mainMenu->adventureManager->originalProgressionMode;
 		}
 	}
 	else if (state == LEADERBOARD)
@@ -984,6 +1016,17 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 			//endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
 		}
 	}
+
+
+	if (ms->mainMenu->adventureManager->originalProgressionMode)
+	{
+		ts_origPowersOptions->SetQuadSubRect(origPowersOptionQuad, 2);
+	}
+	else
+	{
+		ts_origPowersOptions->SetQuadSubRect(origPowersOptionQuad, 3);
+	}
+		
 
 	UpdateHighlight();
 	//UpdateSelectorSprite();
@@ -1241,6 +1284,14 @@ void MapSector::UpdateOptionButtons()
 	button = XBoxButton::XBOX_Y;
 	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(levelSelectOptionButtonQuads + 4 * 2, ir);
+
+	button = XBoxButton::XBOX_START;
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(levelSelectOptionButtonQuads + 4 * 3, ir);
+
+	button = XBoxButton::XBOX_X;
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(origPowersOptionButtonQuad, ir);	
 }
 
 void MapSector::UpdateSectorArrows()

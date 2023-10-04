@@ -33,6 +33,8 @@ AdventureManager::AdventureManager()
 		parallelPracticeMode = false;
 	}
 
+	originalProgressionMode = false;
+
 	LoadAdventure("tadventure");
 
 	kinBoostScreen = new KinBoostScreen;

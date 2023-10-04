@@ -39,6 +39,7 @@ struct AdventureManager
 
 
 	bool parallelPracticeMode;
+	bool originalProgressionMode;
 
 	AdventureManager();
 	~AdventureManager();

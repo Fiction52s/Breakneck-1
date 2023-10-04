@@ -66,9 +66,8 @@ WorldMap::WorldMap()
 	}
 
 	
-	ts_parallelPlayMarker = GetSizedTileset("HUD/score_384x96.png");
+	ts_parallelPlayMarker = GetSizedTileset("Menu/parallel_play_384x128.png");
 	ts_parallelPlayMarker->SetSpriteTexture(parallelPlayMarkerSpr);
-	ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 15);
 
 	Vector2f parallelPlayMarkerPos(1450, 850);
 
@@ -79,11 +78,11 @@ WorldMap::WorldMap()
 
 	if (adventureManager->parallelPracticeMode)
 	{
-		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 15);
+		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 0);
 	}
 	else
 	{
-		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 17);
+		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 1);
 	}
 	
 	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
@@ -595,13 +594,18 @@ void WorldMap::Update()
 			adventureManager->parallelPracticeMode = !adventureManager->parallelPracticeMode;
 		}
 
+		if (!MainMenu::GetInstance()->steamOn)
+		{
+			adventureManager->parallelPracticeMode = false;
+		}
+
 		if (adventureManager->parallelPracticeMode)
 		{
-			ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 15);
+			ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 0);
 		}
 		else
 		{
-			ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 17);
+			ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 1);
 		}
 
 		int numUnlockedWorlds = -1;
@@ -1058,10 +1062,13 @@ void WorldMap::Draw( RenderTarget *target )
 
 	DrawAsteroids(rt, false);
 
-	if (state == PLANET)
+	if (state == PLANET || state == PLANET_VISUAL_ONLY )
 	{
-		rt->draw(parallelPlayMarkerSpr);
-		rt->draw(parallelPlayButtonQuad, 4, sf::Quads, ts_buttons->texture);
+		if (MainMenu::GetInstance()->steamOn)
+		{
+			rt->draw(parallelPlayMarkerSpr);
+			rt->draw(parallelPlayButtonQuad, 4, sf::Quads, ts_buttons->texture);
+		}
 	}
 
 	if (state != COLONY && state != PlANET_TO_COLONY

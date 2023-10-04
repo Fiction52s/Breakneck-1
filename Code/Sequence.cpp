@@ -208,6 +208,7 @@ Sequence::Sequence()
 	seqData.frame = 0;
 	seqData.state = 0;
 
+	sequenceID = -1;
 	/*if (sess->IsSessTypeGame())
 	{
 		SetIDAndAddToAllSequencesVec();

@@ -32,6 +32,7 @@ struct TutorialObject : Enemy
 	bool TryDeactivate();
 	void UpdateParamsSettings();
 	sf::FloatRect GetAABB();
+	void SetExtraIDsAndAddToVectors();
 	
 	
 	double entranceRadius;

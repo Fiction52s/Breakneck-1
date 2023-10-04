@@ -421,6 +421,8 @@ void ScoreBar::SetText(const std::string &str,
 	textColor = c;
 	text.setString(str);
 	text.setFillColor(textColor);
+	text.setOutlineColor(Color::Black);
+	text.setOutlineThickness(2);
 }
 
 void ScoreBar::PopOut()

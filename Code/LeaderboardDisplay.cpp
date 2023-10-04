@@ -580,7 +580,8 @@ void LeaderboardDisplay::Update( ControllerState prevInput, ControllerState curr
 				scrollBar->SetRows(numEntries, NUM_ROWS);
 
 
-				assert(manager.myEntryIndex != -1);
+				//assert(manager.myEntryIndex != -1);
+				//this just means you dont have an entry. I don't think this should result in a crash.
 
 				int myIndexPosition = 4;
 				if (manager.myEntryIndex < myIndexPosition)

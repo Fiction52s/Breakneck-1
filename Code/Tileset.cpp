@@ -73,7 +73,7 @@ IntRect Tileset::GetSubRect( int localID )
 		cout << "localID: " << localID << ", sx: " << sx << ", sy: " << sy << endl;
 		assert( 0 );
 	}
-	return IntRect( xi * tileWidth, yi * tileHeight, tileWidth, tileHeight ); 
+	return IntRect( xi * tileWidth, yi * tileHeight, tileWidth, tileHeight );
 }
 
 int Tileset::GetNumTiles()
