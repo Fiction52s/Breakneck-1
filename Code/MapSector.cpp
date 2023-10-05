@@ -348,8 +348,12 @@ void MapSector::Draw(sf::RenderTarget *target)
 				target->draw(levelSelectOptionQuads, numOptionsShown * 4, sf::Quads, ts_mapSelectOptions->texture);
 				target->draw(levelSelectOptionButtonQuads, numOptionsShown * 4, sf::Quads, ts_buttons->texture);
 
-				target->draw(origPowersOptionQuad, 4, sf::Quads, ts_origPowersOptions->texture);
-				target->draw(origPowersOptionButtonQuad, 4, sf::Quads, ts_buttons->texture);
+				if (ghostAndReplayOn)
+				{
+					target->draw(origPowersOptionQuad, 4, sf::Quads, ts_origPowersOptions->texture);
+					target->draw(origPowersOptionButtonQuad, 4, sf::Quads, ts_buttons->texture);
+				}
+				
 
 				target->draw(levelNumberQuads, numLevels * 4, sf::Quads, ts_levelSelectNumbers->texture);
 

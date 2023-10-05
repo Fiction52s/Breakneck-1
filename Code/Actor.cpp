@@ -3336,8 +3336,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	singleWireBoostTiming = 4;
 	doubleWireBoostTiming = 4;
 
-	glideTurnAccel = .01;
-	maxGlideTurnFactor = .08;
+	glideTurnAccel = .005;//.01;
+	maxGlideTurnFactor = .05;//.08;
 
 	spriteAction = FAIR;
 	currTileIndex = 0;
