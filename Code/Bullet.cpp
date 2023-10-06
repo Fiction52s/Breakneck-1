@@ -229,6 +229,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 1.0;
+	hitboxInfo->knockbackOnBlock = false;
 	hitboxInfo->kbDir = V2d( 1, 0 );
 
 	bytesStoredPerBullet = inactiveBullets->GetNumStoredBytes();

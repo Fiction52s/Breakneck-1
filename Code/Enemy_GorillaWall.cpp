@@ -171,6 +171,7 @@ GorillaWall::GorillaWall(GorillaWallPool *p_pool, sf::Vertex *myQuad)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 	hitboxInfo->hType = HitboxInfo::MAGENTA;
+	hitboxInfo->knockbackOnBlock = false;
 
 	
 	hitBody.SetupNumFrames(1);

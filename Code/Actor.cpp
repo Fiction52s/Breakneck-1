@@ -4620,7 +4620,7 @@ void Actor::AddActiveComboObj(ComboObject *c)
 	}
 	else
 	{
-		c->data.nextComboObj = activeComboObjList;
+		c->data.nextComboObjectID = sess->GetComboObjectID(activeComboObjList);
 		activeComboObjList = c;
 	}
 }
@@ -4653,7 +4653,7 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 	c->data.active = false;
 	if (c == activeComboObjList)
 	{
-		activeComboObjList = activeComboObjList->data.nextComboObj;
+		activeComboObjList = sess->GetComboObjectFromID( activeComboObjList->data.nextComboObjectID );
 	}
 
 	ComboObject *curr = activeComboObjList;
@@ -4662,15 +4662,15 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 	{
 		if (curr == c)
 		{
-			prev->data.nextComboObj = curr->data.nextComboObj;
+			prev->data.nextComboObjectID = curr->data.nextComboObjectID;
 			break;
 		}
 
 		prev = curr;
-		curr = curr->data.nextComboObj;
+		curr = sess->GetComboObjectFromID(curr->data.nextComboObjectID);
 	}
 
-	c->data.nextComboObj = NULL;
+	c->data.nextComboObjectID = -1;
 }
 
 void Actor::ClearActiveComboObjects()
@@ -4687,7 +4687,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 	while (curr != NULL)
 	{
 		curr->Draw(target);
-		curr = curr->data.nextComboObj;
+		curr = sess->GetComboObjectFromID(curr->data.nextComboObjectID);
 	}
 }
 
@@ -5437,6 +5437,13 @@ void Actor::ProcessReceivedHit()
 		case HitResult::FULLBLOCK:
 		case HitResult::HALFBLOCK:
 		{
+			if (!receivedHit.knockbackOnBlock)
+			{
+				receivedHit.knockback = 0;
+				receivedHit.drainX = 0;
+				receivedHit.drainY = 0;
+			}
+
 			if (IsActionGroundBlock(action))
 			{
 				blockstunFrames = receivedHit.hitstunFrames * blockstunFactor;
@@ -5467,7 +5474,11 @@ void Actor::ProcessReceivedHit()
 
 				V2d kb = CalcKnockback(&receivedHit) * shieldKBFactor;
 
-				velocity = kb;
+				if (kb.x != 0 || kb.y != 0)
+				{
+					velocity = kb;
+				}
+				
 
 				RestoreAirOptions();
 			}
@@ -9238,147 +9249,6 @@ V2d Actor::UpdateReversePhysics()
 
 				//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 				//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-
-				if( false )
-				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
-				{
-					cout << "e0n: " << e0n.x << ", " << e0n.y << endl;
-					if( e0n.x > 0 && nextSteep )
-					{
-						cout << "c" << endl;
-						if( groundSpeed <= steepClimbSpeedThresh )
-						{
-							offsetX = -offsetX;
-							groundSpeed = 0;
-							break;
-						}
-						else
-						{
-							ground = next;
-							q = length( ground->v1 - ground->v0 );	
-						}
-					}
-					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
-					{
-						cout << "A" << endl;
-						reversed = false;
-						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-						movementVec.y += .1;
-						if( movementVec.x >= -.1 )
-						{
-							movementVec.x = -.1;
-						}
-						//leftGroundExtra.y = .01;
-						//leftGroundExtra.x = .01;
-
-						cout << "airborne 2" << endl;
-						leftGround = true;
-						SetAction( JUMP );
-						frame = 1;
-						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-						ground = NULL;
-
-						leftGroundExtra = movementVec;
-						return leftGroundExtra;
-					}
-					else
-					{
-						if( e0n.y > -steepThresh )
-						{
-							if( e0n.x < 0 )
-							{
-								if( gNormal.x >= -slopeTooSteepLaunchLimitX )
-								{
-									cout << "A2" << endl;
-									reversed = false;
-									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-									movementVec.y += .1;
-									if( movementVec.x <= .1 )
-									{
-										movementVec.x = .1;
-									}	
-
-									cout << "airborne 1" << endl;
-									leftGroundExtra.y = .01;
-									leftGroundExtra.x = .01;
-
-									leftGround = true;
-									SetAction( JUMP );
-									frame = 1;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-									ground = NULL;
-									holdJump = false;
-
-									return leftGroundExtra;
-								}
-								else
-								{
-									facingRight = true;
-									if (!IsGroundAttackAction(action ) )
-									{
-
-										SetAction(STEEPSLIDE);
-										frame = 0;
-									}
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-									ground = next;
-									q = length( ground->v1 - ground->v0 );	
-								}
-							}
-							else if( e0n.x > 0 )
-							{
-								SetAction(STEEPCLIMB);
-								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-								ground = next;
-								q = length( ground->v1 - ground->v0 );	
-							}
-							else
-							{
-								ground = next;
-								q = length( ground->v1 - ground->v0 );	
-							}
-						}
-						else
-						{
-							ground = next;
-							q = length( ground->v1 - ground->v0 );	
-						}
-					}
-				}
-				else
-				{
-					cout << "airborne 0" << endl;
-					//cout  <<  "reverse left" << endl;
-					//cout << "d" << endl;
-					reversed = false;
-					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-					movementVec.y += .1;
-					if( movementVec.x <= .1 )
-					{
-						movementVec.x = .1;
-					}
-
-					leftGround = true;
-					SetAction( JUMP );
-					frame = 1;
-					ground = NULL;
-					holdJump = false;
-					leftGroundExtra = movementVec;
-					return leftGroundExtra;
-
-					//break;
-				}
 			}
 			else if( transferRight )
 			{
@@ -9518,158 +9388,6 @@ V2d Actor::UpdateReversePhysics()
 
 				//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 				//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-
-				if( false )
-				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
-				{
-					cout << "e1n: " << e1n.x << ", " << e1n.y << endl;
-					if( e1n.x < 0 && e1n.y > -steepThresh )
-					{
-						cout << "dd" << endl;
-						if( groundSpeed >= -steepClimbSpeedThresh )
-						{
-							groundSpeed = 0;
-							offsetX = -offsetX;
-							break;
-						}
-						else
-						{
-							ground = next;
-							q = 0;
-						}
-					}
-					else if( e1n.x > 0 && e1n.y > -steepThresh )
-					{
-						reversed = false;
-						cout << "b" << endl;
-						cout << "gNormal: " << gNormal.x << ", " << gNormal.y << endl;
-						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-						movementVec.y += .1;
-						if( movementVec.x <= .1 )
-						{
-							movementVec.x = .1;
-						}
-
-						leftGround = true;
-						SetAction( JUMP );
-						frame = 1;
-						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-						ground = NULL;
-						holdJump = false;
-						leftGroundExtra = movementVec;
-						//leftGroundExtra.y = .01;
-						//leftGroundExtra.x = -.01;
-						return leftGroundExtra;
-
-					}
-					else
-					{
-						if( e1n.y > -steepThresh )
-						{
-							if( e1n.x > 0 )
-							{
-								if( gNormal.x <= slopeTooSteepLaunchLimitX )
-								{
-									//cout << "B2, extra: " << extra << endl;
-									reversed = false;
-									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-									movementVec.y += .1;
-									if( movementVec.x >= -.1 )
-									{
-										movementVec.x = -.1;
-									}
-
-									cout << "airborne 3" << endl;
-									leftGround = true;
-									SetAction( JUMP );
-									frame = 1;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-									ground = NULL;
-
-									holdJump = false;
-
-									leftGroundExtra = movementVec;
-									//leftGroundExtra.y = .01;
-									//leftGroundExtra.x = -.01;
-									return leftGroundExtra;
-
-								}
-								else
-								{
-									facingRight = false;
-									if (!IsGroundAttackAction(action))
-									{
-
-										SetAction(STEEPSLIDE);
-										frame = 0;
-									}
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-									ground = next;
-									q = 0;
-								}
-							}
-							else if( e1n.x < 0 )
-							{
-								//cout << "setting to climb??" << endl;
-								SetAction(STEEPCLIMB);
-								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-								ground = next;
-								q = 0;
-							}
-							else
-							{
-								ground = next;
-								q = 0;
-							}
-						}
-						else
-						{
-							ground = next;
-							q = 0;
-						}
-					}
-				}
-				else
-				{
-					//remember this is modified
-					velocity = normalize( V2d( 0, 0 ) + normalize(ground->v1 - ground->v0 ) ) * -groundSpeed;
-						
-					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-
-
-					//cout  <<  "reverse right:" << movementVec.x << ", " << movementVec.y << endl;
-					movementVec.y += .1;//.01;
-					if( movementVec.x >= -.1 )
-					{
-						movementVec.x = -.1;
-					}
-					cout << "airborne 4: " << velocity.x << ", " << velocity.y << endl;
-					SetAction( JUMP );
-					frame = 1;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-					leftGround = true;
-					reversed = false;
-					ground = NULL;
-					holdJump = false;
-
-					//leftGroundExtra.y = .01;
-					//leftGroundExtra.x = -.01;
-					leftGroundExtra = movementVec;
-
-					return leftGroundExtra;
-					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
-				}
 
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
@@ -10154,7 +9872,9 @@ V2d Actor::UpdateReversePhysics()
 									//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
 									velocity = testVel;
 
-									movementVec = normalize(ground->v1 - ground->v0) * -extra;
+									position += minContact.resolution;
+
+									movementVec = normalize(ground->v1 - ground->v0) * steal;//-extra;
 
 									leftGround = true;
 									ground = NULL;
@@ -11424,7 +11144,7 @@ bool Actor::EnemyIsFar(V2d &enemyPos)
 			isFar = (len > MAX_VELOCITY * 2);
 			if (!isFar)
 				return false;
-			curr = curr->data.nextComboObj;
+			curr = sess->GetComboObjectFromID(curr->data.nextComboObjectID);
 		}
 	}
 
@@ -11447,7 +11167,7 @@ ComboObject * Actor::IntersectMyComboHitboxes(Enemy *e, CollisionBody *cb,
 				return curr;
 			}
 		}
-		curr = curr->data.nextComboObj;
+		curr = sess->GetComboObjectFromID(curr->data.nextComboObjectID);
 	}
 
 	return NULL;
@@ -13597,8 +13317,22 @@ void Actor::UpdatePhysics()
 							//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
 									velocity = testVel;
 						
-									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-						
+									position += minContact.resolution;
+
+									//resMove -= minContact.resolution;
+
+									//cout << "extra: " << extra << "\n";
+
+									movementVec = normalize(ground->v1 - ground->v0) * steal;//V2d(0, 0);//normalize(ground->v1 - ground->v0) * steal;//resMove;
+
+									//this basically is always V2d(0,0) afaik. The issue before
+									//was that I was using * extra, and that fails if you hit the wall but its not at the end
+									//of your edge, such as when using a floor rail.
+
+									//if I have other skipping bugs from physics it will most likely be because of doing *extra but I haven't found any others yet
+									
+
+
 									leftGround = true;
 									ground = NULL;
 									SetAction( JUMP );

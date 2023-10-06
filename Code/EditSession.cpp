@@ -13873,6 +13873,14 @@ void EditSession::GeneralEventHandler()
 			{
 				if (ev.key.code == Keyboard::S && ev.key.control)
 				{
+					if (mode == TEST_PLAYER)
+					{
+						CreateError(ERR_CANT_SAVE_WHILE_PLAYTESTING);
+						ShowMostRecentError();
+						break;
+					}
+
+
 					if (ev.key.shift)
 					{
 						SaveMapDialog(MapBrowser::EDITOR_SAVE);

@@ -90,6 +90,7 @@ CoyoteShockwave::CoyoteShockwave(sf::Vertex *myQuad, CoyoteShockwavePool *pool)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->knockbackOnBlock = false;
 
 	BasicCircleHitBodySetup(16);
 	CollisionBox & cb = hitBody.GetCollisionBoxes(0)[0];

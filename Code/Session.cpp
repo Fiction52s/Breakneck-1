@@ -1414,6 +1414,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
 	ts_goal = NULL;
+	ts_goalCrack = NULL;
 	ts_goalExplode = NULL;
 
 	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
@@ -9834,13 +9835,20 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 	{
 		DestroyTileset(ts_goal);
 		ts_goal = NULL;
+	}
 
+	if (ts_goalCrack != NULL)
+	{
 		DestroyTileset(ts_goalCrack);
 		ts_goalCrack = NULL;
-
+	}
+	
+	if (ts_goalExplode != NULL)
+	{
 		DestroyTileset(ts_goalExplode);
 		ts_goalExplode = NULL;
 	}
+	
 
 	//if (worldIndex < 1)
 	{

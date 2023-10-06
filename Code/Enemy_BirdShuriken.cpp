@@ -152,6 +152,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->knockbackOnBlock = false;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

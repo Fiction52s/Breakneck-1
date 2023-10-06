@@ -2721,7 +2721,7 @@ ComboObject::ComboObject(Enemy *en)
 	:enemy(en), enemyHitBody(CollisionBox::Hit)
 {
 	data.enemyHitboxFrame = -1;
-	data.nextComboObj = NULL;
+	data.nextComboObjectID = -1;
 	enemyHitboxInfo = NULL;
 
 	comboObjectID = -1;
@@ -2736,7 +2736,7 @@ ComboObject::~ComboObject()
 void ComboObject::Reset()
 {
 	data.enemyHitboxFrame = 0;
-	data.nextComboObj = NULL;
+	data.nextComboObjectID = -1;
 	data.active = false;
 }
 

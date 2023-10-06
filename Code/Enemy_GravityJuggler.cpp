@@ -64,7 +64,7 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	SetEditorActions(S_FLOAT, 0, 0);
 
 	actionLength[S_FLOAT] = 18;
-	actionLength[S_POP] = 10;
+	actionLength[S_POP] = 60;
 	actionLength[S_JUGGLE] = 10;
 	
 	actionLength[S_RETURN] = 30;
@@ -97,7 +97,7 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 
 	UpdateParamsSettings();
 	
-	maxWaitFrames = 180;
+	maxWaitFrames = 90;
 
 	gravFactor = 1.0;
 
@@ -250,18 +250,37 @@ void GravityJuggler::PopThrow()
 
 	dir = receivedHit.hDir;//normalize(receivedHit->hDir);
 
+	if (!HitboxInfo::IsAirType(receivedHit.hitPosType))
+	{
+		if (dir.y > 0)
+		{
+			dir.y = 0;
+		}
+	}
+
 	V2d hit(0, -25);//-20);
 
 	double extraX = 10;//8;
 
-	if (dir.x != 0)
+	if (dir.x > 0)
 	{
-		hit.x += dir.x * extraX;
+		hit.x = extraX;
+	}
+	else if( dir.x < 0 )
+	{
+		hit.x = -extraX;
+	}
+
+	
+
+	if (dir.y > 0)
+	{
+		hit.y = 10;
 	}
 
 	bool pFacingRight = sess->PlayerIsFacingRight(0);
 
-	if (((dir.y == 1 && !reversedGrav) || (dir.y == -1 && reversedGrav))
+	/*if (((dir.y == 1 && !reversedGrav) || (dir.y == -1 && reversedGrav))
 		&& dir.x == 0)
 	{
 		hit.y += 3;
@@ -274,7 +293,7 @@ void GravityJuggler::PopThrow()
 			hit.x += extraX / 2.0;
 		}
 
-	}
+	}*/
 
 	if (reversedGrav)
 	{
@@ -375,7 +394,7 @@ void GravityJuggler::ProcessState()
 	}*/
 
 	double verticalLimitToBeHittable = -6;
-	if (action == S_POP && ( (data.velocity.y >= verticalLimitToBeHittable && !reversedGrav) || (data.velocity.y <= -verticalLimitToBeHittable && reversedGrav ) ) )
+	if (action == S_POP && frame >= 20)//( (data.velocity.y >= verticalLimitToBeHittable && !reversedGrav) || (data.velocity.y <= -verticalLimitToBeHittable && reversedGrav ) ) )
 	{
 		action = S_JUGGLE;
 		frame = 0;
@@ -449,6 +468,16 @@ void GravityJuggler::FrameIncrement()
 		
 	}
 	
+}
+
+bool GravityJuggler::CanComboHit(Enemy *e)
+{
+	if (e->type == EN_GRAVITYJUGGLER)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void GravityJuggler::ComboHit()

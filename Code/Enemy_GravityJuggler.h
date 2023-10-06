@@ -44,6 +44,7 @@ struct GravityJuggler : Enemy
 	GravityJuggler(ActorParams *ap );
 	~GravityJuggler();
 	void UpdateParamsSettings();
+	bool CanComboHit(Enemy *e);
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();

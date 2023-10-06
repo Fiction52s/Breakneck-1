@@ -193,6 +193,7 @@ SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->knockbackOnBlock = false;
 
 	
 

@@ -338,7 +338,15 @@ void MapSector::Draw(sf::RenderTarget *target)
 				int numOptionsShown = 0;
 				if (ghostAndReplayOn)
 				{
-					numOptionsShown = 4;
+					if (ms->mainMenu->steamOn)
+					{
+						numOptionsShown = 4;
+					}
+					else
+					{
+						numOptionsShown = 3;
+					}
+					
 				}
 				else
 				{
@@ -828,7 +836,7 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 
 	if (state == NORMAL || state == COMPLETE)
 	{
-		if (controllerInput->ButtonPressed_Start())
+		if (ms->mainMenu->steamOn && controllerInput->ButtonPressed_Start())
 		{
 			state = LEADERBOARD;
 

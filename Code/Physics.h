@@ -177,6 +177,7 @@ struct HitboxInfo
 		reversableKnockback = true;
 		sensor = false;
 		comboer = false;
+		knockbackOnBlock = true;
 	}
 
 	static bool IsAirType(HitPosType hpt);
@@ -214,6 +215,7 @@ struct HitboxInfo
 	bool reversableKnockback;
 	bool sensor; //doesn't register as recent hitter
 	bool comboer;
+	bool knockbackOnBlock;
 	
 };
 

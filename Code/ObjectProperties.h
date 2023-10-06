@@ -181,7 +181,7 @@ struct ComboObject
 	{
 		bool active;
 		int enemyHitboxFrame;
-		ComboObject *nextComboObj;
+		int nextComboObjectID;
 	};
 
 	MyData data;
