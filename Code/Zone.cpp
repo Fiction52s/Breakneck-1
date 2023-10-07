@@ -502,6 +502,10 @@ void Zone::Init()
 
 		if (allSecret)
 		{
+			if (!secretZone)
+			{
+				zonePoly->FinalizeSecret();
+			}
 			secretZone = true;
 		}
 		

@@ -34,7 +34,7 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	animFactor[RECOVER] = 1;//17 * 5;
 
 	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 8, 8, GetPosition(), V2d(0, 1), 2 * PI, 90, false);
+	launchers[0] = new Launcher(this, BasicBullet::PUFFERFISH, 8, 8, GetPosition(), V2d(0, 1), 2 * PI, 90, false);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();

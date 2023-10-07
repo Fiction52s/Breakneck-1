@@ -111,7 +111,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		bulletTilesetIndex = 1;
 		break;
 	case BasicBullet::BAT:
-		bulletTilesetIndex = 6;
+		bulletTilesetIndex = 3;
 		break;
 	case BasicBullet::CURVE_TURRET:
 		bulletTilesetIndex = 2;
@@ -131,11 +131,14 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::TURTLE:
 		bulletTilesetIndex = 7;
 		break;
+	case BasicBullet::PUFFERFISH:
+		bulletTilesetIndex = 6;
+		break;
 	case BasicBullet::LIZARD:
 		bulletTilesetIndex = 10;
 		break;
 	case BasicBullet::PARROT:
-		bulletTilesetIndex = 8;
+		bulletTilesetIndex = 9;
 		break;
 	case BasicBullet::GROWING_TREE:
 		bulletTilesetIndex = 8;
@@ -303,6 +306,8 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 	case BasicBullet::BIG_OWL:
 		return 10;
 	case BasicBullet::TURTLE:
+		return 16;
+	case BasicBullet::PUFFERFISH:
 		return 16;
 	case BasicBullet::LIZARD:
 		return 32;

@@ -41,6 +41,7 @@ struct BasicBullet : QuadTreeCollider
 		OWL,
 		BIG_OWL,
 		TURTLE,
+		PUFFERFISH,
 		LIZARD,
 		PARROT,
 		GROWING_TREE,
