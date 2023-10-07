@@ -2004,17 +2004,17 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	int r = rand() % 2;
 	cout << "choosing quickplay map: " << r << endl;
 
-	r = 0; //just for testing
+	//r = 0; //just for testing
 	//r = 1;
 
 	if (r == 0)
 	{
 		//return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
-		return "Resources/Maps/Sorted/W2/Multiplayer/afighting6" + string(MAP_EXT);
+		return "Resources/Maps/Multiplayer/afighting6" + string(MAP_EXT);
 	}
 	else
 	{
-		return "Resources/Maps/W2/afighting2" + string(MAP_EXT);
+		return "Resources/Maps/Multiplayer/afighting2" + string(MAP_EXT);
 	}
 	
 }
