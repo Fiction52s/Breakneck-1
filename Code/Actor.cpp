@@ -6946,6 +6946,25 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 		along = V2d(-trueNorm.y, trueNorm.x);
 	}
 
+	currHitboxInfo->hitPosType = HitboxInfo::AIRFORWARD; //default. just need to distinguish between ground/air
+	switch (action)
+	{
+	case STANDATTACK1:
+	case STANDATTACK2:
+	case STANDATTACK3:
+	case STANDATTACK4:
+	case DASHATTACK:
+	case DASHATTACK2:
+	case DASHATTACK3:
+	case UPTILT1:
+	case UPTILT2:
+	case UPTILT3:
+	case STEEPCLIMBATTACK:
+	case STEEPSLIDEATTACK:
+		currHitboxInfo->hitPosType = HitboxInfo::GROUND;
+		break;
+	}
+
 	switch (action)
 	{
 	case AIRDASHFORWARDATTACK:

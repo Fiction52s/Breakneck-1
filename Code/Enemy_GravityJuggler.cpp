@@ -252,7 +252,7 @@ void GravityJuggler::PopThrow()
 
 	if (!HitboxInfo::IsAirType(receivedHit.hitPosType))
 	{
-		if (dir.y > 0)
+		if ((dir.y > 0 && !reversed ) || (dir.y < 0 && reversed ))
 		{
 			dir.y = 0;
 		}
@@ -273,7 +273,7 @@ void GravityJuggler::PopThrow()
 
 	
 
-	if (dir.y > 0)
+	if ((dir.y > 0 && !reversed) || (dir.y < 0 && reversed))
 	{
 		hit.y = 10;
 	}

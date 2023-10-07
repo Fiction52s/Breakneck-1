@@ -105,6 +105,7 @@ Zone::Zone( TerrainPolygon *tp )
 	zonePoly->FinalizeJustEdges();
 	//zonePoly->Finalize();//FinalizeJustEdges();
 
+	totalNumKeys = -1;
 	zoneIndex = -2;
 	secretZone = false;
 	parentZone = NULL;
@@ -554,7 +555,7 @@ void Zone::Init()
 		miniShader->setUniform("shadowColor", ColorGL(Minimap::terrainColor));
 		miniShader->setUniform("alpha", 1.f);
 
-
+		std::map<pair<int,int>, double> totalTouchingTerrainType;
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
 			Edge *start = (*it);
@@ -565,10 +566,25 @@ void Zone::Init()
 				if (!curr->IsGateEdge())
 				{
 					curr->secretZoneEdge = true;
+					totalTouchingTerrainType[make_pair(curr->poly->terrainWorldType, curr->poly->terrainVariation)] += curr->GetLength();
 				}
 				curr = curr->edge1;
 			}
 		}
+
+		int mostTouchedAmount = -1;
+		pair<int, int> mostTouchedTerrain = make_pair(0, 0);
+		for (auto it = totalTouchingTerrainType.begin(); it != totalTouchingTerrainType.end(); ++it)
+		{
+			if ((*it).second > mostTouchedAmount)
+			{
+				mostTouchedAmount = (*it).second;
+				mostTouchedTerrain = (*it).first;
+			}
+		}
+		zonePoly->SetMaterialType(mostTouchedTerrain.first, mostTouchedTerrain.second);
+
+
 		/*if (secretPreviewShader != NULL)
 		{
 			delete secretPreviewShader;

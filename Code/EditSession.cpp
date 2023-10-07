@@ -816,6 +816,7 @@ void EditSession::TestPlayerMode()
 				if ((*enit)->myEnemy != NULL)
 				{
 					(*enit)->myEnemy->Reset();
+					//(*enit)->myEnemy->zone = NULL;
 					//AddEnemy((*enit)->myEnemy);
 				}
 			}
@@ -826,6 +827,7 @@ void EditSession::TestPlayerMode()
 			if ((*it)->enemyChain != NULL)
 			{
 				(*it)->enemyChain->Reset();
+				//(*it)->enemyChain->zone = NULL;
 				//AddEnemy((*it)->enemyChain);
 			}
 			else
@@ -8137,7 +8139,7 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		}
 	}
 
-	CleanupTestPlayerMode();
+	
 
 	/*CleanupGates();
 	CleanupZones();*/
@@ -8175,7 +8177,7 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		for (list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
 			it2 != (*it).second->actors.end(); ++it2)
 		{
-			if ((*it2)->myEnemy != NULL && (*it2)->myEnemy->zone != NULL && (*it2)->myEnemy->zone->zType == Zone::SECRET)
+			if ( hideSecret && (*it2)->myEnemy != NULL && (*it2)->myEnemy->zone != NULL && (*it2)->myEnemy->zone->zType == Zone::SECRET)
 			{
 				continue;
 			}
@@ -8198,6 +8200,8 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 
 		//(*it).second->DrawPreview( mapPreviewTex );
 	}
+
+	CleanupTestPlayerMode();
 
 	DrawDecor(EffectLayer::IN_FRONT, target);
 
@@ -8231,6 +8235,16 @@ void EditSession::TestPlayerModeForPreview()
 		(*it)->CancelTransformation();
 	}
 
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->Respawn();
+		}
+	}
+
 	if (terrainTree != NULL)
 	{
 		terrainTree->Clear();
@@ -8255,6 +8269,7 @@ void EditSession::TestPlayerModeForPreview()
 				if (currEnemy != NULL)
 				{
 					currEnemy->Reset();
+					currEnemy->zone = NULL;
 					RemoveEnemy(currEnemy);
 				}
 			}
@@ -8265,6 +8280,7 @@ void EditSession::TestPlayerModeForPreview()
 			if ((*it)->enemyChain != NULL)
 			{
 				(*it)->enemyChain->Reset();
+				(*it)->enemyChain->zone = NULL;
 				RemoveEnemy((*it)->enemyChain);
 			}
 		}
