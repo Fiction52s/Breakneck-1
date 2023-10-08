@@ -36,7 +36,6 @@ struct GravityJuggler : Enemy
 	V2d gDir;
 	double maxFallSpeed;
 	Tileset *ts;
-	bool reversed;
 	int juggleReps;
 	
 	int maxWaitFrames;

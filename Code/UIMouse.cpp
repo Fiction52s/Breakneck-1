@@ -3,6 +3,7 @@
 #include <iostream>
 #include "CustomCursor.h"
 #include <assert.h>
+#include "VectorMath.h"
 
 using namespace sf;
 using namespace std;
@@ -72,43 +73,92 @@ void UIMouse::Update(sf::Vector2i &p_mousePos)
 			}
 		}
 
+		sf::Vector2i movement(0, 0);
+		float maxSpeed = 15;
+
 		if (nonNeutralStates == NULL)
 		{
-			myPos = mousePos;
+			for (int i = 0; i < CTYPE_NONE; ++i)
+			{
+				for (int j = 0; j < 4; ++j)
+				{
+					currStates = CONTROLLERS.GetStateQueue(i, j);
+					if (currStates != NULL)
+					{
+						//if (currStates->GetCurrState().PLeft() || currStates->GetCurrState().PUp()
+						//	|| currStates->GetCurrState().PRight() || currStates->GetCurrState().PDown())
+						if( currStates->ButtonHeld_PadAny())
+						{
+							nonNeutralStates = currStates;
+							break;
+						}
+					}
+				}
+			}
+
+			if (nonNeutralStates == NULL)
+			{
+				myPos = mousePos;
+				consumed = false;
+				return;
+			}
+			else
+			{
+				Vector2f move(0, 0);
+				if (nonNeutralStates->ButtonHeld_PadLeft())
+				{
+					move.x = -1;
+				}
+				else if (nonNeutralStates->ButtonHeld_PadRight())
+				{
+					move.x = 1;
+				}
+				
+				if (nonNeutralStates->ButtonHeld_PadUp())
+				{
+					move.y = -1;
+				}
+				else if (nonNeutralStates->ButtonHeld_PadDown())
+				{
+					move.y = 1;
+				}
+				move = normalize(move) * maxSpeed;
+				
+				movement = Vector2i(round(move.x), round(move.y));
+			}
 		}
 		else
 		{
 			//we already know its out of the deadzone because of the previous calculation
 			ControllerState currState = nonNeutralStates->GetCurrState();
-
-			Vector2i origSize(1920, 1080);
-			Vector2f origSizeF(origSize);
-
 			float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
 			float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
-			float maxSpeed = 20;
-			sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
-
-			myPos += movement;
-
-			if (myPos.x < 0)
-				myPos.x = 0;
-			else if (myPos.x > origSize.x)
-				myPos.x = origSize.x;
-
-			if (myPos.y < 0)
-				myPos.y = 0;
-			else if (myPos.y > origSize.y)
-				myPos.y = origSize.y;
-
-			Vector2f windowSize(currWindow->getSize());
-			Vector2f pos(myPos);
-
-			pos.x *= windowSize.x / origSizeF.x;
-			pos.y *= windowSize.y / origSizeF.y;
-
-			sf::Mouse::setPosition(Vector2i(pos), *currWindow);
+			
+			movement = Vector2i(round(x * maxSpeed), round(y * maxSpeed));
 		}
+
+		Vector2i origSize(1920, 1080);
+		Vector2f origSizeF(origSize);
+
+		myPos += movement;
+
+		if (myPos.x < 0)
+			myPos.x = 0;
+		else if (myPos.x > origSize.x)
+			myPos.x = origSize.x;
+
+		if (myPos.y < 0)
+			myPos.y = 0;
+		else if (myPos.y > origSize.y)
+			myPos.y = origSize.y;
+
+		Vector2f windowSize(currWindow->getSize());
+		Vector2f pos(myPos);
+
+		pos.x *= windowSize.x / origSizeF.x;
+		pos.y *= windowSize.y / origSizeF.y;
+
+		sf::Mouse::setPosition(Vector2i(pos), *currWindow);
 	}
 	else if (cursorOn)
 	{

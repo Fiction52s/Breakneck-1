@@ -905,8 +905,8 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 	{
 		int old = GetSelectedIndex();
 
-		bool left = controllerInput->GetCurrState().LLeft();
-		bool right = controllerInput->GetCurrState().LRight();
+		bool left = controllerInput->GetCurrState().LLeft() || controllerInput->ButtonHeld_PadLeft();
+		bool right = controllerInput->GetCurrState().LRight() || controllerInput->ButtonHeld_PadRight();
 
 		int changed = mapSASelector->UpdateIndex(left, right);
 

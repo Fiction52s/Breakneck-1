@@ -113,8 +113,6 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	}
 	maxFallSpeed = 15;
 
-	reversed = true;
-
 	ts = GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -252,7 +250,7 @@ void GravityJuggler::PopThrow()
 
 	if (!HitboxInfo::IsAirType(receivedHit.hitPosType))
 	{
-		if ((dir.y > 0 && !reversed ) || (dir.y < 0 && reversed ))
+		if ((dir.y > 0 && !reversedGrav ) || (dir.y < 0 && reversedGrav))
 		{
 			dir.y = 0;
 		}
@@ -273,7 +271,7 @@ void GravityJuggler::PopThrow()
 
 	
 
-	if ((dir.y > 0 && !reversed) || (dir.y < 0 && reversed))
+	if ((dir.y > 0 && !reversedGrav) || (dir.y < 0 && reversedGrav))
 	{
 		hit.y = 10;
 	}

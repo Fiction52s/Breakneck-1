@@ -19,11 +19,13 @@ WorldMapShip::WorldMapShip(WorldMap *wm)
 void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)
 {
 	ControllerState currState = controllerInput->GetCurrState();
+	float maxSpeed = 10;
+
 	if (currState.leftStickMagnitude > GameController::stickThresh )
 	{
 		float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
 		float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
-		float maxSpeed = 10;
+		
 		sf::Vector2f movement(round(x * maxSpeed), round(y * maxSpeed));
 
 		if (currState.LUp())
@@ -71,6 +73,75 @@ void WorldMapShip::Update(ControllerDualStateQueue *controllerInput)
 
 		//facingIndex = (currState.leftStickDirection / 8);
 		//currState.leftStickRadians
+
+		SetPosition(position + movement);
+
+		++frame;
+	}
+	else if (controllerInput->ButtonHeld_PadAny())
+	{
+		if (controllerInput->ButtonHeld_PadUp())
+		{
+			if (controllerInput->ButtonHeld_PadLeft())
+			{
+				facingIndex = 5;
+			}
+			else if (controllerInput->ButtonHeld_PadRight())
+			{
+				facingIndex = 7;
+			}
+			else
+			{
+				facingIndex = 6;
+			}
+		}
+		else if (controllerInput->ButtonHeld_PadDown())
+		{
+			if (controllerInput->ButtonHeld_PadLeft())
+			{
+				facingIndex = 3;
+			}
+			else if (controllerInput->ButtonHeld_PadRight())
+			{
+				facingIndex = 1;
+			}
+			else
+			{
+				facingIndex = 2;
+			}
+		}
+		else
+		{
+			if (controllerInput->ButtonHeld_PadLeft())
+			{
+				facingIndex = 4;
+			}
+			else if (controllerInput->ButtonHeld_PadRight())
+			{
+				facingIndex = 0;
+			}
+		}
+
+		sf::Vector2f movement(0, 0);
+		if (controllerInput->ButtonHeld_PadLeft())
+		{
+			movement.x = -1;
+		}
+		else if (controllerInput->ButtonHeld_PadRight())
+		{
+			movement.x = 1;
+		}
+
+		if (controllerInput->ButtonHeld_PadUp())
+		{
+			movement.y = -1;
+		}
+		else if (controllerInput->ButtonHeld_PadDown())
+		{
+			movement.y = 1;
+		}
+
+		movement = normalize(movement) * maxSpeed;
 
 		SetPosition(position + movement);
 

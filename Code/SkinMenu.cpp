@@ -79,7 +79,7 @@ void SkinMenu::SetGridTopLeft(sf::Vector2f &pos)
 
 bool SkinMenu::Update(ControllerDualStateQueue *controllerInput)
 {
-	if (controllerInput->DirPressed_Up())
+	if (controllerInput->MenuDirPressed_Up())
 	{
 		selectedPos.y--;
 		if (selectedPos.y == -1)
@@ -87,7 +87,7 @@ bool SkinMenu::Update(ControllerDualStateQueue *controllerInput)
 			selectedPos.y = 7;
 		}
 	}
-	else if (controllerInput->DirPressed_Down() )
+	else if (controllerInput->MenuDirPressed_Down() )
 	{
 		selectedPos.y++;
 		if (selectedPos.y == 8)
@@ -96,7 +96,7 @@ bool SkinMenu::Update(ControllerDualStateQueue *controllerInput)
 		}
 	}
 
-	if (controllerInput->DirPressed_Left())
+	if (controllerInput->MenuDirPressed_Left())
 	{
 		selectedPos.x--;
 		if (selectedPos.x == -1)
@@ -104,7 +104,7 @@ bool SkinMenu::Update(ControllerDualStateQueue *controllerInput)
 			selectedPos.x = 7;
 		}
 	}
-	else if (controllerInput->DirPressed_Right())
+	else if (controllerInput->MenuDirPressed_Right())
 	{
 		selectedPos.x++;
 		if (selectedPos.x == 8)

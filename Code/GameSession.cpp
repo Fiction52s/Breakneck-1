@@ -3610,37 +3610,40 @@ int GameSession::Run()
 		parentGame->bonusHandler->InitBonus();
 	}
 
-	if (mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
+	if (mainMenu->adventureManager != NULL)
 	{
-		PlayerReplayManager *prm = mainMenu->adventureManager->leaderboard->replayChosen;
-		//TryStartLeaderboardReplay(mainMenu->adventureManager->leaderboard->replayChosen);
-		CleanupReplaysAndGhosts();
+		if (mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
+		{
+			PlayerReplayManager *prm = mainMenu->adventureManager->leaderboard->replayChosen;
+			//TryStartLeaderboardReplay(mainMenu->adventureManager->leaderboard->replayChosen);
+			CleanupReplaysAndGhosts();
 
-		bestTimeGhostOn = true; //for desyncs
-		bestReplayOn = true;
+			bestTimeGhostOn = true; //for desyncs
+			bestReplayOn = true;
 
-		activePlayerReplayManagers.push_back(prm);
-		prm->replayHUD->SetSession();
+			activePlayerReplayManagers.push_back(prm);
+			prm->replayHUD->SetSession();
 
-		prm->SetPlayers();
+			prm->SetPlayers();
 
-		prm->AddGhostsToVec(replayGhosts, mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins());
-		prm->replaysActive = bestReplayOn;
-		prm->ghostsActive = bestTimeGhostOn;
+			prm->AddGhostsToVec(replayGhosts, mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins());
+			prm->replaysActive = bestReplayOn;
+			prm->ghostsActive = bestTimeGhostOn;
 
-		prm->Reset();
+			prm->Reset();
 
-		bool res = AddGhostsForReplay(prm);
+			bool res = AddGhostsForReplay(prm);
 
-		mainMenu->adventureManager->leaderboard->Hide();
-	}
-	else if (mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
-	{
-		CleanupReplaysAndGhosts();
+			mainMenu->adventureManager->leaderboard->Hide();
+		}
+		else if (mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
+		{
+			CleanupReplaysAndGhosts();
 
-		AddGhosts();
+			AddGhosts();
 
-		mainMenu->adventureManager->leaderboard->Hide();
+			mainMenu->adventureManager->leaderboard->Hide();
+		}
 	}
 
 	quit = false;

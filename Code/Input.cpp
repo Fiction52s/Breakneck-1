@@ -1890,6 +1890,167 @@ bool AllControllers::ButtonPressed_Start()
 	return false;
 }
 
+bool AllControllers::ButtonHeld_PadLeft()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_PadLeft())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_PadLeft()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_PadLeft())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_PadRight()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_PadRight())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_PadRight()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_PadRight())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_PadUp()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_PadUp())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_PadUp()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_PadUp())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_PadDown()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_PadDown())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_PadDown()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_PadDown())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_PadAny()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_PadAny())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_PadAny()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_PadAny())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+
 bool AllControllers::ButtonHeld_Any()
 {
 	ControllerDualStateQueue *states = NULL;
@@ -1984,6 +2145,26 @@ bool AllControllers::DirPressed_Down()
 	}
 
 	return false;
+}
+
+bool AllControllers::MenuDirPressed_Left()
+{
+	return (DirPressed_Left() || ButtonPressed_PadLeft());
+}
+
+bool AllControllers::MenuDirPressed_Right()
+{
+	return (DirPressed_Right() || ButtonPressed_PadRight());
+}
+
+bool AllControllers::MenuDirPressed_Up()
+{
+	return (DirPressed_Up() || ButtonPressed_PadUp());
+}
+
+bool AllControllers::MenuDirPressed_Down()
+{
+	return (DirPressed_Down() || ButtonPressed_PadDown());
 }
 
 bool AllControllers::KeyboardButtonPressed(int key)
@@ -2421,6 +2602,57 @@ bool ControllerStateQueue::ButtonPressed_Any()
 		|| ButtonPressed_LeftTrigger() || ButtonPressed_RightTrigger();
 }
 
+bool ControllerStateQueue::ButtonHeld_PadLeft()
+{
+	return states[0].PLeft();
+}
+
+bool ControllerStateQueue::ButtonPressed_PadLeft()
+{
+	return states[0].PLeft() && !states[1].PLeft();
+}
+
+bool ControllerStateQueue::ButtonHeld_PadRight()
+{
+	return states[0].PRight();
+}
+
+bool ControllerStateQueue::ButtonPressed_PadRight()
+{
+	return states[0].PRight() && !states[1].PRight();
+}
+
+bool ControllerStateQueue::ButtonHeld_PadUp()
+{
+	return states[0].PUp();
+}
+
+bool ControllerStateQueue::ButtonPressed_PadUp()
+{
+	return states[0].PUp() && !states[1].PUp();
+}
+
+bool ControllerStateQueue::ButtonHeld_PadDown()
+{
+	return states[0].PDown();
+}
+
+bool ControllerStateQueue::ButtonPressed_PadDown()
+{
+	return states[0].PDown() && !states[1].PDown();
+}
+
+bool ControllerStateQueue::ButtonHeld_PadAny()
+{
+	return (ButtonHeld_PadLeft() || ButtonHeld_PadRight() || ButtonHeld_PadUp() || ButtonHeld_PadDown());
+}
+
+bool ControllerStateQueue::ButtonPressed_PadAny()
+{
+	return (ButtonPressed_PadLeft() || ButtonPressed_PadRight() || ButtonPressed_PadUp() || ButtonPressed_PadDown());
+}
+
+
 bool ControllerStateQueue::DirPressed_Left()
 {
 	return states[0].LLeft() && !states[1].LLeft();
@@ -2440,6 +2672,27 @@ bool ControllerStateQueue::DirPressed_Down()
 {
 	return states[0].LDown() && !states[1].LDown();
 }
+
+bool ControllerStateQueue::MenuDirPressed_Left()
+{
+	return DirPressed_Left() || ButtonPressed_PadLeft();
+}
+
+bool ControllerStateQueue::MenuDirPressed_Right()
+{
+	return DirPressed_Right() || ButtonPressed_PadRight();
+}
+
+bool ControllerStateQueue::MenuDirPressed_Up()
+{
+	return DirPressed_Up() || ButtonPressed_PadUp();
+}
+
+bool ControllerStateQueue::MenuDirPressed_Down()
+{
+	return DirPressed_Down() || ButtonPressed_PadDown();
+}
+
 
 bool ControllerStateQueue::IsDoingAnything()
 {

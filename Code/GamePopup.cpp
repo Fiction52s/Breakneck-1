@@ -94,7 +94,7 @@ int GamePopup::Update(ControllerDualStateQueue *controllerInput)
 
 	if (numOptions > 1)
 	{
-		if (controllerInput->DirPressed_Left())
+		if (controllerInput->MenuDirPressed_Left())
 		{
 			currentlySelectedOption--;
 			if (currentlySelectedOption < 0)
@@ -102,7 +102,7 @@ int GamePopup::Update(ControllerDualStateQueue *controllerInput)
 				currentlySelectedOption = numOptions - 1;//OPTION_BACK;
 			}
 		}
-		if (controllerInput->DirPressed_Right())
+		if (controllerInput->MenuDirPressed_Right())
 		{
 			currentlySelectedOption++;
 			if (currentlySelectedOption == numOptions)

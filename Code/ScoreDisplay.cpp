@@ -3,6 +3,7 @@
 #include "Tileset.h"
 #include "MainMenu.h"
 #include "GameSession.h"
+#include "EditSession.h"
 #include "SaveFile.h"
 #include "MapHeader.h"
 #include "AdventureManager.h"
@@ -220,8 +221,17 @@ void ScoreDisplay::Activate()
 	waiting = false;
 
 	GameSession *game = GameSession::GetSession();
+	EditSession *edit = EditSession::GetSession();
 
-	levelNameText.setString(game->mapHeader->fullName);
+	if (game != NULL)
+	{
+		levelNameText.setString(game->mapHeader->fullName);
+	}
+	else if (edit != NULL)
+	{
+		levelNameText.setString(edit->mapHeader->fullName);
+	}
+	
 
 	auto lb = levelNameText.getLocalBounds();
 	//if( levelNameText.getGlobalBounds().)

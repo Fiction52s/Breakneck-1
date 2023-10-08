@@ -263,12 +263,33 @@ struct ControllerStateQueue
 	bool ButtonPressed_RightTrigger();
 	bool ButtonHeld_Start();
 	bool ButtonPressed_Start();
+	bool ButtonHeld_PadLeft();
+	bool ButtonPressed_PadLeft();
+	bool ButtonHeld_PadRight();
+	bool ButtonPressed_PadRight();
+	bool ButtonHeld_PadUp();
+	bool ButtonPressed_PadUp();
+	bool ButtonHeld_PadDown();
+	bool ButtonPressed_PadDown();
+	bool ButtonHeld_PadAny();
+	bool ButtonPressed_PadAny();
+	
 	bool ButtonHeld_Any();
 	bool ButtonPressed_Any();
+
+
 	bool DirPressed_Left();
 	bool DirPressed_Right();
 	bool DirPressed_Up();
 	bool DirPressed_Down();
+
+	bool MenuDirPressed_Left();
+	bool MenuDirPressed_Right();
+	bool MenuDirPressed_Up();
+	bool MenuDirPressed_Down();
+
+
+
 	bool IsDoingAnything();
 	
 
@@ -325,12 +346,30 @@ struct AllControllers
 	bool ButtonPressed_RightShoulder();
 	bool ButtonHeld_Start();
 	bool ButtonPressed_Start();
+
+	bool ButtonHeld_PadLeft();
+	bool ButtonPressed_PadLeft();
+	bool ButtonHeld_PadRight();
+	bool ButtonPressed_PadRight();
+	bool ButtonHeld_PadUp();
+	bool ButtonPressed_PadUp();
+	bool ButtonHeld_PadDown();
+	bool ButtonPressed_PadDown();
+	bool ButtonHeld_PadAny();
+	bool ButtonPressed_PadAny();
+
 	bool ButtonHeld_Any();
 	bool ButtonPressed_Any();
 	bool DirPressed_Left();
 	bool DirPressed_Right();
 	bool DirPressed_Up();
 	bool DirPressed_Down();
+
+	bool MenuDirPressed_Left();
+	bool MenuDirPressed_Right();
+	bool MenuDirPressed_Up();
+	bool MenuDirPressed_Down();
+
 	bool KeyboardButtonPressed(int key);
 	bool KeyboardButtonHeld(int key);
 	bool KeyboardButtonHeldPrev(int key);

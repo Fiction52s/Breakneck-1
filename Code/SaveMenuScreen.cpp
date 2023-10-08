@@ -523,7 +523,8 @@ bool SaveMenuScreen::Update()
 			}
 			else
 			{
-				ChangeIndex(controllerInput->DirPressed_Down(), controllerInput->DirPressed_Up(), controllerInput->DirPressed_Left(), controllerInput->DirPressed_Right());
+				ChangeIndex(controllerInput->MenuDirPressed_Down(), controllerInput->MenuDirPressed_Up(), 
+					controllerInput->MenuDirPressed_Left(), controllerInput->MenuDirPressed_Right());
 			}
 		}
 		else if (action == CONFIRMDELETE)
@@ -662,7 +663,7 @@ bool SaveMenuScreen::Update()
 			}
 			else
 			{
-				ChangeIndex(controllerInput->DirPressed_Down(), controllerInput->DirPressed_Up(), controllerInput->DirPressed_Left(), controllerInput->DirPressed_Right());
+				ChangeIndex(controllerInput->MenuDirPressed_Down(), controllerInput->MenuDirPressed_Up(), controllerInput->MenuDirPressed_Left(), controllerInput->MenuDirPressed_Right());
 			}
 		}
 		else if (action == CONFIRMCOPY)

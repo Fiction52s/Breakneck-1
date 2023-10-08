@@ -1898,7 +1898,7 @@ void ActionButtonGroup::Update()
 
 		if (controllerInput->GetPrevState().IsLeftNeutral())
 		{
-			if (controllerInput->DirPressed_Left())
+			if (controllerInput->MenuDirPressed_Left())
 			{
 				do
 				{
@@ -1912,7 +1912,7 @@ void ActionButtonGroup::Update()
 				} 
 				while (tempIndex >= numButtons);
 			}
-			else if (controllerInput->DirPressed_Right())
+			else if (controllerInput->MenuDirPressed_Right())
 			{
 				do
 				{
@@ -1926,7 +1926,7 @@ void ActionButtonGroup::Update()
 				while (tempIndex >= numButtons);
 			}
 
-			if (controllerInput->DirPressed_Up())
+			if (controllerInput->MenuDirPressed_Up())
 			{
 				do
 				{
@@ -1939,7 +1939,7 @@ void ActionButtonGroup::Update()
 				}
 				while (tempIndex >= numButtons);
 			}
-			else if (controllerInput->DirPressed_Down())
+			else if (controllerInput->MenuDirPressed_Down())
 			{
 				do
 				{
