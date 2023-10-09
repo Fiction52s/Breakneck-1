@@ -125,6 +125,8 @@ void Bat::SetActionEditLoop()
 
 void Bat::ResetEnemy()
 {
+	rayCastInfo.tree = sess->terrainTree;
+
 	data.currVisual = FLAP;
 	data.visFrame = 0;
 	data.framesSinceBothered = 0;
@@ -202,7 +204,7 @@ void Bat::ProcessState()
 
 	if (action == FLY)
 	{
-		if (data.framesSinceBothered >= 60 && startPos != currBasePos )
+		if (data.framesSinceBothered >= 60 && startPos != currBasePos && length(diff) > detectRange)
 		{
 			action = RETURN;
 			//frame = 0;
@@ -216,13 +218,19 @@ void Bat::ProcessState()
 		}
 		if (length(diff) < detectRange)
 		{
-			data.framesSinceBothered = 0;
-			action = RETREAT;
-			//frame = 0;
-			currBasePos = position;
-			retreatMove->end = -pDir * dodgeRange;
-			//retreatWait->pos = retreatMove->end;
-			retreatSeq.Reset();
+			V2d moveDelta = -pDir * dodgeRange;
+			V2d moveEnd = position + moveDelta;
+
+			if (!ExecuteRayCast(position, moveEnd))
+			{
+				data.framesSinceBothered = 0;
+				action = RETREAT;
+				//frame = 0;
+				currBasePos = position;
+				retreatMove->end = moveDelta;
+				//retreatWait->pos = retreatMove->end;
+				retreatSeq.Reset();
+			}
 		}
 		else
 		{
@@ -247,12 +255,17 @@ void Bat::ProcessState()
 	{
 		if (length(diff) < detectRange)
 		{
-			data.framesSinceBothered = 0;
-			action = RETREAT;
-			//frame = 0;
-			currBasePos = position;
-			retreatMove->end = -pDir * dodgeRange;
-			retreatSeq.Reset();
+			V2d moveDelta = -pDir * dodgeRange;
+			V2d moveEnd = position + moveDelta;
+
+			if (!ExecuteRayCast(position, moveEnd))
+			{
+				data.framesSinceBothered = 0;
+				action = RETREAT;
+				currBasePos = position;
+				retreatMove->end = moveDelta;
+				retreatSeq.Reset();
+			}
 		}
 		else if (!returnSeq.IsMovementActive())
 		{

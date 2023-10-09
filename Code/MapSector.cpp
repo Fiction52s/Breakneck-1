@@ -905,10 +905,10 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 	{
 		int old = GetSelectedIndex();
 
-		bool left = controllerInput->GetCurrState().LLeft() || controllerInput->ButtonHeld_PadLeft();
-		bool right = controllerInput->GetCurrState().LRight() || controllerInput->ButtonHeld_PadRight();
+		bool inputLeft = controllerInput->GetCurrState().LLeft() || controllerInput->ButtonHeld_PadLeft();
+		bool inputRight = controllerInput->GetCurrState().LRight() || controllerInput->ButtonHeld_PadRight();
 
-		int changed = mapSASelector->UpdateIndex(left, right);
+		int changed = mapSASelector->UpdateIndex(inputLeft, inputRight);
 
 		if (changed != 0)
 		{
@@ -1316,20 +1316,20 @@ void MapSector::UpdateSectorArrows()
 	}
 
 	//fix this later
-	if (CONTROLLERS.ButtonPressed_LeftShoulder() )//ms->mainMenu->GetCurrInputUnfiltered(0).LLeft())
-	{
-		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, tile + 1);
-	}
-	else
+	//if (CONTROLLERS.ButtonPressed_LeftShoulder() )//ms->mainMenu->GetCurrInputUnfiltered(0).LLeft())
+	//{
+	//	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, tile + 1);
+	//}
+	//else
 	{
 		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, tile);
 	}
 
-	if (CONTROLLERS.ButtonPressed_RightShoulder())
+	/*if (CONTROLLERS.ButtonPressed_RightShoulder())
 	{
 		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads + 4, tile + 1, true);
 	}
-	else
+	else*/
 	{
 		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads + 4, tile, true);
 	}

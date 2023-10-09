@@ -486,8 +486,8 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 
 	if (currSelectMode == SM_WORLD)
 	{
-		int worldChanged = worldSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		int worldChanged = worldSelector->UpdateIndex(currInput.LLeft() || currInput.PLeft(), currInput.LRight() || currInput.PRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp() || currInput.PUp(), currInput.LDown() || currInput.PDown());
 
 		if (worldChanged != 0)
 		{
@@ -524,8 +524,8 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 	}
 	else if (currSelectMode == SM_SHARD)
 	{
-		int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		int xchanged = xSelector->UpdateIndex(currInput.LLeft() || currInput.PLeft(), currInput.LRight() || currInput.PRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp() || currInput.PUp(), currInput.LDown() || currInput.PDown());
 
 		bool currShardCap = IsCurrShardCaptured();
 

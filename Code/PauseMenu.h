@@ -202,27 +202,6 @@ struct PauseMenu
 	int momentum;
 	int maxMomentum;
 	CubicBezier accelBez;
-
-	
-
-	
-	
-	
-
-	
-	UpdateResponse UpdateOptions(
-		ControllerState &currInput,
-	ControllerState &prevInput );
-	UpdateResponse UpdateInputOptions(
-		ControllerState &currInput,
-		ControllerState &prevInput);
-	UpdateResponse UpdateVideoOptions(
-		ControllerState &currInput,
-		ControllerState &prevInput);
-	UpdateResponse UpdateAudioOptions(
-		ControllerState &currInput,
-		ControllerState &prevInput);
-	
 	
 	/*int maxWaitFrames;
 	int currWaitFrames;

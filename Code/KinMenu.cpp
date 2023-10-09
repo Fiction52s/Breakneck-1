@@ -330,8 +330,8 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	int ychanged;
 
 
-	xchanged = xSelector->UpdateIndex(curr.LLeft(), curr.LRight());
-	ychanged = ySelector->UpdateIndex(curr.LUp(), curr.LDown());
+	xchanged = xSelector->UpdateIndex(curr.LLeft() || curr.PLeft(), curr.LRight() || curr.PRight());
+	ychanged = ySelector->UpdateIndex(curr.LUp() || curr.PUp(), curr.LDown() || curr.PDown());
 
 
 	if (xchanged != 0 || ychanged != 0)

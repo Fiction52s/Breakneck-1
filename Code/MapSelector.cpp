@@ -223,7 +223,11 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 		else
 		{
 			int oldIndex = sectorSASelector->currIndex;
-			int changed = sectorSASelector->UpdateIndex(controllerInput->GetCurrState().LLeft(), controllerInput->GetCurrState().LRight());
+
+			bool left = controllerInput->GetCurrState().LLeft() || controllerInput->ButtonHeld_PadLeft();
+			bool right = controllerInput->GetCurrState().LRight() || controllerInput->ButtonHeld_PadRight();
+
+			int changed = sectorSASelector->UpdateIndex(left, right);
 			int numCurrLevels = FocusedSector()->unlockedLevelCount;
 			if (changed != 0)
 			{

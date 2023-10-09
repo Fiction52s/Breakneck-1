@@ -4,7 +4,7 @@
 #include "Enemy.h"
 #include "Bullet.h"
 
-struct Bat : Enemy, LauncherEnemy
+struct Bat : Enemy, LauncherEnemy, RayCastHandler
 {
 	enum Action : int32
 	{

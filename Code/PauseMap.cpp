@@ -88,20 +88,20 @@ void PauseMap::Update(ControllerState &currInput,
 	}
 
 	float move = 20.0 * mapZoomFactor / 2.0;
-	if (currInput.LLeft())
+	if (currInput.LLeft() || currInput.PLeft())
 	{
 		mapCenter.x -= move;
 	}
-	else if (currInput.LRight())
+	else if (currInput.LRight() || currInput.PRight())
 	{
 		mapCenter.x += move;
 	}
 
-	if (currInput.LUp())
+	if (currInput.LUp() || currInput.PUp())
 	{
 		mapCenter.y -= move;
 	}
-	else if (currInput.LDown())
+	else if (currInput.LDown() || currInput.PDown())
 	{
 		mapCenter.y += move;
 	}
