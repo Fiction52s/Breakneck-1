@@ -8962,6 +8962,19 @@ void Session::DrawQueriedRails(sf::RenderTarget *target)
 	}
 }
 
+void Session::DrawQueriedRailsToMinimap(sf::RenderTarget *target)
+{
+	RailPtr r = railDrawList;
+	RailPtr next;
+	while (r != NULL)
+	{
+		r->DrawForMinimap(target);
+		next = r->queryNext;
+		r->queryNext = NULL;
+		r = next;
+	}
+}
+
 V2d Session::CalcBounceReflectionVel(V2d norm, V2d &vel)
 {
 

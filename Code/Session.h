@@ -855,6 +855,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawQueriedTerrain(sf::RenderTarget *target);
 	void DrawQueriedSpecialTerrain(sf::RenderTarget *target);
 	void DrawQueriedRails(sf::RenderTarget *target);
+	void DrawQueriedRailsToMinimap(sf::RenderTarget *target);
 	virtual bool UpdateRunModeBackAndStartButtons() = 0;
 	virtual void DrawSpecialTerrain(sf::RenderTarget *target) = 0;
 	virtual void DrawTerrain(sf::RenderTarget *target) = 0;

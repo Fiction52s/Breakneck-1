@@ -8082,43 +8082,64 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 
 	//TestPlayerMode();
 
-	if (hideSecret)
+	//if (hideSecret)
+	//{
+	//	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	//	{
+	//		oldSelected = (*it)->selected;
+	//		(*it)->SetSelected(false);
+
+	//		TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
+	//		(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
+
+	//		(*it)->Draw(false, 1, target, false, NULL);
+
+	//		(*it)->SetRenderMode(oldPolyMode);
+	//		(*it)->SetSelected(oldSelected);
+	//	}
+	//}
+	//else
+	//{
+	//	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	//	{
+	//		oldSelected = (*it)->selected;
+	//		(*it)->SetSelected(false);
+
+	//		//TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
+	//		//(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
+
+	//		(*it)->Draw(false, 1, target, false, NULL);
+
+	//		//(*it)->SetRenderMode(oldPolyMode);
+	//		(*it)->SetSelected(oldSelected);
+	//	}
+	//}
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+
+		TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
+
+		if (hideSecret)
 		{
-			oldSelected = (*it)->selected;
-			(*it)->SetSelected(false);
-
-			TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
-			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
-
-			(*it)->Draw(false, 1, target, false, NULL);
-
-			(*it)->SetRenderMode(oldPolyMode);
-			(*it)->SetSelected(oldSelected);
+			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_BASIC_PREVIEW);
 		}
-	}
-	else
-	{
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		else
 		{
-			oldSelected = (*it)->selected;
-			(*it)->SetSelected(false);
-
-			//TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
-			//(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_PREVIEW);
-
-			(*it)->Draw(false, 1, target, false, NULL);
-
-			//(*it)->SetRenderMode(oldPolyMode);
-			(*it)->SetSelected(oldSelected);
+			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_EDITOR_PREVIEW);
 		}
+
+		(*it)->Draw(false, 1, target, false, NULL);
+
+		(*it)->SetRenderMode(oldPolyMode);
+		(*it)->SetSelected(oldSelected);
 	}
 	
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
-		(*it)->Draw(target);
+		(*it)->DrawPreview(target);
 	}
 
 	

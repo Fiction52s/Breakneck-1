@@ -928,7 +928,7 @@ bool Gate::IsReformingType()
 
 bool Gate::IsInUnlockableState()
 {
-	return data.gState == SOFTEN || data.gState == SOFT || data.gState == DISSOLVE || data.gState == TOTALDISSOLVE;
+	return data.gState == SOFTEN || data.gState == SOFT || data.gState == DISSOLVE || data.gState == TOTALDISSOLVE || data.gState == GLITCH;
 }
 
 bool Gate::CanUnlock()

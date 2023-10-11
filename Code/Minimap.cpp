@@ -207,7 +207,7 @@ void Minimap::DrawRails(sf::Rect<double> &rect,
 	sf::RenderTarget *target)
 {
 	sess->QueryRailDrawTree(rect);
-	sess->DrawQueriedRails(target);
+	sess->DrawQueriedRailsToMinimap(target);
 }
 
 void Minimap::DrawSpecialTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)

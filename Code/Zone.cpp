@@ -490,13 +490,21 @@ void Zone::Init()
 
 		bool allSecret = true;
 		Gate *tempGate;
-		for (auto it = gates.begin(); it != gates.end(); ++it)
+
+		if (sess->originalZone == this)
 		{
-			tempGate = (Gate*)((*it)->info);
-			if (tempGate->category != Gate::SECRET)
+			allSecret = false;
+		}
+		else
+		{
+			for (auto it = gates.begin(); it != gates.end(); ++it)
 			{
-				allSecret = false;
-				break;
+				tempGate = (Gate*)((*it)->info);
+				if (tempGate->category != Gate::SECRET)
+				{
+					allSecret = false;
+					break;
+				}
 			}
 		}
 

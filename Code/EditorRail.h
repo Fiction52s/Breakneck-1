@@ -139,6 +139,8 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	TerrainRail(TerrainRail &r);
 	~TerrainRail();
 	void UpdateTexturedQuads();
+	void UpdateTexturedQuadsColorForMinimap();
+	void ResetTexturedQuadsColorForMinimap();
 	void UpdateArrowQuads();
 	void SetRenderMode(RenderMode rm);
 	int GetRailType();
@@ -155,6 +157,8 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	void Draw(sf::RenderTarget *target);
+	void DrawPreview(sf::RenderTarget *target);
+	void DrawForMinimap(sf::RenderTarget *target);
 	void AddEnemyChainToWorldTrees();
 	bool RequiresPowerToGrind();
 	void UpdateEnemyChain();

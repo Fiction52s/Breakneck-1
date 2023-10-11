@@ -865,6 +865,58 @@ void TerrainRail::UpdateTexturedQuads()
 	}
 }
 
+void TerrainRail::UpdateTexturedQuadsColorForMinimap()
+{
+	Color myColor = Color::White;
+
+	switch (rType)
+	{
+	case FLOORANDCEILING:
+		break;
+	case FLOOR:
+		break;
+	case CEILING:
+		break;
+	case BOUNCE:
+		break;
+	case SCORPIONONLY:
+		break;
+	case GRIND:
+		break;
+	case PHASE:
+		break;
+	case INVERSEPHASE:
+		break;
+	case ACCELERATE:
+		break;
+	case FADE:
+		break;
+	case LOCKED:
+		break;
+	case ANTITIMESLOW:
+		break;
+	case WIREONLY:
+		break;
+	case WIREBLOCKING:
+		break;
+	case HIT:
+		break;
+	}
+
+	for (int i = 0; i < numTexturedQuads; ++i)
+	{
+		SetRectColor(texturedQuads + i * 4, myColor);
+	}
+}
+
+void TerrainRail::ResetTexturedQuadsColorForMinimap()
+{
+	for (int i = 0; i < numTexturedQuads; ++i)
+	{
+		SetRectColor(texturedQuads + i * 4, Color::White);
+	}
+}
+
 void TerrainRail::UpdateArrowQuads()
 {
 	double startQuant = 0;
@@ -2158,6 +2210,20 @@ void TerrainRail::Draw( RenderTarget *target )
 	Draw(1.0, false, target);
 }
 
+void TerrainRail::DrawPreview(sf::RenderTarget *target)
+{
+	//DrawQuads(target);
+	Draw(target);
+}
+
+void TerrainRail::DrawForMinimap(sf::RenderTarget *target)
+{
+	UpdateTexturedQuadsColorForMinimap();
+	target->draw(texturedQuads, numTexturedQuads * 4,
+		sf::Quads);
+	ResetTexturedQuadsColorForMinimap();
+}
+
 void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *target)
 {
 	int numP = GetNumPoints();
@@ -2170,8 +2236,6 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 
 	if (renderMode == RENDERMODE_NORMAL)
 	{
-
-
 		switch (rType)
 		{
 		case FLOORANDCEILING:
@@ -2182,7 +2246,7 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 		case GRIND:
 		case ACCELERATE:
 		case FADE:
-		
+
 		case PHASE:
 		case INVERSEPHASE:
 		case ANTITIMESLOW:

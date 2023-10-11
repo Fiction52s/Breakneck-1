@@ -209,7 +209,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_TRANSFORM,
 		RENDERMODE_FLIES,
 		RENDERMODE_PHASED,
-		RENDERMODE_PREVIEW,
+		RENDERMODE_BASIC_PREVIEW,
+		RENDERMODE_EDITOR_PREVIEW,
 	};
 
 	enum WaterType

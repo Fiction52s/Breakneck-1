@@ -5247,7 +5247,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		return;
 	}
-	else if (renderMode == RENDERMODE_PREVIEW)
+	else if (renderMode == RENDERMODE_BASIC_PREVIEW)
 	{
 		UpdatePreviewLineColors();
 
@@ -5262,6 +5262,21 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		UpdateLineColors();
 
 		return;
+	}
+	else if (renderMode == RENDERMODE_EDITOR_PREVIEW)
+	{
+		//UpdatePreviewLineColors();
+
+		DrawInnerArea(rt);
+
+		DrawDecor(rt);
+
+		DrawGrass(rt);
+
+		rt->draw(lines, numP * 2, sf::Lines);
+
+		return;
+		//UpdateLineColors();
 	}
 
 	DrawGrass(rt);
