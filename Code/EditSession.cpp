@@ -68,6 +68,7 @@
 #include "MapBrowser.h"
 #include "PlayerBox.h"
 #include "DeathSequence.h"
+#include "Enemy_PowerItem.h"
 //#define GGPO_ON
 
 using namespace std;
@@ -2659,8 +2660,6 @@ void EditSession::WriteMapHeader(ofstream &of)
 		mapHeader->numLogs = logVec.size();
 	}
 
-	
-
 
 	{
 		auto &powerVec = mapHeader->powerVec;
@@ -2672,13 +2671,17 @@ void EditSession::WriteMapHeader(ofstream &of)
 			std::list<ActorPtr> &aList = (*it).second->actors;
 			for (auto ait = aList.begin(); ait != aList.end(); ++ait)
 			{
-				if ((*ait)->type->info.name == "poweritem")
+				if ((*ait)->myEnemy != NULL && (*ait)->myEnemy->type == EnemyType::EN_POWERITEM )
 				{
+					PowerItem *pItem = (PowerItem*)((*ait)->myEnemy);
+
+					int powerIndex = pItem->powerIndex;
+
 					pp = (BasicAirEnemyParams*)(*ait);
 					foundPower = false;
 					for (auto sit = powerVec.begin(); sit != powerVec.end(); ++sit)
 					{
-						if ((*sit) == pp->GetLevel()-1)
+						if ((*sit) == powerIndex )
 						{
 							foundPower = true;
 							break;
@@ -2687,7 +2690,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 
 					if (!foundPower)
 					{
-						powerVec.push_back(pp->GetLevel()-1);
+						powerVec.push_back(powerIndex);
 					}
 				}
 			}

@@ -7142,7 +7142,7 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-
+	//cout << "groundspeed: " << groundSpeed << "\n";
 	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
 	/*if (homingFrames > 0)
 	{
