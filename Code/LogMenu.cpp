@@ -379,7 +379,9 @@ void LogMenu::UpdateUnlockedLogs()
 
 			//SetRectCenter(logSelectQuads + index, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
 
-			if (IsLogFound(j, i))
+			int logIndex = i * xSelector->totalItems + j;
+
+			if (IsLogFound(worldSelector->currIndex, logIndex))
 			{
 				SetRectColor(logSelectQuads + index, Color(Color::White));
 				//SetRectSubRect(logSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
@@ -508,6 +510,8 @@ int LogMenu::GetLogTile(int w, int li)
 
 void LogMenu::UpdateLogsOnWorldChange()
 {
+	UpdateUnlockedLogs();
+
 	int index = 0;
 	for (int i = 1; i < ySelector->totalItems; ++i)
 	{
@@ -670,7 +674,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
 		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 
-		bool currLogFound = IsCurrLogFound();
+	//	bool currLogFound = IsCurrLogFound();
 
 		int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
 		LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][index];
@@ -729,7 +733,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 
 			if (currInput.A && !prevInput.A)
 			{
-				if (currLogFound)
+				//if (currLogFound)
 				{
 					//if (state == WAIT)
 					//{
@@ -795,7 +799,10 @@ void LogMenu::Draw(sf::RenderTarget *target)
 
 	if (currSelectMode == SM_LOG)
 	{
-		logPreview.Draw(target);
+		if (IsCurrLogFound())
+		{
+			logPreview.Draw(target);
+		}
 
 		target->draw(selectedBGQuad, 4, sf::Quads);
 	}
