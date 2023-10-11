@@ -872,34 +872,49 @@ void TerrainRail::UpdateTexturedQuadsColorForMinimap()
 	switch (rType)
 	{
 	case FLOORANDCEILING:
+		myColor = Color( 0x00, 0x99, 0xff);
 		break;
 	case FLOOR:
+		myColor = Color(0x00, 0xee, 0x22);
 		break;
 	case CEILING:
+		myColor = Color(0x00, 0xff, 0xbb);
 		break;
 	case BOUNCE:
+		myColor = Color(0xff, 0xff, 0x22);
 		break;
 	case SCORPIONONLY:
+		myColor = Color(0xbb, 0x99, 0xff);
 		break;
 	case GRIND:
+		myColor = Color(0xff, 0xcc, 0x22);
 		break;
 	case PHASE:
+		myColor = Color(0xff, 0x77, 0x33);
 		break;
 	case INVERSEPHASE:
+		myColor = Color(0x66, 0x99, 0xff);
 		break;
 	case ACCELERATE:
+		myColor = Color(0x00, 0xdd, 0xff);
 		break;
 	case FADE:
+		myColor = Color(0xff, 0x55, 0x11);
 		break;
 	case LOCKED:
+		myColor = Color(0xff, 0x99, 0x00);
 		break;
 	case ANTITIMESLOW:
+		myColor = Color(0xaa, 0xff, 0x00);
 		break;
 	case WIREONLY:
+		myColor = Color(0xff, 0x55, 0xaa);
 		break;
 	case WIREBLOCKING:
+		myColor = Color(0xff, 0x77, 0xff);
 		break;
 	case HIT:
+		myColor = Color(0xbb, 0xcc, 0xee);
 		break;
 	}
 

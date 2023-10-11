@@ -20514,11 +20514,7 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 		sess->totalFramesBeforeGoal = sess->totalGameFrames;
 		SetKinMode(K_NORMAL);
 		SetExpr(KinMask::Expr_NEUTRAL);
-		if (sess->scoreDisplay != NULL)
-		{
-			sess->scoreDisplay->Activate();
-			sess->hud->Hide(60);
-		}
+		
 		
 		//WriteBestTimeRecordings();
 
@@ -20549,6 +20545,12 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 		if (setRecord)
 		{
 			owner->scoreDisplay->madeRecord = true;
+		}
+
+		if (sess->scoreDisplay != NULL)
+		{
+			sess->scoreDisplay->Activate();
+			sess->hud->Hide(60);
 		}
 	}
 }
