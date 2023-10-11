@@ -195,20 +195,19 @@ void Actor::STEEPSLIDE_Update()
 
 	if (currInput.LDown())
 	{
-		//cout << "fast slide" << endl;
-
-		int numSlideUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_STEEP_SLIDE_ACCEL_1, 3);
-
+		double currFactor = 0;
 		double upgradeAmount = steepSlideFastGravFactor * .2;
-		double currFactor = steepSlideFastGravFactor + upgradeAmount * numSlideUpgrades;
 
 		
-
 		if (reversed)
 		{
-			int numCeilingSlideUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_CEILING_STEEP_SLIDE_ACCEL_1, 3);
-			double ceilingUpgradeAmount = steepSlideFastGravFactor * .2;
-			currFactor += numCeilingSlideUpgrades * ceilingUpgradeAmount;
+			int numCeilingSlideUpgrades = HasUpgrade(UPGRADE_W3_CEILING_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W4_CEILING_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W5_CEILING_STEEP_SLIDE_3);
+			currFactor = steepSlideFastGravFactor + upgradeAmount * numCeilingSlideUpgrades;
+		}
+		else
+		{
+			int numSlideUpgrades = HasUpgrade(UPGRADE_W1_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W2_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W6_STEEP_SLIDE_3);
+			currFactor = steepSlideFastGravFactor + upgradeAmount * numSlideUpgrades;
 		}
 
 		fac = GetGravity() * currFactor;

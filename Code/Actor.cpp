@@ -4110,7 +4110,7 @@ double Actor::GetMaxSpeed()
 	//starts at 60, goes up to 100
 	double upgradeAmount = 5;
 
-	int maxSpeedUpgrades = NumUpgradeRange(UPGRADE_W6_MAX_SPEED_1, 8);
+	int maxSpeedUpgrades = 0;//NumUpgradeRange(UPGRADE_W6_MAX_SPEED_1, 8);
 
 	return maxSpeed + upgradeAmount * maxSpeedUpgrades;
 }
@@ -4178,8 +4178,8 @@ double Actor::GetBounceBoostSpeed()
 {
 	double currBounceBoostSpeed = bounceBoostSpeed;
 
-	double upgradeAmount = 2.0;
-	int numUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_BOUNCE_STRENGTH_1, 3);
+	double upgradeAmount = 5.0;//2.0;
+	int numUpgrades = HasUpgrade(UPGRADE_W4_SCORPION_BOUNCE);
 	currBounceBoostSpeed += upgradeAmount * numUpgrades;
 
 	return currBounceBoostSpeed;
@@ -4928,10 +4928,37 @@ void Actor::Respawn( bool setStartPos )
 	speedLevel = 0;
 	currentSpeedBar = 0;//60;
 
-	int numStartMomentumUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_START_MOMENTUM_1, 3);
+	//int numStartMomentumUpgrades = 0;
+	bool hasStartMomentumUpgrade = false;
+	switch (sess->mapHeader->envWorldType)
+	{
+	case 0:
+		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_STARTING_MOMENTUM);
+		break;
+	case 1:
+		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_STARTING_MOMENTUM);
+		break;
+	case 2:
+		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_STARTING_MOMENTUM);
+		break;
+	case 3:
+		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_STARTING_MOMENTUM);
+		break;
+	case 4:
+		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_STARTING_MOMENTUM);
+		break;
+	case 5:
+		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_STARTING_MOMENTUM);
+		break;
+	}
 
-	float startMomentumUpgradeFactor = 15.0;
-	currentSpeedBar = startMomentumUpgradeFactor * numStartMomentumUpgrades;
+	//float startMomentumUpgradeFactor = 15.0;
+	float startMomentumUpgradeFactor = 40;//15.0;
+	if (hasStartMomentumUpgrade)
+	{
+		currentSpeedBar = startMomentumUpgradeFactor;
+	}
+	//currentSpeedBar = startMomentumUpgradeFactor * numStartMomentumUpgrades;
 
 	currBBoostCounter = 0;
 	currTutorialObject = NULL;
@@ -5586,51 +5613,55 @@ void Actor::ReactToBeingHit()
 	{
 		int damage = receivedHit.damage;
 
-		int damageUpgrades = 0;
+		bool hasDamageUpgrade = false;
 
 		switch (receivedHit.hType)
 		{
 		case HitboxInfo::BLUE:
 		{
-			damageUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DAMAGE_1, 3);
+			hasDamageUpgrade = HasUpgrade(UPGRADE_W1_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::GREEN:
 		{
-			damageUpgrades = NumUpgradeRange(UPGRADE_W2_DECREASE_DAMAGE_1, 3);
+			hasDamageUpgrade = HasUpgrade(UPGRADE_W2_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::YELLOW:
 		{
-			damageUpgrades = NumUpgradeRange(UPGRADE_W3_DECREASE_DAMAGE_1, 3);
+			hasDamageUpgrade = HasUpgrade(UPGRADE_W3_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::ORANGE:
 		{
-			damageUpgrades = NumUpgradeRange(UPGRADE_W4_DECREASE_DAMAGE_1, 3);
+			hasDamageUpgrade = HasUpgrade(UPGRADE_W4_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::RED:
 		{
-			damageUpgrades = NumUpgradeRange(UPGRADE_W5_DECREASE_DAMAGE_1, 3);
+			hasDamageUpgrade = HasUpgrade(UPGRADE_W5_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::MAGENTA:
 		{
-			damageUpgrades = NumUpgradeRange(UPGRADE_W6_DECREASE_DAMAGE_1, 3);
+			hasDamageUpgrade = HasUpgrade(UPGRADE_W6_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
-		case HitboxInfo::GREY:
+		/*case HitboxInfo::GREY:
 		{
 			damageUpgrades = NumUpgradeRange(UPGRADE_W7_DECREASE_DAMAGE_1, 3);
 			break;
-		}
+		}*/
 
 		}
 
 		float dmg = damage;
-		float upgradeFactor = .2 * damageUpgrades;
-		dmg -= upgradeFactor * dmg;
+		float upgradeFactor = .5;//.2;
+
+		if (hasDamageUpgrade)
+		{
+			dmg -= upgradeFactor;
+		}
 		damage = dmg;
 
 		if (damage > 0)
@@ -6694,7 +6725,7 @@ void Actor::ActivateLauncherEffect(int tile)
 
 bool Actor::CheckExtendedAirdash()
 {
-	return (( inBubble && UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES ) 
+	return (( inBubble && HasUpgrade( UPGRADE_W6_BUBBLE_AIRDASH ) )//UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES ) 
 		|| InWater(TerrainPolygon::WATER_ZEROGRAV));
 		//|| InWater( TerrainPolygon::WATER_MOMENTUM ));
 }
@@ -7563,19 +7594,18 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 		double fac = min(((double)framesSinceClimbBoost) / climbBoostLimit, 1.0);
 
 		double extra = 10.0;
-
-		int numClimbUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_STEEP_CLIMB_1, 3);
-
 		double upgradeAmount = 2.0;
-
-		extra += numClimbUpgrades * upgradeAmount;
 
 		if (reversed)
 		{
-			int numCeilingClimbUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_CEILING_STEEP_CLIMB_1, 3);
-			double upgradeAmountCeiling = 2.0;
+			int numCeilingClimbUpgrades = HasUpgrade(UPGRADE_W3_CEILING_STEEP_CLIMB_1) + HasUpgrade(UPGRADE_W4_CEILING_STEEP_CLIMB_2) + HasUpgrade(UPGRADE_W5_CEILING_STEEP_CLIMB_3);
 
-			extra += numCeilingClimbUpgrades * upgradeAmountCeiling;
+			extra += numCeilingClimbUpgrades * upgradeAmount;
+		}
+		else
+		{
+			int numClimbUpgrades = HasUpgrade(UPGRADE_W1_STEEP_CLIMB_1) + HasUpgrade(UPGRADE_W2_STEEP_CLIMB_2) + HasUpgrade(UPGRADE_W6_STEEP_CLIMB_3);
+			extra += numClimbUpgrades * upgradeAmount;
 		}
 
 
@@ -10469,7 +10499,7 @@ double Actor::GetDashSpeed()
 {
 	double dSpeed = GetOriginalDashSpeed();
 
-	int numBaseDashUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_BASE_DASH_1, 3);
+	int numBaseDashUpgrades = HasUpgrade(UPGRADE_W1_BASE_DASH_1) + HasUpgrade(UPGRADE_W3_BASE_DASH_2) + HasUpgrade(UPGRADE_W6_BASE_DASH_3);
 	double upgradeAmount = 3;
 	dSpeed += upgradeAmount * numBaseDashUpgrades;
 
@@ -10494,7 +10524,7 @@ double Actor::GetAirDashSpeed()
 
 	double dSpeed = GetOriginalDashSpeed();
 
-	int numBaseAirdashUpgrades = NumUpgradeRange(UPGRADE_W6_INCREASE_BASE_AIRDASH_1, 3);
+	int numBaseAirdashUpgrades = HasUpgrade(UPGRADE_W2_BASE_AIRDASH_1) + HasUpgrade(UPGRADE_W5_BASE_AIRDASH_2) + HasUpgrade(UPGRADE_W6_BASE_AIRDASH_3);
 	double upgradeAmount = 3;
 	dSpeed += upgradeAmount * numBaseAirdashUpgrades;
 
@@ -10947,9 +10977,10 @@ void Actor::TryDashBoost()
 		}
 		else
 		{
+			//passively has 2 high speed boost upgrades on. test to make sure its not crazy
 			double highSpeedBoost = 3;//5
 
-			int highSpeedBoostUpgrades = NumUpgradeRange(UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1, 3);
+			int highSpeedBoostUpgrades = 2;
 			double upgradeAmount = 2;
 
 			highSpeedBoost += highSpeedBoostUpgrades * upgradeAmount;
@@ -11006,7 +11037,7 @@ void Actor::TryDashBoost()
 
 void Actor::TryAirdashBoost()
 {
-	if (!HasUpgrade(UPGRADE_W1_AIRDASH_BOOST))
+	if (!HasUpgrade(UPGRADE_W2_AIRDASH_BOOST))
 	{
 		return;
 	}
@@ -11021,7 +11052,7 @@ void Actor::TryAirdashBoost()
 
 void Actor::TryExtraAirdashBoost()
 {
-	if (!HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	//if (!HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
 	{
 		return;
 	}
@@ -11289,7 +11320,7 @@ bool Actor::IntersectMySlowboxes(CollisionBody *cb, int cbFrame )
 
 int Actor::GetMaxBubbles()
 {
-	int numBubbles = 1 + NumUpgradeRange(UPGRADE_W5_MAX_BUBBLES_1, 4);
+	int numBubbles = 1 + HasUpgrade(UPGRADE_W6_EXTRA_BUBBLES_1) * 2 + HasUpgrade(UPGRADE_W6_EXTRA_BUBBLES_2) * 2;
 	return numBubbles;
 }
 
@@ -11297,36 +11328,33 @@ int Actor::GetMaxBubbles()
 
 int Actor::GetBubbleRadius()
 {
-	int numBubbleSizeUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_BUBBLE_SIZE_1, 3);
-	int upgradeFactor = 15;
-	return bubbleRadius + numBubbleSizeUpgrades * upgradeFactor;
-	//bubbleRadius0 = 160;
-	//bubbleRadius1 = 180;
-	//bubbleRadius2 = 200;
-	/*switch( speedLevel )
+	bool hasBubbleSizeUpgrade = HasUpgrade(UPGRADE_W6_BUBBLE_SIZE);
+	int upgradeFactor = 30;//15;
+
+	int currRad = bubbleRadius;
+	if (hasBubbleSizeUpgrade)
 	{
-	case 0:
-		return bubbleRadius0;
-		break;
-	case 1:
-		return bubbleRadius1;
-		break;
-	case 2:
-		return bubbleRadius2;
-		break;
-	}*/
+		currRad += upgradeFactor;
+	}
+	
+	return currRad;
 }
 
 int Actor::GetBubbleTimeFactor()
 {
-	int numBubbleFactorUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_BUBBLE_SLOW_FACTOR_1, 2);
-	return baseTimeSlowedMultiple + numBubbleFactorUpgrades;
+	return baseTimeSlowedMultiple;
 }
 
 int Actor::GetBeingSlowedFactor()
 {
-	int numTimeslowResistanceUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_SLOW_RESISTANCE_1, 2);
-	return baseTimeSlowedMultiple - numTimeslowResistanceUpgrades;
+	bool hasBeingSlowedUpgrade = HasUpgrade(UPGRADE_W5_SLOW_RESISTANCE);
+	int mult = baseTimeSlowedMultiple;
+
+	if (hasBeingSlowedUpgrade)
+	{
+		mult -= 2;
+	}
+	return mult;
 }
 
 double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
@@ -11344,19 +11372,18 @@ double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
 		extraSprintAccel = min( .3, extraSprintAccel );
 	}
 	extraSprintAccel *= .09;
-
-
-	int numSprintUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_SPRINT_ACCEL_1, 3);
+	
 	double upgradeSprintAmount = .03;
-
-	extraSprintAccel += upgradeSprintAmount * numSprintUpgrades;
 
 	if (reversed)
 	{
-		int numCeilingSprintUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_CEILING_SPRINT_ACCEL_1, 3);
-		double upgradeCeilingSprintAmount = .03;
-
-		extraSprintAccel += upgradeCeilingSprintAmount * numCeilingSprintUpgrades;
+		int numCeilingSprintUpgrades = HasUpgrade(UPGRADE_W3_CEILING_SPRINT_1) + HasUpgrade(UPGRADE_W4_CEILING_SPRINT_2) + HasUpgrade(UPGRADE_W5_CEILING_SPRINT_3);
+		extraSprintAccel += extraSprintAccel * numCeilingSprintUpgrades;
+	}
+	else
+	{
+		int numSprintUpgrades = HasUpgrade(UPGRADE_W1_SPRINT_1) + HasUpgrade(UPGRADE_W2_SPRINT_2) + HasUpgrade(UPGRADE_W6_SPRINT_3);
+		extraSprintAccel += upgradeSprintAmount * numSprintUpgrades;
 	}
 
 	return sprintAccel + extraSprintAccel;
@@ -11374,14 +11401,19 @@ double Actor::GetMinRailGrindSpeed()
 void Actor::GroundExtraAccel()
 {
 	double extraAccel = 0;
-	int numPassiveAccelUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1, 3);
-	extraAccel = numPassiveAccelUpgrades * .03;
-
+	double upgradeFactor = .03;
 
 	if (reversed)
 	{
-		int numPassiveCeilingAccelUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_PASSIVE_CEILING_ACCEL_1, 3);
-		extraAccel += numPassiveCeilingAccelUpgrades * .03;
+		int numPassiveCeilingAccelUpgrades = HasUpgrade(UPGRADE_W3_CEILING_PASSIVE_GROUND_1) 
+			+ HasUpgrade(UPGRADE_W4_CEILING_PASSIVE_GROUND_2) 
+			+ HasUpgrade(UPGRADE_W5_CEILING_PASSIVE_GROUND_3);
+		extraAccel = numPassiveCeilingAccelUpgrades * .03;
+	}
+	else
+	{
+		int numPassiveAccelUpgrades = HasUpgrade(UPGRADE_W1_PASSIVE_GROUND_1) + HasUpgrade(UPGRADE_W2_PASSIVE_GROUND_2) + HasUpgrade(UPGRADE_W6_PASSIVE_GROUND_3);
+		extraAccel = numPassiveAccelUpgrades * .03;
 	}
 
 	if (groundSpeed > 0)
@@ -11392,22 +11424,6 @@ void Actor::GroundExtraAccel()
 	{
 		groundSpeed -= extraAccel;
 	}
-
-	//if( bounceFlameOn )
-	//{
-	//	double bounceFlameAccel = GetBounceFlameAccel();
-	//	if( groundSpeed > 0 )
-	//		groundSpeed += bounceFlameAccel / slowMultiple;
-	//	else if( groundSpeed < 0 )
-	//		groundSpeed -= bounceFlameAccel / slowMultiple;
-	//}
-	//else if( DashButtonHeld() )
-	//{
-	//	/*if( groundSpeed > 0 )
-	//		groundSpeed += holdDashAccel / slowMultiple;
-	//	else if( groundSpeed < 0 )
-	//		groundSpeed -= holdDashAccel / slowMultiple;*/
-	//}
 }
 
 
@@ -12527,10 +12543,15 @@ void Actor::RestoreAirOptions()
 		hasWallJumpRechargeAirDash = true;
 	}
 
-	if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	/*if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
 	{
 		numRemainingExtraAirdashBoosts = 1;
+	}*/
+	//else
+	{
+		numRemainingExtraAirdashBoosts = 0;
 	}
+	
 	
 	hasHitRechargeDoubleJump = true;
 	hasHitRechargeAirDash = true;
@@ -20943,26 +20964,41 @@ void Actor::ConfirmHit( Enemy *e )
 		velocity.y = 4;
 	}*/
 
+	bool hasMomentumUpgrade = false;
+	bool hasRegenUpgrade = false;
+
 	Color c;
 	switch(e->world )
 	{
 	case 1:
 		c = COLOR_BLUE;
+		hasMomentumUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_ENEMY_REGEN);
 		break;
 	case 2:
 		c = COLOR_GREEN;
+		hasMomentumUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_ENEMY_REGEN);
 		break;
 	case 3:
 		c = COLOR_YELLOW;
+		hasMomentumUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_ENEMY_REGEN);
 		break;
 	case 4:
 		c = COLOR_ORANGE;
+		hasMomentumUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_ENEMY_REGEN);
 		break;
 	case 5:
 		c = COLOR_RED;
+		hasMomentumUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_ENEMY_REGEN);
 		break;
 	case 6:
 		c = COLOR_MAGENTA;
+		hasMomentumUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_ENEMY_REGEN);
 		break;
 	case 7:
 		c = Color::Black;
@@ -20971,10 +21007,15 @@ void Actor::ConfirmHit( Enemy *e )
 
 	float speedBarAddition = hitParams.speedBar;
 
-	int numMomentumUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_MOMENTUM_FROM_ENEMIES_1, 3);
+	
+	float momentumUpgradeAmount = .5;//.2;
+	if (hasMomentumUpgrade)
+	{
+		speedBarAddition += speedBarAddition * momentumUpgradeAmount;
+	}
 
-	float upgradeAmount = .2;
-	speedBarAddition += speedBarAddition * upgradeAmount * numMomentumUpgrades;
+	
+	
 
 	currentSpeedBar += hitParams.speedBar;
 	hitEnemyDuringPhysics = true;
@@ -21003,35 +21044,8 @@ void Actor::ConfirmHit( Enemy *e )
 
 	float ch = hitParams.charge;
 
-	int numChargeUpgrades = 0;
-
-	switch (e->world)
-	{
-	case 1:
-		numChargeUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_REGEN_1, 3);
-		break;
-	case 2:
-		numChargeUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_REGEN_1, 3);
-		break;
-	case 3:
-		numChargeUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_REGEN_1, 3);
-		break;
-	case 4:
-		numChargeUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_REGEN_1, 3);
-		break;
-	case 5:
-		numChargeUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_REGEN_1, 3);
-		break;
-	case 6:
-		numChargeUpgrades = NumUpgradeRange(UPGRADE_W6_INCREASE_REGEN_1, 3);
-		break;
-	case 7:
-		numChargeUpgrades = NumUpgradeRange(UPGRADE_W7_INCREASE_REGEN_1, 3);
-		break;
-	}
-
-	float upgradeFactor = .2 * numChargeUpgrades;
-	ch += upgradeFactor * ch;
+	float regenUpgradeAmount = .5;//.2 * numChargeUpgrades;
+	ch += regenUpgradeAmount * ch;
 
 	int charge = ch;
 
@@ -22277,7 +22291,7 @@ void Actor::ExecuteDoubleJump()
 	}
 
 	double scorpionExtra = 10;
-	if (bounceFlameOn && HasUpgrade( UPGRADE_W3_SCORPION_DOUBLEJUMP ))
+	if (bounceFlameOn && HasUpgrade( UPGRADE_W4_SCORPION_JUMP))
 	{
 		currStrength += scorpionExtra;
 	}
@@ -22436,7 +22450,7 @@ int Actor::GetDoubleJump()
 
 bool Actor::CanDoubleJump()
 {
-	return ( (hasDoubleJump || extraDoubleJump || ( HasUpgrade( UPGRADE_W5_INFINITE_DOUBLEJUMP_WITHIN_BUBBLES) && inBubble ) ) && 
+	return ( (hasDoubleJump || extraDoubleJump || ( HasUpgrade( UPGRADE_W6_BUBBLE_AIRDASH) && inBubble ) ) && 
 		(JumpButtonPressed() || pauseBufferedJump ) && !IsSingleWirePulling() );
 }
 

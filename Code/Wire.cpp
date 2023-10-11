@@ -927,8 +927,8 @@ void Wire::UpdateAnchors( V2d vel )
 
 
 
-		if ( ((right && player->HasUpgrade( Actor::UPGRADE_W6_WIRE_ENEMIES_RIGHT) )
-			|| (!right && player->HasUpgrade( Actor::UPGRADE_W6_WIRE_ENEMIES_LEFT )))
+		if ( ((right && false )//player->HasUpgrade( Actor::UPGRADE_W6_WIRE) )
+			|| (!right && false ) )//player->HasUpgrade( Actor::UPGRADE_W6_WIRE_ENEMIES_LEFT )))
 			&& GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
 		{
 			data.storedPlayerPos = playerPos;

@@ -201,9 +201,13 @@ void Actor::BOUNCEGROUND_Change()
 			{
 				hasAirDash = true;
 
-				if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+				/*if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
 				{
 					numRemainingExtraAirdashBoosts = 1;
+				}
+				else*/
+				{
+					numRemainingExtraAirdashBoosts = 0;
 				}
 
 				hasWallJumpRechargeAirDash = false;
