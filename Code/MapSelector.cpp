@@ -23,11 +23,13 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	ts_statIcons = mm->tilesetManager.GetSizedTileset("HUD/score_384x96.png");
 
-	ts_statIcons->SetSpriteTexture(bestTimeIconSpr);
+	/*ts_statIcons->SetSpriteTexture(bestTimeIconSpr);
 	ts_statIcons->SetSpriteTexture(shardIconSpr);
+	ts_statIcons->SetSpriteTexture(logIconSpr);
 
 	ts_statIcons->SetSubRect(bestTimeIconSpr, 12);
 	ts_statIcons->SetSubRect(shardIconSpr, 14);
+	ts_statIcons->SetSubRect(logIconSpr, 14);*/
 
 	ts_rock = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/level_rock_256x300.png");
 

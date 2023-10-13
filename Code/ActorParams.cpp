@@ -31,7 +31,7 @@ sf::Font *PoiParams::font = NULL;
 
 
 
-
+#define SHARD_DISPLAY_ROW_SIZE 16
 
 
 //remnove the postype thing. we have 2 bools for that already
@@ -640,7 +640,7 @@ ShardParams::ShardParams(ActorType *at, int level)
 
 void ShardParams::SetShard(int w, int li)
 {
-	SetShard(w, li % 11, li / 11);
+	SetShard(w, li % SHARD_DISPLAY_ROW_SIZE, li / SHARD_DISPLAY_ROW_SIZE);
 }
 
 void ShardParams::SetShard(int w, int realX, int realY)
@@ -648,7 +648,7 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	shInfo.world = w;
 	sX = realX;
 	sY = realY;
-	shInfo.localIndex = realX + realY * 11;
+	shInfo.localIndex = realX + realY * SHARD_DISPLAY_ROW_SIZE;
 
 	if (myEnemy != NULL)
 	{
@@ -685,7 +685,7 @@ void ShardParams::SetShard(int w, int realX, int realY)
 
 int ShardParams::GetTotalIndex()
 {
-	return shInfo.world * 22 + shInfo.localIndex;
+	return shInfo.world * ShardInfo::MAX_SHARDS_PER_WORLD + shInfo.localIndex;
 }
 
 ShardParams::ShardParams(ActorType *at,ifstream &is)
@@ -776,8 +776,6 @@ void LogParams::SetLog(int w, int li)
 	{
 		myEnemy->UpdateParamsSettings();
 	}
-
-	//SetLog(w, li % 11, li / 11);
 }
 
 void LogParams::SetLog(int w, int realX, int realY)
@@ -785,7 +783,7 @@ void LogParams::SetLog(int w, int realX, int realY)
 	lInfo.world = w;
 	sX = realX;
 	sY = realY;
-	lInfo.localIndex = realX + realY * 11;
+	lInfo.localIndex = realX + realY * SHARD_DISPLAY_ROW_SIZE;
 
 	if (myEnemy != NULL)
 	{

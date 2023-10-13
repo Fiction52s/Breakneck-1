@@ -344,7 +344,7 @@ void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 	currGateTypeRects[Gate::SHARD]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
 	int x = icRect->pos.x / gateGridSize;
-	int y = icRect->pos.y / gateGridSize;
+	int y = icRect->pos.y / ( gateGridSize * 2 );
 
 	int world = y / edit->shardNumY;
 	int localIndex = (y % edit->shardNumY) * edit->shardNumX + x;

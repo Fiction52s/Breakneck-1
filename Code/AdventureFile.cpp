@@ -282,13 +282,15 @@ void AdventureMap::Save(std::ofstream &of, int copyMode)
 }
 
 AdventureSector::AdventureSector()
-	:hasShardField(ShardInfo::MAX_SHARDS)
+	:hasShardField(ShardInfo::MAX_SHARDS),
+	hasLogField( LogDetailedInfo::MAX_LOGS )
 {
 }
 
 void AdventureSector::Clear()
 {
 	hasShardField.Reset();
+	hasLogField.Reset();
 	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR; ++i)
 	{
 		maps[i].Clear();
@@ -341,8 +343,17 @@ int AdventureWorld::GetNumExistingSectors()
 	return activeCounter;
 }
 
+AdventureWorld::AdventureWorld()
+	:hasShardField(ShardInfo::MAX_SHARDS),
+	hasLogField(LogDetailedInfo::MAX_LOGS)
+{
+
+}
+
 void AdventureWorld::Clear()
 {
+	hasShardField.Reset();
+	hasLogField.Reset();
 	for (int i = 0; i < ADVENTURE_MAX_NUM_SECTORS_PER_WORLD; ++i)
 	{
 		sectors[i].Clear();
@@ -382,7 +393,7 @@ int AdventureFile::GetNumExistingWorlds()
 }
 
 AdventureFile::AdventureFile()
-	:hasShardField( 32 * 4 )
+	:hasShardField(ShardInfo::MAX_SHARDS), hasLogField(LogDetailedInfo::MAX_LOGS)
 {
 	SetVer(1);
 }
@@ -399,6 +410,7 @@ void AdventureFile::SetVer(int v )
 void AdventureFile::Clear()
 {
 	hasShardField.Reset();
+	hasLogField.Reset();
 	for (int i = 0; i < ADVENTURE_MAX_NUM_WORLDS; ++i)
 	{
 		worlds[i].Clear();
@@ -533,11 +545,14 @@ bool AdventureFile::LoadMapHeaders()
 				{
 					am.LoadHeaderInfo();
 					worlds[w].sectors[s].hasShardField.Or(am.headerInfo.hasShardField);
+					worlds[w].sectors[s].hasLogField.Or(am.headerInfo.hasLogField);
 				}
 			}
 			worlds[w].hasShardField.Or(worlds[w].sectors[s].hasShardField);
+			worlds[w].hasLogField.Or(worlds[w].sectors[s].hasLogField);
 		}
 		hasShardField.Or(worlds[w].hasShardField);
+		hasLogField.Or(worlds[w].hasLogField);
 	}
 
 	return true;
@@ -582,8 +597,8 @@ void AdventureFile::GetOriginalProgressionUpgradeField(int mapIndex, BitField &b
 		//for (int j = 0; j < mhi.po.numOptions; ++j)
 	}
 
-	int w, s, m;
-	GetMapIndexes(mapIndex, w, s, m);
+	/*int w, s, m;
+	GetMapIndexes(mapIndex, w, s, m);*/
 }
 
 void AdventureFile::GetOriginalProgressionLogField(int mapIndex, BitField &bf)
@@ -604,9 +619,9 @@ void AdventureFile::GetOriginalProgressionLogField(int mapIndex, BitField &bf)
 		auto &mhi = GetMapHeaderInfo(i);
 		assert(mhi.IsLoaded());
 
-		for (int j = 0; j < mhi.hasShardField.numOptions; ++j)
+		for (int j = 0; j < mhi.hasLogField.numOptions; ++j)
 		{
-			bf.SetBit(Actor::SHARD_START_INDEX + j, bf.GetBit(Actor::SHARD_START_INDEX + j) || mhi.hasShardField.GetBit(j)); //Or(mhi.hasShardField);
+			bf.SetBit(j, bf.GetBit(j) || mhi.hasLogField.GetBit(j));
 		}
 	}
 }

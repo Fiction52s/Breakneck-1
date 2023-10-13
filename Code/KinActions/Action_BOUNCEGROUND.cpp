@@ -3,6 +3,7 @@
 #include "Session.h"
 #include "SoundTypes.h"
 #include "EditorTerrain.h"
+#include "EditorRail.h"
 
 using namespace std;
 using namespace sf;
@@ -41,7 +42,8 @@ void Actor::BOUNCEGROUND_Change()
 	//if (TrySlideBrakeOrStand()) return true;
 
 
-	//if (!PowerButtonHeld() || currPowerMode != PMODE_BOUNCE )
+	//doesn't happen when involving scorpiononly rails, that gets handled in the bounceflameOff function because of ordering stuff
+	//making it hard to know If I just let go of a rail or ground
 	if( !bounceFlameOn)
 	{
 		SetAction(JUMP);
@@ -52,20 +54,17 @@ void Actor::BOUNCEGROUND_Change()
 		return;
 	}
 
+	bool scorpOnlyRail = bounceEdge != NULL && bounceEdge->rail != NULL && bounceEdge->rail->GetRailType() == TerrainRail::SCORPIONONLY;
+
 	//if (TryGroundBlock()) return true;
 
 	//if (TryFloorRailDropThrough()) return true;
 
 	//if (TryPressGrind()) return true;
-	if (JumpButtonPressed())
+
+	if (scorpOnlyRail)
 	{
-		if (TryLandFromBounceGround())
-		{
-			SetAction(JUMPSQUAT);
-			frame = 0;
-			return;
-		}
-		else
+		if (JumpButtonPressed())
 		{
 			if (TryDoubleJump())
 			{
@@ -75,61 +74,8 @@ void Actor::BOUNCEGROUND_Change()
 				return;
 			}
 		}
-		
-	}
-	
-	/*if (AttackButtonPressed())
-	{
-		if (TryLandFromBounceGround())
-		{
-			if (TryGroundAttack())
-			{
-				return;
-			}
-			else
-			{
-				assert(0);
-			}
-		}
-		else
-		{
-			if (AirAttack())
-			{
-				bounceEdge = NULL;
-				velocity = storedBounceVel;
-				holdJump = false;
-				return;
-			}
-			else
-			{
-				assert(0);
-			}
-		}
-	}*/
-	
-	if (DashButtonPressed())
-	{
-		if (bounceNorm.y < 0 && TerrainPolygon::IsSteepGround(bounceNorm))
-		{
-			if ((bounceNorm.x < 0 && (currInput.LRight() || currInput.LUp()) && !currInput.LLeft() && !currInput.LDown())
-				|| (bounceNorm.x > 0 && (currInput.LLeft() || currInput.LUp()) && !currInput.LRight() && !currInput.LDown()))
-			{
-				if (!TryLandFromBounceGround())
-				{
-					assert(0);
-				}
-				SetAction(STEEPCLIMB);
-				frame = 0;
-				return;
-			}
-		}
-		else if (TryLandFromBounceGround())
-		{
-			SetAction(DASH);
-			frame = 0;
-			return;
-		}
-		else
+
+		/*if (DashButtonPressed())
 		{
 			if (TryAirDash())
 			{
@@ -138,20 +84,67 @@ void Actor::BOUNCEGROUND_Change()
 				holdJump = false;
 				return;
 			}
-		}
-		
+		}*/
 	}
-
-	/*if (TryJumpSquat())
+	else
 	{
-		
-		return;
+		if (JumpButtonPressed())
+		{
+			if (TryLandFromBounceGround())
+			{
+				SetAction(JUMPSQUAT);
+				frame = 0;
+				return;
+			}
+			else
+			{
+				if (TryDoubleJump())
+				{
+					bounceEdge = NULL;
+					velocity = storedBounceVel;
+					holdJump = false;
+					return;
+				}
+			}
+
+		}
+
+		if (DashButtonPressed())
+		{
+			if (bounceNorm.y < 0 && TerrainPolygon::IsSteepGround(bounceNorm))
+			{
+				if ((bounceNorm.x < 0 && (currInput.LRight() || currInput.LUp()) && !currInput.LLeft() && !currInput.LDown())
+					|| (bounceNorm.x > 0 && (currInput.LLeft() || currInput.LUp()) && !currInput.LRight() && !currInput.LDown()))
+				{
+					if (!TryLandFromBounceGround())
+					{
+						assert(0);
+					}
+					SetAction(STEEPCLIMB);
+					frame = 0;
+					return;
+				}
+			}
+			else if (TryLandFromBounceGround())
+			{
+				SetAction(DASH);
+				frame = 0;
+				return;
+			}
+			else
+			{
+				if (TryAirDash())
+				{
+					bounceEdge = NULL;
+					velocity = storedBounceVel;
+					holdJump = false;
+					return;
+				}
+			}
+
+		}
 	}
 	
-
-	if (TryGroundAttack()) return;
-
-	if (TryDash()) return;*/
 
 
 	V2d bn = bounceNorm;//bounceEdge->Normal();

@@ -3,7 +3,7 @@
 
 struct ShardInfo
 {
-	const static int MAX_SHARDS_PER_WORLD = 22;
+	const static int MAX_SHARDS_PER_WORLD = 16;
 	const static int MAX_SHARDS = 128;
 
 	ShardInfo()

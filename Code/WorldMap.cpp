@@ -28,7 +28,7 @@ WorldMap::WorldMap()
 	mainMenu = MainMenu::GetInstance();
 	adventureManager = mainMenu->adventureManager;
 	
-	allUnlocked = true;
+	allUnlocked = false;
 
 	UpdateButtonIconsWhenControllerIsChanged();
 
@@ -52,6 +52,12 @@ WorldMap::WorldMap()
 	shardsCapturedText.setCharacterSize(36);
 	shardsCapturedText.setFont(mainMenu->arial);
 	shardsCapturedText.setPosition(infoQuadPos + Vector2f(10, 10 + 60));
+
+	logsCapturedText.setFillColor(Color::White);
+	logsCapturedText.setCharacterSize(36);
+	logsCapturedText.setFont(mainMenu->arial);
+	logsCapturedText.setPosition(infoQuadPos + Vector2f(10, 10 + 60 + 60));
+	
 
 	worldNameText.setFillColor(Color::White);
 	worldNameText.setCharacterSize(40);
@@ -270,10 +276,14 @@ void WorldMap::UpdateWorldStats()
 	sectorsCompleteText.setString(ss.str());
 
 	int numTotalShards = 0;
-	int totalCaptured = 0;
-	int numLevels;
-	int levIndex;
-	int numShardsInLevel;
+	int totalShardsCaptured = 0;
+	int numLevels = 0;
+	int levIndex = 0;
+	int numShardsInLevel = 0;
+
+	int numTotalLogs = 0;
+	int totalLogsCaptured = 0;
+	int numLogsInLevel = 0;
 
 	for (int i = 0; i < numTotalSectors; ++i)
 	{
@@ -282,24 +292,43 @@ void WorldMap::UpdateWorldStats()
 		{
 			levIndex = world.sectors[i].GetLevelIndex(j);
 			AdventureMapHeaderInfo &amhi = adventureManager->adventureFile.GetMapHeaderInfo(levIndex);
+
 			numShardsInLevel = amhi.shardInfoVec.size();
 			numTotalShards += numShardsInLevel;
 			for (int k = 0; k < numShardsInLevel; ++k)
 			{
 				if (saveFile->IsShardCaptured(amhi.shardInfoVec[k].GetTrueIndex()))
 				{
-					++totalCaptured;
+					++totalShardsCaptured;
 				}
 			}
+
+			numLogsInLevel = amhi.logInfoVec.size();
+			numTotalLogs += numLogsInLevel;
+			for (int k = 0; k < numLogsInLevel; ++k)
+			{
+				if (saveFile->HasLog(amhi.logInfoVec[k].GetTrueIndex()))
+				{
+					++totalLogsCaptured;
+				}
+			}
+
 		}
 	}
 
 	ss.str("");
 	ss.clear();
 
-	ss << "Shards: " << totalCaptured << "/" << numTotalShards;
+	ss << "Shards: " << totalShardsCaptured << "/" << numTotalShards;
 
 	shardsCapturedText.setString(ss.str());
+
+	ss.str("");
+	ss.clear();
+
+	ss << "Logs: " << totalLogsCaptured << "/" << numTotalLogs;
+
+	logsCapturedText.setString(ss.str());
 }
 
 void WorldMap::UpdateColonySelect()
@@ -530,6 +559,7 @@ void WorldMap::Update()
 		if (keyboardAllLevelsUnlockedCheat)
 		{
 			allUnlocked = !allUnlocked;
+			InitSelectors();
 		}
 
 		UpdateSelectedColony();
@@ -1085,6 +1115,7 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(infoNameBG, 4, sf::Quads);
 		rt->draw(sectorsCompleteText);
 		rt->draw(shardsCapturedText);
+		rt->draw(logsCapturedText);
 		rt->draw(worldNameText);
 
 		//if (adventureManager->parallelPracticeMode)

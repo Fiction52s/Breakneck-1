@@ -25,6 +25,7 @@ struct SaveFileDisplay
 	sf::Text completedWorldsText;
 	sf::Text completeLevelsText;
 	sf::Text capturedShardsText;
+	sf::Text capturedLogsText;
 	sf::Text totalTime;
 
 	sf::Vector2f pos;

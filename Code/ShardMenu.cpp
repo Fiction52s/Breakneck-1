@@ -73,7 +73,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 	int xSize = 5;
 	int ySize = 5 + 1;
 
-	int numWorlds = 7;
+	int numWorlds = 8;
 
 	shardInfo = new ShardDetailedInfo*[numWorlds];
 	for (int i = 0; i < numWorlds; ++i)
@@ -679,17 +679,8 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 	
 	target->draw(shardSelectQuads , ShardInfo::MAX_SHARDS_PER_WORLD * 4,
 		sf::Quads, ts_shards[worldSelector->currIndex]->texture);
-	/*for (int i = 0; i < 7; ++i)
-	{
-		target->draw(shardSelectQuads + 22 * 4 * i, 22 * 4,
-			sf::Quads, ts_shards[i]->texture);
-	}*/
 	target->draw(worldText);
 	
-
-	/*target->draw(shardSelectQuads, 22 * 4,
-		sf::Quads, ts_shards[0]->texture);*/
-	//target->draw(selectedShardHighlight);
 	if (currShardText.getString() != "")
 	{
 		target->draw(currShardText);

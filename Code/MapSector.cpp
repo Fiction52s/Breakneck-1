@@ -34,11 +34,17 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ms->ts_statIcons->SetSpriteTexture(mapShardIconSpr);
 	ms->ts_statIcons->SetSubRect(mapShardIconSpr, 14);
 
+	ms->ts_statIcons->SetSpriteTexture(mapLogIconSpr);
+	ms->ts_statIcons->SetSubRect(mapLogIconSpr, 14);
+
 	ms->ts_statIcons->SetSpriteTexture(mapBestTimeIconSpr);
 	ms->ts_statIcons->SetSubRect(mapBestTimeIconSpr, 12);
 	
 	ms->ts_statIcons->SetSpriteTexture(sectorShardIconSpr);
 	ms->ts_statIcons->SetSubRect(sectorShardIconSpr, 14);
+
+	ms->ts_statIcons->SetSpriteTexture(sectorLogIconSpr);
+	ms->ts_statIcons->SetSubRect(sectorLogIconSpr, 14);
 	
 	SetRectColor(lockedOverlayQuad, Color( 0, 0, 0, 230 ));//Color(100, 100, 100, 100));
 
@@ -116,6 +122,11 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	shardsCollectedText.setCharacterSize(40);
 	shardsCollectedText.setFillColor(Color::White);
 
+	logsCollectedText.setFont(mainMenu->arial);
+	logsCollectedText.setCharacterSize(40);
+	logsCollectedText.setFillColor(Color::White);
+	
+
 	numLevelsBeatenText.setFont(mainMenu->arial);
 	numLevelsBeatenText.setCharacterSize(40);
 	numLevelsBeatenText.setFillColor(Color::White);
@@ -124,8 +135,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	sectorShardsCollectedText.setCharacterSize(40);
 	sectorShardsCollectedText.setFillColor(Color::White);
 
+	sectorLogsCollectedText.setFont(mainMenu->arial);
+	sectorLogsCollectedText.setCharacterSize(40);
+	sectorLogsCollectedText.setFillColor(Color::White);
 	
-
 	//completionPercentText.setCharacterSize(40);
 	//completionPercentText.setFillColor(Color::White);
 
@@ -332,8 +345,12 @@ void MapSector::Draw(sf::RenderTarget *target)
 				target->draw(levelStatsBG, 4, sf::Quads);
 				target->draw(mapBestTimeIconSpr);
 				target->draw(bestTimeText);
+
 				target->draw(mapShardIconSpr);
 				target->draw(shardsCollectedText);
+
+				target->draw(mapLogIconSpr);
+				target->draw(logsCollectedText);
 
 				int numOptionsShown = 0;
 				if (ghostAndReplayOn)
@@ -483,7 +500,11 @@ void MapSector::SetXCenter(float x)
 	Vector2f sectorStatsTopLeft = sectorStatsCenter - sectorStatsSize / 2.f;
 	numLevelsBeatenText.setPosition(sectorStatsTopLeft + Vector2f(10, 10));
 	sectorShardIconSpr.setPosition(sectorStatsTopLeft + Vector2f(-30, 96 - 20));
+
+	Vector2f sectorLogDiff(200, 0);
+	sectorLogIconSpr.setPosition(sectorStatsTopLeft + Vector2f(-30, 96 - 20) + sectorLogDiff);
 	sectorShardsCollectedText.setPosition(sectorStatsTopLeft + Vector2f(100, 96));
+	sectorLogsCollectedText.setPosition(sectorStatsTopLeft + Vector2f(100, 96) + sectorLogDiff);
 
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter);
 	SetRectColor(sectorStatsBG, Color(0, 0, 0, 200));
@@ -516,14 +537,20 @@ void MapSector::SetXCenter(float x)
 	SetRectTopLeft(origPowersOptionQuad, 384, 128, origPowersOptionPos);
 	SetRectTopLeft(origPowersOptionButtonQuad, 64, 64, origPowersOptionPos + buttonIconOffset);
 
-	SetRectTopLeft(levelStatsBG, 256 + 48, 192, levelStatsTopLeft);
+	SetRectTopLeft(levelStatsBG, 384, 192, levelStatsTopLeft);
 
 	mapShardIconSpr.setPosition(levelStatsTopLeft + Vector2f( -15, 96 ));
+
+	Vector2f logDiff(170, 0);
+	mapLogIconSpr.setPosition(levelStatsTopLeft + Vector2f(-15, 96) + logDiff );
 	mapBestTimeIconSpr.setPosition(levelStatsTopLeft + Vector2f( -20, 0 ) );
 
-	bestTimeText.setPosition(mapBestTimeIconSpr.getPosition() + Vector2f(96 + 60, 20));
-	shardsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 60, 20));
 
+	
+
+	bestTimeText.setPosition(mapBestTimeIconSpr.getPosition() + Vector2f(96 + 60, 20));
+	shardsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 30, 20));
+	logsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 30, 20) + logDiff);
 	//requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
 
 	//shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
@@ -559,8 +586,12 @@ void MapSector::DrawStats(sf::RenderTarget *target)
 {
 	target->draw(sectorStatsBG, 4, sf::Quads);
 	target->draw(numLevelsBeatenText);
+
 	target->draw(sectorShardIconSpr);
 	target->draw(sectorShardsCollectedText);
+
+	target->draw(sectorLogIconSpr);
+	target->draw(sectorLogsCollectedText);
 	//target->draw(completionPercentText);
 	//target->draw(shardsCollectedText);
 }
@@ -589,9 +620,13 @@ void MapSector::UpdateStats()
 	numLevelsBeatenText.setString(ss.str());
 
 	int totalShards = 0;
-	int numCaptured = 0;
+	int numShardsCaptured = 0;
+	int totalLogs = 0;
+	int numLogsCaptured = 0;
 
 	int numShardsPerLevel = 0;
+	int numLogsPerLevel = 0;
+
 	for (int i = 0; i < numLevels; ++i)
 	{
 		AdventureMapHeaderInfo &amhi =
@@ -602,7 +637,17 @@ void MapSector::UpdateStats()
 		{
 			if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
 			{
-				++numCaptured;
+				++numShardsCaptured;
+			}
+		}
+
+		numLogsPerLevel = amhi.logInfoVec.size();
+		totalLogs += numLogsPerLevel;
+		for (int j = 0; j < numLogsPerLevel; ++j)
+		{
+			if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
+			{
+				++numLogsCaptured;
 			}
 		}
 	}
@@ -610,9 +655,16 @@ void MapSector::UpdateStats()
 	ss.str("");
 	ss.clear();
 
-	ss << numCaptured << "/" << totalShards;
+	ss << numShardsCaptured << "/" << totalShards;
 
 	sectorShardsCollectedText.setString(ss.str());
+
+	ss.str("");
+	ss.clear();
+
+	ss << numLogsCaptured << "/" << totalLogs;
+
+	sectorLogsCollectedText.setString(ss.str());
 
 	/*int numTotalShards = adventureFile.GetAdventureSector(sec).hasShardField.GetOnCount();
 	int numShardsCaptured = saveSector->GetNumShardsCaptured();
@@ -675,22 +727,39 @@ void MapSector::UpdateLevelStats()
 	levelNameText.setOrigin(lb.left + lb.width / 2, 0);
 
 	int totalNumShards = headerInfo.shardInfoVec.size();
+	int totalNumLogs = headerInfo.logInfoVec.size();
 
+	int numShardsCollected = 0;
+	int numLogsCollected = 0;
 
-	int numCollected = 0;
 	for (auto it = headerInfo.shardInfoVec.begin(); it !=
 		headerInfo.shardInfoVec.end(); ++it)
 	{
 		if (saveFile->IsShardCaptured((*it).GetTrueIndex()))
 		{
-			numCollected++;
+			numShardsCollected++;
+		}
+	}
+
+	for (auto it = headerInfo.logInfoVec.begin(); it != headerInfo.logInfoVec.end(); ++it)
+	{
+		if (saveFile->HasLog((*it).GetTrueIndex() ) )
+		{
+			numLogsCollected++;
 		}
 	}
 
 	stringstream ss;
-	ss << numCollected << "/" << totalNumShards;
+	ss << numShardsCollected << "/" << totalNumShards;
 
 	shardsCollectedText.setString(ss.str());
+
+	ss.str("");
+	ss.clear();
+
+	ss << numLogsCollected << "/" << totalNumLogs;
+
+	logsCollectedText.setString(ss.str());
 
 
 

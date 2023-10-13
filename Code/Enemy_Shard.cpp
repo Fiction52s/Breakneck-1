@@ -36,7 +36,7 @@ void Shard::UpdateParamsSettings()
 	ShardParams *sParams = (ShardParams*)editParams;
 	shardWorld = sParams->shInfo.world;
 	localIndex = sParams->shInfo.localIndex;
-	shardType = GetShardTypeFromWorldAndIndex(shardWorld, localIndex);//shardWorld * 22 + localIndex;//Shard::GetShardType(shardWorld, localIndex);
+	shardType = GetShardTypeFromWorldAndIndex(shardWorld, localIndex);
 
 	if (shardType != oldShardType)
 	{
@@ -50,12 +50,44 @@ void Shard::UpdateParamsSettings()
 
 int Shard::GetShardTypeFromWorldAndIndex(int w, int li)
 {
-	return w * 22 + li;
+	return w * ShardInfo::MAX_SHARDS_PER_WORLD + li;
 }
 
 int Shard::GetNumShardsTotal()
 {
-	return 22 * 7;
+	return ShardInfo::MAX_SHARDS;
+	/*int total = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		total += GetNumShardsForWorld(i);
+	}
+
+	return total;*/
+}
+
+int Shard::GetNumShardsForWorld(int w)
+{
+	switch (w)
+	{
+	case 0:
+		return 10;
+	case 1:
+		return 10;
+	case 2:
+		return 10;
+	case 3:
+		return 12;
+	case 4:
+		return 11;
+	case 5:
+		return 14;
+	case 6:
+		return 0;
+	case 7:
+		return 0;
+	}
+
+	return 0;
 }
 
 void Shard::Setup()
@@ -218,41 +250,6 @@ void Shard::FrameIncrement()
 {
 	++data.totalFrame;
 }
-
-//int Shard::GetShardType(const std::string &str)
-//{
-//	return shardTypeMap[str];
-//}
-//
-//int Shard::GetShardType(int w, int li)
-//{
-//	int totalIndex = w * 22 + li;
-//	if (totalIndex >= SHARD_Count)
-//	{
-//		totalIndex = 0;
-//	}
-//	return totalIndex;
-//	//return shardTypeMap[str];
-//}
-//
-//std::string Shard::GetShardString(ShardType st)
-//{
-//	return shardStrMap[st];
-//}
-//
-//std::string Shard::GetShardString(int w, int li)
-//{
-//	int shardIndex = 22 * w + li;
-//
-//	if (shardIndex < ShardType::SHARD_Count)
-//	{
-//		return GetShardString((ShardType)shardIndex);
-//	}
-//	else
-//	{
-//		return string("-------");
-//	}
-//}
 
 void Shard::IHitPlayer(int index)
 {

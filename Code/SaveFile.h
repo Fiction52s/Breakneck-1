@@ -102,6 +102,7 @@ struct AdventureSector
 {	
 	AdventureSector();
 	BitField hasShardField;
+	BitField hasLogField;
 	AdventureMap maps[ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR];
 	void Clear();
 	void Load(std::ifstream &is, int ver, int copyMode );
@@ -112,14 +113,10 @@ struct AdventureSector
 struct AdventureWorld
 {
 	BitField hasShardField;
+	BitField hasLogField;
 	AdventureSector sectors[ADVENTURE_MAX_NUM_SECTORS_PER_WORLD];
 
-	AdventureWorld()
-		:hasShardField(ShardInfo::MAX_SHARDS)
-	{
-
-	}
-	
+	AdventureWorld();
 	void Clear();
 	void Load(std::ifstream &is, int ver, int copyMode );
 	void Save(std::ofstream &of, int ver, int copyMode );
@@ -138,6 +135,7 @@ struct AdventureFile
 
 	CopyMode copyMode;
 	BitField hasShardField;
+	BitField hasLogField;
 	AdventureWorld worlds[ADVENTURE_MAX_NUM_WORLDS];
 	int ver;
 
@@ -227,6 +225,9 @@ struct SaveFile
 
 	int GetNumShardsCaptured();
 	int GetNumShardsTotal();
+
+	int GetNumLogsCaptured();
+	int GetNumLogsTotal();
 
 	int GetNumCompleteWorlds( AdventurePlanet *planet );
 

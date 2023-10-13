@@ -3735,23 +3735,25 @@ void EditSession::SetCurrSelectedLogType(int w, int li)
 
 void EditSession::SetupShardSelectPanel()
 {
-	shardNumX = 11;
-	shardNumY = 2;
+	shardNumX = 16;
+	shardNumY = 1;
 
 	shardGridSize = 64;
 
-	shardTypePanel = new Panel("shardtype", 600, 800, this, true);
+	int numWorlds = 7;
+
+	shardTypePanel = new Panel("shardtype", shardGridSize * shardNumX, shardGridSize * numWorlds * 2, this, true);
 	Color c(100, 100, 100);
-	c.a = 180;
+	c.a = 255;
 	shardTypePanel->SetColor(c);
 
-	int numWorlds = 7;
+	
 	for (int i = 0; i < numWorlds; ++i)
 	{
 		ts_shards[i] = Shard::GetShardTileset(i, this);
 	}
 
-	int totalShards = shardNumX * shardNumY * 7;
+	int totalShards = Shard::GetNumShardsTotal();//shardNumX * shardNumY * shardNumX;
 
 	Tileset *ts_currShards;
 	int sInd = 0;
@@ -4898,8 +4900,8 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	}
 	else if (panel->name == "shard_options" )
 	{
-		int world = gs->selectedX / 11;
-		int realX = gs->selectedX % 11;
+		int world = gs->selectedX / 16;
+		int realX = gs->selectedX % 16;
 		int realY = gs->selectedY;
 
 		ShardParams *shard = NULL;

@@ -94,18 +94,22 @@ struct MapSector
 	sf::Sprite mapPreviewSpr;
 	sf::Sprite nodeHighlight;
 	sf::Sprite mapShardIconSpr;
+	sf::Sprite mapLogIconSpr;
 	sf::Sprite mapBestTimeIconSpr;
 	sf::Sprite sectorShardIconSpr;
+	sf::Sprite sectorLogIconSpr;
 	sf::Sprite lockSpr;
 
 	sf::Text levelNameText;
 	sf::Text bestTimeText;
 	sf::Text shardsCollectedText;
+	sf::Text logsCollectedText;
 	sf::Text levelsBeatenText;
 	//sf::Text requirementText;
 	sf::Text sectorNameText;
 	sf::Text numLevelsBeatenText;
 	sf::Text sectorShardsCollectedText;
+	sf::Text sectorLogsCollectedText;
 
 	Tileset *ts_buttons;
 	Tileset *ts_levelSelectNumbers;
@@ -232,8 +236,9 @@ struct MapSelector
 	Tileset *ts_rock;
 	Tileset *ts_statIcons;
 
-	sf::Sprite bestTimeIconSpr;
-	sf::Sprite shardIconSpr;
+	//sf::Sprite bestTimeIconSpr;
+	//sf::Sprite shardIconSpr;
+	//sf::Sprite logIconSpr;
 	
 
 	MapSelector( WorldMap *worldMap, 
@@ -326,6 +331,7 @@ struct WorldMap : TilesetManager
 	sf::Vertex infoQuadBG[4];
 	sf::Text sectorsCompleteText;
 	sf::Text shardsCapturedText;
+	sf::Text logsCapturedText;
 	sf::Text worldNameText;
 
 	sf::Text numCurrentPlayersText[ADVENTURE_MAX_NUM_WORLDS];

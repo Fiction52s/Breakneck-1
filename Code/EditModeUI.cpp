@@ -187,8 +187,8 @@ void EditModeUI::CreateKinOptionsPanel()
 	int numUpgradesCurrLine = 0;
 	for (int i = 0; i < totalShards; ++i)
 	{
-		w = i / 22;
-		li = i % 22;
+		w = i / ShardInfo::MAX_SHARDS_PER_WORLD;
+		li = i % ShardInfo::MAX_SHARDS_PER_WORLD;
 
 		if (w > currWorld)
 		{
@@ -217,7 +217,7 @@ void EditModeUI::CreateKinOptionsPanel()
 			continue;
 		}
 		//multiple shard
-		if (currName.at(currName.size() - 2) == '/')
+		/*if (currName.at(currName.size() - 2) == '/')
 		{
 			int numberOfUpgrades = currName.at(currName.size() - 1) - '0';
 
@@ -230,7 +230,7 @@ void EditModeUI::CreateKinOptionsPanel()
 				upgradeIndex, numberOfUpgrades);
 			i += (numberOfUpgrades - 1);
 		}
-		else
+		else*/
 		{
 			string modifiedName = currName + ":";
 
@@ -738,7 +738,7 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 			else if(icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)
 			{
 				int x = icRect->pos.x / edit->shardGridSize;
-				int y = icRect->pos.y / edit->shardGridSize;
+				int y = icRect->pos.y / (edit->shardGridSize * 2);//*2 because of the spacing being x2
 
 				int world = y / edit->shardNumY;
 				int localIndex = (y % edit->shardNumY) * edit->shardNumX + x;

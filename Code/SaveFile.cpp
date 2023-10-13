@@ -317,6 +317,16 @@ int SaveFile::GetNumShardsTotal()
 	return adventureFile->hasShardField.GetOnCount();
 }
 
+int SaveFile::GetNumLogsCaptured()
+{
+	return logField.GetOnCount();
+}
+
+int SaveFile::GetNumLogsTotal()
+{
+	return adventureFile->hasLogField.GetOnCount();
+}
+
 bool SaveFile::IsLevelJustBeaten(Level *lev)
 {
 	return levelsJustBeatenField.GetBit(lev->index);

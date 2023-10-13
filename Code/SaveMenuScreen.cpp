@@ -23,6 +23,7 @@ SaveFileDisplay::SaveFileDisplay(sf::Font &f)
 	lineColor = Color::Black;
 
 	InitText(capturedShardsText);
+	InitText(capturedLogsText);
 	InitText(totalTime);
 	InitText(completeLevelsText);
 	InitText(blankText);
@@ -58,6 +59,7 @@ void SaveFileDisplay::SetPosition(Vector2f &p_pos)
 	completedWorldsText.setPosition(innerStart);
 	completeLevelsText.setPosition(innerStart + Vector2f(0, 50));
 	capturedShardsText.setPosition(innerStart + Vector2f(0, 100));
+	capturedLogsText.setPosition(innerStart + Vector2f(0, 150));
 }
 
 void SaveFileDisplay::Draw(sf::RenderTarget *target)
@@ -71,6 +73,7 @@ void SaveFileDisplay::Draw(sf::RenderTarget *target)
 		target->draw(completedWorldsText);
 		target->draw(completeLevelsText);
 		target->draw(capturedShardsText);
+		target->draw(capturedLogsText);
 		//target->draw(totalTime);
 		
 	}
@@ -98,7 +101,12 @@ void SaveFileDisplay::SetValues(SaveFile *sf, AdventurePlanet *adventurePlanet)
 
 		ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards collected";
 		capturedShardsText.setString(ss.str());
-		
+
+		ss.str("");
+
+		ss << sf->GetNumLogsCaptured() << " / " << sf->GetNumLogsTotal() << " Logs collected";
+		capturedLogsText.setString(ss.str());
+
 		/*ss.str("");
 		ss << "Time: " << sf->GetBestTimeString();
 		totalTime.setString(ss.str());*/

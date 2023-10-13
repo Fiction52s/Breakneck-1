@@ -4930,26 +4930,29 @@ void Actor::Respawn( bool setStartPos )
 
 	//int numStartMomentumUpgrades = 0;
 	bool hasStartMomentumUpgrade = false;
-	switch (sess->mapHeader->envWorldType)
+	if (sess->mapHeader != NULL)
 	{
-	case 0:
-		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_STARTING_MOMENTUM);
-		break;
-	case 1:
-		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_STARTING_MOMENTUM);
-		break;
-	case 2:
-		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_STARTING_MOMENTUM);
-		break;
-	case 3:
-		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_STARTING_MOMENTUM);
-		break;
-	case 4:
-		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_STARTING_MOMENTUM);
-		break;
-	case 5:
-		hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_STARTING_MOMENTUM);
-		break;
+		switch (sess->mapHeader->envWorldType)
+		{
+		case 0:
+			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_STARTING_MOMENTUM);
+			break;
+		case 1:
+			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_STARTING_MOMENTUM);
+			break;
+		case 2:
+			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_STARTING_MOMENTUM);
+			break;
+		case 3:
+			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_STARTING_MOMENTUM);
+			break;
+		case 4:
+			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_STARTING_MOMENTUM);
+			break;
+		case 5:
+			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_STARTING_MOMENTUM);
+			break;
+		}
 	}
 
 	//float startMomentumUpgradeFactor = 15.0;
@@ -10580,21 +10583,21 @@ bool Actor::TryScorpRailDropThrough()
 {
 	//this almost works. try to make a fallthrough algorithm for normal rails
 	//and see if it helps this.
-	if (bounceEdge == NULL || !scorpOn)
-	{
-		if (ground != NULL && ground->rail != NULL
-			&& ground->rail->GetRailType() == TerrainRail::SCORPIONONLY)
-		{
-			SetAction(JUMP);
-			frame = 1;
-			velocity = ground->Along() * groundSpeed;
-			ground = NULL;
-			framesInAir = 0;
-			scorpOn = false; //turns off scorp for one frame to allow dropthrough.
-							 //this is a bit hacky, and i probably need to fix it more later
-			return true;
-		}
-	}
+	//if (bounceEdge == NULL || !scorpOn)
+	//{
+	//	if (ground != NULL && ground->rail != NULL
+	//		&& ground->rail->GetRailType() == TerrainRail::SCORPIONONLY)
+	//	{
+	//		SetAction(JUMP);
+	//		frame = 1;
+	//		velocity = ground->Along() * groundSpeed;
+	//		ground = NULL;
+	//		framesInAir = 0;
+	//		scorpOn = false; //turns off scorp for one frame to allow dropthrough.
+	//						 //this is a bit hacky, and i probably need to fix it more later
+	//		return true;
+	//	}
+	//}
 
 	return false;
 }
@@ -10978,12 +10981,14 @@ void Actor::TryDashBoost()
 		else
 		{
 			//passively has 2 high speed boost upgrades on. test to make sure its not crazy
-			double highSpeedBoost = 3;//5
+			//double highSpeedBoost = 3;//5
 
-			int highSpeedBoostUpgrades = 2;
-			double upgradeAmount = 2;
+			//int highSpeedBoostUpgrades = 2;
+			//double upgradeAmount = 4;//2;
 
-			highSpeedBoost += highSpeedBoostUpgrades * upgradeAmount;
+			double highSpeedBoost = 5;//5
+
+			//highSpeedBoost += upgradeAmount;//highSpeedBoostUpgrades * upgradeAmount;
 
 			if (groundSpeed > 0)
 			{
@@ -11408,12 +11413,12 @@ void Actor::GroundExtraAccel()
 		int numPassiveCeilingAccelUpgrades = HasUpgrade(UPGRADE_W3_CEILING_PASSIVE_GROUND_1) 
 			+ HasUpgrade(UPGRADE_W4_CEILING_PASSIVE_GROUND_2) 
 			+ HasUpgrade(UPGRADE_W5_CEILING_PASSIVE_GROUND_3);
-		extraAccel = numPassiveCeilingAccelUpgrades * .03;
+		extraAccel = numPassiveCeilingAccelUpgrades * upgradeFactor;
 	}
 	else
 	{
 		int numPassiveAccelUpgrades = HasUpgrade(UPGRADE_W1_PASSIVE_GROUND_1) + HasUpgrade(UPGRADE_W2_PASSIVE_GROUND_2) + HasUpgrade(UPGRADE_W6_PASSIVE_GROUND_3);
-		extraAccel = numPassiveAccelUpgrades * .03;
+		extraAccel = numPassiveAccelUpgrades * upgradeFactor;
 	}
 
 	if (groundSpeed > 0)
@@ -17295,6 +17300,25 @@ void Actor::BounceFlameOn()
 
 void Actor::BounceFlameOff()
 {
+	if (action == BOUNCEGROUND && bounceEdge != NULL && bounceEdge->rail != NULL && bounceEdge->rail->GetRailType() == TerrainRail::SCORPIONONLY)
+	{
+		SetAction(JUMP);
+		ground = NULL;
+		frame = 1;
+		holdJump = false;
+
+		double through = dot(storedBounceVel, -bounceEdge->Normal());
+		velocity = storedBounceVel + bounceEdge->Normal() * through;
+
+		//if (TryLandFromBounceGround())
+		//{
+		//	SetAction(JUMP);
+		//	velocity = ground->Along() * groundSpeed;
+		//	ground = NULL;
+		//	frame = 1;
+		//	holdJump = false;
+	}
+
 	scorpOn = false;
 	framesFlameOn = 0;
 	bounceFlameOn = false;

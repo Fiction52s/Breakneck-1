@@ -115,6 +115,7 @@ struct Shard : Enemy
 
 	static int GetShardTypeFromWorldAndIndex(int w, int li);
 	static int GetNumShardsTotal();
+	static int GetNumShardsForWorld(int w);
 	//MovementSequence testSeq;
 	
 	void ProcessState();
