@@ -32,19 +32,19 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	world = &mainMenu->adventureManager->adventurePlanet->worlds[sec->worldIndex];
 
 	ms->ts_statIcons->SetSpriteTexture(mapShardIconSpr);
-	ms->ts_statIcons->SetSubRect(mapShardIconSpr, 14);
+	ms->ts_statIcons->SetSubRect(mapShardIconSpr, 2);
 
 	ms->ts_statIcons->SetSpriteTexture(mapLogIconSpr);
-	ms->ts_statIcons->SetSubRect(mapLogIconSpr, 14);
+	ms->ts_statIcons->SetSubRect(mapLogIconSpr, 3);
 
 	ms->ts_statIcons->SetSpriteTexture(mapBestTimeIconSpr);
-	ms->ts_statIcons->SetSubRect(mapBestTimeIconSpr, 12);
+	ms->ts_statIcons->SetSubRect(mapBestTimeIconSpr, 0);
 	
 	ms->ts_statIcons->SetSpriteTexture(sectorShardIconSpr);
-	ms->ts_statIcons->SetSubRect(sectorShardIconSpr, 14);
+	ms->ts_statIcons->SetSubRect(sectorShardIconSpr, 2);
 
 	ms->ts_statIcons->SetSpriteTexture(sectorLogIconSpr);
-	ms->ts_statIcons->SetSubRect(sectorLogIconSpr, 14);
+	ms->ts_statIcons->SetSubRect(sectorLogIconSpr, 3);
 	
 	SetRectColor(lockedOverlayQuad, Color( 0, 0, 0, 230 ));//Color(100, 100, 100, 100));
 
@@ -75,7 +75,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 		ts_origPowersOptions->SetQuadSubRect(origPowersOptionQuad, 3);
 	}
 
-	int playTileIndex = 21;
+	int playTileIndex = 18;
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads, playTileIndex);
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 4, playTileIndex + 2);
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 8, playTileIndex + 4);
@@ -499,10 +499,10 @@ void MapSector::SetXCenter(float x)
 
 	Vector2f sectorStatsTopLeft = sectorStatsCenter - sectorStatsSize / 2.f;
 	numLevelsBeatenText.setPosition(sectorStatsTopLeft + Vector2f(10, 10));
-	sectorShardIconSpr.setPosition(sectorStatsTopLeft + Vector2f(-30, 96 - 20));
+	sectorShardIconSpr.setPosition(sectorStatsTopLeft + Vector2f(-10, 96 - 20));
 
-	Vector2f sectorLogDiff(200, 0);
-	sectorLogIconSpr.setPosition(sectorStatsTopLeft + Vector2f(-30, 96 - 20) + sectorLogDiff);
+	Vector2f sectorLogDiff(170, 0);
+	sectorLogIconSpr.setPosition(sectorStatsTopLeft + Vector2f(-10, 96 - 20) + sectorLogDiff);
 	sectorShardsCollectedText.setPosition(sectorStatsTopLeft + Vector2f(100, 96));
 	sectorLogsCollectedText.setPosition(sectorStatsTopLeft + Vector2f(100, 96) + sectorLogDiff);
 
@@ -539,18 +539,18 @@ void MapSector::SetXCenter(float x)
 
 	SetRectTopLeft(levelStatsBG, 384, 192, levelStatsTopLeft);
 
-	mapShardIconSpr.setPosition(levelStatsTopLeft + Vector2f( -15, 96 ));
+	mapShardIconSpr.setPosition(levelStatsTopLeft + Vector2f( 10, 96 ));
 
-	Vector2f logDiff(170, 0);
-	mapLogIconSpr.setPosition(levelStatsTopLeft + Vector2f(-15, 96) + logDiff );
-	mapBestTimeIconSpr.setPosition(levelStatsTopLeft + Vector2f( -20, 0 ) );
+	Vector2f logDiff(180, 0);
+	mapLogIconSpr.setPosition(levelStatsTopLeft + Vector2f(10, 96) + logDiff );
+	mapBestTimeIconSpr.setPosition(levelStatsTopLeft + Vector2f( 10, 0 ) );
 
 
 	
 
-	bestTimeText.setPosition(mapBestTimeIconSpr.getPosition() + Vector2f(96 + 60, 20));
-	shardsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 30, 20));
-	logsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 30, 20) + logDiff);
+	bestTimeText.setPosition(mapBestTimeIconSpr.getPosition() + Vector2f(96 + 35, 20));
+	shardsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 10, 20));
+	logsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 10, 20) + logDiff);
 	//requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
 
 	//shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);

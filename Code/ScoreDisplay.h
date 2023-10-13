@@ -107,6 +107,7 @@ struct ScoreDisplay
 
 	Session *sess;
 	Tileset *ts_score;
+	Tileset *ts_scoreIcons;
 
 	sf::Vector2f basePos;
 	float selectOffset;

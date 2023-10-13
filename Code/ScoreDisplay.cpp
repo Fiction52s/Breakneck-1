@@ -27,6 +27,7 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	basePos += Vector2f(0, 80); //for name box
 
 	ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
+	ts_scoreIcons = sess->GetSizedTileset("HUD/score_icons_128x96.png");
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
@@ -308,9 +309,9 @@ ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)
 	:row(p_row), parent( p_parent )
 {
 	barSprite.setTexture(*parent->ts_score->texture);
-	symbolSprite.setTexture(*parent->ts_score->texture);
+	symbolSprite.setTexture(*parent->ts_scoreIcons->texture);
 
-	symbolSprite.setTextureRect(parent->ts_score->GetSubRect(12 + row));
+	symbolSprite.setTextureRect(parent->ts_scoreIcons->GetSubRect(row));
 
 	stateLength[NONE] = 1;
 	stateLength[POP_OUT] = 30;
@@ -343,7 +344,7 @@ void ScoreBar::SetBarPos(float xDiff)
 
 	Vector2f newPos(parent->basePos.x + xDiffPos, parent->basePos.y + row * rowHeight);
 	barSprite.setPosition(newPos);
-	symbolSprite.setPosition(newPos);
+	symbolSprite.setPosition(newPos + Vector2f( 25, 0 ));
 	text.setPosition(newPos + Vector2f(150, 20));
 }
 
@@ -558,12 +559,12 @@ SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 	barSprite.setTexture(*parent->ts_score->texture);
 	if (row <= 2)
 	{
-		int barStartTile = 15;
+		int barStartTile = 12;
 		barSprite.setTextureRect(parent->ts_score->GetSubRect(barStartTile + row * 2));
 	}
 	else
 	{
-		int barStartTile = 23; //after PLAY
+		int barStartTile = 20; //after PLAY
 		int r = row - 3;
 		barSprite.setTextureRect(parent->ts_score->GetSubRect(barStartTile + r * 2));
 	}

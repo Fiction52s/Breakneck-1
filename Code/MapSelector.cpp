@@ -21,7 +21,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 		ts_kinJump[i - 1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
 	}
 
-	ts_statIcons = mm->tilesetManager.GetSizedTileset("HUD/score_384x96.png");
+	ts_statIcons = mm->tilesetManager.GetSizedTileset("HUD/score_icons_128x96.png");
 
 	/*ts_statIcons->SetSpriteTexture(bestTimeIconSpr);
 	ts_statIcons->SetSpriteTexture(shardIconSpr);

@@ -290,6 +290,10 @@ void LogMenu::LoadLogInfo()
 					currLog.logType = LogDetailedInfo::LT_SKIN;
 					currLog.skinIndex = Actor::GetSkinIndexFromString(skinString);
 				}
+				else if (typeString == "Momenta")
+				{
+					currLog.logType = LogDetailedInfo::LT_MOMENTA;
+				}
 				
 				if (currLog.logType == LogDetailedInfo::LT_SKIN)
 				{
