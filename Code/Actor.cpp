@@ -11973,7 +11973,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 		queryType = Q_GRASS;
 		sess->grassTree->Query(this, r);
 
-		double extraMovement = .001;
+		double extraMovement = .9;//.001;
 
 		if (checkRailAndTerrainTransfers)
 		{
@@ -19321,42 +19321,61 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 				if (ground == NULL)
 				{
-					double landingSpeed = CalcLandingSpeed(velocity, along, rn, true);
-					if (landingSpeed == 0)
+					if (e->IsWall())
 					{
-						if (facingRight)
-						{
+						railSpeed = velocity.y;
+
+						if (railSpeed >= 0 && railSpeed < minRailCurr)
 							railSpeed = minRailCurr;
-						}
-						else
-						{
+						else if (railSpeed <= 0 && railSpeed > -minRailCurr)
 							railSpeed = -minRailCurr;
-						}
-					}
-					else if (landingSpeed > 0)
-					{
-						railSpeed = max(landingSpeed, minRailCurr);
-					}
-					else if (landingSpeed < 0)
-					{
-						railSpeed = min(landingSpeed, -minRailCurr);
-					}
-
-
-					if (!e->IsSteepGround())
-					{
-						if (velocity.x > 0 && railSpeed < velocity.x)//groundSpeed > 0 && groundSpeed < velocity.x)
+						
+						if (e->Along().y < 0) //right wall, moving down
 						{
-							//cout << "railspeed a from " << railSpeed << " to : " << velocity.x << "\n";
-							railSpeed = max( minRailCurr, velocity.x );
-
-						}
-						else if (velocity.x < 0 && railSpeed > velocity.x)//groundSpeed < 0 && groundSpeed > velocity.x)
-						{
-							//cout << "railspeed b from " << railSpeed << " to : " << velocity.x << "\n";
-							railSpeed = min( -minRailCurr, velocity.x );
+							railSpeed = -railSpeed;
 						}
 					}
+					else
+					{
+						double landingSpeed = CalcLandingSpeed(velocity, along, rn, true);
+						if (landingSpeed == 0)
+						{
+							if (facingRight)
+							{
+								railSpeed = minRailCurr;
+							}
+							else
+							{
+								railSpeed = -minRailCurr;
+							}
+						}
+						else if (landingSpeed > 0)
+						{
+							railSpeed = max(landingSpeed, minRailCurr);
+						}
+						else if (landingSpeed < 0)
+						{
+							railSpeed = min(landingSpeed, -minRailCurr);
+						}
+
+						if (!e->IsSteepGround())
+						{
+							if (velocity.x > 0 && railSpeed < velocity.x)//groundSpeed > 0 && groundSpeed < velocity.x)
+							{
+								//cout << "railspeed a from " << railSpeed << " to : " << velocity.x << "\n";
+								railSpeed = max(minRailCurr, velocity.x);
+
+							}
+							else if (velocity.x < 0 && railSpeed > velocity.x)//groundSpeed < 0 && groundSpeed > velocity.x)
+							{
+								//cout << "railspeed b from " << railSpeed << " to : " << velocity.x << "\n";
+								railSpeed = min(-minRailCurr, velocity.x);
+							}
+						}
+					}
+
+
+					
 				}
 				else
 				{
@@ -19395,8 +19414,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					
 				}
 
-				if ((oldDist >= 0 && newDist >= 0)
-					|| (oldDist <= 0 && newDist <= 0))
+				if ((oldDist >= 0 && newDist > 0)//used to be >=
+					|| (oldDist <= 0 && newDist < 0))//used to be <=
 				{
 					return;
 				}
@@ -19450,14 +19469,16 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					grindSpeed = railSpeed;
 				}
 
-				if (canRailGrind && CanBufferGrind())
+				SetAction(RAILSLIDE);
+
+				/*if (canRailGrind && CanBufferGrind())
 				{
 					SetAction(RAILGRIND);
 				}
 				else
 				{
 					SetAction(RAILSLIDE);
-				}
+				}*/
 			}
 		}
 	}

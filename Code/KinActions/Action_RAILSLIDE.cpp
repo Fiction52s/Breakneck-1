@@ -35,10 +35,10 @@ void Actor::RAILSLIDE_Change()
 
 	RailPtr rail = grindEdge->rail;
 
-	if (CanPressGrind())
-	{
-		SetAction(RAILGRIND);
-	}
+	//if (CanPressGrind())
+	//{
+	//	SetAction(RAILGRIND);
+	//}
 
 
 	if (JumpButtonPressed())
