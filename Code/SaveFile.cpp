@@ -221,6 +221,24 @@ void SaveFile::CalcShardProgress(BitField &b, float &totalShards,
 	}
 }
 
+void SaveFile::CalcLogProgress(BitField &b, float &totalLogs,
+	float &totalCaptured)
+{
+	totalLogs = 0;
+	totalCaptured = 0;
+	for (int i = 0; i < LogDetailedInfo::MAX_LOGS; ++i)
+	{
+		if (b.GetBit(i))
+		{
+			++totalLogs;
+			if (HasLog(i))
+			{
+				++totalCaptured;
+			}
+		}
+	}
+}
+
 int SaveFile::GetTotalMaps()
 {
 	int totalMaps = 0;
@@ -523,13 +541,27 @@ bool SaveFile::IsFullyCompleteLevel(Level *lev)
 	
 	if (IsCompleteLevel(lev))
 	{
+		bool hasAllShards = false;
+		bool hasAllLogs = false;
+
 		float totalShards, totalCaptured;
 		CalcShardProgress(am.headerInfo.hasShardField, totalShards, totalCaptured);
 
 		if (totalShards == totalCaptured)
 		{
-			return true;
+			hasAllShards = true;
 		}
+
+		float totalLogs, totalLogsCaptured;
+		CalcLogProgress(am.headerInfo.hasLogField, totalLogs, totalLogsCaptured);
+
+		if (totalLogs == totalLogsCaptured)
+		{
+			hasAllLogs = true;
+		}
+
+		if (hasAllShards && hasAllLogs)
+			return true;
 	}
 	return false;
 }

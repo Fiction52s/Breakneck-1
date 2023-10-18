@@ -87,7 +87,7 @@ void OptionsMenu::Update(ControllerState &currInput,
 	{
 	case CHOOSESTATE:
 	{
-		int res = optionModeSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		int res = optionModeSelector->UpdateIndex(currInput.LUp() || currInput.PUp(), currInput.LDown() || currInput.PDown());
 		if (res != 0)
 		{
 			game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_change"));

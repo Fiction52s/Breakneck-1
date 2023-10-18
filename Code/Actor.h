@@ -136,6 +136,13 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W1_SPRINT_1,
 		UPGRADE_W1_BASE_DASH_1,
 
+		UPGRADE_W1_EMPTY_1,
+		UPGRADE_W1_EMPTY_2,
+		UPGRADE_W1_EMPTY_3,
+		UPGRADE_W1_EMPTY_4,
+		UPGRADE_W1_EMPTY_5,
+		UPGRADE_W1_EMPTY_6,
+
 		//W2
 		UPGRADE_W2_DECREASE_ENEMY_DAMAGE,
 		UPGRADE_W2_INCREASE_ENEMY_REGEN,
@@ -149,6 +156,13 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W2_SPRINT_2,
 		UPGRADE_W2_BASE_AIRDASH_1,
 
+		UPGRADE_W2_EMPTY_1,
+		UPGRADE_W2_EMPTY_2,
+		UPGRADE_W2_EMPTY_3,
+		UPGRADE_W2_EMPTY_4,
+		UPGRADE_W2_EMPTY_5,
+		UPGRADE_W2_EMPTY_6,
+
 		//W3
 		UPGRADE_W3_DECREASE_ENEMY_DAMAGE,
 		UPGRADE_W3_INCREASE_ENEMY_REGEN,
@@ -161,6 +175,13 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W3_CEILING_PASSIVE_GROUND_1,
 		UPGRADE_W3_CEILING_SPRINT_1,
 		UPGRADE_W3_BASE_DASH_2,
+
+		UPGRADE_W3_EMPTY_1,
+		UPGRADE_W3_EMPTY_2,
+		UPGRADE_W3_EMPTY_3,
+		UPGRADE_W3_EMPTY_4,
+		UPGRADE_W3_EMPTY_5,
+		UPGRADE_W3_EMPTY_6,
 
 		//W4
 		UPGRADE_W4_DECREASE_ENEMY_DAMAGE,
@@ -177,6 +198,11 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W4_CEILING_PASSIVE_GROUND_2,
 		UPGRADE_W4_CEILING_SPRINT_2,
 
+		UPGRADE_W4_EMPTY_1,
+		UPGRADE_W4_EMPTY_2,
+		UPGRADE_W4_EMPTY_3,
+		UPGRADE_W4_EMPTY_4,
+
 		//W5
 		UPGRADE_W5_DECREASE_ENEMY_DAMAGE,
 		UPGRADE_W5_INCREASE_ENEMY_REGEN,
@@ -190,6 +216,12 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W5_CEILING_PASSIVE_GROUND_3,
 		UPGRADE_W5_CEILING_SPRINT_3,
 		UPGRADE_W5_BASE_AIRDASH_2,
+
+		UPGRADE_W5_EMPTY_1,
+		UPGRADE_W5_EMPTY_2,
+		UPGRADE_W5_EMPTY_3,
+		UPGRADE_W5_EMPTY_4,
+		UPGRADE_W5_EMPTY_5,
 
 		//W6
 		UPGRADE_W6_DECREASE_ENEMY_DAMAGE,
@@ -208,6 +240,9 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W6_PASSIVE_GROUND_3,
 		UPGRADE_W6_SPRINT_3,
 
+		UPGRADE_W6_EMPTY_1,
+		UPGRADE_W6_EMPTY_2,
+
 
 		UPGRADE_Count,
 	};
@@ -219,6 +254,8 @@ struct Actor : QuadTreeCollider,
 		Q_CHECKWALL,
 		Q_CHECK_GATE,
 		Q_GRASS,
+		Q_RAIL_GRIND_TERRAIN_CHECK,
+		Q_TERRAIN_GRIND_RAIL_CHECK,
 		Q_ENVPLANT,
 		Q_RAIL,
 		Q_ACTIVEITEM,
@@ -1266,6 +1303,7 @@ struct Actor : QuadTreeCollider,
 	V2d GetGroundAnchor();
 	double GetBounceBoostSpeed();
 	int GetSurvivalFrame();
+	void TryStartWaterGlide();
 
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
 	bool TryThrowSwordProjectileBasic();
@@ -1474,6 +1512,7 @@ struct Actor : QuadTreeCollider,
 	bool TryAirDash();
 	bool TryGlide();
 	bool ExitGrind(bool jump);
+	void CheckGates();
 	void SetSpriteTexture(int a);
 	void SetSpriteTile(int tileIndex, bool noFlipX = true, bool noFlipY = true);
 	void SetSpriteTile(sf::Sprite *spr,
@@ -1625,7 +1664,7 @@ struct Actor : QuadTreeCollider,
 	void ProcessGravityGrass();
 	void ProcessHitGoal();
 	void UpdateWirePhysics();
-	void UpdateGrindPhysics(double movement);
+	void UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfers);
 	void StopGrind();
 	void HandleBounceGrass();
 	void HandleBounceRail();

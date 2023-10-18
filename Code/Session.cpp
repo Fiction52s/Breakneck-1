@@ -584,7 +584,7 @@ void Session::RegisterW6Enemies()
 	//AddBasicAerialWorldEnemy("ChessY", "chessy", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicAerialWorldEnemy("Chess Diag Down Right", "chessdiagdownright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicAerialWorldEnemy("chess Diag Up Right", "chessdiagupright", 6, enemyRow, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	//AddBasicAerialWorldEnemy("Future Checker", "futurechecker", 6, enemyRow, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	
 	//AddBasicAerialWorldEnemy("Laser Jays", "laserjays", 6, enemyRow, CreateEnemy<LaserJays>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicAerialWorldEnemy("Tethered Rusher", "tetheredrusher", 6, enemyRow, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Dragon", "dragon", 6, enemyRow, CreateEnemy<Dragon>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -633,6 +633,8 @@ void Session::RegisterW7Enemies()
 
 	//enemies
 	AddBasicAerialWorldEnemy("Trailer", "trailer", 7, enemyRow, CreateEnemy<Trailer>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("Copycat", "copycat", 7, enemyRow, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("Future Checker", "futurechecker", 7, enemyRow, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	//items
 	AddBasicAerialWorldEnemy("Dimension Eye", "dimensioneye", 7, itemRow, CreateEnemy<DimensionEye>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
@@ -643,6 +645,7 @@ void Session::RegisterW7Enemies()
 	AddBasicAerialWorldEnemy("Rewind Booster", "rewindbooster", 7, itemRow, CreateEnemy<RewindBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Attract Juggler", "attractjuggler", 7, itemRow, CreateEnemy<AttractJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Remote Comboer", "remotecomboer", 7, itemRow, CreateEnemy<RemoteComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+	
 
 	//story
 	AddWorldEnemy("Grey Skeleton Boss Node", "greyskeletonnode", 7, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),

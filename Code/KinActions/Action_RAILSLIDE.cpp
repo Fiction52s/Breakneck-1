@@ -35,6 +35,12 @@ void Actor::RAILSLIDE_Change()
 
 	RailPtr rail = grindEdge->rail;
 
+	if (CanPressGrind())
+	{
+		SetAction(RAILGRIND);
+	}
+
+
 	if (JumpButtonPressed())
 	{
 
@@ -93,6 +99,21 @@ void Actor::RAILSLIDE_Update()
 void Actor::RAILSLIDE_UpdateSprite()
 {
 	GRINDBALL_UpdateSprite();
+
+	bool r = grindSpeed > 0;
+
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpSlide->texture);
+
+		SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
+
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			scorpSprite.getLocalBounds().height / 2 + 15);
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
 }
 
 void Actor::RAILSLIDE_TransitionToAction(int a)

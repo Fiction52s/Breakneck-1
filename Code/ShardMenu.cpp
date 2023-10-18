@@ -70,7 +70,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
-	int xSize = 5;
+	int xSize = 4;
 	int ySize = 5 + 1;
 
 	int numWorlds = 8;
@@ -179,8 +179,15 @@ void ShardMenu::UpdateShardQuads()
 {
 	for (int i = 0; i < ShardInfo::MAX_SHARDS_PER_WORLD; ++i)
 	{
-		SetRectSubRect(shardSelectQuads + i * 4,
-			ts_shards[worldSelector->currIndex]->GetSubRect(i));
+		if (shardInfo[worldSelector->currIndex][i].name == "")
+		{
+			SetRectSubRect(shardSelectQuads + i * 4, sf::FloatRect());
+		}
+		else
+		{
+			SetRectSubRect(shardSelectQuads + i * 4,
+				ts_shards[worldSelector->currIndex]->GetSubRect(i));
+		}
 	}
 
 	/*int index;
@@ -497,9 +504,6 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 
 		if (ychanged != 0)
 		{
-			currSelectMode = SM_SHARD;
-			SetCurrShard();
-
 			worldText.setOutlineThickness(0);
 
 			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
@@ -518,6 +522,9 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 					}
 				}
 			}
+
+			currSelectMode = SM_SHARD;
+			SetCurrShard();
 
 			UpdateShardSelectQuads();
 		}

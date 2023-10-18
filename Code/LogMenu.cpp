@@ -94,7 +94,7 @@ LogMenu::LogMenu(Session *p_sess)
 
 	LoadLogInfo();
 
-	logSelectQuads = new sf::Vertex[xSize * ySize * 4];
+	logSelectQuads = new sf::Vertex[LogInfo::MAX_LOGS_PER_WORLD * 4];//xSize * ySize * 4];
 
 	
 	topLeft = Vector2f(0, 0);
@@ -182,15 +182,25 @@ void LogMenu::SetTopLeft(sf::Vector2f &pos)
 
 	Vector2f gridStart(150, 200);
 	gridStart += pos;
+
+	bool done = false;
 	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
 			index = (i * xSelector->totalItems + j);
 
+			if (index >= LogInfo::MAX_LOGS_PER_WORLD)
+			{
+				done = true;
+				break;
+			}
+
 			SetRectCenter(logSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
-			SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(0));
 		}
+
+		if (done)
+			break;
 	}
 
 	topLeft = pos;
@@ -373,30 +383,28 @@ bool LogMenu::IsCurrLogFound()
 
 void LogMenu::UpdateUnlockedLogs()
 {
-	int index = 0;
-
-	for (int i = 0; i < ySelector->totalItems-1; ++i)
+	for (int i = 0; i < LogInfo::MAX_LOGS_PER_WORLD; ++i)
 	{
-		for (int j = 0; j < xSelector->totalItems; ++j)
+		if (logInfo[worldSelector->currIndex][i].name == "")
 		{
-			index = (i * xSelector->totalItems + j) * 4;
+			SetRectSubRect(logSelectQuads + i * 4, FloatRect());
+		}
+		else
+		{
+			SetRectSubRect(logSelectQuads + i * 4, ts_logs->GetSubRect(0));
 
-			//SetRectCenter(logSelectQuads + index, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
-
-			int logIndex = i * xSelector->totalItems + j;
-
-			if (IsLogFound(worldSelector->currIndex, logIndex))
+			if (IsLogFound(worldSelector->currIndex, i))
 			{
-				SetRectColor(logSelectQuads + index, Color(Color::White));
+				SetRectColor(logSelectQuads + i * 4, Color(Color::White));
 				//SetRectSubRect(logSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
 			}
 			else
 			{
-				SetRectColor(logSelectQuads + index, Color(Color::Black));
+				SetRectColor(logSelectQuads + i * 4, Color(Color::Black));
 				//SetRectSubRect(logSelectQuads + index, FloatRect());
 			}
-			//ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
 		}
+		
 	}
 }
 
@@ -516,22 +524,19 @@ void LogMenu::UpdateLogsOnWorldChange()
 {
 	UpdateUnlockedLogs();
 
-	int index = 0;
-	for (int i = 1; i < ySelector->totalItems; ++i)
+	for (int i = 0; i < LogInfo::MAX_LOGS_PER_WORLD; ++i)
 	{
-		for (int j = 0; j < xSelector->totalItems; ++j)
+		if (logInfo[worldSelector->currIndex][i].name != "")
 		{
-			index = ((i - 1) * xSelector->totalItems + j);
-
-			int tile = GetLogTile(worldSelector->currIndex, index);
+			int tile = GetLogTile(worldSelector->currIndex, i);
 
 			if (tile == -1)
 			{
-				SetRectSubRect(logSelectQuads + index * 4, FloatRect());
+				SetRectSubRect(logSelectQuads + i * 4, FloatRect());
 			}
 			else
 			{
-				SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(tile));
+				SetRectSubRect(logSelectQuads + i * 4, ts_logs->GetSubRect(tile));
 			}
 		}
 	}
@@ -636,8 +641,9 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 
 	if (currSelectMode == SM_WORLD)
 	{
-		int worldChanged = worldSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		int worldChanged = worldSelector->UpdateIndex(currInput.LLeft() || currInput.PLeft(), currInput.LRight() || currInput.PRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp() || currInput.PUp(), currInput.LDown() || currInput.PDown() );
+
 
 		if (worldChanged != 0)
 		{
@@ -647,11 +653,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 
 		if (ychanged != 0 )
 		{
-			currSelectMode = SM_LOG;
-			SetCurrLog();
-
-			//worldText.setOutlineColor(Color::Red);
-			worldText.setOutlineThickness(0);
+			
 		
 			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
 			LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][index];
@@ -670,13 +672,19 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 				}
 			}
 
+			currSelectMode = SM_LOG;
+			SetCurrLog();
+
+			//worldText.setOutlineColor(Color::Red);
+			worldText.setOutlineThickness(0);
+
 			UpdateLogSelectQuads();
 		}
 	}
 	else if (currSelectMode == SM_LOG)
 	{
-		int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		int xchanged = xSelector->UpdateIndex(currInput.LLeft() || currInput.PLeft(), currInput.LRight() || currInput.PRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp() || currInput.PUp(), currInput.LDown() || currInput.PDown());
 
 	//	bool currLogFound = IsCurrLogFound();
 
@@ -812,7 +820,7 @@ void LogMenu::Draw(sf::RenderTarget *target)
 	}
 	
 
-	target->draw(logSelectQuads, xSelector->totalItems * (ySelector->totalItems - 1) * 4,
+	target->draw(logSelectQuads, LogInfo::MAX_LOGS_PER_WORLD * 4,//xSelector->totalItems * (ySelector->totalItems - 1) * 4,
 		sf::Quads, ts_logs->texture );
 
 	

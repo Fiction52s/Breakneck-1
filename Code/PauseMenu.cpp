@@ -819,7 +819,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				return UpdateResponse::R_P_RESPAWN;
 			}
 
-			int res = pauseSelector->UpdateIndex(currInput.LUp() && !prevInput.LUp(), currInput.LDown() && !prevInput.LDown());
+			bool up = (currInput.LUp() && !prevInput.LUp()) || (currInput.PUp() && !prevInput.PUp());
+			bool down = (currInput.LDown() && !prevInput.LDown()) || (currInput.PDown() && !prevInput.PDown());
+
+			int res = pauseSelector->UpdateIndex(up, down);
 
 			if (res != 0)
 			{

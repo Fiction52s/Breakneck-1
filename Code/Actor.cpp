@@ -5977,19 +5977,7 @@ void Actor::UpdateCanStandUp()
 			b.rh = normalHeight;
 			b.offset.y = 0;
 
-
-
-
-			minContact.collisionPriority = 10000;
-			minContact.edge = NULL;
-			minContact.resolution = V2d(0, 0);
-			col = false;
-			queryType = Q_CHECK_GATE;
-			Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
-
-			GetTerrainTree()->Query(this, r);
-
-
+			CheckGates();
 		}
 	}
 }
@@ -8833,29 +8821,16 @@ bool Actor::CheckStandUp()
 		//standup to work for grind.
 		Rect<double> r;
 
-		/*if( action != GRINDBALL )
-		{*/
-		if( reversed )
-		{
-			r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
-		}
-		else
-		{
-			r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
-		}
+		
+		//if( reversed )
+		//{
+		//	r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
 		//}
 		//else
 		//{
-		//	V2d p = grindEdge->GetPoint( grindQuantity );
-		//	if( reversed )
-		//	{
-		//		r = Rect<double>( p - b.rw - ex, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
-		//	}
-		//	else
-		//	{
-		//		r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
-		//	}
+		//	r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
 		//}
+		r = Rect<double>(position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
 
 		queryType = Q_CHECK;
 		checkValid = true;
@@ -10100,6 +10075,18 @@ V2d Actor::UpdateReversePhysics()
 	return leftGroundExtra;
 }
 
+void Actor::CheckGates()
+{
+	minContact.collisionPriority = 10000;
+	minContact.edge = NULL;
+	minContact.resolution = V2d(0, 0);
+	col = false;
+	queryType = Q_CHECK_GATE;
+	Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+
+	GetTerrainTree()->Query(this, r);
+}
+
 bool Actor::ExitGrind(bool jump)
 {
 	
@@ -10132,6 +10119,7 @@ bool Actor::ExitGrind(bool jump)
 		if (!CheckStandUp())
 		{
 			position = op;
+			return false;
 		}
 		else
 		{
@@ -10150,7 +10138,9 @@ bool Actor::ExitGrind(bool jump)
 			if (!jump)
 			{
 				ground = grindEdge;
-				SetAction(LAND);
+				//SetAction(LAND);
+				SetAction(LAND2);
+				//in the grindball file this is LAND2
 				frame = 0;
 				groundSpeed = grindSpeed;
 
@@ -10182,6 +10172,8 @@ bool Actor::ExitGrind(bool jump)
 
 			grindEdge = NULL;
 			reversed = false;
+
+			CheckGates();
 		}
 
 	}
@@ -10196,15 +10188,21 @@ bool Actor::ExitGrind(bool jump)
 			position.x += -b.rw - .1;
 		}
 
-		if (grindNorm.y > 0)
-			position.y += normalHeight + .1;
+		//if (grindNorm.y > 0)
+		position.y += normalHeight + .1;
+
+		bool oldReversed = reversed;
+		reversed = true;
 
 		if (!CheckStandUp())
 		{
+			reversed = oldReversed;
 			position = op;
+			return false;
 		}
 		else
 		{
+			reversed = oldReversed;
 			if (!HasUpgrade( UPGRADE_POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
@@ -10218,14 +10216,8 @@ bool Actor::ExitGrind(bool jump)
 
 
 				framesNotGrinding = 0;
-				if (reversed)
-				{
-					velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
-				}
-				else
-				{
-					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-				}
+
+				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 
 				SetAction(JUMP);
 				frame = 1;
@@ -10274,17 +10266,16 @@ bool Actor::ExitGrind(bool jump)
 				ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), angle, 25, 1, facingRight);
 				ActivateSound(PlayerSounds::S_GRAVREVERSE);
 			}
+
+			CheckGates();
 		}
 	}
 	else
 	{
-		framesInAir = 0;
-		SetAction(DOUBLE);
-		frame = 0;
-		grindEdge = NULL;
-		ground = NULL;
+		//this was the old code
+		//SetAction(DOUBLE);
+		//frame = 0;
 
-		//TODO: this might glitch grind areas? test it with the range of your get out of grind query
 		if (grindNorm.x > 0)
 		{
 			position.x += b.rw + .1;
@@ -10292,6 +10283,24 @@ bool Actor::ExitGrind(bool jump)
 		else if (grindNorm.x < 0)
 		{
 			position.x += -b.rw - .1;
+		}
+
+		if (CheckStandUp())
+		{
+			framesInAir = 0;
+			SetAction(JUMP);
+			frame = 1;
+			grindEdge = NULL;
+			ground = NULL;
+
+			CheckGates();
+			//TODO: this might glitch grind areas? test it with the range of your get out of grind query
+
+		}
+		else
+		{
+			position = op;
+			return false;
 		}
 	}
 
@@ -11624,7 +11633,7 @@ void Actor::StopGrind()
 	}
 }
 
-void Actor::UpdateGrindPhysics(double movement)
+void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfers)
 {
 	Edge *e0 = grindEdge->edge0;
 	Edge *e1 = grindEdge->edge1;
@@ -11945,6 +11954,13 @@ void Actor::UpdateGrindPhysics(double movement)
 			minTop = oldR.top;
 		}
 
+		currBooster = NULL;
+		currTimeBooster = NULL;
+		currFreeFlightBooster = NULL;
+		currBounceBooster = NULL;
+		currGravModifier = NULL;
+		currHomingBooster = NULL;
+
 		double ex = 1;
 		Rect<double> r(minLeft - ex, minTop - ex, (maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2);
 
@@ -11956,6 +11972,53 @@ void Actor::UpdateGrindPhysics(double movement)
 
 		queryType = Q_GRASS;
 		sess->grassTree->Query(this, r);
+
+		double extraMovement = .001;
+
+		if (checkRailAndTerrainTransfers)
+		{
+			tempVel = newGrindPos - oldGrindPos;
+			if (grindEdge->rail != NULL)
+			{
+				queryType = Q_RAIL_GRIND_TERRAIN_CHECK;
+				sess->terrainTree->Query(this, r);
+
+				if (grindEdge->rail == NULL)
+				{
+					physicsOver = true;
+
+					if (grindSpeed > 0)
+					{
+						UpdateGrindPhysics(extraMovement, false);
+					}
+					else if (grindSpeed < 0)
+					{
+						UpdateGrindPhysics(-extraMovement, false);
+					}
+				}
+			}
+			else
+			{
+				queryType = Q_TERRAIN_GRIND_RAIL_CHECK;
+				sess->railEdgeTree->Query(this, r);
+
+				if (grindEdge->rail != NULL)
+				{
+					physicsOver = true;
+
+					if (grindSpeed > 0)
+					{
+						UpdateGrindPhysics(extraMovement, false);
+					}
+					else if (grindSpeed < 0)
+					{
+						UpdateGrindPhysics(-extraMovement, false);
+					}
+				}
+			}
+
+		}
+		
 	}
 
 
@@ -12654,7 +12717,7 @@ void Actor::UpdatePhysics()
 
 	if (grindEdge != NULL && IsGrindAction( action ))
 	{
-		UpdateGrindPhysics(movement);
+		UpdateGrindPhysics(movement, true);
 		return;
 	}
 	else if (grindEdge != NULL && IsOnRailAction(action))
@@ -15239,6 +15302,55 @@ void Actor::PhysicsResponse()
 
 				UnlockGate( g );
 
+				//this is the same code as down below in !leaveGround section,
+				//not a huge deal to have it duplicated rn imo. Just gonna leave it.
+				//could potentially cl ean up a little bit later
+				gn = ground->Normal();
+
+				Vector2<double> groundPoint = ground->GetPosition(edgeQuantity);
+
+				position = groundPoint;
+
+				position.x += offsetX + b.offset.x;
+
+				if (reversed)
+				{
+					if (gn.y > 0 || abs(offsetX) != b.rw)
+					{
+						position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+					}
+				}
+				else
+				{
+					if (gn.y < 0 || abs(offsetX) != b.rw)
+					{
+						position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+					}
+				}
+
+				if (reversed)
+				{
+					if ((action == STEEPCLIMB || action == STEEPSLIDE) && (-gn.y <= -steepThresh || !approxEquals(abs(offsetX), b.rw)))
+					{
+						SetAction(LAND2);
+						frame = 0;
+					}
+				}
+				else
+				{
+
+					if ((action == STEEPCLIMB || action == STEEPSLIDE) && (gn.y <= -steepThresh || !approxEquals(abs(offsetX), b.rw)))
+					{
+						//cout << "here no: " << action << ", " << offsetX << endl;
+						SetAction(LAND2);
+						frame = 0;
+					}
+					else
+					{
+
+					}
+				}
+
 				SetAction( JUMP );
 				frame = 1;
 				
@@ -15912,6 +16024,79 @@ V2d Actor::GetTrueCenter()
 	return position + b.offset;
 }
 
+void Actor::TryStartWaterGlide()
+{
+	if (action == WATERGLIDE || action == WATERGLIDE_HITSTUN || action == WATERGLIDECHARGE)
+	{
+		return;
+	}
+
+	if (grindEdge != NULL)
+	{
+		if (!ExitGrind(false))
+		{
+			return;
+		}
+	}
+
+	if (reversed && ground != NULL)
+	{
+		groundSpeed = -groundSpeed;
+	}
+
+	V2d vel = GetTrueVel();
+
+	if (ground != NULL)
+	{
+		ground = NULL;
+		framesInAir = 0;
+
+		if (reversed)
+		{
+			vel.y += 5;
+		}
+		else
+		{
+			vel.y -= 5;
+		}
+
+	}
+
+	if (length(vel) < 15.0)
+	{
+		vel = normalize(vel) * 15.0;
+	}
+
+	springVel = vel;
+
+	springExtra = V2d(0, 0);
+
+	if (vel.x < 0)
+		facingRight = false;
+	else if (vel.x > 0)
+		facingRight = true;
+
+	SetAction(WATERGLIDE);
+
+	holdJump = false;
+	holdDouble = false;
+	RestoreAirOptions();
+	rightWire->Reset();
+	leftWire->Reset();
+	frame = 0;
+	UpdateHitboxes();
+	ground = NULL;
+	wallNormal = V2d(0, 0);
+	velocity = V2d(0, 0);
+	currWall = NULL;
+	bounceEdge = NULL;
+	grindEdge = NULL;
+	reversed = false;
+
+	if (IsNormalSkin())
+		SetSkin(SKIN_GLIDE);
+}
+
 void Actor::HandleWaterSituation(int wType,
 	SpecialTerrainSituation sit)
 {
@@ -16040,59 +16225,24 @@ void Actor::HandleWaterSituation(int wType,
 		if (sit == SPECIALT_ENTER)
 			//if (action != WATERGLIDE)
 		{
-			V2d vel = GetTrueVel();
-
-			if (ground != NULL)
-			{
-				ground = NULL;
-				framesInAir = 0;
-				vel.y -= 5;
-			}
-
-			if (length(vel) < 15.0)
-			{
-				vel = normalize(vel) * 15.0;
-			}
-
-			springVel = vel;
-
-			springExtra = V2d(0, 0);
-
-			if (vel.x < 0)
-				facingRight = false;
-			else if (vel.x > 0)
-				facingRight = true;
-
-			SetAction(WATERGLIDE);
 			
-			holdJump = false;
-			holdDouble = false;
-			RestoreAirOptions();
-			rightWire->Reset();
-			leftWire->Reset();
-			frame = 0;
-			UpdateHitboxes();
-			ground = NULL;
-			wallNormal = V2d(0, 0);
-			velocity = V2d(0, 0);
-			currWall = NULL;
-			bounceEdge = NULL;
-			grindEdge = NULL;
-
-			if (IsNormalSkin())
-				SetSkin(SKIN_GLIDE);
 		}
 
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
+			TryStartWaterGlide();
+
 			//if i add glide attack, adjust this
 			//this makes sure that you don't
 			//get hit and then hitstun cancels the glide.
-			if (action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != WATERGLIDECHARGE)
+			/*if (action != WATERGLIDE && action != WATERGLIDE_HITSTUN && action != WATERGLIDECHARGE)
 			{
 				SetAction(WATERGLIDE);
+			}*/
+			if (action == WATERGLIDE || action == WATERGLIDECHARGE )
+			{
+				springStunFrames = 2;
 			}
-			springStunFrames = 2;
 		}
 
 		if (sit == SPECIALT_EXIT)
@@ -17925,7 +18075,18 @@ void Actor::CoyoteBulletBounce()
 
 void Actor::SetBounceBoostVelocity()
 {
-	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
+	if (grindEdge != NULL)
+	{
+		if (!ExitGrind(false))
+		{
+			return;
+		}
+	}
+
+	assert(grindEdge == NULL);
+
+
+	if (ground == NULL && bounceEdge == NULL )
 	{
 		//SetAction(BOOSTERBOUNCE);
 		//frame = 0;
@@ -18783,7 +18944,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					return;
 				}
 			}
-			else if (grindSpeed > 0 && grindEdge->edge1->IsGateEdge() )
+			else if (grindSpeed > 0 && grindEdge->edge1 != NULL && grindEdge->edge1->IsGateEdge() )
 			{
 				Edge *e1 = grindEdge->edge1;
 				Gate *g = (Gate*)e1->info;
@@ -18793,7 +18954,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					return;
 				}
 			}
-			else if (grindSpeed < 0 && grindEdge->edge0->IsGateEdge() )
+			else if (grindSpeed < 0 && grindEdge->edge0 != NULL && grindEdge->edge0->IsGateEdge() )
 			{
 				Edge *e0 = grindEdge->edge0;
 				Gate *g = (Gate*)e0->info;
@@ -18899,6 +19060,96 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				SetTouchedGate(g);
 				
 			}
+		}
+	}
+	else if (queryType == Q_RAIL_GRIND_TERRAIN_CHECK)
+	{
+		Edge *e = (Edge*)qte;
+
+		if (e->IsUnlockedGateEdge())
+		{
+			return;
+		}
+
+		assert(e->rail == NULL);
+		//assert(grindEdge->rail != NULL);
+
+		if (e->rail != NULL)
+			return;
+
+		if (grindEdge->rail == NULL)
+			return;
+
+		//if momentum is parallel to edge or away from it ignore it
+		if (dot(tempVel, e->Normal()) >= 0)
+		{
+			return;
+		}
+
+		V2d grindPos = grindEdge->GetPosition(edgeQuantity);
+
+		LineIntersection li = SegmentIntersect(grindPos, grindPos - tempVel, e->v0, e->v1);
+	
+		if (!li.parallel )
+		{
+			V2d p = li.position;
+			double quant = e->GetQuantity(p);
+
+			//if (quant >= 0 && quant <= e->GetLength())
+			{
+				grindEdge = e;
+				edgeQuantity = quant;
+				//SetAction(GRINDBALL);
+			}
+		}
+		else
+		{
+			//if no intersection, just ignore
+		}
+	}
+	else if (queryType == Q_TERRAIN_GRIND_RAIL_CHECK)
+	{
+		Edge *e = (Edge*)qte;
+
+		if (e->IsUnlockedGateEdge())
+		{
+			return;
+		}
+
+		assert(e->rail != NULL);
+		//assert(grindEdge->rail == NULL);
+
+		if (e->rail == NULL)
+			return;
+
+		if (grindEdge->rail != NULL)
+			return;
+
+		//if momentum is parallel to edge or away from it ignore it
+		if (dot(tempVel, e->Normal()) >= 0)
+		{
+			return;
+		}
+
+		V2d grindPos = grindEdge->GetPosition(edgeQuantity);
+
+		LineIntersection li = SegmentIntersect(grindPos, grindPos - tempVel, e->v0, e->v1);
+
+		if (!li.parallel)
+		{
+			V2d p = li.position;
+			double quant = e->GetQuantity(p);
+
+			//if (quant >= 0 && quant <= e->GetLength())
+			{
+				grindEdge = e;
+				edgeQuantity = quant;
+				//SetAction(RAILGRIND);
+			}
+		}
+		else
+		{
+			//if no intersection, just ignore
 		}
 	}
 	else if (queryType == Q_GRASS)
@@ -19199,7 +19450,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					grindSpeed = railSpeed;
 				}
 
-				if (canRailGrind)
+				if (canRailGrind && CanBufferGrind())
 				{
 					SetAction(RAILGRIND);
 				}

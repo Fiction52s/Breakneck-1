@@ -270,6 +270,8 @@ private:
 		float &totalBeaten);
 	void CalcShardProgress(BitField &b, float &totalShards,
 		float &totalCaptured);
+	void CalcLogProgress(BitField &b, float &totalLogs,
+		float &totalLogsCaptured);
 	float CalcCompletionPercentage(
 		int start, int end, BitField &b);
 	bool IsRangeComplete(int start, int end);

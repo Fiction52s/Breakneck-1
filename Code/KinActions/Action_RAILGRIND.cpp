@@ -16,6 +16,13 @@ void Actor::RAILGRIND_End()
 
 void Actor::RAILGRIND_Change()
 {
+
+	if (!GrindButtonHeld())
+	{
+		SetAction(RAILSLIDE);
+	}
+
+
 	RailPtr rail = grindEdge->rail;
 	if (JumpButtonPressed())
 	{
@@ -43,14 +50,14 @@ void Actor::RAILGRIND_Change()
 		frame = 0;
 		grindEdge = NULL;
 	}
-	if (PowerButtonPressed() && framesGrinding > 1)
+	/*if (PowerButtonPressed() && framesGrinding > 1)
 	{
 		SetAction(JUMP);
 		grindEdge = NULL;
 		frame = 1;
 		regrindOffCount = 0;
 		return;
-	}
+	}*/
 }
 
 void Actor::RAILGRIND_Update()
