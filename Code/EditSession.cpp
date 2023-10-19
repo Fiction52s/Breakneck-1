@@ -2383,6 +2383,12 @@ void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 		testIndex++;
 	}
 
+	if (terrain0 == NULL || terrain1 == NULL)
+	{
+		cout << "broken gate found. ignoring" << endl;
+		return;
+	}
+
 	GateInfoPtr gi(new GateInfo);
 	gi->poly0 = terrain0;
 	gi->poly1 = terrain1;

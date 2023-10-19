@@ -230,7 +230,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (false)//DashButtonPressed())
+	else if (false)//DashButtonPressed() && HasUpgrade(UPGRADE_W5_GRIND_LUNGE)
 	{
 		V2d op = position;
 

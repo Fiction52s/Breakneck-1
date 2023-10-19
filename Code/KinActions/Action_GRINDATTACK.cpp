@@ -214,7 +214,7 @@ void Actor::GRINDATTACK_Change()
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (DashButtonPressed())
+	else if (DashButtonPressed() && HasUpgrade(UPGRADE_W5_GRIND_LUNGE))
 	{
 		V2d op = position;
 

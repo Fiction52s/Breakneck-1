@@ -19070,6 +19070,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}
+		else if (e->poly != NULL && !e->poly->IsActive())
+		{
+			return;
+		}
 
 		assert(e->rail == NULL);
 		//assert(grindEdge->rail != NULL);
@@ -19114,6 +19118,61 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		if (e->IsUnlockedGateEdge())
 		{
 			return;
+		}
+		else if (e->rail != NULL)
+		{
+			if (!e->rail->IsActive())
+			{
+				return;
+			}
+			else if (e->rail->IsTerrainType())
+			{
+				if (!e->rail->IsEdgeActive(e))
+				{
+					return;
+				}
+				else if (e->rail->GetRailType() == TerrainRail::SCORPIONONLY)
+				{
+					if (!scorpOn)
+					{
+						return;
+					}
+				}
+				else if (e->rail->GetRailType() == TerrainRail::BOUNCE)
+				{
+					if (scorpOn)
+					{
+						return;
+					}
+				}
+				else if (e->rail->GetRailType() == TerrainRail::FLOOR)
+				{
+					if (ground == NULL)
+					{
+						if (currInput.LDown() && !IsAttackAction(action) && !currInput.LLeft() && !currInput.LRight())
+						{
+							return;
+						}
+					}
+					else
+					{
+						if (ground->GetNextEdge() == e || ground->GetPrevEdge() == e)
+						{
+
+						}
+						else if (currInput.LDown())
+						{
+							return;
+						}
+					}
+
+				}
+			}
+			else
+			{
+				return;
+			}
+
 		}
 
 		assert(e->rail != NULL);
