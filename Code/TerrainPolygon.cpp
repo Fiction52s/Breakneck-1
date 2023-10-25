@@ -5113,6 +5113,35 @@ void TerrainPolygon::DrawGrass(sf::RenderTarget *target)
 	}
 }
 
+void TerrainPolygon::DrawPreviewGrass(sf::RenderTarget *target, bool hideSecret)
+{
+	if (hideSecret)
+	{
+		Edge *e = NULL;
+		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
+		{
+			e = (*it).poly->GetEdge((*it).edgeIndex);
+			if (e->secretZone != NULL && !e->secretZone->IsActive())
+			{
+				SetRectColor(grassVA + (*it).tileIndex * 4, Color::Transparent);
+			}
+		}
+	}
+
+	if (grassVA != NULL)
+	{
+		target->draw(grassVA, numGrassTotal * 4, sf::Quads, ts_grass->texture);
+	}
+
+	if (hideSecret)
+	{
+		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
+		{
+			SetRectColor(grassVA + (*it).tileIndex * 4, Color::White);
+		}
+	}
+}
+
 void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 {
 	if (va != NULL)
@@ -5257,7 +5286,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		DrawDecor(rt);
 
-		DrawGrass(rt);
+		DrawPreviewGrass(rt, true);
 
 		rt->draw(lines, numP * 2, sf::Lines);
 
@@ -5273,7 +5302,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		DrawDecor(rt);
 
-		DrawGrass(rt);
+		DrawPreviewGrass(rt, false);
 
 		rt->draw(lines, numP * 2, sf::Lines);
 
@@ -7202,6 +7231,33 @@ void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
 	//target->draw(*va);
 }
 
+void TerrainPolygon::MiniDrawGrass(sf::RenderTarget *target )
+{
+	Edge *e = NULL;
+	for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
+	{
+		e = (*it).poly->GetEdge((*it).edgeIndex);
+		if (e->secretZone != NULL && !e->secretZone->IsActive())
+		{
+			SetRectColor(grassVA + (*it).tileIndex * 4, Color::Transparent);
+		}
+		else
+		{
+			SetRectColor(grassVA + (*it).tileIndex * 4, (*it).GetColor());
+		}
+	}
+
+	if (grassVA != NULL)
+	{
+		target->draw(grassVA, numGrassTotal * 4, sf::Quads);
+	}
+
+	for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
+	{
+		SetRectColor(grassVA + (*it).tileIndex * 4, Color::White);
+	}
+}
+
 void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
 {
 	if (va != NULL)
@@ -7223,56 +7279,8 @@ void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
 			target->draw(*va);
 		}
 
-		//DrawGrass(target);
 
-		/*for (int i = 0; i < numGrassTotal; ++i)
-		{
-			if (grassStateVec[i].gState == G_ON)
-			{
-				activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, (Grass::GrassType)grassStateVec[i].gType));
-			}
-		}*/
-
-		Edge *e = NULL;
-		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
-		{
-			e = (*it).poly->GetEdge((*it).edgeIndex);
-			if (e->secretZone != NULL && !e->secretZone->IsActive())
-			{
-				SetRectColor(grassVA + (*it).tileIndex * 4, Color::Transparent);
-			}
-			else
-			{
-				SetRectColor(grassVA + (*it).tileIndex * 4, (*it).GetColor());
-			}
-
-		}
-		
-		/*for (int i = 0; i < numGrassTotal; ++i)
-		{
-			if (grassStateVec[i].gState == G_ON)
-			{
-				SetRectColor(grassVA + i * 4, (*it).
-			}
-		}*/
-		if (grassVA != NULL)
-		{
-			target->draw(grassVA, numGrassTotal * 4, sf::Quads );
-		}
-
-		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
-		{
-			SetRectColor(grassVA + (*it).tileIndex * 4, Color::White );
-		}
-
-		/*for (int i = 0; i < numGrassTotal; ++i)
-		{
-			if (grassStateVec[i].gState == G_ON)
-			{
-				SetRectColor(grassVA + i * 4, Color::White);
-			}
-			
-		}*/
+		MiniDrawGrass(target);
 	}
 }
 

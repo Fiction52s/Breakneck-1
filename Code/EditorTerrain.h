@@ -564,6 +564,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void DrawAsSecretCover(sf::RenderTarget *target);
 	void DrawFlies(sf::RenderTarget *target);
 	void DrawGrass(sf::RenderTarget *target);
+	void DrawPreviewGrass(sf::RenderTarget *target, bool hideSecret);
 	void FixWinding();
 	void FixWindingInverse();
 	bool IsClockwise();
@@ -618,6 +619,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void BrushDraw(sf::RenderTarget *target,
 		bool valid);
 	void MiniDraw(sf::RenderTarget *target);
+	void MiniDrawGrass(sf::RenderTarget *target);
 	void SetTerrainColor(sf::Color c);
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
