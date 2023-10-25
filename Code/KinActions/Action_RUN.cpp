@@ -110,7 +110,7 @@ void Actor::RUN_UpdateSprite()
 		SetSpriteTile(&scorpSprite, ts_scorpRun, f / 2, fr);
 
 		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
-			scorpSprite.getLocalBounds().height / 2 + 20);
+			scorpSprite.getLocalBounds().height / 2 + 10);
 		scorpSprite.setPosition(position.x, position.y);
 		scorpSprite.setRotation(sprite->getRotation());
 		scorpSet = true;

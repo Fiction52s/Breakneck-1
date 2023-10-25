@@ -1227,7 +1227,7 @@ void Actor::SetupExtraTilesets()
 	ts_scorpSlide = sess->GetSizedTileset(powerFolder, "scorp_slide_160x96.png");
 	ts_scorpSteepSlide = sess->GetSizedTileset(powerFolder, "scorp_steep_slide_224x128.png");
 	ts_scorpStart = sess->GetSizedTileset(powerFolder, "scorp_start_256x256.png");
-	ts_scorpStand = sess->GetSizedTileset(powerFolder, "scorp_stand_224x128.png");
+	ts_scorpStand = sess->GetSizedTileset(powerFolder, "scorp_stand_192x128.png");
 	ts_scorpJump = sess->GetSizedTileset(powerFolder, "scorp_jump_192x144.png");
 	ts_scorpDash = sess->GetSizedTileset(powerFolder, "scorp_dash_192x80.png");
 	ts_scorpSprint = sess->GetSizedTileset(powerFolder, "scorp_sprint_192x96.png");

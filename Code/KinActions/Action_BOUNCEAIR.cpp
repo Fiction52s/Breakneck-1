@@ -20,7 +20,7 @@ void Actor::BOUNCEAIR_Change()
 	{
 		SetAction(JUMP);
 		frame = 1;
-		return;
+		//return;
 		//BounceFlameOff();
 	}
 

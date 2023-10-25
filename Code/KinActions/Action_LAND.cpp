@@ -223,6 +223,19 @@ void Actor::LAND_UpdateSprite()
 
 		ActivateEffect(PLAYERFX_LAND_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(angle), 8, 2, facingRight);
 	}
+
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpSlide->texture);
+
+		SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
+
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			scorpSprite.getLocalBounds().height / 2 + 10);
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
 }
 
 void Actor::LAND_TransitionToAction(int a)

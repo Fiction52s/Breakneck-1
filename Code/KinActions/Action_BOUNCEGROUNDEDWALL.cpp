@@ -29,7 +29,10 @@ void Actor::BOUNCEGROUNDEDWALL_Change()
 
 	if (JumpButtonPressed())
 	{
-		SetAction(JUMP);
+		/*SetAction(JUMP);
+		frame = 0;*/
+
+		SetAction(JUMPSQUAT);
 		frame = 0;
 		//runTappingSound.stop();
 		return;
