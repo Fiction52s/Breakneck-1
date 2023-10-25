@@ -15413,35 +15413,45 @@ void Actor::PhysicsResponse()
 					&& action != RAILBOUNCEGROUND  && action != BOOSTERBOUNCEGROUND )
 				{
 					storedBounceVel = velocity;
-					//only testing railbounceground but could probably apply to boosterbounceground too, so added that
-					if (currInput.LLeft() || currInput.LRight())
+
+					if (TryBufferGrind())
 					{
-						SetAction(LAND2);
-						ActivateSound(PlayerSounds::S_LAND);
-						frame = 0;
+						holdJump = false;
+						holdDouble = false;
+						currBBoostCounter = 0;
 					}
 					else
 					{
-						if (reversed)
+						//only testing railbounceground but could probably apply to boosterbounceground too, so added that
+						if (currInput.LLeft() || currInput.LRight())
 						{
-							SetAction(GRAVREVERSE);
-
-							if (currInput.LLeft() || currInput.LRight())
-							{
-								storedReverseSpeed = 0;
-							}
-							else
-							{
-								storedReverseSpeed = -groundSpeed;
-							}
+							SetAction(LAND2);
+							ActivateSound(PlayerSounds::S_LAND);
+							frame = 0;
 						}
 						else
 						{
-							
-							SetAction(LAND);
-							ActivateSound(PlayerSounds::S_LAND);
+							if (reversed)
+							{
+								SetAction(GRAVREVERSE);
+
+								if (currInput.LLeft() || currInput.LRight())
+								{
+									storedReverseSpeed = 0;
+								}
+								else
+								{
+									storedReverseSpeed = -groundSpeed;
+								}
+							}
+							else
+							{
+
+								SetAction(LAND);
+								ActivateSound(PlayerSounds::S_LAND);
+							}
+							frame = 0;
 						}
-						frame = 0;
 					}
 				}
 				else if (action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK)

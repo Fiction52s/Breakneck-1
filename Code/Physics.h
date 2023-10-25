@@ -16,6 +16,7 @@ struct GameSession;
 struct EdgeParentNode;
 struct Gate;
 struct Edge;
+struct Zone;
 
 struct EdgeInfo
 {
@@ -94,7 +95,7 @@ struct Edge : QuadTreeEntrant
 	TerrainRail *rail;
 	sf::Rect<double> aabb;
 	int edgeIndex;//only when finalized for gameplay does this take on its real value atm
-	bool secretZoneEdge; //to avoid drawing lines at the preview
+	Zone *secretZone; //to avoid drawing secret things at the preview or minimap
 
 	void *info;
 };

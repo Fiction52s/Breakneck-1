@@ -287,7 +287,7 @@ Edge::Edge()
 	edgeType = EdgeType::REGULAR;
 	poly = NULL;
 	rail = NULL;
-	secretZoneEdge = false;
+	secretZone = NULL;
 }
 
 V2d Edge::Normal()

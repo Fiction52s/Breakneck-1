@@ -119,11 +119,13 @@ std::string Grass::GetGrassStringFromType(int t)
 }
 
 Grass::Grass(Tileset *p_ts_grass, int p_tileIndex,
-	V2d &p_pos, TerrainPolygon *p_poly, GrassType gType)
+	V2d &p_pos, TerrainPolygon *p_poly, GrassType gType, int p_edgeIndex)
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
 	ts_grass(p_ts_grass), poly(p_poly), pos(p_pos), radius(128 / 2.0 - 20)
 {
 	grassType = gType;
+
+	edgeIndex = p_edgeIndex;
 
 	explosion.isCircle = true;
 	explosion.rw = 64;

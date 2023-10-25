@@ -577,7 +577,7 @@ void Zone::Init()
 			{
 				if (!curr->IsGateEdge())
 				{
-					curr->secretZoneEdge = true;
+					curr->secretZone = this;
 					totalTouchingTerrainType[make_pair(curr->poly->terrainWorldType, curr->poly->terrainVariation)] += curr->GetLength();
 				}
 				curr = curr->edge1;

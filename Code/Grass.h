@@ -30,7 +30,8 @@ struct Grass : QuadTreeEntrant
 	Grass(Tileset *p_ts_grass,
 		int p_tileIndex,
 		V2d &pos,
-		TerrainPolygon *poly, GrassType gType);
+		TerrainPolygon *poly, GrassType gType,
+		int p_edgeIndex);
 	sf::Color GetColor(); //temp
 	void Reset();
 	V2d pos;
@@ -56,6 +57,7 @@ struct Grass : QuadTreeEntrant
 	int explodeFrame;
 	int explodeLimit;
 	TerrainPolygon *poly;
+	int edgeIndex;
 	sf::IntRect aabb;
 };
 

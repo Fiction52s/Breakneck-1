@@ -3906,7 +3906,7 @@ void TerrainPolygon::AddGrassToQuadTree(QuadTree *tree)
 	{
 		if (grassStateVec[i].gState == G_ON)
 		{
-			activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, (Grass::GrassType)grassStateVec[i].gType));
+			activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, (Grass::GrassType)grassStateVec[i].gType, grassStateVec[i].edge->edgeIndex));
 		}
 	}
 	
@@ -3922,6 +3922,8 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 		return;
 
 	Edge *currEdge = GetEdge(i);
+
+	
 
 	TerrainPoint *curr, *next;
 
@@ -3959,7 +3961,7 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 
 		pos += extra;
 
-		
+		grassStateVec[grassIndex].edge = currEdge;
 
 		Vector2f topLeft = pos + Vector2f(-grassSize / 2, -grassSize / 2);
 		Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
@@ -4527,7 +4529,7 @@ void TerrainPolygon::FillGrassVec(TerrainPoint *point, std::vector<GrassInfo> &g
 		{
 			gVec.push_back(GrassInfo( TerrainPolygon::G_ON, 
 				grassStateVec[i + point->grassStartIndex].gType,
-				i ));
+				i, grassStateVec[i].edge ));
 		}
 	}
 }
@@ -4644,7 +4646,7 @@ void TerrainPolygon::SetupGrassAfterGameSessionLoad(std::list<GrassSeg> &segment
 				//SetRectColor(grassVA + (j + totalGrass) * 4, c);
 				ts_grass->SetQuadSubRect(currGrassRect, (*it).gType);
 
-				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, (Grass::GrassType)(*it).gType));
+				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, (Grass::GrassType)(*it).gType, (*it).edgeIndex));
 				sess->grassTree->Insert(&activeGrass.back());
 
 				++totalGrassIndex;
@@ -5766,7 +5768,7 @@ void TerrainPolygon::UpdatePreviewLineColor(int i)
 		break;
 	}
 
-	if (GetEdge(i)->secretZoneEdge)
+	if (GetEdge(i)->secretZone != NULL)
 	{
 		edgeColor = Color::Transparent;
 	}
@@ -7222,10 +7224,30 @@ void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
 		}
 
 		//DrawGrass(target);
+
+		/*for (int i = 0; i < numGrassTotal; ++i)
+		{
+			if (grassStateVec[i].gState == G_ON)
+			{
+				activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, (Grass::GrassType)grassStateVec[i].gType));
+			}
+		}*/
+
+		Edge *e = NULL;
 		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
 		{
-			SetRectColor(grassVA + (*it).tileIndex * 4, (*it).GetColor());	
+			e = (*it).poly->GetEdge((*it).edgeIndex);
+			if (e->secretZone != NULL && !e->secretZone->IsActive())
+			{
+				SetRectColor(grassVA + (*it).tileIndex * 4, Color::Transparent);
+			}
+			else
+			{
+				SetRectColor(grassVA + (*it).tileIndex * 4, (*it).GetColor());
+			}
+
 		}
+		
 		/*for (int i = 0; i < numGrassTotal; ++i)
 		{
 			if (grassStateVec[i].gState == G_ON)

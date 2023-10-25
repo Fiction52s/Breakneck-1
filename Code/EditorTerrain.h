@@ -38,16 +38,17 @@ typedef std::set<std::pair<__int64,__int64>> ClipperIntPointSet;
 struct GrassInfo
 {
 	GrassInfo()
-		:gState(-1),gType(-1),index(-1)
+		:gState(-1),gType(-1),index(-1), edge( NULL )
 	{
 
 	}
-	GrassInfo(int s, int t, int i)
-		:gState(s), gType(t), index( i )
+	GrassInfo(int s, int t, int i, Edge *e )
+		:gState(s), gType(t), index( i ), edge(e)
 	{
 
 	}
 
+	Edge *edge;
 	int index;
 	int gState;
 	int gType;
