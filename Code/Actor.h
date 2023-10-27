@@ -251,6 +251,7 @@ struct Actor : QuadTreeCollider,
 	{
 		Q_RESOLVE,
 		Q_CHECK,
+		Q_CHECK_GRIND_TRANSFER,
 		Q_CHECKWALL,
 		Q_CHECK_GATE,
 		Q_GRASS,
@@ -1215,6 +1216,7 @@ struct Actor : QuadTreeCollider,
 	int maxSuperFrames;
 	
 	bool checkValid;
+	Edge *grindTransferCheckEdge;
 	
 	bool leftGround;
 	ControllerState prevInput;
@@ -1588,6 +1590,7 @@ struct Actor : QuadTreeCollider,
 	bool CheckWall( bool right );
 	bool TryWallJump();
 	bool CheckStandUp();
+	bool TryStandupOnForcedGrindExit();
 	void TryDashBoost();
 	void TryAirdashBoost();
 	void TryExtraAirdashBoost();
@@ -1830,6 +1833,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateNumFuturePositions();
 
 	void CheckCollisionForTerrainFade();
+	void CheckGrindEdgeForTerrainFade();
 
 	void ProcessGroundedCollision();
 	bool TryLandFromBounceGround();

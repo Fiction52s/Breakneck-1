@@ -20,151 +20,161 @@ void Actor::GRINDBALL_Change()
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	bool j = JumpButtonPressed();
 	//bool isntWall = grindEdge->Normal().y != 0;
-	if ((framesGrinding > 0 && !GrindButtonHeld() ) || j || touchedGrass[Grass::ANTIGRIND] || InWater( TerrainPolygon::WATER_FREEFLIGHT ) 
-		|| InWater( TerrainPolygon::WATER_INVERTEDINPUTS ) || InWater( TerrainPolygon::WATER_GLIDE ) )
+
+	bool exitedGrind = false;
+
+	if ((framesGrinding > 0 && !GrindButtonHeld()) || j || touchedGrass[Grass::ANTIGRIND] || InWater(TerrainPolygon::WATER_FREEFLIGHT)
+		|| InWater(TerrainPolygon::WATER_INVERTEDINPUTS) || InWater(TerrainPolygon::WATER_GLIDE))
 	{
-		ExitGrind(j);
-	}
-	else if (DashButtonPressed() && HasUpgrade(UPGRADE_W5_GRIND_LUNGE))
-	{
-		V2d op = position;
-
-		//V2d op = position;
-
-		V2d grindNorm = grindEdge->Normal();
-
-		if (grindNorm.y < 0)
+		if (ExitGrind(j))
 		{
-			double extra = 0;
-			if (grindNorm.x > 0)
-			{
-				offsetX = b.rw;
-				extra = .1;
-			}
-			else if (grindNorm.x < 0)
-			{
-				offsetX = -b.rw;
-				extra = -.1;
-			}
-			else
-			{
-				offsetX = 0;
-			}
-
-			position.x += offsetX + extra;
-
-			position.y -= normalHeight + .1;
-
-			if (!CheckStandUp())
-			{
-				position = op;
-			}
-			else
-			{
-				SetAction(GRINDLUNGE);
-				frame = 0;
-
-				V2d grindNorm = grindEdge->Normal();
-				V2d gDir = normalize(grindEdge->v1 - grindEdge->v0);
-				lungeNormal = grindNorm;
-
-				double lungeSpeed;
-				if (speedLevel == 0)
-				{
-					lungeSpeed = grindLungeSpeed0;
-				}
-				else if (speedLevel == 1)
-				{
-					lungeSpeed = grindLungeSpeed1;
-				}
-				else if (speedLevel == 2)
-				{
-					lungeSpeed = grindLungeSpeed2;
-				}
-				//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
-				//double extra = f * grindLungeExtraMax;
-
-				velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
-
-													/*double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
-													double extra = f * grindLungeExtraMax;
-
-													velocity = lungeNormal * ( grindLungeSpeed + extra );*/
-
-													/*if( currInput.A )
-													{
-													velocity += gDir * grindSpeed;
-													V2d normV = normalize( velocity );
-													lungeNormal = V2d( normV.y, -normV.x );
-													}*/
-
-													//grindEdge = NULL;
-
-				facingRight = (grindNorm.x > 0);
-
-				grindEdge = NULL;
-				ground = NULL;
-			}
-
+			exitedGrind = true;
 		}
-		else
-		{
-
-			if (grindNorm.x > 0)
-			{
-				position.x += b.rw + .1;
-			}
-			else if (grindNorm.x < 0)
-			{
-				position.x += -b.rw - .1;
-			}
-
-			if (grindNorm.y > 0)
-				position.y += normalHeight + .1;
-
-			if (!CheckStandUp())
-			{
-				position = op;
-			}
-			else
-			{
-				SetAction(GRINDLUNGE);
-				frame = 0;
-
-				V2d grindNorm = grindEdge->Normal();
-				V2d gDir = normalize(grindEdge->v1 - grindEdge->v0);
-
-				lungeNormal = grindNorm;
-				double lungeSpeed;
-				if (speedLevel == 0)
-				{
-					lungeSpeed = grindLungeSpeed0;
-				}
-				else if (speedLevel == 1)
-				{
-					lungeSpeed = grindLungeSpeed1;
-				}
-				else if (speedLevel == 2)
-				{
-					lungeSpeed = grindLungeSpeed2;
-				}
-				//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
-				//double extra = f * grindLungeExtraMax;
-
-				velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
-
-				facingRight = (grindNorm.x > 0);
-
-				grindEdge = NULL;
-				ground = NULL;
-			}
-		}
-		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (currInput.rightShoulder && !prevInput.rightShoulder)
+
+	if (!exitedGrind)
 	{
-		SetAction(GRINDATTACK);
-		frame = 0;
+		if (DashButtonPressed() && HasUpgrade(UPGRADE_W5_GRIND_LUNGE))
+		{
+			V2d op = position;
+
+			//V2d op = position;
+
+			V2d grindNorm = grindEdge->Normal();
+
+			if (grindNorm.y < 0)
+			{
+				double extra = 0;
+				if (grindNorm.x > 0)
+				{
+					offsetX = b.rw;
+					extra = .1;
+				}
+				else if (grindNorm.x < 0)
+				{
+					offsetX = -b.rw;
+					extra = -.1;
+				}
+				else
+				{
+					offsetX = 0;
+				}
+
+				position.x += offsetX + extra;
+
+				position.y -= normalHeight + .1;
+
+				if (!CheckStandUp())
+				{
+					position = op;
+				}
+				else
+				{
+					SetAction(GRINDLUNGE);
+					frame = 0;
+
+					V2d grindNorm = grindEdge->Normal();
+					V2d gDir = normalize(grindEdge->v1 - grindEdge->v0);
+					lungeNormal = grindNorm;
+
+					double lungeSpeed;
+					if (speedLevel == 0)
+					{
+						lungeSpeed = grindLungeSpeed0;
+					}
+					else if (speedLevel == 1)
+					{
+						lungeSpeed = grindLungeSpeed1;
+					}
+					else if (speedLevel == 2)
+					{
+						lungeSpeed = grindLungeSpeed2;
+					}
+					//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+					//double extra = f * grindLungeExtraMax;
+
+					velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
+
+														/*double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+														double extra = f * grindLungeExtraMax;
+
+														velocity = lungeNormal * ( grindLungeSpeed + extra );*/
+
+														/*if( currInput.A )
+														{
+														velocity += gDir * grindSpeed;
+														V2d normV = normalize( velocity );
+														lungeNormal = V2d( normV.y, -normV.x );
+														}*/
+
+														//grindEdge = NULL;
+
+					facingRight = (grindNorm.x > 0);
+
+					grindEdge = NULL;
+					ground = NULL;
+				}
+
+			}
+			else
+			{
+
+				if (grindNorm.x > 0)
+				{
+					position.x += b.rw + .1;
+				}
+				else if (grindNorm.x < 0)
+				{
+					position.x += -b.rw - .1;
+				}
+
+				if (grindNorm.y > 0)
+					position.y += normalHeight + .1;
+
+				if (!CheckStandUp())
+				{
+					position = op;
+				}
+				else
+				{
+					SetAction(GRINDLUNGE);
+					frame = 0;
+
+					V2d grindNorm = grindEdge->Normal();
+					V2d gDir = normalize(grindEdge->v1 - grindEdge->v0);
+
+					lungeNormal = grindNorm;
+					double lungeSpeed;
+					if (speedLevel == 0)
+					{
+						lungeSpeed = grindLungeSpeed0;
+					}
+					else if (speedLevel == 1)
+					{
+						lungeSpeed = grindLungeSpeed1;
+					}
+					else if (speedLevel == 2)
+					{
+						lungeSpeed = grindLungeSpeed2;
+					}
+					//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+					//double extra = f * grindLungeExtraMax;
+
+					velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
+
+					facingRight = (grindNorm.x > 0);
+
+					grindEdge = NULL;
+					ground = NULL;
+				}
+			}
+			//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+		}
+		else if (currInput.rightShoulder && !prevInput.rightShoulder)
+		{
+			SetAction(GRINDATTACK);
+			frame = 0;
+		}
 	}
 
 

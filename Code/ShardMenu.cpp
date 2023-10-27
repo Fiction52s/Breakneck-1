@@ -71,7 +71,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
 	int xSize = 4;
-	int ySize = 5 + 1;
+	int ySize = 4 + 1;
 
 	int numWorlds = 8;
 
@@ -433,7 +433,8 @@ void ShardMenu::SetCurrentDescription( bool captured)
 {
 	if( captured )
 	{
-		ShardDetailedInfo &currInfo = GetCurrShardInfo();
+		cout << "worldindex: " << worldSelector->currIndex << ", select: " << selectedIndex << "\n";
+		ShardDetailedInfo &currInfo = shardInfo[worldSelector->currIndex][selectedIndex];//GetCurrShardInfo();
 		currShardNameText.setString(currInfo.name);
 		FloatRect lBounds = currShardNameText.getLocalBounds();
 		currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
@@ -507,7 +508,12 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 			worldText.setOutlineThickness(0);
 
 			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+
+			assert(index < ShardInfo::MAX_SHARDS_PER_WORLD);
+
 			ShardDetailedInfo &currInfo = shardInfo[worldSelector->currIndex][index];
+
+
 
 			if (currInfo.name == "")
 			{

@@ -107,6 +107,19 @@ void Actor::JUMPSQUAT_UpdateSprite()
 	{
 		assert(0);
 	}
+
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpSlide->texture);
+
+		SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
+
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			scorpSprite.getLocalBounds().height / 2 + 10);
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
 }
 
 void Actor::JUMPSQUAT_TransitionToAction(int a)

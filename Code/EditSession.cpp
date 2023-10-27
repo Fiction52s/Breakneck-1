@@ -8176,9 +8176,10 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 	/*CleanupGates();
 	CleanupZones();*/
 
+	int index = 0;
 	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
-		if (hideSecret && (*it)->category == Gate::SECRET)
+		if (hideSecret && ((*it)->category == Gate::SECRET || gates[index]->IsSecret() ) )
 		{
 			(*it)->DrawSecretPreview(target);
 		}
@@ -8186,7 +8187,21 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		{
 			(*it)->DrawPreview(target);
 		}
+
+		++index;
 	}
+
+	/*for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	{
+		if (hideSecret && (*it)->category == Gate::SECRET )
+		{
+			(*it)->DrawSecretPreview(target);
+		}
+		else
+		{
+			(*it)->DrawPreview(target);
+		}
+	}*/
 
 	sf::RectangleShape borderRect;
 	borderRect.setFillColor(Color(30, 30, 30));

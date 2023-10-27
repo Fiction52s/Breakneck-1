@@ -7230,8 +7230,7 @@ void Actor::UpdatePrePhysics()
 	}
 
 
-	if (CheckTerrainDisappear(ground) || CheckTerrainDisappear(bounceEdge)
-		|| CheckTerrainDisappear(grindEdge))
+	if (CheckTerrainDisappear(ground))
 	{
 		V2d along = ground->Along();
 		if (reversed)
@@ -7241,6 +7240,19 @@ void Actor::UpdatePrePhysics()
 		velocity = groundSpeed * along;
 		SetAirPos(position, facingRight);
 	}
+	else if (CheckTerrainDisappear(bounceEdge))
+	{
+		double through = dot(storedBounceVel, -bounceEdge->Normal());
+		velocity = storedBounceVel + bounceEdge->Normal() * through;
+
+		SetAirPos(position, facingRight);
+	}
+	else if (CheckTerrainDisappear(grindEdge))
+	{
+		TryStandupOnForcedGrindExit();
+	}
+
+		
 	
 	//TryCheckGrass();
 
@@ -8797,6 +8809,116 @@ bool Actor::CheckWall( bool right )
 	}
 	return false;
 
+}
+
+bool Actor::TryStandupOnForcedGrindExit()
+{
+	V2d op = position;
+
+	V2d grindNorm = grindEdge->Normal();
+
+	bool oldReversed = reversed;
+
+	if (grindNorm.y < 0)
+	{
+		double extra = 0;
+		if (grindNorm.x > 0)
+		{
+			offsetX = b.rw;
+			extra = .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			offsetX = -b.rw;
+			extra = -.1;
+		}
+		else
+		{
+			offsetX = 0;
+		}
+
+		position.x += offsetX + extra;
+
+		position.y -= normalHeight + .1;
+	}
+	else if (grindNorm.y > 0)
+	{
+		if (grindNorm.x > 0)
+		{
+			position.x += b.rw + .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			position.x += -b.rw - .1;
+		}
+
+		position.y += normalHeight + .1;
+
+		reversed = true;
+	}
+	else
+	{
+		if (grindNorm.x > 0)
+		{
+			position.x += b.rw + .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			position.x += -b.rw - .1;
+		}
+	}
+
+	double ex = .05;//.1 //needs to be smaller than the extra amount given to grind for 
+					//standup to work for grind.
+	Rect<double> r;
+	r = Rect<double>(position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
+
+	queryType = Q_CHECK_GRIND_TRANSFER;
+	grindTransferCheckEdge = NULL;
+
+	GetTerrainTree()->Query(this, r);
+	sess->railEdgeTree->Query(this, r);
+
+	reversed = oldReversed;
+
+	//sess->barrierTree->Query(this, r);
+
+	if (grindTransferCheckEdge != NULL)
+	{
+		position = op;
+		grindEdge = grindTransferCheckEdge;
+		edgeQuantity = grindTransferCheckEdge->GetQuantity(position);
+
+		CheckGrindEdgeForTerrainFade();
+
+		CheckGates();
+		return true;
+	}
+	else
+	{
+		framesInAir = 0;
+		SetAction(JUMP);
+		frame = 1;
+		ground = NULL;
+		grindEdge = NULL;
+		reversed = false;
+		offsetX = 0;
+		PhysicsResponse();
+		if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+		else if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+
+		CheckGates();
+
+		return false;
+	}
+	
+	
 }
 
 bool Actor::CheckStandUp()
@@ -11751,10 +11873,11 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 				//		}
 				//	}
 				//}
-				grindEdge = e1;
+				
 
-				if (grindEdge != NULL)
+				if (e1 != NULL)
 				{
+					grindEdge = e1;
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
 						if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
@@ -11766,20 +11889,44 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 				}
 				else
 				{
-					framesInAir = 0;
-					SetAction(JUMP);
-					frame = 1;
-					ground = NULL;
-					offsetX = 0;
-					PhysicsResponse();
-					if (velocity.x > 0)
+					/*bool exitGrind = false;
+
+					position = grindEdge->GetPosition(edgeQuantity);
+
+					if (CheckStandUp())
 					{
-						facingRight = true;
+						exitGrind = true;
 					}
-					else if (velocity.x < 0)
+					else
 					{
-						facingRight = false;
+						if (!TryStandupOnForcedGrindExit())
+						{
+							exitGrind = true;
+						}
 					}
+
+					if (exitGrind)
+					{
+						framesInAir = 0;
+						SetAction(JUMP);
+						frame = 1;
+						ground = NULL;
+						grindEdge = NULL;
+						offsetX = 0;
+						PhysicsResponse();
+						if (velocity.x > 0)
+						{
+							facingRight = true;
+						}
+						else if (velocity.x < 0)
+						{
+							facingRight = false;
+						}
+					}*/
+
+					TryStandupOnForcedGrindExit();
+					
+					
 					return;
 				}
 			}
@@ -11849,37 +11996,9 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 					}
 				}
 
-				//CheckStandUp();
-				//if( )
-
-				//if ( e0 != NULL && e0->IsGateEdge())
-				//{
-				//	Gate *gg = (Gate*)e0->info;
-				//	if (gg->IsSoft() )
-				//	{
-				//		if (CanUnlockGate(gg))
-				//		{
-				//			//cout << "unlock gate" << endl;
-				//			UnlockGate(gg);
-
-				//			if (e0 == gg->edgeA)
-				//			{
-				//				gateTouched = gg->edgeB;
-				//			}
-				//			else
-				//			{
-				//				gateTouched = gg->edgeA;
-
-				//			}
-
-				//			e0 = grindEdge->edge0;
-				//		}
-				//	}
-				//}
-				grindEdge = e0;
-
-				if (grindEdge != NULL)
+				if (e0 != NULL)
 				{
+					grindEdge = e0;
 					q = length(grindEdge->v1 - grindEdge->v0);
 
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
@@ -11892,20 +12011,42 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 				}
 				else
 				{
-					framesInAir = 0;
-					SetAction(JUMP);
-					frame = 1;
-					ground = NULL;
-					offsetX = 0;
-					PhysicsResponse();
-					if (velocity.x > 0)
+					/*bool exitGrind = false;
+
+					position = grindEdge->GetPosition(edgeQuantity);
+
+					if (CheckStandUp())
 					{
-						facingRight = true;
+						exitGrind = true;
 					}
-					else if (velocity.x < 0)
+					else
 					{
-						facingRight = false;
+						if (!TryStandupOnForcedGrindExit())
+						{
+							exitGrind = true;
+						}
 					}
+
+					if (exitGrind)
+					{
+						framesInAir = 0;
+						SetAction(JUMP);
+						frame = 1;
+						ground = NULL;
+						grindEdge = NULL;
+						offsetX = 0;
+						PhysicsResponse();
+						if (velocity.x > 0)
+						{
+							facingRight = true;
+						}
+						else if (velocity.x < 0)
+						{
+							facingRight = false;
+						}
+					}*/
+
+					TryStandupOnForcedGrindExit();
 					return;
 				}
 			}
@@ -18095,40 +18236,34 @@ void Actor::SetBounceBoostVelocity()
 
 	assert(grindEdge == NULL);
 
+	double s = currBounceBooster->strength;
 
-	if (ground == NULL && bounceEdge == NULL )
+	if (currBounceBooster->upOnly)
 	{
-		//SetAction(BOOSTERBOUNCE);
-		//frame = 0;
-	}
-	else
-	{
-		SetAction(JUMP);
-		frame = 1;
+		if (ground == NULL && bounceEdge == NULL)
+		{
+			//SetAction(BOOSTERBOUNCE);
+			//frame = 0;
+		}
+		else
+		{
+			SetAction(JUMP);
+			frame = 1;
 
-		velocity = GetTrueVel();
+			velocity = GetTrueVel();
+
+			ground = NULL;
+			bounceEdge = NULL;
+			grindEdge = NULL;
+
+			//SetAction(BOOSTERBOUNCE);
+		}
 
 		ground = NULL;
 		bounceEdge = NULL;
 		grindEdge = NULL;
+		reversed = false;
 
-		//SetAction(BOOSTERBOUNCE);
-	}
-
-	
-	ground = NULL;
-	bounceEdge = NULL;
-	grindEdge = NULL;
-	reversed = false;
-	
-
-	RestoreAirOptions();
-
-	double s = currBounceBooster->strength;
-	//velocity.y = min(s, velocity.y);
-
-	if (currBounceBooster->upOnly)
-	{
 		velocity.y = -s;
 
 		if (action == AIRDASH)
@@ -18137,23 +18272,119 @@ void Actor::SetBounceBoostVelocity()
 			frame = 1;
 		}
 		holdJump = false;
-
 	}
 	else
 	{
 		V2d dir = normalize(position - currBounceBooster->GetPosition());
-		velocity = dir * s;
-		velocity.x *= .6;
 
-		
+		if (ground != NULL)
+		{
+			V2d norm = ground->Normal();
 
-		if (velocity.y > 0)
-			velocity.y *= .5;
+			double d = dot(dir, norm);
+			double dAlong = dot(dir, ground->Along());
 
-		SetAction(BOOSTERBOUNCE);
-		frame = 0;
+			if ( d < 0 )
+			{
+				//if (dAlong > 0)
+				//{
+				//	groundSpeed = s * dAlong;
+				//}
+				//else if (dAlong < 0)
+				//{
+				//	groundSpeed = s * dAlong;
+				//}
+				//else
+				//{
+				//	bool fr = (facingRight && !reversed) || (!facingRight && reversed);
+				//	if (fr)
+				//	{
+				//		groundSpeed = s;
+				//	}
+				//	else
+				//	{
+				//		groundSpeed = -s;
+				//	}
+				//	//assert(0);
+				//}
+				if (reversed)
+				{
+					groundSpeed = -s * dAlong;
+				}
+				else
+				{
+					groundSpeed = s * dAlong;
+				}
+				
+
+				SetAction(BOOSTERBOUNCEGROUND);
+				frame = 0;
+			}
+			else
+			{
+				SetAction(JUMP);
+				frame = 1;
+
+				velocity = GetTrueVel();
+
+				ground = NULL;
+				bounceEdge = NULL;
+				grindEdge = NULL;
+				
+				reversed = false;
+
+				velocity = dir * s;
+				velocity.x *= .6;
+
+
+				if (velocity.y > 0)
+					velocity.y *= .5;
+
+				SetAction(BOOSTERBOUNCE);
+				frame = 0;
+			}
+		}
+		else
+		{
+			if (ground == NULL && bounceEdge == NULL)
+			{
+				//SetAction(BOOSTERBOUNCE);
+				//frame = 0;
+			}
+			else
+			{
+				SetAction(JUMP);
+				frame = 1;
+
+				velocity = GetTrueVel();
+
+				ground = NULL;
+				bounceEdge = NULL;
+				grindEdge = NULL;
+
+				//SetAction(BOOSTERBOUNCE);
+			}
+
+			ground = NULL;
+			bounceEdge = NULL;
+			grindEdge = NULL;
+			reversed = false;
+
+			velocity = dir * s;
+			velocity.x *= .6;
+
+
+
+			if (velocity.y > 0)
+				velocity.y *= .5;
+
+			SetAction(BOOSTERBOUNCE);
+			frame = 0;
+		}	
 	}
-	
+
+
+	RestoreAirOptions();
 }
 
 bool Actor::IsGoalKillAction(int a)
@@ -18805,6 +19036,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}
+		else if (e->poly != NULL && !e->poly->IsActive())
+		{
+			return;
+		}
 		if (e->rail != NULL 
 			&& (!e->rail->IsTerrainType() || !e->rail->IsEdgeActive( e )))
 		{
@@ -19007,6 +19242,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				return;
 			}
 		}
+		else if (e->poly != NULL && !e->poly->IsActive())
+		{
+			return;
+		}
 
 		if (e->IsUnlockedGateEdge())
 		{
@@ -19072,6 +19311,104 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 		}
 	}
+	else if (queryType == Q_CHECK_GRIND_TRANSFER)
+	{
+		Edge *e = (Edge*)qte;
+
+		if (e->IsUnlockedGateEdge())
+		{
+			return;
+		}
+		else if (e->poly != NULL && !e->poly->IsActive())
+		{
+			return;
+		}
+		if (e->rail != NULL
+			&& (!e->rail->IsTerrainType() || !e->rail->IsEdgeActive(e)))
+		{
+			return;
+		}
+
+		if (e == grindEdge || e == grindEdge->edge0 || e == grindEdge->edge1)
+		{
+			//not my edge or those adjacent to me
+			return;
+		}
+		
+		if (e->edgeType == Edge::BORDER)
+		{
+			return;
+		}
+
+		//not sure if this applies correctly
+		if (grindEdge->IsGateEdge())
+		{
+			Gate *g = (Gate*)grindEdge->info;
+			if (grindEdge == g->edgeA)
+			{
+				if (e == g->edgeB || e == g->edgeB->edge0 || e == g->edgeB->edge1)
+				{
+					return;
+				}
+			}
+			else
+			{
+				if (e == g->edgeA || e == g->edgeA->edge0 || e == g->edgeA->edge1)
+				{
+					return;
+				}
+			}
+
+			if (e == g->edgeA && grindEdge == g->edgeB
+				|| e == g->edgeB && grindEdge == g->edgeA)//|| e == g->edgeB )
+			{
+
+				//cout << "returnning early" << endl;
+				return;
+			}
+		}
+		else if (grindSpeed > 0 && grindEdge->edge1 != NULL && grindEdge->edge1->IsGateEdge())
+		{
+			Edge *e1 = grindEdge->edge1;
+			Gate *g = (Gate*)e1->info;
+			if (e == g->edgeA && e1 == g->edgeB
+				|| e == g->edgeB && e1 == g->edgeA)
+			{
+				return;
+			}
+		}
+		else if (grindSpeed < 0 && grindEdge->edge0 != NULL && grindEdge->edge0->IsGateEdge())
+		{
+			Edge *e0 = grindEdge->edge0;
+			Gate *g = (Gate*)e0->info;
+			if (e == g->edgeA && e0 == g->edgeB
+				|| e == g->edgeB && e0 == g->edgeA)
+			{
+				return;
+			}
+		}
+
+		
+		
+		if (grindTransferCheckEdge == NULL)
+		{
+			grindTransferCheckEdge = e;
+		}
+		else
+		{
+			double eQuant = e->GetQuantity(position);
+			V2d ePos = e->GetPosition(eQuant);
+
+			double currQuant = grindTransferCheckEdge->GetQuantity( position );
+			V2d currPos = grindTransferCheckEdge->GetPosition(currQuant);
+
+			if (length(ePos - position) < length(currPos - position))
+			{
+				grindTransferCheckEdge = e;
+			}
+
+		}		
+	}
 	else if (queryType == Q_RAIL_GRIND_TERRAIN_CHECK)
 	{
 		Edge *e = (Edge*)qte;
@@ -19113,6 +19450,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			{
 				grindEdge = e;
 				edgeQuantity = quant;
+				CheckGrindEdgeForTerrainFade();
 				//SetAction(GRINDBALL);
 			}
 		}
@@ -19213,6 +19551,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			{
 				grindEdge = e;
 				edgeQuantity = quant;
+				CheckGrindEdgeForTerrainFade();
 				//SetAction(RAILGRIND);
 			}
 		}
@@ -19300,6 +19639,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				bounceEdge = NULL;
 				grindSpeed = 0;
 				currWall = NULL;
+
+				//CheckGrindEdgeForTerrainFade(); //not needed because its a locked rail already
 
 				//leftGround = true;
 				reversed = false;
@@ -19509,6 +19850,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				prevRail = grindEdge->rail;//->info;
 				ground = NULL;
 				bounceEdge = NULL;
+
+				//CheckGrindEdgeForTerrainFade(); //not needed because these are only for rails that aren't terrain
 
 				
 
@@ -20033,7 +20376,11 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 
 	double alongSpeed = dot(testVel, alongVel);
 
-	if ((currInput.LDown() || rail ) && noLeftRight)
+	if (action == BOOSTERBOUNCE) //special case, to avoid having to add a bunch of code to just do this same thing
+	{
+		gSpeed = alongSpeed;
+	}
+	else if ((currInput.LDown() || rail ) && noLeftRight)
 	{
 		gSpeed = alongSpeed;
 	}
@@ -20289,16 +20636,20 @@ void Actor::DefaultGroundLanding( double &movement )
 			RestoreAirOptions();
 		}
 
-		if (velocity.x < 0 && gNorm.y <= -steepThresh)
+		if (action != BOOSTERBOUNCE)
 		{
-			groundSpeed = min(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
-			//cout << "left boost: " << groundSpeed << endl;
+			if (velocity.x < 0 && gNorm.y <= -steepThresh)
+			{
+				groundSpeed = min(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
+				//cout << "left boost: " << groundSpeed << endl;
+			}
+			else if (velocity.x > 0 && gNorm.y <= -steepThresh)
+			{
+				groundSpeed = max(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
+				//cout << "right boost: " << groundSpeed << endl;
+			}
 		}
-		else if (velocity.x > 0 && gNorm.y <= -steepThresh)
-		{
-			groundSpeed = max(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
-			//cout << "right boost: " << groundSpeed << endl;
-		}
+		
 		//groundSpeed  = max( abs( velocity.x ), ( - ) );
 
 		if (velocity.x < 0)
@@ -22591,6 +22942,8 @@ void Actor::SetActionGrind()
 	}
 	
 	grindEdge = ground;
+
+	CheckGrindEdgeForTerrainFade();
 	frame = 0;
 
 
@@ -24269,6 +24622,24 @@ void Actor::UpdateInHitlag()
 			 && minContact.edge->rail->rType == TerrainRail::FADE)
 		 {
 			 minContact.edge->rail->FadeOut();
+		 }
+	 }
+ }
+
+ void Actor::CheckGrindEdgeForTerrainFade()
+ {
+	 if (!simulationMode)
+	 {
+		 assert(grindEdge != NULL);
+		 if (grindEdge->poly != NULL
+			 && grindEdge->poly->IsSometimesActiveType())
+		 {
+			 grindEdge->poly->FadeOut();
+		 }
+		 else if (grindEdge->rail != NULL
+			 && grindEdge->rail->rType == TerrainRail::FADE)
+		 {
+			 grindEdge->rail->FadeOut();
 		 }
 	 }
  }

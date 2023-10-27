@@ -656,6 +656,9 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 			
 		
 			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+
+			assert(index < LogInfo::MAX_LOGS_PER_WORLD);
+
 			LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][index];
 
 			if (currLog.logType == -1)
