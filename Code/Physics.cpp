@@ -1638,7 +1638,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 
 
-			if (e->v1.y == -7304)
+			if (e->v0.x == -349 && e->v0.y == -1834 && vel.x != 8 && vel.x != -8 )
 			{
 				int xxxxxx = 56;
 			}
@@ -1665,7 +1665,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				//if( intersectQuantity >length( e->v1 - e->v0 ) )
 				//	intersectQuantity = length( e->v1 - e->v0 );
 				double len = length( e->v1 - e->v0 );
-				if( intersectQuantity < -.0001 || intersectQuantity > len + .0001 )
+
+				//this was .0001 before, but it caused a bug when jumping and then drifting into sloped ceilings using
+				//zero gravity water (and probably other spots)
+				//hopefully this doesn't cause any weirdness!
+
+				//if( intersectQuantity < -.0001 || intersectQuantity > len + .0001 )
+				if (intersectQuantity < -.01 || intersectQuantity > len + .01)
 				{
 					
 					//cout << "bad: " << en.x << ", " << en.y << "  " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;

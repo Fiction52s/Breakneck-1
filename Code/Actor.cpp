@@ -11816,7 +11816,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 						(*it)->SetLocked(true);
 					}
 
-					if (grindEdge->edge1->GetGate() == (*it))
+					if (grindEdge->edge1 != NULL && grindEdge->edge1->GetGate() == (*it))
 					{
 						if ((*it)->IsSoft())
 						{
@@ -11967,7 +11967,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 						(*it)->SetLocked(true);
 					}
 
-					if (grindEdge->edge0->GetGate() == (*it))
+					if ( grindEdge->edge0 != NULL && grindEdge->edge0->GetGate() == (*it))
 					{
 						if ((*it)->IsSoft())
 						{
@@ -12362,6 +12362,7 @@ void Actor::HandleBounceRail()
 	}
 
 	ground = NULL;
+	reversed = false;
 
 	velocity = sess->CalcBounceReflectionVel(bounceNorm, velocity);//minContact.edge, velocity);
 

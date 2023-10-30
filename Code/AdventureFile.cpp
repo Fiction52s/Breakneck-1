@@ -217,6 +217,7 @@ bool AdventureMap::LoadHeaderInfo()
 	}
 	else
 	{
+		cout << "unable to open header for: " << filePath << "\n";
 		assert(false);
 	}
 
