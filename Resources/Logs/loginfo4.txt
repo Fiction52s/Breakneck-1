@@ -3,42 +3,6 @@ Enemy
 cheetah
 Fastest on the ground!
 
-Grind Juggler
-Enemy
-grindjugglercw
-Grinds along terrain or rails that its hit onto. If it kills an enemy,
-it will fly away from the terrain and can be hit again. Has 
-clockwise and counterclockwise versions, as well as a limited version
-that will reset after a certain number of hits.
-
-Grounded Grind Juggler
-Enemy
-groundedgrindjugglercw
-Grinds along the terrain until it slows down and stops. Can be hit again
-to speed back up. Has clockwise and counterclockwise versions, as well 
-as a limited version that will reset after a certain number of hits.
-
-Grind Launcher
-Enemy
-grindlauncher
-Choose a direction to lauch in. You will grind on any terrain that you hit.
-
-Phase Booster
-Enemy
-phasebooster
-When you touch it, you will be able to touch Phase Terrain for 5 seconds.
-
-Momentum Booster
-Enemy
-momentumbooster
-When you touch it, your momentum meter will fill to maximum and maintain
-that maximum for 5 seconds.
-
-Widow
-Enemy
-widow
-Tries to keep away from you on terrain and shoots bullets.
-
 Turtle
 Enemy
 turtle
@@ -59,6 +23,42 @@ Enemy
 falcon
 Flies towards you, and then will dive at you and then resume flying.
 
+Grind Comboer
+Enemy
+grindcomboer
+Grinds along terrain or rails that its hit onto. If it kills an enemy,
+it will fly away from the terrain and can be hit again. Has 
+clockwise and counterclockwise versions, as well as a limited version
+that will reset after a certain number of hits.
+
+Grounded Grind Juggler
+Enemy
+groundedgrindjuggler
+Grinds along the terrain until it slows down and stops. Can be hit again
+to speed back up. Has clockwise and counterclockwise versions, as well 
+as a limited version that will reset after a certain number of hits.
+
+Grind Launcher
+Enemy
+grindlauncher
+Choose a direction to lauch in. You will grind on any terrain that you hit.
+
+Phase Switch
+Enemy
+phaseswitch
+When on, phase terrain is off.
+
+Momentum Booster
+Enemy
+momentumbooster
+When you touch it, your momentum meter will fill to maximum and maintain
+that maximum for 5 seconds.
+
+Scorpion Target
+Enemy
+scorpiontarget
+Can only be hit if you have the scorpion activated!
+
 Launcher Water
 Water
 WATER_LAUNCHER
@@ -78,6 +78,11 @@ GRIND
 Touching this rail will cause you to enter a grind state where you accelerate slowly in
 the direction you're moving until you jump off.
 
+Scorpion Only Rail
+Rail
+SCORPIONONLY
+You can only interact with this rail while the scorpion is activated!
+
 Phase Rail
 Rail
 PHASE
@@ -89,10 +94,10 @@ Rail
 INVERSEPHASE
 You can touch this rail normally, but can't if you have touched Phase Booster.
 
-Anti-Grind Grass
-Grass
-ANTIGRIND
-If you are grinding in any form when you touch this grass, your grind will end.
+Acceleration Rail
+Rail
+ACCELERATE
+Works like a grind rail but continuously accelerates you.
 
 Dusk S-Kin
 Skin

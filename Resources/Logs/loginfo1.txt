@@ -72,6 +72,12 @@ Grass
 JUMP
 If you jump or walljump while touching this grass, you'll go much higher.
 
+Secret Information
+Momenta
+Secret items that contain information or upgrades can be found in hidden areas.
+Hidden areas are invisible on the minimap until they have been found.
+You will never need to come back later with new upgrades to find a secret item.
+
 Orange S-kin
 Skin
 SKIN_ORANGE

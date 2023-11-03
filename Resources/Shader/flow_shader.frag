@@ -4,6 +4,9 @@ uniform sampler2D u_texture;
 uniform sampler2D u_normals;   //normal map
 uniform sampler2D u_pattern;
 
+uniform vec4 flowColor;
+uniform vec4 closeFlowColor;
+
 uniform vec2 topLeft;
 uniform float zoom;
 
@@ -57,23 +60,34 @@ void main()
 	
 	bool res = (len < radius && len > radius - radDiff)
 		|| (radius <= radDiff && len + (radDiff - radius) > maxFlowRings);
+	float fres = float(res);
+	
 	float alpha = rand( vec2( pos.x + radius, pos.y + radius ) );
-	//0, 0x66, 0xcc
-	finalfinal = vec4( 0, 0x66 / 255.0 * float(res) , 0xcc / 255.0 * float(res), alpha * .7 );
+	
+	finalfinal = vec4( flowColor.r * fres, flowColor.g * fres , flowColor.b * fres, alpha * .7 );
 	
 	if( !res )
 		finalfinal = vec4( 0, 0, 0, 1 );
 	
-	//0, 0xee, 0xff
 	float d = dot( normalize( goalPos - playerPos ), normalize( goalPos - pos ));
 	
-	if( res && realLen <= playerToGoal - 40 && d > .99 )
+	if( res && realLen <= playerToGoal - 40 )//&& d > .99 )
 	{
 		float f = 1 - ((1 - d) / .01);
-		//d -= (1- d) * 25;
-		//if( d < .01 )
-		//	d = .01;
-		finalfinal = vec4( 0, 0xee / 255.0 * f, 0xff / 255.0 * f, .5) + vec4( 0,0x66 / 255.0 * (1-f), 0xcc / 255.0 * ( 1-f), .5 ); 
+		float sameDirection = 0.999;
+		float sortOfDirection = 0.97;
+		
+		if( d > sameDirection )
+		{
+			finalfinal = closeFlowColor;
+		}
+		else if ( d > sortOfDirection )
+		{
+			float test = 1.0 - (sameDirection - d) / (sameDirection - sortOfDirection );
+			finalfinal = mix( flowColor, closeFlowColor, test);
+		}
+		
+		//finalfinal = mix( flowColor, closeFlowColor, d * 0.5 );
 		finalfinal.a = alpha * 5.0;
 	}
 	

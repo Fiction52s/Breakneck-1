@@ -51,18 +51,12 @@ void main()
 				
 				if( pixel2.a != 0.0 )
 				{
-					vec2 blah = vec2( 1.0, 1.0 );
-					vec2 stuff = ((gl_TexCoord[0].xy - u_quad.xy) / quadSize.xy) + vec2( 0.0, u_slide * .7);//, 0.0 );
-					vec2 stuff2 = ((gl_TexCoord[0].xy - u_quad.xy) / quadSize.xy) + vec2( 0.0, u_slide * 1.3);//, 0.0 );
-					vec4 colora0 = texture2D( u_auraTex, stuff.xy );
-					vec4 colora1 = texture2D( u_auraTex2, stuff2.xy );
-					//pixel = colora0;//colora0 * colora1;
-					//if( colora1.a != 0 )
-					//pixel = colora0 * colora1;//colora0.a;
-
-					//pixel.a = colora0.a + colora1.a;
-					//pixel.a = max( colora0.a, colora1.a );
-					//pixel.a = .8;
+					//vec2 blah = vec2( 1.0, 1.0 );
+					//vec2 stuff = ((gl_TexCoord[0].xy - u_quad.xy) / quadSize.xy) + vec2( 0.0, u_slide * .7);//, 0.0 );
+					//vec2 stuff2 = ((gl_TexCoord[0].xy - u_quad.xy) / quadSize.xy) + vec2( 0.0, u_slide * 1.3);//, 0.0 );
+					//vec4 colora0 = texture2D( u_auraTex, stuff.xy );
+					//vec4 colora1 = texture2D( u_auraTex2, stuff2.xy );
+					
 					pixel = u_auraColor;
 					found = true;
 				}

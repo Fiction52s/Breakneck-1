@@ -1,0 +1,104 @@
+8
+17
+crawlerfight1test
+14
+no description
+0
+0
+0
+0
+fiction52s
+76561198058577095
+1
+0
+21
+1220
+1219
+w1_06
+-4695 245 2285 3076
+9000
+0
+16
+NONE
+NONE
+0
+-4148 3083
+0
+0
+0
+0
+0
+0
+0
+0
+borderpoly
+0 4
+16
+-4555 2509
+-4555 2713
+-4453 2916
+-4250 3119
+-4047 3221
+-3843 3221
+-3640 3119
+-3437 2916
+-3335 2713
+-3335 2509
+-3437 2306
+-3640 2103
+-3843 2002
+-4047 2002
+-4250 2103
+-4453 2306
+0
+0
+0
+0
+1
+-- 21
+poi 0 -4489 3203
+crawlerdig1
+poi 0 -3159 3163
+crawlerdig2
+poi 1 -1 3 80.5555
+kinstand0
+poi 1 -1 6 132.936
+crawlersurface
+poi 1 -1 14 98.9949
+crawlerthrowkin
+camerashot -3949 2628
+fightcam
+2.57778
+camerashot -3945 2618
+cavecam
+2.42963
+crawlernode 1 -1 0 96
+A
+crawlernode 1 -1 2 140.007
+A
+crawlernode 1 -1 4 109
+A
+crawlernode 1 -1 6 213.546
+A
+crawlerqueen -1 7 133.781
+1
+crawlernode 1 -1 8 84
+A
+crawlernode 1 -1 10 137.886
+A
+crawlernode 1 -1 12 91
+A
+groundedwarper -1 9 112.257
+FinishedScenes/W1/nexus1
+0
+crawlernode 1 -1 14 147.785
+A
+crawlernode 1 -1 1 64.3749
+B
+crawlernode 1 -1 7 157.88
+B
+crawlernode 1 -1 3 157.449
+B
+crawlernode 1 -1 5 126.967
+B
+0

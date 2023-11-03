@@ -1,71 +1,35 @@
-Decrease W6 Health Drain 1/3
-Decreases the rate at which you passively
-lose energy within world 6.
+Decrease W6 Enemy Damage
+You take less damage from world 6 enemies!
 
-Decrease W6 Health Drain 2/3
-Decreases the rate at which you passively
-lose energy within world 6.
+Increase W6 Enemy Health Gain
+Gain more health when hitting world 6 enemies!
 
-Decrease W6 Health Drain 3/3
-Decreases the rate at which you passively
-lose energy within world 6.
+Increase W6 Enemy Momentum Gain
+Gain more momentum meter when hitting world 6 enemies!
 
-Decrease W6 Enemy Damage 1/3
-Decreases the damage taken from world 6 enemies.
+Increase W6 Starting Momemtum
+Start world 6 levels with increased momentum meter!
 
-Decrease W6 Enemy Damage 2/3
-Decreases the damage taken from world 6 enemies.
+Upgrade Bubble Airdash
+You now have infinite air options (double jump, airdash) within timeslow bubbles!
 
-Decrease W6 Enemy Damage 3/3
-Decreases the damage taken from world 6 enemies.
+Upgrade Bubble Size
+Timeslow bubbles you create now have a larger radius!
 
-Increase W6 Energy Capture 1/3
-Increases the amount of energy you get from killing
-enemies within world 6.
+Upgrade Base Dash Speed 3/3
+Dash speed increased!
 
-Increase W6 Energy Capture 2/3
-Increases the amount of energy you get from killing
-enemies within world 6.
+Upgrade Base Airdash Speed 3/3
+Airdash speed increased!
 
-Increase W6 Energy Capture 3/3
-Increases the amount of energy you get from killing
-enemies within world 6.
+Upgrade Steep Climb 3/3
+Climb steep slopes faster!
 
-Unlock Right Wire Enemy Hook
-Your right wire can now grab onto and swing from most enemies.
+Upgrade Steep Slide 3/3
+Slide down steep slopes faster!
 
-Unlock Left Wire Enemy Hook
-Your left wire can now grab onto and swing from most enemies.
+Upgrade Ground Acceleration 3/3
+Increased passive acceleration during grounded movement!
 
-Increase Maximum Speed 1/8
-Increase your overall maximum speed!
-
-Increase Maximum Speed 2/8
-Increase your overall maximum speed!
-
-Increase Maximum Speed 3/8
-Increase your overall maximum speed!
-
-Increase Maximum Speed 4/8
-Increase your overall maximum speed!
-
-Increase Maximum Speed 5/8
-Increase your overall maximum speed!
-
-Increase Maximum Speed 6/8
-Increase your overall maximum speed!
-
-Increase Maximum Speed 7/8
-Increase your overall maximum speed!
-
-Increase Maximum Speed 8/8
-Increase your overall maximum speed!
-
-Increase Base Airdash Speed 1/3
-Your base airdash speed has been increased.
-
-Increase Base Airdash Speed 2/3
-Your base airdash speed has been increased.
-
-Increase Base Airdash Speed 3/3
-Your base airdash speed has been increased.
+Upgrade Sprint 3/3
+Increased acceleration from sprinting on slopes!

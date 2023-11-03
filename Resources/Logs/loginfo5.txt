@@ -1,19 +1,37 @@
-Hungry Comboer
+Swarm
 Enemy
-hungrycomboer
-Once hit, it will chase down and eat any enemies in the area.
-Also has a limited verison which will reset after a certain amount
-of enemies killed.
+swarm
+A swarm colony that holds 5 smaller enemies and launches them at you if you get close. The smaller
+enemies are on a timer and will die after a few seconds. It will continue to generate enemies 
+until you kill it.
 
-Hungry Return Comboer
+Claw Turret
 Enemy
-hungryreturncomboer
-Once hit, it will chase down and eat an enemy, and then come back
-to attack you. If you hit it again, it will chase another enemy.
-Also has a limited verison which will reset after a certain amount
-of enemies killed.
+growingtree
+Shoots bullets that home in on you.
 
-Time Booster
+Plasmid
+Enemy
+ghost
+Locks onto a position relative to Kin. Then steadily moves closer until attacking you.
+
+Lizard
+Enemy
+lizard
+Chases you on the ground while sometimes producing energy shocks which travel along the terrain.
+
+Parrot
+Enemy
+parrot
+Flying enemy that chases you but stays at a distance where it can lob bullets onto you.
+
+Homing Launcher
+Enemy
+hominglauncher
+Launches you in a direction of your choice. During the launch, holding the attack
+button will cause you to do an attack and home in on enemies.
+
+Time Slow Booster
 Enemy
 timebooster
 If you touch this, every piece of the game moves in slowmotion except
@@ -32,11 +50,12 @@ antitimeslowbooster
 If you touch this, for 5 seconds you will not be effected by timeslow effects at
 all.
 
-Homing Launcher
+Hungry Comboer
 Enemy
-hominglauncher
-Launches you in a direction of your choice. During the launch, holding the attack
-button will cause you to do an attack and home in on enemies.
+hungrycomboer
+Once hit, it will chase down and eat any enemies in the area.
+Also has a limited verison which will reset after a certain amount
+of enemies killed.
 
 Relative Comboer
 Enemy
@@ -50,35 +69,13 @@ relativecomboerdetach
 Can be hit into other enemies. After it travels a short distance, it will lock its position
 relative to Kin. If it kills an enemy, it will unlock and remain stationary until hit again.
 
-Swarm
+Homing Detach Comboer
 Enemy
-swarm
-A swarm colony that holds 5 smaller enemies and launches them at you if you get close. The smaller
-enemies are on a timer and will die after a few seconds. It will continue to generate enemies 
-until you kill it.
+relativecomboerdetach
+Can be hit into other enemies. After it travels a short distance, it will lock its position
+relative to Kin. If it kills an enemy, it will unlock and remain stationary until hit again.
 
-Sprout
-Enemy
-growingtree
-After you get close, it will shoot bullets at you, after a couple rounds, it will grow to a new
-state with more powerful bullets.
-
-Ghost
-Enemy
-ghost
-Locks onto a position relative to Kin. Then steadily moves closer until attacking you.
-
-Lizard
-Enemy
-lizard
-Chases you on the ground while sometimes producing energy shocks which travel along the terrain.
-
-Parrot
-Enemy
-parrot
-Flying enemy that chases you but stays at a distance where it can lob bullets onto you.
-
-Timeslow Water
+Time Slow Water
 Water
 WATER_TIMESLOW
 While within this water, your actions are performed slower, and you move slower. You do have
@@ -89,12 +86,6 @@ Water
 WATER_POISON
 While within this water, your health drains at a very fast rate. You also have infinitely
 refreshing air options and will accelerate slightly in any direction that you move.
-
-Fade Rail
-Rail
-FADE
-After you touch this rail, it will disappear after a short time, and then reappear
-soon afterwards.
 
 Locked Rail
 Rail
@@ -111,6 +102,11 @@ Poison Grass
 Grass
 POISON
 While touching this grass, your health drains much much faster.
+
+Anti-Grind Grass
+Grass
+ANTIGRIND
+If you are grinding in any form when you touch this grass, your grind will end.
 
 Bonfire S-Kin
 Skin

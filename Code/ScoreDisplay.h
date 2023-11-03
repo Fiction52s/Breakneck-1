@@ -32,6 +32,10 @@ struct ScoreBar
 	sf::Sprite barSprite;
 	sf::Sprite symbolSprite;
 	sf::Text text;
+
+	sf::Sprite extraSymbolSprite;
+	sf::Text extraText;
+
 	sf::Color textColor;
 	int row;
 

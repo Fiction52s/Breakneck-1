@@ -4259,7 +4259,7 @@ void Actor::ActionEnded()
 
 void Actor::CheckHoldJump()
 {
-	if (InWater( TerrainPolygon::WATER_BUOYANCY) )//|| InWater( TerrainPolygon::WATER_NORMAL ))
+	if (InWater( TerrainPolygon::WATER_BUOYANCY) || InWater(TerrainPolygon::WATER_ZEROGRAV))//|| InWater( TerrainPolygon::WATER_NORMAL ))
 	{
 		if (!JumpButtonHeld())
 		{
@@ -5957,6 +5957,9 @@ void Actor::ProcessGravityGrass()
 		trueNormal = normalize(trueNormal + dir);
 		velocity = abs(groundSpeed) * trueNormal;
 
+		//cout << "velocity: " << velocity.x << ", " << velocity.y << ", norm: " << trueNormal.x << ", " << trueNormal.y << "\n";
+
+		holdJump = false;
 		ground = NULL;
 		frame = 1; //so it doesnt use the jump frame when just dropping
 		reversed = false;
@@ -20560,9 +20563,13 @@ void Actor::DefaultGroundLanding( double &movement )
 
 		if (offsetX > b.rw + .00001 || offsetX < -b.rw - .00001) //stops glitchyness with _\ weird offsets
 		{
-			cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
+			//removing the print here now, but it could always cause something weird later...
+			//this triggered last time when climbing a steep slope and jumping onto it while going up
+			//honestly I feel like this probably doesn't cause any problems.
+
+			/*cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
 				<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
-			cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;
+			cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;*/
 			if (offsetX > 0)
 			{
 				offsetX = b.rw;

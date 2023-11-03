@@ -1529,7 +1529,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					}
 					else
 					{
-						cout << "miss: 1 0: " << edgeTop << ", " << edgeBottom << ", l/r: " << top << ", " << bottom << endl;
+						//not sure why I had this print here, prob some old testing
+						//cout << "miss: 1 0: " << edgeTop << ", " << edgeBottom << ", l/r: " << top << ", " << bottom << endl;
 						hit = false;
 					} 
 

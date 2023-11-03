@@ -1,24 +1,40 @@
 1
 0
-Beta3\b02
-Beta3\b03
-CustomMaps\tiny01
-Beta3\b04
-Beta2\a01
-Beta3\b22
-Beta3\b10
-Beta3\b11
-Beta2\m00
-Beta2\w2m7
-W1\quick1
-Beta2\m18
-Beta2\m05
-Beta2\a12
-W1\new10
-Beta2\m28
-Beta2\w2m9
-Beta3\b08
-CustomMaps\jumpgrass01
+EarlyAccess\World 1\Movement Intro\Forward
+EarlyAccess\World 1\Movement Intro\Bearings
+EarlyAccess\World 1\Movement Intro\Descent
+EarlyAccess\World 1\Movement Intro\Ascent
+EarlyAccess\World 1\Enemy Intro\Crawling
+EarlyAccess\World 1\Enemy Intro\Nest
+EarlyAccess\World 1\Enemy Intro\Hatch
+EarlyAccess\World 1\Post-Intro\Resistance
+EarlyAccess\World 1\Item Intro\Combo
+EarlyAccess\World 1\Item Intro\Launch
+EarlyAccess\World 1\Post-Intro\Scavenge
+EarlyAccess\World 1\Item Intro\Faster
+EarlyAccess\World 1\Item Intro\Construction
+EarlyAccess\World 1\Item Intro\Not So Fast
+EarlyAccess\World 1\Item Intro\Reaching Higher
+EarlyAccess\World 1\Item Intro\Regenerate
+EarlyAccess\World 1\Item Intro\Fluid
+EarlyAccess\World 1\Enemy Intro\Security
+EarlyAccess\World 1\Item Intro\Blockade
+EarlyAccess\World 1\Post-Intro\Soar
+EarlyAccess\World 1\Post-Intro\Cavern
+EarlyAccess\World 1\Post-Intro\Outcropping
+EarlyAccess\World 1\Post-Intro\Threshold
+EarlyAccess\World 1\Enemy Intro\Detected
+EarlyAccess\World 1\Post-Intro\Infiltration
+EarlyAccess\World 1\Post-Intro\Elevate
+EarlyAccess\World 1\Post-Intro\Violence
+EarlyAccess\World 1\Post-Intro\Prism
+EarlyAccess\World 1\Post-Intro\The Easy Road
+EarlyAccess\World 1\Post-Intro\Rocket
+EarlyAccess\World 1\Post-Intro\Fissure
+EarlyAccess\World 1\Post-Intro\Low Profile
+EarlyAccess\World 1\Post-Intro\Ridge
+EarlyAccess\World 1\Post-Intro\Surface Tension
+EarlyAccess\World 1\Power\Breathe
 ----
 ----
 ----
@@ -48,6 +64,32 @@ CustomMaps\jumpgrass01
 ----
 ----
 ----
+EarlyAccess\World 2\Enemy Intro\Rampage
+EarlyAccess\World 2\Enemy Intro\Photosynthesis
+EarlyAccess\World 2\Enemy Intro\Leap
+EarlyAccess\World 2\Enemy Intro\Unwelcome
+EarlyAccess\World 2\Enemy Intro\Crush
+EarlyAccess\World 2\Item Intro\Liftoff
+EarlyAccess\World 2\Item Intro\Heavy Mettle
+EarlyAccess\World 2\Item Intro\Burdens Lifted
+EarlyAccess\World 2\Item Intro\Consequence
+EarlyAccess\World 2\Item Intro\Rising
+EarlyAccess\World 2\Item Intro\Icarus
+EarlyAccess\World 2\Item Intro\Floating
+EarlyAccess\World 2\Item Intro\Stay Down
+EarlyAccess\World 2\Item Intro\Buoyant
+EarlyAccess\World 2\Item Intro\Floor
+EarlyAccess\World 2\Item Intro\Ceiling
+EarlyAccess\World 2\Item Intro\Altered
+EarlyAccess\World 2\Post-Intro\Pond
+EarlyAccess\World 2\Post-Intro\Dive
+EarlyAccess\World 2\Post-Intro\Guide
+EarlyAccess\World 2\Post-Intro\Weave
+EarlyAccess\World 2\Post-Intro\Valley
+EarlyAccess\World 2\Post-Intro\Switchback
+EarlyAccess\World 2\Post-Intro\Tributary
+EarlyAccess\World 2\Post-Intro\Bouldering
+EarlyAccess\World 2\Power\Forbidden Ground
 ----
 ----
 ----
@@ -64,14 +106,6 @@ CustomMaps\jumpgrass01
 ----
 ----
 ----
-Beta2\m29
-Beta2\m01
-Beta2\m16
-Beta2\m27
-Beta2\a08
-Beta2\m21
-CustomMaps\w2short
-Beta3\b17
 ----
 ----
 ----
@@ -94,6 +128,34 @@ Beta3\b17
 ----
 ----
 ----
+EarlyAccess\World 3\Enemy Intro\Wisdom
+EarlyAccess\World 3\Enemy Intro\Illumination
+EarlyAccess\World 3\Enemy Intro\Thirsty
+EarlyAccess\World 3\Item Intro\Release
+EarlyAccess\World 3\Item Intro\Accelerate
+EarlyAccess\World 3\Enemy Intro\Dormant
+EarlyAccess\World 3\Enemy Intro\Road
+EarlyAccess\World 3\Enemy Intro\Territorial
+EarlyAccess\World 3\Item Intro\Bouncy
+EarlyAccess\World 3\Item Intro\Zero
+EarlyAccess\World 3\Item Intro\Reflection
+EarlyAccess\World 3\Item Intro\Drive
+EarlyAccess\World 3\Item Intro\Off the Wall
+EarlyAccess\World 3\Post-Intro\Slip Up
+EarlyAccess\World 3\Item Intro\Opposition
+EarlyAccess\World 3\Item Intro\Redirection
+EarlyAccess\World 3\Item Intro\Pass
+EarlyAccess\World 3\Item Intro\Trampoline
+EarlyAccess\World 3\Post-Intro\Flipside
+EarlyAccess\World 3\Post-Intro\Dune
+EarlyAccess\World 3\Item Intro\Repulse
+EarlyAccess\World 3\Item Intro\Trickshot
+EarlyAccess\World 3\Post-Intro\Oasis
+EarlyAccess\World 3\Post-Intro\Arid
+EarlyAccess\World 3\Post-Intro\Escalation
+EarlyAccess\World 3\Post-Intro\Shaft
+EarlyAccess\World 3\Post-Intro\Mirage
+EarlyAccess\World 3\Power\Scorpion
 ----
 ----
 ----
@@ -128,17 +190,33 @@ Beta3\b17
 ----
 ----
 ----
-Beta2\m02
-Beta2\m30
-CustomMaps\w3tiny01
-Beta2\m08
-Beta2\a13
-Beta2\m17
 ----
 ----
-Beta2\m10
-Beta2\m40
-Beta2\m41
+EarlyAccess\World 4\Enemy Intro\Appear
+EarlyAccess\World 4\Enemy Intro\Intruder
+EarlyAccess\World 4\Enemy Intro\Pursuit
+EarlyAccess\World 4\Enemy Intro\Danger
+EarlyAccess\World 4\Enemy Intro\Raptor
+EarlyAccess\World 4\Item Intro\Touch
+EarlyAccess\World 4\Item Intro\Momentous
+EarlyAccess\World 4\Item Intro\Phasing In
+EarlyAccess\World 4\Item Intro\Simulate
+EarlyAccess\World 4\Item Intro\Juggle
+EarlyAccess\World 4\Item Intro\Target
+EarlyAccess\World 4\Item Intro\Phasing Out
+EarlyAccess\World 4\Item Intro\Rip Current
+EarlyAccess\World 4\Item Intro\Aquatic
+EarlyAccess\World 4\Item Intro\Over The Line
+EarlyAccess\World 4\Item Intro\Ride
+EarlyAccess\World 4\Item Intro\Binary
+EarlyAccess\World 4\Item Intro\Flipped
+EarlyAccess\World 4\Item Intro\Whiplash
+EarlyAccess\World 4\Post-Intro\Tube
+EarlyAccess\World 4\Post-Intro\Cove
+EarlyAccess\World 4\Post-Intro\Deep Dive
+EarlyAccess\World 4\Post-Intro\Beach
+EarlyAccess\World 4\Post-Intro\Prison
+EarlyAccess\World 4\Power\Access
 ----
 ----
 ----
@@ -178,6 +256,29 @@ Beta2\m41
 ----
 ----
 ----
+EarlyAccess\World 5\Enemy Intro\Swarm
+EarlyAccess\World 5\Enemy Intro\Claw
+EarlyAccess\World 5\Enemy Intro\Terror
+EarlyAccess\World 5\Enemy Intro\Wild
+EarlyAccess\World 5\Enemy Intro\Aviary
+EarlyAccess\World 5\Item Intro\Bloodthirsty
+EarlyAccess\World 5\Item Intro\Focus
+EarlyAccess\World 5\Item Intro\Predator
+EarlyAccess\World 5\Item Intro\Choices
+EarlyAccess\World 5\Item Intro\Hunger
+EarlyAccess\World 5\Item Intro\Adjacent
+EarlyAccess\World 5\Item Intro\Relative
+EarlyAccess\World 5\Item Intro\Caught
+EarlyAccess\World 5\Item Intro\Poison
+EarlyAccess\World 5\Item Intro\Rules
+EarlyAccess\World 5\Item Intro\Choices
+EarlyAccess\World 5\Item Intro\Rebellious
+EarlyAccess\World 5\Item Intro\Counter
+EarlyAccess\World 5\Post-Intro\Narrow
+EarlyAccess\World 5\Post-Intro\Burning Flow
+EarlyAccess\World 5\Post-Intro\Immunity
+EarlyAccess\World 5\Post-Intro\Follow
+EarlyAccess\World 5\Power\Control
 ----
 ----
 ----
@@ -192,11 +293,6 @@ Beta2\m41
 ----
 ----
 ----
-Beta2\m11
-Beta2\a06
-Beta2\m31
-Beta2\m33
-Beta2\m38
 ----
 ----
 ----
@@ -224,120 +320,24 @@ Beta2\m38
 ----
 ----
 ----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-Beta2\m15
-Beta2\a14
-Beta2\a07
-Beta2\m39
-Beta2\m36
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-Beta2\m26
-Beta2\m13
-Beta2\m23
-Beta2\m32
-Beta2\m37
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
-----
+EarlyAccess\World 6\Enemy Intro\Strength
+EarlyAccess\World 6\Enemy Intro\Nefarious
+EarlyAccess\World 6\Enemy Intro\Judgement
+EarlyAccess\World 6\Enemy Intro\Ferocious
+EarlyAccess\World 6\Enemy Intro\Hesitation
+EarlyAccess\World 6\Item Intro\Freedom
+EarlyAccess\World 6\Item Intro\Centrifugal
+EarlyAccess\World 6\Power\Awakening
+EarlyAccess\World 6\Item Intro\Awareness
+EarlyAccess\World 6\Item Intro\Dual
+EarlyAccess\World 6\Item Intro\Touch And Go
+EarlyAccess\World 6\Item Intro\Drift
+EarlyAccess\World 6\Item Intro\Contemplation
+EarlyAccess\World 6\Item Intro\Transcience
+EarlyAccess\World 6\Item Intro\Impermanence
+EarlyAccess\World 6\Post-Intro\Path
+EarlyAccess\World 6\Post-Intro\Tricky
+EarlyAccess\World 6\Post-Intro\Split
 ----
 ----
 ----

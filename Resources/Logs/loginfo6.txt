@@ -8,49 +8,40 @@ Enemy
 specter
 Shoots bullets that home in on you while buffing any surrounding enemies.
 
-Free Flight Target
-Enemy
-freeflighttarget
-Can only be hit by touching it while in a state of free flight.
-
-Wire Juggler
-Enemy
-magentawirejuggler
-Can be hit into other enemies. Blue and red versions can only be
-hit with the blue and red wire respectively. The magenta version
-can be hit by either wire. Also has a limited version.
-
 Laser Wolf
 Enemy
 laserwolf
-Shoots a bouncing laser!
-
-Future Checker
-Enemy
-futurechecker
-Predicts your future position and appears there to attack you.
-
-Laser Jays
-Enemy
-laserjays
-A 2-part enemy composed of a red and blue jay. They fire a laser between
-them as they chase you. If you kill one but not the other, it will switch
-to shooting bullets.
+Shoots a boucing laser!
 
 Dragon
 Enemy
 dragon
-Dashes and flies at you!
+Flies around and dashes at you.
 
 Skunk
 Enemy
 skunk
-Will hop towards you. If you hit it it will cause a big explosion.
+Explodes if you get too close!
 
-Copycat
+Free Flight Booster
 Enemy
-copycat
-An enemy that shoots at you while using your directional inputs as its own control inputs.
+freeflightbooster
+gives you freeflight powers for 5 seconds!
+
+Swing Launcher
+Enemy
+swinglauncher
+Swings you around. Jump off when ready!
+
+Blue Wire Juggler
+Enemy
+bluewirejuggler
+Can only be hit with the blue wire!
+
+Red Wire Juggler
+Enemy
+redwirejuggler
+Can only be hit with the red wire!
 
 Free Flight Water
 Water
@@ -65,6 +56,11 @@ While within this water, your left/right and up/down inputs are reversed. Upon e
 the water, your directional inputs are frozen for a short while to allow you to switch to inverted
 or normal controls smoothly without losing speed.
 
+Fade Rail
+Rail
+FADE
+Disappears when you touch it. Reappears soon after.
+
 Wire Only Rail
 Rail
 WIREONLY
@@ -74,6 +70,11 @@ Wire Blocking Rail
 Rail
 WIREBLOCKING
 You cannot interact with this rail in any way, but it blocks wires that are shot at it.
+
+Boost Grass
+Grass
+BOOST
+Instantly accelerates you to a high speed.
 
 Anti-Wire Grass
 Grass

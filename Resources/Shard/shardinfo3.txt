@@ -1,72 +1,30 @@
-Decrease W3 Health Drain 1/3
-Decreases the rate at which you passively
-lose energy within world 3.
+Decrease W3 Enemy Damage
+You take less damage from world 3 enemies!
 
-Decrease W3 Health Drain 2/3
-Decreases the rate at which you passively
-lose energy within world 3.
+Increase W3 Enemy Health Gain
+Gain more health when hitting world 3 enemies!
 
-Decrease W3 Health Drain 3/3
-Decreases the rate at which you passively
-lose energy within world 3.
+Increase W3 Enemy Momentum Gain
+Gain more momentum meter when hitting world 3 enemies!
 
-Decrease W3 Enemy Damage 1/3
-Decreases the damage taken from world 3 enemies.
+Increase W3 Starting Momemtum
+Start world 3 levels with increased momentum meter!
 
-Decrease W3 Enemy Damage 2/3
-Decreases the damage taken from world 3 enemies.
+Unlock Ceiling Drop Aerial
+Drop from the ceiling and perform an attack quickly for a special move!
+(Note: Not implemented yet.)
 
-Decrease W3 Enemy Damage 3/3
-Decreases the damage taken from world 3 enemies.
+Upgrade Ceiling Steep Climb 1/3
+Climb ceiling steep slopes faster!
 
-Increase W3 Energy Capture 1/3
-Increases the amount of energy you get from killing
-enemies within world 3.
+Upgrade Ceiling Steep Slide 1/3
+Slide down ceiling steep slopes faster!
 
-Increase W3 Energy Capture 2/3
-Increases the amount of energy you get from killing
-enemies within world 3.
+Upgrade Ceiling Ground Acceleration 1/3
+Increased passive acceleration during grounded movement on the ceiling!
 
-Increase W3 Energy Capture 3/3
-Increases the amount of energy you get from killing
-enemies within world 3.
+Upgrade Ceiling Sprint 1/3
+Increased acceleration from sprinting on ceiling slopes!
 
-Unlock Scorpion Jump
-With the scorpion turned on, your normal jump is now higher than usual.
-
-Unlock Scorpion Doublejump
-With the scorpion turned on, your double jump his now higher than usual.
-
-Unlock Scorpion Enemy Kill Bounce
-With the scorpion turned on, kill an enemy to be boosted in the opposite direction
-of the attack you used.
-
-Increase Passive Ground Acceleration 1/3
-You will accelerate more rapidly while on the ground.
-
-Increase Passive Ground Acceleration 2/3
-You will accelerate more rapidly while on the ground.
-
-Increase Passive Ground Acceleration 3/3
-You will accelerate more rapidly while on the ground.
-
-Increase Grounded Sprinting Acceleration 1/3
-Sprinting on the ground now accelerates more rapidly.
-
-Increase Grounded Sprinting Acceleration 2/3
-Sprinting on the ground now accelerates more rapidly.
-
-Increase Grounded Sprinting Acceleration 3/3
-Sprinting on the ground now accelerates more rapidly.
-
-Increase Bounce Strength 1/3
-The scorpion is now bouncier!
-
-Increase Bounce Strength 2/3
-The scorpion is now bouncier!
-
-Increase Bounce Strength 3/3
-The scorpion is now bouncier!
-
-Empty
-EMPTY UPGRADE SLOT
+Upgrade Base Dash Speed 2/3
+Dash speed increased!

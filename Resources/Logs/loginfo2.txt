@@ -1,8 +1,3 @@
-Glide Target
-Enemy
-glidetarget
-Can only be killed by running into it while gliding.
-
 Gravity Juggler
 Enemy
 downgravityjuggler

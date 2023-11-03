@@ -1,3 +1,13 @@
+Future Checker
+Enemy
+futurechecker
+Predicts your future position and appears there to attack you.
+
+Copycat
+Enemy
+copycat
+An enemy that shoots at you while using your directional inputs as its own control inputs.
+
 Dimension Eye
 Enemy
 dimensioneye

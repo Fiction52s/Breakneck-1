@@ -1789,6 +1789,8 @@ void EditSession::CleanupForReload()
 	DestroyTilesetCategory(TilesetCategory::C_STORY);
 	//destroy backgrounds would be needed but bgs handle their own stuff
 	StopCurrentMusic();
+
+	selectedBrush->Clear();
 	//StopMusic(originalMusic);
 	//StopMusic(previewMusic);
 }

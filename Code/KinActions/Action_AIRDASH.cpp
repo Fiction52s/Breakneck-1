@@ -165,6 +165,7 @@ void Actor::AIRDASH_Update()
 
 			double keepHorizontalLimit = 30;
 			double removeSpeedFactor = .5;
+			double zeroGravWaterAccel = .1;
 
 			if (currInput.LUp())
 			{
@@ -195,6 +196,8 @@ void Actor::AIRDASH_Update()
 				if (extraGravityModifier == 0) //0 gravity water
 				{
 					velocity.y = min(-aSpeed, startVel.y);
+
+					velocity.y += -zeroGravWaterAccel;
 				}
 				else
 				{
@@ -225,6 +228,8 @@ void Actor::AIRDASH_Update()
 				if (extraGravityModifier == 0)
 				{
 					velocity.y = max(aSpeed, startVel.y);
+
+					velocity.y += zeroGravWaterAccel;
 				}
 				else
 				{
@@ -259,6 +264,16 @@ void Actor::AIRDASH_Update()
 				}
 				else
 				{
+					if (InWater(TerrainPolygon::WATER_ZEROGRAV))
+					{
+						if (-aSpeed < startAirDashVel.x)
+						{
+							startAirDashVel.x = -aSpeed;
+						}
+						startAirDashVel.x += -zeroGravWaterAccel;
+						
+					}
+					
 					velocity.x = min(startAirDashVel.x, -aSpeed);
 				}
 				facingRight = false;
@@ -273,6 +288,16 @@ void Actor::AIRDASH_Update()
 				}
 				else
 				{
+					if (InWater(TerrainPolygon::WATER_ZEROGRAV))
+					{
+						if (aSpeed > startAirDashVel.x)
+						{
+							startAirDashVel.x = aSpeed;
+						}
+						startAirDashVel.x += zeroGravWaterAccel;
+
+					}
+
 					velocity.x = max(startAirDashVel.x, aSpeed);
 				}
 				facingRight = true;

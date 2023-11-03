@@ -80,7 +80,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	creditsMenuScreen = new CreditsMenuScreen;
 
 	
-	titleMusic = mainMenu->musicManager->songMap["w0_1_Breakneck_Title"];
+	titleMusic = mainMenu->musicManager->songMap["w0_Title"];
 	if (titleMusic != NULL)
 	{
 		titleMusic->Load();

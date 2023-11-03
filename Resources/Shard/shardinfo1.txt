@@ -1,71 +1,29 @@
-Decrease W1 Health Drain 1/3
-Decreases the rate at which you passively
-lose energy within world 1.
+Decrease W1 Enemy Damage
+You take less damage from world 1 enemies!
 
-Decrease W1 Health Drain 2/3
-Decreases the rate at which you passively
-lose energy within world 1.
+Increase W1 Enemy Health Gain
+Gain more health when hitting world 1 enemies!
 
-Decrease W1 Health Drain 3/3
-Decreases the rate at which you passively
-lose energy within world 1.
+Increase W1 Enemy Momentum Gain
+Gain more momentum meter when hitting world 1 enemies!
 
-Decrease W1 Enemy Damage 1/3
-Decreases the damage taken from world 1 enemies.
-
-Decrease W1 Enemy Damage 2/3
-Decreases the damage taken from world 1 enemies.
-
-Decrease W1 Enemy Damage 3/3
-Decreases the damage taken from world 1 enemies.
-
-Increase W1 Energy Capture 1/3
-Increases the amount of energy you get from killing
-enemies within world 1.
-
-Increase W1 Energy Capture 2/3
-Increases the amount of energy you get from killing
-enemies within world 1.
-
-Increase W1 Energy Capture 3/3
-Increases the amount of energy you get from killing
-enemies within world 1.
+Increase W1 Starting Momemtum
+Start world 1 levels with increased momentum meter!
 
 Unlock Dash Boost
 Let go of dash near the end to get a boost of speed!
 
-Unlock Airdash Boost
-Finish an airdash for extra speed in any direction!
+Upgrade Steep Climb 1/3
+Climb steep slopes faster!
 
-Walljump Restores Doublejump
-Walljumping can restore your doublejump once per airtime.
+Upgrade Steep Slide 1/3
+Slide down steep slopes faster!
 
-Walljump Restores Airdash
-Walljumping can restore your airdash once per airtime.
+Upgrade Ground Acceleration 1/3
+Increased passive acceleration during grounded movement!
 
-Dash Boost High Speed 1/3
-Dash boost becomes more effective at high speed.
+Upgrade Sprint 1/3
+Increased acceleration from sprinting on slopes!
 
-Dash Boost High Speed 2/3
-Dash boost becomes more effective at high speed.
-
-Dash Boost High Speed 3/3
-Dash boost becomes more effective at high speed.
-
-Increase steep slope climbing speed 1/3
-Tapping dash while climbing up a steep slope is now more powerful.
-
-Increase steep slope climbing speed 2/3
-Tapping dash while climbing up a steep slope is now more powerful.
-
-Increase steep slope climbing speed 3/3
-Tapping dash while climbing up a steep slope is now more powerful.
-
-Increase steep slope sliding acceleration 1/3
-Holding down while sliding down a steep slope now accelerates you faster!
-
-Increase steep slope sliding acceleration 2/3
-Holding down while sliding down a steep slope now accelerates you faster!
-
-Increase steep slope sliding acceleration 3/3
-Holding down while sliding down a steep slope now accelerates you faster!
+Upgrade Base Dash Speed 1/3
+Dash speed increased!

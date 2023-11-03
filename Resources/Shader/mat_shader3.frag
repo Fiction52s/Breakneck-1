@@ -75,6 +75,9 @@ void main()
 	
 	DiffuseColor = texture2D(u_texture, UV );
 	
+	//vec4 test2 = vec4(0.5, 0.5, 0.5, 1.0 );
+	//DiffuseColor = DiffuseColor * test2;
+	
 	//vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
 	//vec3 Intensity = Ambient;//.000001;
 	//finalfinal = vec4( DiffuseColor.rgb * Intensity, DiffuseColor.a );

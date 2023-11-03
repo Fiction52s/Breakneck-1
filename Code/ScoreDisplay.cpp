@@ -310,8 +310,15 @@ ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)
 {
 	barSprite.setTexture(*parent->ts_score->texture);
 	symbolSprite.setTexture(*parent->ts_scoreIcons->texture);
+	extraSymbolSprite.setTexture(*parent->ts_scoreIcons->texture);
 
 	symbolSprite.setTextureRect(parent->ts_scoreIcons->GetSubRect(row));
+
+	if (row == 2)
+	{
+		extraSymbolSprite.setTextureRect(parent->ts_scoreIcons->GetSubRect(row + 1));
+	}
+	
 
 	stateLength[NONE] = 1;
 	stateLength[POP_OUT] = 30;
@@ -326,6 +333,10 @@ ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)
 	text.setCharacterSize(40);
 	text.setFillColor(textColor);
 
+	extraText.setFont(parent->font);
+	extraText.setCharacterSize(40);
+	extraText.setFillColor(textColor);
+
 	Reset();
 }
 
@@ -335,6 +346,7 @@ void ScoreBar::Reset()
 	state = NONE;
 	frame = 0;
 	symbolSprite.setColor(Color::Transparent);
+	extraSymbolSprite.setColor(Color::Transparent);
 }
 
 void ScoreBar::SetBarPos(float xDiff)
@@ -346,6 +358,9 @@ void ScoreBar::SetBarPos(float xDiff)
 	barSprite.setPosition(newPos);
 	symbolSprite.setPosition(newPos + Vector2f( 25, 0 ));
 	text.setPosition(newPos + Vector2f(150, 20));
+
+	extraSymbolSprite.setPosition(symbolSprite.getPosition() + Vector2f(100, 0));
+	extraText.setPosition(text.getPosition() + Vector2f(100, 0));
 }
 
 void ScoreBar::Update()
@@ -412,10 +427,14 @@ void ScoreBar::Update()
 			CubicBezier bez(0, 0, 1, 1);
 			float z = bez.GetValue((double)frame / dispFrames);
 			symbolSprite.setColor(Color(255, 255, 255, z * 255.f));
+
+			extraSymbolSprite.setColor(symbolSprite.getColor());
 			
 			Color c = textColor;
 			c.a = z * 255.f;
 			text.setFillColor(c);
+
+			extraText.setFillColor(text.getFillColor());
 		}
 		break;
 	}
@@ -445,6 +464,12 @@ void ScoreBar::Draw(sf::RenderTarget *target)
 	{
 		target->draw(symbolSprite);
 		target->draw(text);
+
+		if (row == 2)
+		{
+			target->draw(extraSymbolSprite);
+			target->draw(extraText);
+		}
 	}
 	
 }
@@ -526,20 +551,41 @@ void ScoreBar::PopOut()
 		Session *sess = parent->sess;
 
 		
-		int total = sess->mapHeader->numShards;
-		int currCaptured = 0;
+		int totalShards = sess->mapHeader->numShards;
+		int currShardsCaptured = 0;
 		for (auto it = sess->mapHeader->shardInfoVec.begin();
 			it != sess->mapHeader->shardInfoVec.end(); ++it)
 		{
-			if (sess->currShardField.GetBit((*it).GetTrueIndex()))
+			if (sess->IsShardCaptured( (*it).GetTrueIndex() ) )
 			{
-				currCaptured++;
+				currShardsCaptured++;
 			}
 		}
 
 		stringstream ss;
-		ss << currCaptured << "/" << total;
+		ss << currShardsCaptured << "/" << totalShards;
 		SetText(ss.str(), Color::White);
+
+
+		int totalLogs = sess->mapHeader->numLogs;
+		int currLogsCaptured = 0;
+		for (auto it = sess->mapHeader->logInfoVec.begin();
+			it != sess->mapHeader->logInfoVec.end(); ++it)
+		{
+			if (sess->HasLog((*it).GetTrueIndex()))
+			{
+				currLogsCaptured++;
+			}
+		}
+
+		ss.clear();
+
+		ss << currLogsCaptured << "/" << totalLogs;
+
+		extraText.setString(ss.str());
+		extraText.setFillColor(textColor);
+		extraText.setOutlineColor(Color::Black);
+		extraText.setOutlineThickness(2);
 	}
 }
 

@@ -5,12 +5,12 @@ uniform sampler2D u_texture;
 uniform vec4 u_quad1;
 uniform vec4 u_quad2;
 
-uniform vec4 skyColor;
+//uniform vec4 skyColor;
 uniform vec2 topLeft;
 uniform float zoom;
 
 uniform vec2 Resolution;      //resolution of screen
-uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
+//uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
 
 uniform float u_slide;
 uniform vec4 u_waterBaseColor;

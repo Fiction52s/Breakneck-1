@@ -10,7 +10,7 @@ void main()
 {		
 	vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
 	
-	if( DiffuseColor.rgb != auraColor.rgb )
+	if( DiffuseColor != auraColor )
 	{
 		DiffuseColor.rgb = DiffuseColor.rgb * vec3( 1.0 - prop ) + toColor.rgb * vec3(prop);
 	}
