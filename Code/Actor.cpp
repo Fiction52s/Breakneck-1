@@ -22600,81 +22600,97 @@ void Actor::RunMovement()
 
 void Actor::AttackMovement()
 {
-	
+	assert(ground != NULL);
+	if (ground->IsSteepGround() )
+	{
+		V2d norm = currNormal;
 
-	double dSpeed = GetDashSpeed();
-	if( currInput.LLeft() )
-	{
-		if( groundSpeed > 0 )
+		if ((groundSpeed > 0 && norm.x < 0) || ( groundSpeed < 0 && norm.x > 0 ))
 		{
-			if( DashButtonHeld() )
-			{
-				groundSpeed = -dSpeed;
-			}
-			else
-			{
-				groundSpeed = 0;
-			}
+			SteepClimbMovement();
 		}
 		else
 		{
-			if( groundSpeed > -dSpeed && DashButtonHeld() )
-			{
-				groundSpeed = -dSpeed;
-			}
-			else if( groundSpeed > -maxRunInit )
-			{
-				groundSpeed -= runAccelInit / slowMultiple;
-				if( groundSpeed < -maxRunInit )
-					groundSpeed = -maxRunInit;
-			}
-			else
-			{
-				groundSpeed -= runAccel / slowMultiple;
-			}
-				
+			SteepSlideMovement();
 		}
-	}
-	else if( currInput.LRight() )
-	{
-		if (groundSpeed < 0 )
-		{
-			if( DashButtonHeld() )
-			{
-				groundSpeed = dSpeed;
-			}
-			else
-			{
-				groundSpeed = 0;
-			}
-		}
-		else
-		{
-			if( groundSpeed < dSpeed && DashButtonHeld() )
-			{
-				groundSpeed = dSpeed;
-			}
-			else if( groundSpeed < maxRunInit )
-			{
-				groundSpeed += runAccelInit / slowMultiple;
-				if( groundSpeed > maxRunInit )
-					groundSpeed = maxRunInit;
-			}
-			else
-			{
-				groundSpeed += runAccel / slowMultiple;
-			}
-		}
-	}
-	else if( currInput.LDown() || currInput.LUp() )
-	{
-		//groundspeed stays the same
-		
 	}
 	else
 	{
-		groundSpeed = 0;
+		double dSpeed = GetDashSpeed();
+		if (currInput.LLeft())
+		{
+			if (groundSpeed > 0)
+			{
+				if (DashButtonHeld())
+				{
+					groundSpeed = -dSpeed;
+				}
+				else
+				{
+					groundSpeed = 0;
+				}
+			}
+			else
+			{
+				if (groundSpeed > -dSpeed && DashButtonHeld())
+				{
+					groundSpeed = -dSpeed;
+				}
+				else if (groundSpeed > -maxRunInit)
+				{
+					groundSpeed -= runAccelInit / slowMultiple;
+					if (groundSpeed < -maxRunInit)
+						groundSpeed = -maxRunInit;
+				}
+				else
+				{
+					groundSpeed -= runAccel / slowMultiple;
+				}
+
+			}
+		}
+		else if (currInput.LRight())
+		{
+			if (groundSpeed < 0)
+			{
+				if (DashButtonHeld())
+				{
+					groundSpeed = dSpeed;
+				}
+				else
+				{
+					groundSpeed = 0;
+				}
+			}
+			else
+			{
+				if (groundSpeed < dSpeed && DashButtonHeld())
+				{
+					groundSpeed = dSpeed;
+				}
+				else if (groundSpeed < maxRunInit)
+				{
+					groundSpeed += runAccelInit / slowMultiple;
+					if (groundSpeed > maxRunInit)
+						groundSpeed = maxRunInit;
+				}
+				else
+				{
+					groundSpeed += runAccel / slowMultiple;
+				}
+			}
+		}
+		else if (currInput.LDown() || currInput.LUp())
+		{
+			//groundspeed stays the same
+
+		}
+		else
+		{
+			groundSpeed = 0;
+		}
 	}
+	
 
 	if (shieldPushbackFrames > 0)
 	{
@@ -23017,7 +23033,7 @@ void Actor::ExecuteDoubleJump()
 	}
 
 	double scorpionExtra = 10;
-	if (bounceFlameOn && HasUpgrade( UPGRADE_W4_SCORPION_JUMP))
+	if (bounceFlameOn && HasUpgrade( UPGRADE_W4_SCORPION_DOUBLE_JUMP))
 	{
 		currStrength += scorpionExtra;
 	}
@@ -23961,6 +23977,93 @@ int Actor::GetCurrUpTilt()
 int Actor::GetCurrDownTilt()
 {
 	return -1;
+}
+
+void Actor::SteepSlideMovement()
+{
+	double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;
+
+	if (currInput.LDown())
+	{
+		double currFactor = 0;
+		double upgradeAmount = steepSlideFastGravFactor * .2;
+
+
+		if (reversed)
+		{
+			int numCeilingSlideUpgrades = HasUpgrade(UPGRADE_W3_CEILING_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W4_CEILING_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W5_CEILING_STEEP_SLIDE_3);
+			currFactor = steepSlideFastGravFactor + upgradeAmount * numCeilingSlideUpgrades;
+		}
+		else
+		{
+			int numSlideUpgrades = HasUpgrade(UPGRADE_W1_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W2_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W6_STEEP_SLIDE_3);
+			currFactor = steepSlideFastGravFactor + upgradeAmount * numSlideUpgrades;
+		}
+
+		fac = GetGravity() * currFactor;
+	}
+
+
+	groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
+
+	if (InWater(TerrainPolygon::WATER_NORMAL))
+	{
+		V2d vel;
+		if (reversed)
+		{
+			vel = ground->Along() * -groundSpeed;
+
+			if (vel.y < -normalWaterMaxFallSpeed)
+			{
+				vel.y = -normalWaterMaxFallSpeed;
+			}
+		}
+		else
+		{
+			vel = ground->Along() * groundSpeed;
+
+			if (vel.y > normalWaterMaxFallSpeed)
+			{
+				vel.y = normalWaterMaxFallSpeed;
+			}
+		}
+
+		double len = length(vel);
+		if (groundSpeed > 0)
+		{
+			groundSpeed = len;
+		}
+		else
+		{
+			groundSpeed = -len;
+		}
+	}
+}
+
+void Actor::SteepClimbMovement()
+{
+	bool boost = TryClimbBoost(currNormal);
+
+	float factor = steepClimbGravFactor;
+	if (currInput.LUp())
+	{
+		//the factor is just to make you climb a little farther
+		factor = steepClimbUpFactor;
+	}
+	else if (currInput.LDown())
+	{
+		factor = steepClimbDownFactor;
+	}
+
+	if (reversed)
+	{
+		groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
+	}
+	else
+	{
+		groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
+		//cout << "groundspeed: " << groundSpeed << endl;
+	}
 }
 
 void Actor::StartStandAttack()

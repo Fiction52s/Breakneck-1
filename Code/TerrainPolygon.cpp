@@ -1633,6 +1633,51 @@ sf::IntRect TerrainPolygon::GetBorderSubRect(int tileWidth, EdgeAngleType angleT
 	return ir;
 }
 
+void TerrainPolygon::RemoveExtraPointsOnSameSlope()
+{
+	//its possible that someday I will need to go over this and just make it do a dummy "add" using clipper, if there's some inconsistency, but i doubt it would happen
+
+	int numP = GetNumPoints();
+
+	vector<TerrainPoint> pointsCopy(PointVector());
+	vector<Vector2i> newPointPositions;
+
+	TerrainPoint *currPoint;
+	TerrainPoint *prevPoint;
+	TerrainPoint *nextPoint;
+
+	V2d currAlong, prevAlong;
+
+	double thresh = .0000001;
+
+	for (int i = 0; i < numP; ++i)
+	{
+		currPoint = GetPoint(i);
+		prevPoint = GetPrevPoint(i);
+		nextPoint = GetNextPoint(i);
+
+		prevAlong = normalize(V2d(currPoint->pos - prevPoint->pos));
+		currAlong = normalize(V2d(nextPoint->pos - currPoint->pos));
+		
+		if( abs( currAlong.x - prevAlong.x ) < thresh && abs( currAlong.y - prevAlong.y ) < thresh )
+		{
+			continue;
+		}
+
+		newPointPositions.push_back(currPoint->pos);
+	}
+
+	if (newPointPositions.size() != PointVector().size())
+	{
+		ClearPoints();
+
+		for (auto it = newPointPositions.begin(); it != newPointPositions.end(); ++it)
+		{
+			AddPoint((*it), false);
+		}
+	}
+}
+
 void TerrainPolygon::GenerateWaterBorderMesh()
 {
 	

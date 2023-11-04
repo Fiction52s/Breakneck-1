@@ -73,28 +73,9 @@ void Actor::STEEPCLIMBATTACK_Update()
 		TryThrowSwordProjectileBasic();
 
 	}
-
-	bool boost = TryClimbBoost(currNormal);
-
-	float factor = steepClimbGravFactor;//.7 ;
-	if (currInput.LUp())
-	{
-		//cout << "speeding up climb!" << endl;
-		factor = steepClimbUpFactor;//.5;
-	}
-	else if( currInput.LDown() )
-	{
-		factor = steepClimbDownFactor;
-	}
-
-	if (reversed)
-	{
-		groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
-	}
-	else
-	{
-		groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
-	}
+	
+	AttackMovement();
+	//SteepClimbMovement();
 }
 
 void Actor::STEEPCLIMBATTACK_UpdateSprite()

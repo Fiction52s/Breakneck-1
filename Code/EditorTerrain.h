@@ -305,6 +305,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool IsSometimesActiveType();
 	void FadeOut();
 	bool IsActive();
+	void RemoveExtraPointsOnSameSlope();
 
 	void MakeGlobalPath(
 		V2d &startPos,

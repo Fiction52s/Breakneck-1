@@ -191,63 +191,7 @@ void Actor::STEEPSLIDE_Change()
 
 void Actor::STEEPSLIDE_Update()
 {
-	double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;
-
-	if (currInput.LDown())
-	{
-		double currFactor = 0;
-		double upgradeAmount = steepSlideFastGravFactor * .2;
-
-		
-		if (reversed)
-		{
-			int numCeilingSlideUpgrades = HasUpgrade(UPGRADE_W3_CEILING_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W4_CEILING_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W5_CEILING_STEEP_SLIDE_3);
-			currFactor = steepSlideFastGravFactor + upgradeAmount * numCeilingSlideUpgrades;
-		}
-		else
-		{
-			int numSlideUpgrades = HasUpgrade(UPGRADE_W1_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W2_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W6_STEEP_SLIDE_3);
-			currFactor = steepSlideFastGravFactor + upgradeAmount * numSlideUpgrades;
-		}
-
-		fac = GetGravity() * currFactor;
-	}
-
-
-	groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
-
-	if (InWater(TerrainPolygon::WATER_NORMAL))
-	{
-		V2d vel;
-		if (reversed)
-		{
-			vel = ground->Along() * -groundSpeed;
-
-			if (vel.y < -normalWaterMaxFallSpeed)
-			{
-				vel.y = -normalWaterMaxFallSpeed;
-			}
-		}
-		else
-		{
-			vel = ground->Along() * groundSpeed;
-
-			if (vel.y > normalWaterMaxFallSpeed)
-			{
-				vel.y = normalWaterMaxFallSpeed;
-			}
-		}
-
-		double len = length(vel);
-		if (groundSpeed > 0)
-		{
-			groundSpeed = len;
-		}
-		else
-		{
-			groundSpeed = -len;
-		}
-	}
+	SteepSlideMovement();
 }
 
 void Actor::STEEPSLIDE_UpdateSprite()

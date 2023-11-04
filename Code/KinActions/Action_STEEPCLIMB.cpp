@@ -201,28 +201,7 @@ void Actor::STEEPCLIMB_Change()
 
 void Actor::STEEPCLIMB_Update()
 {
-	bool boost = TryClimbBoost(currNormal);
-
-	float factor = steepClimbGravFactor;
-	if (currInput.LUp())
-	{
-		//the factor is just to make you climb a little farther
-		factor = steepClimbUpFactor;
-	}
-	else if (currInput.LDown())
-	{
-		factor = steepClimbDownFactor;
-	}
-
-	if (reversed)
-	{
-		groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
-	}
-	else
-	{
-		groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
-		//cout << "groundspeed: " << groundSpeed << endl;
-	}
+	SteepClimbMovement();
 }
 
 void Actor::STEEPCLIMB_UpdateSprite()

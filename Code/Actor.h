@@ -1808,6 +1808,8 @@ struct Actor : QuadTreeCollider,
 	int GetCurrDashAttack();
 	int GetCurrUpTilt();
 	int GetCurrDownTilt();
+	void SteepSlideMovement();
+	void SteepClimbMovement();
 
 	bool CheckIfEnemyIsTrackable(Enemy *e);
 

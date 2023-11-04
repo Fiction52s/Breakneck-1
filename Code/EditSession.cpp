@@ -9052,6 +9052,8 @@ bool EditSession::ExecuteTerrainCompletion()
 		return false;
 	}
 
+	polygonInProgress->RemoveExtraPointsOnSameSlope();
+
 	polygonInProgress->SetMaterialType(GetCurrTerrainWorld(),
 		GetCurrTerrainVariation());
 
@@ -9066,6 +9068,8 @@ bool EditSession::ExecuteTerrainCompletion()
 
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
 	ClearMostRecentError();
+
+
 
 	bool inverseIntersectsSomething = false;
 

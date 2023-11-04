@@ -357,10 +357,10 @@ void ScoreBar::SetBarPos(float xDiff)
 	Vector2f newPos(parent->basePos.x + xDiffPos, parent->basePos.y + row * rowHeight);
 	barSprite.setPosition(newPos);
 	symbolSprite.setPosition(newPos + Vector2f( 25, 0 ));
-	text.setPosition(newPos + Vector2f(150, 20));
+	text.setPosition(newPos + Vector2f(130, 20));
 
-	extraSymbolSprite.setPosition(symbolSprite.getPosition() + Vector2f(100, 0));
-	extraText.setPosition(text.getPosition() + Vector2f(100, 0));
+	extraSymbolSprite.setPosition(symbolSprite.getPosition() + Vector2f(160, 0));
+	extraText.setPosition(text.getPosition() + Vector2f(160, 0));
 }
 
 void ScoreBar::Update()
@@ -578,6 +578,7 @@ void ScoreBar::PopOut()
 			}
 		}
 
+		ss.str("");
 		ss.clear();
 
 		ss << currLogsCaptured << "/" << totalLogs;
