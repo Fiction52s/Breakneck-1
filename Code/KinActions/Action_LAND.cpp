@@ -5,7 +5,7 @@ using namespace std;
 
 void Actor::LAND_Start()
 {
-	if (currInput.IsLeftNeutral() && !ground->IsSteepGround())
+	if (currInput.IsLeftNeutral() && !IsOnSteepGround() )//!ground->IsSteepGround())
 	{
 		groundSpeed = 0; //recently added cuz of annoying slide during land anim
 	}

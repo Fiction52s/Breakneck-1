@@ -90,6 +90,7 @@ void Actor::GRINDATTACK_Change()
 
 
 				grindEdge = NULL;
+
 				reversed = false;
 			}
 

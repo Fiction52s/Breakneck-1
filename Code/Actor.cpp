@@ -5345,7 +5345,7 @@ int Actor::GetSurvivalFrame()
 
 void Actor::ReverseVerticalInputsWhenOnCeiling()
 {
-	if (reversed)
+	//if (reversed)
 	{
 		bool up = currInput.LUp();
 		bool down = currInput.LDown();
@@ -5679,8 +5679,7 @@ void Actor::ReactToBeingHit()
 	//might need to tune/figure out how to use for singleplayer
 	if (ground != NULL )
 	{
-		if (reversed)
-			reversed = false;
+		reversed = false;
 		ground = NULL;
 		SetAction(JUMP);
 		frame = 1;
@@ -7313,7 +7312,11 @@ void Actor::UpdatePrePhysics()
 
 	//DesperationUpdate();
 
-	ReverseVerticalInputsWhenOnCeiling();
+	if (reversed)
+	{
+		ReverseVerticalInputsWhenOnCeiling();
+	}
+	
 
 	ActionEnded();
 
@@ -14304,7 +14307,7 @@ bool Actor::TryGroundAttack()
 	if ( normalSwing || IsGroundAttackAction(pauseBufferedAttack) )
 	{
 		V2d groundNorm = ground->Normal();
-		if (ground->IsSteepGround())
+		if (IsOnSteepGround())
 		{
 			if (groundNorm.x > 0)
 			{
@@ -20691,11 +20694,17 @@ void Actor::DefaultGroundLanding( double &movement )
 
 bool Actor::DefaultGravReverseCheck()
 {
+	bool holdingUp = false;
+	if ((!reversed && currInput.LUp()) || (reversed && currInput.LDown()))
+	{
+		holdingUp = true;
+	}
+
 	return ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& (((DashButtonHeld() && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+		&& (((DashButtonHeld() && holdingUp) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -21987,6 +21996,43 @@ double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
 	return angle;
 }
 
+V2d Actor::GetGroundedNormal()
+{
+	assert(ground != NULL);
+	V2d gn = ground->Normal();
+
+	if (!approxEquals(abs(offsetX), b.rw))
+	{
+		gn = V2d(0, -1);
+		if (reversed)
+		{
+			gn = V2d(0, 1);
+		}
+	}
+
+	return gn;
+}
+
+bool Actor::IsOnSteepGround()
+{
+	if (ground != NULL && GetGroundedNormal().x != 0 && ground->IsSteepGround())
+	{
+		return true;
+	}
+	
+	return false;
+}
+
+bool Actor::HoldingRelativeUp()
+{
+	return (!reversed && currInput.LUp()) || (reversed && currInput.LDown());
+}
+
+bool Actor::HoldingRelativeDown()
+{
+	return (!reversed && currInput.LDown()) || (reversed && currInput.LUp());
+}
+
 void Actor::SetSpriteTexture( int a )
 {
 	spriteAction = a;
@@ -22601,7 +22647,7 @@ void Actor::RunMovement()
 void Actor::AttackMovement()
 {
 	assert(ground != NULL);
-	if (ground->IsSteepGround() )
+	if (IsOnSteepGround())
 	{
 		V2d norm = currNormal;
 

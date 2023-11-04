@@ -1619,6 +1619,11 @@ struct Actor : QuadTreeCollider,
 	bool TryHomingMovement();
 	double GroundedAngle();
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
+	V2d GetGroundedNormal();
+	bool IsOnSteepGround();
+	bool HoldingRelativeUp();
+	bool HoldingRelativeDown();
+	void TryFlipRightSideUp();
 	sf::Vector2i GetWireOffset();
 	void RunMovement();
 	void BrakeMovement();
@@ -1658,7 +1663,7 @@ struct Actor : QuadTreeCollider,
 	bool IsInvincible();
 	void SetKinMode(Mode m);
 	void KinModeUpdate();
-	void ReverseVerticalInputsWhenOnCeiling();
+	void ReverseVerticalInputs();
 	void ProcessReceivedHit();
 	void HitGoal();
 	void UpdateDrain();

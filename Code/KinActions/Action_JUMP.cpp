@@ -42,13 +42,64 @@ void Actor::JUMP_Update()
 				V2d dir(0, 0);
 
 				dir.y = .2;
-				V2d along = normalize(ground->v1 - ground->v0);
-				V2d trueNormal = along;
-				if (groundSpeed > 0)
-					trueNormal = -trueNormal;
+				V2d along = ground->Along();
 
-				trueNormal = normalize(trueNormal + dir);
-				velocity = abs(groundSpeed) * trueNormal;
+				V2d realNorm = GetGroundedNormal();
+
+				if (realNorm.x == 0)
+				{
+					//right and left are opposite from what you see because its reversed
+					Edge *leftEdge = NULL, *rightEdge = NULL;
+
+					bool onTip = false;
+
+					if (approxEquals(edgeQuantity, 0))
+					{
+						leftEdge = ground->GetPrevEdge();
+						rightEdge = ground;
+
+						onTip = true;
+					}
+					else if (approxEquals(edgeQuantity, ground->GetLength()))
+					{
+						leftEdge = ground;
+						rightEdge = ground->GetNextEdge();
+
+						onTip = true;
+					}
+
+					if (onTip)
+					{
+						assert(leftEdge != NULL && rightEdge != NULL);
+
+						if ((leftEdge->Normal().y <= 0 || leftEdge->IsSteepGround()) && groundSpeed > 0)
+						{
+							//cout << "case a" << "\n";
+							along = V2d(1, 0);
+						}
+						else if ((rightEdge->Normal().y <= 0 || rightEdge->IsSteepGround()) && groundSpeed < 0)
+						{
+							//cout << "case b" << "\n";
+							along = V2d(-1, 0);
+						}
+						else if (groundSpeed > 0)
+						{
+							//cout << "case c \n";
+							along = leftEdge->Along();
+						}
+						else if (groundSpeed < 0)
+						{
+							//cout << "case d" << "\n";
+							along = rightEdge->Along();
+						}
+					}
+				}
+
+				//if (groundSpeed > 0)
+				//along = -along;
+
+				along = normalize(along + dir);
+				velocity = -groundSpeed * along;
 
 				ground = NULL;
 				frame = 1; //so it doesnt use the jump frame when just dropping
@@ -64,8 +115,64 @@ void Actor::JUMP_Update()
 
 				V2d dir(0, 0);
 
-				V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0));
-				velocity = groundSpeed * trueNormal;
+				V2d realNorm = GetGroundedNormal();
+
+				V2d along = ground->Along();
+
+				if (realNorm.x == 0)
+				{
+					Edge *leftEdge = NULL, *rightEdge = NULL;
+
+					//handles when kin is on ground like /\ or similar and is at angle 0. this should not give you extra
+					//horizontal velocity for your jump, instead using the edge that you just left
+					bool onTip = false;
+
+					if (approxEquals(edgeQuantity, 0))
+					{
+						leftEdge = ground->GetPrevEdge();
+						rightEdge = ground;
+
+						onTip = true;
+					}
+					else if (approxEquals(edgeQuantity, ground->GetLength()))
+					{
+						leftEdge = ground;
+						rightEdge = ground->GetNextEdge();
+
+						onTip = true;
+					}
+
+					if (onTip)
+					{
+						assert(leftEdge != NULL && rightEdge != NULL);
+
+						if ((leftEdge->Normal().y >= 0 || leftEdge->IsSteepGround()) && groundSpeed > 0)
+						{
+							//cout << "case a" << "\n";
+							along = V2d(1, 0);
+						}
+						else if ((rightEdge->Normal().y >= 0 || rightEdge->IsSteepGround()) && groundSpeed < 0)
+						{
+							//cout << "case b" << "\n";
+							along = V2d(-1, 0);
+						}
+						else if (groundSpeed > 0)
+						{
+							//cout << "case c" << "\n";
+							along = leftEdge->Along();
+						}
+						else if (groundSpeed < 0)
+						{
+							//cout << "case d" << "\n";
+							along = rightEdge->Along();
+						}
+					}
+					//leftEdge can be NULL on a rail! be careful!
+					//cout << "along: " << along.x << ", " << along.y << endl;
+				}
+
+				//V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0));
+				velocity = groundSpeed * along;
 				if (velocity.y < 0)
 				{
 					velocity.y *= .7;
