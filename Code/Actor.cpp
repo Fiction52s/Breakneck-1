@@ -4291,7 +4291,7 @@ void Actor::CheckHoldJump()
 		
 		if( holdJump && framesInAir > 2 )
 		{
-			bool steepCheck = (!steepJump && !JumpButtonHeld()) || (steepJump && !currInput.LUp());
+			bool steepCheck = (!steepJump && !JumpButtonHeld()) || (steepJump && !HoldingRelativeUp());
 			if (steepCheck)
 			{
 				if (velocity.y < -8)
@@ -5343,7 +5343,7 @@ int Actor::GetSurvivalFrame()
 	return maxDespFrames - numFramesToLive;
 }
 
-void Actor::ReverseVerticalInputsWhenOnCeiling()
+void Actor::ReverseVerticalInputs()
 {
 	//if (reversed)
 	{
@@ -7312,10 +7312,10 @@ void Actor::UpdatePrePhysics()
 
 	//DesperationUpdate();
 
-	if (reversed)
+	/*if (reversed)
 	{
-		ReverseVerticalInputsWhenOnCeiling();
-	}
+		ReverseVerticalInputs();
+	}*/
 	
 
 	ActionEnded();
@@ -7618,7 +7618,7 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 		}
 
 
-		if (currInput.LUp())
+		if (HoldingRelativeUp())
 		{
 			double extraUpBoost = 3.0;
 			if ((gNorm.x > 0 && groundSpeed <= 0)
@@ -9735,7 +9735,7 @@ V2d Actor::UpdateReversePhysics()
 						double yDist = abs( gNormal.x ) * -groundSpeed;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
-						if( next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						if( next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -9813,7 +9813,7 @@ V2d Actor::UpdateReversePhysics()
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
 						double yDist = abs( gNormal.x ) * -groundSpeed;
-						if(next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						if(next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 						{
 
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
@@ -10555,7 +10555,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 	if (currInput.LLeft())
 	{
 		facingRight = false;
-		if ((currInput.LDown() && gNorm.x < 0) || (currInput.LUp() && gNorm.x > 0))
+		if ((HoldingRelativeDown() && gNorm.x < 0) || (HoldingRelativeUp() && gNorm.x > 0))
 		{
 			if (action != SPRINT)
 			{
@@ -10581,7 +10581,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 	else if (currInput.LRight())
 	{
 		facingRight = true;
-		if ((currInput.LDown() && gNorm.x > 0) || (currInput.LUp() && gNorm.x < 0))
+		if ((HoldingRelativeDown() && gNorm.x > 0) || (HoldingRelativeUp() && gNorm.x < 0))
 		{
 			if (action != SPRINT)
 			{
@@ -11539,6 +11539,37 @@ double Actor::GetMinRailGrindSpeed()
 //eventually need to change resolve physics so that the player can't miss going by enemies. i understand the need now
 //for universal substeps. guess box2d makes more sense now doesn't it XD
 
+void Actor::SprintAccel()
+{
+	V2d trueNormal = GetGroundedNormal();
+	if (HoldingRelativeDown() && ((facingRight && trueNormal.x > 0) || (!facingRight && trueNormal.x < 0)))
+	{
+		//cout << "sprint down" << endl;
+		double sprAccel = GetFullSprintAccel(true, trueNormal);// / sprFactor;
+		if (facingRight)
+		{
+			groundSpeed += sprAccel / slowMultiple;
+		}
+		else
+		{
+			groundSpeed -= sprAccel / slowMultiple;
+		}
+	}
+	else if (HoldingRelativeUp() && ((facingRight && trueNormal.x < 0) || (!facingRight && trueNormal.x > 0)))
+	{
+		//cout << "sprint up" << endl;
+		double sprAccel = GetFullSprintAccel(false, trueNormal);// / sprFactor;
+
+		if (facingRight)
+		{
+			groundSpeed += sprAccel / slowMultiple;
+		}
+		else
+		{
+			groundSpeed -= sprAccel / slowMultiple;
+		}
+	}
+}
 
 void Actor::GroundExtraAccel()
 {
@@ -13365,7 +13396,7 @@ void Actor::UpdatePhysics()
 					{
 						Edge *next = ground->edge1;
 						double yDist = abs( gNormal.x ) * groundSpeed;
-						if( next != NULL && next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
+						if( next != NULL && next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
 						{
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -13411,7 +13442,7 @@ void Actor::UpdatePhysics()
 					{
 						double yDist = abs( gNormal.x ) * groundSpeed;
 						Edge *next = ground->edge0;
-						if(next != NULL && next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+						if(next != NULL && next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
@@ -20387,15 +20418,15 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 	{
 		gSpeed = alongSpeed;
 	}
-	else if ((currInput.LDown() || rail ) && noLeftRight)
+	else if ((HoldingRelativeDown() || rail ) && noLeftRight)
 	{
 		gSpeed = alongSpeed;
 	}
-	else if ((currInput.LUp() || rail ) && noLeftRight)
+	else if ((HoldingRelativeUp() || rail ) && noLeftRight)
 	{
 		gSpeed = alongSpeed;
 	}
-	else if( ( currInput.LLeft() && testVel.x <= 0 ) || ( currInput.LRight() && testVel.x >= 0 ))// || currInput.LDown() || currInput.LUp() )
+	else if( ( currInput.LLeft() && testVel.x <= 0 ) || ( currInput.LRight() && testVel.x >= 0 ))
 	{
 		double res = dot( testVel, alongVel );
 
@@ -20434,46 +20465,6 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 	
 	return gSpeed;
 }
-
-//double Actor::CalcRailLandingSpeed(V2d &testVel,
-//	V2d &alongDir, V2d &railNorm)
-//{
-//	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
-//	//double rSpeed = 0; //groundSpeed;
-//
-//	//if (currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp())
-//	//{
-//	//	double res = dot(testVel, alongDir);
-//
-//	//	if (railNorm.y <= -steepThresh) //not steep
-//	//	{
-//	//		if (testVel.x > 0 && railNorm.x < 0)
-//	//		{
-//	//			V2d straight(1, 0);
-//	//			res = max(res, dot(testVel, straight));
-//	//		}
-//	//		else if (testVel.x < 0 && railNorm.x > 0)
-//	//		{
-//	//			V2d straight(-1, 0);
-//	//			res = min(res, dot(testVel, straight));
-//	//		}
-//	//	}
-//	//	rSpeed = res;
-//	//}
-//	//else
-//	//{
-//	//	if (railNorm.y > -steepThresh)
-//	//	{
-//	//		rSpeed = dot(testVel, alongDir);
-//	//	}
-//	//	else
-//	//	{
-//	//		rSpeed = 0;
-//	//	}
-//	//}
-//
-//	//return rSpeed;
-//}
 
 bool Actor::IsInvincible()
 {
@@ -20694,17 +20685,11 @@ void Actor::DefaultGroundLanding( double &movement )
 
 bool Actor::DefaultGravReverseCheck()
 {
-	bool holdingUp = false;
-	if ((!reversed && currInput.LUp()) || (reversed && currInput.LDown()))
-	{
-		holdingUp = true;
-	}
-
 	return ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& (((DashButtonHeld() && holdingUp) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+		&& (((DashButtonHeld() && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -22759,6 +22744,8 @@ void Actor::AttackMovement()
 		shieldPushbackFrames--;
 	}
 
+	SprintAccel();
+
 	GroundExtraAccel();
 }
 
@@ -24029,7 +24016,7 @@ void Actor::SteepSlideMovement()
 {
 	double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;
 
-	if (currInput.LDown())
+	if (HoldingRelativeDown())
 	{
 		double currFactor = 0;
 		double upgradeAmount = steepSlideFastGravFactor * .2;
@@ -24091,12 +24078,12 @@ void Actor::SteepClimbMovement()
 	bool boost = TryClimbBoost(currNormal);
 
 	float factor = steepClimbGravFactor;
-	if (currInput.LUp())
+	if (HoldingRelativeUp())
 	{
 		//the factor is just to make you climb a little farther
 		factor = steepClimbUpFactor;
 	}
-	else if (currInput.LDown())
+	else if (HoldingRelativeDown())
 	{
 		factor = steepClimbDownFactor;
 	}
@@ -24287,8 +24274,8 @@ void Actor::UpdateInHitlag()
  {
 	 bool forwardHeld = currInput.LLeft() || currInput.LRight();
 
-	 bool up = currInput.LUp();
-	 bool down = currInput.LDown();
+	 bool up = HoldingRelativeUp();
+	 bool down = HoldingRelativeDown();
 
 	/* if (reversed)
 	 {

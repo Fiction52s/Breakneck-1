@@ -41,8 +41,8 @@ void Actor::SPRINT_Change()
 		if (facingRight && currInput.LLeft())
 		{
 
-			if ((currInput.LDown() && currNormal.x < 0) 
-				|| (currInput.LUp() && currNormal.x > 0))
+			if ((HoldingRelativeDown() && currNormal.x < 0)
+				|| (HoldingRelativeUp() && currNormal.x > 0))
 			{
 				frame = 0;
 			}
@@ -58,8 +58,8 @@ void Actor::SPRINT_Change()
 		}
 		else if (!facingRight && currInput.LRight())
 		{
-			if ((currInput.LDown() && currNormal.x > 0) 
-				|| (currInput.LUp() && currNormal.x < 0))
+			if ((HoldingRelativeDown() && currNormal.x > 0) 
+				|| (HoldingRelativeUp() && currNormal.x < 0))
 			{
 				frame = 0;
 			}
@@ -73,9 +73,9 @@ void Actor::SPRINT_Change()
 			frame = 0;
 			return;
 		}
-		else if (!((currInput.LDown() && ((currNormal.x > 0 && facingRight) 
+		else if (!((HoldingRelativeDown() && ((currNormal.x > 0 && facingRight)
 			|| (currNormal.x < 0 && !facingRight)))
-			|| (currInput.LUp() && ((currNormal.x < 0 && facingRight) 
+			|| (HoldingRelativeUp() && ((currNormal.x < 0 && facingRight)
 				|| (currNormal.x > 0 && !facingRight)))))
 		{
 			SetAction(RUN);
@@ -183,10 +183,6 @@ void Actor::SPRINT_Update()
 			}
 			else
 			{
-				double minFactor = .2;
-				double factor = abs(currNormal.x);
-				factor = std::max(factor, minFactor);
-
 				if (currNormal.x < 0)
 				{
 					//GroundExtraAccel();

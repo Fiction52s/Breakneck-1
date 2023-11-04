@@ -54,7 +54,7 @@ void Actor::STEEPCLIMB_Change()
 
 		if (currNormal.x > 0 && groundSpeed >= 0)
 		{
-			if (currInput.LUp())
+			if (HoldingRelativeUp())
 			{
 				SetAction(STEEPCLING);
 				frame = 0;
@@ -77,7 +77,7 @@ void Actor::STEEPCLIMB_Change()
 		}
 		else if (currNormal.x < 0 && groundSpeed <= 0)
 		{
-			if (currInput.LUp())
+			if (HoldingRelativeUp())
 			{
 				SetAction(STEEPCLING);
 				frame = 0;
@@ -117,7 +117,7 @@ void Actor::STEEPCLIMB_Change()
 
 		if (currNormal.x > 0 && groundSpeed >= 0)
 		{
-			if (currInput.LUp())
+			if (HoldingRelativeUp())
 			{
 				SetAction(STEEPCLING);
 				frame = 0;
@@ -140,7 +140,7 @@ void Actor::STEEPCLIMB_Change()
 		}
 		else if (currNormal.x < 0 && groundSpeed <= 0)
 		{
-			if (currInput.LUp())
+			if (HoldingRelativeUp())
 			{
 				SetAction(STEEPCLING);
 				frame = 0;

@@ -53,7 +53,7 @@ void Actor::LAND2_Change()
 			}
 			else
 			{
-				if (currInput.LUp())
+				if (HoldingRelativeUp())
 				{
 					SetAction(STEEPCLING);
 					frame = 0;

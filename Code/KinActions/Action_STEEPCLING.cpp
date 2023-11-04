@@ -41,7 +41,7 @@ void Actor::STEEPCLING_Change()
 
 		if (DashButtonPressed())
 		{
-			if ((currInput.LRight() || currInput.LUp()) && currNormal.x < 0)
+			if ((currInput.LRight() || HoldingRelativeUp()) && currNormal.x < 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -51,7 +51,7 @@ void Actor::STEEPCLING_Change()
 
 				}
 			}
-			else if ((currInput.LLeft() || currInput.LUp()) && currNormal.x > 0)
+			else if ((currInput.LLeft() || HoldingRelativeUp()) && currNormal.x > 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -63,7 +63,7 @@ void Actor::STEEPCLING_Change()
 			}
 		}
 
-		if (!currInput.LUp())
+		if (!HoldingRelativeUp())
 		{
 			SetAction(STEEPSLIDE);
 			frame = 0;
@@ -96,7 +96,7 @@ void Actor::STEEPCLING_Change()
 
 		if (DashButtonPressed())
 		{
-			if ((currInput.LRight() || currInput.LUp()) && currNormal.x < 0)
+			if ((currInput.LRight() || HoldingRelativeUp()) && currNormal.x < 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -107,7 +107,7 @@ void Actor::STEEPCLING_Change()
 
 				}
 			}
-			else if ((currInput.LLeft() || currInput.LUp()) && currNormal.x > 0)
+			else if ((currInput.LLeft() || HoldingRelativeUp()) && currNormal.x > 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -120,7 +120,7 @@ void Actor::STEEPCLING_Change()
 			}
 		}
 
-		if ( !currInput.LUp() )
+		if ( !HoldingRelativeUp())
 		{
 			SetAction(STEEPSLIDE);
 			frame = 0;

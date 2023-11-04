@@ -79,7 +79,7 @@ void Actor::GRAVREVERSE_Change()
 			{
 				return;
 			}
-			else if (!currInput.LDown())
+			else if (!HoldingRelativeDown())
 			{
 				SetAction(STAND);
 				frame = 0;

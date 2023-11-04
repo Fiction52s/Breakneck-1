@@ -87,7 +87,7 @@ void Actor::STEEPSLIDE_Change()
 		}
 		else
 		{
-			if (currInput.LUp() && abs(groundSpeed) < steepClingSpeedLimit * 2)
+			if (HoldingRelativeUp() && abs(groundSpeed) < steepClingSpeedLimit * 2)
 			{
 				SetAction(STEEPCLING);
 				frame = 0;
@@ -131,7 +131,7 @@ void Actor::STEEPSLIDE_Change()
 		}
 		else
 		{
-			if (currInput.LUp() && abs(groundSpeed) < steepClingSpeedLimit * 2)
+			if (HoldingRelativeUp() && abs(groundSpeed) < steepClingSpeedLimit * 2)
 			{
 				SetAction(STEEPCLING);
 				frame = 0;
@@ -167,13 +167,13 @@ void Actor::STEEPSLIDE_Change()
 	if (DashButtonPressed())
 	{
 		//up and away from a steep slope shouldn't make you climb out of a slide!
-		if (currNormal.x < 0 && (currInput.LRight() || currInput.LUp()) && !currInput.LLeft() && !currInput.LDown())
+		if (currNormal.x < 0 && (currInput.LRight() || HoldingRelativeUp()) && !currInput.LLeft() && !HoldingRelativeDown())
 		{
 			SetAction(STEEPCLIMB);
 			groundSpeed = 0;//steepClimbBoostStart;
 			frame = 0;
 		}
-		else if (currNormal.x > 0 && (currInput.LLeft() || currInput.LUp()) && !currInput.LRight() && !currInput.LDown())
+		else if (currNormal.x > 0 && (currInput.LLeft() || HoldingRelativeUp()) && !currInput.LRight() && !HoldingRelativeDown())
 		{
 			SetAction(STEEPCLIMB);
 			groundSpeed = 0;//-steepClimbBoostStart;

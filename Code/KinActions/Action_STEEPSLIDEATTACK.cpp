@@ -88,31 +88,6 @@ void Actor::STEEPSLIDEATTACK_Update()
 
 	AttackMovement();
 	//SteepSlideMovement();
-
-
-	//if (frame == 0)
-	//{
-	//}
-
-	//double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;
-
-	//if (currInput.LDown())
-	//{
-	//	//cout << "fast slide" << endl;
-	//	fac = GetGravity() * steepSlideFastGravFactor;
-	//}
-
-	//if (reversed)
-	//{
-
-	//	groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
-	//}
-	//else
-	//{
-
-
-	//	groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
-	//}
 }
 
 void Actor::STEEPSLIDEATTACK_UpdateSprite()

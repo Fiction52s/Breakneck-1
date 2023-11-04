@@ -1696,6 +1696,7 @@ struct Actor : QuadTreeCollider,
 	int GetJumpFrame();
 	void QueryTouchGrass();
 	double GetBounceFlameAccel();
+	void SprintAccel();
 	void GroundExtraAccel();
 	double GetDashSpeed();
 	void StopRepeatingSound();

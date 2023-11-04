@@ -110,33 +110,7 @@ void Actor::DASH_Update()
 	}
 
 
-	//why did i do this..
-	//double sprFactor = 2.0; //dash must be slower accel on slopes
-	if (currInput.LDown() && ((facingRight && currNormal.x > 0) || (!facingRight && currNormal.x < 0)))
-	{
-		double sprAccel = GetFullSprintAccel(true, currNormal);// / sprFactor;
-		if (facingRight)
-		{
-			groundSpeed += sprAccel / slowMultiple;
-		}
-		else
-		{
-			groundSpeed -= sprAccel / slowMultiple;
-		}
-	}
-	else if (currInput.LUp() && ((facingRight && currNormal.x > 0) || (!facingRight && currNormal.x < 0)))
-	{
-		double sprAccel = GetFullSprintAccel(false, currNormal);// / sprFactor;
-
-		if (facingRight)
-		{
-			groundSpeed += sprAccel / slowMultiple;
-		}
-		else
-		{
-			groundSpeed -= sprAccel / slowMultiple;
-		}
-	}
+	SprintAccel();
 
 	GroundExtraAccel();
 

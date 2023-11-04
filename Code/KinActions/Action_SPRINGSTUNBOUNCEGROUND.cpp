@@ -90,21 +90,6 @@ void Actor::SPRINGSTUNBOUNCEGROUND_Change()
 
 			groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
 
-			/*if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
-			{
-			groundSpeed = dot( testVel, alongVel );
-			}
-			else
-			{
-			if( gNorm.y > -steepThresh )
-			{
-			groundSpeed = dot( testVel, alongVel );
-			}
-			else
-			{
-			groundSpeed = 0;
-			}
-			}*/
 
 			//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 			//cout << "setting groundSpeed: " << groundSpeed << endl;

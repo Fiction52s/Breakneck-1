@@ -63,19 +63,8 @@ void Actor::SPRINGSTUNBOUNCE_Change()
 void Actor::SPRINGSTUNBOUNCE_Update()
 {
 	double bounceTurnFactor = .012;
-	if (currInput.LUp())
-	{
-		//glideTurnFactor = bounceTurnFactor;
-	}
-	else if (currInput.LDown())
-	{
-		
-		//glideTurnFactor = -bounceTurnFactor;
-	}
-	else
-	{
-		glideTurnFactor = 0;
-	}
+
+	glideTurnFactor = 0;
 
 
 	if (facingRight)
