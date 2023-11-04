@@ -594,7 +594,7 @@ void Actor::BOUNCEGROUND_Change()
 			groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
 
 
-			currNormal = ground->Normal();
+			currNormal = GetGroundedNormal();//ground->Normal();
 
 			//if( gNorm.y <= -steepThresh )
 			{

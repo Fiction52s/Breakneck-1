@@ -94,7 +94,7 @@ void Actor::SPRINGSTUNBOUNCEGROUND_Change()
 			//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 			//cout << "setting groundSpeed: " << groundSpeed << endl;
 			//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-			currNormal = ground->Normal();
+			currNormal = GetGroundedNormal();//ground->Normal();
 
 			//if( gNorm.y <= -steepThresh )
 			{

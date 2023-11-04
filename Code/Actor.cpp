@@ -7417,8 +7417,8 @@ void Actor::UpdatePrePhysics()
 		return;
 	}
 
-	if( ground != NULL )
-		currNormal = ground->Normal();
+	if (ground != NULL)
+		currNormal = GetGroundedNormal();//ground->Normal();
 	
 	ProcessReceivedHit();
 	
@@ -17503,7 +17503,7 @@ void Actor::UpdatePostPhysics()
 	
 	if( ground != NULL )
 	{
-		currNormal = ground->Normal();
+		currNormal = GetGroundedNormal();//ground->Normal();
 	}
 
 	if( action == DEATH )
@@ -20381,7 +20381,7 @@ bool Actor::TryLandFromBounceGround()
 		//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 		//cout << "setting groundSpeed: " << groundSpeed << endl;
 		//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-		currNormal = ground->Normal();
+		currNormal = GetGroundedNormal();//ground->Normal();
 
 		//if( gNorm.y <= -steepThresh )
 		{
@@ -21559,7 +21559,7 @@ void Actor::UpdateSprite()
 	//V2d gn( 0, 0 );
 	if( ground != NULL )
 	{
-		currNormal = ground->Normal();
+		currNormal = GetGroundedNormal();//ground->Normal();
 	}
 	else
 	{
