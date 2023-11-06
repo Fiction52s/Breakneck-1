@@ -241,7 +241,9 @@ void Actor::JUMP_Update()
 				else
 					fxPos = pp;
 
-				fxPos += currNormal * 16.0;
+				V2d norm = GetGroundedNormal();
+
+				fxPos += norm * 16.0;
 
 				ActivateEffect(PLAYERFX_JUMP_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(ang), 6, 4, facingRight);
 

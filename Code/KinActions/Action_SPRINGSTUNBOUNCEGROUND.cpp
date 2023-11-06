@@ -94,19 +94,19 @@ void Actor::SPRINGSTUNBOUNCEGROUND_Change()
 			//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 			//cout << "setting groundSpeed: " << groundSpeed << endl;
 			//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-			currNormal = GetGroundedNormal();//ground->Normal();
+			V2d norm = GetGroundedNormal();//ground->Normal();
 
 			//if( gNorm.y <= -steepThresh )
 			{
 				RestoreAirOptions();
 			}
 
-			if (testVel.x < 0 && currNormal.y <= -steepThresh)
+			if (testVel.x < 0 && norm.y <= -steepThresh)
 			{
 				groundSpeed = min(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
 				//cout << "left boost: " << groundSpeed << endl;
 			}
-			else if (testVel.x > 0 && currNormal.y <= -steepThresh)
+			else if (testVel.x > 0 && norm.y <= -steepThresh)
 			{
 				groundSpeed = max(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
 				//cout << "right boost: " << groundSpeed << endl;

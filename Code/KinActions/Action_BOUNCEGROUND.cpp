@@ -294,258 +294,11 @@ void Actor::BOUNCEGROUND_Change()
 			}
 		}
 
-
-		//double currSpeed = length(velocity);
-
-		//if (bn.y < 0)
-		//{
-		//	double testVel = 25;
-		//	if (velocity.y > -testVel)
-		//		velocity.y = -testVel;
-
-		//	vDir = normalize(velocity);
-
-		//	velocity = vDir * currSpeed;
-
-		//	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
-
-		//	//velocity.y = -ySpeed;
-		//}
-
-
-
-
-
-
-
-		/*velocity = sess->CalcBounceReflectionVel(bounceEdge, storedBounceVel);
-		
-
-
-		//if (bn.y < 0)
-		//{
-		//	//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
-		//	if (bn.y > -steepThresh)
-		//	{
-		//		//if( bn.x > 0  && storedBounceVel.x < 0 )
-		//		//{
-		//		//	//cout << "A" << endl;
-		//		//	velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
-		//		//}
-		//		//else if( bn.x < 0 && storedBounceVel.x > 0 )
-		//		//{
-		//		////	cout << "B" << endl;
-		//		//	velocity = V2d( -abs(storedBounceVel.x), -abs(storedBounceVel.y) );
-		//		//}
-		//		//else
-		//		{
-		//			velocity = sess->CalcBounceReflectionVel(bounceEdge, storedBounceVel);
-		//		}
-
-		//		double velStrength = length(velocity);
-		//		V2d vDir = normalize(velocity);
-		//		if (abs(vDir.y) < extraBThresh)
-		//		{
-		//			if (currInput.LUp())
-		//			{
-		//				vDir = normalize(vDir + V2d(0, -extraBUp));
-		//			}
-		//			else if (currInput.LDown())
-		//			{
-		//				vDir = normalize(vDir + V2d(0, extraBDown));
-		//			}
-		//			//velocity = vDir * velStrength;
-		//		}
-
-		//		if (boostNow)
-		//		{
-		//			//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
-		//			velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
-
-
-		//			boostBounce = false;
-		//		}
-		//		else if (boostBounce)
-		//		{
-		//			boostBounce = false;
-		//		}
-		//	}
-		//	else
-		//	{
-		//		if (storedBounceVel.x > 0 && currInput.LLeft())
-		//		{
-		//			storedBounceVel.x = -dSpeed;
-		//		}
-		//		else if (storedBounceVel.x < 0 && currInput.LRight())
-		//		{
-		//			storedBounceVel.x = dSpeed;
-		//		}
-		//		else if (storedBounceVel.x == 0)
-		//		{
-		//			if (currInput.LLeft())
-		//			{
-		//				storedBounceVel.x = -maxAirXControl;
-		//			}
-		//			else if (currInput.LRight())
-		//			{
-		//				storedBounceVel.x = maxAirXControl;
-		//			}
-		//		}
-
-		//		double bouncePower = 20;
-		//		double absY = abs(storedBounceVel.y);
-		//		bouncePower = max(bouncePower, absY);
-		//		
-
-		//		velocity = V2d(storedBounceVel.x, -bouncePower);//length( storedBounceVel ) * bounceEdge->Normal();
-
-		//		if (boostNow)
-		//		{
-		//			//6.0
-		//			double fac = max(currBoostBounceSpeed, .25 * abs(velocity.y));
-		//														  
-		//			velocity += normalize(velocity) * fac / (double)slowMultiple;
-
-		//			/*double shardSpeedBoost = 5;
-		//			if (velocity.x > 0)
-		//			{
-		//				velocity.x += shardSpeedBoost;
-		//			}
-		//			else if (velocity.x < 0)
-		//			{
-		//				velocity.x -= shardSpeedBoost;
-		//			}*/
-		//			boostBounce = false;
-		//		}
-		//		else if (boostBounce)
-		//		{
-		//			boostBounce = false;
-		//		}
-
-		//	}
-		//}
-		//else if (bn.y > 0)
-		//{
-		//	if (-bn.y > -steepThresh)
-		//	{
-		//		//if( bn.x > 0 && storedBounceVel.x < 0 )
-		//		//{
-		//		////	cout << "C" << endl;
-		//		//	velocity = V2d( abs(storedBounceVel.x), storedBounceVel.y );
-		//		//}
-		//		//else if( bn.x < 0 && storedBounceVel.x > 0 )
-		//		//{
-		//		////	cout << "D" << endl;
-		//		//	velocity = V2d( -abs(storedBounceVel.x), storedBounceVel.y );
-		//		//}
-		//		//else
-		//		{
-		//			double lenVel = length(storedBounceVel);
-		//			double reflX = cross(normalize(-storedBounceVel), bn);
-		//			double reflY = dot(normalize(-storedBounceVel), bn);
-		//			V2d edgeDir = normalize(bounceEdge->v1 - bounceEdge->v0);
-		//			velocity = normalize(reflX * edgeDir + reflY * bn) * lenVel;
-		//		}
-		//	}
-		//	else
-		//	{
-		//		if (storedBounceVel.x == 0)
-		//		{
-		//			if (currInput.LLeft())
-		//			{
-		//				storedBounceVel.x = -maxAirXControl;
-		//			}
-		//			else if (currInput.LRight())
-		//			{
-		//				storedBounceVel.x = maxAirXControl;
-		//			}
-		//		}
-
-
-		//		velocity = V2d(storedBounceVel.x, abs(storedBounceVel.y));//length( storedBounceVel ) * bounceEdge->Normal();
-		//																  //	cout << "E: " << velocity.x << ", " << velocity.y << endl;
-
-		//	}
-
-		//	double velStrength = length(velocity);
-		//	V2d vDir = normalize(velocity);
-		//	if (abs(vDir.y) < extraBThresh)
-		//	{
-		//		if (currInput.LUp())
-		//		{
-		//			vDir = normalize(vDir + V2d(0, -extraBUp));
-		//		}
-		//		else if (currInput.LDown())
-		//		{
-		//			vDir = normalize(vDir + V2d(0, extraBDown));
-		//		}
-		//		//velocity = vDir * velStrength;
-		//	}
-
-		//	if (boostNow)
-		//	{
-		//		//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
-		//		//velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
-		//		velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
-
-		//		boostBounce = false;
-		//	}
-		//	else if (boostBounce)
-		//	{
-		//		boostBounce = false;
-		//	}
-		//}
-		//else
-		//{
-		//	//	cout << "F" << endl;
-		//	velocity = V2d(-storedBounceVel.x, storedBounceVel.y);
-
-		//	double velStrength = length(velocity);
-		//	V2d vDir = normalize(velocity);
-		//	if (abs(vDir.y) < extraBThresh)
-		//	{
-		//		if (currInput.LUp())
-		//		{
-		//			vDir = normalize(vDir + V2d(0, -extraBUp));
-		//		}
-		//		else if (currInput.LDown())
-		//		{
-		//			vDir = normalize(vDir + V2d(0, extraBDown));
-		//		}
-		//		velocity = vDir * velStrength;
-		//	}
-
-		//	if (boostNow)
-		//	{
-		//		velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
-		//		/*if( currInput.LUp() )
-		//		{
-		//		velocity += V2d( 0, -1 ) * extraBUp;
-		//		}
-		//		else if( currInput.LDown() )
-		//		{
-		//		velocity += V2d( 0, 1 ) * extraBDown;
-		//		}*/
-
-		//		boostBounce = false;
-		//	}
-		//	else if (boostBounce)
-		//	{
-		//		boostBounce = false;
-		//	}
-		//}
-
 		//velocity += V2d( 0, -gravity * slowMultiple );
 		if (facingRight && velocity.x < 0)
 			facingRight = false;
 		else if (!facingRight && velocity.x > 0)
 			facingRight = true;
-
-		/*double lenVel = length( storedBounceVel );
-		double reflX = cross( normalize( -storedBounceVel ), bn );
-		double reflY = dot( normalize( -storedBounceVel ), bn );
-		V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
-		velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;*/
 
 
 		framesSinceBounce = 0;
@@ -594,19 +347,19 @@ void Actor::BOUNCEGROUND_Change()
 			groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
 
 
-			currNormal = GetGroundedNormal();//ground->Normal();
+			V2d norm = GetGroundedNormal();//ground->Normal();
 
 			//if( gNorm.y <= -steepThresh )
 			{
 				RestoreAirOptions();
 			}
 
-			if (testVel.x < 0 && currNormal.y <= -steepThresh)
+			if (testVel.x < 0 && norm.y <= -steepThresh)
 			{
 				groundSpeed = min(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
 				//cout << "left boost: " << groundSpeed << endl;
 			}
-			else if (testVel.x > 0 && currNormal.y <= -steepThresh)
+			else if (testVel.x > 0 && norm.y <= -steepThresh)
 			{
 				groundSpeed = max(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
 				//cout << "right boost: " << groundSpeed << endl;

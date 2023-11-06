@@ -45,7 +45,7 @@ void Actor::DASH_Change()
 		return;
 	}
 
-	if (BasicSteepAction(currNormal))
+	if (BasicSteepAction())
 		return;
 
 	if (canStandUp)
@@ -213,17 +213,19 @@ void Actor::DASH_UpdateSprite()
 
 	//sprite->setPosition(pp.x, pp.y);
 
+	V2d norm = GetGroundedNormal();
+
 	bool fr = facingRight;
 	if (reversed)
 		fr = !fr;
 	if (frame == 0 && DashButtonPressed() )
 	{
-		ActivateEffect(PLAYERFX_DASH_START, Vector2f(pp + currNormal * 64.0 + along * xExtraStart), RadiansToDegrees(angle), 9, 3, fr);
+		ActivateEffect(PLAYERFX_DASH_START, Vector2f(pp + norm * 64.0 + along * xExtraStart), RadiansToDegrees(angle), 9, 3, fr);
 		ActivateSound(PlayerSounds::S_DASH_START);
 	}
 	else if (frame % 5 == 0)
 	{
-		ActivateEffect(PLAYERFX_DASH_REPEAT, Vector2f(pp + currNormal * 32.0 + along * xExtraRepeat), RadiansToDegrees(angle), 12, 3, fr);
+		ActivateEffect(PLAYERFX_DASH_REPEAT, Vector2f(pp + norm * 32.0 + along * xExtraRepeat), RadiansToDegrees(angle), 12, 3, fr);
 		
 		if (reversed)
 		{

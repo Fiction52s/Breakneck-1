@@ -80,17 +80,19 @@ void Actor::JUMPSQUAT_UpdateSprite()
 
 	double angle = GroundedAngle();
 
+	V2d norm = GetGroundedNormal();
+
 	//some special stuff for jumpsquat
 	if (reversed)
 	{
-		if (-currNormal.y > -steepThresh)
+		if (-norm.y > -steepThresh)
 		{
 			angle = PI;
 		}
 	}
 	else
 	{
-		if (currNormal.y > -steepThresh)
+		if (norm.y > -steepThresh)
 		{
 			angle = 0;
 		}

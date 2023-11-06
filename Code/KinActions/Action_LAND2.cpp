@@ -32,15 +32,15 @@ void Actor::LAND2_Change()
 
 	if (TryJumpSquat()) return;
 
-
+	V2d norm = GetGroundedNormal();
 
 	if (reversed)
 	{
-		if (-currNormal.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
+		if (-norm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
 		{
 
-			if (groundSpeed < 0 && currNormal.x > 0 
-				|| groundSpeed > 0 && currNormal.x < 0)
+			if (groundSpeed < 0 && norm.x > 0
+				|| groundSpeed > 0 && norm.x < 0)
 			{
 				SetAction(STEEPCLIMB);
 
@@ -57,7 +57,7 @@ void Actor::LAND2_Change()
 				{
 					SetAction(STEEPCLING);
 					frame = 0;
-					facingRight = currNormal.x < 0;
+					facingRight = norm.x < 0;
 				}
 				else
 				{
@@ -84,7 +84,7 @@ void Actor::LAND2_Change()
 				else if (currInput.LRight())
 					facingRight = true;
 			}
-			else if (TrySprintOrRun(currNormal))
+			else if (TrySprintOrRun())
 			{
 
 			}
@@ -102,9 +102,9 @@ void Actor::LAND2_Change()
 	else
 	{
 
-		if (currNormal.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
+		if (norm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
 		{
-			if (groundSpeed > 0 && currNormal.x < 0 || groundSpeed < 0 && currNormal.x > 0)
+			if (groundSpeed > 0 && norm.x < 0 || groundSpeed < 0 && norm.x > 0)
 			{
 				SetAction(STEEPCLIMB);
 
@@ -117,7 +117,7 @@ void Actor::LAND2_Change()
 			}
 			else
 			{
-				if (currNormal.x > 0)
+				if (norm.x > 0)
 				{
 					facingRight = true;
 				}
@@ -160,11 +160,11 @@ void Actor::LAND2_Change()
 						}
 						else
 						{
-							if (currNormal.x > 0)
+							if (norm.x > 0)
 							{
 								facingRight = true;
 							}
-							else if (currNormal.x < 0)
+							else if (norm.x < 0)
 							{
 								facingRight = false;
 							}
@@ -175,7 +175,7 @@ void Actor::LAND2_Change()
 
 				SetAction(DASH);
 			}
-			else if (TrySprintOrRun(currNormal))
+			else if (TrySprintOrRun())
 			{
 
 			}

@@ -25,9 +25,10 @@ void Actor::STEEPCLING_Change()
 		return;
 	}
 
+	V2d norm = GetGroundedNormal();
 	if (reversed)
 	{
-		if (-currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
+		if (-norm.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
 			|| approxEquals(offsetX, -b.rw)))
 		{
 			SetAction(LAND2);
@@ -41,7 +42,7 @@ void Actor::STEEPCLING_Change()
 
 		if (DashButtonPressed())
 		{
-			if ((currInput.LRight() || HoldingRelativeUp()) && currNormal.x < 0)
+			if ((currInput.LRight() || HoldingRelativeUp()) && norm.x < 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -51,7 +52,7 @@ void Actor::STEEPCLING_Change()
 
 				}
 			}
-			else if ((currInput.LLeft() || HoldingRelativeUp()) && currNormal.x > 0)
+			else if ((currInput.LLeft() || HoldingRelativeUp()) && norm.x > 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -67,7 +68,7 @@ void Actor::STEEPCLING_Change()
 		{
 			SetAction(STEEPSLIDE);
 			frame = 0;
-			facingRight = (currNormal.x > 0 );
+			facingRight = (norm.x > 0 );
 			if (SteepSlideAttack())
 			{
 
@@ -79,7 +80,7 @@ void Actor::STEEPCLING_Change()
 	}
 	else
 	{
-		if (currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
+		if (norm.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
 			|| approxEquals(offsetX, -b.rw)))
 		{
 			//cout << "blahzzz" << endl;
@@ -96,7 +97,7 @@ void Actor::STEEPCLING_Change()
 
 		if (DashButtonPressed())
 		{
-			if ((currInput.LRight() || HoldingRelativeUp()) && currNormal.x < 0)
+			if ((currInput.LRight() || HoldingRelativeUp()) && norm.x < 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -107,7 +108,7 @@ void Actor::STEEPCLING_Change()
 
 				}
 			}
-			else if ((currInput.LLeft() || HoldingRelativeUp()) && currNormal.x > 0)
+			else if ((currInput.LLeft() || HoldingRelativeUp()) && norm.x > 0)
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -124,7 +125,7 @@ void Actor::STEEPCLING_Change()
 		{
 			SetAction(STEEPSLIDE);
 			frame = 0;
-			facingRight = (currNormal.x > 0);
+			facingRight = (norm.x > 0);
 			if (SteepSlideAttack())
 			{
 
@@ -141,6 +142,7 @@ void Actor::STEEPCLING_Change()
 
 void Actor::STEEPCLING_Update()
 {
+	V2d norm = GetGroundedNormal();
 	if (reversed)
 	{
 		groundSpeed += dot(V2d(0, GetGravity() * steepClimbUpFactor), 
@@ -152,11 +154,11 @@ void Actor::STEEPCLING_Update()
 			normalize(ground->v1 - ground->v0)) / slowMultiple;
 	}
 
-	if (currNormal.x > 0 && groundSpeed > steepClingSpeedLimit)
+	if (norm.x > 0 && groundSpeed > steepClingSpeedLimit)
 	{
 		groundSpeed = steepClingSpeedLimit;
 	}
-	else if( currNormal.x < 0 && groundSpeed < -steepClingSpeedLimit)
+	else if(norm.x < 0 && groundSpeed < -steepClingSpeedLimit)
 	{
 		groundSpeed = -steepClingSpeedLimit;
 	}
@@ -170,7 +172,7 @@ void Actor::STEEPCLING_UpdateSprite()
 	int tFrame = 0;
 	SetSpriteTile(tFrame, r);
 
-	double angle = atan2(currNormal.x, -currNormal.y);
+	double angle = GroundedAngle();
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 	sprite->setRotation(angle / PI * 180);

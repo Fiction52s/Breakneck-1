@@ -15,7 +15,7 @@ void Actor::BRAKE_End()
 
 void Actor::BRAKE_Change()
 {
-	BasicGroundAction(currNormal);
+	BasicGroundAction();
 }
 
 void Actor::BRAKE_Update()

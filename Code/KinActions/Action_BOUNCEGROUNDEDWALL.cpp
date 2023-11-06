@@ -84,16 +84,7 @@ void Actor::BOUNCEGROUNDEDWALL_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(tFrame, r);
 
-	double angle = 0;
-	if (!approxEquals(abs(offsetX), b.rw))
-	{
-		if (reversed)
-			angle = PI;
-	}
-	else
-	{
-		angle = atan2(currNormal.x, -currNormal.y);
-	}
+	double angle = GroundedAngle();
 
 	SetGroundedSpriteTransform();
 

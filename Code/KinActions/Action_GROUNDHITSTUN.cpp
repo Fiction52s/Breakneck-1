@@ -17,7 +17,7 @@ void Actor::GROUNDHITSTUN_Change()
 {
 	if (hitstunFrames == 0)
 	{
-		BasicGroundAction(currNormal);
+		BasicGroundAction();
 	}
 }
 

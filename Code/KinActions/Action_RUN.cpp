@@ -15,7 +15,7 @@ void Actor::RUN_End()
 
 void Actor::RUN_Change()
 {
-	BasicGroundAction(currNormal);
+	BasicGroundAction();
 }
 
 void Actor::RUN_Update()

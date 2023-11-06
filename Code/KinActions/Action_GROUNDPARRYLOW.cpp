@@ -23,7 +23,6 @@ void Actor::GROUNDPARRYLOW_Change()
 		SetAction(STAND);
 		frame = 0;
 	}
-	//BasicGroundAction(currNormal);
 }
 
 void Actor::GROUNDPARRYLOW_Update()

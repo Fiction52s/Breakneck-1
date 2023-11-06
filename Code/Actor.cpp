@@ -7416,9 +7416,6 @@ void Actor::UpdatePrePhysics()
 		}
 		return;
 	}
-
-	if (ground != NULL)
-		currNormal = GetGroundedNormal();//ground->Normal();
 	
 	ProcessReceivedHit();
 	
@@ -7595,10 +7592,11 @@ void Actor::SetAction( int a )
 	}
 }
 
-bool Actor::TryClimbBoost( V2d &gNorm)
+bool Actor::TryClimbBoost()
 {
 	if (DashButtonPressed())
 	{
+		V2d norm = GetGroundedNormal();
 		double sp = steepClimbBoostStart + GetDashSpeed();//steepClimbBoostStart;// 8;//13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
 		double fac = min(((double)framesSinceClimbBoost) / climbBoostLimit, 1.0);
 
@@ -7621,8 +7619,8 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 		if (HoldingRelativeUp())
 		{
 			double extraUpBoost = 3.0;
-			if ((gNorm.x > 0 && groundSpeed <= 0)
-				|| (gNorm.x < 0 && groundSpeed >= 0))
+			if ((norm.x > 0 && groundSpeed <= 0)
+				|| (norm.x < 0 && groundSpeed >= 0))
 			{
 				extra += extraUpBoost;
 			}
@@ -7634,11 +7632,11 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 
 		//cout << "frames: " << framesSinceClimbBoos
 		//cout << "fac: " << fac << " extra: " << extra << endl;
-		if (gNorm.x > 0)//&& currInput.LLeft() )
+		if (norm.x > 0)//&& currInput.LLeft() )
 		{
 			groundSpeed = std::min(groundSpeed - extra, -sp);
 		}
-		else if (gNorm.x < 0)// && currInput.LRight() )
+		else if (norm.x < 0)// && currInput.LRight() )
 		{
 			//cout << "old groundspeed: " << groundSpeed << " ";
 			groundSpeed = std::max(groundSpeed + extra, sp);
@@ -9303,6 +9301,7 @@ V2d Actor::UpdateReversePhysics()
 				//{
 
 				bool jumpOff = false;
+				bool tip = false;
 				
 				if( nextNorm.y >= 0 || abs( e0n.x ) >= wallThresh || e0->IsInvisibleWall())
 				{
@@ -9312,13 +9311,14 @@ V2d Actor::UpdateReversePhysics()
 				{
 					if( movingUp )
 					{
-						if( nextMovingUp )
+						if(nextMovingDown && nextSteep)
 						{
-							jumpOff = false;
+							jumpOff = true;
+							tip = true;
 						}
 						else
 						{
-							jumpOff = true;
+							jumpOff = false;
 						}
 					}
 					else
@@ -9333,11 +9333,8 @@ V2d Actor::UpdateReversePhysics()
 						if( nextSteep && nextMovingDown )
 						{
 							jumpOff = true;
+							tip = true;
 						}
-						/*else if( nextNorm.x <= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
-						{
-							jumpOff = true;
-						}*/
 						else
 						{
 							jumpOff = false;
@@ -9345,7 +9342,7 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else
 					{
-						if( gNormal.x == 0 && nextMovingDown && nextSteep )
+						if (gNormal.x == 0 && nextMovingDown && nextSteep)
 						{
 							jumpOff = true;
 						}
@@ -9362,8 +9359,16 @@ V2d Actor::UpdateReversePhysics()
 				if( jumpOff || unlockedGateJumpOff)
 				{	
 					reversed = false;
-					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+					V2d along = ground->Along();
+
+					if (tip)
+					{
+						along = V2d(-1, 0);
+					}
+
+					velocity = along * -groundSpeed;
+					movementVec = along * extra;
 
 					movementVec.y += .1;
 					if( movementVec.x <= .1 )
@@ -9377,6 +9382,8 @@ V2d Actor::UpdateReversePhysics()
 					frame = 1;
 					
 					ground = NULL;
+
+					//cout << "jumpoff a: " << along.x << ", " << along.y << endl;
 
 					leftGroundExtra = movementVec;
 					return leftGroundExtra;
@@ -9410,6 +9417,7 @@ V2d Actor::UpdateReversePhysics()
 				//cout << "transferright" << endl;
 
 				bool jumpOff = false;
+				bool tip = false;
 				bool unlockedGateJumpOff = false;
 				if( e1->IsGateEdge() )
 				{
@@ -9449,13 +9457,14 @@ V2d Actor::UpdateReversePhysics()
 				{
 					if( movingUp )
 					{
-						if( nextMovingUp )
+						if( nextMovingDown && nextSteep )
 						{
-							jumpOff = false;
+							jumpOff = true;
+							tip = true;
 						}
 						else
 						{
-							jumpOff = true;
+							jumpOff = false;
 						}
 					}
 					else
@@ -9470,11 +9479,8 @@ V2d Actor::UpdateReversePhysics()
 						if( nextSteep && nextMovingDown )
 						{
 							jumpOff = true;
+							tip = true;
 						}
-						/*else if( nextNorm.x >= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
-						{
-							jumpOff = true;
-						}*/
 						else
 						{
 							jumpOff = false;
@@ -9497,9 +9503,16 @@ V2d Actor::UpdateReversePhysics()
 				if( jumpOff || unlockedGateJumpOff)
 				{
 					reversed = false;
-						
-					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+					
+					V2d along = ground->Along();
+
+					if (tip)
+					{
+						along = V2d(-1, 0);
+					}
+
+					velocity = along * -groundSpeed;
+					movementVec = along * extra;
 
 					movementVec.y += .1;
 					if( movementVec.x >= -.1 )
@@ -9510,13 +9523,12 @@ V2d Actor::UpdateReversePhysics()
 					leftGround = true;
 					SetAction( JUMP );
 					frame = 1;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
 					holdJump = false;
+
+					//cout << "jumpoff b: " << along.x << ", " << along.y << endl;
+
 					leftGroundExtra = movementVec;
-					//leftGroundExtra.y = .01;
-					//leftGroundExtra.x = -.01;
 					return leftGroundExtra;
 				}
 				else if( nextSteep && nextMovingUp )
@@ -9675,8 +9687,55 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else
 					{
-						V2d wVel = position - oldPos;
-						edgeQuantity = q;
+						if (movement > 0 && offsetX == b.rw && gNormal.x > 0 && gNormal.y > -steepThresh)// && groundSpeed > 5)
+						{
+							if (e0n.x < 0 && e0n.y > -steepThresh)
+							{
+								LeaveTipTransfer(true, V2d(0, 1));
+							}
+							else
+							{
+								LeaveGroundTipTransfer(true, e0, V2d(0, gravity * 2));
+							}
+							break;
+						}
+						else if (movement < 0 && offsetX == -b.rw && gNormal.x < 0 && gNormal.y > -steepThresh)// && groundSpeed < -5)
+						{
+							if (e1n.x > 0 && e1n.y > -steepThresh)
+							{
+								LeaveTipTransfer(false, V2d(0, 1));
+							}
+							else
+							{
+								LeaveGroundTipTransfer(false, e1, V2d(0, gravity * 2));
+							}
+							break;
+						}
+						else
+						{
+							V2d wVel = position - oldPos;
+							edgeQuantity = q;
+						}
+
+						//reversed
+						if (movement > 0 && offsetX == b.rw && gNormal.x > 0 && gNormal.y > -steepThresh )
+						{
+							LeaveTipTransfer(true, V2d(0, 1));
+							break;
+						}
+						else if (movement < 0 && offsetX == -b.rw && gNormal.x < 0 && gNormal.y > -steepThresh )
+						{
+							LeaveTipTransfer(false, V2d(0, 1));
+							break;
+						}
+						else
+						{
+							V2d wVel = position - oldPos;
+							edgeQuantity = q;
+						}
+
+						/*V2d wVel = position - oldPos;
+						edgeQuantity = q;*/
 						
 					}
 
@@ -10173,8 +10232,70 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else
 					{
-						V2d wVel = position - oldPos;
-						edgeQuantity = q;
+						if (movement > 0 && extra > 0 && gNormal.x < 0 && gNormal.y > -steepThresh && e1n.x >= 0 )
+								//|| ( gNormal.y <= -steepThresh && e1n.x >= 0 && e1n.y > -steepThresh ) ) )
+						{
+							reversed = false;
+
+							V2d along = ground->Along();
+
+							velocity = along * -groundSpeed;
+							movementVec = along * extra;
+
+							movementVec.y += .1;
+							if (movementVec.x <= .1)
+							{
+								movementVec.x = .1;
+							}
+
+							//cout << "airborne 2" << endl;
+							leftGround = true;
+							SetAction(JUMP);
+							frame = 1;
+
+							ground = NULL;
+
+							//cout << "jumpoff c: " << along.x << ", " << along.y << endl;
+
+							leftGroundExtra = movementVec;
+							return leftGroundExtra;
+						}
+						else if (movement < 0 && extra < 0 && gNormal.x > 0 && gNormal.y > -steepThresh && e0n.x <= 0 )
+							//	|| ( gNormal.y <= -steepThresh && e0n.x <= 0 && e0n.y > -steepThresh ) ) )
+						{
+							reversed = false;
+
+							V2d along = ground->Along();
+
+							velocity = along * -groundSpeed;
+							movementVec = along * extra;
+
+							movementVec.y += .1;
+							if (movementVec.x >= -.1)
+							{
+								movementVec.x = -.1;
+							}
+
+							//cout << "airborne 2" << endl;
+							leftGround = true;
+							SetAction(JUMP);
+							frame = 1;
+
+							ground = NULL;
+
+							//cout << "jumpoff d: " << along.x << ", " << along.y << endl;
+
+							leftGroundExtra = movementVec;
+							return leftGroundExtra;
+						}
+						else
+						{
+							V2d wVel = position - oldPos;
+							edgeQuantity = q;
+						}
+						//V2d wVel = position - oldPos;
+						//edgeQuantity = q;
+						
 						
 					}
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10471,13 +10592,14 @@ bool Actor::TrySlideBrakeOrStand()
 	return false;
 }
 
-bool Actor::BasicSteepAction(V2d &gNorm)
+bool Actor::BasicSteepAction()
 {
+	V2d norm = GetGroundedNormal();
 	if (reversed)
 	{
-		if (-gNorm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
+		if (-norm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
 		{
-			if ((groundSpeed > 0 && gNorm.x < 0) || (groundSpeed < 0 && gNorm.x > 0))
+			if ((groundSpeed > 0 && norm.x < 0) || (groundSpeed < 0 && norm.x > 0))
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -10485,7 +10607,7 @@ bool Actor::BasicSteepAction(V2d &gNorm)
 			}
 			else
 			{
-				if (gNorm.x < 0)
+				if (norm.x < 0)
 					facingRight = false;
 				else
 					facingRight = true;
@@ -10497,9 +10619,9 @@ bool Actor::BasicSteepAction(V2d &gNorm)
 	}
 	else
 	{
-		if (gNorm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
+		if (norm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
 		{
-			if ((groundSpeed > 0 && gNorm.x < 0) || (groundSpeed < 0 && gNorm.x > 0))
+			if ((groundSpeed > 0 && norm.x < 0) || (groundSpeed < 0 && norm.x > 0))
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
@@ -10507,7 +10629,7 @@ bool Actor::BasicSteepAction(V2d &gNorm)
 			}
 			else
 			{
-				if (gNorm.x > 0)
+				if (norm.x > 0)
 					facingRight = true;
 				else
 					facingRight = false;
@@ -10549,13 +10671,14 @@ void Actor::SetSprintStartFrame()
 	}
 }
 
-bool Actor::TrySprintOrRun(V2d &gNorm)
+bool Actor::TrySprintOrRun()
 {
 	bool isLandingAction = action == LAND || action == LAND2;
+	V2d norm = GetGroundedNormal();
 	if (currInput.LLeft())
 	{
 		facingRight = false;
-		if ((HoldingRelativeDown() && gNorm.x < 0) || (HoldingRelativeUp() && gNorm.x > 0))
+		if ((HoldingRelativeDown() && norm.x < 0) || (HoldingRelativeUp() && norm.x > 0))
 		{
 			if (action != SPRINT)
 			{
@@ -10581,7 +10704,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 	else if (currInput.LRight())
 	{
 		facingRight = true;
-		if ((HoldingRelativeDown() && gNorm.x > 0) || (HoldingRelativeUp() && gNorm.x < 0))
+		if ((HoldingRelativeDown() && norm.x > 0) || (HoldingRelativeUp() && norm.x < 0))
 		{
 			if (action != SPRINT)
 			{
@@ -10864,7 +10987,7 @@ bool Actor::CheckSetToAerialFromNormalWater()
 	return false;
 }
 
-bool Actor::BasicGroundAction( V2d &gNorm)
+bool Actor::BasicGroundAction()
 {
 	CheckBounceFlame();
 
@@ -10889,9 +11012,9 @@ bool Actor::BasicGroundAction( V2d &gNorm)
 
 	//control only
 
-	if (BasicSteepAction( gNorm )) return true;
+	if (BasicSteepAction()) return true;
 
-	if (TrySprintOrRun( gNorm )) return true;
+	if (TrySprintOrRun()) return true;
 
 	if (TrySlideBrakeOrStand()) return true;
 
@@ -11069,8 +11192,6 @@ void Actor::TryDashBoost()
 
 	if (currBBoostCounter >= 20)
 	{
-		//ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart,
-		//	pp + currNormal * 64.0 + along * xExtraStart, false, angle, 9, 3, fr);
 		bool fr = facingRight;
 		if (reversed)
 		{
@@ -12717,11 +12838,54 @@ bool Actor::TryUnlockOnTransfer( Edge * e)
 	return false;
 }
 
+void Actor::LeaveTipTransfer(bool right, V2d leaveExtra)
+{
+	V2d along(1, 0);
+
+	/*if (reversed)
+	{
+		along = -along;
+	}*/
+	/*if (!right)
+	{
+		along = -along;
+	}*/
+	velocity = along * groundSpeed + leaveExtra;//normalize(ground->v1 - ground->v0) * groundSpeed + leaveExtra;
+
+	movementVec = along * extra;
+
+	movementVec.y -= .01;
+	if (right)
+	{
+		if (movementVec.x <= .01)
+		{
+			movementVec.x = .01;
+		}
+	}
+	else
+	{
+		if (movementVec.x >= -.01)
+		{
+			movementVec.x = -.01;
+		}
+	}
+
+	//cout << "leave tip transfer: " << along.x << ", " << along.y << endl;
+
+	reversed = false;
+	leftGround = true;
+	ground = NULL;
+	SetAction(JUMP);
+	frame = 1;
+	holdJump = false;
+}
+
 void Actor::LeaveGroundTransfer(bool right, V2d leaveExtra )
 {
-	velocity = normalize(ground->v1 - ground->v0) * groundSpeed + leaveExtra;
+	V2d along = ground->Along();
+	velocity = along * groundSpeed + leaveExtra;//normalize(ground->v1 - ground->v0) * groundSpeed + leaveExtra;
 
-	movementVec = normalize(ground->v1 - ground->v0) * extra;
+	movementVec = along * extra;
 
 	movementVec.y -= .01;
 	if (right)
@@ -12739,7 +12903,59 @@ void Actor::LeaveGroundTransfer(bool right, V2d leaveExtra )
 		}
 	}
 	
+	//cout << "leave ground transfer: " << along.x << ", " << along.y << endl;
 
+	leftGround = true;
+	ground = NULL;
+	SetAction(JUMP);
+	frame = 1;
+	holdJump = false;
+}
+
+void Actor::LeaveGroundTipTransfer(bool rightTransfer, Edge *altEdge, V2d leaveExtra )
+{
+	//V2d leaveExtra(0, -gravity * 2);
+	V2d along = altEdge->Along();//ground->Along();
+
+	double speed = groundSpeed;
+	if (reversed)
+	{
+		speed = -speed;
+	}
+
+	velocity = along * speed + leaveExtra;//normalize(ground->v1 - ground->v0) * groundSpeed + leaveExtra;
+
+	//cout << "transfer vel: " << velocity.x << ", " << velocity.y << endl;
+
+	movementVec = along * extra;
+
+	if (reversed)
+	{
+		movementVec.y += .01;
+	}
+	else
+	{
+		movementVec.y -= .01;
+	}
+	
+	bool r = ( rightTransfer && !reversed ) || ( !rightTransfer && reversed );
+
+	if (r)
+	{
+		if (movementVec.x <= .01)
+		{
+			movementVec.x = .01;
+		}
+	}
+	else
+	{
+		if (movementVec.x >= -.01)
+		{
+			movementVec.x = -.01;
+		}
+	}
+
+	reversed = false;
 	leftGround = true;
 	ground = NULL;
 	SetAction(JUMP);
@@ -13018,8 +13234,19 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
-						ground = next;
-						q = length( ground->v1 - ground->v0 );	
+						//this is for walking left/right from the top of a steep tip
+						if (e0n.x <= 0 && e0n.y > -steepThresh )
+						{
+							LeaveTipTransfer(false, V2d(0, -gravity * 2));//V2d( 0, -1 ));
+							break;
+							//LeaveGroundTransfer(false);//, V2d(0, -gravity * 2));
+						}
+						else
+						{
+							ground = next;
+							q = length(ground->v1 - ground->v0);
+						}
+						
 					}
 					else
 					{
@@ -13105,6 +13332,7 @@ void Actor::UpdatePhysics()
 				V2d nextNorm = next->Normal();
 				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh )
 				{
+
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
 						if( groundSpeed <= steepClimbSpeedThresh && action != STEEPCLIMB
@@ -13121,8 +13349,16 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
-						ground = next;
-						q = 0;
+						if (e1n.x >= 0 && e1n.y > -steepThresh)//&& groundSpeed > 5)
+						{
+							LeaveTipTransfer(true, V2d(0, -gravity * 2));//V2d( 0, -1));
+							break;
+						}
+						else
+						{
+							ground = next;
+							q = 0;
+						}
 					}
 					else
 					{
@@ -13324,8 +13560,37 @@ void Actor::UpdatePhysics()
 					}
 					else
 					{
-						V2d wVel = position - oldPos;
-						edgeQuantity = q;
+						if (movement > 0 && offsetX == b.rw && gNormal.x > 0 && gNormal.y > -steepThresh  )// && groundSpeed > 5)
+						{
+							if (e0n.x < 0 && e0n.y > -steepThresh)
+							{
+								LeaveTipTransfer(true, V2d(0, -gravity * 2));
+							}
+							else
+							{
+								LeaveGroundTipTransfer(true, e0, V2d(0, -gravity * 2)); //uses the previous edge's along
+							}
+							
+							break;
+						}
+						else if (movement < 0 && offsetX == -b.rw && gNormal.x < 0 && gNormal.y > -steepThresh )// && groundSpeed < -5)
+						{
+							if (e1n.x > 0 && e1n.y > -steepThresh)
+							{
+								LeaveTipTransfer(false, V2d(0, -gravity * 2));
+							}
+							else
+							{
+								LeaveGroundTipTransfer(false, e1, V2d(0, -gravity * 2));
+							}
+							
+							break;
+						}
+						else
+						{
+							V2d wVel = position - oldPos;
+							edgeQuantity = q;
+						}						
 					}
 
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -14987,7 +15252,8 @@ void Actor::HitWhileGrounded()
 	}
 	else
 	{
-		groundSpeed *= (1 - receivedHit.drainX) * abs(currNormal.y) + (1 - receivedHit.drainY) * abs(currNormal.x);
+		V2d norm = GetGroundedNormal();
+		groundSpeed *= (1 - receivedHit.drainX) * abs(norm.y) + (1 - receivedHit.drainY) * abs(norm.x);
 	}
 }
 
@@ -17066,7 +17332,9 @@ void Actor::UpdateSpeedParticles()
 				double angle = GroundedAngle();
 				V2d groundPos = ground->GetPosition(edgeQuantity);
 
-				V2d truePos = groundPos + currNormal * normalHeight;
+				V2d norm = GetGroundedNormal();
+
+				V2d truePos = groundPos + norm * normalHeight;
 				int randx = rand() % rx;
 				randx -= rx / 2;
 				int randy = rand() % ry;
@@ -17084,7 +17352,7 @@ void Actor::UpdateSpeedParticles()
 				int randy = rand() % ry;
 				randy -= ry / 2;
 				truePos += V2d(randx, randy);
-				double angle = atan2(currNormal.x, currNormal.y);
+				double angle = GroundedAngle();
 
 				ActivateEffect(PLAYERFX_SPEED_LEVEL_CHARGE, Vector2f(truePos), RadiansToDegrees(angle), 12, 3, facingRight, randTex * 12);
 			}
@@ -17097,7 +17365,8 @@ void Actor::UpdateSpeedParticles()
 			if (ground != NULL)
 			{
 				V2d groundPos = ground->GetPosition(edgeQuantity);
-				V2d truePos = groundPos + currNormal * normalHeight;//.0;
+				V2d norm = GetGroundedNormal();
+				V2d truePos = groundPos + norm * normalHeight;//.0;
 				int randx = rand() % rx;
 				randx -= rx / 2;
 				int randy = rand() % ry;
@@ -17116,7 +17385,7 @@ void Actor::UpdateSpeedParticles()
 				int randy = rand() % ry;
 				randy -= ry / 2;
 				truePos += V2d(randx, randy);
-				double angle = atan2(currNormal.x, currNormal.y);
+				double angle = GroundedAngle();
 				//purple charge
 				ActivateEffect(PLAYERFX_SPEED_LEVEL_CHARGE, Vector2f(truePos), RadiansToDegrees(angle), 12, 3, facingRight, 12 * 5);
 			}
@@ -17500,11 +17769,6 @@ void Actor::UpdatePostPhysics()
 	QueryTouchGrass();
 
 	ProcessSpecialTerrain();
-	
-	if( ground != NULL )
-	{
-		currNormal = GetGroundedNormal();//ground->Normal();
-	}
 
 	if( action == DEATH )
 	{
@@ -18545,6 +18809,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				{
 					return;
 				}
+				else if (ground != NULL && ((ground->v0 == e->v0) || (ground->v1 == e->v1)))
+				{
+					//cout << "ignored" << endl;
+					return;
+				}
 				else if (e->rail->GetRailType() == TerrainRail::SCORPIONONLY)
 				{
 					if (!scorpOn)
@@ -18919,6 +19188,25 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 					return;
 
+				}
+			}
+			else if (e->rail != NULL)
+			{
+				if (e->edge0 != NULL  && e->v0 == c->position)
+				{
+					double c = cross(position - e->v0, e->edge0->Along());
+					if (c <= 0)
+					{
+						return;
+					}
+				}
+				else if (e->edge1 != NULL && e->v1 == c->position)
+				{
+					double c = cross(position - e->v1, e->edge1->Along());
+					if (c <= 0)
+					{
+						return;
+					}
 				}
 			}
 
@@ -20362,38 +20650,19 @@ bool Actor::TryLandFromBounceGround()
 
 		groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
 
-		/*if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
-		{
-		groundSpeed = dot( testVel, alongVel );
-		}
-		else
-		{
-		if( gNorm.y > -steepThresh )
-		{
-		groundSpeed = dot( testVel, alongVel );
-		}
-		else
-		{
-		groundSpeed = 0;
-		}
-		}*/
-
-		//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
-		//cout << "setting groundSpeed: " << groundSpeed << endl;
-		//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-		currNormal = GetGroundedNormal();//ground->Normal();
+		V2d norm = GetGroundedNormal();
 
 		//if( gNorm.y <= -steepThresh )
 		{
 			RestoreAirOptions();
 		}
 
-		if (testVel.x < 0 && currNormal.y <= -steepThresh)
+		if (testVel.x < 0 && norm.y <= -steepThresh)
 		{
 			groundSpeed = min(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
 			//cout << "left boost: " << groundSpeed << endl;
 		}
-		else if (testVel.x > 0 && currNormal.y <= -steepThresh)
+		else if (testVel.x > 0 && norm.y <= -steepThresh)
 		{
 			groundSpeed = max(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
 			//cout << "right boost: " << groundSpeed << endl;
@@ -20726,12 +20995,14 @@ void Actor::DefaultCeilingLanding(double &movement)
 	double groundLength = length(ground->v1 - ground->v0);
 	groundSpeed = 0;
 
-	V2d gno = ground->Normal();
+	offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+	V2d gno = GetGroundedNormal();//ground->Normal();
 
 
 	double angle = atan2(gno.x, -gno.y);
 
-	V2d along = ground->Along();
+	V2d along(-gno.y, gno.x);//ground->Along();
 	if (-gno.y > -steepThresh) //is steep
 	{
 		groundSpeed = -dot(velocity, along);
@@ -20756,7 +21027,7 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	
 	//offsetX = -10;//(position.x + b.offset.x) - minContact.position.x;
-	offsetX = (position.x + b.offset.x) - minContact.position.x;
+	
 	//offsetX = -offsetX;
 
 	//cout << "offsetX: " << offsetX << "\n";
@@ -21555,13 +21826,7 @@ void Actor::UpdateSprite()
 
 	//dustParticles->Update(&rpu);
 
-
-	//V2d gn( 0, 0 );
-	if( ground != NULL )
-	{
-		currNormal = GetGroundedNormal();//ground->Normal();
-	}
-	else
+	if( ground == NULL )
 	{
 		bool r = rightWire->IsPulling();
 		bool l = leftWire->IsPulling();
@@ -21862,8 +22127,22 @@ double Actor::GroundedAngle()
 	V2d gn;
 	if( ground != NULL )
 	{
-		gn = ground->Normal();
-		//return 0;
+		if (!approxEquals(abs(offsetX), b.rw))
+		{
+			if (reversed)
+			{
+				return PI;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			gn = ground->Normal();
+			return atan2(gn.x, -gn.y);
+		}
 	}
 	else if( grindEdge != NULL )
 	{
@@ -21872,75 +22151,32 @@ double Actor::GroundedAngle()
 		{
 			gn = -gn;
 		}
+
+		return atan2(gn.x, -gn.y);
 	}
 	else if (bounceEdge != NULL)
 	{
-		gn = bounceEdge->Normal();
+		if (!approxEquals(abs(offsetX), b.rw))
+		{
+			if (reversed)
+			{
+				return PI;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			gn = bounceEdge->Normal();
+			return atan2(gn.x, -gn.y);
+		}
 	}
 	else
 	{
 		return 0;
 	}
-	
-	//cout << "gn: " << gn.x << ", " << gn.y << endl;
-
-	double angle = 0;
-	
-	bool extraCase = false;
-	
-	if (ground != NULL)
-	{
-		bool a = false, b = false;
-		if (!reversed)
-		{
-			if (ground->edge0 != NULL)
-			{
-				V2d e0n = ground->edge0->Normal();
-				a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
-			}
-			
-			if (ground->edge1 != NULL)
-			{
-				V2d e1n = ground->edge1->Normal();
-				b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
-			}
-		}
-		else
-		{
-			if (ground->edge0 != NULL)
-			{
-				V2d e0n = ground->edge0->Normal();
-				a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
-			}
-
-			if (ground->edge1 != NULL)
-			{
-				V2d e1n = ground->edge1->Normal();
-				b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
-			}
-		}
-		extraCase = a || b;
-	}
-	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
-	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );
-	//cout << "offsetX: " << offsetX << ", b.rw: " << b.rw << endl;
-
-	//approxequals is broken????????
-
-	//note: approxequals is broken??
-	bool okayOffset = abs( abs(offsetX) - b.rw ) < .001;
-	if( !okayOffset || extraCase )
-	{
-		//cout << "bad offset: " << offsetX << endl;
-		if( reversed )
-			angle = PI;
-	}
-	else
-	{
-		angle = atan2( gn.x, -gn.y );
-	}
-
-	return angle;
 }
 
 double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
@@ -22634,7 +22870,7 @@ void Actor::AttackMovement()
 	assert(ground != NULL);
 	if (IsOnSteepGround())
 	{
-		V2d norm = currNormal;
+		V2d norm = GetGroundedNormal();
 
 		if ((groundSpeed > 0 && norm.x < 0) || ( groundSpeed < 0 && norm.x > 0 ))
 		{
@@ -24075,7 +24311,7 @@ void Actor::SteepSlideMovement()
 
 void Actor::SteepClimbMovement()
 {
-	bool boost = TryClimbBoost(currNormal);
+	bool boost = TryClimbBoost();
 
 	float factor = steepClimbGravFactor;
 	if (HoldingRelativeUp())

@@ -31,13 +31,16 @@ void Actor::GRAVREVERSE_Change()
 		}
 	}
 
+	
+
 	//groundSpeed = 0;
 	if (reversed)
 	{
-		if (-currNormal.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
+		V2d norm = GetGroundedNormal();
+		if (-norm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
 		{
 
-			if (groundSpeed < 0 && currNormal.x > 0 || groundSpeed > 0 && currNormal.x < 0)
+			if (groundSpeed < 0 && norm.x > 0 || groundSpeed > 0 && norm.x < 0)
 			{
 				SetAction(STEEPCLIMB);
 

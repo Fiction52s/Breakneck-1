@@ -72,9 +72,10 @@ void Actor::STEEPSLIDE_Change()
 		return;
 	}
 
+	V2d norm = GetGroundedNormal();
 	if (reversed)
 	{
-		if (-currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw) 
+		if (-norm.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
 			|| approxEquals(offsetX, -b.rw)))
 		{
 			SetAction(LAND2);
@@ -95,14 +96,14 @@ void Actor::STEEPSLIDE_Change()
 				{
 
 				}
-				facingRight = (currNormal.x < 0);
+				facingRight = (norm.x < 0);
 				return;
 			}
 
 
 			//is steep
-			if ((currNormal.x < 0 && groundSpeed > 0)
-				|| (currNormal.x > 0 && groundSpeed < 0))
+			if ((norm.x < 0 && groundSpeed > 0)
+				|| (norm.x > 0 && groundSpeed < 0))
 			{
 				SetAction(STEEPCLIMB);
 				frame = 1;
@@ -116,7 +117,7 @@ void Actor::STEEPSLIDE_Change()
 	}
 	else
 	{
-		if (currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw) 
+		if (norm.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
 			|| approxEquals(offsetX, -b.rw)))
 		{
 			//cout << "is it really this wtf" << endl;
@@ -139,14 +140,14 @@ void Actor::STEEPSLIDE_Change()
 				{
 
 				}
-				facingRight = (currNormal.x < 0);
+				facingRight = (norm.x < 0);
 				return;
 			}
 
 
 			//is steep
-			if ((currNormal.x < 0 && groundSpeed > 0) 
-				|| (currNormal.x > 0 && groundSpeed < 0))
+			if ((norm.x < 0 && groundSpeed > 0)
+				|| (norm.x > 0 && groundSpeed < 0))
 			{
 				SetAction(STEEPCLIMB);
 				frame = 1;
@@ -167,13 +168,13 @@ void Actor::STEEPSLIDE_Change()
 	if (DashButtonPressed())
 	{
 		//up and away from a steep slope shouldn't make you climb out of a slide!
-		if (currNormal.x < 0 && (currInput.LRight() || HoldingRelativeUp()) && !currInput.LLeft() && !HoldingRelativeDown())
+		if (norm.x < 0 && (currInput.LRight() || HoldingRelativeUp()) && !currInput.LLeft() && !HoldingRelativeDown())
 		{
 			SetAction(STEEPCLIMB);
 			groundSpeed = 0;//steepClimbBoostStart;
 			frame = 0;
 		}
-		else if (currNormal.x > 0 && (currInput.LLeft() || HoldingRelativeUp()) && !currInput.LRight() && !HoldingRelativeDown())
+		else if (norm.x > 0 && (currInput.LLeft() || HoldingRelativeUp()) && !currInput.LRight() && !HoldingRelativeDown())
 		{
 			SetAction(STEEPCLIMB);
 			groundSpeed = 0;//-steepClimbBoostStart;
@@ -201,17 +202,7 @@ void Actor::STEEPSLIDE_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(0, r);
 
-	double angle = 0;
-	if (!approxEquals(abs(offsetX), b.rw))
-	{
-		if (reversed)
-			angle = PI;
-		//this should never happen
-	}
-	else
-	{
-		angle = atan2(currNormal.x, -currNormal.y);
-	}
+	double angle = GroundedAngle();
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 	sprite->setRotation(angle / PI * 180);

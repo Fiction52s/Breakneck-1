@@ -937,7 +937,6 @@ struct Actor : QuadTreeCollider,
 	BitField originalProgressionUpgradeField;
 	BitField originalProgressionLogField;
 	bool canStandUp;
-	V2d currNormal;
 	Tileset *ts_kinFace;
 	sf::Sprite exitAuraSprite;
 	std::vector<void(Actor::*)()> startActionFuncs;
@@ -1333,7 +1332,7 @@ struct Actor : QuadTreeCollider,
 
 	void PopulateState(PState *ps);
 	void PopulateFromState(PState *ps);
-	bool TryClimbBoost(V2d &gNorm);
+	bool TryClimbBoost();
 	CollisionBody * GetBubbleHitbox(int index);
 
 	int GetMaxBubbles();
@@ -1509,7 +1508,7 @@ struct Actor : QuadTreeCollider,
 	bool TryDash();
 	bool TryJumpSquat();
 	bool TrySlideBrakeOrStand();
-	bool TrySprintOrRun(V2d &gNorm);
+	bool TrySprintOrRun();
 	void SetSprintStartFrame();
 	bool TryAirDash();
 	bool TryGlide();
@@ -1600,8 +1599,8 @@ struct Actor : QuadTreeCollider,
 	bool GlideAction();
 	bool HomingAction();
 	bool IsHomingAttackAction(int a);
-	bool BasicGroundAction( V2d &gNorm);
-	bool BasicSteepAction(V2d &gNorm);
+	bool BasicGroundAction();
+	bool BasicSteepAction();
 	bool BasicAirAttackAction();
 	sf::Vector2<double> UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
@@ -1679,6 +1678,8 @@ struct Actor : QuadTreeCollider,
 	bool UpdateGrindRailPhysics(double movement);
 	bool TryUnlockOnTransfer( Edge *e );
 	void LeaveGroundTransfer(bool right, V2d leaveExtra = V2d());
+	void LeaveGroundTipTransfer(bool right, Edge *altEdge, V2d leaveExtra = V2d());
+	void LeaveTipTransfer(bool right, V2d leaveExtra = V2d());
 	bool UpdateAutoRunPhysics( double q, double m );
 	void UpdateSpeedBar();
 	bool CareAboutSpeedAction();

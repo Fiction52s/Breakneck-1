@@ -38,9 +38,10 @@ void Actor::STEEPCLIMB_Change()
 		return;
 	}
 
+	V2d norm = GetGroundedNormal();
 	if (reversed)
 	{
-		if (-currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw) 
+		if (-norm.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
 			|| approxEquals(offsetX, -b.rw)))
 		{
 			SetAction(LAND2);
@@ -52,7 +53,7 @@ void Actor::STEEPCLIMB_Change()
 			return;
 		}
 
-		if (currNormal.x > 0 && groundSpeed >= 0)
+		if (norm.x > 0 && groundSpeed >= 0)
 		{
 			if (HoldingRelativeUp())
 			{
@@ -75,7 +76,7 @@ void Actor::STEEPCLIMB_Change()
 			}
 			return;
 		}
-		else if (currNormal.x < 0 && groundSpeed <= 0)
+		else if (norm.x < 0 && groundSpeed <= 0)
 		{
 			if (HoldingRelativeUp())
 			{
@@ -101,7 +102,7 @@ void Actor::STEEPCLIMB_Change()
 	}
 	else
 	{
-		if (currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw) 
+		if (norm.y <= -steepThresh || !(approxEquals(offsetX, b.rw)
 			|| approxEquals(offsetX, -b.rw)))
 		{
 			//cout << "blahzzz" << endl;
@@ -115,7 +116,7 @@ void Actor::STEEPCLIMB_Change()
 			//not steep
 		}
 
-		if (currNormal.x > 0 && groundSpeed >= 0)
+		if (norm.x > 0 && groundSpeed >= 0)
 		{
 			if (HoldingRelativeUp())
 			{
@@ -138,7 +139,7 @@ void Actor::STEEPCLIMB_Change()
 			}
 			return;
 		}
-		else if (currNormal.x < 0 && groundSpeed <= 0)
+		else if (norm.x < 0 && groundSpeed <= 0)
 		{
 			if (HoldingRelativeUp())
 			{
@@ -167,36 +168,6 @@ void Actor::STEEPCLIMB_Change()
 	{
 		return;
 	}
-
-	/*bool fallAway = false;
-	if (reversed)
-	{
-	}
-	else
-	{
-		if (facingRight)
-		{
-			if (currInput.LLeft())
-			{
-				fallAway = true;
-			}
-		}
-		else
-		{
-			if (currInput.LRight())
-			{
-				fallAway = true;
-			}
-		}
-	}
-
-	if (fallAway)
-	{
-		SetAction(JUMP);
-		frame = 0;
-		steepJump = true;
-		return;
-	}*/
 }
 
 void Actor::STEEPCLIMB_Update()
@@ -212,17 +183,7 @@ void Actor::STEEPCLIMB_UpdateSprite()
 	int tFrame = frame / 4;
 	SetSpriteTile(tFrame, r);
 
-	double angle = 0;
-	if (!approxEquals(abs(offsetX), b.rw))
-	{
-		if (reversed)
-			angle = PI;
-		//this should never happen
-	}
-	else
-	{
-		angle = atan2(currNormal.x, -currNormal.y);
-	}
+	double angle = GroundedAngle();
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 	sprite->setRotation(angle / PI * 180);

@@ -18,7 +18,7 @@ void Actor::STAND_End()
 
 void Actor::STAND_Change()
 {
-	BasicGroundAction(currNormal);
+	BasicGroundAction();
 }
 
 void Actor::STAND_Update()

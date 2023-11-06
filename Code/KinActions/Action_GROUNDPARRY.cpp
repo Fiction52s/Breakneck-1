@@ -28,14 +28,6 @@ void Actor::GROUNDPARRY_Change()
 	{
 		SetGroundBlockAction();
 	}
-	/*if (!currInput.Y && blockstunFrames == 0)
-	{
-		SetAction(STAND);
-		frame = 0;
-	}*/
-
-	//else if( BasicGroundAction)
-
 }
 
 void Actor::GROUNDPARRY_Update()

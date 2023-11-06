@@ -52,15 +52,17 @@ void Actor::STEEPSLIDEATTACK_Change()
 		//if (SteepSlideAttack())
 		//	return;
 
+		V2d norm = GetGroundedNormal();
+
 		if (DashButtonPressed())
 		{
-			if (currNormal.x < 0 && currInput.LRight())
+			if (norm.x < 0 && currInput.LRight())
 			{
 				SetAction(STEEPCLIMB);
 				groundSpeed = steepClimbBoostStart;
 				frame = 0;
 			}
-			else if (currNormal.x > 0 && currInput.LLeft())
+			else if (norm.x > 0 && currInput.LLeft())
 			{
 				SetAction(STEEPCLIMB);
 				groundSpeed = -steepClimbBoostStart;

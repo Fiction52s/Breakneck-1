@@ -17,7 +17,7 @@ void Actor::SPRINT_End()
 
 void Actor::SPRINT_Change()
 {
-	if (BasicGroundAction(currNormal))
+	if (BasicGroundAction())
 		return;
 
 	if (!(currInput.LLeft() || currInput.LRight()))
@@ -38,11 +38,12 @@ void Actor::SPRINT_Change()
 	}
 	else
 	{
+		V2d norm = GetGroundedNormal();
 		if (facingRight && currInput.LLeft())
 		{
 
-			if ((HoldingRelativeDown() && currNormal.x < 0)
-				|| (HoldingRelativeUp() && currNormal.x > 0))
+			if ((HoldingRelativeDown() && norm.x < 0)
+				|| (HoldingRelativeUp() && norm.x > 0))
 			{
 				frame = 0;
 			}
@@ -58,8 +59,8 @@ void Actor::SPRINT_Change()
 		}
 		else if (!facingRight && currInput.LRight())
 		{
-			if ((HoldingRelativeDown() && currNormal.x > 0) 
-				|| (HoldingRelativeUp() && currNormal.x < 0))
+			if ((HoldingRelativeDown() && norm.x > 0)
+				|| (HoldingRelativeUp() && norm.x < 0))
 			{
 				frame = 0;
 			}
@@ -73,10 +74,10 @@ void Actor::SPRINT_Change()
 			frame = 0;
 			return;
 		}
-		else if (!((HoldingRelativeDown() && ((currNormal.x > 0 && facingRight)
-			|| (currNormal.x < 0 && !facingRight)))
-			|| (HoldingRelativeUp() && ((currNormal.x < 0 && facingRight)
-				|| (currNormal.x > 0 && !facingRight)))))
+		else if (!((HoldingRelativeDown() && ((norm.x > 0 && facingRight)
+			|| (norm.x < 0 && !facingRight)))
+			|| (HoldingRelativeUp() && ((norm.x < 0 && facingRight)
+				|| (norm.x > 0 && !facingRight)))))
 		{
 			SetAction(RUN);
 			frame = frame / 4;
@@ -119,6 +120,7 @@ void Actor::SPRINT_Update()
 	else if (currInput.LRight())
 		facingRight = true;
 
+	V2d norm = GetGroundedNormal();
 	double accel = 0;
 	if (!facingRight)//currInput.LLeft() )
 	{
@@ -137,12 +139,12 @@ void Actor::SPRINT_Update()
 			}
 			else
 			{
+				
 
-
-				if (currNormal.x > 0)
+				if (norm.x > 0)
 				{
 					//up a slope
-					double sprAccel = GetFullSprintAccel(false, currNormal);
+					double sprAccel = GetFullSprintAccel(false, norm);
 
 					//GroundExtraAccel();
 
@@ -154,7 +156,7 @@ void Actor::SPRINT_Update()
 				{
 					//GroundExtraAccel();
 
-					double sprAccel = GetFullSprintAccel(true, currNormal);
+					double sprAccel = GetFullSprintAccel(true, norm);
 
 					accel = sprAccel / slowMultiple;
 					groundSpeed -= accel;
@@ -183,11 +185,11 @@ void Actor::SPRINT_Update()
 			}
 			else
 			{
-				if (currNormal.x < 0)
+				if (norm.x < 0)
 				{
 					//GroundExtraAccel();
 
-					double sprAccel = GetFullSprintAccel(false, currNormal);
+					double sprAccel = GetFullSprintAccel(false, norm);
 
 					accel = sprAccel / slowMultiple;
 					groundSpeed += accel;
@@ -197,7 +199,7 @@ void Actor::SPRINT_Update()
 
 					//GroundExtraAccel();
 
-					double sprAccel = GetFullSprintAccel(true, currNormal);
+					double sprAccel = GetFullSprintAccel(true, norm);
 
 					accel = sprAccel / slowMultiple;
 					groundSpeed += accel;

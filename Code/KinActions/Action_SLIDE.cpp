@@ -16,7 +16,7 @@ void Actor::SLIDE_End()
 
 void Actor::SLIDE_Change()
 {
-	BasicGroundAction(currNormal);
+	BasicGroundAction();
 }
 
 void Actor::SLIDE_Update()
