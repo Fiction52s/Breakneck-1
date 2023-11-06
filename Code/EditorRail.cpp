@@ -491,14 +491,14 @@ bool TerrainRail::RequiresPowerToGrind()
 
 bool TerrainRail::AlignExtremes()
 {
-	vector<PointMoveInfo> emptyLockPoints;
-	return AlignExtremes(emptyLockPoints);
+	list<PointMoveInfo> emptyLockPoints;
+	return AlignExtremes(emptyLockPoints, emptyLockPoints);
 }
 
-bool TerrainRail::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
+bool TerrainRail::AlignExtremes(std::list<PointMoveInfo> &lockPoints, std::list<PointMoveInfo> &addedLockPoints)
 {
-	return false;
-	/*double primLimit = EditSession::PRIMARY_LIMIT;
+	//return false;
+	double primLimit = EditSession::PRIMARY_LIMIT;
 	bool adjustedAtAll = false;
 
 	bool checkPoint;
@@ -511,8 +511,19 @@ bool TerrainRail::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 
 	bool lockPointsEmpty = lockPoints.empty();
 
+	bool nextPointLocked;
+
 
 	int numP = GetNumPoints();
+
+	set<int> lockedPointIndexes;
+	for (auto it = lockPoints.begin(); it != lockPoints.end(); ++it)
+	{
+		lockedPointIndexes.insert((*it).pointIndex);
+	}
+
+	TerrainPoint *curr, *next;// , *prev;//*next;
+	
 
 	while (adjusted)
 	{
@@ -523,8 +534,81 @@ bool TerrainRail::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 
 		for (int i = 0; i < numP; ++i, lockPointIndex++)
 		{
-			isPointLocked = !lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
-			result = FixNearPrimary(i, isPointLocked);
+			isPointLocked = (lockedPointIndexes.find(i) != lockedPointIndexes.end());//!lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
+
+			curr = GetPoint(i);
+			next = GetPoint(i + 1);
+
+			if (next != NULL)
+			{
+				nextPointLocked = (lockedPointIndexes.find(next->index) != lockedPointIndexes.end());
+			}
+			else
+			{
+				break;
+			}
+
+			Vector2i extreme = GetExtreme(curr, next);
+			
+			result = 0;
+
+			if (extreme.x == 0 && extreme.y == 0)
+				continue;
+			else if (isPointLocked)
+			{
+				if (nextPointLocked)
+				{
+					continue;
+					assert(0); //need to adjust the next point, but its locked too!
+				}
+
+				PointMoveInfo pi;
+				pi.origPos = next->pos;
+				pi.pointIndex = next->index;
+				pi.rail = this;
+				//continue;
+				if (extreme.x != 0)
+					next->pos.y = curr->pos.y;
+				else
+					next->pos.x = curr->pos.x;
+
+				if (curr->pos == next->pos)
+				{
+					int b = 6;
+					assert(0);
+				}
+
+				pi.newPos = next->pos;
+
+				addedLockPoints.push_back(pi);
+				lockedPointIndexes.insert(pi.pointIndex);
+
+				result = 2;
+			}
+			else
+			{
+				PointMoveInfo pi;
+				pi.origPos = curr->pos;
+				pi.pointIndex = curr->index;
+				pi.rail = this;
+
+				if (extreme.x != 0)
+					curr->pos.y = next->pos.y;
+				else
+					curr->pos.x = next->pos.x;
+
+				if (curr->pos == next->pos)
+				{
+					int b = 6;
+					assert(0);
+				}
+
+				pi.newPos = curr->pos;
+				addedLockPoints.push_back(pi);
+				lockedPointIndexes.insert(pi.pointIndex);
+
+				result = 1;
+			}
 
 			if (result > 0)
 			{
@@ -534,7 +618,7 @@ bool TerrainRail::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 		}
 	}
 
-	return adjustedAtAll;*/
+	return adjustedAtAll;
 }
 
 
@@ -2184,6 +2268,30 @@ void TerrainRail::UpdateState()
 	}
 
 	++frame;
+}
+
+Vector2i TerrainRail::GetExtreme(TerrainPoint *p0,
+	TerrainPoint *p1)
+{
+	Vector2i extreme(0, 0);
+
+	Vector2i diff = p1->pos - p0->pos;
+
+	if (diff.x == 0 || diff.y == 0)
+		return extreme;
+
+	double primLimit = EditSession::PRIMARY_LIMIT;
+	V2d diffDir = normalize(V2d(diff));
+	if (diffDir.x > primLimit)
+		extreme.x = 1;
+	else if (diffDir.x < -primLimit)
+		extreme.x = -1;
+	if (diffDir.y > primLimit)
+		extreme.y = 1;
+	else if (diffDir.y < -primLimit)
+		extreme.y = -1;
+
+	return extreme;
 }
 
 void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b)

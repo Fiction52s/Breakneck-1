@@ -5690,38 +5690,7 @@ void EditSession::TryRemoveSelectedPoints()
 			affectedRails.push_back(rp);
 
 			rp->CreateNewRailsWithSelectedPointsRemoved(newRails);
-			/*PolyPtr newPoly(tp->CreateCopyWithSelectedPointsRemoved());
-
-			if (newPoly != NULL)
-			{
-				newPoly->RemoveSlivers();
-				newPoly->AlignExtremes();
-			}
-			else
-			{
-				valid = false;
-			}
-
-			if (valid)
-			{
-				if (!IsPolygonValid(newPoly, tp))
-				{
-					valid = false;
-				}
-			}
-
-			if (!valid)
-			{
-				delete newPoly;
-				for (auto pit = newPolys.begin(); pit != newPolys.end(); ++pit)
-				{
-					delete (*pit);
-				}
-				MessagePop("problem removing points");
-				return;
-			}
-
-			newPolys.push_back(newPoly);*/
+			rp->AlignExtremes();
 		}
 
 		for (auto it = newRails.begin(); it != newRails.end(); ++it)

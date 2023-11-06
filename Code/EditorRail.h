@@ -147,6 +147,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	const std::string &GetRailTypeName();
 	void ResetState();
 	void UpdateState();
+	sf::Vector2i GetExtreme(TerrainPoint *curr, TerrainPoint *next);
 	void FadeOut();
 	bool IsActive();
 	static int GetRailIndexFromString(const std::string &s);
@@ -215,7 +216,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void Finalize();
 	void Reset();
 	void SoftReset();
-	bool AlignExtremes(std::vector<PointMoveInfo> &lockPoints);
+	bool AlignExtremes(std::list<PointMoveInfo> &lockPoints, std::list<PointMoveInfo> &addedLockPoints);
 	bool AlignExtremes();
 	void UpdateBounds();
 	void WriteFile(std::ofstream &of);
