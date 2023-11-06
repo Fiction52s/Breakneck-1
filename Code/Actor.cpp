@@ -8925,65 +8925,61 @@ bool Actor::TryStandupOnForcedGrindExit()
 
 bool Actor::CheckStandUp()
 {
-	if( b.rh > normalHeight )
+	double ex = .05;//.1 //needs to be smaller than the extra amount given to grind for 
+					//standup to work for grind.
+	Rect<double> r;
+
+	r = Rect<double>(position.x + b.offset.x - b.rw - ex, position.y - ex - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
+
+	queryType = Q_CHECK;
+	checkValid = true;
+	GetTerrainTree()->Query(this, r);
+	sess->railEdgeTree->Query(this, r);
+
+	sess->barrierTree->Query(this, r);
+
+	possibleEdgeCount = 0;
+
+	/*if( checkValid )
+	cout << "check valid" << endl;
+	else
 	{
-		cout << "WEIRD" << endl;
-		return false;
-	//	return true;
+	cout << "cant stand up" << endl;
+	}*/
+
+	/*if( checkValid )
+	{
+	cout << "canstand" << endl;
 	}
 	else
 	{
-		//Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - normalHeight, 2 * b.rw, 2 * normalHeight );
-	//	Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight * 2, 2 * b.rw, 2 * normalHeight * 2 );
+	cout << "cannot stand" << endl;
+	}*/
+	return checkValid;
+}
 
-	//	Rect<double> r( position.x + offsetX + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+bool Actor::CheckStandUpToDash()
+{
+	double ex = .05;//.1 //needs to be smaller than the extra amount given to grind for 
+					//standup to work for grind.
+	Rect<double> r;
 
-		//hope this doesnt make weird issues sometimes ;_;
+	double yOff = normalHeight - dashHeight;
+	if (reversed)
+		yOff = -yOff;
 
-		
-		double ex = .05;//.1 //needs to be smaller than the extra amount given to grind for 
-		//standup to work for grind.
-		Rect<double> r;
+	r = Rect<double>(position.x + b.offset.x - b.rw - ex, position.y + yOff - ex - dashHeight, 2 * b.rw + 2 * ex, 2 * dashHeight + 2 * ex);
 
-		
-		//if( reversed )
-		//{
-		//	r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
-		//}
-		//else
-		//{
-		//	r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
-		//}
-		r = Rect<double>(position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
+	queryType = Q_CHECK;
+	checkValid = true;
+	GetTerrainTree()->Query(this, r);
+	sess->railEdgeTree->Query(this, r);
 
-		queryType = Q_CHECK;
-		checkValid = true;
-	//	Query( this, owner->testTree, r );
-		GetTerrainTree()->Query( this, r );
-		sess->railEdgeTree->Query(this, r);
-		
-		sess->barrierTree->Query(this, r);
+	sess->barrierTree->Query(this, r);
 
-		possibleEdgeCount = 0;
+	possibleEdgeCount = 0;
 
-		/*if( checkValid )
-			cout << "check valid" << endl;
-		else
-		{
-			cout << "cant stand up" << endl;
-		}*/
-
-		/*if( checkValid )
-		{
-			cout << "canstand" << endl;
-		}
-		else
-		{
-			cout << "cannot stand" << endl;
-		}*/
-		return checkValid;
-	}
-	
+	return checkValid;
 }
 
 bool Actor::ResolvePhysics( V2d vel )
@@ -10336,7 +10332,6 @@ void Actor::CheckGates()
 
 bool Actor::ExitGrind(bool jump)
 {
-	
 	V2d op = position;
 
 	V2d grindNorm = grindEdge->Normal();
@@ -10365,8 +10360,68 @@ bool Actor::ExitGrind(bool jump)
 
 		if (!CheckStandUp())
 		{
-			position = op;
-			return false;
+			if (!CheckStandUpToDash())
+			{
+				position = op;
+				return false;
+			}
+			else
+			{
+				b.rh = dashHeight;
+				b.offset.y = (normalHeight - dashHeight);
+				if (reversed)
+					b.offset.y = -b.offset.y;
+
+				if (!jump)
+				{
+					if (grindSpeed > 0)
+					{
+						facingRight = true;
+					}
+					else
+					{
+						facingRight = false;
+					}
+
+					framesNotGrinding = 0;
+					RestoreAirOptions();
+
+					ground = grindEdge;
+					SetAction(DASH);
+
+					frame = 0;
+					groundSpeed = grindSpeed;
+
+					if (currInput.LRight())
+					{
+						facingRight = true;
+						if (groundSpeed < 0)
+						{
+							groundSpeed = 0;
+						}
+					}
+					else if (currInput.LLeft())
+					{
+						facingRight = false;
+						if (groundSpeed > 0)
+						{
+							groundSpeed = 0;
+						}
+					}
+				}
+				else
+				{
+					ground = grindEdge;
+					groundSpeed = grindSpeed;
+					SetAction(JUMPSQUAT);
+					frame = 0;
+				}
+
+				grindEdge = NULL;
+				reversed = false;
+
+				CheckGates();
+			}
 		}
 		else
 		{
@@ -10443,9 +10498,115 @@ bool Actor::ExitGrind(bool jump)
 
 		if (!CheckStandUp())
 		{
-			reversed = oldReversed;
-			position = op;
-			return false;
+			if (!CheckStandUpToDash())
+			{
+				reversed = oldReversed;
+				position = op;
+				return false;
+			}
+			else
+			{
+				reversed = oldReversed;
+
+				framesNotGrinding = 0;
+
+				if (!HasUpgrade(UPGRADE_POWER_GRAV) || jump)
+				{
+					if (grindNorm.x > 0)
+					{
+						offsetX = b.rw;
+					}
+					else if (grindNorm.x < 0)
+					{
+						offsetX = -b.rw;
+					}
+					else
+					{
+						offsetX = 0;
+					}
+
+					if (grindSpeed < 0)
+					{
+						facingRight = true;
+					}
+					else
+					{
+						facingRight = false;
+					}
+
+					RestoreAirOptions();
+
+					ground = grindEdge;
+					groundSpeed = -grindSpeed;
+					reversed = true;
+
+					b.rh = dashHeight;
+					b.offset.y = (normalHeight - dashHeight);
+					if (reversed)
+						b.offset.y = -b.offset.y;
+
+					grindEdge = NULL;
+
+					SetAction(JUMPSQUAT);
+					framesNotGrinding = 0;
+					frame = 0;
+				}
+				else if (abs(grindNorm.x) >= wallThresh || grindEdge->IsInvisibleWall())
+				{
+					reversed = oldReversed;
+					position = op;
+					return false;
+				}
+				else
+				{
+					if (grindNorm.x > 0)
+					{
+						offsetX = b.rw;
+					}
+					else if (grindNorm.x < 0)
+					{
+						offsetX = -b.rw;
+					}
+					else
+					{
+						offsetX = 0;
+					}
+
+					if (grindSpeed < 0)
+					{
+						facingRight = true;
+					}
+					else
+					{
+						facingRight = false;
+					}
+
+					RestoreAirOptions();
+
+					ground = grindEdge;
+					groundSpeed = -grindSpeed;
+					reversed = true;
+
+					b.rh = dashHeight;
+					b.offset.y = (normalHeight - dashHeight);
+					if (reversed)
+						b.offset.y = -b.offset.y;
+
+					grindEdge = NULL;
+
+					SetAction(DASH);
+					framesNotGrinding = 0;
+					frame = 0;
+
+
+					double angle = GroundedAngle() / PI * 180.0;
+
+					ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), angle, 25, 1, facingRight);
+					ActivateSound(PlayerSounds::S_GRAVREVERSE);
+				}
+
+				CheckGates();
+			}
 		}
 		else
 		{
@@ -20780,154 +20941,88 @@ void Actor::DrawPlayerSprite( sf::RenderTarget *target )
 
 void Actor::DefaultGroundLanding( double &movement )
 {
-	//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
+	
 	prevRail = NULL;
 
-	//b.rh = dashHeight;
-	//cout << "edge: " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << ", v1: " << minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
-	//cout << "pos: " << position.x << ", " << position.y << ", minpos: " << minContact.position.x << ", " << minContact.position.y << endl;
 	offsetX = (position.x + b.offset.x) - minContact.position.x;
 
-	//cout << "offsetX: " << offsetX << endl;
 
-	//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
-	////if( false )
-	//{
-	//	cout << "prevented glitchy offset: " << offsetX << endl;
-	//	assert( 0 );
-	if (false)
+		
+
+	if (offsetX > b.rw + .00001 || offsetX < -b.rw - .00001) //stops glitchyness with _\ weird offsets
 	{
-	}
-	else
-	{
-		//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 )
+		//removing the print here now, but it could always cause something weird later...
+		//this triggered last time when climbing a steep slope and jumping onto it while going up
+		//honestly I feel like this probably doesn't cause any problems.
 
-		if (offsetX > b.rw + .00001 || offsetX < -b.rw - .00001) //stops glitchyness with _\ weird offsets
+		/*cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
+			<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+		cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;*/
+		if (offsetX > 0)
 		{
-			//removing the print here now, but it could always cause something weird later...
-			//this triggered last time when climbing a steep slope and jumping onto it while going up
-			//honestly I feel like this probably doesn't cause any problems.
-
-			/*cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
-				<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
-			cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;*/
-			if (offsetX > 0)
-			{
-				offsetX = b.rw;
-				minContact.position.x = position.x - b.rw;
-			}
-			else
-			{
-				offsetX = -b.rw;
-				minContact.position.x = position.x + b.rw;
-			}
-		}
-
-		/*if( b.rh == doubleJumpHeight )
-		{
-		b.offset.y = (normalHeight - doubleJumpHeight);
-		}*/
-
-		if (b.rh < normalHeight)
-		{
-			if (minContact.normal.y > 0)
-				b.offset.y = -(normalHeight - b.rh);
-			else if (minContact.normal.y < 0)
-				b.offset.y = (normalHeight - b.rh);
+			offsetX = b.rw;
+			minContact.position.x = position.x - b.rw;
 		}
 		else
 		{
-			b.offset.y = 0;
-		}
-
-		//if( reversed )
-		//	b.offset.y = -b.offset.y;
-
-		//cout << "LANDINGGGGGG------" << endl;
-		assert(!(minContact.normal.x == 0 && minContact.normal.y == 0));
-		ground = minContact.edge;
-		framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
-
-		edgeQuantity = minContact.edge->GetQuantity(minContact.position);
-
-		V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
-
-		double groundLength = length(ground->v1 - ground->v0);
-
-		V2d gNorm = ground->Normal();
-
-		V2d testVel = velocity;
-
-		//testVel.y *= .7;
-		if (testVel.y > 20)
-		{
-			testVel.y *= .7;
-		}
-		else if (testVel.y < -30)
-		{
-			//testVel.y = -30;
-			testVel.y *= .5;
-		}
-		//testVel.y /= 2.0
-		//cout << "groundspeed: " << groundSpeed << endl;
-
-		gNorm = ground->Normal();
-
-		groundSpeed = CalcLandingSpeed(testVel, alongVel, gNorm);
-
-		//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
-		//cout << "setting groundSpeed: " << groundSpeed << endl;
-		//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-
-
-		//if( gNorm.y <= -steepThresh )
-		{
-			RestoreAirOptions();
-		}
-
-		if (action != BOOSTERBOUNCE)
-		{
-			if (velocity.x < 0 && gNorm.y <= -steepThresh)
-			{
-				groundSpeed = min(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
-				//cout << "left boost: " << groundSpeed << endl;
-			}
-			else if (velocity.x > 0 && gNorm.y <= -steepThresh)
-			{
-				groundSpeed = max(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
-				//cout << "right boost: " << groundSpeed << endl;
-			}
-		}
-		
-		//groundSpeed  = max( abs( velocity.x ), ( - ) );
-
-		if (velocity.x < 0)
-		{
-			//	groundSpeed = -groundSpeed;
-		}
-
-		//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
-
-		movement = 0;
-
-
-
-		//cout << "offsetX: " <<offsetX << endl;
-		//cout << "offsetX: " << offsetX << endl;
-		//cout << "offset now!: " << offsetX << endl;
-		//V2d gn = ground->Normal();
-
-		if (ground->Normal().x > 0 && offsetX < b.rw && !approxEquals(offsetX, b.rw))
-		{
-			//cout << "super secret fix offsetx1: " << offsetX << endl;
-			//offsetX = b.rw;
-		}
-		if (ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals(offsetX, -b.rw))
-		{
-			//cout << "super secret fix offsetx2: " << offsetX << endl;
-			//offsetX = -b.rw;
+			offsetX = -b.rw;
+			minContact.position.x = position.x + b.rw;
 		}
 	}
+
+	if (b.rh < normalHeight)
+	{
+		if (minContact.normal.y > 0)
+			b.offset.y = -(normalHeight - b.rh);
+		else if (minContact.normal.y < 0)
+			b.offset.y = (normalHeight - b.rh);
+	}
+	else
+	{
+		b.offset.y = 0;
+	}
+
+	assert(!(minContact.normal.x == 0 && minContact.normal.y == 0));
+	ground = minContact.edge;
+	framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
+
+	edgeQuantity = minContact.edge->GetQuantity(minContact.position);
+
+	V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
+
+	double groundLength = length(ground->v1 - ground->v0);
+
+	V2d gNorm = ground->Normal();
+
+	V2d testVel = velocity;
+
+	if (testVel.y > 20)
+	{
+		testVel.y *= .7;
+	}
+	else if (testVel.y < -30)
+	{
+		testVel.y *= .5;
+	}
+
+	gNorm = ground->Normal();
+
+	groundSpeed = CalcLandingSpeed(testVel, alongVel, gNorm);
+
+	RestoreAirOptions();
+
+	if (action != BOOSTERBOUNCE)
+	{
+		if (velocity.x < 0 && gNorm.y <= -steepThresh)
+		{
+			groundSpeed = min(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
+		}
+		else if (velocity.x > 0 && gNorm.y <= -steepThresh)
+		{
+			groundSpeed = max(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
+		}
+	}
+	movement = 0;
 }
 
 bool Actor::DefaultGravReverseCheck()

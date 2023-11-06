@@ -95,11 +95,21 @@ void Actor::JUMP_Update()
 					}
 				}
 
-				//if (groundSpeed > 0)
-				//along = -along;
+				if (groundSpeed > 0)
+				{
+					along = -along;
+				}
 
 				along = normalize(along + dir);
-				velocity = -groundSpeed * along;
+
+				if (groundSpeed > 0)
+				{
+					velocity = groundSpeed * along;
+				}
+				else
+				{
+					velocity = -groundSpeed * along;
+				}
 
 				ground = NULL;
 				frame = 1; //so it doesnt use the jump frame when just dropping

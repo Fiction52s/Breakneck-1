@@ -1587,6 +1587,7 @@ struct Actor : QuadTreeCollider,
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
 	bool TryWallJump();
+	bool CheckStandUpToDash();
 	bool CheckStandUp();
 	bool TryStandupOnForcedGrindExit();
 	void TryDashBoost();
