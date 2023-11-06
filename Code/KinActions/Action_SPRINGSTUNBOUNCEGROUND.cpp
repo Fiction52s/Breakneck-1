@@ -19,22 +19,6 @@ void Actor::SPRINGSTUNBOUNCEGROUND_End()
 
 void Actor::SPRINGSTUNBOUNCEGROUND_Change()
 {
-	/*if (!PowerButtonHeld() || currPowerMode != PMODE_BOUNCE )
-	{
-
-
-		SetAction(JUMP);
-		velocity = storedBounceVel;
-		frame = 1;
-		BounceFlameOff();
-		holdJump = false;
-		return;
-	}*/
-
-	V2d bn = bounceNorm;//bounceEdge->Normal();
-	bool framesDone = frame == GetActionLength(SPRINGSTUNBOUNCEGROUND) - 1;
-
-	//if (boostBounce )
 	if( frame == 4 )
 	{
 		springStunFrames = aimLauncherStunFrames;
@@ -45,100 +29,24 @@ void Actor::SPRINGSTUNBOUNCEGROUND_Change()
 		oldBounceNorm = bounceNorm;
 		frame = 0;
 
+		V2d bouncePos = bounceEdge->GetPosition(edgeQuantity);
+		V2d bn = bounceNorm;
+		double angle = atan2(bn.x, -bn.y);
+		bouncePos += bn * 80.0;
+		ActivateEffect(PLAYERFX_BOUNCE_BOOST, Vector2f(bouncePos), RadiansToDegrees(angle), 30, 1, facingRight);
+
 		if (facingRight && velocity.x < 0)
 			facingRight = false;
 		else if (!facingRight && velocity.x > 0)
 			facingRight = true;
 
-		boostBounce = false;
 		framesSinceBounce = 0;
 		bounceEdge = NULL;
-	}
-	else if (framesDone)
-	{
-		if (bn.y < 0)
-		{
-			V2d alongVel = V2d(-bn.y, bn.x);
-			ground = bounceEdge;
-			bounceEdge = NULL;
-
-			if (bn.y > -steepThresh)
-			{
-
-			}
-			else
-			{
-			}
-			SetAction(LAND);
-			frame = 0;
-
-			bounceFlameOn = true;
-			scorpOn = true;
-
-			V2d testVel = storedBounceVel;
-
-
-			if (testVel.y > 20)
-			{
-				testVel.y *= .7;
-			}
-			else if (testVel.y < -30)
-			{
-
-				testVel.y *= .5;
-			}
-
-			groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
-
-
-			//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
-			//cout << "setting groundSpeed: " << groundSpeed << endl;
-			//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-			V2d norm = GetGroundedNormal();//ground->Normal();
-
-			//if( gNorm.y <= -steepThresh )
-			{
-				RestoreAirOptions();
-			}
-
-			if (testVel.x < 0 && norm.y <= -steepThresh)
-			{
-				groundSpeed = min(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
-				//cout << "left boost: " << groundSpeed << endl;
-			}
-			else if (testVel.x > 0 && norm.y <= -steepThresh)
-			{
-				groundSpeed = max(testVel.x, dot(testVel, normalize(ground->v1 - ground->v0)) * .7);
-				//cout << "right boost: " << groundSpeed << endl;
-			}
-
-
-		}
-		else
-		{
-			SetAction(JUMP);
-			frame = 1;
-			velocity = storedBounceVel;
-			bounceEdge = NULL;
-		}
 	}
 }
 
 void Actor::SPRINGSTUNBOUNCEGROUND_Update()
 {
-	if (!boostBounce && JumpButtonPressed() )
-	{
-		//ActivateSound( soundBuffers[S_BOUNCEJUMP] );
-		boostBounce = true;
-
-
-		V2d bouncePos = bounceEdge->GetPosition(edgeQuantity);
-		V2d bn = bounceEdge->Normal();
-		double angle = atan2(bn.x, -bn.y);
-		bouncePos += bn * 80.0;
-		ActivateEffect(PLAYERFX_BOUNCE_BOOST, Vector2f(bouncePos), RadiansToDegrees(angle), 30, 1, facingRight);
-	}
-
 	velocity.x = 0;
 	velocity.y = 0;
 	groundSpeed = 0;

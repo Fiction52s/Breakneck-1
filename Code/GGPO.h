@@ -185,7 +185,6 @@ struct PState
 	EdgeInfo oldBounceEdgeInfo;
 	int framesSinceBounce;
 	bool groundedWallBounce;
-	bool boostBounce;
 	bool bounceGrounded;
 	bool justToggledBounce;
 

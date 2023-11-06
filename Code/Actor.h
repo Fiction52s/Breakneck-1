@@ -836,7 +836,6 @@ struct Actor : QuadTreeCollider,
 	Edge *oldBounceEdge;
 	int framesSinceBounce;
 	bool groundedWallBounce;
-	bool boostBounce;
 	bool bounceGrounded;
 	bool justToggledBounce;
 

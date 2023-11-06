@@ -136,8 +136,6 @@ Zone::Zone( TerrainPolygon *tp )
 	zShader = NULL;
 	miniShader = NULL;
 
-	secretPreviewShader = NULL;
-
 	zType = NORMAL;
 
 	ts_z = NULL;
@@ -161,12 +159,6 @@ Zone::~Zone()
 	{
 		delete zShader;
 		zShader = NULL;
-	}
-
-	if (secretPreviewShader != NULL)
-	{
-		delete secretPreviewShader;
-		secretPreviewShader = NULL;
 	}
 
 	if (miniShader != NULL)
@@ -595,50 +587,7 @@ void Zone::Init()
 			}
 		}
 		zonePoly->SetMaterialType(mostTouchedTerrain.first, mostTouchedTerrain.second);
-
-
-		/*if (secretPreviewShader != NULL)
-		{
-			delete secretPreviewShader;
-		}
-
-		secretPreviewShader = new sf::Shader;
-
-		if (!miniShader->loadFromFile("Resources/Shader/normalzone.frag", sf::Shader::Fragment))
-		{
-			cout << "mini zone shader not loading correctly!" << endl;
-			assert(false);
-		}*/
 	}
-
-
-
-	/*totalNumKeys = 0;
-	for (auto it = allEnemies.begin(); it != allEnemies.end(); ++it)
-	{
-		if ((*it)->hasMonitor)
-		{
-			totalNumKeys++;
-		}
-	}*/
-
-	
-
-	//for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
-	//{
-	//	if ((*it)->type == EN_CRAWLERQUEEN)
-	//	{
-	//		action = OPEN;
-	//	}
-	//	//if( (*it)->type == EN_NEXUS|| (*it)->type == EN_CRAWLERQUEEN )
-	//	//{
-	//	//	active = true;
-	//	//	//owner->ActivateZone( this );
-	//	//	break;
-	//	//}
-	//}
-
-	
 }
 
 bool Zone::HasEnemyGate()

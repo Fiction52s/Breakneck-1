@@ -149,8 +149,16 @@ void Actor::BOUNCEGROUND_Change()
 
 	V2d bn = bounceNorm;//bounceEdge->Normal();
 	bool framesDone = frame == GetActionLength(BOUNCEGROUND) - 1;
-	if (boostBounce || (framesDone && bn.y >= 0))
+
+	if (frame == 4)//boostBounce || (framesDone && bn.y >= 0))
 	{
+		V2d bouncePos = bounceEdge->GetPosition(edgeQuantity);
+		V2d bn = bounceNorm;
+		double angle = atan2(bn.x, -bn.y);
+		bouncePos += bn * 80.0;
+		ActivateEffect(PLAYERFX_BOUNCE_BOOST, Vector2f(bouncePos), RadiansToDegrees(angle), 30, 1, facingRight);
+
+	
 		ActivateSound(PlayerSounds::S_BOUNCEJUMP);
 		framesInAir = 0;
 		SetAction(BOUNCEAIR);
@@ -162,7 +170,6 @@ void Actor::BOUNCEGROUND_Change()
 
 		int option = 0; //0 is ground, 1 is wall, 2 is ceiling
 
-		bool boostNow = boostBounce && framesSinceBounce > 8;
 
 		double extraBUp = .2;
 		double extraBDown = .2;
@@ -379,19 +386,6 @@ void Actor::BOUNCEGROUND_Change()
 
 void Actor::BOUNCEGROUND_Update()
 {
-	if (!boostBounce && frame == 4 )//&& JumpButtonPressed() )
-	{
-		//ActivateSound( soundBuffers[S_BOUNCEJUMP] );
-		boostBounce = true;
-
-
-		V2d bouncePos = bounceEdge->GetPosition(edgeQuantity);
-		V2d bn = bounceEdge->Normal();
-		double angle = atan2(bn.x, -bn.y);
-		bouncePos += bn * 80.0;
-		ActivateEffect(PLAYERFX_BOUNCE_BOOST, Vector2f(bouncePos), RadiansToDegrees(angle), 30, 1, facingRight);
-	}
-
 	velocity.x = 0;
 	velocity.y = 0;
 	groundSpeed = 0;

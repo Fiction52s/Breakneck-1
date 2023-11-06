@@ -332,7 +332,6 @@ void Actor::PopulateState(PState *ps)
 
 	ps->framesSinceBounce = framesSinceBounce;
 	ps->groundedWallBounce = groundedWallBounce;
-	ps->boostBounce = boostBounce;
 	ps->bounceGrounded = bounceGrounded;
 	ps->justToggledBounce = justToggledBounce;
 
@@ -605,7 +604,6 @@ void Actor::PopulateFromState(PState *ps)
 
 	framesSinceBounce = ps->framesSinceBounce;
 	groundedWallBounce = ps->groundedWallBounce;
-	boostBounce = ps->boostBounce;
 	bounceGrounded = ps->bounceGrounded;
 	justToggledBounce = ps->justToggledBounce;
 
@@ -7244,8 +7242,8 @@ void Actor::UpdatePrePhysics()
 	}
 	else if (CheckTerrainDisappear(bounceEdge))
 	{
-		double through = dot(storedBounceVel, -bounceEdge->Normal());
-		velocity = storedBounceVel + bounceEdge->Normal() * through;
+		double through = dot(storedBounceVel, -bounceNorm);
+		velocity = storedBounceVel + bounceNorm * through;
 
 		SetAirPos(position, facingRight);
 	}
@@ -12550,24 +12548,6 @@ void Actor::HandleBounceRail()
 		}
 	}
 
-	/*if (cross(velocity, bn) < maxBounceBoost )
-	{
-		velocity.x += vDir.x * currBoostBounceSpeed / (double)slowMultiple;
-	}
-	if (abs(velocity.x) < maxBounceBoost)
-	{
-		velocity.x += vDir.x * currBoostBounceSpeed / (double)slowMultiple;
-	}
-	else if (abs(velocity.y) < maxBounceBoost)
-	{
-
-	}
-
-	if (length(velocity) < maxBounceBoost)
-	{
-		
-	}*/
-
 	velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
 	
 	if (bounceNorm.y != 0)
@@ -15621,7 +15601,6 @@ void Actor::PhysicsResponse()
 			//scorpOn = false;
 
 			SetAction(BOUNCEGROUND);
-			boostBounce = false;
 			frame = 0;
 			groundSpeed = 0;
 
@@ -17910,8 +17889,8 @@ void Actor::BounceFlameOff()
 		frame = 1;
 		holdJump = false;
 
-		double through = dot(storedBounceVel, -bounceEdge->Normal());
-		velocity = storedBounceVel + bounceEdge->Normal() * through;
+		double through = dot(storedBounceVel, -bounceNorm);
+		velocity = storedBounceVel + bounceNorm * through;
 
 		//if (TryLandFromBounceGround())
 		//{
@@ -17927,7 +17906,6 @@ void Actor::BounceFlameOff()
 	bounceFlameOn = false;
 	oldBounceEdge = NULL;
 	bounceEdge = NULL;
-	boostBounce = false;
 	bounceGrounded = false;
 }
 

@@ -87,7 +87,6 @@ struct Zone
 	Zone *parentZone;
 	sf::Shader *zShader;
 	sf::Shader *miniShader;
-	sf::Shader *secretPreviewShader;
 	Tileset *ts_z;
 
 	Zone( TerrainPolygon * tp );
