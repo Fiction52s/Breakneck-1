@@ -66,7 +66,7 @@ int Actor::BRAKE_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::BRAKE_GetTileset()
+const char * Actor::BRAKE_GetTilesetName()
 {
-	return GetActionTileset("brake_64x64.png");
+	return "brake_64x64.png";
 }

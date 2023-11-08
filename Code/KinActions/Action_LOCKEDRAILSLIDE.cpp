@@ -134,7 +134,7 @@ int Actor::LOCKEDRAILSLIDE_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::LOCKEDRAILSLIDE_GetTileset()
+const char * Actor::LOCKEDRAILSLIDE_GetTilesetName()
 {
 	return NULL;
 }

@@ -108,7 +108,7 @@ int Actor::UPTILT1_GetActionLength()
 	return 16 * 2;
 }
 
-Tileset * Actor::UPTILT1_GetTileset()
+const char * Actor::UPTILT1_GetTilesetName()
 {
-	return GetActionTileset("stand_att_02_64x64.png");
+	return NULL;//return "stand_att_02_64x64.png";
 }

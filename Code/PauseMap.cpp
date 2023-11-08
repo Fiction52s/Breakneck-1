@@ -4,27 +4,21 @@
 #include "GameSession.h"
 #include "MapHeader.h"
 #include "Session.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
 
 Color PauseMap::terrainColor(0x75, 0x70, 0x90);// , 191);
 
-PauseMap::PauseMap()
+PauseMap::PauseMap(TilesetManager *p_tm)
 {
-	game = GameSession::GetSession();
+	tm = p_tm;
+	game = NULL;
 
-	assert(game != NULL);
+	MainMenu *mm = MainMenu::GetInstance();
 
-	mapTex = game->mapTex;
-
-	/*if (!mapShader.loadFromFile("Resources/Shader/minimap_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "minimap shader not loaded");
-	}
-	mapShader.setUniform("imageSize", Vector2f(mapTex->getSize().x,
-		mapTex->getSize().y));*/
+	mapTex = mm->mapTexture;
 
 	mapSprite.setTexture(mapTex->getTexture());
 	mapSprite.setOrigin(mapSprite.getLocalBounds().width / 2,
@@ -32,7 +26,7 @@ PauseMap::PauseMap()
 
 	//mapSprite.setScale(1, -1);
 
-	ts_miniIcons = game->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+	ts_miniIcons = tm->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 	kinMapIcon.setTexture(*ts_miniIcons->texture);
 	kinMapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMapIcon.setScale(2, 2);
@@ -48,9 +42,9 @@ PauseMap::PauseMap()
 	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
 		goalMapIcon.getLocalBounds().height / 2);
 
-	SetCenter(Vector2f(200, game->preScreenTex->getSize().y - 200));
+	SetCenter(Vector2f(200, 1080 - 200));
 
-	Reset();
+	//Reset();
 }
 
 void PauseMap::Reset()
@@ -58,6 +52,12 @@ void PauseMap::Reset()
 	mapCenter.x = game->GetPlayerPos(0).x;
 	mapCenter.y = game->GetPlayerPos(0).y;
 	mapZoomFactor = 8;
+}
+
+void PauseMap::SetGame(GameSession *p_game)
+{
+	game = p_game;
+	Reset();
 }
 
 void PauseMap::SetCenter(sf::Vector2f &center)
@@ -68,6 +68,7 @@ void PauseMap::SetCenter(sf::Vector2f &center)
 void PauseMap::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
+	assert(game != NULL);
 	float fac = .05;
 	if (currInput.A)
 	{

@@ -124,7 +124,7 @@ int Actor::FREEFLIGHTSTUN_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::FREEFLIGHTSTUN_GetTileset()
+const char * Actor::FREEFLIGHTSTUN_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

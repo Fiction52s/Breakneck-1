@@ -94,7 +94,7 @@ int Actor::SPRINGSTUNAIM_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::SPRINGSTUNAIM_GetTileset()
+const char * Actor::SPRINGSTUNAIM_GetTilesetName()
 {
-	return GetActionTileset("launch_96x64.png");
+	return "launch_96x64.png";
 }

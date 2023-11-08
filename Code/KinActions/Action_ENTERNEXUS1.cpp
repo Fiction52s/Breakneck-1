@@ -51,7 +51,7 @@ int Actor::ENTERNEXUS1_GetActionLength()
 	return 10 * 4;
 }
 
-Tileset * Actor::ENTERNEXUS1_GetTileset()
+const char * Actor::ENTERNEXUS1_GetTilesetName()
 {
-	return GetActionTileset("intro_0_160x80.png");
+	return NULL;// return "intro_0_160x80.png";
 }

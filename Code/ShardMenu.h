@@ -94,8 +94,10 @@ struct ShardMenu
 	sf::Text currShardNameText;
 
 	ShardDetailedInfo **shardInfo;
+
+	TilesetManager *tm;
 	
-	Session *sess;
+	GameSession *game;
 
 	int currSelectMode;
 	int numShardsTotal;
@@ -124,9 +126,10 @@ struct ShardMenu
 	Tileset *ts_shardContainer;
 	Tileset *ts_sparkle;
 
-	ShardMenu( Session *sess );
+	ShardMenu( TilesetManager *tm );
 	~ShardMenu();
 
+	void SetGame(GameSession *game);
 	void SetTopLeft(sf::Vector2f &pos);
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );

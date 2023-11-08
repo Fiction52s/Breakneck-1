@@ -76,7 +76,7 @@ SinglePlayerControllerJoinScreen::SinglePlayerControllerJoinScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
-	ts_bg = mainMenu->tilesetManager.GetTileset("Menu/Load/load_w1.png", 1920, 1080);
+	ts_bg = mainMenu->GetTileset("Menu/Load/load_w1.png", 1920, 1080);
 
 	panel = new Panel("SinglePlayerControllerJoinScreen", 1920, 1080, this, true);
 	panel->SetColor(Color::Transparent);

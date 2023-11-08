@@ -74,7 +74,7 @@ int Actor::SPRINGSTUNTELEPORT_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::SPRINGSTUNTELEPORT_GetTileset()
+const char * Actor::SPRINGSTUNTELEPORT_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

@@ -393,8 +393,7 @@ struct GameSession : RayCastHandler, Session
 	
 	//process reading file
 	void ProcessHeader();
-	void ProcessDecorSpr(const std::string &name,
-		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+	void ProcessDecorSpr(const std::string &name, int dTile, int dLayer, sf::Vector2f &centerPos,
 		float rotation, sf::Vector2f &scale);
 	void ProcessAllDecorSpr();
 	void ProcessTerrain(PolyPtr poly);
@@ -530,9 +529,6 @@ struct GameSession : RayCastHandler, Session
 	void SequenceGameModeRespondToGoalDestroyed();
 	void UpdateTerrainStates();
 	void UpdateRailStates();
-
-	void SetupPauseMenu();
-	void CleanupPauseMenu();
 
 	void SetupPopup();
 	void CleanupPopup();

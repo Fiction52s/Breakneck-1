@@ -9,6 +9,8 @@ TutorialBox::TutorialBox()
 {
 	sess = Session::GetSession();
 
+	MainMenu *mm = MainMenu::GetInstance();
+
 	charHeight = 48;
 	lockedSize = Vector2f();
 	quadColor = Color(0, 0, 0, 100);
@@ -18,7 +20,7 @@ TutorialBox::TutorialBox()
 
 	SetRectColor(quad, quadColor);
 
-	text.setFont(sess->mainMenu->arial);
+	text.setFont(mm->arial);
 	text.setCharacterSize(charHeight);
 	text.setFillColor(textColor);
 }
@@ -26,6 +28,8 @@ TutorialBox::TutorialBox()
 TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color p_quadColor, sf::Color p_textColor, float p_rectBuffer)
 {
 	sess = Session::GetSession();
+
+	MainMenu *mm = MainMenu::GetInstance();
 
 	charHeight = p_charHeight;
 	lockedSize = p_lockedSize;
@@ -35,7 +39,7 @@ TutorialBox::TutorialBox( int p_charHeight, sf::Vector2f p_lockedSize, sf::Color
 
 	topLeftMode = false;
 
-	text.setFont(sess->mainMenu->arial);
+	text.setFont(mm->arial);
 	text.setCharacterSize(charHeight);
 	text.setFillColor(textColor);
 
@@ -245,6 +249,9 @@ void TutorialBox::SetText(const std::string &str)
 
 void TutorialBox::UpdateButtonIconsWhenControllerIsChanged()
 {
+	if (sess == NULL)
+		return;
+
 	int sessControllerType = sess->controllerStates[0]->GetControllerType();
 	if (currControllerType == sessControllerType )
 	{

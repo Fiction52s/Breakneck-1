@@ -245,7 +245,7 @@ int Actor::STEEPCLIMB_GetActionLength()
 	return 8 * 4;
 }
 
-Tileset * Actor::STEEPCLIMB_GetTileset()
+const char * Actor::STEEPCLIMB_GetTilesetName()
 {
-	return GetActionTileset("steepclimb_96x32.png");
+	return "steepclimb_96x32.png";
 }

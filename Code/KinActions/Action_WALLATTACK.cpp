@@ -154,7 +154,7 @@ int Actor::WALLATTACK_GetActionLength()
 	return 8 * 2;
 }
 
-Tileset * Actor::WALLATTACK_GetTileset()
+const char * Actor::WALLATTACK_GetTilesetName()
 {
-	return GetActionTileset("wall_att_64x128.png");
+	return "wall_att_64x128.png";
 }

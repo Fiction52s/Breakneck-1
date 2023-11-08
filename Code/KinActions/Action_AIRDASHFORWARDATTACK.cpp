@@ -135,7 +135,7 @@ int Actor::AIRDASHFORWARDATTACK_GetActionLength()
 	return 8 * 2;
 }
 
-Tileset * Actor::AIRDASHFORWARDATTACK_GetTileset()
+const char* Actor::AIRDASHFORWARDATTACK_GetTilesetName()
 {
-	return GetActionTileset("fair_80x80.png");
+	return "fair_80x80.png";
 }

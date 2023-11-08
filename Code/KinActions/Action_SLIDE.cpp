@@ -83,7 +83,7 @@ int Actor::SLIDE_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SLIDE_GetTileset()
+const char * Actor::SLIDE_GetTilesetName()
 {
-	return GetActionTileset("slide_64x64.png");
+	return "slide_64x64.png";
 }

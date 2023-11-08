@@ -224,7 +224,7 @@ int Actor::STEEPCLING_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::STEEPCLING_GetTileset()
+const char * Actor::STEEPCLING_GetTilesetName()
 {
-	return STEEPCLIMB_GetTileset();
+	return STEEPCLIMB_GetTilesetName();
 }

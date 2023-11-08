@@ -100,7 +100,7 @@ int Actor::GRINDSLASH_GetActionLength()
 	return 16;
 }
 
-Tileset * Actor::GRINDSLASH_GetTileset()
+const char * Actor::GRINDSLASH_GetTilesetName()
 {
-	return GetActionTileset("grind_lunge_96x128.png");
+	return "grind_lunge_96x128.png";
 }

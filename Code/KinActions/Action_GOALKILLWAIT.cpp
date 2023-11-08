@@ -51,7 +51,7 @@ int Actor::GOALKILLWAIT_GetActionLength()
 	return 2;
 }
 
-Tileset * Actor::GOALKILLWAIT_GetTileset()
+const char * Actor::GOALKILLWAIT_GetTilesetName()
 {
 	return NULL;
 }

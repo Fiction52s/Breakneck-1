@@ -16,6 +16,7 @@
 #include "Enemy_LogItem.h"
 #include "TutorialBox.h"
 #include "LogMenu.h"
+#include "PauseMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -133,7 +134,9 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	if (sess->IsSessTypeGame())
 	{
-		logPreview = new LogPreview;
+		GameSession *game = (GameSession*)sess;
+		logPreview = new LogPreview(game->pauseMenu->tm);
+		logPreview->SetSession(sess);
 		logPreview->SetInfo(sess->logMenu->GetLogInfo(world, localIndex));
 	}
 	else
@@ -447,7 +450,7 @@ LogPopup::LogPopup()
 
 	if (sess->IsSessTypeEdit())
 	{
-		logPreview = new LogPreview;
+		logPreview = new LogPreview( sess );
 	}
 	else
 	{

@@ -47,12 +47,12 @@ void Actor::EXITBOOST_UpdateSprite()
 	{
 		//wtf are independent effects LOL
 		owner->mainMenu->ActivateIndEffect(
-			owner->mainMenu->tilesetManager.GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), V2d(960, 540), false, 0, 4, 2, true, 2);
+			owner->mainMenu->GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), V2d(960, 540), false, 0, 4, 2, true, 2);
 	}
 	else if (frame == 63 * 2)
 	{
 		owner->mainMenu->ActivateIndEffect(
-			owner->mainMenu->tilesetManager.GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), V2d(960, 540), false, 0, 6, 2, true);
+			owner->mainMenu->GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), V2d(960, 540), false, 0, 6, 2, true);
 	}
 }
 
@@ -76,7 +76,7 @@ int Actor::EXITBOOST_GetActionLength()
 	return 79 * 2;
 }
 
-Tileset * Actor::EXITBOOST_GetTileset()
+const char * Actor::EXITBOOST_GetTilesetName()
 {
-	return GetActionTileset("exitboost_96x128.png");
+	return "exitboost_96x128.png";
 }

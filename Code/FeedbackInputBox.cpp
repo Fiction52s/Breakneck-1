@@ -19,7 +19,7 @@ FeedbackInputBox::FeedbackInputBox()
 	feedbackText.setOrigin(0, lb.top + lb.height / 2);
 
 	//ts_buttons = mainMenu->GetButtonIconTileset(ControllerType::CTYPE_KEYBOARD);
-	ts_button = mainMenu->tilesetManager.GetSizedTileset("Menu/f1button_64x64.png");
+	ts_button = mainMenu->GetSizedTileset("Menu/f1button_64x64.png");
 
 	SetRectSubRect(buttonIcon, ts_button->GetSubRect(0));
 

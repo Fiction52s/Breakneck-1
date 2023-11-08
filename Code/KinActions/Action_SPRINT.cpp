@@ -318,7 +318,7 @@ int Actor::SPRINT_GetActionLength()
 	return 8 * 4;
 }
 
-Tileset * Actor::SPRINT_GetTileset()
+const char * Actor::SPRINT_GetTilesetName()
 {
-	return GetActionTileset("sprint_80x48.png");
+	return "sprint_80x48.png";
 }

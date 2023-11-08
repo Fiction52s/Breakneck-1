@@ -128,7 +128,7 @@ int Actor::STANDATTACK1_GetActionLength()
 	return 12 * 2;
 }
 
-Tileset * Actor::STANDATTACK1_GetTileset()
+const char * Actor::STANDATTACK1_GetTilesetName()
 {
-	return GetActionTileset("stand_att_01_96x64.png");
+	return "stand_att_01_96x64.png";
 }

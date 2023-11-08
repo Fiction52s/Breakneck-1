@@ -10,6 +10,7 @@ struct GameSession;
 
 struct PauseMap
 {
+	TilesetManager *tm;
 	sf::Shader mapShader;
 	sf::Sprite mapSprite;
 	sf::Sprite kinMapIcon;
@@ -27,8 +28,9 @@ struct PauseMap
 	float mapZoomFactor;
 
 
-	PauseMap();
+	PauseMap(TilesetManager *tm);
 	void DrawToTex();
+	void SetGame(GameSession *game);
 	void SetupBorderQuads(
 		bool *blackBorder, bool topBorderOn,
 		MapHeader *mh);

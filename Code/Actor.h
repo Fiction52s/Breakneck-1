@@ -509,6 +509,8 @@ struct Actor : QuadTreeCollider,
 	std::vector<FXInfo> effectPools;
 	PaletteShader *fxPaletteShader;
 
+	bool shallowInit;
+
 
 	enum AirTriggerBehavior
 	{
@@ -947,7 +949,7 @@ struct Actor : QuadTreeCollider,
 	std::vector<void(Actor::*)()> timeIndFrameIncFuncs;
 	std::vector<void(Actor::*)()> timeDepFrameIncFuncs;
 	std::vector<int(Actor::*)()> getActionLengthFuncs;
-	std::vector<Tileset*(Actor::*)()> getTilesetFuncs;
+	std::vector<const char*(Actor::*)()> getTilesetNameFuncs;
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];
 	EffectPool *keyExplodePool;
@@ -1275,6 +1277,7 @@ struct Actor : QuadTreeCollider,
 
 	
 
+	Actor(); //for blank creation so I can initialize the tilesets
 	Actor( GameSession *owner, 
 		EditSession *editOwner, int actorIndex );
 	~Actor();
@@ -1387,7 +1390,7 @@ struct Actor : QuadTreeCollider,
 		void(Actor::*)(),
 		void(Actor::*)(),
 		int(Actor::*)(),
-		Tileset*(Actor::*)());
+		const char *(Actor::*)());
 	void SetupTimeBubbles();
 	void SetGameMode();
 	void UpdateModifiedGravity();
@@ -1520,7 +1523,7 @@ struct Actor : QuadTreeCollider,
 	void SetExpr(int ex);
 	void SetAction(int a);
 	void SetupTilesets();
-	void SetupFXTilesets();
+	void SetupFX();
 	void SetupSwordTilesets();
 	void SetupExtraTilesets();
 	void SetupActionTilesets();
@@ -1865,7 +1868,7 @@ struct Actor : QuadTreeCollider,
 	void AIMWAIT_TimeIndFrameInc();
 	void AIMWAIT_TimeDepFrameInc();
 	int AIMWAIT_GetActionLength();
-	Tileset * AIMWAIT_GetTileset();
+	const char * AIMWAIT_GetTilesetName();
 
 	void AIRBLOCKUP_Start();
 	void AIRBLOCKUP_End();
@@ -1876,7 +1879,7 @@ struct Actor : QuadTreeCollider,
 	void AIRBLOCKUP_TimeIndFrameInc();
 	void AIRBLOCKUP_TimeDepFrameInc();
 	int AIRBLOCKUP_GetActionLength();
-	Tileset * AIRBLOCKUP_GetTileset();
+	const char * AIRBLOCKUP_GetTilesetName();
 
 	void AIRBLOCKUPFORWARD_Start();
 	void AIRBLOCKUPFORWARD_End();
@@ -1887,7 +1890,7 @@ struct Actor : QuadTreeCollider,
 	void AIRBLOCKUPFORWARD_TimeIndFrameInc();
 	void AIRBLOCKUPFORWARD_TimeDepFrameInc();
 	int AIRBLOCKUPFORWARD_GetActionLength();
-	Tileset * AIRBLOCKUPFORWARD_GetTileset();
+	const char * AIRBLOCKUPFORWARD_GetTilesetName();
 
 	void AIRBLOCKFORWARD_Start();
 	void AIRBLOCKFORWARD_End();
@@ -1898,7 +1901,7 @@ struct Actor : QuadTreeCollider,
 	void AIRBLOCKFORWARD_TimeIndFrameInc();
 	void AIRBLOCKFORWARD_TimeDepFrameInc();
 	int AIRBLOCKFORWARD_GetActionLength();
-	Tileset * AIRBLOCKFORWARD_GetTileset();
+	const char * AIRBLOCKFORWARD_GetTilesetName();
 
 	void AIRBLOCKDOWNFORWARD_Start();
 	void AIRBLOCKDOWNFORWARD_End();
@@ -1909,7 +1912,7 @@ struct Actor : QuadTreeCollider,
 	void AIRBLOCKDOWNFORWARD_TimeIndFrameInc();
 	void AIRBLOCKDOWNFORWARD_TimeDepFrameInc();
 	int AIRBLOCKDOWNFORWARD_GetActionLength();
-	Tileset * AIRBLOCKDOWNFORWARD_GetTileset();
+	const char * AIRBLOCKDOWNFORWARD_GetTilesetName();
 
 	void AIRBLOCKDOWN_Start();
 	void AIRBLOCKDOWN_End();
@@ -1920,7 +1923,7 @@ struct Actor : QuadTreeCollider,
 	void AIRBLOCKDOWN_TimeIndFrameInc();
 	void AIRBLOCKDOWN_TimeDepFrameInc();
 	int AIRBLOCKDOWN_GetActionLength();
-	Tileset * AIRBLOCKDOWN_GetTileset();
+	const char * AIRBLOCKDOWN_GetTilesetName();
 
 	void AIRDASH_Start();
 	void AIRDASH_End();
@@ -1931,7 +1934,7 @@ struct Actor : QuadTreeCollider,
 	void AIRDASH_TimeIndFrameInc();
 	void AIRDASH_TimeDepFrameInc();
 	int AIRDASH_GetActionLength();
-	Tileset * AIRDASH_GetTileset();
+	const char * AIRDASH_GetTilesetName();
 
 	void AIRDASHFORWARDATTACK_Start();
 	void AIRDASHFORWARDATTACK_End();
@@ -1942,7 +1945,7 @@ struct Actor : QuadTreeCollider,
 	void AIRDASHFORWARDATTACK_TimeIndFrameInc();
 	void AIRDASHFORWARDATTACK_TimeDepFrameInc();
 	int AIRDASHFORWARDATTACK_GetActionLength();
-	Tileset * AIRDASHFORWARDATTACK_GetTileset();
+	const char * AIRDASHFORWARDATTACK_GetTilesetName();
 
 
 	void AIRHITSTUN_Start();
@@ -1954,7 +1957,7 @@ struct Actor : QuadTreeCollider,
 	void AIRHITSTUN_TimeIndFrameInc();
 	void AIRHITSTUN_TimeDepFrameInc();
 	int AIRHITSTUN_GetActionLength();
-	Tileset * AIRHITSTUN_GetTileset();
+	const char * AIRHITSTUN_GetTilesetName();
 
 	void AIRPARRY_Start();
 	void AIRPARRY_End();
@@ -1965,7 +1968,7 @@ struct Actor : QuadTreeCollider,
 	void AIRPARRY_TimeIndFrameInc();
 	void AIRPARRY_TimeDepFrameInc();
 	int AIRPARRY_GetActionLength();
-	Tileset * AIRPARRY_GetTileset();
+	const char * AIRPARRY_GetTilesetName();
 
 	void AUTORUN_Start();
 	void AUTORUN_End();
@@ -1976,7 +1979,7 @@ struct Actor : QuadTreeCollider,
 	void AUTORUN_TimeIndFrameInc();
 	void AUTORUN_TimeDepFrameInc();
 	int AUTORUN_GetActionLength();
-	Tileset * AUTORUN_GetTileset();
+	const char * AUTORUN_GetTilesetName();
 
 	void BACKWARDSDOUBLE_Start();
 	void BACKWARDSDOUBLE_End();
@@ -1987,7 +1990,7 @@ struct Actor : QuadTreeCollider,
 	void BACKWARDSDOUBLE_TimeIndFrameInc();
 	void BACKWARDSDOUBLE_TimeDepFrameInc();
 	int BACKWARDSDOUBLE_GetActionLength();
-	Tileset * BACKWARDSDOUBLE_GetTileset();
+	const char * BACKWARDSDOUBLE_GetTilesetName();
 
 	void BOUNCEAIR_Start();
 	void BOUNCEAIR_End();
@@ -1998,7 +2001,7 @@ struct Actor : QuadTreeCollider,
 	void BOUNCEAIR_TimeIndFrameInc();
 	void BOUNCEAIR_TimeDepFrameInc();
 	int BOUNCEAIR_GetActionLength();
-	Tileset * BOUNCEAIR_GetTileset();
+	const char * BOUNCEAIR_GetTilesetName();
 
 	void BOOSTERBOUNCE_Start();
 	void BOOSTERBOUNCE_End();
@@ -2009,7 +2012,7 @@ struct Actor : QuadTreeCollider,
 	void BOOSTERBOUNCE_TimeIndFrameInc();
 	void BOOSTERBOUNCE_TimeDepFrameInc();
 	int BOOSTERBOUNCE_GetActionLength();
-	Tileset * BOOSTERBOUNCE_GetTileset();
+	const char * BOOSTERBOUNCE_GetTilesetName();
 
 	void BOOSTERBOUNCEGROUND_Start();
 	void BOOSTERBOUNCEGROUND_End();
@@ -2020,7 +2023,7 @@ struct Actor : QuadTreeCollider,
 	void BOOSTERBOUNCEGROUND_TimeIndFrameInc();
 	void BOOSTERBOUNCEGROUND_TimeDepFrameInc();
 	int BOOSTERBOUNCEGROUND_GetActionLength();
-	Tileset * BOOSTERBOUNCEGROUND_GetTileset();
+	const char * BOOSTERBOUNCEGROUND_GetTilesetName();
 
 	void BOUNCEGROUND_Start();
 	void BOUNCEGROUND_End();
@@ -2031,7 +2034,7 @@ struct Actor : QuadTreeCollider,
 	void BOUNCEGROUND_TimeIndFrameInc();
 	void BOUNCEGROUND_TimeDepFrameInc();
 	int BOUNCEGROUND_GetActionLength();
-	Tileset * BOUNCEGROUND_GetTileset();
+	const char * BOUNCEGROUND_GetTilesetName();
 
 	void BOUNCEGROUNDEDWALL_Start();
 	void BOUNCEGROUNDEDWALL_End();
@@ -2042,7 +2045,7 @@ struct Actor : QuadTreeCollider,
 	void BOUNCEGROUNDEDWALL_TimeIndFrameInc();
 	void BOUNCEGROUNDEDWALL_TimeDepFrameInc();
 	int BOUNCEGROUNDEDWALL_GetActionLength();
-	Tileset * BOUNCEGROUNDEDWALL_GetTileset();
+	const char * BOUNCEGROUNDEDWALL_GetTilesetName();
 
 	void BRAKE_Start();
 	void BRAKE_End();
@@ -2053,7 +2056,7 @@ struct Actor : QuadTreeCollider,
 	void BRAKE_TimeIndFrameInc();
 	void BRAKE_TimeDepFrameInc();
 	int BRAKE_GetActionLength();
-	Tileset * BRAKE_GetTileset();
+	const char * BRAKE_GetTilesetName();
 
 	void DAIR_Start();
 	void DAIR_End();
@@ -2064,7 +2067,7 @@ struct Actor : QuadTreeCollider,
 	void DAIR_TimeIndFrameInc();
 	void DAIR_TimeDepFrameInc();
 	int DAIR_GetActionLength();
-	Tileset * DAIR_GetTileset();
+	const char * DAIR_GetTilesetName();
 
 	void DASH_Start();
 	void DASH_End();
@@ -2075,7 +2078,7 @@ struct Actor : QuadTreeCollider,
 	void DASH_TimeIndFrameInc();
 	void DASH_TimeDepFrameInc();
 	int DASH_GetActionLength();
-	Tileset * DASH_GetTileset();
+	const char * DASH_GetTilesetName();
 
 	void DASHATTACK_Start();
 	void DASHATTACK_End();
@@ -2086,7 +2089,7 @@ struct Actor : QuadTreeCollider,
 	void DASHATTACK_TimeIndFrameInc();
 	void DASHATTACK_TimeDepFrameInc();
 	int DASHATTACK_GetActionLength();
-	Tileset * DASHATTACK_GetTileset();
+	const char * DASHATTACK_GetTilesetName();
 
 	void DASHATTACK2_Start();
 	void DASHATTACK2_End();
@@ -2097,7 +2100,7 @@ struct Actor : QuadTreeCollider,
 	void DASHATTACK2_TimeIndFrameInc();
 	void DASHATTACK2_TimeDepFrameInc();
 	int DASHATTACK2_GetActionLength();
-	Tileset * DASHATTACK2_GetTileset();
+	const char * DASHATTACK2_GetTilesetName();
 
 	void DASHATTACK3_Start();
 	void DASHATTACK3_End();
@@ -2108,7 +2111,7 @@ struct Actor : QuadTreeCollider,
 	void DASHATTACK3_TimeIndFrameInc();
 	void DASHATTACK3_TimeDepFrameInc();
 	int DASHATTACK3_GetActionLength();
-	Tileset * DASHATTACK3_GetTileset();
+	const char * DASHATTACK3_GetTilesetName();
 
 	void DEATH_Start();
 	void DEATH_End();
@@ -2119,7 +2122,7 @@ struct Actor : QuadTreeCollider,
 	void DEATH_TimeIndFrameInc();
 	void DEATH_TimeDepFrameInc();
 	int DEATH_GetActionLength();
-	Tileset * DEATH_GetTileset();
+	const char * DEATH_GetTilesetName();
 
 	void DIAGDOWNATTACK_Start();
 	void DIAGDOWNATTACK_End();
@@ -2130,7 +2133,7 @@ struct Actor : QuadTreeCollider,
 	void DIAGDOWNATTACK_TimeIndFrameInc();
 	void DIAGDOWNATTACK_TimeDepFrameInc();
 	int DIAGDOWNATTACK_GetActionLength();
-	Tileset * DIAGDOWNATTACK_GetTileset();
+	const char * DIAGDOWNATTACK_GetTilesetName();
 
 	void DIAGUPATTACK_Start();
 	void DIAGUPATTACK_End();
@@ -2141,7 +2144,7 @@ struct Actor : QuadTreeCollider,
 	void DIAGUPATTACK_TimeIndFrameInc();
 	void DIAGUPATTACK_TimeDepFrameInc();
 	int DIAGUPATTACK_GetActionLength();
-	Tileset * DIAGUPATTACK_GetTileset();
+	const char * DIAGUPATTACK_GetTilesetName();
 
 	void DOUBLE_Start();
 	void DOUBLE_End();
@@ -2152,7 +2155,7 @@ struct Actor : QuadTreeCollider,
 	void DOUBLE_TimeIndFrameInc();
 	void DOUBLE_TimeDepFrameInc();
 	int DOUBLE_GetActionLength();
-	Tileset * DOUBLE_GetTileset();
+	const char * DOUBLE_GetTilesetName();
 
 	void ENTERNEXUS1_Start();
 	void ENTERNEXUS1_End();
@@ -2163,7 +2166,7 @@ struct Actor : QuadTreeCollider,
 	void ENTERNEXUS1_TimeIndFrameInc();
 	void ENTERNEXUS1_TimeDepFrameInc();
 	int ENTERNEXUS1_GetActionLength();
-	Tileset * ENTERNEXUS1_GetTileset();
+	const char * ENTERNEXUS1_GetTilesetName();
 
 	void EXIT_Start();
 	void EXIT_End();
@@ -2174,7 +2177,7 @@ struct Actor : QuadTreeCollider,
 	void EXIT_TimeIndFrameInc();
 	void EXIT_TimeDepFrameInc();
 	int EXIT_GetActionLength();
-	Tileset * EXIT_GetTileset();
+	const char * EXIT_GetTilesetName();
 
 	void EXITBOOST_Start();
 	void EXITBOOST_End();
@@ -2185,7 +2188,7 @@ struct Actor : QuadTreeCollider,
 	void EXITBOOST_TimeIndFrameInc();
 	void EXITBOOST_TimeDepFrameInc();
 	int EXITBOOST_GetActionLength();
-	Tileset * EXITBOOST_GetTileset();
+	const char * EXITBOOST_GetTilesetName();
 
 	void EXITWAIT_Start();
 	void EXITWAIT_End();
@@ -2196,7 +2199,7 @@ struct Actor : QuadTreeCollider,
 	void EXITWAIT_TimeIndFrameInc();
 	void EXITWAIT_TimeDepFrameInc();
 	int EXITWAIT_GetActionLength();
-	Tileset * EXITWAIT_GetTileset();
+	const char * EXITWAIT_GetTilesetName();
 
 	void FAIR_Start();
 	void FAIR_End();
@@ -2207,7 +2210,7 @@ struct Actor : QuadTreeCollider,
 	void FAIR_TimeIndFrameInc();
 	void FAIR_TimeDepFrameInc();
 	int FAIR_GetActionLength();
-	Tileset * FAIR_GetTileset();
+	const char * FAIR_GetTilesetName();
 
 	void FREEFLIGHT_Start();
 	void FREEFLIGHT_End();
@@ -2218,7 +2221,7 @@ struct Actor : QuadTreeCollider,
 	void FREEFLIGHT_TimeIndFrameInc();
 	void FREEFLIGHT_TimeDepFrameInc();
 	int FREEFLIGHT_GetActionLength();
-	Tileset * FREEFLIGHT_GetTileset();
+	const char * FREEFLIGHT_GetTilesetName();
 
 	void FREEFLIGHTSTUN_Start();
 	void FREEFLIGHTSTUN_End();
@@ -2229,7 +2232,7 @@ struct Actor : QuadTreeCollider,
 	void FREEFLIGHTSTUN_TimeIndFrameInc();
 	void FREEFLIGHTSTUN_TimeDepFrameInc();
 	int FREEFLIGHTSTUN_GetActionLength();
-	Tileset * FREEFLIGHTSTUN_GetTileset();
+	const char * FREEFLIGHTSTUN_GetTilesetName();
 
 	void GETPOWER_AIRDASH_FLIP_Start();
 	void GETPOWER_AIRDASH_FLIP_End();
@@ -2240,7 +2243,7 @@ struct Actor : QuadTreeCollider,
 	void GETPOWER_AIRDASH_FLIP_TimeIndFrameInc();
 	void GETPOWER_AIRDASH_FLIP_TimeDepFrameInc();
 	int GETPOWER_AIRDASH_FLIP_GetActionLength();
-	Tileset * GETPOWER_AIRDASH_FLIP_GetTileset();
+	const char * GETPOWER_AIRDASH_FLIP_GetTilesetName();
 
 	void GETPOWER_AIRDASH_MEDITATE_Start();
 	void GETPOWER_AIRDASH_MEDITATE_End();
@@ -2251,7 +2254,7 @@ struct Actor : QuadTreeCollider,
 	void GETPOWER_AIRDASH_MEDITATE_TimeIndFrameInc();
 	void GETPOWER_AIRDASH_MEDITATE_TimeDepFrameInc();
 	int GETPOWER_AIRDASH_MEDITATE_GetActionLength();
-	Tileset * GETPOWER_AIRDASH_MEDITATE_GetTileset();
+	const char * GETPOWER_AIRDASH_MEDITATE_GetTilesetName();
 
 	void GETSHARD_Start();
 	void GETSHARD_End();
@@ -2262,7 +2265,7 @@ struct Actor : QuadTreeCollider,
 	void GETSHARD_TimeIndFrameInc();
 	void GETSHARD_TimeDepFrameInc();
 	int GETSHARD_GetActionLength();
-	Tileset * GETSHARD_GetTileset();
+	const char * GETSHARD_GetTilesetName();
 
 	void GLIDE_Start();
 	void GLIDE_End();
@@ -2273,7 +2276,7 @@ struct Actor : QuadTreeCollider,
 	void GLIDE_TimeIndFrameInc();
 	void GLIDE_TimeDepFrameInc();
 	int GLIDE_GetActionLength();
-	Tileset * GLIDE_GetTileset();
+	const char * GLIDE_GetTilesetName();
 
 	void GOALKILL_Start();
 	void GOALKILL_End();
@@ -2284,7 +2287,7 @@ struct Actor : QuadTreeCollider,
 	void GOALKILL_TimeIndFrameInc();
 	void GOALKILL_TimeDepFrameInc();
 	int GOALKILL_GetActionLength();
-	Tileset * GOALKILL_GetTileset();
+	const char * GOALKILL_GetTilesetName();
 
 	void GOALKILL1_Start();
 	void GOALKILL1_End();
@@ -2319,7 +2322,7 @@ struct Actor : QuadTreeCollider,
 	void GOALKILLWAIT_TimeIndFrameInc();
 	void GOALKILLWAIT_TimeDepFrameInc();
 	int GOALKILLWAIT_GetActionLength();
-	Tileset * GOALKILLWAIT_GetTileset();
+	const char * GOALKILLWAIT_GetTilesetName();
 
 	void GRABSHIP_Start();
 	void GRABSHIP_End();
@@ -2330,7 +2333,7 @@ struct Actor : QuadTreeCollider,
 	void GRABSHIP_TimeIndFrameInc();
 	void GRABSHIP_TimeDepFrameInc();
 	int GRABSHIP_GetActionLength();
-	Tileset * GRABSHIP_GetTileset();
+	const char * GRABSHIP_GetTilesetName();
 
 	void GRAVREVERSE_Start();
 	void GRAVREVERSE_End();
@@ -2341,7 +2344,7 @@ struct Actor : QuadTreeCollider,
 	void GRAVREVERSE_TimeIndFrameInc();
 	void GRAVREVERSE_TimeDepFrameInc();
 	int GRAVREVERSE_GetActionLength();
-	Tileset * GRAVREVERSE_GetTileset();
+	const char * GRAVREVERSE_GetTilesetName();
 
 	void GRINDATTACK_Start();
 	void GRINDATTACK_End();
@@ -2352,7 +2355,7 @@ struct Actor : QuadTreeCollider,
 	void GRINDATTACK_TimeIndFrameInc();
 	void GRINDATTACK_TimeDepFrameInc();
 	int GRINDATTACK_GetActionLength();
-	Tileset * GRINDATTACK_GetTileset();
+	const char * GRINDATTACK_GetTilesetName();
 
 	void GRINDBALL_Start();
 	void GRINDBALL_End();
@@ -2363,7 +2366,7 @@ struct Actor : QuadTreeCollider,
 	void GRINDBALL_TimeIndFrameInc();
 	void GRINDBALL_TimeDepFrameInc();
 	int GRINDBALL_GetActionLength();
-	Tileset * GRINDBALL_GetTileset();
+	const char * GRINDBALL_GetTilesetName();
 
 	void GRINDLUNGE_Start();
 	void GRINDLUNGE_End();
@@ -2374,7 +2377,7 @@ struct Actor : QuadTreeCollider,
 	void GRINDLUNGE_TimeIndFrameInc();
 	void GRINDLUNGE_TimeDepFrameInc();
 	int GRINDLUNGE_GetActionLength();
-	Tileset * GRINDLUNGE_GetTileset();
+	const char * GRINDLUNGE_GetTilesetName();
 
 	void GRINDSLASH_Start();
 	void GRINDSLASH_End();
@@ -2385,7 +2388,7 @@ struct Actor : QuadTreeCollider,
 	void GRINDSLASH_TimeIndFrameInc();
 	void GRINDSLASH_TimeDepFrameInc();
 	int GRINDSLASH_GetActionLength();
-	Tileset * GRINDSLASH_GetTileset();
+	const char * GRINDSLASH_GetTilesetName();
 
 	void GROUNDBLOCKDOWN_Start();
 	void GROUNDBLOCKDOWN_End();
@@ -2396,7 +2399,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDBLOCKDOWN_TimeIndFrameInc();
 	void GROUNDBLOCKDOWN_TimeDepFrameInc();
 	int GROUNDBLOCKDOWN_GetActionLength();
-	Tileset * GROUNDBLOCKDOWN_GetTileset();
+	const char * GROUNDBLOCKDOWN_GetTilesetName();
 
 	void GROUNDBLOCKDOWNFORWARD_Start();
 	void GROUNDBLOCKDOWNFORWARD_End();
@@ -2407,7 +2410,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDBLOCKDOWNFORWARD_TimeIndFrameInc();
 	void GROUNDBLOCKDOWNFORWARD_TimeDepFrameInc();
 	int GROUNDBLOCKDOWNFORWARD_GetActionLength();
-	Tileset * GROUNDBLOCKDOWNFORWARD_GetTileset();
+	const char * GROUNDBLOCKDOWNFORWARD_GetTilesetName();
 
 	void GROUNDBLOCKFORWARD_Start();
 	void GROUNDBLOCKFORWARD_End();
@@ -2418,7 +2421,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDBLOCKFORWARD_TimeIndFrameInc();
 	void GROUNDBLOCKFORWARD_TimeDepFrameInc();
 	int GROUNDBLOCKFORWARD_GetActionLength();
-	Tileset * GROUNDBLOCKFORWARD_GetTileset();
+	const char * GROUNDBLOCKFORWARD_GetTilesetName();
 
 	void GROUNDBLOCKUPFORWARD_Start();
 	void GROUNDBLOCKUPFORWARD_End();
@@ -2429,7 +2432,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDBLOCKUPFORWARD_TimeIndFrameInc();
 	void GROUNDBLOCKUPFORWARD_TimeDepFrameInc();
 	int GROUNDBLOCKUPFORWARD_GetActionLength();
-	Tileset * GROUNDBLOCKUPFORWARD_GetTileset();
+	const char * GROUNDBLOCKUPFORWARD_GetTilesetName();
 
 	void GROUNDBLOCKUP_Start();
 	void GROUNDBLOCKUP_End();
@@ -2440,7 +2443,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDBLOCKUP_TimeIndFrameInc();
 	void GROUNDBLOCKUP_TimeDepFrameInc();
 	int GROUNDBLOCKUP_GetActionLength();
-	Tileset * GROUNDBLOCKUP_GetTileset();
+	const char * GROUNDBLOCKUP_GetTilesetName();
 
 	void GROUNDHITSTUN_Start();
 	void GROUNDHITSTUN_End();
@@ -2451,7 +2454,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDHITSTUN_TimeIndFrameInc();
 	void GROUNDHITSTUN_TimeDepFrameInc();
 	int GROUNDHITSTUN_GetActionLength();
-	Tileset * GROUNDHITSTUN_GetTileset();
+	const char * GROUNDHITSTUN_GetTilesetName();
 
 	void GROUNDPARRY_Start();
 	void GROUNDPARRY_End();
@@ -2462,7 +2465,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDPARRY_TimeIndFrameInc();
 	void GROUNDPARRY_TimeDepFrameInc();
 	int GROUNDPARRY_GetActionLength();
-	Tileset * GROUNDPARRY_GetTileset();
+	const char * GROUNDPARRY_GetTilesetName();
 
 	void GROUNDPARRYLOW_Start();
 	void GROUNDPARRYLOW_End();
@@ -2473,7 +2476,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDPARRYLOW_TimeIndFrameInc();
 	void GROUNDPARRYLOW_TimeDepFrameInc();
 	int GROUNDPARRYLOW_GetActionLength();
-	Tileset * GROUNDPARRYLOW_GetTileset();
+	const char * GROUNDPARRYLOW_GetTilesetName();
 
 	void GROUNDTECHBACK_Start();
 	void GROUNDTECHBACK_End();
@@ -2484,7 +2487,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDTECHBACK_TimeIndFrameInc();
 	void GROUNDTECHBACK_TimeDepFrameInc();
 	int GROUNDTECHBACK_GetActionLength();
-	Tileset * GROUNDTECHBACK_GetTileset();
+	const char * GROUNDTECHBACK_GetTilesetName();
 
 	void GROUNDTECHFORWARD_Start();
 	void GROUNDTECHFORWARD_End();
@@ -2495,7 +2498,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDTECHFORWARD_TimeIndFrameInc();
 	void GROUNDTECHFORWARD_TimeDepFrameInc();
 	int GROUNDTECHFORWARD_GetActionLength();
-	Tileset * GROUNDTECHFORWARD_GetTileset();
+	const char * GROUNDTECHFORWARD_GetTilesetName();
 
 	void GROUNDTECHINPLACE_Start();
 	void GROUNDTECHINPLACE_End();
@@ -2506,7 +2509,7 @@ struct Actor : QuadTreeCollider,
 	void GROUNDTECHINPLACE_TimeIndFrameInc();
 	void GROUNDTECHINPLACE_TimeDepFrameInc();
 	int GROUNDTECHINPLACE_GetActionLength();
-	Tileset * GROUNDTECHINPLACE_GetTileset();
+	const char * GROUNDTECHINPLACE_GetTilesetName();
 
 	void HIDDEN_Start();
 	void HIDDEN_End();
@@ -2517,7 +2520,7 @@ struct Actor : QuadTreeCollider,
 	void HIDDEN_TimeIndFrameInc();
 	void HIDDEN_TimeDepFrameInc();
 	int HIDDEN_GetActionLength();
-	Tileset * HIDDEN_GetTileset();
+	const char * HIDDEN_GetTilesetName();
 
 	void HOMINGATTACK_Start();
 	void HOMINGATTACK_End();
@@ -2528,7 +2531,7 @@ struct Actor : QuadTreeCollider,
 	void HOMINGATTACK_TimeIndFrameInc();
 	void HOMINGATTACK_TimeDepFrameInc();
 	int HOMINGATTACK_GetActionLength();
-	Tileset * HOMINGATTACK_GetTileset();
+	const char * HOMINGATTACK_GetTilesetName();
 
 	void INTRO_Start();
 	void INTRO_End();
@@ -2539,7 +2542,7 @@ struct Actor : QuadTreeCollider,
 	void INTRO_TimeIndFrameInc();
 	void INTRO_TimeDepFrameInc();
 	int INTRO_GetActionLength();
-	Tileset * INTRO_GetTileset();
+	const char * INTRO_GetTilesetName();
 
 	void INTROBOOST_Start();
 	void INTROBOOST_End();
@@ -2550,7 +2553,7 @@ struct Actor : QuadTreeCollider,
 	void INTROBOOST_TimeIndFrameInc();
 	void INTROBOOST_TimeDepFrameInc();
 	int INTROBOOST_GetActionLength();
-	Tileset * INTROBOOST_GetTileset();
+	const char * INTROBOOST_GetTilesetName();
 
 	void JUMP_Start();
 	void JUMP_End();
@@ -2561,7 +2564,7 @@ struct Actor : QuadTreeCollider,
 	void JUMP_TimeIndFrameInc();
 	void JUMP_TimeDepFrameInc();
 	int JUMP_GetActionLength();
-	Tileset * JUMP_GetTileset();
+	const char * JUMP_GetTilesetName();
 
 	void JUMPSQUAT_Start();
 	void JUMPSQUAT_End();
@@ -2572,7 +2575,7 @@ struct Actor : QuadTreeCollider,
 	void JUMPSQUAT_TimeIndFrameInc();
 	void JUMPSQUAT_TimeDepFrameInc();
 	int JUMPSQUAT_GetActionLength();
-	Tileset * JUMPSQUAT_GetTileset();
+	const char * JUMPSQUAT_GetTilesetName();
 
 	void LAND_Start();
 	void LAND_End();
@@ -2583,7 +2586,7 @@ struct Actor : QuadTreeCollider,
 	void LAND_TimeIndFrameInc();
 	void LAND_TimeDepFrameInc();
 	int LAND_GetActionLength();
-	Tileset * LAND_GetTileset();
+	const char * LAND_GetTilesetName();
 
 	void LAND2_Start();
 	void LAND2_End();
@@ -2594,7 +2597,7 @@ struct Actor : QuadTreeCollider,
 	void LAND2_TimeIndFrameInc();
 	void LAND2_TimeDepFrameInc();
 	int LAND2_GetActionLength();
-	Tileset * LAND2_GetTileset();
+	const char * LAND2_GetTilesetName();
 
 	void LOCKEDRAILSLIDE_Start();
 	void LOCKEDRAILSLIDE_End();
@@ -2605,7 +2608,7 @@ struct Actor : QuadTreeCollider,
 	void LOCKEDRAILSLIDE_TimeIndFrameInc();
 	void LOCKEDRAILSLIDE_TimeDepFrameInc();
 	int LOCKEDRAILSLIDE_GetActionLength();
-	Tileset * LOCKEDRAILSLIDE_GetTileset();
+	const char * LOCKEDRAILSLIDE_GetTilesetName();
 
 	void NEXUSKILL_Start();
 	void NEXUSKILL_End();
@@ -2616,7 +2619,7 @@ struct Actor : QuadTreeCollider,
 	void NEXUSKILL_TimeIndFrameInc();
 	void NEXUSKILL_TimeDepFrameInc();
 	int NEXUSKILL_GetActionLength();
-	Tileset * NEXUSKILL_GetTileset();
+	const char * NEXUSKILL_GetTilesetName();
 
 	void RAILBOUNCE_Start();
 	void RAILBOUNCE_End();
@@ -2627,7 +2630,7 @@ struct Actor : QuadTreeCollider,
 	void RAILBOUNCE_TimeIndFrameInc();
 	void RAILBOUNCE_TimeDepFrameInc();
 	int RAILBOUNCE_GetActionLength();
-	Tileset * RAILBOUNCE_GetTileset();
+	const char * RAILBOUNCE_GetTilesetName();
 
 	void RAILBOUNCEGROUND_Start();
 	void RAILBOUNCEGROUND_End();
@@ -2638,7 +2641,7 @@ struct Actor : QuadTreeCollider,
 	void RAILBOUNCEGROUND_TimeIndFrameInc();
 	void RAILBOUNCEGROUND_TimeDepFrameInc();
 	int RAILBOUNCEGROUND_GetActionLength();
-	Tileset * RAILBOUNCEGROUND_GetTileset();
+	const char * RAILBOUNCEGROUND_GetTilesetName();
 
 	void RAILDASH_Start();
 	void RAILDASH_End();
@@ -2649,7 +2652,7 @@ struct Actor : QuadTreeCollider,
 	void RAILDASH_TimeIndFrameInc();
 	void RAILDASH_TimeDepFrameInc();
 	int RAILDASH_GetActionLength();
-	Tileset * RAILDASH_GetTileset();
+	const char * RAILDASH_GetTilesetName();
 
 	void RAILGRIND_Start();
 	void RAILGRIND_End();
@@ -2660,7 +2663,7 @@ struct Actor : QuadTreeCollider,
 	void RAILGRIND_TimeIndFrameInc();
 	void RAILGRIND_TimeDepFrameInc();
 	int RAILGRIND_GetActionLength();
-	Tileset * RAILGRIND_GetTileset();
+	const char * RAILGRIND_GetTilesetName();
 
 	void RAILSLIDE_Start();
 	void RAILSLIDE_End();
@@ -2671,7 +2674,7 @@ struct Actor : QuadTreeCollider,
 	void RAILSLIDE_TimeIndFrameInc();
 	void RAILSLIDE_TimeDepFrameInc();
 	int RAILSLIDE_GetActionLength();
-	Tileset * RAILSLIDE_GetTileset();
+	const char * RAILSLIDE_GetTilesetName();
 
 	void RIDESHIP_Start();
 	void RIDESHIP_End();
@@ -2682,7 +2685,7 @@ struct Actor : QuadTreeCollider,
 	void RIDESHIP_TimeIndFrameInc();
 	void RIDESHIP_TimeDepFrameInc();
 	int RIDESHIP_GetActionLength();
-	Tileset * RIDESHIP_GetTileset();
+	const char * RIDESHIP_GetTilesetName();
 
 	void RUN_Start();
 	void RUN_End();
@@ -2693,7 +2696,7 @@ struct Actor : QuadTreeCollider,
 	void RUN_TimeIndFrameInc();
 	void RUN_TimeDepFrameInc();
 	int RUN_GetActionLength();
-	Tileset * RUN_GetTileset();
+	const char * RUN_GetTilesetName();
 
 	void SEQ_CRAWLERFIGHT_DODGEBACK_Start();
 	void SEQ_CRAWLERFIGHT_DODGEBACK_End();
@@ -2704,7 +2707,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_CRAWLERFIGHT_DODGEBACK_TimeIndFrameInc();
 	void SEQ_CRAWLERFIGHT_DODGEBACK_TimeDepFrameInc();
 	int SEQ_CRAWLERFIGHT_DODGEBACK_GetActionLength();
-	Tileset * SEQ_CRAWLERFIGHT_DODGEBACK_GetTileset();
+	const char * SEQ_CRAWLERFIGHT_DODGEBACK_GetTilesetName();
 
 	void SEQ_CRAWLERFIGHT_LAND_Start();
 	void SEQ_CRAWLERFIGHT_LAND_End();
@@ -2715,7 +2718,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_CRAWLERFIGHT_LAND_TimeIndFrameInc();
 	void SEQ_CRAWLERFIGHT_LAND_TimeDepFrameInc();
 	int SEQ_CRAWLERFIGHT_LAND_GetActionLength();
-	Tileset * SEQ_CRAWLERFIGHT_LAND_GetTileset();
+	const char * SEQ_CRAWLERFIGHT_LAND_GetTilesetName();
 
 	void SEQ_CRAWLERFIGHT_STAND_Start();
 	void SEQ_CRAWLERFIGHT_STAND_End();
@@ -2726,7 +2729,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_CRAWLERFIGHT_STAND_TimeIndFrameInc();
 	void SEQ_CRAWLERFIGHT_STAND_TimeDepFrameInc();
 	int SEQ_CRAWLERFIGHT_STAND_GetActionLength();
-	Tileset * SEQ_CRAWLERFIGHT_STAND_GetTileset();
+	const char * SEQ_CRAWLERFIGHT_STAND_GetTilesetName();
 
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_Start();
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_End();
@@ -2737,7 +2740,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeIndFrameInc();
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeDepFrameInc();
 	int SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetActionLength();
-	Tileset * SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTileset();
+	const char * SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTilesetName();
 
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Start();
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_End();
@@ -2748,7 +2751,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeIndFrameInc();
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeDepFrameInc();
 	int SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetActionLength();
-	Tileset * SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTileset();
+	const char * SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTilesetName();
 
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Start();
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_End();
@@ -2759,7 +2762,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeIndFrameInc();
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeDepFrameInc();
 	int SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetActionLength();
-	Tileset * SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTileset();
+	const char * SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTilesetName();
 
 	void SEQ_ENTERCORE1_Start();
 	void SEQ_ENTERCORE1_End();
@@ -2770,7 +2773,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_ENTERCORE1_TimeIndFrameInc();
 	void SEQ_ENTERCORE1_TimeDepFrameInc();
 	int SEQ_ENTERCORE1_GetActionLength();
-	Tileset * SEQ_ENTERCORE1_GetTileset();
+	const char * SEQ_ENTERCORE1_GetTilesetName();
 
 	void SEQ_FADE_INTO_NEXUS_Start();
 	void SEQ_FADE_INTO_NEXUS_End();
@@ -2781,7 +2784,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_FADE_INTO_NEXUS_TimeIndFrameInc();
 	void SEQ_FADE_INTO_NEXUS_TimeDepFrameInc();
 	int SEQ_FADE_INTO_NEXUS_GetActionLength();
-	Tileset * SEQ_FADE_INTO_NEXUS_GetTileset();
+	const char * SEQ_FADE_INTO_NEXUS_GetTilesetName();
 
 	void SEQ_FLOAT_TO_NEXUS_OPENING_Start();
 	void SEQ_FLOAT_TO_NEXUS_OPENING_End();
@@ -2792,7 +2795,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_FLOAT_TO_NEXUS_OPENING_TimeIndFrameInc();
 	void SEQ_FLOAT_TO_NEXUS_OPENING_TimeDepFrameInc();
 	int SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength();
-	Tileset * SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset();
+	const char * SEQ_FLOAT_TO_NEXUS_OPENING_GetTilesetName();
 
 	void SEQ_GATORSTUN_Start();
 	void SEQ_GATORSTUN_End();
@@ -2803,7 +2806,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_GATORSTUN_TimeIndFrameInc();
 	void SEQ_GATORSTUN_TimeDepFrameInc();
 	int SEQ_GATORSTUN_GetActionLength();
-	Tileset * SEQ_GATORSTUN_GetTileset();
+	const char * SEQ_GATORSTUN_GetTilesetName();
 
 	void SEQ_KINFALL_Start();
 	void SEQ_KINFALL_End();
@@ -2814,7 +2817,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_KINFALL_TimeIndFrameInc();
 	void SEQ_KINFALL_TimeDepFrameInc();
 	int SEQ_KINFALL_GetActionLength();
-	Tileset * SEQ_KINFALL_GetTileset();
+	const char * SEQ_KINFALL_GetTilesetName();
 
 	void SEQ_KINSTAND_Start();
 	void SEQ_KINSTAND_End();
@@ -2825,7 +2828,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_KINSTAND_TimeIndFrameInc();
 	void SEQ_KINSTAND_TimeDepFrameInc();
 	int SEQ_KINSTAND_GetActionLength();
-	Tileset * SEQ_KINSTAND_GetTileset();
+	const char * SEQ_KINSTAND_GetTilesetName();
 
 	void SEQ_KINTHROWN_Start();
 	void SEQ_KINTHROWN_End();
@@ -2836,7 +2839,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_KINTHROWN_TimeIndFrameInc();
 	void SEQ_KINTHROWN_TimeDepFrameInc();
 	int SEQ_KINTHROWN_GetActionLength();
-	Tileset * SEQ_KINTHROWN_GetTileset();
+	const char * SEQ_KINTHROWN_GetTilesetName();
 
 	void SEQ_KNEEL_Start();
 	void SEQ_KNEEL_End();
@@ -2847,7 +2850,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_KNEEL_TimeIndFrameInc();
 	void SEQ_KNEEL_TimeDepFrameInc();
 	int SEQ_KNEEL_GetActionLength();
-	Tileset * SEQ_KNEEL_GetTileset();
+	const char * SEQ_KNEEL_GetTilesetName();
 
 	void SEQ_KNEEL_TO_MEDITATE_Start();
 	void SEQ_KNEEL_TO_MEDITATE_End();
@@ -2858,7 +2861,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_KNEEL_TO_MEDITATE_TimeIndFrameInc();
 	void SEQ_KNEEL_TO_MEDITATE_TimeDepFrameInc();
 	int SEQ_KNEEL_TO_MEDITATE_GetActionLength();
-	Tileset * SEQ_KNEEL_TO_MEDITATE_GetTileset();
+	const char * SEQ_KNEEL_TO_MEDITATE_GetTilesetName();
 
 	void SEQ_LOOKUP_Start();
 	void SEQ_LOOKUP_End();
@@ -2869,7 +2872,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_LOOKUP_TimeIndFrameInc();
 	void SEQ_LOOKUP_TimeDepFrameInc();
 	int SEQ_LOOKUP_GetActionLength();
-	Tileset * SEQ_LOOKUP_GetTileset();
+	const char * SEQ_LOOKUP_GetTilesetName();
 
 	void SEQ_LOOKUPDISAPPEAR_Start();
 	void SEQ_LOOKUPDISAPPEAR_End();
@@ -2880,7 +2883,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_LOOKUPDISAPPEAR_TimeIndFrameInc();
 	void SEQ_LOOKUPDISAPPEAR_TimeDepFrameInc();
 	int SEQ_LOOKUPDISAPPEAR_GetActionLength();
-	Tileset * SEQ_LOOKUPDISAPPEAR_GetTileset();
+	const char * SEQ_LOOKUPDISAPPEAR_GetTilesetName();
 
 	void SEQ_MASKOFF_Start();
 	void SEQ_MASKOFF_End();
@@ -2891,7 +2894,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_MASKOFF_TimeIndFrameInc();
 	void SEQ_MASKOFF_TimeDepFrameInc();
 	int SEQ_MASKOFF_GetActionLength();
-	Tileset * SEQ_MASKOFF_GetTileset();
+	const char * SEQ_MASKOFF_GetTilesetName();
 
 	void SEQ_MEDITATE_Start();
 	void SEQ_MEDITATE_End();
@@ -2902,7 +2905,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_MEDITATE_TimeIndFrameInc();
 	void SEQ_MEDITATE_TimeDepFrameInc();
 	int SEQ_MEDITATE_GetActionLength();
-	Tileset * SEQ_MEDITATE_GetTileset();
+	const char * SEQ_MEDITATE_GetTilesetName();
 
 	void SEQ_MEDITATE_MASKON_Start();
 	void SEQ_MEDITATE_MASKON_End();
@@ -2913,7 +2916,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_MEDITATE_MASKON_TimeIndFrameInc();
 	void SEQ_MEDITATE_MASKON_TimeDepFrameInc();
 	int SEQ_MEDITATE_MASKON_GetActionLength();
-	Tileset * SEQ_MEDITATE_MASKON_GetTileset();
+	const char * SEQ_MEDITATE_MASKON_GetTilesetName();
 
 	void SEQ_TURNFACE_Start();
 	void SEQ_TURNFACE_End();
@@ -2924,7 +2927,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_TURNFACE_TimeIndFrameInc();
 	void SEQ_TURNFACE_TimeDepFrameInc();
 	int SEQ_TURNFACE_GetActionLength();
-	Tileset * SEQ_TURNFACE_GetTileset();
+	const char * SEQ_TURNFACE_GetTilesetName();
 
 	void SEQ_WAIT_Start();
 	void SEQ_WAIT_End();
@@ -2935,7 +2938,7 @@ struct Actor : QuadTreeCollider,
 	void SEQ_WAIT_TimeIndFrameInc();
 	void SEQ_WAIT_TimeDepFrameInc();
 	int SEQ_WAIT_GetActionLength();
-	Tileset * SEQ_WAIT_GetTileset();
+	const char * SEQ_WAIT_GetTilesetName();
 
 	void SKYDIVE_Start();
 	void SKYDIVE_End();
@@ -2946,7 +2949,7 @@ struct Actor : QuadTreeCollider,
 	void SKYDIVE_TimeIndFrameInc();
 	void SKYDIVE_TimeDepFrameInc();
 	int SKYDIVE_GetActionLength();
-	Tileset * SKYDIVE_GetTileset();
+	const char * SKYDIVE_GetTilesetName();
 
 	void SKYDIVETOFALL_Start();
 	void SKYDIVETOFALL_End();
@@ -2957,7 +2960,7 @@ struct Actor : QuadTreeCollider,
 	void SKYDIVETOFALL_TimeIndFrameInc();
 	void SKYDIVETOFALL_TimeDepFrameInc();
 	int SKYDIVETOFALL_GetActionLength();
-	Tileset * SKYDIVETOFALL_GetTileset();
+	const char * SKYDIVETOFALL_GetTilesetName();
 
 	void SLIDE_Start();
 	void SLIDE_End();
@@ -2968,7 +2971,7 @@ struct Actor : QuadTreeCollider,
 	void SLIDE_TimeIndFrameInc();
 	void SLIDE_TimeDepFrameInc();
 	int SLIDE_GetActionLength();
-	Tileset * SLIDE_GetTileset();
+	const char * SLIDE_GetTilesetName();
 
 	void SPAWNWAIT_Start();
 	void SPAWNWAIT_End();
@@ -2979,7 +2982,7 @@ struct Actor : QuadTreeCollider,
 	void SPAWNWAIT_TimeIndFrameInc();
 	void SPAWNWAIT_TimeDepFrameInc();
 	int SPAWNWAIT_GetActionLength();
-	Tileset * SPAWNWAIT_GetTileset();
+	const char * SPAWNWAIT_GetTilesetName();
 
 	void SPRINGSTUN_Start();
 	void SPRINGSTUN_End();
@@ -2990,7 +2993,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUN_TimeIndFrameInc();
 	void SPRINGSTUN_TimeDepFrameInc();
 	int SPRINGSTUN_GetActionLength();
-	Tileset * SPRINGSTUN_GetTileset();
+	const char * SPRINGSTUN_GetTilesetName();
 
 	void SPRINGSTUNAIM_Start();
 	void SPRINGSTUNAIM_End();
@@ -3001,7 +3004,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNAIM_TimeIndFrameInc();
 	void SPRINGSTUNAIM_TimeDepFrameInc();
 	int SPRINGSTUNAIM_GetActionLength();
-	Tileset * SPRINGSTUNAIM_GetTileset();
+	const char * SPRINGSTUNAIM_GetTilesetName();
 
 	void SPRINGSTUNAIRBOUNCE_Start();
 	void SPRINGSTUNAIRBOUNCE_End();
@@ -3012,7 +3015,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNAIRBOUNCE_TimeIndFrameInc();
 	void SPRINGSTUNAIRBOUNCE_TimeDepFrameInc();
 	int SPRINGSTUNAIRBOUNCE_GetActionLength();
-	Tileset * SPRINGSTUNAIRBOUNCE_GetTileset();
+	const char * SPRINGSTUNAIRBOUNCE_GetTilesetName();
 
 	void SPRINGSTUNAIRBOUNCEPAUSE_Start();
 	void SPRINGSTUNAIRBOUNCEPAUSE_End();
@@ -3023,7 +3026,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNAIRBOUNCEPAUSE_TimeIndFrameInc();
 	void SPRINGSTUNAIRBOUNCEPAUSE_TimeDepFrameInc();
 	int SPRINGSTUNAIRBOUNCEPAUSE_GetActionLength();
-	Tileset * SPRINGSTUNAIRBOUNCEPAUSE_GetTileset();
+	const char * SPRINGSTUNAIRBOUNCEPAUSE_GetTilesetName();
 
 	void SPRINGSTUNANNIHILATION_Start();
 	void SPRINGSTUNANNIHILATION_End();
@@ -3034,7 +3037,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNANNIHILATION_TimeIndFrameInc();
 	void SPRINGSTUNANNIHILATION_TimeDepFrameInc();
 	int SPRINGSTUNANNIHILATION_GetActionLength();
-	Tileset * SPRINGSTUNANNIHILATION_GetTileset();
+	const char * SPRINGSTUNANNIHILATION_GetTilesetName();
 
 	void SPRINGSTUNANNIHILATIONATTACK_Start();
 	void SPRINGSTUNANNIHILATIONATTACK_End();
@@ -3045,7 +3048,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNANNIHILATIONATTACK_TimeIndFrameInc();
 	void SPRINGSTUNANNIHILATIONATTACK_TimeDepFrameInc();
 	int SPRINGSTUNANNIHILATIONATTACK_GetActionLength();
-	Tileset * SPRINGSTUNANNIHILATIONATTACK_GetTileset();
+	const char * SPRINGSTUNANNIHILATIONATTACK_GetTilesetName();
 
 	
 
@@ -3058,7 +3061,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNBOUNCE_TimeIndFrameInc();
 	void SPRINGSTUNBOUNCE_TimeDepFrameInc();
 	int SPRINGSTUNBOUNCE_GetActionLength();
-	Tileset * SPRINGSTUNBOUNCE_GetTileset();
+	const char * SPRINGSTUNBOUNCE_GetTilesetName();
 
 	void SPRINGSTUNBOUNCEGROUND_Start();
 	void SPRINGSTUNBOUNCEGROUND_End();
@@ -3069,7 +3072,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNBOUNCEGROUND_TimeIndFrameInc();
 	void SPRINGSTUNBOUNCEGROUND_TimeDepFrameInc();
 	int SPRINGSTUNBOUNCEGROUND_GetActionLength();
-	Tileset * SPRINGSTUNBOUNCEGROUND_GetTileset();
+	const char * SPRINGSTUNBOUNCEGROUND_GetTilesetName();
 
 	void SPRINGSTUNGLIDE_Start();
 	void SPRINGSTUNGLIDE_End();
@@ -3080,7 +3083,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNGLIDE_TimeIndFrameInc();
 	void SPRINGSTUNGLIDE_TimeDepFrameInc();
 	int SPRINGSTUNGLIDE_GetActionLength();
-	Tileset * SPRINGSTUNGLIDE_GetTileset();
+	const char * SPRINGSTUNGLIDE_GetTilesetName();
 
 	void SPRINGSTUNGRIND_Start();
 	void SPRINGSTUNGRIND_End();
@@ -3091,7 +3094,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNGRIND_TimeIndFrameInc();
 	void SPRINGSTUNGRIND_TimeDepFrameInc();
 	int SPRINGSTUNGRIND_GetActionLength();
-	Tileset * SPRINGSTUNGRIND_GetTileset();
+	const char * SPRINGSTUNGRIND_GetTilesetName();
 
 	void SPRINGSTUNGRINDFLY_Start();
 	void SPRINGSTUNGRINDFLY_End();
@@ -3102,7 +3105,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNGRINDFLY_TimeIndFrameInc();
 	void SPRINGSTUNGRINDFLY_TimeDepFrameInc();
 	int SPRINGSTUNGRINDFLY_GetActionLength();
-	Tileset * SPRINGSTUNGRINDFLY_GetTileset();
+	const char * SPRINGSTUNGRINDFLY_GetTilesetName();
 
 	void SPRINGSTUNHOMING_Start();
 	void SPRINGSTUNHOMING_End();
@@ -3113,7 +3116,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNHOMING_TimeIndFrameInc();
 	void SPRINGSTUNHOMING_TimeDepFrameInc();
 	int SPRINGSTUNHOMING_GetActionLength();
-	Tileset * SPRINGSTUNHOMING_GetTileset();
+	const char * SPRINGSTUNHOMING_GetTilesetName();
 
 
 	void SPRINGSTUNHOMINGATTACK_Start();
@@ -3125,7 +3128,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNHOMINGATTACK_TimeIndFrameInc();
 	void SPRINGSTUNHOMINGATTACK_TimeDepFrameInc();
 	int SPRINGSTUNHOMINGATTACK_GetActionLength();
-	Tileset * SPRINGSTUNHOMINGATTACK_GetTileset();
+	const char * SPRINGSTUNHOMINGATTACK_GetTilesetName();
 
 	void SPRINGSTUNTELEPORT_Start();
 	void SPRINGSTUNTELEPORT_End();
@@ -3136,7 +3139,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNTELEPORT_TimeIndFrameInc();
 	void SPRINGSTUNTELEPORT_TimeDepFrameInc();
 	int SPRINGSTUNTELEPORT_GetActionLength();
-	Tileset * SPRINGSTUNTELEPORT_GetTileset();
+	const char * SPRINGSTUNTELEPORT_GetTilesetName();
 
 	void SPRINT_Start();
 	void SPRINT_End();
@@ -3147,7 +3150,7 @@ struct Actor : QuadTreeCollider,
 	void SPRINT_TimeIndFrameInc();
 	void SPRINT_TimeDepFrameInc();
 	int SPRINT_GetActionLength();
-	Tileset * SPRINT_GetTileset();
+	const char * SPRINT_GetTilesetName();
 
 	void STAND_Start();
 	void STAND_End();
@@ -3158,7 +3161,7 @@ struct Actor : QuadTreeCollider,
 	void STAND_TimeIndFrameInc();
 	void STAND_TimeDepFrameInc();
 	int STAND_GetActionLength();
-	Tileset * STAND_GetTileset();
+	const char * STAND_GetTilesetName();
 
 	void STANDATTACK1_Start();
 	void STANDATTACK1_End();
@@ -3169,7 +3172,7 @@ struct Actor : QuadTreeCollider,
 	void STANDATTACK1_TimeIndFrameInc();
 	void STANDATTACK1_TimeDepFrameInc();
 	int STANDATTACK1_GetActionLength();
-	Tileset * STANDATTACK1_GetTileset();
+	const char * STANDATTACK1_GetTilesetName();
 
 	void STANDATTACK2_Start();
 	void STANDATTACK2_End();
@@ -3180,7 +3183,7 @@ struct Actor : QuadTreeCollider,
 	void STANDATTACK2_TimeIndFrameInc();
 	void STANDATTACK2_TimeDepFrameInc();
 	int STANDATTACK2_GetActionLength();
-	Tileset * STANDATTACK2_GetTileset();
+	const char * STANDATTACK2_GetTilesetName();
 
 	void STANDATTACK3_Start();
 	void STANDATTACK3_End();
@@ -3191,7 +3194,7 @@ struct Actor : QuadTreeCollider,
 	void STANDATTACK3_TimeIndFrameInc();
 	void STANDATTACK3_TimeDepFrameInc();
 	int STANDATTACK3_GetActionLength();
-	Tileset * STANDATTACK3_GetTileset();
+	const char * STANDATTACK3_GetTilesetName();
 
 	void STANDATTACK4_Start();
 	void STANDATTACK4_End();
@@ -3202,7 +3205,7 @@ struct Actor : QuadTreeCollider,
 	void STANDATTACK4_TimeIndFrameInc();
 	void STANDATTACK4_TimeDepFrameInc();
 	int STANDATTACK4_GetActionLength();
-	Tileset * STANDATTACK4_GetTileset();
+	const char * STANDATTACK4_GetTilesetName();
 
 	void STEEPCLIMB_Start();
 	void STEEPCLIMB_End();
@@ -3213,7 +3216,7 @@ struct Actor : QuadTreeCollider,
 	void STEEPCLIMB_TimeIndFrameInc();
 	void STEEPCLIMB_TimeDepFrameInc();
 	int STEEPCLIMB_GetActionLength();
-	Tileset * STEEPCLIMB_GetTileset();
+	const char * STEEPCLIMB_GetTilesetName();
 
 	void STEEPCLIMBATTACK_Start();
 	void STEEPCLIMBATTACK_End();
@@ -3224,7 +3227,7 @@ struct Actor : QuadTreeCollider,
 	void STEEPCLIMBATTACK_TimeIndFrameInc();
 	void STEEPCLIMBATTACK_TimeDepFrameInc();
 	int STEEPCLIMBATTACK_GetActionLength();
-	Tileset * STEEPCLIMBATTACK_GetTileset();
+	const char * STEEPCLIMBATTACK_GetTilesetName();
 
 	void STEEPCLING_Start();
 	void STEEPCLING_End();
@@ -3235,7 +3238,7 @@ struct Actor : QuadTreeCollider,
 	void STEEPCLING_TimeIndFrameInc();
 	void STEEPCLING_TimeDepFrameInc();
 	int STEEPCLING_GetActionLength();
-	Tileset * STEEPCLING_GetTileset();
+	const char * STEEPCLING_GetTilesetName();
 
 	void STEEPSLIDE_Start();
 	void STEEPSLIDE_End();
@@ -3246,7 +3249,7 @@ struct Actor : QuadTreeCollider,
 	void STEEPSLIDE_TimeIndFrameInc();
 	void STEEPSLIDE_TimeDepFrameInc();
 	int STEEPSLIDE_GetActionLength();
-	Tileset * STEEPSLIDE_GetTileset();
+	const char * STEEPSLIDE_GetTilesetName();
 
 	void STEEPSLIDEATTACK_Start();
 	void STEEPSLIDEATTACK_End();
@@ -3257,7 +3260,7 @@ struct Actor : QuadTreeCollider,
 	void STEEPSLIDEATTACK_TimeIndFrameInc();
 	void STEEPSLIDEATTACK_TimeDepFrameInc();
 	int STEEPSLIDEATTACK_GetActionLength();
-	Tileset * STEEPSLIDEATTACK_GetTileset();
+	const char * STEEPSLIDEATTACK_GetTilesetName();
 
 	void SWINGSTUN_Start();
 	void SWINGSTUN_End();
@@ -3268,7 +3271,7 @@ struct Actor : QuadTreeCollider,
 	void SWINGSTUN_TimeIndFrameInc();
 	void SWINGSTUN_TimeDepFrameInc();
 	int SWINGSTUN_GetActionLength();
-	Tileset * SWINGSTUN_GetTileset();
+	const char * SWINGSTUN_GetTilesetName();
 
 	void TESTSUPER_Start();
 	void TESTSUPER_End();
@@ -3279,7 +3282,7 @@ struct Actor : QuadTreeCollider,
 	void TESTSUPER_TimeIndFrameInc();
 	void TESTSUPER_TimeDepFrameInc();
 	int TESTSUPER_GetActionLength();
-	Tileset * TESTSUPER_GetTileset();
+	const char * TESTSUPER_GetTilesetName();
 
 	void SUPERBIRD_Start();
 	void SUPERBIRD_End();
@@ -3290,7 +3293,7 @@ struct Actor : QuadTreeCollider,
 	void SUPERBIRD_TimeIndFrameInc();
 	void SUPERBIRD_TimeDepFrameInc();
 	int SUPERBIRD_GetActionLength();
-	Tileset * SUPERBIRD_GetTileset();
+	const char * SUPERBIRD_GetTilesetName();
 
 	void TELEPORTACROSSTERRAIN_Start();
 	void TELEPORTACROSSTERRAIN_End();
@@ -3301,7 +3304,7 @@ struct Actor : QuadTreeCollider,
 	void TELEPORTACROSSTERRAIN_TimeIndFrameInc();
 	void TELEPORTACROSSTERRAIN_TimeDepFrameInc();
 	int TELEPORTACROSSTERRAIN_GetActionLength();
-	Tileset * TELEPORTACROSSTERRAIN_GetTileset();
+	const char * TELEPORTACROSSTERRAIN_GetTilesetName();
 
 	void UAIR_Start();
 	void UAIR_End();
@@ -3312,7 +3315,7 @@ struct Actor : QuadTreeCollider,
 	void UAIR_TimeIndFrameInc();
 	void UAIR_TimeDepFrameInc();
 	int UAIR_GetActionLength();
-	Tileset * UAIR_GetTileset();
+	const char * UAIR_GetTilesetName();
 
 	void UPTILT1_Start();
 	void UPTILT1_End();
@@ -3323,7 +3326,7 @@ struct Actor : QuadTreeCollider,
 	void UPTILT1_TimeIndFrameInc();
 	void UPTILT1_TimeDepFrameInc();
 	int UPTILT1_GetActionLength();
-	Tileset * UPTILT1_GetTileset();
+	const char * UPTILT1_GetTilesetName();
 
 	void UPTILT2_Start();
 	void UPTILT2_End();
@@ -3334,7 +3337,7 @@ struct Actor : QuadTreeCollider,
 	void UPTILT2_TimeIndFrameInc();
 	void UPTILT2_TimeDepFrameInc();
 	int UPTILT2_GetActionLength();
-	Tileset * UPTILT2_GetTileset();
+	const char * UPTILT2_GetTilesetName();
 
 	void UPTILT3_Start();
 	void UPTILT3_End();
@@ -3345,7 +3348,7 @@ struct Actor : QuadTreeCollider,
 	void UPTILT3_TimeIndFrameInc();
 	void UPTILT3_TimeDepFrameInc();
 	int UPTILT3_GetActionLength();
-	Tileset * UPTILT3_GetTileset();
+	const char * UPTILT3_GetTilesetName();
 
 	void WAITFORSHIP_Start();
 	void WAITFORSHIP_End();
@@ -3356,7 +3359,7 @@ struct Actor : QuadTreeCollider,
 	void WAITFORSHIP_TimeIndFrameInc();
 	void WAITFORSHIP_TimeDepFrameInc();
 	int WAITFORSHIP_GetActionLength();
-	Tileset * WAITFORSHIP_GetTileset();
+	const char * WAITFORSHIP_GetTilesetName();
 
 	void WALLATTACK_Start();
 	void WALLATTACK_End();
@@ -3367,7 +3370,7 @@ struct Actor : QuadTreeCollider,
 	void WALLATTACK_TimeIndFrameInc();
 	void WALLATTACK_TimeDepFrameInc();
 	int WALLATTACK_GetActionLength();
-	Tileset * WALLATTACK_GetTileset();
+	const char * WALLATTACK_GetTilesetName();
 
 	void WALLCLING_Start();
 	void WALLCLING_End();
@@ -3378,7 +3381,7 @@ struct Actor : QuadTreeCollider,
 	void WALLCLING_TimeIndFrameInc();
 	void WALLCLING_TimeDepFrameInc();
 	int WALLCLING_GetActionLength();
-	Tileset * WALLCLING_GetTileset();
+	const char * WALLCLING_GetTilesetName();
 
 	void WALLJUMP_Start();
 	void WALLJUMP_End();
@@ -3389,7 +3392,7 @@ struct Actor : QuadTreeCollider,
 	void WALLJUMP_TimeIndFrameInc();
 	void WALLJUMP_TimeDepFrameInc();
 	int WALLJUMP_GetActionLength();
-	Tileset * WALLJUMP_GetTileset();
+	const char * WALLJUMP_GetTilesetName();
 
 	void WALLTECH_Start();
 	void WALLTECH_End();
@@ -3400,7 +3403,7 @@ struct Actor : QuadTreeCollider,
 	void WALLTECH_TimeIndFrameInc();
 	void WALLTECH_TimeDepFrameInc();
 	int WALLTECH_GetActionLength();
-	Tileset * WALLTECH_GetTileset();
+	const char * WALLTECH_GetTilesetName();
 
 	void WATERGLIDE_Start();
 	void WATERGLIDE_End();
@@ -3411,7 +3414,7 @@ struct Actor : QuadTreeCollider,
 	void WATERGLIDE_TimeIndFrameInc();
 	void WATERGLIDE_TimeDepFrameInc();
 	int WATERGLIDE_GetActionLength();
-	Tileset * WATERGLIDE_GetTileset();
+	const char * WATERGLIDE_GetTilesetName();
 
 	void WATERGLIDECHARGE_Start();
 	void WATERGLIDECHARGE_End();
@@ -3422,7 +3425,7 @@ struct Actor : QuadTreeCollider,
 	void WATERGLIDECHARGE_TimeIndFrameInc();
 	void WATERGLIDECHARGE_TimeDepFrameInc();
 	int WATERGLIDECHARGE_GetActionLength();
-	Tileset * WATERGLIDECHARGE_GetTileset();
+	const char * WATERGLIDECHARGE_GetTilesetName();
 
 	void WATERGLIDE_HITSTUN_Start();
 	void WATERGLIDE_HITSTUN_End();
@@ -3433,7 +3436,7 @@ struct Actor : QuadTreeCollider,
 	void WATERGLIDE_HITSTUN_TimeIndFrameInc();
 	void WATERGLIDE_HITSTUN_TimeDepFrameInc();
 	int WATERGLIDE_HITSTUN_GetActionLength();
-	Tileset * WATERGLIDE_HITSTUN_GetTileset();
+	const char * WATERGLIDE_HITSTUN_GetTilesetName();
 
 	void WIREHOLD_Start();
 	void WIREHOLD_End();
@@ -3444,7 +3447,7 @@ struct Actor : QuadTreeCollider,
 	void WIREHOLD_TimeIndFrameInc();
 	void WIREHOLD_TimeDepFrameInc();
 	int WIREHOLD_GetActionLength();
-	Tileset * WIREHOLD_GetTileset();
+	const char * WIREHOLD_GetTilesetName();
 
 };
 

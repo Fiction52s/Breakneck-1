@@ -156,7 +156,7 @@ int Actor::GRAVREVERSE_GetActionLength()
 	return 20;
 }
 
-Tileset * Actor::GRAVREVERSE_GetTileset()
+const char * Actor::GRAVREVERSE_GetTilesetName()
 {
-	return GetActionTileset("grav_64x64.png");
+	return "grav_64x64.png";
 }

@@ -45,7 +45,7 @@ int Actor::SPAWNWAIT_GetActionLength()
 	return 60;
 }
 
-Tileset * Actor::SPAWNWAIT_GetTileset()
+const char * Actor::SPAWNWAIT_GetTilesetName()
 {
 	return NULL;
 }

@@ -63,7 +63,7 @@ int Actor::GETSHARD_GetActionLength()
 	return 2;
 }
 
-Tileset * Actor::GETSHARD_GetTileset()
+const char * Actor::GETSHARD_GetTilesetName()
 {
-	return DEATH_GetTileset();
+	return DEATH_GetTilesetName();
 }

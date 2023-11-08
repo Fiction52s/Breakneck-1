@@ -44,7 +44,7 @@ int Actor::WIREHOLD_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::WIREHOLD_GetTileset()
+const char * Actor::WIREHOLD_GetTilesetName()
 {
-	return STEEPSLIDE_GetTileset();
+	return STEEPSLIDE_GetTilesetName();
 }

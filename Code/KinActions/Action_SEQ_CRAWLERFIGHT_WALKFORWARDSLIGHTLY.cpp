@@ -46,7 +46,7 @@ int Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetActionLength()
 	return 10 * 4;
 }
 
-Tileset * Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTileset()
+const char * Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTilesetName()
 {
-	return GetActionTileset("run_64x64.png");
+	return "run_64x64.png";
 }

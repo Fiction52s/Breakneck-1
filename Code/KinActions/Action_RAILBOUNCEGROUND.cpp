@@ -85,8 +85,8 @@ int Actor::RAILBOUNCEGROUND_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::RAILBOUNCEGROUND_GetTileset()
+const char * Actor::RAILBOUNCEGROUND_GetTilesetName()
 {
-	return GetActionTileset("bounce_wall_96x64.png");
+	return "bounce_wall_96x64.png";
 	//return GetActionTileset("brake_64x64.png");
 }

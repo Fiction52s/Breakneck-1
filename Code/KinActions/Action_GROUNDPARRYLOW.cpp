@@ -81,7 +81,7 @@ int Actor::GROUNDPARRYLOW_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::GROUNDPARRYLOW_GetTileset()
+const char * Actor::GROUNDPARRYLOW_GetTilesetName()
 {
-	return GetActionTileset("parry_low_64x64.png");
+	return "parry_low_64x64.png";
 }

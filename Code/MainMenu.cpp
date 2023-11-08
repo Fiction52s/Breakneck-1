@@ -562,7 +562,8 @@ MainMenu::MainMenu( bool p_steamOn)
 	{
 		remoteStorageManager = NULL;
 	}
-	
+
+	CreatePlayerTilesets();
 
 	globalFile = new GlobalSaveFile;
 	if (!globalFile->Load())
@@ -1752,6 +1753,9 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 
 void MainMenu::CreatePlayerTilesets()
 {
+	Actor a;
+
+	//create FX Tilesets
 	string folderFX = "Kin/FX/";
 	playerTilesetMap[PTS_FX_FAIR_SWORD_LIGHTNING_0] = GetSizedTileset(folderFX, "fair_sword_lightning_256x256.png");
 	playerTilesetMap[PTS_FX_FAIR_SWORD_LIGHTNING_1] = GetSizedTileset(folderFX, "fair_sword_lightning_256x256.png");
@@ -1801,7 +1805,7 @@ void MainMenu::CreatePlayerTilesets()
 	playerTilesetMap[PTS_FX_EXITENERGY_1] = GetSizedTileset(folderFX, "exitenergy_1_512x512.png");
 	playerTilesetMap[PTS_FX_EXITENERGY_2] = GetSizedTileset(folderFX, "exitenergy_2_512x512.png");
 
-	string folderSword = "Kin/Sword/";
+	/*string folderSword = "Kin/Sword/";
 
 	playerTilesetMap[PTS_SWORD_FAIR_A] = GetSizedTileset(folderSword, "fair_sworda_256x256.png");
 	playerTilesetMap[PTS_SWORD_FAIR_B] = GetSizedTileset(folderSword, "fair_swordb_288x288.png");
@@ -1896,7 +1900,7 @@ void MainMenu::CreatePlayerTilesets()
 	playerTilesetMap[PTS_GRIND_ATTACK] = GetSizedTileset(powerFolder, "grind_attack_192x192.png");
 	playerTilesetMap[PTS_BLOCK_SHELD] = GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	playerTilesetMap[PTS_HOMING] = GetSizedTileset(folderFX, "homing_att_ball_256x256.png");
-	playerTilesetMap[PTS_ANTITIMESLOWRING] = GetSizedTileset(folderFX, "low_grav_ring_128x128.png");
+	playerTilesetMap[PTS_ANTITIMESLOWRING] = GetSizedTileset(folderFX, "low_grav_ring_128x128.png");*/
 }
 
 void MainMenu::Slide()

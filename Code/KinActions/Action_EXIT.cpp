@@ -53,7 +53,7 @@ int Actor::EXIT_GetActionLength()
 	return 29 * 2;
 }
 
-Tileset * Actor::EXIT_GetTileset()
+const char * Actor::EXIT_GetTilesetName()
 {
-	return GetActionTileset("exit_64x128.png");
+	return "exit_64x128.png";
 }

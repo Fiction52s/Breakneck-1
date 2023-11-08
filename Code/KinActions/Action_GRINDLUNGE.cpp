@@ -70,7 +70,7 @@ int Actor::GRINDLUNGE_GetActionLength()
 	return 20;
 }
 
-Tileset * Actor::GRINDLUNGE_GetTileset()
+const char * Actor::GRINDLUNGE_GetTilesetName()
 {
-	return GetActionTileset("airdash_80x80.png");
+	return "airdash_80x80.png";
 }

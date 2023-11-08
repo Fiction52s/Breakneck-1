@@ -10,13 +10,15 @@
 using namespace std;
 using namespace sf;
 
-OptionsMenu::OptionsMenu(PauseMenu *pauseMenu)
+OptionsMenu::OptionsMenu(TilesetManager *p_tm)
 {
+	tm = p_tm;
 	state = CHOOSESTATE;
-	game = pauseMenu->game;
-	mainMenu = pauseMenu->mainMenu;
+	game = NULL;
+	
+	MainMenu *mm = MainMenu::GetInstance();
 
-	gameSettingsMenu = mainMenu->gameSettingsScreen;
+	gameSettingsMenu = mm->gameSettingsScreen;
 
 	//temporary init here
 	basePos = Vector2f(100, 100);
@@ -25,7 +27,7 @@ OptionsMenu::OptionsMenu(PauseMenu *pauseMenu)
 	int waitModeThresh[2] = { 2, 2 };
 	optionModeSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
 
-	ts_optionMode = game->GetSizedTileset("Menu/Pause/optionsptions_768x128.png");
+	ts_optionMode = tm->GetSizedTileset("Menu/Pause/optionsptions_768x128.png");
 
 	//Vector2f startOffset(1820 / 2, 100);
 	Vector2f startOffset(1820 / 2, 128 / 2 + 150);
@@ -36,11 +38,9 @@ OptionsMenu::OptionsMenu(PauseMenu *pauseMenu)
 		SetRectCenter(optionModeQuads + i * 4, 768, 128, startOffset + Vector2f(0, (128 + spacing) * i));
 	}
 
-	playerBoxGroup = new PlayerBoxGroup(game, 1, 450, 450, 100);
+	playerBoxGroup = new PlayerBoxGroup(tm, 1, 450, 450, 100);
 	playerBoxGroup->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
 	playerBoxGroup->SetBoxCenter(0, startOffset + Vector2f(0, 128 + 150));
-	playerBoxGroup->SetControllerStates(0, game->controllerStates[0], game->GetPlayerNormalSkin(0));
-	playerBoxGroup->SetControlProfile(0, game->controlProfiles[0]);
 }
 
 OptionsMenu::~OptionsMenu()
@@ -48,6 +48,13 @@ OptionsMenu::~OptionsMenu()
 	delete optionModeSelector;
 
 	delete playerBoxGroup;
+}
+
+void OptionsMenu::SetGame(GameSession *p_game)
+{
+	game = p_game;
+	playerBoxGroup->SetControllerStates(0, game->controllerStates[0], game->GetPlayerNormalSkin(0));
+	playerBoxGroup->SetControlProfile(0, game->controlProfiles[0]);
 }
 
 void OptionsMenu::Start()
@@ -114,7 +121,8 @@ void OptionsMenu::Update(ControllerState &currInput,
 				//mainMenu->gameSettingsScreen->UpdateFromConfig();
 				//break;
 			case GAMEPLAY:
-				mainMenu->gameSettingsScreen->UpdateFromConfig();
+		
+				gameSettingsMenu->UpdateFromConfig();
 				MOUSE.Show();
 				MOUSE.SetControllersOn(true);
 				MOUSE.Update(MOUSE.GetRealPixelPos());
@@ -139,14 +147,17 @@ void OptionsMenu::Update(ControllerState &currInput,
 
 		playerBoxGroup->Update();
 
+		
+
 		if (playerBoxGroup->IsReady())
 		{
 			ControlProfile *cp = playerBoxGroup->GetControlProfile(0);
 			if (cp != game->controlProfiles[0])
 			{
-				if (mainMenu->adventureManager != NULL)
+				MainMenu *mm = MainMenu::GetInstance();
+				if (mm->adventureManager != NULL)
 				{
-					mainMenu->adventureManager->currProfile = cp;
+					mm->adventureManager->currProfile = cp;
 				}
 				game->controlProfiles[0] = cp;
 			}
@@ -200,8 +211,11 @@ void OptionsMenu::Draw(sf::RenderTarget *target)
 		//csm->Draw(target);
 		break;
 	case SOUND:
-		mainMenu->gameSettingsScreen->Draw(target);
+	{
+		gameSettingsMenu->Draw(target);
 		break;
+	}
+		
 	case VISUAL:
 	case GAMEPLAY:
 	{

@@ -115,7 +115,7 @@ int Actor::DAIR_GetActionLength()
 	return 16;
 }
 
-Tileset * Actor::DAIR_GetTileset()
+const char * Actor::DAIR_GetTilesetName()
 {
-	return GetActionTileset("dair_80x80.png");
+	return "dair_80x80.png";
 }

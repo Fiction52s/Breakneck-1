@@ -71,7 +71,7 @@ int Actor::GROUNDTECHBACK_GetActionLength()
 	return 9 * 3;
 }
 
-Tileset * Actor::GROUNDTECHBACK_GetTileset()
+const char * Actor::GROUNDTECHBACK_GetTilesetName()
 {
-	return GetActionTileset("tech_back_80x80.png");
+	return "tech_back_80x80.png";
 }

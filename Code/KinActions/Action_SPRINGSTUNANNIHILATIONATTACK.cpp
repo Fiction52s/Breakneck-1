@@ -69,7 +69,7 @@ int Actor::SPRINGSTUNANNIHILATIONATTACK_GetActionLength()
 	return 60;
 }
 
-Tileset * Actor::SPRINGSTUNANNIHILATIONATTACK_GetTileset()
+const char * Actor::SPRINGSTUNANNIHILATIONATTACK_GetTilesetName()
 {
-	return JUMP_GetTileset();
+	return JUMP_GetTilesetName();
 }

@@ -61,7 +61,7 @@ int Actor::TELEPORTACROSSTERRAIN_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::TELEPORTACROSSTERRAIN_GetTileset()
+const char * Actor::TELEPORTACROSSTERRAIN_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

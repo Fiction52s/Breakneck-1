@@ -66,7 +66,7 @@ int Actor::SEQ_MEDITATE_MASKON_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_MEDITATE_MASKON_GetTileset()
+const char * Actor::SEQ_MEDITATE_MASKON_GetTilesetName()
 {
-	return SEQ_KNEEL_GetTileset();
+	return SEQ_KNEEL_GetTilesetName();
 }

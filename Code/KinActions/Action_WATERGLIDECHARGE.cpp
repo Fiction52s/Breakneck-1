@@ -141,7 +141,7 @@ int Actor::WATERGLIDECHARGE_GetActionLength()
 	return -1; //infinite frames so I can count how long I'm in it
 }
 
-Tileset * Actor::WATERGLIDECHARGE_GetTileset()
+const char * Actor::WATERGLIDECHARGE_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

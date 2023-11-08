@@ -90,7 +90,7 @@ int Actor::RAILGRIND_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::RAILGRIND_GetTileset()
+const char * Actor::RAILGRIND_GetTilesetName()
 {
 	return NULL;
 }

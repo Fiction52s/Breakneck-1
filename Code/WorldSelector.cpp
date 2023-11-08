@@ -7,7 +7,7 @@ using namespace sf;
 
 WorldSelector::WorldSelector(MainMenu *mm)
 {
-	ts = mm->tilesetManager.GetTileset("WorldMap/world_select_192x192.png", 192, 192);
+	ts = mm->GetTileset("WorldMap/world_select_192x192.png", 192, 192);
 	for (int i = 0; i < 4; ++i)
 	{
 		SetRectSubRect(quads + i * 4, ts->GetSubRect(i));

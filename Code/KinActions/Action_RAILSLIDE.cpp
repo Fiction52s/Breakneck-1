@@ -136,7 +136,7 @@ int Actor::RAILSLIDE_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::RAILSLIDE_GetTileset()
+const char * Actor::RAILSLIDE_GetTilesetName()
 {
 	return NULL;
 }

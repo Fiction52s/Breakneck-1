@@ -51,7 +51,7 @@ int Actor::SEQ_KINTHROWN_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_KINTHROWN_GetTileset()
+const char * Actor::SEQ_KINTHROWN_GetTilesetName()
 {
-	return AIRHITSTUN_GetTileset();
+	return AIRHITSTUN_GetTilesetName();
 }

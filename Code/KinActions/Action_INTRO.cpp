@@ -69,7 +69,7 @@ int Actor::INTRO_GetActionLength()
 	return 18 * 2;
 }
 
-Tileset * Actor::INTRO_GetTileset()
+const char * Actor::INTRO_GetTilesetName()
 {
-	return GetActionTileset("entrance_64x64.png");
+	return "entrance_64x64.png";
 }

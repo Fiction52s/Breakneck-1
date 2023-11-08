@@ -135,7 +135,7 @@ int Actor::DIAGDOWNATTACK_GetActionLength()
 	return 11 * 2;
 }
 
-Tileset * Actor::DIAGDOWNATTACK_GetTileset()
+const char * Actor::DIAGDOWNATTACK_GetTilesetName()
 {
-	return GetActionTileset("airdash_attack_down_64x64.png");
+	return "airdash_attack_down_64x64.png";
 }

@@ -71,7 +71,7 @@ int Actor::WALLTECH_GetActionLength()
 	return 20;
 }
 
-Tileset * Actor::WALLTECH_GetTileset()
+const char * Actor::WALLTECH_GetTilesetName()
 {
-	return GetActionTileset("jump_64x64.png");
+	return "jump_64x64.png";
 }

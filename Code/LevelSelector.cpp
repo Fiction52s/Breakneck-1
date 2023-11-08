@@ -56,7 +56,7 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 	width = 400;
 	height = 1080;
 	
-	ts_previewNotFound = mainMenu->tilesetManager.GetTileset("Maps/notfound.png", 912, 492);
+	ts_previewNotFound = mainMenu->GetTileset("Maps/notfound.png", 912, 492);
 	drawPanel.create( width, height );
 	drawPanel.clear();
 	entries = NULL;
@@ -180,11 +180,11 @@ void LevelSelector::GetPreview( const std::string &pName, const std::string &mNa
 	
 	if (update)
 	{
-		previewTS[mName] = mainMenu->tilesetManager.GetUpdatedTileset(fileName, 912, 492);
+		previewTS[mName] = mainMenu->GetUpdatedTileset(fileName, 912, 492);
 	}
 	else
 	{
-		previewTS[mName] = mainMenu->tilesetManager.GetTileset(fileName, 912, 492);
+		previewTS[mName] = mainMenu->GetTileset(fileName, 912, 492);
 	}
 	
 }

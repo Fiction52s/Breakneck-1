@@ -58,7 +58,7 @@ int Actor::GROUNDBLOCKDOWNFORWARD_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::GROUNDBLOCKDOWNFORWARD_GetTileset()
+const char * Actor::GROUNDBLOCKDOWNFORWARD_GetTilesetName()
 {
-	return GetActionTileset("block_64x64.png");
+	return "block_64x64.png";
 }

@@ -4,6 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include "SaveFile.h"
 #include "Input.h"
+#include "Tileset.h"
+
 
 struct WorldMap;
 struct SaveMenuScreen;
@@ -13,9 +15,11 @@ struct SaveFile;
 struct ControlProfile;
 struct LeaderboardDisplay;
 struct FeedbackForm;
+struct PauseMenu;
 
-struct AdventureManager
+struct AdventureManager : TilesetManager
 {
+	PauseMenu *pauseMenu;
 	WorldMap *worldMap;
 	KinBoostScreen *kinBoostScreen;
 	SaveMenuScreen *saveMenu;

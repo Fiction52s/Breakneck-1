@@ -80,7 +80,7 @@ int Actor::WALLCLING_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::WALLCLING_GetTileset()
+const char * Actor::WALLCLING_GetTilesetName()
 {
-	return GetActionTileset("wallcling_64x64.png");
+	return "wallcling_64x64.png";
 }

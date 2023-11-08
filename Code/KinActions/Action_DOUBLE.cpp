@@ -92,7 +92,7 @@ int Actor::DOUBLE_GetActionLength()
 	return 28 + 10;
 }
 
-Tileset * Actor::DOUBLE_GetTileset()
+const char * Actor::DOUBLE_GetTilesetName()
 {
-	return GetActionTileset("double_64x64.png");
+	return "double_64x64.png";
 }

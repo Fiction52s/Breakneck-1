@@ -8,6 +8,7 @@
 #include "Leaderboard.h"
 #include "md5.h"
 #include "FeedbackForm.h"
+#include "PauseMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -16,6 +17,7 @@ AdventureManager::AdventureManager()
 {
 	leaderboard = new LeaderboardDisplay;
 	feedbackForm = new FeedbackForm;
+	pauseMenu = new PauseMenu(this);
 	worldMap = NULL;
 	kinBoostScreen = NULL;
 	saveMenu = NULL;
@@ -52,6 +54,12 @@ AdventureManager::AdventureManager()
 
 AdventureManager::~AdventureManager()
 {
+	if (pauseMenu != NULL)
+	{
+		delete pauseMenu;
+		pauseMenu = NULL;
+	}
+
 	if (leaderboard != NULL)
 	{
 		delete leaderboard;

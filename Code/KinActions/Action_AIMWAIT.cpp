@@ -148,7 +148,7 @@ int Actor::AIMWAIT_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::AIMWAIT_GetTileset()
+const char *Actor::AIMWAIT_GetTilesetName()
 {
-	return GetActionTileset("launch_96x64.png");
+	return "launch_96x64.png";
 }

@@ -43,7 +43,7 @@ int Actor::EXITWAIT_GetActionLength()
 	return 6 * 3 * 2;
 }
 
-Tileset * Actor::EXITWAIT_GetTileset()
+const char * Actor::EXITWAIT_GetTilesetName()
 {
 	return NULL;
 }

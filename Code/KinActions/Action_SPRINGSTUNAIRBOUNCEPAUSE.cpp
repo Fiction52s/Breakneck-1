@@ -77,7 +77,7 @@ int Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetActionLength()
 	return 10;
 }
 
-Tileset * Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetTileset()
+const char * Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

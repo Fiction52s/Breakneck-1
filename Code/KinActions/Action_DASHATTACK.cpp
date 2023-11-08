@@ -136,7 +136,7 @@ int Actor::DASHATTACK_GetActionLength()
 	return 14 * 2;
 }
 
-Tileset * Actor::DASHATTACK_GetTileset()
+const char * Actor::DASHATTACK_GetTilesetName()
 {
-	return GetActionTileset("dash_att_01_128x64.png");
+	return "dash_att_01_128x64.png";
 }

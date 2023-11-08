@@ -50,7 +50,7 @@ int Actor::SEQ_LOOKUP_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_LOOKUP_GetTileset()
+const char * Actor::SEQ_LOOKUP_GetTilesetName()
 {
-	return GetActionTileset("cover_64x64.png");
+	return "cover_64x64.png";
 }

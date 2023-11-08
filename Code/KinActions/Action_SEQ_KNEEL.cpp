@@ -64,7 +64,7 @@ int Actor::SEQ_KNEEL_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_KNEEL_GetTileset()
+const char * Actor::SEQ_KNEEL_GetTilesetName()
 {
-	return GetActionTileset("kin_meditate_64x96.png");
+	return "kin_meditate_64x96.png";
 }

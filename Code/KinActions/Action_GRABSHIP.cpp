@@ -76,7 +76,7 @@ int Actor::GRABSHIP_GetActionLength()
 	return 10 * 5 + 20;
 }
 
-Tileset * Actor::GRABSHIP_GetTileset()
+const char * Actor::GRABSHIP_GetTilesetName()
 {
-	return GetActionTileset("ship_jump_160x96.png");
+	return "ship_jump_160x96.png";
 }

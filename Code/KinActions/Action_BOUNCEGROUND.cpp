@@ -572,7 +572,7 @@ int Actor::BOUNCEGROUND_GetActionLength()
 	return 15;
 }
 
-Tileset * Actor::BOUNCEGROUND_GetTileset()
+const char * Actor::BOUNCEGROUND_GetTilesetName()
 {
-	return GetActionTileset("bounce_96x96.png");
+	return "bounce_96x96.png";
 }

@@ -357,7 +357,7 @@ int Actor::GRINDBALL_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::GRINDBALL_GetTileset()
+const char * Actor::GRINDBALL_GetTilesetName()
 {
-	return GetActionTileset("grind_64x64.png");
+	return "grind_64x64.png";
 }

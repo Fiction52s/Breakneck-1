@@ -63,7 +63,7 @@ int Actor::GROUNDPARRY_GetActionLength()
 	return 15;
 }
 
-Tileset * Actor::GROUNDPARRY_GetTileset()
+const char * Actor::GROUNDPARRY_GetTilesetName()
 {
-	return GetActionTileset("parry_64x64.png");
+	return "parry_64x64.png";
 }

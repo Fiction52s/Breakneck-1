@@ -476,7 +476,7 @@ int Actor::AIRDASH_GetActionLength()
 	return 33;
 }
 
-Tileset * Actor::AIRDASH_GetTileset()
+const char * Actor::AIRDASH_GetTilesetName()
 {
-	return GetActionTileset("airdash_80x80.png");
+	return "airdash_80x80.png";
 }

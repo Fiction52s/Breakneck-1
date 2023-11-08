@@ -100,8 +100,8 @@ int Actor::BOOSTERBOUNCEGROUND_GetActionLength()
 	return 20;
 }
 
-Tileset * Actor::BOOSTERBOUNCEGROUND_GetTileset()
+const char * Actor::BOOSTERBOUNCEGROUND_GetTilesetName()
 {
-	return GetActionTileset("bounce_wall_96x64.png");
+	return "bounce_wall_96x64.png";
 	//return GetActionTileset("brake_64x64.png");
 }

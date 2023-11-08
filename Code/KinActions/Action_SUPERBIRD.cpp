@@ -106,7 +106,7 @@ int Actor::SUPERBIRD_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SUPERBIRD_GetTileset()
+const char * Actor::SUPERBIRD_GetTilesetName()
 {
-	return SLIDE_GetTileset();
+	return SLIDE_GetTilesetName();
 }

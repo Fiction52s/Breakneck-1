@@ -67,7 +67,7 @@ int Actor::SEQ_MASKOFF_GetActionLength()
 	return 24 * 3;
 }
 
-Tileset * Actor::SEQ_MASKOFF_GetTileset()
+const char * Actor::SEQ_MASKOFF_GetTilesetName()
 {
-	return SEQ_KNEEL_GetTileset();
+	return SEQ_KNEEL_GetTilesetName();
 }

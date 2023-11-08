@@ -183,7 +183,7 @@ void Swiper::SwipeTypeInfo::Load( MainMenu *mm)
 		for (int i = 0; i < numImages; ++i)
 		{
 			currImage = i / 4;
-			tilesets[i] = mm->tilesetManager.GetTileset(path + baseName + underscore + to_string(currImage) + png, 960, 540 );
+			tilesets[i] = mm->GetTileset(path + baseName + underscore + to_string(currImage) + png, 960, 540 );
 		}
 		loaded = true;
 	}

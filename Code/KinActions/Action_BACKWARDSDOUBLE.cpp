@@ -82,7 +82,7 @@ int Actor::BACKWARDSDOUBLE_GetActionLength()
 	return 40;
 }
 
-Tileset * Actor::BACKWARDSDOUBLE_GetTileset()
+const char * Actor::BACKWARDSDOUBLE_GetTilesetName()
 {
-	return GetActionTileset("double_back_96x96.png");
+	return "double_back_96x96.png";
 }

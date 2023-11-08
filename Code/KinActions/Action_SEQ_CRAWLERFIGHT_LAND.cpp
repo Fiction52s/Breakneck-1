@@ -46,7 +46,7 @@ int Actor::SEQ_CRAWLERFIGHT_LAND_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_CRAWLERFIGHT_LAND_GetTileset()
+const char * Actor::SEQ_CRAWLERFIGHT_LAND_GetTilesetName()
 {
-	return GetActionTileset("land_64x64.png");
+	return "land_64x64.png";
 }

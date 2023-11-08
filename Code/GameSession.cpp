@@ -1136,12 +1136,6 @@ void GameSession::Cleanup()
 	}
 
 	CleanupPopup();
-		
-
-	CleanupShardMenu();
-	CleanupLogMenu();
-
-	CleanupPauseMenu();
 }
 
 GameSession::~GameSession()
@@ -1412,14 +1406,17 @@ void GameSession::ProcessHeader()
 	}*/
 }
 
-void GameSession::ProcessDecorSpr(const std::string &name,
-	Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+
+void GameSession::ProcessDecorSpr(const std::string &name, int dTile, int dLayer, sf::Vector2f &centerPos,
 	float rotation, sf::Vector2f &scale)
 {
 	Sprite dSpr;
 	dSpr.setScale(scale);
 	dSpr.setRotation(rotation);
 	dSpr.setPosition(centerPos);
+
+	Tileset *d_ts = GetSizedTileset(name + ".png");
+	//assumes decor tilesets are sized already
 
 	dSpr.setTexture(*d_ts->texture);
 	dSpr.setTextureRect(d_ts->GetSubRect(dTile));
@@ -1795,11 +1792,7 @@ bool GameSession::Load()
 	SetupSoundManager();
 	SetupSoundLists();
 
-	/*SetupShardMenu();
-	SetupLogMenu();
-
-	SetupPauseMenu();*/
-
+	//old pause menu init
 
 	if (!ShouldContinueLoading())
 	{
@@ -1856,19 +1849,21 @@ bool GameSession::Load()
 
 	//blah 2
 
-	gameSoundInfos[S_KEY_COMPLETE_W1] = GetSound("key_complete_w1.ogg");
-	gameSoundInfos[S_KEY_COMPLETE_W2] = GetSound("key_complete_w2.ogg");
-	gameSoundInfos[S_KEY_COMPLETE_W3] = GetSound("key_complete_w2.ogg");
-	gameSoundInfos[S_KEY_COMPLETE_W4] = GetSound("key_complete_w2.ogg");
-	gameSoundInfos[S_KEY_COMPLETE_W5] = GetSound("key_complete_w2.ogg");
-	gameSoundInfos[S_KEY_COMPLETE_W6] = GetSound("key_complete_w6.ogg");
-	gameSoundInfos[S_KEY_ENTER_0] = GetSound("key_enter_1.ogg");
-	gameSoundInfos[S_KEY_ENTER_1] = GetSound("key_enter_1.ogg");
-	gameSoundInfos[S_KEY_ENTER_2] = GetSound("key_enter_2.ogg");
-	gameSoundInfos[S_KEY_ENTER_3] = GetSound("key_enter_3.ogg");
-	gameSoundInfos[S_KEY_ENTER_4] = GetSound("key_enter_4.ogg");
-	gameSoundInfos[S_KEY_ENTER_5] = GetSound("key_enter_5.ogg");
-	gameSoundInfos[S_KEY_ENTER_6] = GetSound("key_enter_6.ogg");
+
+	//these sounds are probably just unused
+	/*gameSoundInfos[S_KEY_COMPLETE_W1] = GetSound("key_complete_w1");
+	gameSoundInfos[S_KEY_COMPLETE_W2] = GetSound("key_complete_w2");
+	gameSoundInfos[S_KEY_COMPLETE_W3] = GetSound("key_complete_w2");
+	gameSoundInfos[S_KEY_COMPLETE_W4] = GetSound("key_complete_w2");
+	gameSoundInfos[S_KEY_COMPLETE_W5] = GetSound("key_complete_w2");
+	gameSoundInfos[S_KEY_COMPLETE_W6] = GetSound("key_complete_w6");
+	gameSoundInfos[S_KEY_ENTER_0] = GetSound("key_enter_1");
+	gameSoundInfos[S_KEY_ENTER_1] = GetSound("key_enter_1");
+	gameSoundInfos[S_KEY_ENTER_2] = GetSound("key_enter_2");
+	gameSoundInfos[S_KEY_ENTER_3] = GetSound("key_enter_3");
+	gameSoundInfos[S_KEY_ENTER_4] = GetSound("key_enter_4");
+	gameSoundInfos[S_KEY_ENTER_5] = GetSound("key_enter_5");
+	gameSoundInfos[S_KEY_ENTER_6] = GetSound("key_enter_6");*/
 
 	//blah 3
 
@@ -1914,12 +1909,6 @@ bool GameSession::Load()
 
 	matSet.clear();
 
-	SetupShardMenu();
-
-	SetupLogMenu();
-
-	SetupPauseMenu();
-
 	SetupControlProfiles();
 
 	SetupScoreDisplay();
@@ -1933,6 +1922,9 @@ bool GameSession::Load()
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 	{
 		mainMenu->adventureManager->SetBoards(this);
+
+		pauseMenu = mainMenu->adventureManager->pauseMenu;
+		pauseMenu->SetGame(this);
 	}
 
 	SetupBackground(); //new location above SetupGameMode for parallel backgrounds
@@ -3817,7 +3809,7 @@ void GameSession::Init()
 
 	preScreenTex->setSmooth(false);
 	postProcessTex2->setSmooth(false);
-	ReadDecorImagesFile();
+	//ReadDecorImagesFile();
 }
 
 void GameSession::SetStorySeq(StorySequence *storySeq)
@@ -3989,28 +3981,6 @@ void GameSession::OpenGates(int gCat)
 		{
 			gates[i]->Open();
 		}
-	}
-}
-
-void GameSession::SetupPauseMenu()
-{
-	if (parentGame != NULL)
-	{
-		pauseMenu = parentGame->pauseMenu;
-	}
-	else
-	{
-		assert(pauseMenu == NULL);
-		pauseMenu = new PauseMenu(this);
-	}
-}
-
-void GameSession::CleanupPauseMenu()
-{
-	if (parentGame == NULL && pauseMenu != NULL)
-	{
-		delete pauseMenu;
-		pauseMenu = NULL;
 	}
 }
 

@@ -55,7 +55,7 @@ int Actor::AIRBLOCKUPFORWARD_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::AIRBLOCKUPFORWARD_GetTileset()
+const char * Actor::AIRBLOCKUPFORWARD_GetTilesetName()
 {
-	return GetActionTileset("block_64x64.png");
+	return "block_64x64.png";
 }

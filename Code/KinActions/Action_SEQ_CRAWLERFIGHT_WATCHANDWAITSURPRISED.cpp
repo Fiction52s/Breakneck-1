@@ -45,7 +45,7 @@ int Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTileset()
+const char * Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTilesetName()
 {
-	return GetActionTileset("slide_64x64.png");
+	return "slide_64x64.png";
 }

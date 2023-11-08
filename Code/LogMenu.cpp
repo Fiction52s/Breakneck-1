@@ -17,7 +17,7 @@
 #include "MusicSelector.h"
 #include "VisualEffects.h"
 #include "SaveFile.h"
-#include "Session.h"
+#include "GameSession.h"
 #include "Actor.h"
 #include "EditorTerrain.h"
 #include "EditorRail.h"
@@ -43,20 +43,24 @@ void LogDetailedInfo::Reset()
 	specialTerrainVariation = -1;
 }
 
-LogMenu::LogMenu(Session *p_sess)
-	:sess(p_sess)
+LogMenu::LogMenu(TilesetManager *p_tm)
+	:logPreview(p_tm)
 {
+	game = NULL;
+	tm = p_tm;
 	totalFrame = 0;
 
+	MainMenu *mm = MainMenu::GetInstance();
+
 	currLogText.setCharacterSize(20);
-	currLogText.setFont(sess->mainMenu->arial);
+	currLogText.setFont(mm->arial);
 	
-	worldText.setFont(sess->mainMenu->arial);
+	worldText.setFont(mm->arial);
 	worldText.setCharacterSize(40);
 	worldText.setFillColor(Color::White);
 
 	currLogNameText.setCharacterSize(36);
-	currLogNameText.setFont(sess->mainMenu->arial);
+	currLogNameText.setFont(mm->arial);
 
 	SetRectColor(logBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
@@ -64,9 +68,9 @@ LogMenu::LogMenu(Session *p_sess)
 	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
-	ts_notCapturedPreview = sess->GetSizedTileset("Menu/not_captured_512x512.png");
-	ts_noPreview = sess->GetTileset("Menu/nopreview.png", 512, 512);
-	ts_shardButtons = sess->GetSizedTileset("Menu/pause_shard_buttons_128x93.png");
+	ts_notCapturedPreview = tm->GetSizedTileset("Menu/not_captured_512x512.png");
+	ts_noPreview = tm->GetTileset("Menu/nopreview.png", 512, 512);
+	ts_shardButtons = tm->GetSizedTileset("Menu/pause_shard_buttons_128x93.png");
 	for (int i = 0; i < 4; ++i)
 	{
 		SetRectSubRect(shardButtons + i * 4, ts_shardButtons->GetSubRect(i));
@@ -74,7 +78,7 @@ LogMenu::LogMenu(Session *p_sess)
 
 	state = WAIT;
 
-	ts_logs = sess->GetSizedTileset("Logs/logs_64x64.png");
+	ts_logs = tm->GetSizedTileset("Logs/logs_64x64.png");
 
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
@@ -98,10 +102,9 @@ LogMenu::LogMenu(Session *p_sess)
 
 	
 	topLeft = Vector2f(0, 0);
-	SetTopLeft(Vector2f(50, 50));
+	//SetTopLeft(Vector2f(50, 50));
 	
 	SetWorldMode();
-	UpdateLogsOnWorldChange();
 }
 
 LogMenu::~LogMenu()
@@ -117,6 +120,14 @@ LogMenu::~LogMenu()
 	delete worldSelector;
 
 	delete[] logSelectQuads;
+}
+
+void LogMenu::SetGame(GameSession *p_game)
+{
+	game = p_game;
+	logPreview.SetSession(p_game);
+	SetTopLeft(Vector2f(50, 50));
+	UpdateLogsOnWorldChange();
 }
 
 void LogMenu::SetTopLeft(sf::Vector2f &pos)
@@ -357,9 +368,9 @@ bool LogMenu::IsLogFound(int w, int li)
 
 	int logType = LogItem::GetLogTypeFromWorldAndIndex(w, li);
 
-	if (sess->mainMenu->adventureManager != NULL)
+	if (game->mainMenu->adventureManager != NULL)
 	{
-		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
+		SaveFile *saveFile = game->mainMenu->adventureManager->currSaveFile;
 		if (saveFile != NULL)
 		{
 			return saveFile->HasLog(logType);
@@ -372,7 +383,7 @@ bool LogMenu::IsLogFound(int w, int li)
 	}
 	else
 	{
-		return sess->HasLog(logType);
+		return game->HasLog(logType);
 	}
 }
 
@@ -460,13 +471,8 @@ void LogMenu::SetCurrMusic()
 
 MusicInfo *LogMenu::GetLogMusic(const std::string &str)
 {
-	//stringstream ss;
-
-	//ss.str("");
-	//ss << "Shard/" << str << "_" << counter << ".png";
-	//cout << "test: " << ss.str() << endl;
-	return sess->mainMenu->musicManager->songMap["w02_Glade"];
-	//sf::Music *m = mainMenu->musicManager->//LoadSong("Audio/Music/.ogg");
+	//placeholder
+	return game->mainMenu->musicManager->songMap["w02_Glade"];
 }
 
 void LogMenu::SetupLogImages()
@@ -840,20 +846,21 @@ void LogMenu::Draw(sf::RenderTarget *target)
 
 }
 
-LogPreview::LogPreview()
+LogPreview::LogPreview(TilesetManager *p_tm)
 	:pSkinShader("player"), pFaceSkinShader("player")
 {
-	sess = Session::GetSession();
+	tm = p_tm;
+	sess = NULL;
 
 	previewParams = NULL;
 
 	waterShaderCounter = 0;
 	currLogMusic = NULL;
 
-	ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
+	ts_grass = tm->GetSizedTileset("Env/grass_128x128.png");
 	grassSprite.setTexture(*ts_grass->texture);
 
-	ts_kin = sess->GetSizedTileset("Menu/pause_kin_400x836.png");
+	ts_kin = tm->GetSizedTileset("Menu/pause_kin_400x836.png");
 	kinSprite.setTexture(*ts_kin->texture);
 	kinSprite.setScale(.5, .5);
 
@@ -861,7 +868,7 @@ LogPreview::LogPreview()
 
 	pSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
 
-	ts_kinFace = sess->GetSizedTileset("HUD/kin_face_320x288.png");
+	ts_kinFace = tm->GetSizedTileset("HUD/kin_face_320x288.png");
 	kinFaceSprite.setTexture(*ts_kinFace->texture);
 	kinFaceSprite.setTextureRect(ts_kinFace->GetSubRect(0));
 
@@ -869,8 +876,36 @@ LogPreview::LogPreview()
 
 	pFaceSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
 
+	previewPoly = NULL;
+	previewRail = NULL;
+}
+
+LogPreview::~LogPreview()
+{
+	ClearActorParams();
+
+	delete previewPoly;
+	delete previewRail;
+}
+
+void LogPreview::SetSession(Session *p_sess)
+{
+	sess = p_sess;
+
+	if (previewPoly != NULL)
+	{
+		delete previewPoly;
+		previewPoly = NULL;
+
+		delete previewRail;
+		previewRail = NULL;
+	}
+
+
 	int waterWidth = 400;
 	int waterHeight = 400;
+
+
 	previewPoly = new TerrainPolygon;
 	previewPoly->AddPoint(Vector2i(Vector2f(-waterWidth / 2, -waterHeight / 2)), false);
 	previewPoly->AddPoint(Vector2i(Vector2f(waterWidth / 2, -waterHeight / 2)), false);
@@ -885,14 +920,6 @@ LogPreview::LogPreview()
 
 	previewRail->SetRailType(TerrainRail::FLOORANDCEILING);
 	previewRail->Finalize();
-}
-
-LogPreview::~LogPreview()
-{
-	ClearActorParams();
-
-	delete previewPoly;
-	delete previewRail;
 }
 
 void LogPreview::ClearActorParams()

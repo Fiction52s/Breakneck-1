@@ -162,7 +162,7 @@ int Actor::BOUNCEGROUNDEDWALL_GetActionLength()
 	return 30;
 }
 
-Tileset * Actor::BOUNCEGROUNDEDWALL_GetTileset()
+const char * Actor::BOUNCEGROUNDEDWALL_GetTilesetName()
 {
-	return GetActionTileset("bounce_wall_96x64.png");
+	return "bounce_wall_96x64.png";
 }

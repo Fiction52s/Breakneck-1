@@ -43,7 +43,7 @@ int Actor::SEQ_LOOKUPDISAPPEAR_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_LOOKUPDISAPPEAR_GetTileset()
+const char * Actor::SEQ_LOOKUPDISAPPEAR_GetTilesetName()
 {
 	return NULL;
 }

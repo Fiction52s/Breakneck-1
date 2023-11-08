@@ -48,7 +48,7 @@ int Actor::HIDDEN_GetActionLength()
 	return 2;
 }
 
-Tileset * Actor::HIDDEN_GetTileset()
+const char * Actor::HIDDEN_GetTilesetName()
 {
 	return NULL;
 }

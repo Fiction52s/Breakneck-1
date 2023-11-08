@@ -54,7 +54,7 @@ int Actor::SEQ_GATORSTUN_GetActionLength()
 	return 10;
 }
 
-Tileset * Actor::SEQ_GATORSTUN_GetTileset()
+const char * Actor::SEQ_GATORSTUN_GetTilesetName()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return "hurt_64x64.png";
 }

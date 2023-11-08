@@ -54,7 +54,7 @@ int Actor::RAILDASH_GetActionLength()
 	return 20;
 }
 
-Tileset * Actor::RAILDASH_GetTileset()
+const char * Actor::RAILDASH_GetTilesetName()
 {
 	return NULL;
 }

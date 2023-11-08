@@ -84,7 +84,7 @@ int Actor::TESTSUPER_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::TESTSUPER_GetTileset()
+const char * Actor::TESTSUPER_GetTilesetName()
 {
-	return SLIDE_GetTileset();
+	return SLIDE_GetTilesetName();
 }

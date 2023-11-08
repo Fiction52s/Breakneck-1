@@ -45,7 +45,7 @@ int Actor::SEQ_KINSTAND_GetActionLength()
 	return STAND_GetActionLength();
 }
 
-Tileset * Actor::SEQ_KINSTAND_GetTileset()
+const char * Actor::SEQ_KINSTAND_GetTilesetName()
 {
 	return NULL;
 }

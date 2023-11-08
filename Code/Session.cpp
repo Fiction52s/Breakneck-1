@@ -304,20 +304,37 @@ void Session::RegisterGeneralEnemies()
 
 	
 	//utility
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_zoneProperties = NULL;
+	Tileset *ts_camShot = NULL;
+	Tileset *ts_poi = NULL;
+	Tileset *ts_xBarrier = NULL;
+	Tileset *ts_xBarrierWarp = NULL;
+
+	if (isEdit)
+	{
+		ts_zoneProperties = GetSizedTileset("Editor/zoneproperties_128x128.png");
+		ts_camShot = GetTileset("Editor/camera_128x128.png", 128, 128);
+		ts_poi = GetSizedTileset("Editor/pointofinterest_32x32.png");
+		ts_xBarrier = GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		ts_xBarrierWarp = GetSizedTileset("Enemies/target_224x224.png");
+	}
+
 	AddExtraEnemy("Zone Properties", "zoneproperties", utilityRow, NULL, SetParamsType<ZonePropertiesParams>, Vector2i(0, 0),
 		Vector2i(128, 128), false, false, false, false, true, false, false, 1,
-		GetSizedTileset("Editor/zoneproperties_128x128.png"));
+		ts_zoneProperties);
 	AddExtraEnemy("Sequence Camera", "camerashot", utilityRow, NULL, SetParamsType<CameraShotParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
-		GetTileset("Editor/camera_128x128.png", 128, 128));
+		ts_camShot );
 	AddExtraEnemy("Point of Interest", "poi", utilityRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/pointofinterest_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_poi);
 
 	AddExtraEnemy("X Barrier", "xbarrier", utilityRow, NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
-		GetSizedTileset("Enemies/blocker_w1_192x192.png"));
+		ts_xBarrier );
 	AddExtraEnemy("X Warp Barrier", "xbarrierwarp", utilityRow, NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
-		GetSizedTileset("Enemies/target_224x224.png"));
-	AddExtraEnemy("Air Trigger", "airtrigger", utilityRow, NULL, SetParamsType<AirTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
-		GetSizedTileset("Enemies/jayshield_128x128.png"));
+		ts_xBarrierWarp );
+	//AddExtraEnemy("Air Trigger", "airtrigger", utilityRow, NULL, SetParamsType<AirTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
+	//	GetSizedTileset("Enemies/jayshield_128x128.png"));
 	AddExtraEnemy("Grounded Warper", "groundedwarper", utilityRow, CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
 		true, false);
 
@@ -362,9 +379,18 @@ void Session::RegisterW1Enemies()
 	AddBasicAerialWorldEnemy("Regenerating\nTarget", "regentarget", 1, targetRow, CreateEnemy<RegenTarget>,
 		Vector2i(0, 0), Vector2i(32, 32), true, false, false, false);
 
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_crawlerNode = NULL;
+
+	if (isEdit)
+	{
+		ts_crawlerNode = GetSizedTileset("Editor/crawlernode_32x32.png");
+	}
+
 	//story
 	AddWorldEnemy("Crawler Boss Node", "crawlernode", 1, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/crawlernode_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_crawlerNode);
 	AddBasicAerialWorldEnemy("Movement Tester", "movementtester", 1, storyRow, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
 	AddBasicGroundWorldEnemy("Crawler Queen Boss", "crawlerqueen", 1, storyRow, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
 	AddBasicGroundWorldEnemy("Sequence Crawler Queen", "sequencecrawler", 1, storyRow, CreateEnemy<SequenceCrawler>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 1);
@@ -408,10 +434,20 @@ void Session::RegisterW2Enemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	//story
+
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_birdNode = NULL;
+
+	if (isEdit)
+	{
+		ts_birdNode = GetSizedTileset("Editor/birdnode_32x32.png");
+	}
+
 	AddBasicAerialWorldEnemy("Bird Boss", "bird", 2, storyRow, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
 	AddBasicGroundWorldEnemy("Sequence Bird", "sequencebird", 2, storyRow, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
 	AddWorldEnemy("Bird Boss Node", "birdnode", 2, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/birdnode_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_birdNode);
 	AddBasicGroundWorldEnemy("Green Nexus", "nexus2", 2, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	//AddBasicGroundWorldEnemy("reversepoisonfrog", 2, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -457,13 +493,20 @@ void Session::RegisterW3Enemies()
 
 	//AddBasicGroundWorldEnemy("cactus", 3, CreateEnemy<Cactus>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_coyNode = NULL;
+
+	if (isEdit)
+	{
+		ts_coyNode = GetSizedTileset("Editor/coyotenode_32x32.png");
+	}
 
 	//story
 	AddBasicGroundWorldEnemy("Coyote Boss", "coyote", 3, storyRow, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	AddBasicGroundWorldEnemy("Sequence Coyote", "sequencecoyote", 3, storyRow, CreateEnemy<SequenceCoyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	AddWorldEnemy("Coyote Boss Node", "coyotenode", 3, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/coyotenode_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_coyNode);
 }
 
 void Session::RegisterW4Enemies()
@@ -512,11 +555,20 @@ void Session::RegisterW4Enemies()
 	AddWorldEnemy("Orange\nBlocker", "orangeblocker", 4, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_tigerNode = NULL;
+
+	if (isEdit)
+	{
+		ts_tigerNode = GetSizedTileset("Editor/tigernode_32x32.png");
+	}
+
 	//story
 	AddBasicGroundWorldEnemy("Boss Tiger", "tiger", 4, storyRow, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
 	AddBasicGroundWorldEnemy("Sequence Tiger", "sequencetiger", 4, storyRow, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
 	AddWorldEnemy("Boss Tiger Node", "tigernode", 4, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/tigernode_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_tigerNode);
 }
 
 void Session::RegisterW5Enemies()
@@ -559,9 +611,18 @@ void Session::RegisterW5Enemies()
 	AddWorldEnemy("Red\nBlocker", "redblocker", 5, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_gatorNode = NULL;
+
+	if (isEdit)
+	{
+		ts_gatorNode = GetSizedTileset("Editor/gatornode_32x32.png");
+	}
+
 	//story
 	AddWorldEnemy("Gator Boss Node", "gatornode", 5, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/gatornode_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_gatorNode);
 	AddBasicAerialWorldEnemy("Gator Boss", "gator", 5, storyRow, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicAerialWorldEnemy("Sequence Gator", "sequencegator", 5, storyRow, CreateEnemy<SequenceGator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 }
@@ -613,9 +674,18 @@ void Session::RegisterW6Enemies()
 	AddWorldEnemy("Magenta\nBlocker", "magentablocker", 6, targetRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_skeleNode = NULL;
+
+	if (isEdit)
+	{
+		ts_skeleNode = GetSizedTileset("Editor/skeletonnode_32x32.png");
+	}
+
 	//story
 	AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/skeletonnode_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_skeleNode);
 	AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, storyRow, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
@@ -646,10 +716,19 @@ void Session::RegisterW7Enemies()
 	AddBasicAerialWorldEnemy("Attract Juggler", "attractjuggler", 7, itemRow, CreateEnemy<AttractJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 	AddBasicAerialWorldEnemy("Remote Comboer", "remotecomboer", 7, itemRow, CreateEnemy<RemoteComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 	
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_greyNode = NULL;
+
+	if (isEdit)
+	{
+		ts_greyNode = GetSizedTileset("Editor/skeleton2node_32x32.png");
+	}
+
 
 	//story
 	AddWorldEnemy("Grey Skeleton Boss Node", "greyskeletonnode", 7, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, GetSizedTileset("Editor/skeleton2node_32x32.png"));
+		false, false, false, false, true, true, false, 1, ts_greyNode );
 	AddBasicAerialWorldEnemy("Grey Skeleton Boss", "greyskeleton", 7, storyRow, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 }
 
@@ -2073,42 +2152,7 @@ void Session::UpdatePlayerWireQuads()
 	}
 }
 
-bool Session::ReadDecorImagesFile()
-{
-	ifstream is;
-	is.open("Resources/decor.txt");
-	if (is.is_open())
-	{
-		string name;
-		int width;
-		int height;
-		int tile;
-		while (!is.eof())
-		{
-			is >> name;
-			is >> width;
-			is >> height;
 
-			is >> tile;
-
-			string fullName = name + string(".png");
-
-			Tileset *ts = GetTileset(fullName, width, height);
-			assert(ts != NULL);
-			decorTSMap[name] = ts;
-
-			ProcessDecorFromFile(name, tile);
-		}
-
-		is.close();
-	}
-	else
-	{
-		return false;
-	}
-
-	return true;
-}
 
 bool Session::LoadPolyShader()
 {
@@ -2203,8 +2247,6 @@ bool Session::ReadHeader(std::ifstream &is)
 
 bool Session::ReadDecor(std::ifstream &is)
 {
-	//decorTSMap.clear();
-
 	int numDecorImages;
 	is >> numDecorImages;
 
@@ -2239,7 +2281,7 @@ bool Session::ReadDecor(std::ifstream &is)
 		//dSpr.setTextureRect(d_ts->GetSubRect(dTile));
 		//dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
 
-		ProcessDecorSpr( dName, decorTSMap[dName], dTile, dLayer, dPos, dRot, dScale );
+		ProcessDecorSpr( dName, dTile, dLayer, dPos, dRot, dScale );
 	}
 
 	ProcessAllDecorSpr();
@@ -6447,50 +6489,6 @@ void Session::CleanupMyBestPlayerReplayManager()
 		delete myBestReplayManager;
 		myBestReplayManager = NULL;
 	}
-}
-
-void Session::SetupShardMenu()
-{
-	if (parentGame != NULL)
-	{
-		shardMenu = parentGame->shardMenu;
-	}
-	else
-	{
-		shardMenu = new ShardMenu(this);
-	}
-}
-
-void Session::CleanupShardMenu()
-{
-	if (parentGame == NULL)
-	{
-		delete shardMenu;
-	}
-
-	shardMenu = NULL;
-}
-
-void Session::SetupLogMenu()
-{
-	if (parentGame != NULL)
-	{
-		logMenu = parentGame->logMenu;
-	}
-	else
-	{
-		logMenu = new LogMenu(this);
-	}
-}
-
-void Session::CleanupLogMenu()
-{
-	if (parentGame == NULL)
-	{
-		delete logMenu;
-	}
-
-	logMenu = NULL;
 }
 
 void Session::CleanupRain()

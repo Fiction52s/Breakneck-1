@@ -59,7 +59,7 @@ int Actor::SEQ_FADE_INTO_NEXUS_GetActionLength()
 	return 8 * 10;
 }
 
-Tileset * Actor::SEQ_FADE_INTO_NEXUS_GetTileset()
+const char * Actor::SEQ_FADE_INTO_NEXUS_GetTilesetName()
 {
-	return SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset();
+	return SEQ_FLOAT_TO_NEXUS_OPENING_GetTilesetName();
 }

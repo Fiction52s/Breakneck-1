@@ -84,7 +84,7 @@ int Actor::AIRHITSTUN_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::AIRHITSTUN_GetTileset()
+const char* Actor::AIRHITSTUN_GetTilesetName()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return "hurt_64x64.png";
 }

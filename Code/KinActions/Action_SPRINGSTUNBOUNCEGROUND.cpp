@@ -164,7 +164,7 @@ int Actor::SPRINGSTUNBOUNCEGROUND_GetActionLength()
 	return 60;
 }
 
-Tileset * Actor::SPRINGSTUNBOUNCEGROUND_GetTileset()
+const char * Actor::SPRINGSTUNBOUNCEGROUND_GetTilesetName()
 {
-	return GetActionTileset("bounce_96x96.png");
+	return "bounce_96x96.png";
 }

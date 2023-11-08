@@ -10,20 +10,22 @@
 #include "MusicSelector.h"
 #include "VisualEffects.h"
 #include "SaveFile.h"
-#include "Session.h"
+#include "GameSession.h"
 #include "Actor.h"
 #include "AdventureManager.h"
 
 using namespace sf;
 using namespace std;
 
-ShardMenu::ShardMenu(Session *p_sess)
-	:sess( p_sess )
+ShardMenu::ShardMenu(TilesetManager *p_tm)
 {
+	MainMenu *mm = MainMenu::GetInstance();
+	game = NULL;
+	tm = p_tm;
 	totalFrame = 0;
 
-	ts_shardContainer = sess->GetSizedTileset("Menu/shard_container_401x512.png");
-	ts_sparkle = sess->GetSizedTileset("Menu/shard_sparkle_64x64.png");
+	ts_shardContainer = tm->GetSizedTileset("Menu/shard_container_401x512.png");
+	ts_sparkle = tm->GetSizedTileset("Menu/shard_sparkle_64x64.png");
 
 	selectedIndex = 0;
 
@@ -32,15 +34,15 @@ ShardMenu::ShardMenu(Session *p_sess)
 	
 
 	currShardText.setCharacterSize(20);
-	currShardText.setFont(sess->mainMenu->arial);
+	currShardText.setFont(mm->arial);
 	
 
 	currShardNameText.setCharacterSize(36);
-	currShardNameText.setFont(sess->mainMenu->arial);
+	currShardNameText.setFont(mm->arial);
 	
 
 	worldText.setCharacterSize(40);
-	worldText.setFont(sess->mainMenu->arial);
+	worldText.setFont(mm->arial);
 	//worldText.setPosition(Vector2f(825 + 401 / 2, 594 + 93 / 2));
 	
 
@@ -62,7 +64,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 	//this probably loads shard textures twice, is probably wasteful.
 	for (int i = 0; i < 7; ++i)
 	{
-		ts_shards[i] = sess->GetSizedTileset("Shard/shards_w" + to_string(i+1) + "_192x192.png");
+		ts_shards[i] = mm->GetSizedTileset("Shard/shards_w" + to_string(i+1) + "_192x192.png");
 	}
 
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
@@ -92,7 +94,6 @@ ShardMenu::ShardMenu(Session *p_sess)
 	SetTopLeft(Vector2f(50, 50));
 
 	SetWorldMode();
-	UpdateWorld();
 }
 
 void ShardMenu::SetTopLeft(sf::Vector2f &pos)
@@ -225,6 +226,12 @@ ShardMenu::~ShardMenu()
 	delete sparklePool;
 }
 
+void ShardMenu::SetGame(GameSession *p_game)
+{
+	game = p_game;
+	UpdateWorld();
+}
+
 void ShardMenu::LoadShardInfo()
 {
 	for (int i = 0; i < 7; ++i)
@@ -291,9 +298,11 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 
 	int shardType = Shard::GetShardTypeFromWorldAndIndex(w, li);
 
-	if (sess->mainMenu->adventureManager != NULL)
+	assert(game != NULL);
+
+	if (game->mainMenu->adventureManager != NULL)
 	{
-		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
+		SaveFile *saveFile = game->mainMenu->adventureManager->currSaveFile;
 		if (saveFile != NULL)
 		{
 			return saveFile->IsShardCaptured(shardType);
@@ -305,7 +314,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 	}
 	else
 	{
-		return sess->IsShardCaptured(shardType);
+		return game->IsShardCaptured(shardType);
 	}
 }
 

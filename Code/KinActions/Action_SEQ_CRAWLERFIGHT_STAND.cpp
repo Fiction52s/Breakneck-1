@@ -45,7 +45,7 @@ int Actor::SEQ_CRAWLERFIGHT_STAND_GetActionLength()
 	return 20 * 8;
 }
 
-Tileset * Actor::SEQ_CRAWLERFIGHT_STAND_GetTileset()
+const char * Actor::SEQ_CRAWLERFIGHT_STAND_GetTilesetName()
 {
-	return GetActionTileset("stand_64x64.png");
+	return "stand_64x64.png";
 }

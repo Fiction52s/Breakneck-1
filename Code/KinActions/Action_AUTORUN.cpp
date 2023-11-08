@@ -48,7 +48,7 @@ int Actor::AUTORUN_GetActionLength()
 	return RUN_GetActionLength();
 }
 
-Tileset * Actor::AUTORUN_GetTileset()
+const char * Actor::AUTORUN_GetTilesetName()
 {
 	return NULL;
 }

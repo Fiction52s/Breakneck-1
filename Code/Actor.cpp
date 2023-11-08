@@ -995,7 +995,7 @@ Collider &Actor::GetCollider()
 	return sess->collider;
 }
 
-void Actor::SetupFXTilesets()
+void Actor::SetupFX()
 {
 	string folder = "Kin/FX/";
 
@@ -1004,66 +1004,65 @@ void Actor::SetupFXTilesets()
 
 	effectPools.resize(PLAYERFX_Count);
 
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset( MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_BOUNCE_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_BOUNCE_BOOST), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false);
+	effectPools[PLAYERFX_HURT_SPACK].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_HURT_SPACK), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_BOUNCE_BOOST].Set(tm->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false);
-	effectPools[PLAYERFX_HURT_SPACK].Set(tm->GetSizedTileset(folder, "fx_hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DASH_START].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DASH_START), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DASH_REPEAT].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DASH_REPEAT), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_DASH_START].Set(tm->GetSizedTileset(folder, "fx_dash_start_160x160.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DASH_REPEAT].Set(tm->GetSizedTileset(folder, "fx_dash_repeat_192x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAND_0), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAND_1), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAND_2), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_LAND_0].Set(tm->GetSizedTileset(folder, "fx_land_a_128x128.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LAND_1].Set(tm->GetSizedTileset(folder, "fx_land_b_192x208.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LAND_2].Set(tm->GetSizedTileset(folder, "fx_land_c_224x224.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RUN_START].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_RUN_START), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_RUN_START].Set(tm->GetSizedTileset(folder, "fx_runstart_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPRINT_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SPRINT_0), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPRINT_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SPRINT_1), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPRINT_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SPRINT_2), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_SPRINT_0].Set(tm->GetSizedTileset(folder, "fx_sprint_a_192x192.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_SPRINT_1].Set(tm->GetSizedTileset(folder, "fx_sprint_b_320x320.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_SPRINT_2].Set(tm->GetSizedTileset(folder, "fx_sprint_c_320x320.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RUN].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_RUN), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_RUN].Set(tm->GetSizedTileset(folder, "fx_run_144x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_JUMP_0), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_JUMP_1), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_JUMP_2), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_JUMP_0].Set(tm->GetSizedTileset(folder, "fx_jump_a_128x80.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_JUMP_1].Set(tm->GetSizedTileset(folder, "fx_jump_b_160x192.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_JUMP_2].Set(tm->GetSizedTileset(folder, "fx_jump_c_160x192.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_WALLJUMP_0), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_WALLJUMP_1), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_WALLJUMP_2), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_WALLJUMP_0].Set(tm->GetSizedTileset(folder, "fx_walljump_a_160x160.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_WALLJUMP_1].Set(tm->GetSizedTileset(folder, "fx_walljump_b_224x224.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_WALLJUMP_2].Set(tm->GetSizedTileset(folder, "fx_walljump_c_224x224.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DOUBLE].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DOUBLE), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_DOUBLE].Set(tm->GetSizedTileset(folder, "fx_double_256x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_GRAV_REVERSE].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_GRAV_REVERSE), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_GRAV_REVERSE].Set(tm->GetSizedTileset(folder, "fx_grav_reverse_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPEED_LEVEL_CHARGE].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SPEED_LEVEL_CHARGE), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_SPEED_LEVEL_CHARGE].Set(tm->GetSizedTileset(folder, "fx_elec_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RIGHT_WIRE_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_RIGHT_WIRE_BOOST), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LEFT_WIRE_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LEFT_WIRE_BOOST), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DOUBLE_WIRE_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DOUBLE_WIRE_BOOST), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_RIGHT_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_r_64x64.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LEFT_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_b_64x64.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DOUBLE_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_m_64x64.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_AIRDASH_DIAGONAL].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_AIRDASH_DIAGONAL), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_AIRDASH_DIAGONAL].Set(tm->GetSizedTileset(folder, "fx_airdash_diag_128x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_AIRDASH_UP].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_AIRDASH_UP), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_AIRDASH_UP].Set(tm->GetSizedTileset(folder, "fx_airdash_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_AIRDASH_HOVER].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_AIRDASH_HOVER), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_AIRDASH_HOVER].Set(tm->GetSizedTileset(folder, "fx_airdash_hold_96x80.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_GATE_ENTER].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_GATE_ENTER), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_GATE_ENTER].Set(tm->GetSizedTileset(folder, "fx_gate_enter_160x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SMALL_LIGHTNING].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SMALL_LIGHTNING), EffectType::FX_RELATIVE, 20);
 
-	effectPools[PLAYERFX_SMALL_LIGHTNING].Set(tm->GetSizedTileset(folder, "fx_elec_128x96.png"), EffectType::FX_RELATIVE, 20);
-
-	effectPools[PLAYERFX_GATE_BLACK].Set(tm->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2,
+	effectPools[PLAYERFX_GATE_BLACK].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_GATE_BLACK), EffectType::FX_RELATIVE, 2,
 		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
 	effectPools[PLAYERFX_KEY].Set(sess->ts_key, EffectType::FX_REGULAR, 32,
@@ -1074,21 +1073,21 @@ void Actor::SetupFXTilesets()
 	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		true, false);
 
-	effectPools[PLAYERFX_DASH_BOOST].Set(tm->GetSizedTileset(folder, "fx_dash_boost_128x256.png"), EffectType::FX_REGULAR, 4);
+	effectPools[PLAYERFX_DASH_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DASH_BOOST), EffectType::FX_REGULAR, 4);
 
-	effectPools[PLAYERFX_SPRINT_STAR].Set(tm->GetSizedTileset(folder, "fx_sprint_star_01_64x64.png"), EffectType::FX_RELATIVE, 100);
+	effectPools[PLAYERFX_SPRINT_STAR].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SPRINT_STAR), EffectType::FX_RELATIVE, 100);
 
-	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(tm->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100,
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAUNCH_PARTICLE_0), EffectType::FX_REGULAR, 100,
 		BETWEEN_PLAYER_AND_ENEMIES, false, false);
-	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(tm->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100,
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAUNCH_PARTICLE_1), EffectType::FX_REGULAR, 100,
 		BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
-	effectPools[PLAYERFX_ENTER].Set(tm->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_ENTER].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_ENTER), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
 
 	//hopefully no problem making only 1 of these
-	effectPools[PLAYERFX_EXITENERGY_0].Set(tm->GetSizedTileset(folder, "exitenergy_0_512x512.png"), EffectType::FX_IND, 1);
-	effectPools[PLAYERFX_EXITENERGY_1].Set(tm->GetSizedTileset(folder, "exitenergy_1_512x512.png"), EffectType::FX_IND, 1);
-	effectPools[PLAYERFX_EXITENERGY_2].Set(tm->GetSizedTileset(folder, "exitenergy_2_512x512.png"), EffectType::FX_IND, 1);
+	effectPools[PLAYERFX_EXITENERGY_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_EXITENERGY_0), EffectType::FX_IND, 1);
+	effectPools[PLAYERFX_EXITENERGY_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_EXITENERGY_1), EffectType::FX_IND, 1);
+	effectPools[PLAYERFX_EXITENERGY_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_EXITENERGY_2), EffectType::FX_IND, 1);
 
 
 	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
@@ -1230,7 +1229,9 @@ void Actor::SetupSwordTilesets()
 {
 	string folder = "Sword/";
 
-	TilesetManager *tm = sess->mainMenu;
+
+
+	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 
 	ts_fairSword[0] = tm->GetSizedTileset(folder, "fair_sworda_256x256.png");
 	ts_fairSword[1] = tm->GetSizedTileset(folder, "fair_swordb_288x288.png");
@@ -1303,7 +1304,7 @@ void Actor::SetupExtraTilesets()
 
 	string powerFolder = folder + "Powers/";
 
-	TilesetManager *tm = sess->mainMenu;
+	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 
 	ts_scorpRun = tm->GetSizedTileset(powerFolder, "scorp_run_192x128.png");
 	ts_scorpSlide = tm->GetSizedTileset(powerFolder, "scorp_slide_160x96.png");
@@ -1355,14 +1356,19 @@ void Actor::SetupActionTilesets()
 	}
 
 	Tileset *temp;
+	const char *name;
 	for (int i = 0; i < Count; ++i)
 	{
-		if (getTilesetFuncs[i] != NULL)
+		if (getTilesetNameFuncs[i] != NULL)
 		{
-			temp = (this->*getTilesetFuncs[i])();
-			if (temp != NULL)
+			name = (this->*getTilesetNameFuncs[i])();
+			if (name != NULL)
 			{
-				tileset[i] = temp;
+				temp = GetActionTileset(name);
+				if (temp != NULL)
+				{
+					tileset[i] = temp;
+				}
 			}
 		}
 	}
@@ -1432,10 +1438,14 @@ void Actor::ActionTimeDepFrameInc()
 
 void Actor::SetupTilesets()
 {
-	SetupFXTilesets();
 	SetupSwordTilesets();
 	SetupExtraTilesets();
 	SetupActionTilesets();
+
+	tileset[GOALKILL1] = GetActionTileset("goal_w01_killb_384x256.png");
+	tileset[GOALKILL2] = GetActionTileset("goal_w01_killc_384x256.png");
+	tileset[GOALKILL3] = GetActionTileset("goal_w01_killd_384x256.png");
+	tileset[GOALKILL4] = GetActionTileset("goal_w01_kille_384x256.png");
 }
 
 void Actor::Init()
@@ -1468,7 +1478,7 @@ void Actor::SetupFuncsForAction(
 	void(Actor::* timeIndInc)(),
 	void(Actor::* timeDepInc)(),
 	int(Actor::* getActionLength)(),
-	Tileset*(Actor::* getTileset)() )
+	const char *(Actor::* getTilesetName)() )
 {
 	startActionFuncs[a] = start;
 	endActionFuncs[a] = end;
@@ -1479,12 +1489,12 @@ void Actor::SetupFuncsForAction(
 	timeIndFrameIncFuncs[a] = timeIndInc;
 	timeDepFrameIncFuncs[a] = timeDepInc;
 	getActionLengthFuncs[a] = getActionLength;
-	getTilesetFuncs[a] = getTileset;
+	getTilesetNameFuncs[a] = getTilesetName;
 }
 
 Tileset *Actor::GetActionTileset(const std::string &fn)
 {
-	TilesetManager *tm = sess->mainMenu;
+	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 	return tm->GetSizedTileset(actionFolder, fn);
 }
 
@@ -1499,7 +1509,7 @@ void Actor::SetupActionFunctions()
 	timeIndFrameIncFuncs.resize(Count);
 	timeDepFrameIncFuncs.resize(Count);
 	getActionLengthFuncs.resize(Count);
-	getTilesetFuncs.resize(Count);
+	getTilesetNameFuncs.resize(Count);
 
 	SetupFuncsForAction(AIMWAIT,
 		&Actor::AIMWAIT_Start,
@@ -1511,7 +1521,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIMWAIT_TimeIndFrameInc,
 		&Actor::AIMWAIT_TimeDepFrameInc,
 		&Actor::AIMWAIT_GetActionLength,
-		&Actor::AIMWAIT_GetTileset);
+		&Actor::AIMWAIT_GetTilesetName);
 
 	SetupFuncsForAction(AIRBLOCKUP,
 		&Actor::AIRBLOCKUP_Start,
@@ -1523,7 +1533,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRBLOCKUP_TimeIndFrameInc,
 		&Actor::AIRBLOCKUP_TimeDepFrameInc,
 		&Actor::AIRBLOCKUP_GetActionLength,
-		&Actor::AIRBLOCKUP_GetTileset);
+		&Actor::AIRBLOCKUP_GetTilesetName);
 
 	SetupFuncsForAction(AIRBLOCKUPFORWARD,
 		&Actor::AIRBLOCKUPFORWARD_Start,
@@ -1535,7 +1545,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRBLOCKUPFORWARD_TimeIndFrameInc,
 		&Actor::AIRBLOCKUPFORWARD_TimeDepFrameInc,
 		&Actor::AIRBLOCKUPFORWARD_GetActionLength,
-		&Actor::AIRBLOCKUPFORWARD_GetTileset);
+		&Actor::AIRBLOCKUPFORWARD_GetTilesetName);
 
 	SetupFuncsForAction(AIRBLOCKFORWARD,
 		&Actor::AIRBLOCKFORWARD_Start,
@@ -1547,7 +1557,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRBLOCKFORWARD_TimeIndFrameInc,
 		&Actor::AIRBLOCKFORWARD_TimeDepFrameInc,
 		&Actor::AIRBLOCKFORWARD_GetActionLength,
-		&Actor::AIRBLOCKFORWARD_GetTileset);
+		&Actor::AIRBLOCKFORWARD_GetTilesetName);
 
 	SetupFuncsForAction(AIRBLOCKDOWNFORWARD,
 		&Actor::AIRBLOCKDOWNFORWARD_Start,
@@ -1559,7 +1569,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRBLOCKDOWNFORWARD_TimeIndFrameInc,
 		&Actor::AIRBLOCKDOWNFORWARD_TimeDepFrameInc,
 		&Actor::AIRBLOCKDOWNFORWARD_GetActionLength,
-		&Actor::AIRBLOCKDOWNFORWARD_GetTileset);
+		&Actor::AIRBLOCKDOWNFORWARD_GetTilesetName);
 
 	SetupFuncsForAction(AIRBLOCKDOWN,
 		&Actor::AIRBLOCKDOWN_Start,
@@ -1571,7 +1581,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRBLOCKDOWN_TimeIndFrameInc,
 		&Actor::AIRBLOCKDOWN_TimeDepFrameInc,
 		&Actor::AIRBLOCKDOWN_GetActionLength,
-		&Actor::AIRBLOCKDOWN_GetTileset);
+		&Actor::AIRBLOCKDOWN_GetTilesetName);
 
 	SetupFuncsForAction(AIRDASH,
 		&Actor::AIRDASH_Start,
@@ -1583,7 +1593,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRDASH_TimeIndFrameInc,
 		&Actor::AIRDASH_TimeDepFrameInc,
 		&Actor::AIRDASH_GetActionLength,
-		&Actor::AIRDASH_GetTileset);
+		&Actor::AIRDASH_GetTilesetName);
 
 	SetupFuncsForAction(AIRDASHFORWARDATTACK,
 		&Actor::AIRDASHFORWARDATTACK_Start,
@@ -1595,7 +1605,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRDASHFORWARDATTACK_TimeIndFrameInc,
 		&Actor::AIRDASHFORWARDATTACK_TimeDepFrameInc,
 		&Actor::AIRDASHFORWARDATTACK_GetActionLength,
-		&Actor::AIRDASHFORWARDATTACK_GetTileset);
+		&Actor::AIRDASHFORWARDATTACK_GetTilesetName);
 
 	SetupFuncsForAction(AIRHITSTUN,
 		&Actor::AIRHITSTUN_Start,
@@ -1607,7 +1617,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRHITSTUN_TimeIndFrameInc,
 		&Actor::AIRHITSTUN_TimeDepFrameInc,
 		&Actor::AIRHITSTUN_GetActionLength,
-		&Actor::AIRHITSTUN_GetTileset);
+		&Actor::AIRHITSTUN_GetTilesetName);
 
 	SetupFuncsForAction(AIRPARRY,
 		&Actor::AIRPARRY_Start,
@@ -1619,7 +1629,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRPARRY_TimeIndFrameInc,
 		&Actor::AIRPARRY_TimeDepFrameInc,
 		&Actor::AIRPARRY_GetActionLength,
-		&Actor::AIRPARRY_GetTileset);
+		&Actor::AIRPARRY_GetTilesetName);
 
 	SetupFuncsForAction(AUTORUN,
 		&Actor::AUTORUN_Start,
@@ -1631,7 +1641,7 @@ void Actor::SetupActionFunctions()
 		&Actor::AUTORUN_TimeIndFrameInc,
 		&Actor::AUTORUN_TimeDepFrameInc,
 		&Actor::AUTORUN_GetActionLength,
-		&Actor::AUTORUN_GetTileset);
+		&Actor::AUTORUN_GetTilesetName);
 
 	SetupFuncsForAction(BACKWARDSDOUBLE,
 		&Actor::BACKWARDSDOUBLE_Start,
@@ -1643,7 +1653,7 @@ void Actor::SetupActionFunctions()
 		&Actor::BACKWARDSDOUBLE_TimeIndFrameInc,
 		&Actor::BACKWARDSDOUBLE_TimeDepFrameInc,
 		&Actor::BACKWARDSDOUBLE_GetActionLength,
-		&Actor::BACKWARDSDOUBLE_GetTileset);
+		&Actor::BACKWARDSDOUBLE_GetTilesetName);
 
 	SetupFuncsForAction(BOUNCEAIR,
 		&Actor::BOUNCEAIR_Start,
@@ -1655,7 +1665,7 @@ void Actor::SetupActionFunctions()
 		&Actor::BOUNCEAIR_TimeIndFrameInc,
 		&Actor::BOUNCEAIR_TimeDepFrameInc,
 		&Actor::BOUNCEAIR_GetActionLength,
-		&Actor::BOUNCEAIR_GetTileset);
+		&Actor::BOUNCEAIR_GetTilesetName);
 
 	SetupFuncsForAction(BOOSTERBOUNCE,
 		&Actor::BOOSTERBOUNCE_Start,
@@ -1667,7 +1677,7 @@ void Actor::SetupActionFunctions()
 		&Actor::BOOSTERBOUNCE_TimeIndFrameInc,
 		&Actor::BOOSTERBOUNCE_TimeDepFrameInc,
 		&Actor::BOOSTERBOUNCE_GetActionLength,
-		&Actor::BOOSTERBOUNCE_GetTileset);
+		&Actor::BOOSTERBOUNCE_GetTilesetName);
 
 	SetupFuncsForAction(BOOSTERBOUNCEGROUND,
 		&Actor::BOOSTERBOUNCEGROUND_Start,
@@ -1679,7 +1689,7 @@ void Actor::SetupActionFunctions()
 		&Actor::BOOSTERBOUNCEGROUND_TimeIndFrameInc,
 		&Actor::BOOSTERBOUNCEGROUND_TimeDepFrameInc,
 		&Actor::BOOSTERBOUNCEGROUND_GetActionLength,
-		&Actor::BOOSTERBOUNCEGROUND_GetTileset);
+		&Actor::BOOSTERBOUNCEGROUND_GetTilesetName);
 
 	SetupFuncsForAction(BOUNCEGROUND,
 		&Actor::BOUNCEGROUND_Start,
@@ -1691,7 +1701,7 @@ void Actor::SetupActionFunctions()
 		&Actor::BOUNCEGROUND_TimeIndFrameInc,
 		&Actor::BOUNCEGROUND_TimeDepFrameInc,
 		&Actor::BOUNCEGROUND_GetActionLength,
-		&Actor::BOUNCEGROUND_GetTileset);
+		&Actor::BOUNCEGROUND_GetTilesetName);
 
 	SetupFuncsForAction(BOUNCEGROUNDEDWALL,
 		&Actor::BOUNCEGROUNDEDWALL_Start,
@@ -1703,7 +1713,7 @@ void Actor::SetupActionFunctions()
 		&Actor::BOUNCEGROUNDEDWALL_TimeIndFrameInc,
 		&Actor::BOUNCEGROUNDEDWALL_TimeDepFrameInc,
 		&Actor::BOUNCEGROUNDEDWALL_GetActionLength,
-		&Actor::BOUNCEGROUNDEDWALL_GetTileset);
+		&Actor::BOUNCEGROUNDEDWALL_GetTilesetName);
 
 	SetupFuncsForAction(BRAKE,
 		&Actor::BRAKE_Start,
@@ -1715,7 +1725,7 @@ void Actor::SetupActionFunctions()
 		&Actor::BRAKE_TimeIndFrameInc,
 		&Actor::BRAKE_TimeDepFrameInc,
 		&Actor::BRAKE_GetActionLength,
-		&Actor::BRAKE_GetTileset);
+		&Actor::BRAKE_GetTilesetName);
 
 	SetupFuncsForAction(DAIR,
 		&Actor::DAIR_Start,
@@ -1727,7 +1737,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DAIR_TimeIndFrameInc,
 		&Actor::DAIR_TimeDepFrameInc,
 		&Actor::DAIR_GetActionLength,
-		&Actor::DAIR_GetTileset);
+		&Actor::DAIR_GetTilesetName);
 
 	SetupFuncsForAction(DASH,
 		&Actor::DASH_Start,
@@ -1739,7 +1749,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DASH_TimeIndFrameInc,
 		&Actor::DASH_TimeDepFrameInc,
 		&Actor::DASH_GetActionLength,
-		&Actor::DASH_GetTileset);
+		&Actor::DASH_GetTilesetName);
 
 	SetupFuncsForAction(DASHATTACK,
 		&Actor::DASHATTACK_Start,
@@ -1751,7 +1761,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DASHATTACK_TimeIndFrameInc,
 		&Actor::DASHATTACK_TimeDepFrameInc,
 		&Actor::DASHATTACK_GetActionLength,
-		&Actor::DASHATTACK_GetTileset);
+		&Actor::DASHATTACK_GetTilesetName);
 
 	SetupFuncsForAction(DASHATTACK2,
 		&Actor::DASHATTACK2_Start,
@@ -1763,7 +1773,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DASHATTACK2_TimeIndFrameInc,
 		&Actor::DASHATTACK2_TimeDepFrameInc,
 		&Actor::DASHATTACK2_GetActionLength,
-		&Actor::DASHATTACK2_GetTileset);
+		&Actor::DASHATTACK2_GetTilesetName);
 
 	SetupFuncsForAction(DASHATTACK3,
 		&Actor::DASHATTACK3_Start,
@@ -1775,7 +1785,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DASHATTACK3_TimeIndFrameInc,
 		&Actor::DASHATTACK3_TimeDepFrameInc,
 		&Actor::DASHATTACK3_GetActionLength,
-		&Actor::DASHATTACK3_GetTileset);
+		&Actor::DASHATTACK3_GetTilesetName);
 
 	SetupFuncsForAction(DEATH,
 		&Actor::DEATH_Start,
@@ -1787,7 +1797,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DEATH_TimeIndFrameInc,
 		&Actor::DEATH_TimeDepFrameInc,
 		&Actor::DEATH_GetActionLength,
-		&Actor::DEATH_GetTileset);
+		&Actor::DEATH_GetTilesetName);
 
 	SetupFuncsForAction(DIAGDOWNATTACK,
 		&Actor::DIAGDOWNATTACK_Start,
@@ -1799,7 +1809,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DIAGDOWNATTACK_TimeIndFrameInc,
 		&Actor::DIAGDOWNATTACK_TimeDepFrameInc,
 		&Actor::DIAGDOWNATTACK_GetActionLength,
-		&Actor::DIAGDOWNATTACK_GetTileset);
+		&Actor::DIAGDOWNATTACK_GetTilesetName);
 
 	SetupFuncsForAction(DIAGUPATTACK,
 		&Actor::DIAGUPATTACK_Start,
@@ -1811,7 +1821,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DIAGUPATTACK_TimeIndFrameInc,
 		&Actor::DIAGUPATTACK_TimeDepFrameInc,
 		&Actor::DIAGUPATTACK_GetActionLength,
-		&Actor::DIAGUPATTACK_GetTileset);
+		&Actor::DIAGUPATTACK_GetTilesetName);
 
 	SetupFuncsForAction(DOUBLE,
 		&Actor::DOUBLE_Start,
@@ -1823,7 +1833,7 @@ void Actor::SetupActionFunctions()
 		&Actor::DOUBLE_TimeIndFrameInc,
 		&Actor::DOUBLE_TimeDepFrameInc,
 		&Actor::DOUBLE_GetActionLength,
-		&Actor::DOUBLE_GetTileset);
+		&Actor::DOUBLE_GetTilesetName);
 
 	SetupFuncsForAction(ENTERNEXUS1,
 		&Actor::ENTERNEXUS1_Start,
@@ -1835,7 +1845,7 @@ void Actor::SetupActionFunctions()
 		&Actor::ENTERNEXUS1_TimeIndFrameInc,
 		&Actor::ENTERNEXUS1_TimeDepFrameInc,
 		&Actor::ENTERNEXUS1_GetActionLength,
-		&Actor::ENTERNEXUS1_GetTileset);
+		&Actor::ENTERNEXUS1_GetTilesetName);
 
 	SetupFuncsForAction(EXIT,
 		&Actor::EXIT_Start,
@@ -1847,7 +1857,7 @@ void Actor::SetupActionFunctions()
 		&Actor::EXIT_TimeIndFrameInc,
 		&Actor::EXIT_TimeDepFrameInc,
 		&Actor::EXIT_GetActionLength,
-		&Actor::EXIT_GetTileset);
+		&Actor::EXIT_GetTilesetName);
 
 	SetupFuncsForAction(EXITBOOST,
 		&Actor::EXITBOOST_Start,
@@ -1859,7 +1869,7 @@ void Actor::SetupActionFunctions()
 		&Actor::EXITBOOST_TimeIndFrameInc,
 		&Actor::EXITBOOST_TimeDepFrameInc,
 		&Actor::EXITBOOST_GetActionLength,
-		&Actor::EXITBOOST_GetTileset);
+		&Actor::EXITBOOST_GetTilesetName);
 
 	SetupFuncsForAction(EXITWAIT,
 		&Actor::EXITWAIT_Start,
@@ -1871,7 +1881,7 @@ void Actor::SetupActionFunctions()
 		&Actor::EXITWAIT_TimeIndFrameInc,
 		&Actor::EXITWAIT_TimeDepFrameInc,
 		&Actor::EXITWAIT_GetActionLength,
-		&Actor::EXITWAIT_GetTileset);
+		&Actor::EXITWAIT_GetTilesetName);
 
 	SetupFuncsForAction(FAIR,
 		&Actor::FAIR_Start,
@@ -1883,7 +1893,7 @@ void Actor::SetupActionFunctions()
 		&Actor::FAIR_TimeIndFrameInc,
 		&Actor::FAIR_TimeDepFrameInc,
 		&Actor::FAIR_GetActionLength,
-		&Actor::FAIR_GetTileset);
+		&Actor::FAIR_GetTilesetName);
 
 	SetupFuncsForAction(FREEFLIGHT,
 		&Actor::FREEFLIGHT_Start,
@@ -1895,7 +1905,7 @@ void Actor::SetupActionFunctions()
 		&Actor::FREEFLIGHT_TimeIndFrameInc,
 		&Actor::FREEFLIGHT_TimeDepFrameInc,
 		&Actor::FREEFLIGHT_GetActionLength,
-		&Actor::FREEFLIGHT_GetTileset);
+		&Actor::FREEFLIGHT_GetTilesetName);
 
 	SetupFuncsForAction(FREEFLIGHTSTUN,
 		&Actor::FREEFLIGHTSTUN_Start,
@@ -1907,7 +1917,7 @@ void Actor::SetupActionFunctions()
 		&Actor::FREEFLIGHTSTUN_TimeIndFrameInc,
 		&Actor::FREEFLIGHTSTUN_TimeDepFrameInc,
 		&Actor::FREEFLIGHTSTUN_GetActionLength,
-		&Actor::FREEFLIGHTSTUN_GetTileset);
+		&Actor::FREEFLIGHTSTUN_GetTilesetName);
 
 	SetupFuncsForAction(GETPOWER_AIRDASH_FLIP,
 		&Actor::GETPOWER_AIRDASH_FLIP_Start,
@@ -1919,7 +1929,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GETPOWER_AIRDASH_FLIP_TimeIndFrameInc,
 		&Actor::GETPOWER_AIRDASH_FLIP_TimeDepFrameInc,
 		&Actor::GETPOWER_AIRDASH_FLIP_GetActionLength,
-		&Actor::GETPOWER_AIRDASH_FLIP_GetTileset);
+		&Actor::GETPOWER_AIRDASH_FLIP_GetTilesetName);
 
 	SetupFuncsForAction(GETPOWER_AIRDASH_MEDITATE,
 		&Actor::GETPOWER_AIRDASH_MEDITATE_Start,
@@ -1931,7 +1941,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GETPOWER_AIRDASH_MEDITATE_TimeIndFrameInc,
 		&Actor::GETPOWER_AIRDASH_MEDITATE_TimeDepFrameInc,
 		&Actor::GETPOWER_AIRDASH_MEDITATE_GetActionLength,
-		&Actor::GETPOWER_AIRDASH_MEDITATE_GetTileset);
+		&Actor::GETPOWER_AIRDASH_MEDITATE_GetTilesetName);
 
 	SetupFuncsForAction(GETSHARD,
 		&Actor::GETSHARD_Start,
@@ -1943,7 +1953,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GETSHARD_TimeIndFrameInc,
 		&Actor::GETSHARD_TimeDepFrameInc,
 		&Actor::GETSHARD_GetActionLength,
-		&Actor::GETSHARD_GetTileset);
+		&Actor::GETSHARD_GetTilesetName);
 
 	SetupFuncsForAction(GLIDE,
 		&Actor::GLIDE_Start,
@@ -1955,7 +1965,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GLIDE_TimeIndFrameInc,
 		&Actor::GLIDE_TimeDepFrameInc,
 		&Actor::GLIDE_GetActionLength,
-		&Actor::GLIDE_GetTileset);
+		&Actor::GLIDE_GetTilesetName);
 
 	SetupFuncsForAction(GOALKILL,
 		&Actor::GOALKILL_Start,
@@ -1967,7 +1977,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GOALKILL_TimeIndFrameInc,
 		&Actor::GOALKILL_TimeDepFrameInc,
 		&Actor::GOALKILL_GetActionLength,
-		&Actor::GOALKILL_GetTileset);
+		&Actor::GOALKILL_GetTilesetName);
 
 	SetupFuncsForAction(GOALKILLWAIT,
 		&Actor::GOALKILLWAIT_Start,
@@ -1979,7 +1989,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GOALKILLWAIT_TimeIndFrameInc,
 		&Actor::GOALKILLWAIT_TimeDepFrameInc,
 		&Actor::GOALKILLWAIT_GetActionLength,
-		&Actor::GOALKILLWAIT_GetTileset);
+		&Actor::GOALKILLWAIT_GetTilesetName);
 
 	SetupFuncsForAction(GRABSHIP,
 		&Actor::GRABSHIP_Start,
@@ -1991,7 +2001,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GRABSHIP_TimeIndFrameInc,
 		&Actor::GRABSHIP_TimeDepFrameInc,
 		&Actor::GRABSHIP_GetActionLength,
-		&Actor::GRABSHIP_GetTileset);
+		&Actor::GRABSHIP_GetTilesetName);
 
 	SetupFuncsForAction(GRAVREVERSE,
 		&Actor::GRAVREVERSE_Start,
@@ -2003,7 +2013,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GRAVREVERSE_TimeIndFrameInc,
 		&Actor::GRAVREVERSE_TimeDepFrameInc,
 		&Actor::GRAVREVERSE_GetActionLength,
-		&Actor::GRAVREVERSE_GetTileset);
+		&Actor::GRAVREVERSE_GetTilesetName);
 
 	SetupFuncsForAction(GRINDATTACK,
 		&Actor::GRINDATTACK_Start,
@@ -2015,7 +2025,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GRINDATTACK_TimeIndFrameInc,
 		&Actor::GRINDATTACK_TimeDepFrameInc,
 		&Actor::GRINDATTACK_GetActionLength,
-		&Actor::GRINDATTACK_GetTileset);
+		&Actor::GRINDATTACK_GetTilesetName);
 
 	SetupFuncsForAction(GRINDBALL,
 		&Actor::GRINDBALL_Start,
@@ -2027,7 +2037,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GRINDBALL_TimeIndFrameInc,
 		&Actor::GRINDBALL_TimeDepFrameInc,
 		&Actor::GRINDBALL_GetActionLength,
-		&Actor::GRINDBALL_GetTileset);
+		&Actor::GRINDBALL_GetTilesetName);
 
 	SetupFuncsForAction(GRINDLUNGE,
 		&Actor::GRINDLUNGE_Start,
@@ -2039,7 +2049,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GRINDLUNGE_TimeIndFrameInc,
 		&Actor::GRINDLUNGE_TimeDepFrameInc,
 		&Actor::GRINDLUNGE_GetActionLength,
-		&Actor::GRINDLUNGE_GetTileset);
+		&Actor::GRINDLUNGE_GetTilesetName);
 
 	SetupFuncsForAction(GRINDSLASH,
 		&Actor::GRINDSLASH_Start,
@@ -2051,7 +2061,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GRINDSLASH_TimeIndFrameInc,
 		&Actor::GRINDSLASH_TimeDepFrameInc,
 		&Actor::GRINDSLASH_GetActionLength,
-		&Actor::GRINDSLASH_GetTileset);
+		&Actor::GRINDSLASH_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDBLOCKDOWN,
 		&Actor::GROUNDBLOCKDOWN_Start,
@@ -2063,7 +2073,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDBLOCKDOWN_TimeIndFrameInc,
 		&Actor::GROUNDBLOCKDOWN_TimeDepFrameInc,
 		&Actor::GROUNDBLOCKDOWN_GetActionLength,
-		&Actor::GROUNDBLOCKDOWN_GetTileset);
+		&Actor::GROUNDBLOCKDOWN_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDBLOCKDOWNFORWARD,
 		&Actor::GROUNDBLOCKDOWNFORWARD_Start,
@@ -2075,7 +2085,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDBLOCKDOWNFORWARD_TimeIndFrameInc,
 		&Actor::GROUNDBLOCKDOWNFORWARD_TimeDepFrameInc,
 		&Actor::GROUNDBLOCKDOWNFORWARD_GetActionLength,
-		&Actor::GROUNDBLOCKDOWNFORWARD_GetTileset);
+		&Actor::GROUNDBLOCKDOWNFORWARD_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDBLOCKFORWARD,
 		&Actor::GROUNDBLOCKFORWARD_Start,
@@ -2087,7 +2097,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDBLOCKFORWARD_TimeIndFrameInc,
 		&Actor::GROUNDBLOCKFORWARD_TimeDepFrameInc,
 		&Actor::GROUNDBLOCKFORWARD_GetActionLength,
-		&Actor::GROUNDBLOCKFORWARD_GetTileset);
+		&Actor::GROUNDBLOCKFORWARD_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDBLOCKUPFORWARD,
 		&Actor::GROUNDBLOCKUPFORWARD_Start,
@@ -2099,7 +2109,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDBLOCKUPFORWARD_TimeIndFrameInc,
 		&Actor::GROUNDBLOCKUPFORWARD_TimeDepFrameInc,
 		&Actor::GROUNDBLOCKUPFORWARD_GetActionLength,
-		&Actor::GROUNDBLOCKUPFORWARD_GetTileset);
+		&Actor::GROUNDBLOCKUPFORWARD_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDBLOCKUP,
 		&Actor::GROUNDBLOCKUP_Start,
@@ -2111,7 +2121,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDBLOCKUP_TimeIndFrameInc,
 		&Actor::GROUNDBLOCKUP_TimeDepFrameInc,
 		&Actor::GROUNDBLOCKUP_GetActionLength,
-		&Actor::GROUNDBLOCKUP_GetTileset);
+		&Actor::GROUNDBLOCKUP_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDHITSTUN,
 		&Actor::GROUNDHITSTUN_Start,
@@ -2123,7 +2133,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDHITSTUN_TimeIndFrameInc,
 		&Actor::GROUNDHITSTUN_TimeDepFrameInc,
 		&Actor::GROUNDHITSTUN_GetActionLength,
-		&Actor::GROUNDHITSTUN_GetTileset);
+		&Actor::GROUNDHITSTUN_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDPARRY,
 		&Actor::GROUNDPARRY_Start,
@@ -2135,7 +2145,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDPARRY_TimeIndFrameInc,
 		&Actor::GROUNDPARRY_TimeDepFrameInc,
 		&Actor::GROUNDPARRY_GetActionLength,
-		&Actor::GROUNDPARRY_GetTileset);
+		&Actor::GROUNDPARRY_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDPARRYLOW,
 		&Actor::GROUNDPARRYLOW_Start,
@@ -2147,7 +2157,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDPARRYLOW_TimeIndFrameInc,
 		&Actor::GROUNDPARRYLOW_TimeDepFrameInc,
 		&Actor::GROUNDPARRYLOW_GetActionLength,
-		&Actor::GROUNDPARRYLOW_GetTileset);
+		&Actor::GROUNDPARRYLOW_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDTECHBACK,
 		&Actor::GROUNDTECHBACK_Start,
@@ -2159,7 +2169,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDTECHBACK_TimeIndFrameInc,
 		&Actor::GROUNDTECHBACK_TimeDepFrameInc,
 		&Actor::GROUNDTECHBACK_GetActionLength,
-		&Actor::GROUNDTECHBACK_GetTileset);
+		&Actor::GROUNDTECHBACK_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDTECHFORWARD,
 		&Actor::GROUNDTECHFORWARD_Start,
@@ -2171,7 +2181,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDTECHFORWARD_TimeIndFrameInc,
 		&Actor::GROUNDTECHFORWARD_TimeDepFrameInc,
 		&Actor::GROUNDTECHFORWARD_GetActionLength,
-		&Actor::GROUNDTECHFORWARD_GetTileset);
+		&Actor::GROUNDTECHFORWARD_GetTilesetName);
 
 	SetupFuncsForAction(GROUNDTECHINPLACE,
 		&Actor::GROUNDTECHINPLACE_Start,
@@ -2183,7 +2193,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDTECHINPLACE_TimeIndFrameInc,
 		&Actor::GROUNDTECHINPLACE_TimeDepFrameInc,
 		&Actor::GROUNDTECHINPLACE_GetActionLength,
-		&Actor::GROUNDTECHINPLACE_GetTileset);
+		&Actor::GROUNDTECHINPLACE_GetTilesetName);
 
 	SetupFuncsForAction(HIDDEN,
 		&Actor::HIDDEN_Start,
@@ -2195,7 +2205,7 @@ void Actor::SetupActionFunctions()
 		&Actor::HIDDEN_TimeIndFrameInc,
 		&Actor::HIDDEN_TimeDepFrameInc,
 		&Actor::HIDDEN_GetActionLength,
-		&Actor::HIDDEN_GetTileset);
+		&Actor::HIDDEN_GetTilesetName);
 
 	SetupFuncsForAction(HOMINGATTACK,
 		&Actor::HOMINGATTACK_Start,
@@ -2207,7 +2217,7 @@ void Actor::SetupActionFunctions()
 		&Actor::HOMINGATTACK_TimeIndFrameInc,
 		&Actor::HOMINGATTACK_TimeDepFrameInc,
 		&Actor::HOMINGATTACK_GetActionLength,
-		&Actor::HOMINGATTACK_GetTileset);
+		&Actor::HOMINGATTACK_GetTilesetName);
 
 	SetupFuncsForAction(INTRO,
 		&Actor::INTRO_Start,
@@ -2219,7 +2229,7 @@ void Actor::SetupActionFunctions()
 		&Actor::INTRO_TimeIndFrameInc,
 		&Actor::INTRO_TimeDepFrameInc,
 		&Actor::INTRO_GetActionLength,
-		&Actor::INTRO_GetTileset);
+		&Actor::INTRO_GetTilesetName);
 
 	SetupFuncsForAction(INTROBOOST,
 		&Actor::INTROBOOST_Start,
@@ -2231,7 +2241,7 @@ void Actor::SetupActionFunctions()
 		&Actor::INTROBOOST_TimeIndFrameInc,
 		&Actor::INTROBOOST_TimeDepFrameInc,
 		&Actor::INTROBOOST_GetActionLength,
-		&Actor::INTROBOOST_GetTileset);
+		&Actor::INTROBOOST_GetTilesetName);
 
 	SetupFuncsForAction(JUMP,
 		&Actor::JUMP_Start,
@@ -2243,7 +2253,7 @@ void Actor::SetupActionFunctions()
 		&Actor::JUMP_TimeIndFrameInc,
 		&Actor::JUMP_TimeDepFrameInc,
 		&Actor::JUMP_GetActionLength,
-		&Actor::JUMP_GetTileset);
+		&Actor::JUMP_GetTilesetName);
 
 	SetupFuncsForAction(JUMPSQUAT,
 		&Actor::JUMPSQUAT_Start,
@@ -2255,7 +2265,7 @@ void Actor::SetupActionFunctions()
 		&Actor::JUMPSQUAT_TimeIndFrameInc,
 		&Actor::JUMPSQUAT_TimeDepFrameInc,
 		&Actor::JUMPSQUAT_GetActionLength,
-		&Actor::JUMPSQUAT_GetTileset);
+		&Actor::JUMPSQUAT_GetTilesetName);
 
 	SetupFuncsForAction(GLIDE,
 		&Actor::GLIDE_Start,
@@ -2267,7 +2277,7 @@ void Actor::SetupActionFunctions()
 		&Actor::GLIDE_TimeIndFrameInc,
 		&Actor::GLIDE_TimeDepFrameInc,
 		&Actor::GLIDE_GetActionLength,
-		&Actor::GLIDE_GetTileset);
+		&Actor::GLIDE_GetTilesetName);
 
 	SetupFuncsForAction(LAND,
 		&Actor::LAND_Start,
@@ -2279,7 +2289,7 @@ void Actor::SetupActionFunctions()
 		&Actor::LAND_TimeIndFrameInc,
 		&Actor::LAND_TimeDepFrameInc,
 		&Actor::LAND_GetActionLength,
-		&Actor::LAND_GetTileset);
+		&Actor::LAND_GetTilesetName);
 
 	SetupFuncsForAction(LAND2,
 		&Actor::LAND2_Start,
@@ -2291,7 +2301,7 @@ void Actor::SetupActionFunctions()
 		&Actor::LAND2_TimeIndFrameInc,
 		&Actor::LAND2_TimeDepFrameInc,
 		&Actor::LAND2_GetActionLength,
-		&Actor::LAND2_GetTileset);
+		&Actor::LAND2_GetTilesetName);
 
 	SetupFuncsForAction(LOCKEDRAILSLIDE,
 		&Actor::LOCKEDRAILSLIDE_Start,
@@ -2303,7 +2313,7 @@ void Actor::SetupActionFunctions()
 		&Actor::LOCKEDRAILSLIDE_TimeIndFrameInc,
 		&Actor::LOCKEDRAILSLIDE_TimeDepFrameInc,
 		&Actor::LOCKEDRAILSLIDE_GetActionLength,
-		&Actor::LOCKEDRAILSLIDE_GetTileset);
+		&Actor::LOCKEDRAILSLIDE_GetTilesetName);
 
 	SetupFuncsForAction(NEXUSKILL,
 		&Actor::NEXUSKILL_Start,
@@ -2315,7 +2325,7 @@ void Actor::SetupActionFunctions()
 		&Actor::NEXUSKILL_TimeIndFrameInc,
 		&Actor::NEXUSKILL_TimeDepFrameInc,
 		&Actor::NEXUSKILL_GetActionLength,
-		&Actor::NEXUSKILL_GetTileset);
+		&Actor::NEXUSKILL_GetTilesetName);
 
 	SetupFuncsForAction(RAILBOUNCE,
 		&Actor::RAILBOUNCE_Start,
@@ -2327,7 +2337,7 @@ void Actor::SetupActionFunctions()
 		&Actor::RAILBOUNCE_TimeIndFrameInc,
 		&Actor::RAILBOUNCE_TimeDepFrameInc,
 		&Actor::RAILBOUNCE_GetActionLength,
-		&Actor::RAILBOUNCE_GetTileset);
+		&Actor::RAILBOUNCE_GetTilesetName);
 
 	SetupFuncsForAction(RAILBOUNCEGROUND,
 		&Actor::RAILBOUNCEGROUND_Start,
@@ -2339,7 +2349,7 @@ void Actor::SetupActionFunctions()
 		&Actor::RAILBOUNCEGROUND_TimeIndFrameInc,
 		&Actor::RAILBOUNCEGROUND_TimeDepFrameInc,
 		&Actor::RAILBOUNCEGROUND_GetActionLength,
-		&Actor::RAILBOUNCEGROUND_GetTileset);
+		&Actor::RAILBOUNCEGROUND_GetTilesetName);
 
 	SetupFuncsForAction(RAILDASH,
 		&Actor::RAILDASH_Start,
@@ -2351,7 +2361,7 @@ void Actor::SetupActionFunctions()
 		&Actor::RAILDASH_TimeIndFrameInc,
 		&Actor::RAILDASH_TimeDepFrameInc,
 		&Actor::RAILDASH_GetActionLength,
-		&Actor::RAILDASH_GetTileset);
+		&Actor::RAILDASH_GetTilesetName);
 
 	SetupFuncsForAction(RAILGRIND,
 		&Actor::RAILGRIND_Start,
@@ -2363,7 +2373,7 @@ void Actor::SetupActionFunctions()
 		&Actor::RAILGRIND_TimeIndFrameInc,
 		&Actor::RAILGRIND_TimeDepFrameInc,
 		&Actor::RAILGRIND_GetActionLength,
-		&Actor::RAILGRIND_GetTileset);
+		&Actor::RAILGRIND_GetTilesetName);
 
 	SetupFuncsForAction(RAILSLIDE,
 		&Actor::RAILSLIDE_Start,
@@ -2375,7 +2385,7 @@ void Actor::SetupActionFunctions()
 		&Actor::RAILSLIDE_TimeIndFrameInc,
 		&Actor::RAILSLIDE_TimeDepFrameInc,
 		&Actor::RAILSLIDE_GetActionLength,
-		&Actor::RAILSLIDE_GetTileset);
+		&Actor::RAILSLIDE_GetTilesetName);
 
 	SetupFuncsForAction(RIDESHIP,
 		&Actor::RIDESHIP_Start,
@@ -2387,7 +2397,7 @@ void Actor::SetupActionFunctions()
 		&Actor::RIDESHIP_TimeIndFrameInc,
 		&Actor::RIDESHIP_TimeDepFrameInc,
 		&Actor::RIDESHIP_GetActionLength,
-		&Actor::RIDESHIP_GetTileset);
+		&Actor::RIDESHIP_GetTilesetName);
 
 	SetupFuncsForAction(RUN,
 		&Actor::RUN_Start,
@@ -2399,7 +2409,7 @@ void Actor::SetupActionFunctions()
 		&Actor::RUN_TimeIndFrameInc,
 		&Actor::RUN_TimeDepFrameInc,
 		&Actor::RUN_GetActionLength,
-		&Actor::RUN_GetTileset);
+		&Actor::RUN_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_CRAWLERFIGHT_DODGEBACK,
 		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Start,
@@ -2411,7 +2421,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_TimeIndFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_TimeDepFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_GetActionLength,
-		&Actor::AIRDASH_GetTileset);
+		&Actor::AIRDASH_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_CRAWLERFIGHT_LAND,
 		&Actor::SEQ_CRAWLERFIGHT_LAND_Start,
@@ -2423,7 +2433,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_CRAWLERFIGHT_LAND_TimeIndFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_LAND_TimeDepFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_LAND_GetActionLength,
-		&Actor::AIRDASH_GetTileset);
+		&Actor::AIRDASH_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_CRAWLERFIGHT_STAND,
 		&Actor::SEQ_CRAWLERFIGHT_STAND_Start,
@@ -2435,7 +2445,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_CRAWLERFIGHT_STAND_TimeIndFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_STAND_TimeDepFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_STAND_GetActionLength,
-		&Actor::SEQ_CRAWLERFIGHT_STAND_GetTileset);
+		&Actor::SEQ_CRAWLERFIGHT_STAND_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Start,
@@ -2447,7 +2457,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeIndFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeDepFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetActionLength,
-		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTileset);
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY,
 		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Start,
@@ -2459,7 +2469,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeIndFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeDepFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetActionLength,
-		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTileset);
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED,
 		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Start,
@@ -2471,7 +2481,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeIndFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeDepFrameInc,
 		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetActionLength,
-		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTileset);
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_ENTERCORE1,
 		&Actor::SEQ_ENTERCORE1_Start,
@@ -2483,7 +2493,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_ENTERCORE1_TimeIndFrameInc,
 		&Actor::SEQ_ENTERCORE1_TimeDepFrameInc,
 		&Actor::SEQ_ENTERCORE1_GetActionLength,
-		&Actor::SEQ_ENTERCORE1_GetTileset);
+		&Actor::SEQ_ENTERCORE1_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_FADE_INTO_NEXUS,
 		&Actor::SEQ_FADE_INTO_NEXUS_Start,
@@ -2495,7 +2505,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_FADE_INTO_NEXUS_TimeIndFrameInc,
 		&Actor::SEQ_FADE_INTO_NEXUS_TimeDepFrameInc,
 		&Actor::SEQ_FADE_INTO_NEXUS_GetActionLength,
-		&Actor::SEQ_FADE_INTO_NEXUS_GetTileset);
+		&Actor::SEQ_FADE_INTO_NEXUS_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_FLOAT_TO_NEXUS_OPENING,
 		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Start,
@@ -2507,7 +2517,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TimeIndFrameInc,
 		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TimeDepFrameInc,
 		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength,
-		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset);
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_GATORSTUN,
 		&Actor::SEQ_GATORSTUN_Start,
@@ -2519,7 +2529,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_GATORSTUN_TimeIndFrameInc,
 		&Actor::SEQ_GATORSTUN_TimeDepFrameInc,
 		&Actor::SEQ_GATORSTUN_GetActionLength,
-		&Actor::SEQ_GATORSTUN_GetTileset);
+		&Actor::SEQ_GATORSTUN_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_KINFALL,
 		&Actor::SEQ_KINFALL_Start,
@@ -2531,7 +2541,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_KINFALL_TimeIndFrameInc,
 		&Actor::SEQ_KINFALL_TimeDepFrameInc,
 		&Actor::SEQ_KINFALL_GetActionLength,
-		&Actor::SEQ_KINFALL_GetTileset);
+		&Actor::SEQ_KINFALL_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_KINSTAND,
 		&Actor::SEQ_KINSTAND_Start,
@@ -2543,7 +2553,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_KINSTAND_TimeIndFrameInc,
 		&Actor::SEQ_KINSTAND_TimeDepFrameInc,
 		&Actor::SEQ_KINSTAND_GetActionLength,
-		&Actor::SEQ_KINSTAND_GetTileset);
+		&Actor::SEQ_KINSTAND_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_KINTHROWN,
 		&Actor::SEQ_KINTHROWN_Start,
@@ -2555,7 +2565,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_KINTHROWN_TimeIndFrameInc,
 		&Actor::SEQ_KINTHROWN_TimeDepFrameInc,
 		&Actor::SEQ_KINTHROWN_GetActionLength,
-		&Actor::SEQ_KINTHROWN_GetTileset);
+		&Actor::SEQ_KINTHROWN_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_KNEEL,
 		&Actor::SEQ_KNEEL_Start,
@@ -2567,7 +2577,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_KNEEL_TimeIndFrameInc,
 		&Actor::SEQ_KNEEL_TimeDepFrameInc,
 		&Actor::SEQ_KNEEL_GetActionLength,
-		&Actor::SEQ_KNEEL_GetTileset);
+		&Actor::SEQ_KNEEL_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_KNEEL_TO_MEDITATE,
 		&Actor::SEQ_KNEEL_TO_MEDITATE_Start,
@@ -2579,7 +2589,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_KNEEL_TO_MEDITATE_TimeIndFrameInc,
 		&Actor::SEQ_KNEEL_TO_MEDITATE_TimeDepFrameInc,
 		&Actor::SEQ_KNEEL_TO_MEDITATE_GetActionLength,
-		&Actor::SEQ_KNEEL_TO_MEDITATE_GetTileset);
+		&Actor::SEQ_KNEEL_TO_MEDITATE_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_LOOKUP,
 		&Actor::SEQ_LOOKUP_Start,
@@ -2591,7 +2601,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_LOOKUP_TimeIndFrameInc,
 		&Actor::SEQ_LOOKUP_TimeDepFrameInc,
 		&Actor::SEQ_LOOKUP_GetActionLength,
-		&Actor::SEQ_LOOKUP_GetTileset);
+		&Actor::SEQ_LOOKUP_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_LOOKUPDISAPPEAR,
 		&Actor::SEQ_LOOKUPDISAPPEAR_Start,
@@ -2603,7 +2613,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_LOOKUPDISAPPEAR_TimeIndFrameInc,
 		&Actor::SEQ_LOOKUPDISAPPEAR_TimeDepFrameInc,
 		&Actor::SEQ_LOOKUPDISAPPEAR_GetActionLength,
-		&Actor::SEQ_LOOKUPDISAPPEAR_GetTileset);
+		&Actor::SEQ_LOOKUPDISAPPEAR_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_MASKOFF,
 		&Actor::SEQ_MASKOFF_Start,
@@ -2615,7 +2625,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_MASKOFF_TimeIndFrameInc,
 		&Actor::SEQ_MASKOFF_TimeDepFrameInc,
 		&Actor::SEQ_MASKOFF_GetActionLength,
-		&Actor::SEQ_MASKOFF_GetTileset);
+		&Actor::SEQ_MASKOFF_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_MEDITATE,
 		&Actor::SEQ_MEDITATE_Start,
@@ -2627,7 +2637,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_MEDITATE_TimeIndFrameInc,
 		&Actor::SEQ_MEDITATE_TimeDepFrameInc,
 		&Actor::SEQ_MEDITATE_GetActionLength,
-		&Actor::SEQ_MEDITATE_GetTileset);
+		&Actor::SEQ_MEDITATE_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_MEDITATE_MASKON,
 		&Actor::SEQ_MEDITATE_MASKON_Start,
@@ -2639,7 +2649,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_MEDITATE_MASKON_TimeIndFrameInc,
 		&Actor::SEQ_MEDITATE_MASKON_TimeDepFrameInc,
 		&Actor::SEQ_MEDITATE_MASKON_GetActionLength,
-		&Actor::SEQ_MEDITATE_MASKON_GetTileset);
+		&Actor::SEQ_MEDITATE_MASKON_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_TURNFACE,
 		&Actor::SEQ_TURNFACE_Start,
@@ -2651,7 +2661,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_TURNFACE_TimeIndFrameInc,
 		&Actor::SEQ_TURNFACE_TimeDepFrameInc,
 		&Actor::SEQ_TURNFACE_GetActionLength,
-		&Actor::SEQ_TURNFACE_GetTileset);
+		&Actor::SEQ_TURNFACE_GetTilesetName);
 
 	SetupFuncsForAction(SEQ_WAIT,
 		&Actor::SEQ_WAIT_Start,
@@ -2663,7 +2673,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_WAIT_TimeIndFrameInc,
 		&Actor::SEQ_WAIT_TimeDepFrameInc,
 		&Actor::SEQ_WAIT_GetActionLength,
-		&Actor::SEQ_WAIT_GetTileset);
+		&Actor::SEQ_WAIT_GetTilesetName);
 
 	SetupFuncsForAction(SKYDIVE,
 		&Actor::SKYDIVE_Start,
@@ -2675,7 +2685,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SKYDIVE_TimeIndFrameInc,
 		&Actor::SKYDIVE_TimeDepFrameInc,
 		&Actor::SKYDIVE_GetActionLength,
-		&Actor::SKYDIVE_GetTileset);
+		&Actor::SKYDIVE_GetTilesetName);
 
 	SetupFuncsForAction(SKYDIVETOFALL,
 		&Actor::SKYDIVETOFALL_Start,
@@ -2687,7 +2697,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SKYDIVETOFALL_TimeIndFrameInc,
 		&Actor::SKYDIVETOFALL_TimeDepFrameInc,
 		&Actor::SKYDIVETOFALL_GetActionLength,
-		&Actor::SKYDIVETOFALL_GetTileset);
+		&Actor::SKYDIVETOFALL_GetTilesetName);
 
 	SetupFuncsForAction(SLIDE,
 		&Actor::SLIDE_Start,
@@ -2699,7 +2709,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SLIDE_TimeIndFrameInc,
 		&Actor::SLIDE_TimeDepFrameInc,
 		&Actor::SLIDE_GetActionLength,
-		&Actor::SLIDE_GetTileset);
+		&Actor::SLIDE_GetTilesetName);
 
 	SetupFuncsForAction(SPAWNWAIT,
 		&Actor::SPAWNWAIT_Start,
@@ -2711,7 +2721,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPAWNWAIT_TimeIndFrameInc,
 		&Actor::SPAWNWAIT_TimeDepFrameInc,
 		&Actor::SPAWNWAIT_GetActionLength,
-		&Actor::SPAWNWAIT_GetTileset);
+		&Actor::SPAWNWAIT_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUN,
 		&Actor::SPRINGSTUN_Start,
@@ -2723,7 +2733,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUN_TimeIndFrameInc,
 		&Actor::SPRINGSTUN_TimeDepFrameInc,
 		&Actor::SPRINGSTUN_GetActionLength,
-		&Actor::SPRINGSTUN_GetTileset);
+		&Actor::SPRINGSTUN_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNAIM,
 		&Actor::SPRINGSTUNAIM_Start,
@@ -2735,7 +2745,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNAIM_TimeIndFrameInc,
 		&Actor::SPRINGSTUNAIM_TimeDepFrameInc,
 		&Actor::SPRINGSTUNAIM_GetActionLength,
-		&Actor::SPRINGSTUNAIM_GetTileset);
+		&Actor::SPRINGSTUNAIM_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNAIRBOUNCE,
 		&Actor::SPRINGSTUNAIRBOUNCE_Start,
@@ -2747,7 +2757,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNAIRBOUNCE_TimeIndFrameInc,
 		&Actor::SPRINGSTUNAIRBOUNCE_TimeDepFrameInc,
 		&Actor::SPRINGSTUNAIRBOUNCE_GetActionLength,
-		&Actor::SPRINGSTUNAIRBOUNCE_GetTileset);
+		&Actor::SPRINGSTUNAIRBOUNCE_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNAIRBOUNCEPAUSE,
 		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_Start,
@@ -2759,7 +2769,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_TimeIndFrameInc,
 		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_TimeDepFrameInc,
 		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetActionLength,
-		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetTileset);
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNANNIHILATION,
 		&Actor::SPRINGSTUNANNIHILATION_Start,
@@ -2771,7 +2781,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNANNIHILATION_TimeIndFrameInc,
 		&Actor::SPRINGSTUNANNIHILATION_TimeDepFrameInc,
 		&Actor::SPRINGSTUNANNIHILATION_GetActionLength,
-		&Actor::SPRINGSTUNANNIHILATION_GetTileset);
+		&Actor::SPRINGSTUNANNIHILATION_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNANNIHILATIONATTACK,
 		&Actor::SPRINGSTUNANNIHILATIONATTACK_Start,
@@ -2783,7 +2793,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNANNIHILATIONATTACK_TimeIndFrameInc,
 		&Actor::SPRINGSTUNANNIHILATIONATTACK_TimeDepFrameInc,
 		&Actor::SPRINGSTUNANNIHILATIONATTACK_GetActionLength,
-		&Actor::SPRINGSTUNANNIHILATIONATTACK_GetTileset);
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNBOUNCE,
 		&Actor::SPRINGSTUNBOUNCE_Start,
@@ -2795,7 +2805,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNBOUNCE_TimeIndFrameInc,
 		&Actor::SPRINGSTUNBOUNCE_TimeDepFrameInc,
 		&Actor::SPRINGSTUNBOUNCE_GetActionLength,
-		&Actor::SPRINGSTUNBOUNCE_GetTileset);
+		&Actor::SPRINGSTUNBOUNCE_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNBOUNCEGROUND,
 		&Actor::SPRINGSTUNBOUNCEGROUND_Start,
@@ -2807,7 +2817,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNBOUNCEGROUND_TimeIndFrameInc,
 		&Actor::SPRINGSTUNBOUNCEGROUND_TimeDepFrameInc,
 		&Actor::SPRINGSTUNBOUNCEGROUND_GetActionLength,
-		&Actor::SPRINGSTUNBOUNCEGROUND_GetTileset);
+		&Actor::SPRINGSTUNBOUNCEGROUND_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNGLIDE,
 		&Actor::SPRINGSTUNGLIDE_Start,
@@ -2819,7 +2829,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNGLIDE_TimeIndFrameInc,
 		&Actor::SPRINGSTUNGLIDE_TimeDepFrameInc,
 		&Actor::SPRINGSTUNGLIDE_GetActionLength,
-		&Actor::SPRINGSTUNGLIDE_GetTileset);
+		&Actor::SPRINGSTUNGLIDE_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNGRIND,
 		&Actor::SPRINGSTUNGRIND_Start,
@@ -2831,7 +2841,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNGRIND_TimeIndFrameInc,
 		&Actor::SPRINGSTUNGRIND_TimeDepFrameInc,
 		&Actor::SPRINGSTUNGRIND_GetActionLength,
-		&Actor::SPRINGSTUNGRIND_GetTileset);
+		&Actor::SPRINGSTUNGRIND_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNGRINDFLY,
 		&Actor::SPRINGSTUNGRINDFLY_Start,
@@ -2843,7 +2853,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNGRINDFLY_TimeIndFrameInc,
 		&Actor::SPRINGSTUNGRINDFLY_TimeDepFrameInc,
 		&Actor::SPRINGSTUNGRINDFLY_GetActionLength,
-		&Actor::SPRINGSTUNGRINDFLY_GetTileset);
+		&Actor::SPRINGSTUNGRINDFLY_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNHOMING,
 		&Actor::SPRINGSTUNHOMING_Start,
@@ -2855,7 +2865,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNHOMING_TimeIndFrameInc,
 		&Actor::SPRINGSTUNHOMING_TimeDepFrameInc,
 		&Actor::SPRINGSTUNHOMING_GetActionLength,
-		&Actor::SPRINGSTUNHOMING_GetTileset);
+		&Actor::SPRINGSTUNHOMING_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNHOMINGATTACK,
 		&Actor::SPRINGSTUNHOMINGATTACK_Start,
@@ -2867,7 +2877,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNHOMINGATTACK_TimeIndFrameInc,
 		&Actor::SPRINGSTUNHOMINGATTACK_TimeDepFrameInc,
 		&Actor::SPRINGSTUNHOMINGATTACK_GetActionLength,
-		&Actor::SPRINGSTUNHOMINGATTACK_GetTileset);
+		&Actor::SPRINGSTUNHOMINGATTACK_GetTilesetName);
 
 	SetupFuncsForAction(SPRINGSTUNTELEPORT,
 		&Actor::SPRINGSTUNTELEPORT_Start,
@@ -2879,7 +2889,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNTELEPORT_TimeIndFrameInc,
 		&Actor::SPRINGSTUNTELEPORT_TimeDepFrameInc,
 		&Actor::SPRINGSTUNTELEPORT_GetActionLength,
-		&Actor::SPRINGSTUNTELEPORT_GetTileset);
+		&Actor::SPRINGSTUNTELEPORT_GetTilesetName);
 
 	SetupFuncsForAction(SPRINT,
 		&Actor::SPRINT_Start,
@@ -2891,7 +2901,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINT_TimeIndFrameInc,
 		&Actor::SPRINT_TimeDepFrameInc,
 		&Actor::SPRINT_GetActionLength,
-		&Actor::SPRINT_GetTileset);
+		&Actor::SPRINT_GetTilesetName);
 
 	SetupFuncsForAction(STAND,
 		&Actor::STAND_Start,
@@ -2903,7 +2913,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STAND_TimeIndFrameInc,
 		&Actor::STAND_TimeDepFrameInc,
 		&Actor::STAND_GetActionLength,
-		&Actor::STAND_GetTileset);
+		&Actor::STAND_GetTilesetName);
 
 	SetupFuncsForAction(STANDATTACK1,
 		&Actor::STANDATTACK1_Start,
@@ -2915,7 +2925,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STANDATTACK1_TimeIndFrameInc,
 		&Actor::STANDATTACK1_TimeDepFrameInc,
 		&Actor::STANDATTACK1_GetActionLength,
-		&Actor::STANDATTACK1_GetTileset);
+		&Actor::STANDATTACK1_GetTilesetName);
 
 	SetupFuncsForAction(STANDATTACK2,
 		&Actor::STANDATTACK2_Start,
@@ -2927,7 +2937,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STANDATTACK2_TimeIndFrameInc,
 		&Actor::STANDATTACK2_TimeDepFrameInc,
 		&Actor::STANDATTACK2_GetActionLength,
-		&Actor::STANDATTACK2_GetTileset);
+		&Actor::STANDATTACK2_GetTilesetName);
 
 	SetupFuncsForAction(STANDATTACK3,
 		&Actor::STANDATTACK3_Start,
@@ -2939,7 +2949,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STANDATTACK3_TimeIndFrameInc,
 		&Actor::STANDATTACK3_TimeDepFrameInc,
 		&Actor::STANDATTACK3_GetActionLength,
-		&Actor::STANDATTACK3_GetTileset);
+		&Actor::STANDATTACK3_GetTilesetName);
 
 	SetupFuncsForAction(STANDATTACK4,
 		&Actor::STANDATTACK4_Start,
@@ -2951,7 +2961,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STANDATTACK4_TimeIndFrameInc,
 		&Actor::STANDATTACK4_TimeDepFrameInc,
 		&Actor::STANDATTACK4_GetActionLength,
-		&Actor::STANDATTACK4_GetTileset);
+		&Actor::STANDATTACK4_GetTilesetName);
 
 	SetupFuncsForAction(STEEPCLIMB,
 		&Actor::STEEPCLIMB_Start,
@@ -2963,7 +2973,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STEEPCLIMB_TimeIndFrameInc,
 		&Actor::STEEPCLIMB_TimeDepFrameInc,
 		&Actor::STEEPCLIMB_GetActionLength,
-		&Actor::STEEPCLIMB_GetTileset);
+		&Actor::STEEPCLIMB_GetTilesetName);
 
 	SetupFuncsForAction(STEEPCLIMBATTACK,
 		&Actor::STEEPCLIMBATTACK_Start,
@@ -2975,7 +2985,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STEEPCLIMBATTACK_TimeIndFrameInc,
 		&Actor::STEEPCLIMBATTACK_TimeDepFrameInc,
 		&Actor::STEEPCLIMBATTACK_GetActionLength,
-		&Actor::STEEPCLIMBATTACK_GetTileset);
+		&Actor::STEEPCLIMBATTACK_GetTilesetName);
 
 	SetupFuncsForAction(STEEPCLING,
 		&Actor::STEEPCLING_Start,
@@ -2987,7 +2997,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STEEPCLING_TimeIndFrameInc,
 		&Actor::STEEPCLING_TimeDepFrameInc,
 		&Actor::STEEPCLING_GetActionLength,
-		&Actor::STEEPCLING_GetTileset);
+		&Actor::STEEPCLING_GetTilesetName);
 
 	SetupFuncsForAction(STEEPSLIDE,
 		&Actor::STEEPSLIDE_Start,
@@ -2999,7 +3009,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STEEPSLIDE_TimeIndFrameInc,
 		&Actor::STEEPSLIDE_TimeDepFrameInc,
 		&Actor::STEEPSLIDE_GetActionLength,
-		&Actor::STEEPSLIDE_GetTileset);
+		&Actor::STEEPSLIDE_GetTilesetName);
 
 	SetupFuncsForAction(STEEPSLIDEATTACK,
 		&Actor::STEEPSLIDEATTACK_Start,
@@ -3011,7 +3021,7 @@ void Actor::SetupActionFunctions()
 		&Actor::STEEPSLIDEATTACK_TimeIndFrameInc,
 		&Actor::STEEPSLIDEATTACK_TimeDepFrameInc,
 		&Actor::STEEPSLIDEATTACK_GetActionLength,
-		&Actor::STEEPSLIDEATTACK_GetTileset);
+		&Actor::STEEPSLIDEATTACK_GetTilesetName);
 
 	SetupFuncsForAction(SWINGSTUN,
 		&Actor::SWINGSTUN_Start,
@@ -3023,7 +3033,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SWINGSTUN_TimeIndFrameInc,
 		&Actor::SWINGSTUN_TimeDepFrameInc,
 		&Actor::SWINGSTUN_GetActionLength,
-		&Actor::SWINGSTUN_GetTileset);
+		&Actor::SWINGSTUN_GetTilesetName);
 
 	SetupFuncsForAction(SUPERBIRD,
 		&Actor::SUPERBIRD_Start,
@@ -3035,7 +3045,7 @@ void Actor::SetupActionFunctions()
 		&Actor::SUPERBIRD_TimeIndFrameInc,
 		&Actor::SUPERBIRD_TimeDepFrameInc,
 		&Actor::SUPERBIRD_GetActionLength,
-		&Actor::SUPERBIRD_GetTileset);
+		&Actor::SUPERBIRD_GetTilesetName);
 
 	SetupFuncsForAction(TELEPORTACROSSTERRAIN,
 		&Actor::TELEPORTACROSSTERRAIN_Start,
@@ -3047,7 +3057,7 @@ void Actor::SetupActionFunctions()
 		&Actor::TELEPORTACROSSTERRAIN_TimeIndFrameInc,
 		&Actor::TELEPORTACROSSTERRAIN_TimeDepFrameInc,
 		&Actor::TELEPORTACROSSTERRAIN_GetActionLength,
-		&Actor::TELEPORTACROSSTERRAIN_GetTileset);
+		&Actor::TELEPORTACROSSTERRAIN_GetTilesetName);
 
 	SetupFuncsForAction(TESTSUPER,
 		&Actor::TESTSUPER_Start,
@@ -3059,7 +3069,7 @@ void Actor::SetupActionFunctions()
 		&Actor::TESTSUPER_TimeIndFrameInc,
 		&Actor::TESTSUPER_TimeDepFrameInc,
 		&Actor::TESTSUPER_GetActionLength,
-		&Actor::TESTSUPER_GetTileset);
+		&Actor::TESTSUPER_GetTilesetName);
 
 	SetupFuncsForAction(UAIR,
 		&Actor::UAIR_Start,
@@ -3071,7 +3081,7 @@ void Actor::SetupActionFunctions()
 		&Actor::UAIR_TimeIndFrameInc,
 		&Actor::UAIR_TimeDepFrameInc,
 		&Actor::UAIR_GetActionLength,
-		&Actor::UAIR_GetTileset);
+		&Actor::UAIR_GetTilesetName);
 
 	SetupFuncsForAction(UPTILT1,
 		&Actor::UPTILT1_Start,
@@ -3083,7 +3093,7 @@ void Actor::SetupActionFunctions()
 		&Actor::UPTILT1_TimeIndFrameInc,
 		&Actor::UPTILT1_TimeDepFrameInc,
 		&Actor::UPTILT1_GetActionLength,
-		&Actor::UPTILT1_GetTileset);
+		&Actor::UPTILT1_GetTilesetName);
 
 	SetupFuncsForAction(UPTILT2,
 		&Actor::UPTILT2_Start,
@@ -3095,7 +3105,7 @@ void Actor::SetupActionFunctions()
 		&Actor::UPTILT2_TimeIndFrameInc,
 		&Actor::UPTILT2_TimeDepFrameInc,
 		&Actor::UPTILT2_GetActionLength,
-		&Actor::UPTILT2_GetTileset);
+		&Actor::UPTILT2_GetTilesetName);
 
 	SetupFuncsForAction(UPTILT3,
 		&Actor::UPTILT3_Start,
@@ -3107,7 +3117,7 @@ void Actor::SetupActionFunctions()
 		&Actor::UPTILT3_TimeIndFrameInc,
 		&Actor::UPTILT3_TimeDepFrameInc,
 		&Actor::UPTILT3_GetActionLength,
-		&Actor::UPTILT3_GetTileset);
+		&Actor::UPTILT3_GetTilesetName);
 	
 
 	SetupFuncsForAction(WAITFORSHIP,
@@ -3120,7 +3130,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WAITFORSHIP_TimeIndFrameInc,
 		&Actor::WAITFORSHIP_TimeDepFrameInc,
 		&Actor::WAITFORSHIP_GetActionLength,
-		&Actor::WAITFORSHIP_GetTileset);
+		&Actor::WAITFORSHIP_GetTilesetName);
 
 	SetupFuncsForAction(WALLATTACK,
 		&Actor::WALLATTACK_Start,
@@ -3132,7 +3142,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WALLATTACK_TimeIndFrameInc,
 		&Actor::WALLATTACK_TimeDepFrameInc,
 		&Actor::WALLATTACK_GetActionLength,
-		&Actor::WALLATTACK_GetTileset);
+		&Actor::WALLATTACK_GetTilesetName);
 
 	SetupFuncsForAction(WALLCLING,
 		&Actor::WALLCLING_Start,
@@ -3144,7 +3154,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WALLCLING_TimeIndFrameInc,
 		&Actor::WALLCLING_TimeDepFrameInc,
 		&Actor::WALLCLING_GetActionLength,
-		&Actor::WALLCLING_GetTileset);
+		&Actor::WALLCLING_GetTilesetName);
 
 	SetupFuncsForAction(WALLJUMP,
 		&Actor::WALLJUMP_Start,
@@ -3156,7 +3166,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WALLJUMP_TimeIndFrameInc,
 		&Actor::WALLJUMP_TimeDepFrameInc,
 		&Actor::WALLJUMP_GetActionLength,
-		&Actor::WALLJUMP_GetTileset);
+		&Actor::WALLJUMP_GetTilesetName);
 
 	SetupFuncsForAction(WALLTECH,
 		&Actor::WALLTECH_Start,
@@ -3168,7 +3178,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WALLTECH_TimeIndFrameInc,
 		&Actor::WALLTECH_TimeDepFrameInc,
 		&Actor::WALLTECH_GetActionLength,
-		&Actor::WALLTECH_GetTileset);
+		&Actor::WALLTECH_GetTilesetName);
 
 	SetupFuncsForAction(WATERGLIDE,
 		&Actor::WATERGLIDE_Start,
@@ -3180,7 +3190,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WATERGLIDE_TimeIndFrameInc,
 		&Actor::WATERGLIDE_TimeDepFrameInc,
 		&Actor::WATERGLIDE_GetActionLength,
-		&Actor::WATERGLIDE_GetTileset);
+		&Actor::WATERGLIDE_GetTilesetName);
 
 	SetupFuncsForAction(WATERGLIDECHARGE,
 		&Actor::WATERGLIDECHARGE_Start,
@@ -3192,7 +3202,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WATERGLIDECHARGE_TimeIndFrameInc,
 		&Actor::WATERGLIDECHARGE_TimeDepFrameInc,
 		&Actor::WATERGLIDECHARGE_GetActionLength,
-		&Actor::WATERGLIDECHARGE_GetTileset);
+		&Actor::WATERGLIDECHARGE_GetTilesetName);
 
 	SetupFuncsForAction(WATERGLIDE_HITSTUN,
 		&Actor::WATERGLIDE_HITSTUN_Start,
@@ -3204,7 +3214,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WATERGLIDE_HITSTUN_TimeIndFrameInc,
 		&Actor::WATERGLIDE_HITSTUN_TimeDepFrameInc,
 		&Actor::WATERGLIDE_HITSTUN_GetActionLength,
-		&Actor::WATERGLIDE_HITSTUN_GetTileset);
+		&Actor::WATERGLIDE_HITSTUN_GetTilesetName);
 
 	SetupFuncsForAction(WIREHOLD,
 		&Actor::WIREHOLD_Start,
@@ -3216,7 +3226,7 @@ void Actor::SetupActionFunctions()
 		&Actor::WIREHOLD_TimeIndFrameInc,
 		&Actor::WIREHOLD_TimeDepFrameInc,
 		&Actor::WIREHOLD_GetActionLength,
-		&Actor::WIREHOLD_GetTileset);
+		&Actor::WIREHOLD_GetTilesetName);
 }
 
 void Actor::StartAction()
@@ -3259,6 +3269,23 @@ void Actor::UpdateActionSprite()
 	}
 }
 
+Actor::Actor()
+	:dead(false), actorIndex(0), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	skinShader("player"), exitAuraShader("boostplayer"), swordShader("aura"),
+	originalProgressionUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	originalProgressionLogField(LogDetailedInfo::MAX_LOGS)
+{
+	shallowInit = true;
+	sess = NULL;
+	editOwner = NULL;
+	owner = NULL;
+	actionFolder = "Kin/";
+
+	SetupActionFunctions();
+	SetupTilesets();
+}
+
 Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	:dead(false), actorIndex(p_actorIndex), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
@@ -3266,6 +3293,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 	{
+	shallowInit = false;
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
 
@@ -3387,6 +3415,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	
 	SetupTilesets();
 
+	SetupFX();
+
 	/*if (actorIndex == 0)
 	{
 		SetupTilesets(NULL, NULL);
@@ -3461,15 +3491,15 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	//	cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 	//	assert( 0 && "player shader not loaded" );
 	//}
-	Tileset *ts_auraTest = sess->GetSizedTileset("FX/aura1_64x64.png");
-	Tileset *ts_auraTest2 = sess->GetSizedTileset("FX/aura2_64x64.png");
+	//Tileset *ts_auraTest = sess->GetSizedTileset("FX/aura1_64x64.png");
+	//Tileset *ts_auraTest2 = sess->GetSizedTileset("FX/aura2_64x64.png");
 	//Color auraColor(Color::Cyan);
 	//auraColor.a = 200;
 	//SetAuraColor(auraColor);
-	ts_auraTest2->texture->setRepeated(true);
-	ts_auraTest->texture->setRepeated(true);
-	skinShader.pShader.setUniform("u_auraTex", *(ts_auraTest->texture));
-	skinShader.pShader.setUniform("u_auraTex2", *(ts_auraTest2->texture));
+	//ts_auraTest2->texture->setRepeated(true);
+	//ts_auraTest->texture->setRepeated(true);
+	//skinShader.pShader.setUniform("u_auraTex", *(ts_auraTest->texture));
+	//skinShader.pShader.setUniform("u_auraTex2", *(ts_auraTest2->texture));
 
 
 	//SetSkin(SKIN_NORMAL);
@@ -3537,7 +3567,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		
 	soundInfos[PlayerSounds::S_HITCEILING] = GetSound("Kin/ceiling");
 	soundInfos[PlayerSounds::S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
-	soundInfos[PlayerSounds::S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
+	//soundInfos[PlayerSounds::S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
 	soundInfos[PlayerSounds::S_DAIR] = GetSound("Kin/dair");
 	soundInfos[PlayerSounds::S_DOUBLE] = GetSound("Kin/doublejump");
 	soundInfos[PlayerSounds::S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
@@ -4070,7 +4100,11 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 Actor::~Actor()
 {
-	delete nameTag;
+	if (shallowInit)
+		return;
+
+	if( nameTag != NULL )
+		delete nameTag;
 
 	/*for (auto it = birdCommands.begin(); it != birdCommands.end(); ++it)
 	{
@@ -4120,17 +4154,17 @@ Actor::~Actor()
 	effectPools.clear();
 
 	delete fxPaletteShader;
+	
 
-	//delete keyExplodePool;
 	delete keyExplodeUpdater;
 	delete keyExplodeRingGroup;
 	delete enemyExplodeRingGroup;
 	delete enemiesClearedRingGroup;
 	delete enoughKeysToExitRingGroup;
-
 	delete gravityDecreaserOnRingGroup;
 	delete gravityDecreaserOffRingGroup;
 
+	
 	delete gravityIncreaserTrailEmitter;
 	delete gravityDecreaserTrailEmitter;
 	delete momentumBoosterTrailEmitter;

@@ -19,34 +19,36 @@
 using namespace sf;
 using namespace std;
 
-KinMenu::KinMenu( GameSession *p_game)
-	:playerSkinShader( "player"),
-	game( p_game )
+KinMenu::KinMenu( TilesetManager *p_tm )
+	:playerSkinShader( "player")
 {
+	tm = p_tm;
+	game = NULL;
 	
-	
-	ts_powers = game->GetSizedTileset("Menu/power_icon_128x128.png");
+	MainMenu *mm = MainMenu::GetInstance();
 
-	description.setFont(game->mainMenu->arial);
+	ts_powers = tm->GetSizedTileset("Menu/power_icon_128x128.png");
+
+	description.setFont(mm->arial);
 	description.setCharacterSize(24);
 	description.setFillColor(Color::White);
 
 	int tutWidth = 1220;
 	int tutHeight = 320;
-	ts_tutorial[0] = game->GetTileset("Menu/tut_jump.png", tutWidth, tutHeight);
-	ts_tutorial[1] = game->GetTileset("Menu/tut_attack.png", tutWidth, tutHeight);
-	ts_tutorial[2] = game->GetTileset("Menu/tut_sprint.png", tutWidth, tutHeight);
-	ts_tutorial[3] = game->GetTileset("Menu/tut_dash.png", tutWidth, tutHeight);
-	ts_tutorial[4] = game->GetTileset("Menu/tut_walljump.png", tutWidth, tutHeight);
-	ts_tutorial[5] = game->GetTileset("Menu/tut_speed.png", tutWidth, tutHeight);
-	ts_tutorial[6] = game->GetTileset("Menu/tut_health.png", tutWidth, tutHeight);
-	ts_tutorial[7] = game->GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
-	ts_tutorial[8] = game->GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
-	ts_tutorial[9] = game->GetTileset("Menu/tut_airdash.png", tutWidth, tutHeight);
+	ts_tutorial[0] = tm->GetSizedTileset("Menu/tut_jump_1220x320.png");
+	ts_tutorial[1] = tm->GetSizedTileset("Menu/tut_attack_1220x320.png");
+	ts_tutorial[2] = tm->GetSizedTileset("Menu/tut_sprint_1220x320.png");
+	ts_tutorial[3] = tm->GetSizedTileset("Menu/tut_dash_1220x320.png");
+	ts_tutorial[4] = tm->GetSizedTileset("Menu/tut_walljump_1220x320.png");
+	ts_tutorial[5] = tm->GetSizedTileset("Menu/tut_speed_1220x320.png");
+	ts_tutorial[6] = tm->GetSizedTileset("Menu/tut_health_1220x320.png");
+	ts_tutorial[7] = tm->GetSizedTileset("Menu/tut_survival_1220x320.png");
+	ts_tutorial[8] = tm->GetSizedTileset("Menu/tut_key_1220x320.png");
+	ts_tutorial[9] = tm->GetSizedTileset("Menu/tut_airdash_1220x320.png");
 	
 
 	SetRectColor(descriptionBox, Color(0, 0, 0, 255));
-	SetRectCenter(descriptionBox, 1220, 90, Vector2f(1122, 439));//topleft is 512,394
+	SetRectCenter(descriptionBox, tutWidth, 90, Vector2f(1122, 439));//topleft is 512,394
 
 	description.setPosition(512 + 10, 394 + 10);
 
@@ -65,16 +67,16 @@ KinMenu::KinMenu( GameSession *p_game)
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
-	Tileset *ts_selector = game->GetSizedTileset("Menu/power_icon_border_160x160.png");
+	Tileset *ts_selector = tm->GetSizedTileset("Menu/power_icon_border_160x160.png");
 	selectorSpr.setTexture(*ts_selector->texture);
 	selectorSpr.setOrigin(selectorSpr.getLocalBounds().width / 2, selectorSpr.getLocalBounds().height / 2);
 
-	ts_kin = game->GetSizedTileset("Menu/pause_kin_400x836.png");
-	ts_aura1A = game->GetSizedTileset("Menu/pause_kin_aura_1a_400x836.png");
-	ts_aura1B = game->GetSizedTileset("Menu/pause_kin_aura_1b_400x836.png");
-	ts_aura2A = game->GetSizedTileset("Menu/pause_kin_aura_2a_400x836.png");
-	ts_aura2B = game->GetSizedTileset("Menu/pause_kin_aura_2b_400x836.png");
-	ts_veins = game->GetSizedTileset("Menu/pause_kin_veins_400x836.png");
+	ts_kin = tm->GetSizedTileset("Menu/pause_kin_400x836.png");
+	ts_aura1A = tm->GetSizedTileset("Menu/pause_kin_aura_1a_400x836.png");
+	ts_aura1B = tm->GetSizedTileset("Menu/pause_kin_aura_1b_400x836.png");
+	ts_aura2A = tm->GetSizedTileset("Menu/pause_kin_aura_2a_400x836.png");
+	ts_aura2B = tm->GetSizedTileset("Menu/pause_kin_aura_2b_400x836.png");
+	ts_veins = tm->GetSizedTileset("Menu/pause_kin_veins_400x836.png");
 
 	if (!scrollShader1.loadFromFile("Resources/Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
@@ -185,10 +187,10 @@ KinMenu::KinMenu( GameSession *p_game)
 	powerDescriptions[9] = "Press DASH while in the air to HOVER for a short period. Hold a direction\n"
 							"to AIRDASH in 1 of 8 directions. You can change your AIRDASH\n"
 							"direction at any time. Kin gets 1 AIRDASH per air time.";
-	UpdateDescription();
-	UpdateSelector();
-	UpdatePowerSprite();
-	UpdateTutorial();
+	//UpdateDescription();
+	//UpdateSelector();
+	//UpdatePowerSprite();
+	//UpdateTutorial();
 
 }
 
@@ -207,6 +209,16 @@ KinMenu::~KinMenu()
 	delete bgShifter;
 
 	delete selectedShifter;
+}
+
+void KinMenu::SetGame(GameSession *p_game)
+{
+	game = p_game;
+	tutBox->sess = p_game;
+	UpdateSelector();
+	UpdatePowerSprite();
+	UpdateTutorial();
+	UpdateDescription();
 }
 
 void KinMenu::SetTopLeft(sf::Vector2f &pos)
@@ -333,6 +345,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	xchanged = xSelector->UpdateIndex(curr.LLeft() || curr.PLeft(), curr.LRight() || curr.PRight());
 	ychanged = ySelector->UpdateIndex(curr.LUp() || curr.PUp(), curr.LDown() || curr.PDown());
 
+	assert(game != NULL);
 
 	if (xchanged != 0 || ychanged != 0)
 	{

@@ -65,7 +65,7 @@ int Actor::RIDESHIP_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::RIDESHIP_GetTileset()
+const char * Actor::RIDESHIP_GetTilesetName()
 {
-	return GetActionTileset("dive_64x64.png");
+	return "dive_64x64.png";
 }

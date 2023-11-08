@@ -173,8 +173,7 @@ int Actor::HOMINGATTACK_GetActionLength()
 	return 15 * 2;
 }
 
-Tileset * Actor::HOMINGATTACK_GetTileset()
+const char * Actor::HOMINGATTACK_GetTilesetName()
 {
-	return GetActionTileset("homing_att_64x64.png");
-	//return SPRINGSTUN_GetTileset();
+	return "homing_att_64x64.png";
 }

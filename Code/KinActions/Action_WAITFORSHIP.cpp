@@ -56,7 +56,7 @@ int Actor::WAITFORSHIP_GetActionLength()
 	return 60 * 1;
 }
 
-Tileset * Actor::WAITFORSHIP_GetTileset()
+const char * Actor::WAITFORSHIP_GetTilesetName()
 {
-	return GetActionTileset("ship_jump_160x96.png");
+	return "ship_jump_160x96.png";
 }

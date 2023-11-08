@@ -14,7 +14,7 @@ ActorType::ActorType(ParamsInfo &pi, bool p_unlisted)
 
 	unlisted = p_unlisted;
 
-	if (info.ts == NULL)
+	if (info.ts == NULL && sess->IsSessTypeEdit() )
 	{
 		info.ts = sess->GetTileset(string("Editor/") + info.name + string("_editor.png"));
 	}

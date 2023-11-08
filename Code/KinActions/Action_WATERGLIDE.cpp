@@ -146,7 +146,7 @@ int Actor::WATERGLIDE_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::WATERGLIDE_GetTileset()
+const char * Actor::WATERGLIDE_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

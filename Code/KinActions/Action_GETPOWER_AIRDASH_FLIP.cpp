@@ -59,7 +59,7 @@ int Actor::GETPOWER_AIRDASH_FLIP_GetActionLength()
 	return 133 * 2;
 }
 
-Tileset * Actor::GETPOWER_AIRDASH_FLIP_GetTileset()
+const char * Actor::GETPOWER_AIRDASH_FLIP_GetTilesetName()
 {
-	return GetActionTileset("w1_airdashget_128x128.png");
+	return "w1_airdashget_128x128.png";
 }

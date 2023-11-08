@@ -144,7 +144,7 @@ int Actor::JUMPSQUAT_GetActionLength()
 	return 3;
 }
 
-Tileset * Actor::JUMPSQUAT_GetTileset()
+const char * Actor::JUMPSQUAT_GetTilesetName()
 {
-	return GetActionTileset("jump_64x64.png");
+	return "jump_64x64.png";
 }

@@ -68,7 +68,7 @@ int Actor::RAILBOUNCE_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::RAILBOUNCE_GetTileset()
+const char * Actor::RAILBOUNCE_GetTilesetName()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return "hurt_64x64.png";
 }

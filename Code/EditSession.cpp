@@ -1557,7 +1557,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	scaleText.setFillColor(Color::White);
 	scaleText.setPosition(5, 30);
 
-	Tileset *ts_kinScale = p_mainMenu->tilesetManager.GetTileset("Kin/stand_64x64.png", 64, 64);
+	Tileset *ts_kinScale = p_mainMenu->GetTileset("Kin/stand_64x64.png", 64, 64);
 	scaleSprite.setTexture(*ts_kinScale->texture);
 	scaleSprite.setTextureRect(ts_kinScale->GetSubRect(0));
 
@@ -1914,9 +1914,6 @@ EditSession::~EditSession()
 	if (ggpoStatsPanel != NULL)
 		delete ggpoStatsPanel;
 
-	CleanupShardMenu();
-	CleanupLogMenu();
-
 	currSession = NULL;
 
 }
@@ -2146,10 +2143,11 @@ bool EditSession::ReadDecor(std::ifstream &is)
 	return true;
 }
 
-void EditSession::ProcessDecorSpr(const std::string &name,
-	Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+void EditSession::ProcessDecorSpr(const std::string &name, int dTile, int dLayer, sf::Vector2f &centerPos,
 	float rotation, sf::Vector2f &scale)
 {
+	Tileset *d_ts = decorTSMap[name];
+
 	DecorPtr dec = new EditorDecorInfo(name, d_ts, dTile, dLayer, centerPos,
 		rotation, scale );
 	if (dLayer > 0)
@@ -2426,7 +2424,7 @@ void EditSession::ProcessHeader()
 	double memD = GetMemoryUsage();
 	double megs = memD / 1000000.0;
 	cout << "memory usage: " << megs << endl;
-	double memDMM = MainMenu::GetInstance()->tilesetManager.GetMemoryUsage();
+	double memDMM = MainMenu::GetInstance()->GetMemoryUsage();
 	double megsMM = memDMM / 1000000.0;
 	cout << "mm usage: " << megsMM << endl;
 	background = Background::SetupFullBG(mapHeader->envName);
@@ -3940,9 +3938,6 @@ void EditSession::Init()
 	SetupSuperSequence();
 
 	SetupHitboxManager();
-	
-	SetupShardMenu();
-	SetupLogMenu();
 
 //#ifdef GGPO_ON
 //	SetupNetplay();
@@ -5181,6 +5176,40 @@ int EditSession::GetSpecialTerrainMode()
 		}
 	}
 	
+}
+
+bool EditSession::ReadDecorImagesFile()
+{
+	ifstream is;
+	is.open("Resources/decor.txt");
+	if (is.is_open())
+	{
+		string name;
+		int width;
+		int height;
+		int tile;
+		while (!is.eof())
+		{
+			is >> name;
+			is >> tile;
+
+			string fullName = name + string(".png");
+
+			Tileset *ts = GetSizedTileset(fullName);
+			assert(ts != NULL);
+			decorTSMap[name] = ts;
+
+			ProcessDecorFromFile(name, tile);
+		}
+
+		is.close();
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void EditSession::InitDecorPanel()

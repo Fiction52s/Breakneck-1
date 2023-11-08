@@ -20,14 +20,10 @@ struct KinMenu
 	PlayerSkinShader playerSkinShader;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
-	int GetCurrIndex();
-	~KinMenu();
-	void SetTopLeft(sf::Vector2f &pos);
+	TilesetManager *tm;
 	GameSession *game;
 	sf::Sprite selectorSpr;
-	void UpdatePowers(Actor *player);
 	int secondRowMax;
-	KinMenu( GameSession *p_game);
 	sf::Vertex powerQuads[10 * 4];
 	sf::Vertex powerQuadsBG[10 * 4];
 	ColorShifter *selectedShifter;
@@ -53,7 +49,6 @@ struct KinMenu
 	sf::Color Get2BColor();
 	sf::Sprite tutorialSpr;
 	sf::Vertex descriptionBox[4];
-	void UpdateCommandButton();
 	Tileset *ts_tutorial[10];
 	sf::Sprite kinSpr;
 	sf::Sprite veinSpr;
@@ -62,15 +57,23 @@ struct KinMenu
 	sf::Sprite aura2ASpr;
 	sf::Sprite aura2BSpr;
 	sf::Vertex kinBG[4];
+	std::string powerDescriptions[10];
+	sf::Text description;
+	
+	KinMenu(TilesetManager *tm);
+	~KinMenu();
+	void SetGame(GameSession *game);
+	int GetCurrIndex();
+	void SetTopLeft(sf::Vector2f &pos);
+	void UpdatePowers(Actor *player);
+	void UpdateCommandButton();
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void UpdateDescription();
 	void UpdateSelector();
 	void UpdateTutorial();
 	void UpdatePowerSprite();
-	std::string powerDescriptions[10];
 	void Draw(sf::RenderTarget *target);
-	sf::Text description;
 };
 
 #endif

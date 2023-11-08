@@ -55,10 +55,6 @@ struct PlayerBoxGroup;
 
 struct OptionsMenu
 {
-
-	MainMenu *mainMenu;
-	GameSession *game;
-
 	enum State
 	{
 		CHOOSESTATE,
@@ -68,16 +64,18 @@ struct OptionsMenu
 		GAMEPLAY,
 	};
 	State state;
+	GameSession *game;
 
 	PlayerBoxGroup *playerBoxGroup;
 	GameSettingsScreen *gameSettingsMenu;
-
+	TilesetManager *tm;
 	Tileset *ts_optionMode;
 	sf::Vertex optionModeQuads[4*4];
 	SingleAxisSelector *optionModeSelector;
 	sf::Vector2f basePos;
-	OptionsMenu( PauseMenu *pauseMenu );
+	OptionsMenu( TilesetManager *tm );
 	~OptionsMenu();
+	void SetGame(GameSession *game);
 	void HandleEvent(sf::Event ev);
 	void Start();
 	void Update( ControllerState &currInput,
@@ -104,8 +102,9 @@ struct PauseMenu
 		Count
 	};
 
-	PauseMenu(GameSession *game);
+	PauseMenu(TilesetManager *tm);
 	~PauseMenu();
+	void SetGame(GameSession *p_game);
 	void Draw( sf::RenderTarget *target );
 	void ResetCounters();
 	void SetTab( Tab t );
@@ -118,6 +117,7 @@ struct PauseMenu
 	void HandleEvent(sf::Event ev);
 	void SetTopLeft(sf::Vector2f &pos);
 
+	TilesetManager *tm;
 	sf::Text debugText;
 	sf::Text mapNameText;
 

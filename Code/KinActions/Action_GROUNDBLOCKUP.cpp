@@ -56,7 +56,7 @@ int Actor::GROUNDBLOCKUP_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::GROUNDBLOCKUP_GetTileset()
+const char * Actor::GROUNDBLOCKUP_GetTilesetName()
 {
-	return GetActionTileset("block_64x64.png");
+	return "block_64x64.png";
 }

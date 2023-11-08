@@ -236,7 +236,7 @@ int Actor::LAND2_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::LAND2_GetTileset()
+const char * Actor::LAND2_GetTilesetName()
 {
-	return GetActionTileset("land_64x64.png");
+	return "land_64x64.png";
 }

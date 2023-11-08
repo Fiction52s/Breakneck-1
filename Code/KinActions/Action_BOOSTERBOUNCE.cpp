@@ -71,7 +71,7 @@ int Actor::BOOSTERBOUNCE_GetActionLength()
 	return 20;
 }
 
-Tileset * Actor::BOOSTERBOUNCE_GetTileset()
+const char * Actor::BOOSTERBOUNCE_GetTilesetName()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return "hurt_64x64.png";
 }

@@ -51,7 +51,7 @@ int Actor::SKYDIVE_GetActionLength()
 	return 9 * 2;
 }
 
-Tileset * Actor::SKYDIVE_GetTileset()
+const char * Actor::SKYDIVE_GetTilesetName()
 {
-	return GetActionTileset("walljump_64x64.png");
+	return "walljump_64x64.png";
 }

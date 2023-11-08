@@ -108,7 +108,7 @@ int Actor::GLIDE_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::GLIDE_GetTileset()
+const char * Actor::GLIDE_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

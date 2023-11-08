@@ -498,7 +498,7 @@ int Actor::SPRINGSTUNGRIND_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SPRINGSTUNGRIND_GetTileset()
+const char * Actor::SPRINGSTUNGRIND_GetTilesetName()
 {
-	return GetActionTileset("grind_64x64.png");
+	return "grind_64x64.png";
 }

@@ -135,7 +135,7 @@ int Actor::FAIR_GetActionLength()
 	return 8 * 2;
 }
 
-Tileset * Actor::FAIR_GetTileset()
+const char * Actor::FAIR_GetTilesetName()
 {
-	return GetActionTileset("fair_80x80.png");
+	return "fair_80x80.png";
 }

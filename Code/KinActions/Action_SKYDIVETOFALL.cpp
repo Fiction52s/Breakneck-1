@@ -51,7 +51,7 @@ int Actor::SKYDIVETOFALL_GetActionLength()
 	return 10 * 4;
 }
 
-Tileset * Actor::SKYDIVETOFALL_GetTileset()
+const char * Actor::SKYDIVETOFALL_GetTilesetName()
 {
-	return GetActionTileset("intro_0_160x80.png");
+	return NULL;//return "intro_0_160x80.png";
 }

@@ -45,7 +45,7 @@ int Actor::SEQ_ENTERCORE1_GetActionLength()
 	return 60;
 }
 
-Tileset * Actor::SEQ_ENTERCORE1_GetTileset()
+const char * Actor::SEQ_ENTERCORE1_GetTilesetName()
 {
 	return NULL;
 }

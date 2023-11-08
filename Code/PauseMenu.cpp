@@ -143,17 +143,18 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 	target->draw( currentText );
 }
 
-PauseMenu::PauseMenu( GameSession *p_game)
+PauseMenu::PauseMenu( TilesetManager *p_tm )
 	:currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
 {
-	game = p_game;
-	mainMenu = game->mainMenu;
+	tm = p_tm;
+	game = NULL;
+	mainMenu = MainMenu::GetInstance();
 	
-	mapNameText.setFont(game->mainMenu->arial);
+	mapNameText.setFont(mainMenu->arial);
 	mapNameText.setCharacterSize(40);
 	mapNameText.setFillColor(Color::White);
 
-	debugText.setFont(game->mainMenu->arial);
+	debugText.setFont(mainMenu->arial);
 	debugText.setCharacterSize(28);
 	debugText.setFillColor(Color::White);
 	/*debugText.setString(
@@ -165,36 +166,35 @@ PauseMenu::PauseMenu( GameSession *p_game)
 
 	optionType = OptionType::O_INPUT;
 
-	ts_background = game->GetSizedTileset("Menu/Pause/pause_BG_1820x980.png");
+	ts_background = tm->GetSizedTileset("Menu/Pause/pause_BG_1820x980.png");
 	bgSprite.setTexture(*ts_background->texture);
 
-	ts_tabs = game->GetSizedTileset("Menu/Pause/pause_tabs_1326x50.png");
+	ts_tabs = tm->GetSizedTileset("Menu/Pause/pause_tabs_1326x50.png");
 	tabSprite.setTexture(*ts_tabs->texture);
 	
 
 	bgPaletteShader = new PaletteShader("pause", 
 		"Resources/Menu/Pause/pause_palette_16x6.png");
 
-	ts_select = game->GetSizedTileset("Menu/menu_select_800x140.png");
+	ts_select = tm->GetSizedTileset("Menu/menu_select_800x140.png");
 	
-	ts_pauseOptions = game->GetSizedTileset("Menu/Pause/pauseoptions_768x128.png");
+	ts_pauseOptions = tm->GetSizedTileset("Menu/Pause/pauseoptions_768x128.png");
 
 	int waitFrames[3] = { 60, 30, 30 };
 	int waitModeThresh[2] = { 2, 2 };
 	pauseSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0, false);
 	
-	optionsMenu = new OptionsMenu(this);
-
-	pauseMap = new PauseMap;
+	optionsMenu = new OptionsMenu(tm);
+	pauseMap = new PauseMap(tm);
 	
 	selectSprite.setTexture( *ts_select->texture );
 
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
-	shardMenu = game->shardMenu;
-	logMenu = game->logMenu;
-	kinMenu = new KinMenu(game);
+	shardMenu = new ShardMenu(tm);
+	logMenu = new LogMenu(tm);
+	kinMenu = new KinMenu(tm);
 	//resolution
 	//fullscreen
 	//vsync
@@ -255,9 +255,6 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	maxMomentum = 4;
 
 	SetTopLeft(Vector2f(50, 50));
-
-	UpdateButtonIconsWhenControllerIsChanged();
-
 	SetTab(PAUSE);
 
 	
@@ -274,6 +271,17 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	//SetTab( MAP );
 	//SetAssocSymbols();
 	//cout << "end this initialization" << endl;
+}
+
+void PauseMenu::SetGame(GameSession *p_game)
+{
+	game = p_game;
+	UpdateButtonIconsWhenControllerIsChanged();
+	shardMenu->SetGame(p_game);
+	logMenu->SetGame(p_game);
+	kinMenu->SetGame(p_game);
+	optionsMenu->SetGame(p_game);
+	pauseMap->SetGame(p_game);
 }
 
 void PauseMenu::UpdatePauseOptions()
@@ -293,6 +301,9 @@ void PauseMenu::UpdatePauseOptions()
 
 PauseMenu::~PauseMenu()
 {
+	delete shardMenu;
+	delete logMenu;
+
 	delete pauseSelector;
 	
 	delete optionsMenu;

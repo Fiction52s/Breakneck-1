@@ -120,7 +120,7 @@ int Actor::UAIR_GetActionLength()
 	return 16;
 }
 
-Tileset * Actor::UAIR_GetTileset()
+const char * Actor::UAIR_GetTilesetName()
 {
-	return GetActionTileset("uair_96x96.png");
+	return "uair_96x96.png";
 }

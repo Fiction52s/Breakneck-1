@@ -126,7 +126,7 @@ int Actor::SPRINGSTUNBOUNCE_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::SPRINGSTUNBOUNCE_GetTileset()
+const char * Actor::SPRINGSTUNBOUNCE_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

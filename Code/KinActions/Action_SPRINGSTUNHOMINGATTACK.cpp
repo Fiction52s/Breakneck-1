@@ -114,7 +114,7 @@ int Actor::SPRINGSTUNHOMINGATTACK_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::SPRINGSTUNHOMINGATTACK_GetTileset()
+const char * Actor::SPRINGSTUNHOMINGATTACK_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

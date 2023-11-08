@@ -56,7 +56,7 @@ int Actor::SEQ_TURNFACE_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_TURNFACE_GetTileset()
+const char * Actor::SEQ_TURNFACE_GetTilesetName()
 {
-	return GetActionTileset("ship_jump_160x96.png");
+	return "ship_jump_160x96.png";
 }

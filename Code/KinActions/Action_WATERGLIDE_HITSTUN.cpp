@@ -92,7 +92,7 @@ int Actor::WATERGLIDE_HITSTUN_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::WATERGLIDE_HITSTUN_GetTileset()
+const char * Actor::WATERGLIDE_HITSTUN_GetTilesetName()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return "hurt_64x64.png";
 }

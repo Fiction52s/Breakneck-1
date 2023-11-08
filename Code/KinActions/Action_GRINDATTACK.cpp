@@ -440,7 +440,7 @@ int Actor::GRINDATTACK_GetActionLength()
 	return 20;
 }
 
-Tileset * Actor::GRINDATTACK_GetTileset()
+const char * Actor::GRINDATTACK_GetTilesetName()
 {
-	return GetActionTileset("grind_64x64.png");
+	return "grind_64x64.png";
 }

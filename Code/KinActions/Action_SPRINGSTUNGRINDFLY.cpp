@@ -94,7 +94,7 @@ int Actor::SPRINGSTUNGRINDFLY_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::SPRINGSTUNGRINDFLY_GetTileset()
+const char * Actor::SPRINGSTUNGRINDFLY_GetTilesetName()
 {
-	return GetActionTileset("launch_96x64.png");
+	return "launch_96x64.png";
 }

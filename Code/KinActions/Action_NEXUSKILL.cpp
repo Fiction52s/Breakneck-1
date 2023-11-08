@@ -79,7 +79,7 @@ int Actor::NEXUSKILL_GetActionLength()
 	return 63 * 2;
 }
 
-Tileset * Actor::NEXUSKILL_GetTileset()
+const char * Actor::NEXUSKILL_GetTilesetName()
 {
 	return NULL;
 }

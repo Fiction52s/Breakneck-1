@@ -64,7 +64,7 @@ int Actor::AIRPARRY_GetActionLength()
 	return 15;
 }
 
-Tileset * Actor::AIRPARRY_GetTileset()
+const char * Actor::AIRPARRY_GetTilesetName()
 {
-	return GetActionTileset("parry_64x64.png");
+	return "parry_64x64.png";
 }

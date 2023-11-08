@@ -188,7 +188,7 @@ int Actor::STEEPSLIDEATTACK_GetActionLength()
 	return 16;
 }
 
-Tileset * Actor::STEEPSLIDEATTACK_GetTileset()
+const char * Actor::STEEPSLIDEATTACK_GetTilesetName()
 {
-	return GetActionTileset("steep_att_128x64.png");
+	return "steep_att_128x64.png";
 }

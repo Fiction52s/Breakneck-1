@@ -94,7 +94,7 @@ int Actor::GROUNDHITSTUN_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::GROUNDHITSTUN_GetTileset()
+const char * Actor::GROUNDHITSTUN_GetTilesetName()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return "hurt_64x64.png";
 }

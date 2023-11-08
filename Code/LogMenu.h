@@ -19,6 +19,7 @@ struct SingleAxisSelector;
 struct ActorParams;
 struct TerrainPolygon;
 struct TerrainRail;
+struct GameSession;
 
 struct LogDetailedInfo
 {
@@ -60,7 +61,6 @@ struct LogPreview
 	LogDetailedInfo logInfo;
 	TilesetManager tMan;
 	SoundManager sMan;
-	Session *sess;
 	sf::Vector2f center;
 	sf::Vector2f terrainCenter;
 
@@ -91,10 +91,15 @@ struct LogPreview
 
 	//LT_MUSIC
 	MusicInfo *currLogMusic;
+	
+	TilesetManager *tm;
 
-	LogPreview();
+	Session *sess;
+
+	LogPreview( TilesetManager *tm);
 	~LogPreview();
 	void Clear();
+	void SetSession(Session *sess);
 	void PlayMusic();
 	void StopMusic();
 	void Update();
@@ -120,6 +125,7 @@ struct LogMenu
 		SM_LOG,
 	};
 
+	TilesetManager *tm;
 	LogPreview logPreview;
 	sf::Vector2f topLeft;
 	sf::Text worldText;
@@ -132,7 +138,7 @@ struct LogMenu
 	sf::Text currLogNameText;
 	LogDetailedInfo **logInfo;
 	Tileset *ts_logs;
-	Session *sess;
+	GameSession *game;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
 	SingleAxisSelector *worldSelector;
@@ -153,8 +159,9 @@ struct LogMenu
 	sf::Vector2f previewCenter;
 	int numWorlds;
 	
-	LogMenu(Session *sess);
+	LogMenu(TilesetManager *tm);
 	~LogMenu();
+	void SetGame(GameSession *game);
 	void Update(ControllerState &currInput,
 		ControllerState &prevInput);
 	void Draw(sf::RenderTarget *target);

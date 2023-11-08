@@ -185,7 +185,7 @@ int Actor::BOUNCEAIR_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::BOUNCEAIR_GetTileset()
+const char * Actor::BOUNCEAIR_GetTilesetName()
 {
-	return GetActionTileset("bounce_96x96.png");
+	return "bounce_96x96.png";
 }

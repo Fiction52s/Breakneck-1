@@ -137,7 +137,7 @@ int Actor::RUN_GetActionLength()
 	return 10 * 4;
 }
 
-Tileset * Actor::RUN_GetTileset()
+const char * Actor::RUN_GetTilesetName()
 {
-	return GetActionTileset("run_64x64.png");	
+	return "run_64x64.png";
 }

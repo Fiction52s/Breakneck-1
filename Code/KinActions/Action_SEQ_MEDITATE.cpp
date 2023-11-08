@@ -66,7 +66,7 @@ int Actor::SEQ_MEDITATE_GetActionLength()
 	return 1;
 }
 
-Tileset * Actor::SEQ_MEDITATE_GetTileset()
+const char * Actor::SEQ_MEDITATE_GetTilesetName()
 {
-	return SEQ_KNEEL_GetTileset();
+	return SEQ_KNEEL_GetTilesetName();
 }

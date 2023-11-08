@@ -363,6 +363,7 @@ struct EditSession : GUIHandler, Session
 	ErrorBar errorBar;
 	ErrorType mostRecentError;
 	GateInfo testGateInfo;
+	std::map<std::string, Tileset*> decorTSMap;
 	sf::Vector2i gatePoint0;
 	sf::Vector2i gatePoint1;
 	GateInfoPtr modifyGate;
@@ -423,7 +424,7 @@ struct EditSession : GUIHandler, Session
 
 	void TestNetplay();
 
-
+	bool ReadDecorImagesFile();
 
 
 	void PublishMap();
@@ -443,8 +444,7 @@ struct EditSession : GUIHandler, Session
 	void ProcessDecorFromFile(const std::string &name,
 		int tile);
 	void ProcessHeader();
-	void ProcessDecorSpr(const std::string &name,
-		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+	void ProcessDecorSpr(const std::string &name, int dTile, int dLayer, sf::Vector2f &centerPos,
 		float rotation, sf::Vector2f &scale);
 	void ProcessTerrain( PolyPtr poly );
 	void ProcessSpecialTerrain(PolyPtr poly);

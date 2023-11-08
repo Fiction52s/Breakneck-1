@@ -269,7 +269,7 @@ int Actor::DASH_GetActionLength()
 	return 45;
 }
 
-Tileset * Actor::DASH_GetTileset()
+const char * Actor::DASH_GetTilesetName()
 {
-	return GetActionTileset("dash_96x48.png");
+	return "dash_96x48.png";
 }

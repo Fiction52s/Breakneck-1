@@ -312,9 +312,6 @@ TilesetManager::TilesetCategory TilesetManager::GetCategory(const std::string &s
 	}
 }
 
-
-
-
 Tileset * TilesetManager::GetSizedTileset(const std::string & s)
 {
 	TilesetCategory cat = GetCategory(s);

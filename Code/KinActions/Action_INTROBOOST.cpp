@@ -64,7 +64,7 @@ int Actor::INTROBOOST_GetActionLength()
 	return 18 * 2;//22 * 2;
 }
 
-Tileset * Actor::INTROBOOST_GetTileset()
+const char * Actor::INTROBOOST_GetTilesetName()
 {
-	return INTRO_GetTileset();//EXITBOOST_GetTileset();
+	return INTRO_GetTilesetName();//EXITBOOST_GetTilesetName();
 }

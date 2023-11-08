@@ -72,7 +72,7 @@ int Actor::GROUNDTECHINPLACE_GetActionLength()
 	return 12 * 2;
 }
 
-Tileset * Actor::GROUNDTECHINPLACE_GetTileset()
+const char * Actor::GROUNDTECHINPLACE_GetTilesetName()
 {
-	return GetActionTileset("tech_stand_80x80.png");
+	return "tech_stand_80x80.png";
 }

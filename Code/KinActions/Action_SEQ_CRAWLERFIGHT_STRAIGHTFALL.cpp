@@ -45,7 +45,7 @@ int Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetActionLength()
 	return 2;
 }
 
-Tileset * Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTileset()
+const char * Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTilesetName()
 {
-	return GetActionTileset("jump_64x64.png");
+	return "jump_64x64.png";
 }

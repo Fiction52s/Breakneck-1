@@ -144,7 +144,7 @@ int Actor::SPRINGSTUNGLIDE_GetActionLength()
 	return 8;
 }
 
-Tileset * Actor::SPRINGSTUNGLIDE_GetTileset()
+const char * Actor::SPRINGSTUNGLIDE_GetTilesetName()
 {
-	return SPRINGSTUN_GetTileset();
+	return SPRINGSTUN_GetTilesetName();
 }

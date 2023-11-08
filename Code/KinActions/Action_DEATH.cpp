@@ -83,7 +83,7 @@ int Actor::DEATH_GetActionLength()
 	return 44 * 2;
 }
 
-Tileset * Actor::DEATH_GetTileset()
+const char * Actor::DEATH_GetTilesetName()
 {
-	return GetActionTileset("death_64x64.png");
+	return "death_64x64.png";
 }

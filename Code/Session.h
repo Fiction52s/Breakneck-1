@@ -375,7 +375,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	boost::filesystem::path filePath;
 	std::string filePathStr;
 	MapHeader *mapHeader;
-	std::map<std::string, Tileset*> decorTSMap;
+	
 	sf::RenderWindow *window;
 	sf::Vector2i playerOrigPos[MAX_PLAYERS];
 	ControllerState filteredPrevInput[MAX_PLAYERS];
@@ -492,8 +492,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void ProcessDecorFromFile(const std::string &name,
 		int tile) {}
 	virtual void ProcessHeader() {}
-	virtual void ProcessDecorSpr(const std::string &name,
-		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+	virtual void ProcessDecorSpr(const std::string &name, int dTile, int dLayer, sf::Vector2f &centerPos,
 		float rotation, sf::Vector2f &scale) {}
 	virtual void ProcessAllDecorSpr() {}
 	virtual void ProcessPlayerOptions() {}
@@ -716,7 +715,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawPlayerWires(sf::RenderTarget *target);
 	void UpdatePlayerWireQuads();
 	bool ReadFile();
-	bool ReadDecorImagesFile();
 	bool ReadDecorInfoFile(int tWorld, int tVar);
 	bool ReadHeader(std::ifstream &is);
 	bool ReadDecor(std::ifstream &is);
@@ -961,10 +959,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void UpdateRailStates();
 	void SetCurrentBoss(Boss *b);
 	void RemoveBoss( Boss *b );
-	void SetupShardMenu();
-	void CleanupShardMenu();
-	void SetupLogMenu();
-	void CleanupLogMenu();
+	
 	virtual bool HasLog(int logIndex) { return false; }
 	void SetKeyMarkerToCurrentZone();
 	void TransitionMusic(MusicInfo *mi,

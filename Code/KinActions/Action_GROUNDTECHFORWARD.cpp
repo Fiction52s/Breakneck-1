@@ -71,7 +71,7 @@ int Actor::GROUNDTECHFORWARD_GetActionLength()
 	return 12 * 3;
 }
 
-Tileset * Actor::GROUNDTECHFORWARD_GetTileset()
+const char * Actor::GROUNDTECHFORWARD_GetTilesetName()
 {
-	return GetActionTileset("tech_forward_80x80.png");
+	return "tech_forward_80x80.png";
 }

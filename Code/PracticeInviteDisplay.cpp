@@ -13,7 +13,7 @@ PracticePlayerDisp::PracticePlayerDisp(PracticeInviteDisplay *p_disp )
 {
 	disp = p_disp;
 
-	ts_kin = disp->sess->GetPlayer(0)->STAND_GetTileset();
+	ts_kin = disp->sess->GetPlayer(0)->GetActionTileset(disp->sess->GetPlayer(0)->STAND_GetTilesetName());
 
 	kinSprite.setTexture(*ts_kin->texture);
 	kinSprite.setTextureRect(ts_kin->GetSubRect(0));
