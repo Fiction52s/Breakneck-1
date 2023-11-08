@@ -610,11 +610,11 @@ MainMenu::MainMenu( bool p_steamOn)
 	deadThread = NULL;
 	loadThread = NULL;
 	
-	ts_mainOption = tilesetManager.GetSizedTileset("Menu/mainmenu_text_512x64.png");
-	ts_menuSelector = tilesetManager.GetSizedTileset("Menu/menu_selector_64x64.png");
+	ts_mainOption = GetSizedTileset("Menu/mainmenu_text_512x64.png");
+	ts_menuSelector = GetSizedTileset("Menu/menu_selector_64x64.png");
 
-	ts_buttonIcons = tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
-	ts_keyboardIcons = tilesetManager.GetSizedTileset("Menu/keyboard_icons_64x64.png");
+	ts_buttonIcons = GetSizedTileset("Menu/button_icon_128x128.png");
+	ts_keyboardIcons = GetSizedTileset("Menu/keyboard_icons_64x64.png");
 	ts_thanksForPlaying = NULL;
 
 	selectorSprite.setTexture(*ts_menuSelector->texture);
@@ -786,7 +786,7 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	matchResultsScreen = NULL;
 
-	loadingBackpack = new LoadingBackpack(&tilesetManager);
+	loadingBackpack = new LoadingBackpack( this );
 
 	CONTROLLERS.Update();
 }
@@ -820,7 +820,6 @@ void MainMenu::SetupWindow()
 		customCursor = new CustomCursor;
 	}
 	
-	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
 	customCursor->Init(window);
 
 	MOUSE.SetCustomCursor(customCursor);
@@ -1041,18 +1040,10 @@ MainMenu *MainMenu::GetInstance()
 
 void MainMenu::Init()
 {	
-	ts_buttonIcons = tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
+	ts_buttonIcons = GetSizedTileset("Menu/button_icon_128x128.png");
 
-	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
+	ts_splashScreen = GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
 	splashSprite.setTexture( *ts_splashScreen->texture );
-
-	/*ts_kinTitle[0] = tilesetManager.GetTileset( "Title/kin_title_1_1216x1080.png", 1216, 1080 );
-	ts_kinTitle[1] = tilesetManager.GetTileset( "Title/kin_title_2_1216x1080.png", 1216, 1080 );
-	ts_kinTitle[2] = tilesetManager.GetTileset( "Title/kin_title_3_1216x1080.png", 1216, 1080 );
-	ts_kinTitle[3] = tilesetManager.GetTileset( "Title/kin_title_4_1216x1080.png", 1216, 1080 );
-	ts_kinTitle[4] = tilesetManager.GetTileset( "Title/kin_title_5_1216x1080.png", 1216, 1080 );
-	ts_kinTitle[5] = tilesetManager.GetTileset( "Title/kin_title_6_1216x1080.png", 1216, 1080 );
-	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );*/
 
 	fader = new Fader;
 	swiper = new Swiper();
@@ -1231,13 +1222,13 @@ void MainMenu::SetMode(Mode m)
 
 	if (menuMode == THANKS_FOR_PLAYING)
 	{
-		ts_thanksForPlaying = tilesetManager.GetTileset("Story/Ship_04.png", 1920, 1080);
+		ts_thanksForPlaying = GetTileset("Story/Ship_04.png", 1920, 1080);
 		ts_thanksForPlaying->SetQuadSubRect(thanksQuad, 0);
 		SetRectTopLeft(thanksQuad, 1920, 1080, Vector2f(0, 0));
 	}
 	else if (oldMode == THANKS_FOR_PLAYING)
 	{
-		tilesetManager.DestroyTileset(ts_thanksForPlaying);
+		DestroyTileset(ts_thanksForPlaying);
 		ts_thanksForPlaying = NULL;
 	}
 }
@@ -1759,6 +1750,155 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 
 #include <sfeMovie/Movie.hpp>
 
+void MainMenu::CreatePlayerTilesets()
+{
+	string folderFX = "Kin/FX/";
+	playerTilesetMap[PTS_FX_FAIR_SWORD_LIGHTNING_0] = GetSizedTileset(folderFX, "fair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_FAIR_SWORD_LIGHTNING_1] = GetSizedTileset(folderFX, "fair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_FAIR_SWORD_LIGHTNING_2] = GetSizedTileset(folderFX, "fair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_DAIR_SWORD_LIGHTNING_0] = GetSizedTileset(folderFX, "dair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_DAIR_SWORD_LIGHTNING_1] = GetSizedTileset(folderFX, "dair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_DAIR_SWORD_LIGHTNING_2] = GetSizedTileset(folderFX, "dair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_UAIR_SWORD_LIGHTNING_0] = GetSizedTileset(folderFX, "uair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_UAIR_SWORD_LIGHTNING_1] = GetSizedTileset(folderFX, "uair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_UAIR_SWORD_LIGHTNING_2] = GetSizedTileset(folderFX, "uair_sword_lightning_256x256.png");
+	playerTilesetMap[PTS_FX_BOUNCE_BOOST] = GetSizedTileset(folderFX, "bounceboost_256x192.png");
+	playerTilesetMap[PTS_FX_HURT_SPACK] = GetSizedTileset(folderFX, "fx_hurt_spack_128x160.png");
+	playerTilesetMap[PTS_FX_DASH_START] = GetSizedTileset(folderFX, "fx_dash_start_160x160.png");
+	playerTilesetMap[PTS_FX_DASH_REPEAT] = GetSizedTileset(folderFX, "fx_dash_repeat_192x128.png");
+	playerTilesetMap[PTS_FX_LAND_0] = GetSizedTileset(folderFX, "fx_land_a_128x128.png");
+	playerTilesetMap[PTS_FX_LAND_1] = GetSizedTileset(folderFX, "fx_land_b_192x208.png");
+	playerTilesetMap[PTS_FX_LAND_2] = GetSizedTileset(folderFX, "fx_land_c_224x224.png");
+	playerTilesetMap[PTS_FX_RUN_START] = GetSizedTileset(folderFX, "fx_runstart_128x128.png");
+	playerTilesetMap[PTS_FX_SPRINT_0] = GetSizedTileset(folderFX, "fx_sprint_a_192x192.png");
+	playerTilesetMap[PTS_FX_SPRINT_1] = GetSizedTileset(folderFX, "fx_sprint_b_320x320.png");
+	playerTilesetMap[PTS_FX_SPRINT_2] = GetSizedTileset(folderFX, "fx_sprint_c_320x320.png");
+	playerTilesetMap[PTS_FX_RUN] = GetSizedTileset(folderFX, "fx_run_144x128.png");
+	playerTilesetMap[PTS_FX_JUMP_0] = GetSizedTileset(folderFX, "fx_jump_a_128x80.png");
+	playerTilesetMap[PTS_FX_JUMP_1] = GetSizedTileset(folderFX, "fx_jump_b_160x192.png");
+	playerTilesetMap[PTS_FX_JUMP_2] = GetSizedTileset(folderFX, "fx_jump_c_160x192.png");
+	playerTilesetMap[PTS_FX_WALLJUMP_0] = GetSizedTileset(folderFX, "fx_walljump_a_160x160.png");
+	playerTilesetMap[PTS_FX_WALLJUMP_1] = GetSizedTileset(folderFX, "fx_walljump_b_224x224.png");
+	playerTilesetMap[PTS_FX_WALLJUMP_2] = GetSizedTileset(folderFX, "fx_walljump_c_224x224.png");
+	playerTilesetMap[PTS_FX_DOUBLE] = GetSizedTileset(folderFX, "fx_double_256x128.png");
+	playerTilesetMap[PTS_FX_GRAV_REVERSE] = GetSizedTileset(folderFX, "fx_grav_reverse_128x128.png");
+	playerTilesetMap[PTS_FX_SPEED_LEVEL_CHARGE] = GetSizedTileset(folderFX, "fx_elec_128x128.png");
+	playerTilesetMap[PTS_FX_RIGHT_WIRE_BOOST] = GetSizedTileset(folderFX, "wire_boost_r_64x64.png");
+	playerTilesetMap[PTS_FX_LEFT_WIRE_BOOST] = GetSizedTileset(folderFX, "wire_boost_b_64x64.png");
+	playerTilesetMap[PTS_FX_DOUBLE_WIRE_BOOST] = GetSizedTileset(folderFX, "wire_boost_m_64x64.png");
+	playerTilesetMap[PTS_FX_AIRDASH_DIAGONAL] = GetSizedTileset(folderFX, "fx_airdash_diag_128x160.png");
+	playerTilesetMap[PTS_FX_AIRDASH_UP] = GetSizedTileset(folderFX, "fx_airdash_128x128.png");
+	playerTilesetMap[PTS_FX_AIRDASH_HOVER] = GetSizedTileset(folderFX, "fx_airdash_hold_96x80.png");
+	playerTilesetMap[PTS_FX_GATE_ENTER] = GetSizedTileset(folderFX, "fx_gate_enter_160x128.png");
+	playerTilesetMap[PTS_FX_SMALL_LIGHTNING] = GetSizedTileset(folderFX, "fx_elec_128x96.png");
+	playerTilesetMap[PTS_FX_GATE_BLACK] = GetSizedTileset(folderFX, "keydrain_160x160.png");
+	playerTilesetMap[PTS_FX_DASH_BOOST] = GetSizedTileset(folderFX, "fx_dash_boost_128x256.png");
+	playerTilesetMap[PTS_FX_SPRINT_STAR] = GetSizedTileset(folderFX, "fx_sprint_star_01_64x64.png");
+	playerTilesetMap[PTS_FX_LAUNCH_PARTICLE_0] = GetSizedTileset(folderFX, "launch_fx_192x128.png");
+	playerTilesetMap[PTS_FX_LAUNCH_PARTICLE_1] = GetSizedTileset(folderFX, "launch_fx_192x128.png");
+	playerTilesetMap[PTS_FX_ENTER] = GetSizedTileset(folderFX, "fx_enter_256x256.png");
+	playerTilesetMap[PTS_FX_EXITENERGY_0] = GetSizedTileset(folderFX, "exitenergy_0_512x512.png");
+	playerTilesetMap[PTS_FX_EXITENERGY_1] = GetSizedTileset(folderFX, "exitenergy_1_512x512.png");
+	playerTilesetMap[PTS_FX_EXITENERGY_2] = GetSizedTileset(folderFX, "exitenergy_2_512x512.png");
+
+	string folderSword = "Kin/Sword/";
+
+	playerTilesetMap[PTS_SWORD_FAIR_A] = GetSizedTileset(folderSword, "fair_sworda_256x256.png");
+	playerTilesetMap[PTS_SWORD_FAIR_B] = GetSizedTileset(folderSword, "fair_swordb_288x288.png");
+	playerTilesetMap[PTS_SWORD_FAIR_C] = GetSizedTileset(folderSword, "fair_swordc_384x384.png");
+
+	playerTilesetMap[PTS_SWORD_DAIR_A] = GetSizedTileset(folderSword, "dair_sworda_256x256.png");
+	playerTilesetMap[PTS_SWORD_DAIR_B] = GetSizedTileset(folderSword, "dair_swordb_288x288.png");
+	playerTilesetMap[PTS_SWORD_DAIR_C] = GetSizedTileset(folderSword, "dair_swordc_384x384.png");
+
+	playerTilesetMap[PTS_SWORD_UAIR_A] = GetSizedTileset(folderSword, "uair_sworda_256x256.png");
+	playerTilesetMap[PTS_SWORD_UAIR_B] = GetSizedTileset(folderSword, "uair_swordb_288x288.png");
+	playerTilesetMap[PTS_SWORD_UAIR_C] = GetSizedTileset(folderSword, "uair_swordc_320x320.png");
+
+	playerTilesetMap[PTS_SWORD_GRIND_LUNGE_A] = GetSizedTileset(folderSword, "grind_lunge_sworda_160x160.png");
+	playerTilesetMap[PTS_SWORD_GRIND_LUNGE_B] = GetSizedTileset(folderSword, "grind_lunge_swordb_192x192.png");
+	playerTilesetMap[PTS_SWORD_GRIND_LUNGE_C] = GetSizedTileset(folderSword, "grind_lunge_swordc_224x208.png");
+
+	playerTilesetMap[PTS_SWORD_WALL_A] = GetSizedTileset(folderSword, "wall_sworda_144x256.png");
+	playerTilesetMap[PTS_SWORD_WALL_B] = GetSizedTileset(folderSword, "wall_swordb_240x352.png");
+	playerTilesetMap[PTS_SWORD_WALL_C] = GetSizedTileset(folderSword, "wall_swordc_298x400.png");
+
+	playerTilesetMap[PTS_SWORD_STEEP_A] = GetSizedTileset(folderSword, "steep_att_sworda_480x176.png");
+	playerTilesetMap[PTS_SWORD_STEEP_B] = GetSizedTileset(folderSword, "steep_att_swordb_352x192.png");
+	playerTilesetMap[PTS_SWORD_STEEP_C] = GetSizedTileset(folderSword, "steep_att_swordc_560x256.png");
+
+	playerTilesetMap[PTS_SWORD_CLIMB_A] = GetSizedTileset(folderSword, "climb_att_sworda_352x128.png");
+	playerTilesetMap[PTS_SWORD_CLIMB_B] = GetSizedTileset(folderSword, "climb_att_swordb_416x320.png");
+	playerTilesetMap[PTS_SWORD_CLIMB_C] = GetSizedTileset(folderSword, "climb_att_swordc_496x208.png");
+
+	playerTilesetMap[PTS_SWORD_DIAGUP_A] = GetSizedTileset(folderSword, "airdash_u_sword_144x208.png");
+	playerTilesetMap[PTS_SWORD_DIAGUP_B] = GetSizedTileset(folderSword, "airdash_u_sword_b_224x240.png");
+	playerTilesetMap[PTS_SWORD_DIAGUP_C] = GetSizedTileset(folderSword, "airdash_u_sword_p_320x384.png");
+
+	playerTilesetMap[PTS_SWORD_DIAGDOWN_A] = GetSizedTileset(folderSword, "airdash_sword_128x208.png");
+	playerTilesetMap[PTS_SWORD_DIAGDOWN_B] = GetSizedTileset(folderSword, "airdash_sword_b_224x240.png");
+	playerTilesetMap[PTS_SWORD_DIAGDOWN_C] = GetSizedTileset(folderSword, "airdash_sword_p_320x384.png");
+
+	playerTilesetMap[PTS_SWORD_DASH_1_A] = GetSizedTileset(folderSword, "dash_att_01_sword_384x320.png");
+	playerTilesetMap[PTS_SWORD_DASH_1_B] = GetSizedTileset(folderSword, "dash_att_01_sword_b_480x480.png");
+	playerTilesetMap[PTS_SWORD_DASH_1_C] = GetSizedTileset(folderSword, "dash_att_01_sword_p_480x480.png");
+
+	playerTilesetMap[PTS_SWORD_DASH_2_A] = GetSizedTileset(folderSword, "dash_att_02_sword_384x384.png");
+	playerTilesetMap[PTS_SWORD_DASH_2_B] = GetSizedTileset(folderSword, "dash_att_02_sword_b_480x480.png");
+	playerTilesetMap[PTS_SWORD_DASH_2_C] = GetSizedTileset(folderSword, "dash_att_02_sword_p_480x480.png");
+
+	playerTilesetMap[PTS_SWORD_DASH_3_A] = GetSizedTileset(folderSword, "dash_att_03_sword_384x384.png");
+	playerTilesetMap[PTS_SWORD_DASH_3_B] = GetSizedTileset(folderSword, "dash_att_03_sword_b_480x480.png");
+	playerTilesetMap[PTS_SWORD_DASH_3_C] = GetSizedTileset(folderSword, "dash_att_03_sword_p_480x480.png");
+
+	playerTilesetMap[PTS_SWORD_STAND_1_A] = GetSizedTileset(folderSword, "stand_att_01_sword_384x384.png");
+	playerTilesetMap[PTS_SWORD_STAND_1_B] = GetSizedTileset(folderSword, "stand_att_01_sword_b_480x256.png");
+	playerTilesetMap[PTS_SWORD_STAND_1_C] = GetSizedTileset(folderSword, "stand_att_01_sword_p_480x320.png");
+
+	playerTilesetMap[PTS_SWORD_STAND_2_A] = GetSizedTileset(folderSword, "stand_att_02_sword_384x384.png");
+	playerTilesetMap[PTS_SWORD_STAND_2_B] = GetSizedTileset(folderSword, "stand_att_02_sword_b_480x320.png");
+	playerTilesetMap[PTS_SWORD_STAND_2_C] = GetSizedTileset(folderSword, "stand_att_02_sword_p_480x320.png");
+
+	playerTilesetMap[PTS_SWORD_STAND_3_A] = GetSizedTileset(folderSword, "stand_att_03_sword_384x384.png");
+	playerTilesetMap[PTS_SWORD_STAND_3_B] = GetSizedTileset(folderSword, "stand_att_03_sword_b_480x256.png");
+	playerTilesetMap[PTS_SWORD_STAND_3_C] = GetSizedTileset(folderSword, "stand_att_03_sword_p_480x256.png");
+
+	playerTilesetMap[PTS_SWORD_STAND_4_A] = GetSizedTileset(folderSword, "stand_att_04_sword_384x384.png");
+	playerTilesetMap[PTS_SWORD_STAND_4_B] = GetSizedTileset(folderSword, "stand_att_04_sword_b_480x400.png");
+	playerTilesetMap[PTS_SWORD_STAND_4_C] = GetSizedTileset(folderSword, "stand_att_04_sword_p_480x400.png");
+
+	string powerFolder = "Kin/Powers/";
+
+	playerTilesetMap[PTS_SCORP_RUN] = GetSizedTileset(powerFolder, "scorp_run_192x128.png");
+	playerTilesetMap[PTS_SCORP_SLIDE] = GetSizedTileset(powerFolder, "scorp_slide_160x96.png");
+	playerTilesetMap[PTS_SCORP_STEEP_SLIDE] = GetSizedTileset(powerFolder, "scorp_steep_slide_224x128.png");
+	playerTilesetMap[PTS_SCORP_START] = GetSizedTileset(powerFolder, "scorp_start_256x256.png");
+	playerTilesetMap[PTS_SCORP_STAND] = GetSizedTileset(powerFolder, "scorp_stand_192x128.png");
+	playerTilesetMap[PTS_SCORP_JUMP] = GetSizedTileset(powerFolder, "scorp_jump_192x144.png");
+	playerTilesetMap[PTS_SCORP_DASH] = GetSizedTileset(powerFolder, "scorp_dash_192x80.png");
+	playerTilesetMap[PTS_SCORP_SPRINT] = GetSizedTileset(powerFolder, "scorp_sprint_192x96.png");
+	playerTilesetMap[PTS_SCORP_CLIMB] = GetSizedTileset(powerFolder, "scorp_climb_256x128.png");
+
+	playerTilesetMap[PTS_SCORP_BOUNCE] = GetSizedTileset(powerFolder, "scorp_bounce_256x256.png");
+	playerTilesetMap[PTS_SCORP_BOUNCE_WALL] = GetSizedTileset(powerFolder, "scorp_bounce_wall_256x128.png");
+	playerTilesetMap[PTS_TIME_BUBBLE] = GetSizedTileset(powerFolder, "time_bubble_128x128.png");
+	playerTilesetMap[PTS_DODECA_SMALL] = GetSizedTileset(powerFolder, "dodecasmall_180x180.png");
+	playerTilesetMap[PTS_DODECA_BIG] = GetSizedTileset(powerFolder, "dodecabig_360x360.png");
+	playerTilesetMap[PTS_DODECA] = GetSizedTileset(powerFolder, "dodeca_64x64.png");
+
+	playerTilesetMap[PTS_TRIBLUE] = GetSizedTileset(powerFolder, "triblue_64x64.png");
+	playerTilesetMap[PTS_TRICYM] = GetSizedTileset(powerFolder, "tricym_128x128.png");
+	playerTilesetMap[PTS_TRIGREEN] = GetSizedTileset(powerFolder, "trigreen_64x64.png");
+	playerTilesetMap[PTS_TRIORAN] = GetSizedTileset(powerFolder, "trioran_128x128.png");
+	playerTilesetMap[PTS_TRIPURP] = GetSizedTileset(powerFolder, "tripurp_128x128.png");
+	playerTilesetMap[PTS_TRIRGB] = GetSizedTileset(powerFolder, "trirgb_128x128.png");
+
+	playerTilesetMap[PTS_GRIND_ATTACK] = GetSizedTileset(powerFolder, "grind_attack_192x192.png");
+	playerTilesetMap[PTS_BLOCK_SHELD] = GetSizedTileset(powerFolder, "block_shield_64x64.png");
+	playerTilesetMap[PTS_HOMING] = GetSizedTileset(folderFX, "homing_att_ball_256x256.png");
+	playerTilesetMap[PTS_ANTITIMESLOWRING] = GetSizedTileset(folderFX, "low_grav_ring_128x128.png");
+}
+
 void MainMenu::Slide()
 {
 	CubicBezier bez(0, 0, 1, 1);
@@ -1774,6 +1914,7 @@ void MainMenu::Slide()
 
 	slideCurrFrame++;
 }
+
 
 //#define USE_MOVIE_TEST
 void MainMenu::Run()
@@ -2004,11 +2145,11 @@ void MainMenu::SetModeAdventureLoadingMap( int wIndex )
 
 	if (ts_loadBG != NULL)
 	{
-		tilesetManager.DestroyTileset(ts_loadBG);
+		DestroyTileset(ts_loadBG);
 		ts_loadBG = NULL;
 	}
 
-	ts_loadBG = tilesetManager.GetTileset(ss.str(), 1920, 1080);
+	ts_loadBG = GetTileset(ss.str(), 1920, 1080);
 
 	loadingBackpack->SetScale(1.f);
 	loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
@@ -3952,6 +4093,11 @@ void MainMenu::RunEditor(Mode preMode, const std::string &p_editMapName)
 	preEditMode = preMode;
 	editMapName = p_editMapName;
 	LoadMode(RUN_EDITOR_MAP);
+}
+
+Tileset *MainMenu::GetPlayerTileset(PlayerTilesetOptions option)
+{
+	return playerTilesetMap[option];
 }
 
 void MainMenu::LoadMode(Mode m)

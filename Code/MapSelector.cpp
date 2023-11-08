@@ -18,10 +18,10 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	for (int i = 1; i <= 5; ++i)
 	{
-		ts_kinJump[i - 1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
+		ts_kinJump[i - 1] = mm->GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
 	}
 
-	ts_statIcons = mm->tilesetManager.GetSizedTileset("HUD/score_icons_128x96.png");
+	ts_statIcons = mm->GetSizedTileset("HUD/score_icons_128x96.png");
 
 	/*ts_statIcons->SetSpriteTexture(bestTimeIconSpr);
 	ts_statIcons->SetSpriteTexture(shardIconSpr);
@@ -31,7 +31,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	ts_statIcons->SetSubRect(shardIconSpr, 14);
 	ts_statIcons->SetSubRect(logIconSpr, 14);*/
 
-	ts_rock = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/level_rock_256x300.png");
+	ts_rock = mm->GetSizedTileset("Menu/LevelSelect/level_rock_256x300.png");
 
 
 	rockSprite.setTexture(*ts_rock->texture);

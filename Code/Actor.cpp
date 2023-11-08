@@ -999,102 +999,182 @@ void Actor::SetupFXTilesets()
 {
 	string folder = "Kin/FX/";
 
+	TilesetManager *tm = sess->mainMenu;
+	MainMenu *mm = sess->mainMenu;
+
 	effectPools.resize(PLAYERFX_Count);
 
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset( MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_BOUNCE_BOOST].Set(sess->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false );
-	effectPools[PLAYERFX_HURT_SPACK].Set(sess->GetSizedTileset(folder, "fx_hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_DASH_START].Set(sess->GetSizedTileset(folder, "fx_dash_start_160x160.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DASH_REPEAT].Set(sess->GetSizedTileset(folder, "fx_dash_repeat_192x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_BOUNCE_BOOST].Set(tm->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false);
+	effectPools[PLAYERFX_HURT_SPACK].Set(tm->GetSizedTileset(folder, "fx_hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_LAND_0].Set(sess->GetSizedTileset(folder, "fx_land_a_128x128.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LAND_1].Set(sess->GetSizedTileset(folder, "fx_land_b_192x208.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LAND_2].Set(sess->GetSizedTileset(folder, "fx_land_c_224x224.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DASH_START].Set(tm->GetSizedTileset(folder, "fx_dash_start_160x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DASH_REPEAT].Set(tm->GetSizedTileset(folder, "fx_dash_repeat_192x128.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_RUN_START].Set(sess->GetSizedTileset(folder, "fx_runstart_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_0].Set(tm->GetSizedTileset(folder, "fx_land_a_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_1].Set(tm->GetSizedTileset(folder, "fx_land_b_192x208.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_2].Set(tm->GetSizedTileset(folder, "fx_land_c_224x224.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_SPRINT_0].Set(sess->GetSizedTileset(folder, "fx_sprint_a_192x192.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_SPRINT_1].Set(sess->GetSizedTileset(folder, "fx_sprint_b_320x320.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_SPRINT_2].Set(sess->GetSizedTileset(folder, "fx_sprint_c_320x320.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RUN_START].Set(tm->GetSizedTileset(folder, "fx_runstart_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_RUN].Set(sess->GetSizedTileset(folder, "fx_run_144x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPRINT_0].Set(tm->GetSizedTileset(folder, "fx_sprint_a_192x192.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPRINT_1].Set(tm->GetSizedTileset(folder, "fx_sprint_b_320x320.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPRINT_2].Set(tm->GetSizedTileset(folder, "fx_sprint_c_320x320.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_JUMP_0].Set(sess->GetSizedTileset(folder, "fx_jump_a_128x80.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_JUMP_1].Set(sess->GetSizedTileset(folder, "fx_jump_b_160x192.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_JUMP_2].Set(sess->GetSizedTileset(folder, "fx_jump_c_160x192.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RUN].Set(tm->GetSizedTileset(folder, "fx_run_144x128.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_WALLJUMP_0].Set(sess->GetSizedTileset(folder, "fx_walljump_a_160x160.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_WALLJUMP_1].Set(sess->GetSizedTileset(folder, "fx_walljump_b_224x224.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_WALLJUMP_2].Set(sess->GetSizedTileset(folder, "fx_walljump_c_224x224.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_0].Set(tm->GetSizedTileset(folder, "fx_jump_a_128x80.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_1].Set(tm->GetSizedTileset(folder, "fx_jump_b_160x192.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_2].Set(tm->GetSizedTileset(folder, "fx_jump_c_160x192.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_DOUBLE].Set(sess->GetSizedTileset(folder, "fx_double_256x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_0].Set(tm->GetSizedTileset(folder, "fx_walljump_a_160x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_1].Set(tm->GetSizedTileset(folder, "fx_walljump_b_224x224.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_2].Set(tm->GetSizedTileset(folder, "fx_walljump_c_224x224.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_GRAV_REVERSE].Set(sess->GetSizedTileset(folder, "fx_grav_reverse_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DOUBLE].Set(tm->GetSizedTileset(folder, "fx_double_256x128.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_SPEED_LEVEL_CHARGE].Set(sess->GetSizedTileset(folder, "fx_elec_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_GRAV_REVERSE].Set(tm->GetSizedTileset(folder, "fx_grav_reverse_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_RIGHT_WIRE_BOOST].Set(sess->GetSizedTileset(folder, "wire_boost_r_64x64.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LEFT_WIRE_BOOST].Set(sess->GetSizedTileset(folder, "wire_boost_b_64x64.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DOUBLE_WIRE_BOOST].Set(sess->GetSizedTileset(folder, "wire_boost_m_64x64.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SPEED_LEVEL_CHARGE].Set(tm->GetSizedTileset(folder, "fx_elec_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_AIRDASH_DIAGONAL].Set(sess->GetSizedTileset(folder, "fx_airdash_diag_128x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RIGHT_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_r_64x64.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LEFT_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_b_64x64.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DOUBLE_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_m_64x64.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_AIRDASH_UP].Set(sess->GetSizedTileset(folder, "fx_airdash_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_AIRDASH_DIAGONAL].Set(tm->GetSizedTileset(folder, "fx_airdash_diag_128x160.png"), EffectType::FX_REGULAR, 20);
 
-	effectPools[PLAYERFX_AIRDASH_HOVER].Set(sess->GetSizedTileset(folder, "fx_airdash_hold_96x80.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_AIRDASH_UP].Set(tm->GetSizedTileset(folder, "fx_airdash_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	
+	effectPools[PLAYERFX_AIRDASH_HOVER].Set(tm->GetSizedTileset(folder, "fx_airdash_hold_96x80.png"), EffectType::FX_REGULAR, 20);
 
-	/*effectPools[PLAYERFX_DEATH_1A].Set(sess->GetSizedTileset(folder, "death_fx_1a_256x256.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DEATH_1B].Set(sess->GetSizedTileset(folder, "death_fx_1b_128x80.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DEATH_1C].Set(sess->GetSizedTileset(folder, "death_fx_1c_128x128.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DEATH_1D].Set(sess->GetSizedTileset(folder, "death_fx_1d_48x48.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DEATH_1E].Set(sess->GetSizedTileset(folder, "death_fx_1e_160x160.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_DEATH_1F].Set(sess->GetSizedTileset(folder, "death_fx_1f_160x160.png"), EffectType::FX_REGULAR, 20);*/
+	effectPools[PLAYERFX_GATE_ENTER].Set(tm->GetSizedTileset(folder, "fx_gate_enter_160x128.png"), EffectType::FX_REGULAR, 20);
 
-	//effectPools[PLAYERFX_GATE_ENTER].Set(sess->GetSizedTileset(folder, "gateenter_256x320.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_GATE_ENTER].Set(sess->GetSizedTileset(folder, "fx_gate_enter_160x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_SMALL_LIGHTNING].Set(tm->GetSizedTileset(folder, "fx_elec_128x96.png"), EffectType::FX_RELATIVE, 20);
 
-	effectPools[PLAYERFX_SMALL_LIGHTNING].Set(sess->GetSizedTileset(folder, "fx_elec_128x96.png"), EffectType::FX_RELATIVE, 20);
-
-	effectPools[PLAYERFX_GATE_BLACK].Set(sess->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2,
+	effectPools[PLAYERFX_GATE_BLACK].Set(tm->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2,
 		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
 	effectPools[PLAYERFX_KEY].Set(sess->ts_key, EffectType::FX_REGULAR, 32,
-		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false );
+		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 	keyExplodeUpdater = new KeyExplodeUpdater(this);
 	effectPools[PLAYERFX_KEY].pool->SetUpdater(keyExplodeUpdater);
 
-	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32,EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		true, false);
 
-	effectPools[PLAYERFX_DASH_BOOST].Set(sess->GetSizedTileset(folder, "fx_dash_boost_128x256.png"), EffectType::FX_REGULAR, 4);
+	effectPools[PLAYERFX_DASH_BOOST].Set(tm->GetSizedTileset(folder, "fx_dash_boost_128x256.png"), EffectType::FX_REGULAR, 4);
 
-	effectPools[PLAYERFX_SPRINT_STAR].Set(sess->GetSizedTileset(folder, "fx_sprint_star_01_64x64.png"), EffectType::FX_RELATIVE, 100);
+	effectPools[PLAYERFX_SPRINT_STAR].Set(tm->GetSizedTileset(folder, "fx_sprint_star_01_64x64.png"), EffectType::FX_RELATIVE, 100);
 
-	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100, 
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(tm->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100,
 		BETWEEN_PLAYER_AND_ENEMIES, false, false);
-	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100, 
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(tm->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100,
 		BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
-	effectPools[PLAYERFX_ENTER].Set(sess->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_ENTER].Set(tm->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
 
 	//hopefully no problem making only 1 of these
-	effectPools[PLAYERFX_EXITENERGY_0].Set(sess->GetSizedTileset(folder, "exitenergy_0_512x512.png"), EffectType::FX_IND, 1);
-	effectPools[PLAYERFX_EXITENERGY_1].Set(sess->GetSizedTileset(folder, "exitenergy_1_512x512.png"), EffectType::FX_IND, 1);
-	effectPools[PLAYERFX_EXITENERGY_2].Set(sess->GetSizedTileset(folder, "exitenergy_2_512x512.png"), EffectType::FX_IND, 1);
+	effectPools[PLAYERFX_EXITENERGY_0].Set(tm->GetSizedTileset(folder, "exitenergy_0_512x512.png"), EffectType::FX_IND, 1);
+	effectPools[PLAYERFX_EXITENERGY_1].Set(tm->GetSizedTileset(folder, "exitenergy_1_512x512.png"), EffectType::FX_IND, 1);
+	effectPools[PLAYERFX_EXITENERGY_2].Set(tm->GetSizedTileset(folder, "exitenergy_2_512x512.png"), EffectType::FX_IND, 1);
+
+
+	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+
+	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+
+	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+
+	//effectPools[PLAYERFX_BOUNCE_BOOST].Set(tm->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false );
+	//effectPools[PLAYERFX_HURT_SPACK].Set(tm->GetSizedTileset(folder, "fx_hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_DASH_START].Set(tm->GetSizedTileset(folder, "fx_dash_start_160x160.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_DASH_REPEAT].Set(tm->GetSizedTileset(folder, "fx_dash_repeat_192x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_LAND_0].Set(tm->GetSizedTileset(folder, "fx_land_a_128x128.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_LAND_1].Set(tm->GetSizedTileset(folder, "fx_land_b_192x208.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_LAND_2].Set(tm->GetSizedTileset(folder, "fx_land_c_224x224.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_RUN_START].Set(tm->GetSizedTileset(folder, "fx_runstart_128x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_SPRINT_0].Set(tm->GetSizedTileset(folder, "fx_sprint_a_192x192.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_SPRINT_1].Set(tm->GetSizedTileset(folder, "fx_sprint_b_320x320.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_SPRINT_2].Set(tm->GetSizedTileset(folder, "fx_sprint_c_320x320.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_RUN].Set(tm->GetSizedTileset(folder, "fx_run_144x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_JUMP_0].Set(tm->GetSizedTileset(folder, "fx_jump_a_128x80.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_JUMP_1].Set(tm->GetSizedTileset(folder, "fx_jump_b_160x192.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_JUMP_2].Set(tm->GetSizedTileset(folder, "fx_jump_c_160x192.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_WALLJUMP_0].Set(tm->GetSizedTileset(folder, "fx_walljump_a_160x160.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_WALLJUMP_1].Set(tm->GetSizedTileset(folder, "fx_walljump_b_224x224.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_WALLJUMP_2].Set(tm->GetSizedTileset(folder, "fx_walljump_c_224x224.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_DOUBLE].Set(tm->GetSizedTileset(folder, "fx_double_256x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_GRAV_REVERSE].Set(tm->GetSizedTileset(folder, "fx_grav_reverse_128x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_SPEED_LEVEL_CHARGE].Set(tm->GetSizedTileset(folder, "fx_elec_128x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_RIGHT_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_r_64x64.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_LEFT_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_b_64x64.png"), EffectType::FX_REGULAR, 20);
+	//effectPools[PLAYERFX_DOUBLE_WIRE_BOOST].Set(tm->GetSizedTileset(folder, "wire_boost_m_64x64.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_AIRDASH_DIAGONAL].Set(tm->GetSizedTileset(folder, "fx_airdash_diag_128x160.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_AIRDASH_UP].Set(tm->GetSizedTileset(folder, "fx_airdash_128x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_AIRDASH_HOVER].Set(tm->GetSizedTileset(folder, "fx_airdash_hold_96x80.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_GATE_ENTER].Set(tm->GetSizedTileset(folder, "fx_gate_enter_160x128.png"), EffectType::FX_REGULAR, 20);
+
+	//effectPools[PLAYERFX_SMALL_LIGHTNING].Set(tm->GetSizedTileset(folder, "fx_elec_128x96.png"), EffectType::FX_RELATIVE, 20);
+
+	//effectPools[PLAYERFX_GATE_BLACK].Set(tm->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2,
+	//	EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
+
+	//effectPools[PLAYERFX_KEY].Set(sess->ts_key, EffectType::FX_REGULAR, 32,
+	//	EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false );
+	//keyExplodeUpdater = new KeyExplodeUpdater(this);
+	//effectPools[PLAYERFX_KEY].pool->SetUpdater(keyExplodeUpdater);
+
+	//effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32,EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	//	true, false);
+
+	//effectPools[PLAYERFX_DASH_BOOST].Set(tm->GetSizedTileset(folder, "fx_dash_boost_128x256.png"), EffectType::FX_REGULAR, 4);
+
+	//effectPools[PLAYERFX_SPRINT_STAR].Set(tm->GetSizedTileset(folder, "fx_sprint_star_01_64x64.png"), EffectType::FX_RELATIVE, 100);
+
+	//effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(tm->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100,
+	//	BETWEEN_PLAYER_AND_ENEMIES, false, false);
+	//effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(tm->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100,
+	//	BETWEEN_PLAYER_AND_ENEMIES, false, false);
+
+	//effectPools[PLAYERFX_ENTER].Set(tm->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
+
+	////hopefully no problem making only 1 of these
+	//effectPools[PLAYERFX_EXITENERGY_0].Set(tm->GetSizedTileset(folder, "exitenergy_0_512x512.png"), EffectType::FX_IND, 1);
+	//effectPools[PLAYERFX_EXITENERGY_1].Set(tm->GetSizedTileset(folder, "exitenergy_1_512x512.png"), EffectType::FX_IND, 1);
+	//effectPools[PLAYERFX_EXITENERGY_2].Set(tm->GetSizedTileset(folder, "exitenergy_2_512x512.png"), EffectType::FX_IND, 1);
 
 	keyExplodeRingGroup = new MovingGeoGroup;
 	keyExplodeRingGroup->AddGeo(new MovingRing(32, 20, 300, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
@@ -1150,69 +1230,71 @@ void Actor::SetupSwordTilesets()
 {
 	string folder = "Sword/";
 
-	ts_fairSword[0] = sess->GetSizedTileset(folder, "fair_sworda_256x256.png");
-	ts_fairSword[1] = sess->GetSizedTileset(folder, "fair_swordb_288x288.png");
-	ts_fairSword[2] = sess->GetSizedTileset(folder, "fair_swordc_384x384.png");
+	TilesetManager *tm = sess->mainMenu;
 
-	ts_dairSword[0] = sess->GetSizedTileset(folder, "dair_sworda_256x256.png");
-	ts_dairSword[1] = sess->GetSizedTileset(folder, "dair_swordb_288x288.png");
-	ts_dairSword[2] = sess->GetSizedTileset(folder, "dair_swordc_384x384.png");
+	ts_fairSword[0] = tm->GetSizedTileset(folder, "fair_sworda_256x256.png");
+	ts_fairSword[1] = tm->GetSizedTileset(folder, "fair_swordb_288x288.png");
+	ts_fairSword[2] = tm->GetSizedTileset(folder, "fair_swordc_384x384.png");
 
-	ts_uairSword[0] = sess->GetSizedTileset(folder, "uair_sworda_256x256.png");
-	ts_uairSword[1] = sess->GetSizedTileset(folder, "uair_swordb_288x288.png");
-	ts_uairSword[2] = sess->GetSizedTileset(folder, "uair_swordc_320x320.png");
+	ts_dairSword[0] = tm->GetSizedTileset(folder, "dair_sworda_256x256.png");
+	ts_dairSword[1] = tm->GetSizedTileset(folder, "dair_swordb_288x288.png");
+	ts_dairSword[2] = tm->GetSizedTileset(folder, "dair_swordc_384x384.png");
 
-	ts_grindLungeSword[0] = sess->GetSizedTileset(folder, "grind_lunge_sworda_160x160.png");
-	ts_grindLungeSword[1] = sess->GetSizedTileset(folder, "grind_lunge_swordb_192x192.png");
-	ts_grindLungeSword[2] = sess->GetSizedTileset(folder, "grind_lunge_swordc_224x208.png");
+	ts_uairSword[0] = tm->GetSizedTileset(folder, "uair_sworda_256x256.png");
+	ts_uairSword[1] = tm->GetSizedTileset(folder, "uair_swordb_288x288.png");
+	ts_uairSword[2] = tm->GetSizedTileset(folder, "uair_swordc_320x320.png");
 
-	ts_wallAttackSword[0] = sess->GetSizedTileset(folder, "wall_sworda_144x256.png");
-	ts_wallAttackSword[1] = sess->GetSizedTileset(folder, "wall_swordb_240x352.png");
-	ts_wallAttackSword[2] = sess->GetSizedTileset(folder, "wall_swordc_298x400.png");
+	ts_grindLungeSword[0] = tm->GetSizedTileset(folder, "grind_lunge_sworda_160x160.png");
+	ts_grindLungeSword[1] = tm->GetSizedTileset(folder, "grind_lunge_swordb_192x192.png");
+	ts_grindLungeSword[2] = tm->GetSizedTileset(folder, "grind_lunge_swordc_224x208.png");
 
-	ts_steepSlideAttackSword[0] = sess->GetSizedTileset(folder, "steep_att_sworda_480x176.png");
-	ts_steepSlideAttackSword[1] = sess->GetSizedTileset(folder, "steep_att_swordb_352x192.png");
-	ts_steepSlideAttackSword[2] = sess->GetSizedTileset(folder, "steep_att_swordc_560x256.png");
+	ts_wallAttackSword[0] = tm->GetSizedTileset(folder, "wall_sworda_144x256.png");
+	ts_wallAttackSword[1] = tm->GetSizedTileset(folder, "wall_swordb_240x352.png");
+	ts_wallAttackSword[2] = tm->GetSizedTileset(folder, "wall_swordc_298x400.png");
 
-	ts_steepClimbAttackSword[0] = sess->GetSizedTileset(folder, "climb_att_sworda_352x128.png");
-	ts_steepClimbAttackSword[1] = sess->GetSizedTileset(folder, "climb_att_swordb_416x320.png");
-	ts_steepClimbAttackSword[2] = sess->GetSizedTileset(folder, "climb_att_swordc_496x208.png");
+	ts_steepSlideAttackSword[0] = tm->GetSizedTileset(folder, "steep_att_sworda_480x176.png");
+	ts_steepSlideAttackSword[1] = tm->GetSizedTileset(folder, "steep_att_swordb_352x192.png");
+	ts_steepSlideAttackSword[2] = tm->GetSizedTileset(folder, "steep_att_swordc_560x256.png");
 
-	ts_diagUpSword[0] = sess->GetSizedTileset(folder, "airdash_u_sword_144x208.png");
-	ts_diagUpSword[1] = sess->GetSizedTileset(folder, "airdash_u_sword_b_224x240.png");
-	ts_diagUpSword[2] = sess->GetSizedTileset(folder, "airdash_u_sword_p_320x384.png");
+	ts_steepClimbAttackSword[0] = tm->GetSizedTileset(folder, "climb_att_sworda_352x128.png");
+	ts_steepClimbAttackSword[1] = tm->GetSizedTileset(folder, "climb_att_swordb_416x320.png");
+	ts_steepClimbAttackSword[2] = tm->GetSizedTileset(folder, "climb_att_swordc_496x208.png");
 
-	ts_diagDownSword[0] = sess->GetSizedTileset(folder, "airdash_sword_128x208.png");
-	ts_diagDownSword[1] = sess->GetSizedTileset(folder, "airdash_sword_b_224x240.png");
-	ts_diagDownSword[2] = sess->GetSizedTileset(folder, "airdash_sword_p_320x384.png");
+	ts_diagUpSword[0] = tm->GetSizedTileset(folder, "airdash_u_sword_144x208.png");
+	ts_diagUpSword[1] = tm->GetSizedTileset(folder, "airdash_u_sword_b_224x240.png");
+	ts_diagUpSword[2] = tm->GetSizedTileset(folder, "airdash_u_sword_p_320x384.png");
 
-	ts_dashAttackSword[0] = sess->GetSizedTileset(folder, "dash_att_01_sword_384x320.png");
-	ts_dashAttackSword[1] = sess->GetSizedTileset(folder, "dash_att_01_sword_b_480x480.png");
-	ts_dashAttackSword[2] = sess->GetSizedTileset(folder, "dash_att_01_sword_p_480x480.png");
+	ts_diagDownSword[0] = tm->GetSizedTileset(folder, "airdash_sword_128x208.png");
+	ts_diagDownSword[1] = tm->GetSizedTileset(folder, "airdash_sword_b_224x240.png");
+	ts_diagDownSword[2] = tm->GetSizedTileset(folder, "airdash_sword_p_320x384.png");
 
-	ts_dashAttackSword2[0] = sess->GetSizedTileset(folder, "dash_att_02_sword_384x384.png");
-	ts_dashAttackSword2[1] = sess->GetSizedTileset(folder, "dash_att_02_sword_b_480x480.png");
-	ts_dashAttackSword2[2] = sess->GetSizedTileset(folder, "dash_att_02_sword_p_480x480.png");
+	ts_dashAttackSword[0] = tm->GetSizedTileset(folder, "dash_att_01_sword_384x320.png");
+	ts_dashAttackSword[1] = tm->GetSizedTileset(folder, "dash_att_01_sword_b_480x480.png");
+	ts_dashAttackSword[2] = tm->GetSizedTileset(folder, "dash_att_01_sword_p_480x480.png");
 
-	ts_dashAttackSword3[0] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png");
-	ts_dashAttackSword3[1] = sess->GetSizedTileset(folder, "dash_att_03_sword_b_480x480.png");
-	ts_dashAttackSword3[2] = sess->GetSizedTileset(folder, "dash_att_03_sword_p_480x480.png");
+	ts_dashAttackSword2[0] = tm->GetSizedTileset(folder, "dash_att_02_sword_384x384.png");
+	ts_dashAttackSword2[1] = tm->GetSizedTileset(folder, "dash_att_02_sword_b_480x480.png");
+	ts_dashAttackSword2[2] = tm->GetSizedTileset(folder, "dash_att_02_sword_p_480x480.png");
 
-	ts_standAttackSword[0] = sess->GetSizedTileset(folder, "stand_att_01_sword_384x384.png");
-	ts_standAttackSword[1] = sess->GetSizedTileset(folder, "stand_att_01_sword_b_480x256.png");
-	ts_standAttackSword[2] = sess->GetSizedTileset(folder, "stand_att_01_sword_p_480x320.png");
+	ts_dashAttackSword3[0] = tm->GetSizedTileset(folder, "dash_att_03_sword_384x384.png");
+	ts_dashAttackSword3[1] = tm->GetSizedTileset(folder, "dash_att_03_sword_b_480x480.png");
+	ts_dashAttackSword3[2] = tm->GetSizedTileset(folder, "dash_att_03_sword_p_480x480.png");
 
-	ts_standAttackSword2[0] = sess->GetSizedTileset(folder, "stand_att_02_sword_384x384.png");
-	ts_standAttackSword2[1] = sess->GetSizedTileset(folder, "stand_att_02_sword_b_480x320.png");
-	ts_standAttackSword2[2] = sess->GetSizedTileset(folder, "stand_att_02_sword_p_480x320.png");
+	ts_standAttackSword[0] = tm->GetSizedTileset(folder, "stand_att_01_sword_384x384.png");
+	ts_standAttackSword[1] = tm->GetSizedTileset(folder, "stand_att_01_sword_b_480x256.png");
+	ts_standAttackSword[2] = tm->GetSizedTileset(folder, "stand_att_01_sword_p_480x320.png");
 
-	ts_standAttackSword3[0] = sess->GetSizedTileset(folder, "stand_att_03_sword_384x384.png");
-	ts_standAttackSword3[1] = sess->GetSizedTileset(folder, "stand_att_03_sword_b_480x256.png");
-	ts_standAttackSword3[2] = sess->GetSizedTileset(folder, "stand_att_03_sword_p_480x256.png");
+	ts_standAttackSword2[0] = tm->GetSizedTileset(folder, "stand_att_02_sword_384x384.png");
+	ts_standAttackSword2[1] = tm->GetSizedTileset(folder, "stand_att_02_sword_b_480x320.png");
+	ts_standAttackSword2[2] = tm->GetSizedTileset(folder, "stand_att_02_sword_p_480x320.png");
 
-	ts_standAttackSword4[0] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png");
-	ts_standAttackSword4[1] = sess->GetSizedTileset(folder, "stand_att_04_sword_b_480x400.png");
-	ts_standAttackSword4[2] = sess->GetSizedTileset(folder, "stand_att_04_sword_p_480x400.png");
+	ts_standAttackSword3[0] = tm->GetSizedTileset(folder, "stand_att_03_sword_384x384.png");
+	ts_standAttackSword3[1] = tm->GetSizedTileset(folder, "stand_att_03_sword_b_480x256.png");
+	ts_standAttackSword3[2] = tm->GetSizedTileset(folder, "stand_att_03_sword_p_480x256.png");
+
+	ts_standAttackSword4[0] = tm->GetSizedTileset(folder, "stand_att_04_sword_384x384.png");
+	ts_standAttackSword4[1] = tm->GetSizedTileset(folder, "stand_att_04_sword_b_480x400.png");
+	ts_standAttackSword4[2] = tm->GetSizedTileset(folder, "stand_att_04_sword_p_480x400.png");
 }
 
 void Actor::SetupExtraTilesets()
@@ -1221,45 +1303,68 @@ void Actor::SetupExtraTilesets()
 
 	string powerFolder = folder + "Powers/";
 
-	ts_scorpRun = sess->GetSizedTileset(powerFolder, "scorp_run_192x128.png");
-	ts_scorpSlide = sess->GetSizedTileset(powerFolder, "scorp_slide_160x96.png");
-	ts_scorpSteepSlide = sess->GetSizedTileset(powerFolder, "scorp_steep_slide_224x128.png");
-	ts_scorpStart = sess->GetSizedTileset(powerFolder, "scorp_start_256x256.png");
-	ts_scorpStand = sess->GetSizedTileset(powerFolder, "scorp_stand_192x128.png");
-	ts_scorpJump = sess->GetSizedTileset(powerFolder, "scorp_jump_192x144.png");
-	ts_scorpDash = sess->GetSizedTileset(powerFolder, "scorp_dash_192x80.png");
-	ts_scorpSprint = sess->GetSizedTileset(powerFolder, "scorp_sprint_192x96.png");
-	ts_scorpClimb = sess->GetSizedTileset(powerFolder, "scorp_climb_256x128.png");
-	ts_scorpBounce = sess->GetSizedTileset(powerFolder, "scorp_bounce_256x256.png");
-	ts_scorpBounceWall = sess->GetSizedTileset(powerFolder, "scorp_bounce_wall_256x128.png");
-	
-	ts_bubble = sess->GetSizedTileset(powerFolder, "time_bubble_128x128.png");
-	ts_dodecaSmall = sess->GetSizedTileset(powerFolder, "dodecasmall_180x180.png");
-	ts_dodecaBig = sess->GetSizedTileset(powerFolder, "dodecabig_360x360.png");
-	tsgsdodeca = sess->GetSizedTileset(powerFolder, "dodeca_64x64.png");
-	tsgstriblue = sess->GetSizedTileset(powerFolder, "triblue_64x64.png");
-	tsgstricym = sess->GetSizedTileset(powerFolder, "tricym_128x128.png");
-	tsgstrigreen = sess->GetSizedTileset(powerFolder, "trigreen_64x64.png");
-	tsgstrioran = sess->GetSizedTileset(powerFolder, "trioran_128x128.png");
-	tsgstripurp = sess->GetSizedTileset(powerFolder, "tripurp_128x128.png");
-	tsgstrirgb = sess->GetSizedTileset(powerFolder, "trirgb_128x128.png");
+	TilesetManager *tm = sess->mainMenu;
 
-	ts_grindAttackFX = sess->GetSizedTileset(powerFolder, "grind_attack_192x192.png");
+	ts_scorpRun = tm->GetSizedTileset(powerFolder, "scorp_run_192x128.png");
+	ts_scorpSlide = tm->GetSizedTileset(powerFolder, "scorp_slide_160x96.png");
+	ts_scorpSteepSlide = tm->GetSizedTileset(powerFolder, "scorp_steep_slide_224x128.png");
+	ts_scorpStart = tm->GetSizedTileset(powerFolder, "scorp_start_256x256.png");
+	ts_scorpStand = tm->GetSizedTileset(powerFolder, "scorp_stand_192x128.png");
+	ts_scorpJump = tm->GetSizedTileset(powerFolder, "scorp_jump_192x144.png");
+	ts_scorpDash = tm->GetSizedTileset(powerFolder, "scorp_dash_192x80.png");
+	ts_scorpSprint = tm->GetSizedTileset(powerFolder, "scorp_sprint_192x96.png");
+	ts_scorpClimb = tm->GetSizedTileset(powerFolder, "scorp_climb_256x128.png");
+	ts_scorpBounce = tm->GetSizedTileset(powerFolder, "scorp_bounce_256x256.png");
+	ts_scorpBounceWall = tm->GetSizedTileset(powerFolder, "scorp_bounce_wall_256x128.png");
+	
+	ts_bubble = tm->GetSizedTileset(powerFolder, "time_bubble_128x128.png");
+	ts_dodecaSmall = tm->GetSizedTileset(powerFolder, "dodecasmall_180x180.png");
+	ts_dodecaBig = tm->GetSizedTileset(powerFolder, "dodecabig_360x360.png");
+	tsgsdodeca = tm->GetSizedTileset(powerFolder, "dodeca_64x64.png");
+	tsgstriblue = tm->GetSizedTileset(powerFolder, "triblue_64x64.png");
+	tsgstricym = tm->GetSizedTileset(powerFolder, "tricym_128x128.png");
+	tsgstrigreen = tm->GetSizedTileset(powerFolder, "trigreen_64x64.png");
+	tsgstrioran = tm->GetSizedTileset(powerFolder, "trioran_128x128.png");
+	tsgstripurp = tm->GetSizedTileset(powerFolder, "tripurp_128x128.png");
+	tsgstrirgb = tm->GetSizedTileset(powerFolder, "trirgb_128x128.png");
+
+	ts_grindAttackFX = tm->GetSizedTileset(powerFolder, "grind_attack_192x192.png");
 
 	ts_grindAttackFX->SetSpriteTexture(grindAttackSprite);
 
-	ts_blockShield = sess->GetSizedTileset(powerFolder, "block_shield_64x64.png");
+	ts_blockShield = tm->GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	ts_blockShield->SetSpriteTexture(shieldSprite);
 
-	ts_homingAttackBall = sess->GetSizedTileset("Kin/FX/homing_att_ball_256x256.png");
+	ts_homingAttackBall = tm->GetSizedTileset("Kin/FX/homing_att_ball_256x256.png");
 	ts_homingAttackBall->SetSpriteTexture(homingAttackBallSprite);
 
-	ts_antiTimeSlowRing = sess->GetSizedTileset("Kin/FX/low_grav_ring_128x128.png");
+	ts_antiTimeSlowRing = tm->GetSizedTileset("Kin/FX/low_grav_ring_128x128.png");
 
 	if (owner != NULL)
 	{
-		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
+		ts_exitAura = owner->mainMenu->GetSizedTileset("Kin/FX/exitaura_256x256.png");
 		exitAuraSprite.setTexture(*ts_exitAura->texture);
+	}
+}
+
+void Actor::SetupActionTilesets()
+{
+	for (int i = 0; i < Count; ++i)
+	{
+		tileset[i] = NULL;
+	}
+
+	Tileset *temp;
+	for (int i = 0; i < Count; ++i)
+	{
+		if (getTilesetFuncs[i] != NULL)
+		{
+			temp = (this->*getTilesetFuncs[i])();
+			if (temp != NULL)
+			{
+				tileset[i] = temp;
+			}
+		}
 	}
 }
 
@@ -1324,26 +1429,6 @@ void Actor::ActionTimeDepFrameInc()
 	}
 }
 
-void Actor::SetupActionTilesets()
-{
-	for (int i = 0; i < Count; ++i)
-	{
-		tileset[i] = NULL;
-	}
-
-	Tileset *temp;
-	for (int i = 0; i < Count; ++i)
-	{
-		if (getTilesetFuncs[i] != NULL)
-		{
-			temp = (this->*getTilesetFuncs[i])();
-			if (temp != NULL)
-			{
-				tileset[i] = temp;
-			}
-		}
-	}
-}
 
 void Actor::SetupTilesets()
 {
@@ -1399,7 +1484,8 @@ void Actor::SetupFuncsForAction(
 
 Tileset *Actor::GetActionTileset(const std::string &fn)
 {
-	return sess->GetSizedTileset(actionFolder, fn);
+	TilesetManager *tm = sess->mainMenu;
+	return tm->GetSizedTileset(actionFolder, fn);
 }
 
 void Actor::SetupActionFunctions()

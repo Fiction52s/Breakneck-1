@@ -125,7 +125,7 @@ struct EditorMenuScreen;
 struct CustomCursor;
 struct MatchParams;
 
-struct MainMenu
+struct MainMenu : TilesetManager
 {
 	//int [ControllerTypes::Count]
 
@@ -214,6 +214,130 @@ struct MainMenu
 		GRT_QUICKPLAY,
 	};
 
+	enum PlayerTilesetOptions
+	{
+		PTS_FX_FAIR_SWORD_LIGHTNING_0,
+		PTS_FX_FAIR_SWORD_LIGHTNING_1,
+		PTS_FX_FAIR_SWORD_LIGHTNING_2,
+		PTS_FX_DAIR_SWORD_LIGHTNING_0,
+		PTS_FX_DAIR_SWORD_LIGHTNING_1,
+		PTS_FX_DAIR_SWORD_LIGHTNING_2,
+		PTS_FX_UAIR_SWORD_LIGHTNING_0,
+		PTS_FX_UAIR_SWORD_LIGHTNING_1,
+		PTS_FX_UAIR_SWORD_LIGHTNING_2,
+		PTS_FX_BOUNCE_BOOST,
+		PTS_FX_HURT_SPACK,
+		PTS_FX_DASH_START,
+		PTS_FX_DASH_REPEAT,
+		PTS_FX_LAND_0,
+		PTS_FX_LAND_1,
+		PTS_FX_LAND_2,
+		PTS_FX_RUN_START,
+		PTS_FX_SPRINT_0,
+		PTS_FX_SPRINT_1,
+		PTS_FX_SPRINT_2,
+		PTS_FX_RUN,
+		PTS_FX_JUMP_0,
+		PTS_FX_JUMP_1,
+		PTS_FX_JUMP_2,
+		PTS_FX_WALLJUMP_0,
+		PTS_FX_WALLJUMP_1,
+		PTS_FX_WALLJUMP_2,
+		PTS_FX_DOUBLE,
+		PTS_FX_GRAV_REVERSE,
+		PTS_FX_SPEED_LEVEL_CHARGE,
+		PTS_FX_RIGHT_WIRE_BOOST,
+		PTS_FX_LEFT_WIRE_BOOST,
+		PTS_FX_DOUBLE_WIRE_BOOST,
+		PTS_FX_AIRDASH_DIAGONAL,
+		PTS_FX_AIRDASH_UP,
+		PTS_FX_AIRDASH_HOVER,
+		PTS_FX_GATE_ENTER,
+		PTS_FX_SMALL_LIGHTNING,
+		PTS_FX_GATE_BLACK,
+		PTS_FX_DASH_BOOST,
+		PTS_FX_SPRINT_STAR,
+		PTS_FX_LAUNCH_PARTICLE_0,
+		PTS_FX_LAUNCH_PARTICLE_1,
+		PTS_FX_ENTER,
+		PTS_FX_EXITENERGY_0,
+		PTS_FX_EXITENERGY_1,
+		PTS_FX_EXITENERGY_2,
+		PTS_SWORD_FAIR_A,
+		PTS_SWORD_FAIR_B,
+		PTS_SWORD_FAIR_C,
+		PTS_SWORD_DAIR_A,
+		PTS_SWORD_DAIR_B,
+		PTS_SWORD_DAIR_C,
+		PTS_SWORD_UAIR_A,
+		PTS_SWORD_UAIR_B,
+		PTS_SWORD_UAIR_C,
+		PTS_SWORD_GRIND_LUNGE_A,
+		PTS_SWORD_GRIND_LUNGE_B,
+		PTS_SWORD_GRIND_LUNGE_C,
+		PTS_SWORD_WALL_A,
+		PTS_SWORD_WALL_B,
+		PTS_SWORD_WALL_C,
+		PTS_SWORD_STEEP_A,
+		PTS_SWORD_STEEP_B,
+		PTS_SWORD_STEEP_C,
+		PTS_SWORD_CLIMB_A,
+		PTS_SWORD_CLIMB_B,
+		PTS_SWORD_CLIMB_C,
+		PTS_SWORD_DIAGUP_A,
+		PTS_SWORD_DIAGUP_B,
+		PTS_SWORD_DIAGUP_C,
+		PTS_SWORD_DIAGDOWN_A,
+		PTS_SWORD_DIAGDOWN_B,
+		PTS_SWORD_DIAGDOWN_C,
+		PTS_SWORD_DASH_1_A,
+		PTS_SWORD_DASH_1_B,
+		PTS_SWORD_DASH_1_C,
+		PTS_SWORD_DASH_2_A,
+		PTS_SWORD_DASH_2_B,
+		PTS_SWORD_DASH_2_C,
+		PTS_SWORD_DASH_3_A,
+		PTS_SWORD_DASH_3_B,
+		PTS_SWORD_DASH_3_C,
+		PTS_SWORD_STAND_1_A,
+		PTS_SWORD_STAND_1_B,
+		PTS_SWORD_STAND_1_C,
+		PTS_SWORD_STAND_2_A,
+		PTS_SWORD_STAND_2_B,
+		PTS_SWORD_STAND_2_C,
+		PTS_SWORD_STAND_3_A,
+		PTS_SWORD_STAND_3_B,
+		PTS_SWORD_STAND_3_C,
+		PTS_SWORD_STAND_4_A,
+		PTS_SWORD_STAND_4_B,
+		PTS_SWORD_STAND_4_C,
+		PTS_SCORP_RUN,
+		PTS_SCORP_SLIDE,
+		PTS_SCORP_STEEP_SLIDE,
+		PTS_SCORP_START,
+		PTS_SCORP_STAND,
+		PTS_SCORP_JUMP,
+		PTS_SCORP_DASH,
+		PTS_SCORP_SPRINT,
+		PTS_SCORP_CLIMB,
+		PTS_SCORP_BOUNCE,
+		PTS_SCORP_BOUNCE_WALL,
+		PTS_TIME_BUBBLE,
+		PTS_DODECA_SMALL,
+		PTS_DODECA_BIG,
+		PTS_DODECA,
+		PTS_TRIBLUE,
+		PTS_TRICYM,
+		PTS_TRIGREEN,
+		PTS_TRIORAN,
+		PTS_TRIPURP,
+		PTS_TRIRGB,
+		PTS_GRIND_ATTACK,
+		PTS_BLOCK_SHELD,
+		PTS_HOMING,
+		PTS_ANTITIMESLOWRING,
+	};
+
 	bool steamOn;
 	RemoteStorageManager *remoteStorageManager;
 	//testing
@@ -227,6 +351,8 @@ struct MainMenu
 	ClosedBetaScreen *closedBetaScreen;
 	SinglePlayerControllerJoinScreen *singlePlayerControllerJoinScreen;
 
+	std::map<PlayerTilesetOptions, Tileset*> playerTilesetMap;
+
 	MatchParams *menuMatchParams;
 
 	std::string editMapName;
@@ -236,6 +362,7 @@ struct MainMenu
 	Mode modeLoadingFrom;
 	Mode modeToLoad;
 	void LoadMode(Mode m);
+	Tileset *GetPlayerTileset(PlayerTilesetOptions option);
 	void RunEditor(Mode preMode, const std::string &editMapName);
 	void StartLoadModeScreen();
 	static void sLevelLoad(MainMenu *mm, GameSession *gs);
@@ -319,6 +446,7 @@ struct MainMenu
 	void GGPOOption();
 	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
+	void CreatePlayerTilesets();
 
 	sf::IntRect GetKeyboardKeyIconTile(sf::Keyboard::Key key);
 	sf::IntRect GetButtonIconTile(ControllerSettings::ButtonType button, ControlProfile *profile);
@@ -342,7 +470,6 @@ struct MainMenu
 	//GameController controller2;
 	SoundManager soundManager;
 	SoundNodeList * soundNodeList;
-	TilesetManager tilesetManager;
 	
 	bool quit;
 	bool doneLoading;
