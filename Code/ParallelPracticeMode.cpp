@@ -36,7 +36,7 @@ void ParallelPracticeMode::StartGame()
 
 HUD *ParallelPracticeMode::CreateHUD()
 {
-	return new AdventureHUD;
+	return new AdventureHUD( sess );
 }
 
 bool ParallelPracticeMode::CheckVictoryConditions()

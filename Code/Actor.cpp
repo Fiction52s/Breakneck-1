@@ -1336,10 +1336,18 @@ void Actor::SetupExtraTilesets()
 	ts_blockShield = tm->GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	ts_blockShield->SetSpriteTexture(shieldSprite);
 
+	ts_swordProjectile = tm->GetSizedTileset("Enemies/comboers_128x128.png");
+
 	ts_homingAttackBall = tm->GetSizedTileset("Kin/FX/homing_att_ball_256x256.png");
 	ts_homingAttackBall->SetSpriteTexture(homingAttackBallSprite);
 
 	ts_antiTimeSlowRing = tm->GetSizedTileset("Kin/FX/low_grav_ring_128x128.png");
+
+	ts_fx_boosterParticles = tm->GetSizedTileset("Kin/FX/booster_particles_32x32.png");
+
+	ts_wire = tm->GetSizedTileset(powerFolder,"wires_16x16.png");
+	ts_wireNode = tm->GetSizedTileset(powerFolder, "wire_node_16x16.png");
+	ts_wireTip = tm->GetSizedTileset(powerFolder, "wire_tips_16x16.png");
 
 	if (owner != NULL)
 	{
@@ -1350,6 +1358,7 @@ void Actor::SetupExtraTilesets()
 
 void Actor::SetupActionTilesets()
 {
+	//memset(tileset, 0, sizeof(tileset));
 	for (int i = 0; i < Count; ++i)
 	{
 		tileset[i] = NULL;
@@ -3297,6 +3306,20 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
 
+	SetSession(Session::GetSession(), gs, es);
+
+	/*if (sess->hud->hType == HUD::ADVENTURE)
+	{
+		kinMask = NULL;
+		AdventureHUD *ah = sess->GetAdventureHUD();
+		if (ah != NULL)
+		{
+			kinMask = ah->kinMask;
+		}
+	}*/
+
+	kinMask = NULL;
+
 	nameTag = new NameTag;
 
 	pState = new PState;
@@ -3325,6 +3348,10 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	
 	action = -1;
 
+	actionFolder = "Kin/";
+	SetupActionFunctions();
+	SetupTilesets();
+
 	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_164x30.png");
 	fxPaletteShader->SetPaletteIndex(0);
 
@@ -3336,7 +3363,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
 	{
-		swordProjectiles[i] = new SwordProjectile;
+		swordProjectiles[i] = new SwordProjectile(this);
 	}
 
 	LoadHitboxes();
@@ -3347,9 +3374,9 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	superActiveLimit = 180;
 	attackLevelCounterLimit = 60;
 
-	SetupActionFunctions();
+	
 
-	SetSession(Session::GetSession(), gs, es);
+	
 
 	rpu = new RisingParticleUpdater( this );
 
@@ -3369,15 +3396,15 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	}
 
 	gravityIncreaserTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_INCREASER);
-	gravityIncreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/booster_particles_32x32.png"));//"Env/leaves_128x128.png"));
+	gravityIncreaserTrailEmitter->SetTileset(ts_fx_boosterParticles);
 	gravityIncreaserTrailEmitter->CreateParticles();
 
 	gravityDecreaserTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_GRAVITY_DECREASER);
-	gravityDecreaserTrailEmitter->SetTileset(sess->GetSizedTileset("FX/booster_particles_32x32.png"));//"Env/leaves_128x128.png"));
+	gravityDecreaserTrailEmitter->SetTileset(ts_fx_boosterParticles);
 	gravityDecreaserTrailEmitter->CreateParticles();
 
 	momentumBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_MOMENTUM);
-	momentumBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	momentumBoosterTrailEmitter->SetTileset(ts_fx_boosterParticles);
 	momentumBoosterTrailEmitter->CreateParticles();
 
 	//timeSlowBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, PlayerBoosterEffectEmitter::BOOSTER_TIMESLOW);
@@ -3385,35 +3412,35 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	//timeSlowBoosterTrailEmitter->CreateParticles();
 
 	homingBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_HOMING);
-	homingBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	homingBoosterTrailEmitter->SetTileset(ts_fx_boosterParticles);
 	homingBoosterTrailEmitter->CreateParticles();
 
 	antiTimeSlowBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_ANTITIMESLOW);
-	antiTimeSlowBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	antiTimeSlowBoosterTrailEmitter->SetTileset(ts_fx_boosterParticles);
 	antiTimeSlowBoosterTrailEmitter->CreateParticles();
 
 	freeFlightBoosterTrailEmitter = new PlayerBoosterEffectEmitter(this, ShapeEmitter::PARTICLE_BOOSTER_FREEFLIGHT);
-	freeFlightBoosterTrailEmitter->SetTileset(sess->GetSizedTileset("FX/homingparticle_32x32.png"));//"Env/leaves_128x128.png"));
+	freeFlightBoosterTrailEmitter->SetTileset(ts_fx_boosterParticles);
 	freeFlightBoosterTrailEmitter->CreateParticles();
 
 	motionGhostBuffer = new VertexBuf(80, sf::Quads);
 	motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
 	motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
 
-	kinMask = new KinMask(this);
+	//kinMask = new KinMask(this);
 		
 
 	//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
 	//risingAuraPool->ts = GetTileset("Kin/FX/rising_8x8.png", 8, 8);
 
 	maxMotionGhosts = 80;
-	memset(tileset, 0, sizeof(tileset));
 	
-	actionFolder = "Kin/";
+	
+	
 		
 	team = (Team)actorIndex; //debug
 	
-	SetupTilesets();
+	//SetupTilesets();
 
 	SetupFX();
 
@@ -4139,8 +4166,8 @@ Actor::~Actor()
 
 	delete rpu;
 
-	if( kinMask != NULL)
-		delete kinMask;
+	/*if( kinMask != NULL)
+		delete kinMask;*/
 
 
 	//delete risingAuraPool;
@@ -22412,6 +22439,10 @@ double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
 
 V2d Actor::GetGroundedNormal()
 {
+	if (ground == NULL)
+		return V2d(0, -1);
+
+
 	assert(ground != NULL);
 	V2d gn = ground->Normal();
 

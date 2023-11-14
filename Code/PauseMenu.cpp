@@ -277,8 +277,8 @@ void PauseMenu::SetGame(GameSession *p_game)
 {
 	game = p_game;
 	UpdateButtonIconsWhenControllerIsChanged();
-	shardMenu->SetGame(p_game);
-	logMenu->SetGame(p_game);
+	shardMenu->SetSession(p_game);
+	logMenu->SetSession(p_game);
 	kinMenu->SetGame(p_game);
 	optionsMenu->SetGame(p_game);
 	pauseMap->SetGame(p_game);

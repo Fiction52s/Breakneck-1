@@ -17,7 +17,7 @@
 #include "MusicSelector.h"
 #include "VisualEffects.h"
 #include "SaveFile.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "Actor.h"
 #include "EditorTerrain.h"
 #include "EditorRail.h"
@@ -46,7 +46,7 @@ void LogDetailedInfo::Reset()
 LogMenu::LogMenu(TilesetManager *p_tm)
 	:logPreview(p_tm)
 {
-	game = NULL;
+	sess = NULL;
 	tm = p_tm;
 	totalFrame = 0;
 
@@ -122,10 +122,10 @@ LogMenu::~LogMenu()
 	delete[] logSelectQuads;
 }
 
-void LogMenu::SetGame(GameSession *p_game)
+void LogMenu::SetSession(Session *p_sess)
 {
-	game = p_game;
-	logPreview.SetSession(p_game);
+	sess = p_sess;
+	logPreview.SetSession(p_sess);
 	SetTopLeft(Vector2f(50, 50));
 	UpdateLogsOnWorldChange();
 }
@@ -368,9 +368,9 @@ bool LogMenu::IsLogFound(int w, int li)
 
 	int logType = LogItem::GetLogTypeFromWorldAndIndex(w, li);
 
-	if (game->mainMenu->adventureManager != NULL)
+	if (sess->mainMenu->adventureManager != NULL)
 	{
-		SaveFile *saveFile = game->mainMenu->adventureManager->currSaveFile;
+		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 		if (saveFile != NULL)
 		{
 			return saveFile->HasLog(logType);
@@ -383,7 +383,7 @@ bool LogMenu::IsLogFound(int w, int li)
 	}
 	else
 	{
-		return game->HasLog(logType);
+		return sess->HasLog(logType);
 	}
 }
 
@@ -472,7 +472,7 @@ void LogMenu::SetCurrMusic()
 MusicInfo *LogMenu::GetLogMusic(const std::string &str)
 {
 	//placeholder
-	return game->mainMenu->musicManager->songMap["w02_Glade"];
+	return sess->mainMenu->musicManager->songMap["w02_Glade"];
 }
 
 void LogMenu::SetupLogImages()
@@ -1059,8 +1059,8 @@ void LogPreview::Update()
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
-			sess->waterShaders[i].setUniform("u_slide", waterShaderCounter);
-			sess->waterShaders[i].setUniform("zoom", 1.f);
+			sess->mainMenu->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+			sess->mainMenu->waterShaders[i].setUniform("zoom", 1.f);
 		}
 		waterShaderCounter += .01f;
 	}

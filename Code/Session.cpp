@@ -70,6 +70,7 @@
 #include "PracticeInviteDisplay.h"
 #include "BasicTextMenu.h"
 #include <assert.h>
+#include "AdventureManager.h"
 
 //#include "ggpo\backends\backend.h"
 
@@ -255,6 +256,26 @@ void Session::SetupEnemyType(ParamsInfo &pi, bool unlisted )
 
 void Session::RegisterGeneralEnemies()
 {
+	bool isEdit = IsSessTypeEdit();
+
+	Tileset *ts_zoneProperties = NULL;
+	Tileset *ts_camShot = NULL;
+	Tileset *ts_poi = NULL;
+	Tileset *ts_xBarrier = NULL;
+	Tileset *ts_xBarrierWarp = NULL;
+	Tileset *ts_ship = NULL;
+
+	if (isEdit)
+	{
+		ts_zoneProperties = GetSizedTileset("Editor/zoneproperties_128x128.png");
+		ts_camShot = GetTileset("Editor/camera_128x128.png", 128, 128);
+		ts_poi = GetSizedTileset("Editor/pointofinterest_32x32.png");
+		ts_xBarrier = GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		ts_xBarrierWarp = GetSizedTileset("Enemies/target_224x224.png");
+		ts_ship = GetSizedTileset("Ship/ship_864x400.png");
+	}
+
+
 	int normalRow = 0;
 	int objectRow = 1;
 	int powerRow = 2;
@@ -280,7 +301,7 @@ void Session::RegisterGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddExtraEnemy("Ship Pickup", "shippickup", objectRow, CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 	AddExtraEnemy("Entrance Ship", "ship", objectRow, NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
-		GetSizedTileset("Ship/ship_864x400.png"));
+		ts_ship);
 	AddExtraEnemy("Tutorial Object", "tutorialobject", objectRow, CreateEnemy<TutorialObject>, SetParamsType<TutorialObjectParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
@@ -304,22 +325,7 @@ void Session::RegisterGeneralEnemies()
 
 	
 	//utility
-	bool isEdit = IsSessTypeEdit();
-
-	Tileset *ts_zoneProperties = NULL;
-	Tileset *ts_camShot = NULL;
-	Tileset *ts_poi = NULL;
-	Tileset *ts_xBarrier = NULL;
-	Tileset *ts_xBarrierWarp = NULL;
-
-	if (isEdit)
-	{
-		ts_zoneProperties = GetSizedTileset("Editor/zoneproperties_128x128.png");
-		ts_camShot = GetTileset("Editor/camera_128x128.png", 128, 128);
-		ts_poi = GetSizedTileset("Editor/pointofinterest_32x32.png");
-		ts_xBarrier = GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		ts_xBarrierWarp = GetSizedTileset("Enemies/target_224x224.png");
-	}
+	
 
 	AddExtraEnemy("Zone Properties", "zoneproperties", utilityRow, NULL, SetParamsType<ZonePropertiesParams>, Vector2i(0, 0),
 		Vector2i(128, 128), false, false, false, false, true, false, false, 1,
@@ -1625,7 +1631,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
-	absorbShardParticles = NULL;
 
 	parentGame = NULL;
 
@@ -1661,8 +1666,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	staticItemTree = NULL;
 
 	//polyShaders = NULL;
-	waterShaders = NULL;
-	minimapWaterShaders = NULL;
+	
 	background = NULL;
 	ownsBG = true;
 	hitboxManager = NULL;
@@ -1727,18 +1731,12 @@ Session::~Session()
 		absorbDarkParticles = NULL;
 	}
 
-	if (parentGame == NULL && absorbShardParticles != NULL)
-	{
-		delete absorbShardParticles;
-		absorbShardParticles = NULL;
-	}
 
-
-	if (parentGame == NULL && hud != NULL)
+	/*if (parentGame == NULL && hud != NULL)
 	{
 		delete hud;
 		hud = NULL;
-	}
+	}*/
 
 	//---------------
 
@@ -1846,17 +1844,7 @@ Session::~Session()
 		polyShaders = NULL;
 	}*/
 
-	if (waterShaders != NULL)
-	{
-		delete[] waterShaders;
-		waterShaders = NULL;
-	}
-
-	if (minimapWaterShaders != NULL)
-	{
-		delete[] minimapWaterShaders;
-		minimapWaterShaders = NULL;
-	}
+	
 		
 
 	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
@@ -2014,58 +2002,6 @@ void Session::DebugDrawActors(sf::RenderTarget *target)
 	}
 }
 
-void Session::SetupWaterShaders()
-{
-	if (waterShaders != NULL)
-	{
-		return;
-	}
-
-	ts_water = GetSizedTileset("Env/water_128x128.png");
-	waterShaders = new Shader[TerrainPolygon::WATER_Count];
-	minimapWaterShaders = new Shader[TerrainPolygon::WATER_Count];
-
-	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
-	{
-		SetupWaterShader(waterShaders[i], i);
-		SetupWaterShader(minimapWaterShaders[i], i);
-		minimapWaterShaders[i].setUniform("zoom", Minimap::MINIMAP_ZOOM);
-		minimapWaterShaders[i].setUniform("topLeft", Vector2f( 0, 0 ));
-	}
-}
-
-void Session::SetupWaterShader(sf::Shader &waterShader, int waterIndex )
-{
-	if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "water SHADER NOT LOADING CORRECTLY" << endl;
-	}
-
-	waterShader.setUniform("u_slide", 0.f);
-	waterShader.setUniform("u_texture", *ts_water->texture);
-	waterShader.setUniform("Resolution", Vector2f(1920, 1080));
-	//waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-	//waterShader.setUniform("skyColor", ColorGL(Color::White));
-
-	Color wColor = TerrainPolygon::GetWaterColor(waterIndex);
-	wColor.a = 200;
-	waterShader.setUniform("u_waterBaseColor", ColorGL(wColor));
-
-	IntRect ir1 = ts_water->GetSubRect(waterIndex * 2);
-	IntRect ir2 = ts_water->GetSubRect(waterIndex * 2 + 1);
-
-	float width = ts_water->texture->getSize().x;
-	float height = ts_water->texture->getSize().y;
-
-	waterShader.setUniform("u_quad1",
-		Glsl::Vec4(ir1.left / width, ir1.top / height,
-		(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
-
-	waterShader.setUniform("u_quad2",
-		Glsl::Vec4(ir2.left / width, ir2.top / height,
-		(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
-}
-
 void Session::DrawPlayerWires( RenderTarget *target )
 {
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
@@ -2154,27 +2090,7 @@ void Session::UpdatePlayerWireQuads()
 
 
 
-bool Session::LoadPolyShader()
-{
-	//ts_terrain = GetSizedTileset("Env/terrain_256x256.png");
-	ts_terrain = GetSizedTileset("Env/terrain_128x128.png");
 
-	if (!terrainShader.loadFromFile("Resources/Shader/mat_shader3.frag", sf::Shader::Fragment))
-	{
-		cout << "terrain shader not loading" << endl;
-		//cout << "MATERIAL  NOT LOADING CORRECTLY:" << matFile << endl;
-		return false;
-	}
-
-	terrainShader.setUniform("u_texture", *ts_terrain->texture);
-	terrainShader.setUniform("Resolution", Vector2f(1920, 1080));
-	terrainShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-	terrainShader.setUniform("skyColor", ColorGL(Color::White));
-	
-
-	//ReadDecorInfoFile(matWorld, matVariation);
-	return true;
-}
 
 bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 {
@@ -4642,8 +4558,15 @@ void Session::SetupHUD()
 	}
 	else
 	{
-		if (hud == NULL )//&& !IsParallelSession() )
+		if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 		{
+			hud = mainMenu->adventureManager->adventureHUD;
+			hud->SetSession(this);
+			GetPlayer(0)->kinMask = mainMenu->adventureManager->adventureHUD->kinMask;
+		}
+		else if (hud == NULL )//&& !IsParallelSession() )
+		{
+			cout << "creating HUD because none is available" << endl;
 			hud = gameMode->CreateHUD();
 		}
 	}
@@ -4708,7 +4631,6 @@ void Session::SetupAbsorbParticles()
 	{
 		absorbParticles = parentGame->absorbParticles;
 		absorbDarkParticles = parentGame->absorbDarkParticles;
-		absorbShardParticles = parentGame->absorbShardParticles;
 	}
 	else
 	{
@@ -4716,12 +4638,10 @@ void Session::SetupAbsorbParticles()
 		{
 			delete absorbParticles;
 			delete absorbDarkParticles;
-			delete absorbShardParticles;
 		}
 
 		absorbParticles = new AbsorbParticles(this, AbsorbParticles::ENERGY);
 		absorbDarkParticles = new AbsorbParticles(this, AbsorbParticles::DARK);
-		absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
 	}
 	
 }
@@ -4738,9 +4658,6 @@ void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 	case AbsorbParticles::DARK:
 		absorbDarkParticles->Activate(p, storedHits, pos, startAngle);
 		CollectKey();
-		break;
-	case AbsorbParticles::SHARD:
-		absorbShardParticles->Activate(p, storedHits, pos, startAngle);
 		break;
 	}
 }
@@ -4761,7 +4678,6 @@ void Session::ResetAbsorbParticles()
 		return;
 	absorbParticles->Reset();
 	absorbDarkParticles->Reset();
-	absorbShardParticles->Reset();
 }
 
 void Session::DrawEnemies(sf::RenderTarget *target)
@@ -6161,14 +6077,6 @@ int Session::GetNumTotalEnergyParticles(int absorbType)
 		}
 		break;
 	}
-	case AbsorbParticles::SHARD:
-	{
-		for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
-		{
-			total += (*it)->GetNumShardAbsorbParticles();
-		}
-		break;
-	}
 	}
 
 	return total;
@@ -6719,10 +6627,6 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawPlayerShields(target);
 
-	absorbShardParticles->Draw(target);
-
-	
-
 	LayeredDraw(EffectLayer::IN_FRONT, target);
 
 	DrawBullets(target);
@@ -7099,7 +7003,6 @@ bool Session::RunGameModeUpdate()
 
 		absorbParticles->Update();
 		absorbDarkParticles->Update();
-		absorbShardParticles->Update();
 
 		UpdateEffects();
 		UpdateEmitters();
@@ -7940,7 +7843,6 @@ bool Session::OnlineRunGameModeUpdate()
 
 	absorbParticles->Update();
 	absorbDarkParticles->Update();
-	absorbShardParticles->Update();
 
 	UpdateEffects();
 	UpdateEmitters();
@@ -8306,7 +8208,6 @@ int Session::GetNumStoredBytes()
 
 	totalSize += absorbParticles->GetNumStoredBytes();
 	totalSize += absorbDarkParticles->GetNumStoredBytes();
-	totalSize += absorbShardParticles->GetNumStoredBytes();
 
 	for (auto it = allSequencesVec.begin(); it != allSequencesVec.end(); ++it)
 	{
@@ -8398,9 +8299,6 @@ void Session::StoreBytes(unsigned char *bytes)
 	absorbDarkParticles->StoreBytes(bytes);
 	bytes += absorbDarkParticles->GetNumStoredBytes();
 
-	absorbShardParticles->StoreBytes(bytes);
-	bytes += absorbShardParticles->GetNumStoredBytes();
-
 	for (auto it = allSequencesVec.begin(); it != allSequencesVec.end(); ++it)
 	{
 		(*it)->StoreBytes(bytes);
@@ -8465,9 +8363,6 @@ void Session::SetFromBytes(unsigned char *bytes)
 
 	absorbDarkParticles->SetFromBytes(bytes);
 	bytes += absorbDarkParticles->GetNumStoredBytes();
-
-	absorbShardParticles->SetFromBytes(bytes);
-	bytes += absorbShardParticles->GetNumStoredBytes();
 
 	for (auto it = allSequencesVec.begin(); it != allSequencesVec.end(); ++it)
 	{
@@ -9818,6 +9713,18 @@ void Session::CleanupGameMode()
 
 void Session::UpdateWorldDependentTileset( int worldIndex)
 {
+	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	{
+		mainMenu->adventureManager->UpdateWorldDependentTileset(worldIndex);
+		ts_key = mainMenu->adventureManager->ts_key;
+		ts_keyExplode = mainMenu->adventureManager->ts_keyExplode;
+		ts_goal = mainMenu->adventureManager->ts_goal;
+		ts_goalCrack = mainMenu->adventureManager->ts_goalCrack;
+		ts_goalExplode = mainMenu->adventureManager->ts_goalExplode;
+		return;
+	}
+
+
 	currWorldDependentTilesetWorldIndex = worldIndex;
 	if (ts_key != NULL)
 	{

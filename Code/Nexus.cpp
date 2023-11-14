@@ -6,6 +6,7 @@
 #include "Nexus.h"
 #include "SequenceW1.h"
 #include "MapHeader.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -28,7 +29,7 @@ Nexus::Nexus( ActorParams *ap)
 		height = 320;
 		ts_nexusOpen = sess->GetTileset("Nexus/nexus_open_1296x904.png", 1296, 904);
 		ts_nexusDestroyed = sess->GetTileset("Nexus/nexus_destroyed_1296x904.png", 1296, 904);
-		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+		ts_mini = sess->mainMenu->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 		ts_explosion = sess->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
 		ts_explosion1 = sess->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
 		ts_node1 = sess->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
@@ -38,20 +39,6 @@ Nexus::Nexus( ActorParams *ap)
 		explosionYOffset = 80;
 		initialYOffset = 30;
 		break;
-	/*case 2:
-	default:
-		width = 288;
-		height = 256;
-		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
-		ts_node1 = sess->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
-		ts_node2 = sess->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
-		ts_explosion = sess->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
-		ts_explosion1 = NULL;
-		explosionLength = 15;
-		explosionAnimFactor = 2;
-		explosionYOffset = 0;
-		initialYOffset = 0;
-		break;*/
 	}
 
 	if (world == 2)

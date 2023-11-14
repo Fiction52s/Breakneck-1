@@ -17,18 +17,6 @@ AbsorbParticles::AbsorbParticles(Session *p_sess, AbsorbType p_abType )
 	maxNumParticles = sess->GetNumTotalEnergyParticles(p_abType);
 
 	allParticles.reserve(maxNumParticles);
-	//switch (p_abType)
-	//{
-	//case ENERGY:
-	//	maxNumParticles = sess->GetNumTotalEnergyParticles( p_abType); //256;
-	//	break;
-	//case DARK:
-	//	maxNumParticles = sess->(p_abType);//64;
-	//	break;
-	//case SHARD:
-	//	maxNumParticles = 64;
-	//	break;
-	//}
 
 	va = new Vertex[maxNumParticles * 4];
 
@@ -46,12 +34,6 @@ AbsorbParticles::AbsorbParticles(Session *p_sess, AbsorbType p_abType )
 		ts = sess->ts_key;
 		ts_explodeDestroy = sess->ts_keyExplode;
 		animFactor = 2;
-		break;
-	case SHARD:
-		ts = sess->GetTileset("HUD/shard_get_128x128.png", 128, 128);
-		animFactor = 2;
-		//ts_explodeCreate = GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
-		ts_explodeDestroy = sess->GetTileset("FX/shard_explode_02_256x256.png", 256, 256);
 		break;
 	default:
 		ts = sess->GetTileset("FX/absorb_64x64.png", 64, 64);
@@ -75,12 +57,6 @@ sf::Vector2f AbsorbParticles::SingleEnergyParticle::GetTargetPos(AbsorbType abTy
 		V2d playerPos = playerTarget->position;
 		return Vector2f(playerPos);
 		//return Vector2f(1920 - 100, 100);
-		break;
-	}
-	case SHARD:
-	{
-		V2d playerPos = playerTarget->position;
-		return Vector2f(playerPos);//Vector2f(286, 202);
 		break;
 	}
 	}
@@ -236,18 +212,6 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 		vel = normalize(Vector2f(startPos) - targetPos ) * startSpeed;*/
 		break;
 	}
-	case SHARD:
-	{
-		//owner->ActivateEffect()
-
-		startPos = Vector2f(p_pos);//Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
-		//pos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
-		//startPos = Vector2f(400, 200);
-		t = Transform::Identity;
-		vel = normalize(Vector2f(startPos) - targetPos) * startSpeed;
-		//vel = normalize(Vector2f(targetPos) - pos) * startSpeed;
-		break;
-	}
 	}
 
 	switch (abType)
@@ -255,8 +219,6 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	case ENERGY:
 		break;
 	case DARK:
-		break;
-	case SHARD:
 		break;
 	}
 
@@ -334,13 +296,6 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 		va[tileIndex * 4 + 1].color = Color::Black;
 		va[tileIndex * 4 + 2].color = Color::Black;
 		va[tileIndex * 4 + 3].color = Color::Black;*/
-		break;
-	}	
-	case SHARD:
-	{
-		sub.width = 128;
-		sub.height = 128;
-		SetRectSubRect(va + particleIndex * 4, parent->ts->GetSubRect(0));
 		break;
 	}
 	
@@ -449,11 +404,6 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 6, 3, true);
 			//parent->sess->CollectKey();
 			break;
-		}
-		case SHARD:
-		{
-			parent->sess->ActivateEffect(EffectLayer::IN_FRONT,
-				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 9, 3, true);
 		}
 		}
 		return false;
@@ -578,9 +528,6 @@ void AbsorbParticles::Draw(sf::RenderTarget *target)
 	case DARK:
 		ts = sess->ts_key;
 		ts_explodeDestroy = sess->ts_keyExplode;
-		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
-		break;
-	case SHARD:
 		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
 		break;
 	}

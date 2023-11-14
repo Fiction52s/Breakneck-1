@@ -114,7 +114,7 @@ void FightMode::StartGame()
 
 HUD *FightMode::CreateHUD()
 {
-	return new FightHUD;
+	return new FightHUD( sess );
 }
 
 bool FightMode::CheckVictoryConditions()

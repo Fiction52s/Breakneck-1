@@ -4,6 +4,7 @@
 #include "GameSession.h"
 #include "MapHeader.h"
 #include "Session.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -12,11 +13,13 @@ Color Minimap::terrainColor(0x75, 0x70, 0x90);// , 191);
 
 const float Minimap::MINIMAP_ZOOM = 16.f;
 
-Minimap::Minimap()
+Minimap::Minimap(TilesetManager *tm)
 {
-	sess = Session::GetSession();
+	sess = NULL;
 
-	minimapTex = sess->minimapTex;
+	MainMenu *mm = MainMenu::GetInstance();
+
+	minimapTex = mm->minimapTexture;
 
 	if (!minimapShader.loadFromFile("Resources/Shader/minimap_shader.frag", sf::Shader::Fragment))
 	{
@@ -31,7 +34,7 @@ Minimap::Minimap()
 	
 	minimapSprite.setScale(1, -1);
 
-	ts_miniIcons = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+	ts_miniIcons = mm->GetSizedTileset("HUD/minimap_icons_64x64.png");
 	kinMinimapIcon.setTexture(*ts_miniIcons->texture);
 	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,
@@ -45,7 +48,12 @@ Minimap::Minimap()
 	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
 		goalMapIcon.getLocalBounds().height / 2);
 
-	SetCenter(Vector2f(200, sess->preScreenTex->getSize().y - 200));
+	SetCenter(Vector2f(200, 1080 - 200));
+}
+
+void Minimap::SetSession(Session *p_sess)
+{
+	sess = p_sess;
 }
 
 void Minimap::SetCenter(sf::Vector2f &center)

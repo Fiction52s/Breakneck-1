@@ -47,7 +47,7 @@ void BasicMode::EndGame()
 
 HUD *BasicMode::CreateHUD()
 {
-	return new AdventureHUD;
+	return new AdventureHUD( sess );
 }
 
 ExploreMode::ExploreMode( int p_numPlayers )
@@ -74,7 +74,7 @@ HUD *ExploreMode::CreateHUD()
 {
 	if( numPlayers == 1 )
 	{
-		return new AdventureHUD;
+		return new AdventureHUD( sess );
 	}
 	else
 	{

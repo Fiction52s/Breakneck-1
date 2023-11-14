@@ -255,9 +255,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool firstUpdateHasHappened;
 	bool simulationMode; //for running frames with ggpo without creating sounds or visual fx
 	float waterShaderCounter;
-	Tileset *ts_water;
-	sf::Shader *waterShaders;
-	sf::Shader *minimapWaterShaders;
 	int gameModeType;
 
 	std::list<Boss*> activeBosses;
@@ -379,10 +376,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::RenderWindow *window;
 	sf::Vector2i playerOrigPos[MAX_PLAYERS];
 	ControllerState filteredPrevInput[MAX_PLAYERS];
-	int numPolyShaders;
-	//sf::Shader *polyShaders;
-	sf::Shader terrainShader;
-	Tileset *ts_terrain;
+
+	
 	std::map<std::pair<int, int>, TerrainDecorInfo*> terrainDecorInfoMap;
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	GameSession *parentGame;
@@ -400,7 +395,6 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	AbsorbParticles *absorbParticles;
 	AbsorbParticles *absorbDarkParticles;
-	AbsorbParticles *absorbShardParticles;
 
 	std::list<Edge*> globalBorderEdges;
 	bool drain;
@@ -725,8 +719,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool ReadBGTerrain(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
-	void SetupWaterShaders();
-	void SetupWaterShader(sf::Shader &sh, int waterIndex );
+	
 	bool LoadPolyShader();
 
 	bool OneFrameModeUpdate();

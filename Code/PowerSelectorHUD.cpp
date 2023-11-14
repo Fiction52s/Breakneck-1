@@ -5,18 +5,22 @@
 using namespace std;
 using namespace sf;
 
-PowerSelector::PowerSelector()
+PowerSelector::PowerSelector(TilesetManager *tm)
 {
-	sess = Session::GetSession();
-	ts = sess->GetSizedTileset("HUD/power_selector_96x96.png");
+	sess = NULL;
+	ts = tm->GetSizedTileset("HUD/power_selector_96x96.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect( 0 ));
-	//sprite.setPosition(288, 140);
 	state = STATIC;
 
 	SetRectSubRect(deactivatedQuads, ts->GetSubRect(11));
 	SetRectSubRect(deactivatedQuads + 4, ts->GetSubRect(9));
 	SetRectSubRect(deactivatedQuads + 8, ts->GetSubRect(10));
+}
+
+void PowerSelector::SetSession(Session *p_sess)
+{
+	sess = p_sess;
 }
 
 void PowerSelector::Update( int playerPowerMode )

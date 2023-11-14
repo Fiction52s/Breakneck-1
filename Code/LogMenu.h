@@ -138,7 +138,7 @@ struct LogMenu
 	sf::Text currLogNameText;
 	LogDetailedInfo **logInfo;
 	Tileset *ts_logs;
-	GameSession *game;
+	Session *sess;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
 	SingleAxisSelector *worldSelector;
@@ -161,7 +161,7 @@ struct LogMenu
 	
 	LogMenu(TilesetManager *tm);
 	~LogMenu();
-	void SetGame(GameSession *game);
+	void SetSession(Session *sess);
 	void Update(ControllerState &currInput,
 		ControllerState &prevInput);
 	void Draw(sf::RenderTarget *target);

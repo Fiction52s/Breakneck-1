@@ -14,7 +14,6 @@ struct AbsorbParticles
 	{
 		ENERGY,
 		DARK,
-		SHARD,
 	};
 	
 	struct SingleEnergyParticle

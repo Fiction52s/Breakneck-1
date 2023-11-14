@@ -7,7 +7,7 @@ struct GameSession;
 
 struct MomentumBar
 {
-	MomentumBar(Session *sess);
+	MomentumBar(TilesetManager *tm);
 	sf::Sprite teal;
 	sf::Sprite blue;
 	sf::Sprite purp;

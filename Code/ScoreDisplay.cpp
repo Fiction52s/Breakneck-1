@@ -26,8 +26,18 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 
 	basePos += Vector2f(0, 80); //for name box
 
-	ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
-	ts_scoreIcons = sess->GetSizedTileset("HUD/score_icons_128x96.png");
+	if (sess->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && sess->mainMenu->adventureManager != NULL)
+	{
+		ts_score = sess->mainMenu->adventureManager->GetSizedTileset("HUD/score_384x96.png");
+		ts_scoreIcons = sess->mainMenu->adventureManager->GetSizedTileset("HUD/score_icons_128x96.png");
+	}
+	else
+	{
+		ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
+		ts_scoreIcons = sess->GetSizedTileset("HUD/score_icons_128x96.png");
+	}
+	
+	
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{

@@ -1254,7 +1254,7 @@ TerrainPolygon::TerrainPolygon()
 
 	if (sess != NULL)
 	{
-		ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
+		ts_grass = sess->mainMenu->GetSizedTileset("Env/grass_128x128.png");
 	}
 	
 	grassSize = 128;
@@ -1529,7 +1529,7 @@ void TerrainPolygon::SetBorderTileset()
 {
 	if (terrainWorldType >= W1_SPECIAL)
 	{
-		ts_border = sess->GetSizedTileset( "Env/water_surface_64x2.png" );
+		ts_border = sess->mainMenu->GetSizedTileset( "Env/water_surface_64x2.png" );
 		return;
 	}
 	//basically theres a way to make this invisible, but haven't set it up yet.
@@ -3369,8 +3369,8 @@ void TerrainPolygon::UpdateMaterialType()
 {
 	if (waterType != -1)
 	{
-		pShader = &sess->waterShaders[waterType];
-		miniShader = &sess->minimapWaterShaders[waterType];
+		pShader = &sess->mainMenu->waterShaders[waterType];
+		miniShader = &sess->mainMenu->minimapWaterShaders[waterType];
 		tdInfo = NULL;
 	}
 	else
@@ -5193,18 +5193,6 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 	{
 		if (pShader != NULL)
 		{
-			/*if (terrainWorldType > SECRETCORE)
-			{
-			Vector2f vSize = sess->view.getSize();
-			float zoom = vSize.x / 960;
-			Vector2f botLeft(sess->view.getCenter().x - vSize.x / 2, sess->view.getCenter().y + vSize.y / 2);
-
-			waterShader.setUniform("zoom", zoom);
-			waterShader.setUniform("topLeft", botLeft);
-			waterShader.setUniform("u_slide", waterShaderCounter);
-			waterShaderCounter += .01;
-			}*/
-
 			if (terrainWorldType <= SECRETCORE)
 			{
 				Tileset *ts = sess->ts_terrain;

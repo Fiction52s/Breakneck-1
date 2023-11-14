@@ -16,9 +16,20 @@ struct ControlProfile;
 struct LeaderboardDisplay;
 struct FeedbackForm;
 struct PauseMenu;
+struct AdventureHUD;
+struct Background;
 
 struct AdventureManager : TilesetManager
 {
+	int currWorldDependentTilesetWorldIndex;
+
+	Tileset *ts_key;
+	Tileset *ts_keyExplode;
+	Tileset *ts_goal;
+	Tileset *ts_goalCrack;
+	Tileset *ts_goalExplode;
+
+
 	PauseMenu *pauseMenu;
 	WorldMap *worldMap;
 	KinBoostScreen *kinBoostScreen;
@@ -26,6 +37,9 @@ struct AdventureManager : TilesetManager
 	SaveFile *files[6];
 	SaveFile *currSaveFile;
 	int currSaveFileIndex;
+	AdventureHUD *adventureHUD;
+
+	Background *background;
 
 	AdventureFile adventureFile;
 	AdventurePlanet *adventurePlanet;
@@ -47,6 +61,7 @@ struct AdventureManager : TilesetManager
 
 	AdventureManager();
 	~AdventureManager();
+	void UpdateWorldDependentTileset(int worldIndex);
 	void LoadAdventure( const std::string &adventureName );
 	bool CompleteCurrentMap(GameSession *game );
 	void DrawWorldMap(sf::RenderTarget *target);

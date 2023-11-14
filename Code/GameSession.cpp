@@ -1913,19 +1913,34 @@ bool GameSession::Load()
 
 	SetupScoreDisplay();
 
-	ReadFile();
-
-	myHash = md5file(filePathStr);
-
-	mapNameText.setString(mapHeader->fullName);
-
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 	{
 		mainMenu->adventureManager->SetBoards(this);
 
 		pauseMenu = mainMenu->adventureManager->pauseMenu;
 		pauseMenu->SetGame(this);
+
+
+		shardMenu = pauseMenu->shardMenu;
+		logMenu = pauseMenu->logMenu;
 	}
+
+	ReadFile();
+
+	myHash = md5file(filePathStr);
+
+	mapNameText.setString(mapHeader->fullName);
+
+	/*if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	{
+		mainMenu->adventureManager->SetBoards(this);
+
+		pauseMenu = mainMenu->adventureManager->pauseMenu;
+		pauseMenu->SetGame(this);
+
+		shardMenu = pauseMenu->shardMenu;
+		logMenu = pauseMenu->logMenu;
+	}*/
 
 	SetupBackground(); //new location above SetupGameMode for parallel backgrounds
 
@@ -3782,7 +3797,6 @@ void GameSession::Init()
 	flyTerrainList = NULL;
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
-	absorbShardParticles = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
 		players[i] = NULL;
@@ -4100,7 +4114,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
-			waterShaders[i].setUniform("zoom", zoom);
+			mainMenu->waterShaders[i].setUniform("zoom", zoom);
 		}
 	}
 
@@ -4112,7 +4126,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
-			waterShaders[i].setUniform("topLeft", botLeft);
+			mainMenu->waterShaders[i].setUniform("topLeft", botLeft);
 		}
 	}
 	
@@ -4130,7 +4144,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
-		waterShaders[i].setUniform("u_slide", waterShaderCounter);
+		mainMenu->waterShaders[i].setUniform("u_slide", waterShaderCounter);
 	}
 	waterShaderCounter += .01f;
 }

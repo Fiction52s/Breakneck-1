@@ -5,11 +5,11 @@
 using namespace std;
 using namespace sf;
 
-MomentumBar::MomentumBar(Session *sess)
+MomentumBar::MomentumBar(TilesetManager *tm)
 {
-	ts_bar = sess->GetTileset("HUD/momentumbar_105x105.png", 105, 105);
-	ts_container = sess->GetTileset("HUD/momentumbar_115x115.png", 115, 115);
-	ts_num = sess->GetTileset("HUD/momentumnum_48x48.png", 48, 48);
+	ts_bar = tm->GetSizedTileset("HUD/momentumbar_105x105.png");
+	ts_container = tm->GetSizedTileset("HUD/momentumbar_115x115.png");
+	ts_num = tm->GetSizedTileset("HUD/momentumnum_48x48.png");
 
 	levelNumSpr.setTexture(*ts_num->texture);
 	levelNumSpr.setTextureRect(ts_bar->GetSubRect(0));

@@ -280,8 +280,6 @@ void Shard::DissipateOnTouch()
 
 void Shard::Capture()
 {
-	//owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
-
 	assert(shardType != -1);
 
 	int upgradeIndex = shardType + Actor::SHARD_START_INDEX;

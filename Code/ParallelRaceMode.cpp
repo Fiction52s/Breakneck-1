@@ -108,7 +108,7 @@ void ParallelRaceMode::StartGame()
 
 HUD *ParallelRaceMode::CreateHUD()
 {
-	return new AdventureHUD;
+	return new AdventureHUD( sess );
 	//return NULL;
 	//return new FightHUD;
 }

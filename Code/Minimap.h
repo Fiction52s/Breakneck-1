@@ -23,12 +23,13 @@ struct Minimap
 	static sf::Color terrainColor;
 	const static float MINIMAP_ZOOM;
 
-	Minimap();
+	Minimap(TilesetManager *tm);
 	void DrawToTex();
 	void SetupBorderQuads(
 		bool *blackBorder, bool topBorderOn,
 		MapHeader *mh);
 	void Draw(sf::RenderTarget *target);
+	void SetSession(Session *p_sess);
 	void Update();
 	void SetCenter(sf::Vector2f &center);
 

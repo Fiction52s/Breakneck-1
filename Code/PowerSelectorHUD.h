@@ -6,6 +6,8 @@
 
 struct Tileset;
 struct Session;
+struct TilesetManager;
+
 struct PowerSelector
 {
 	enum State
@@ -25,8 +27,9 @@ struct PowerSelector
 	State state;
 	int frame;
 
-	PowerSelector();
+	PowerSelector(TilesetManager *tm);
 
+	void SetSession(Session *p_sess);
 	void SetPosition(sf::Vector2f &pos);
 
 	void Update(int currPowerMode );

@@ -1797,6 +1797,9 @@ void EditSession::CleanupForReload()
 
 EditSession::~EditSession()
 {
+	delete logMenu;
+	delete shardMenu;
+
 	for (int i = 0; i < 4; ++i)
 	{
 		players[i] = allPlayers[i];
@@ -3931,6 +3934,12 @@ void EditSession::Init()
 
 	currTerrainWorld[TERRAINLAYER_FLY] = 9;
 	currTerrainVar[TERRAINLAYER_FLY] = 0;
+
+	shardMenu = new ShardMenu(this);
+	shardMenu->SetSession(this);
+
+	logMenu = new LogMenu(this);
+	logMenu->SetSession(this);
 
 	SetupSoundManager();
 	SetupSoundLists();
@@ -12924,7 +12933,7 @@ void EditSession::UpdatePolyShaders()
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
-			waterShaders[i].setUniform("zoom", zoom);
+			mainMenu->waterShaders[i].setUniform("zoom", zoom);
 		}
 	}
 
@@ -12937,14 +12946,14 @@ void EditSession::UpdatePolyShaders()
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
-			waterShaders[i].setUniform("topLeft", botLeft);
+			mainMenu->waterShaders[i].setUniform("topLeft", botLeft);
 		}
 	}
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
-		waterShaders[i].setUniform("u_slide", waterShaderCounter);
-		waterShaders[i].setUniform("u_cameraAngle", camAngle);
+		mainMenu->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+		mainMenu->waterShaders[i].setUniform("u_cameraAngle", camAngle);
 	}
 	waterShaderCounter += .01f;
 	

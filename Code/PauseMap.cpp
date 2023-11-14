@@ -26,7 +26,8 @@ PauseMap::PauseMap(TilesetManager *p_tm)
 
 	//mapSprite.setScale(1, -1);
 
-	ts_miniIcons = tm->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+	//global tileset
+	ts_miniIcons = mm->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 	kinMapIcon.setTexture(*ts_miniIcons->texture);
 	kinMapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMapIcon.setScale(2, 2);

@@ -23,7 +23,6 @@ struct SwordProjectile : Enemy
 	MyData data;
 
 	double speed;
-	
 
 	int shootLimit;
 	int hitLimit;
@@ -32,7 +31,7 @@ struct SwordProjectile : Enemy
 
 	void SetLevel(int lev);
 
-	SwordProjectile();
+	SwordProjectile( Actor *player );
 	~SwordProjectile();
 
 	void Throw( int playerIndex, V2d &pos, V2d &dir);

@@ -923,6 +923,13 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite homingAttackBallSprite;
 	Tileset *ts_blockShield;
 	Tileset *ts_homingAttackBall;
+
+	Tileset *ts_wire;
+	Tileset *ts_wireNode;
+	Tileset *ts_wireTip;
+
+	Tileset *ts_swordProjectile;
+	Tileset *ts_fx_boosterParticles;
 	
 	std::vector<SoundInfo*> soundInfos;
 	Tileset *ts_exitAura;

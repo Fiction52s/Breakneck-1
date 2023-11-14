@@ -164,7 +164,6 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	sf::Sprite fuseSprite;
 	Tileset *ts_wireTip;
 	Tileset *ts_wire;
-	Tileset *ts_miniHit;
 	Tileset *ts_wireNode;
 	HitboxInfo *tipHitboxInfo;
 	sf::Vertex *quads;

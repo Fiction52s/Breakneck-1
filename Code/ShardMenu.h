@@ -97,7 +97,7 @@ struct ShardMenu
 
 	TilesetManager *tm;
 	
-	GameSession *game;
+	Session *sess;
 
 	int currSelectMode;
 	int numShardsTotal;
@@ -129,7 +129,7 @@ struct ShardMenu
 	ShardMenu( TilesetManager *tm );
 	~ShardMenu();
 
-	void SetGame(GameSession *game);
+	void SetSession(Session *sess);
 	void SetTopLeft(sf::Vector2f &pos);
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );

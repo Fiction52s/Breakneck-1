@@ -9,8 +9,8 @@ using namespace std;
 
 ShipEnterScene::ShipEnterScene()
 {
-	ts_w1ShipClouds0 = sess->GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
-	ts_w1ShipClouds1 = sess->GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
+	ts_w1ShipClouds0 = sess->GetSizedTileset("Ship/cloud_w1_a1_960x128.png");
+	ts_w1ShipClouds1 = sess->GetSizedTileset("Ship/cloud_w1_b1_960x320.png");
 	ts_ship = sess->GetTileset("Ship/ship_864x400.png", 864, 400);
 
 	shipSprite.setTexture(*ts_ship->texture);

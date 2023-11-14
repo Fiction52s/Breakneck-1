@@ -9,6 +9,7 @@
 #include "md5.h"
 #include "FeedbackForm.h"
 #include "PauseMenu.h"
+#include "HUD.h"
 
 using namespace std;
 using namespace sf;
@@ -19,12 +20,20 @@ AdventureManager::AdventureManager()
 	feedbackForm = new FeedbackForm;
 	pauseMenu = new PauseMenu(this);
 	worldMap = NULL;
+	background = NULL;
 	kinBoostScreen = NULL;
 	saveMenu = NULL;
 	adventurePlanet = NULL;
 	controllerInput = NULL;
 	currProfile = NULL;
-	//parallelPracticeMode = false;
+
+	adventureHUD = new AdventureHUD(this);
+
+	currWorldDependentTilesetWorldIndex = -1;
+	ts_key = NULL;
+	ts_goal = NULL;
+	ts_goalCrack = NULL;
+	ts_goalExplode = NULL;
 
 	if (MainMenu::GetInstance()->steamOn)
 	{
@@ -54,6 +63,11 @@ AdventureManager::AdventureManager()
 
 AdventureManager::~AdventureManager()
 {
+	if (adventureHUD != NULL)
+	{
+		delete adventureHUD;
+	}
+
 	if (pauseMenu != NULL)
 	{
 		delete pauseMenu;
@@ -103,6 +117,71 @@ void AdventureManager::LoadAdventure(const std::string &adventureName)
 	adventureFile.Load("Resources/Adventure", adventureName);
 	adventureFile.LoadMapHeaders();
 	adventurePlanet = new AdventurePlanet(adventureFile);
+}
+
+void AdventureManager::UpdateWorldDependentTileset(int worldIndex)
+{
+	if (currWorldDependentTilesetWorldIndex == worldIndex)
+		return;
+
+	currWorldDependentTilesetWorldIndex = worldIndex;
+	if (ts_key != NULL)
+	{
+		DestroyTileset(ts_key);
+		ts_key = NULL;
+
+		DestroyTileset(ts_keyExplode);
+		ts_keyExplode = NULL;
+	}
+
+	int w = worldIndex + 1;
+
+	if (worldIndex < 8)
+	{
+		stringstream ss;
+		ss << "FX/key_w" << w << "_128x128.png";
+		stringstream ssExplode;
+		ssExplode << "FX/keyexplode_w" << w << "_128x128.png";
+		ts_key = GetSizedTileset(ss.str());
+		ts_keyExplode = GetSizedTileset(ssExplode.str());
+	}
+	else
+	{
+		ts_key = GetSizedTileset("FX/key_w1_128x128.png");
+		ts_keyExplode = GetSizedTileset("FX/keyexplode_w1_128x128.png");
+	}
+
+	if (ts_goal != NULL)
+	{
+		DestroyTileset(ts_goal);
+		ts_goal = NULL;
+	}
+
+	if (ts_goalCrack != NULL)
+	{
+		DestroyTileset(ts_goalCrack);
+		ts_goalCrack = NULL;
+	}
+
+	if (ts_goalExplode != NULL)
+	{
+		DestroyTileset(ts_goalExplode);
+		ts_goalExplode = NULL;
+	}
+
+
+	//if (worldIndex < 1)
+	{
+		stringstream ss;
+		ss << "Goal/goal_w" << w << "_a_512x512.png";
+		stringstream ssCrack;
+		ssCrack << "Goal/goal_w" << w << "_b_512x512.png";
+		stringstream ssExplode;
+		ssExplode << "Goal/goal_w" << w << "_c_512x512.png";
+		ts_goal = GetSizedTileset(ss.str());
+		ts_goalCrack = GetSizedTileset(ssCrack.str());
+		ts_goalExplode = GetSizedTileset(ssExplode.str());
+	}
 }
 
 bool AdventureManager::TryToGoToNextLevel()

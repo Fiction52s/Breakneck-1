@@ -17,10 +17,10 @@
 using namespace sf;
 using namespace std;
 
-HUD::HUD()
+HUD::HUD(TilesetManager *tm)
 {
-	sess = Session::GetSession();
-	mini = new Minimap;
+	sess = NULL;
+	mini = new Minimap( tm );
 }
 
 HUD::~HUD()
@@ -28,17 +28,20 @@ HUD::~HUD()
 	delete mini;
 }
 
-AdventureHUD::AdventureHUD()
+AdventureHUD::AdventureHUD( TilesetManager *tm)
+	:HUD( tm )
 {
 	hType = HUDType::ADVENTURE;
 
-	timer = new TimerHUD(false);
-	modifierTimer = new TimerHUD(true);
+	sess = NULL;
 
-	keyMarkers.push_back(new KeyMarker);
-	keyMarkers.push_back(new KeyMarker);
+	timer = new TimerHUD( tm, false);
+	modifierTimer = new TimerHUD( tm, true);
 
-	powerSelector = new PowerSelector;
+	keyMarkers.push_back(new KeyMarker( tm ));
+	keyMarkers.push_back(new KeyMarker( tm ));
+
+	powerSelector = new PowerSelector(tm);
 
 	timerShowPos = Vector2f(1920 / 2, 50);
 
@@ -50,8 +53,10 @@ AdventureHUD::AdventureHUD()
 	flyCountTextShowPos = Vector2f(1920 - 30, 10);
 	flyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);
 
+	MainMenu *mm = MainMenu::GetInstance();
+
 	flyCountText.setCharacterSize(40);
-	flyCountText.setFont(sess->mainMenu->arial);
+	flyCountText.setFont(mm->arial);
 	flyCountText.setFillColor(Color::White);
 	flyCountText.setString("x100");
 	flyCountText.setOrigin(flyCountText.getLocalBounds().left +
@@ -59,7 +64,7 @@ AdventureHUD::AdventureHUD()
 	flyCountText.setString("x0");
 	flyCountText.setPosition(flyCountTextShowPos);
 
-	ts_go = sess->GetSizedTileset("Zone/gate_orb_64x64.png");
+	ts_go = tm->GetSizedTileset("Zone/gate_orb_64x64.png");
 	ts_go->SetSpriteTexture(goSpr);
 	ts_go->SetSubRect(goSpr, 2);
 
@@ -69,7 +74,7 @@ AdventureHUD::AdventureHUD()
 	miniShowPos = mini->minimapSprite.getPosition();
 	miniHidePos = Vector2f(-500, miniShowPos.y);
 
-	kinMask = sess->GetPlayer(0)->kinMask;
+	kinMask = new KinMask(tm);
 
 	kinMaskShowPos = kinMask->GetTopLeft();
 	kinMaskHidePos = Vector2f(-500, kinMaskShowPos.y);
@@ -83,11 +88,8 @@ AdventureHUD::AdventureHUD()
 	keyMarkerYOffset = 80;
 
 	bossHealthBar = NULL;
-	
-	/*momentumShowPos = momentumBar->GetTopLeft();
-	momentumHidePos = Vector2f(-200, momentumShowPos.y);*/
 
-	Reset();
+	//Reset();
 }
 
 AdventureHUD::~AdventureHUD()
@@ -99,8 +101,31 @@ AdventureHUD::~AdventureHUD()
 
 	delete powerSelector;
 
+	delete kinMask;
+
 	delete timer;
 	delete modifierTimer;
+}
+
+void AdventureHUD::SetSession(Session *p_sess)
+{
+	sess = p_sess;
+
+	mini->SetSession(sess);
+
+	for (auto it = keyMarkers.begin(); it != keyMarkers.end(); ++it)
+	{
+		(*it)->SetSession(sess);
+	}
+
+	powerSelector->SetSession(sess);
+
+	kinMask->SetSession(sess);
+
+	timer->SetSession(sess);
+	modifierTimer->SetSession(sess);
+
+	Reset();
 }
 
 void AdventureHUD::UpdateKeyNumbers()
@@ -508,14 +533,14 @@ void AdventureHUD::Draw(RenderTarget *target)
 	}
 }
 
-KinMask::KinMask( Actor *a )
+KinMask::KinMask( TilesetManager *tm )
 	:playerSkinShader("player")
 {
-	actor = a;
-	sess = actor->sess;
+	actor = NULL;
+	sess = NULL;
 
-	ts_face = sess->GetSizedTileset("HUD/kin_face_320x288.png");
-	ts_portraitBG = sess->GetSizedTileset("HUD/kin_portrait_320x288.png");
+	ts_face = tm->GetSizedTileset("HUD/kin_face_320x288.png");
+	ts_portraitBG = tm->GetSizedTileset("HUD/kin_portrait_320x288.png");
 	face.setTexture(*ts_face->texture);
 	face.setTextureRect(ts_face->GetSubRect(0));
 	playerSkinShader.SetSubRect( ts_face, ts_face->GetSubRect(0));
@@ -523,10 +548,7 @@ KinMask::KinMask( Actor *a )
 	faceBG.setTexture(*ts_portraitBG->texture);
 	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
 
-	
-	
-
-	momentumBar = new MomentumBar(sess);
+	momentumBar = new MomentumBar(tm);
 
 	SetTopLeft(Vector2f(0, 0));
 
@@ -538,15 +560,20 @@ KinMask::~KinMask()
 	delete momentumBar;
 }
 
+void KinMask::SetSession(Session *p_sess)
+{
+	sess = p_sess;
+	actor = sess->GetPlayer(0);
+	
+	Reset();
+}
+
 void KinMask::Reset()
 {
-	playerSkinShader.SetSkin(actor->sess->GetPlayerNormalSkin(0));
-	/*if (actor->owner != NULL && actor->owner->saveFile != NULL)
+	if (actor != NULL)
 	{
-		playerSkinShader.SetSkin(actor->owner->saveFile->defaultSkinIndex);
-	}*/
-
-
+		playerSkinShader.SetSkin(actor->sess->GetPlayerNormalSkin(0));
+	}
 
 	SetExpr(Expr_NEUTRAL);
 	Update(0,false);

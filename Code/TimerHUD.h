@@ -9,6 +9,7 @@ struct ImageText;
 struct Session;
 struct Tileset;
 struct PaletteShader;
+struct TilesetManager;
 
 struct TimerHUD
 {
@@ -48,9 +49,10 @@ struct TimerHUD
 	float currScale;
 	float centiScale;
 
-	TimerHUD( bool modifier );
+	TimerHUD( TilesetManager *tm, bool modifier );
 	~TimerHUD();
 
+	void SetSession(Session *p_sess);
 	void SetNumFrames(int frames);
 	void SetModifiedPlus(int frames);
 	void SetModifiedMinus(int frames);

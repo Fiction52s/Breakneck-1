@@ -8,22 +8,21 @@
 using namespace std;
 using namespace sf;
 
-KeyMarker::KeyMarker()
+KeyMarker::KeyMarker(TilesetManager *tm )
 {
-	sess = Session::GetSession();
-	//backSprite.setTexture( *ts_keys->texture );
-	//energySprite.setTexture( *ts_keyEnergy->texture );
+	sess = NULL;
 
-	//backSprite.setPosition( 1920 - 256 - 40, 1080 - 256 - 40 );
-	//energySprite.setPosition( backSprite.getPosition() );
+	ts_keyIcon = NULL;
 
 	showMaxKeys = false;
 
 	frame = 0;
 
+	MainMenu *mm = MainMenu::GetInstance();
+
 	scale = .5;
 
-	xKeyText.setFont(sess->mainMenu->arial);
+	xKeyText.setFont(mm->arial);
 	xKeyText.setCharacterSize(40);
 	xKeyText.setFillColor(Color::White);
 	xKeyText.setString("X");
@@ -31,7 +30,7 @@ KeyMarker::KeyMarker()
 		xKeyText.getLocalBounds().top + xKeyText.getLocalBounds().height / 2);
 	xKeyText.setScale(scale,scale);
 
-	slashText.setFont(sess->mainMenu->arial);
+	slashText.setFont(mm->arial);
 	slashText.setCharacterSize(80);
 	slashText.setFillColor(Color::White);
 	slashText.setString("/");
@@ -40,16 +39,12 @@ KeyMarker::KeyMarker()
 	slashText.setScale(scale, scale);
 
 	
-
-	Tileset *scoreTS = sess->GetSizedTileset("Menu/keynum_small_32x32.png");
-	ts_keyNumLight = sess->GetSizedTileset("Menu/keynum_light_80x80.png");
-	ts_keyNumDark = sess->GetSizedTileset("Menu/keynum_dark_80x80.png");
-
-	ts_enemyNumLight = sess->GetSizedTileset("Menu/keynum_red_light_80x80.png");
-	ts_enemyNumDark = sess->GetSizedTileset("Menu/keynum_red_dark_80x80.png");
-
-	ts_keyIcon = sess->ts_key;//sess->GetSizedTileset("FX/key_128x128.png");
-	ts_enemyIcon = sess->GetSizedTileset("HUD/enemy_hud_icon_64x64.png");
+	//Tileset *scoreTS = tm->GetSizedTileset("Menu/keynum_small_32x32.png");
+	ts_keyNumLight = tm->GetSizedTileset("Menu/keynum_light_80x80.png");
+	ts_keyNumDark = tm->GetSizedTileset("Menu/keynum_dark_80x80.png");
+	ts_enemyNumLight = tm->GetSizedTileset("Menu/keynum_red_light_80x80.png");
+	ts_enemyNumDark = tm->GetSizedTileset("Menu/keynum_red_dark_80x80.png");
+	ts_enemyIcon = tm->GetSizedTileset("HUD/enemy_hud_icon_64x64.png");
 
 	float textSpacingFactor = .7;
 
@@ -66,10 +61,8 @@ KeyMarker::KeyMarker()
 	keyNumberTotalHUD->SetScale(scale);
 
 	SetMarkerType(KEY);
-	//keyNumberTotalHUD = new ImageText(2, scoreTS);
 
 	SetPosition(Vector2f(1920 - 70, 50));
-	//SetPosition(Vector2f(226 + 10, 141 + 10));
 }
 
 KeyMarker::~KeyMarker()
@@ -78,6 +71,14 @@ KeyMarker::~KeyMarker()
 	delete keyNumberNeededHUDBack;
 
 	delete keyNumberTotalHUD;
+}
+
+void KeyMarker::SetSession(Session *p_sess)
+{
+	sess = p_sess;
+	ts_keyIcon = sess->ts_key;
+
+	SetMarkerType(markerType);
 }
 
 void KeyMarker::ShowMaxKeys(int k)
@@ -152,7 +153,10 @@ Vector2f KeyMarker::GetPosition()
 
 void KeyMarker::SetMarkerType(int k)
 {
-	ts_keyIcon = sess->ts_key;
+	if (sess != NULL)
+	{
+		ts_keyIcon = sess->ts_key;
+	}
 	markerType = (MarkerType)k;
 
 	Tileset *ts_icon = NULL;
@@ -171,18 +175,22 @@ void KeyMarker::SetMarkerType(int k)
 		keyNumberNeededHUDBack->ts = ts_enemyNumLight;
 	}
 
-	keyIconSpr.setTexture(*ts_icon->texture);
-	keyIconSpr.setTextureRect(ts_icon->GetSubRect(0));
-	keyIconSpr.setOrigin(keyIconSpr.getLocalBounds().width / 2,
-		keyIconSpr.getLocalBounds().height / 2);
+	if (ts_icon != NULL)
+	{
+		keyIconSpr.setTexture(*ts_icon->texture);
+		keyIconSpr.setTextureRect(ts_icon->GetSubRect(0));
 
-	if (markerType == ENEMY)
-	{
-		keyIconSpr.setScale(scale * 2, scale * 2);
-	}
-	else
-	{
-		keyIconSpr.setScale(scale, scale);
+		keyIconSpr.setOrigin(keyIconSpr.getLocalBounds().width / 2,
+			keyIconSpr.getLocalBounds().height / 2);
+
+		if (markerType == ENEMY)
+		{
+			keyIconSpr.setScale(scale * 2, scale * 2);
+		}
+		else
+		{
+			keyIconSpr.setScale(scale, scale);
+		}
 	}
 }
 

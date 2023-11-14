@@ -10,7 +10,7 @@
 #include "MusicSelector.h"
 #include "VisualEffects.h"
 #include "SaveFile.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "Actor.h"
 #include "AdventureManager.h"
 
@@ -20,7 +20,7 @@ using namespace std;
 ShardMenu::ShardMenu(TilesetManager *p_tm)
 {
 	MainMenu *mm = MainMenu::GetInstance();
-	game = NULL;
+	sess = NULL;
 	tm = p_tm;
 	totalFrame = 0;
 
@@ -226,9 +226,9 @@ ShardMenu::~ShardMenu()
 	delete sparklePool;
 }
 
-void ShardMenu::SetGame(GameSession *p_game)
+void ShardMenu::SetSession(Session *p_sess)
 {
-	game = p_game;
+	sess = p_sess;
 	UpdateWorld();
 }
 
@@ -298,11 +298,11 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 
 	int shardType = Shard::GetShardTypeFromWorldAndIndex(w, li);
 
-	assert(game != NULL);
+	assert(sess != NULL);
 
-	if (game->mainMenu->adventureManager != NULL)
+	if (sess->mainMenu->adventureManager != NULL)
 	{
-		SaveFile *saveFile = game->mainMenu->adventureManager->currSaveFile;
+		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 		if (saveFile != NULL)
 		{
 			return saveFile->IsShardCaptured(shardType);
@@ -314,7 +314,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 	}
 	else
 	{
-		return game->IsShardCaptured(shardType);
+		return sess->IsShardCaptured(shardType);
 	}
 }
 

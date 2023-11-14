@@ -43,9 +43,9 @@ struct KinMask
 	MomentumBar *momentumBar;
 	PlayerSkinShader playerSkinShader;
 
-
-	KinMask( Actor *a);
+	KinMask( TilesetManager *tm );
 	~KinMask();
+	void SetSession(Session *sess);
 	void Update( int speedLevel,
 		bool desp );
 	void Draw(sf::RenderTarget *target);
@@ -69,8 +69,9 @@ struct HUD
 	HUDType hType;
 	Minimap *mini;
 
-	HUD();
+	HUD( TilesetManager *tm);
 	virtual ~HUD();
+	virtual void SetSession(Session *p_sess) { sess = p_sess; }
 	virtual void Hide(int frames = 0) {}
 	virtual void Show(int frames = 0) {}
 	virtual void Draw(sf::RenderTarget *target) {}
@@ -86,7 +87,7 @@ struct FightHUD : HUD
 	sf::RectangleShape p0MeterRect[6];
 	sf::RectangleShape p1MeterRect[6];
 
-	FightHUD();
+	FightHUD(TilesetManager *tm);
 	~FightHUD();
 	void Draw(sf::RenderTarget *target);
 	void Update();
@@ -151,8 +152,9 @@ struct AdventureHUD : HUD
 	
 	BossHealth *bossHealthBar;
 
-	AdventureHUD();
+	AdventureHUD(TilesetManager *tm);
 	~AdventureHUD();
+	void SetSession(Session *p_sess);
 	void CheckForGo();
 	void UpdateKeyNumbers();
 	void UpdateEnemyNumbers();

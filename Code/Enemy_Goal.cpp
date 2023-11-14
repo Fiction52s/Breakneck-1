@@ -8,6 +8,7 @@
 #include "MapHeader.h"
 #include "ActorParamsBase.h"
 #include "Actor.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -21,7 +22,7 @@ Goal::Goal( ActorParams *ap )
 
 	explosionAnimFactor = 3;
 	explosionLength = 16;
-	ts_mini = GetSizedTileset("HUD/minimap_icons_64x64.png");
+	ts_mini = sess->mainMenu->GetSizedTileset("HUD/minimap_icons_64x64.png");
 
 	//world
 

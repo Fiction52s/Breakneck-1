@@ -8,7 +8,8 @@
 using namespace std;
 using namespace sf;
 
-FightHUD::FightHUD()
+FightHUD::FightHUD(TilesetManager *tm)
+	:HUD(tm)
 {
 	hType = HUDType::FIGHT;
 	Reset();

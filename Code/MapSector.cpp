@@ -59,12 +59,11 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_energyMask = worldMap->GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
 	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
 	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
-	ts_mapSelectOptions = worldMap->GetSizedTileset("HUD/score_384x96.png");
 	ts_origPowersOptions = worldMap->GetSizedTileset("Menu/parallel_play_384x128.png");
 	ts_lock = worldMap->GetSizedTileset("Menu/LevelSelect/sector_lock_256x256.png");
-	//ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
-
 	ts_levelSelectNumbers = worldMap->GetSizedTileset("Menu/LevelSelect/level_select_number_32x32.png");
+
+	ts_mapSelectOptions = ms->mainMenu->adventureManager->GetSizedTileset("HUD/score_384x96.png");
 
 	if (ms->mainMenu->adventureManager->originalProgressionMode)
 	{

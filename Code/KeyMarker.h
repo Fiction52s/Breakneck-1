@@ -7,6 +7,7 @@ struct Session;
 struct Zone;
 struct Tileset;
 struct ImageText;
+struct TilesetManager;
 
 struct KeyMarker
 {
@@ -32,8 +33,9 @@ struct KeyMarker
 	void SetMarkerType(int k);
 	Session *sess;
 	float scale;
-	KeyMarker();
+	KeyMarker(TilesetManager *tm);
 	~KeyMarker();
+	void SetSession(Session *p_sess);
 	void Reset();
 	void SetStartKeys( int neededKeys,
 		int totalKeys );

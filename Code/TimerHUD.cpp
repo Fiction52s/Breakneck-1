@@ -7,20 +7,17 @@
 using namespace std;
 using namespace sf;
 
-TimerHUD::TimerHUD( bool p_modifier )
+TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier )
 	:growBez( 0, 0, 1, 1 ), shrinkBez( 0, 0, 1, 1 )
 {
 	modifier = p_modifier;
-	sess = Session::GetSession();
-	ts_text = sess->GetSizedTileset("HUD/numbers_48x64.png");
-	//ts_text = sess->GetSizedTileset("HUD/numbers_2_50x64.png");
+	sess = NULL;//Session::GetSession();
+	ts_text = tm->GetSizedTileset("HUD/numbers_48x64.png");
 	timer = new TimerText(ts_text);
 
 	//center = Vector2f(1920 / 2, 50);
 
 	textShader = new PaletteShader("timer", "Resources/HUD/numbers_palette_2x1.png");
-
-	
 
 	textShader->SetPaletteIndex(0);
 	textShader->SetTileset(ts_text);
@@ -69,6 +66,11 @@ TimerHUD::~TimerHUD()
 	delete timer;
 	delete centiSecondTimer;
 	delete textShader;
+}
+
+void TimerHUD::SetSession(Session *p_sess)
+{
+	sess = p_sess;
 }
 
 void TimerHUD::Reset()

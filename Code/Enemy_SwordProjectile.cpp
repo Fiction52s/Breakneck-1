@@ -4,7 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_SwordProjectile.h"
-#include "Eye.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -13,7 +13,7 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-SwordProjectile::SwordProjectile()
+SwordProjectile::SwordProjectile(Actor *player)
 	:Enemy(EnemyType::EN_SWORDPROJECTILE, NULL)//, false, 1, false)
 {
 	SetNumActions(S_Count);
@@ -35,7 +35,7 @@ SwordProjectile::SwordProjectile()
 	hitLimit = 6;
 	facingRight = true;
 
-	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = player->ts_swordProjectile;//GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

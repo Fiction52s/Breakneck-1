@@ -80,21 +80,19 @@ Wire::Wire( Actor *p, bool r)
 	data.antiWireGrassCount = 0;
 
 	int tipIndex = 0;
-	ts_wire = player->sess->GetTileset( "Kin/Powers/wires_16x16.png", 16, 16 );
+	ts_wire = player->ts_wire;
+	ts_wireNode = player->ts_wireNode;
+	ts_wireTip = player->ts_wireTip;
+
 	if( r )
 	{
-		ts_miniHit = player->sess->GetTileset( "Env/rain_64x64.png", 64, 64 );
 		tipIndex = 0;
 	}
 	else
 	{
 		tipIndex = 2;
-		ts_miniHit = player->sess->GetTileset( "Env/rain_64x64.png", 64, 64 );
 	}
 
-	ts_wireNode = player->sess->GetSizedTileset("Kin/Powers/wire_node_16x16.png");
-
-	ts_wireTip = player->sess->GetTileset( "Kin/Powers/wire_tips_16x16.png", 16, 16 );
 
 	wireShader.setUniform("u_texture", *ts_wire->texture);//sf::Shader::CurrentTexture);
 	wireShader.setUniform("u_quant", 0.f);

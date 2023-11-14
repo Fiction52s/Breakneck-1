@@ -352,6 +352,12 @@ struct MainMenu : TilesetManager
 
 	AdventureManager *adventureManager;
 
+	Tileset *ts_water;
+	sf::Shader *waterShaders;
+	sf::Shader *minimapWaterShaders;
+
+	Tileset *ts_terrain;
+	sf::Shader terrainShader;
 	
 	MainMenu(bool p_steamOn);
 	~MainMenu();
@@ -360,6 +366,10 @@ struct MainMenu : TilesetManager
 	double accumulator;
 	double currentTime;
 	int modeFrame;
+
+	void SetupWaterShaders();
+	void SetupWaterShader(sf::Shader &sh, int waterIndex);
+	bool LoadPolyShader();
 
 	void SetMode(Mode m);
 	void ReturnToWorldAfterLevel();
