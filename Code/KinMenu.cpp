@@ -349,7 +349,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 	if (xchanged != 0 || ychanged != 0)
 	{
-		game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_change"));
+		game->pauseSoundNodeList->ActivateSound(game->GetSound("pause_change"));
 
 		if (ySelector->currIndex == 1 && xSelector->currIndex > secondRowMax)
 		{

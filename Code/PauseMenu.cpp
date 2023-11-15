@@ -356,7 +356,7 @@ void PauseMenu::TabLeft()
 	if( index < 0 )
 		index = 5;	
 	SetTab((Tab)index);
-	game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("tab_left"));
+	game->pauseSoundNodeList->ActivateSound(game->GetSound("tab_left"));
 }
 
 void PauseMenu::TabRight()
@@ -366,7 +366,7 @@ void PauseMenu::TabRight()
 	if( index > 5 )
 		index = 0;
 	SetTab((Tab)index );
-	game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("tab_right"));
+	game->pauseSoundNodeList->ActivateSound(game->GetSound("tab_right"));
 }
 
 void PauseMenu::SetTab( Tab t )
@@ -739,7 +739,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				optionsMenu->optionModeSelector->currIndex = 0;
 			}*/
 
-			game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_off"));
+			game->pauseSoundNodeList->ActivateSound(game->GetSound("pause_off"));
 			game->SetGameSessionState(GameSession::RUN);
 			game->soundNodeList->Pause(false);
 		}
@@ -837,7 +837,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 			if (res != 0)
 			{
-				game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_change"));
+				game->pauseSoundNodeList->ActivateSound(game->GetSound("pause_change"));
 			}
 			int h = 200;
 			//selectSprite.setPosition( 100, 100 + h * pauseSelector->currIndex);

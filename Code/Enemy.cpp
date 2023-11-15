@@ -523,8 +523,11 @@ bool Enemy::SetHitParams()
 	return true;
 }
 
+//sometimes the wrong constructor can be called because these are ambiguous without a cast
+//doesn't change much but good to be aware of.
 Enemy::Enemy(EnemyType t, ActorParams *ap)
-	:hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
+	:hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit ),
+	bodyPtrVec( 2 )
 {
 	type = t;
 	if (ap == NULL)
@@ -538,7 +541,8 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 }
 
 Enemy::Enemy(EnemyType t, int w)
-	:hurtBody(CollisionBox::BoxType::Hurt), hitBody(CollisionBox::BoxType::Hit)
+	:hurtBody(CollisionBox::BoxType::Hurt), hitBody(CollisionBox::BoxType::Hit),
+	bodyPtrVec(2)
 {
 	type = t;
 	OnCreate(NULL, w);
@@ -612,7 +616,7 @@ void Enemy::OnCreate(ActorParams *ap,
 	if (CanTouchSpecter())
 	{
 		//specterTester = NULL;
-		specterTester = new SpecterTester(this);
+		specterTester = NULL;//new SpecterTester(this);
 	}
 	else
 	{
@@ -667,12 +671,11 @@ void Enemy::OnCreate(ActorParams *ap,
 		cutObject = NULL;
 	}
 
-	if (!hurtShader.loadFromFile("Resources/Shader/enemyhurt_shader.frag", sf::Shader::Fragment))
+	if (type != EN_BASICEFFECT)
 	{
-		cout << "couldnt load enemy enemyhurt shader" << endl;
-		assert(false);
+		sess->mainMenu->LoadShader(hurtShader, "enemyhurt");
+		hurtShader.setUniform("toColor", Glsl::Vec4(Color::White.r, Color::White.g, Color::White.b, Color::White.a));
 	}
-	hurtShader.setUniform("toColor", Glsl::Vec4(Color::White.r, Color::White.g, Color::White.b, Color::White.a));
 	//hurtShader.setUniform("auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a));
 
 	if (world == 0)
@@ -784,11 +787,7 @@ void Enemy::SetKey()
 
 		if (!keyShaderLoaded)
 		{
-			if (!keyShader.loadFromFile("Resources/Shader/key_shader.frag", sf::Shader::Fragment))
-			{
-				cout << "couldnt load enemy key shader" << endl;
-				assert(false);
-			}
+			sess->mainMenu->LoadShader(keyShader, "enemykey");
 			
 			keyShaderLoaded = true;
 		}
@@ -1377,7 +1376,8 @@ void Enemy::SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source)
 
 void Enemy::CheckSpecters()
 {
-	specterProtected = false;
+	//depreciated
+	/*specterProtected = false;
 	if (currShield != NULL)
 		currShield->specterProtected = specterProtected;
 
@@ -1394,7 +1394,7 @@ void Enemy::CheckSpecters()
 		r.height = extra * 2;
 
 		specterTester->Query(r);
-	}
+	}*/
 }
 
 void Enemy::UpdatePrePhysics()

@@ -319,7 +319,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::list<ParamsInfo> extraEnemyNames;
 	int keyFrame;
 	int numTotalKeys;
-	SoundManager *soundManager;
 	SoundNodeList * soundNodeList;
 	SoundNodeList * pauseSoundNodeList;
 	int pauseFrames;
@@ -347,7 +346,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	MainMenu *mainMenu;
 	std::vector<Actor*> players;
 	
-	HitboxManager *hitboxManager;
+	
 	bool ownsBG;
 	Background *background;
 	QuadTree * terrainTree;
@@ -529,7 +528,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ActivateZone(Zone * z, bool instant = false);
 	void SetPlayerOptionField(int pIndex);
 	void SetupHitboxManager();
-	void SetupSoundManager();
 	void SetupSoundLists();
 	void SetupTimeBubbles();
 	bool IsSessTypeGame();

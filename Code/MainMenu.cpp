@@ -69,6 +69,7 @@
 #include "FeedbackManager.h"
 
 #include "Minimap.h"
+#include "HitboxManager.h"
 
 using namespace std;
 using namespace sf;
@@ -123,7 +124,7 @@ bool MainMenu::LoadPolyShader()
 	//global tileset
 	ts_terrain = GetSizedTileset("Env/terrain_128x128.png");
 
-	if (!terrainShader.loadFromFile("Resources/Shader/mat_shader3.frag", sf::Shader::Fragment))
+	if (!terrainShader.loadFromFile("Resources/Shader/terrain.frag", sf::Shader::Fragment))
 	{
 		cout << "terrain shader not loading" << endl;
 		//cout << "MATERIAL  NOT LOADING CORRECTLY:" << matFile << endl;
@@ -162,7 +163,7 @@ void MainMenu::SetupWaterShaders()
 
 void MainMenu::SetupWaterShader(sf::Shader &waterShader, int waterIndex)
 {
-	if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
+	if (!waterShader.loadFromFile("Resources/Shader/water.frag", sf::Shader::Fragment))
 	{
 		cout << "water SHADER NOT LOADING CORRECTLY" << endl;
 	}
@@ -640,6 +641,8 @@ MainMenu::MainMenu( bool p_steamOn)
 		remoteStorageManager = NULL;
 	}
 
+	kinHitboxManager = new HitboxManager("Kin/Hitboxes");
+
 	CreatePlayerTilesets();
 
 	globalFile = new GlobalSaveFile;
@@ -657,6 +660,21 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
+
+	//player shaders
+	RegisterShader("colorswap");
+	RegisterShader("playerdesperation");
+	RegisterShader("playersuper");
+	RegisterShader("motionghost");
+	RegisterShader("shield");
+	RegisterShader("wire");
+
+	//enemy shaders
+	RegisterShader("enemyhurt");
+	RegisterShader("enemykey");
+
+	
+
 
 	transLength = 60;
 	transFrame = 0;
@@ -1027,6 +1045,11 @@ MainMenu::~MainMenu()
 {
 	assert(currInstance == this);
 	currInstance = NULL;
+
+	if (kinHitboxManager != NULL)
+	{
+		delete kinHitboxManager;
+	}
 
 	if (waterShaders != NULL)
 	{
@@ -4496,6 +4519,65 @@ void MainMenu::TitleMenuModeUpdate()
 	}
 
 	UpdateMenuOptionText();
+}
+
+void MainMenu::RegisterShader(const std::string &shaderType)
+{
+	assert(shaderStringsStreams.count(shaderType) == 0);
+
+	ifstream is( "Resources/Shader/" + shaderType + ".frag");
+
+	shaderStringsStreams[shaderType] << is.rdbuf();
+
+	cout << "registering shader: " << shaderType << "\n";
+}
+
+bool MainMenu::TryAssignShader(sf::Shader &sh, const std::string &shaderType)
+{
+	if (shaderStringsStreams.count(shaderType) == 0)
+	{
+		return false;
+	}
+	else
+	{
+		if (!sh.loadFromMemory(shaderStringsStreams[shaderType].str(), sf::Shader::Fragment))
+		{
+			cout << "reigstered shader not loading correctly: " << shaderType << "\n";
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+}
+
+bool MainMenu::LoadShader(sf::Shader &sh, const std::string &shaderType)
+{
+	if (shaderStringsStreams.count(shaderType) == 0)
+	{
+		RegisterShader(shaderType);
+
+		if (sh.loadFromMemory(shaderStringsStreams[shaderType].str(), sf::Shader::Fragment))
+		{
+			return true;
+		}
+		else
+		{
+			cout << "unregistered shader not loading correctly: " << shaderType << "\n";
+		}
+	}
+	else
+	{
+		if (sh.loadFromMemory(shaderStringsStreams[shaderType].str(), sf::Shader::Fragment))
+		{
+			return true;
+		}
+		else
+		{
+			cout << "registered shader not loading correctly: " << shaderType << "\n";
+		}
+	}
 }
 
 void MainMenu::DrawMode( Mode m )

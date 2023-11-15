@@ -23,7 +23,7 @@ FillRingSection::FillRingSection(TilesetManager &tm,
 	
 
 	//ringType = (RingType)p_rType;
-	if (!ringShader.loadFromFile("Resources/Shader/ring_shader.frag", sf::Shader::Fragment))
+	if (!ringShader.loadFromFile("Resources/Shader/ring.frag", sf::Shader::Fragment))
 	{
 		cout << "ring shader not loading correctly!" << endl;
 		assert(false);

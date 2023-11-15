@@ -152,7 +152,7 @@ WorldMap::WorldMap()
 
 	colonySelectSprZoomed.setScale(1.f / 8.f, 1.f / 8.f );
 	
-	if (!zoomShader.loadFromFile("Resources/Shader/zoomblur_shader.frag", sf::Shader::Fragment))
+	if (!zoomShader.loadFromFile("Resources/Shader/zoomblur.frag", sf::Shader::Fragment))
 	{
 		cout << "zoom blur SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);
@@ -163,7 +163,7 @@ WorldMap::WorldMap()
 	zoomShader.setUniform("radial_origin", Vector2f( .5, .5 ) );
 	zoomShader.setUniform("radial_size", Vector2f( 1.f / 1920, 1.f / 1080 ));
 
-	if (!selectableRingShader.loadFromFile("Resources/Shader/colonyselectable_shader.frag", sf::Shader::Fragment ))
+	if (!selectableRingShader.loadFromFile("Resources/Shader/colonyselectable.frag", sf::Shader::Fragment ))
 	{
 		cout << "selectable ring shader not loading correctly" << endl;
 		assert(0);

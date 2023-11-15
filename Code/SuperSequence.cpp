@@ -19,7 +19,7 @@ SuperSequence::SuperSequence()
 
 	animFactor = 3;
 
-	birdSound = sess->soundManager->GetSound("Bosses/bird_super_01");
+	birdSound = sess->GetSound("Bosses/bird_super_01");
 
 	portraitLeftStart = Vector2f(-500, 0);
 	portraitLeftEnd = Vector2f(0, 0);

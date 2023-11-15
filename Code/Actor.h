@@ -1315,6 +1315,8 @@ struct Actor : QuadTreeCollider,
 	int GetSurvivalFrame();
 	void TryStartWaterGlide();
 
+	void InitSounds();
+
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
 	bool TryThrowSwordProjectileBasic();
 	bool TryThrowEnemySwordProjectileBasic();
@@ -1450,6 +1452,7 @@ struct Actor : QuadTreeCollider,
 	Collider &GetCollider();
 	SoundInfo * GetSound(const std::string &name);
 	CollisionBody *CreateCollisionBody(const std::string &str);
+	void CreateCollisionBodies();
 	bool IsGroundAttack(int a);
 	GameController *GetController(int index);
 	void HandleGroundTrigger(GroundTrigger *trigger);

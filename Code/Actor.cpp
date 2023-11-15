@@ -778,12 +778,83 @@ void Actor::SetSession(Session *p_sess,
 
 SoundInfo * Actor::GetSound(const std::string &name)
 {
-	return sess->soundManager->GetSound(name);
+	return MainMenu::GetInstance()->soundManager.GetSound(name);
+	/*if (sess != NULL)
+	{
+		return sess->GetSound(name);
+	}
+	else
+	{
+		
+	}*/
+}
+
+void Actor::CreateCollisionBodies()
+{
+	fairHitboxes[0] = CreateCollisionBody("fairahitboxes");
+	fairHitboxes[1] = CreateCollisionBody("fairbhitboxes");
+	fairHitboxes[2] = CreateCollisionBody("fairchitboxes");
+
+	uairHitboxes[0] = CreateCollisionBody("uairahitboxes");
+	uairHitboxes[1] = CreateCollisionBody("uairbhitboxes");
+	uairHitboxes[2] = CreateCollisionBody("uairchitboxes");
+
+	dairHitboxes[0] = CreateCollisionBody("dairahitboxes");
+	dairHitboxes[1] = CreateCollisionBody("dairbhitboxes");
+	dairHitboxes[2] = CreateCollisionBody("dairchitboxes");
+
+	standHitboxes1[0] = CreateCollisionBody("stand_att_01_a_hitboxes");
+	standHitboxes1[1] = CreateCollisionBody("stand_att_01_b_hitboxes");
+	standHitboxes1[2] = CreateCollisionBody("stand_att_01_c_hitboxes");
+
+	standHitboxes2[0] = CreateCollisionBody("stand_att_02_a_hitboxes");
+	standHitboxes2[1] = CreateCollisionBody("stand_att_02_b_hitboxes");
+	standHitboxes2[2] = CreateCollisionBody("stand_att_02_c_hitboxes");
+
+	standHitboxes3[0] = CreateCollisionBody("stand_att_03_a_hitboxes");
+	standHitboxes3[1] = CreateCollisionBody("stand_att_03_b_hitboxes");
+	standHitboxes3[2] = CreateCollisionBody("stand_att_03_c_hitboxes");
+
+	standHitboxes4[0] = CreateCollisionBody("stand_att_04_a_hitboxes");
+	standHitboxes4[1] = CreateCollisionBody("stand_att_04_b_hitboxes");
+	standHitboxes4[2] = CreateCollisionBody("stand_att_04_c_hitboxes");
+
+	dashHitboxes1[0] = CreateCollisionBody("dash_att_01_a_hitboxes");
+	dashHitboxes1[1] = CreateCollisionBody("dash_att_01_b_hitboxes");
+	dashHitboxes1[2] = CreateCollisionBody("dash_att_01_c_hitboxes");
+
+	dashHitboxes2[0] = CreateCollisionBody("dash_att_02_a_hitboxes");
+	dashHitboxes2[1] = CreateCollisionBody("dash_att_02_b_hitboxes");
+	dashHitboxes2[2] = CreateCollisionBody("dash_att_02_c_hitboxes");
+
+	dashHitboxes3[0] = CreateCollisionBody("dash_att_03_a_hitboxes");
+	dashHitboxes3[1] = CreateCollisionBody("dash_att_03_b_hitboxes");
+	dashHitboxes3[2] = CreateCollisionBody("dash_att_03_c_hitboxes");
+
+	wallHitboxes[0] = CreateCollisionBody("wallahitboxes");
+	wallHitboxes[1] = CreateCollisionBody("wallbhitboxes");
+	wallHitboxes[2] = CreateCollisionBody("wallchitboxes");
+
+	steepClimbHitboxes[0] = CreateCollisionBody("climbahitboxes");
+	steepClimbHitboxes[1] = CreateCollisionBody("climbbhitboxes");
+	steepClimbHitboxes[2] = CreateCollisionBody("climbchitboxes");
+
+	steepSlideHitboxes[0] = CreateCollisionBody("slideahitboxes");
+	steepSlideHitboxes[1] = CreateCollisionBody("slidebhitboxes");
+	steepSlideHitboxes[2] = CreateCollisionBody("slidechitboxes");
+
+	diagUpHitboxes[0] = CreateCollisionBody("airdashupahitboxes");
+	diagUpHitboxes[1] = CreateCollisionBody("airdashupbhitboxes");
+	diagUpHitboxes[2] = CreateCollisionBody("airdashupchitboxes");
+
+	diagDownHitboxes[0] = CreateCollisionBody("airdashdownahitboxes");
+	diagDownHitboxes[1] = CreateCollisionBody("airdashdownbhitboxes");
+	diagDownHitboxes[2] = CreateCollisionBody("airdashdownchitboxes");
 }
 
 CollisionBody *Actor::CreateCollisionBody(const std::string &str)
 {
-	return sess->hitboxManager->CreateBody(str, currHitboxInfo);
+	return MainMenu::GetInstance()->kinHitboxManager->CreateBody(str, currHitboxInfo);
 }
 
 void Actor::UpdatePowersMenu()
@@ -3293,6 +3364,10 @@ Actor::Actor()
 
 	SetupActionFunctions();
 	SetupTilesets();
+
+	InitSounds();
+
+	CreateCollisionBodies();
 }
 
 Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
@@ -3327,7 +3402,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	preSimulationState = NULL;
 	futurePositions = NULL;
-	soundInfos.resize(PlayerSounds::S_Count);
+	
 
 	normalWaterMaxFallSpeed = 4.0;
 
@@ -3508,59 +3583,20 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	motionGhostSpacing = 1;
 	ghostSpacingCounter = 0;
 
-	//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
-	//numActiveEdges = 0;
-	//assert( Shader::isAvailable() && "help me" );
-	//if (!sh.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
-	////if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	//{
-
-	//	cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
-	//	assert( 0 && "player shader not loaded" );
-	//}
-	//Tileset *ts_auraTest = sess->GetSizedTileset("FX/aura1_64x64.png");
-	//Tileset *ts_auraTest2 = sess->GetSizedTileset("FX/aura2_64x64.png");
-	//Color auraColor(Color::Cyan);
-	//auraColor.a = 200;
-	//SetAuraColor(auraColor);
-	//ts_auraTest2->texture->setRepeated(true);
-	//ts_auraTest->texture->setRepeated(true);
-	//skinShader.pShader.setUniform("u_auraTex", *(ts_auraTest->texture));
-	//skinShader.pShader.setUniform("u_auraTex2", *(ts_auraTest2->texture));
-
-
-	//SetSkin(SKIN_NORMAL);
-
-
-	if (!shieldShader.loadFromFile("Resources/Shader/shield_shader.frag", sf::Shader::Fragment))
-
-	{
-		cout << "SHIELD SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "shield shader not loaded");
-	}
+	sess->mainMenu->LoadShader(shieldShader, "shield");
 	shieldShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 	
 	fullBlockShieldColor = Color( 237, 29, 36 );
 	halfBlockShieldColor = Color(255, 201, 14);
 
 	
-
-	if (!despFaceShader.loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
-		cout << "desp face SHADER NOT LOADING CORRECTLY" << endl;
-		assert( 0 && "desp shader not loaded" );
-	}
+	sess->mainMenu->LoadShader(despFaceShader, "colorswap");
 	//uniform vec4 toColor;
 	//uniform vec4 fromColor;
 	Color c( 0x66, 0xee, 0xff );
 	despFaceShader.setUniform( "fromColor", ColorGL( c ) );
 
-	if (!motionGhostShader.loadFromFile("Resources/Shader/motionghost_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "motion ghost SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "desp shader not loaded");
-	}
+	sess->mainMenu->LoadShader(motionGhostShader, "motionghost");
 		
 	Color mgc = Color::Cyan;
 	mgc.a = 25;
@@ -3569,90 +3605,22 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 
-	if (!playerDespShader.loadFromFile("Resources/Shader/playerdesperation.frag", sf::Shader::Fragment))
-		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
-		cout << "desp player SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "desp shader not loaded");
-	}
+	sess->mainMenu->LoadShader(playerDespShader, "playerdesperation");
 	playerDespShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
-	if (!playerSuperShader.loadFromFile("Resources/Shader/playersuper_shader.frag", sf::Shader::Fragment))
-		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
-		cout << "super player SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "super shader not loaded");
-	}
+
+	sess->mainMenu->LoadShader(playerSuperShader, "playersuper");
 	playerSuperShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
 	//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 	
-	/*if( !timeSlowShader.loadFromFile( "Shader/timeslow_shader.frag", sf::Shader::Fragment ) )
+	/*if( !timeSlowShader.loadFromFile( "Shader/timeslow.frag", sf::Shader::Fragment ) )
 	{
 		cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "time slow shader not loaded" );
 	}*/
-		
-	soundInfos[PlayerSounds::S_HITCEILING] = GetSound("Kin/ceiling");
-	soundInfos[PlayerSounds::S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
-	//soundInfos[PlayerSounds::S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
-	soundInfos[PlayerSounds::S_DAIR] = GetSound("Kin/dair");
-	soundInfos[PlayerSounds::S_DOUBLE] = GetSound("Kin/doublejump");
-	soundInfos[PlayerSounds::S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
-	soundInfos[PlayerSounds::S_FAIR1] = GetSound("Kin/fair");
-	soundInfos[PlayerSounds::S_JUMP] = GetSound("Kin/jump");
-	soundInfos[PlayerSounds::S_LAND] = GetSound("Kin/land");
-	soundInfos[PlayerSounds::S_RUN_STEP1] = GetSound( "Kin/run_01a" );
-	soundInfos[PlayerSounds::S_RUN_STEP2] = GetSound( "Kin/run_01b" );
-	soundInfos[PlayerSounds::S_SLIDE] = GetSound("Kin/slide");
-	soundInfos[PlayerSounds::S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
-	soundInfos[PlayerSounds::S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
-	soundInfos[PlayerSounds::S_STANDATTACK] = GetSound("Kin/stand");
-	soundInfos[PlayerSounds::S_STEEPSLIDE] = GetSound("Kin/steep");
-	soundInfos[PlayerSounds::S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
-	soundInfos[PlayerSounds::S_UAIR] = GetSound("Kin/uair");
-	soundInfos[PlayerSounds::S_WALLATTACK] = GetSound("Kin/wall_att");
-	soundInfos[PlayerSounds::S_WALLJUMP] = GetSound("Kin/walljump");
-	soundInfos[PlayerSounds::S_WALLSLIDE] = GetSound("Kin/wallslide");
-
-	soundInfos[PlayerSounds::S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
-	soundInfos[PlayerSounds::S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
-	soundInfos[PlayerSounds::S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
-	soundInfos[PlayerSounds::S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
-
-	soundInfos[PlayerSounds::S_ENEMY_GATE_UNLOCKED] = GetSound("Test/Explode");
-	soundInfos[PlayerSounds::S_OPEN_ENEMY_GATE] = GetSound("Zone/Gate_Open_03");
-
-	soundInfos[PlayerSounds::S_HIT] = GetSound("Enemies/turret_shoot");
-
-	soundInfos[PlayerSounds::S_DESTROY_GOAL] = GetSound("Test/Explode");
-	soundInfos[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_06");
-
-	soundInfos[PlayerSounds::S_ENTER_W1] = GetSound("Test/Crawler_Theme_01");
-	soundInfos[PlayerSounds::S_ENTER_W2] = GetSound("Test/Bird_Theme_04");
-	soundInfos[PlayerSounds::S_ENTER_W3] = GetSound("Test/Coyote_Theme_01");
-	soundInfos[PlayerSounds::S_ENTER_W4] = GetSound("Test/Tiger_Theme_01");
-	soundInfos[PlayerSounds::S_ENTER_W5] = GetSound("Test/Gator_Theme_01");
-	soundInfos[PlayerSounds::S_ENTER_W6] = GetSound("Test/Skele_Theme_01");
-	soundInfos[PlayerSounds::S_ENTER_W7] = GetSound("Test/Core_Theme_01");
-	soundInfos[PlayerSounds::S_ENTER_W8] = GetSound("Test/Bear_Theme_01");
-	soundInfos[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
-	//soundInfos[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
-
-	/*soundInfos[S_DASH_START] = GetSound( "Kin/dash_02" );
-	soundInfos[S_HIT] = GetSound( "kin_hitspack_short" );
-	soundInfos[S_HURT] = GetSound( "Kin/hit_1b" );
-	soundInfos[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
-	soundInfos[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
-		
-	soundInfos[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
-	soundInfos[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
-		
-	soundInfos[S_TIMESLOW] = GetSound( "Kin/time_slow_1" );
-	soundInfos[S_ENTER] = GetSound( "Kin/enter" );
-	soundInfos[S_EXIT] = GetSound( "Kin/exit" );
-
-	soundInfos[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
-	soundInfos[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
+	
+	InitSounds();
 
 
 	currHitboxInfo = new HitboxInfo();
@@ -3732,67 +3700,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	if (true)
 	{
-		fairHitboxes[0] = CreateCollisionBody("fairahitboxes"); 
-		fairHitboxes[1] = CreateCollisionBody("fairbhitboxes");
-		fairHitboxes[2] = CreateCollisionBody("fairchitboxes");
-
-		uairHitboxes[0] = CreateCollisionBody("uairahitboxes");
-		uairHitboxes[1] = CreateCollisionBody("uairbhitboxes");
-		uairHitboxes[2] = CreateCollisionBody("uairchitboxes");
-
-		dairHitboxes[0] = CreateCollisionBody("dairahitboxes");
-		dairHitboxes[1] = CreateCollisionBody("dairbhitboxes");
-		dairHitboxes[2] = CreateCollisionBody("dairchitboxes");
-
-		standHitboxes1[0] = CreateCollisionBody("stand_att_01_a_hitboxes"); 
-		standHitboxes1[1] = CreateCollisionBody("stand_att_01_b_hitboxes");
-		standHitboxes1[2] = CreateCollisionBody("stand_att_01_c_hitboxes");
-
-		standHitboxes2[0] = CreateCollisionBody("stand_att_02_a_hitboxes");
-		standHitboxes2[1] = CreateCollisionBody("stand_att_02_b_hitboxes");
-		standHitboxes2[2] = CreateCollisionBody("stand_att_02_c_hitboxes");
-
-		standHitboxes3[0] = CreateCollisionBody("stand_att_03_a_hitboxes");
-		standHitboxes3[1] = CreateCollisionBody("stand_att_03_b_hitboxes");
-		standHitboxes3[2] = CreateCollisionBody("stand_att_03_c_hitboxes");
-
-		standHitboxes4[0] = CreateCollisionBody("stand_att_04_a_hitboxes");
-		standHitboxes4[1] = CreateCollisionBody("stand_att_04_b_hitboxes");
-		standHitboxes4[2] = CreateCollisionBody("stand_att_04_c_hitboxes");
-
-		dashHitboxes1[0] = CreateCollisionBody("dash_att_01_a_hitboxes");
-		dashHitboxes1[1] = CreateCollisionBody("dash_att_01_b_hitboxes");
-		dashHitboxes1[2] = CreateCollisionBody("dash_att_01_c_hitboxes");
-
-		dashHitboxes2[0] = CreateCollisionBody("dash_att_02_a_hitboxes");
-		dashHitboxes2[1] = CreateCollisionBody("dash_att_02_b_hitboxes");
-		dashHitboxes2[2] = CreateCollisionBody("dash_att_02_c_hitboxes");
-
-		dashHitboxes3[0] = CreateCollisionBody("dash_att_03_a_hitboxes");
-		dashHitboxes3[1] = CreateCollisionBody("dash_att_03_b_hitboxes");
-		dashHitboxes3[2] = CreateCollisionBody("dash_att_03_c_hitboxes");
-
-		
-
-		wallHitboxes[0] = CreateCollisionBody("wallahitboxes");
-		wallHitboxes[1] = CreateCollisionBody("wallbhitboxes");
-		wallHitboxes[2] = CreateCollisionBody("wallchitboxes");
-
-		steepClimbHitboxes[0] = CreateCollisionBody("climbahitboxes");
-		steepClimbHitboxes[1] = CreateCollisionBody("climbbhitboxes");
-		steepClimbHitboxes[2] = CreateCollisionBody("climbchitboxes");
-
-		steepSlideHitboxes[0] = CreateCollisionBody("slideahitboxes");
-		steepSlideHitboxes[1] = CreateCollisionBody("slidebhitboxes");
-		steepSlideHitboxes[2] = CreateCollisionBody("slidechitboxes");
-
-		diagUpHitboxes[0] = CreateCollisionBody("airdashupahitboxes");
-		diagUpHitboxes[1] = CreateCollisionBody("airdashupbhitboxes");
-		diagUpHitboxes[2] = CreateCollisionBody("airdashupchitboxes");
-
-		diagDownHitboxes[0] = CreateCollisionBody("airdashdownahitboxes");
-		diagDownHitboxes[1] = CreateCollisionBody("airdashdownbhitboxes");
-		diagDownHitboxes[2] = CreateCollisionBody("airdashdownchitboxes");
+		CreateCollisionBodies();
 
 
 
@@ -3954,46 +3862,21 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	gstrirgb.setTexture( *tsgstrirgb->texture);
 
 
-
-	if (!swordShaders[0].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-		assert( 0 && "sword shader not loaded" );
-	}
+	sess->mainMenu->LoadShader(swordShaders[0], "colorswap");
 	swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
 	swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
-	//swordShaders[1] = swordShaders[0];
-	if (!swordShaders[1].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-		assert( 0 && "sword shader not loaded" );
-	}
+
+	sess->mainMenu->LoadShader(swordShaders[1], "colorswap");
 	swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
 	swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
-	//swordShaders[2] = swordShaders[0];
-	if (!swordShaders[2].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-		assert( 0 && "sword shader not loaded" );
-	}
+	
+	sess->mainMenu->LoadShader(swordShaders[2], "colorswap");
 	swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
 	swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	grindActionLength = 32;
 
 	repeatingSound = NULL;
-	//SetAction( SPAWNWAIT );
-
-	//if (owner != NULL)
-	//{
-	//	SetAction(INTROBOOST);//INTRO
-	//	frame = 0;
-	//}
-	//else
-	//{
-	//	SetAction(JUMP);
-	//	frame = 1;
-	//}
 		
 	Init();
 
@@ -4248,6 +4131,73 @@ Actor::~Actor()
 		delete rightWire;
 	if (leftWire != NULL)
 		delete leftWire;
+}
+
+void Actor::InitSounds()
+{
+	soundInfos.resize(PlayerSounds::S_Count);
+
+	soundInfos[PlayerSounds::S_HITCEILING] = GetSound("Kin/ceiling");
+	soundInfos[PlayerSounds::S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
+	//soundInfos[PlayerSounds::S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
+	soundInfos[PlayerSounds::S_DAIR] = GetSound("Kin/dair");
+	soundInfos[PlayerSounds::S_DOUBLE] = GetSound("Kin/doublejump");
+	soundInfos[PlayerSounds::S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
+	soundInfos[PlayerSounds::S_FAIR1] = GetSound("Kin/fair");
+	soundInfos[PlayerSounds::S_JUMP] = GetSound("Kin/jump");
+	soundInfos[PlayerSounds::S_LAND] = GetSound("Kin/land");
+	soundInfos[PlayerSounds::S_RUN_STEP1] = GetSound("Kin/run_01a");
+	soundInfos[PlayerSounds::S_RUN_STEP2] = GetSound("Kin/run_01b");
+	soundInfos[PlayerSounds::S_SLIDE] = GetSound("Kin/slide");
+	soundInfos[PlayerSounds::S_SPRINT_STEP1] = GetSound("Kin/sprint_01a");
+	soundInfos[PlayerSounds::S_SPRINT_STEP2] = GetSound("Kin/sprint_01b");
+	soundInfos[PlayerSounds::S_STANDATTACK] = GetSound("Kin/stand");
+	soundInfos[PlayerSounds::S_STEEPSLIDE] = GetSound("Kin/steep");
+	soundInfos[PlayerSounds::S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
+	soundInfos[PlayerSounds::S_UAIR] = GetSound("Kin/uair");
+	soundInfos[PlayerSounds::S_WALLATTACK] = GetSound("Kin/wall_att");
+	soundInfos[PlayerSounds::S_WALLJUMP] = GetSound("Kin/walljump");
+	soundInfos[PlayerSounds::S_WALLSLIDE] = GetSound("Kin/wallslide");
+
+	soundInfos[PlayerSounds::S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
+	soundInfos[PlayerSounds::S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
+	soundInfos[PlayerSounds::S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
+	soundInfos[PlayerSounds::S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
+
+	soundInfos[PlayerSounds::S_ENEMY_GATE_UNLOCKED] = GetSound("Test/Explode");
+	soundInfos[PlayerSounds::S_OPEN_ENEMY_GATE] = GetSound("Zone/Gate_Open_03");
+
+	soundInfos[PlayerSounds::S_HIT] = GetSound("Enemies/turret_shoot");
+
+	soundInfos[PlayerSounds::S_DESTROY_GOAL] = GetSound("Test/Explode");
+	soundInfos[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_06");
+
+	soundInfos[PlayerSounds::S_ENTER_W1] = GetSound("Test/Crawler_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W2] = GetSound("Test/Bird_Theme_04");
+	soundInfos[PlayerSounds::S_ENTER_W3] = GetSound("Test/Coyote_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W4] = GetSound("Test/Tiger_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W5] = GetSound("Test/Gator_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W6] = GetSound("Test/Skele_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W7] = GetSound("Test/Core_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W8] = GetSound("Test/Bear_Theme_01");
+	soundInfos[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
+	//soundInfos[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
+
+	/*soundInfos[S_DASH_START] = GetSound( "Kin/dash_02" );
+	soundInfos[S_HIT] = GetSound( "kin_hitspack_short" );
+	soundInfos[S_HURT] = GetSound( "Kin/hit_1b" );
+	soundInfos[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
+	soundInfos[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
+
+	soundInfos[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
+	soundInfos[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
+
+	soundInfos[S_TIMESLOW] = GetSound( "Kin/time_slow_1" );
+	soundInfos[S_ENTER] = GetSound( "Kin/enter" );
+	soundInfos[S_EXIT] = GetSound( "Kin/exit" );
+
+	soundInfos[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
+	soundInfos[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
 }
 
 double Actor::GetMaxSpeed()

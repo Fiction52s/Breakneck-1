@@ -77,7 +77,7 @@ void FlashedImage::SetBG(SceneBG * p_bg)
 		{
 			bgSplitShader = new Shader;
 
-			if (!bgSplitShader->loadFromFile("Resources/Shader/split_shader.frag", sf::Shader::Fragment))
+			if (!bgSplitShader->loadFromFile("Resources/Shader/split.frag", sf::Shader::Fragment))
 			{
 				cout << "couldnt load enemy split shader" << endl;
 				assert(false);
@@ -124,7 +124,7 @@ void FlashedImage::SetSplit(Tileset *ts, Tileset *borderTS, int tileIndex, sf::V
 	splitShader = new Shader;
 
 
-	if (!splitShader->loadFromFile("Resources/Shader/split_shader.frag", sf::Shader::Fragment))
+	if (!splitShader->loadFromFile("Resources/Shader/split.frag", sf::Shader::Fragment))
 	{
 		cout << "couldnt load enemy split shader" << endl;
 		assert(false);

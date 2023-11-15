@@ -7,6 +7,7 @@
 #include "Grass.h"
 #include "GGPO.h"
 #include "EditorRail.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -60,10 +61,7 @@ Wire::Wire( Actor *p, bool r)
 
 	minimapQuads = new Vertex[numQuadVertices];
 
-	if (!wireShader.loadFromFile("Resources/Shader/wire_shader.frag", sf::Shader::Fragment))
-	{
-		assert(0);
-	}
+	MainMenu::GetInstance()->LoadShader(wireShader, "wire");
 
 	data.state = IDLE;
 	data.numPoints = 0;

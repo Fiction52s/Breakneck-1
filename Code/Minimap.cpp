@@ -21,7 +21,7 @@ Minimap::Minimap(TilesetManager *tm)
 
 	minimapTex = mm->minimapTexture;
 
-	if (!minimapShader.loadFromFile("Resources/Shader/minimap_shader.frag", sf::Shader::Fragment))
+	if (!minimapShader.loadFromFile("Resources/Shader/minimap.frag", sf::Shader::Fragment))
 	{
 		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0 && "minimap shader not loaded");

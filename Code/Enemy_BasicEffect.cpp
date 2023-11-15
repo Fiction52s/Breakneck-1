@@ -12,7 +12,7 @@ using namespace sf;
 
 
 BasicEffect::BasicEffect ()
-	:Enemy( EnemyType::EN_BASICEFFECT, NULL )//, false, 0, false )
+	:Enemy( EnemyType::EN_BASICEFFECT, (ActorParams*)NULL )//, false, 0, false )
 {
 	spawned = true;
 	pauseImmune = false;

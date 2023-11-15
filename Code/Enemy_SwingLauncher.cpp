@@ -90,7 +90,7 @@ SwingLauncher::SwingLauncher(ActorParams *ap)
 
 	ts = GetSizedTileset("Enemies/W6/swing_launcher_128x128.png");
 
-	if (!armShader.loadFromFile("Resources/Shader/swinglauncherarm_shader.frag", sf::Shader::Fragment))
+	if (!armShader.loadFromFile("Resources/Shader/swinglauncherarm.frag", sf::Shader::Fragment))
 	{
 		assert(0);
 	}

@@ -1186,7 +1186,7 @@ TerrainPolygon::TerrainPolygon()
 
 	//ts_water = sess->GetSizedTileset("Env/water_128x128.png");
 
-	//if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
+	//if (!waterShader.loadFromFile("Resources/Shader/water.frag", sf::Shader::Fragment))
 	//{
 	//	cout << "water SHADER NOT LOADING CORRECTLY" << endl;
 	//}
@@ -3383,7 +3383,7 @@ void TerrainPolygon::UpdateMaterialType()
 			texInd = game->matIndices[texInd];
 		}*/
 
-		pShader = &sess->terrainShader;//&sess->polyShaders[texInd];
+		pShader = &sess->mainMenu->terrainShader;//&sess->polyShaders[texInd];
 		miniShader = NULL;
 		tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
 	}
@@ -5195,7 +5195,7 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 		{
 			if (terrainWorldType <= SECRETCORE)
 			{
-				Tileset *ts = sess->ts_terrain;
+				Tileset *ts = sess->mainMenu->ts_terrain;
 
 
 				int tile = (8 * terrainWorldType + terrainVariation) * 4;
@@ -5205,7 +5205,7 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 				float height = ts->texture->getSize().y;
 
 
-				sess->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
+				sess->mainMenu->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
 
 				for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
 				{
@@ -5213,7 +5213,7 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 					tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
 				}
 
-				sess->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
+				sess->mainMenu->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
 
 				/*sess->terrainShader.setUniform("u_quad",
 				Glsl::Vec4(ir.left / width, ir.top / height,
@@ -5407,7 +5407,7 @@ void TerrainPolygon::DrawAsSecretCover(sf::RenderTarget *target)
 		{
 			if (terrainWorldType <= SECRETCORE)
 			{
-				Tileset *ts = sess->ts_terrain;
+				Tileset *ts = sess->mainMenu->ts_terrain;
 
 
 				int tile = (8 * terrainWorldType + terrainVariation) * 4;
@@ -5417,7 +5417,7 @@ void TerrainPolygon::DrawAsSecretCover(sf::RenderTarget *target)
 				float height = ts->texture->getSize().y;
 
 
-				sess->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
+				sess->mainMenu->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
 
 				for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
 				{
@@ -5425,7 +5425,7 @@ void TerrainPolygon::DrawAsSecretCover(sf::RenderTarget *target)
 					tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
 				}
 
-				sess->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
+				sess->mainMenu->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
 
 				/*sess->terrainShader.setUniform("u_quad",
 				Glsl::Vec4(ir.left / width, ir.top / height,

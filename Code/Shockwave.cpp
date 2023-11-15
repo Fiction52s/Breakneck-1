@@ -9,7 +9,7 @@ Shockwave::Shockwave()
 {
 	Session *sess = Session::GetSession();
 
-	if (!shockShader.loadFromFile("Resources/Shader/shockwave_shader.frag", sf::Shader::Fragment))
+	if (!shockShader.loadFromFile("Resources/Shader/shockwave.frag", sf::Shader::Fragment))
 	{
 		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
 	}

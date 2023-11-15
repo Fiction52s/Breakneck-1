@@ -20,7 +20,7 @@
 struct AdventureManager;
 struct MapHeader;
 struct ClosedBetaScreen;
-
+struct HitboxManager;
 struct Config;
 
 struct SaveFile;
@@ -425,6 +425,10 @@ struct MainMenu : TilesetManager
 	static sf::RenderTexture *brushPreviewTexture;
 	static sf::RenderTexture *extraScreenTexture;
 	static sf::RenderTexture *auraCheckTexture;
+
+	HitboxManager *kinHitboxManager;
+
+	std::map<std::string, std::stringstream> shaderStringsStreams;
 	
 	//Tileset *ts_kinTitle[7];
 	TitleScreen *titleScreen;
@@ -458,6 +462,10 @@ struct MainMenu : TilesetManager
 	static void copyDirectoryRecursively(
 		const boost::filesystem::path& sourceDir,
 		const boost::filesystem::path& destinationDir);
+
+	void RegisterShader(const std::string &shader);
+	bool TryAssignShader(sf::Shader &sh, const std::string &shaderType);
+	bool LoadShader(sf::Shader &sh, const std::string &shaderType);
 
 	//singleton
 	static MainMenu *GetInstance();

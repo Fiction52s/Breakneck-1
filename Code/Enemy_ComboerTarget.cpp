@@ -24,7 +24,7 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 	BasicCircleHitBodySetup(100);
 	BasicCircleHurtBodySetup(100);
 
-	if (!myShader.loadFromFile("Resources/Shader/comboertarget_shader.frag", sf::Shader::Fragment))
+	if (!myShader.loadFromFile("Resources/Shader/comboertarget.frag", sf::Shader::Fragment))
 	{
 		cout << "couldnt load comboer target shader" << endl;
 		assert(false);

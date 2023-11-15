@@ -1482,10 +1482,6 @@ void GameSession::ProcessAllTerrain()
 
 	int numMats = matSet.size();
 
-	SetupWaterShaders();
-
-	LoadPolyShader();
-
 	int index = 0;
 	for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
 	{
@@ -1740,7 +1736,7 @@ bool GameSession::Load()
 		//leaf_1_128x128
 	//for (int i = 0; i < 50; ++i)
 	//{
-	//	if (!speedBarShader.loadFromFile("Resources/Shader/speedbar_shader.frag", sf::Shader::Fragment))
+	//	if (!speedBarShader.loadFromFile("Resources/Shader/speedbar.frag", sf::Shader::Fragment))
 	//	{
 	//		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
 	//		//assert( 0 && "polygon shader not loaded" );
@@ -1789,7 +1785,6 @@ bool GameSession::Load()
 	SetupEnemyTypes();
 
 	SetupHitboxManager();
-	SetupSoundManager();
 	SetupSoundLists();
 
 	//old pause menu init
@@ -2070,7 +2065,11 @@ bool GameSession::Load()
 
 	if (hasGoal)
 	{
-		SetupGoalFlow();
+		if (!IsParallelSession())
+		{
+			SetupGoalFlow();
+		}
+		
 		SetupGoalPulse();
 	}
 	else
@@ -2271,7 +2270,7 @@ void GameSession::SetupShaders()
 
 	shadersLoaded = true;
 
-	if (!timeSlowShader.loadFromFile("Resources/Shader/clone_shader.frag", sf::Shader::Fragment))
+	if (!timeSlowShader.loadFromFile("Resources/Shader/clone.frag", sf::Shader::Fragment))
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
 	}
@@ -4110,7 +4109,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 	if (first || oldShaderZoom != zoom)
 	{
 		oldShaderZoom = zoom;
-		terrainShader.setUniform("zoom", cam.GetZoom());
+		mainMenu->terrainShader.setUniform("zoom", cam.GetZoom());
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
@@ -4122,7 +4121,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 	{
 		oldShaderBotLeft = botLeft;
 
-		terrainShader.setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+		mainMenu->terrainShader.setUniform("topLeft", botLeft); //just need to change the name topleft eventually
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
@@ -4130,15 +4129,15 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 		}
 	}
 	
-	terrainShader.setUniform("playertest", playertest);
+	mainMenu->terrainShader.setUniform("playertest", playertest);
 
 	if (background != NULL)
 	{
-		terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
+		mainMenu->terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
 	}
 	else
 	{
-		terrainShader.setUniform("skyColor", ColorGL(Color::White));
+		mainMenu->terrainShader.setUniform("skyColor", ColorGL(Color::White));
 	}
 	
 

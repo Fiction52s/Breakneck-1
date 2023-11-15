@@ -21,7 +21,7 @@ using namespace sf;
 BlockerChain::BlockerChain(ActorParams *ap)
 	:EnemyChain(ap, EN_BLOCKERCHAIN)
 {
-	if (!blockerShader.loadFromFile("Resources/Shader/blocker_shader.frag", sf::Shader::Fragment))
+	if (!blockerShader.loadFromFile("Resources/Shader/blocker.frag", sf::Shader::Fragment))
 	{
 		cout << "couldnt load blocker shader" << endl;
 		assert(false);

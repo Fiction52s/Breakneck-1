@@ -205,18 +205,6 @@ void Session::SetupSoundLists()
 	}
 }
 
-void Session::SetupSoundManager()
-{
-	if (parentGame != NULL)
-	{
-		soundManager = parentGame->soundManager;
-	}
-	else if (soundManager == NULL)
-	{
-		soundManager = new SoundManager;
-	}
-}
-
 void Session::SetParentGame(GameSession *game)
 {
 	parentGame = game;
@@ -230,19 +218,6 @@ void Session::SetPlayerOptionField(int pIndex)
 
 void Session::SetupHitboxManager()
 {
-	if (parentGame != NULL)
-	{
-		hitboxManager = parentGame->hitboxManager;
-	}
-	else if (hitboxManager == NULL)
-	{
-		hitboxManager = new HitboxManager( "Kin/Hitboxes" );
-	}
-		
-
-	//dont clear this because it will probably contain all the player hitboxes
-	//else
-	//hitboxManager->
 }
 
 void Session::SetupEnemyType(ParamsInfo &pi, bool unlisted )
@@ -1064,7 +1039,7 @@ void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
 
 SoundInfo *Session::GetSound(const std::string &name)
 {
-	return soundManager->GetSound(name);
+	return mainMenu->soundManager.GetSound(name);
 }
 
 SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundInfo *si, bool loop)
@@ -1646,7 +1621,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	players.resize(MAX_PLAYERS);
 
-	soundManager = NULL;
 	soundNodeList = NULL;
 	pauseSoundNodeList = NULL;
 	
@@ -1669,7 +1643,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	
 	background = NULL;
 	ownsBG = true;
-	hitboxManager = NULL;
 	inactiveEffects = NULL;
 
 	activeEnemyList = NULL;
@@ -1694,13 +1667,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 Session::~Session()
 {
-	//new stuff
-	if ( parentGame == NULL && soundManager != NULL)
-	{
-		delete soundManager;
-		soundManager = NULL;
-	}
-
 	if (parentGame == NULL && soundNodeList != NULL)
 	{
 		delete soundNodeList;
@@ -1862,13 +1828,6 @@ Session::~Session()
 	CleanupBarriers(); //has to be before background deletion for warp barriers
 
 	CleanupBackground();
-
-	if ( parentGame == NULL && hitboxManager != NULL)
-	{
-		delete hitboxManager;
-		hitboxManager = NULL;
-	}
-		
 
 	for (auto it = types.begin(); it != types.end(); ++it)
 	{

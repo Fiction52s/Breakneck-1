@@ -65,13 +65,13 @@ Gate::Gate( Session *p_sess, int p_cat, int p_var )
 	stateLength[LOCKFOREVER] = 1;
 	stateLength[OPEN] = 1;
 	
-	if (!gateShader.loadFromFile("Resources/Shader/gate_shader.frag", sf::Shader::Fragment))
+	if (!gateShader.loadFromFile("Resources/Shader/gate.frag", sf::Shader::Fragment))
 	{
 		cout << "failed to load gate shader" << endl;
 		assert(0);
 	}
 
-	if (!centerShader.loadFromFile("Resources/Shader/gatecenter_shader.frag", sf::Shader::Fragment))
+	if (!centerShader.loadFromFile("Resources/Shader/gatecenter.frag", sf::Shader::Fragment))
 	{
 		cout << "failed to load gate center shader" << endl;
 		assert(0);

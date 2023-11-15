@@ -11,12 +11,7 @@ PlayerSkinShader::PlayerSkinShader(const std::string &shaderStr)
 {
 	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_164x30.png");
 
-	assert(Shader::isAvailable() && "help me");
-	if (!pShader.loadFromFile("Resources/Shader/" + shaderStr + "_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "PLAYER SKIN SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "player skin shader not loaded");
-	}
+	MainMenu::GetInstance()->LoadShader(pShader, shaderStr);
 	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	if (shaderStr == "player")

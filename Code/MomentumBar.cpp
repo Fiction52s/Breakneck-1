@@ -29,7 +29,7 @@ MomentumBar::MomentumBar(TilesetManager *tm)
 	levelNumSpr.setTexture(*ts_num->texture);
 	levelNumSpr.setTextureRect(ts_num->GetSubRect(0));
 
-	if (!partShader.loadFromFile("Resources/Shader/momentum_shader.frag", sf::Shader::Fragment))
+	if (!partShader.loadFromFile("Resources/Shader/momentum.frag", sf::Shader::Fragment))
 	{
 		cout << "momentum bar SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);

@@ -19,7 +19,7 @@ GoalFlow::GoalFlow(Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 
 	sess = Session::GetSession();
 
-	if (!flowShader.loadFromFile("Resources/Shader/flow_shader.frag", sf::Shader::Fragment))
+	if (!flowShader.loadFromFile("Resources/Shader/flow.frag", sf::Shader::Fragment))
 	{
 		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);

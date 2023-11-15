@@ -1482,9 +1482,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	createTerrainModeUI = NULL;
 	enemyEdgePolygon = NULL;
 	moveAction = NULL;
-	LoadPolyShader();
-
-	SetupWaterShaders();
 
 	playerInputBoxGroup = new PlayerBoxGroup(this, 1, 450, 450, 100);
 	playerInputBoxGroup->SetMode(PlayerBox::Mode::MODE_CONTROLLER_ONLY);
@@ -3623,7 +3620,7 @@ void EditSession::SetupTerrainSelectPanel()
 			matTypeRects[TERRAINLAYER_NORMAL][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
-				ts_terrain, ts_terrain->GetSubRect( (worldI * maxTerrainVarPerWorld + i) * 4 ),
+				mainMenu->ts_terrain, mainMenu->ts_terrain->GetSubRect( (worldI * maxTerrainVarPerWorld + i) * 4 ),
 				terrainGridSize);
 
 			//TerrainPolygon::IsInversePhaseType()
@@ -3657,7 +3654,7 @@ void EditSession::SetupTerrainSelectPanel()
 			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 			Vector2f(TerrainPolygon::GetWaterWorld(i) * terrainGridSize, 
 				TerrainPolygon::GetWaterIndexInWorld(i) * terrainGridSize),
-			ts_water, ts_water->GetSubRect(i * 2),
+			mainMenu->ts_water, mainMenu->ts_water->GetSubRect(i * 2),
 			terrainGridSize);
 		matTypeRects[TERRAINLAYER_WATER][i]->Init();
 		matTypeRects[TERRAINLAYER_WATER][i]->SetName(TerrainPolygon::GetWaterNameFromType(i));
@@ -3701,7 +3698,7 @@ void EditSession::SetupTerrainSelectPanel()
 			matTypeRects[TERRAINLAYER_FLY][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
-				ts_terrain,
+				mainMenu->ts_terrain,
 				IntRect(0, 0, 128, 128),
 				terrainGridSize);
 			matTypeRects[TERRAINLAYER_FLY][ind]->Init();
@@ -3941,7 +3938,6 @@ void EditSession::Init()
 	logMenu = new LogMenu(this);
 	logMenu->SetSession(this);
 
-	SetupSoundManager();
 	SetupSoundLists();
 
 	SetupSuperSequence();
@@ -8712,8 +8708,8 @@ void EditSession::CreatePreview(bool thumbnail, bool hideSecret )
 	float zoom = vSize.x / 960;
 	Vector2f botLeft(pView.getCenter().x - vSize.x / 2, pView.getCenter().y + vSize.y / 2);
 	
-	terrainShader.setUniform("zoom", zoom);
-	terrainShader.setUniform("topLeft", botLeft);
+	mainMenu->terrainShader.setUniform("zoom", zoom);
+	mainMenu->terrainShader.setUniform("topLeft", botLeft);
 
 	oldShaderZoom = -1; //updates the shader back to normal after this is over
 
@@ -12858,7 +12854,7 @@ void EditSession::UpdateCurrTerrainType()
 {
 	int ind = currTerrainWorld[TERRAINLAYER_NORMAL] 
 		* MAX_TERRAIN_VARIATION_PER_WORLD + currTerrainVar[TERRAINLAYER_NORMAL];
-	currTerrainTypeSpr.setTexture(*ts_terrain->texture);//*ts_polyShaders[ind]->texture);
+	currTerrainTypeSpr.setTexture(*mainMenu->ts_terrain->texture);//*ts_polyShaders[ind]->texture);
 	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
 }
 
@@ -12923,13 +12919,13 @@ void EditSession::UpdatePolyShaders()
 	
 	bool first = oldShaderZoom < 0;
 
-	terrainShader.setUniform("u_cameraAngle",camAngle );
+	mainMenu->terrainShader.setUniform("u_cameraAngle",camAngle );
 	//terrainShader.setUniform("u_seed", (float)totalGameFrames );
 	if (first || oldShaderZoom != zoom ) //first run
 	{
 		oldShaderZoom = zoom;
 
-		terrainShader.setUniform("zoom", zoom);
+		mainMenu->terrainShader.setUniform("zoom", zoom);
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
@@ -12941,7 +12937,7 @@ void EditSession::UpdatePolyShaders()
 	{
 		oldShaderBotLeft = botLeft;
 
-		terrainShader.setUniform("topLeft", botLeft);
+		mainMenu->terrainShader.setUniform("topLeft", botLeft);
 
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)

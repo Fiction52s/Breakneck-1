@@ -15,13 +15,7 @@ PaletteShader::PaletteShader(const std::string &shaderStr,
 
 	paletteArray = new sf::Glsl::Vec4[paletteSize];
 
-	assert(Shader::isAvailable() && "help me");
-	if (!pShader.loadFromFile("Resources/Shader/" + shaderStr + "_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "Palette SHADER NOT LOADING CORRECTLY: " << shaderStr  << endl;
-		assert(0 && "palette shader not loaded");
-	}
-	//pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+	MainMenu::GetInstance()->LoadShader(pShader, shaderStr);
 
 	SetPaletteIndex(0);
 }
