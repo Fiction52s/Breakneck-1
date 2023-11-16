@@ -18,8 +18,8 @@ Ghost::Ghost( ActorParams *ap )
 
 	approachSpeed = 5.0;
 
-	detectionRadius = 600;
-	awakeCap = 30;
+	detectionRadius = 800;
+	awakeCap = 5;
 
 	actionLength[WAKEUP] = 30;
 	actionLength[APPROACH] = 2;
@@ -65,8 +65,15 @@ void Ghost::ResetEnemy()
 	data.latchedOn = false;
 	data.totalFrame = 0;
 
+	data.approachTile = 0;
+
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
+
+	//hurtBody.GetCollisionBoxes(0).front().offset = V2d(0, 0);
+	//hitBody.GetCollisionBoxes(0).front().offset = V2d(0, 0);
+	hurtBody.GetCollisionBoxes(0).front().rw = 32;
+	hitBody.GetCollisionBoxes(0).front().rw = 32;
 	
 	facingRight = (sess->GetPlayerPos(0).x - GetPosition().x) >= 0;
 
@@ -163,7 +170,7 @@ void Ghost::ProcessState()
 	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == WAKEUP)
 	{
-		if( WithinDistance( playerPos, GetPosition(), 1000 ))
+		if( WithinDistance( playerPos, GetPosition(), detectionRadius))
 		{
 			data.awakeFrames++;
 
@@ -193,6 +200,47 @@ void Ghost::ProcessState()
 			if (data.awakeFrames < 0)
 				data.awakeFrames = 0;
 		}
+	}
+
+
+	if (action == APPROACH)
+	{
+		double lenDiff = length(data.offsetPlayer);//owner->GetPlayer(0)->position - position;
+												   //length(diff);
+		if (lenDiff < 300)
+		{
+			data.approachTile = 4;
+			hurtBody.GetCollisionBoxes(0).front().rw = 70;
+			hitBody.GetCollisionBoxes(0).front().rw = 70;
+		}
+		else if (lenDiff < 400)
+		{
+			data.approachTile = 3;
+			hurtBody.GetCollisionBoxes(0).front().rw = 60;
+			hitBody.GetCollisionBoxes(0).front().rw = 60;
+		}
+		else if (lenDiff < 500)
+		{
+			data.approachTile = 2;
+			hurtBody.GetCollisionBoxes(0).front().rw = 50;
+			hitBody.GetCollisionBoxes(0).front().rw = 50;
+		}
+		else
+		{
+			data.approachTile = 1;
+			hurtBody.GetCollisionBoxes(0).front().rw = 40;
+			hitBody.GetCollisionBoxes(0).front().rw = 40;
+		}
+	}
+	else if (action == WAKEUP)
+	{
+		hurtBody.GetCollisionBoxes(0).front().rw = 32;
+		hitBody.GetCollisionBoxes(0).front().rw = 32;
+	}
+	else if( action == BITE )
+	{
+		hurtBody.GetCollisionBoxes(0).front().rw = 70;
+		hitBody.GetCollisionBoxes(0).front().rw = 70;
 	}
 }
 
@@ -225,49 +273,40 @@ void Ghost::UpdateSprite()
 		currPosInfo.position = data.basePos + data.offsetPlayer;
 	}
 	
-	double lenDiff = length(data.offsetPlayer);//owner->GetPlayer(0)->position - position;
 	//length(diff);
-	IntRect ir;
+
+	int tile = 0;
+
 	switch (action)
 	{
 	case WAKEUP:
-		ir = ts->GetSubRect(0);
+		tile = 0;
 		break;
 	case APPROACH:
-		if (lenDiff < 300)
-		{
-			ir = ts->GetSubRect(4);
-		}
-		else if (lenDiff < 400)
-		{
-			ir = ts->GetSubRect(3);
-		}
-		else if (lenDiff < 500)
-		{
-			ir = ts->GetSubRect(2);
-		}
-		else
-		{
-			ir = ts->GetSubRect(1);
-		}
+		tile = data.approachTile;
 		break;
 	case BITE:
-		ir = ts->GetSubRect((frame / animFactor[BITE]) + 5);
+		tile = frame / animFactor[BITE] + 5;
 		break;
 	case EXPLODE:
-		ir = ts->GetSubRect(frame / animFactor[EXPLODE] + 12);
+		tile = frame / animFactor[EXPLODE] + 12;
 		break;
 	case RETURN:
-		ir = ts->GetSubRect(0);
+		tile = 0;
 		break;
 	}
 
-	if (!facingRight)
+	if (action == RETURN)
 	{
-		ir = sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height);
+		float factor = ((float)frame) / (actionLength[RETURN] * animFactor[RETURN] - 1);
+		sprite.setColor(Color(255, 255, 255, factor * 255.f));
+	}
+	else
+	{
+		sprite.setColor(Color::White);
 	}
 
-	sprite.setTextureRect(ir);
+	ts->SetSubRect(sprite, tile, !facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 }

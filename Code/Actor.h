@@ -602,6 +602,8 @@ struct Actor : QuadTreeCollider,
 
 	const static int MAX_FRAMES_TO_LIVE = (100 * 60 * 60) - 1;
 
+	const static int NUM_GRIND_QUADS = 4;
+
 	PState *pState;
 
 	//havent put into rollback yet
@@ -770,7 +772,7 @@ struct Actor : QuadTreeCollider,
 	bool reversed;
 	double storedReverseSpeed;
 
-	double grindActionCurrent;
+	double distanceGrinded;
 	int framesGrinding;
 	int framesNotGrinding;
 	int framesSinceGrindAttempt;
@@ -1037,21 +1039,10 @@ struct Actor : QuadTreeCollider,
 	Tileset *tileset[Count];
 	Tileset *ts_dodecaSmall;
 	Tileset *ts_dodecaBig;
-	sf::Sprite gsdodeca;
-	sf::Sprite gstriblue;
-	sf::Sprite gstricym;
-	sf::Sprite gstrigreen;
-	sf::Sprite gstrioran;
-	sf::Sprite gstripurp;
-	sf::Sprite gstrirgb;
+	
+	Tileset *ts_grind;
+	sf::Vertex grindQuads[4 * NUM_GRIND_QUADS];
 	int grindActionLength;
-	Tileset * tsgsdodeca;
-	Tileset * tsgstriblue;
-	Tileset * tsgstricym;
-	Tileset * tsgstrigreen;
-	Tileset * tsgstrioran;
-	Tileset * tsgstripurp;
-	Tileset * tsgstrirgb;
 	Tileset *ts_grindAttackFX;
 	
 	RelEffectInstance *currLockedFairFX;

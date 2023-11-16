@@ -68,8 +68,10 @@ GravityFaller::GravityFaller(ActorParams *ap)
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::GREEN;
 
-	BasicCircleHurtBodySetup(40);
-	BasicCircleHitBodySetup(40);
+	//BasicCircleHurtBodySetup(40);
+	//BasicCircleHitBodySetup(40);
+	BasicRectHitBodySetup(40, 40, PI / 4, V2d(0, 0), V2d());
+	BasicRectHurtBodySetup(40, 40, PI / 4, V2d(0, 0), V2d());
 	hitBody.hitboxInfo = hitboxInfo;
 
 	chargeLength = 20;

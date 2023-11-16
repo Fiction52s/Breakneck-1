@@ -3942,8 +3942,6 @@ void EditSession::Init()
 
 	SetupSuperSequence();
 
-	SetupHitboxManager();
-
 //#ifdef GGPO_ON
 //	SetupNetplay();
 //#endif

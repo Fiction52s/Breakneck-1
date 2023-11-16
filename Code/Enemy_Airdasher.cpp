@@ -62,8 +62,23 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	sprite.setTexture(*ts->texture);	
 	sprite.setScale(scale, scale);
 
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
+	//BasicCircleHurtBodySetup(48);
+	//BasicCircleHitBodySetup(48);
+
+	hitBody.ResetFrames();
+	hitBody.SetupNumFrames(2);
+	hitBody.SetupNumBoxesOnFrame(0, 1);
+	hitBody.SetupNumBoxesOnFrame(1, 1);
+	hitBody.AddBasicCircle(0, 48, 0, V2d());
+	hitBody.AddBasicRect(1, 60, 25, 0, V2d(0,-10));
+	
+
+	hurtBody.ResetFrames();
+	hurtBody.SetupNumFrames(2);
+	hurtBody.SetupNumBoxesOnFrame(0, 1);
+	hurtBody.SetupNumBoxesOnFrame(1, 1);
+	hurtBody.AddBasicCircle(0, 48, 0, V2d());
+	hurtBody.AddBasicRect(1, 60, 25, 0, V2d(0, -10));
 
 	
 	hitboxInfo = new HitboxInfo;
@@ -102,12 +117,16 @@ void Airdasher::ResetEnemy()
 	action = S_FLOAT;
 	frame = 0;
 	sprite.setRotation(0);
-	facingRight = true;
+	
+	if (PlayerDir().x >= 0)
+		facingRight = true;
+	else
+		facingRight = false;
 
 	data.physStepIndex = 0;
 
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	UpdateHitboxes();
 	UpdateSprite();
@@ -115,8 +134,40 @@ void Airdasher::ResetEnemy()
 
 void Airdasher::UpdateHitboxes()
 {
-	BasicUpdateHitboxes();
-	
+	V2d position = GetPosition();
+
+
+	double ang = 0;
+
+	if (action == S_DASH)
+	{
+		ang = GetVectorAngleCW(data.dashDir);
+		if (!facingRight)
+		{
+			ang = ang + PI;
+		}
+	}
+	//can update this with a universal angle at some point
+	if (!hurtBody.IsEmpty())
+	{
+		hurtBody.SetBasicPos(currHurtboxFrame, position, ang);
+		hurtBody.GetCollisionBoxes(currHurtboxFrame).at(0).flipHorizontal = !facingRight;
+	}
+
+	if (!hitBody.IsEmpty())
+	{
+		hitBody.SetBasicPos(currHitboxFrame, position, ang);
+		hitBody.GetCollisionBoxes(currHitboxFrame).at(0).flipHorizontal = !facingRight;
+	}
+
+	auto comboBoxes = GetComboHitboxes();
+	if (comboBoxes != NULL)
+	{
+		for (auto it = comboBoxes->begin(); it != comboBoxes->end(); ++it)
+		{
+			(*it).globalPosition = position;
+		}
+	}
 	
 
 	//switch (action)
@@ -192,6 +243,9 @@ void Airdasher::ProcessState()
 				action = S_DASH;
 				frame = 0;
 				data.physStepIndex = 0;
+
+				DefaultHitboxesOn(1);
+				DefaultHurtboxesOn(1);
 				
 				//cout << "angle : " << angle << endl;
 			}
@@ -288,6 +342,9 @@ void Airdasher::UpdateEnemyPhysics()
 			action = S_OUT;
 			frame = 0;
 			data.physStepIndex = 0;
+
+			DefaultHitboxesOn(0);
+			DefaultHurtboxesOn(0);
 			break;
 		}
 		double f = dashBez.GetValue(a);

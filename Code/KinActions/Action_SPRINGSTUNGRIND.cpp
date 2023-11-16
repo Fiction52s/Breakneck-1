@@ -414,25 +414,7 @@ void Actor::SPRINGSTUNGRIND_UpdateSprite()
 
 	SetSpriteTile(0, r);
 
-	grindActionCurrent += grindSpeed / 20;
-	while (grindActionCurrent >= grindActionLength)
-	{
-		grindActionCurrent -= grindActionLength;
-	}
-	while (grindActionCurrent < 0)
-	{
-		grindActionCurrent += grindActionLength;
-	}
-
-	int grindActionInt = grindActionCurrent;
-
-	gsdodeca.setTextureRect(tsgsdodeca->GetSubRect((grindActionInt * 5) % grindActionLength));
-	gstriblue.setTextureRect(tsgstriblue->GetSubRect((grindActionInt * 5) % grindActionLength));
-	gstricym.setTextureRect(tsgstricym->GetSubRect(grindActionInt % grindActionLength)); //broken?
-	gstrigreen.setTextureRect(tsgstrigreen->GetSubRect((grindActionInt * 5) % grindActionLength));
-	gstrioran.setTextureRect(tsgstrioran->GetSubRect(grindActionInt% grindActionLength));
-	gstripurp.setTextureRect(tsgstripurp->GetSubRect(grindActionInt% grindActionLength));
-	gstrirgb.setTextureRect(tsgstrirgb->GetSubRect(grindActionInt% grindActionLength));
+	
 
 
 
@@ -458,24 +440,6 @@ void Actor::SPRINGSTUNGRIND_UpdateSprite()
 	V2d pp = grindEdge->GetPosition(edgeQuantity);
 
 	sprite->setPosition(pp.x, pp.y);
-
-
-	gsdodeca.setOrigin(gsdodeca.getLocalBounds().width / 2, gsdodeca.getLocalBounds().height / 2);
-	gstriblue.setOrigin(gstriblue.getLocalBounds().width / 2, gstriblue.getLocalBounds().height / 2);
-	gstricym.setOrigin(gstricym.getLocalBounds().width / 2, gstricym.getLocalBounds().height / 2);
-	gstrigreen.setOrigin(gstrigreen.getLocalBounds().width / 2, gstrigreen.getLocalBounds().height / 2);
-	gstrioran.setOrigin(gstrioran.getLocalBounds().width / 2, gstrioran.getLocalBounds().height / 2);
-	gstripurp.setOrigin(gstripurp.getLocalBounds().width / 2, gstripurp.getLocalBounds().height / 2);
-	gstrirgb.setOrigin(gstrirgb.getLocalBounds().width / 2, gstrirgb.getLocalBounds().height / 2);
-
-
-	gsdodeca.setPosition(pp.x, pp.y);
-	gstriblue.setPosition(pp.x, pp.y);
-	gstricym.setPosition(pp.x, pp.y);
-	gstrigreen.setPosition(pp.x, pp.y);
-	gstrioran.setPosition(pp.x, pp.y);
-	gstripurp.setPosition(pp.x, pp.y);
-	gstrirgb.setPosition(pp.x, pp.y);
 }
 
 void Actor::SPRINGSTUNGRIND_TransitionToAction(int a)

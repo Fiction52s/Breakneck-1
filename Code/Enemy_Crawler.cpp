@@ -87,7 +87,7 @@ Crawler::Crawler(ActorParams *ap )
 	animFactor[START_UNDERGROUND] = 1;
 	animFactor[IDLE] = 1;
 
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHurtBodySetup(40);
 	BasicCircleHitBodySetup(32);
 
 	hitboxInfo = new HitboxInfo;

@@ -43,7 +43,10 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	hitboxInfo->kbDir = normalize(V2d(1, -.3));
 	hitboxInfo->hType = HitboxInfo::BLUE;
 	
-	BasicRectHurtBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
+	//BasicRectHurtBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
+	//BasicRectHitBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
+
+	BasicRectHurtBodySetup(40, 80, 0, V2d(0, 40));//72, 0, V2d(0, 30));
 	BasicRectHitBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
 	hitBody.hitboxInfo = hitboxInfo;
 

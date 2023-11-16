@@ -17,6 +17,7 @@ struct Ghost : Enemy
 
 	struct MyData : StoredEnemyData
 	{
+		int approachTile;
 		int awakeFrames;
 		double latchStartAngle;
 		V2d basePos;

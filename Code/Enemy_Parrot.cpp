@@ -49,8 +49,8 @@ Parrot::Parrot(ActorParams *ap)
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::RED;
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32, 0, V2d( 10, 0 ), V2d());
+	BasicCircleHurtBodySetup(40, 0, V2d( 10, 0 ), V2d());
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::PARROT, 12, 1, GetPosition(), V2d(1, 0), 0, 90, false);

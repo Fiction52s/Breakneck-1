@@ -60,8 +60,8 @@ Firefly::Firefly(ActorParams *ap)
 	data.pulseBody.BasicCircleSetup(pulseRadius * scale, 0, V2d());
 	data.pulseBody.hitboxInfo = hitboxInfo;
 
-	BasicCircleHitBodySetup(16);
-	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(40);
 
 	hitBody.hitboxInfo = hitboxInfo;
 

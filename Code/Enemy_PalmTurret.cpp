@@ -83,8 +83,10 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	laserHitboxInfo->hType = HitboxInfo::ORANGE;
 
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	//BasicCircleHurtBodySetup(32);
+	//BasicCircleHitBodySetup(32);
+	BasicRectHitBodySetup(50, 70, 0, V2d(0, 0), V2d());
+	BasicRectHurtBodySetup(50, 70, 0, V2d(0, 0), V2d());
 	hitBody.hitboxInfo = hitboxInfo;
 
 	laserBody.BasicRectSetup( laserLength/2, finalLaserWidth/2, 0, V2d());

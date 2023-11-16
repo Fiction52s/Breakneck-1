@@ -43,8 +43,8 @@ SwarmMember::SwarmMember(Swarm *p_parent, int index, V2d &p_targetOffset,
 
 
 	
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(30);
+	BasicCircleHitBodySetup(20);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	//cutObject->Setup(parent->ts_swarm, 0, 0, scale);
@@ -413,8 +413,8 @@ Swarm::Swarm( ActorParams *ap )
 	hitboxInfo->knockback = 10;
 	hitboxInfo->hType = HitboxInfo::RED;
 
-	BasicCircleHitBodySetup(48);
-	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(60);
+	BasicCircleHurtBodySetup(70);
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(10);

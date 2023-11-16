@@ -107,8 +107,8 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
 
 	hitBody.hitboxInfo = NULL;
 
@@ -137,7 +137,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 		GameSession *game = (GameSession*)sess;
 		logPreview = new LogPreview(game->pauseMenu->tm);
 		logPreview->SetSession(sess);
-		logPreview->SetInfo(sess->logMenu->GetLogInfo(world, localIndex));
+		logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, localIndex));
 	}
 	else
 	{
@@ -451,6 +451,7 @@ LogPopup::LogPopup()
 	if (sess->IsSessTypeEdit())
 	{
 		logPreview = new LogPreview( sess );
+		logPreview->SetSession(sess);
 	}
 	else
 	{

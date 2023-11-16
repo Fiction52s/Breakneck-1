@@ -38,7 +38,7 @@ FutureChecker::FutureChecker(ActorParams *ap)
 	accel = 2.0;
 	maxSpeed = 10.0;
 
-	ts = GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = GetSizedTileset("Enemies/W4/turtle_320x256.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -78,7 +78,7 @@ void FutureChecker::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 4.0;
+		scale = 1.0;
 		break;
 	case 2:
 		scale = 2.0;

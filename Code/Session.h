@@ -527,7 +527,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AdjustBoundsHeightFromTerrain();
 	void ActivateZone(Zone * z, bool instant = false);
 	void SetPlayerOptionField(int pIndex);
-	void SetupHitboxManager();
 	void SetupSoundLists();
 	void SetupTimeBubbles();
 	bool IsSessTypeGame();

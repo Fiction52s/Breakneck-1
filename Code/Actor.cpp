@@ -261,7 +261,7 @@ void Actor::PopulateState(PState *ps)
 	ps->reversed = reversed;
 	ps->storedReverseSpeed = storedReverseSpeed;
 
-	ps->grindActionCurrent = grindActionCurrent;
+	ps->distanceGrinded = distanceGrinded;
 	ps->framesGrinding = framesGrinding;
 	ps->framesNotGrinding = framesNotGrinding;
 	ps->framesSinceGrindAttempt = framesSinceGrindAttempt;
@@ -533,7 +533,7 @@ void Actor::PopulateFromState(PState *ps)
 	reversed = ps->reversed;
 	storedReverseSpeed = ps->storedReverseSpeed;
 
-	grindActionCurrent = ps->grindActionCurrent;
+	distanceGrinded = ps->distanceGrinded;
 	framesGrinding = ps->framesGrinding;
 	framesNotGrinding = ps->framesNotGrinding;
 	framesSinceGrindAttempt = ps->framesSinceGrindAttempt;
@@ -1374,31 +1374,28 @@ void Actor::SetupExtraTilesets()
 	string folder = "Kin/";
 
 	string powerFolder = folder + "Powers/";
+	
+	string scorpionFolder = powerFolder + "Scorpion/";
 
 	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 
-	ts_scorpRun = tm->GetSizedTileset(powerFolder, "scorp_run_192x128.png");
-	ts_scorpSlide = tm->GetSizedTileset(powerFolder, "scorp_slide_160x96.png");
-	ts_scorpSteepSlide = tm->GetSizedTileset(powerFolder, "scorp_steep_slide_224x128.png");
-	ts_scorpStart = tm->GetSizedTileset(powerFolder, "scorp_start_256x256.png");
-	ts_scorpStand = tm->GetSizedTileset(powerFolder, "scorp_stand_192x128.png");
-	ts_scorpJump = tm->GetSizedTileset(powerFolder, "scorp_jump_192x144.png");
-	ts_scorpDash = tm->GetSizedTileset(powerFolder, "scorp_dash_192x80.png");
-	ts_scorpSprint = tm->GetSizedTileset(powerFolder, "scorp_sprint_192x96.png");
-	ts_scorpClimb = tm->GetSizedTileset(powerFolder, "scorp_climb_256x128.png");
-	ts_scorpBounce = tm->GetSizedTileset(powerFolder, "scorp_bounce_256x256.png");
-	ts_scorpBounceWall = tm->GetSizedTileset(powerFolder, "scorp_bounce_wall_256x128.png");
+	ts_scorpRun = tm->GetSizedTileset(scorpionFolder, "scorp_run_192x128.png");
+	ts_scorpSlide = tm->GetSizedTileset(scorpionFolder, "scorp_slide_160x128.png");
+	ts_scorpSteepSlide = tm->GetSizedTileset(scorpionFolder, "scorp_steep_slide_224x128.png");
+	ts_scorpStart = tm->GetSizedTileset(scorpionFolder, "scorp_start_256x256.png");
+	ts_scorpStand = tm->GetSizedTileset(scorpionFolder, "scorp_stand_192x128.png");
+	ts_scorpJump = tm->GetSizedTileset(scorpionFolder, "scorp_jump_192x192.png");
+	ts_scorpDash = tm->GetSizedTileset(scorpionFolder, "scorp_dash_192x80.png");
+	ts_scorpSprint = tm->GetSizedTileset(scorpionFolder, "scorp_sprint_256x128.png");
+	ts_scorpClimb = tm->GetSizedTileset(scorpionFolder, "scorp_climb_224x128.png");
+	ts_scorpBounce = tm->GetSizedTileset(scorpionFolder, "scorp_bounce_256x256.png");
+	ts_scorpBounceWall = tm->GetSizedTileset(scorpionFolder, "scorp_bounce_wall_256x128.png");
 	
 	ts_bubble = tm->GetSizedTileset(powerFolder, "time_bubble_128x128.png");
 	ts_dodecaSmall = tm->GetSizedTileset(powerFolder, "dodecasmall_180x180.png");
 	ts_dodecaBig = tm->GetSizedTileset(powerFolder, "dodecabig_360x360.png");
-	tsgsdodeca = tm->GetSizedTileset(powerFolder, "dodeca_64x64.png");
-	tsgstriblue = tm->GetSizedTileset(powerFolder, "triblue_64x64.png");
-	tsgstricym = tm->GetSizedTileset(powerFolder, "tricym_128x128.png");
-	tsgstrigreen = tm->GetSizedTileset(powerFolder, "trigreen_64x64.png");
-	tsgstrioran = tm->GetSizedTileset(powerFolder, "trioran_128x128.png");
-	tsgstripurp = tm->GetSizedTileset(powerFolder, "tripurp_128x128.png");
-	tsgstrirgb = tm->GetSizedTileset(powerFolder, "trirgb_128x128.png");
+
+	ts_grind = tm->GetSizedTileset(powerFolder, "grind_tri_128x128.png");
 
 	ts_grindAttackFX = tm->GetSizedTileset(powerFolder, "grind_attack_192x192.png");
 
@@ -3851,17 +3848,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	maxBBoostCount = GetActionLength(DASH);
 	maxAirdashBoostCount = GetActionLength(AIRDASH);
-		 	
-
-	gsdodeca.setTexture( *tsgsdodeca->texture);
-	gstriblue.setTexture( *tsgstriblue->texture);
-	gstricym.setTexture( *tsgstricym->texture);
-	gstrigreen.setTexture( *tsgstrigreen->texture);
-	gstrioran.setTexture( *tsgstrioran->texture);
-	gstripurp.setTexture( *tsgstripurp->texture);
-	gstrirgb.setTexture( *tsgstrirgb->texture);
-
-
+		 
 	sess->mainMenu->LoadShader(swordShaders[0], "colorswap");
 	swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
 	swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
@@ -5205,7 +5192,7 @@ void Actor::Respawn( bool setStartPos )
 	holdJump = false;
 	steepJump = false;
 	airDashStall = false;
-	grindActionCurrent = 0;
+	distanceGrinded = 0;
 	framesInAir = 0;
 	wallJumpFrameCounter = 0;
 	framesSinceClimbBoost = 0;
@@ -12261,34 +12248,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 					}
 					
 				}
-
-				//if ( e1 != NULL && e1->IsGateEdge() )
-				//{
-				//	Gate *gg = (Gate*)e1->info;
-				//	if (gg->IsSoft())
-				//	{
-				//		if (CanUnlockGate(gg))
-				//		{
-				//			//cout << "unlock gate" << endl;
-				//			UnlockGate(gg);
-
-				//			if (e1 == gg->edgeA)
-				//			{
-				//				gateTouched = gg->edgeB;
-
-				//			}
-				//			else
-				//			{
-				//				gateTouched = gg->edgeA;
-
-				//			}
-
-				//			e1 = grindEdge->edge1;
-				//		}
-				//	}
-				//}
 				
-
 				if (e1 != NULL)
 				{
 					grindEdge = e1;
@@ -12303,44 +12263,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 				}
 				else
 				{
-					/*bool exitGrind = false;
-
-					position = grindEdge->GetPosition(edgeQuantity);
-
-					if (CheckStandUp())
-					{
-						exitGrind = true;
-					}
-					else
-					{
-						if (!TryStandupOnForcedGrindExit())
-						{
-							exitGrind = true;
-						}
-					}
-
-					if (exitGrind)
-					{
-						framesInAir = 0;
-						SetAction(JUMP);
-						frame = 1;
-						ground = NULL;
-						grindEdge = NULL;
-						offsetX = 0;
-						PhysicsResponse();
-						if (velocity.x > 0)
-						{
-							facingRight = true;
-						}
-						else if (velocity.x < 0)
-						{
-							facingRight = false;
-						}
-					}*/
-
 					TryStandupOnForcedGrindExit();
-					
-					
 					return;
 				}
 			}
@@ -21560,13 +21483,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 	if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
 	{
-		target->draw( gsdodeca );
-		target->draw( gstriblue );
-		target->draw( gstricym );
-		target->draw( gstrigreen );
-		target->draw( gstrioran );
-		target->draw( gstripurp );
-		target->draw( gstrirgb );
+		target->draw(grindQuads, 4 * NUM_GRIND_QUADS, sf::Quads, ts_grind->texture);
 
 		DrawPlayerSprite(target);
 	}
@@ -22389,8 +22306,8 @@ double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
 
 V2d Actor::GetGroundedNormal()
 {
-	if (ground == NULL)
-		return V2d(0, -1);
+	//if (ground == NULL)
+	//	return V2d(0, -1);
 
 
 	assert(ground != NULL);

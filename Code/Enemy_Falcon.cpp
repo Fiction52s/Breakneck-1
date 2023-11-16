@@ -55,8 +55,10 @@ Falcon::Falcon(ActorParams *ap)
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::ORANGE;
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	//BasicCircleHurtBodySetup(40, 0, V2d( 20, 0 ), V2d());
+	//BasicCircleHitBodySetup(40, 0, V2d(20, 0), V2d());
+	BasicRectHitBodySetup(60, 20, 0, V2d(20, 15), V2d());
+	BasicRectHurtBodySetup(60, 30, 0, V2d(20, 10), V2d());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -245,6 +247,44 @@ void Falcon::UpdateEnemyPhysics()
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
+	}
+}
+
+void Falcon::UpdateHitboxes()
+{
+	V2d position = GetPosition();
+
+
+	double ang = 0;// GetGroundedAngleRadians();
+
+	if (action == RUSH)
+	{
+		ang = GetVectorAngleCW(data.velocity);
+		if (!facingRight)
+		{
+			ang = ang + PI;
+		}
+	}
+	//can update this with a universal angle at some point
+	if (!hurtBody.IsEmpty())
+	{
+		hurtBody.SetBasicPos( currHurtboxFrame, position, ang);
+		hurtBody.GetCollisionBoxes(currHurtboxFrame).at(0).flipHorizontal = !facingRight;
+	}
+
+	if (!hitBody.IsEmpty())
+	{
+		hitBody.SetBasicPos(currHitboxFrame, position, ang);
+		hitBody.GetCollisionBoxes(currHitboxFrame).at(0).flipHorizontal = !facingRight;
+	}
+
+	auto comboBoxes = GetComboHitboxes();
+	if (comboBoxes != NULL)
+	{
+		for (auto it = comboBoxes->begin(); it != comboBoxes->end(); ++it)
+		{
+			(*it).globalPosition = position;
+		}
 	}
 }
 

@@ -73,8 +73,25 @@ Badger::Badger(ActorParams *ap)
 	hitboxInfo->knockback = 15;
 	hitboxInfo->hType = HitboxInfo::YELLOW;
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	hitBody.ResetFrames();
+	hitBody.SetupNumFrames(2);
+	hitBody.SetupNumBoxesOnFrame(0, 1);
+	hitBody.SetupNumBoxesOnFrame(1, 1);
+	hitBody.AddBasicRect(0, 65, 25, 0, V2d(-15, 12));
+	hitBody.AddBasicCircle(1, 32, 0, V2d());
+
+	hurtBody.ResetFrames();
+	hurtBody.SetupNumFrames(2);
+	hurtBody.SetupNumBoxesOnFrame(0, 1);
+	hurtBody.SetupNumBoxesOnFrame(1, 1);
+	hurtBody.AddBasicRect(0, 70, 30, 0, V2d(-15, 12));
+	hurtBody.AddBasicCircle(1, 40, 0, V2d());
+
+	//BasicRectHitBodySetup(60, 25, 0, V2d(0, 0), V2d());
+	//BasicRectHurtBodySetup(60, 25, 0, V2d(0, 0), V2d());
+
+	/*BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);*/
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(33);
@@ -115,8 +132,8 @@ void Badger::HandleNoHealth()
 
 void Badger::ResetEnemy()
 {
-	DefaultHurtboxesOn();
-	DefaultHitboxesOn();
+	DefaultHurtboxesOn(0);
+	DefaultHitboxesOn(0);
 
 	if (PlayerDir().x >= 0 )
 	{
@@ -150,6 +167,18 @@ void Badger::UpdateNextAction()
 
 		action = data.nextAction;
 		frame = 0;
+
+		if (action == SHORTJUMP || action == TALLJUMP)
+		{
+			DefaultHurtboxesOn(1);
+			DefaultHitboxesOn(1);
+		}
+		else
+		{
+			DefaultHurtboxesOn(0);
+			DefaultHitboxesOn(0);
+		}
+		
 
 		if (PlayerDir().x >= 0)
 		{
@@ -233,6 +262,9 @@ void Badger::ActionEnded()
 			{
 				action = SHORTJUMP;
 				frame = 0;
+
+				DefaultHurtboxesOn(1);
+				DefaultHitboxesOn(1);
 			}
 			break;
 		case TALLJUMP:
@@ -242,10 +274,16 @@ void Badger::ActionEnded()
 			{
 				action = TALLJUMP;
 				frame = 0;
+
+				DefaultHurtboxesOn(1);
+				DefaultHitboxesOn(1);
 			}
 			break;
 		
 		case LAND:
+
+			DefaultHurtboxesOn(0);
+			DefaultHitboxesOn(0);
 
 			UpdateNextAction();			
 			break;

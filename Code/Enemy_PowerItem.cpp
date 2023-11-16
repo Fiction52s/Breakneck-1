@@ -145,8 +145,8 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
 
 	hitBody.hitboxInfo = NULL;
 

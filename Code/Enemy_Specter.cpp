@@ -108,7 +108,7 @@ Specter::Specter( ActorParams *ap )
 	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHitBodySetup(64);
-	BasicCircleHurtBodySetup(64);
+	BasicCircleHurtBodySetup(70);
 
 	hitBody.hitboxInfo = hitboxInfo;
 	

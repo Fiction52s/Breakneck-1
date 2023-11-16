@@ -59,8 +59,8 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	puffRadius = 800;
 	unpuffRadius = 1000;
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32, 0, V2d( 0, 0 ), V2d());
+	BasicCircleHurtBodySetup(32, 0, V2d( 0, 0 ), V2d());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -123,6 +123,11 @@ void Pufferfish::ResetEnemy()
 	{
 		facingRight = false;
 	}
+
+	hurtBody.GetCollisionBoxes(0).front().offset = V2d(0, 0);
+	hitBody.GetCollisionBoxes(0).front().offset = V2d(0, 0);
+	hurtBody.GetCollisionBoxes(0).front().rw = 32;
+	hitBody.GetCollisionBoxes(0).front().rw = 32;
 
 
 	DefaultHitboxesOn();
@@ -253,40 +258,100 @@ void Pufferfish::ProcessState()
 	}
 
 	float rw = -1;
+	double yOffset = 0;
 	switch (action)
 	{
 	case NEUTRAL:
 		rw = 32;
+		yOffset = 0;
 		//hurtBody.GetCollisionBoxes(0).front().rw = scale * 
 		break;
 	case PUFF:
-		rw = 48;
+		if (frame < 6)
+		{
+			rw = 48;
+			yOffset = 0;
+		}
+		else if (frame < 15)
+		{
+			rw = 50;
+			yOffset = 0;
+		}
+		else if( frame < 23 )
+		{
+			rw = 64;
+			yOffset = -10;
+		}
+		else
+		{
+			rw = 64;
+			yOffset = -10;
+		}
 		break;
 	case HOLDPUFF:
 		rw = 64;
+		yOffset = -10;
 		break;
 	case UNPUFF:
-		rw = 48;
+		if (frame < 6)
+		{
+			rw = 64;
+			yOffset = -10;
+		}
+		else if (frame < 15)
+		{
+			rw = 64;
+			yOffset = -10;
+		}
+		else if (frame < 23)
+		{
+			rw = 50;
+			yOffset = 0;
+		}
+		else
+		{
+			rw = 48;
+			yOffset = 0;
+		}
 		break;
 	case BLAST:
+
+
+	//	tile = 9;
+	//	break;
+	//case RECOVER:
+	//	if (frame < (actionLength[RECOVER] * animFactor[RECOVER]) / 2)
+	//	{
+	//		tile = 8;
+	//		//tile = 3;
+	//	}
+	//	else
+	//	{
+	//		tile = 0;
+	//	}
+
 		rw = 64;
+		yOffset = -10;
 		break;
 	case RECOVER:
-		rw = 32;
-		//if (frame < (actionLength[RECOVER] * animFactor[RECOVER]) / 2)
-		//{
-		//	tile = 0;
-		//	//tile = 3;
-		//}
-		//else
-		//{
-		//	tile = 0;
-		//}
+		
+		if (frame < (actionLength[RECOVER] * animFactor[RECOVER]) / 2)
+		{
+			rw = 50;
+			yOffset = 0;
+		}
+		else
+		{
+			rw = 32;
+			yOffset = 0;
+		}
 
 		break;
 	}
 	assert(rw != -1);
 
+	hurtBody.GetCollisionBoxes(0).front().offset = V2d(0, yOffset);
+	hitBody.GetCollisionBoxes(0).front().offset = V2d(0, yOffset);
 	hurtBody.GetCollisionBoxes(0).front().rw = rw;
 	hitBody.GetCollisionBoxes(0).front().rw = rw;
 }

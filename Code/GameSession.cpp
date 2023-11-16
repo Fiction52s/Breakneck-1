@@ -1026,6 +1026,17 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}*/
 
+	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	{
+	}
+	else
+	{
+		assert(pauseMenu != NULL);
+		delete pauseMenu;
+		pauseMenu = NULL;
+	}
+
+
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
 		delete allPolysVec[i];
@@ -1716,37 +1727,18 @@ bool GameSession::ShouldContinueLoading()
 
 bool GameSession::Load()
 {
-	//sf::sleep(sf::seconds(2));
-	//while (true);
-	//cout << "start load" << endl;
-	//sf::sleep(sf::seconds(5));
-	//return true;
-
-	//testEmit = new BoxEmitter(4, 100, PI, PI / 6, 1, 5, 1000, 1000);
-
-
-
-	//testEmit = new LeafEmitter;// (4, 1000);// PI, PI / 6, 0, 0, 1000, 1000);
-	//testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
-	//testEmit->CreateParticles();
-
-	//testEmit->SetRatePerSecond(120);
-
-	//testEmit->posSpawner = new BoxPosSpawner(400, 400);
-		//leaf_1_128x128
-	//for (int i = 0; i < 50; ++i)
-	//{
-	//	if (!speedBarShader.loadFromFile("Resources/Shader/speedbar.frag", sf::Shader::Fragment))
-	//	{
-	//		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
-	//		//assert( 0 && "polygon shader not loaded" );
-	//	}
-	//	speedBarShader.setUniform("u_texture", sf::Shader::CurrentTexture);
-	//}
-
-	//while (true);
-
-	UpdateWorldDependentTileset(0);
+	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	{
+		ts_key = mainMenu->adventureManager->ts_key;
+		ts_keyExplode = mainMenu->adventureManager->ts_keyExplode;
+		ts_goal = mainMenu->adventureManager->ts_goal;
+		ts_goalCrack = mainMenu->adventureManager->ts_goalCrack;
+		ts_goalExplode = mainMenu->adventureManager->ts_goalExplode;
+	}
+	else
+	{
+		UpdateWorldDependentTileset(0);
+	}
 
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 	{
@@ -1783,8 +1775,6 @@ bool GameSession::Load()
 
 	RegisterAllEnemies();
 	SetupEnemyTypes();
-
-	SetupHitboxManager();
 	SetupSoundLists();
 
 	//old pause menu init
@@ -1915,6 +1905,14 @@ bool GameSession::Load()
 		pauseMenu = mainMenu->adventureManager->pauseMenu;
 		pauseMenu->SetGame(this);
 
+
+		shardMenu = pauseMenu->shardMenu;
+		logMenu = pauseMenu->logMenu;
+	}
+	else
+	{
+		pauseMenu = new PauseMenu(this);
+		pauseMenu->SetGame(this);
 
 		shardMenu = pauseMenu->shardMenu;
 		logMenu = pauseMenu->logMenu;

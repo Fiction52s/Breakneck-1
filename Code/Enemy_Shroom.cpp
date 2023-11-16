@@ -41,7 +41,7 @@ Shroom::Shroom(ActorParams *ap )
 
 	hitSound = GetSound("Enemies/shroom_spark");
 
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHurtBodySetup(40);
 	BasicCircleHitBodySetup(32);
 	
 
@@ -275,7 +275,7 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	hitboxInfo->knockback = 0;
 	hitboxInfo->hType = HitboxInfo::BLUE;
 
-	BasicCircleHurtBodySetup(32);
+	BasicCircleHurtBodySetup(40);
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 	/*comboObj = new ComboObject(this);

@@ -35,34 +35,14 @@ void Actor::RAILSLIDE_Change()
 
 	RailPtr rail = grindEdge->rail;
 
-	//if (CanPressGrind())
-	//{
-	//	SetAction(RAILGRIND);
-	//}
-
-
 	if (JumpButtonPressed())
 	{
 
 		facingRight = IsRailSlideFacingRight();
+		
 		velocity = grindSpeed * along;
-		if (GameSession::IsWall(grindEdge->Normal()) < 0) //not wall
-		{
-			SetAction(JUMPSQUAT);
-			//frame = 0;
-		}
-		else
-		{
-			hasDoubleJump = true;
-			TryDoubleJump();
-			grindEdge = NULL;
-		}
 
-
-
-
-		//if( abs( grindEdge->Normal().y ) )
-
+		SetAction(JUMP);
 		frame = 0;
 
 		regrindOffCount = 0;
@@ -109,7 +89,7 @@ void Actor::RAILSLIDE_UpdateSprite()
 		SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
 
 		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
-			scorpSprite.getLocalBounds().height / 2 + 15);
+			scorpSprite.getLocalBounds().height / 2 + 10);
 		scorpSprite.setPosition(position.x, position.y);
 		scorpSprite.setRotation(sprite->getRotation());
 		scorpSet = true;

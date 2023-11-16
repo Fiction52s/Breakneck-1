@@ -63,8 +63,8 @@ LobTurret::LobTurret(ActorParams *ap)
 	hitboxInfo->knockback = 10;
 	hitboxInfo->hType = HitboxInfo::GREEN;
 
-	BasicRectHurtBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
-	BasicRectHitBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
+	BasicRectHurtBodySetup(50, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
+	BasicRectHitBodySetup(40, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
 
 	//BasicCircleHurtBodySetup(32);
 	//BasicCircleHitBodySetup(32);

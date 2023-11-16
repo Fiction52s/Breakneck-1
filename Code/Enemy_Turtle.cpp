@@ -63,8 +63,8 @@ Turtle::Turtle( ActorParams *ap )
 
 
 
-	BasicCircleHitBodySetup(48);
-	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(60, 0, V2d( 15, 0 ), V2d());
+	BasicCircleHurtBodySetup(50, 0, V2d( 15, 0 ), V2d());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -154,8 +154,7 @@ void Turtle::ActionEnded()
 	case FADEOUT:
 		action = INVISIBLE;
 		frame = 0;
-		SetHitboxes(NULL, 0);
-		SetHurtboxes(NULL, 0);
+		
 		data.playerTrackPos = playerPos;
 		break;
 	}
@@ -206,6 +205,11 @@ void Turtle::ProcessState()
 		}
 		break;
 	case FADEOUT:
+		if (frame == 15 * animFactor[FADEOUT] && slowCounter == 1)
+		{
+			HitboxesOff();
+			HurtboxesOff();
+		}
 		break;
 	}
 

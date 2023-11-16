@@ -138,7 +138,7 @@ struct PState
 	bool reversed;
 	double storedReverseSpeed;
 
-	double grindActionCurrent;
+	double distanceGrinded;
 	int framesGrinding;
 	int framesNotGrinding;
 	int framesSinceGrindAttempt;

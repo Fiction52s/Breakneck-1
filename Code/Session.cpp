@@ -216,10 +216,6 @@ void Session::SetPlayerOptionField(int pIndex)
 	GetPlayer(pIndex)->SetAllUpgrades(defaultStartingPlayerOptionsField);
 }
 
-void Session::SetupHitboxManager()
-{
-}
-
 void Session::SetupEnemyType(ParamsInfo &pi, bool unlisted )
 {
 	if (types[pi.name] == NULL)
@@ -4527,6 +4523,7 @@ void Session::SetupHUD()
 		{
 			cout << "creating HUD because none is available" << endl;
 			hud = gameMode->CreateHUD();
+			hud->SetSession(this);
 		}
 	}
 }

@@ -67,8 +67,8 @@ Roadrunner::Roadrunner(ActorParams *ap)
 	//BasicRectHurtBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
 	//BasicRectHitBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
 
-	BasicCircleHurtBodySetup(48, 0, V2d( 0, -30), GetPosition());
-	BasicCircleHitBodySetup(48, 0, V2d(0, -30), GetPosition());
+	BasicCircleHurtBodySetup(80, 0, V2d( 0, -50), GetPosition());
+	BasicCircleHitBodySetup(80, 0, V2d(0, -50), GetPosition());
 	hitBody.hitboxInfo = hitboxInfo;
 
 	cutObject->SetTileset(ts);

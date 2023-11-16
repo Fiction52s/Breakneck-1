@@ -376,10 +376,7 @@ void Actor::JUMP_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(tFrame, r);
 
-	if (frame > 0)
-	{
-		sprite->setRotation(0);
-	}
+	sprite->setRotation(0);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);

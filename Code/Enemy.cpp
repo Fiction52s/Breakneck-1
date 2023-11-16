@@ -526,9 +526,9 @@ bool Enemy::SetHitParams()
 //sometimes the wrong constructor can be called because these are ambiguous without a cast
 //doesn't change much but good to be aware of.
 Enemy::Enemy(EnemyType t, ActorParams *ap)
-	:hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit ),
-	bodyPtrVec( 2 )
+	:hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	//bodyPtrVec.reserve(2);
 	type = t;
 	if (ap == NULL)
 	{
@@ -541,9 +541,9 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 }
 
 Enemy::Enemy(EnemyType t, int w)
-	:hurtBody(CollisionBox::BoxType::Hurt), hitBody(CollisionBox::BoxType::Hit),
-	bodyPtrVec(2)
+	:hurtBody(CollisionBox::BoxType::Hurt), hitBody(CollisionBox::BoxType::Hit)
 {
+	//bodyPtrVec.reserve(2);
 	type = t;
 	OnCreate(NULL, w);
 }
@@ -579,6 +579,9 @@ void Enemy::OnCreate(ActorParams *ap,
 	facingRight = true;
 	editLoopAction = 0;
 	editIdleFrame = 0;
+
+	currHitboxFrame = -1;
+	currHurtboxFrame = -1;
 
 	enemyIndex = -1;
 
@@ -1250,7 +1253,7 @@ bool Enemy::IsTouchingSpecterField( SpecterArea *sa )
 
 void Enemy::CheckTouchingSpecterField(SpecterArea *sa)
 {
-	specterProtected = IsTouchingSpecterField(sa);
+	specterProtected = false;//IsTouchingSpecterField(sa);
 
 	if (currShield != NULL)
 		currShield->specterProtected = specterProtected;
@@ -1968,16 +1971,17 @@ void Enemy::BasicUpdateHitboxes()
 	
 	double ang = GetGroundedAngleRadians();
 	//can update this with a universal angle at some point
-	if (!hurtBody.IsEmpty())
+	if (!hurtBody.IsEmpty() && currHurtboxFrame >= 0)
 	{
-		hurtBody.SetBasicPos(position, ang);
-		hurtBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
+		hurtBody.SetBasicPos(currHurtboxFrame, position, ang);
+		//cout << "currhurtbox frame: " << currHurtboxFrame << endl;
+		hurtBody.GetCollisionBoxes(currHurtboxFrame).at(0).flipHorizontal = !facingRight;
 	}
 
-	if (!hitBody.IsEmpty())
+	if (!hitBody.IsEmpty() && currHitboxFrame >= 0)
 	{
-		hitBody.SetBasicPos(position, ang);
-		hitBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
+		hitBody.SetBasicPos(currHitboxFrame, position, ang);
+		hitBody.GetCollisionBoxes(currHitboxFrame).at(0).flipHorizontal = !facingRight;
 	}
 
 	auto comboBoxes = GetComboHitboxes();
@@ -2456,6 +2460,7 @@ void Enemy::RegisterShield(Shield *s)
 HittableObject::HittableObject()
 {
 	receivedHit.SetEmpty();
+	specterProtected = false;
 }
 
 int HittableObject::GetReceivedHitPlayerIndex()

@@ -51,7 +51,7 @@ Goal::Goal( ActorParams *ap )
 	SetOffGroundHeight(180);//160);//128);
 	SetCurrPosInfo(startPosInfo);
 
-	BasicRectHurtBodySetup(80, 100, currPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
+	BasicRectHurtBodySetup(80 + 20, 100 + 30, currPosInfo.GetGroundAngleRadians(), V2d(0, 20 + 30), GetPosition());
 
 	frame = 0;
 	animationFactor = 7;

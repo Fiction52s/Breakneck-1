@@ -80,8 +80,8 @@ Bat::Bat( ActorParams *ap )
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hType = HitboxInfo::GREEN;
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(40);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	cutObject->Setup(ts, 53, 52, scale);

@@ -40,6 +40,7 @@ struct Falcon : Enemy
 	void ActionEnded();
 
 	void SetLevel(int lev);
+	void UpdateHitboxes();
 
 	void UpdateSprite();
 	void ResetEnemy();

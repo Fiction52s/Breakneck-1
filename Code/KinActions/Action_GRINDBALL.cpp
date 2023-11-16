@@ -8,6 +8,7 @@ using namespace std;
 
 void Actor::GRINDBALL_Start()
 {
+	distanceGrinded = 0;
 }
 
 void Actor::GRINDBALL_End()
@@ -237,6 +238,8 @@ void Actor::GRINDBALL_Update()
 	}
 
 	velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+
+	distanceGrinded += grindSpeed;
 }
 
 void Actor::GRINDBALL_UpdateSprite()
@@ -255,28 +258,6 @@ void Actor::GRINDBALL_UpdateSprite()
 	}
 
 	SetSpriteTile(0, r);
-
-	grindActionCurrent += grindSpeed / 20;
-	while (grindActionCurrent >= grindActionLength)
-	{
-		grindActionCurrent -= grindActionLength;
-	}
-	while (grindActionCurrent < 0)
-	{
-		grindActionCurrent += grindActionLength;
-	}
-
-	int grindActionInt = grindActionCurrent;
-
-	gsdodeca.setTextureRect(tsgsdodeca->GetSubRect((grindActionInt * 5) % grindActionLength));
-	gstriblue.setTextureRect(tsgstriblue->GetSubRect((grindActionInt * 5) % grindActionLength));
-	gstricym.setTextureRect(tsgstricym->GetSubRect(grindActionInt % grindActionLength)); //broken?
-	gstrigreen.setTextureRect(tsgstrigreen->GetSubRect((grindActionInt * 5) % grindActionLength));
-	gstrioran.setTextureRect(tsgstrioran->GetSubRect(grindActionInt% grindActionLength));
-	gstripurp.setTextureRect(tsgstripurp->GetSubRect(grindActionInt% grindActionLength));
-	gstrirgb.setTextureRect(tsgstrirgb->GetSubRect(grindActionInt% grindActionLength));
-
-
 
 	double angle = 0;
 	angle = atan2(grindNorm.x, -grindNorm.y);
@@ -302,23 +283,23 @@ void Actor::GRINDBALL_UpdateSprite()
 
 	sprite->setPosition(pp.x, pp.y);
 
+	double gAng = distanceGrinded / 50.0;
+	double realGAng = gAng;
 
-	gsdodeca.setOrigin(gsdodeca.getLocalBounds().width / 2, gsdodeca.getLocalBounds().height / 2);
-	gstriblue.setOrigin(gstriblue.getLocalBounds().width / 2, gstriblue.getLocalBounds().height / 2);
-	gstricym.setOrigin(gstricym.getLocalBounds().width / 2, gstricym.getLocalBounds().height / 2);
-	gstrigreen.setOrigin(gstrigreen.getLocalBounds().width / 2, gstrigreen.getLocalBounds().height / 2);
-	gstrioran.setOrigin(gstrioran.getLocalBounds().width / 2, gstrioran.getLocalBounds().height / 2);
-	gstripurp.setOrigin(gstripurp.getLocalBounds().width / 2, gstripurp.getLocalBounds().height / 2);
-	gstrirgb.setOrigin(gstrirgb.getLocalBounds().width / 2, gstrirgb.getLocalBounds().height / 2);
+	for (int i = 0; i < NUM_GRIND_QUADS; ++i)
+	{
+		realGAng = gAng;
+		if (i >= 2)
+		{
+			realGAng += PI;
+		}
+		SetRectRotation(grindQuads + i * 4, realGAng, ts_grind->tileWidth, ts_grind->tileHeight, Vector2f(grindPoint));
 
+		ts_grind->SetQuadSubRect(grindQuads + i * 4, i);
+		
+	}
 
-	gsdodeca.setPosition(grindPoint.x, grindPoint.y);
-	gstriblue.setPosition(grindPoint.x, grindPoint.y);
-	gstricym.setPosition(grindPoint.x, grindPoint.y);
-	gstrigreen.setPosition(grindPoint.x, grindPoint.y);
-	gstrioran.setPosition(grindPoint.x, grindPoint.y);
-	gstripurp.setPosition(grindPoint.x, grindPoint.y);
-	gstrirgb.setPosition(grindPoint.x, grindPoint.y);
+	
 
 	if (framesGrinding % 10 == 0 && framesGrinding >= grindLimitBeforeSlow)
 	{

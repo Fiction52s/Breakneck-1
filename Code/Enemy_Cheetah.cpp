@@ -68,8 +68,10 @@ Cheetah::Cheetah(ActorParams *ap)
 	hitboxInfo->knockback = 15;
 	hitboxInfo->hType = HitboxInfo::ORANGE;
 
-	BasicCircleHitBodySetup(32);
-	BasicCircleHurtBodySetup(32);
+	//BasicCircleHitBodySetup(32);
+	//BasicCircleHurtBodySetup(32);
+	BasicRectHitBodySetup(50, 23, 0, V2d(0, 0), V2d());
+	BasicRectHurtBodySetup(54, 25, 0, V2d(0, 0), V2d());
 	hitBody.hitboxInfo = hitboxInfo;
 
 	cutObject->Setup(ts, 23, 24, scale);

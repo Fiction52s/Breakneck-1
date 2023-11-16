@@ -73,9 +73,11 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	hitboxInfo->knockback = 20;
 	hitboxInfo->hType = HitboxInfo::GREEN;
 	
+	BasicRectHitBodySetup(70, 45, 0, V2d(0, -10), V2d());
+	BasicRectHurtBodySetup(80, 50, 0, V2d(0, -10), V2d());
 
-	BasicCircleHurtBodySetup(60);
-	BasicCircleHitBodySetup(60);
+	//BasicCircleHurtBodySetup(60);
+	//BasicCircleHitBodySetup(60);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	shield = NULL;

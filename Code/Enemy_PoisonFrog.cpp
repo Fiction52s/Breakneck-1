@@ -105,7 +105,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	sprite.setScale(scale, scale);
 
 	BasicCircleHurtBodySetup(30);
-	BasicCircleHitBodySetup(30);
+	BasicCircleHitBodySetup(24);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 180;
