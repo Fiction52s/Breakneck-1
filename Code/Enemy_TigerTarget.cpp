@@ -48,9 +48,9 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	burnBeforeReadyFrames = 60;
 
 
-	ts_bigFlame = GetSizedTileset("Bosses/Tiger/tiger_fire_1_192x192.png");
-	ts_smallFlame = GetSizedTileset("Bosses/Tiger/tiger_fire_2_160x160.png");
-	ts_attack = GetSizedTileset("Bosses/Tiger/tiger_fire_3_80x80.png");
+	ts_bigFlame = GetSizedTileset("Enemies/Bosses/Tiger/tiger_fire_1_192x192.png");
+	ts_smallFlame = GetSizedTileset("Enemies/Bosses/Tiger/tiger_fire_2_160x160.png");
+	ts_attack = GetSizedTileset("Enemies/Bosses/Tiger/tiger_fire_3_80x80.png");
 	sprite.setTexture(*ts_bigFlame->texture);
 	sprite.setScale(scale, scale);
 

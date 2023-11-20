@@ -8,7 +8,7 @@ struct CustomCursor
 	enum Mode
 	{
 		M_REGULAR,
-		M_SHIP,
+		//M_SHIP,
 		M_Count
 	};
 

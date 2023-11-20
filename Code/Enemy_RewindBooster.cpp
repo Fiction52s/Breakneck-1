@@ -32,7 +32,7 @@ RewindBooster::RewindBooster(ActorParams *ap)
 
 	strength = 360;
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 	//ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);

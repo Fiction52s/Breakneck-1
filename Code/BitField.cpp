@@ -26,7 +26,7 @@ BitField::~BitField()
 void BitField::Set(const BitField & otherField)
 {
 	assert(numFields == otherField.numFields);
-	/*if (numFields != otherField.numFields)
+	/*if (numFields != otherField.numFields)figure
 	{
 		delete[] optionField;
 		numFields = otherField.numFields;

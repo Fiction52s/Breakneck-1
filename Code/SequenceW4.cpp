@@ -59,13 +59,13 @@ void CrawlerPreFight2Scene::AddFlashes()
 {
 	/*int togetherFrames = 5;
 
-	AddFlashedImage("stare0", owner->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+	AddFlashedImage("stare0", owner->GetTileset("Enemies/Bosses/Coyote/Coy_09b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare1", owner->GetTileset("Bosses/Coyote/Coy_10b.png", 1920, 1080),
+	AddFlashedImage("stare1", owner->GetTileset("Enemies/Bosses/Coyote/Coy_10b.png", 1920, 1080),
 		0, 30, 30, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare2", owner->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
+	AddFlashedImage("stare2", owner->GetTileset("Enemies/Bosses/Coyote/Coy_11b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
@@ -469,13 +469,13 @@ void TigerPreFightScene::AddFlashes()
 {
 	/*int togetherFrames = 5;
 
-	AddFlashedImage("stare0", owner->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+	AddFlashedImage("stare0", owner->GetTileset("Enemies/Bosses/Coyote/Coy_09b.png", 1920, 1080),
 	0, 30, 20, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare1", owner->GetTileset("Bosses/Coyote/Coy_10b.png", 1920, 1080),
+	AddFlashedImage("stare1", owner->GetTileset("Enemies/Bosses/Coyote/Coy_10b.png", 1920, 1080),
 	0, 30, 30, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare2", owner->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
+	AddFlashedImage("stare2", owner->GetTileset("Enemies/Bosses/Coyote/Coy_11b.png", 1920, 1080),
 	0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
@@ -796,7 +796,7 @@ void BirdTigerAllianceScene::UpdateState()
 			//seqTiger->Breathe();
 
 
-			sess->hud->Hide();
+			sess->HideHUD();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
 			sess->Fade(true, 60, Color::Black);
@@ -912,7 +912,7 @@ void BirdVSTigerScene::UpdateState()
 			sess->AddEnemy(seqTiger);
 			seqTiger->facingRight = false;
 
-			sess->hud->Hide();
+			sess->HideHUD();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
 			sess->Fade(true, 60, Color::Black);

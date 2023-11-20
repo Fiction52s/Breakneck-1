@@ -137,7 +137,6 @@ struct LogPopup
 	void Reset();
 	void Update();
 	void SetLog(int w, int i );
-	void SetDescription(const std::string &desc);
 	void Draw(sf::RenderTarget *target);
 };
 

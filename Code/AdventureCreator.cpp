@@ -44,7 +44,7 @@ AdventureCreator::AdventureCreator()
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("Editor/worldselector_64x64.png");
 
 	ts_sectorIcons = edit->GetSizedTileset("Editor/sectoricons_64x64.png");
-	ts_sectorNumbers = edit->GetSizedTileset("Menu/keynum_red_dark_80x80.png");
+	ts_sectorNumbers = edit->GetSizedTileset("HUD/keynum_red_dark_80x80.png");
 
 	currWorldRect = panel->AddImageRect(ChooseRect::I_ADVENTURECREATOR_WORLD_SEARCH,
 		startWorldPos, ts_worldChoosers, 1, 100);

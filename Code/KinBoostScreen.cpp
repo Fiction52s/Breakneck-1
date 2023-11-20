@@ -13,16 +13,16 @@ using namespace sf;
 KinBoostScreen::KinBoostScreen()
 	:skinShader( "boostplayer")
 {
-	ts_bg = GetTileset("KinBoost/kinboost_BG1.png", 1920, 1080);
-	ts_bgShape = GetTileset("KinBoost/kinboost_BG1_shape.png", 1920, 1080);
+	ts_bg = GetTileset("Menu/KinBoost/kinboost_BG1.png", 1920, 1080);
+	ts_bgShape = GetTileset("Menu/KinBoost/kinboost_BG1_shape.png", 1920, 1080);
 
-	ts_light[0] = GetTileset("KinBoost/kinboost_light_01a.png", 1920, 1080);
-	ts_light[1] = GetTileset("KinBoost/kinboost_light_01b.png", 1920, 1080);
+	ts_light[0] = GetTileset("Menu/KinBoost/kinboost_light_01a.png", 1920, 1080);
+	ts_light[1] = GetTileset("Menu/KinBoost/kinboost_light_01b.png", 1920, 1080);
 
-	ts_stars[0] = GetTileset("KinBoost/kinboost_stars_01a.png", 1920, 1080);
-	ts_stars[1] = GetTileset("KinBoost/kinboost_stars_01b.png", 1920, 1080);
-	ts_stars[2] = GetTileset("KinBoost/kinboost_stars_01c.png", 1920, 1080);
-	ts_stars[3] = GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
+	ts_stars[0] = GetTileset("Menu/KinBoost/kinboost_stars_01a.png", 1920, 1080);
+	ts_stars[1] = GetTileset("Menu/KinBoost/kinboost_stars_01b.png", 1920, 1080);
+	ts_stars[2] = GetTileset("Menu/KinBoost/kinboost_stars_01c.png", 1920, 1080);
+	ts_stars[3] = GetTileset("Menu/KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
 	ts_kinBoost = GetSizedTileset("Kin/exitboost_96x128.png");
 	ts_kinAura = GetSizedTileset("Kin/FX/exitaura_256x256.png");
@@ -67,7 +67,7 @@ KinBoostScreen::KinBoostScreen()
 	//load this by streaming it or in another thread while in the boost screen. do not load until running
 	//the gamesession
 	//and 
-	//ts_swipe[0] = mainMenu->tilesetManager.GetTileset("KinBoost/kinswipe_960x540.png", 960, 540);
+	//ts_swipe[0] = mainMenu->tilesetManager.GetTileset("Menu/KinBoost/kinswipe_960x540.png", 960, 540);
 	//swipeSpr.setTexture(*ts_swipe[0]->texture);
 	//swipeSpr.setTextureRect(ts_swipe[0]->GetSubRect(0));
 	//swipeSpr.setScale(2, 2);

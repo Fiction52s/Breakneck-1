@@ -30,9 +30,9 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 		assert(false);
 	}
 
-	ts = GetSizedTileset("Enemies/key_comboer_256x256.png");
+	ts = GetSizedTileset("Enemies/General/key_comboer_256x256.png");
 
-	ts_palette = GetSizedTileset("Enemies/key_comboer_palette_18x8.png");
+	ts_palette = GetSizedTileset("Enemies/General/key_comboer_palette_18x8.png");
 	sf::Image paletteImage = ts_palette->texture->copyToImage();
 
 	hasMonitor = true;

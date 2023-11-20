@@ -276,7 +276,7 @@ void BirdCrawlerAllianceScene::SetupStates()
 void BirdCrawlerAllianceScene::ReturnToGame()
 {
 	//sess->SetPlayerInputOn(true);
-	//sess->hud->Show();
+	//sess->ShowHUD();
 	//sess->cam.SetManual(false);
 	//sess->Fade(true, 60, Color::Black);
 	sess->EndLevelNoScene();
@@ -326,7 +326,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 			seqBird->facingRight = false;
 			seqBird->Breathe();
 
-			sess->hud->Hide();
+			sess->HideHUD();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
 			sess->Fade(true, 60, Color::Black);

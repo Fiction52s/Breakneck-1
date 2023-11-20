@@ -28,6 +28,8 @@ void SaveGameState::Clear()
 	activeSequenceID = -1;
 	randomState = 0;
 	phaseOn = false;
+	timerOn = false;
+	turnTimerOnCounter = -1;
 	cam.Reset();
 }
 

@@ -11,7 +11,7 @@ SkinMenu::SkinMenu(SaveMenuScreen *p_saveScreen)
 {
 	skinScale = 2.0;
 	saveScreen = p_saveScreen;
-	ts_skins = saveScreen->GetSizedTileset("Menu/Skin/skin_64x64.png");
+	ts_skins = saveScreen->GetSizedTileset("Menu/Save/skin_64x64.png");
 
 	//unlock all skins for debug
 	for (int i = 0; i < Actor::SKIN_Count; ++i)

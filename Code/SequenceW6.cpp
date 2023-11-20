@@ -105,7 +105,7 @@ void EnterFortressScene::AddFlashes()
 		
 	}*/
 
-	/*AddFlashedImage("stare2", sess->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
+	/*AddFlashedImage("stare2", sess->GetTileset("Enemies/Bosses/Coyote/Coy_11b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));*/
 
 	
@@ -331,7 +331,7 @@ void TigerAndBirdTunnelScene::UpdateState()
 	case FADE:
 		if (seqData.frame == 0)
 		{
-			sess->hud->Hide();
+			sess->HideHUD();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
 			sess->Fade(true, 60, Color::Black);
@@ -388,7 +388,7 @@ void TigerAndBirdTunnelScene::UpdateState()
 		if (IsLastFrame())
 		{
 			sess->cam.SetManual(false);
-			sess->hud->Show();
+			sess->ShowHUD();
 		}
 		break;
 	}
@@ -747,7 +747,7 @@ void MindControlScene::UpdateState()
 			sess->AddEnemy(seqSkeleton);
 			seqSkeleton->facingRight = false;
 
-			sess->hud->Hide();
+			sess->HideHUD();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
 			sess->Fade(true, 60, Color::Black);

@@ -18,7 +18,7 @@ ThornPool::ThornPool()
 	numThorns = 10;//5;//10;
 	thornVec.resize(numThorns);
 	//verts = new Vertex[numLasers * 4];
-	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Coyote/coyotebullet_32x32.png");
 	for (int i = 0; i < numThorns; ++i)
 	{
 		thornVec[i] = new Thorn(/*verts + 4 * i, */this);

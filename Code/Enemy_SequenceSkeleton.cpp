@@ -60,22 +60,22 @@ SequenceSkeleton::SequenceSkeleton(ActorParams *ap)
 	laserAnimFrames = 20;
 	laserAnimFactor = 2;
 
-	ts_bullet = GetSizedTileset("Bosses/Skeleton/skele_bullet_128x128.png");
+	ts_bullet = GetSizedTileset("Enemies/Bosses/Skeleton/skele_bullet_128x128.png");
 
-	ts_laser = GetSizedTileset("Bosses/Skeleton/skele_laser_160x128.png");
+	ts_laser = GetSizedTileset("Enemies/Bosses/Skeleton/skele_laser_160x128.png");
 
-	ts = GetSizedTileset("Bosses/Skeleton/skele_128x128.png");
+	ts = GetSizedTileset("Enemies/Bosses/Skeleton/skele_128x128.png");
 
-	ts_walk = GetSizedTileset("Bosses/Skeleton/skele_walk_128x128.png");
+	ts_walk = GetSizedTileset("Enemies/Bosses/Skeleton/skele_walk_128x128.png");
 
-	ts_hop = GetSizedTileset("Bosses/Skeleton/skele_hop_128x128.png");
+	ts_hop = GetSizedTileset("Enemies/Bosses/Skeleton/skele_hop_128x128.png");
 
-	ts_wireAway = GetSizedTileset("Bosses/Skeleton/skele_wire_160x128.png");
+	ts_wireAway = GetSizedTileset("Enemies/Bosses/Skeleton/skele_wire_160x128.png");
 
 	SetRectColor(wireQuad, Color::Red);
 
 	//SetRectColor(laserQuad, Color::Magenta);
-	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
+	//ts_walk = GetSizedTileset("Enemies/Bosses/Coyote/coy_walk_80x80.png");
 
 	ResetEnemy();
 }

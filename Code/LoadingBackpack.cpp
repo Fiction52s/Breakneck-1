@@ -4,7 +4,7 @@
 
 LoadingBackpack::LoadingBackpack( TilesetManager *tm)
 {
-	ts_loadIcon = tm->GetTileset("Menu/loadicon_320x320.png", 320, 320);
+	ts_loadIcon = tm->GetTileset("Menu/Load/loadicon_320x320.png", 320, 320);
 
 	for (int i = 0; i < 3; ++i)
 	{

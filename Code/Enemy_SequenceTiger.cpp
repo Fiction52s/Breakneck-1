@@ -49,10 +49,10 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 
 	//animFactor[DIG_OUT] = 4;
 
-	ts_roar = GetSizedTileset("Bosses/Tiger/tiger_roar_256x160.png");
-	ts_walk = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
+	ts_roar = GetSizedTileset("Enemies/Bosses/Tiger/tiger_roar_256x160.png");
+	ts_walk = GetSizedTileset("Enemies/Bosses/Tiger/tiger_walk_256x160.png");
 
-	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
+	//ts_walk = GetSizedTileset("Enemies/Bosses/Coyote/coy_walk_80x80.png");
 
 	Reset();
 	//ResetEnemy();

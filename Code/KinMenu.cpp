@@ -27,7 +27,7 @@ KinMenu::KinMenu( TilesetManager *p_tm )
 	
 	MainMenu *mm = MainMenu::GetInstance();
 
-	ts_powers = tm->GetSizedTileset("Menu/power_icon_128x128.png");
+	ts_powers = tm->GetSizedTileset("Menu/Pause/power_icon_128x128.png");
 
 	description.setFont(mm->arial);
 	description.setCharacterSize(24);
@@ -35,16 +35,16 @@ KinMenu::KinMenu( TilesetManager *p_tm )
 
 	int tutWidth = 1220;
 	int tutHeight = 320;
-	ts_tutorial[0] = tm->GetSizedTileset("Menu/tut_jump_1220x320.png");
-	ts_tutorial[1] = tm->GetSizedTileset("Menu/tut_attack_1220x320.png");
-	ts_tutorial[2] = tm->GetSizedTileset("Menu/tut_sprint_1220x320.png");
-	ts_tutorial[3] = tm->GetSizedTileset("Menu/tut_dash_1220x320.png");
-	ts_tutorial[4] = tm->GetSizedTileset("Menu/tut_walljump_1220x320.png");
-	ts_tutorial[5] = tm->GetSizedTileset("Menu/tut_speed_1220x320.png");
-	ts_tutorial[6] = tm->GetSizedTileset("Menu/tut_health_1220x320.png");
-	ts_tutorial[7] = tm->GetSizedTileset("Menu/tut_survival_1220x320.png");
-	ts_tutorial[8] = tm->GetSizedTileset("Menu/tut_key_1220x320.png");
-	ts_tutorial[9] = tm->GetSizedTileset("Menu/tut_airdash_1220x320.png");
+	ts_tutorial[0] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_jump_1220x320.png");
+	ts_tutorial[1] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_attack_1220x320.png");
+	ts_tutorial[2] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_sprint_1220x320.png");
+	ts_tutorial[3] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_dash_1220x320.png");
+	ts_tutorial[4] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_walljump_1220x320.png");
+	ts_tutorial[5] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_speed_1220x320.png");
+	ts_tutorial[6] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_health_1220x320.png");
+	ts_tutorial[7] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_survival_1220x320.png");
+	ts_tutorial[8] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_key_1220x320.png");
+	ts_tutorial[9] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_airdash_1220x320.png");
 	
 
 	SetRectColor(descriptionBox, Color(0, 0, 0, 255));
@@ -67,16 +67,16 @@ KinMenu::KinMenu( TilesetManager *p_tm )
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
-	Tileset *ts_selector = tm->GetSizedTileset("Menu/power_icon_border_160x160.png");
+	Tileset *ts_selector = tm->GetSizedTileset("Menu/Pause/power_icon_border_160x160.png");
 	selectorSpr.setTexture(*ts_selector->texture);
 	selectorSpr.setOrigin(selectorSpr.getLocalBounds().width / 2, selectorSpr.getLocalBounds().height / 2);
 
-	ts_kin = tm->GetSizedTileset("Menu/pause_kin_400x836.png");
-	ts_aura1A = tm->GetSizedTileset("Menu/pause_kin_aura_1a_400x836.png");
-	ts_aura1B = tm->GetSizedTileset("Menu/pause_kin_aura_1b_400x836.png");
-	ts_aura2A = tm->GetSizedTileset("Menu/pause_kin_aura_2a_400x836.png");
-	ts_aura2B = tm->GetSizedTileset("Menu/pause_kin_aura_2b_400x836.png");
-	ts_veins = tm->GetSizedTileset("Menu/pause_kin_veins_400x836.png");
+	ts_kin = tm->GetSizedTileset("Menu/Pause/pause_kin_400x836.png");
+	ts_aura1A = tm->GetSizedTileset("Menu/Pause/pause_kin_aura_1a_400x836.png");
+	ts_aura1B = tm->GetSizedTileset("Menu/Pause/pause_kin_aura_1b_400x836.png");
+	ts_aura2A = tm->GetSizedTileset("Menu/Pause/pause_kin_aura_2a_400x836.png");
+	ts_aura2B = tm->GetSizedTileset("Menu/Pause/pause_kin_aura_2b_400x836.png");
+	ts_veins = tm->GetSizedTileset("Menu/Pause/pause_kin_veins_400x836.png");
 
 	if (!scrollShader1.loadFromFile("Resources/Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
@@ -110,11 +110,11 @@ KinMenu::KinMenu( TilesetManager *p_tm )
 	aura2ASpr.setColor(Color::Yellow);
 	aura2BSpr.setColor(Color::Magenta);*/
 	Image palette;
-	bool loadPalette = palette.loadFromFile("Resources/Menu/pause_kin_aura_color.png");
+	bool loadPalette = palette.loadFromFile("Resources/Menu/Pause/pause_kin_aura_color.png");
 	assert(loadPalette);
 
 	Image powerPalette;
-	bool loadPowerPalette = powerPalette.loadFromFile("Resources/Menu/power_icons_palette.png");
+	bool loadPowerPalette = powerPalette.loadFromFile("Resources/Menu/Pause/power_icons_palette_3x7.png");
 
 	aura1AShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
 	aura1BShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);

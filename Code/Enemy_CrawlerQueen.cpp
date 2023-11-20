@@ -75,13 +75,13 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	clockwisePicker.AddActiveOption(0, 2);
 	clockwisePicker.AddActiveOption(1, 2);
 
-	ts_move = GetSizedTileset("Bosses/Crawler/crawler_queen_dash_320x320.png");
-	ts_slash = GetSizedTileset("Bosses/Crawler/crawler_queen_slash_320x320.png");
-	ts_dig_in = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png");
-	ts_dig_out = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
-	ts_jump = GetSizedTileset("Bosses/Crawler/crawler_queen_jump_320x320.png");
-	ts_lunge = GetSizedTileset("Bosses/Crawler/crawler_queen_lunge_320x320.png");
-	ts_boostCharge = GetSizedTileset("Bosses/Crawler/crawler_queen_charge_320x320.png");
+	ts_move = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_dash_320x320.png");
+	ts_slash = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_slash_320x320.png");
+	ts_dig_in = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_dig_in_320x320.png");
+	ts_dig_out = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_dig_out_320x320.png");
+	ts_jump = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_jump_320x320.png");
+	ts_lunge = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_lunge_320x320.png");
+	ts_boostCharge = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_charge_320x320.png");
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
@@ -94,7 +94,7 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 
 	LoadParams();
 
-	//CreateHitboxManager("Bosses/Crawler");
+	//CreateHitboxManager("Enemies/Bosses/Crawler");
 	//SetupHitboxes(MOVE, "normal");
 
 	BasicCircleHurtBodySetup(70, 0, V2d( 30, -40 ), V2d());
@@ -124,7 +124,7 @@ CrawlerQueen::~CrawlerQueen()
 void CrawlerQueen::LoadParams()
 {
 	ifstream is;
-	is.open("Resources/Bosses/Crawler/crawlerparams.json");
+	is.open("Resources/Enemies/Bosses/Crawler/crawlerparams.json");
 
 	assert(is.is_open());
 

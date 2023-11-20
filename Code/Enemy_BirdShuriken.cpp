@@ -35,8 +35,8 @@ BirdShurikenPool::BirdShurikenPool(Enemy *p_parentEnemy)
 
 	parentEnemy = p_parentEnemy;
 
-	//ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
-	ts = sess->GetSizedTileset("Bosses/Bird/bird_shuriken_256x256.png");
+	//ts = sess->GetSizedTileset("Enemies/Bosses/Bird/shuriken01_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Bird/bird_shuriken_256x256.png");
 }
 
 BirdShurikenPool::~BirdShurikenPool()
@@ -131,7 +131,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 
 	CreateSurfaceMover(startPosInfo, 12, this);
 
-	Tileset *ts_basicBullets = sess->GetSizedTileset("Enemies/bullet_80x80.png");
+	Tileset *ts_basicBullets = sess->GetSizedTileset("Enemies/General/bullet_80x80.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 16, 1, GetPosition(),
@@ -140,8 +140,8 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	launchers[0]->hitboxInfo->damage = 60;
 	frame = 0;
 
-	ts = sess->GetSizedTileset("Bosses/Bird/bird_shuriken_256x256.png");
-	//ts = GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Bird/bird_shuriken_256x256.png");
+	//ts = GetSizedTileset("Enemies/Bosses/Bird/shuriken01_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

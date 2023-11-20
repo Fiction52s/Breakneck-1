@@ -8,7 +8,7 @@ using namespace sf;
 
 WorldMapShip::WorldMapShip(WorldMap *wm)
 {
-	ts = wm->GetSizedTileset("WorldMap/ship_128x128.png");//wm->GetSizedTileset("Menu/ship_mouse_icon_1_172x80.png");
+	ts = wm->GetSizedTileset("Menu/WorldMap/ship_128x128.png");
 	SetAlpha(1.0);
 	facingIndex = 0;
 	frame = 0;

@@ -17,7 +17,7 @@ CoyoteShockwavePool::CoyoteShockwavePool()
 	numShockwaves = 1;
 	shockwaveVec.resize(numShockwaves);
 	verts = new Vertex[numShockwaves * 4];
-	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Coyote/coyotebullet_32x32.png");
 	for (int i = 0; i < numShockwaves; ++i)
 	{
 		shockwaveVec[i] = new CoyoteShockwave(verts + 4 * i, this);

@@ -33,11 +33,11 @@ SequenceGator::SequenceGator(ActorParams *ap)
 	animFactor[IDLE] = 2;
 	//animFactor[DIG_OUT] = 4;
 
-	ts = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	ts = GetSizedTileset("Enemies/Bosses/Gator/dominance_384x384.png");
 
 	superOrbOffset = V2d(-150, 0);
 
-	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
+	//ts_walk = GetSizedTileset("Enemies/Bosses/Coyote/coy_walk_80x80.png");
 
 	ResetEnemy();
 }

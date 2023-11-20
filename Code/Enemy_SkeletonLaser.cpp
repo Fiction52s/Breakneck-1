@@ -17,7 +17,7 @@ SkeletonLaserPool::SkeletonLaserPool( int maxLasers )
 	numLasers = maxLasers;//100;//5;//10;
 	laserVec.resize(numLasers);
 	//verts = new Vertex[numLasers * 4];
-	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Coyote/coyotebullet_32x32.png");
 	for (int i = 0; i < numLasers; ++i)
 	{
 		laserVec[i] = new SkeletonLaser(/*verts + 4 * i, */this);

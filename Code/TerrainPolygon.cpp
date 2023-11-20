@@ -178,7 +178,7 @@ void TerrainPolygon::GenerateMyFlies()
 	if (terrainWorldType != FLY)
 		return;
 
-	ts_fly = sess->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
+	ts_fly = sess->GetTileset("Enemies/General/healthfly_64x64.png", 64, 64);
 
 	SetRenderMode(RENDERMODE_FLIES);
 
@@ -778,8 +778,9 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 		//int GameSession::TerrainPiece::bushAnimLength = 20;
 		//int GameSession::TerrainPiece::bushAnimFactor = 8;
 
-
-		switch (dType)
+		//currently depreciated
+		ts_d = NULL;
+		/*switch (dType)
 		{
 		case D_W1_BUSH_NORMAL:
 			ts_d = sess->GetTileset("Env/bush_01_64x64.png", 64, 64);
@@ -944,8 +945,8 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 		case D_W2_BUSH_1_6:
 			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 1, 1, 6);
-			break;
-		}
+			break;*/
+		//}
 
 		sess->decorLayerMap[dType] = layer;
 	}
@@ -1183,38 +1184,6 @@ TerrainPolygon::TerrainPolygon()
 
 	SetupTilePattern();
 
-
-	//ts_water = sess->GetSizedTileset("Env/water_128x128.png");
-
-	//if (!waterShader.loadFromFile("Resources/Shader/water.frag", sf::Shader::Fragment))
-	//{
-	//	cout << "water SHADER NOT LOADING CORRECTLY" << endl;
-	//}
-
-	//waterShader.setUniform("u_slide", waterShaderCounter);
-	//waterShader.setUniform("u_texture", *ts_water->texture);
-	//waterShader.setUniform("Resolution", Vector2f(1920, 1080));
-	//waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-	//waterShader.setUniform("skyColor", ColorGL(Color::White));
-
-	////Color g = Color::Green;
-	//Color g = Color::Magenta;
-	//g.a = 50;
-	//waterShader.setUniform("u_waterBaseColor", ColorGL(g));
-
-	//IntRect ir1 = ts_water->GetSubRect(2);
-	//IntRect ir2 = ts_water->GetSubRect(3);
-
-	//float width = ts_water->texture->getSize().x;
-	//float height = ts_water->texture->getSize().y;
-
-	//waterShader.setUniform("u_quad1", 
-	//	Glsl::Vec4(ir1.left / width, ir1.top / height,
-	//	(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
-
-	//waterShader.setUniform("u_quad2",
-	//	Glsl::Vec4(ir2.left / width, ir2.top / height,
-	//	(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
 	polyIndex = -1;
 
 	grassBufferForAABBOn = false;
@@ -1537,7 +1506,7 @@ void TerrainPolygon::SetBorderTileset()
 
 	stringstream ss;
 
-	ss << "Borders/bor_" << terrainWorldType + 1 << "_";
+	ss << "Env/Borders/bor_" << terrainWorldType + 1 << "_";
 	ss << "01_512x512";
 
 	//this is if we get more border variations

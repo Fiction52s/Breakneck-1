@@ -28,7 +28,7 @@ BlockerChain::BlockerChain(ActorParams *ap)
 	}
 
 	sf::Image paletteImage;
-	paletteImage.loadFromFile("Resources/Enemies/blocker_palette_16x9.png");
+	paletteImage.loadFromFile("Resources/Enemies/General/blocker_palette_16x9.png");
 	
 	int skinIndex = 0;
 	
@@ -125,7 +125,7 @@ void BlockerChain::EnemyDraw(sf::RenderTarget *target)
 
 Tileset *BlockerChain::GetTileset(int variation)
 {
-	return GetSizedTileset("Enemies/blocker_w1_192x192.png");
+	return GetSizedTileset("Enemies/General/blocker_w1_192x192.png");
 }
 
 Enemy *BlockerChain::CreateEnemy(V2d &pos, int ind)

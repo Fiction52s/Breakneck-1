@@ -113,7 +113,7 @@ void BirdPostFight2Scene::SetupStates()
 
 
 	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
-	warper = sess->GetWarper("Bosses/greyw1");
+	warper = sess->GetWarper("Enemies/Bosses/greyw1");
 }
 
 void BirdPostFight2Scene::ReturnToGame()
@@ -274,7 +274,7 @@ void BirdTigerApproachScene::UpdateState()
 			
 
 
-			sess->hud->Hide();
+			sess->HideHUD();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
 			sess->Fade(true, 60, Color::Black);
@@ -307,7 +307,7 @@ void BirdTigerApproachScene::UpdateState()
 		if (IsLastFrame())
 		{
 			sess->cam.SetManual(false);
-			sess->hud->Show();
+			sess->ShowHUD();
 		}
 		break;
 	}

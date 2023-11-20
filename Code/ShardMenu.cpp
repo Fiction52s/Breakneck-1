@@ -24,8 +24,8 @@ ShardMenu::ShardMenu(TilesetManager *p_tm)
 	tm = p_tm;
 	totalFrame = 0;
 
-	ts_shardContainer = tm->GetSizedTileset("Menu/shard_container_401x512.png");
-	ts_sparkle = tm->GetSizedTileset("Menu/shard_sparkle_64x64.png");
+	ts_shardContainer = tm->GetSizedTileset("Menu/Pause/shard_container_401x512.png");
+	ts_sparkle = tm->GetSizedTileset("Menu/Pause/shard_sparkle_64x64.png");
 
 	selectedIndex = 0;
 
@@ -363,49 +363,6 @@ void ShardMenu::UpdateUnlockedShards()
 	//		//ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
 	//	}
 	//}
-}
-
-bool ShardMenu::SetDescription( std::string &nameStr, std::string &destStr, const std::string &shardTypeStr)
-{
-	stringstream ss;
-	ss << "Resources/Shard/Descriptions/" << shardTypeStr << ".sdesc";
-	ifstream is;
-	is.open(ss.str());
-
-	nameStr = "";
-	destStr = "";
-	if( is.is_open())
-	{
-		getline(is, nameStr);
-		destStr.assign((std::istreambuf_iterator<char>(is)),
-			(std::istreambuf_iterator<char>()));
-		/*char c;
-		while (is.get(c))
-		{
-			
-		}*/
-
-		//getline(is, destStr);
-		/*is.seekg(0, std::ios::end);
-		destStr.reserve(is.tellg());
-		is.seekg(0, std::ios::beg);
-
-		destStr.assign((std::istreambuf_iterator<char>(is)),
-			std::istreambuf_iterator<char>());*/
-		/*if (!is.good())
-		{
-			assert(is.good());
-		}*/
-		
-		//cout << "dest str: " << destStr << endl;
-	}
-	else
-	{
-		cout << "trying to get: " << shardTypeStr << " description" << endl;
-		return false;
-		assert(0);
-	}
-	return true;
 }
 
 void ShardMenu::UpdateShardSelectQuads()

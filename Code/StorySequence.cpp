@@ -96,7 +96,7 @@ void StorySequence::EndSequence()
 bool StorySequence::Load(const std::string &sequenceName)
 {
 	ifstream is;
-	string fName = "Resources/Scripts/";
+	string fName = "Resources/Story/Scripts/";
 	fName += sequenceName + string(".txt");
 	is.open(fName);
 	seqName = sequenceName;

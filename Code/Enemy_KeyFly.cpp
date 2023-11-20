@@ -22,9 +22,9 @@ KeyFly::KeyFly(ActorParams *ap)
 	SetKey();
 
 	ts = sess->ts_key;
-	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
+	//ts = GetSizedTileset("Enemies/General/healthfly_64x64.png");
 	//ts = GetSizedTileset("FX/key_128x128.png");
-	ts_container = GetSizedTileset("Enemies/key_container_256x256.png");
+	ts_container = GetSizedTileset("Enemies/General/key_container_256x256.png");
 
 	BasicCircleHurtBodySetup(80, 0, V2d( 0, 10 ), V2d());
 

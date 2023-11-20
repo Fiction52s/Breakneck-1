@@ -61,20 +61,15 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	string worldIndexStr = to_string(world->index + 1);
 
-	string nodeFile = "WorldMap/node_w" + worldIndexStr + "_128x128.png";
+	string nodeFile = "Menu/WorldMap/LevelNode/node_w" + worldIndexStr + "_128x128.png";
 
 	ts_node = worldMap->GetSizedTileset(nodeFile);
 
 	ts_bossFight = new Tileset*[1];
-	ts_bossFight[0] = worldMap->GetTileset("Worldmap/boss_w1_128x128.png", 128, 128);
+	ts_bossFight[0] = worldMap->GetTileset("Menu/Worldmap/boss_w1_128x128.png", 128, 128);
 
-	ts_sectorLevelBG = worldMap->GetTileset("Worldmap/sector_levelbg_1200x400.png", 1200, 400);
-	ts_levelStatsBG = worldMap->GetTileset("Worldmap/level_stats_512x256.png", 512, 256);
-	ts_sectorStatsBG = worldMap->GetTileset("Worldmap/sector_box_256x256.png", 256, 256);
-
-	ts_sectorKey = worldMap->GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
 	ts_sectorOpen = new Tileset*[1];
-	ts_sectorOpen[0] = worldMap->GetTileset("Worldmap/sectorunlock_256x256.png", 256, 256);
+	ts_sectorOpen[0] = worldMap->GetTileset("Menu/Worldmap/sectorunlock_256x256.png", 256, 256);
 
 	bottomBG.setPosition(624, 545);
 	numSectors = 0;

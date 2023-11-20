@@ -136,49 +136,49 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 	switch (gt)
 	{
 	case TouchGrass::TYPE_NORMAL_W1:
-		t = tm->GetSizedTileset("Env/bushtouch_1_01_64x64.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_1_01_64x64.png");
 		break;
 	case TouchGrass::TYPE_NORMAL_W2:
-		t = tm->GetSizedTileset("Env/bushtouch_2_01_64x64.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_2_01_64x64.png");
 		break;
 	case TouchGrass::TYPE_NORMAL_W3:
-		t = tm->GetSizedTileset("Env/bushtouch_3_01_64x64.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_3_01_64x64.png");
 		break;
 	case TouchGrass::TYPE_NORMAL_W4:
-		t = tm->GetSizedTileset("Env/bushtouch_4_01_64x64.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_4_01_64x64.png");
 		break;
 	case TouchGrass::TYPE_NORMAL_W5:
-		t = tm->GetSizedTileset("Env/bushtouch_5_01_64x64.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_5_01_64x64.png");
 		break;
 	case TouchGrass::TYPE_NORMAL_W6:
-		t = tm->GetSizedTileset("Env/bushtouch_6_01_64x64.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_6_01_64x64.png");
 		break;
 	/*case TouchGrass::TYPE_NORMAL_W7:
-		t = tm->GetSizedTileset("Env/bushtouch_7_01_64x64.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_7_01_64x64.png");
 		break;*/
 	case TouchGrass::TYPE_LARGE_W1:
-		t = tm->GetSizedTileset("Env/bushtouch_1_02_128x128.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_1_02_128x128.png");
 		break;
 	case TouchGrass::TYPE_LARGE_W2:
-		t = tm->GetSizedTileset("Env/bushtouch_2_02_128x128.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_2_02_128x128.png");
 		break;
 	case TouchGrass::TYPE_LARGE_W3:
-		t = tm->GetSizedTileset("Env/bushtouch_3_02_128x128.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_3_02_128x128.png");
 		break;
 	case TouchGrass::TYPE_LARGE_W4:
-		t = tm->GetSizedTileset("Env/bushtouch_4_02_128x128.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_4_02_128x128.png");
 		break;
 	case TouchGrass::TYPE_LARGE_W5:
-		t = tm->GetSizedTileset("Env/bushtouch_5_02_128x128.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_5_02_128x128.png");
 		break;
 	case TouchGrass::TYPE_LARGE_W6:
-		t = tm->GetSizedTileset("Env/bushtouch_6_02_128x128.png");
+		t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_6_02_128x128.png");
 		break;
 	//case TouchGrass::TYPE_LARGE_W7:
-	//	t = tm->GetSizedTileset("Env/bushtouch_7_02_128x128.png");
+	//	t = tm->GetSizedTileset("Env/TouchGrass/bushtouch_7_02_128x128.png");
 	//	break;
 	case TouchGrass::TYPE_TREE:
-		t = tm->GetTileset("Env/trees_128x128.png", 128, 128);
+		t = tm->GetTileset("Env/TouchGrass/trees_128x128.png", 128, 128);
 		break;
 	default:
 		assert(0);

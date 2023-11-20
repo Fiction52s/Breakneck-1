@@ -13,7 +13,7 @@
 //	//numBullets = 10;
 //	//bulletVec.resize(numBullets);
 //	//verts = new Vertex[numBullets * 4];
-//	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+//	ts = sess->GetSizedTileset("Enemies/Bosses/Coyote/coyotebullet_32x32.png");
 //	/*for (int i = 0; i < numBullets; ++i)
 //	{
 //		bulletVec[i] = new Projectile(verts + 4 * i, this);

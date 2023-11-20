@@ -19,7 +19,7 @@ void DimensionEye::Setup()
 	if (game != NULL )
 	{
 		assert(myBonus == NULL);
-		myBonus = game->CreateBonus("Bosses/greyw1");
+		myBonus = game->CreateBonus("Enemies/Bosses/greyw1");
 	}
 	else
 	{
@@ -41,7 +41,7 @@ DimensionEye::DimensionEye(ActorParams *ap)
 	animFactor[DIE] = 1;
 	
 
-	ts = GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
+	ts = GetSizedTileset("Enemies/Bosses/GreySkeleton/dimensioneye_80x80.png");
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;

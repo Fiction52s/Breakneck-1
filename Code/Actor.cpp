@@ -1298,7 +1298,7 @@ void Actor::SetupFX()
 
 void Actor::SetupSwordTilesets()
 {
-	string folder = "Sword/";
+	string folder = "Kin/Sword/";
 
 
 
@@ -1376,6 +1376,9 @@ void Actor::SetupExtraTilesets()
 	string powerFolder = folder + "Powers/";
 	
 	string scorpionFolder = powerFolder + "Scorpion/";
+	string grindFolder = powerFolder + "Grind/";
+	string timeslowFolder = powerFolder + "TimeSlow/";
+	string wireFolder = powerFolder + "Wire/";
 
 	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 
@@ -1391,31 +1394,30 @@ void Actor::SetupExtraTilesets()
 	ts_scorpBounce = tm->GetSizedTileset(scorpionFolder, "scorp_bounce_256x256.png");
 	ts_scorpBounceWall = tm->GetSizedTileset(scorpionFolder, "scorp_bounce_wall_256x128.png");
 	
-	ts_bubble = tm->GetSizedTileset(powerFolder, "time_bubble_128x128.png");
-	ts_dodecaSmall = tm->GetSizedTileset(powerFolder, "dodecasmall_180x180.png");
-	ts_dodecaBig = tm->GetSizedTileset(powerFolder, "dodecabig_360x360.png");
+	ts_bubble = tm->GetSizedTileset(timeslowFolder, "time_bubble_128x128.png");
+	ts_dodecaSmall = tm->GetSizedTileset(timeslowFolder, "dodecasmall_180x180.png");
+	ts_dodecaBig = tm->GetSizedTileset(timeslowFolder, "dodecabig_360x360.png");
 
-	ts_grind = tm->GetSizedTileset(powerFolder, "grind_tri_128x128.png");
-
-	ts_grindAttackFX = tm->GetSizedTileset(powerFolder, "grind_attack_192x192.png");
+	ts_grind = tm->GetSizedTileset(grindFolder, "grind_tri_128x128.png");
+	ts_grindAttackFX = tm->GetSizedTileset(grindFolder, "grind_attack_192x192.png");
 
 	ts_grindAttackFX->SetSpriteTexture(grindAttackSprite);
 
 	ts_blockShield = tm->GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	ts_blockShield->SetSpriteTexture(shieldSprite);
 
-	ts_swordProjectile = tm->GetSizedTileset("Enemies/comboers_128x128.png");
+	ts_swordProjectile = tm->GetSizedTileset("Enemies/General/comboers_128x128.png");
 
 	ts_homingAttackBall = tm->GetSizedTileset("Kin/FX/homing_att_ball_256x256.png");
 	ts_homingAttackBall->SetSpriteTexture(homingAttackBallSprite);
 
-	ts_antiTimeSlowRing = tm->GetSizedTileset("Kin/FX/low_grav_ring_128x128.png");
+	ts_antiTimeSlowRing = tm->GetSizedTileset("Kin/FX/anti_timeslow_ring_128x128.png");
 
 	ts_fx_boosterParticles = tm->GetSizedTileset("Kin/FX/booster_particles_32x32.png");
 
-	ts_wire = tm->GetSizedTileset(powerFolder,"wires_16x16.png");
-	ts_wireNode = tm->GetSizedTileset(powerFolder, "wire_node_16x16.png");
-	ts_wireTip = tm->GetSizedTileset(powerFolder, "wire_tips_16x16.png");
+	ts_wire = tm->GetSizedTileset(wireFolder,"wires_16x16.png");
+	ts_wireNode = tm->GetSizedTileset(wireFolder, "wire_node_16x16.png");
+	ts_wireTip = tm->GetSizedTileset(wireFolder, "wire_tips_16x16.png");
 
 	if (owner != NULL)
 	{
@@ -5276,7 +5278,7 @@ void Actor::HandleAirTrigger()
 		{
 			if (ground != NULL)
 			{
-				owner->hud->Hide(60);
+				owner->HideHUD(60);
 				SetAction(AUTORUN);
 				frame = 0;
 				maxAutoRunSpeed = 25;
@@ -5920,7 +5922,7 @@ void Actor::UpdateDrain()
 		return; //dont drain while simulating player for now
 	}
 
-	if (action != DEATH && sess->hud->IsShown()
+	if (action != DEATH && sess->timerOn
 		&& (sess->currentZone == NULL || sess->currentZone->zType != Zone::MOMENTA))
 	{
 		//!IsIntroAction(action)
@@ -8621,7 +8623,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 void Actor::EndLevelWithoutGoal()
 {
-	sess->hud->Hide(60);
+	sess->HideHUD(60);
 	sess->scoreDisplay->Activate();
 	SetAction(Actor::GOALKILLWAIT);
 	frame = 0;
@@ -21647,7 +21649,7 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 		if (sess->scoreDisplay != NULL)
 		{
 			sess->scoreDisplay->Activate();
-			sess->hud->Hide(60);
+			sess->HideHUD(60);
 		}
 	}
 }

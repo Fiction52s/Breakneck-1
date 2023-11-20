@@ -15,7 +15,11 @@ Shockwave::Shockwave()
 	}
 	shockShader.setUniform("resolution", Vector2f(1920, 1080));
 	shockShader.setUniform("texSize", Vector2f(580, 580));
-	ts_shock = sess->GetTileset("FX/shockwave_580x580.png");
+
+	//depreciated. shockwave is in old assets
+	//ts_shock = sess->GetTileset("FX/shockwave_580x580.png");
+	ts_shock = NULL;
+	
 	shockShader.setUniform("shockwaveTex", *ts_shock->texture);
 
 	frame = 0;

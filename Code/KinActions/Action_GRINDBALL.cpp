@@ -239,7 +239,7 @@ void Actor::GRINDBALL_Update()
 
 	velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 
-	distanceGrinded += grindSpeed;
+	distanceGrinded += grindSpeed / slowMultiple;
 }
 
 void Actor::GRINDBALL_UpdateSprite()
@@ -283,16 +283,30 @@ void Actor::GRINDBALL_UpdateSprite()
 
 	sprite->setPosition(pp.x, pp.y);
 
-	double gAng = distanceGrinded / 50.0;
+	double gAng = distanceGrinded /50.0;
 	double realGAng = gAng;
 
 	for (int i = 0; i < NUM_GRIND_QUADS; ++i)
 	{
 		realGAng = gAng;
-		if (i >= 2)
+
+
+		if (i == 1)
 		{
+			realGAng *= .8;
+		}
+		else if (i == 2)
+		{
+			realGAng *= 1.3;
 			realGAng += PI;
 		}
+		else if (i == 3)
+		{
+			realGAng *= 1.7;
+			realGAng += PI;
+		}
+
+		
 		SetRectRotation(grindQuads + i * 4, realGAng, ts_grind->tileWidth, ts_grind->tileHeight, Vector2f(grindPoint));
 
 		ts_grind->SetQuadSubRect(grindQuads + i * 4, i);

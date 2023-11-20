@@ -17,7 +17,7 @@ GrindFirePool::GrindFirePool()
 	numFires = 24;
 	fireVec.resize(numFires);
 	verts = new Vertex[numFires * 4];
-	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Coyote/coyotebullet_32x32.png");
 	for (int i = 0; i < numFires; ++i)
 	{
 		fireVec[i] = new GrindFire(verts + 4 * i, this);
@@ -198,7 +198,7 @@ TigerGrindBulletPool::TigerGrindBulletPool()
 	numBullets = 10;
 	bulletVec.resize(numBullets);
 	verts = new Vertex[numBullets * 4];
-	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Coyote/coyotebullet_32x32.png");
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bulletVec[i] = new TigerGrindBullet(verts + 4 * i, this);

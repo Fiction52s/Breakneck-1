@@ -37,7 +37,7 @@ TutorialObject::TutorialObject(ActorParams *ap)
 
 	SetCurrPosInfo(startPosInfo);
 
-	ts = GetSizedTileset("Enemies/tutorial_flower_256x256.png");
+	ts = GetSizedTileset("Enemies/General/tutorial_flower_256x256.png");
 
 	TutorialObjectParams *top = (TutorialObjectParams*)ap;
 	

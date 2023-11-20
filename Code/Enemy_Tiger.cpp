@@ -66,9 +66,9 @@ Tiger::Tiger(ActorParams *ap)
 	actionLength[FLAME_STUN] = 180;
 	animFactor[FLAME_STUN] = 1;
 
-	ts_move = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
-	ts_grind = GetSizedTileset("Bosses/Tiger/tiger_grind_256x256.png");
-	ts_roar = GetSizedTileset("Bosses/Tiger/tiger_roar_256x160.png");
+	ts_move = GetSizedTileset("Enemies/Bosses/Tiger/tiger_walk_256x160.png");
+	ts_grind = GetSizedTileset("Enemies/Bosses/Tiger/tiger_grind_256x256.png");
+	ts_roar = GetSizedTileset("Enemies/Bosses/Tiger/tiger_roar_256x160.png");
 	//sprite.setColor(Color::Red);
 
 	TigerTarget *target = NULL;
@@ -121,7 +121,7 @@ Tiger::~Tiger()
 void Tiger::LoadParams()
 {
 	/*ifstream is;
-	is.open("Resources/Bosses/Bird/birdparams.json");
+	is.open("Resources/Enemies/Bosses/Bird/birdparams.json");
 
 	assert(is.is_open());
 

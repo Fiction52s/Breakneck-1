@@ -50,7 +50,7 @@ GroundedWarper::GroundedWarper(ActorParams *ap)
 	startActivated = gwParams->startActivated;
 	bonusName = gwParams->GetName();
 
-	ts = sess->GetSizedTileset("Enemies/target_224x224.png");
+	ts = sess->GetSizedTileset("Enemies/Multiplayer/target_224x224.png");
 	sprite.setColor(Color::Red);
 
 	//BasicCircleHurtBodySetup(40);

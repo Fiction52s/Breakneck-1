@@ -35,7 +35,7 @@ SwordProjectile::SwordProjectile(Actor *player)
 	hitLimit = 6;
 	facingRight = true;
 
-	ts = player->ts_swordProjectile;//GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = player->ts_swordProjectile;//GetSizedTileset("Enemies/General/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

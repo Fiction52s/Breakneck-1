@@ -375,7 +375,7 @@ TextDisp::~TextDisp()
 
 void TextDisp::Load(const std::string &name)
 {
-	string path = "Resources/Text/";
+	string path = "Resources/Story/Text/";
 	string suffix = ".txt";
 
 	ifstream is;
@@ -635,7 +635,7 @@ Script::Script()
 
 void Script::Load(const std::string &name)
 {
-	string path = "Resources/Text/";
+	string path = "Resources/Story/Text/";
 	string suffix = ".txt";
 
 	ifstream is;
@@ -807,7 +807,8 @@ Tileset *Speech::GetTileset()
 {
 	if (speaker == "Momenta")
 	{
-		return sess->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
+		//depreciated path
+		return NULL;//sess->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
 	}
 	else if (speaker == "Kin")
 	{
@@ -844,7 +845,7 @@ Tileset *Speech::GetTileset()
 	else
 	{
 		//assert(0);
-		return sess->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384);
+		return sess->GetTileset("Enemies/Bosses/Bird/bird_face_384x384.png", 384, 384);
 	}
 }
 
@@ -882,7 +883,7 @@ void ConversationGroup::Load(const std::string &name)
 {
 	sceneName = name;
 
-	string path = "Resources/Text/";
+	string path = "Resources/Story/Text/";
 	string suffix = ".txt";
 
 	string fullFileName = path + name + suffix;
@@ -1119,7 +1120,7 @@ void Conversation::SetTextMode(Speech::TextMode tMode)
 
 void Conversation::Load( const std::string &name )
 {
-	string path = "Resources/Text/";
+	string path = "Resources/Story/Text/";
 	string suffix = ".txt";
 
 	ifstream is;

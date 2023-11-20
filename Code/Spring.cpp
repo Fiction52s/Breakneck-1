@@ -187,29 +187,29 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	
 	if (tilesetChoice == 0)
 	{
-		ts = GetSizedTileset("Enemies/Launchers/launcher_1_384x384.png");
+		ts = GetSizedTileset("Enemies/General/Launchers/launcher_1_384x384.png");
 	}
 	else if (tilesetChoice == 1)
 	{
-		ts = GetSizedTileset("Enemies/Launchers/launcher_2_384x384.png");
+		ts = GetSizedTileset("Enemies/General/Launchers/launcher_2_384x384.png");
 	}
 
 	if (recoverTileseChoice == 0)
 	{
-		ts_recover = GetSizedTileset("Enemies/Launchers/launcher_recover_1_384x384.png");
+		ts_recover = GetSizedTileset("Enemies/General/Launchers/launcher_recover_1_384x384.png");
 	}
 	else if (recoverTileseChoice == 1)
 	{
-		ts_recover = GetSizedTileset("Enemies/Launchers/launcher_recover_2_384x384.png");
+		ts_recover = GetSizedTileset("Enemies/General/Launchers/launcher_recover_2_384x384.png");
 	}
 	else if (recoverTileseChoice == 2)
 	{
-		ts_recover = GetSizedTileset("Enemies/Launchers/launcher_recover_3_384x384.png");
+		ts_recover = GetSizedTileset("Enemies/General/Launchers/launcher_recover_3_384x384.png");
 	}
 
 	launchSoundBuf = GetSound("Enemies/spring_launch");
-	ts_particles = GetSizedTileset("Enemies/Launchers/launcher_particles_256x256.png");
-	ts_boost = GetSizedTileset("Enemies/Launchers/launcher_explode_512x512.png");
+	ts_particles = GetSizedTileset("Enemies/General/Launchers/launcher_particles_256x256.png");
+	ts_boost = GetSizedTileset("Enemies/General/Launchers/launcher_explode_512x512.png");
 	
 	
 	particleSprite.setTexture(*ts_particles->texture);

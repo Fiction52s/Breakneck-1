@@ -34,7 +34,7 @@ Minimap::Minimap(TilesetManager *tm)
 	
 	minimapSprite.setScale(1, -1);
 
-	ts_miniIcons = mm->GetSizedTileset("HUD/minimap_icons_64x64.png");
+	ts_miniIcons = mm->GetSizedTileset("HUD/Minimap/minimap_icons_64x64.png");
 	kinMinimapIcon.setTexture(*ts_miniIcons->texture);
 	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,

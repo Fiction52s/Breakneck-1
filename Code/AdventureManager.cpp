@@ -139,16 +139,16 @@ void AdventureManager::UpdateWorldDependentTileset(int worldIndex)
 	if (worldIndex < 8)
 	{
 		stringstream ss;
-		ss << "FX/key_w" << w << "_128x128.png";
+		ss << "Enemies/General/Keys/key_w" << w << "_128x128.png";
 		stringstream ssExplode;
-		ssExplode << "FX/keyexplode_w" << w << "_128x128.png";
+		ssExplode << "Enemies/General/Keys/keyexplode_w" << w << "_128x128.png";
 		ts_key = GetSizedTileset(ss.str());
 		ts_keyExplode = GetSizedTileset(ssExplode.str());
 	}
 	else
 	{
-		ts_key = GetSizedTileset("FX/key_w1_128x128.png");
-		ts_keyExplode = GetSizedTileset("FX/keyexplode_w1_128x128.png");
+		ts_key = GetSizedTileset("Enemies/General/Keys/key_w1_128x128.png");
+		ts_keyExplode = GetSizedTileset("Enemies/General/Keys/keyexplode_w1_128x128.png");
 	}
 
 	if (ts_goal != NULL)
@@ -173,11 +173,11 @@ void AdventureManager::UpdateWorldDependentTileset(int worldIndex)
 	//if (worldIndex < 1)
 	{
 		stringstream ss;
-		ss << "Goal/goal_w" << w << "_a_512x512.png";
+		ss << "Enemies/General/Goal/goal_w" << w << "_a_512x512.png";
 		stringstream ssCrack;
-		ssCrack << "Goal/goal_w" << w << "_b_512x512.png";
+		ssCrack << "Enemies/General/Goal/goal_w" << w << "_b_512x512.png";
 		stringstream ssExplode;
-		ssExplode << "Goal/goal_w" << w << "_c_512x512.png";
+		ssExplode << "Enemies/General/Goal/goal_w" << w << "_c_512x512.png";
 		ts_goal = GetSizedTileset(ss.str());
 		ts_goalCrack = GetSizedTileset(ssCrack.str());
 		ts_goalExplode = GetSizedTileset(ssExplode.str());

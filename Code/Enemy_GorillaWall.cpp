@@ -25,14 +25,14 @@ GorillaWallPool::GorillaWallPool()
 	numBullets = 20;
 
 	Session *sess = Session::GetSession();
-	ts = sess->GetSizedTileset("Enemies/W6/gorillawall_400x50.png");//sess->GetSizedTileset("Bosses/Bird/bird_shuriken_256x256.png");
+	ts = sess->GetSizedTileset("Enemies/W6/gorillawall_400x50.png");//sess->GetSizedTileset("Enemies/Bosses/Bird/bird_shuriken_256x256.png");
 	bulletVec.resize(numBullets);
 	verts = new Vertex[numBullets * 4];
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bulletVec[i] = new GorillaWall(this, verts + 4 * i);
 	}
-	//ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+	//ts = sess->GetSizedTileset("Enemies/Bosses/Bird/shuriken01_128x128.png");
 
 }
 
@@ -157,7 +157,7 @@ GorillaWall::GorillaWall(GorillaWallPool *p_pool, sf::Vertex *myQuad)
 
 
 	ts = pool->ts;
-	//ts = GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+	//ts = GetSizedTileset("Enemies/Bosses/Bird/shuriken01_128x128.png");
 	//sprite.setTexture(*ts->texture);
 	//sprite.setScale(scale, scale);
 

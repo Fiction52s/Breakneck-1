@@ -12,12 +12,12 @@ TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier )
 {
 	modifier = p_modifier;
 	sess = NULL;//Session::GetSession();
-	ts_text = tm->GetSizedTileset("HUD/numbers_48x64.png");
+	ts_text = tm->GetSizedTileset("HUD/timer_numbers_48x64.png");
 	timer = new TimerText(ts_text);
 
 	//center = Vector2f(1920 / 2, 50);
 
-	textShader = new PaletteShader("timer", "Resources/HUD/numbers_palette_2x1.png");
+	textShader = new PaletteShader("timer", "Resources/HUD/timer_numbers_palette_2x1.png");
 
 	textShader->SetPaletteIndex(0);
 	textShader->SetTileset(ts_text);

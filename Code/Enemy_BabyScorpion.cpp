@@ -22,7 +22,7 @@ BabyScorpion::BabyScorpion(ActorParams *ap)
 	actionLength[DISSIPATE] = 30;
 	actionLength[DANCE] = 60;
 
-	ts = GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
+	ts = GetSizedTileset("Enemies/Bosses/Coyote/babyscorpion_64x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

@@ -10,11 +10,11 @@ QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap)
 	SetEditorActions(FLOATING, 0, 0);
 	//preload
 	ts_explosion = GetSizedTileset(
-		"Bosses/Crawler/bombexplode_512x512.png");
+		"Enemies/Bosses/Crawler/bombexplode_512x512.png");
 
 	CreateSurfaceMover(startPosInfo, 32, this);
 
-	ts = GetSizedTileset("Bosses/Crawler/bomb_128x160.png");
+	ts = GetSizedTileset("Enemies/Bosses/Crawler/bomb_128x160.png");
 	sprite.setTexture(*ts->texture);
 
 	action = FLOATING;

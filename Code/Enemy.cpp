@@ -637,7 +637,7 @@ void Enemy::OnCreate(ActorParams *ap,
 	}
 
 	pauseFrames = 0;
-	ts_zoned = GetSizedTileset("Enemies/enemy_zone_icon_128x128.png");
+	ts_zoned = GetSizedTileset("Zone/enemy_zone_icon_128x128.png");
 	zonedSprite.setTexture(*ts_zoned->texture);
 
 	genericDeathSound = GetSound("Enemies/kill");
@@ -806,19 +806,14 @@ void Enemy::SetKey()
 			w = 2; //we dont have all the sprites yet
 		}
 
-		//stringstream ss;
-		//ss << "FX/key_w0" << w << "_1_128x128.png";
-		//ts_key = sess->GetTileset(ss.str(), 128, 128);
+		ts_fx_key = sess->GetSizedTileset("FX/fx_enemy_key_256x256.png");
 
-
-		ts_key = sess->GetSizedTileset("FX/key_w1_256x256.png");
-
-		keySprite.setTexture(*ts_key->texture);
+		keySprite.setTexture(*ts_fx_key->texture);
 		UpdateKeySprite();
 	}
 	else
 	{
-		ts_key = NULL;
+		ts_fx_key = NULL;
 	}
 }
 
@@ -1604,7 +1599,7 @@ void Enemy::UpdateKeySprite()
 	{
 		int fac = 5;
 		int kFrame = sess->totalGameFrames % (16 * fac);
-		keySprite.setTextureRect(ts_key->GetSubRect(kFrame / fac));
+		keySprite.setTextureRect(ts_fx_key->GetSubRect(kFrame / fac));
 		keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
 			keySprite.getLocalBounds().height / 2);
 		keySprite.setPosition(GetPositionF());

@@ -74,7 +74,7 @@ SequenceBird::SequenceBird(ActorParams *ap)
 
 	extraHeight = 76;
 
-	ts = GetSizedTileset("Bosses/Bird/bird_walk_160x160.png");
+	ts = GetSizedTileset("Enemies/Bosses/Bird/bird_walk_160x160.png");
 
 	ResetEnemy();
 }

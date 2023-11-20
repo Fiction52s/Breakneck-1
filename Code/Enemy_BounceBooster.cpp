@@ -30,7 +30,7 @@ BounceBooster::BounceBooster(ActorParams *ap)
 	else
 	{
 		BasicCircleHitBodySetup(128);
-		ts = GetSizedTileset("Enemies/boosters_384x384.png");
+		ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 	}
 
 	

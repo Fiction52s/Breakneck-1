@@ -30,33 +30,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-//std::map<std::string, ShardType> Shard::shardTypeMap;
-//std::map<ShardType, std::string> Shard::shardStrMap;
-
-//void Shard::UpdateParamsSettings()
-//{
-//	int oldShardType = shardType;
-//
-//	ShardParams *sParams = (ShardParams*)editParams;
-//	shardWorld = sParams->shInfo.world;
-//	localIndex = sParams->shInfo.localIndex;
-//	shardType = Shard::GetShardType(shardWorld, localIndex);
-//
-//	if (shardType != oldShardType)
-//	{
-//		switch (shardWorld)
-//		{
-//		case 0://ShardType::SHARD_W1_TEACH_JUMP:
-//		default:
-//			ts = sess->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
-//			sprite.setTexture(*ts->texture);
-//			sprite.setTextureRect(ts->GetSubRect(localIndex));
-//			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-//			break;
-//		}
-//	}
-//}
-
 void PowerItem::Setup()
 {
 	geoGroup.SetBase(GetPositionF());
@@ -98,7 +71,7 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 		powerIndex = 5;
 	}
 
-	ts = GetSizedTileset("Enemies/poweritem_128x128.png");
+	ts = GetSizedTileset("Enemies/General/poweritem_128x128.png");
 
 	//UpdateParamsSettings();
 
@@ -138,7 +111,7 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	testEmitter->SetPos(GetPositionF());
 	testEmitter->SetRatePerSecond(30);
 
-	ts_sparkle = GetSizedTileset("Menu/shard_sparkle_64x64.png");
+	ts_sparkle = GetSizedTileset("Menu/Pause/shard_sparkle_64x64.png");
 
 	ts_explodeCreate = GetSizedTileset("FX/shard_explode_01_256x256.png");
 
@@ -469,7 +442,7 @@ PowerPopup::PowerPopup()
 	SetRectColor(topBorderQuad, borderColor);
 	SetRectColor(powerBorderQuad, borderColor);
 
-	ts_powers = sess->GetSizedTileset("Enemies/poweritem_128x128.png");
+	ts_powers = sess->GetSizedTileset("Enemies/General/poweritem_128x128.png");
 	powerSpr.setTexture(*ts_powers->texture);
 
 	borderHeight = 2;

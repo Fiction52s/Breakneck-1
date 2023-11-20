@@ -42,7 +42,7 @@ Comboer::Comboer(ActorParams *ap )
 	hitLimit = 6;
 	facingRight = true;
 
-	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/General/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

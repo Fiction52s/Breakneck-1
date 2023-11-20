@@ -571,7 +571,7 @@ void ShroomJelly::UpdateSprite()
 
 	if (hasMonitor && !suppressMonitor)
 	{
-		keySprite.setTextureRect(ts_key->GetSubRect(sess->keyFrame / 5));
+		keySprite.setTextureRect(ts_fx_key->GetSubRect(sess->keyFrame / 5));
 		keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
 			keySprite.getLocalBounds().height / 2);
 		keySprite.setPosition(GetPositionF());

@@ -13,8 +13,8 @@ FeedbackForm::FeedbackForm()
 {
 	Vector2i size(700, 420);//300 + 20);
 
-	ts_star = MainMenu::GetInstance()->GetSizedTileset("Menu/ratingstar_64x64.png");
-	//ts_star = GetSizedTileset("Menu/ratingstar_64x64.png");
+	ts_star = MainMenu::GetInstance()->GetSizedTileset("HUD/Feedback/ratingstar_64x64.png");
+
 
 	panel = new Panel("feedbackpanel", size.x, size.y, this, true);
 	panel->SetCenterPos(Vector2i(960, 540));

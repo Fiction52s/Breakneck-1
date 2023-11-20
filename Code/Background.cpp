@@ -362,7 +362,7 @@ Background::Background()
 {
 	stringstream ss;
 
-	string folder = "Title/";
+	string folder = "Menu/Title/";
 
 	//int eType = envLevel + 1; //adjust for alex naming -_-
 	//ss << folder << "w" << envType + 1 << "_BG";

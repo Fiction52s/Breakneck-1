@@ -147,19 +147,19 @@ Bird::Bird(ActorParams *ap)
 	stageMgr.AddActiveOption(3, SHURIKEN_SHOTGUN, 2);
 	stageMgr.AddActiveOption(3, UNDODGEABLE_SHURIKEN, 2);*/
 
-	ts_idle = GetSizedTileset("Bosses/Bird/bird_idle_160x160.png");
-	ts_punch = GetSizedTileset("Bosses/Bird/bird_punch_256x256.png");
-	ts_punch2 = GetSizedTileset("Bosses/Bird/bird_punch_2_256x256.png");
-	ts_kick = GetSizedTileset("Bosses/Bird/kick_256x256.png");
-	ts_charge = GetSizedTileset("Bosses/Bird/bird_charge_160x256.png");
-	ts_throw = GetSizedTileset("Bosses/Bird/bird_throw_256x256.png");
+	ts_idle = GetSizedTileset("Enemies/Bosses/Bird/bird_idle_160x160.png");
+	ts_punch = GetSizedTileset("Enemies/Bosses/Bird/bird_punch_256x256.png");
+	ts_punch2 = GetSizedTileset("Enemies/Bosses/Bird/bird_punch_2_256x256.png");
+	ts_kick = GetSizedTileset("Enemies/Bosses/Bird/kick_256x256.png");
+	ts_charge = GetSizedTileset("Enemies/Bosses/Bird/bird_charge_160x256.png");
+	ts_throw = GetSizedTileset("Enemies/Bosses/Bird/bird_throw_256x256.png");
 
 	BasicCircleHurtBodySetup(16);
 	//BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
 	LoadParams();
 
-	CreateHitboxManager("Bosses/Bird");
+	CreateHitboxManager("Enemies/Bosses/Bird");
 	SetupHitboxes(PUNCH, "punch1");
 	SetupHitboxes(PUNCH2, "punch2");
 
@@ -198,7 +198,7 @@ Bird::~Bird()
 void Bird::LoadParams()
 {
 	ifstream is;
-	is.open("Resources/Bosses/Bird/birdparams.json");
+	is.open("Resources/Enemies/Bosses/Bird/birdparams.json");
 
 	assert(is.is_open());
 

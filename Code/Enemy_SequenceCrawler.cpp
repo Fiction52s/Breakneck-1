@@ -51,10 +51,10 @@ SequenceCrawler::SequenceCrawler(ActorParams *ap)
 	actionLength[DIE_BY_TIGER] = 30;
 	animFactor[DIE_BY_TIGER] = 1;
 
-	ts_dig_in = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png");
-	ts_dig_out = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
+	ts_dig_in = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_dig_in_320x320.png");
+	ts_dig_out = GetSizedTileset("Enemies/Bosses/Crawler/crawler_queen_dig_out_320x320.png");
 
-	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
+	//ts_walk = GetSizedTileset("Enemies/Bosses/Coyote/coy_walk_80x80.png");
 
 	ResetEnemy();
 }

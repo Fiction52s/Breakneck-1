@@ -126,7 +126,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	testEmitter->SetPos(GetPositionF());
 	testEmitter->SetRatePerSecond(30);
 
-	ts_sparkle = GetSizedTileset("Menu/shard_sparkle_64x64.png");
+	ts_sparkle = GetSizedTileset("Menu/Pause/shard_sparkle_64x64.png");
 
 	ts_explodeCreate = GetSizedTileset("FX/shard_explode_01_256x256.png");
 

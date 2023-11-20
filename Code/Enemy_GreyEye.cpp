@@ -57,7 +57,7 @@ GreyEye::GreyEye( int p_eyeType, GreySkeleton *gs )
 		sprite.setColor(Color::Red);
 	}
 
-	ts = GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
+	ts = GetSizedTileset("Enemies/Bosses/GreySkeleton/dimensioneye_80x80.png");
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;

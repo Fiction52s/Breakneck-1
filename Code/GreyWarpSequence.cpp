@@ -45,7 +45,7 @@ void GreyWarpSequence::UpdateState()
 		{
 			sess->cam.SetManual(true);
 			player->Wait();
-			sess->hud->Hide(60);
+			sess->HideHUD(60);
 			sess->Fade(false, 60, Color::Black, false);
 			barrier->Trigger();
 		}

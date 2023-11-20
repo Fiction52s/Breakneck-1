@@ -21,7 +21,7 @@ ShipEnterScene::ShipEnterScene()
 
 void ShipEnterScene::AddFlashes()
 {
-	/*AddFlashedImage("stare0", sess->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+	/*AddFlashedImage("stare0", sess->GetTileset("Enemies/Bosses/Coyote/Coy_09b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
@@ -107,7 +107,7 @@ void ShipEnterScene::Reset()
 void ShipEnterScene::ReturnToGame()
 {
 	sess->SetPlayerInputOn(true);
-	sess->hud->Show(60);
+	sess->ShowHUD(60);
 	sess->cam.SetManual(false);
 	//owner->cam.EaseOutOfManual(5);
 }
@@ -116,7 +116,7 @@ void ShipEnterScene::UpdateState()
 {
 	if (seqData.frame == 0)
 	{
-		sess->hud->Hide();
+		sess->HideHUD();
 		//SetFlashGroup("staregroup");
 	}
 

@@ -31,7 +31,7 @@ HomingBooster::HomingBooster(ActorParams *ap)
 
 	SetCurrPosInfo(startPosInfo);
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

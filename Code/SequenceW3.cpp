@@ -133,17 +133,17 @@ void CoyoteSleepScene::AddFlashes()
 
 
 
-	AddFlashedImage("wake0", sess->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
+	AddFlashedImage("wake0", sess->GetTileset("Enemies/Bosses/Coyote/Coy_02b.png", 1920, 1080),
 		0, 30, 30, 30, Vector2f(960, 540));
 
-	AddFlashedImage("wake1", sess->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
+	AddFlashedImage("wake1", sess->GetTileset("Enemies/Bosses/Coyote/Coy_03b.png", 1920, 1080),
 		0, 30, 10, 30, Vector2f(960, 540));
 
 
-	AddFlashedImage("wake2", sess->GetTileset("Bosses/Coyote/Coy_04b.png", 1920, 1080),
+	AddFlashedImage("wake2", sess->GetTileset("Enemies/Bosses/Coyote/Coy_04b.png", 1920, 1080),
 		0, 30, 10, 30, Vector2f(960, 540));
 
-	AddFlashedImage("wake3", sess->GetTileset("Bosses/Coyote/Coy_05b.png", 1920, 1080),
+	AddFlashedImage("wake3", sess->GetTileset("Enemies/Bosses/Coyote/Coy_05b.png", 1920, 1080),
 		0, 30, 10, 30, Vector2f(960, 540));
 
 
@@ -270,13 +270,13 @@ void CoyotePreFightScene::AddFlashes()
 {
 	int togetherFrames = 5;
 
-	AddFlashedImage("stare0", sess->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+	AddFlashedImage("stare0", sess->GetTileset("Enemies/Bosses/Coyote/Coy_09b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare1", sess->GetTileset("Bosses/Coyote/Coy_10b.png", 1920, 1080),
+	AddFlashedImage("stare1", sess->GetTileset("Enemies/Bosses/Coyote/Coy_10b.png", 1920, 1080),
 		0, 30, 30, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare2", sess->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
+	AddFlashedImage("stare2", sess->GetTileset("Enemies/Bosses/Coyote/Coy_11b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
@@ -531,11 +531,11 @@ void CoyoteAndSkeletonScene::AddFlashes()
 
 	int holdFrames = scrollFrames + 60;
 
-	AddFlashedImage("screen0", sess->GetTileset("Bosses/Coyote/Coy_Pan_02a.png", 1920, 1080),
+	AddFlashedImage("screen0", sess->GetTileset("Enemies/Bosses/Coyote/Coy_Pan_02a.png", 1920, 1080),
 		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540))
 		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);
 
-	AddFlashedImage("screen1", sess->GetTileset("Bosses/Coyote/Coy_Pan_02b.png", 1920, 1080),
+	AddFlashedImage("screen1", sess->GetTileset("Enemies/Bosses/Coyote/Coy_Pan_02b.png", 1920, 1080),
 		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540 - 1080))
 		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);
 

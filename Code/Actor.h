@@ -941,7 +941,6 @@ struct Actor : QuadTreeCollider,
 	sf::Shader despFaceShader;
 	sf::Shader playerDespShader;
 	sf::Shader playerSuperShader;
-	sf::Shader auraTestShader;
 	bool showExitAura;
 	BitField bStartHasUpgradeField;
 	BitField originalProgressionUpgradeField;

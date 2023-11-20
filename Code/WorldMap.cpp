@@ -91,30 +91,29 @@ WorldMap::WorldMap()
 		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 1);
 	}
 	
-	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
-	ts_colonyActive[0] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
-	ts_colonyActive[1] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
-	ts_colonyActiveZoomed[0] = GetTileset("WorldMap/map_w1_vein.png", 1920, 1080);
-	ts_colonyActiveZoomed[1] = GetTileset("WorldMap/map_w2_vein.png", 1920, 1080);
+	ts_colonyActive[0] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActive[1] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActiveZoomed[0] = GetTileset("Menu/WorldMap/map_w1_vein.png", 1920, 1080);
+	ts_colonyActiveZoomed[1] = GetTileset("Menu/WorldMap/map_w2_vein.png", 1920, 1080);
 
-	ts_space = GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
+	ts_space = GetTileset("Menu/WorldMap/worldmap_bg.png", 1920, 1080);
 	spaceSpr.setTexture(*ts_space->texture);
 	
-	ts_planet = GetTileset("WorldMap/worldmap.png", 1920, 1080); 
+	ts_planet = GetTileset("Menu/WorldMap/worldmap.png", 1920, 1080); 
 	planetSpr.setTexture(*ts_planet->texture);
 	planetSpr.setOrigin(planetSpr.getLocalBounds().width / 2, planetSpr.getLocalBounds().height / 2);
 	planetSpr.setPosition(960, 540);
 	
-	ts_colony[0] = GetTileset("WorldMap/map_w1.png", 1920, 1080);
-	ts_colony[1] = GetTileset("WorldMap/map_w2.png", 1920, 1080);
-	ts_colony[2] = GetTileset("WorldMap/map_w3.png", 1920, 1080);
-	ts_colony[3] = GetTileset("WorldMap/map_w4.png", 1920, 1080);
-	ts_colony[4] = GetTileset("WorldMap/map_w5.png", 1920, 1080);
-	ts_colony[5] = GetTileset("WorldMap/map_w6.png", 1920, 1080);
-	ts_colony[6] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
-	ts_colony[7] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
+	ts_colony[0] = GetTileset("Menu/WorldMap/map_w1.png", 1920, 1080);
+	ts_colony[1] = GetTileset("Menu/WorldMap/map_w2.png", 1920, 1080);
+	ts_colony[2] = GetTileset("Menu/WorldMap/map_w3.png", 1920, 1080);
+	ts_colony[3] = GetTileset("Menu/WorldMap/map_w4.png", 1920, 1080);
+	ts_colony[4] = GetTileset("Menu/WorldMap/map_w5.png", 1920, 1080);
+	ts_colony[5] = GetTileset("Menu/WorldMap/map_w6.png", 1920, 1080);
+	ts_colony[6] = GetTileset("Menu/WorldMap/map_w7.png", 1920, 1080);
+	ts_colony[7] = GetTileset("Menu/WorldMap/map_w7.png", 1920, 1080);
 
-	ts_selectableRing = GetSizedTileset("WorldMap/world_select_ring_192x192.png");
+	ts_selectableRing = GetSizedTileset("Menu/WorldMap/world_select_ring_192x192.png");
 	
 	SetupAsteroids();
 
@@ -219,10 +218,10 @@ WorldMap::~WorldMap()
 
 void WorldMap::SetupAsteroids()
 {
-	ts_asteroids[0] = GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
-	ts_asteroids[1] = GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
-	ts_asteroids[2] = GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
-	ts_asteroids[3] = GetTileset("WorldMap/asteroid_4_1920x1080.png", 1920, 1080);
+	ts_asteroids[0] = GetTileset("Menu/WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
+	ts_asteroids[1] = GetTileset("Menu/WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
+	ts_asteroids[2] = GetTileset("Menu/WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
+	ts_asteroids[3] = GetTileset("Menu/WorldMap/asteroid_4_1920x1080.png", 1920, 1080);
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -333,18 +332,10 @@ void WorldMap::UpdateWorldStats()
 
 void WorldMap::UpdateColonySelect()
 {
-	//colonySelectSpr.setTextureRect( ts_colonySelect[0]->GetSubRect( 0 ) );
-	/*colonySelectSpr.setOrigin( colonySelectSpr.getLocalBounds().width / 2,
-		colonySelectSpr.getLocalBounds().height / 2 );*/
-
-	//colonySelectSpr.setPosition(colonySpr[0].getPosition());
 	if (selectedColony >= 0)
 	{
 		worldSelector->SetPosition(Vector2f(colonySpr[selectedColony].getPosition() + Vector2f(960 / 8.f, 540 / 8.f)));
-	}
-	
-	//colonySelectSprZoomed.setTexture(*ts_colonySelectZoomed[selectedColony]->texture);
-	//colonySelectSprZoomed.setPosition(colonySpr[selectedColony].getPosition());
+	}	
 }
 
 bool WorldMap::IsInAllUnlockedMode()

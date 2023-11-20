@@ -60,8 +60,8 @@ SequenceCoyote::SequenceCoyote(ActorParams *ap)
 	actionLength[RUN] = 15;
 	animFactor[RUN] = 2;
 
-	ts_coy = GetSizedTileset("Bosses/Coyote/coy_old_80x80.png");
-	ts_scorp = GetSizedTileset("Bosses/Coyote/coy_scorp_160x128.png");
+	ts_coy = GetSizedTileset("Enemies/Bosses/Coyote/coy_old_80x80.png");
+	ts_scorp = GetSizedTileset("Enemies/Bosses/Coyote/coy_scorp_160x128.png");
 
 	ResetEnemy();
 }

@@ -64,7 +64,7 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 
 	action = S_IDLE;
 
-	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/General/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

@@ -8,7 +8,7 @@ using namespace sf;
 TopClouds::TopClouds()
 {
 	sess = Session::GetSession();
-	ts = sess->GetTileset("FX/cloud_ceiling_256x256.png", 256, 256);
+	ts = sess->GetTileset("Env/cloud_ceiling_256x256.png", 256, 256);
 	animLength = 11;
 	animFactor = 10;
 	cloudVA = NULL;

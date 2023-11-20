@@ -31,7 +31,7 @@ TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	strength = 300;//180
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 
 	sprite.setTexture(*ts->texture);
 	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");

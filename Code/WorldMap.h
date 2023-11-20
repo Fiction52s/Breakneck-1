@@ -74,7 +74,6 @@ struct MapSector
 	int sectorIndex;
 
 	sf::Vertex levelCollectedShards[16 * 4];
-	sf::Vertex levelBG[4];
 	sf::Vertex levelStatsBG[4];
 	sf::Vertex sectorStatsBG[4];
 	sf::Vertex lockedOverlayQuad[4];
@@ -116,7 +115,6 @@ struct MapSector
 	Tileset *ts_mapSelectOptions;
 	Tileset *ts_origPowersOptions;
 
-	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
@@ -225,12 +223,8 @@ struct MapSelector
 	SingleAxisSelector *sectorSASelector;
 	World *world;
 
-	Tileset *ts_sectorLevelBG;
-	Tileset *ts_levelStatsBG;
-	Tileset *ts_sectorStatsBG;
 	Tileset *ts_node;
 	Tileset **ts_bossFight;
-	Tileset *ts_sectorKey;
 	Tileset **ts_sectorOpen;
 	Tileset *ts_kinJump[5];
 	Tileset *ts_rock;
@@ -357,7 +351,6 @@ struct WorldMap : TilesetManager
 	Tileset * ts_colonyActiveZoomed[ADVENTURE_MAX_NUM_WORLDS];
 	Tileset * ts_colonyActive[ADVENTURE_MAX_NUM_WORLDS];
 	Tileset * ts_colony[ADVENTURE_MAX_NUM_WORLDS];
-	Tileset *ts_colonySelect;
 	Tileset *ts_selectableRing;
 	Tileset *ts_parallelPlayMarker;
 

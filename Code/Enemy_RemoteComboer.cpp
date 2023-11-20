@@ -43,7 +43,7 @@ RemoteComboer::RemoteComboer(ActorParams *ap)
 	hitLimit = 21;
 	facingRight = true;
 
-	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/General/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 	sprite.setColor(Color::Red);

@@ -120,7 +120,7 @@ void NexusCoreSeq::ReturnToGame()
 	player->frame = 0;
 	
 	sess->scoreDisplay->Activate();
-	sess->hud->Hide();
+	sess->HideHUD();
 }
 
 void NexusCoreSeq::UpdateState()

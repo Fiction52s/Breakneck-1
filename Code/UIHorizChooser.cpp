@@ -10,7 +10,8 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 	:UIControl( p_parent, NULL, UI_BAR ), width( p_width ), textOffset( 10, 30 ), alignment( LEFT )
 {
 	sideWidth = 20;
-	ts_bar = tsMan->GetTileset( "Menu/ui_bar_32x80.png", 32, 80 );
+	//depreciated
+	ts_bar = NULL;//tsMan->GetTileset( "Menu/ui_bar_32x80.png", 32, 80 );
 	//ts_bar = tsMan->GetTileset( "blahbar" );
 	AssignTexture(0);
 	SetTopLeft( 0, 0 );

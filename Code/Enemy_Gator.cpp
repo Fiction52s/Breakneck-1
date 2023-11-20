@@ -20,8 +20,8 @@ Gator::Gator(ActorParams *ap)
 
 	StageSetup(8, 4);
 
-	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
-	ts_bite = GetSizedTileset("Bosses/Gator/gator_dash_512x320.png");
+	ts_move = GetSizedTileset("Enemies/Bosses/Gator/dominance_384x384.png");
+	ts_bite = GetSizedTileset("Enemies/Bosses/Gator/gator_dash_512x320.png");
 
 	actionLength[SUMMON] = 60;
 	actionLength[REDIRECT_ORBS] = 60;
@@ -145,7 +145,7 @@ Gator::Gator(ActorParams *ap)
 
 	LoadParams();
 
-	CreateHitboxManager("Bosses/Gator");
+	CreateHitboxManager("Enemies/Bosses/Gator");
 	SetupHitboxes(CHASE_ATTACK, "dominance");
 	SetupHitboxes(TRIPLE_LUNGE_1, "dominance");
 	SetupHitboxes(TRIPLE_LUNGE_2, "dominance");
@@ -171,7 +171,7 @@ Gator::~Gator()
 void Gator::LoadParams()
 {
 	ifstream is;
-	is.open("Resources/Bosses/Gator/gatorparams.json");
+	is.open("Resources/Enemies/Bosses/Gator/gatorparams.json");
 
 	assert(is.is_open());
 

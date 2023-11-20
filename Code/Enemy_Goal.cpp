@@ -22,7 +22,7 @@ Goal::Goal( ActorParams *ap )
 
 	explosionAnimFactor = 3;
 	explosionLength = 16;
-	ts_mini = sess->mainMenu->GetSizedTileset("HUD/minimap_icons_64x64.png");
+	ts_mini = sess->mainMenu->GetSizedTileset("HUD/Minimap/minimap_icons_64x64.png");
 
 	//world
 

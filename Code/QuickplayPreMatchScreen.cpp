@@ -11,8 +11,8 @@ using namespace sf;
 QuickplayPreMatchScreen::QuickplayPreMatchScreen()
 	:p0Shader( "player" ), p1Shader( "player")
 {
-	ts_player0 = GetSizedTileset("Menu/pause_kin_400x836.png");
-	ts_player1 = GetSizedTileset("Menu/pause_kin_400x836.png");
+	ts_player0 = GetSizedTileset("Menu/Pause/pause_kin_400x836.png");
+	ts_player1 = GetSizedTileset("Menu/Pause/pause_kin_400x836.png");
 
 	TilesetManager::SetGameResourcesMode(false);
 	//be careful of this^

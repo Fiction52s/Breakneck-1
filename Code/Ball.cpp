@@ -81,7 +81,7 @@ Ball::Ball(ActorParams *ap)
 
 	action = S_FLOAT;
 
-	ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/General/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

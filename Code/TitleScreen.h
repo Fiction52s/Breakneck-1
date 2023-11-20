@@ -22,14 +22,13 @@ struct TitleScreen : TilesetManager, GUIHandler
 	Button *feedbackButton;
 	std::string feedbackURL;
 
-	Tileset *ts_breakneckTitle;
+	Tileset *ts_kineticTitle;
 	Tileset *ts_emergenceTitle;
 	Tileset *ts_titleBG;
 	Tileset *ts_discord;
 	int frame;
 	sf::Sprite titleBGSprite;
-	sf::Sprite breakneckTitleSprite;
-	sf::Sprite emergenceTitleSprite;
+	sf::Sprite kineticTitleSprite;
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 	Tileset *ts_energy;
 	sf::Sprite energySpr;

@@ -241,8 +241,8 @@ void Session::RegisterGeneralEnemies()
 		ts_zoneProperties = GetSizedTileset("Editor/zoneproperties_128x128.png");
 		ts_camShot = GetTileset("Editor/camera_128x128.png", 128, 128);
 		ts_poi = GetSizedTileset("Editor/pointofinterest_32x32.png");
-		ts_xBarrier = GetSizedTileset("Enemies/blocker_w1_192x192.png");
-		ts_xBarrierWarp = GetSizedTileset("Enemies/target_224x224.png");
+		ts_xBarrier = GetSizedTileset("Enemies/General/blocker_w1_192x192.png");
+		ts_xBarrierWarp = GetSizedTileset("Enemies/Multiplayer/target_224x224.png");
 		ts_ship = GetSizedTileset("Ship/ship_864x400.png");
 	}
 
@@ -1445,8 +1445,8 @@ void Session::CreateBulletQuads()
 		{
 			bigBulletVA[i].position = Vector2f(0, 0);
 		}
-		ts_basicBullets = GetSizedTileset("Enemies/bullet_80x80.png");
-		ts_basicBulletExplode = GetSizedTileset("FX/bullet_explode_128x128.png");
+		ts_basicBullets = GetSizedTileset("Enemies/General/bullet_80x80.png");
+		ts_basicBulletExplode = GetSizedTileset("Enemies/General/bullet_explode_128x128.png");
 	}
 	else
 	{
@@ -1475,6 +1475,9 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	ts_goal = NULL;
 	ts_goalCrack = NULL;
 	ts_goalExplode = NULL;
+
+	turnTimerOnCounter = -1;
+	timerOn = false;
 
 	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
@@ -2052,8 +2055,28 @@ bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 	stringstream ss;
 	ifstream is;
 
-	ss << "Resources/Terrain/Decor/" << "terraindecor_"
-		<< (tWorld + 1) << "_0" << (tVar + 1) << ".txt";
+	//ss << "Resources/Terrain/Decor/" << "terraindecor_"
+	//	<< (tWorld + 1) << "_0" << (tVar + 1) << ".txt";
+
+	//path depreciated
+
+	//had format like
+	
+	/*terraindecor_1_01.txt
+	
+	D_W1_VEINS1 100
+	D_W1_VEINS2 100
+	D_W1_VEINS3 100
+	D_W1_VEINS4 100
+	D_W1_VEINS5 100
+	D_W1_VEINS6 100
+	D_W1_ROCK_1 100
+	D_W1_ROCK_2 100
+	D_W1_ROCK_3 100
+	D_W1_GRASSYROCK 100
+	D_W1_BUSH_NORMAL 100
+	D_W1_PLANTROCK 100
+	*/
 	is.open(ss.str());
 
 	if (is.is_open())
@@ -4541,8 +4564,23 @@ void Session::DrawHUD(sf::RenderTarget *target)
 
 void Session::UpdateHUD()
 {
-	if (hud != NULL)
+	if (hud != NULL && !IsParallelSession() )
+	{
 		hud->Update();
+	}
+	
+	if (!timerOn)
+	{
+		if (turnTimerOnCounter == 0)
+		{
+			timerOn = true;
+			turnTimerOnCounter = -1;
+		}
+		else
+		{
+			--turnTimerOnCounter;
+		}
+	}
 }
 
 void Session::HitlagUpdate()
@@ -8196,6 +8234,11 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->currentZoneID = GetZoneID(currentZone);
 
 
+	currSaveState->turnTimerOnCounter = turnTimerOnCounter;
+
+	currSaveState->timerOn = timerOn;
+
+	
 
 	currSaveState->phaseOn = phaseOn;
 	currSaveState->pauseFrames = pauseFrames;
@@ -8347,6 +8390,10 @@ void Session::SetFromBytes(unsigned char *bytes)
 	}
 
 	currentZone = GetZoneFromID(currSaveState->currentZoneID);
+
+	turnTimerOnCounter = currSaveState->turnTimerOnCounter;
+
+	timerOn = currSaveState->timerOn;
 
 	phaseOn = currSaveState->phaseOn;
 	pauseFrames = currSaveState->pauseFrames;
@@ -9696,16 +9743,16 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 	if (worldIndex < 8)
 	{
 		stringstream ss;
-		ss << "FX/key_w" << w << "_128x128.png";
+		ss << "Enemies/General/Keys/key_w" << w << "_128x128.png";
 		stringstream ssExplode;
-		ssExplode << "FX/keyexplode_w" << w << "_128x128.png";
+		ssExplode << "Enemies/General/Keys/keyexplode_w" << w << "_128x128.png";
 		ts_key = GetSizedTileset(ss.str());
 		ts_keyExplode = GetSizedTileset(ssExplode.str());
 	}
 	else
 	{
-		ts_key = GetSizedTileset("FX/key_w1_128x128.png");
-		ts_keyExplode = GetSizedTileset("FX/keyexplode_w1_128x128.png");
+		ts_key = GetSizedTileset("Enemies/General/Keys/key_w1_128x128.png");
+		ts_keyExplode = GetSizedTileset("Enemies/General/Keys/keyexplode_w1_128x128.png");
 	}
 
 	if (ts_goal != NULL)
@@ -9730,11 +9777,11 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 	//if (worldIndex < 1)
 	{
 		stringstream ss;
-		ss << "Goal/goal_w" << w << "_a_512x512.png";
+		ss << "Enemies/General/Goal/goal_w" << w << "_a_512x512.png";
 		stringstream ssCrack;
-		ssCrack << "Goal/goal_w" << w << "_b_512x512.png";
+		ssCrack << "Enemies/General/Goal/goal_w" << w << "_b_512x512.png";
 		stringstream ssExplode;
-		ssExplode << "Goal/goal_w" << w << "_c_512x512.png";
+		ssExplode << "Enemies/General/Goal/goal_w" << w << "_c_512x512.png";
 		ts_goal = GetSizedTileset(ss.str());
 		ts_goalCrack = GetSizedTileset(ssCrack.str());
 		ts_goalExplode = GetSizedTileset(ssExplode.str());
@@ -9800,3 +9847,29 @@ std::string Session::GetMapPreviewPath()
 	return filePath.parent_path().string() + "\\" + filePath.stem().string() + ".png";
 }
 
+void Session::HideHUD(int frames)
+{
+	if (!IsParallelSession())
+	{
+		hud->Hide(frames);
+	}
+	
+	timerOn = false;
+}
+
+void Session::ShowHUD(int frames)
+{
+	if (!IsParallelSession())
+	{
+		hud->Show(frames);
+	}
+	
+	if (frames == 0)
+	{
+		timerOn = true;
+	}
+	else
+	{
+		turnTimerOnCounter = frames;
+	}
+}

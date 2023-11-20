@@ -5,7 +5,7 @@
 
 #define MAP_EXT ".kinmap"
 #define SAVE_EXT ".kinsave"
-#define GLOBAL_SAVE_EXT ".kingsave"
+#define GLOBAL_SAVE_EXT ".gkinsave"
 //maybe get to cleaning this up later, right now its too much.
 //#define IMAGE_EXT ".png" 
 #define GHOST_EXT ".kinghost"

@@ -9,7 +9,7 @@ using namespace std;
 CreditsMenuScreen::CreditsMenuScreen()
 {
 	menuOffset = Vector2f(0, 0);
-	ts = GetSizedTileset("Menu/credits_960x540.png");
+	ts = GetSizedTileset("Menu/Credits/credits_960x540.png");
 
 	SetRectTopLeft(creditsQuad, 1920, 1080, Vector2f(0, 0));
 	SetRectSubRect(creditsQuad, ts->GetSubRect(0));

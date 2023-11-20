@@ -300,6 +300,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	Zone *activatedZoneList;
 	Zone *currentZone;
 	Zone *originalZone;
+	bool timerOn;
+	int turnTimerOnCounter;
 	std::vector<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
 	BitField defaultStartingPlayerOptionsField;
@@ -919,7 +921,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	GGPOPlayer *ggpoPlayers;
 
 	
-
+	
 	virtual void InitGGPO();
 	virtual void CleanupGGPO();
 	bool OnlineRunGameModeUpdate();
@@ -1011,6 +1013,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateWorldDependentTileset( int world );
 
 	Actor *GetPlayerFromNetplayPlayerIndex(int index);
+
+	void HideHUD(int frames = 0);
+	void ShowHUD(int frames = 0);
 };
 
 #endif

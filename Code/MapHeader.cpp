@@ -479,6 +479,10 @@ void MapHeader::Save(std::ofstream &of)
 
 bool MapHeader::Replace(boost::filesystem::path &p )
 {
+	assert(0);
+	return false;
+	//depreciated
+
 	ifstream is;
 	is.open(p.string());
 

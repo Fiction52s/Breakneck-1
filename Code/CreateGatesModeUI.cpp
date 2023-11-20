@@ -108,62 +108,6 @@ CreateGatesModeUI::~CreateGatesModeUI()
 	delete origModifyGate;
 }
 
-//void CreateGatesModeUI::CreateShardTypePanel()
-//{
-//	shardNumX = 11;
-//	shardNumY = 2;
-//
-//	shardGateTypePanel = new Panel("shardtype", 600, 600, this, true);
-//	shardGateTypePanel->SetPosition(popupPanelPos);
-//	Color c(100, 100, 100);
-//	c.a = 180;
-//	shardGateTypePanel->SetColor(c);
-//
-//	int numWorlds = 7;
-//	for (int i = 0; i < numWorlds; ++i)
-//	{
-//		ts_shards[i] = edit->GetSizedTileset("Shard/shards_w" + to_string(i+1) + "_48x48.png");
-//	}
-//
-//	int totalShards = shardNumX * shardNumY * 7;
-//
-//	Tileset *ts_currShards;
-//	int sInd = 0;
-//
-//	shardGateTypePanel->ReserveImageRects(totalShards);
-//	shardGateTypeRects.resize(totalShards);
-//
-//	for (int w = 0; w < numWorlds; ++w)
-//	{
-//		ts_currShards = ts_shards[w];
-//		if (ts_currShards == NULL)
-//			continue;
-//
-//		for (int y = 0; y < shardNumY; ++y)
-//		{
-//			for (int x = 0; x < shardNumX; ++x)
-//			{
-//				sInd = y * shardNumX + x;
-//				int shardT = (sInd + (shardNumX * shardNumY) * w);
-//				if (shardT >= SHARD_Count)
-//				{
-//					shardGateTypeRects[shardT] = NULL;
-//				}
-//				else
-//				{
-//					shardGateTypeRects[shardT] =
-//						shardGateTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_SHARDLIBRARY,
-//						Vector2f( x * gateGridSize, y * gateGridSize + w * 2 * gateGridSize),
-//							ts_currShards, sInd, gateGridSize);
-//					shardGateTypeRects[shardT]->Init();
-//					shardGateTypeRects[shardT]->SetShown(true);
-//				}
-//
-//			}
-//		}
-//	}
-//}
-
 void CreateGatesModeUI::SetShard(int world, int localIndex)
 {
 	int ind = world * (edit->shardNumX * edit->shardNumY) + localIndex;

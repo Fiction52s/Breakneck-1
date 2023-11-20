@@ -16,7 +16,7 @@ AppearingShapePool::AppearingShapePool()
 	ts = NULL;
 	numShapes = 100;//5;//10;
 	shapeVec.resize(numShapes);
-	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Coyote/coyotebullet_32x32.png");
 	for (int i = 0; i < numShapes; ++i)
 	{
 		shapeVec[i] = new AppearingShape(this);

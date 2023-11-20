@@ -22,12 +22,12 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	level = ap->GetLevel();
 
-	//ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	//ts_move = GetSizedTileset("Enemies/Bosses/Gator/dominance_384x384.png");
 
-	ts_charge = GetSizedTileset("Bosses/Skeleton/skele_charge_128x128.png");
-	ts_stand = GetSizedTileset("Bosses/Skeleton/skele_128x128.png");
-	ts_hop = GetSizedTileset("Bosses/Skeleton/skele_hop_128x128.png");
-	ts_laser = GetSizedTileset("Bosses/Skeleton/skele_laser_160x128.png");
+	ts_charge = GetSizedTileset("Enemies/Bosses/Skeleton/skele_charge_128x128.png");
+	ts_stand = GetSizedTileset("Enemies/Bosses/Skeleton/skele_128x128.png");
+	ts_hop = GetSizedTileset("Enemies/Bosses/Skeleton/skele_hop_128x128.png");
+	ts_laser = GetSizedTileset("Enemies/Bosses/Skeleton/skele_laser_160x128.png");
 
 	//stageMgr.AddActiveOption(0, SHOOT_LASER, 2);
 	//stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
@@ -132,7 +132,7 @@ Skeleton::~Skeleton()
 void Skeleton::LoadParams()
 {
 	/*ifstream is;
-	is.open("Resources/Bosses/Bird/birdparams.json");
+	is.open("Resources/Enemies/Bosses/Bird/birdparams.json");
 
 	assert(is.is_open());
 

@@ -99,7 +99,7 @@ void CrawlerAttackScene::AddFlashes()
 
 void CrawlerAttackScene::SpecialInit()
 {
-	ts_queenGrab = sess->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
+	ts_queenGrab = sess->GetTileset("Enemies/Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
 	queenGrabSprite.setTexture(*ts_queenGrab->texture);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 }
@@ -310,7 +310,7 @@ bool TextTestSeq::Update()
 	{
 		player->SetAction(Actor::STAND);
 		player->frame = 0;
-		sess->hud->Show(60);
+		sess->ShowHUD(60);
 		sess->cam.EaseOutOfManual(60);
 		//player->set
 		return false;
@@ -325,7 +325,7 @@ bool TextTestSeq::Update()
 		{
 			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
 			conv->Show();
-			sess->hud->Hide(60);
+			sess->HideHUD(60);
 		}
 
 		if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
@@ -510,7 +510,7 @@ void CrawlerPreFightScene::UpdateState()
 			sess->FreezePlayer(true);
 			sess->AddEnemy(queen);
 			queen->SeqWait();
-			sess->hud->Hide();
+			sess->HideHUD();
 			
 			SetCameraShot("crawlerdig1");
 			EaseShot("crawlerdig2", 90);
@@ -925,7 +925,7 @@ void GetAirdashPowerScene::UpdateState()
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->Fade(true, 60, Color::Black, true);
-			sess->hud->Show(60);
+			sess->ShowHUD(60);
 			SaveFile *sf = sess->mainMenu->adventureManager->currSaveFile;
 			if (sf != NULL)
 			{

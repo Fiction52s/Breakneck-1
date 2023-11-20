@@ -38,12 +38,10 @@ KeyMarker::KeyMarker(TilesetManager *tm )
 		slashText.getLocalBounds().top + slashText.getLocalBounds().height / 2);
 	slashText.setScale(scale, scale);
 
-	
-	//Tileset *scoreTS = tm->GetSizedTileset("Menu/keynum_small_32x32.png");
-	ts_keyNumLight = tm->GetSizedTileset("Menu/keynum_light_80x80.png");
-	ts_keyNumDark = tm->GetSizedTileset("Menu/keynum_dark_80x80.png");
-	ts_enemyNumLight = tm->GetSizedTileset("Menu/keynum_red_light_80x80.png");
-	ts_enemyNumDark = tm->GetSizedTileset("Menu/keynum_red_dark_80x80.png");
+	ts_keyNumLight = tm->GetSizedTileset("HUD/keynum_light_80x80.png");
+	ts_keyNumDark = tm->GetSizedTileset("HUD/keynum_dark_80x80.png");
+	ts_enemyNumLight = tm->GetSizedTileset("HUD/keynum_red_light_80x80.png");
+	ts_enemyNumDark = tm->GetSizedTileset("HUD/keynum_red_dark_80x80.png");
 	ts_enemyIcon = tm->GetSizedTileset("HUD/enemy_hud_icon_64x64.png");
 
 	float textSpacingFactor = .7;

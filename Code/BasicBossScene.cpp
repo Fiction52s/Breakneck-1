@@ -280,7 +280,7 @@ void BasicBossScene::EntranceUpdate()
 		if (seqData.frame == 0)
 		{
 			sess->Fade(false, fadeFrames, Color::Black);
-			sess->hud->Hide(fadeFrames);
+			sess->HideHUD(fadeFrames);
 			player->Wait();
 			sess->cam.SetManual(true);
 		}
@@ -304,7 +304,7 @@ void BasicBossScene::EntranceUpdate()
 				barrier->Trigger();
 			}*/
 
-			sess->hud->Hide();
+			sess->HideHUD();
 			player->Wait();
 			sess->cam.SetManual(true);
 			//		sess->RemoveAllEnemies();
@@ -315,7 +315,7 @@ void BasicBossScene::EntranceUpdate()
 	}
 	else if (entranceType == APPEAR)
 	{
-		//owner->hud->Hide(fadeFrames);
+		//owner->HideHUD(fadeFrames);
 	}
 }
 
@@ -339,7 +339,7 @@ void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
 void BasicBossScene::ReturnToGame()
 {
 	sess->SetPlayerInputOn(true);
-	sess->hud->Show(60);
+	sess->ShowHUD(60);
 	sess->cam.EaseOutOfManual(60);
 }
 
@@ -395,7 +395,7 @@ void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 void BasicBossScene::StartBasicKillFade()
 {
 	sess->SetGameSessionState(GameSession::FROZEN);
-	sess->hud->Hide(explosionFadeFrames);
+	sess->HideHUD(explosionFadeFrames);
 	sess->cam.SetManual(true);
 	MainMenu *mm = sess->mainMenu;
 	sess->CrossFade(explosionFadeFrames, 0, fadeFrames, Color::White);
@@ -404,7 +404,7 @@ void BasicBossScene::StartBasicKillFade()
 void BasicBossScene::StartBasicNewMapKillFade()
 {
 	sess->SetGameSessionState(GameSession::SEQUENCE);
-	sess->hud->Hide();
+	sess->HideHUD();
 	sess->cam.SetManual(true);
 	MainMenu *mm = sess->mainMenu;
 	sess->Fade(false, explosionFadeFrames, Color::White, false, EffectLayer::IN_FRONT);

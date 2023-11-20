@@ -82,7 +82,7 @@ WireJuggler::WireJuggler( ActorParams *ap )
 	}*/
 	maxFallSpeed = 15;
 
-	//ts = GetSizedTileset("Enemies/comboers_128x128.png");
+	//ts = GetSizedTileset("Enemies/General/comboers_128x128.png");
 	ts = GetSizedTileset("Enemies/W6/wire_juggler_320x320.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(0));

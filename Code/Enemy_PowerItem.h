@@ -27,7 +27,6 @@ struct PowerPopup
 	void Reset();
 	void Update();
 	void SetPower(int index);
-	void SetDescription(const std::string &desc);
 	void Draw(sf::RenderTarget *target);
 	void SetName(const std::string &name);
 

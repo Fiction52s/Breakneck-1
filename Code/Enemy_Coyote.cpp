@@ -53,7 +53,7 @@ Coyote::Coyote(ActorParams *ap)
 	
 	
 
-	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	ts_move = GetSizedTileset("Enemies/Bosses/Coyote/coy_stand_80x64.png");
 
 	pulsePool = new PulseAttackPool(5);
 
@@ -144,7 +144,7 @@ Coyote::~Coyote()
 void Coyote::LoadParams()
 {
 	/*ifstream is;
-	is.open("Resources/Bosses/Bird/birdparams.json");
+	is.open("Resources/Enemies/Bosses/Bird/birdparams.json");
 
 	assert(is.is_open());
 

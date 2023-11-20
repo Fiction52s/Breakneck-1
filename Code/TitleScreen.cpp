@@ -31,26 +31,21 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	feedbackURL = "https://docs.google.com/forms/d/e/1FAIpQLSewgTgR6kh-0vX3_un4T_WqQkyGZLkH1jGaz1ysI8rPcZSBBQ/viewform?usp=sf_link";
 
-	ts_breakneckTitle = GetSizedTileset("Title/Kinetic_Title_1024x440.png");//GetTileset("Title/breakneck_1034x835.png", 1034, 835);
-	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
-	ts_titleBG = GetTileset("Title/title_base_1920x1080.png", 1920, 1080);
-	//ts_emergenceTitle = GetTileset("Title/emergence_337x51.png", 337, 51);
+	ts_kineticTitle = GetSizedTileset("Menu/Title/Kinetic_Title_1024x440.png");
+	ts_titleBG = GetTileset("Menu/Title/title_base_1920x1080.png", 1920, 1080);
 
 	titleBGSprite.setTexture(*ts_titleBG->texture);
-	breakneckTitleSprite.setTexture(*ts_breakneckTitle->texture);
-	//emergenceTitleSprite.setTexture(*ts_emergenceTitle->texture);
+	kineticTitleSprite.setTexture(*ts_kineticTitle->texture);
 
-	breakneckTitleSprite.setOrigin(breakneckTitleSprite.getLocalBounds().width / 2, 0);
-	//breakneckTitleSprite.setPosition(444, 0 + 20);
-	breakneckTitleSprite.setPosition(960, 0);// + 20);
-	//emergenceTitleSprite.setPosition(794, 233 + 20);
+	kineticTitleSprite.setOrigin(kineticTitleSprite.getLocalBounds().width / 2, 0);
+	kineticTitleSprite.setPosition(960, 0);
 
 	background = new Background;
 
-	ts_energy = GetTileset("Title/energy_1920x1080.png", 1920, 1080);
+	ts_energy = GetTileset("Menu/Title/energy_1920x1080.png", 1920, 1080);
 	energySpr.setTexture(*ts_energy->texture);
 
-	ts_discord = GetSizedTileset("Title/discord_256x256.png");
+	ts_discord = GetSizedTileset("Menu/Title/discord_256x256.png");
 
 	ImageChooseRect *icr = panel->AddImageRect(ChooseRect::I_DISCORD_LINK, Vector2f(1920 - 300, 1080 - 300), ts_discord, 0, 256);
 	icr->Init();
@@ -58,22 +53,22 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	energySpr.setColor(Color::Blue);
 
-	ts_kin = GetTileset("Title/kintitle_128x256.png", 128, 256);
+	ts_kin = GetTileset("Menu/Title/kintitle_128x256.png", 128, 256);
 	kinSpr.setTexture(*ts_kin->texture);
 	kinSpr.setTextureRect(ts_kin->GetSubRect(0));
 	kinSpr.setPosition(913, 710);
 
-	ts_kinHandEnergy = GetTileset("Title/kintitle_energy_128x256.png", 128, 256);
+	ts_kinHandEnergy = GetTileset("Menu/Title/kintitle_energy_128x256.png", 128, 256);
 	kinHandEnergySpr.setTexture(*ts_kinHandEnergy->texture);
 	kinHandEnergySpr.setTextureRect(ts_kinHandEnergy->GetSubRect(0));
 	kinHandEnergySpr.setPosition(913, 710);
 
 	scrollingBackgrounds.push_back(
 		new ScrollingBackground(
-			GetTileset("Title/titlecloud_1_1920x1080.png", 1920, 1080), 0, 1, 5 * 5));
+			GetTileset("Menu/Title/titlecloud_1_1920x1080.png", 1920, 1080), 0, 1, 5 * 5));
 	scrollingBackgrounds.push_back(
 		new ScrollingBackground(
-			GetTileset("Title/titlecloud_2_1920x1080.png", 1920, 1080), 0, 1, 10 * 5));
+			GetTileset("Menu/Title/titlecloud_2_1920x1080.png", 1920, 1080), 0, 1, 10 * 5));
 
 	frame = 0;
 
@@ -243,9 +238,8 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 
 	mainMenu->DrawMenuOptionText(target);
 
-	target->draw(breakneckTitleSprite);
+	target->draw(kineticTitleSprite);
 
 	panel->Draw(target);
-	//target->draw(emergenceTitleSprite);
 	
 }

@@ -174,7 +174,6 @@ struct LogMenu
 	std::string GetLogDesc(int w, int li);
 	std::string GetLogName(int w, int li);
 	LogDetailedInfo GetLogInfo(int w, int li);
-	bool SetDescription(std::string &nameStr, std::string &destStr, const std::string &shardTypeStr);
 	void SetCurrentDescription(bool captured);
 	void UpdateUnlockedLogs();
 	bool IsLogFound(int w, int li);

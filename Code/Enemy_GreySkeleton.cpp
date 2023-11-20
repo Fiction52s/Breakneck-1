@@ -21,7 +21,7 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 	
 	level = ap->GetLevel();
 
-	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	ts_move = GetSizedTileset("Enemies/Bosses/Gator/dominance_384x384.png");
 	sprite.setColor(Color::Green);
 
 
@@ -104,7 +104,7 @@ GreySkeleton::~GreySkeleton()
 void GreySkeleton::LoadParams()
 {
 	/*ifstream is;
-	is.open("Resources/Bosses/Bird/birdparams.json");
+	is.open("Resources/Enemies/Bosses/Bird/birdparams.json");
 
 	assert(is.is_open());
 

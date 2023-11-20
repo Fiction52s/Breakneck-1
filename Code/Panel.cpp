@@ -23,7 +23,7 @@ Panel::Panel(const string &n, int width, int height, GUIHandler *h, bool pop)
 	reservedImageRectCount = 0;
 	reservedTextRectCount = 0;
 	reservedLobbyRectCount = 0;
-	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf"); //each panel loads the font separately, this is bad
+	arial.loadFromFile("Resources/Fonts/Kinetic_Font_01.ttf"); //each panel loads the font separately, this is bad
 	SetPosition(Vector2i(0, 0));
 	extraUpdater = NULL;
 

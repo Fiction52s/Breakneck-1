@@ -625,7 +625,7 @@ void EditSession::TestPlayerMode()
 	{
 		hud->Reset();
 
-		hud->Show();
+		ShowHUD();
 	}
 
 	SeedRand(time(0));
@@ -659,6 +659,9 @@ void EditSession::TestPlayerMode()
 	{
 		debugReplayPlayerOn = false;
 	}
+
+	turnTimerOnCounter = -1;
+	timerOn = false;
 
 	phaseOn = false;
 
@@ -1530,7 +1533,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	copiedBrush = NULL;
 	freeActorCopiedBrush = NULL;
 	
-	//arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
+	//arialFont.loadFromFile( "Kinetic_Font_01.ttf" );
 	cursorLocationText.setFont( mainMenu->arial );
 	cursorLocationText.setCharacterSize( 16 );
 	cursorLocationText.setFillColor( Color::White );
@@ -3961,7 +3964,7 @@ void EditSession::Init()
 	players[0] = allPlayers[0]; //for when reading enemies that use it? might need a cleanup later
 
 	debugReplayPlayer = NULL;//new ReplayPlayer(players[0]);
-	/*bool canOpen = debugReplayPlayer->OpenReplay("Resources/Debug/debugreplay" + string(REPLAY_EXT));
+	/*bool canOpen = debugReplayPlayer->OpenReplay("Resources/Recordings/Debug/debugreplay" + string(REPLAY_EXT));
 	if (!canOpen)
 	{
 		delete debugReplayPlayer;
@@ -5184,7 +5187,7 @@ int EditSession::GetSpecialTerrainMode()
 bool EditSession::ReadDecorImagesFile()
 {
 	ifstream is;
-	is.open("Resources/decor.txt");
+	is.open("Resources/Env/Decor/decor.txt");
 	if (is.is_open())
 	{
 		string name;
@@ -5194,6 +5197,12 @@ bool EditSession::ReadDecorImagesFile()
 		while (!is.eof())
 		{
 			is >> name;
+
+			if (!is.good())
+			{
+				return false;
+			}
+
 			is >> tile;
 
 			string fullName = name + string(".png");

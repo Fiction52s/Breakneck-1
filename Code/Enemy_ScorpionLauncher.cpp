@@ -109,7 +109,7 @@ ScorpionLauncher::ScorpionLauncher(ActorParams *ap)//SpringType sp, Vector2i &po
 	animFactor[SPRINGING] = 5;
 	animFactor[RECOVERING] = 4;
 
-	ts = GetSizedTileset("Bosses/Coyote/coy_scorp_160x128.png");
+	ts = GetSizedTileset("Enemies/Bosses/Coyote/coy_scorp_160x128.png");
 
 	launchSoundBuf = GetSound("Enemies/spring_launch");
 

@@ -32,9 +32,6 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	keyIdleLength = 16;
 	keyAnimFactor = 3;
 
-	//ts = GetSizedTileset("Enemies/target_256x256.png");
-	//ts = GetSizedTileset("Enemies/healthfly_64x64.png");
-
 	BasicCircleHitBodySetup(100);
 	BasicCircleHurtBodySetup(100);
 
@@ -72,7 +69,7 @@ SpecialTarget::SpecialTarget(ActorParams *ap)
 	}
 	
 
-	ts = GetSizedTileset("Enemies/specialtarget_320x320.png");
+	ts = GetSizedTileset("Enemies/General/specialtarget_320x320.png");
 
 	actionLength[A_IDLE] = 5;
 	animFactor[A_IDLE] = 5;

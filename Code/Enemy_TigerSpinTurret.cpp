@@ -24,7 +24,7 @@ using namespace sf;
 //
 //	Session *sess = Session::GetSession();
 //
-//	ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+//	ts = sess->GetSizedTileset("Enemies/Bosses/Bird/shuriken01_128x128.png");
 //}
 //
 //TigerSpinTurretPool::~TigerSpinTurretPool()
@@ -84,7 +84,7 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	framesBetween = 60;
 	maxFramesToLive = 180 * 2;
 
-	Tileset *ts_basicBullets = GetSizedTileset("Enemies/bullet_80x80.png");
+	Tileset *ts_basicBullets = GetSizedTileset("Enemies/General/bullet_80x80.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 2, GetPosition(),
@@ -92,7 +92,7 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 60;
 
-	ts = GetSizedTileset("Bosses/Tiger/bosstiger_spinturret_80x80.png");
+	ts = GetSizedTileset("Enemies/Bosses/Tiger/bosstiger_spinturret_80x80.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

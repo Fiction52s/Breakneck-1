@@ -2711,7 +2711,7 @@ bool GameSession::RunMainLoopOnce()
 			texture.create(windowSize.x, windowSize.y);
 			texture.update(*window);
 			sf::Image screenshot = texture.copyToImage();
-			screenshot.saveToFile("Resources/Debug/desync.png");
+			screenshot.saveToFile("Resources/Recordings/Debug/desync.png");
 
 			quit = true;
 			returnVal = GR_EXITLEVEL;
@@ -2839,7 +2839,7 @@ bool GameSession::RunMainLoopOnce()
 			texture.create(windowSize.x, windowSize.y);
 			texture.update(*window);
 			sf::Image screenshot = texture.copyToImage();
-			screenshot.saveToFile("Resources/Debug/desync.png");
+			screenshot.saveToFile("Resources/Recordings/Debug/desync.png");
 
 			quit = true;
 			returnVal = GR_EXITLEVEL;
@@ -3998,6 +3998,11 @@ void GameSession::OpenGates(int gCat)
 
 void GameSession::UpdateEnvShaders()
 {
+	if (IsParallelSession())
+	{
+		return;
+	}
+
 	//sometimes gets called like 8 times in a frame wtf?
 	Vector2f botLeft(view.getCenter().x - view.getSize().x / 2,
 		view.getCenter().y + view.getSize().y / 2);
@@ -4256,6 +4261,9 @@ void GameSession::RestartGame()
 void GameSession::RestartLevel()
 {
 	phaseOn = false;
+
+	turnTimerOnCounter = -1;
+	timerOn = false;
 
 	onlinePauseMenuOn = false;
 	gameState = GameSession::RUN;

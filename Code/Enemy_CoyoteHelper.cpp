@@ -35,7 +35,7 @@ CoyoteHelper::CoyoteHelper(ActorParams *ap)
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
-	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	ts_move = GetSizedTileset("Enemies/Bosses/Coyote/coy_stand_80x64.png");
 
 	nodeAStr = "A";
 
@@ -64,7 +64,7 @@ CoyoteHelper::CoyoteHelper(ActorParams *ap)
 void CoyoteHelper::LoadParams()
 {
 	/*ifstream is;
-	is.open("Resources/Bosses/Bird/birdparams.json");
+	is.open("Resources/Enemies/Bosses/Bird/birdparams.json");
 
 	assert(is.is_open());
 

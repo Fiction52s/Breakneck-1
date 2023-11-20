@@ -48,16 +48,9 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	
 	SetRectColor(lockedOverlayQuad, Color( 0, 0, 0, 230 ));//Color(100, 100, 100, 100));
 
-	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
-
 	SetRectColor(levelStatsBG, Color(0, 0, 0, 100));
-	//SetRectSubRect(levelStatsBG, ms->ts_levelStatsBG->GetSubRect(0));
-	//SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
 
-	ts_energyCircle = worldMap->GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80);
-	ts_energyTri = worldMap->GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
-	ts_energyMask = worldMap->GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
-	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
+	ts_nodeExplode = worldMap->GetTileset("Menu/WorldMap/nodeexplode_288x288.png", 288, 288);
 	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
 	ts_origPowersOptions = worldMap->GetSizedTileset("Menu/parallel_play_384x128.png");
 	ts_lock = worldMap->GetSizedTileset("Menu/LevelSelect/sector_lock_256x256.png");
@@ -507,9 +500,6 @@ void MapSector::SetXCenter(float x)
 
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter);
 	SetRectColor(sectorStatsBG, Color(0, 0, 0, 200));
-
-
-	SetRectCenter(levelBG, 1200, 400, Vector2f(x, ms->sectorCenter.y));
 
 	//top right of mappreview
 	Vector2f levelStatsTopLeft = Vector2f( 960, 550 ) + Vector2f(912 / 2, -492 / 2) + Vector2f( 20, 0 );

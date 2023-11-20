@@ -11,9 +11,9 @@ CustomCursor::CustomCursor()
 	clickedImage[M_REGULAR].loadFromFile("Resources/Menu/arrow_editor_2_36x36.png");
 	hotspot[M_REGULAR] = Vector2u(2,2);
 
-	normalImage[M_SHIP].loadFromFile("Resources/Menu/ship_mouse_icon_1_172x80.png");
-	clickedImage[M_SHIP].loadFromFile("Resources/Menu/ship_mouse_icon_2_172x80.png");
-	hotspot[M_SHIP] = Vector2u(172/2, 80/2);
+	//normalImage[M_SHIP].loadFromFile("Resources/Menu/ship_mouse_icon_1_172x80.png");
+	//clickedImage[M_SHIP].loadFromFile("Resources/Menu/ship_mouse_icon_2_172x80.png");
+	//hotspot[M_SHIP] = Vector2u(172/2, 80/2);
 	clicked = false;
 	visible = false;
 	grabbed = false;

@@ -44,9 +44,9 @@ VictoryScreen4Player::VictoryScreen4Player( MatchStats *mStats )
 		}
 	}
 
-	Tileset *ts_bg = GetSizedTileset("Menu/Results/win_bg_960x540.png");
-	Tileset *ts_win = GetSizedTileset("Menu/Results/win_960x540.png");
-	Tileset *ts_kin = GetSizedTileset("Menu/Results/win_kin_1_960x540.png");
+	Tileset *ts_bg = GetSizedTileset("Menu/Multiplayer/Results/win_bg_960x540.png");
+	Tileset *ts_win = GetSizedTileset("Menu/Multiplayer/Results/win_960x540.png");
+	Tileset *ts_kin = GetSizedTileset("Menu/Multiplayer/Results/win_kin_1_960x540.png");
 
 	action = A_SHOW_WINNER;
 	frame = 0;
@@ -315,7 +315,7 @@ PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
 
 	PlayerStats *ps = resultsScreen->matchStats->playerStats[playerIndex];
 
-	Tileset *ts_placing = resultsScreen->GetSizedTileset("Menu/keynum_dark_80x80.png");
+	Tileset *ts_placing = resultsScreen->GetSizedTileset("HUD/keynum_dark_80x80.png");
 
 	ts_placing->SetSpriteTexture(placingSpr);
 	ts_placing->SetSubRect( placingSpr, ps->placing + 1);

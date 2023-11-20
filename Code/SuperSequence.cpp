@@ -10,16 +10,16 @@ SuperSequence::SuperSequence()
 	SetRectColor(blackQuad, Color( 0, 0, 0, 150 ));
 	SetRectTopLeft(blackQuad, 1920, 1080, Vector2f());
 
-	ts_lit1 = sess->GetSizedTileset("FX/lit_01_960x540.png");
-	ts_lit2 = sess->GetSizedTileset("FX/lit_02_960x540.png");
-	ts_spark1 = sess->GetSizedTileset("FX/spark_01_960x540.png");
-	ts_spark2 = sess->GetSizedTileset("FX/spark_01_960x540.png");
+	ts_lit1 = sess->GetSizedTileset("FX/Multiplayer/lit_01_960x540.png");
+	ts_lit2 = sess->GetSizedTileset("FX/Multiplayer/lit_02_960x540.png");
+	ts_spark1 = sess->GetSizedTileset("FX/Multiplayer/spark_01_960x540.png");
+	ts_spark2 = sess->GetSizedTileset("FX/Multiplayer/spark_01_960x540.png");
 
-	ts_birdPortrait = sess->GetTileset("Bosses/Bird/Bird_Super_01b.png", 1920, 1080);
+	ts_birdPortrait = sess->GetTileset("Enemies/Bosses/Bird/Bird_Super_01b.png", 1920, 1080);
 
 	animFactor = 3;
 
-	birdSound = sess->GetSound("Bosses/bird_super_01");
+	birdSound = sess->GetSound("Enemies/Bosses/bird_super_01");
 
 	portraitLeftStart = Vector2f(-500, 0);
 	portraitLeftEnd = Vector2f(0, 0);

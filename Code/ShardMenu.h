@@ -135,7 +135,6 @@ struct ShardMenu
 		ControllerState &prevInput );
 	void Draw(sf::RenderTarget *target);
 	void SetCurrShard();
-	bool SetDescription(std::string &nameStr, std::string &destStr, const std::string &shardTypeStr );
 	void SetCurrentDescription( bool captured );
 	const std::string &GetShardDesc(int w, int li);
 	const std::string &GetShardName(int w, int li);

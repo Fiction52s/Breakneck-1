@@ -175,8 +175,6 @@ PauseMenu::PauseMenu( TilesetManager *p_tm )
 
 	bgPaletteShader = new PaletteShader("pause", 
 		"Resources/Menu/Pause/pause_palette_16x6.png");
-
-	ts_select = tm->GetSizedTileset("Menu/menu_select_800x140.png");
 	
 	ts_pauseOptions = tm->GetSizedTileset("Menu/Pause/pauseoptions_768x128.png");
 
@@ -186,8 +184,7 @@ PauseMenu::PauseMenu( TilesetManager *p_tm )
 	
 	optionsMenu = new OptionsMenu(tm);
 	pauseMap = new PauseMap(tm);
-	
-	selectSprite.setTexture( *ts_select->texture );
+
 
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
@@ -495,7 +492,6 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 		target->draw(pauseOptionQuads, 4 * 5, sf::Quads, ts_pauseOptions->texture);
 		target->draw(respawnButtonIconQuad, 4, sf::Quads, ts_buttons->texture);
 		//target->draw(debugText);
-		//target->draw( selectSprite );
 	}
 	else if (currentTab == MAP)
 	{
@@ -840,7 +836,6 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				game->pauseSoundNodeList->ActivateSound(game->GetSound("pause_change"));
 			}
 			int h = 200;
-			//selectSprite.setPosition( 100, 100 + h * pauseSelector->currIndex);
 			UpdatePauseOptions();
 			break;
 		}

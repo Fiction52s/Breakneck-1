@@ -27,7 +27,6 @@ struct ShardPopup
 	void Reset();
 	void Update();
 	void SetShard(int w, int li);
-	void SetDescription(const std::string &desc);
 	void Draw(sf::RenderTarget *target);
 	
 

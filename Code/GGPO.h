@@ -344,6 +344,7 @@ struct SaveGameState
 	int currSuperPlayerIndex;
 	int gameState; //game mode such as RUN or FROZEN
 	int activeSequenceID;
+	int turnTimerOnCounter; //for adventure timer
 	uint32 randomState;
 	Camera cam;
 
@@ -351,6 +352,7 @@ struct SaveGameState
 
 	bool nextFrameRestartGame;
 	bool phaseOn; //for phase switches
+	bool timerOn; //for adventure timer
 
 	SaveGameState();
 	void Print();

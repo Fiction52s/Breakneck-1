@@ -28,7 +28,7 @@ void RemoteStorageManager::GetFileStats()
 
 void RemoteStorageManager::Test()
 {
-	Upload("globalsave.kingsave");
+	//Upload("globalsave.kingsave");
 }
 
 void RemoteStorageManager::LoadAll()

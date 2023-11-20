@@ -68,9 +68,9 @@ LogMenu::LogMenu(TilesetManager *p_tm)
 	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
-	ts_notCapturedPreview = tm->GetSizedTileset("Menu/not_captured_512x512.png");
-	ts_noPreview = tm->GetTileset("Menu/nopreview.png", 512, 512);
-	ts_shardButtons = tm->GetSizedTileset("Menu/pause_shard_buttons_128x93.png");
+	ts_notCapturedPreview = tm->GetSizedTileset("Menu/Pause/not_captured_512x512.png");
+	ts_noPreview = NULL;//tm->GetTileset("Menu/nopreview.png", 512, 512);
+	ts_shardButtons = tm->GetSizedTileset("Menu/Pause/pause_shard_buttons_128x93.png");
 	for (int i = 0; i < 4; ++i)
 	{
 		SetRectSubRect(shardButtons + i * 4, ts_shardButtons->GetSubRect(i));
@@ -417,49 +417,6 @@ void LogMenu::UpdateUnlockedLogs()
 		}
 		
 	}
-}
-
-bool LogMenu::SetDescription(std::string &nameStr, std::string &destStr, const std::string &shardTypeStr)
-{
-	stringstream ss;
-	ss << "Resources/Shard/Descriptions/" << shardTypeStr << ".sdesc";
-	ifstream is;
-	is.open(ss.str());
-
-	nameStr = "";
-	destStr = "";
-	if (is.is_open())
-	{
-		getline(is, nameStr);
-		destStr.assign((std::istreambuf_iterator<char>(is)),
-			(std::istreambuf_iterator<char>()));
-		/*char c;
-		while (is.get(c))
-		{
-
-		}*/
-
-		//getline(is, destStr);
-		/*is.seekg(0, std::ios::end);
-		destStr.reserve(is.tellg());
-		is.seekg(0, std::ios::beg);
-
-		destStr.assign((std::istreambuf_iterator<char>(is)),
-		std::istreambuf_iterator<char>());*/
-		/*if (!is.good())
-		{
-		assert(is.good());
-		}*/
-
-		//cout << "dest str: " << destStr << endl;
-	}
-	else
-	{
-		cout << "trying to get: " << shardTypeStr << " description" << endl;
-		return false;
-		assert(0);
-	}
-	return true;
 }
 
 void LogMenu::SetCurrMusic()
@@ -860,7 +817,7 @@ LogPreview::LogPreview(TilesetManager *p_tm)
 	ts_grass = tm->GetSizedTileset("Env/grass_128x128.png");
 	grassSprite.setTexture(*ts_grass->texture);
 
-	ts_kin = tm->GetSizedTileset("Menu/pause_kin_400x836.png");
+	ts_kin = tm->GetSizedTileset("Menu/Pause/pause_kin_400x836.png");
 	kinSprite.setTexture(*ts_kin->texture);
 	kinSprite.setScale(.5, .5);
 

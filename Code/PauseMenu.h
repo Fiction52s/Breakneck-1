@@ -158,8 +158,6 @@ struct PauseMenu
 
 	PaletteShader *bgPaletteShader;
 
-	Tileset *ts_select;
-
 	ShardMenu *shardMenu;
 	LogMenu *logMenu;
 	KinMenu *kinMenu;
@@ -167,7 +165,6 @@ struct PauseMenu
 	sf::Sprite bgSprite;
 	sf::Sprite tabSprite;
 	Tileset *ts_tabs;
-	sf::Sprite selectSprite;
 	GameSession *game;
 
 	ControlProfile *GetCurrSelectedProfile();

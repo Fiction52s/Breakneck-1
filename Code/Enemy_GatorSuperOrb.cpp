@@ -16,7 +16,7 @@ GatorSuperOrbPool::GatorSuperOrbPool()
 	numBullets = 5;
 	bulletVec.resize(numBullets);
 	verts = new Vertex[numBullets * 4];
-	ts = sess->GetSizedTileset("Bosses/Gator/orb_32x32.png");
+	ts = sess->GetSizedTileset("Enemies/Bosses/Gator/orb_32x32.png");
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bulletVec[i] = new GatorSuperOrb(verts + 4 * i, this);
