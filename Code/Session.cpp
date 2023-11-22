@@ -181,7 +181,8 @@ void Session::SetupSoundLists()
 		//parallel sessions shouldn't use sounds at all. making a pool for each session overloads the system resources.
 		if (IsParallelSession())
 		{
-
+			soundNodeList = NULL;
+			pauseSoundNodeList = NULL;
 		}
 		else
 		{
@@ -1047,6 +1048,9 @@ SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundInfo *si, bool loop)
 	if (soundNodeList == NULL)
 		return NULL;
 
+	if (IsParallelSession())
+		return NULL;
+
 	sf::Rect<double> soundRect = screenRect;
 	double soundExtra = 300;
 	soundRect.left -= soundExtra;
@@ -1073,6 +1077,9 @@ SoundNode *Session::ActivateSound(SoundInfo *si, bool loop)
 	if (soundNodeList == NULL)
 		return NULL;
 
+	if (IsParallelSession())
+		return NULL;
+
 	return soundNodeList->ActivateSound(si, loop);
 }
 
@@ -1086,6 +1093,9 @@ SoundNode *Session::ActivatePauseSound(SoundInfo *si, bool loop)
 	{
 		return NULL;
 	}
+
+	if (IsParallelSession())
+		return NULL;
 
 	return pauseSoundNodeList->ActivateSound(si, loop);
 }
@@ -2693,6 +2703,7 @@ void Session::UpdatePlayerInput(int index)
 		{
 			cout << "desynced. player pos: " << player->position.x << ", " << player->position.y << ", desync check: "
 				<< test.desyncCheckPos.x << ", " << test.desyncCheckPos.y << "\n";
+			cout << "player action: " << player->action << ", desync check: " << test.desyncCheckAction << "\n";
 			player->practiceDesyncDetected = true;
 		}
 		else
@@ -2946,7 +2957,7 @@ bool Session::OneFrameModeUpdate()
 #ifdef _DEBUG
 	skipInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
 #else
-	skipInput = IsSessTypeEdit() && CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp);
+	skipInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageUp) && IsSessTypeEdit();
 #endif
 	bool replayMode = IsReplayHUDOn();
 	//and hit nexus or start ship sequence
@@ -4530,23 +4541,30 @@ void Session::DrawPlayersMini(sf::RenderTarget *target)
 
 void Session::SetupHUD()
 {
-	if (parentGame != NULL)
+	if (IsParallelSession())
 	{
-		hud = parentGame->hud;
+		hud = NULL;
 	}
 	else
 	{
-		if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+		if (parentGame != NULL)
 		{
-			hud = mainMenu->adventureManager->adventureHUD;
-			hud->SetSession(this);
-			GetPlayer(0)->kinMask = mainMenu->adventureManager->adventureHUD->kinMask;
+			hud = parentGame->hud;
 		}
-		else if (hud == NULL )//&& !IsParallelSession() )
+		else
 		{
-			cout << "creating HUD because none is available" << endl;
-			hud = gameMode->CreateHUD();
-			hud->SetSession(this);
+			if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL )
+			{
+				hud = mainMenu->adventureManager->adventureHUD;
+				hud->SetSession(this);
+				GetPlayer(0)->kinMask = mainMenu->adventureManager->adventureHUD->kinMask;
+			}
+			else if (hud == NULL)//&& !IsParallelSession() )
+			{
+				cout << "creating HUD because none is available" << endl;
+				hud = gameMode->CreateHUD();
+				hud->SetSession(this);
+			}
 		}
 	}
 }
@@ -4659,7 +4677,7 @@ void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 void Session::CollectKey()
 {
 	GetPlayer(0)->numKeysHeld++;
-	if (hud != NULL && hud->hType == HUD::ADVENTURE)
+	if (hud != NULL && hud->hType == HUD::ADVENTURE && !IsParallelSession() )
 	{
 		AdventureHUD *ah = (AdventureHUD*)hud;
 		ah->UpdateKeyNumbers();
@@ -6763,7 +6781,7 @@ void Session::UpdateRunningTimerText()
 
 void Session::UpdateSoundNodeLists()
 {
-	if (soundNodeList != NULL)
+	if (soundNodeList != NULL && !IsParallelSession() )
 	{
 		soundNodeList->Update();
 	}
@@ -6884,6 +6902,9 @@ bool Session::RunGameModeUpdate()
 
 		UpdateAllPlayersInput();*/
 
+		//please....hoping to fix the bug from below and doesn't mess up sequence stuff...
+		UpdateAllPlayersInput();
+
 		ActiveSequenceUpdate();
 		if (switchGameState)
 		{
@@ -6907,7 +6928,8 @@ bool Session::RunGameModeUpdate()
 			return false;
 		}
 
-		UpdateAllPlayersInput();
+		//old spot causes 1 frame discrepancy when loading in for the first time
+		//UpdateAllPlayersInput();
 
 
 
@@ -7016,6 +7038,8 @@ bool Session::RunGameModeUpdate()
 		UpdateBarriers();
 
 		UpdateCamera();
+
+		UpdateRunningTimerText();
 
 		alertBox->Update();
 
@@ -8975,7 +8999,7 @@ void Session::SetCurrentBoss(Boss *b)
 	activeBosses.clear();
 	activeBosses.push_back(b);
 
-	if (hud != NULL && hud->hType == HUD::ADVENTURE)
+	if (hud != NULL && hud->hType == HUD::ADVENTURE && !IsParallelSession())
 	{
 		AdventureHUD *ah = (AdventureHUD*)hud;
 		ah->SetBossHealthBar(b->healthBar);
@@ -8986,7 +9010,7 @@ void Session::RemoveBoss(Boss *b)
 {
 	activeBosses.remove(b);
 
-	if (hud != NULL && hud->hType == HUD::ADVENTURE)
+	if (hud != NULL && hud->hType == HUD::ADVENTURE && !IsParallelSession())
 	{
 		AdventureHUD *ah = (AdventureHUD*)hud;
 		ah->bossHealthBar = NULL;
@@ -8997,6 +9021,12 @@ void Session::SetKeyMarkerToCurrentZone()
 {
 	AdventureHUD *ah = (AdventureHUD*)hud;
 	
+	if (IsParallelSession())
+		return;
+
+	if (ah == NULL)
+		return;
+
 	ah->numActiveKeyMarkers = 0;
 
 	bool hasEnemyGate = false;

@@ -661,7 +661,7 @@ void EditSession::TestPlayerMode()
 	}
 
 	turnTimerOnCounter = -1;
-	timerOn = false;
+	timerOn = true;
 
 	phaseOn = false;
 

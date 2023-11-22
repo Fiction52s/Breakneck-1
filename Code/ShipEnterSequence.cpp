@@ -114,6 +114,7 @@ void ShipEnterScene::ReturnToGame()
 
 void ShipEnterScene::UpdateState()
 {
+	//cout << "update ship enter state. curr frame is " << seqData.frame << " on total game frames: " << sess->totalGameFrames << "\n";
 	if (seqData.frame == 0)
 	{
 		sess->HideHUD();

@@ -241,3 +241,17 @@ void TutorialObject::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+void TutorialObject::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void TutorialObject::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
+

@@ -14,6 +14,11 @@ struct TutorialObject : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+	};
+
+	MyData data;
 	TutorialObject(ActorParams *ap);//sf::Vector2i &pos, int level);
 	~TutorialObject();
 	bool CountsForEnemyGate() { return false; }
@@ -33,6 +38,8 @@ struct TutorialObject : Enemy
 	void UpdateParamsSettings();
 	sf::FloatRect GetAABB();
 	void SetExtraIDsAndAddToVectors();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 	
 	
 	double entranceRadius;

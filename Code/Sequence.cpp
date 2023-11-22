@@ -201,7 +201,6 @@ Sequence *Sequence::CreateScene(const std::string &name)
 }
 
 Sequence::Sequence()
-	:nextSeq(NULL)
 {
 	sess = Session::GetSession();
 
@@ -214,10 +213,15 @@ Sequence::Sequence()
 		SetIDAndAddToAllSequencesVec();
 	}*/
 	
+	movieFadeFrames = -1;
+	movieStopFrame = -1;
 	currConvGroup = NULL;
 	numStates = 0;
 	stateLength = NULL;
 	barrier = NULL;
+	nextSeq = NULL;
+	currMovie = NULL;
+	currFlashGroup = NULL;
 }
 
 Sequence::~Sequence()

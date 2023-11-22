@@ -723,6 +723,7 @@ void Enemy::OnCreate(ActorParams *ap,
 }
 
 
+
 Tileset * Enemy::GetTileset(const std::string &s,
 	int tileWidth,
 	int tileHeight)
@@ -2388,6 +2389,17 @@ int Enemy::GetNumDarkAbsorbParticles()
 int Enemy::GetNumShardAbsorbParticles()
 { 
 	return 0; 
+}
+
+int Enemy::GetNumStoredBytes()
+{ 
+	return 0; 
+}
+
+void Enemy::StoreBytes(unsigned char *bytes)
+{
+	std::cout << "failing to store bytes from type " << this->type << "\n";
+	assert(0);
 }
 
 Actor *Enemy::GetFocusedPlayer()

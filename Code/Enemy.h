@@ -123,10 +123,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual Shield *GetShieldFromID(int id);
 	int GetShieldID(Shield *s);
 
-	virtual int GetNumStoredBytes() { return 0; }
-	virtual void StoreBytes(unsigned char *bytes) {
-		assert(0);
-	}
+	virtual int GetNumStoredBytes();
+	virtual void StoreBytes(unsigned char *bytes);
 	virtual void SetFromBytes(unsigned char *bytes) {}
 	void SetLaunchersFromBytes(unsigned char *bytes);
 	void StoreBytesForLaunchers(unsigned char *bytes);

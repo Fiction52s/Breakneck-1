@@ -933,6 +933,12 @@ SoundNode * Actor::ActivateSound(int st, bool loop )
 		return NULL;
 	}
 
+	if (sess->IsParallelSession())
+	{
+		return NULL;
+	}
+		
+
 	SoundInfo *si = soundInfos[st];
 
 	if (si == NULL)
@@ -957,6 +963,10 @@ SoundNode * Actor::ActivateRepeatingSound(int st, bool loop )
 	{
 		return NULL;
 	}
+
+	if (sess->IsParallelSession())
+		return NULL;
+
 	StopRepeatingSound();
 	repeatingSound = ActivateSound(st, loop);
 	return repeatingSound;
@@ -965,6 +975,9 @@ SoundNode * Actor::ActivateRepeatingSound(int st, bool loop )
 void Actor::DeactivateSound(SoundNode *sn)
 {
 	if (simulationMode)
+		return;
+
+	if (sess->IsParallelSession())
 		return;
 	sess->soundNodeList->DeactivateSound(sn);
 }
@@ -3382,16 +3395,6 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	SetSession(Session::GetSession(), gs, es);
 
-	/*if (sess->hud->hType == HUD::ADVENTURE)
-	{
-		kinMask = NULL;
-		AdventureHUD *ah = sess->GetAdventureHUD();
-		if (ah != NULL)
-		{
-			kinMask = ah->kinMask;
-		}
-	}*/
-
 	kinMask = NULL;
 
 	nameTag = new NameTag;
@@ -4170,7 +4173,9 @@ void Actor::InitSounds()
 	soundInfos[PlayerSounds::S_ENTER_W7] = GetSound("Test/Core_Theme_01");
 	soundInfos[PlayerSounds::S_ENTER_W8] = GetSound("Test/Bear_Theme_01");
 	soundInfos[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
-	//soundInfos[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
+
+	soundInfos[PlayerSounds::S_BOUNCEJUMP] = GetSound("Kin/bounce");
+	soundInfos[PlayerSounds::S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
 	/*soundInfos[S_DASH_START] = GetSound( "Kin/dash_02" );
 	soundInfos[S_HIT] = GetSound( "kin_hitspack_short" );
@@ -15068,19 +15073,12 @@ void Actor::HandleTouchedGate()
 					{
 						oldZone->ReformAllGates(g);
 					}
-
-					//if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
-					//{
-					//	sess->SetKeyMarkerToCurrentZone();
-					//	//AdventureHUD *ah = (AdventureHUD*)sess->hud;
-					//	//ah->keyMarker->Reset();
-					//}
 				}
 				sess->ActivateZone(newZone);
 
 				if (!twoWay) //for secret gates
 				{
-					if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+					if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE && !sess->IsParallelSession() )
 					{
 						sess->SetKeyMarkerToCurrentZone();
 						//AdventureHUD *ah = (AdventureHUD*)sess->hud;
@@ -21855,7 +21853,7 @@ void Actor::UpdateSprite()
 	RotateCW(diff, sprite->getRotation() / 180.f * PI);
 	spriteCenter = V2d(sprite->getPosition() + diff);
 
-	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE && !sess->IsParallelSession() )
 	{
 		AdventureHUD *ah = (AdventureHUD*)sess->hud;
 		ah->powerSelector->Update(currPowerMode);
@@ -21989,7 +21987,7 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 
 	TryThrowEnemySwordProjectileBasic();
 
-	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE && !sess->IsParallelSession() )
 	{
 		AdventureHUD *ah = (AdventureHUD*)sess->hud;
 		ah->UpdateEnemyNumbers();

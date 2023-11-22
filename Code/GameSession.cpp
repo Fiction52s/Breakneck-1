@@ -1990,7 +1990,7 @@ bool GameSession::Load()
 	bool blackBorder[2];
 	bool topBorderOn = false;
 	SetupGlobalBorderQuads(blackBorder, topBorderOn);
-	if (hud != NULL && hud->mini != NULL)
+	if (hud != NULL && hud->mini != NULL && !IsParallelSession())
 	{
 		hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 		kinMapSpawnIcon.setTexture(*hud->mini->ts_miniIcons->texture);
@@ -2614,7 +2614,7 @@ bool GameSession::RunMainLoopOnce()
 	currentTime = newTime;
 
 	frameRateDisplay.Update(frameTime);
-	UpdateRunningTimerText();
+	//UpdateRunningTimerText();
 
 	accumulator += frameTime;
 
@@ -3581,7 +3581,7 @@ int GameSession::Run()
 		//Fade(true, 60, Color::Black, true);
 	}
 	
-	if (preLevelScene != NULL)
+	/*if (preLevelScene != NULL)
 	{
 		preLevelScene->Reset();
 		SetActiveSequence(preLevelScene);
@@ -3590,7 +3590,7 @@ int GameSession::Run()
 	{
 		shipEnterScene->Reset();
 		SetActiveSequence(shipEnterScene);
-	}
+	}*/
 
 	RestartLevel();
 
@@ -4263,7 +4263,7 @@ void GameSession::RestartLevel()
 	phaseOn = false;
 
 	turnTimerOnCounter = -1;
-	timerOn = false;
+	timerOn = true;
 
 	onlinePauseMenuOn = false;
 	gameState = GameSession::RUN;
@@ -4379,11 +4379,6 @@ void GameSession::RestartLevel()
 	//DONT RESET totalGameFramesIncludingRespawns
 	totalGameFrames = 0;
 	totalFramesBeforeGoal = -1;
-	/*if( GetPlayer->record > 1 )
-	{
-		player->LoadState();
-		LoadState();
-	}*/
 
 	if( goalPulse != NULL )
 		goalPulse->Reset();
@@ -4397,7 +4392,7 @@ void GameSession::RestartLevel()
 	
 	numKeysCollected = 0;
 
-	if (hud != NULL)
+	if (hud != NULL && !IsParallelSession())
 	{
 		hud->Reset();
 	}

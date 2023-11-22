@@ -16,6 +16,7 @@
 #include "ControlProfile.h"
 #include "Input.h"
 #include "SaveFile.h"
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -3451,6 +3452,18 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 		*bufferMsg = pm;
 		tempBuffer += sizeof(pm);
 		sess->StoreBytes(tempBuffer);
+
+
+		cout << "sending start message with total game frames: " << sess->totalGameFrames;
+		if (sess->activeSequence != NULL)
+		{
+			cout << "and active sequence has a frame of: " << sess->activeSequence->seqData.frame << "\n";
+		}
+		else
+		{
+			cout << "no active sequence when joining" << endl;
+		}
+		
 	}
 
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)
