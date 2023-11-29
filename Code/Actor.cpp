@@ -3854,15 +3854,15 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	maxBBoostCount = GetActionLength(DASH);
 	maxAirdashBoostCount = GetActionLength(AIRDASH);
 		 
-	sess->mainMenu->LoadShader(swordShaders[0], "colorswap");
-	swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
+	sess->mainMenu->LoadShader(swordShaders[0], "sword");
+	swordShaders[0].setUniform("fromColor", ColorGL(Color(0, 238, 255)));//ColorGL(COLOR_TEAL) );
 	swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
 
-	sess->mainMenu->LoadShader(swordShaders[1], "colorswap");
+	sess->mainMenu->LoadShader(swordShaders[1], "sword");
 	swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
 	swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
 	
-	sess->mainMenu->LoadShader(swordShaders[2], "colorswap");
+	sess->mainMenu->LoadShader(swordShaders[2], "sword");
 	swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
 	swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
@@ -21489,10 +21489,10 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 	else
 	{
-		if (owner != NULL)
+		/*if (owner != NULL)
 			flashFrames = owner->pauseFrames;
 		else
-			flashFrames = 0;
+			flashFrames = 0;*/
 		
 		DrawPlayerSprite( target );
 		
@@ -22071,7 +22071,7 @@ void Actor::ConfirmHit( Enemy *e )
 		hasRegenUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_ENEMY_REGEN);
 		break;
 	case 7:
-		c = Color::Black;
+		c = Color::White;
 		break;
 	}
 
@@ -22104,7 +22104,7 @@ void Actor::ConfirmHit( Enemy *e )
 	attackingHitlag = true;
 
 	flashColor = c;	
-	//flashFrames = hitParams->flashFrames + 1;
+	flashFrames = currHitboxInfo->hitlagFrames;// +1;
 	for( int i = 0; i < 3; ++i )
 	{
 		swordShaders[i].setUniform( "toColor", ColorGL( flashColor ) );
@@ -24522,6 +24522,9 @@ void Actor::UpdateInHitlag()
 	UpdateBubbles();
 
 	TryChangePowerMode();
+
+	if (flashFrames > 0)
+		--flashFrames;
 
 	//might be more stuff missing here?
 

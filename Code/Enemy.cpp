@@ -1552,7 +1552,6 @@ void Enemy::UpdatePostPhysics()
 	{
 		ProcessHit();
 	}
-	
 
 	if (numHealth == 0 && LaunchersAreDone()
 		&& ( ( cutObject != NULL && !cutObject->active ) 
