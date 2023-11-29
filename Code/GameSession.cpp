@@ -1347,6 +1347,7 @@ void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 	{
 		allSpecialPolysVec.push_back(poly);
 		specialTerrainTree->Insert(poly);
+		waterMatSet.insert(poly->waterType);
 	}
 	else if (specialType == 2)
 	{
@@ -1357,6 +1358,17 @@ void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 	}
 	//matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
 	
+}
+
+void GameSession::ProcessAllSpecialTerrain()
+{
+	int numMats = waterMatSet.size();
+
+	waterTypeIndexesUsedVec.reserve(numMats);
+	for (auto it = waterMatSet.begin(); it != waterMatSet.end(); ++it)
+	{
+		waterTypeIndexesUsedVec.push_back((*it));
+	}
 }
 
 void GameSession::ProcessGate(int gCat,
@@ -1492,6 +1504,12 @@ void GameSession::ProcessAllTerrain()
 	terrainDecorInfoMap.clear();
 
 	int numMats = matSet.size();
+
+	terrainTypeIndexesUsedVec.reserve(numMats);
+	for (auto it = matSet.begin(); it != matSet.end(); ++it)
+	{
+		terrainTypeIndexesUsedVec.push_back((*it).first * 8 + (*it).second);
+	}
 
 	int index = 0;
 	for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
@@ -2124,6 +2142,7 @@ bool GameSession::Load()
 	gameState = RUN;
 	SeedRand(matchParams.randSeed);
 
+	oldCamAngle = 0;
 	oldShaderZoom = -1;
 	goalDestroyed = false;
 	frameRateDisplay.showFrameRate = true;
@@ -4006,10 +4025,22 @@ void GameSession::UpdateEnvShaders()
 	}
 
 	//sometimes gets called like 8 times in a frame wtf?
-	Vector2f botLeft(view.getCenter().x - view.getSize().x / 2,
-		view.getCenter().y + view.getSize().y / 2);
+	//Vector2f botLeft(view.getCenter().x - view.getSize().x / 2,
+	//	view.getCenter().y + view.getSize().y / 2);
+	Vector2f vSize = view.getSize();
+	Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
 
 	Vector2f playertest = (botLeft - oldCamBotLeft) / 5.f;
+
+	float camAngle = (float)(view.getRotation() * PI / 180.0);
+
+	Vector2f botLeftTest(-vSize.x / 2, vSize.y / 2);
+	RotateCW(botLeftTest, camAngle);
+
+	botLeftTest += view.getCenter();
+
+	botLeft = botLeftTest;
+
 
 	UpdatePolyShaders(botLeft, playertest);
 
@@ -4105,51 +4136,108 @@ void GameSession::DrawReplayGhosts(sf::RenderTarget *target)
 
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
-	//cout << "here?" << endl;
 	//oldShaderZoom is only used in editor. Need to optimize this in GameSession as well
 	bool first = oldShaderZoom < 0;
 
 	float zoom = cam.GetZoom();
 
-	if (first || oldShaderZoom != zoom)
+	int numTerrainMats = terrainTypeIndexesUsedVec.size();
+	int numWaterMats = waterTypeIndexesUsedVec.size();
+
+	float camAngle = (float)(view.getRotation() * PI / 180.0);
+
+	bool shouldUpdateZoom = first || oldShaderZoom != zoom;
+	bool shouldUpdatePos = first || oldShaderBotLeft != botLeft;
+	bool shouldUpdateRotation = first || oldCamAngle != camAngle;
+
+	/*if (first || oldCamAngle != camAngle)
+	{
+		oldCamAngle = camAngle;
+
+		for (int i = 0; i < TerrainPolygon::TOTAL_TERRAIN_TYPES; ++i)
+		{
+			mainMenu->terrainShaders[i].setUniform("u_cameraAngle", camAngle);
+		}
+	}*/
+
+	Shader *currTerrainShader = NULL;
+	Shader *currWaterShader = NULL;
+
+	if (shouldUpdateZoom)
 	{
 		oldShaderZoom = zoom;
-		mainMenu->terrainShader.setUniform("zoom", cam.GetZoom());
 
-		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		for (int i = 0; i < numTerrainMats; ++i)
 		{
-			mainMenu->waterShaders[i].setUniform("zoom", zoom);
+			currTerrainShader = &mainMenu->terrainShaders[terrainTypeIndexesUsedVec[i]];
+			currTerrainShader->setUniform("zoom", zoom);
+		}
+
+		for (int i = 0; i < numWaterMats; ++i)
+		{
+			currWaterShader = &mainMenu->waterShaders[waterTypeIndexesUsedVec[i]];
+			currWaterShader->setUniform("zoom", zoom);
 		}
 	}
 
-	if (first || oldShaderBotLeft != botLeft)
+	if (shouldUpdatePos)
 	{
 		oldShaderBotLeft = botLeft;
 
-		mainMenu->terrainShader.setUniform("topLeft", botLeft); //just need to change the name topleft eventually
-
-		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		for (int i = 0; i < numTerrainMats; ++i)
 		{
-			mainMenu->waterShaders[i].setUniform("topLeft", botLeft);
+			currTerrainShader = &mainMenu->terrainShaders[terrainTypeIndexesUsedVec[i]];
+			currTerrainShader->setUniform("topLeft", botLeft);
+		}
+
+		for (int i = 0; i < numWaterMats; ++i)
+		{
+			currWaterShader = &mainMenu->waterShaders[waterTypeIndexesUsedVec[i]];
+			currWaterShader->setUniform("topLeft", botLeft);
 		}
 	}
-	
-	mainMenu->terrainShader.setUniform("playertest", playertest);
+
+	if (shouldUpdateRotation)
+	{
+		oldCamAngle = camAngle;
+
+		for (int i = 0; i < numTerrainMats; ++i)
+		{
+			currTerrainShader = &mainMenu->terrainShaders[terrainTypeIndexesUsedVec[i]];
+			currTerrainShader->setUniform("u_cameraAngle", camAngle);
+		}
+
+		for (int i = 0; i < numWaterMats; ++i)
+		{
+			currWaterShader = &mainMenu->waterShaders[waterTypeIndexesUsedVec[i]];
+			currWaterShader->setUniform("u_cameraAngle", camAngle);
+		}
+	}
+	//mainMenu->terrainShader.setUniform("playertest", playertest);
 
 	if (background != NULL)
 	{
-		mainMenu->terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
+		for (int i = 0; i < numTerrainMats; ++i)
+		{
+			currTerrainShader = &mainMenu->terrainShaders[terrainTypeIndexesUsedVec[i]];
+			currTerrainShader->setUniform("skyColor", ColorGL(background->GetSkyColor()));
+		}
 	}
 	else
 	{
-		mainMenu->terrainShader.setUniform("skyColor", ColorGL(Color::White));
+		for (int i = 0; i < numTerrainMats; ++i)
+		{
+			currTerrainShader = &mainMenu->terrainShaders[terrainTypeIndexesUsedVec[i]];
+			currTerrainShader->setUniform("skyColor", ColorGL(Color::White));
+		}
 	}
-	
 
-	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+	for (int i = 0; i < numWaterMats; ++i)
 	{
-		mainMenu->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+		currWaterShader = &mainMenu->waterShaders[waterTypeIndexesUsedVec[i]];
+		currWaterShader->setUniform("u_slide", waterShaderCounter);
 	}
+
 	waterShaderCounter += .01f;
 }
 

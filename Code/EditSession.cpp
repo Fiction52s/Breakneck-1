@@ -4185,6 +4185,7 @@ int EditSession::EditRun()
 	grabbedBorderIndex = -1;
 
 	oldShaderZoom = -1;
+	oldCamAngle = 0;
 	complexPaste = NULL;
 
 	testGateInfo.edit = EditSession::GetSession();
@@ -8715,9 +8716,14 @@ void EditSession::CreatePreview(bool thumbnail, bool hideSecret )
 	float zoom = vSize.x / 960;
 	Vector2f botLeft(pView.getCenter().x - vSize.x / 2, pView.getCenter().y + vSize.y / 2);
 	
-	mainMenu->terrainShader.setUniform("zoom", zoom);
-	mainMenu->terrainShader.setUniform("topLeft", botLeft);
+	for (int i = 0; i < TerrainPolygon::TOTAL_TERRAIN_TYPES; ++i)
+	{
+		mainMenu->terrainShaders[i].setUniform("zoom", zoom);
+		mainMenu->terrainShaders[i].setUniform("topLeft", botLeft);
+	}
+	
 
+	oldCamAngle = 0;
 	oldShaderZoom = -1; //updates the shader back to normal after this is over
 
 	if (thumbnail)
@@ -12921,18 +12927,28 @@ void EditSession::UpdatePolyShaders()
 	botLeftTest += view.getCenter();
 
 	botLeft = botLeftTest;
-
-	
 	
 	bool first = oldShaderZoom < 0;
 
-	mainMenu->terrainShader.setUniform("u_cameraAngle",camAngle );
+	if (first || oldCamAngle != camAngle)
+	{
+		oldCamAngle = camAngle;
+
+		for (int i = 0; i < TerrainPolygon::TOTAL_TERRAIN_TYPES; ++i)
+		{
+			mainMenu->terrainShaders[i].setUniform("u_cameraAngle", camAngle);
+		}
+	}
+	
 	//terrainShader.setUniform("u_seed", (float)totalGameFrames );
 	if (first || oldShaderZoom != zoom ) //first run
 	{
 		oldShaderZoom = zoom;
 
-		mainMenu->terrainShader.setUniform("zoom", zoom);
+		for (int i = 0; i < TerrainPolygon::TOTAL_TERRAIN_TYPES; ++i)
+		{
+			mainMenu->terrainShaders[i].setUniform("zoom", zoom);
+		}
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
@@ -12944,8 +12960,10 @@ void EditSession::UpdatePolyShaders()
 	{
 		oldShaderBotLeft = botLeft;
 
-		mainMenu->terrainShader.setUniform("topLeft", botLeft);
-
+		for (int i = 0; i < TerrainPolygon::TOTAL_TERRAIN_TYPES; ++i)
+		{
+			mainMenu->terrainShaders[i].setUniform("topLeft", botLeft);
+		}
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{

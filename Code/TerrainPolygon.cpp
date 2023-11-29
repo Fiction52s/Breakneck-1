@@ -34,9 +34,9 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 const int TerrainPolygon::inverseExtraBoxDist = 1500;
-const int TerrainPolygon::TILE_PATTERN_GRID_SIZE = 16;
-const int TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
-const int TerrainPolygon::TOTAL_TILES_IN_USE = 4;
+//const int TerrainPolygon::TILE_PATTERN_GRID_SIZE = 16;
+//const int TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
+//const int TerrainPolygon::TOTAL_TILES_IN_USE = 4;
 
 namespace mapbox
 {
@@ -1158,31 +1158,31 @@ void BorderSizeInfo::SetWidth(int w)
 	startLen - width - inter;
 }
 
-void TerrainPolygon::SetupTilePattern()
-{
-	tilePattern = new float[TILE_PATTERN_TOTAL_INDEXES];
-	tileQuads = new Glsl::Vec4[TOTAL_TILES_IN_USE];
-
-
-	RandomPicker p;
-	p.AddActiveOption(0, 2);
-	p.AddActiveOption(1, 2);
-	p.AddActiveOption(2, 2);
-	p.AddActiveOption(3, 2);
-
-
-	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)
-	{
-		tilePattern[i] = p.AlwaysGetNextOption();//rand() % TOTAL_TILES_IN_USE;
-	}
-}
+//void TerrainPolygon::SetupTilePattern()
+//{
+//	tilePattern = new float[TILE_PATTERN_TOTAL_INDEXES];
+//	tileQuads = new Glsl::Vec4[TOTAL_TILES_IN_USE];
+//
+//
+//	RandomPicker p;
+//	p.AddActiveOption(0, 2);
+//	p.AddActiveOption(1, 2);
+//	p.AddActiveOption(2, 2);
+//	p.AddActiveOption(3, 2);
+//
+//
+//	for (int i = 0; i < TILE_PATTERN_TOTAL_INDEXES; ++i)
+//	{
+//		tilePattern[i] = p.AlwaysGetNextOption();//rand() % TOTAL_TILES_IN_USE;
+//	}
+//}
 
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
 	sess = Session::GetSession();
 
-	SetupTilePattern();
+	//SetupTilePattern();
 
 	polyIndex = -1;
 
@@ -1265,7 +1265,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 
 	pointVector.resize(2);
 
-	SetupTilePattern();
+	//SetupTilePattern();
 
 	if (pointsOnly)
 	{
@@ -1291,8 +1291,8 @@ TerrainPolygon::~TerrainPolygon()
 {
 	//cout << "destroying poly: " << this << endl;
 
-	delete[] tilePattern;
-	delete[] tileQuads;
+	//delete[] tilePattern;
+	//delete[] tileQuads;
 
 	if (lines != NULL)
 		delete[] lines;
@@ -3352,7 +3352,10 @@ void TerrainPolygon::UpdateMaterialType()
 			texInd = game->matIndices[texInd];
 		}*/
 
-		pShader = &sess->mainMenu->terrainShader;//&sess->polyShaders[texInd];
+		int terrainIndex = terrainWorldType * 8 + terrainVariation;
+
+		pShader = &sess->mainMenu->terrainShaders[terrainIndex];//&sess->polyShaders[texInd];
+		//pShader = &sess->mainMenu->terrainShader;//&sess->polyShaders[texInd];
 		miniShader = NULL;
 		tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
 	}
@@ -3697,98 +3700,106 @@ bool TerrainPolygon::IsSometimesActiveType()
 	return terrainWorldType == 5 && terrainVariation == 7;
 }
 
-void TerrainPolygon::UpdateWaterType()
+int TerrainPolygon::GetWaterIndex(int w, int variation)
 {
-	if (terrainWorldType >= W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
+	int wType = -1;
+	if (w >= W1_SPECIAL && w <= W8_SPECIAL)
 	{
-		switch (terrainWorldType)
+		switch (w)
 		{
 		case W1_SPECIAL:
-			if (terrainVariation == 0 )
+			if (variation == 0)
 			{
-				waterType = WATER_NORMAL;
+				wType = WATER_NORMAL;
 			}
 			break;
 		case W2_SPECIAL:
-			if (terrainVariation == 0)
+			if (variation == 0)
 			{
-				waterType = WATER_GLIDE;
+				wType = WATER_GLIDE;
 			}
-			else if (terrainVariation == 1)
+			else if (variation == 1)
 			{
-				waterType = WATER_LOWGRAV;
+				wType = WATER_LOWGRAV;
 			}
-			else if (terrainVariation == 2 )
+			else if (variation == 2)
 			{
-				waterType = WATER_HEAVYGRAV;
+				wType = WATER_HEAVYGRAV;
 			}
-			else if (terrainVariation == 3)
+			else if (variation == 3)
 			{
-				waterType = WATER_BUOYANCY;
+				wType = WATER_BUOYANCY;
 			}
 			break;
 		case W3_SPECIAL:
-			if (terrainVariation == 0)
+			if (variation == 0)
 			{
-				waterType = WATER_ACCEL;
+				wType = WATER_ACCEL;
 			}
-			else if (terrainVariation == 1)
+			else if (variation == 1)
 			{
-				waterType = WATER_ZEROGRAV;
+				wType = WATER_ZEROGRAV;
 			}
 			break;
 		case W4_SPECIAL:
-			if (terrainVariation == 0)
+			if (variation == 0)
 			{
-				waterType = WATER_LAUNCHER;
+				wType = WATER_LAUNCHER;
 			}
-			else if (terrainVariation == 1)
+			else if (variation == 1)
 			{
-				waterType = WATER_MOMENTUM;
+				wType = WATER_MOMENTUM;
 			}
 			break;
 		case W5_SPECIAL:
-			if (terrainVariation == 0)
+			if (variation == 0)
 			{
-				waterType = WATER_TIMESLOW;
+				wType = WATER_TIMESLOW;
 			}
-			else if (terrainVariation == 1)
+			else if (variation == 1)
 			{
-				waterType = WATER_POISON;
+				wType = WATER_POISON;
 			}
 			break;
 		case W6_SPECIAL:
-			if (terrainVariation == 0)
+			if (variation == 0)
 			{
-				waterType = WATER_FREEFLIGHT;
+				wType = WATER_FREEFLIGHT;
 			}
-			else if (terrainVariation == 1)
+			else if (variation == 1)
 			{
-				waterType = WATER_INVERTEDINPUTS;
+				wType = WATER_INVERTEDINPUTS;
 			}
 			break;
 		case W7_SPECIAL:
-			if (terrainVariation == 0)
+			if (variation == 0)
 			{
-				waterType = WATER_REWIND;
+				wType = WATER_REWIND;
 			}
-			else if (terrainVariation == 1)
+			else if (variation == 1)
 			{
-				waterType = WATER_SWORDPROJECTILE;
+				wType = WATER_SWORDPROJECTILE;
 			}
 			break;
 		case W8_SPECIAL:
-			if (terrainVariation == 0)
+			if (variation == 0)
 			{
-				waterType = WATER_SUPER;
+				wType = WATER_SUPER;
 			}
 			break;
 		}
 	}
 	else
 	{
-		waterType = -1;
+		wType = -1;
 	}
+
+	return wType;
+}
+
+void TerrainPolygon::UpdateWaterType()
+{
+	waterType = GetWaterIndex(terrainWorldType, terrainVariation);
 }
 
 void TerrainPolygon::SetAsWaterType(int water)
@@ -5164,25 +5175,25 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 		{
 			if (terrainWorldType <= SECRETCORE)
 			{
-				Tileset *ts = sess->mainMenu->ts_terrain;
+				//Tileset *ts = sess->mainMenu->ts_terrain;
 
 
-				int tile = (8 * terrainWorldType + terrainVariation) * 4;
-				IntRect ir;//rand() % 8);//tile + rand() % 2);
+				//int tile = (8 * terrainWorldType + terrainVariation) * 4;
+				//IntRect ir;//rand() % 8);//tile + rand() % 2);
 
-				float width = ts->texture->getSize().x;
-				float height = ts->texture->getSize().y;
+				//float width = ts->texture->getSize().x;
+				//float height = ts->texture->getSize().y;
 
 
-				sess->mainMenu->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
+				//sess->mainMenu->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
 
-				for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
-				{
-					ir = ts->GetSubRect(tile + i);
-					tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
-				}
+				//for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
+				//{
+				//	ir = ts->GetSubRect(tile + i);
+				//	tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
+				//}
 
-				sess->mainMenu->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
+				//sess->mainMenu->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
 
 				/*sess->terrainShader.setUniform("u_quad",
 				Glsl::Vec4(ir.left / width, ir.top / height,
@@ -5376,35 +5387,25 @@ void TerrainPolygon::DrawAsSecretCover(sf::RenderTarget *target)
 		{
 			if (terrainWorldType <= SECRETCORE)
 			{
-				Tileset *ts = sess->mainMenu->ts_terrain;
+				//Tileset *ts = sess->mainMenu->ts_terrain;
 
 
-				int tile = (8 * terrainWorldType + terrainVariation) * 4;
-				IntRect ir;//rand() % 8);//tile + rand() % 2);
+				//int tile = (8 * terrainWorldType + terrainVariation) * 4;
+				//IntRect ir;//rand() % 8);//tile + rand() % 2);
 
-				float width = ts->texture->getSize().x;
-				float height = ts->texture->getSize().y;
+				//float width = ts->texture->getSize().x;
+				//float height = ts->texture->getSize().y;
 
 
-				sess->mainMenu->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
+				//sess->mainMenu->terrainShader.setUniformArray("u_patternGrid", tilePattern, TILE_PATTERN_TOTAL_INDEXES);
 
-				for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
-				{
-					ir = ts->GetSubRect(tile + i);
-					tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
-				}
+				//for (int i = 0; i < TOTAL_TILES_IN_USE; ++i)
+				//{
+				//	ir = ts->GetSubRect(tile + i);
+				//	tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
+				//}
 
-				sess->mainMenu->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
-
-				/*sess->terrainShader.setUniform("u_quad",
-				Glsl::Vec4(ir.left / width, ir.top / height,
-				(ir.left + ir.width) / width, (ir.top + ir.height) / height));
-
-				IntRect ir_alt = ts->GetSubRect(tile+1);
-
-				sess->terrainShader.setUniform("u_alt_quad",
-				Glsl::Vec4(ir_alt.left / width, ir_alt.top / height,
-				(ir_alt.left + ir_alt.width) / width, (ir_alt.top + ir_alt.height) / height));*/
+				//sess->mainMenu->terrainShader.setUniformArray("u_quadArray", tileQuads, TOTAL_TILES_IN_USE);
 			}
 
 			target->draw(*va, pShader);

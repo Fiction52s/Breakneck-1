@@ -357,7 +357,8 @@ struct MainMenu : TilesetManager
 	sf::Shader *minimapWaterShaders;
 
 	Tileset *ts_terrain;
-	sf::Shader terrainShader;
+	sf::Shader *terrainShaders;
+	//sf::Shader terrainShader;
 	
 	MainMenu(bool p_steamOn);
 	~MainMenu();
@@ -369,7 +370,8 @@ struct MainMenu : TilesetManager
 
 	void SetupWaterShaders();
 	void SetupWaterShader(sf::Shader &sh, int waterIndex);
-	bool LoadPolyShader();
+	void SetupTerrainShaders();
+	void SetupTerrainShader(sf::Shader &sh, int terrainIndex);
 
 	void SetMode(Mode m);
 	void ReturnToWorldAfterLevel();

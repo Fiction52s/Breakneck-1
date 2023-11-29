@@ -2287,6 +2287,8 @@ bool Session::ReadSpecialTerrain(std::ifstream &is)
 		ProcessSpecialTerrain(poly);
 	}
 
+	ProcessAllSpecialTerrain();
+
 	return true;
 }
 

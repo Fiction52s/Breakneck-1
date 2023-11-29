@@ -282,13 +282,19 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int polyIndex;
 	int waterType;
 
-	const static int TILE_PATTERN_GRID_SIZE;
-	const static int TILE_PATTERN_TOTAL_INDEXES;
-	const static int TOTAL_TILES_IN_USE;
+
+	/*const int TerrainPolygon::TILE_PATTERN_GRID_SIZE = 16;
+	const int TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
+	const int TerrainPolygon::TOTAL_TILES_IN_USE = 4;*/
+
+	const static int TILE_PATTERN_GRID_SIZE = 16;
+	const static int TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
+	const static int TOTAL_TILES_IN_USE = 4;
+	const static int TOTAL_TERRAIN_TYPES = 64;
 	const static int inverseExtraBoxDist;
 
-	float *tilePattern;
-	sf::Glsl::Vec4 *tileQuads;
+	//float *tilePattern;
+	//sf::Glsl::Vec4 *tileQuads;
 
 
 	bool grassBufferForAABBOn;
@@ -299,6 +305,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	static std::string GetWaterNameFromType(int waterT);
 	static sf::Color GetWaterColor(int waterT);
 	bool IsSpecialTerrainType(int w, int var);
+	static int GetWaterIndex(int w, int var);
 	void UpdateWaterType();
 	bool IsPhaseType();
 	bool IsInversePhaseType();
@@ -505,7 +512,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly,
 		bool storeSelectedPoints = false );
 	~TerrainPolygon();
-	void SetupTilePattern();
+	//void SetupTilePattern();
 	void UpdateLineColor(int i);
 	void UpdatePreviewLineColor(int i);
 	void UpdateLineColors();

@@ -266,11 +266,15 @@ struct GameSession : RayCastHandler, Session
 	
 	//from mainmenu
 
+	std::vector<int> terrainTypeIndexesUsedVec;
+	std::vector<int> waterTypeIndexesUsedVec;
 	//for loading only
 	std::list<PolyPtr> allPolygonsList;
 	bool continueLoading;
 	boost::mutex continueLoadingLock;
 	std::set<std::pair<int, int>> matSet;
+	std::set<int> waterMatSet;
+
 	//std::map<int, int> matIndices;
 	std::map<std::string, std::list<DecorInfo>> decorListMap;
 
@@ -398,6 +402,7 @@ struct GameSession : RayCastHandler, Session
 	void ProcessAllDecorSpr();
 	void ProcessTerrain(PolyPtr poly);
 	void ProcessAllTerrain();
+	void ProcessAllSpecialTerrain();
 	void ProcessActor(ActorPtr a);
 	void ProcessAllActors();
 	void ProcessGate(int gCat, 
@@ -557,7 +562,7 @@ struct GameSession : RayCastHandler, Session
 	void SetMatchParams(MatchParams &mp);
 	void UpdateMatchParams(MatchParams &mp);
 	void StartRaceFromPractice();
-
+	
 	//void StartPracticeInviteMode();
 };
 #endif

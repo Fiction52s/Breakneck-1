@@ -70,6 +70,7 @@
 
 #include "Minimap.h"
 #include "HitboxManager.h"
+#include "RandomPicker.h"
 
 using namespace std;
 using namespace sf;
@@ -119,26 +120,69 @@ std::string GetTimeStr(int numFrames)
 	return ss.str();
 }
 
-bool MainMenu::LoadPolyShader()
+void MainMenu::SetupTerrainShaders()
 {
+	if (terrainShaders != NULL)
+	{
+		return;
+	}
+
 	//global tileset
 	ts_terrain = GetSizedTileset("Env/terrain_128x128.png");
 
-	if (!terrainShader.loadFromFile("Resources/Shader/terrain.frag", sf::Shader::Fragment))
+	terrainShaders = new Shader[TerrainPolygon::TOTAL_TERRAIN_TYPES];
+
+	for (int i = 0; i < TerrainPolygon::TOTAL_TERRAIN_TYPES; ++i)
 	{
-		cout << "terrain shader not loading" << endl;
-		//cout << "MATERIAL  NOT LOADING CORRECTLY:" << matFile << endl;
-		return false;
+		SetupTerrainShader(terrainShaders[i], i);
+	}
+}
+
+void MainMenu::SetupTerrainShader(sf::Shader &sh, int terrainIndex)
+{
+	if (!sh.loadFromFile("Resources/Shader/terrain.frag", sf::Shader::Fragment))
+	{
+		cout << "terrain shader not loading correctly" << endl;
+		return;
 	}
 
-	terrainShader.setUniform("u_texture", *ts_terrain->texture);
-	terrainShader.setUniform("Resolution", Vector2f(1920, 1080));
-	terrainShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-	terrainShader.setUniform("skyColor", ColorGL(Color::White));
+	sh.setUniform("u_texture", *ts_terrain->texture);
+	sh.setUniform("Resolution", Vector2f(1920, 1080));
+	sh.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+	sh.setUniform("skyColor", ColorGL(Color::White));
+
+	float tilePattern[TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES];
+	Glsl::Vec4 tileQuads[TerrainPolygon::TOTAL_TILES_IN_USE];
+
+	RandomPicker p;
+	p.AddActiveOption(0, 2);
+	p.AddActiveOption(1, 2);
+	p.AddActiveOption(2, 2);
+	p.AddActiveOption(3, 2);
+
+	p.ShuffleActiveOptions();
+
+	for (int i = 0; i < TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES; ++i)
+	{
+		tilePattern[i] = p.AlwaysGetNextOption();//rand() % TOTAL_TILES_IN_USE;
+	}
+
+	int tile = terrainIndex * 4;//(8 * terrainWorldType + terrainVariation) * 4;
+	IntRect ir;//rand() % 8);//tile + rand() % 2);
+
+	float width = ts_terrain->texture->getSize().x;
+	float height = ts_terrain->texture->getSize().y;
 
 
-	//ReadDecorInfoFile(matWorld, matVariation);
-	return true;
+	sh.setUniformArray("u_patternGrid", tilePattern, TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES);
+
+	for (int i = 0; i < TerrainPolygon::TOTAL_TILES_IN_USE; ++i)
+	{
+		ir = ts_terrain->GetSubRect(tile + i);
+		tileQuads[i] = Glsl::Vec4(ir.left / width, ir.top / height, (ir.left + ir.width) / width, (ir.top + ir.height) / height);
+	}
+
+	sh.setUniformArray("u_quadArray", tileQuads, TerrainPolygon::TOTAL_TILES_IN_USE);
 }
 
 void MainMenu::SetupWaterShaders()
@@ -166,6 +210,7 @@ void MainMenu::SetupWaterShader(sf::Shader &waterShader, int waterIndex)
 	if (!waterShader.loadFromFile("Resources/Shader/water.frag", sf::Shader::Fragment))
 	{
 		cout << "water SHADER NOT LOADING CORRECTLY" << endl;
+		return;
 	}
 
 	waterShader.setUniform("u_slide", 0.f);
@@ -847,8 +892,10 @@ MainMenu::MainMenu( bool p_steamOn)
 	waterShaders = NULL;
 	minimapWaterShaders = NULL;
 
+	terrainShaders = NULL;
+
 	SetupWaterShaders();
-	LoadPolyShader();
+	SetupTerrainShaders();
 
 	adventureManager = NULL;
 	//worldMap = new WorldMap( this );

@@ -413,6 +413,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	float oldShaderZoom;
 	sf::Vector2f oldShaderBotLeft;
 
+	float oldCamAngle;
+
 	//2 borders, 2 extensions
 	sf::Vertex blackBorderQuads[4 * 4];
 
@@ -493,6 +495,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void ProcessPlayerOptions() {}
 	virtual void ProcessTerrain(PolyPtr poly) {}
 	virtual void ProcessAllTerrain() {}
+	virtual void ProcessAllSpecialTerrain() {}
 	virtual void ProcessBGTerrain(PolyPtr poly) {}
 	virtual void ProcessRail(RailPtr rail) {}
 	virtual bool ReadActors(std::ifstream &is);
