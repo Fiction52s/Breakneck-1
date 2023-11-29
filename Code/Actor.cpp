@@ -4175,7 +4175,7 @@ void Actor::InitSounds()
 	soundInfos[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
 
 	soundInfos[PlayerSounds::S_BOUNCEJUMP] = GetSound("Kin/bounce");
-	soundInfos[PlayerSounds::S_GRAVREVERSE] = GetSound("Kin/gravreverse");
+	//soundInfos[PlayerSounds::S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
 	/*soundInfos[S_DASH_START] = GetSound( "Kin/dash_02" );
 	soundInfos[S_HIT] = GetSound( "kin_hitspack_short" );

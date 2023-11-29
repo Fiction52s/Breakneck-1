@@ -1898,6 +1898,8 @@ bool GameSession::Load()
 
 	SetupScoreDisplay();
 
+	myHash = md5file(filePathStr); //need the hash before you set up leaderboards
+
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 	{
 		mainMenu->adventureManager->SetBoards(this);
@@ -1920,7 +1922,7 @@ bool GameSession::Load()
 
 	ReadFile();
 
-	myHash = md5file(filePathStr);
+	//myHash = md5file(filePathStr);
 
 	mapNameText.setString(mapHeader->fullName);
 
@@ -4192,7 +4194,8 @@ void GameSession::SetOriginalMusic()
 
 				if (originalMusic == NULL)
 				{
-					assert(0);
+					cout << "couldn't load music for: " << (*it).first << endl;
+					return;
 				}
 				//musicMap[(*it).first] = originalMusic;
 				originalMusic->Load();

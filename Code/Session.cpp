@@ -7216,6 +7216,13 @@ bool Session::FrozenGameModeUpdate()
 		fader->Update();
 		swiper->Update();
 
+		if (cam.manual)
+		{
+			UpdateCamera();
+
+			UpdateEnvShaders();
+		}
+
 		pokeTriangleScreenGroup->Update();
 
 		if (gameState != FROZEN)
@@ -7283,6 +7290,8 @@ bool Session::SequenceGameModeUpdate()
 		swiper->Update();
 		mainMenu->UpdateEffects();
 		UpdateEmitters();
+
+		//UpdateEnvShaders(); //havent tested at this position. should work fine.
 
 		//totalGameFrames++;
 
