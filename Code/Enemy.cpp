@@ -1065,7 +1065,7 @@ void Enemy::DrawSprite( sf::RenderTarget *target, sf::Sprite &spr )
 		//(sess->GetPauseFrames() < 2 && pauseFrames < 2) 
 		//|| ( receivedHit == NULL && pauseFrames < 2 );
 
-	if (hasMonitor && !suppressMonitor)
+	if (hasMonitor && !suppressMonitor) 
 	{
 		if (drawHurtShader)
 		{

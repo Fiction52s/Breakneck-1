@@ -388,6 +388,8 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	Vector2f targetOffset;
 	Vector2f tempOffset = offset;
 
+	cout << "offset.x: " << offset.x << ", " << offset.y << endl;
+
 	Vector2f baseOffsetFactor(4, 1);
 
 	float xPropMultiplier = 4.f;
@@ -428,9 +430,12 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	targetOffset.x *= maxOffset.x;
 	targetOffset.y *= maxOffset.y;
 	
-	float currZoom = GetZoom();
+	//float currZoom = GetZoom();
+	float currZoom = 1.f;
 	
 	targetOffset *= currZoom;
+
+	cout << "targetoffset: " << targetOffset.x << ", " << targetOffset.y << endl;
 
 	//how fast you are moving on the axis in comparison to the max speed
 	//capped at 1.0. Assumes max speed is 60
@@ -527,13 +532,38 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	}
 	
 		
-
+	cout << "offsetVel: " << offsetVel.x << ", " << offsetVel.y << endl;
 	tempOffset += offsetVel;
+
+	if (tempOffset.x > targetOffset.x && targetOffset.x > 0)
+	{
+		tempOffset.x = targetOffset.x;
+	}
+	else if (tempOffset.x < targetOffset.x && targetOffset.x < 0)
+	{
+		tempOffset.x = targetOffset.x;
+	}
+	
+	if (tempOffset.y > targetOffset.y && targetOffset.y > 0)
+	{
+		tempOffset.y = targetOffset.y;
+	}
+	else if (tempOffset.y < targetOffset.y && targetOffset.y < 0)
+	{
+		tempOffset.y = targetOffset.y;
+	}
+
+	/*if (offsetVel.x > 0 && oldTempOffset.x > targetOffset.x && tempOffset.x < targetOffset.x)
+	{
+		tempOffset.x = targetOffset.x;
+		cout << "ADJUST NEW" << endl;
+	}*/
 
 	//prevent vibrating by stopping at the target correctly.
 	if (offsetVel.x > 0 && oldTempOffset.x < targetOffset.x && tempOffset.x > targetOffset.x)
 	{
 		tempOffset.x = targetOffset.x;
+		cout << "ADJUST" << endl;
 	}
 	else if (offsetVel.x < 0 && oldTempOffset.x > targetOffset.x && tempOffset.x < targetOffset.x)
 	{
@@ -549,7 +579,9 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 		tempOffset.y = targetOffset.y;
 	}
 
-	//cout << "offset: " << tempOffset.x << ", "
+
+
+	cout << "finaliedoffset: " << tempOffset.x << ", " << tempOffset.y << endl;
 	//<< tempOffset.y << endl;
 
 	return tempOffset;
@@ -905,6 +937,10 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 		{
 			pVel = -pVel;
 		}
+	}
+	else if (player->bounceEdge != NULL)
+	{
+		pVel = player->storedBounceVel;
 	}
 	else
 	{
@@ -1376,7 +1412,7 @@ void Camera::UpdateBasicMode()
 //	cout << "zoomfactor: " << zoomFactor << endl;
 
 	
-	pos += currOffset;// *GetZoom();
+	pos += currOffset * GetZoom();// *GetZoom();
 	//orig pos
 	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 

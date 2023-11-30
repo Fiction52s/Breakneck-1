@@ -21500,7 +21500,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		{
 			sf::Shader &swordSh = swordShaders[speedLevel];
 
-			if (flashFrames > 0)
+			if (flashFrames > 2)//0)
 			{
 				target->draw(swordSprite, &swordSh);
 			}

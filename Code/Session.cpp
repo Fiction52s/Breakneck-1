@@ -6679,18 +6679,23 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 		ppm->DrawInviteDisplay(target);
 	}
 
+	//left = 300;
+	//right = -300;
+	//top = 300;//150;
+	//bottom = -300;
+
 	//camera debug grid
-	/*sf::Vertex testGrid[4];
-	testGrid[0].position = Vector2f(960, 0);
-	testGrid[1].position = Vector2f(960, 1080);
+	sf::Vertex testGrid[4];
+	testGrid[0].position = Vector2f(960 - cam.maxOffset.x * 2, 0);
+	testGrid[1].position = Vector2f(960 - cam.maxOffset.x * 2, 1080);
 	testGrid[2].position = Vector2f(0, 540);
 	testGrid[3].position = Vector2f(1920, 540);
 	
 	testGrid[0].color = Color::Red;
 	testGrid[1].color = Color::Red;
-	testGrid[2].color = Color::Red;for the
+	testGrid[2].color = Color::Red;
 	testGrid[3].color = Color::Red;
-	target->draw(testGrid, 4, sf::Lines);*/
+	target->draw(testGrid, 2, sf::Lines);
 
 
 	target->setView(view);
