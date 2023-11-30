@@ -22075,6 +22075,11 @@ void Actor::ConfirmHit( Enemy *e )
 		break;
 	}
 
+	if (e->numHealth == 1)
+	{
+		c = Color::Red;
+	}
+
 	float speedBarAddition = hitParams.speedBar;
 
 	

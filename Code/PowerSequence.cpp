@@ -114,7 +114,7 @@ void GetPowerSequence::UpdateState()
 
 		if (seqData.frame < freezeFrame)
 		{
-			sess->UpdateCamera();
+			//sess->UpdateCamera();
 
 			if (!geoGroup.Update())
 			{

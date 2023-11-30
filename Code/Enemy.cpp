@@ -1416,6 +1416,44 @@ void Enemy::UpdatePrePhysics()
 		--pauseFrames;
 		if( pauseFrames > 0 )
 			return;
+		else
+		{
+			if (numHealth <= 0)
+			{
+				dead = true;
+
+				if (world >= 1)
+				{
+					if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
+					{
+						sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+					}
+
+				}
+
+				if (hasMonitor && !suppressMonitor)
+				{
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+				}
+				else
+				{
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
+						sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
+				}
+
+
+
+				if (cutObject != NULL)
+				{
+					SyncCutObject();
+				}
+
+				HandleNoHealth();
+
+				
+			}
+		}
 	}
 
 	if ( dead )
@@ -1553,7 +1591,7 @@ void Enemy::UpdatePostPhysics()
 		ProcessHit();
 	}
 
-	if (numHealth == 0 && LaunchersAreDone()
+	if (numHealth == 0 && pauseFrames == 0 && LaunchersAreDone()
 		&& ( ( cutObject != NULL && !cutObject->active ) 
 			|| cutObject == NULL && dead ) )
 	{
@@ -1719,7 +1757,8 @@ void Enemy::ConfirmHitNoKill()
 
 	if (!receivedHit.comboer)
 	{
-		sess->cam.SetRumble(.5, .5, pauseFrames);
+		//sess->cam.SetRumble(.5, .5, pauseFrames);
+		sess->cam.SetRumble(1, 1, pauseFrames);
 	}
 }
 
@@ -1764,7 +1803,7 @@ void Enemy::ConfirmKill()
 	}
 	else
 	{
-		pauseFrames = 7;
+		pauseFrames = receivedHit.hitlagFrames;
 		//sess->Pause(7);
 		//pauseFrames = 0;
 	}
@@ -1772,41 +1811,45 @@ void Enemy::ConfirmKill()
 
 	pauseFramesFromAttacking = false;
 
-	if (world >= 1)
-	{
-		if (type != EN_COMBOERTARGET && type != EN_REGENTARGET ) //exception list to having blood
-		{
-			sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
-		}
-		
-	}
+	
 
 	if (!receivedHit.comboer)
 	{
-		sess->cam.SetRumble(1.5, 1.5, 7);
+		//sess->cam.SetRumble(1.5, 1.5, pauseFrames + 5);
+		sess->cam.SetRumble(2, 2, pauseFrames + 5);
 	}
+
 	
 	
 	
-	if (hasMonitor && !suppressMonitor)
-	{
-		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::DARK,
-			sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
-	}
-	else
-	{
-		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-			sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
-	}
+	//if (world >= 1)
+	//{
+	//	if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
+	//	{
+	//		sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+	//	}
 
-	dead = true;
+	//}
+	//
+	//if (hasMonitor && !suppressMonitor)
+	//{
+	//	sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::DARK,
+	//		sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+	//}
+	//else
+	//{
+	//	sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
+	//		sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
+	//}
 
-	if (cutObject != NULL)
-	{
-		SyncCutObject();
-	}
+	//
 
-	HandleNoHealth();
+	//if (cutObject != NULL)
+	//{
+	//	SyncCutObject();
+	//}
+
+	
 	PlayDeathSound();
 }
 
