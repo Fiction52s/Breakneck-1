@@ -1706,6 +1706,14 @@ Session::~Session()
 		absorbDarkParticles = NULL;
 	}
 
+	if (!(mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL))
+	{
+		if (hud != NULL)
+		{
+			delete hud;
+			hud = NULL;
+		}
+	}
 
 	/*if (parentGame == NULL && hud != NULL)
 	{
