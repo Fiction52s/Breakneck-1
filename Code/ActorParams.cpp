@@ -79,7 +79,7 @@ PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos, int p_playerIndex)
 	auto &bounds = numberText.getLocalBounds();
 	numberText.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height);
 
-	skinShader = new PlayerSkinShader("player");
+	skinShader = new PlayerSkinShader;
 	skinShader->SetSkin(playerIndex);
 	PlaceAerial(pos);
 }

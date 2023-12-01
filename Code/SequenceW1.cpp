@@ -813,7 +813,7 @@ void GetAirdashPowerScene::SetupStates()
 
 void GetAirdashPowerScene::AddMovies()
 {
-	AddMovie("kin_meditate_01");
+	//AddMovie("kin_meditate_01");
 }
 
 void GetAirdashPowerScene::ReturnToGame()

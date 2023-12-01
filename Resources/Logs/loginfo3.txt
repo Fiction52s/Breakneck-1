@@ -1,75 +1,76 @@
 Badger
 Enemy
 badger
-Executes a dash, small jump, large jump pattern and chases you.
+Repeats a sequence of a dash into small jump into a large jump as it chases
+you.
 
 Roadrunner
 Enemy
 roadrunner
-Chases you around on the ground using its crazy acceleration.
+Chases you around on the ground using its crazy acceleration. It can also
+move very fast while hopping over gaps.
 
 Owl
 Enemy
 owl
-Shoots bullets that bounce off of terrain. Upon its death, it releases a larger
-set of bullets which do the same thing.
+Stationary aerial enemy which shoots a shotgun of bullets that bounce off of 
+terrain up to 3 times each.
 
-Electro Barrel
+Mine
 Enemy
 explodingbarrel
-Will release an energy charge all around it if you get close.
+Filled with destructive force. A single slash will cause it to explode, damaging
+anything around it.
 
 Firefly
 Enemy
 firefly
-Moves towards you and charges up its energy before releasing it to hit you.
+Moves towards you and charges up its energy before releasing it in bursts.
 
-Shotgun Cactus
+Cactus Turret
 Enemy
 shotgunturret
-Turret which shoots a split of 3 bullets at a high rate of fire.
+Turret which shoots a shotgun attack of 3 bullets.
 
 Ball
 Enemy
 ball
-Can be hit into other enemies. Bounces off surfaces. Has a limited
-version that will reset after a number of hits.
+Can be hit into other enemies. Bounces off surfaces like a bouncy ball. 
+Has a limited version that will reset after a number of hits. You can hit it
+again after it has bounced.
 
 Bounce Comboer
 Enemy
 bouncecomboer
 Can be hit into other enemies. Will go in a straight line but
-bounce directly off of surfaces. Has a limited version that
-will reset after a number of hits. You can only hit it again
-after it has bounced.
+bounce directly off of surfaces.
 
-Aim Launcher
+Bounce Launcher
 Enemy
 aimlauncher
-Launches you at a set speed, but you have a choice of 9 directions
-(8 directions plus default). When you touch a piece of terrain, press
-the jump button to bounce off, and reset the amount of time you are
-being launched for.
+Launches you in a set direction. If you hit terrain, you will bounce off of it.
+You can cancel the launch stun with almost any action.
 
 Air Bounce Launcher
 Enemy
 airbouncelauncher
-Launcher you at a set speed, but you have a choice of 9 directions
-(8 directions plus default). If you press jump, you will pause for
-a moment in the air, you can choose a new direction and will redirect
-there and reset your launch timer. You can only do this a total of 3 times.
+Launcher you in a set direction. If you press jump during the launch stun, you 
+will pause for a moment in the air, you can choose a new direction and will
+redirect there and reset your launch stun timer. You can only do this a total 
+of 3 times per launch.
 
 Trampoline
 Enemy
 upbouncebooster
-If you touch it, you will be launched vertically, maintaining your
+If you touch it, you will be boosted upwards, maintaining your
 horizontal speed.
 
-Bounce Booster
+Omni Bouncer
 Enemy
 omnibouncebooster
-If you touch it, you will be launched whichever direction you are from
-the center of the booster.
+If you touch it, you will be launched in whichever direction you are from
+the center of the booster. Has a slight stun effect on the bounce which limits
+your drift, but can be cancelled by almost any action.
 
 Bounce Floater
 Enemy
@@ -80,40 +81,40 @@ of the attack's knockback.
 Acceleration Water
 Water
 WATER_ACCEL
+A fluid pool of energy that can affect your movement.
 Causes you to accelerate all the time in whatever direction you are moving.
 
 Zero Gravity Water
 Water
 WATER_ZEROGRAV
-Causes you to completely ignore the effects of gravity. You also have an infinitely long airdash
-and air options that continuously refresh.
+A fluid pool of energy that can affect your movement.
+Causes you to completely ignore the effects of gravity. You also have an 
+infinitely long airdash which accelerates over time, and air options that 
+continuously refresh.
 
 Bounce Rail
 Rail
 BOUNCE
-Touching this rail causes you to bounce off in the normal direction of the edge that you touched.
-
-Scorpion Only Rail
-Rail
-SCORPIONONLY
-You can only interact with this rail physically with the scorpion turned on. Otherwise
-you will move right through it.
+Touching this rail causes you to bounce away in a direction depending on the 
+angle of the piece of rail that you touched.
 
 Anti Gravity Reverse Grass
 Grass
 ANTIGRAVREVERSE
-Even if you have the gravity reverse power, you cannot walk on the ceiling where this grass
-is present.
+Even if you have the gravity reverse power, you cannot walk on the ceiling
+while touching this grass.
 
 Bounce Grass
 Grass
 BOUNCE
-You will slightly bounce on this grass. You are unable to land on it.
+Grass that causes you to bounce away from whatever edge you touch while
+in contact with this grass.
 
 Accelerate Grass
 Grass
 ACCELERATE
-While touching this grass, you will accelerate on the ground/ceiling.
+While touching this grass, you will accelerate in whatever direction you are
+going. Usually, along the ground or the ceiling.
 
 Purple S-Kin
 Skin

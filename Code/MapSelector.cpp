@@ -11,8 +11,7 @@ using namespace sf;
 
 MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	MainMenu *mm, sf::Vector2f &pos )
-	:centerPos(pos), world( p_world ), worldMap( p_worldMap ),
-	playerSkinShader( "player")
+	:centerPos(pos), world( p_world ), worldMap( p_worldMap )
 {
 	mainMenu = mm;
 

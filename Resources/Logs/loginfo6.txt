@@ -1,60 +1,70 @@
 Gorilla
 Enemy
 gorilla
-Places up a large wall that you have to get around to hit it.
+Strong enemy that throws a large energy wall at you. You can block the wall,
+and if you catch it in a time slow bubble, it becomes hittable and also
+loses its ability to hurt you.
 
 Specter
 Enemy
 specter
-Shoots bullets that home in on you while buffing any surrounding enemies.
+Shoots bullets that are almost impossible to dodge. They can be blocked, or
+catching the bullet in a time slow bubble will cause it to instantly dissipate.
 
 Laser Wolf
 Enemy
 laserwolf
-Shoots a boucing laser!
+Shoots a long laser that can bounce off walls. The laser can be made more
+manageable by catching it in a time slow bubble.
 
 Dragon
 Enemy
 dragon
-Flies around and dashes at you.
+Terror of the skies. Flies around and occassionally dives at you and then
+resumes flying.
 
 Skunk
 Enemy
 skunk
-Explodes if you get too close!
+Explodes if you get too close! Be careful when interacting with this enemy.
+You must either hit it before the explosion, or bait it out and attack after.
 
 Free Flight Booster
 Enemy
 freeflightbooster
-gives you freeflight powers for 5 seconds!
+If you touch this, it gives you the power to fly freely for 5 seconds. Simply
+hold the direction you want to go to drift that way.
 
 Swing Launcher
 Enemy
 swinglauncher
 Swings you around. Jump off when ready!
 
-Blue Wire Juggler
-Enemy
-bluewirejuggler
-Can only be hit with the blue wire!
-
 Red Wire Juggler
 Enemy
 redwirejuggler
-Can only be hit with the red wire!
+Can only be hit with the red wire! Flies off in the direction it was hit,
+but moves in a an arc due to gravity.
+
+Blue Wire Juggler
+Enemy
+bluewirejuggler
+Can only be hit with the blue wire! Flies off in the direction it was hit,
+but moves in a an arc due to gravity.
 
 Free Flight Water
 Water
 WATER_FREEFLIGHT
-Entering this water puts you into a free flight state. Press any direction to accelerate
-in that direction up to a certain point.
+Entering this water puts you into a free flight state. Press any direction to
+accelerate in that direction.
 
 Inverted Inputs Water
 Water
 WATER_INVERTEDINPUTS
-While within this water, your left/right and up/down inputs are reversed. Upon entering or exiting
-the water, your directional inputs are frozen for a short while to allow you to switch to inverted
-or normal controls smoothly without losing speed.
+While within this water, your left/right and up/down inputs are reversed. Upon 
+entering or exiting the water, your directional inputs are frozen for a short
+time to allow you to switch to inverted or normal controls smoothly without
+losing speed.
 
 Fade Rail
 Rail
@@ -69,18 +79,18 @@ This rail type can only be touched with wires. You will pass through it.
 Wire Blocking Rail
 Rail
 WIREBLOCKING
-You cannot interact with this rail in any way, but it blocks wires that are shot at it.
+You cannot interact with this rail in any way, but it blocks wires that are shot
+at it.
 
 Boost Grass
 Grass
 BOOST
-Instantly accelerates you to a high speed.
+Instantly accelerates you to a high speed when touched.
 
 Anti-Wire Grass
 Grass
 ANTIWIRE
-If you a shoot a wire, and the tip of the wire hits the terrain where this grass is,
-the wire will break.
+If you a shoot a wire and it hits this grass, the wire will be cancelled.
 
 Magi S-Kin
 Skin

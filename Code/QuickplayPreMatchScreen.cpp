@@ -9,7 +9,6 @@ using namespace std;
 using namespace sf;
 
 QuickplayPreMatchScreen::QuickplayPreMatchScreen()
-	:p0Shader( "player" ), p1Shader( "player")
 {
 	ts_player0 = GetSizedTileset("Menu/Pause/pause_kin_400x836.png");
 	ts_player1 = GetSizedTileset("Menu/Pause/pause_kin_400x836.png");

@@ -197,6 +197,7 @@ bool Swiper::SwipeTypeInfo::IsPostWipe(int index)
 std::map<Swiper::SwipeType, Swiper::SwipeTypeInfo> Swiper::swipeTypeMap;
 
 Swiper::Swiper()
+
 {
 	if (swipeTypeMap.empty())
 	{
@@ -204,7 +205,7 @@ Swiper::Swiper()
 		stW1.numImages = 1;
 		stW1.numTiles = 4;
 		stW1.fullWipeIndex = 1;
-		stW1.baseName = "kinswipe_960x540";
+		//stW1.baseName = "kinswipe_960x540";
 	}
 	swipeSpr.setScale(2, 2);
 

@@ -4574,6 +4574,13 @@ void Session::SetupHUD()
 				cout << "creating HUD because none is available" << endl;
 				hud = gameMode->CreateHUD();
 				hud->SetSession(this);
+
+				if (hud->hType == HUD::HUDType::ADVENTURE)
+				{
+					AdventureHUD *ah = (AdventureHUD*)hud;
+					GetPlayer(0)->kinMask = ah->kinMask;
+				}
+				//mainMenu->adventureManager->adventureHUD->kinMask;
 			}
 		}
 	}

@@ -255,7 +255,7 @@ void Actor::JUMP_Update()
 
 				fxPos += norm * 16.0;
 
-				ActivateEffect(PLAYERFX_JUMP_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(ang), 6, 4, facingRight);
+				ActivateEffect(PLAYERFX_JUMP_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(ang), 5, 4, facingRight,1);
 
 				//ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
 

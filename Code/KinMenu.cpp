@@ -20,7 +20,6 @@ using namespace sf;
 using namespace std;
 
 KinMenu::KinMenu( TilesetManager *p_tm )
-	:playerSkinShader( "player")
 {
 	tm = p_tm;
 	game = NULL;

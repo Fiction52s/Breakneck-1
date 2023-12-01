@@ -5,7 +5,14 @@
 struct Tileset;
 struct PlayerSkinShader
 {
-	PlayerSkinShader(const std::string &shaderStr);
+	enum ShaderType
+	{
+		ST_DEFAULT,
+		ST_BOOST,
+		ST_AURA,
+	};
+
+	PlayerSkinShader(ShaderType sType = ShaderType::ST_DEFAULT );
 	void SetSkin(int index);
 	void FillPaletteArray(int skinIndex);
 	void SetDefaultPlayerVars();
@@ -15,6 +22,8 @@ struct PlayerSkinShader
 	void SetQuad(sf::Glsl::Vec4 &v);
 	void SetQuad(Tileset *ts, int tile);
 	void SetTileset(Tileset *ts);
+
+	int shaderType;
 	const static int NUM_PALETTE_COLORS = 164;
 	sf::Image skinPaletteImage;
 	sf::Shader pShader;

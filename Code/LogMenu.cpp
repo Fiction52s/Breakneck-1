@@ -804,7 +804,6 @@ void LogMenu::Draw(sf::RenderTarget *target)
 }
 
 LogPreview::LogPreview(TilesetManager *p_tm)
-	:pSkinShader("player"), pFaceSkinShader("player")
 {
 	tm = p_tm;
 	sess = NULL;

@@ -119,7 +119,6 @@ void SaveFileDisplay::SetValues(SaveFile *sf, AdventurePlanet *adventurePlanet)
 }
 
 SaveMenuScreen::SaveMenuScreen()
-	:playerSkinShader( "player" ),maskPlayerSkinShader( "player" )
 {
 	mainMenu = MainMenu::GetInstance();
 

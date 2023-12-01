@@ -11,7 +11,7 @@ using namespace std;
 using namespace sf;
 
 KinBoostScreen::KinBoostScreen()
-	:skinShader( "boostplayer")
+	:skinShader(PlayerSkinShader::ST_BOOST)
 {
 	ts_bg = GetTileset("Menu/KinBoost/kinboost_BG1.png", 1920, 1080);
 	ts_bgShape = GetTileset("Menu/KinBoost/kinboost_BG1_shape.png", 1920, 1080);

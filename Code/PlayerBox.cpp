@@ -45,7 +45,7 @@ PlayerBox::PlayerBox(PlayerBoxGroup *p_group, int p_index )
 	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, kinSprite.getLocalBounds().height / 2);
 	kinSprite.setScale(4, 4);
 
-	playerShader = new PlayerSkinShader("player");
+	playerShader = new PlayerSkinShader;
 
 	playerShader->SetTileset(boxGroup->ts_kin);
 

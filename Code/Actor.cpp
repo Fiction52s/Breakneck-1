@@ -1398,7 +1398,6 @@ void Actor::SetupExtraTilesets()
 	ts_scorpRun = tm->GetSizedTileset(scorpionFolder, "scorp_run_192x128.png");
 	ts_scorpSlide = tm->GetSizedTileset(scorpionFolder, "scorp_slide_160x128.png");
 	ts_scorpSteepSlide = tm->GetSizedTileset(scorpionFolder, "scorp_steep_slide_224x128.png");
-	ts_scorpStart = tm->GetSizedTileset(scorpionFolder, "scorp_start_256x256.png");
 	ts_scorpStand = tm->GetSizedTileset(scorpionFolder, "scorp_stand_192x128.png");
 	ts_scorpJump = tm->GetSizedTileset(scorpionFolder, "scorp_jump_192x192.png");
 	ts_scorpDash = tm->GetSizedTileset(scorpionFolder, "scorp_dash_192x80.png");
@@ -3364,7 +3363,7 @@ void Actor::UpdateActionSprite()
 Actor::Actor()
 	:dead(false), actorIndex(0), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	skinShader("player"), exitAuraShader("boostplayer"), swordShader("aura"),
+	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_AURA),
 	originalProgressionUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	originalProgressionLogField(LogDetailedInfo::MAX_LOGS)
 {
@@ -3385,7 +3384,7 @@ Actor::Actor()
 Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	:dead(false), actorIndex(p_actorIndex), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	skinShader("player"), exitAuraShader("boostplayer"), swordShader("aura"),
+	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_AURA),
 	originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 	{
@@ -22399,9 +22398,9 @@ void Actor::SetSpriteTile(int tileIndex, bool noFlipX, bool noFlipY)
 	{		
 		skinShader.SetQuad(ts, currTileIndex);
 			
-		static float testCounter = 0;
-		skinShader.pShader.setUniform("u_slide", testCounter);
-		testCounter += .01f;
+		//static float testCounter = 0;
+		//skinShader.pShader.setUniform("u_slide", testCounter);
+		//testCounter += .01f;
 	}
 	else if( kinMode == K_SUPER )
 	{

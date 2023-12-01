@@ -534,7 +534,6 @@ void AdventureHUD::Draw(RenderTarget *target)
 }
 
 KinMask::KinMask( TilesetManager *tm )
-	:playerSkinShader("player")
 {
 	actor = NULL;
 	sess = NULL;

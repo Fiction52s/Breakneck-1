@@ -140,7 +140,7 @@ void BasicEffect::UpdateHitboxes()
 
 PlayerEffect::PlayerEffect()
 {
-	playerShader = new PlayerSkinShader("player");
+	playerShader = new PlayerSkinShader;
 	//effectType = EFFECT_TYPE_PLAYER;
 }
 

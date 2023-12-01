@@ -1,52 +1,57 @@
 Cheetah
 Enemy
 cheetah
-Fastest on the ground!
+Fastest enemy on the ground. It charges up and then boosts extremely
+quickly.
 
 Turtle
 Enemy
 turtle
-Teleports to your position and explodes with bullets.
+Tracks to your position, teleports to it, and releases a large shotgun blast of
+bullets.
 
 Pufferfish
 Enemy
 pufferfish
-Puffs up when you're nearby. If you kill another enemy it will explode with spikes.
+When it detects you, it puffs up and explodes with bullets in 8 directions.
 
 Palm Turret
 Enemy
 palmturret
-Charges up a huge laser beam and shoots it at you.
+Charges up a huge laser beam and shoots it at you. The laser won't hurt you
+while it is charging up.
 
 Falcon
 Enemy
 falcon
-Flies towards you, and then will dive at you and then resume flying.
+Chases you while flying, and occassionally dives at you, and then continues
+flying.
 
 Grind Comboer
 Enemy
 grindcomboer
-Grinds along terrain or rails that its hit onto. If it kills an enemy,
-it will fly away from the terrain and can be hit again. Has 
-clockwise and counterclockwise versions, as well as a limited version
-that will reset after a certain number of hits.
+Flies off in whatever direction you hit it in. If it touches terrain or a rail,
+it will grind along the surface. It hits any enemies along the way.
+Has clockwise and counter-clockwise versions.
 
 Grounded Grind Juggler
 Enemy
 groundedgrindjuggler
-Grinds along the terrain until it slows down and stops. Can be hit again
-to speed back up. Has clockwise and counterclockwise versions, as well 
-as a limited version that will reset after a certain number of hits.
+When hit, it will grind along the terrain until it slows down and stops. Can be
+hit again to speed it back up. Has clockwise and counter-clockwise versions, 
+as well  as a limited version that will reset after a certain number of hits.
 
 Grind Launcher
 Enemy
 grindlauncher
-Choose a direction to lauch in. You will grind on any terrain that you hit.
+Launches you in a set direction. If you hit terrain while in launch stun, you
+will grind along the terrain.
 
 Phase Switch
 Enemy
 phaseswitch
-When on, phase terrain is off.
+When on, phase terrain is off. Each zone begins with the phase terrain off.
+There is also inverse phase terrain which begins each zone turned on.
 
 Momentum Booster
 Enemy
@@ -57,37 +62,39 @@ that maximum for 5 seconds.
 Scorpion Target
 Enemy
 scorpiontarget
-Can only be hit if you have the scorpion activated!
+Can only be hit by touching it while the scorpion is activated.
 
 Launcher Water
 Water
 WATER_LAUNCHER
-While within this water, you are given infinitely refreshing air options. Upon exiting
-you will be launched in whatever direction the edge faces that you exited from.
+A fluid pool of energy that can affect your movement.
+While within this water, you are given infinitely refreshing air options. Upon 
+exiting you will be launched in whatever direction the edge faces that you 
+exited from.
 
 Momentum Water
 Water
 WATER_MOMENTUM
-While within this water, you are given infinitely refreshing air options. You also have
-slightly decreased gravity, and your momentum meter will be filled quickly upon entering
-and remain at full fill until you exit.
+A fluid pool of energy that can affect your movement.
+While within this water, you are given infinite air options. You also have
+slightly decreased gravity, a bit of passive acceleration, and your momentum
+meter will be filled quickly upon entering and remain full until you exit.
 
 Grind Rail
 Rail
 GRIND
-Touching this rail will cause you to enter a grind state where you accelerate slowly in
-the direction you're moving until you jump off.
+Touching this rail will cause you to enter a grind state where you accelerate 
+slowly in the direction you're moving until you jump off.
 
 Scorpion Only Rail
 Rail
 SCORPIONONLY
-You can only interact with this rail while the scorpion is activated!
+You can only interact with this rail while the scorpion is activated.
 
 Phase Rail
 Rail
 PHASE
-You can only touch this rail if you have activated a Phase Booster such that you can touch
-Phase Terrain.
+On when phase terrain is on. Can be flipped on and off using phase switches.
 
 Inverse Phase Rail
 Rail
@@ -97,7 +104,7 @@ You can touch this rail normally, but can't if you have touched Phase Booster.
 Acceleration Rail
 Rail
 ACCELERATE
-Works like a grind rail but continuously accelerates you.
+Works like a grind rail but continuously accelerates you much faster.
 
 Dusk S-Kin
 Skin

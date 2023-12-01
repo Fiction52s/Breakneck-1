@@ -19,7 +19,7 @@ using namespace std;
 
 
 ReplayGhost::ReplayGhost(PlayerReplayer *p_pReplayer)
-	:pReplayer(p_pReplayer), sprBuffer(NULL), playerSkinShader( "player")
+	:pReplayer(p_pReplayer), sprBuffer(NULL)
 {
 	frame = 0;
 	action = 0;

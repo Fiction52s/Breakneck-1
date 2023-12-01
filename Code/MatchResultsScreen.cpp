@@ -323,7 +323,7 @@ PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
 	placingSpr.setOrigin(placingSpr.getLocalBounds().width / 2, placingSpr.getLocalBounds().height);
 	placingSpr.setScale(2, 2);
 
-	skinShader = new PlayerSkinShader("player");
+	skinShader = new PlayerSkinShader;
 
 	skinShader->SetSkin(ps->skinIndex);
 

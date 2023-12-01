@@ -9,7 +9,6 @@ using namespace sf;
 using namespace std;
 
 PracticePlayerDisp::PracticePlayerDisp(PracticeInviteDisplay *p_disp )
-	:playerSkinShader("player")
 {
 	disp = p_disp;
 

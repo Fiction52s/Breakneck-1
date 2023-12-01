@@ -7,14 +7,29 @@
 using namespace std;
 using namespace sf;
 
-PlayerSkinShader::PlayerSkinShader(const std::string &shaderStr)
+PlayerSkinShader::PlayerSkinShader(ShaderType sType)
 {
 	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_164x30.png");
+
+	shaderType = sType;
+	string shaderStr;
+	switch (sType)
+	{
+	case ST_DEFAULT:
+		shaderStr = "player";
+		break;
+	case ST_BOOST:
+		shaderStr = "boostplayer";
+		break;
+	case ST_AURA:
+		shaderStr = "aura";
+		break;
+	}
 
 	MainMenu::GetInstance()->LoadShader(pShader, shaderStr);
 	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
-	if (shaderStr == "player")
+	if (shaderType == ST_DEFAULT )
 	{
 		SetDefaultPlayerVars();
 	}
@@ -26,7 +41,7 @@ void PlayerSkinShader::SetDefaultPlayerVars()
 {
 	pShader.setUniform("u_invincible", 0.f);
 	pShader.setUniform("u_super", 0.f);
-	pShader.setUniform("u_slide", 0.f);
+	//pShader.setUniform("u_slide", 0.f);
 }
 
 void PlayerSkinShader::SetSubRect(Tileset *ts, IntRect &ir)
@@ -41,8 +56,16 @@ void PlayerSkinShader::SetSubRect(Tileset *ts, IntRect &ir)
 void PlayerSkinShader::SetSkin(int index)
 {
 	FillPaletteArray(index);
-	pShader.setUniformArray("u_palette", paletteArray, NUM_PALETTE_COLORS);
-	pShader.setUniform("u_auraColor", ColorGL(paletteArray[9]));
+
+	if (shaderType != ST_AURA)
+	{
+		pShader.setUniformArray("u_palette", paletteArray, NUM_PALETTE_COLORS);
+	}
+	
+	if (shaderType == ST_DEFAULT )
+	{
+		pShader.setUniform("u_auraColor", ColorGL(paletteArray[9]));
+	}
 }
 
 void PlayerSkinShader::BlendSkins(int first, int second, float progress )
@@ -54,8 +77,16 @@ void PlayerSkinShader::BlendSkins(int first, int second, float progress )
 				skinPaletteImage.getPixel(i, first), 
 				skinPaletteImage.getPixel(i, second), progress));
 	}
-	pShader.setUniformArray("u_palette", paletteArray, NUM_PALETTE_COLORS);
-	pShader.setUniform("u_auraColor", ColorGL(paletteArray[9]));
+
+	if (shaderType != ST_AURA)
+	{
+		pShader.setUniformArray("u_palette", paletteArray, NUM_PALETTE_COLORS);
+	}
+
+	if (shaderType == ST_DEFAULT)
+	{
+		pShader.setUniform("u_auraColor", ColorGL(paletteArray[9]));
+	}
 }
 
 void PlayerSkinShader::FillPaletteArray(int skinIndex)
@@ -68,7 +99,10 @@ void PlayerSkinShader::FillPaletteArray(int skinIndex)
 
 void PlayerSkinShader::SetAuraColor(Color c)
 {
-	pShader.setUniform("u_auraColor", ColorGL(c));
+	if (shaderType == ST_DEFAULT)
+	{
+		pShader.setUniform("u_auraColor", ColorGL(c));
+	}
 }
 
 void PlayerSkinShader::SetQuad(sf::Glsl::Vec4 &v)

@@ -55,5 +55,5 @@ int Actor::GETPOWER_AIRDASH_MEDITATE_GetActionLength()
 
 const char * Actor::GETPOWER_AIRDASH_MEDITATE_GetTilesetName()
 {
-	return "w1_airdashget_128x128.png";
+	return NULL;//"w1_airdashget_128x128.png";
 }

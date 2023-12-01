@@ -1,30 +1,30 @@
-Patroller
+Drone
 Enemy
 patroller
-Flies and shoots stuff.
+A stationary flying enemy that turns its head to face you and then shoots.
 
 Crawler
 Enemy
 crawler
-Crawls around
+Digs out from underground and chases you. Accelerates down hills or if 
+you're nearby.
 
 Booster
 Enemy
 booster
-Gives your speed a boost in whatever 
-direction you are currently travelling.
+Gives you a boost in the direction of your current velocity.
 
-Airdasher
+Wasp
 Enemy
 airdasher
-Lunges at you, recovers, and then lunges again.
+Flying enemy that lunges at you, recovers, and then lunges again.
 
 Shroom
 Enemy
 shroom
-Released the jellyfish creature in its cap when killed.
+Releases the jellyfish creature in its cap when killed.
 
-Basic Turret
+Flower Turret
 Enemy
 basicturret
 Shoots bullets at a set rhythm in a straight line.
@@ -33,36 +33,38 @@ Blocker
 Enemy
 blueblocker
 If you hit it with a normal attack, it will take a moment to dissipate.
+Usually its better to just go around these.
 
 Comboer
 Enemy
 comboer
-It will fly off in whichever of the 4 primary directions you hit it,
-and hit any enemies along the way.
+It will fly off in whichever of the 4 primary directions you hit it, and hit any
+enemies along the way.
 
-Regenerating Target
+Regenerator
 Enemy
 regentarget
-Regenerates quickly after dying!
+Regenerates quickly after being destroyed. Useful for gaining height in the air.
 
 Launcher
 Enemy
 spring
-Shoots you off at a set speed in a set direction. You can cancel the
-launch stun with any action.
+Shoots you off at a set speed in a set direction. You can cancel the launch 
+stun with almost any action.
 
-Normal Water
+Energy Water
 Water
 WATER_NORMAL
-Maximum fall speed is lessened, and you have infinitely refreshing
-air options such as doublejump.
+A fluid pool of energy that can affect your movement.
+Maximum fall speed is lessened, and you have infinitely refreshing air options 
+such as doublejump. You also accelerate slowly when holding left or right.
 
 Terrain Rail
 Rail
 FLOORANDCEILING
 Rail that behaves exactly normal terrain. It is completely solid.
 
-Decelerate Grass
+Sticky Grass
 Grass
 DECELERATE
 While moving through this grass, you will lose speed.
@@ -70,13 +72,14 @@ While moving through this grass, you will lose speed.
 Jump Grass
 Grass
 JUMP
-If you jump or walljump while touching this grass, you'll go much higher.
+If you jump or walljump while touching this grass, you'll get a huge vertical 
+boost.
 
 Secret Information
 Momenta
-Secret items that contain information or upgrades can be found in hidden areas.
-Hidden areas are invisible on the minimap until they have been found.
-You will never need to come back later with new upgrades to find a secret item.
+Secret items that contain info or upgrades can be found in hidden areas.
+Hidden areas are invisible on the minimap until they have been found. You will
+never need to come back later with new upgrades to find a secret item.
 
 Orange S-kin
 Skin

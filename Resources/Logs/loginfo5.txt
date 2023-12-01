@@ -1,107 +1,115 @@
 Swarm
 Enemy
 swarm
-A swarm colony that holds 5 smaller enemies and launches them at you if you get close. The smaller
-enemies are on a timer and will die after a few seconds. It will continue to generate enemies 
-until you kill it.
+A swarm colony that holds 5 smaller enemies and launches them at you if you
+get close. The smaller enemies are on a timer and will die after a few
+seconds. The colony will continue to generate enemies until you kill it.
 
 Claw Turret
 Enemy
 growingtree
-Shoots bullets that home in on you.
+Shoots 3 bullets in different directions that all home in on you.
 
 Plasmid
 Enemy
 ghost
-Locks onto a position relative to Kin. Then steadily moves closer until attacking you.
+Locks onto a position relative to Kin. Then steadily moves closer until it hits
+you. It will prevent you from getting closer to further from it after locking on.
+Defeat it by waiting for it to get close.
 
 Lizard
 Enemy
 lizard
-Chases you on the ground while sometimes producing energy shocks which travel along the terrain.
+Chases you on the ground while sometimes producing energy shocks which
+travel along the terrain.
 
 Parrot
 Enemy
 parrot
-Flying enemy that chases you but stays at a distance where it can lob bullets onto you.
+Flying enemy that chases you but stays at a distance where it can lob bullets
+onto your head. Defeat it by convincing it to dive lower and then hitting it
+as it descends.
 
 Homing Launcher
 Enemy
 hominglauncher
-Launches you in a direction of your choice. During the launch, holding the attack
-button will cause you to do an attack and home in on enemies.
+Launches you in a direction of your choice (8 directions plus neutral). During
+the launch stun, holding the attack button will cause you to do a repeating
+homing attack that hunts down all nearby enemies.
 
 Time Slow Booster
 Enemy
 timebooster
-If you touch this, every piece of the game moves in slowmotion except
-for you for 5 seconds.
+If you touch this, everything for except for you will move in slow motion for 5
+seconds.
 
 Homing Booster
 Enemy
 homingbooster
 If you touch this, for 5 seconds your regular sword attacks are replaced with
-an attack that will make you home in on enemies. Can be held to attack continuously
-until the 5 seconds are up.
+a repeating homing attack that will hunt down nearby enemies. If there are no
+enemies nearby, you will use your normal attacks.
 
 Anti-Timeslow Booster
 Enemy
 antitimeslowbooster
-If you touch this, for 5 seconds you will not be effected by timeslow effects at
+If you touch this, for 5 seconds you will not be affected by timeslow effects at
 all.
 
 Hungry Comboer
 Enemy
 hungrycomboer
-Once hit, it will chase down and eat any enemies in the area.
-Also has a limited verison which will reset after a certain amount
-of enemies killed.
+Once hit, it will chase down and eat any enemies in the area. Can eat up to 3
+enemies before resetting.
 
 Relative Comboer
 Enemy
 relativecomboer
-Can be hit into other enemies. After it travels a short distance, it will lock its position
-relative to Kin and destroy any enemies it touches. Also has a limited version.
+Can be hit into other enemies. After it travels a short distance in the
+direction you hit it, it will lock its position relative to you and destroy any
+enemies it touches. Also has a limited version. Detach it from its locked state
+by turning on your shield.
 
 Relative Detach Comboer
 Enemy
 relativecomboerdetach
-Can be hit into other enemies. After it travels a short distance, it will lock its position
-relative to Kin. If it kills an enemy, it will unlock and remain stationary until hit again.
-
-Homing Detach Comboer
-Enemy
-relativecomboerdetach
-Can be hit into other enemies. After it travels a short distance, it will lock its position
-relative to Kin. If it kills an enemy, it will unlock and remain stationary until hit again.
+Can be hit into other enemies. After it travels a short distance in the
+direction you hit it, it will lock its position relative to Kin. If it kills
+an enemy, it will unlock and remain stationary until hit again. You can also
+detach it from its locked state by turning on your shield.
 
 Time Slow Water
 Water
 WATER_TIMESLOW
-While within this water, your actions are performed slower, and you move slower. You do have
-infinitely refreshing air options, however.
+A fluid pool of energy that can affect your movement.
+While within this water, your actions are performed slower, and you move
+slower. You are also given infinitely refreshing air options.
 
 Poison Water
 Water
 WATER_POISON
-While within this water, your health drains at a very fast rate. You also have infinitely
-refreshing air options and will accelerate slightly in any direction that you move.
+A fluid pool of energy that can affect your movement.
+While within this water, your health drains at a very fast rate. You also have
+infinitely refreshing air options and will accelerate slightly in any direction
+that you move.
 
 Locked Rail
 Rail
 LOCKED
-Touching this rail forces you to stay on it until you reach the end. You can also
-pass through terrain completely while riding on it.
+Touching this rail forces you to stay on it until you reach the end. You can
+also pass through terrain completely while riding on it.
 
-AntiTimeslow Rail
+Anti-Timeslow Rail
 Rail
 ANTITIMESLOW
-Works similarly to a Grind Rail, except that while on it, you are immune to timeslow effects.
+Works similarly to a Grind Rail, except that while on it, you are immune to
+time slow effects.
 
 Poison Grass
 Grass
 POISON
-While touching this grass, your health drains much much faster.
+While touching this grass, your health drains at a very fast rate. You will
+also accelerate slightly in any direction you move.
 
 Anti-Grind Grass
 Grass

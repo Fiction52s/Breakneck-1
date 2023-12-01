@@ -148,7 +148,7 @@ void MainMenu::SetupTerrainShader(sf::Shader &sh, int terrainIndex)
 
 	sh.setUniform("u_texture", *ts_terrain->texture);
 	sh.setUniform("Resolution", Vector2f(1920, 1080));
-	sh.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+	//sh.setUniform("AmbientColor", ColorGL(Color::White)); //just not used currently
 	sh.setUniform("skyColor", ColorGL(Color::White));
 
 	float tilePattern[TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES];

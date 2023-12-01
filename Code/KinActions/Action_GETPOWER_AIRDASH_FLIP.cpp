@@ -61,5 +61,5 @@ int Actor::GETPOWER_AIRDASH_FLIP_GetActionLength()
 
 const char * Actor::GETPOWER_AIRDASH_FLIP_GetTilesetName()
 {
-	return "w1_airdashget_128x128.png";
+	return NULL;//"w1_airdashget_128x128.png";
 }

@@ -1109,7 +1109,6 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_scorpRun;
 	Tileset *ts_scorpSlide;
 	Tileset *ts_scorpSteepSlide;
-	Tileset *ts_scorpStart;
 	Tileset *ts_scorpStand;
 	Tileset *ts_scorpJump;
 	Tileset *ts_scorpDash;

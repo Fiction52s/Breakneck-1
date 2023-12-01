@@ -66,5 +66,5 @@ int Actor::SEQ_KNEEL_GetActionLength()
 
 const char * Actor::SEQ_KNEEL_GetTilesetName()
 {
-	return "kin_meditate_64x96.png";
+	return NULL;//"kin_meditate_64x96.png";
 }
