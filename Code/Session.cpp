@@ -6685,7 +6685,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	//bottom = -300;
 
 	//camera debug grid
-	sf::Vertex testGrid[4];
+	/*sf::Vertex testGrid[4];
 	testGrid[0].position = Vector2f(960 - cam.maxOffset.x * 2, 0);
 	testGrid[1].position = Vector2f(960 - cam.maxOffset.x * 2, 1080);
 	testGrid[2].position = Vector2f(0, 540);
@@ -6695,7 +6695,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	testGrid[1].color = Color::Red;
 	testGrid[2].color = Color::Red;
 	testGrid[3].color = Color::Red;
-	target->draw(testGrid, 2, sf::Lines);
+	target->draw(testGrid, 2, sf::Lines);*/
 
 
 	target->setView(view);

@@ -136,7 +136,7 @@ struct Camera
 	void ManualUpdate( Actor *a );
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);
 	void UpdateVS();
-	double GetMovementZoomTarget( Actor *player );
+	double GetMovementZoomTarget( Actor *player, double speed );
 	double GetNextMovementZoom( double moveZoom );
 	double GetNextEnemyZoom(double enemyZoom);
 	V2d GetPlayerVel( Actor *player);

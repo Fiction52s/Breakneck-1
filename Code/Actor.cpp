@@ -4002,8 +4002,39 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 Actor::~Actor()
 {
+	for (int i = 0; i < 3; ++i)
+	{
+		delete fairHitboxes[i];
+		delete uairHitboxes[i];
+		delete dairHitboxes[i];
+
+		delete standHitboxes1[i];
+		delete standHitboxes2[i];
+		delete standHitboxes3[i];
+		delete standHitboxes4[i];
+
+		delete wallHitboxes[i];
+
+		delete dashHitboxes1[i];
+		delete dashHitboxes2[i];
+		delete dashHitboxes3[i];
+
+		//	delete wallHitboxes[i];
+		delete steepClimbHitboxes[i];
+		delete steepSlideHitboxes[i];
+		delete diagUpHitboxes[i];
+		delete diagDownHitboxes[i];
+		//delete grindHitboxes[i];
+	}
+	
 	if (shallowInit)
 		return;
+
+	delete grindHitboxes[0];
+	delete homingHitboxes;
+	delete annihilationHitboxes;
+
+	
 
 	if( nameTag != NULL )
 		delete nameTag;
@@ -4084,37 +4115,7 @@ Actor::~Actor()
 	delete currVSHitboxInfo;
 
 	/*if (owner != NULL)*/
-	{
-		for (int i = 0; i < 3; ++i)
-		{
-			delete fairHitboxes[i];
-			delete uairHitboxes[i];
-			delete dairHitboxes[i];
-
-			delete standHitboxes1[i];
-			delete standHitboxes2[i];
-			delete standHitboxes3[i];
-			delete standHitboxes4[i];
-
-			delete wallHitboxes[i];
-
-			delete dashHitboxes1[i];
-			delete dashHitboxes2[i];
-			delete dashHitboxes3[i];
-
-				//	delete wallHitboxes[i];
-			delete steepClimbHitboxes[i];
-			delete steepSlideHitboxes[i];
-			delete diagUpHitboxes[i];
-			delete diagDownHitboxes[i];
-			//delete grindHitboxes[i];
-		}
-
-		delete grindHitboxes[0];
-		delete homingHitboxes;
-		delete annihilationHitboxes;
-
-	}
+	
 
 	
 	//delete shockwaveHitboxes;

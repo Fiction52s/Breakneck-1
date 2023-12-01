@@ -1096,12 +1096,19 @@ MainMenu::~MainMenu()
 	if (kinHitboxManager != NULL)
 	{
 		delete kinHitboxManager;
+		kinHitboxManager = NULL;
 	}
 
 	if (waterShaders != NULL)
 	{
 		delete[] waterShaders;
 		waterShaders = NULL;
+	}
+
+	if (terrainShaders != NULL)
+	{
+		delete[] terrainShaders;
+		terrainShaders = NULL;
 	}
 
 	if (minimapWaterShaders != NULL)

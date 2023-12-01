@@ -388,7 +388,7 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	Vector2f targetOffset;
 	Vector2f tempOffset = offset;
 
-	cout << "offset.x: " << offset.x << ", " << offset.y << endl;
+	//cout << "offset.x: " << offset.x << ", " << offset.y << endl;
 
 	Vector2f baseOffsetFactor(4, 1);
 
@@ -435,7 +435,7 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	
 	targetOffset *= currZoom;
 
-	cout << "targetoffset: " << targetOffset.x << ", " << targetOffset.y << endl;
+	//cout << "targetoffset: " << targetOffset.x << ", " << targetOffset.y << endl;
 
 	//how fast you are moving on the axis in comparison to the max speed
 	//capped at 1.0. Assumes max speed is 60
@@ -532,7 +532,7 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	}
 	
 		
-	cout << "offsetVel: " << offsetVel.x << ", " << offsetVel.y << endl;
+	//cout << "offsetVel: " << offsetVel.x << ", " << offsetVel.y << endl;
 	tempOffset += offsetVel;
 
 	if (tempOffset.x > targetOffset.x && targetOffset.x > 0)
@@ -563,7 +563,7 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	if (offsetVel.x > 0 && oldTempOffset.x < targetOffset.x && tempOffset.x > targetOffset.x)
 	{
 		tempOffset.x = targetOffset.x;
-		cout << "ADJUST" << endl;
+		//cout << "ADJUST" << endl;
 	}
 	else if (offsetVel.x < 0 && oldTempOffset.x > targetOffset.x && tempOffset.x < targetOffset.x)
 	{
@@ -581,7 +581,7 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 
 
 
-	cout << "finaliedoffset: " << tempOffset.x << ", " << tempOffset.y << endl;
+	//cout << "finaliedoffset: " << tempOffset.x << ", " << tempOffset.y << endl;
 	//<< tempOffset.y << endl;
 
 	return tempOffset;
@@ -924,13 +924,17 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 	}
 	else if (player->ground != NULL)
 	{
-		if (player->action != Actor::JUMPSQUAT)
+		if (player->action == Actor::JUMPSQUAT)
 		{
-			pVel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed;
+			pVel = normalize(player->ground->v1 - player->ground->v0) * player->storedGroundSpeed;
+		}
+		else if (player->action == Actor::BOUNCEGROUNDEDWALL)
+		{
+			pVel = normalize(player->ground->v1 - player->ground->v0) * player->storedBounceGroundSpeed;
 		}
 		else
 		{
-			pVel = normalize(player->ground->v1 - player->ground->v0) * player->storedGroundSpeed;
+			pVel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed;
 		}
 
 		if (player->reversed)
@@ -955,14 +959,22 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 	return pVel;
 }
 
-double Camera::GetMovementZoomTarget( Actor *player )
+double Camera::GetMovementZoomTarget( Actor *player, double speed )
 {
 	double zFactor = zoomFactor;
 	double temp;
-	V2d f;
+	//V2d f;
 	double kk = 18.0;
 	double mult = 1.0;//2.0;
-	if (player->ground != NULL)
+
+
+	temp = speed / kk;
+	double extra = temp - 1.0;
+	temp = 1.0f + extra * mult;
+	//f = player->velocity * 10.0;
+
+
+	/*if (player->ground != NULL)
 	{
 		temp = abs(player->groundSpeed) / kk;
 
@@ -979,7 +991,7 @@ double Camera::GetMovementZoomTarget( Actor *player )
 		double extra = temp - 1.0;
 		temp = 1.0f + extra * mult;
 		f = player->velocity * 10.0;
-	}
+	}*/
 
 	return max( 1.0, temp );
 }
@@ -1402,7 +1414,7 @@ void Camera::UpdateBasicMode()
 	}
 
 	//cout << "currOffset: " << currOffset.x << ", " << currOffset.y << endl;
-	double moveZoom = GetMovementZoomTarget(player);
+	double moveZoom = GetMovementZoomTarget(player, length( pVel ));
 
 	//double oldZoomFactor = zoomFactor;
 
