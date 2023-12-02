@@ -755,6 +755,7 @@ void EditSession::TestPlayerMode()
 
 	ClearReplayGhosts();
 	activePlayerReplayManagers.clear();
+	skipOneReplayFrame = false;
 
 	if (debugReplayPlayerOn && debugReplayManager != NULL)
 	{

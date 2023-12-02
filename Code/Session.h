@@ -222,6 +222,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		FEEDBACK_FORM,
 	};
 
+	bool skipOneReplayFrame;
 	int currWorldDependentTilesetWorldIndex;
 
 	Tileset *ts_key;

@@ -77,7 +77,6 @@
 using namespace sf;
 using namespace std;
 
-
 template <typename X>ActorParams * MakeParams(ActorType *at, int level)
 {
 	return new X(at, level);
@@ -1480,6 +1479,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
+	skipOneReplayFrame = false;
 	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
 	ts_goal = NULL;
@@ -2746,11 +2746,14 @@ void Session::UpdatePlayerInput(int index)
 	}
 	else if (IsReplayOn())
 	{
-		player->prevInput = player->currInput;
+		if (!skipOneReplayFrame)
+		{
+			player->prevInput = player->currInput;
 
-		assert(!activePlayerReplayManagers.empty());
+			assert(!activePlayerReplayManagers.empty());
 
-		activePlayerReplayManagers[0]->GetReplayer(playerInd)->replayPlayer->UpdateInput(player->currInput);
+			activePlayerReplayManagers[0]->GetReplayer(playerInd)->replayPlayer->UpdateInput(player->currInput);
+		}
 		//repPlayer->UpdateInput(player->currInput);//controllerStates[0]);
 	}
 	else
@@ -6937,9 +6940,15 @@ bool Session::RunGameModeUpdate()
 		//please....hoping to fix the bug from below and doesn't mess up sequence stuff...
 		UpdateAllPlayersInput();
 
+		skipOneReplayFrame = false;
+
 		ActiveSequenceUpdate();
 		if (switchGameState)
 		{
+			if (IsReplayOn())
+			{
+				skipOneReplayFrame = true;
+			}
 			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
 			{
 				PracticeStateChangeMsg pm;
@@ -7248,12 +7257,17 @@ bool Session::FrozenGameModeUpdate()
 		fader->Update();
 		swiper->Update();
 
+		
+
 		if (cam.manual)
 		{
 			UpdateCamera();
 
 			UpdateEnvShaders();
 		}
+
+		if (background != NULL)
+			background->Update(view.getCenter());
 
 		pokeTriangleScreenGroup->Update();
 

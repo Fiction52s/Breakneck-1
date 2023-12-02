@@ -4327,6 +4327,7 @@ void GameSession::RestartGame()
 void GameSession::RestartLevel()
 {
 	phaseOn = false;
+	skipOneReplayFrame = false;
 
 	turnTimerOnCounter = -1;
 	timerOn = true;
