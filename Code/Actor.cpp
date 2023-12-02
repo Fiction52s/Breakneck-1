@@ -10137,11 +10137,26 @@ V2d Actor::UpdateReversePhysics()
 									{
 										//cout << "c" << endl;   
 										//cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
+
+										position += minContact.resolution; //probably does nothing
+
 										ground = minContact.edge;
 
 										q = ground->GetQuantity(minContact.position);
 
-										offsetX = position.x + minContact.resolution.x - minContact.position.x;
+
+										if (minContact.normal.x > 0)
+										{
+											offsetX = b.rw;
+										}
+										else if (minContact.normal.x < 0)
+										{
+											offsetX = -b.rw;
+										}
+										else
+										{
+											offsetX = (position.x + b.offset.x) - minContact.position.x;
+										}
 										offsetX = -offsetX;
 
 										ProcessGroundedCollision();
@@ -13364,6 +13379,8 @@ void Actor::UpdatePhysics()
 				e1n = e1->Normal();
 			}
 
+			//cout << "offsetX: " << offsetX << "\n";
+
 			bool transferLeft = e0 != NULL && q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh || e0n.x <= 0 )
 				&& ((gNormal.x == 0 && e0n.x == 0 )
 				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0)  ) 
@@ -13992,16 +14009,41 @@ void Actor::UpdatePhysics()
 									}
 									else
 									{	
+										position += minContact.resolution;
+
+										if (minContact.normal.x > 0)
+										{
+											offsetX = b.rw;
+										}
+										else if (minContact.normal.x < 0)
+										{
+											offsetX = -b.rw;
+										}
+										else
+										{
+											offsetX = (position.x + b.offset.x) - minContact.position.x;
+										}
+
 										ground = minContact.edge;
 										q = ground->GetQuantity( minContact.position );
 
 										V2d eNorm = minContact.normal;
 
+										
+
 										//hopefully this doesn't cause any bugs. 
 										//if it does i know exactly where to find it
 
 										//CHANGED OFFSET
-										offsetX = position.x + minContact.resolution.x - minContact.position.x;
+										//offsetX = position.x + minContact.resolution.x - minContact.position.x;
+
+										//changed from previous^ because you could get stuck
+
+										
+										
+
+										
+										
 
 										ProcessGroundedCollision();
 									}
@@ -14573,7 +14615,20 @@ void Actor::UpdatePhysics()
 
 				framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
-				offsetX = (position.x + b.offset.x) - minContact.position.x;
+				if (minContact.normal.x > 0)
+				{
+					offsetX = b.rw;
+				}
+				else if (minContact.normal.x < 0)
+				{
+					offsetX = -b.rw;
+				}
+				else
+				{
+					offsetX = (position.x + b.offset.x) - minContact.position.x;
+				}
+
+				//offsetX = (position.x + b.offset.x) - minContact.position.x;
 
 				if (b.rh < normalHeight)
 				{
@@ -20964,31 +21019,42 @@ void Actor::DefaultGroundLanding( double &movement )
 	
 	prevRail = NULL;
 
-	offsetX = (position.x + b.offset.x) - minContact.position.x;
+	//offsetX = (position.x + b.offset.x) - minContact.position.x;
 
 
-		
-
-	if (offsetX > b.rw + .00001 || offsetX < -b.rw - .00001) //stops glitchyness with _\ weird offsets
+	if (minContact.normal.x > 0)
 	{
-		//removing the print here now, but it could always cause something weird later...
-		//this triggered last time when climbing a steep slope and jumping onto it while going up
-		//honestly I feel like this probably doesn't cause any problems.
-
-		/*cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
-			<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
-		cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;*/
-		if (offsetX > 0)
-		{
-			offsetX = b.rw;
-			minContact.position.x = position.x - b.rw;
-		}
-		else
-		{
-			offsetX = -b.rw;
-			minContact.position.x = position.x + b.rw;
-		}
+		offsetX = b.rw;
 	}
+	else if (minContact.normal.x < 0)
+	{
+		offsetX = -b.rw;
+	}
+	else
+	{
+		offsetX = (position.x + b.offset.x) - minContact.position.x;
+	}
+
+	//if (offsetX > b.rw + .00001 || offsetX < -b.rw - .00001) //stops glitchyness with _\ weird offsets
+	//{
+	//	//removing the print here now, but it could always cause something weird later...
+	//	//this triggered last time when climbing a steep slope and jumping onto it while going up
+	//	//honestly I feel like this probably doesn't cause any problems.
+
+	//	/*cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
+	//		<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+	//	cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;*/
+	//	if (offsetX > 0)
+	//	{
+	//		offsetX = b.rw;
+	//		minContact.position.x = position.x - b.rw;
+	//	}
+	//	else
+	//	{
+	//		offsetX = -b.rw;
+	//		minContact.position.x = position.x + b.rw;
+	//	}
+	//}
 
 	if (b.rh < normalHeight)
 	{
@@ -21088,7 +21154,20 @@ void Actor::DefaultCeilingLanding(double &movement)
 	double groundLength = length(ground->v1 - ground->v0);
 	groundSpeed = 0;
 
-	offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+	if (minContact.normal.x > 0)
+	{
+		offsetX = b.rw;
+	}
+	else if (minContact.normal.x < 0)
+	{
+		offsetX = -b.rw;
+	}
+	else
+	{
+		offsetX = (position.x + b.offset.x) - minContact.position.x;
+	}
+	//offsetX = (position.x + b.offset.x) - minContact.position.x;
 
 	V2d gno = GetGroundedNormal();//ground->Normal();
 
@@ -21154,7 +21233,20 @@ void Actor::BounceCollision( double &movement )
 
 		edgeQuantity = bounceEdge->GetQuantity(minContact.position);
 
-		offsetX = (position.x + b.offset.x) - minContact.position.x;
+		if (minContact.normal.x > 0)
+		{
+			offsetX = b.rw;
+		}
+		else if (minContact.normal.x < 0)
+		{
+			offsetX = -b.rw;
+		}
+		else
+		{
+			offsetX = (position.x + b.offset.x) - minContact.position.x;
+		}
+
+		//offsetX = (position.x + b.offset.x) - minContact.position.x;
 
 		if (b.rh < normalHeight)
 		{

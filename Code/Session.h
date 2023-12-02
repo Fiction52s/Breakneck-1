@@ -29,6 +29,7 @@ struct PlayerReplayManager;
 struct RecordPlayer;
 struct ReplayPlayer;
 struct Nexus;
+struct ReplayGhost;
 
 struct GroundedWarper;
 
@@ -241,6 +242,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<PlayerReplayManager*> activePlayerReplayManagers;
 	PlayerRecordingManager *playerRecordingManager;
 
+	std::vector<ReplayGhost*> replayGhosts;
 	int parallelSessionIndex; //-1 if not parallel
 
 	MatchParams matchParams;
@@ -877,7 +879,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawInputVis(sf::RenderTarget *target);
 	void UpdateInputVis();
 	void SetupInputVis();
-	virtual void DrawReplayGhosts(sf::RenderTarget *target) {}
+	void DrawReplayGhosts(sf::RenderTarget *target);
 	void DrawGame(sf::RenderTarget *target);
 	void DrawPracticeGame(sf::RenderTarget *target);
 	void UpdateRunningTimerText();
@@ -892,7 +894,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual int TryToActivateBonus() { return 0; }
 	virtual void RecPlayerRecordFrame( int pIndex );
 	virtual void RecGhostRecordFrame() {}
-	virtual void UpdateReplayGhostSprites() {}
+	void UpdateReplayGhostSprites();
+	void ClearReplayGhosts();
 	bool RunGameModeUpdate();
 	bool OnlineFrozenGameModeUpdate();
 	bool FrozenGameModeUpdate();
@@ -955,7 +958,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetCurrentBoss(Boss *b);
 	void RemoveBoss( Boss *b );
 	
-	virtual bool HasLog(int logIndex) { return false; }
+	virtual bool HasLog(int logIndex);
 	void SetKeyMarkerToCurrentZone();
 	void TransitionMusic(MusicInfo *mi,
 		int transFrames);

@@ -163,7 +163,7 @@ struct EditSession : GUIHandler, Session
 	WorkshopUploader *workshopUploader;
 	MusicInfo *previewMusic;
 	MusicSelectorUI *musicSelectorUI;
-	ReplayPlayer *debugReplayPlayer;
+	PlayerReplayManager *debugReplayManager;
 	bool debugReplayPlayerOn;
 	int currGrassType;
 	FrameWaiter *removeProgressPointWaiter;
@@ -876,6 +876,7 @@ struct EditSession : GUIHandler, Session
 	void UpdateNetworkStats();
 
 	void RestartGame();
+	bool HasLog(int logIndex);
 };
 
 

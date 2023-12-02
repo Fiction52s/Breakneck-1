@@ -92,6 +92,11 @@ EditSession * EditSession::currSession = NULL;
 
 bool EditSession::IsShardCaptured(int sType)
 {
+	if (IsReplayOn())
+	{
+		return activePlayerReplayManagers[0]->header.IsShardCaptured(sType);
+	}
+
 	return currShardField.GetBit(sType);
 }
 
@@ -691,10 +696,17 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
+	/*if (debugReplayPlayerOn && debugReplayManager != NULL)
 	{
-		debugReplayPlayer->Reset();
-	}
+		ClearReplayGhosts();
+		activePlayerReplayManagers.clear();
+
+		debugReplayManager->Reset();
+		
+		activePlayerReplayManagers.push_back(debugReplayManager);
+
+		debugReplayManager->AddGhostsToVec(replayGhosts, false);
+	}*/
 
 	skipped = false;
 	oneFrameMode = false;
@@ -741,7 +753,17 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	
+	ClearReplayGhosts();
+	activePlayerReplayManagers.clear();
+
+	if (debugReplayPlayerOn && debugReplayManager != NULL)
+	{
+		debugReplayManager->Reset();
+
+		activePlayerReplayManagers.push_back(debugReplayManager);
+
+		debugReplayManager->AddGhostsToVec(replayGhosts, false);
+	}
 
 	if (mode == TEST_PLAYER)
 	{	
@@ -1805,9 +1827,9 @@ EditSession::~EditSession()
 		players[i] = allPlayers[i];
 	}
 
-	if (debugReplayPlayer != NULL)
+	if (debugReplayManager != NULL)
 	{
-		delete debugReplayPlayer;
+		delete debugReplayManager;
 	}
 
 	delete removeProgressPointWaiter;
@@ -3963,13 +3985,16 @@ void EditSession::Init()
 	}
 	players[0] = allPlayers[0]; //for when reading enemies that use it? might need a cleanup later
 
-	debugReplayPlayer = NULL;//new ReplayPlayer(players[0]);
-	/*bool canOpen = debugReplayPlayer->OpenReplay("Resources/Recordings/Debug/debugreplay" + string(REPLAY_EXT));
+	debugReplayManager = new PlayerReplayManager;
+
+	bool canOpen = debugReplayManager->LoadFromFile("Resources/Recordings/Debug/debugreplay" + string(REPLAY_EXT));
+	debugReplayManager->ghostsActive = true;
+	debugReplayManager->replaysActive = true;
 	if (!canOpen)
 	{
-		delete debugReplayPlayer;
-		debugReplayPlayer = NULL;
-	}*/
+		delete debugReplayManager;
+		debugReplayManager = NULL;
+	}
 
 	SetupEnemyTypes();
 
@@ -16267,4 +16292,14 @@ void EditSession::PublishMap()
 	{
 		messagePopup->Pop("Map must be saved before it can be published.");
 	}
+}
+
+bool EditSession::HasLog(int logIndex)
+{
+	if (IsReplayOn())
+	{
+		return activePlayerReplayManagers[0]->header.IsLogCaptured(logIndex);
+	}
+
+	return currLogField.GetBit(logIndex);
 }

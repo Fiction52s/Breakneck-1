@@ -313,7 +313,7 @@ struct GameSession : RayCastHandler, Session
 	V2d nexusPos;
 	Nexus *nexus;
 	
-	std::vector<ReplayGhost*> replayGhosts;
+	
 	Grass *explodingGravityGrass;
 	bool quit;
 	bool boostIntro;
@@ -479,7 +479,6 @@ struct GameSession : RayCastHandler, Session
 	
 	void QuitGame();
 	void DrawRails(sf::RenderTarget *target);
-	void DrawReplayGhosts(sf::RenderTarget *target);
 	void UpdateDebugModifiers();
 	void SetStorySeq(StorySequence *storySeq);
 	void SuppressEnemyKeys(Gate *g);
@@ -509,7 +508,6 @@ struct GameSession : RayCastHandler, Session
 	void CloseGates(int gCat);
 	
 	int TryToActivateBonus();
-	void UpdateReplayGhostSprites();
 	
 	
 	void DrawSpecialTerrain(sf::RenderTarget *target);
@@ -521,7 +519,6 @@ struct GameSession : RayCastHandler, Session
 	void UpdateEnvPlants();
 	bool UpdateRunModeBackAndStartButtons();
 	void CleanupDecor();
-	void CleanupGhosts();
 	void DrawDecor(EffectLayer ef, sf::RenderTarget *target);
 
 	bool RunPreUpdate();

@@ -5445,6 +5445,16 @@ bool Session::IsShardCaptured(int s)
 	return currShardField.GetBit(s);
 }
 
+bool Session::HasLog(int logIndex)
+{
+	if (IsReplayOn())
+	{
+		return activePlayerReplayManagers[0]->header.IsLogCaptured(logIndex);
+	}
+
+	return currLogField.GetBit(logIndex);
+}
+
 void Session::AddEmitter(ShapeEmitter *emit,
 	EffectLayer layer)
 {
@@ -9933,4 +9943,25 @@ void Session::ShowHUD(int frames)
 	{
 		turnTimerOnCounter = frames;
 	}
+}
+
+void Session::DrawReplayGhosts(sf::RenderTarget *target)
+{
+	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+}
+
+void Session::UpdateReplayGhostSprites()
+{
+	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+	{
+		(*it)->UpdateReplaySprite();
+	}
+}
+
+void Session::ClearReplayGhosts()
+{
+	replayGhosts.clear();
 }

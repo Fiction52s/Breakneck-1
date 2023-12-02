@@ -477,14 +477,6 @@ void GameSession::DrawSpecialTerrain(sf::RenderTarget *target)
 	DrawQueriedSpecialTerrain(target);
 }
 
-void GameSession::UpdateReplayGhostSprites()
-{
-	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
-	{
-		(*it)->UpdateReplaySprite();
-	}
-}
-
 //returns gameresult of the bonus
 int GameSession::TryToActivateBonus()
 {
@@ -1138,7 +1130,7 @@ void GameSession::Cleanup()
 
 	CleanupMyBestPlayerReplayManager();
 
-	CleanupGhosts();
+	ClearReplayGhosts();
 
 	if (parentGame == NULL && playerRecordingManager != NULL)
 	{
@@ -2491,15 +2483,6 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 	}*/
 }
 
-void GameSession::CleanupGhosts()
-{
-	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
-	{
-		//delete (*it);
-	}
-	replayGhosts.clear();
-}
-
 void GameSession::SetBestReplayOn(bool on)
 {
 	bestReplayOn = on;
@@ -2529,7 +2512,7 @@ void GameSession::SetBestGhostOn(bool on)
 
 void GameSession::CleanupReplaysAndGhosts()
 {
-	CleanupGhosts();
+	ClearReplayGhosts();
 
 	CleanupMyBestPlayerReplayManager();
 
@@ -4123,14 +4106,6 @@ void GameSession::UpdateDecorSprites()
 		poly->UpdateDecorSprites();
 		poly->UpdateTouchGrass(); //put this in its own spot soon
 		poly = poly->queryNext;
-	}
-}
-
-void GameSession::DrawReplayGhosts(sf::RenderTarget *target)
-{
-	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
-	{
-		(*it)->Draw(target);
 	}
 }
 
