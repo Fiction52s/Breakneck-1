@@ -1254,7 +1254,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	bool dead;
-	sf::Shader swordShaders[3];
+	//sf::Shader swordShaders[3];
 	sf::Color flashColor;
 	int steepClimbBoostStart;
 	

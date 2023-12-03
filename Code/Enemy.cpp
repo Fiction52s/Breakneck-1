@@ -677,7 +677,9 @@ void Enemy::OnCreate(ActorParams *ap,
 	if (type != EN_BASICEFFECT)
 	{
 		sess->mainMenu->LoadShader(hurtShader, "enemyhurt");
-		hurtShader.setUniform("toColor", Glsl::Vec4(Color::White.r, Color::White.g, Color::White.b, Color::White.a));
+
+		Color c = Color::White;
+		hurtShader.setUniform("toColor", ColorGL( c ) );
 	}
 	//hurtShader.setUniform("auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a));
 
@@ -1065,6 +1067,26 @@ void Enemy::DrawSprite( sf::RenderTarget *target, sf::Sprite &spr )
 		//(sess->GetPauseFrames() < 2 && pauseFrames < 2) 
 		//|| ( receivedHit == NULL && pauseFrames < 2 );
 
+	/*bool changeScale = pauseFrames >= 4 && !pauseFramesFromAttacking;
+
+	Vector2f oldScale = spr.getScale();
+	Vector2f currScale = oldScale;
+
+	if (changeScale)
+	{
+		float amt = .01;
+		if (currScale.x > 0)
+			currScale.x += amt;
+		else if (currScale.x < 0)
+			currScale.x -= amt;
+		if (currScale.y > 0)
+			currScale.y += amt;
+		else if (currScale.y < 0)
+			currScale.y -= amt;
+
+		spr.setScale(currScale);
+	}*/
+
 	if (hasMonitor && !suppressMonitor) 
 	{
 		if (drawHurtShader)
@@ -1088,6 +1110,11 @@ void Enemy::DrawSprite( sf::RenderTarget *target, sf::Sprite &spr )
 			target->draw(spr);
 		}
 	}
+
+	/*if (changeScale)
+	{
+		spr.setScale(oldScale);
+	}*/
 }
 
 int Enemy::NumTotalBullets()
@@ -1731,6 +1758,9 @@ void Enemy::ConfirmHitNoKill()
 {
 	assert(!receivedHit.IsEmpty());
 
+	Color c = Color::White;
+	hurtShader.setUniform("toColor", ColorGL(c));
+
 	HitboxInfo::HitboxType hType = receivedHit.hType;
 	if (receivedHit.comboer)
 	{
@@ -1781,6 +1811,9 @@ void Enemy::ConfirmKill()
 
 	HitboxInfo::HitboxType hType;
 	
+	Color c = Color::Red;
+	hurtShader.setUniform("toColor", ColorGL(c));
+
 	
 	if (!receivedHit.IsEmpty())
 	{
@@ -1816,7 +1849,7 @@ void Enemy::ConfirmKill()
 	if (!receivedHit.comboer)
 	{
 		//sess->cam.SetRumble(1.5, 1.5, pauseFrames + 5);
-		sess->cam.SetRumble(2, 2, pauseFrames + 5);
+		sess->cam.SetRumble(2, 2, pauseFrames);
 	}
 
 	

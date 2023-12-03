@@ -25,7 +25,7 @@ void PoisonFrog::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.5;
+		scale = 1.0;
 		break;
 	case 2:
 		scale = 2.0;
@@ -69,9 +69,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 
 	maxFallSpeed = 25;
 
-	double width = 80;
-	double height = 80;
-	ts_test = GetSizedTileset( "Enemies/W2/frog_80x80.png");
+	ts_test = GetSizedTileset( "Enemies/W2/frog_120x120.png");
 
 	const string &typeName = ap->GetTypeName();
 

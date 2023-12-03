@@ -9,7 +9,7 @@ using namespace sf;
 
 PlayerSkinShader::PlayerSkinShader(ShaderType sType)
 {
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_164x30.png");
+	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_180x30.png");
 
 	shaderType = sType;
 	string shaderStr;
@@ -23,6 +23,9 @@ PlayerSkinShader::PlayerSkinShader(ShaderType sType)
 		break;
 	case ST_AURA:
 		shaderStr = "aura";
+		break;
+	case ST_SWORD:
+		shaderStr = "sword";
 		break;
 	}
 

@@ -10,6 +10,7 @@ struct PlayerSkinShader
 		ST_DEFAULT,
 		ST_BOOST,
 		ST_AURA,
+		ST_SWORD,
 	};
 
 	PlayerSkinShader(ShaderType sType = ShaderType::ST_DEFAULT );
@@ -24,7 +25,7 @@ struct PlayerSkinShader
 	void SetTileset(Tileset *ts);
 
 	int shaderType;
-	const static int NUM_PALETTE_COLORS = 164;
+	const static int NUM_PALETTE_COLORS = 180;
 	sf::Image skinPaletteImage;
 	sf::Shader pShader;
 	sf::Glsl::Vec4 paletteArray[NUM_PALETTE_COLORS];

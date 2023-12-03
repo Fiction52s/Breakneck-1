@@ -3363,7 +3363,7 @@ void Actor::UpdateActionSprite()
 Actor::Actor()
 	:dead(false), actorIndex(0), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_AURA),
+	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_SWORD),
 	originalProgressionUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	originalProgressionLogField(LogDetailedInfo::MAX_LOGS)
 {
@@ -3384,7 +3384,7 @@ Actor::Actor()
 Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	:dead(false), actorIndex(p_actorIndex), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_AURA),
+	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_SWORD),
 	originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 	{
@@ -3428,7 +3428,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	SetupActionFunctions();
 	SetupTilesets();
 
-	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_164x30.png");
+	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_180x30.png");
 	fxPaletteShader->SetPaletteIndex(0);
 
 	birdCommands.resize(3);
@@ -3853,17 +3853,17 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	maxBBoostCount = GetActionLength(DASH);
 	maxAirdashBoostCount = GetActionLength(AIRDASH);
 		 
-	sess->mainMenu->LoadShader(swordShaders[0], "sword");
-	swordShaders[0].setUniform("fromColor", ColorGL(Color(0, 238, 255)));//ColorGL(COLOR_TEAL) );
-	swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
+	//sess->mainMenu->LoadShader(swordShaders[0], "sword");
+	//swordShaders[0].setUniform("fromColor", ColorGL(Color(0, 238, 255)));//ColorGL(COLOR_TEAL) );
+	//swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
 
-	sess->mainMenu->LoadShader(swordShaders[1], "sword");
-	swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
-	swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
-	
-	sess->mainMenu->LoadShader(swordShaders[2], "sword");
-	swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
-	swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
+	//sess->mainMenu->LoadShader(swordShaders[1], "sword");
+	//swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
+	//swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
+	//
+	//sess->mainMenu->LoadShader(swordShaders[2], "sword");
+	//swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
+	//swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	grindActionLength = 32;
 
@@ -4782,6 +4782,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
+	swordShader.SetSkin(0);
+
 	gravityIncreaserTrailEmitter->Reset();
 	gravityDecreaserTrailEmitter->Reset();
 	momentumBoosterTrailEmitter->Reset();
@@ -21590,15 +21592,16 @@ void Actor::Draw( sf::RenderTarget *target )
 		
 		if (showSword)
 		{
-			sf::Shader &swordSh = swordShaders[speedLevel];
+			//sf::Shader &swordSh = swordShaders[speedLevel];
 
 			if (flashFrames > 2)//0)
 			{
-				target->draw(swordSprite, &swordSh);
+				target->draw(swordSprite, &swordShader.pShader);//&swordSh);
 			}
 			else
 			{
-				target->draw(swordSprite);// , &swordShader.pShader);
+				target->draw(swordSprite, &swordShader.pShader);
+				//target->draw(swordSprite);// , &swordShader.pShader);
 			}
 
 		}
@@ -22202,10 +22205,12 @@ void Actor::ConfirmHit( Enemy *e )
 
 	flashColor = c;	
 	flashFrames = currHitboxInfo->hitlagFrames;// +1;
-	for( int i = 0; i < 3; ++i )
+
+	swordShader.SetSkin(0);
+	/*for( int i = 0; i < 3; ++i )
 	{
 		swordShaders[i].setUniform( "toColor", ColorGL( flashColor ) );
-	}
+	}*/
 
 	//owner->powerWheel->Charge( charge );
 
