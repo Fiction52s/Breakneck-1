@@ -3086,7 +3086,6 @@ void MainMenu::HandleMenuMode()
 
 		}
 		SetMode(GAME_SETTINGS);
-		config->WaitForLoad();
 
 		gameSettingsScreen->UpdateFromConfig();
 		/*if (slideCurrFrame > numSlideFrames)

@@ -1910,25 +1910,29 @@ bool GameSession::Load()
 
 	myHash = md5file(filePathStr); //need the hash before you set up leaderboards
 
-	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	if (!IsParallelSession())
 	{
-		mainMenu->adventureManager->SetBoards(this);
+		if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+		{
+			mainMenu->adventureManager->SetBoards(this);
 
-		pauseMenu = mainMenu->adventureManager->pauseMenu;
-		pauseMenu->SetGame(this);
+			pauseMenu = mainMenu->adventureManager->pauseMenu;
+			pauseMenu->SetGame(this);
 
 
-		shardMenu = pauseMenu->shardMenu;
-		logMenu = pauseMenu->logMenu;
+			shardMenu = pauseMenu->shardMenu;
+			logMenu = pauseMenu->logMenu;
+		}
+		else
+		{
+			pauseMenu = new PauseMenu(this);
+			pauseMenu->SetGame(this);
+
+			shardMenu = pauseMenu->shardMenu;
+			logMenu = pauseMenu->logMenu;
+		}
 	}
-	else
-	{
-		pauseMenu = new PauseMenu(this);
-		pauseMenu->SetGame(this);
-
-		shardMenu = pauseMenu->shardMenu;
-		logMenu = pauseMenu->logMenu;
-	}
+	
 
 	ReadFile();
 
@@ -2137,8 +2141,9 @@ bool GameSession::Load()
 	oldCamAngle = 0;
 	oldShaderZoom = -1;
 	goalDestroyed = false;
-	frameRateDisplay.showFrameRate = true;
-	runningTimerDisplay.showRunningTimer = true;
+	const ConfigData &configData = mainMenu->config->GetData();
+	frameRateDisplay.showFrameRate = configData.showFPS;
+	runningTimerDisplay.showRunningTimer = configData.showRunningTimer;
 	goalDestroyed = false;
 
 	if (saveFile == NULL)

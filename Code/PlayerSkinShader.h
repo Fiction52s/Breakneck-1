@@ -10,7 +10,6 @@ struct PlayerSkinShader
 		ST_DEFAULT,
 		ST_BOOST,
 		ST_AURA,
-		ST_SWORD,
 	};
 
 	PlayerSkinShader(ShaderType sType = ShaderType::ST_DEFAULT );

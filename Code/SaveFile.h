@@ -287,7 +287,6 @@ struct GlobalSaveFile
 {
 	BitField skinField;
 	static std::string fileName;
-
 	int ver;
 
 	GlobalSaveFile();

@@ -26,6 +26,10 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 
 	musicVolumeSlider = panel->AddLabeledSlider( "musicslider", Vector2i( 0, 0 ), "Music Volume:", 400, 0, 100, 100, 30 );
 	soundVolumeSlider = panel->AddLabeledSlider("soundslider", Vector2i(0, 0), "Sound Volume:", 400, 0, 100, 100, 30);
+
+	showFPSCheckBox = panel->AddLabeledCheckBox("showfpscheckbox", Vector2i( 0, 0 ), "Show FPS:");
+	showRunningTimerCheckBox = panel->AddLabeledCheckBox("showrunningtimercheckbox", Vector2i(0, 0), "Show Running Timer:");
+
 	defaultButton = panel->AddButton("defaultbutton", Vector2i(0, 0), Vector2f(400, 40), "Restore Defaults");
 	applyButton = panel->AddButton("applybutton", Vector2i(0, 0), Vector2f(400, 40), "APPLY");
 	backButton = panel->AddButton("backbutton", Vector2i(0, 0), Vector2f(400, 40), "BACK");
@@ -102,6 +106,9 @@ void GameSettingsScreen::UpdateFromConfig()
 
 	musicVolumeSlider->SetCurrValue(cd.musicVolume);
 	soundVolumeSlider->SetCurrValue(cd.soundVolume);
+
+	showFPSCheckBox->checked = cd.showFPS;
+	showRunningTimerCheckBox->checked = cd.showRunningTimer;
 }
 
 void GameSettingsScreen::ApplyConfig()
@@ -163,6 +170,9 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 	d.musicVolume = mVol;
 	d.soundVolume = sVol;
 
+	d.showFPS = showFPSCheckBox->checked;
+	d.showRunningTimer = showRunningTimerCheckBox->checked;
+
 	bool windowNeedsReset = false;
 
 	const ConfigData &currData = mainMenu->config->GetData();
@@ -194,6 +204,9 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 		{
 			sess->pauseSoundNodeList->SetSoundVolume(sVol);
 		}
+
+		sess->runningTimerDisplay.showRunningTimer = d.showRunningTimer;
+		sess->frameRateDisplay.showFrameRate = d.showFPS;
 	}
 
 	if (windowNeedsReset)

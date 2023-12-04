@@ -17,6 +17,7 @@
 #include "AdventureManager.h"
 #include "NetplayManager.h"
 #include "Leaderboard.h"
+#include "Config.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -27,6 +28,8 @@ WorldMap::WorldMap()
 {
 	mainMenu = MainMenu::GetInstance();
 	adventureManager = mainMenu->adventureManager;
+
+	adventureManager->parallelPracticeMode = mainMenu->config->GetData().parallelPlayOn;
 	
 	allUnlocked = false;
 
@@ -619,7 +622,16 @@ void WorldMap::Update()
 		}
 		else if (controllerInput->ButtonPressed_Start())
 		{
-			adventureManager->parallelPracticeMode = !adventureManager->parallelPracticeMode;
+			if (MainMenu::GetInstance()->steamOn)
+			{
+				adventureManager->parallelPracticeMode = !adventureManager->parallelPracticeMode;
+
+				ConfigData data = mainMenu->config->GetData();
+				data.parallelPlayOn = adventureManager->parallelPracticeMode;
+				mainMenu->config->SetData(data);
+				mainMenu->config->Save();
+			}
+			
 		}
 
 		if (!MainMenu::GetInstance()->steamOn)

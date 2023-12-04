@@ -322,6 +322,8 @@ struct PState
 
 	int currTouchedGateID;
 
+	int swordState;
+
 	V2d springVel;
 	double glideTurnFactor;
 

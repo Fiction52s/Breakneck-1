@@ -34,6 +34,8 @@ struct GameSettingsScreen : TilesetManager, GUIHandler
 	Button *checkForControllerButton;
 	Label *resolutionLabel;
 	Label *windowModeLabel;
+	CheckBox *showFPSCheckBox;
+	CheckBox *showRunningTimerCheckBox;
 
 	std::vector<sf::Vector2i> resolutions;
 	std::vector<int> windowModes;

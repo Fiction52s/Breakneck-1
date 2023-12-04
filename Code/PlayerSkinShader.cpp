@@ -24,9 +24,6 @@ PlayerSkinShader::PlayerSkinShader(ShaderType sType)
 	case ST_AURA:
 		shaderStr = "aura";
 		break;
-	case ST_SWORD:
-		shaderStr = "sword";
-		break;
 	}
 
 	MainMenu::GetInstance()->LoadShader(pShader, shaderStr);

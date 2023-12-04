@@ -484,6 +484,8 @@ void Actor::PopulateState(PState *ps)
 	ps->hitGoal = hitGoal;
 
 	ps->currTouchedGateID = sess->GetGateID(gateTouched);
+
+	ps->swordState = swordState;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -765,6 +767,8 @@ void Actor::PopulateFromState(PState *ps)
 	hitGoal = ps->hitGoal;
 
 	gateTouched = sess->GetGateFromID(ps->currTouchedGateID);
+
+	swordState = ps->swordState;
 }
 
 void Actor::SetSession(Session *p_sess,
@@ -3363,7 +3367,7 @@ void Actor::UpdateActionSprite()
 Actor::Actor()
 	:dead(false), actorIndex(0), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_SWORD),
+	exitAuraShader(PlayerSkinShader::ST_BOOST),
 	originalProgressionUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	originalProgressionLogField(LogDetailedInfo::MAX_LOGS)
 {
@@ -3384,7 +3388,7 @@ Actor::Actor()
 Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	:dead(false), actorIndex(p_actorIndex), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST), swordShader(PlayerSkinShader::ST_SWORD),
+	exitAuraShader(PlayerSkinShader::ST_BOOST),
 	originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 	{
@@ -4783,6 +4787,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn( bool setStartPos )
 {
 	swordShader.SetSkin(0);
+	
 
 	gravityIncreaserTrailEmitter->Reset();
 	gravityDecreaserTrailEmitter->Reset();
@@ -5223,6 +5228,7 @@ void Actor::Respawn( bool setStartPos )
 
 void Actor::ResetAttackHit()
 {
+	swordState = SWORDSTATE_REGULAR;
 	currAttackHit = false;
 	for (int i = 0; i < 4; ++i)
 	{
@@ -17837,7 +17843,14 @@ void Actor::SlowDependentFrameIncrement()
 				--invincibleFrames;
 
 		if (flashFrames > 0)
+		{
 			--flashFrames;
+			if (flashFrames <= 2)
+			{
+				swordState = SWORDSTATE_REGULAR;
+			}
+		}
+			
 
 
 	}
@@ -21594,15 +21607,18 @@ void Actor::Draw( sf::RenderTarget *target )
 		{
 			//sf::Shader &swordSh = swordShaders[speedLevel];
 
-			if (flashFrames > 2)//0)
-			{
-				target->draw(swordSprite, &swordShader.pShader);//&swordSh);
-			}
-			else
-			{
-				target->draw(swordSprite, &swordShader.pShader);
-				//target->draw(swordSprite);// , &swordShader.pShader);
-			}
+			swordShader.SetOffset(swordState);
+			target->draw(swordSprite, &swordShader.pShader);
+
+			//if (flashFrames > 2)//0)
+			//{
+			//	target->draw(swordSprite, &swordShader.pShader);//&swordSh);
+			//}
+			//else
+			//{
+			//	target->draw(swordSprite, &swordShader.pShader);
+			//	//target->draw(swordSprite);// , &swordShader.pShader);
+			//}
 
 		}
 	}
@@ -22132,6 +22148,8 @@ void Actor::ConfirmHit( Enemy *e )
 	bool hasMomentumUpgrade = false;
 	bool hasRegenUpgrade = false;
 
+	swordState = SWORDSTATE_HITTING;
+
 	Color c;
 	switch(e->world )
 	{
@@ -22173,6 +22191,7 @@ void Actor::ConfirmHit( Enemy *e )
 	if (e->numHealth == 1)
 	{
 		c = Color::Red;
+		swordState = SWORDSTATE_KILLING;
 	}
 
 	float speedBarAddition = hitParams.speedBar;
@@ -22207,6 +22226,7 @@ void Actor::ConfirmHit( Enemy *e )
 	flashFrames = currHitboxInfo->hitlagFrames;// +1;
 
 	swordShader.SetSkin(0);
+	swordShader.SetOffset(swordState);
 	/*for( int i = 0; i < 3; ++i )
 	{
 		swordShaders[i].setUniform( "toColor", ColorGL( flashColor ) );
@@ -24626,7 +24646,15 @@ void Actor::UpdateInHitlag()
 	TryChangePowerMode();
 
 	if (flashFrames > 0)
+	{
 		--flashFrames;
+
+		if (flashFrames <= 2)
+		{
+			swordState = SWORDSTATE_REGULAR;
+		}
+	}
+		
 
 	//might be more stuff missing here?
 

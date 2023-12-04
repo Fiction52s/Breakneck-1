@@ -16,30 +16,20 @@ struct ConfigData
 	int windowStyle;
 	int musicVolume;
 	int soundVolume;
+	bool parallelPlayOn;
+	bool showRunningTimer;
+	bool showFPS;
 };
 
 struct Config
 {
 	Config();
-
-	bool IsDoneLoading();
-	bool IsDoneSaving();
 	void Load();
 	void Save();
-	void Shutdown();
-	bool shutDown;
-	void WaitForLoad();
-	void WaitForSave();
 	const ConfigData &GetData();
 	void SetData(ConfigData &data);
-	void SetThread( boost::thread *p_t );
-	static void CreateSaveThread(Config *config);
-	static void CreateLoadThread(Config *config);
 	void SetToDefault();
 private:
-	bool doneSaving;
-	bool doneLoading;
-	boost::thread *t;
 	ConfigData data;
 };
 

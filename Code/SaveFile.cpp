@@ -681,7 +681,7 @@ void SaveFile::SetAsDefault()
 	defaultSkinIndex = 0;
 }
 
-string GlobalSaveFile::fileName = "Resources/Adventure/SaveData/globalsave" + string(GLOBAL_SAVE_EXT);
+string GlobalSaveFile::fileName = "Resources/globalsave" + string(GLOBAL_SAVE_EXT);
 
 GlobalSaveFile::GlobalSaveFile()
 	:skinField(64)
@@ -758,4 +758,5 @@ void GlobalSaveFile::SetToDefaults()
 	SetVer(1);
 	skinField.Reset();
 	skinField.SetBit(0, true);
+
 }

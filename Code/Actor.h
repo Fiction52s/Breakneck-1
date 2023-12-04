@@ -23,6 +23,7 @@
 #include <iostream>
 #include "EnemyTracker.h"
 #include "PlayerSkinShader.h"
+#include "PlayerSkinSwordShader.h"
 
 struct AdventureManager;
 
@@ -478,6 +479,13 @@ struct Actor : QuadTreeCollider,
 		PLAYERFX_Count,
 	};
 
+	enum SwordState
+	{
+		SWORDSTATE_REGULAR,
+		SWORDSTATE_HITTING,
+		SWORDSTATE_KILLING,
+	};
+
 	struct FXInfo
 	{
 		EffectLayer layer;
@@ -904,7 +912,8 @@ struct Actor : QuadTreeCollider,
 	PlayerSkinShader skinShader;
 	PlayerSkinShader exitAuraShader;
 
-	PlayerSkinShader swordShader;
+	PlayerSkinSwordShader swordShader;
+	int swordState;
 
 	int superActiveLimit;
 	int attackLevelCounterLimit;

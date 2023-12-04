@@ -7,16 +7,6 @@
 using namespace std;
 
 
-void Config::CreateLoadThread( Config *config )
-{
-	config->SetThread( new boost::thread( boost::bind( &Config::Load, config ) ) );
-}
-
-void Config::CreateSaveThread(Config *config)
-{
-	config->SetThread(new boost::thread(boost::bind(&Config::Save, config)));
-}
-
 //config data struct. honestly this should create a warning when your config file is messed up
 
 ConfigData::ConfigData()
@@ -32,49 +22,19 @@ void ConfigData::SetToDefault()
 	windowStyle = sf::Style::Fullscreen;
 	musicVolume = 100;
 	soundVolume = 100;
+	parallelPlayOn = true;
+	showRunningTimer = false;
+	showFPS = false;
 }
 
 Config::Config()
-	:doneLoading( false ), doneSaving( false )
 {
-	t = NULL;
 	SetToDefault();
-	//CreateLoadThread( this );
 }
 
 void Config::SetToDefault()
 {
 	data.SetToDefault();
-}
-
-void Config::SetThread( boost::thread *p_t )
-{
-	assert(t == NULL);
-	t = p_t;
-}
-
-bool Config::IsDoneLoading()
-{
-	return doneLoading;
-}
-
-bool Config::IsDoneSaving()
-{
-	return doneSaving;
-}
-
-void Config::WaitForLoad()
-{
-	t->join();
-	delete t;
-	t = NULL;
-}
-
-void Config::WaitForSave()
-{
-	t->join();
-	delete t;
-	t = NULL;
 }
 
 void Config::Load()
@@ -127,6 +87,24 @@ void Config::Load()
 				is >> vol;
 				data.musicVolume = vol;
 			}
+			else if (settingName == "parallelplayon")
+			{
+				int par;
+				is >> par;
+				data.parallelPlayOn = par;
+			}
+			else if (settingName == "showrunningtimer")
+			{
+				int rtd;
+				is >> rtd;
+				data.showRunningTimer = rtd;
+			}
+			else if (settingName == "showfps")
+			{
+				int fps;
+				is >> fps;
+				data.showFPS = fps;
+			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -176,6 +154,9 @@ void Config::Save()
 		of << "WindowMode " << data.GetWindowModeString(data.windowStyle) << "\n";
 		of << "MusicVolume " << data.musicVolume << "\n";
 		of << "SoundVolume " << data.soundVolume << "\n";
+		of << "ParalelPlayOn " << (int)data.parallelPlayOn << "\n";
+		of << "ShowRunningTimer " << (int)data.showRunningTimer << "\n";
+		of << "ShowFPS" << (int)data.showFPS << "\n";
 		of.close();
 	}
 	else
