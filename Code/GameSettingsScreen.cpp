@@ -11,7 +11,7 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
-	panel = new Panel("gamesettingsscreen", 1000, 700, this, true);
+	panel = new Panel("gamesettingsscreen", 1400, 700, this, true);
 	//panel->SetColor(Color::Transparent);
 	//panel->SetTop
 	panel->SetCenterPos(Vector2i(960, 540));
@@ -29,6 +29,8 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 
 	showFPSCheckBox = panel->AddLabeledCheckBox("showfpscheckbox", Vector2i( 0, 0 ), "Show FPS:");
 	showRunningTimerCheckBox = panel->AddLabeledCheckBox("showrunningtimercheckbox", Vector2i(0, 0), "Show Running Timer:");
+
+	panel->SetAutoSpacing(false, true, Vector2i(800, 350), Vector2i(0, 60));
 
 	defaultButton = panel->AddButton("defaultbutton", Vector2i(0, 0), Vector2f(400, 40), "Restore Defaults");
 	applyButton = panel->AddButton("applybutton", Vector2i(0, 0), Vector2f(400, 40), "APPLY");
