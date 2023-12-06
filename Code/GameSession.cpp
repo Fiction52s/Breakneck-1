@@ -3628,7 +3628,7 @@ int GameSession::Run()
 	}*/
 
 
-	if (netplayManager->action == NetplayManager::A_PRACTICE_SETUP_ERROR)
+	if (netplayManager != NULL && netplayManager->action == NetplayManager::A_PRACTICE_SETUP_ERROR)
 	{
 		cout << "turning off parallel practice due to connection error" << "\n";
 		matchParams.netplayManager = NULL;

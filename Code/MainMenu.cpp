@@ -1301,6 +1301,7 @@ void MainMenu::SetMode(Mode m)
 	//get buffered
 	if (menuMode == TITLEMENU || menuMode == TRANS_MAIN_TO_SAVE )//|| menuMode == WORLDMAP)
 	{
+		isCursorModeOn = false;
 		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
 	}
@@ -3128,6 +3129,8 @@ void MainMenu::HandleMenuMode()
 
 		if (gameSettingsScreen->action == GameSettingsScreen::A_CANCEL)
 		{
+			MOUSE.SetControllersOn(false);
+			MOUSE.Hide();
 			SetMode(TITLEMENU);
 		}
 		break;
@@ -4391,6 +4394,11 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_OPTIONS:
 		{
+			MOUSE.Show();
+			MOUSE.SetControllersOn(true);
+			MOUSE.Update(mousePixelPos);
+			CONTROLLERS.Update();
+			UICONTROLLER.Update();
 			//config->Load();
 			config->Load();
 			//Config::CreateLoadThread(config);
