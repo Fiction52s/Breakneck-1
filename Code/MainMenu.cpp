@@ -1301,7 +1301,8 @@ void MainMenu::SetMode(Mode m)
 	//get buffered
 	if (menuMode == TITLEMENU || menuMode == TRANS_MAIN_TO_SAVE )//|| menuMode == WORLDMAP)
 	{
-		isCursorModeOn = false;
+		
+		
 		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
 	}
@@ -1321,6 +1322,9 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == TITLEMENU)
 	{
 		selectorAnimFrame = 0;
+		isCursorModeOn = false;
+		MOUSE.Hide();
+		MOUSE.SetControllersOn(false);
 		//MOUSE.Show();
 		customCursor->SetMode(CustomCursor::M_REGULAR);
 		//customCursor-
@@ -1329,6 +1333,7 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == ONLINE_MENU)
 	{
 		MOUSE.Show();
+		MOUSE.SetControllersOn(true);
 		onlineMenuScreen->Start();
 	}
 	else if (menuMode == EDITOR_MENU)
@@ -4387,6 +4392,12 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LEVEL_EDITOR:
 		{
+			MOUSE.Show();
+			MOUSE.SetControllersOn(true);
+			MOUSE.Update(mousePixelPos);
+			CONTROLLERS.Update();
+			UICONTROLLER.Update();
+
 			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(EDITOR_MENU);
 			//RunEditor(TITLEMENU, "");
@@ -4500,10 +4511,10 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 			int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
 
-			/*if (res != 0)
+			if (res != 0)
 			{
-			soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
-			}*/
+				soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
+			}
 
 			while (!activatedMainMenuOptions[saSelector->currIndex])
 			{
