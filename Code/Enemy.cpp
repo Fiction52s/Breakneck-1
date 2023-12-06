@@ -1825,14 +1825,14 @@ void Enemy::ConfirmKill()
 	}
 	if (receivedHit.comboer)
 	{
-		pauseFrames = 7;
+		pauseFrames = 6;
 		Enemy *ce = sess->GetEnemyFromID(comboHitEnemyID);
 		ce->ComboKill(this);
 
 	}
 	else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
 	{
-		pauseFrames = 7;
+		pauseFrames = 6;
 	}
 	else
 	{

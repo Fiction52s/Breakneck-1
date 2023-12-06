@@ -2093,6 +2093,9 @@ bool AllControllers::DirPressed_Left()
 			states = GetStateQueue(i, j);
 			if (states != NULL && states->DirPressed_Left())
 				return true;
+
+			if (states != NULL && states->ButtonPressed_PadLeft())
+				return true;
 		}
 	}
 
@@ -2108,6 +2111,9 @@ bool AllControllers::DirPressed_Right()
 		{
 			states = GetStateQueue(i, j);
 			if (states != NULL && states->DirPressed_Right())
+				return true;
+
+			if (states != NULL && states->ButtonPressed_PadRight())
 				return true;
 		}
 	}
@@ -2125,6 +2131,9 @@ bool AllControllers::DirPressed_Up()
 			states = GetStateQueue(i, j);
 			if (states != NULL && states->DirPressed_Up())
 				return true;
+
+			if (states != NULL && states->ButtonPressed_PadUp())
+				return true;
 		}
 	}
 
@@ -2140,6 +2149,9 @@ bool AllControllers::DirPressed_Down()
 		{
 			states = GetStateQueue(i, j);
 			if (states != NULL && states->DirPressed_Down())
+				return true;
+
+			if (states != NULL && states->ButtonPressed_PadDown())
 				return true;
 		}
 	}

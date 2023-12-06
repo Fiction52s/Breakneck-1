@@ -160,6 +160,12 @@ void SinglePlayerControllerJoinScreen::Update()
 	{
 	case A_WAITING_FOR_PLAYER:
 	{
+		if (CONTROLLERS.ButtonPressed_B())
+		{
+			Quit();
+			return;
+		}
+
 		if (playerBoxGroup->CheckControllerJoins())
 		{
 			SetAction(A_READY);
@@ -171,6 +177,12 @@ void SinglePlayerControllerJoinScreen::Update()
 	}
 	case A_READY:
 	{
+		if (CONTROLLERS.ButtonPressed_B())
+		{
+			Start();
+			break;
+		}
+
 		ControllerDualStateQueue *states = playerBoxGroup->GetControllerStates(0);
 
 		if (states != NULL)
@@ -287,5 +299,5 @@ void SinglePlayerControllerJoinScreen::SetAction(int a)
 
 void SinglePlayerControllerJoinScreen::CancelCallback(Panel *p)
 {
-	Quit();
+	//Quit();
 }

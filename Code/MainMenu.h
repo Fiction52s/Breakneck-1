@@ -265,6 +265,8 @@ struct MainMenu : TilesetManager
 		PTS_FX_EXITENERGY_2,
 	};
 
+	bool isCursorModeOn;
+
 	bool steamOn;
 	RemoteStorageManager *remoteStorageManager;
 	//testing
@@ -342,6 +344,7 @@ struct MainMenu : TilesetManager
 	WorkshopBrowser *workshopBrowser;
 	WorkshopManager *workshopManager;
 
+	sf::Vector2i oldMousePixelPos;
 	sf::Vector2i mousePixelPos;
 	
 	void UpdateMenuOptionText();

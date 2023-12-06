@@ -1075,6 +1075,12 @@ void NetplayManager::Update()
 		{
 			PracticeConnect();
 		}
+		else if( lobbyManager->action == LobbyManager::A_ERROR )
+		{
+			cout << "lobby creation failed. entering map." << endl;
+			action = A_PRACTICE_SETUP_ERROR;
+		}
+		//else if( lobbyManager->FailedTo)
 		break;
 	}
 	case A_PRACTICE_SETUP:
@@ -3260,6 +3266,11 @@ void NetplayManager::PrepareClientForNextQuickplayMap()
 
 bool NetplayManager::SendPracticeInitMessageToPlayer(PracticePlayer &pracPlayer)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	PracticeMsgHeader pm(PracticeMsgHeader::MSG_TYPE_INIT);
 
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
@@ -3283,6 +3294,11 @@ bool NetplayManager::SendPracticeInitMessageToPlayer(PracticePlayer &pracPlayer)
 
 void NetplayManager::SendPracticeInitMessageToAllNewPeers()
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return;
+	}
+
 	assert(action == A_PRACTICE_TEST);
 	if (action != A_PRACTICE_TEST)
 	{
@@ -3303,6 +3319,11 @@ void NetplayManager::SendPracticeInitMessageToAllNewPeers()
 
 bool NetplayManager::SendPracticeInputMessageToPlayer(PracticePlayer &pracPlayer, PracticeInputMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	//k_EP2PSendReliable
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable | k_nSteamNetworkingSend_NoNagle, NULL);
 
@@ -3331,6 +3352,11 @@ bool NetplayManager::SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer
 
 	memcpy(tempBuffer, buf, bufSize);*/
 
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	assert(pm.numSyncBytes == 0);
 
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
@@ -3354,6 +3380,11 @@ bool NetplayManager::SendPracticeStartMessageToPlayer(PracticePlayer &pracPlayer
 
 bool NetplayManager::SendPracticeStartMessageToPlayerAsBuffer(PracticePlayer &pracPlayer, unsigned char *buf, int bufSize)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, buf, bufSize, k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
@@ -3375,6 +3406,10 @@ bool NetplayManager::SendPracticeStartMessageToPlayerAsBuffer(PracticePlayer &pr
 
 void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm )
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return;
+	}
 	assert(action == A_PRACTICE_TEST);
 	if (action != A_PRACTICE_TEST)
 	{
@@ -3397,6 +3432,11 @@ void NetplayManager::SendPracticeInputMessageToAllPeers(PracticeInputMsg &pm )
 
 void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return;
+	}
+
 	//assert(action == A_PRACTICE_SETUP);
 	/*if (action != A_PRACTICE_SETUP)
 	{
@@ -3488,6 +3528,11 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 
 bool NetplayManager::SendPracticeSequenceConfirmMessageToPlayer(PracticePlayer &pracPlayer, PracticeSequenceConfirmMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
@@ -3504,6 +3549,11 @@ bool NetplayManager::SendPracticeSequenceConfirmMessageToPlayer(PracticePlayer &
 
 void NetplayManager::SendPracticeSequenceConfirmMessageToAllPeers(PracticeSequenceConfirmMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return;
+	}
+
 	assert(action == A_PRACTICE_TEST);
 	if (action != A_PRACTICE_TEST)
 	{
@@ -3524,6 +3574,11 @@ void NetplayManager::SendPracticeSequenceConfirmMessageToAllPeers(PracticeSequen
 
 bool NetplayManager::SendPracticeStateChangeMessageToPlayer(PracticePlayer &pracPlayer, PracticeStateChangeMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
@@ -3540,6 +3595,11 @@ bool NetplayManager::SendPracticeStateChangeMessageToPlayer(PracticePlayer &prac
 
 void NetplayManager::SendPracticeStateChangeMessageToAllPeers(PracticeStateChangeMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return;
+	}
+
 	assert(action == A_PRACTICE_TEST);
 	if (action != A_PRACTICE_TEST)
 	{
@@ -3560,6 +3620,11 @@ void NetplayManager::SendPracticeStateChangeMessageToAllPeers(PracticeStateChang
 
 bool NetplayManager::SendPracticeRaceStartRequestMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceStartRequestMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
@@ -3576,6 +3641,11 @@ bool NetplayManager::SendPracticeRaceStartRequestMessageToPlayer(PracticePlayer 
 
 bool NetplayManager::SendPracticeRaceCancelMessageToPlayer(PracticePlayer &pracPlayer, PracticeRaceCancelMsg &pm)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
 	if (res == k_EResultOK)
@@ -3592,6 +3662,11 @@ bool NetplayManager::SendPracticeRaceCancelMessageToPlayer(PracticePlayer &pracP
 
 bool NetplayManager::SendPracticeWantsToPlayMessageToPlayer(PracticePlayer &pracPlayer)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	PracticeWantsToPlayMsg pm;
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
@@ -3609,6 +3684,11 @@ bool NetplayManager::SendPracticeWantsToPlayMessageToPlayer(PracticePlayer &prac
 
 bool NetplayManager::SendPracticeDoesntWantToPlayMessageToPlayer(PracticePlayer &pracPlayer)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	PracticeDoesntWantToPlayMsg pm;
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
 
@@ -3627,7 +3707,7 @@ bool NetplayManager::SendPracticeDoesntWantToPlayMessageToPlayer(PracticePlayer 
 bool NetplayManager::IsPracticeMode()
 {
 	return action == A_PRACTICE_TEST || action == A_PRACTICE_CHECKING_FOR_LOBBIES || action == A_PRACTICE_WAIT_FOR_IN_LOBBY
-		|| action == A_PRACTICE_SETUP;
+		|| action == A_PRACTICE_SETUP || action == A_PRACTICE_SETUP_ERROR;
 }
 
 bool NetplayManager::TrySetupPractice( GameSession *game )
@@ -3688,6 +3768,11 @@ void NetplayManager::StartTestRace()
 
 bool NetplayManager::SendRequestPracticePlayerToRace(PracticePlayer &pracPlayer)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	//assert(pracPlayer.isConnectedTo);
 
 	PracticeRaceStartRequestMsg pm;
@@ -3704,6 +3789,11 @@ bool NetplayManager::SendRequestPracticePlayerToRace(PracticePlayer &pracPlayer)
 
 bool NetplayManager::SendPracticePlayerRaceStartResponse(PracticePlayer &pracPlayer, bool accept)
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	PracticeRaceStartResponseMsg pm;
 	pm.acceptedRequest = accept;
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(pracPlayer.connection, &pm, sizeof(pm), k_nSteamNetworkingSend_Reliable, NULL);
@@ -3731,6 +3821,11 @@ bool NetplayManager::SendPracticePlayerRaceStartResponse(PracticePlayer &pracPla
 
 bool NetplayManager::SendCancelPracticePlayerRace()
 {
+	if (action == A_PRACTICE_SETUP_ERROR)
+	{
+		return true;
+	}
+
 	//assert(pracPlayer.isConnectedTo);
 
 	int oppIndex = GetPracticeRaceOpponentPracticeIndex();

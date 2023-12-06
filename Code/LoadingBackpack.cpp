@@ -43,8 +43,8 @@ void LoadingBackpack::Draw(sf::RenderTarget *target)
 
 void LoadingBackpack::Update()
 {
-	loadingIconBackpack[1].rotate(-1);
-	loadingIconBackpack[2].rotate(2);
+	loadingIconBackpack[1].rotate(-2);
+	loadingIconBackpack[2].rotate(4);
 }
 
 //loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 200);

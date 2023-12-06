@@ -4830,11 +4830,14 @@ void Actor::Respawn( bool setStartPos )
 	{
 		if (parallelPracticeAndImParallel)
 		{
-			assert(sess->netplayManager != NULL);
+			if (sess->netplayManager != NULL)
+			{
+				assert(sess->netplayManager != NULL);
 
-			string pName = sess->netplayManager->practicePlayers[sess->parallelSessionIndex].name;
-			nameTag->SetName(pName);
-			nameTag->SetActive(true);
+				string pName = sess->netplayManager->practicePlayers[sess->parallelSessionIndex].name;
+				nameTag->SetName(pName);
+				nameTag->SetActive(true);
+			}
 		}
 		else if( sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && sess->netplayManager != NULL )
 		{

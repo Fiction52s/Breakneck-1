@@ -743,7 +743,7 @@ bool GameSession::RunPreUpdate()
 	UpdateDebugModifiers();
 
 	//if you get a message to play but you're not in the menu already
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+	if (netplayManager != NULL && gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
 	{
 		if (netplayManager->HasBeenInvitedToPracticeRace())
 		{
@@ -1914,23 +1914,49 @@ bool GameSession::Load()
 	{
 		if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 		{
-			mainMenu->adventureManager->SetBoards(this);
+			if (IsParallelSession())
+			{
+				logMenu = mainMenu->adventureManager->pauseMenu->logMenu;
+			}
+			else
+			{
+				mainMenu->adventureManager->SetBoards(this);
 
-			pauseMenu = mainMenu->adventureManager->pauseMenu;
-			pauseMenu->SetGame(this);
+				pauseMenu = mainMenu->adventureManager->pauseMenu;
+				pauseMenu->SetGame(this);
 
 
-			shardMenu = pauseMenu->shardMenu;
-			logMenu = pauseMenu->logMenu;
+				shardMenu = pauseMenu->shardMenu;
+				logMenu = pauseMenu->logMenu;
+			}
 		}
 		else
 		{
-			pauseMenu = new PauseMenu(this);
-			pauseMenu->SetGame(this);
+			if (!IsParallelSession())
+			{
+				pauseMenu = new PauseMenu(this);
+				pauseMenu->SetGame(this);
 
-			shardMenu = pauseMenu->shardMenu;
-			logMenu = pauseMenu->logMenu;
+				shardMenu = pauseMenu->shardMenu;
+				logMenu = pauseMenu->logMenu;
+			}
+			else
+			{
+				//this should be cleaned up because the parallel session doesn't need either of these. not relevant right now outside of freeplay though which doesn't have parallel play
+				assert(0);
+				pauseMenu = new PauseMenu(this);
+				pauseMenu->SetGame(this);
+
+				shardMenu = pauseMenu->shardMenu;
+				logMenu = pauseMenu->logMenu;
+			}
 		}
+	}
+	else
+	{
+		//dont set game to this, but I still need to access the log menu
+		pauseMenu = mainMenu->adventureManager->pauseMenu;
+		logMenu = pauseMenu->logMenu;
 	}
 	
 
@@ -3601,6 +3627,19 @@ int GameSession::Run()
 		SetActiveSequence(shipEnterScene);
 	}*/
 
+
+	if (netplayManager->action == NetplayManager::A_PRACTICE_SETUP_ERROR)
+	{
+		cout << "turning off parallel practice due to connection error" << "\n";
+		matchParams.netplayManager = NULL;
+		netplayManager = NULL;
+		matchParams.gameModeType = MatchParams::GAME_MODE_BASIC;
+		gameModeType = matchParams.gameModeType;
+		matchParams.numPlayers = 1;
+		m_numActivePlayers = 1;
+		SetupGameMode();
+	}
+
 	RestartLevel();
 
 	if (IsParallelGameModeType())
@@ -3610,6 +3649,8 @@ int GameSession::Run()
 		//trying to restart parallel races
 		cout << "restarting parallel sessions" << "\n";
 	}
+
+	
 
 	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();
 

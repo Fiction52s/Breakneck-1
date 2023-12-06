@@ -657,10 +657,14 @@ void MainMenu::UpdateMenuOptionText()
 MainMenu::MainMenu( bool p_steamOn)
 	:windowWidth(1920), windowHeight(1080)
 {
+	mousePixelPos = Vector2i(-1, -1);
+
 	assert(currInstance == NULL);
 	currInstance = this;
 
 	steamOn = p_steamOn;
+
+	isCursorModeOn = false;
 
 	//steamOn = false;
 
@@ -971,6 +975,9 @@ void MainMenu::SetupWindow()
 	customCursor->Init(window);
 
 	MOUSE.SetCustomCursor(customCursor);
+
+	MOUSE.Hide();
+	MOUSE.SetControllersOn(false);
 
 	//window->setMouseCursorVisible(false);
 
@@ -1313,10 +1320,9 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == TITLEMENU)
 	{
 		selectorAnimFrame = 0;
-		MOUSE.SetControllersOn(true);
-		MOUSE.Show();
+		//MOUSE.Show();
 		customCursor->SetMode(CustomCursor::M_REGULAR);
-		customCursor->Show();
+		//customCursor-
 	}
 
 	if (menuMode == ONLINE_MENU)
@@ -2097,6 +2103,8 @@ void MainMenu::Run()
 			{
 				CONTROLLERS.Update();
 
+				oldMousePixelPos = mousePixelPos;
+
 				mousePixelPos = GetPixelPos();//sf::Mouse::getPosition(*window);
 
 				MOUSE.Update(mousePixelPos);
@@ -2278,11 +2286,11 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
 	
 	//do this when using practice mode!
-	if (adventureManager->parallelPracticeMode)
+	if (adventureManager->parallelPracticeMode )
 	{
 		mp.gameModeType = MatchParams::GAME_MODE_PARALLEL_PRACTICE;
 		mp.netplayManager = netplayManager;
-		mp.numPlayers = 2; //me plus 1 other person for now
+		mp.numPlayers = 1;//2; //me plus 1 other person for now //I think this doesn't matter since I can have up to 4 anyway.
 		netplayManager->FindPracticeMatch(levelPath, loadParams.level->index );
 	}
 
@@ -2563,7 +2571,7 @@ void MainMenu::HandleMenuMode()
 			}
 			else
 			{
-				loadingBackpack->Update();
+				//loadingBackpack->Update();
 				//loadingIconBackpack[1].rotate(-1);
 				//loadingIconBackpack[2].rotate(2);
 			}
@@ -2582,6 +2590,10 @@ void MainMenu::HandleMenuMode()
 		netplayManager->Update();
 
 		if (netplayManager->TrySetupPractice(currLevel))
+		{
+			SetMode(RUN_ADVENTURE_MAP);
+		}
+		else if (netplayManager->action == NetplayManager::A_PRACTICE_SETUP_ERROR)
 		{
 			SetMode(RUN_ADVENTURE_MAP);
 		}
@@ -2619,7 +2631,7 @@ void MainMenu::HandleMenuMode()
 			}
 			else
 			{
-				loadingBackpack->Update();
+				//loadingBackpack->Update();
 			}
 		}
 		break;
@@ -2668,6 +2680,10 @@ void MainMenu::HandleMenuMode()
 			if (netplayManager != NULL && netplayManager->IsPracticeMode())
 			{
 				if (netplayManager->TrySetupPractice(currLevel))
+				{
+					adventureManager->kinBoostScreen->End();
+				}
+				else if (netplayManager->action == NetplayManager::A_PRACTICE_SETUP_ERROR)
 				{
 					adventureManager->kinBoostScreen->End();
 				}
@@ -4183,7 +4199,7 @@ Tileset *MainMenu::GetPlayerTileset(PlayerTilesetOptions option)
 
 void MainMenu::LoadMode(Mode m)
 {
-	if (m == TITLEMENU || m == ONLINE_MENU )
+	if (m == ONLINE_MENU )
 	{
 		MOUSE.Show();
 	}
@@ -4213,6 +4229,8 @@ bool MainMenu::IsSkinUnlocked(int skinIndex)
 	return globalFile->IsSkinUnlocked(skinIndex);
 }
 
+
+
 void MainMenu::TitleMenuModeUpdate()
 {
 	titleScreen->Update();
@@ -4225,7 +4243,7 @@ void MainMenu::TitleMenuModeUpdate()
 	{
 		selectorAnimFrame = 0;
 	}
-	
+
 	sf::Event ev;
 	while (window->pollEvent(ev))
 	{
@@ -4305,17 +4323,30 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 	}
 
-	bool isMouseClickedOnCurrentOption = false;
+	bool currOptionPressed = false;
+
 
 	//probably refine this later to capture the mouse etc zzz
-	if (QuadContainsPoint(mainMenuOptionQuads + saSelector->currIndex * 4,
-		MOUSE.GetFloatPos()) && MOUSE.IsMouseLeftClicked())
-	{
-		isMouseClickedOnCurrentOption = true;
-	}
-	
 
-	if (isMouseClickedOnCurrentOption )//|| CONTROLLERS.ButtonPressed_A() )
+	if (isCursorModeOn)
+	{
+		if (QuadContainsPoint(mainMenuOptionQuads + saSelector->currIndex * 4,
+			MOUSE.GetFloatPos()) && MOUSE.IsMouseLeftClicked())
+		{
+			currOptionPressed = true;
+		}
+	}
+	else if (!isCursorModeOn)
+	{
+		if (CONTROLLERS.ButtonPressed_A())
+		{
+			currOptionPressed = true;
+		}
+
+	}
+
+
+	if (currOptionPressed)//|| CONTROLLERS.ButtonPressed_A() )
 	{
 		soundNodeList->ActivateSound(soundManager.GetSound("main_menu_select"));
 		switch (saSelector->currIndex)
@@ -4328,7 +4359,7 @@ void MainMenu::TitleMenuModeUpdate()
 			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
 			//customCursor->SetMode(CustomCursor::M_SHIP);
-			
+
 			break;
 		}
 		case M_FREE_PLAY:
@@ -4348,7 +4379,7 @@ void MainMenu::TitleMenuModeUpdate()
 			//netplayManager->isSyncTest = true;
 			//netplayManager->FindQuickplayMatch();
 			//SetMode(QUICKPLAY_TEST);
-			
+
 			break;
 		}
 		case M_LEVEL_EDITOR:
@@ -4364,7 +4395,7 @@ void MainMenu::TitleMenuModeUpdate()
 			config->Load();
 			//Config::CreateLoadThread(config);
 			//config->WaitForLoad();
-			
+
 			gameSettingsScreen->Start();
 			SetMode(GAME_SETTINGS);
 			//SetMode(TRANS_MAIN_TO_GAME_SETTINGS);
@@ -4396,7 +4427,7 @@ void MainMenu::TitleMenuModeUpdate()
 			}
 
 			SetMode(CUSTOM_MATCH_SETUP);*/
-			
+
 
 			//mapBrowserScreen->Start();
 			//SetMode(BROWSE_WORKSHOP);
@@ -4421,53 +4452,75 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 
 		int oldIndex = saSelector->currIndex;
-		//int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+
+
+		if (isCursorModeOn)
+		{
+			if (CONTROLLERS.DirPressed_Up() || CONTROLLERS.DirPressed_Down())
+			{
+				isCursorModeOn = false;
+				MOUSE.Hide();
+			}
+		}
+		else
+		{
+			if (oldMousePixelPos.x >= 0 && oldMousePixelPos.y >= 0 && mousePixelPos != oldMousePixelPos)
+			{
+				isCursorModeOn = true;
+				MOUSE.Show();
+			}
+		}
 
 		//if mouse is enabled, lets you mouse over to select
-		for (int i = 0; i < saSelector->totalItems; ++i)
+		if (isCursorModeOn)
 		{
-			if (activatedMainMenuOptions[i] && saSelector->currIndex != i )
+			for (int i = 0; i < saSelector->totalItems; ++i)
 			{
-				if (QuadContainsPoint(mainMenuOptionQuads + i * 4,
-					MOUSE.GetFloatPos()))
+				if (activatedMainMenuOptions[i] && saSelector->currIndex != i)
 				{
-					saSelector->SetIndex(i);
-					soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
-					break;
+					if (QuadContainsPoint(mainMenuOptionQuads + i * 4,
+						MOUSE.GetFloatPos()))
+					{
+						saSelector->SetIndex(i);
+						soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
+						break;
+					}
 				}
 			}
 		}
-		
-
-		/*if (res != 0)
+		else
 		{
+			int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
+
+			/*if (res != 0)
+			{
 			soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
-		}*/
+			}*/
 
-		//while (!activatedMainMenuOptions[saSelector->currIndex])
-		//{
-		//	if (saSelector->currIndex != oldIndex)
-		//	{
-		//		if (saSelector->currIndex > oldIndex || (saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
-		//		{
-		//			//down
-		//			++saSelector->currIndex;
-		//			if (saSelector->currIndex == saSelector->totalItems)
-		//			{
-		//				saSelector->currIndex = 0;
-		//			}
-		//		}
-		//		else
-		//		{
-		//			--saSelector->currIndex;
-		//			if (saSelector->currIndex < 0)
-		//			{
-		//				saSelector->currIndex = saSelector->totalItems - 1;
-		//			}
-		//		}
-		//	}
-		//}
-
+			while (!activatedMainMenuOptions[saSelector->currIndex])
+			{
+				if (saSelector->currIndex != oldIndex)
+				{
+					if (saSelector->currIndex > oldIndex || (saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
+					{
+						//down
+						++saSelector->currIndex;
+						if (saSelector->currIndex == saSelector->totalItems)
+						{
+							saSelector->currIndex = 0;
+						}
+					}
+					else
+					{
+						--saSelector->currIndex;
+						if (saSelector->currIndex < 0)
+						{
+							saSelector->currIndex = saSelector->totalItems - 1;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	UpdateMenuOptionText();
