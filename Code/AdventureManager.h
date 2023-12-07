@@ -74,6 +74,7 @@ struct AdventureManager : TilesetManager
 	void CreateSaveMenu();
 	void DestroySaveMenu();
 	bool TryToGoToNextLevel();
+	bool CanBoostToNextLevel();
 	void StartDefaultSaveFile( int index );
 	void SaveCurrFile();
 	void SetCurrSaveFile(int index);

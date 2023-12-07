@@ -7,7 +7,6 @@
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "MainMenu.h"
-#include "AbsorbParticles.h"
 #include "Actor.h"
 #include "Wire.h"
 
@@ -256,8 +255,7 @@ void AttractJuggler::ProcessHit()
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-						sess->GetPlayer(0), 1, GetPosition());
+					ActivateDarkAbsorbParticles();
 					suppressMonitor = true;
 				}
 

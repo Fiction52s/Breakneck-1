@@ -83,6 +83,7 @@ void GetPowerSequence::ReturnToGame()
 	sess->cam.EaseOutOfManual(60);
 	player->SetAction(Actor::JUMP);
 	player->frame = 1;
+	player->RestoreAirOptions();
 	sess->cam.StopRumble();
 }
 

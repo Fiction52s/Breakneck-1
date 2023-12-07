@@ -146,6 +146,7 @@ void GetLogSequence::UpdateState()
 				sess->cam.EaseOutOfManual(60);
 				//player->SetAirPos(player->position, player->facingRight);
 				player->SetAction(Actor::JUMP);
+				player->RestoreAirOptions();
 				player->frame = 1;
 				sess->cam.StopRumble();
 			}

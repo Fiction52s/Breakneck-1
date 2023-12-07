@@ -186,10 +186,7 @@ void RegenTarget::ProcessHit()
 	{
 		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 		ConfirmKill();
-		if (hasMonitor)
-		{
-			suppressMonitor = true;
-		}
+		
 		dead = false;
 
 		action = A_DYING;
@@ -200,6 +197,13 @@ void RegenTarget::ProcessHit()
 		numHealth = maxHealth;
 
 		receivedHit.SetEmpty();
+
+		ActivateAbsorbParticles();
+
+		if (hasMonitor)
+		{
+			suppressMonitor = true;
+		}
 	}
 }
 

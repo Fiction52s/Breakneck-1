@@ -481,7 +481,9 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	static Session *GetSession();
 
-	void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+	void ActivateEnergyAbsorbParticles(Actor *p, int storedHits,
+		V2d &pos, float startAngle = 0);
+	void ActivateDarkAbsorbParticles(Actor *p, int storedHits,
 		V2d &pos, float startAngle = 0);
 	void CollectKey();
 	virtual PolyPtr GetPolygon(int index) = 0;

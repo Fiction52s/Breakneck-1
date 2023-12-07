@@ -8577,14 +8577,22 @@ void Actor::HandleWaitingScoreDisplay()
 
 						SaveFile *currFile = adventureManager->currSaveFile;
 
-						if (currFile->IsLevelLastInSector(owner->level))
+						if (adventureManager->CanBoostToNextLevel())
+						{
+							owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+						}
+						else
 						{
 							owner->resType = GameSession::GameResultType::GR_WIN;
+						}
+						/*if (currFile->IsLevelLastInSector(owner->level))
+						{
+							
 						}
 						else
 						{
 							owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
-						}
+						}*/
 					}
 					else
 					{

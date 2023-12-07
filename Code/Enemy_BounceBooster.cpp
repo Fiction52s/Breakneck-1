@@ -4,7 +4,6 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -94,8 +93,7 @@ bool BounceBooster::Boost()
 
 	if (hasMonitor && !suppressMonitor)
 	{
-		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-			sess->GetPlayer(0), 1, GetPosition());
+		ActivateDarkAbsorbParticles();
 		suppressMonitor = true;
 		PlayKeyDeathSound();
 	}

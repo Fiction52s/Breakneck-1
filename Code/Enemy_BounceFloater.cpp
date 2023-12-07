@@ -7,7 +7,6 @@
 #include "KeyMarker.h"
 #include "Enemy_BounceFloater.h"
 #include "Actor.h"
-#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -104,8 +103,7 @@ void BounceFloater::ProcessHit()
 
 		if (hasMonitor && !suppressMonitor)
 		{
-			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-				sess->GetPlayer(0), 1, GetPosition());
+			ActivateDarkAbsorbParticles();
 			suppressMonitor = true;
 			PlayKeyDeathSound();
 		}

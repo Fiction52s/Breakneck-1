@@ -193,8 +193,7 @@ void SwarmMember::ConfirmKill()
 		sess->cam.SetRumble(1.5, 1.5, 7);
 	}
 
-	sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-		sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
+	ActivateEnergyAbsorbParticles();
 
 	//dead = true;
 

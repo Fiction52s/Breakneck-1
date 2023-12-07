@@ -88,6 +88,7 @@ void GetShardSequence::ReturnToGame()
 
 	sess->cam.EaseOutOfManual(60);
 	player->SetAction(Actor::JUMP);
+	player->RestoreAirOptions();
 	player->frame = 1;
 	sess->cam.StopRumble();
 }

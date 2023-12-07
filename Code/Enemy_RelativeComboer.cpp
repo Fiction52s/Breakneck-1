@@ -8,7 +8,6 @@
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
 #include "MainMenu.h"
-#include "AbsorbParticles.h"
 #include "Actor.h"
 
 using namespace std;
@@ -385,8 +384,7 @@ void RelativeComboer::ComboKill(Enemy *e)
 	{
 		if (hasMonitor && !suppressMonitor)
 		{
-			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-				sess->GetPlayer(0), 1, GetPosition());
+			ActivateDarkAbsorbParticles();
 			suppressMonitor = true;
 		}
 

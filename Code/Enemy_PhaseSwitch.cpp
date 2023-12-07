@@ -5,7 +5,6 @@
 #include <assert.h>
 #include "Enemy_PhaseSwitch.h"
 #include "Actor.h"
-#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -189,8 +188,7 @@ void PhaseSwitch::ProcessHit()
 
 		if (hasMonitor && !suppressMonitor)
 		{
-			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-				sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+			ActivateDarkAbsorbParticles();
 			PlayKeyDeathSound();
 		}
 

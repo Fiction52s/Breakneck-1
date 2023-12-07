@@ -416,9 +416,13 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	V2d GetFocusedPlayerPos();
 	double GetFocusedPlayerDist();
 	V2d GetFocusedPlayerDir();
+	void ActivateAbsorbParticles();
+	virtual void ActivateDarkAbsorbParticles();
+	virtual void ActivateEnergyAbsorbParticles();
 
 	void RegisterCollisionBody(CollisionBody &cb);
 	void RegisterShield(Shield *s);
+	virtual void Die();
 };
 
 

@@ -8,7 +8,6 @@
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
 #include "MainMenu.h"
-#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -318,8 +317,7 @@ void GravityJuggler::ProcessHit()
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-						sess->GetPlayer(0), 1, GetPosition());
+					ActivateDarkAbsorbParticles();
 					suppressMonitor = true;
 					PlayKeyDeathSound();
 				}
@@ -337,8 +335,7 @@ void GravityJuggler::ProcessHit()
 				{
 					if (hasMonitor && !suppressMonitor)
 					{
-						sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-							sess->GetPlayer(0), 1, GetPosition());
+						ActivateDarkAbsorbParticles();
 						suppressMonitor = true;
 						PlayKeyDeathSound();
 					}

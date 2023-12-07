@@ -10,7 +10,6 @@
 #include "Wire.h"
 #include "Actor.h"
 #include "MainMenu.h"
-#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -338,8 +337,7 @@ void WireJuggler::ProcessHit()
 		{
 			if (hasMonitor && !suppressMonitor)
 			{
-				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-					sess->GetPlayer(0), 1, GetPosition());
+				ActivateDarkAbsorbParticles();
 				suppressMonitor = true;
 				PlayKeyDeathSound();
 			}

@@ -147,10 +147,7 @@ void SpecialTarget::Collect()
 	{
 		sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 		ConfirmKill();
-		if (hasMonitor)
-		{
-			suppressMonitor = true;
-		}
+		
 		dead = false;
 
 		action = A_DYING;
@@ -158,7 +155,22 @@ void SpecialTarget::Collect()
 		HitboxesOff();
 		HurtboxesOff();
 
-		numHealth = 0;//maxHealth;
+		numHealth = 1;//maxHealth;
+
+		if (world >= 1)
+		{
+			if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
+			{
+				sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+			}
+		}
+
+		ActivateAbsorbParticles();
+
+		if (hasMonitor)
+		{
+			suppressMonitor = true;
+		}
 	}
 
 

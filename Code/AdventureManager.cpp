@@ -184,6 +184,56 @@ void AdventureManager::UpdateWorldDependentTileset(int worldIndex)
 	}
 }
 
+bool AdventureManager::CanBoostToNextLevel()
+{
+	int w = 0;
+	int s = 0;
+	int m = 0;
+	adventureFile.GetMapIndexes(currLevel->level->index, w, s, m);
+
+	World &world = adventurePlanet->worlds[w];
+	Sector &sector = world.sectors[s];
+	//sector.numLevels;
+
+	AdventureWorld &adventureWorld = adventureFile.GetWorld(w);
+	AdventureSector &adventureSector = adventureFile.GetSector(w, s);
+
+	bool keepGoingAfterSectorEnd = true;
+
+	if (m < adventureSector.GetNumExistingMaps() - 1)
+	{
+		return true;
+	}
+	else
+	{
+		//this is in case I have this as an option at some point
+		if (keepGoingAfterSectorEnd)
+		{
+			if (s < adventureWorld.GetNumExistingSectors() - 1)
+			{
+				return true;
+			}
+			else
+			{
+				if (w < adventureFile.GetNumExistingWorlds() - 1)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool AdventureManager::TryToGoToNextLevel()
 {
 	int w = 0;
@@ -191,28 +241,54 @@ bool AdventureManager::TryToGoToNextLevel()
 	int m = 0;
 	adventureFile.GetMapIndexes(currLevel->level->index, w, s, m);
 
-	adventurePlanet->worlds[w].sectors[s].numLevels;
+	World &world = adventurePlanet->worlds[w];
+	Sector &sector = world.sectors[s];
+	//sector.numLevels;
+	
+	AdventureWorld &adventureWorld = adventureFile.GetWorld(w);
+	AdventureSector &adventureSector = adventureFile.GetSector(w, s);
 
-	auto &sector = adventureFile.GetSector(w, s);
+	bool keepGoingAfterSectorEnd = true;
 
-	if (m < sector.GetNumExistingMaps() - 1)
+	if (m < adventureSector.GetNumExistingMaps() - 1)
 	{
 		++m;
-
-		Level *lev = adventurePlanet->worlds[w].sectors[s].GetLevel(m);
-		kinBoostScreen->level = lev;
-		MainMenu::GetInstance()->SetModeKinBoostLoadingMap(0);
-
-		return true;
 	}
 	else
 	{
-		return false;
-
-		//MainMenu::GetInstance()->fader->Clear();
-
-		//ReturnToWorldAfterLevel();
+		//this is in case I have this as an option at some point
+		if (keepGoingAfterSectorEnd)
+		{
+			if (s < adventureWorld.GetNumExistingSectors() - 1)
+			{
+				++s;
+				m = 0;
+			}
+			else
+			{
+				if (w < adventureFile.GetNumExistingWorlds() - 1)
+				{
+					++w;
+					m = 0;
+					s = 0;
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
+
+	Level *lev = adventurePlanet->worlds[w].sectors[s].GetLevel(m);
+	kinBoostScreen->level = lev;
+	MainMenu::GetInstance()->SetModeKinBoostLoadingMap(0);
+
+	return true;
 }
 
 //returns true if you make a record!

@@ -9,7 +9,6 @@
 #include "Enemy_JugglerCatcher.h"
 #include "EditorRail.h"
 #include "MainMenu.h"
-#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -225,8 +224,7 @@ void GrindJuggler::ProcessHit()
 		{			
 			if (hasMonitor && !suppressMonitor)
 			{
-				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-					sess->GetPlayer(0), 1, GetPosition());
+				ActivateDarkAbsorbParticles();
 				suppressMonitor = true;
 				PlayKeyDeathSound();
 			}

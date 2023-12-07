@@ -4678,20 +4678,17 @@ void Session::SetupAbsorbParticles()
 	
 }
 
-void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+void Session::ActivateEnergyAbsorbParticles(Actor *p, int storedHits,
 	V2d &pos, float startAngle)
 {
-	
-	switch (absorbType)
-	{
-	case AbsorbParticles::ENERGY:
-		absorbParticles->Activate(p, storedHits, pos, startAngle);
-		break;
-	case AbsorbParticles::DARK:
-		absorbDarkParticles->Activate(p, storedHits, pos, startAngle);
-		CollectKey();
-		break;
-	}
+	absorbParticles->Activate(p, storedHits, pos, startAngle);
+}
+
+void Session::ActivateDarkAbsorbParticles(Actor *p, int storedHits,
+	V2d &pos, float startAngle)
+{
+	absorbDarkParticles->Activate(p, storedHits, pos, startAngle);
+	CollectKey();
 }
 
 void Session::CollectKey()

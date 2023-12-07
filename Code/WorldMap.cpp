@@ -31,7 +31,7 @@ WorldMap::WorldMap()
 
 	adventureManager->parallelPracticeMode = mainMenu->config->GetData().parallelPlayOn;
 	
-	allUnlocked = false;
+	allUnlocked = true;
 
 	UpdateButtonIconsWhenControllerIsChanged();
 

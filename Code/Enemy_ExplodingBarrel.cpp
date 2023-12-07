@@ -5,7 +5,6 @@
 #include <assert.h>
 #include "Enemy_ExplodingBarrel.h"
 #include "Eye.h"
-#include "AbsorbParticles.h"
 #include "MovingGeo.h"
 
 using namespace std;
@@ -165,8 +164,7 @@ void ExplodingBarrel::StartHeatingUp()
 	if (hasMonitor && !suppressMonitor)
 	{
 		suppressMonitor = true;
-		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-			sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+		ActivateDarkAbsorbParticles();
 	}
 	else
 	{

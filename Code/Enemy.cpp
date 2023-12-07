@@ -1447,38 +1447,7 @@ void Enemy::UpdatePrePhysics()
 		{
 			if (numHealth <= 0)
 			{
-				dead = true;
-
-				if (world >= 1)
-				{
-					if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
-					{
-						sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
-					}
-
-				}
-
-				if (hasMonitor && !suppressMonitor)
-				{
-					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
-						sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
-				}
-				else
-				{
-					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-						sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
-				}
-
-
-
-				if (cutObject != NULL)
-				{
-					SyncCutObject();
-				}
-
-				HandleNoHealth();
-
-				
+				Die();
 			}
 		}
 	}
@@ -2537,6 +2506,50 @@ void Enemy::RegisterShield(Shield *s)
 {
 	s->shieldID = shieldPtrVec.size();
 	shieldPtrVec.push_back(s);
+}
+
+void Enemy::ActivateAbsorbParticles()
+{
+	if (hasMonitor && !suppressMonitor)
+	{
+		ActivateDarkAbsorbParticles();
+	}
+	else
+	{
+		ActivateEnergyAbsorbParticles();
+	}
+}
+
+void Enemy::ActivateDarkAbsorbParticles()
+{
+	sess->ActivateDarkAbsorbParticles(sess->GetPlayer(receivedHitPlayerIndex), GetNumDarkAbsorbParticles(), GetPosition());
+}
+
+void Enemy::ActivateEnergyAbsorbParticles()
+{
+	sess->ActivateEnergyAbsorbParticles(sess->GetPlayer(receivedHitPlayerIndex), GetNumEnergyAbsorbParticles(), GetPosition());
+}
+
+void Enemy::Die()
+{
+	dead = true;
+
+	if (world >= 1)
+	{
+		if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
+		{
+			sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+		}
+	}
+
+	ActivateAbsorbParticles();
+
+	if (cutObject != NULL)
+	{
+		SyncCutObject();
+	}
+
+	HandleNoHealth();
 }
 
 HittableObject::HittableObject()
