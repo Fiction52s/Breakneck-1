@@ -493,6 +493,14 @@ void WorldMap::SetToLevel(int selColony, int sec, int m)
 {
 	state = WorldMap::COLONY;
 	selectedColony = selColony;
+
+	SaveFile *saveFile = adventureManager->currSaveFile;
+	if (selectedColony != saveFile->mostRecentWorldSelected)
+	{
+		saveFile->mostRecentWorldSelected = adventureManager->worldMap->selectedColony;
+		saveFile->Save();
+	}
+
 	CurrSelector()->sectorSASelector->currIndex = sec;
 	CurrSelector()->FocusedSector()->mapSASelector->currIndex = m;
 
@@ -504,6 +512,8 @@ void WorldMap::SetToLevel(int selColony, int sec, int m)
 
 	CurrSelector()->state = MapSelector::S_MAPSELECT;
 	CurrSelector()->FocusedSector()->UpdateMapPreview();
+
+	
 
 	Update();
 
