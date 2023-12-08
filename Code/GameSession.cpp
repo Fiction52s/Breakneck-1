@@ -3658,6 +3658,10 @@ int GameSession::Run()
 	{
 		fader->Fade(true, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 	}
+	else
+	{
+		fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+	}
 
 	if (parentGame != NULL && parentGame->bonusHandler != NULL)
 	{
@@ -3781,7 +3785,7 @@ int GameSession::Run()
 	//also cleans up savestate in other cases
 	CleanupGGPO();
 
-	fader->Clear();
+	//fader->Clear();
 
 	SetView(oldPreTexView);
 	window->setView(oldWindowView);

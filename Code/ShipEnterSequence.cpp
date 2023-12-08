@@ -118,6 +118,7 @@ void ShipEnterScene::UpdateState()
 	if (seqData.frame == 0)
 	{
 		sess->HideHUD();
+		//sess->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 		//SetFlashGroup("staregroup");
 	}
 

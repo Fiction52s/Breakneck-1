@@ -19,13 +19,13 @@ struct KinBoostScreen : TilesetManager
 	};
 
 	bool ended;
-	bool IsEnded();
+	sf::Text levelNameText;
+	sf::Sprite shardIconSpr;
+	sf::Text shardText;
+	sf::Sprite logIconSpr;
+	sf::Text logText;
 	int stateFrame;
 	State state;
-	KinBoostScreen();
-	void Draw(sf::RenderTarget *target);
-	void Reset();
-	bool IsBoosting();
 	sf::Sprite bgSpr;
 	sf::Sprite bgShapeSpr;
 	sf::Sprite starSpr[4];
@@ -46,9 +46,6 @@ struct KinBoostScreen : TilesetManager
 	int kinEndTileStart;
 	int kinEndLength;
 	int frame;
-	void Update();
-	void End();
-	void DrawLateKin(sf::RenderTarget *target);
 	sf::Shader scrollShaderStars[4];
 	sf::Shader scrollShaderLight[2];
 	float starSpeed[4];
@@ -59,19 +56,21 @@ struct KinBoostScreen : TilesetManager
 	float lightMax[2];
 	float starAccel[4];
 	float lightAccel[2];
-
-
-
-	const static int NUM_SWIPE_SPRITES = 1;
-	int numCoverTiles;
-	Tileset *ts_swipe[NUM_SWIPE_SPRITES];
-
-	sf::Sprite swipeSpr;
+	Tileset *ts_statIcons;
 
 	PlayerSkinShader skinShader;
-
-	//std::string levName;
 	Level *level;
+	
+	KinBoostScreen();
+	void SetLevel(Level *lev);
+	bool IsEnded();
+	void Draw(sf::RenderTarget *target);
+	void Reset();
+	bool IsBoosting();
+	void Update();
+	void End();
+	void DrawLateKin(sf::RenderTarget *target);
+	
 };
 
 #endif

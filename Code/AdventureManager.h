@@ -18,6 +18,7 @@ struct FeedbackForm;
 struct PauseMenu;
 struct AdventureHUD;
 struct Background;
+struct WorldTransferScreen;
 
 struct AdventureManager : TilesetManager
 {
@@ -33,6 +34,7 @@ struct AdventureManager : TilesetManager
 	PauseMenu *pauseMenu;
 	WorldMap *worldMap;
 	KinBoostScreen *kinBoostScreen;
+	WorldTransferScreen *worldTransferScreen;
 	SaveMenuScreen *saveMenu;
 	SaveFile *files[6];
 	SaveFile *currSaveFile;

@@ -10,6 +10,7 @@
 #include "FeedbackForm.h"
 #include "PauseMenu.h"
 #include "HUD.h"
+#include "WorldTransferScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -22,6 +23,7 @@ AdventureManager::AdventureManager()
 	worldMap = NULL;
 	background = NULL;
 	kinBoostScreen = NULL;
+	worldTransferScreen = NULL;
 	saveMenu = NULL;
 	adventurePlanet = NULL;
 	controllerInput = NULL;
@@ -49,6 +51,8 @@ AdventureManager::AdventureManager()
 	LoadAdventure("tadventure");
 
 	kinBoostScreen = new KinBoostScreen;
+
+	worldTransferScreen = new WorldTransferScreen;
 
 	std::vector<string> saveNames = { "blue", "green", "yellow", "orange", "red", "magenta" };
 	for (int i = 0; i < 6; ++i)
@@ -94,6 +98,11 @@ AdventureManager::~AdventureManager()
 	if (kinBoostScreen != NULL)
 	{
 		delete kinBoostScreen;
+	}
+
+	if (worldTransferScreen != NULL)
+	{
+		delete worldTransferScreen;
 	}
 
 	if (saveMenu != NULL)
@@ -241,6 +250,10 @@ bool AdventureManager::TryToGoToNextLevel()
 	int m = 0;
 	adventureFile.GetMapIndexes(currLevel->level->index, w, s, m);
 
+	int origW = w;
+	int origS = s;
+	int origM = m;
+
 	World &world = adventurePlanet->worlds[w];
 	Sector &sector = world.sectors[s];
 	//sector.numLevels;
@@ -285,8 +298,18 @@ bool AdventureManager::TryToGoToNextLevel()
 	}
 
 	Level *lev = adventurePlanet->worlds[w].sectors[s].GetLevel(m);
-	kinBoostScreen->level = lev;
-	MainMenu::GetInstance()->SetModeKinBoostLoadingMap(0);
+
+	if (w == origW)
+	{
+		kinBoostScreen->SetLevel(lev);
+		MainMenu::GetInstance()->SetModeKinBoostLoadingMap(0);
+	}
+	else
+	{
+		worldTransferScreen->SetLevel(lev);
+		MainMenu::GetInstance()->SetModeWorldTransferLoadingMap(w);
+	}
+	
 
 	return true;
 }

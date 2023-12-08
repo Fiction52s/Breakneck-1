@@ -25,6 +25,7 @@
 #include "MapHeader.h"
 #include "ButtonHolder.h"
 #include "SaveMenuScreen.h"
+#include "WorldTransferScreen.h"
 
 #include <Windows.h>
 #include "public.h"
@@ -2269,6 +2270,14 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 
 }
 
+void MainMenu::SetModeWorldTransferLoadingMap(int variation)
+{
+	gameRunType = GRT_ADVENTURE;
+	SetMode(WORLDTRANSFERLOADINGMAP);
+	adventureManager->worldTransferScreen->Reset();
+	adventureManager->worldTransferScreen->SetWorld(variation);
+}
+
 void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 {
 	string levelPath = loadParams.adventureMap->GetMapPath();//lev->GetFullName();// name;
@@ -2713,6 +2722,66 @@ void MainMenu::HandleMenuMode()
 
 		}
 		adventureManager->kinBoostScreen->Update();
+		break;
+	}
+	case WORLDTRANSFERLOADINGMAP:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		if (deadThread != NULL)
+		{
+			if (deadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				delete deadThread;
+				deadThread = NULL;
+			}
+		}
+
+		if (netplayManager != NULL && netplayManager->IsPracticeMode())
+		{
+			netplayManager->Update();
+		}
+
+		if (adventureManager->worldTransferScreen->IsEnded())//swiper->IsPostWipe())
+		{
+			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
+			SetMode(RUN_ADVENTURE_MAP);
+		}
+		else if (adventureManager->worldTransferScreen->level == NULL && loadThread == NULL && deadThread == NULL && adventureManager->worldTransferScreen->IsBoosting())
+		{
+			if (netplayManager != NULL && netplayManager->IsPracticeMode())
+			{
+				if (netplayManager->TrySetupPractice(currLevel))
+				{
+					adventureManager->worldTransferScreen->End();
+				}
+				else if (netplayManager->action == NetplayManager::A_PRACTICE_SETUP_ERROR)
+				{
+					adventureManager->worldTransferScreen->End();
+				}
+			}
+			else
+			{
+				adventureManager->worldTransferScreen->End();
+			}
+		}
+		else
+		{
+			if (adventureManager->worldTransferScreen->frame == 60 && adventureManager->worldTransferScreen->IsBoosting())
+			{
+				//window->setVerticalSyncEnabled(false);
+				//window->setFramerateLimit(60);
+				//string levelPath = worldTransferScreen->level->GetFullName();//worldTransferScreen->levName;
+				Level *lev = adventureManager->worldTransferScreen->level;
+				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, &adventureManager->adventureFile.GetMap(lev->index), lev);
+				adventureManager->worldTransferScreen->level = NULL;
+			}
+
+		}
+		adventureManager->worldTransferScreen->Update();
 		break;
 	}
 
@@ -4673,6 +4742,12 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		adventureManager->kinBoostScreen->Draw(preScreenTexture);
+		break;
+	}
+	case WORLDTRANSFERLOADINGMAP:
+	{
+		preScreenTexture->setView(v);
+		adventureManager->worldTransferScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_MAIN_TO_SAVE:

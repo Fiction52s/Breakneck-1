@@ -156,6 +156,7 @@ struct MainMenu : TilesetManager
 		LOADINGMENULOOP,
 		LOADINGMENUEND,
 		KINBOOSTLOADINGMAP,
+		WORLDTRANSFERLOADINGMAP,
 		RUN_ADVENTURE_MAP,
 		RUN_EDITOR_MAP,
 		SAVEMENU,
@@ -388,6 +389,7 @@ struct MainMenu : TilesetManager
 	void GGPOOption();
 	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
+	void SetModeWorldTransferLoadingMap(int variation);
 	void CreatePlayerTilesets();
 
 	sf::IntRect GetKeyboardKeyIconTile(sf::Keyboard::Key key);

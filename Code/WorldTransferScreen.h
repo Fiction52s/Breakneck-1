@@ -18,37 +18,32 @@ struct WorldTransferScreen : TilesetManager
 		ENDING
 	};
 
+	sf::Text levelNameText;
+	sf::Sprite shardIconSpr;
+	sf::Text shardText;
+	sf::Sprite logIconSpr;
+	sf::Text logText;
+
 	bool ended;
-	bool IsEnded();
-	int stateFrame;
+	sf::Text worldText;
+	int currWorld;
 	State state;
-	WorldTransferScreen();
-	void Draw(sf::RenderTarget *target);
-	void Reset();
-	bool IsBoosting();
 	sf::Sprite bgSpr;
 	sf::Sprite bgShapeSpr;
 	sf::Sprite starSpr[4];
 	sf::Sprite lightSpr[2];
-	sf::Sprite kinAuraSpr;
-	bool showAura;
+	sf::Sprite shipSpr;
+	sf::Sprite planetSpr;
 	Tileset *ts_stars[4];
 	Tileset *ts_light[2];
 	Tileset *ts_bg;
+	Tileset *ts_planet;
 	Tileset *ts_bgShape;
-	Tileset *ts_kinBoost;
-	Tileset *ts_kinAura;
 	Tileset *ts_enterFX;
-	sf::Sprite enterFXSpr;
-	sf::Sprite kinSpr;
-	int kinLoopLength;
-	int kinLoopTileStart;
-	int kinEndTileStart;
-	int kinEndLength;
+	Tileset *ts_ship;
+	sf::Vector2f shipStart;
+	sf::Vector2f shipEnd;
 	int frame;
-	void Update();
-	void End();
-	void DrawLateKin(sf::RenderTarget *target);
 	sf::Shader scrollShaderStars[4];
 	sf::Shader scrollShaderLight[2];
 	float starSpeed[4];
@@ -59,19 +54,20 @@ struct WorldTransferScreen : TilesetManager
 	float lightMax[2];
 	float starAccel[4];
 	float lightAccel[2];
-
-
-
-	const static int NUM_SWIPE_SPRITES = 1;
-	int numCoverTiles;
-	Tileset *ts_swipe[NUM_SWIPE_SPRITES];
-
-	sf::Sprite swipeSpr;
-
+	int shipExitLength;
 	PlayerSkinShader skinShader;
-
-	//std::string levName;
 	Level *level;
+	
+	WorldTransferScreen();
+	void SetLevel(Level *lev);
+	void Draw(sf::RenderTarget *target);
+	void SetWorld(int wIndex);
+	void Reset();
+	bool IsEnded();
+	bool IsBoosting();
+	void Update();
+	void End();
+	
 };
 
 #endif

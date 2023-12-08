@@ -1,4 +1,4 @@
-#include "KinBoostScreen.h"
+#include "WorldTransferScreen.h"
 #include "MainMenu.h"
 #include "Fader.h"
 #include "VectorMath.h" 
@@ -10,10 +10,11 @@
 using namespace std;
 using namespace sf;
 
-KinBoostScreen::KinBoostScreen()
+WorldTransferScreen::WorldTransferScreen()
 	:skinShader(PlayerSkinShader::ST_BOOST)
 {
-	ts_bg = GetTileset("Menu/KinBoost/kinboost_BG1.png", 1920, 1080);
+	ts_bg = GetSizedTileset("Menu/WorldTransfer/world_transfer_bg_1920x300.png");
+	ts_planet = GetSizedTileset("Menu/WorldTransfer/world_transfer_world_1920x1080.png");
 	ts_bgShape = GetTileset("Menu/KinBoost/kinboost_BG1_shape.png", 1920, 1080);
 
 	ts_light[0] = GetTileset("Menu/KinBoost/kinboost_light_01a.png", 1920, 1080);
@@ -24,23 +25,31 @@ KinBoostScreen::KinBoostScreen()
 	ts_stars[2] = GetTileset("Menu/KinBoost/kinboost_stars_01c.png", 1920, 1080);
 	ts_stars[3] = GetTileset("Menu/KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
-	ts_kinBoost = GetSizedTileset("Kin/exitboost_96x128.png");
-	ts_kinAura = GetSizedTileset("Kin/FX/exitaura_256x256.png");
-	ts_enterFX = GetSizedTileset("Kin/FX/enter_fx_320x320.png");
+	ts_planet->SetSpriteTexture(planetSpr);
+	planetSpr.setPosition(0, 1080 - planetSpr.getGlobalBounds().height);
 
-	ts_enterFX->SetSpriteTexture(enterFXSpr);
+	ts_ship = GetTileset("Ship/ship_864x400.png", 864, 400);
+	ts_ship->SetSpriteTexture(shipSpr);
+	shipSpr.setOrigin(shipSpr.getLocalBounds().width / 2, shipSpr.getLocalBounds().height / 2);
 
-	kinSpr.setTexture(*ts_kinBoost->texture);
-	kinSpr.setTextureRect(ts_kinBoost->GetSubRect(71));
-	kinSpr.setOrigin(kinSpr.getLocalBounds().width / 2, kinSpr.getLocalBounds().height / 2);
-	kinSpr.setPosition(Vector2f(960, 540));
-	kinSpr.setScale(2, 2);
+	shipExitLength = 120;
 
-	kinAuraSpr.setTexture(*ts_kinAura->texture);
-	kinAuraSpr.setTextureRect(ts_kinAura->GetSubRect(0));
-	kinAuraSpr.setOrigin(kinAuraSpr.getLocalBounds().width / 2, kinAuraSpr.getLocalBounds().height / 2);
-	kinAuraSpr.setPosition(kinSpr.getPosition());
-	kinAuraSpr.setScale(kinSpr.getScale());
+	MainMenu *mm = MainMenu::GetInstance();
+
+	worldText.setFont(mm->arial);
+	worldText.setCharacterSize(60);
+	worldText.setFillColor(Color::White);
+	worldText.setOutlineColor(Color::Black);
+	worldText.setOutlineThickness(-2);
+	
+	
+
+	shipStart = Vector2f(960, 540);
+	shipEnd = Vector2f(1920 + 500, 540);
+
+	shipSpr.setPosition(shipStart);
+
+
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -55,23 +64,6 @@ KinBoostScreen::KinBoostScreen()
 
 	lightMax[0] = 1.f / 30.f;
 	lightMax[1] = 1.f / 40.f;
-
-	numCoverTiles = 2;
-
-	kinLoopLength = 22;//39;
-	kinLoopTileStart = 79;
-
-	kinEndTileStart = 101;
-	kinEndLength = 9;
-
-	//load this by streaming it or in another thread while in the boost screen. do not load until running
-	//the gamesession
-	//and 
-	//ts_swipe[0] = mainMenu->tilesetManager.GetTileset("Menu/KinBoost/kinswipe_960x540.png", 960, 540);
-	//swipeSpr.setTexture(*ts_swipe[0]->texture);
-	//swipeSpr.setTextureRect(ts_swipe[0]->GetSubRect(0));
-	//swipeSpr.setScale(2, 2);
-	//swipeSpr.setPosition(0, 0);
 
 	bgSpr.setTexture(*ts_bg->texture);
 	bgShapeSpr.setTexture(*ts_bgShape->texture);
@@ -105,24 +97,34 @@ KinBoostScreen::KinBoostScreen()
 	}
 }
 
-void KinBoostScreen::End()
+void WorldTransferScreen::End()
 {
 	state = FINISHBOOST;
-	stateFrame = 0;
+	frame = 0;
 
 	auto *mainMenu = MainMenu::GetInstance();
 	//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
-	mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
+	//mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
 	mainMenu->musicPlayer->FadeOutCurrentMusic(30);
 	//frame = 0;
 }
 
-void KinBoostScreen::Reset()
+void WorldTransferScreen::SetWorld(int wIndex)
+{
+	currWorld = wIndex;
+	worldText.setString("Flying to World " + to_string(currWorld + 1) + "...");
+	auto lb = worldText.getLocalBounds();
+	worldText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+	worldText.setPosition(960, 200);
+}
+
+void WorldTransferScreen::Reset()
 {
 	frame = 0;
-	stateFrame = 0;
 	state = STARTING;
 	ended = false;
+
+	shipSpr.setPosition(shipStart);
 
 	auto *mainMenu = MainMenu::GetInstance();
 
@@ -147,35 +149,16 @@ void KinBoostScreen::Reset()
 	lightSpeed[1] = 1.f / 10000.f;
 }
 
-void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
-{
-	if (state != ENDING)
-	{
-		if (showAura)
-		{
-			target->draw(kinAuraSpr, &skinShader.pShader);
-		}
-		target->draw(kinSpr, &skinShader.pShader);
-	}
-
-	if (state == ENDING)
-	{
-		target->draw(enterFXSpr);
-	}
-}
-
-void KinBoostScreen::Update()
+void WorldTransferScreen::Update()
 {
 	auto *mainMenu = MainMenu::GetInstance();
 
-	showAura = true;
 	switch (state)
 	{
 	case STARTING:
 		state = BOOSTING;
-		//frame = 0;
-		stateFrame = 0;
-		mainMenu->fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
+		frame = 0;
+		mainMenu->fader->Fade(true, 120, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 		break;
 	case BOOSTING:
 		break;
@@ -214,61 +197,38 @@ void KinBoostScreen::Update()
 			scrollShaderLight[i].setUniform("quant", lightFac[i]);//0.f);
 		}
 
-		float bgFade = 360;
-		int bgFadeI = bgFade;
-		if (frame <= bgFadeI)
+		if (state == BOOSTING)
 		{
-			bgSpr.setColor(Color(255, 255, 255, (frame / bgFade) * 255.f));
+			float bgFade = 360;
+			int bgFadeI = bgFade;
+			if (frame <= bgFadeI)
+			{
+				bgSpr.setColor(Color(255, 255, 255, (frame / bgFade) * 255.f));
+			}
 		}
 
-		int kFrame = (frame % (kinLoopLength * 2));
-		int kActual = kFrame / 2 + kinLoopTileStart;
-
-		if (state == BOOSTING || state == FINISHBOOST)
+		if (state == FINISHBOOST && frame == shipExitLength)//&& mainMenu->fader->IsFullyFadedOut())
 		{
-			kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kActual));
-
-			kinAuraSpr.setTextureRect(ts_kinAura->GetSubRect(kActual - 55));
-
-
-
-		}
-
-
-
-		if (state == FINISHBOOST && kFrame == kinLoopLength * 2 - 1 && mainMenu->fader->IsFullyFadedOut())
-		{
+			auto *mainMenu = MainMenu::GetInstance();
+			//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
+			mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
 			state = ENDING;
-			stateFrame = 0;
+			frame = 0;
+			//ended
+			//state = ENDING;
 
+		}
+		else if (state == FINISHBOOST)
+		{
+			float factor = ((float)frame) / shipExitLength;
+			shipSpr.setPosition(shipStart * (1.f - factor) + shipEnd * factor);
 		}
 
 		if (state == ENDING)
 		{
-			kFrame = stateFrame / 2 + kinEndTileStart;
-			kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kFrame));
-			//cout << "kframe: " << kFrame << endl;
-			//if (kFrame - 55 > 60)
-			//	showAura = false;
-
-			kinAuraSpr.setTextureRect(ts_kinAura->GetSubRect(kFrame - 55));
-
-			if (stateFrame / 2 < 12)
-			{
-				ts_enterFX->SetSubRect(enterFXSpr, stateFrame / 2 + 7);
-				enterFXSpr.setPosition(kinSpr.getPosition());
-				enterFXSpr.setScale(2, 2);
-				enterFXSpr.setOrigin(enterFXSpr.getLocalBounds().width / 2,
-					enterFXSpr.getLocalBounds().height / 2);
-			}
-
-			//cout << "blah: " << kFrame - 55 << endl;
-
-			if (stateFrame == kinEndLength * 2 - 1)
+			if (mainMenu->fader->IsFullyFadedOut())
 			{
 				ended = true;
-				--stateFrame;
-				//return;
 			}
 		}
 
@@ -308,23 +268,27 @@ void KinBoostScreen::Update()
 		}
 	}
 
-	++stateFrame;
 	++frame;
 
 
 }
 
-bool KinBoostScreen::IsEnded()
+bool WorldTransferScreen::IsEnded()
 {
 	return ended;
 }
 
-bool KinBoostScreen::IsBoosting()
+bool WorldTransferScreen::IsBoosting()
 {
 	return state == BOOSTING;
 }
 
-void KinBoostScreen::Draw(RenderTarget *target)
+void WorldTransferScreen::SetLevel(Level *lev)
+{
+	level = lev;
+}
+
+void WorldTransferScreen::Draw(RenderTarget *target)
 {
 	switch (state)
 	{
@@ -350,12 +314,17 @@ void KinBoostScreen::Draw(RenderTarget *target)
 			target->draw(starSpr[i], &scrollShaderStars[i]);
 		}
 
-		for (int i = 1; i >= 0; --i)
+		/*for (int i = 1; i >= 0; --i)
 		{
 			target->draw(lightSpr[i], &scrollShaderLight[i]);
-		}
+		}*/
 
-		//target->draw(kinSpr);
+		target->draw(planetSpr);
+
+		target->draw(shipSpr);
+
+		target->draw(worldText);
+
 		break;
 	}
 	}

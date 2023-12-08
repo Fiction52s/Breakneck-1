@@ -28,6 +28,36 @@ KinBoostScreen::KinBoostScreen()
 	ts_kinAura = GetSizedTileset("Kin/FX/exitaura_256x256.png");
 	ts_enterFX = GetSizedTileset("Kin/FX/enter_fx_320x320.png");
 
+	MainMenu *mm = MainMenu::GetInstance();
+
+	ts_statIcons = GetSizedTileset("HUD/score_icons_128x96.png");
+
+	ts_statIcons->SetSpriteTexture(shardIconSpr);
+	ts_statIcons->SetSubRect(shardIconSpr, 2);
+	ts_statIcons->SetSpriteTexture(logIconSpr);
+	ts_statIcons->SetSubRect(logIconSpr, 3);
+
+	shardText.setFont(mm->arial);
+	shardText.setCharacterSize(40);
+	shardText.setFillColor(Color::White);
+
+	logText.setFont(mm->arial);
+	logText.setCharacterSize(40);
+	logText.setFillColor(Color::White);
+
+	levelNameText.setFont(mm->arial);
+	levelNameText.setCharacterSize(60);
+	levelNameText.setFillColor(Color::White);
+
+	Vector2f levelStatsTopLeft = Vector2f(960, 750) + Vector2f(-181, 152); //these seemingly random numbers just center it and put it at the correct height
+	Vector2f logDiff(180, 0);
+
+	shardIconSpr.setPosition(levelStatsTopLeft);
+	shardText.setPosition(shardIconSpr.getPosition() + Vector2f(96 + 10, 20));
+
+	logIconSpr.setPosition(levelStatsTopLeft + logDiff);
+	logText.setPosition(logIconSpr.getPosition() + Vector2f(96 + 10, 20));
+
 	ts_enterFX->SetSpriteTexture(enterFXSpr);
 
 	kinSpr.setTexture(*ts_kinBoost->texture);
@@ -55,8 +85,6 @@ KinBoostScreen::KinBoostScreen()
 
 	lightMax[0] = 1.f / 30.f;
 	lightMax[1] = 1.f / 40.f;
-
-	numCoverTiles = 2;
 
 	kinLoopLength = 22;//39;
 	kinLoopTileStart = 79;
@@ -147,6 +175,62 @@ void KinBoostScreen::Reset()
 	lightSpeed[1] = 1.f / 10000.f;
 }
 
+void KinBoostScreen::SetLevel(Level *lev)
+{
+	MainMenu *mm = MainMenu::GetInstance();
+	level = lev;
+	levelNameText.setString(mm->adventureManager->adventureFile.GetMap(level->index).name);
+
+	auto lb = levelNameText.getLocalBounds();
+
+	levelNameText.setOrigin(lb.left + lb.width / 2, lb.height / 2);
+	levelNameText.setPosition(960, 800);
+
+	int totalShards = 0;
+	int numShardsCaptured = 0;
+	int totalLogs = 0;
+	int numLogsCaptured = 0;
+
+	
+	AdventureMapHeaderInfo &amhi =
+		mm->adventureManager->adventureFile.GetMapHeaderInfo(level->index);
+	totalShards = amhi.shardInfoVec.size();
+
+	SaveFile *saveFile = mm->adventureManager->currSaveFile;
+	for (int j = 0; j < totalShards; ++j)
+	{
+		if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
+		{
+			++numShardsCaptured;
+		}
+	}
+
+	totalLogs = amhi.logInfoVec.size();
+	for (int j = 0; j < totalLogs; ++j)
+	{
+		if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
+		{
+			++numLogsCaptured;
+		}
+	}
+
+	stringstream ss;
+
+	ss.str("");
+	ss.clear();
+
+	ss << numShardsCaptured << "/" << totalShards;
+
+	shardText.setString(ss.str());
+
+	ss.str("");
+	ss.clear();
+
+	ss << numLogsCaptured << "/" << totalLogs;
+
+	logText.setString(ss.str());
+}
+
 void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 {
 	if (state != ENDING)
@@ -175,7 +259,7 @@ void KinBoostScreen::Update()
 		state = BOOSTING;
 		//frame = 0;
 		stateFrame = 0;
-		mainMenu->fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
+		mainMenu->fader->Fade(true, 120, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
 		break;
 	case BOOSTING:
 		break;
@@ -354,6 +438,13 @@ void KinBoostScreen::Draw(RenderTarget *target)
 		{
 			target->draw(lightSpr[i], &scrollShaderLight[i]);
 		}
+
+		target->draw(shardIconSpr);
+		target->draw(shardText);
+		target->draw(logIconSpr);
+		target->draw(logText);
+
+		target->draw(levelNameText);
 
 		//target->draw(kinSpr);
 		break;

@@ -1194,6 +1194,11 @@ void EditSession::TestPlayerMode()
 					shipEnterScene->Init();
 					shipEnterScene->SetIDAndAddToAllSequencesVec();
 				}
+				else
+				{
+					shipEnterScene->SetIDAndAddToAllSequencesVec();
+				}
+
 				foundShipEnter = true;
 				shipEnterScene->shipEntrancePos = (*enit)->GetPosition();
 
@@ -1204,6 +1209,10 @@ void EditSession::TestPlayerMode()
 				{
 					shipExitScene = new ShipExitScene;
 					shipExitScene->Init();
+					shipExitScene->SetIDAndAddToAllSequencesVec();
+				}
+				else
+				{
 					shipExitScene->SetIDAndAddToAllSequencesVec();
 				}
 				foundShipExit = true;
