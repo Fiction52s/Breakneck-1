@@ -5,6 +5,7 @@
 #include "WorldMap.h"
 #include "MusicPlayer.h"
 #include "AdventureManager.h"
+#include "ShardAndLogDisplay.h"
 
 
 using namespace std;
@@ -13,8 +14,8 @@ using namespace sf;
 WorldTransferScreen::WorldTransferScreen()
 	:skinShader(PlayerSkinShader::ST_BOOST)
 {
-	ts_bg = GetSizedTileset("Menu/WorldTransfer/world_transfer_bg_1920x300.png");
-	ts_planet = GetSizedTileset("Menu/WorldTransfer/world_transfer_world_1920x1080.png");
+	ts_bg = GetSizedTileset("Menu/WorldTransfer/world_transfer_bg_1920x1080.png");
+	ts_planet = GetSizedTileset("Menu/WorldTransfer/world_transfer_world_1920x300.png");
 	ts_bgShape = GetTileset("Menu/KinBoost/kinboost_BG1_shape.png", 1920, 1080);
 
 	ts_light[0] = GetTileset("Menu/KinBoost/kinboost_light_01a.png", 1920, 1080);
@@ -41,15 +42,11 @@ WorldTransferScreen::WorldTransferScreen()
 	worldText.setFillColor(Color::White);
 	worldText.setOutlineColor(Color::Black);
 	worldText.setOutlineThickness(-2);
-	
-	
 
 	shipStart = Vector2f(960, 540);
 	shipEnd = Vector2f(1920 + 500, 540);
 
 	shipSpr.setPosition(shipStart);
-
-
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -99,7 +96,7 @@ WorldTransferScreen::WorldTransferScreen()
 
 void WorldTransferScreen::End()
 {
-	state = FINISHBOOST;
+	action = A_FINISHBOOST;
 	frame = 0;
 
 	auto *mainMenu = MainMenu::GetInstance();
@@ -121,7 +118,7 @@ void WorldTransferScreen::SetWorld(int wIndex)
 void WorldTransferScreen::Reset()
 {
 	frame = 0;
-	state = STARTING;
+	action = A_STARTING;
 	ended = false;
 
 	shipSpr.setPosition(shipStart);
@@ -153,22 +150,22 @@ void WorldTransferScreen::Update()
 {
 	auto *mainMenu = MainMenu::GetInstance();
 
-	switch (state)
+	switch (action)
 	{
-	case STARTING:
-		state = BOOSTING;
+	case A_STARTING:
+		action = A_BOOSTING;
 		frame = 0;
 		mainMenu->fader->Fade(true, 120, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 		break;
-	case BOOSTING:
+	case A_BOOSTING:
 		break;
-	case ENDING:
+	case A_ENDING:
 		//if( mainMenu->swiper->IsPostWipe())
 		break;
 	}
 
 
-	if (state != STARTING)
+	if (action != A_STARTING)
 	{
 		/*int scrollFramesBack = 40;
 		int scrollFramesFront = 30;
@@ -197,7 +194,7 @@ void WorldTransferScreen::Update()
 			scrollShaderLight[i].setUniform("quant", lightFac[i]);//0.f);
 		}
 
-		if (state == BOOSTING)
+		if (action == A_BOOSTING)
 		{
 			float bgFade = 360;
 			int bgFadeI = bgFade;
@@ -207,24 +204,24 @@ void WorldTransferScreen::Update()
 			}
 		}
 
-		if (state == FINISHBOOST && frame == shipExitLength)//&& mainMenu->fader->IsFullyFadedOut())
+		if (action == A_FINISHBOOST && frame == shipExitLength)//&& mainMenu->fader->IsFullyFadedOut())
 		{
 			auto *mainMenu = MainMenu::GetInstance();
 			//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
 			mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
-			state = ENDING;
+			action = A_ENDING;
 			frame = 0;
 			//ended
 			//state = ENDING;
 
 		}
-		else if (state == FINISHBOOST)
+		else if (action == A_FINISHBOOST)
 		{
 			float factor = ((float)frame) / shipExitLength;
 			shipSpr.setPosition(shipStart * (1.f - factor) + shipEnd * factor);
 		}
 
-		if (state == ENDING)
+		if (action == A_ENDING)
 		{
 			if (mainMenu->fader->IsFullyFadedOut())
 			{
@@ -280,26 +277,21 @@ bool WorldTransferScreen::IsEnded()
 
 bool WorldTransferScreen::IsBoosting()
 {
-	return state == BOOSTING;
-}
-
-void WorldTransferScreen::SetLevel(Level *lev)
-{
-	level = lev;
+	return action == A_BOOSTING;
 }
 
 void WorldTransferScreen::Draw(RenderTarget *target)
 {
-	switch (state)
+	switch (action)
 	{
-	case STARTING:
+	case A_STARTING:
 	{
 		//target->draw(swipeSpr);
 		break;
 	}
-	case ENDING:
-	case FINISHBOOST:
-	case BOOSTING:
+	case A_ENDING:
+	case A_FINISHBOOST:
+	case A_BOOSTING:
 	{
 		target->draw(bgSpr);
 
@@ -322,6 +314,8 @@ void WorldTransferScreen::Draw(RenderTarget *target)
 		target->draw(planetSpr);
 
 		target->draw(shipSpr);
+
+		DrawLevelInfo(target);
 
 		target->draw(worldText);
 

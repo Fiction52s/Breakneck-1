@@ -5,29 +5,24 @@
 #include "Tileset.h"
 #include "Actor.h"
 #include "PlayerSkinShader.h"
+#include "TransferLoadingScreen.h"
 
 struct MainMenu;
 struct Level;
-struct WorldTransferScreen : TilesetManager
+struct ShardAndLogDisplay;
+struct WorldTransferScreen : TransferLoadingScreen
 {
-	enum State
+	enum Action
 	{
-		STARTING,
-		BOOSTING,
-		FINISHBOOST,
-		ENDING
+		A_STARTING,
+		A_BOOSTING,
+		A_FINISHBOOST,
+		A_ENDING
 	};
-
-	sf::Text levelNameText;
-	sf::Sprite shardIconSpr;
-	sf::Text shardText;
-	sf::Sprite logIconSpr;
-	sf::Text logText;
 
 	bool ended;
 	sf::Text worldText;
 	int currWorld;
-	State state;
 	sf::Sprite bgSpr;
 	sf::Sprite bgShapeSpr;
 	sf::Sprite starSpr[4];
@@ -43,7 +38,6 @@ struct WorldTransferScreen : TilesetManager
 	Tileset *ts_ship;
 	sf::Vector2f shipStart;
 	sf::Vector2f shipEnd;
-	int frame;
 	sf::Shader scrollShaderStars[4];
 	sf::Shader scrollShaderLight[2];
 	float starSpeed[4];
@@ -56,10 +50,8 @@ struct WorldTransferScreen : TilesetManager
 	float lightAccel[2];
 	int shipExitLength;
 	PlayerSkinShader skinShader;
-	Level *level;
 	
 	WorldTransferScreen();
-	void SetLevel(Level *lev);
 	void Draw(sf::RenderTarget *target);
 	void SetWorld(int wIndex);
 	void Reset();

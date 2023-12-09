@@ -5,27 +5,23 @@
 #include "Tileset.h"
 #include "Actor.h"
 #include "PlayerSkinShader.h"
+#include "TransferLoadingScreen.h"
 
 struct MainMenu;
 struct Level;
-struct KinBoostScreen : TilesetManager
+struct ShardAndLogDisplay;
+struct KinBoostScreen : TransferLoadingScreen
 {
-	enum State
+	enum Action
 	{
-		STARTING,
-		BOOSTING,
-		FINISHBOOST,
-		ENDING
+		A_STARTING,
+		A_BOOSTING,
+		A_FINISHBOOST,
+		A_ENDING
 	};
 
 	bool ended;
-	sf::Text levelNameText;
-	sf::Sprite shardIconSpr;
-	sf::Text shardText;
-	sf::Sprite logIconSpr;
-	sf::Text logText;
 	int stateFrame;
-	State state;
 	sf::Sprite bgSpr;
 	sf::Sprite bgShapeSpr;
 	sf::Sprite starSpr[4];
@@ -45,7 +41,6 @@ struct KinBoostScreen : TilesetManager
 	int kinLoopTileStart;
 	int kinEndTileStart;
 	int kinEndLength;
-	int frame;
 	sf::Shader scrollShaderStars[4];
 	sf::Shader scrollShaderLight[2];
 	float starSpeed[4];
@@ -56,13 +51,9 @@ struct KinBoostScreen : TilesetManager
 	float lightMax[2];
 	float starAccel[4];
 	float lightAccel[2];
-	Tileset *ts_statIcons;
-
 	PlayerSkinShader skinShader;
-	Level *level;
 	
 	KinBoostScreen();
-	void SetLevel(Level *lev);
 	bool IsEnded();
 	void Draw(sf::RenderTarget *target);
 	void Reset();

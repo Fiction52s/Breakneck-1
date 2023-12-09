@@ -5,7 +5,7 @@
 #include "WorldMap.h"
 #include "MusicPlayer.h"
 #include "AdventureManager.h"
-
+#include "ShardAndLogDisplay.h"
 
 using namespace std;
 using namespace sf;
@@ -27,36 +27,6 @@ KinBoostScreen::KinBoostScreen()
 	ts_kinBoost = GetSizedTileset("Kin/exitboost_96x128.png");
 	ts_kinAura = GetSizedTileset("Kin/FX/exitaura_256x256.png");
 	ts_enterFX = GetSizedTileset("Kin/FX/enter_fx_320x320.png");
-
-	MainMenu *mm = MainMenu::GetInstance();
-
-	ts_statIcons = GetSizedTileset("HUD/score_icons_128x96.png");
-
-	ts_statIcons->SetSpriteTexture(shardIconSpr);
-	ts_statIcons->SetSubRect(shardIconSpr, 2);
-	ts_statIcons->SetSpriteTexture(logIconSpr);
-	ts_statIcons->SetSubRect(logIconSpr, 3);
-
-	shardText.setFont(mm->arial);
-	shardText.setCharacterSize(40);
-	shardText.setFillColor(Color::White);
-
-	logText.setFont(mm->arial);
-	logText.setCharacterSize(40);
-	logText.setFillColor(Color::White);
-
-	levelNameText.setFont(mm->arial);
-	levelNameText.setCharacterSize(60);
-	levelNameText.setFillColor(Color::White);
-
-	Vector2f levelStatsTopLeft = Vector2f(960, 750) + Vector2f(-181, 152); //these seemingly random numbers just center it and put it at the correct height
-	Vector2f logDiff(180, 0);
-
-	shardIconSpr.setPosition(levelStatsTopLeft);
-	shardText.setPosition(shardIconSpr.getPosition() + Vector2f(96 + 10, 20));
-
-	logIconSpr.setPosition(levelStatsTopLeft + logDiff);
-	logText.setPosition(logIconSpr.getPosition() + Vector2f(96 + 10, 20));
 
 	ts_enterFX->SetSpriteTexture(enterFXSpr);
 
@@ -135,7 +105,7 @@ KinBoostScreen::KinBoostScreen()
 
 void KinBoostScreen::End()
 {
-	state = FINISHBOOST;
+	action = A_FINISHBOOST;
 	stateFrame = 0;
 
 	auto *mainMenu = MainMenu::GetInstance();
@@ -149,7 +119,7 @@ void KinBoostScreen::Reset()
 {
 	frame = 0;
 	stateFrame = 0;
-	state = STARTING;
+	action = A_STARTING;
 	ended = false;
 
 	auto *mainMenu = MainMenu::GetInstance();
@@ -175,65 +145,11 @@ void KinBoostScreen::Reset()
 	lightSpeed[1] = 1.f / 10000.f;
 }
 
-void KinBoostScreen::SetLevel(Level *lev)
-{
-	MainMenu *mm = MainMenu::GetInstance();
-	level = lev;
-	levelNameText.setString(mm->adventureManager->adventureFile.GetMap(level->index).name);
 
-	auto lb = levelNameText.getLocalBounds();
-
-	levelNameText.setOrigin(lb.left + lb.width / 2, lb.height / 2);
-	levelNameText.setPosition(960, 800);
-
-	int totalShards = 0;
-	int numShardsCaptured = 0;
-	int totalLogs = 0;
-	int numLogsCaptured = 0;
-
-	
-	AdventureMapHeaderInfo &amhi =
-		mm->adventureManager->adventureFile.GetMapHeaderInfo(level->index);
-	totalShards = amhi.shardInfoVec.size();
-
-	SaveFile *saveFile = mm->adventureManager->currSaveFile;
-	for (int j = 0; j < totalShards; ++j)
-	{
-		if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
-		{
-			++numShardsCaptured;
-		}
-	}
-
-	totalLogs = amhi.logInfoVec.size();
-	for (int j = 0; j < totalLogs; ++j)
-	{
-		if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
-		{
-			++numLogsCaptured;
-		}
-	}
-
-	stringstream ss;
-
-	ss.str("");
-	ss.clear();
-
-	ss << numShardsCaptured << "/" << totalShards;
-
-	shardText.setString(ss.str());
-
-	ss.str("");
-	ss.clear();
-
-	ss << numLogsCaptured << "/" << totalLogs;
-
-	logText.setString(ss.str());
-}
 
 void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 {
-	if (state != ENDING)
+	if (action != A_ENDING)
 	{
 		if (showAura)
 		{
@@ -242,7 +158,7 @@ void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 		target->draw(kinSpr, &skinShader.pShader);
 	}
 
-	if (state == ENDING)
+	if (action == A_ENDING)
 	{
 		target->draw(enterFXSpr );
 	}
@@ -253,23 +169,23 @@ void KinBoostScreen::Update()
 	auto *mainMenu = MainMenu::GetInstance();
 
 	showAura = true;
-	switch (state)
+	switch (action)
 	{
-	case STARTING:
-		state = BOOSTING;
+	case A_STARTING:
+		action = A_BOOSTING;
 		//frame = 0;
 		stateFrame = 0;
 		mainMenu->fader->Fade(true, 120, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
 		break;
-	case BOOSTING:
+	case A_BOOSTING:
 		break;
-	case ENDING:
+	case A_ENDING:
 		//if( mainMenu->swiper->IsPostWipe())
 		break;
 	}
 
 
-	if( state != STARTING )
+	if( action != A_STARTING )
 	{
 		/*int scrollFramesBack = 40;
 		int scrollFramesFront = 30;
@@ -308,7 +224,7 @@ void KinBoostScreen::Update()
 		int kFrame = (frame % (kinLoopLength * 2));
 		int kActual = kFrame / 2 + kinLoopTileStart;
 
-		if (state == BOOSTING || state == FINISHBOOST)
+		if (action == A_BOOSTING || action == A_FINISHBOOST)
 		{
 			kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kActual));
 
@@ -320,14 +236,14 @@ void KinBoostScreen::Update()
 
 		
 
-		if (state == FINISHBOOST && kFrame == kinLoopLength * 2 - 1 && mainMenu->fader->IsFullyFadedOut() )
+		if (action == A_FINISHBOOST && kFrame == kinLoopLength * 2 - 1 && mainMenu->fader->IsFullyFadedOut() )
 		{
-			state = ENDING;
+			action = A_ENDING;
 			stateFrame = 0;
 			
 		}
 		
-		if (state == ENDING)
+		if (action == A_ENDING)
 		{
 			kFrame = stateFrame / 2 + kinEndTileStart;
 			kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kFrame));
@@ -405,21 +321,21 @@ bool KinBoostScreen::IsEnded()
 
 bool KinBoostScreen::IsBoosting()
 {
-	return state == BOOSTING;
+	return action == A_BOOSTING;
 }
 
 void KinBoostScreen::Draw(RenderTarget *target)
 {
-	switch (state)
+	switch (action)
 	{
-	case STARTING:
+	case A_STARTING:
 	{
 		//target->draw(swipeSpr);
 		break;
 	}
-	case ENDING:
-	case FINISHBOOST:
-	case BOOSTING:
+	case A_ENDING:
+	case A_FINISHBOOST:
+	case A_BOOSTING:
 	{
 		target->draw(bgSpr);
 
@@ -439,12 +355,7 @@ void KinBoostScreen::Draw(RenderTarget *target)
 			target->draw(lightSpr[i], &scrollShaderLight[i]);
 		}
 
-		target->draw(shardIconSpr);
-		target->draw(shardText);
-		target->draw(logIconSpr);
-		target->draw(logText);
-
-		target->draw(levelNameText);
+		DrawLevelInfo(target);
 
 		//target->draw(kinSpr);
 		break;

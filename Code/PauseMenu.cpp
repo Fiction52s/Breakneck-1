@@ -20,6 +20,8 @@
 #include "UIMouse.h"
 #include "UIController.h"
 #include "MusicPlayer.h"
+#include "ShardAndLogDisplay.h"
+
 //#include "Actor.h"
 
 using namespace sf;
@@ -148,6 +150,9 @@ PauseMenu::PauseMenu( TilesetManager *p_tm )
 {
 	tm = p_tm;
 	game = NULL;
+
+	shardAndLogDisplay = new ShardAndLogDisplay(p_tm);
+
 	mainMenu = MainMenu::GetInstance();
 	
 	mapNameText.setFont(mainMenu->arial);
@@ -279,6 +284,8 @@ void PauseMenu::SetGame(GameSession *p_game)
 	kinMenu->SetGame(p_game);
 	optionsMenu->SetGame(p_game);
 	pauseMap->SetGame(p_game);
+
+	
 }
 
 void PauseMenu::UpdatePauseOptions()
@@ -298,6 +305,8 @@ void PauseMenu::UpdatePauseOptions()
 
 PauseMenu::~PauseMenu()
 {
+	delete shardAndLogDisplay;
+
 	delete shardMenu;
 	delete logMenu;
 
@@ -393,9 +402,16 @@ void PauseMenu::SetTab( Tab t )
 	switch( t )
 	{
 	case MAP:
+	{
 		mapNameText.setString(game->mapHeader->fullName);
+		auto gb = mapNameText.getGlobalBounds();
+
+		//shardAndLogDisplay->SetTopLeft(Vector2f(gb.left + gb.width + 40, mapNameText.getPosition().y));
+		shardAndLogDisplay->SetLevel(game->level);
+		
 		pauseMap->Reset();
 		break;
+	}
 	case KIN:
 	{
 		kinMenu->UpdateCommandButton();
@@ -448,6 +464,7 @@ void PauseMenu::SetTopLeft(sf::Vector2f &pos)
 	tabSprite.setPosition(pos);
 
 	mapNameText.setPosition(100 + 10, 100 + 10);
+	shardAndLogDisplay->SetTopLeft( Vector2f(1450, 105) );
 	pauseMap->SetCenter(Vector2f(960, 540));
 
 	Vector2f startOffset(1820 / 2, 128 / 2 + 100);
@@ -497,6 +514,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	{
 		pauseMap->Draw(target);
 		target->draw(mapNameText);
+		shardAndLogDisplay->Draw(target);
 	}
 	else if( currentTab == OPTIONS )
 	{

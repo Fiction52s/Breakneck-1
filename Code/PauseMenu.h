@@ -6,6 +6,7 @@
 #include "Input.h"
 #include "Movement.h"
 
+
 struct GameSettingsScreen;
 
 
@@ -15,6 +16,7 @@ struct LogMenu;
 struct ColorShifter;
 struct ControlProfile;
 struct PaletteShader;
+struct ShardAndLogDisplay;
 struct OptionSelector
 {
 	static sf::Font *font;	
@@ -120,6 +122,7 @@ struct PauseMenu
 	TilesetManager *tm;
 	sf::Text debugText;
 	sf::Text mapNameText;
+	ShardAndLogDisplay *shardAndLogDisplay;
 
 	Tileset *ts_buttons;
 

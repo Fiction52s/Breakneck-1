@@ -29,7 +29,14 @@ WorldMap::WorldMap()
 	mainMenu = MainMenu::GetInstance();
 	adventureManager = mainMenu->adventureManager;
 
-	adventureManager->parallelPracticeMode = mainMenu->config->GetData().parallelPlayOn;
+	if (mainMenu->steamOn)
+	{
+		adventureManager->parallelPracticeMode = mainMenu->config->GetData().parallelPlayOn;
+	}
+	else
+	{
+		adventureManager->parallelPracticeMode = false;
+	}
 	
 	allUnlocked = true;
 

@@ -15,6 +15,7 @@ PauseMap::PauseMap(TilesetManager *p_tm)
 {
 	tm = p_tm;
 	game = NULL;
+	
 
 	MainMenu *mm = MainMenu::GetInstance();
 
@@ -36,7 +37,6 @@ PauseMap::PauseMap(TilesetManager *p_tm)
 	kinMapIcon.setPosition(0, 0);
 	//.5, .5);
 
-
 	goalMapIcon.setTexture(*ts_miniIcons->texture);
 	goalMapIcon.setTextureRect(ts_miniIcons->GetSubRect(5));
 	goalMapIcon.setScale(1.5, 1.5);
@@ -46,6 +46,10 @@ PauseMap::PauseMap(TilesetManager *p_tm)
 	SetCenter(Vector2f(200, 1080 - 200));
 
 	//Reset();
+}
+
+PauseMap::~PauseMap()
+{
 }
 
 void PauseMap::Reset()
@@ -254,7 +258,6 @@ void PauseMap::DrawToTex()
 	mapTex->draw(goalMapIcon);
 
 	mapTex->draw(kinMapIcon);
-
 }
 
 void PauseMap::Draw(sf::RenderTarget *target)

@@ -8,6 +8,7 @@
 struct MapHeader;
 struct GameSession;
 
+
 struct PauseMap
 {
 	TilesetManager *tm;
@@ -29,6 +30,7 @@ struct PauseMap
 
 
 	PauseMap(TilesetManager *tm);
+	~PauseMap();
 	void DrawToTex();
 	void SetGame(GameSession *game);
 	void SetupBorderQuads(
