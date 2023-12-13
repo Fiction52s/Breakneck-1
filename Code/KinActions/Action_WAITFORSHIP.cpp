@@ -27,13 +27,16 @@ void Actor::WAITFORSHIP_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(0, r);
 
-	if (ground != NULL)
-	{
-		SetGroundedSpriteTransform();
-		
+	sprite->setRotation(0);
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	sprite->setPosition(position.x, position.y);
+	//if (ground != NULL)
+	//{
+	//	SetGroundedSpriteTransform();
+	//	
 
-		//cout << "angle: " << angle / PI * 180  << endl;
-	}
+	//	//cout << "angle: " << angle / PI * 180  << endl;
+	//}
 }
 
 void Actor::WAITFORSHIP_TransitionToAction(int a)

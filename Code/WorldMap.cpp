@@ -103,8 +103,18 @@ WorldMap::WorldMap()
 	
 	ts_colonyActive[0] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
 	ts_colonyActive[1] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActive[2] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActive[3] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActive[4] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActive[5] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
+
 	ts_colonyActiveZoomed[0] = GetTileset("Menu/WorldMap/map_w1_vein.png", 1920, 1080);
 	ts_colonyActiveZoomed[1] = GetTileset("Menu/WorldMap/map_w2_vein.png", 1920, 1080);
+	ts_colonyActiveZoomed[2] = GetTileset("Menu/WorldMap/map_w3_vein.png", 1920, 1080);
+	ts_colonyActiveZoomed[3] = GetTileset("Menu/WorldMap/map_w4_vein.png", 1920, 1080);
+	ts_colonyActiveZoomed[4] = GetTileset("Menu/WorldMap/map_w5_vein.png", 1920, 1080);
+	ts_colonyActiveZoomed[5] = GetTileset("Menu/WorldMap/map_w6_vein.png", 1920, 1080);
+	//ts_colonyActiveZoomed[6] = GetTileset("Menu/WorldMap/map_w2_vein.png", 1920, 1080);
 
 	ts_space = GetTileset("Menu/WorldMap/worldmap_bg.png", 1920, 1080);
 	spaceSpr.setTexture(*ts_space->texture);
@@ -139,7 +149,7 @@ WorldMap::WorldMap()
 	colonySpr[6].setPosition(841, 473);
 	colonySpr[7].setPosition(841, 600);
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 6; ++i)
 	{
 		SetRectSubRect(worldActiveQuads + i * 4, ts_colonyActive[i]->GetSubRect(0));
 		SetRectCenter(worldActiveQuads + i * 4, 1920, 1080, Vector2f(960, 540));
@@ -1084,7 +1094,7 @@ void WorldMap::Draw( RenderTarget *target )
 
 	
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 6; ++i)
 	{
 		SetRectColor(worldActiveQuads + i * 4, selectColor);
 		SetRectColor(worldActiveQuadsZoomed + i * 4, selectColor);

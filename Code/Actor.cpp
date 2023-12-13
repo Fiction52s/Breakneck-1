@@ -18220,7 +18220,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	{
 	case TRIGGER_SHIPPICKUP:
 	{
-		ShipPickupPoint(trigger->currPosInfo.GetQuant(), trigger->facingRight);
+		//ShipPickupPoint(trigger->currPosInfo.GetQuant(), trigger->facingRight);
 		break;
 	}
 	case TRIGGER_HOUSEFAMILY:
@@ -21726,7 +21726,7 @@ void Actor::GrabShipWire()
 	frame = 0;
 }
 
-void Actor::ShipPickupPoint( double eq, bool fr )
+void Actor::ShipPickupPoint( V2d pos, bool fr )
 {
 	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
@@ -21740,14 +21740,9 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 		SetAction(WAITFORSHIP);
 		frame = 0;
 		assert( ground != NULL );
-		edgeQuantity = eq;
-		groundSpeed = 0;
-		facingRight = fr;
 
-		if( ground->Normal().y == -1 )
-		{
-			offsetX = 0;
-		}
+		SetAirPos(pos, fr);
+		velocity = V2d(0, 0);
 
 		bool setRecord = false;
 		if (owner != NULL)

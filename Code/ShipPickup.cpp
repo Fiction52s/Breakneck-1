@@ -60,6 +60,8 @@ void ShipPickup::ResetEnemy()
 {
 	SetCurrPosInfo(startPosInfo);
 
+	pickupPos = currPosInfo.GetPosition();
+
 	frame = 0;
 	dead = false;
 	action = IDLE;
@@ -95,13 +97,19 @@ void ShipPickup::UpdateEnemyPhysics()
 
 	Edge *ground = currPosInfo.GetEdge();
 	double edgeQuantity = currPosInfo.GetQuant();
-	if( player->ground == currPosInfo.GetEdge() && action == IDLE)
+
+	/*if (length(player->position - pickupPos) < 50)
+	{
+		player->ShipPickupPoint(pickupPos, facingRight);
+		action = FOUND;
+	}
+	else */if( player->ground == currPosInfo.GetEdge() && action == IDLE)
 	{
 		if( ground->Normal().y == -1 )
 		{
 			if( abs( ( player->edgeQuantity + player->offsetX ) - edgeQuantity ) < 5 )
 			{
-				player->ShipPickupPoint( edgeQuantity, facingRight );
+				player->ShipPickupPoint( pickupPos, facingRight );
 				action = FOUND;
 				//frame = 0; //keeps the same value since its just looping the same anim atm
 			}
@@ -110,7 +118,7 @@ void ShipPickup::UpdateEnemyPhysics()
 		{
 			if( abs( player->edgeQuantity - edgeQuantity ) < 5 )
 			{
-				player->ShipPickupPoint( edgeQuantity, facingRight );
+				player->ShipPickupPoint(pickupPos, facingRight );
 				action = FOUND;
 				//frame = 0;
 			}

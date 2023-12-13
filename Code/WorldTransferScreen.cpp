@@ -29,7 +29,7 @@ WorldTransferScreen::WorldTransferScreen()
 	ts_planet->SetSpriteTexture(planetSpr);
 	planetSpr.setPosition(0, 1080 - planetSpr.getGlobalBounds().height);
 
-	ts_ship = GetTileset("Ship/ship_864x400.png", 864, 400);
+	ts_ship = GetSizedTileset("Ship/ship_864x410.png");
 	ts_ship->SetSpriteTexture(shipSpr);
 	shipSpr.setOrigin(shipSpr.getLocalBounds().width / 2, shipSpr.getLocalBounds().height / 2);
 

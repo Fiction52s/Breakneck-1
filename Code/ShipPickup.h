@@ -20,6 +20,7 @@ struct ShipPickup : Enemy
 
 	Tileset *ts;
 	MyData data;
+	V2d pickupPos;
 
 	ShipPickup(ActorParams *ap);
 	void ProcessState();

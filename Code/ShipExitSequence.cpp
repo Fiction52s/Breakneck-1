@@ -23,7 +23,7 @@ ShipExitScene::ShipExitScene()
 	ts_ship = sess->GetTileset("Ship/ship_exit_864x540.png", 864, 540);
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
-	shipSprite.setOrigin(421, 425);
+	shipSprite.setOrigin(421 + 8, 425);
 }
 
 ShipExitScene::~ShipExitScene()

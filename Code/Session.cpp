@@ -243,7 +243,7 @@ void Session::RegisterGeneralEnemies()
 		ts_poi = GetSizedTileset("Editor/pointofinterest_32x32.png");
 		ts_xBarrier = GetSizedTileset("Enemies/General/blocker_w1_192x192.png");
 		ts_xBarrierWarp = GetSizedTileset("Enemies/Multiplayer/target_224x224.png");
-		ts_ship = GetSizedTileset("Ship/ship_864x400.png");
+		ts_ship = GetSizedTileset("Ship/ship_open_864x410.png");
 	}
 
 

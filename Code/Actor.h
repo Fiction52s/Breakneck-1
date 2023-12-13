@@ -1591,8 +1591,7 @@ struct Actor : QuadTreeCollider,
 	void TryHitPlayer(int targetIndex);
 	void SetTouchedGate(Gate *g);
 	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
-	void ShipPickupPoint( double eq,
-		bool facingRight );
+	void ShipPickupPoint( V2d pos, bool facingRight );
 	void GrabShipWire();
 	bool physicsOver;
 	void UpdatePostPhysics();

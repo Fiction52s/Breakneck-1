@@ -11,7 +11,7 @@ ShipEnterScene::ShipEnterScene()
 {
 	ts_w1ShipClouds0 = sess->GetSizedTileset("Ship/cloud_w1_a1_960x128.png");
 	ts_w1ShipClouds1 = sess->GetSizedTileset("Ship/cloud_w1_b1_960x320.png");
-	ts_ship = sess->GetTileset("Ship/ship_864x400.png", 864, 400);
+	ts_ship = sess->GetSizedTileset("Ship/ship_open_864x410.png");
 
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
