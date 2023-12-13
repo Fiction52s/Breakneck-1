@@ -60,7 +60,7 @@ void ShipPickup::ResetEnemy()
 {
 	SetCurrPosInfo(startPosInfo);
 
-	pickupPos = currPosInfo.GetPosition();
+	pickupPos = currPosInfo.GetPosition() + V2d( 0, -8 );
 
 	frame = 0;
 	dead = false;

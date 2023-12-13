@@ -126,7 +126,7 @@ void ShipExitScene::UpdateState()
 
 		if (seqData.frame >= enterTime)
 		{
-			sess->GetPlayer(0)->position = V2d(shipMovement.GetPos().x, shipMovement.GetPos().y + 48.0 + 28.0);
+			sess->GetPlayer(0)->position = V2d(shipMovement.GetPos().x, shipMovement.GetPos().y + 48.0);// +28.0);
 			if (seqData.frame == enterTime)
 			{
 				EaseShot("shot2", exitTime);

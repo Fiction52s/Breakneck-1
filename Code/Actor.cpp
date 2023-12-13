@@ -6669,7 +6669,7 @@ void Actor::LimitMaxSpeeds()
 		//&& action != SPRINGSTUNAIRBOUNCE
 		//&& action != SPRINGSTUNTELEPORT)
 	{
-		if (action != AIRDASH && !(rightWire->IsPulling() && leftWire->IsPulling()) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD)
+		if (action != AIRDASH && !(rightWire->IsPulling() && leftWire->IsPulling()) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD && action != WAITFORSHIP)
 		{
 			if (!frameAfterAttackingHitlagOver) //hitting enemies was making full hop height lower
 			{
@@ -21722,7 +21722,7 @@ void Actor::DrawMapWires(sf::RenderTarget *target)
 void Actor::GrabShipWire()
 {
 	SetAction(GRABSHIP);
-	ground = NULL;
+//	ground = NULL;
 	frame = 0;
 }
 
@@ -21737,12 +21737,14 @@ void Actor::ShipPickupPoint( V2d pos, bool fr )
 		
 		//WriteBestTimeRecordings();
 
-		SetAction(WAITFORSHIP);
+		
 		frame = 0;
 		assert( ground != NULL );
 
 		SetAirPos(pos, fr);
 		velocity = V2d(0, 0);
+
+		SetAction(WAITFORSHIP);
 
 		bool setRecord = false;
 		if (owner != NULL)

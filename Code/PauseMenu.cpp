@@ -463,8 +463,8 @@ void PauseMenu::SetTopLeft(sf::Vector2f &pos)
 	bgSprite.setPosition(pos);//50, 50 );
 	tabSprite.setPosition(pos);
 
-	mapNameText.setPosition(100 + 10, 100 + 10);
-	shardAndLogDisplay->SetTopLeft( Vector2f(1450, 105) );
+	mapNameText.setPosition(100 + 10 + 34, 100 + 10);
+	shardAndLogDisplay->SetTopLeft(Vector2f(100 + 10, 100 + 10 + 50));//Vector2f(1450, 105) );
 	pauseMap->SetCenter(Vector2f(960, 540));
 
 	Vector2f startOffset(1820 / 2, 128 / 2 + 100);

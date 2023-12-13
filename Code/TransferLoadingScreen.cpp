@@ -7,8 +7,6 @@ using namespace sf;
 
 TransferLoadingScreen::TransferLoadingScreen()
 {
-	shardAndLogDisplay = new ShardAndLogDisplay(this);
-
 	MainMenu *mm = MainMenu::GetInstance();
 
 	shardAndLogDisplay = new ShardAndLogDisplay(this);

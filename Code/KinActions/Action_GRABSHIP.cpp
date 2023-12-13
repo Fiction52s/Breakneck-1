@@ -50,7 +50,7 @@ void Actor::GRABSHIP_UpdateSprite()
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2,
-		sprite->getLocalBounds().height - 20);
+		sprite->getLocalBounds().height - 48);
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 	

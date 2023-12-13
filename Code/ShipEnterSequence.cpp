@@ -41,7 +41,11 @@ void ShipEnterScene::Reset()
 	player->frame = 0;
 	player->position = shipEntrancePos;
 	sess->playerOrigPos[0] = Vector2i(player->position);
-	shipSprite.setPosition(sess->playerOrigPos[0].x - 13, sess->playerOrigPos[0].y - 124);
+
+	Vector2f shipPos(sess->playerOrigPos[0].x - 13, sess->playerOrigPos[0].y - 124);
+	shipPos += Vector2f(8, -50);
+
+	shipSprite.setPosition(shipPos);
 	shipSequence = true;
 	//shipSeqFrame = 0;
 	shipStartPos = shipSprite.getPosition();
