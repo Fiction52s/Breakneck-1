@@ -1019,6 +1019,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ConsumePracticeSequenceConfirm();
 	void CleanupGameMode();
 
+	void StartGoalPulse(sf::Vector2f pos);
+
 	void UpdateWorldDependentTileset( int world );
 
 	Actor *GetPlayerFromNetplayPlayerIndex(int index);

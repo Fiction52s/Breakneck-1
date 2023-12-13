@@ -2103,18 +2103,18 @@ bool GameSession::Load()
 	}
 	//SetupPlayerReplayerManagers();
 
+	SetupGoalPulse();
+
 	if (hasGoal)
 	{
 		if (!IsParallelSession())
 		{
 			SetupGoalFlow();
 		}
-		
-		SetupGoalPulse();
 	}
 	else
 	{
-		CleanupGoalPulse();
+		//CleanupGoalPulse();
 		CleanupGoalFlow();
 	}
 	

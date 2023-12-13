@@ -191,7 +191,7 @@ void Goal::HandleNoHealth()
 	SetHurtboxes(NULL, 0);
 	action = A_KINKILLING;
 
-	sess->goalPulse->StartPulse();
+	sess->StartGoalPulse(GetPositionF());
 }
 
 void Goal::UpdateSprite()

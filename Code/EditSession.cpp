@@ -1314,10 +1314,11 @@ void EditSession::TestPlayerMode()
 		topClouds->SetToHeader();
 	}
 
+	SetupGoalPulse();
+
 	if (hasGoal)
 	{
 		SetupGoalFlow();
-		SetupGoalPulse();
 	}
 
 

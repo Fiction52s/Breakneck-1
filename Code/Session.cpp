@@ -1393,7 +1393,8 @@ void Session::KillAllEnemies()
 	{
 		Enemy *next = curr->next;
 
-		if (curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS)
+		if (curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS
+			&& curr->type != EnemyType::EN_SHIPPICKUP )
 		{
 			curr->DirectKill();
 			//curr->health = 0;
@@ -6391,7 +6392,7 @@ void Session::UpdateGoalFlow()
 
 void Session::CleanupGoalPulse()
 {
-	if (parentGame == NULL || (parentGame != NULL && !parentGame->hasGoal) )
+	if (parentGame == NULL || (parentGame != NULL && parentGame->goalPulse == NULL ) )
 	{
 		delete goalPulse;
 		goalPulse = NULL;
@@ -6408,7 +6409,7 @@ void Session::UpdateGoalPulse()
 
 void Session::SetupGoalPulse()
 {
-	if (parentGame != NULL && parentGame->hasGoal )
+	if (parentGame != NULL && parentGame->goalPulse != NULL )
 	{
 		goalPulse = parentGame->goalPulse;
 	}
@@ -6417,7 +6418,7 @@ void Session::SetupGoalPulse()
 		goalPulse = new GoalPulse;// , Vector2f(goalPos.x, goalPos.y));
 	}
 
-	goalPulse->SetPosition(Vector2f(goalPos));
+	//goalPulse->SetPosition(Vector2f(goalPos));
 }
 
 
@@ -9975,4 +9976,12 @@ void Session::UpdateReplayGhostSprites()
 void Session::ClearReplayGhosts()
 {
 	replayGhosts.clear();
+}
+
+void Session::StartGoalPulse(sf::Vector2f pos)
+{
+	assert(goalPulse != NULL);
+
+	goalPulse->SetPosition(pos);
+	goalPulse->StartPulse();
 }

@@ -111,6 +111,10 @@ void ShipPickup::UpdateEnemyPhysics()
 			{
 				player->ShipPickupPoint( pickupPos, facingRight );
 				action = FOUND;
+
+				
+				sess->KillAllEnemies();
+				sess->StartGoalPulse(Vector2f(pickupPos));
 				//frame = 0; //keeps the same value since its just looping the same anim atm
 			}
 		}
@@ -120,6 +124,9 @@ void ShipPickup::UpdateEnemyPhysics()
 			{
 				player->ShipPickupPoint(pickupPos, facingRight );
 				action = FOUND;
+
+				sess->KillAllEnemies();
+				sess->StartGoalPulse(Vector2f(pickupPos));
 				//frame = 0;
 			}
 		}
