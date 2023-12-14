@@ -15,8 +15,8 @@ ShipEnterScene::ShipEnterScene()
 
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
-	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2,
-		shipSprite.getLocalBounds().height / 2);
+	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2 + 34,
+		shipSprite.getLocalBounds().height / 2 - 53 );
 }
 
 void ShipEnterScene::AddFlashes()

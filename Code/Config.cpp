@@ -156,7 +156,7 @@ void Config::Save()
 		of << "SoundVolume " << data.soundVolume << "\n";
 		of << "ParalelPlayOn " << (int)data.parallelPlayOn << "\n";
 		of << "ShowRunningTimer " << (int)data.showRunningTimer << "\n";
-		of << "ShowFPS" << (int)data.showFPS << "\n";
+		of << "ShowFPS " << (int)data.showFPS << "\n";
 		of.close();
 	}
 	else
