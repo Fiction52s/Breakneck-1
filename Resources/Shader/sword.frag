@@ -1,19 +1,15 @@
-//#version 120
+#version 130
 
 uniform sampler2D u_texture;
-uniform vec4 toColor;
-uniform vec4 fromColor;
+uniform vec4 u_palette[180];
+uniform int u_offset;
 
 void main()
 {		
-	vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
+	vec4 texColor = texture2D(u_texture, gl_TexCoord[0].xy );
 	
-	if( DiffuseColor.rgb == fromColor.rgb )
-	{
-		gl_FragColor = vec4(toColor.rgb, DiffuseColor.a );
-	}
-	else
-	{
-		gl_FragColor = DiffuseColor;
-	}
+	int texIndex = int((texColor.r)* 255.0) + u_offset * 12;
+	vec4 DiffuseColor = vec4( u_palette[texIndex].rgb, texColor.a);
+	
+	gl_FragColor = DiffuseColor * gl_Color;
 }

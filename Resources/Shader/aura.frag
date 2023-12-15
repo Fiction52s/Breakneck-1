@@ -4,7 +4,7 @@ uniform vec4 u_auraColor;
 uniform vec4 u_quad;
 uniform float u_slide;
 
-//uniform vec4 u_palette[164];
+//uniform vec4 u_palette[180];
 
 bool found;
 vec2 texelSize;

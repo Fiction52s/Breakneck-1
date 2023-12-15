@@ -7,7 +7,7 @@ uniform vec4 u_quad;
 //uniform float u_slide;
 uniform float u_invincible;
 uniform float u_super;
-uniform vec4 u_palette[164];
+uniform vec4 u_palette[180];
 
 bool found;
 vec2 texelSize;

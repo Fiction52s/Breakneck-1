@@ -1,5 +1,8 @@
 ResolutionX 1920
 ResolutionY 1080
 WindowMode Fullscreen
-MusicVolume 0
+MusicVolume 40
 SoundVolume 50
+ParalelPlayOn 1
+ShowRunningTimer 1
+ShowFPS 1

@@ -359,6 +359,7 @@ void ShapeEmitter::Init()
 	data.prevID = -1; //initializing here prob does nothing, but its good practice anyway
 	data.nextID = -1;
 
+	prev = NULL;
 	next = NULL;
 	ts = NULL;
 
