@@ -2772,15 +2772,15 @@ void Session::UpdatePlayerInput(int index)
 
 		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession() )//&& playerInd == 0 )
 		{
-			netplayManager->SendPracticeInitMessageToAllNewPeers();
+			//netplayManager->SendPracticeInitMessageToAllNewPeers();
 
-			//sends the start to message to any new peers that join
-			PracticeStartMsg psm;
-			psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
-			psm.SetUpgradeField(player->bStartHasUpgradeField);
-			psm.startFrame = totalGameFrames;
-			psm.wantsToPlay = netplayManager->wantsToPracticeRace;
-			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+			////sends the start to message to any new peers that join
+			//PracticeStartMsg psm;
+			//psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
+			//psm.SetUpgradeField(player->bStartHasUpgradeField);
+			//psm.startFrame = totalGameFrames;
+			//psm.wantsToPlay = netplayManager->wantsToPracticeRace;
+			//netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 
 			PracticeInputMsg pm;
 			pm.frame = totalGameFrames;
@@ -2955,6 +2955,15 @@ void Session::UpdateAllPlayersInput()
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession() )//IsParallelGameModeType() && !IsParallelSession() )
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
+
+		/*for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL && !netplayManager->practicePlayers[i].HasStateChange())
+			{
+				pm->parallelGames[i]->UpdatePlayerInput(i + 1);
+			}
+		}*/
+
 		pm->UpdateParallelPlayerInputs();
 	}
 }
@@ -6936,9 +6945,25 @@ bool Session::RunGameModeUpdate()
 		UpdateAllPlayersInput();*/
 
 		//please....hoping to fix the bug from below and doesn't mess up sequence stuff...
-		UpdateAllPlayersInput();
+		//UpdateAllPlayersInput(); //when its here, logs and state changes fail, because the input is getting incremented but shouldn't be if the
+		//state is going to change
 
 		skipOneReplayFrame = false;
+
+		if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession())//&& playerInd == 0 )
+		{
+			netplayManager->SendPracticeInitMessageToAllNewPeers();
+
+			Actor *player = GetPlayer(0);
+
+			//sends the start to message to any new peers that join
+			PracticeStartMsg psm;
+			psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
+			psm.SetUpgradeField(player->bStartHasUpgradeField);
+			psm.startFrame = totalGameFrames;
+			psm.wantsToPlay = netplayManager->wantsToPracticeRace;
+			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+		}
 
 		ActiveSequenceUpdate();
 		if (switchGameState)
@@ -6970,7 +6995,7 @@ bool Session::RunGameModeUpdate()
 		//old spot causes 1 frame discrepancy when loading in for the first time
 		//UpdateAllPlayersInput();
 
-
+		UpdateAllPlayersInput();
 
 		RunFrameForParallelPractice();
 
@@ -7851,7 +7876,11 @@ bool Session::OnlineRunGameModeUpdate()
 	{
 		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
 		{
-			assert(netplayManager->practicePlayers[parallelSessionIndex].HasStateChange());
+			if (!netplayManager->practicePlayers[parallelSessionIndex].HasStateChange())
+			{
+				assert(netplayManager->practicePlayers[parallelSessionIndex].HasStateChange());
+			}
+			
 			netplayManager->practicePlayers[parallelSessionIndex].ConsumeStateChange();
 		}
 

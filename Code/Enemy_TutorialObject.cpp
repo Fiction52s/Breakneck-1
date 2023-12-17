@@ -241,6 +241,11 @@ void TutorialObject::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int TutorialObject::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
 void TutorialObject::StoreBytes(unsigned char *bytes)
 {
 	StoreBasicEnemyData(data);

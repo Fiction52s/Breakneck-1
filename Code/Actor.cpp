@@ -19862,18 +19862,28 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		if (e->IsTouchingBox(r))
 		{
 			Gate *g = e->GetGate();
-			if (gateTouched == NULL)
+
+			if (CanUnlockGate(g))
 			{
-				//cout << "set touched gate from check gate\n";
-				SetTouchedGate(g);
-			}
-			else if (gateTouched != NULL && gateTouched != g)
-			{
-				//this means gates are both getting touched by you at once which is a problem in the engine anyway
-				//assuming its not going to happen in any normal levels
-				//assert(0);
-				SetTouchedGate(g);
-				
+				//UnlockGate(g); //not sure why this is on so many of the other ones. figure out what is right
+
+				if (gateTouched == NULL)
+				{
+					//cout << "set touched gate from check gate\n";
+					SetTouchedGate(g);
+
+					UnlockGate(g); //recently added these to line them up with other stuff, could be bugs?
+				}
+				else if (gateTouched != NULL && gateTouched != g)
+				{
+					//this means gates are both getting touched by you at once which is a problem in the engine anyway
+					//assuming its not going to happen in any normal levels
+					//assert(0);
+					SetTouchedGate(g);
+
+					UnlockGate(g);
+
+				}
 			}
 		}
 	}

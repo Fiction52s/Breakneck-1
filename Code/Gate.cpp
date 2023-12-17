@@ -177,6 +177,8 @@ void Gate::Reset()
 	data.orbState = ORB_RED;
 	data.orbFrame = 0;
 
+	//SetLocked(true);
+
 	if (category == BOSS )
 	{
 		data.gState = OPEN;
@@ -305,6 +307,7 @@ void Gate::Reform()
 	data.frame = 0;
 	float aa = .5;
 	centerShader.setUniform("breakPosQuant", aa);
+	SetLocked(true);
 }
 
 void Gate::Close()

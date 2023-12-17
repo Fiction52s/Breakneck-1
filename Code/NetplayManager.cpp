@@ -137,6 +137,7 @@ int PracticePlayer::HasInputs()
 	//if (HasStateChange())
 	//	return 0;
 
+	
 	if (nextFrameToRead < waitingForFrame)
 	{
 		//cout << "has input. num frames had: " << waitingForFrame - nextFrameToRead << "\n";

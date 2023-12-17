@@ -38,6 +38,7 @@ struct TutorialObject : Enemy
 	void UpdateParamsSettings();
 	sf::FloatRect GetAABB();
 	void SetExtraIDsAndAddToVectors();
+	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	
