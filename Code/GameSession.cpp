@@ -1255,13 +1255,21 @@ void GameSession::UnlockUpgrade(int upgradeType, int playerIndex )
 	if (IsReplayOn())
 	{
 		//replay on
+		//currUpgradeField.SetBit(upgradeType, true);
+		//GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
+		//do I need to set the currUpgradeField here?
+
+		return;
 	}
 	else if (saveFile != NULL && !IsParallelSession())
 	{
 		saveFile->UnlockUpgrade(upgradeType);
 	}
 
+	currUpgradeField.SetBit(upgradeType, true);
 	GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
+
+	//GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
 }
 
 bool GameSession::TrySaveCurrentSaveFile()
@@ -1290,14 +1298,15 @@ void GameSession::UnlockLog(int lType, int playerIndex )
 	if (IsReplayOn())
 	{
 		//replay on
+		return;
 	}
-	else if (IsParallelSession())
-	{
-	}
-	else if (saveFile != NULL)
+
+	if (saveFile != NULL)
 	{
 		saveFile->UnlockLog(lType);
 	}
+
+	currLogField.SetBit(lType, true);
 }
 
 void GameSession::UpdateEnemiesSprites()
@@ -1916,6 +1925,7 @@ bool GameSession::Load()
 		{
 			if (IsParallelSession())
 			{
+				//shardMenu = mainMenu->adventureManager->pauseMenu->shardMenu; //dont need the shard menu but do I need the log menu?
 				logMenu = mainMenu->adventureManager->pauseMenu->logMenu;
 			}
 			else
@@ -3084,13 +3094,7 @@ bool GameSession::RunMainLoopOnce()
 			{
 				netplayManager->SendPracticeInitMessageToAllNewPeers();
 
-				//sends the start to message to any new peers that join
-				PracticeStartMsg psm;
-				psm.skinIndex = GetPlayerNormalSkin(0);
-				psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
-				psm.startFrame = totalGameFrames;
-				psm.wantsToPlay = netplayManager->wantsToPracticeRace;
-				netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+				SendPracticeStartMessageToAllNewPeers();
 
 				netplayManager->Update();
 			}
@@ -3320,13 +3324,7 @@ bool GameSession::RunMainLoopOnce()
 			{
 				netplayManager->SendPracticeInitMessageToAllNewPeers();
 
-				//sends the start to message to any new peers that join
-				PracticeStartMsg psm;
-				psm.skinIndex = GetPlayerNormalSkin(0);
-				psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
-				psm.startFrame = totalGameFrames;
-				psm.wantsToPlay = netplayManager->wantsToPracticeRace;
-				netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+				SendPracticeStartMessageToAllNewPeers();
 
 				netplayManager->Update();
 			}
@@ -3408,13 +3406,7 @@ bool GameSession::RunMainLoopOnce()
 			{
 				netplayManager->SendPracticeInitMessageToAllNewPeers();
 
-				//sends the start to message to any new peers that join
-				PracticeStartMsg psm;
-				psm.skinIndex = GetPlayerNormalSkin(0);
-				psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
-				psm.startFrame = totalGameFrames;
-				psm.wantsToPlay = netplayManager->wantsToPracticeRace;
-				netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+				SendPracticeStartMessageToAllNewPeers();
 
 				netplayManager->Update();
 			}
@@ -3639,6 +3631,15 @@ int GameSession::Run()
 		m_numActivePlayers = 1;
 		SetupGameMode();
 	}
+
+	currUpgradeField.Reset();
+	currLogField.Reset();
+	if( saveFile != NULL && !originalProgressionModeOn )
+	{
+		currLogField.Set(saveFile->logField);
+		currUpgradeField.Set(saveFile->upgradeField);
+	}
+
 
 	RestartLevel();
 
@@ -4376,6 +4377,23 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
+	if (saveFile == NULL && !IsParallelSession())
+	{
+		//currUpgradeField.Reset();
+		currUpgradeField.Set(defaultStartingPlayerOptionsField);
+		currLogField.Reset();
+	}
+
+	if ( saveFile != NULL && originalProgressionModeOn)
+	{
+		//if orig progression on, set the log field to the orig progression, otherwise, let it stack up.
+		currLogField.Set(saveFile->logField);
+		currLogField.And(originalProgressionLogField);
+
+		currUpgradeField.Set(saveFile->upgradeField);
+		currUpgradeField.And(originalProgressionPlayerOptionsField);
+	}
+
 	phaseOn = false;
 	skipOneReplayFrame = false;
 
@@ -4461,11 +4479,6 @@ void GameSession::RestartLevel()
 	}
 
 	SetDrainOn(true);
-
-	if (saveFile == NULL)
-	{
-		currShardField.Reset();
-	}
 	
 
 	nextFrameRestartGame = false;
@@ -4709,19 +4722,7 @@ bool GameSession::IsShardCaptured(int shardType)
 		return activePlayerReplayManagers[0]->header.IsShardCaptured(shardType);
 	}
 
-	if (originalProgressionModeOn)
-	{
-		return originalProgressionPlayerOptionsField.GetBit(Actor::SHARD_START_INDEX + shardType);
-	}
-
-	if (saveFile != NULL)
-	{
-		return saveFile->IsShardCaptured(shardType);
-	}
-	else
-	{
-		return currShardField.GetBit(shardType);
-	}
+	return currUpgradeField.GetBit(shardType + Actor::SHARD_START_INDEX);
 }
 
 bool GameSession::PopupGameModeUpdate()
@@ -5361,7 +5362,8 @@ bool GameSession::HasLog(int logIndex)
 		return activePlayerReplayManagers[0]->header.IsLogCaptured(logIndex);
 	}
 
-	if (originalProgressionModeOn)
+	return currLogField.GetBit(logIndex);
+	/*if (originalProgressionModeOn)
 	{
 		return originalProgressionLogField.GetBit(logIndex);
 	}
@@ -5369,7 +5371,7 @@ bool GameSession::HasLog(int logIndex)
 	if (saveFile != NULL)
 	{
 		return saveFile->HasLog(logIndex);
-	}
+	}*/
 	return false;
 }
 

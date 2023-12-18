@@ -67,6 +67,7 @@ struct PracticePlayer
 
 	int skinIndex;
 	BitField upgradeField;
+	BitField logField;
 
 	int waitingForFrame;
 	int currReadIndex;
@@ -76,6 +77,7 @@ struct PracticePlayer
 	bool isConnectedTo;
 
 	bool wantsToPlay;
+	bool origProgression;
 
 	bool isInMyPracticeLobby;
 

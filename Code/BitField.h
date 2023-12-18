@@ -17,7 +17,7 @@ struct BitField
 	void SaveBinary(std::ofstream &of);
 	~BitField();
 	void SetBit(int index, bool val);
-	bool GetBit(int index);
+	bool GetBit(int index) const;
 	void Or(const BitField &b);
 	void And(const BitField &b);
 	int GetOnCount( int startBit = 0);

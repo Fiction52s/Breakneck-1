@@ -22,7 +22,7 @@ using namespace std;
 using namespace sf;
 
 PracticePlayer::PracticePlayer()
-	:upgradeField(Session::PLAYER_OPTION_BIT_COUNT)
+	:upgradeField(Session::PLAYER_OPTION_BIT_COUNT), logField( LogInfo::MAX_LOGS_PER_WORLD * 8 )
 {
 	syncStateBuf = NULL;
 	Clear();
@@ -51,11 +51,13 @@ void PracticePlayer::Clear()
 	ClearSyncStateBuf();
 
 	upgradeField.Reset();
+	logField.Reset();
 	skinIndex = 0;
 
 	indexInLobby = -1;
 
 	wantsToPlay = false;
+	origProgression = false;
 
 	ClearMessages();
 }
@@ -282,12 +284,14 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 		needsSessionRestart = true;
 
 		wantsToPlay = msg->wantsToPlay;
+		origProgression = msg->origProgression;
 
 		action = A_RUNNING;
 
 		for (int i = 0; i < 8; ++i)
 		{
 			upgradeField.optionField[i] = msg->upgradeField[i];
+			logField.optionField[i] = msg->logField[i];
 		}
 
 		if (msg->numSyncBytes > 0)

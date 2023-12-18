@@ -56,7 +56,7 @@ void BitField::SetBit(int index, bool val)
 	}
 }
 
-bool BitField::GetBit(int index)
+bool BitField::GetBit(int index) const
 {
 	int trueIndex = index % 32;
 	int fieldIndex = index / 32;

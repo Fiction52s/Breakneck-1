@@ -35,13 +35,16 @@ struct PracticeStartMsg
 	PracticeMsgHeader header;
 	sf::Uint32 skinIndex;
 	sf::Uint32 upgradeField[8];
+	sf::Uint32 logField[8];
 	int numSyncBytes;
 	int startFrame;
 	bool wantsToPlay;
+	bool origProgression;
 
 	PracticeStartMsg();
 	void Clear();
 	void SetUpgradeField(BitField &bf);
+	void SetLogField(BitField &bf);
 };
 
 struct PracticeInputMsg

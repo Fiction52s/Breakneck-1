@@ -952,8 +952,8 @@ struct Actor : QuadTreeCollider,
 	sf::Shader playerSuperShader;
 	bool showExitAura;
 	BitField bStartHasUpgradeField;
-	BitField originalProgressionUpgradeField;
-	BitField originalProgressionLogField;
+	//BitField originalProgressionUpgradeField;
+	//BitField originalProgressionLogField;
 	bool canStandUp;
 	Tileset *ts_kinFace;
 	sf::Sprite exitAuraSprite;

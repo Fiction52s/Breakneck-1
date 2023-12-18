@@ -261,7 +261,6 @@ struct GameSession : RayCastHandler, Session
 	bool bestReplayOn;
 
 
-	bool originalProgressionModeOn;
 	bool originalProgressionCompatible;
 	
 	//from mainmenu

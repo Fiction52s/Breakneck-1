@@ -231,6 +231,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	Tileset *ts_goalCrack;
 	Tileset *ts_goalExplode;
 
+	bool originalProgressionModeOn;
+
 	bool phaseOn; //for phase switches
 
 	int totalGameFramesIncludingRespawns;
@@ -308,7 +310,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
 	BitField defaultStartingPlayerOptionsField;
-	BitField currShardField;
+	BitField currUpgradeField;
 	BitField currLogField;
 	BitField originalProgressionPlayerOptionsField;
 	BitField originalProgressionLogField;
@@ -1027,6 +1029,8 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	void HideHUD(int frames = 0);
 	void ShowHUD(int frames = 0);
+
+	void SendPracticeStartMessageToAllNewPeers();
 };
 
 #endif

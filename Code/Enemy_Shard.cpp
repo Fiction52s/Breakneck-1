@@ -284,8 +284,6 @@ void Shard::Capture()
 
 	int upgradeIndex = shardType + Actor::SHARD_START_INDEX;
 
-	sess->currShardField.SetBit(shardType, true);
-
 	sess->UnlockUpgrade(upgradeIndex);
 
 	sess->TrySaveCurrentSaveFile();
@@ -519,13 +517,20 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	shardSpr.setTextureRect(ts_shard->GetSubRect(li));
 	//shardSpr.setOrigin(shardSpr.getLocalBounds().width / 2, shardSpr.getLocalBounds().height / 2);
 
-	string nameStr = sess->shardMenu->GetShardName(w, li);
-	nameText.setString(nameStr);
-	auto lb = nameText.getLocalBounds();
-	nameText.setOrigin(lb.left + lb.width / 2, 0);
+	string nameStr;
+	if (!sess->IsParallelSession())
+	{
+		assert(sess->shardMenu != NULL);
 
-	string descStr = sess->shardMenu->GetShardDesc(w, li);
-	tutBox->SetText(descStr);
+		nameStr = sess->shardMenu->GetShardName(w, li);
+		nameText.setString(nameStr);
+		auto lb = nameText.getLocalBounds();
+		nameText.setOrigin(lb.left + lb.width / 2, 0);
+
+		string descStr = sess->shardMenu->GetShardDesc(w, li);
+		tutBox->SetText(descStr);
+	}
+	
 }
 
 void ShardPopup::SetTopLeft(sf::Vector2f &pos)

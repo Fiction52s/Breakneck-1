@@ -1476,10 +1476,11 @@ void Session::DrawBullets(sf::RenderTarget *target)
 
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT),
-	currShardField( ShardInfo::MAX_SHARDS ), currLogField( LogDetailedInfo::MAX_LOGS),
+	currUpgradeField(Session::PLAYER_OPTION_BIT_COUNT), currLogField( LogDetailedInfo::MAX_LOGS),
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
+	originalProgressionModeOn = false;
 	skipOneReplayFrame = false;
 	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
@@ -2842,18 +2843,28 @@ void Session::RunFrameForParallelPractice()
 				PracticePlayer &prac = netplayManager->practicePlayers[i];
 				if (prac.needsSessionRestart )
 				{
+
 					prac.needsSessionRestart = false;
 					prac.sequenceConfirmMap.clear();
 					prac.stateChangeMap.clear();
 					//prac.hasSequenceConfirmReady = false;
-					pm->parallelGames[i]->RestartLevel();
-
-					
 
 					if (prac.syncStateBufSize > 0)
 					{
+						//fresh player
+						pm->parallelGames[i]->currLogField.Set(prac.logField);
+						pm->parallelGames[i]->currUpgradeField.Set(prac.upgradeField);
+						pm->parallelGames[i]->originalProgressionModeOn = prac.origProgression;
+
+						pm->parallelGames[i]->RestartLevel();
 						pm->parallelGames[i]->LoadState(prac.syncStateBuf, prac.syncStateBufSize);
+						
+
 						prac.ClearSyncStateBuf();
+					}
+					else
+					{
+						pm->parallelGames[i]->RestartLevel();
 					}
 
 
@@ -4837,6 +4848,7 @@ void Session::AddBarrier(XBarrierParams *xbp, bool warp )
 
 void Session::UnlockUpgrade(int upgradeType, int playerIndex )
 {
+	currUpgradeField.SetBit(upgradeType, true);
 	GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
 }
 
@@ -5452,7 +5464,7 @@ bool Session::IsShardCaptured(int s)
 		return activePlayerReplayManagers[0]->header.IsShardCaptured(s);
 	}
 
-	return currShardField.GetBit(s);
+	return currUpgradeField.GetBit(s + Actor::SHARD_START_INDEX);
 }
 
 bool Session::HasLog(int logIndex)
@@ -6954,15 +6966,7 @@ bool Session::RunGameModeUpdate()
 		{
 			netplayManager->SendPracticeInitMessageToAllNewPeers();
 
-			Actor *player = GetPlayer(0);
-
-			//sends the start to message to any new peers that join
-			PracticeStartMsg psm;
-			psm.skinIndex = GetPlayerNormalSkin(player->actorIndex);
-			psm.SetUpgradeField(player->bStartHasUpgradeField);
-			psm.startFrame = totalGameFrames;
-			psm.wantsToPlay = netplayManager->wantsToPracticeRace;
-			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+			SendPracticeStartMessageToAllNewPeers();
 		}
 
 		ActiveSequenceUpdate();
@@ -7201,7 +7205,11 @@ bool Session::OnlineFrozenGameModeUpdate()
 
 	if (!OneFrameModeUpdate())
 	{
-		UpdateControllers();
+		if (!IsParallelSession())
+		{
+			UpdateControllers();
+		}
+		
 		return true;
 	}
 
@@ -7209,7 +7217,10 @@ bool Session::OnlineFrozenGameModeUpdate()
 
 	//ProcessDesyncMessageQueue(); //netplay only
 
-	UpdateControllers();
+	if (!IsParallelSession())
+	{
+		UpdateControllers();
+	}
 
 	ActiveSequenceUpdate();
 	if (switchGameState)
@@ -7266,13 +7277,7 @@ bool Session::FrozenGameModeUpdate()
 		{
 			netplayManager->SendPracticeInitMessageToAllNewPeers();
 
-			//sends the start to message to any new peers that join
-			PracticeStartMsg psm;
-			psm.skinIndex = GetPlayerNormalSkin(0);
-			psm.SetUpgradeField(GetPlayer(0)->bStartHasUpgradeField);
-			psm.startFrame = totalGameFrames;
-			psm.wantsToPlay = netplayManager->wantsToPracticeRace;
-			netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+			SendPracticeStartMessageToAllNewPeers();
 
 			netplayManager->Update();
 		}
@@ -10013,4 +10018,17 @@ void Session::StartGoalPulse(sf::Vector2f pos)
 
 	goalPulse->SetPosition(pos);
 	goalPulse->StartPulse();
+}
+
+void Session::SendPracticeStartMessageToAllNewPeers()
+{
+	//sends the start to message to any new peers that join
+	PracticeStartMsg psm;
+	psm.skinIndex = GetPlayerNormalSkin(0);
+	psm.SetUpgradeField(currUpgradeField);//GetPlayer(0)->bStartHasUpgradeField);
+	psm.SetLogField(currLogField);
+	psm.startFrame = totalGameFrames;
+	psm.wantsToPlay = netplayManager->wantsToPracticeRace;
+	psm.origProgression = originalProgressionModeOn;
+	netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 }

@@ -33,9 +33,12 @@ void PracticeStartMsg::Clear()
 	for (int i = 0; i < 8; ++i)
 	{
 		upgradeField[i] = 0;
+		logField[i] = 0;
 	}
 
 	wantsToPlay = false;
+
+	origProgression = false;
 }
 
 void PracticeStartMsg::SetUpgradeField(BitField &bf)
@@ -44,6 +47,15 @@ void PracticeStartMsg::SetUpgradeField(BitField &bf)
 	for (int i = 0; i < bf.numFields; ++i)
 	{
 		upgradeField[i] = bf.optionField[i];
+	}
+}
+
+void PracticeStartMsg::SetLogField(BitField &bf)
+{
+	assert(bf.numFields == 8);
+	for (int i = 0; i < bf.numFields; ++i)
+	{
+		logField[i] = bf.optionField[i];
 	}
 }
 

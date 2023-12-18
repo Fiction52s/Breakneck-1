@@ -97,7 +97,7 @@ bool EditSession::IsShardCaptured(int sType)
 		return activePlayerReplayManagers[0]->header.IsShardCaptured(sType);
 	}
 
-	return currShardField.GetBit(sType);
+	return currUpgradeField.GetBit(sType + Actor::SHARD_START_INDEX );
 }
 
 void EditSession::SetupGates()
@@ -652,7 +652,7 @@ void EditSession::TestPlayerMode()
 		(*it)->CancelTransformation();
 	}
 
-	currShardField.Reset();
+	currUpgradeField.Reset();
 
 	scoreDisplay->Reset();
 
@@ -11937,7 +11937,7 @@ void EditSession::CleanupTestPlayerMode()
 		originalMusic->music->stop();
 	}*/
 
-	currShardField.Reset();
+	currUpgradeField.Reset();
 	fader->Reset();
 	swiper->Reset();
 

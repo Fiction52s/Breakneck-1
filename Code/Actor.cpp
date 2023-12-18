@@ -3367,9 +3367,9 @@ void Actor::UpdateActionSprite()
 Actor::Actor()
 	:dead(false), actorIndex(0), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST),
-	originalProgressionUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	originalProgressionLogField(LogDetailedInfo::MAX_LOGS)
+	exitAuraShader(PlayerSkinShader::ST_BOOST)
+	//originalProgressionUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	//originalProgressionLogField(LogDetailedInfo::MAX_LOGS)
 {
 	shallowInit = true;
 	sess = NULL;
@@ -3388,9 +3388,9 @@ Actor::Actor()
 Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	:dead(false), actorIndex(p_actorIndex), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST),
-	originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
-	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
+	exitAuraShader(PlayerSkinShader::ST_BOOST)
+	//originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
+	//originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 	{
 	shallowInit = false;
 
@@ -4868,9 +4868,16 @@ void Actor::Respawn( bool setStartPos )
 		}
 	}
 
+	if (owner != NULL && owner->IsReplayOn())
+	{
+		//do nothing, powers were already set by the replay
+	}
+	else
+	{
+		SetAllUpgrades(owner->currUpgradeField);
+	}
 
-	bool isAdventure = false;
-	if (parallelPracticeAndImParallel)
+	/*if (parallelPracticeAndImParallel)
 	{
 		const BitField &practiceUpgradeField = sess->GetPracticeUpgradeField();
 
@@ -4878,7 +4885,7 @@ void Actor::Respawn( bool setStartPos )
 	}
 	else if (owner != NULL && owner->IsReplayOn())
 	{
-		//do nothing, powers were already set by the replay
+		
 	}
 	else if (owner != NULL && owner->saveFile != NULL )
 	{
@@ -4901,7 +4908,7 @@ void Actor::Respawn( bool setStartPos )
 	else
 	{
 		SetAllUpgrades(sess->defaultStartingPlayerOptionsField);
-	}
+	}*/
 
 	spriteAction = HIDDEN;
 
