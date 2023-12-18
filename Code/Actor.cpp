@@ -21069,13 +21069,6 @@ void Actor::MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawNameTag 
 		target->draw(mapIconSpr);
 	}
 
-	//if (drawPlayer)
-	else
-	{
-		DrawPlayerSprite(target);
-	}
-	
-
 	if (drawNameTag && nameTag->IsActive())
 	{
 		//nameTag->SetName("test test test");
@@ -21083,6 +21076,11 @@ void Actor::MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawNameTag 
 	}
 
 	target->setView(oldView);
+
+	if (drawPlayer)
+	{
+		DrawPlayerSprite(target);
+	}
 }
 
 

@@ -17,10 +17,12 @@ struct Zone;
 
 struct ZoneNode
 {
+	ZoneNode();
 	~ZoneNode();
 	Zone *myZone;
 	std::vector<ZoneNode*> children;
 	ZoneNode *parent;
+	//int zoneNodeID;
 
 	void SetChildrenShouldNotReform();
 	bool IsInMyBranch(Zone *z);
@@ -63,6 +65,7 @@ struct Zone
 
 	int zoneIndex;
 
+	ZoneNode *myNode;
 	TerrainPolygon *zonePoly; //for raycasts to check if I'm inside it etc
 
 	MyData data;

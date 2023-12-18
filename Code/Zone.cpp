@@ -19,6 +19,10 @@
 using namespace sf;
 using namespace std;
 
+ZoneNode::ZoneNode()
+{
+}
+
 ZoneNode::~ZoneNode()
 {
 	for (auto it = children.begin(); it != children.end(); ++it)
@@ -33,11 +37,12 @@ bool ZoneNode::SetZone(Zone *p_myZone)
 
 	myZone = p_myZone;
 
+	myZone->myNode = this;
+
 	if (myZone == sess->zoneTreeEnd)
 	{
 		return true;
 	}
-
 
 	children.reserve(myZone->connectedSet.size());
 	for (auto it = myZone->connectedSet.begin(); it != myZone->connectedSet.end(); ++it)
@@ -105,6 +110,7 @@ Zone::Zone( TerrainPolygon *tp )
 	zonePoly->FinalizeJustEdges();
 	//zonePoly->Finalize();//FinalizeJustEdges();
 
+	myNode = NULL;
 	totalNumKeys = -1;
 	zoneIndex = -2;
 	secretZone = false;

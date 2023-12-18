@@ -1608,12 +1608,10 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	logMenu = NULL;
 
 	zoneTree = NULL;
-	currentZoneNode = NULL;
 	zoneTreeStart = NULL;
 	zoneTreeEnd = NULL;
 	currentZone = NULL;
 	originalZone = NULL;
-	activatedZoneList = NULL;
 
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
@@ -3099,7 +3097,6 @@ void Session::CleanupZones()
 		delete zoneTree;
 		zoneTree = NULL;
 	}
-	currentZoneNode = NULL;
 	currentZone = NULL;
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
@@ -3962,7 +3959,6 @@ int Session::SetupZones()
 	}
 
 	zoneTree->SetZone(zoneTreeStart);
-	currentZoneNode = zoneTree;
 
 	//using shouldreform to test the secret gate stuff
 	for (auto it = zones.begin(); it != zones.end(); ++it)
@@ -4014,20 +4010,6 @@ void Session::ActivateZone(Zone * z, bool instant)
 
 	bool didZoneActivateForFirstTime = z->Activate( instant );
 
-	//if (didZoneActivateForFirstTime)
-	//{
-	//	if (activatedZoneList == NULL)
-	//	{
-	//		activatedZoneList = z;
-	//		z->data.activeNextZoneID = -1;//NULL;
-	//	}
-	//	else
-	//	{
-	//		z->data.activeNextZoneID = GetZoneID(activatedZoneList);
-	//		activatedZoneList = z;
-	//	}
-	//}
-
 	if (currentZone != NULL && z->zType != Zone::SECRET && currentZone->zType != Zone::SECRET)
 	{
 		currentZone->SetClosing(z->openFrames); //this is how it worked before, but openFrames is constant
@@ -4035,17 +4017,18 @@ void Session::ActivateZone(Zone * z, bool instant)
 		//currentZone->SetClosing(z->data.frame);
 
 		bool foundNode = false;
-		for (auto it = currentZoneNode->children.begin();
-			it != currentZoneNode->children.end(); ++it)
+		ZoneNode *currZoneNode = currentZone->myNode;
+		for (auto it = currZoneNode->children.begin();
+			it != currZoneNode->children.end(); ++it)
 		{
 			if ((*it)->myZone == z)
 			{
-				currentZoneNode = (*it);
 				foundNode = true;
 				break;
 			}
 		}
 
+		//zones were accessed out of order somehow
 		if (!foundNode)
 		{
 			assert(foundNode);
@@ -4104,15 +4087,20 @@ void Session::ActivateZone(Zone * z, bool instant)
 
 void Session::CloseOffLimitZones()
 {
-	if (currentZoneNode == NULL)
+	if (currentZone == NULL)
+	{
 		return;
+	}
+
+	/*if (currentZoneNode == NULL)
+		return;*/
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->SetShouldReform(true);
 	}
 
-	currentZoneNode->SetChildrenShouldNotReform();
+	currentZone->myNode->SetChildrenShouldNotReform();
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
@@ -8365,9 +8353,6 @@ void Session::StoreBytes(unsigned char *bytes)
 
 	currSaveState->currentZoneID = GetZoneID(currentZone);
 
-	currSaveState->activatedZoneListID = GetZoneID(activatedZoneList);
-
-
 	currSaveState->turnTimerOnCounter = turnTimerOnCounter;
 
 	currSaveState->timerOn = timerOn;
@@ -8524,8 +8509,6 @@ void Session::SetFromBytes(unsigned char *bytes)
 	}
 
 	currentZone = GetZoneFromID(currSaveState->currentZoneID);
-
-	activatedZoneList = GetZoneFromID(currSaveState->activatedZoneListID);
 
 	turnTimerOnCounter = currSaveState->turnTimerOnCounter;
 

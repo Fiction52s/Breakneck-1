@@ -299,10 +299,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<Launcher*> allLaunchersVec;
 	GateMarkerGroup *gateMarkers;
 	ZoneNode *zoneTree;
-	ZoneNode *currentZoneNode;
 	Zone *zoneTreeStart;
 	Zone *zoneTreeEnd;
-	Zone *activatedZoneList;
 	Zone *currentZone;
 	Zone *originalZone;
 	bool timerOn;
@@ -1007,7 +1005,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	int GetZoneID(Zone *z);
 	int GetComboObjectID(ComboObject *cb);
 	int GetSpecialPolyID(PolyPtr poly);
-
 	
 
 	PolyPtr GetSpecialPolyFromID(int id);

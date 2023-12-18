@@ -342,7 +342,6 @@ struct SaveGameState
 	int inactiveEnemyListID;
 	int emitterListIDs[EffectLayer::EFFECTLAYER_Count];
 	int currentZoneID;
-	int activatedZoneListID;
 	int pauseFrames;
 	int currSuperPlayerIndex;
 	int gameState; //game mode such as RUN or FROZEN

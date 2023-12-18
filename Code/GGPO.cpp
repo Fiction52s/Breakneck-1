@@ -21,7 +21,6 @@ void SaveGameState::Clear()
 	activeEnemyListTailID = -1;
 	inactiveEnemyListID = -1;
 	currentZoneID = -1;
-	activatedZoneListID = -1;
 	pauseFrames = 0;
 	currSuperPlayerIndex = -1;
 	gameState = 0; //game mode such as RUN or FROZEN

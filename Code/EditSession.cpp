@@ -815,7 +815,6 @@ void EditSession::TestPlayerMode()
 		currentZone = NULL;
 		if (originalZone != NULL)
 		{
-			currentZoneNode = zoneTree;
 			ActivateZone(originalZone, true);
 			//gateMarkers->SetToZone(currentZone);
 			

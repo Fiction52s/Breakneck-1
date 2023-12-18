@@ -442,7 +442,7 @@ struct GameSession : RayCastHandler, Session
 		V2d &pos, float startAngle = 0);
 	
 	void UpdatePolyShaders(sf::Vector2f &botLeft,
-		sf::Vector2f &playertest);
+		sf::Vector2f &playertest, float zoom );
 	
 	void RestartGame();
 	void RestartLevel();

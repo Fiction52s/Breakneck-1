@@ -1879,7 +1879,6 @@ bool GameSession::Load()
 	originalZone = NULL;
 
 	unlockedGateList = NULL;
-	activatedZoneList = NULL;
 
 	debugScreenRecorder = NULL; //debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
 
@@ -4064,6 +4063,7 @@ void GameSession::UpdateEnvShaders()
 	Vector2f vSize = view.getSize();
 	Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
 
+	//depreciated variable!!!
 	Vector2f playertest = (botLeft - oldCamBotLeft) / 5.f;
 
 	float camAngle = (float)(view.getRotation() * PI / 180.0);
@@ -4076,7 +4076,7 @@ void GameSession::UpdateEnvShaders()
 	botLeft = botLeftTest;
 
 
-	UpdatePolyShaders(botLeft, playertest);
+	UpdatePolyShaders(botLeft, playertest, cam.GetZoom() );
 
 	/*for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
@@ -4160,12 +4160,12 @@ void GameSession::UpdateDecorSprites()
 	}
 }
 
-void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
+void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest, float zoom )
 {
 	//oldShaderZoom is only used in editor. Need to optimize this in GameSession as well
 	bool first = oldShaderZoom < 0;
 
-	float zoom = cam.GetZoom();
+	//float zoom = cam.GetZoom();
 
 	int numTerrainMats = terrainTypeIndexesUsedVec.size();
 	int numWaterMats = waterTypeIndexesUsedVec.size();
@@ -4639,7 +4639,6 @@ void GameSession::RestartLevel()
 	currentZone = NULL;
 	if (originalZone != NULL)
 	{
-		currentZoneNode = zoneTree;
 		ActivateZone(originalZone, true);
 		gateMarkers->SetToZone(currentZone);
 
