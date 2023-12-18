@@ -10,6 +10,7 @@ struct NameTag
 	sf::Vertex bgQuad[4];
 	sf::Vector2f trackingPos;
 	sf::Vector2f pixelPos;
+	sf::Vector2f hoverDelta;
 
 	NameTag();
 	void SetName(const std::string &n);
@@ -18,6 +19,8 @@ struct NameTag
 	bool IsActive();
 	void SetActive(bool a);
 	void Draw(sf::RenderTarget *target);
+	void MapDraw(sf::RenderTarget *target, sf::Vector2f offset, sf::Vector2f p_pixelPos);
+	void SetHoverDelta(sf::Vector2f offset);
 
 private:
 	bool active;

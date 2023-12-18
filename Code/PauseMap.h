@@ -12,6 +12,7 @@ struct GameSession;
 struct PauseMap
 {
 	TilesetManager *tm;
+
 	sf::Shader mapShader;
 	sf::Sprite mapSprite;
 	sf::Sprite kinMapIcon;

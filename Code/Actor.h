@@ -725,7 +725,7 @@ struct Actor : QuadTreeCollider,
 	ScorpionLauncher *oldScorpionLauncher;
 
 
-	
+	sf::Sprite mapIconSpr;
 	
 	
 	
@@ -1617,6 +1617,7 @@ struct Actor : QuadTreeCollider,
 	void DrawEffects(int effectLayer, sf::RenderTarget *target);
 	void DrawPlayerSprite(sf::RenderTarget *target);
 	void MiniDraw(sf::RenderTarget *target);
+	void MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawName );
 	void DeathDraw(sf::RenderTarget *target);
 	void DebugDraw( sf::RenderTarget *target );
 	void DrawMapWires(sf::RenderTarget *target);

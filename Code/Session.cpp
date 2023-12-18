@@ -2015,7 +2015,8 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelPlayers(preScreenTex);
+		//pm->DrawParallelPlayers(preScreenTex);
+		pm->DrawParallelPlayers(target);
 	}
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
@@ -4013,19 +4014,19 @@ void Session::ActivateZone(Zone * z, bool instant)
 
 	bool didZoneActivateForFirstTime = z->Activate( instant );
 
-	if (didZoneActivateForFirstTime)
-	{
-		if (activatedZoneList == NULL)
-		{
-			activatedZoneList = z;
-			z->activeNext = NULL;
-		}
-		else
-		{
-			z->activeNext = activatedZoneList;
-			activatedZoneList = z;
-		}
-	}
+	//if (didZoneActivateForFirstTime)
+	//{
+	//	if (activatedZoneList == NULL)
+	//	{
+	//		activatedZoneList = z;
+	//		z->data.activeNextZoneID = -1;//NULL;
+	//	}
+	//	else
+	//	{
+	//		z->data.activeNextZoneID = GetZoneID(activatedZoneList);
+	//		activatedZoneList = z;
+	//	}
+	//}
 
 	if (currentZone != NULL && z->zType != Zone::SECRET && currentZone->zType != Zone::SECRET)
 	{
@@ -4569,6 +4570,26 @@ void Session::DrawPlayersMini(sf::RenderTarget *target)
 		if (p != NULL)
 		{
 			p->MiniDraw(target);
+		}
+	}
+}
+
+void Session::DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags )
+{
+	//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
+	if( gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession() )
+	{
+		ParallelMode *pm = (ParallelMode*)gameMode;
+		pm->DrawParallelPlayersToMap(target, drawKin, drawNameTags);
+	}
+
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->MapDraw(target, drawKin, drawNameTags);
 		}
 	}
 }
@@ -8344,6 +8365,8 @@ void Session::StoreBytes(unsigned char *bytes)
 
 	currSaveState->currentZoneID = GetZoneID(currentZone);
 
+	currSaveState->activatedZoneListID = GetZoneID(activatedZoneList);
+
 
 	currSaveState->turnTimerOnCounter = turnTimerOnCounter;
 
@@ -8501,6 +8524,8 @@ void Session::SetFromBytes(unsigned char *bytes)
 	}
 
 	currentZone = GetZoneFromID(currSaveState->currentZoneID);
+
+	activatedZoneList = GetZoneFromID(currSaveState->activatedZoneListID);
 
 	turnTimerOnCounter = currSaveState->turnTimerOnCounter;
 

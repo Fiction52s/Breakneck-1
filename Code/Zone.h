@@ -57,6 +57,7 @@ struct Zone
 		bool visited;
 		bool active;
 		bool reexplored;
+		bool shouldReform;
 	};
 
 
@@ -66,7 +67,7 @@ struct Zone
 
 	MyData data;
 
-	bool shouldReform;
+	Zone *parentZone;
 	bool secretZone;
 	int openFrames;
 	int closeFrames;
@@ -79,15 +80,12 @@ struct Zone
 	std::list<Zone*> subZones;
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;
-	
 	std::set<Zone*> connectedSet;
-	
 	bool showShadow;
-	Zone *activeNext;
-	Zone *parentZone;
 	sf::Shader *zShader;
 	sf::Shader *miniShader;
 	Tileset *ts_z;
+	
 
 	Zone( TerrainPolygon * tp );
 	~Zone();

@@ -1399,6 +1399,13 @@ void Actor::SetupExtraTilesets()
 
 	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 
+	Tileset *ts_mapIcon = tm->GetTileset("HUD/Minimap/minimap_icons_64x64.png", 64, 64);
+	ts_mapIcon->SetSpriteTexture(mapIconSpr);
+	ts_mapIcon->SetSubRect(mapIconSpr, 0);
+	mapIconSpr.setScale(2, 2);
+	mapIconSpr.setOrigin(mapIconSpr.getLocalBounds().width / 2, mapIconSpr.getLocalBounds().height / 2);
+
+
 	ts_scorpRun = tm->GetSizedTileset(scorpionFolder, "scorp_run_192x128.png");
 	ts_scorpSlide = tm->GetSizedTileset(scorpionFolder, "scorp_slide_160x128.png");
 	ts_scorpSteepSlide = tm->GetSizedTileset(scorpionFolder, "scorp_steep_slide_224x128.png");
@@ -21039,6 +21046,46 @@ void Actor::MiniDraw(sf::RenderTarget *target)
 	keyExplodeRingGroup->Draw(target);
 	enemyExplodeRingGroup->Draw(target);
 }
+
+void Actor::MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawNameTag )
+{
+	//vv.setSize(mapTex->getSize().x * mapZoomFactor, mapTex->getSize().y * mapZoomFactor);
+	sf::View oldView = target->getView();
+
+	//float zoom = target->getView().getSize().x / target->getSize().x;
+
+	Vector2i iconPixel = target->mapCoordsToPixel(Vector2f(position));
+	sf::View iconView;
+	iconView.setCenter(0, 0);
+	iconView.setSize(target->getSize().x, target->getSize().y);
+	target->setView(iconView);
+
+	Vector2f trueIconPos = target->mapPixelToCoords(iconPixel);
+
+	if (!drawPlayer)
+	{
+		mapIconSpr.setPosition(trueIconPos);
+
+		target->draw(mapIconSpr);
+	}
+
+	//if (drawPlayer)
+	else
+	{
+		DrawPlayerSprite(target);
+	}
+	
+
+	if (drawNameTag && nameTag->IsActive())
+	{
+		//nameTag->SetName("test test test");
+		nameTag->MapDraw(target, Vector2f(0, -30), Vector2f(trueIconPos));
+	}
+
+	target->setView(oldView);
+}
+
+
 
 void Actor::DrawPlayerSprite( sf::RenderTarget *target )
 {

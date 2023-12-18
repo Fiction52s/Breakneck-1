@@ -131,7 +131,7 @@ Zone::Zone( TerrainPolygon *tp )
 		//points.push_back(curr->pos);
 	}
 
-	activeNext = NULL;
+	//activeNext = NULL;
 
 	zShader = NULL;
 	miniShader = NULL;
@@ -666,6 +666,8 @@ void Zone::Reset()
 	data.framesSinceActivation = 0;
 	data.frame = 0;
 	data.reexplored = false;
+	data.shouldReform = false;
+	//data.activeNextZoneID = -1;
 	if( zShader != NULL )
 		zShader->setUniform("alpha", 1.f);
 
@@ -904,7 +906,7 @@ void Zone::SetClosing( int alreadyOpenFrames )
 
 void Zone::CloseOffIfLimited()
 {
-	if (zType != Zone::SECRET && !data.visited && shouldReform)
+	if (zType != Zone::SECRET && !data.visited && data.shouldReform)
 	{
 		data.visited = true;
 		ReformAllGates();
@@ -913,12 +915,12 @@ void Zone::CloseOffIfLimited()
 
 void Zone::SetShouldReform(bool on)
 {
-	shouldReform = on;
+	data.shouldReform = on;
 }
 
 bool Zone::ShouldReform()
 {
-	return shouldReform;
+	return data.shouldReform;
 }
 
 bool Zone::IsActive()

@@ -63,6 +63,7 @@ struct ParallelMode : GameMode
 	void DrawParallelPlayerShields(sf::RenderTarget *target);
 	void DrawParallelPlayerHomingBalls(sf::RenderTarget *target);
 	void DrawParallelNameTags(sf::RenderTarget *target);
+	void DrawParallelPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags );
 	void DrawPracticeGames(sf::RenderTarget *target);
 	void UpdateParallelNameTagsPixelPos(sf::RenderTarget *target);
 	void SimulateParallelGGPOGameFrames();

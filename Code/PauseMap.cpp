@@ -5,6 +5,7 @@
 #include "MapHeader.h"
 #include "Session.h"
 #include "MainMenu.h"
+#include "Actor.h"
 
 using namespace sf;
 using namespace std;
@@ -238,6 +239,22 @@ void PauseMap::DrawToTex()
 
 	game->DrawPlayersMini(mapTex);
 
+	bool drawKins = mapZoomFactor < 3.2;
+
+	game->DrawPlayersToMap(mapTex, drawKins, true );
+	/*if (mapZoomFactor <= 3.2)
+	{
+		game->UpdateNameTagsPixelPos(mapTex);
+		game->DrawNameTags(mapTex);
+		game->DrawPlayers(mapTex);
+	}
+	else
+	{
+		game->DrawPlayerIcons(mapTex);
+	}*/
+
+	
+
 	Vector2i kinIconPixel = mapTex->mapCoordsToPixel(Vector2f(pos0));
 
 	Vector2i goalIconPixel = mapTex->mapCoordsToPixel(Vector2f(game->goalPos));
@@ -257,7 +274,7 @@ void PauseMap::DrawToTex()
 
 	mapTex->draw(goalMapIcon);
 
-	mapTex->draw(kinMapIcon);
+	//mapTex->draw(kinMapIcon);
 }
 
 void PauseMap::Draw(sf::RenderTarget *target)
