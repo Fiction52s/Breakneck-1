@@ -135,6 +135,7 @@ struct Gate : public QuadTreeEntrant
 	int shardWorld;
 	int shardIndex;
 	int shardType;
+	sf::Vertex secretLine[2];
 
 	Gate(Session *sess, int tcat,
 		int var);
@@ -184,6 +185,8 @@ struct Gate : public QuadTreeEntrant
 	bool IsReformable();
 	bool CanBeHitByWire();
 	bool IsSecret();
+	void UpdateSecretLine();
+	void DrawSecret(sf::RenderTarget *target);
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

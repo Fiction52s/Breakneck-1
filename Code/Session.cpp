@@ -2013,8 +2013,7 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		//pm->DrawParallelPlayers(preScreenTex);
-		pm->DrawParallelPlayers(target);
+		pm->DrawParallelPlayers(preScreenTex);
 	}
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())

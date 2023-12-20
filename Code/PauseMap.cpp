@@ -6,6 +6,7 @@
 #include "Session.h"
 #include "MainMenu.h"
 #include "Actor.h"
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -298,7 +299,15 @@ void PauseMap::DrawZones(RenderTarget *target)
 	auto &zones = game->zones;
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		(*it)->DrawMinimap(target);
+		if ((*it)->zType == Zone::SECRET)
+		{
+			(*it)->zonePoly->DrawAsSecretCover(target, false );
+		}
+		else
+		{
+			(*it)->DrawMinimap(target);
+		}
+		
 	}
 }
 
@@ -323,7 +332,42 @@ void PauseMap::DrawTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)
 
 	game->UpdatePolyShaders(botLeft, blank, realZ);
 
-	game->DrawQueriedTerrain(target);
+	/*for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+
+		TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
+
+		if (hideSecret)
+		{
+			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_BASIC_PREVIEW);
+		}
+		else
+		{
+			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_EDITOR_PREVIEW);
+		}
+
+		(*it)->Draw(false, 1, target, false, NULL);
+
+		(*it)->SetRenderMode(oldPolyMode);
+		(*it)->SetSelected(oldSelected);
+	}*/
+
+
+	PolyPtr poly = game->polyQueryList;
+	while (poly != NULL)
+	{
+		TerrainPolygon::RenderMode oldPolyMode = poly->renderMode;
+		poly->SetRenderMode(TerrainPolygon::RENDERMODE_MAP);
+		
+		poly->Draw(target); //preScreenTex
+
+		poly->SetRenderMode(oldPolyMode);
+		poly = poly->queryNext;
+	}
+
+	//game->DrawQueriedTerrain(target);
 	//game->DrawColoredMapTerrain(target, terrainColor);
 }
 
@@ -354,10 +398,33 @@ void PauseMap::DrawGates(sf::Rect<double> &rect,
 	Gate *gateList = game->gateList;
 	while (gateList != NULL)
 	{
-		gateList->MapDraw(target);
+		if ((gateList->category == Gate::SECRET || gateList->IsSecret()))
+		{
+			gateList->DrawSecret(target);
+		}
+		else
+		{
+			gateList->MapDraw(target);
+		}
+		
 
 		Gate *next = gateList->next;
 		gateList = next;
 	}
 	game->gateList = NULL;
+
+	/*int index = 0;
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	{
+		if (hideSecret && ((*it)->category == Gate::SECRET || gates[index]->IsSecret()))
+		{
+			(*it)->DrawSecretPreview(target);
+		}
+		else
+		{
+			(*it)->DrawPreview(target);
+		}
+
+		++index;
+	}*/
 }

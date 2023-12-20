@@ -1450,7 +1450,54 @@ void Gate::Init()
 		}	
 	}
 
+	UpdateSecretLine();
+	
+
+
+
 	Reset();
+}
+
+void Gate::UpdateSecretLine()
+{
+	V2d along = edgeA->Along();
+	V2d other(along.y, -along.x);
+
+	V2d dv0(edgeA->v0.x, edgeA->v0.y);
+	V2d dv1(edgeA->v1.x, edgeA->v1.y);
+
+	secretLine[0].position = Vector2f(dv0);
+	secretLine[1].position = Vector2f(dv1);
+
+	TerrainPolygon::EdgeAngleType eat = TerrainPolygon::GetEdgeAngleType(other);
+	Color edgeColor;
+	switch (eat)
+	{
+	case TerrainPolygon::EDGE_FLAT:
+		edgeColor = Color::Red;
+		break;
+	case TerrainPolygon::EDGE_SLOPED:
+		edgeColor = Color::Green;
+		break;
+	case TerrainPolygon::EDGE_STEEPSLOPE:
+		edgeColor = Color::White;
+		break;
+	case TerrainPolygon::EDGE_WALL:
+		edgeColor = Color::Magenta;
+		break;
+	case TerrainPolygon::EDGE_STEEPCEILING:
+		edgeColor = Color::Yellow;
+		break;
+	case TerrainPolygon::EDGE_SLOPEDCEILING:
+		edgeColor = Color::Cyan;
+		break;
+	case TerrainPolygon::EDGE_FLATCEILING:
+		edgeColor = Color::Red;
+		break;
+	}
+
+	secretLine[0].color = edgeColor;
+	secretLine[1].color = edgeColor;
 }
 
 void Gate::SetNodeSprite(bool active)
@@ -1545,6 +1592,11 @@ bool Gate::CanBeHitByWire()
 bool Gate::IsSecret()
 {
 	return category == SECRET;
+}
+
+void Gate::DrawSecret(sf::RenderTarget *target)
+{
+	target->draw(secretLine, 2, sf::Lines);
 }
 
 int Gate::GetNumStoredBytes()

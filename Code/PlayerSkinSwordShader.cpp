@@ -9,7 +9,8 @@ using namespace sf;
 
 PlayerSkinSwordShader::PlayerSkinSwordShader()
 {
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_180x30.png");
+	//skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_180x30.png");
+	skinPaletteImage.loadFromFile("Resources/Kin/Sword/sword_palette_256x30.png");
 
 	MainMenu::GetInstance()->LoadShader(pShader, "sword");
 	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);

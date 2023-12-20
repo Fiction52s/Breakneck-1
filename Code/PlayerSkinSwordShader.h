@@ -13,7 +13,7 @@ struct PlayerSkinSwordShader
 	void SetTileset(Tileset *ts);
 
 	int offset;
-	const static int NUM_PALETTE_COLORS = 180;
+	const static int NUM_PALETTE_COLORS = 256;
 	sf::Image skinPaletteImage;
 	sf::Shader pShader;
 	sf::Glsl::Vec4 paletteArray[NUM_PALETTE_COLORS];

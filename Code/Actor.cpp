@@ -4881,7 +4881,7 @@ void Actor::Respawn( bool setStartPos )
 	}
 	else
 	{
-		SetAllUpgrades(owner->currUpgradeField);
+		SetAllUpgrades(sess->currUpgradeField);
 	}
 
 	/*if (parallelPracticeAndImParallel)

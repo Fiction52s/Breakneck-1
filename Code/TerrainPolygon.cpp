@@ -325,6 +325,12 @@ void TerrainPolygon::StoreEnemyPositions(std::vector<std::pair<ActorPtr, Positio
 
 void TerrainPolygon::AddTouchGrass(int gt)
 {
+	bool isSecretCovering = false;
+	if (!secretZoneGateList.empty())
+	{
+		isSecretCovering = true;
+	}
+
 	list<PlantInfo> info;
 
 	TouchGrass::TouchGrassType tgType = (TouchGrass::TouchGrassType)gt;
@@ -336,9 +342,36 @@ void TerrainPolygon::AddTouchGrass(int gt)
 	int numP = GetNumPoints();
 
 	Edge *currEdge;
+
+	bool foundGate = false;
+
+	Gate *g = NULL;
+
 	for (int i = 0; i < numP; ++i)
 	{
 		currEdge = GetEdge(i);
+
+		if (isSecretCovering)
+		{
+			foundGate = false;
+			for (auto it = secretZoneGateList.begin(); it != secretZoneGateList.end(); ++it)
+			{
+				g = (*it)->GetGate();
+
+				if ((currEdge->v0 == g->edgeA->v0 && currEdge->v1 == g->edgeA->v1) || (currEdge->v0 == g->edgeB->v0 && currEdge->v1 == g->edgeB->v1))
+				{
+					foundGate = true;
+					break;
+				}
+			}
+
+			if (!foundGate)
+			{
+				continue;
+			}
+		}
+		
+
 		bool valid = true;
 
 		EdgeAngleType eat = GetEdgeAngleType(currEdge);
@@ -1185,6 +1218,7 @@ TerrainPolygon::TerrainPolygon()
 	//SetupTilePattern();
 
 	polyIndex = -1;
+	waterType = -1;
 
 	grassBufferForAABBOn = false;
 	copiedInverse = false;
@@ -1235,6 +1269,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	waterType = -1;
 	polyIndex = -1;
 	grassBufferForAABBOn = false;
 	copiedInverse = false;
@@ -1649,11 +1684,6 @@ void TerrainPolygon::RemoveExtraPointsOnSameSlope()
 
 void TerrainPolygon::GenerateWaterBorderMesh()
 {
-	
-	int firstType;
-	int secondType;
-
-
 	int numP = GetNumPoints();
 	double edgeLen;
 	Edge *edge;
@@ -1870,6 +1900,406 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 	}
 }
 
+void TerrainPolygon::GenerateSecretBorderMesh()
+{
+	if (ts_border == NULL)
+	{
+		if (totalNumBorderQuads > 0)
+		{
+			//maybe want to leave this, and just not have it show? delete for now
+			delete[] borderQuads;
+			borderQuads = NULL;
+			totalNumBorderQuads = 0;
+		}
+		/*if (borderQuads != NULL)
+		{
+		delete[] borderQuads;
+		borderQuads = NULL;
+		}*/
+		return;
+	}
+
+	if (waterType != -1)
+	{
+		GenerateWaterBorderMesh();
+		return;
+	}
+
+	BorderInfo totalQuadCounts;
+
+	map<Edge*, BorderInfo> numQuadMap[EDGE_WALL + 1];
+
+	BorderSizeInfo borderSizes[BorderInfo::NUM_BORDER_SIZES];
+	borderSizes[0].SetWidth(128);
+	borderSizes[1].SetWidth(32);
+	//borderSizes[2].SetWidth(16);
+
+	int numP = GetNumPoints();
+	EdgeAngleType angleType;
+	int edgeLen;
+	Edge *edge;
+
+	BorderInfo currEdgeQuadCounts;
+	int currSizeLen;
+
+	Edge *oppositeGateEdge = NULL; //for acute angles and stuff
+
+	bool gateFound = false;
+
+	Gate *g = NULL;
+	//get the number of different border sizes we need for this edge
+	for (int i = 0; i < numP; ++i)
+	{
+		edge = GetEdge(i);
+
+		oppositeGateEdge = NULL;
+		for (auto it = secretZoneGateList.begin(); it != secretZoneGateList.end(); ++it)
+		{
+			g = (*it)->GetGate();
+
+			if (edge->v0 == g->edgeA->v0 && edge->v1 == g->edgeA->v1)
+			{
+				oppositeGateEdge = g->edgeB;
+				break;
+			}
+			else if (edge->v0 == g->edgeB->v0 && edge->v1 == g->edgeB->v1)
+			{
+				oppositeGateEdge = g->edgeA;
+				break;
+			}
+		}
+
+		if (oppositeGateEdge == NULL )
+			continue;
+
+		angleType = GetEdgeAngleType(edge);
+		edgeLen = edge->GetLength() + GetExtraForInward(edge)
+			+ GetExtraForInward(edge->GetNextEdge());
+
+		if (edgeLen <= 0)
+			continue;
+
+		currEdgeQuadCounts.Clear();
+		for (int j = 0; j < BorderInfo::NUM_BORDER_SIZES; ++j)
+		{
+			currSizeLen = borderSizes[j].len;
+			currEdgeQuadCounts.numQuads[j] += edgeLen / currSizeLen;
+			edgeLen = edgeLen % currSizeLen;
+			if (edgeLen > 0 && j == BorderInfo::NUM_BORDER_SIZES - 1)
+			{
+				currEdgeQuadCounts.numQuads[j]++;
+			}
+		}
+
+		totalQuadCounts.Add(currEdgeQuadCounts);
+		numQuadMap[angleType][edge] = currEdgeQuadCounts;
+	}
+
+	totalNumBorderQuads = totalQuadCounts.GetTotal();
+	//totalNumBorderQuads += transEdges.size();
+
+	if (totalNumBorderQuads == 0)
+	{
+		/*if (borderQuads != NULL)
+		{
+		delete[] borderQuads;
+		borderQuads = NULL;
+		}*/
+		return;
+	}
+
+	if (borderQuads != NULL)
+	{
+		delete[] borderQuads;
+		borderQuads = NULL;
+	}
+
+	borderQuads = new Vertex[totalNumBorderQuads * 4];
+
+	int totalsPerType[EDGE_WALL + 1] = { 0 };
+	int currentOffsetPerType[EDGE_WALL + 1] = { 0 };
+
+	//get the totals of each type of edge
+	for (int i = 0; i < EDGE_WALL + 1; ++i)
+	{
+		auto &qmRef = numQuadMap[i];
+		for (auto it = qmRef.begin(); it != qmRef.end(); ++it)
+		{
+			totalsPerType[i] += (*it).second.GetTotal();
+		}
+	}
+
+	sf::Vertex *borderQuadsByType[EDGE_WALL + 1];
+	//sf::Vertex *transva;
+
+
+	//transva = (borderQuads + start * 4);
+	//start += transEdges.size();
+
+	//setup the starting point for the different edge types
+	int start = 0;
+	for (int i = EDGE_WALL; i >= 0; --i)
+	{
+		borderQuadsByType[i] = (borderQuads + start * 4);
+		start += totalsPerType[i];
+	}
+	double extraLength = 0;
+
+	BorderInfo *currEdgeNumQuadPtr;
+	V2d along, norm, startInner, startOuter;
+
+	double out = 16;//8;//16;
+	double in = 64 - out;//8;//64 - out;
+
+	double inwardExtra, nextInwardExtra, startAlong, truEnd, currLen;
+
+	int currEdgeTotalQuads;
+
+
+	V2d currStartInner, currStartOuter, currEndInner, currEndOuter;
+
+
+	for (int i = 0; i < numP; ++i)
+	{
+		edge = GetEdge(i);
+
+		oppositeGateEdge = NULL;
+		for (auto it = secretZoneGateList.begin(); it != secretZoneGateList.end(); ++it)
+		{
+			g = (*it)->GetGate();
+
+			if (edge->v0 == g->edgeA->v0 && edge->v1 == g->edgeA->v1)
+			{
+				oppositeGateEdge = g->edgeA;
+				break;
+			}
+			else if (edge->v0 == g->edgeB->v0 && edge->v1 == g->edgeB->v1)
+			{
+				oppositeGateEdge = g->edgeB;
+				break;
+			}
+		}
+
+		if (oppositeGateEdge == NULL)
+			continue;
+
+		currLen = edge->GetLength();
+		angleType = GetEdgeAngleType(edge);
+		currEdgeNumQuadPtr = &numQuadMap[angleType][edge];
+
+		currEdgeTotalQuads = currEdgeNumQuadPtr->GetTotal();
+
+		if (currEdgeTotalQuads == 0)
+			continue;
+
+		along = edge->Along();
+		norm = edge->Normal();
+
+		inwardExtra = GetExtraForInward(edge);
+		nextInwardExtra = GetExtraForInward(edge->GetNextEdge());
+
+		startInner = edge->v0 - along * extraLength - norm * in;
+		startOuter = edge->v0 - along * extraLength + norm * out;
+
+		double startAlong = -inwardExtra;
+		double trueEnd = currLen + nextInwardExtra;
+
+
+		Vertex *currentTypeQuads = borderQuadsByType[angleType]
+			+ currentOffsetPerType[angleType] * 4;
+
+		int currentTypeQuadsStartIndex = currentTypeQuads - borderQuads;
+
+		Edge *oldPrev = edge->GetPrevEdge();
+		Edge *oldNext = edge->GetNextEdge();
+
+		Edge *oldPrevNext = oppositeGateEdge->edge0->edge1;
+		Edge *oldNextPrev = oppositeGateEdge->edge1->edge0;
+
+		edge->edge0 = oppositeGateEdge->edge0;
+		edge->edge1 = oppositeGateEdge->edge1;
+
+		edge->edge0->edge1 = edge;
+		edge->edge1->edge0 = edge;
+
+		Edge *nextEdge = edge->GetNextEdge();
+		bool isAcute = IsAcute(edge);
+		bool nextAcute = IsAcute(nextEdge);
+		V2d bisector = GetBisector(edge);
+		V2d nextBisector = GetBisector(nextEdge);
+		int randomEdgeSizeChoice;
+		int currChosenSizeIndex;
+		int currWidth;
+		int currIntersect;
+
+		for (int j = 0; j < currEdgeTotalQuads; ++j)
+		{
+			randomEdgeSizeChoice = rand() % currEdgeNumQuadPtr->GetNumSizesWithCountAboveZero();
+			currChosenSizeIndex = currEdgeNumQuadPtr->
+				DecrementSizeWithCountAboveZero(randomEdgeSizeChoice);
+			currWidth = borderSizes[currChosenSizeIndex].width;
+
+			currIntersect = GetBorderQuadIntersect(currWidth);
+
+			startAlong -= currIntersect;
+
+			double endAlong = startAlong + currWidth;
+			if (endAlong > trueEnd)
+			{
+				endAlong = trueEnd;// +currIntersect;
+				startAlong = endAlong - currWidth;
+			}
+
+			if (currEdgeTotalQuads == 1)
+			{
+				startAlong = currLen / 2 - currWidth / 2 + GetBorderQuadIntersect(currWidth);
+				endAlong = currLen / 2 + currWidth / 2;
+			}
+			IntRect sub = GetBorderSubRect(currWidth, angleType,
+				rand() % BorderInfo::NUM_BORDER_VARIATIONS);
+
+			double trueAlong = startAlong;
+			if (startAlong > 0)
+			{
+				//trueAlong -= GetBorderQuadIntersect(tw);
+			}
+
+			currStartInner = startInner + trueAlong * along;
+			currStartOuter = startOuter + trueAlong * along;
+			currEndInner = startInner + endAlong * along;
+			currEndOuter = startOuter + endAlong * along;
+
+			double realHeightLeft = 64;//16;//64.0;
+			double realHeightRight = 64;//16;//64.0;
+
+			if (isAcute)
+			{
+				LineIntersection li;
+				lineIntersection(li, currStartInner,
+					currStartOuter, edge->v0, edge->v0 + bisector);
+				assert(!li.parallel);
+				if (!li.parallel)
+				{
+					double testLength = dot(li.position - currStartOuter, normalize(currStartInner - currStartOuter));//(li.position - currStartOuter);
+					assert(testLength >= 0);
+					if (testLength < realHeightLeft)
+					{
+						double diffLen = realHeightLeft - testLength;
+						realHeightLeft = testLength;
+						currStartInner += diffLen * normalize(startOuter - startInner);
+					}
+				}
+
+				lineIntersection(li, currEndInner,
+					currEndOuter, edge->v0, edge->v0 + bisector);
+				assert(!li.parallel);
+				if (!li.parallel)
+				{
+					double testLength = dot(li.position - currStartOuter, normalize(currStartInner - currStartOuter));//(li.position - currStartOuter);
+					assert(testLength >= 0);
+					if (testLength < realHeightRight)
+					{
+						double diffLen = realHeightRight - testLength;
+						realHeightRight = testLength;
+						currEndInner += diffLen * normalize(startOuter - startInner);
+					}
+				}
+			}
+			if (nextAcute)
+			{
+				bool middleSplit = false;
+				LineIntersection liMiddle;
+				lineIntersection(liMiddle, currStartInner,
+					currEndInner, edge->v1, edge->v1 + nextBisector);//te->edge1->v1);
+				if (!liMiddle.parallel)
+				{
+					double md = dot(liMiddle.position - currStartInner, normalize(currEndInner - currStartInner));
+					double cLen = length(currEndInner - currStartInner);
+					if (md < cLen && md > 0)
+					{
+						//currEndInner = liMiddle.position;
+						//middleSplit = true;
+						//SetRectColor(currBVA + i * 4, Color(Color::Red));
+					}
+				}
+
+				if (!middleSplit)
+				{
+					LineIntersection li;
+					lineIntersection(li, currStartInner,
+						currStartOuter, edge->v1, edge->v1 + nextBisector);//te->edge1->v1);
+					assert(!li.parallel);
+					if (!li.parallel)
+					{
+						double testLength = length(li.position - currStartOuter);
+						if (testLength < realHeightLeft)
+						{
+							//cout << "len: " << testLength << ", x: " << li.position.x << "." << currStartOuter.x << endl;
+							double diffLen = realHeightLeft - testLength;
+
+							realHeightLeft = testLength;
+							currStartInner = li.position;
+							//cout << i << "left lipos: " << li.position.x << ", " << li.position.y << endl;
+						}
+					}
+
+					lineIntersection(li, currEndInner,
+						currEndOuter, edge->v1, edge->v1 + nextBisector);//te->edge1->v1 );
+					assert(!li.parallel);
+					if (!li.parallel)
+					{
+						double testLength = length(li.position - currEndOuter);
+						if (testLength < realHeightRight)
+						{
+							//cout << "len: " << testLength << ", x: " << li.position.x << "." << currEndOuter.x << endl;
+							double diffLen = realHeightRight - testLength;
+							realHeightRight = testLength;
+							currEndInner += diffLen * normalize(startOuter - startInner);
+							//cout << i << "right lipos: " << li.position.x << ", " << li.position.y << endl;
+						}
+					}
+				}
+			}
+
+			currentTypeQuads[j * 4 + 0].position = Vector2f(currStartOuter);
+			currentTypeQuads[j * 4 + 1].position = Vector2f(currEndOuter);
+			currentTypeQuads[j * 4 + 2].position = Vector2f(currEndInner);
+			currentTypeQuads[j * 4 + 3].position = Vector2f(currStartInner);
+
+			float outerWidth = length(currEndOuter - currStartOuter);
+			float innerWidth = length(currEndInner - currStartInner);
+			currentTypeQuads[j * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
+			currentTypeQuads[j * 4 + 1].texCoords = Vector2f(sub.left + outerWidth, sub.top);
+			currentTypeQuads[j * 4 + 2].texCoords = Vector2f(sub.left + innerWidth, sub.top + realHeightRight);
+			currentTypeQuads[j * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);
+
+		//	edgeQuadTesting[i].push_back(currentTypeQuads + j * 4);
+
+			/*if(  testSecretEdge )
+			{
+			SetRectColor(currentTypeQuads + j * 4, Color::Transparent);
+			}*/
+
+			if (j == 0)
+			{
+				startAlong += currWidth - GetBorderQuadIntersect(currWidth);
+			}
+			else
+			{
+				startAlong += currWidth - GetBorderQuadIntersect(currWidth);
+			}
+		}
+
+		currentOffsetPerType[angleType] += currEdgeTotalQuads;
+
+		edge->edge0 = oldPrev;
+		edge->edge1 = oldNext;
+
+		oppositeGateEdge->edge0->edge1 = oldPrevNext;
+		oppositeGateEdge->edge1->edge0 = oldNextPrev;
+	}
+}
+
 void TerrainPolygon::GenerateBorderMesh()
 {
 	if (ts_border == NULL)
@@ -1904,10 +2334,6 @@ void TerrainPolygon::GenerateBorderMesh()
 	borderSizes[1].SetWidth(32);
 	//borderSizes[2].SetWidth(16);
 
-	int firstType;
-	int secondType;
-
-
 	int numP = GetNumPoints();
 	EdgeAngleType angleType;
 	int edgeLen;
@@ -1915,6 +2341,8 @@ void TerrainPolygon::GenerateBorderMesh()
 
 	BorderInfo currEdgeQuadCounts;
 	int currSizeLen;
+
+	edgeQuadTesting.resize(numP);
 
 	//get the number of different border sizes we need for this edge
 	for (int i = 0; i < numP; ++i)
@@ -2005,7 +2433,6 @@ void TerrainPolygon::GenerateBorderMesh()
 
 
 	V2d currStartInner, currStartOuter, currEndInner, currEndOuter;
-
 	for (int i = 0; i < numP; ++i)
 	{
 		edge = GetEdge(i);
@@ -2033,6 +2460,8 @@ void TerrainPolygon::GenerateBorderMesh()
 		
 		Vertex *currentTypeQuads = borderQuadsByType[angleType] 
 			+ currentOffsetPerType[angleType] * 4;
+
+		int currentTypeQuadsStartIndex = currentTypeQuads - borderQuads;
 
 		Edge *nextEdge = edge->GetNextEdge();
 		bool isAcute = IsAcute(edge);
@@ -2083,35 +2512,6 @@ void TerrainPolygon::GenerateBorderMesh()
 
 			double realHeightLeft = 64;//16;//64.0;
 			double realHeightRight = 64;//16;//64.0;
-
-			//doesnt work because the quads start above the edge.
-			//can be fixed later by splitting some quads up into
-			//outer and inner 
-			//if (true)
-			//{
-			//	LineIntersection li = SegmentIntersect(currStartInner,
-			//		currStartOuter, nextEdge->v0, nextEdge->v1);
-
-			//	LineIntersection li1 = SegmentIntersect(currStartInner,
-			//		currEndInner, nextEdge->v0, nextEdge->v1);
-
-			//	if (!li.parallel && li1.parallel)
-			//	{
-			//		currEndInner = li.position;
-			//	}
-
-			//	/*LineIntersection li2 = SegmentIntersect(currEndInner,
-			//		currEndOuter, edge->v0, edge->v1);
-
-			//	LineIntersection li3 = SegmentIntersect(currStartInner,
-			//		currEndInner, edge->v0, edge->v1);
-
-			//	if (li2.parallel && !li3.parallel)
-			//	{
-			//		currStartInner = li3.position;
-			//	}*/
-			//}
-
 			
 			if (isAcute)
 			{
@@ -2212,7 +2612,14 @@ void TerrainPolygon::GenerateBorderMesh()
 			currentTypeQuads[j * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
 			currentTypeQuads[j * 4 + 1].texCoords = Vector2f(sub.left + outerWidth, sub.top);
 			currentTypeQuads[j * 4 + 2].texCoords = Vector2f(sub.left + innerWidth, sub.top + realHeightRight);
-			currentTypeQuads[j * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);			
+			currentTypeQuads[j * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);
+
+			edgeQuadTesting[i].push_back(currentTypeQuads + j * 4);
+
+			/*if(  testSecretEdge )
+			{ 
+				SetRectColor(currentTypeQuads + j * 4, Color::Transparent);
+			}*/
 
 			if (j == 0)
 			{
@@ -4281,14 +4688,10 @@ void TerrainPolygon::FinalizeSecret()
 
 	//SetupGrass();
 
-	SetMaterialType(terrainWorldType, terrainVariation);
+	SetBorderTileset();
+	UpdateMaterialType();
 
-
-
-
-
-	//SetupTouchGrass();
-	//GenerateDecor();
+	SetupTouchGrass();
 }
 
 void TerrainPolygon::FinalizeInverse()
@@ -5274,6 +5677,53 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		return;
 	}
+	else if (renderMode == RENDERMODE_MAP)
+	{
+		UpdatePreviewLineColors();
+
+		DrawGrass(rt);
+
+		DrawInnerArea(rt);
+
+		Edge *e = NULL;
+		for (int i = 0; i < numP; ++i )
+		{
+			e = GetEdge(i);
+			if (e->secretZone)
+			{
+				for (auto it = edgeQuadTesting[i].begin(); it != edgeQuadTesting[i].end(); ++it)
+				{
+					SetRectColor((*it), Color::Transparent);
+				}
+			}
+			
+		}
+
+		DrawBorderQuads(rt);
+
+		for (int i = 0; i < numP; ++i)
+		{
+			e = GetEdge(i);
+			if (e->secretZone)
+			{
+				for (auto it = edgeQuadTesting[i].begin(); it != edgeQuadTesting[i].end(); ++it)
+				{
+					SetRectColor((*it), Color::White);
+				}
+			}
+
+		}
+
+		DrawDecor(rt);
+
+		DrawTouchGrass(rt);
+
+		rt->draw(lines, numP * 2, sf::Lines);
+
+		UpdateLineColors();
+
+		return;
+	}
 	else if (renderMode == RENDERMODE_EDITOR_PREVIEW)
 	{
 		//UpdatePreviewLineColors();
@@ -5346,20 +5796,15 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	}
 }
 
-void TerrainPolygon::DrawAsSecretCover(sf::RenderTarget *target)
+void TerrainPolygon::DrawAsSecretCover(sf::RenderTarget *target, bool preview)
 {
-	/*if (va != NULL)
-	{
-		if (pShader != NULL)
-		{
-			target->draw(*va, pShader);
-		}
-		else
-		{
-			target->draw(*va);
-		}
-	}*/
 	DrawInnerArea(target);
+
+	if (!preview)
+	{
+		DrawBorderQuads(target);
+		DrawTouchGrass(target);
+	}
 }
 
 void TerrainPolygon::SetSelected( bool select )

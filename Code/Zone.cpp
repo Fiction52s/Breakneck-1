@@ -107,6 +107,8 @@ Zone::Zone( TerrainPolygon *tp )
 	zonePoly = tp;
 	assert(!zonePoly->finalized);
 
+	zonePoly->FixWinding();//FixWinding();
+
 	zonePoly->FinalizeJustEdges();
 	//zonePoly->Finalize();//FinalizeJustEdges();
 
@@ -116,7 +118,7 @@ Zone::Zone( TerrainPolygon *tp )
 	secretZone = false;
 	parentZone = NULL;
 	showShadow = true;
-	zonePoly->FixWinding();
+	
 
 	openFrames = 60;
 	closeFrames = 60;
@@ -204,11 +206,19 @@ void Zone::Init()
 		secretZone = true;
 	}	
 
+	//if (secretZone)
+	//{
+	//	//can do a special finalization where I ignore the borders, since I only need the inner area to be finalized.
+	//	//zonePoly->Finalize();
+	//	zonePoly->FinalizeSecret();
+	//}
+
 	if (secretZone)
 	{
 		//can do a special finalization where I ignore the borders, since I only need the inner area to be finalized.
 		//zonePoly->Finalize();
-		zonePoly->FinalizeSecret();
+		//zonePoly->FinalizeSecret();
+		//zonePoly->GenerateSecretBorderMesh(gates);
 	}
 
 	list<Zone*> possibleSubs = subZones;
@@ -510,7 +520,9 @@ void Zone::Init()
 		{
 			if (!secretZone)
 			{
-				zonePoly->FinalizeSecret();
+				//zonePoly->secretZoneGateList = gates;
+				//zonePoly->FinalizeSecret();
+				//zonePoly->GenerateSecretBorderMesh();
 			}
 			secretZone = true;
 		}
@@ -592,7 +604,13 @@ void Zone::Init()
 				mostTouchedTerrain = (*it).first;
 			}
 		}
-		zonePoly->SetMaterialType(mostTouchedTerrain.first, mostTouchedTerrain.second);
+		zonePoly->terrainWorldType = (TerrainPolygon::TerrainWorldType)mostTouchedTerrain.first;
+		zonePoly->terrainVariation = mostTouchedTerrain.second;
+
+		zonePoly->secretZoneGateList = gates;
+		zonePoly->FinalizeSecret();
+		zonePoly->GenerateSecretBorderMesh();
+		//zonePoly->SetMaterialType(mostTouchedTerrain.first, mostTouchedTerrain.second);
 	}
 }
 

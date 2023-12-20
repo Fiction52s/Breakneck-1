@@ -212,6 +212,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_PHASED,
 		RENDERMODE_BASIC_PREVIEW,
 		RENDERMODE_EDITOR_PREVIEW,
+		RENDERMODE_MAP,
 	};
 
 	enum WaterType
@@ -282,6 +283,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int polyIndex;
 	int waterType;
 
+	std::vector<std::vector<sf::Vertex*>> edgeQuadTesting;
+	std::list<Edge *> secretZoneGateList;
 
 	/*const int TerrainPolygon::TILE_PATTERN_GRID_SIZE = 16;
 	const int TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
@@ -437,6 +440,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int totalNumBorderQuads;
 	void GenerateBorderMesh();
 	void GenerateWaterBorderMesh();
+	void GenerateSecretBorderMesh();
 	Tileset *ts_border;
 
 	static int GetBorderQuadIntersect(int tileWidth);
@@ -569,7 +573,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SoftReset();
 	void Draw(bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow);
 	void DrawInnerArea(sf::RenderTarget *target);
-	void DrawAsSecretCover(sf::RenderTarget *target);
+	void DrawAsSecretCover(sf::RenderTarget *target, bool preview );
 	void DrawFlies(sf::RenderTarget *target);
 	void DrawGrass(sf::RenderTarget *target);
 	void DrawPreviewGrass(sf::RenderTarget *target, bool hideSecret);

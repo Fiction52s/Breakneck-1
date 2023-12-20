@@ -612,6 +612,9 @@ void EditSession::TestPlayerMode()
 		
 
 	}
+	
+	
+
 
 	nextFrameRestartGame = false; //for respawning after triggering a score display
 
@@ -688,13 +691,15 @@ void EditSession::TestPlayerMode()
 
 	pokeTriangleScreenGroup->Reset();
 	
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	currUpgradeField.Set(defaultStartingPlayerOptionsField);
+
+	/*for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (GetPlayer(i) != NULL)
 		{
 			SetPlayerOptionField(i);
 		}
-	}
+	}*/
 
 	/*if (debugReplayPlayerOn && debugReplayManager != NULL)
 	{
@@ -8214,7 +8219,7 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		{
 			if ((*it)->zType == Zone::SECRET)
 			{
-				(*it)->zonePoly->DrawAsSecretCover(target);
+				(*it)->zonePoly->DrawAsSecretCover(target, true);
 			}
 		}
 	}
