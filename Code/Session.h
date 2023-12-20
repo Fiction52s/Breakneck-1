@@ -1029,6 +1029,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ShowHUD(int frames = 0);
 
 	void SendPracticeStartMessageToAllNewPeers();
+
+	void DrawPracticeSessions(sf::RenderTarget *target, sf::View practiceView );
 };
 
 #endif

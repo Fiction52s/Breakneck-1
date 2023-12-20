@@ -299,13 +299,14 @@ void PauseMap::DrawZones(RenderTarget *target)
 	auto &zones = game->zones;
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		if ((*it)->zType == Zone::SECRET)
+		if ((*it)->zType == Zone::SECRET && (*it)->data.action == Zone::UNEXPLORED)
 		{
 			(*it)->zonePoly->DrawAsSecretCover(target, false );
 		}
 		else
 		{
-			(*it)->DrawMinimap(target);
+			//(*it)->Draw(target);
+			//(*it)->DrawMinimap(target);
 		}
 		
 	}

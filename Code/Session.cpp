@@ -4563,12 +4563,14 @@ void Session::DrawPlayersMini(sf::RenderTarget *target)
 
 void Session::DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags )
 {
-	//if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
+	//just not tested yet, could be right
 	if( gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession() )
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
 		pm->DrawParallelPlayersToMap(target, drawKin, drawNameTags);
 	}
+
+
 
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
@@ -6628,44 +6630,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawGoalFlow(target);
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
-	{
-		extraScreenTex->setView(view);
-		ParallelMode *pm = (ParallelMode*)gameMode;
-
-		for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
-		{
-			if (pm->parallelGames[i] != NULL)
-			{
-				if (netplayManager->practicePlayers[i].isConnectedTo)
-				{
-					pm->parallelGames[i]->DrawPracticeGame(extraScreenTex);
-				}
-			}
-		}
-
-		extraScreenTex->display();
-		const Texture &extraTex = extraScreenTex->getTexture();
-		Sprite extraSprite(extraTex);
-
-		int alpha = 255;//150;
-
-		extraSprite.setColor(Color(255, 255, 255, 150));
-
-		extraSprite.setPosition(-960 / 2, -540 / 2);
-		extraSprite.setScale(.5, .5);
-		extraSprite.setTexture(extraTex);
-
-		View oldView = target->getView();
-
-		target->setView(window->getView());
-
-		preScreenTex->draw(extraSprite);
-
-		target->setView(oldView);
-	}
-	//DrawPracticeGame
-
+	DrawPracticeSessions(target, view );
 
 	DrawHUD(target);
 
@@ -10038,4 +10003,46 @@ void Session::SendPracticeStartMessageToAllNewPeers()
 	psm.wantsToPlay = netplayManager->wantsToPracticeRace;
 	psm.origProgression = originalProgressionModeOn;
 	netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
+}
+
+void Session::DrawPracticeSessions(sf::RenderTarget *target, sf::View practiceView )
+{
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
+	{
+		//extraScreenTex->clear(Color::Transparent);
+		extraScreenTex->setView(practiceView);
+		ParallelMode *pm = (ParallelMode*)gameMode;
+
+		for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				if (netplayManager->practicePlayers[i].isConnectedTo)
+				{
+					pm->parallelGames[i]->DrawPracticeGame(extraScreenTex);
+				}
+			}
+		}
+
+		extraScreenTex->display();
+		const Texture &extraTex = extraScreenTex->getTexture();
+		Sprite extraSprite(extraTex);
+
+		int alpha = 255;//150;
+
+		extraSprite.setColor(Color(255, 255, 255, 150));
+
+		extraSprite.setPosition(-960 / 2, -540 / 2);
+		extraSprite.setScale(.5, .5);
+		extraSprite.setTexture(extraTex);
+
+		View oldView = target->getView();
+
+		target->setView(window->getView());
+
+		//preScreenTex->draw(extraSprite);
+		target->draw(extraSprite);
+
+		target->setView(oldView);
+	}
 }
