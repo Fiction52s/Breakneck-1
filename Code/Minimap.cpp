@@ -174,6 +174,8 @@ void Minimap::DrawToTex()
 
 	sess->DrawPlayersMini(minimapTex);
 
+	sess->DrawPlayersToMap(minimapTex, false, false);
+
 	sf::View iconView;
 	iconView.setCenter(0, 0);
 	iconView.setSize(minimapTex->getSize().x, minimapTex->getSize().y);
@@ -238,7 +240,7 @@ void Minimap::DrawGates(sf::Rect<double> &rect,
 	Gate *gateList = sess->gateList;
 	while (gateList != NULL)
 	{
-		gateList->MapDraw(target);
+		gateList->MiniDraw(target);
 
 		Gate *next = gateList->next;
 		gateList = next;

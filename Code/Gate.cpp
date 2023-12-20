@@ -1113,6 +1113,15 @@ void Gate::Draw(sf::RenderTarget *target)
 
 void Gate::MapDraw(sf::RenderTarget *target)
 {
+	Color oldColor = mapLine[0].color;
+	SetRectColor(mapLine, mapLineColor);
+	target->draw(mapLine, 4, sf::Quads );
+	SetRectColor(mapLine, oldColor);
+	
+}
+
+void Gate::MiniDraw(sf::RenderTarget *target)
+{
 	//if(data.locked && visible && category != SECRET )
 	if (data.gState != OPEN && visible && category != SECRET)
 		target->draw(mapLine, 4, sf::Quads);

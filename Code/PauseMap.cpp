@@ -211,18 +211,23 @@ void PauseMap::DrawToTex()
 	vv.setCenter(mapCenter.x, mapCenter.y);
 	vv.setSize(mapTex->getSize().x * mapZoomFactor, mapTex->getSize().y * mapZoomFactor);
 
-	
-
 	mapTex->setView(vv);
 	mapTex->clear(Color::Black);//Color(0, 0, 0, 191));
 
-	for (auto it = game->zones.begin(); it != game->zones.end(); ++it)
-	{
-		(*it)->Draw(mapTex);
-	}
-
 	sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
 		vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
+
+	game->QueryBorderTree(minimapRect);
+	Vector2f vSize = vv.getSize();
+	Vector2f botLeft(vv.getCenter().x - vSize.x / 2, vv.getCenter().y + vSize.y / 2);
+	Vector2f botLeftTest(-vSize.x / 2, vSize.y / 2);
+	//RotateCW(botLeftTest, camAngle);
+	botLeftTest += vv.getCenter();
+	botLeft = botLeftTest;
+	Vector2f blank;
+	float realZ = vSize.x / (mapTex->getSize().x / 2.f);//960.f;
+	game->UpdatePolyShaders(botLeft, blank, realZ);
+
 
 	DrawSpecialTerrain(minimapRect, mapTex);
 
@@ -240,7 +245,7 @@ void PauseMap::DrawToTex()
 
 	game->EnemiesCheckPauseMapDraw(mapTex, FloatRect(minimapRect));
 
-	game->DrawPlayersMini(mapTex);
+	//game->DrawPlayersMini(mapTex);
 
 	bool drawKins = mapZoomFactor < 3.2;
 
@@ -316,46 +321,6 @@ void PauseMap::DrawTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)
 {
 	game->QueryBorderTree(rect);
 
-	sf::View view = target->getView();
-	Vector2f vSize = view.getSize();
-	Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
-
-	Vector2f botLeftTest(-vSize.x / 2, vSize.y / 2);
-	//RotateCW(botLeftTest, camAngle);
-
-	botLeftTest += view.getCenter();
-
-	botLeft = botLeftTest;
-
-	Vector2f blank;
-
-	float realZ = vSize.x / (target->getSize().x / 2.f);//960.f;
-
-	game->UpdatePolyShaders(botLeft, blank, realZ);
-
-	/*for (auto it = polygons.begin(); it != polygons.end(); ++it)
-	{
-		oldSelected = (*it)->selected;
-		(*it)->SetSelected(false);
-
-		TerrainPolygon::RenderMode oldPolyMode = (*it)->renderMode;
-
-		if (hideSecret)
-		{
-			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_BASIC_PREVIEW);
-		}
-		else
-		{
-			(*it)->SetRenderMode(TerrainPolygon::RENDERMODE_EDITOR_PREVIEW);
-		}
-
-		(*it)->Draw(false, 1, target, false, NULL);
-
-		(*it)->SetRenderMode(oldPolyMode);
-		(*it)->SetSelected(oldSelected);
-	}*/
-
-
 	PolyPtr poly = game->polyQueryList;
 	while (poly != NULL)
 	{
@@ -382,7 +347,14 @@ void PauseMap::DrawRails(sf::Rect<double> &rect,
 void PauseMap::DrawSpecialTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)
 {
 	game->QuerySpecialTerrainTree(rect);
-	game->DrawSpecialMapTerrain(target);
+	//game->DrawSpecialMapTerrain(target);
+
+	PolyPtr poly = game->specialPieceList;
+	while (poly != NULL)
+	{
+		poly->Draw(target);
+		poly = poly->queryNext;
+	}
 }
 
 void PauseMap::DrawMapBorders(
@@ -399,7 +371,8 @@ void PauseMap::DrawGates(sf::Rect<double> &rect,
 	Gate *gateList = game->gateList;
 	while (gateList != NULL)
 	{
-		if ((gateList->category == Gate::SECRET || gateList->IsSecret()))
+		if(gateList->IsSecret() && (gateList->zoneA != NULL && gateList->zoneA->secretZone && gateList->zoneA->data.action == Zone::UNEXPLORED)
+			|| (gateList->zoneB != NULL && gateList->zoneB->secretZone && gateList->zoneB->data.action == Zone::UNEXPLORED))
 		{
 			gateList->DrawSecret(target);
 		}

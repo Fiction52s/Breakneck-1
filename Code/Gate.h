@@ -176,6 +176,7 @@ struct Gate : public QuadTreeEntrant
 	void UpdateOrb();
 	void SetMapLineColor();
 	void MapDraw(sf::RenderTarget *target);
+	void MiniDraw(sf::RenderTarget *target);
 	void OpenSecretTimeGate();
 	void SetToTwoWay();
 	bool IsSoft();

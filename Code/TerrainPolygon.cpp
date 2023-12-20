@@ -5549,7 +5549,8 @@ void TerrainPolygon::DrawPreviewGrass(sf::RenderTarget *target, bool hideSecret)
 		for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
 		{
 			e = (*it).poly->GetEdge((*it).edgeIndex);
-			if (e->secretZone != NULL && !e->secretZone->IsActive())
+			//if (e->secretZone != NULL && !e->secretZone->IsActive())
+			if (e->secretZone != NULL && e->secretZone->data.action == Zone::UNEXPLORED)
 			{
 				SetRectColor(grassVA + (*it).tileIndex * 4, Color::Transparent);
 			}
@@ -5689,7 +5690,8 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		for (int i = 0; i < numP; ++i )
 		{
 			e = GetEdge(i);
-			if (e->secretZone)
+			//if (e->secretZone )
+			if (e->secretZone != NULL && e->secretZone->data.action == Zone::UNEXPLORED)
 			{
 				for (auto it = edgeQuadTesting[i].begin(); it != edgeQuadTesting[i].end(); ++it)
 				{
@@ -5704,7 +5706,8 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		for (int i = 0; i < numP; ++i)
 		{
 			e = GetEdge(i);
-			if (e->secretZone)
+			//if (e->secretZone)
+			if (e->secretZone != NULL && e->secretZone->data.action == Zone::UNEXPLORED)
 			{
 				for (auto it = edgeQuadTesting[i].begin(); it != edgeQuadTesting[i].end(); ++it)
 				{
@@ -6190,7 +6193,8 @@ void TerrainPolygon::UpdatePreviewLineColor(int i)
 		break;
 	}
 
-	if (GetEdge(i)->secretZone != NULL)
+	Edge *e = GetEdge(i);
+	if (e->secretZone != NULL && e->secretZone->data.action == Zone::UNEXPLORED )
 	{
 		edgeColor = Color::Transparent;
 	}
@@ -7630,7 +7634,7 @@ void TerrainPolygon::MiniDrawGrass(sf::RenderTarget *target )
 	for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
 	{
 		e = (*it).poly->GetEdge((*it).edgeIndex);
-		if (e->secretZone != NULL && !e->secretZone->IsActive())
+		if (e->secretZone != NULL && e->secretZone->data.action == Zone::UNEXPLORED)
 		{
 			SetRectColor(grassVA + (*it).tileIndex * 4, Color::Transparent);
 		}

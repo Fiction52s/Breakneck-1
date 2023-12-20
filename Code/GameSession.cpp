@@ -3265,6 +3265,12 @@ bool GameSession::RunMainLoopOnce()
 		preTexSprite.setScale(.5, .5);
 		window->draw(preTexSprite);
 
+		
+		sf::Vertex pauseMenuBG[4];
+		SetRectColor(pauseMenuBG, Color( 0, 0, 0, 180 ));
+		SetRectCenter(pauseMenuBG, 1920, 1080, Vector2f(0, 0));
+		window->draw(pauseMenuBG, 4, sf::Quads );
+
 		pauseMenu->Draw(pauseTex);
 
 		pauseTex->display();
