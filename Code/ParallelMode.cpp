@@ -160,13 +160,13 @@ void ParallelMode::DrawParallelNameTags(sf::RenderTarget *target)
 	}
 }
 
-void ParallelMode::DrawParallelPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags )
+void ParallelMode::DrawParallelPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags, float scale )
 {
 	for (int i = 0; i < MAX_PARALLEL_SESSIONS; ++i)
 	{
 		if (parallelGames[i] != NULL)
 		{
-			parallelGames[i]->DrawPlayersToMap( target, drawKin, drawNameTags);
+			parallelGames[i]->DrawPlayersToMap( target, drawKin, drawNameTags, scale);
 		}
 	}
 }

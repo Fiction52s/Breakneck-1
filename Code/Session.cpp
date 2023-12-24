@@ -4561,13 +4561,23 @@ void Session::DrawPlayersMini(sf::RenderTarget *target)
 	}
 }
 
-void Session::DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags )
+void Session::DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags, float scale )
 {
 	//just not tested yet, could be right
 	if( gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession() )
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
-		pm->DrawParallelPlayersToMap(target, drawKin, drawNameTags);
+		//pm->DrawParallelPlayersToMap(target, drawKin, drawNameTags, scale);
+		for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
+		{
+			if (pm->parallelGames[i] != NULL)
+			{
+				if (netplayManager->practicePlayers[i].isConnectedTo)
+				{
+					pm->parallelGames[i]->DrawPlayersToMap(target, drawKin, drawNameTags, scale);
+				}
+			}
+		}
 	}
 
 
@@ -4578,7 +4588,7 @@ void Session::DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool draw
 		p = GetPlayer(i);
 		if (p != NULL)
 		{
-			p->MapDraw(target, drawKin, drawNameTags);
+			p->MapDraw(target, drawKin, drawNameTags, scale);
 		}
 	}
 }

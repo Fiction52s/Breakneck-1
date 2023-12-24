@@ -407,7 +407,8 @@ void PauseMenu::SetTab( Tab t )
 		auto gb = mapNameText.getGlobalBounds();
 
 		//shardAndLogDisplay->SetTopLeft(Vector2f(gb.left + gb.width + 40, mapNameText.getPosition().y));
-		shardAndLogDisplay->SetLevel(game->level);
+		//shardAndLogDisplay->SetLevel(game->level);
+		shardAndLogDisplay->SetFromGame(game);
 		
 		pauseMap->Reset();
 		break;

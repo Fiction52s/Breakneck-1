@@ -101,6 +101,7 @@ bool FreeplayScreen::HandleEvent(sf::Event ev)
 void FreeplayScreen::StartBrowsing()
 {
 	MOUSE.Show();
+	MOUSE.SetControllersOn(true);
 	action = A_CHOOSE_MAP;
 	frame = 0;
 	mapBrowserScreen->browserHandler->ClearSelection();

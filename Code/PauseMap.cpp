@@ -249,7 +249,7 @@ void PauseMap::DrawToTex()
 
 	bool drawKins = mapZoomFactor < 3.2;
 
-	game->DrawPlayersToMap(mapTex, drawKins, true );
+	game->DrawPlayersToMap(mapTex, drawKins, true, 2.f );
 	/*if (mapZoomFactor <= 3.2)
 	{
 		game->UpdateNameTagsPixelPos(mapTex);

@@ -1321,33 +1321,33 @@ void Actor::SetupSwordTilesets()
 
 	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 
-	ts_fairSword[0] = tm->GetSizedTileset(folder, "fair_sworda_256x256.png");
-	ts_fairSword[1] = tm->GetSizedTileset(folder, "fair_swordb_288x288.png");
-	ts_fairSword[2] = tm->GetSizedTileset(folder, "fair_swordc_384x384.png");
+	ts_fairSword[0] = tm->GetSizedTileset(folder, "fair_sword_256x256.png");
+	ts_fairSword[1] = tm->GetSizedTileset(folder, "fair_sword_b_288x288.png");
+	ts_fairSword[2] = tm->GetSizedTileset(folder, "fair_sword_p_384x384.png");
 
-	ts_dairSword[0] = tm->GetSizedTileset(folder, "dair_sworda_256x256.png");
-	ts_dairSword[1] = tm->GetSizedTileset(folder, "dair_swordb_288x288.png");
-	ts_dairSword[2] = tm->GetSizedTileset(folder, "dair_swordc_384x384.png");
+	ts_dairSword[0] = tm->GetSizedTileset(folder, "dair_sword_256x256.png");
+	ts_dairSword[1] = tm->GetSizedTileset(folder, "dair_sword_b_288x288.png");
+	ts_dairSword[2] = tm->GetSizedTileset(folder, "dair_sword_p_384x384.png");
 
-	ts_uairSword[0] = tm->GetSizedTileset(folder, "uair_sworda_256x256.png");
-	ts_uairSword[1] = tm->GetSizedTileset(folder, "uair_swordb_288x288.png");
-	ts_uairSword[2] = tm->GetSizedTileset(folder, "uair_swordc_320x320.png");
+	ts_uairSword[0] = tm->GetSizedTileset(folder, "uair_sword_256x256.png");
+	ts_uairSword[1] = tm->GetSizedTileset(folder, "uair_sword_b_288x288.png");
+	ts_uairSword[2] = tm->GetSizedTileset(folder, "uair_sword_p_320x320.png");
 
 	ts_grindLungeSword[0] = tm->GetSizedTileset(folder, "grind_lunge_sworda_160x160.png");
 	ts_grindLungeSword[1] = tm->GetSizedTileset(folder, "grind_lunge_swordb_192x192.png");
 	ts_grindLungeSword[2] = tm->GetSizedTileset(folder, "grind_lunge_swordc_224x208.png");
 
-	ts_wallAttackSword[0] = tm->GetSizedTileset(folder, "wall_sworda_144x256.png");
-	ts_wallAttackSword[1] = tm->GetSizedTileset(folder, "wall_swordb_240x352.png");
-	ts_wallAttackSword[2] = tm->GetSizedTileset(folder, "wall_swordc_298x400.png");
+	ts_wallAttackSword[0] = tm->GetSizedTileset(folder, "wall_sword_144x256.png");
+	ts_wallAttackSword[1] = tm->GetSizedTileset(folder, "wall_sword_b_240x352.png");
+	ts_wallAttackSword[2] = tm->GetSizedTileset(folder, "wall_sword_p_298x400.png");
 
-	ts_steepSlideAttackSword[0] = tm->GetSizedTileset(folder, "steep_att_sworda_480x176.png");
-	ts_steepSlideAttackSword[1] = tm->GetSizedTileset(folder, "steep_att_swordb_352x192.png");
-	ts_steepSlideAttackSword[2] = tm->GetSizedTileset(folder, "steep_att_swordc_560x256.png");
+	ts_steepSlideAttackSword[0] = tm->GetSizedTileset(folder, "steep_att_sword_480x176.png");
+	ts_steepSlideAttackSword[1] = tm->GetSizedTileset(folder, "steep_att_sword_b_352x192.png");
+	ts_steepSlideAttackSword[2] = tm->GetSizedTileset(folder, "steep_att_sword_p_560x256.png");
 
-	ts_steepClimbAttackSword[0] = tm->GetSizedTileset(folder, "climb_att_sworda_352x128.png");
-	ts_steepClimbAttackSword[1] = tm->GetSizedTileset(folder, "climb_att_swordb_416x320.png");
-	ts_steepClimbAttackSword[2] = tm->GetSizedTileset(folder, "climb_att_swordc_496x208.png");
+	ts_steepClimbAttackSword[0] = tm->GetSizedTileset(folder, "climb_att_sword_352x128.png");
+	ts_steepClimbAttackSword[1] = tm->GetSizedTileset(folder, "climb_att_sword_b_416x320.png");
+	ts_steepClimbAttackSword[2] = tm->GetSizedTileset(folder, "climb_att_sword_p_496x208.png");
 
 	ts_diagUpSword[0] = tm->GetSizedTileset(folder, "airdash_u_sword_144x208.png");
 	ts_diagUpSword[1] = tm->GetSizedTileset(folder, "airdash_u_sword_b_224x240.png");
@@ -1402,7 +1402,7 @@ void Actor::SetupExtraTilesets()
 	Tileset *ts_mapIcon = tm->GetTileset("HUD/Minimap/minimap_icons_64x64.png", 64, 64);
 	ts_mapIcon->SetSpriteTexture(mapIconSpr);
 	ts_mapIcon->SetSubRect(mapIconSpr, 0);
-	mapIconSpr.setScale(2, 2);
+	//mapIconSpr.setScale(2, 2);
 	mapIconSpr.setOrigin(mapIconSpr.getLocalBounds().width / 2, mapIconSpr.getLocalBounds().height / 2);
 
 
@@ -6449,7 +6449,7 @@ void Actor::ProcessDecelGrass()
 		double dSpeed = GetDashSpeed();
 		double maxGSpeed = 5;
 		double decel = 2.0;
-		double maxSlowSpeed = dSpeed + 5;
+		double maxSlowSpeed = dSpeed;
 		if (groundSpeed > maxSlowSpeed)
 		{
 			groundSpeed -= decel;
@@ -21047,7 +21047,7 @@ void Actor::MiniDraw(sf::RenderTarget *target)
 	enemyExplodeRingGroup->Draw(target);
 }
 
-void Actor::MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawNameTag )
+void Actor::MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawNameTag, float scale )
 {
 	//vv.setSize(mapTex->getSize().x * mapZoomFactor, mapTex->getSize().y * mapZoomFactor);
 	sf::View oldView = target->getView();
@@ -21065,6 +21065,7 @@ void Actor::MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawNameTag 
 	if (!drawPlayer)
 	{
 		mapIconSpr.setPosition(trueIconPos);
+		mapIconSpr.setScale(scale, scale);
 
 		target->draw(mapIconSpr);
 	}

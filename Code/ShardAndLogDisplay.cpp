@@ -2,6 +2,8 @@
 #include "MainMenu.h"
 #include "SaveFile.h"
 #include "AdventureManager.h"
+#include "MapHeader.h"
+#include "GameSession.h"
 
 using namespace sf;
 using namespace std;
@@ -48,23 +50,80 @@ void ShardAndLogDisplay::SetLevel(Level *lev)
 
 	MainMenu *mm = MainMenu::GetInstance();
 
-	AdventureMapHeaderInfo &amhi =
-		mm->adventureManager->adventureFile.GetMapHeaderInfo(lev->index);
-	totalShards = amhi.shardInfoVec.size();
+	if (mm->adventureManager != NULL)
+	{
+		AdventureMapHeaderInfo &amhi =
+			mm->adventureManager->adventureFile.GetMapHeaderInfo(lev->index);
+		totalShards = amhi.shardInfoVec.size();
 
-	SaveFile *saveFile = mm->adventureManager->currSaveFile;
+		SaveFile *saveFile = mm->adventureManager->currSaveFile;
+		for (int j = 0; j < totalShards; ++j)
+		{
+			if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
+			{
+				++numShardsCaptured;
+			}
+		}
+
+		totalLogs = amhi.logInfoVec.size();
+		for (int j = 0; j < totalLogs; ++j)
+		{
+			if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
+			{
+				++numLogsCaptured;
+			}
+		}
+	}
+	else
+	{
+		assert(0);
+	}
+	
+
+	stringstream ss;
+
+	ss.str("");
+	ss.clear();
+
+	ss << numShardsCaptured << "/" << totalShards;
+
+	shardText.setString(ss.str());
+
+	ss.str("");
+	ss.clear();
+
+	ss << numLogsCaptured << "/" << totalLogs;
+
+	logText.setString(ss.str());
+
+	SetTopLeft(topLeft);
+}
+
+void ShardAndLogDisplay::SetFromGame(GameSession *game)
+{
+	int totalShards = 0;
+	int numShardsCaptured = 0;
+	int totalLogs = 0;
+	int numLogsCaptured = 0;
+
+	MainMenu *mm = MainMenu::GetInstance();
+
+	MapHeader *mh = game->mapHeader;
+
+	totalShards = mh->shardInfoVec.size();
+
 	for (int j = 0; j < totalShards; ++j)
 	{
-		if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
+		if (game->IsShardCaptured(mh->shardInfoVec[j].GetTrueIndex()))
 		{
 			++numShardsCaptured;
 		}
 	}
 
-	totalLogs = amhi.logInfoVec.size();
+	totalLogs = mh->logInfoVec.size();
 	for (int j = 0; j < totalLogs; ++j)
 	{
-		if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
+		if (game->HasLog(mh->logInfoVec[j].GetTrueIndex()))
 		{
 			++numLogsCaptured;
 		}

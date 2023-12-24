@@ -174,14 +174,14 @@ void Minimap::DrawToTex()
 
 	sess->DrawPlayersMini(minimapTex);
 
-	sess->DrawPlayersToMap(minimapTex, false, false);
+	sess->DrawPlayersToMap(minimapTex, false, false, 1.f);
 
 	sf::View iconView;
 	iconView.setCenter(0, 0);
 	iconView.setSize(minimapTex->getSize().x, minimapTex->getSize().y);
 	minimapTex->setView(iconView);
 
-	minimapTex->draw(kinMinimapIcon);
+	//minimapTex->draw(kinMinimapIcon);
 }
 
 void Minimap::Draw(sf::RenderTarget *target)

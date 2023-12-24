@@ -759,7 +759,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void EnemiesCheckPauseMapDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);
 	void DrawPlayersMini(sf::RenderTarget *target);
-	void DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags);
+	void DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags, float scale = 1.f);
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void TrySpawnEnemy(QuadTreeEntrant *qte);
 	void TryAddPolyToQueryList(QuadTreeEntrant *qte);

@@ -4,6 +4,7 @@
 #include "Tileset.h"
 
 struct Level;
+struct GameSession;
 
 struct ShardAndLogDisplay
 {
@@ -17,6 +18,7 @@ struct ShardAndLogDisplay
 	ShardAndLogDisplay( TilesetManager *tm );
 	void SetTopLeft(sf::Vector2f pos);
 	void SetLevel(Level *lev);
+	void SetFromGame(GameSession *game );
 	void Draw(sf::RenderTarget *target);
 };
 
