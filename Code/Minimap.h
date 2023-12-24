@@ -20,6 +20,8 @@ struct Minimap
 	Tileset *ts_miniCircle;
 	sf::Vertex blackBorderQuadsMini[4 * 2];
 	sf::Vertex topBorderQuadMini[4];
+	bool blackBorderOn[2];
+	bool topBorderOn;
 	static sf::Color terrainColor;
 	const static float MINIMAP_ZOOM;
 

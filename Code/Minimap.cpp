@@ -67,9 +67,13 @@ void Minimap::Update()
 }
 
 void Minimap::SetupBorderQuads(
-	bool *blackBorder, bool topBorderOn,
+	bool *p_blackBorderOn, bool p_topBorderOn,
 	MapHeader *mapHeader)
 {
+	blackBorderOn[0] = p_blackBorderOn[0];
+	blackBorderOn[1] = p_blackBorderOn[1];
+	topBorderOn = p_topBorderOn;
+
 	int miniQuadWidth = 4000;
 	int inverseTerrainBorder = 4000;
 	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
@@ -105,13 +109,13 @@ void Minimap::SetupBorderQuads(
 	Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
 	//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
 
-	if (blackBorder[0])
+	if (blackBorderOn[0])
 		SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
 	else
 	{
 		SetRectColor(blackBorderQuadsMini, Color::Transparent);
 	}
-	if (blackBorder[1])
+	if (blackBorderOn[1])
 		SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
 	else
 	{
@@ -131,6 +135,10 @@ void Minimap::SetupBorderQuads(
 		topBorderQuadMini[1].position.y = blackMiniTop;
 		topBorderQuadMini[2].position.y = mapHeader->topBounds;
 		topBorderQuadMini[3].position.y = mapHeader->topBounds;
+	}
+	else
+	{
+		SetRectColor(topBorderQuadMini, Color::Transparent);
 	}
 }
 
@@ -229,8 +237,15 @@ void Minimap::DrawSpecialTerrain(sf::Rect<double> &rect, sf::RenderTarget *targe
 void Minimap::DrawMapBorders(
 	sf::RenderTarget *target)
 {
-	target->draw(blackBorderQuadsMini, 8, sf::Quads);
-	target->draw(topBorderQuadMini, 4, sf::Quads);
+	if (blackBorderOn[0] || blackBorderOn[1])
+	{
+		target->draw(blackBorderQuadsMini, 8, sf::Quads);
+	}
+	
+	if (topBorderOn)
+	{
+		target->draw(topBorderQuadMini, 4, sf::Quads);
+	}
 }
 
 void Minimap::DrawGates(sf::Rect<double> &rect,
