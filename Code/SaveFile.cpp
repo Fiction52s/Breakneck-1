@@ -12,6 +12,12 @@
 #include "Actor.h"
 #include "LogMenu.h"
 
+//appdata
+//#include <windows.h>
+//#include <KnownFolders.h>
+
+
+
 
 using namespace std;
 using namespace boost::filesystem;
@@ -49,15 +55,18 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 {
 	SetVer(1);
 
-	string dataFolder = "Resources\\Adventure\\SaveData\\";
+	string dataFolder = MainMenu::GetInstance()->appDataPath + "SaveData\\";
 
-	fileName = dataFolder + name + SAVE_EXT;
-	replayFolderName = dataFolder + name + "\\";
+	myFolderName = dataFolder + name + "\\";
+	fileName = myFolderName + name + SAVE_EXT;
+	replayFolderName = myFolderName + name + "_bestreplay\\";
 }
 
 SaveFile::~SaveFile()
 {
 }
+
+
 
 void SaveFile::CreateSaveWorlds()
 {
@@ -501,11 +510,6 @@ bool SaveFile::LoadInfo(ifstream &is)
 		upgradesTurnedOnField.Load(is);
 		logField.Load(is);
 		is.close();
-
-		if (!boost::filesystem::exists(replayFolderName))
-		{
-			boost::filesystem::create_directory(replayFolderName);
-		}
 		return true;
 	}
 	else
@@ -586,6 +590,16 @@ bool SaveFile::Load()
 
 void SaveFile::Save()
 {
+	if (!boost::filesystem::exists(myFolderName))
+	{
+		boost::filesystem::create_directory(myFolderName);
+	}
+
+	if (!boost::filesystem::exists(replayFolderName))
+	{
+		boost::filesystem::create_directory(replayFolderName);
+	}
+
 	ofstream of;
 
 	of.open(fileName);
@@ -619,10 +633,10 @@ void SaveFile::Save()
 		assert(false);
 	}
 
-	if (!boost::filesystem::exists(replayFolderName))
+	/*if (!boost::filesystem::exists(replayFolderName))
 	{
 		boost::filesystem::create_directory(replayFolderName);
-	}
+	}*/
 }
 
 void SaveFile::Delete()
@@ -681,11 +695,10 @@ void SaveFile::SetAsDefault()
 	defaultSkinIndex = 0;
 }
 
-string GlobalSaveFile::fileName = "Resources/globalsave" + string(GLOBAL_SAVE_EXT);
-
 GlobalSaveFile::GlobalSaveFile()
 	:skinField(64)
 {
+	fileName = MainMenu::GetInstance()->appDataPath + "globalsave" + string(GLOBAL_SAVE_EXT);
 	SetToDefaults();
 }
 

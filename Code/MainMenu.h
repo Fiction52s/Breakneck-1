@@ -266,6 +266,8 @@ struct MainMenu : TilesetManager
 		PTS_FX_EXITENERGY_2,
 	};
 
+
+	std::string appDataPath;
 	bool isCursorModeOn;
 
 	bool steamOn;
@@ -372,6 +374,7 @@ struct MainMenu : TilesetManager
 	double currentTime;
 	int modeFrame;
 
+	static std::string GetAppDataPath();
 	void SetupWaterShaders();
 	void SetupWaterShader(sf::Shader &sh, int waterIndex);
 	void SetupTerrainShaders();

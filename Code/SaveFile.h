@@ -194,6 +194,8 @@ struct SaveFile
 	int GetTotalMapsBeaten();
 
 	void CreateSaveWorlds();
+
+
 	//queries
 	
 	float GetCompletionPercentage();
@@ -247,6 +249,7 @@ struct SaveFile
 	std::string name;
 	std::string fileName;
 	std::string replayFolderName;
+	std::string myFolderName;
 	AdventureFile *adventureFile;
 	int mostRecentWorldSelected;
 	
@@ -286,7 +289,7 @@ private:
 struct GlobalSaveFile
 {
 	BitField skinField;
-	static std::string fileName;
+	std::string fileName;
 	int ver;
 
 	GlobalSaveFile();

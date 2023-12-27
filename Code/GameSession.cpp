@@ -633,7 +633,8 @@ std::string GameSession::GetBestReplayPath()
 
 		
 		//ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << level->index << "_best" << REPLAY_EXT;
-		ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << saveFile->adventureFile->GetMap(level->index).name << "_" << myHash << "_best" << REPLAY_EXT;//<< w+1 << "_" << s+1 << "_" << m+1 << "_best" << REPLAY_EXT;
+		//ss << "Resources/Adventure/SaveData/" << saveFile->name << "/" << saveFile->adventureFile->GetMap(level->index).name << "_" << myHash << "_best" << REPLAY_EXT;//<< w+1 << "_" << s+1 << "_" << m+1 << "_best" << REPLAY_EXT;
+		ss << saveFile->replayFolderName << saveFile->adventureFile->GetMap(level->index).name << "_" << myHash << "_best" << REPLAY_EXT;//<< w+1 << "_" << s+1 << "_" << m+1 << "_best" << REPLAY_EXT;
 		return ss.str();
 	}
 	else

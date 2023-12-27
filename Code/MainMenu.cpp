@@ -1,3 +1,4 @@
+#include <ShlObj.h>
 #include "MainMenu.h"
 #include <boost/filesystem.hpp>
 #include "EditSession.h"
@@ -663,6 +664,66 @@ MainMenu::MainMenu( bool p_steamOn)
 	assert(currInstance == NULL);
 	currInstance = this;
 
+	//set up appdata directories
+
+	appDataPath = GetAppDataPath();
+	path p(appDataPath);
+
+	bool directorySuccess = true;
+	try
+	{
+		if (boost::filesystem::exists(p) && boost::filesystem::is_directory(p))
+		{
+			cout << "app data directory already exists" << endl;
+		}
+		else
+		{
+			boost::filesystem::create_directory(p);
+		}
+	}
+	catch (const boost::filesystem::filesystem_error &e)
+	{
+		cout << "failed creating appdata directory" << endl;
+		if (e.code() == boost::system::errc::permission_denied)
+			std::cout << "Search permission is denied for one of the directories "
+			<< "in the path prefix of " << p << "\n";
+		else
+			std::cout << "is_directory(" << p << ") failed with "
+			<< e.code().message() << '\n';
+
+		directorySuccess = false;
+	}
+
+	assert(directorySuccess);
+
+	p.append("SaveData\\");
+
+	try
+	{
+		if (boost::filesystem::exists(p) && boost::filesystem::is_directory(p))
+		{
+			cout << "savedata directory already exists" << endl;
+		}
+		else
+		{
+			boost::filesystem::create_directory(p);
+		}
+	}
+	catch (const boost::filesystem::filesystem_error &e)
+	{
+		cout << "failed creating savedata directory" << endl;
+		if (e.code() == boost::system::errc::permission_denied)
+			std::cout << "Search permission is denied for one of the directories "
+			<< "in the path prefix of " << p << "\n";
+		else
+			std::cout << "is_directory(" << p << ") failed with "
+			<< e.code().message() << '\n';
+
+		directorySuccess = false;
+	}
+
+	assert(directorySuccess);
+
 	steamOn = p_steamOn;
 
 	isCursorModeOn = false;
@@ -730,9 +791,12 @@ MainMenu::MainMenu( bool p_steamOn)
 	transFrame = 0;
 
 	config = new Config();
-	//Config::CreateLoadThread(config);
-	//config->WaitForLoad();
-	config->Load();
+	if (!config->Load())
+	{
+		config->SetToDefault();
+		config->Save();
+	}
+	
 	//config->Load();
 	//config->WaitForLoad();
 	windowWidth = config->GetData().resolutionX;
@@ -1221,6 +1285,8 @@ MainMenu *MainMenu::GetInstance()
 
 void MainMenu::Init()
 {	
+	//done setting up appdata directories
+
 	ts_buttonIcons = GetSizedTileset("Menu/button_icon_128x128.png");
 
 	ts_splashScreen = GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
@@ -5059,4 +5125,21 @@ void MainMenu::copyDirectoryRecursively(const fs::path& sourceDir, const fs::pat
 		boost::replace_first(relativePathStr, sourceDir.string(), "");
 		fs::copy(path, destinationDir / relativePathStr);
 	}
+}
+
+std::string MainMenu::GetAppDataPath()
+{
+	wchar_t* localAppData = 0;
+	SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &localAppData);
+	wstringstream ss;
+	ss << localAppData;// << L"/Google/Chrome/Application/chrome.exe";
+
+	CoTaskMemFree(static_cast<void*>(localAppData));
+
+	wstring ws = ss.str();
+	std::string str(ws.begin(), ws.end());
+
+	str += "\\Kinetic\\";
+
+	return str;
 }

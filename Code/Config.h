@@ -24,13 +24,14 @@ struct ConfigData
 struct Config
 {
 	Config();
-	void Load();
+	bool Load();
 	void Save();
 	const ConfigData &GetData();
 	void SetData(ConfigData &data);
 	void SetToDefault();
 private:
 	ConfigData data;
+	std::string path;
 };
 
 #endif

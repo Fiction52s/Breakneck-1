@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include "Input.h"
+#include "MainMenu.h"
 
 
 using namespace std;
@@ -20,8 +21,8 @@ void ConfigData::SetToDefault()
 	resolutionX = 1920;
 	resolutionY = 1080;
 	windowStyle = sf::Style::Fullscreen;
-	musicVolume = 100;
-	soundVolume = 100;
+	musicVolume = 40;
+	soundVolume = 50;
 	parallelPlayOn = true;
 	showRunningTimer = false;
 	showFPS = false;
@@ -29,6 +30,7 @@ void ConfigData::SetToDefault()
 
 Config::Config()
 {
+	path = MainMenu::GetInstance()->appDataPath + "config.txt";
 	SetToDefault();
 }
 
@@ -37,10 +39,11 @@ void Config::SetToDefault()
 	data.SetToDefault();
 }
 
-void Config::Load()
+bool Config::Load()
 {
 	ifstream is;
-	is.open( "Resources/config.txt" );
+
+	is.open( path );
 	if( is.is_open() )
 	{
 		std::string settingName;
@@ -112,8 +115,15 @@ void Config::Load()
 				break;
 			}
 		}
+
+		is.close();
+
+		return true;
 	}
-	is.close();
+	else
+	{
+		return false;
+	}
 }
 
 std::string ConfigData::GetWindowModeString( int mode )
@@ -146,7 +156,8 @@ void Config::Save()
 {
 	cout << "config::save\n";
 	ofstream of;
-	of.open("Resources/config.txt");
+	//of.open("Resources/config.txt");
+	of.open(path);
 	if (of.is_open())
 	{
 		of << "ResolutionX " << data.resolutionX << "\n";
