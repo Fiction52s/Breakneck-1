@@ -496,7 +496,7 @@ bool HungryComboer::CanComboHit(Enemy *e)
 
 void HungryComboer::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	data.waitFrame = 0;
 }
 

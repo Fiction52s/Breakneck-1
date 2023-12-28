@@ -227,7 +227,7 @@ void SwordProjectile::FrameIncrement()
 
 void SwordProjectile::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	++data.currHits;
 	if (data.currHits >= hitLimit)
 	{

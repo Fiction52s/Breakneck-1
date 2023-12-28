@@ -471,7 +471,7 @@ void WireBall::FrameIncrement()
 
 void WireBall::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	data.waitFrame = 0;
 	++data.currHits;
 	if (hitLimit > 0 && data.currHits >= hitLimit)

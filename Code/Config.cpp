@@ -30,6 +30,7 @@ void ConfigData::SetToDefault()
 
 Config::Config()
 {
+	ver = 1;
 	path = MainMenu::GetInstance()->appDataPath + "config.txt";
 	SetToDefault();
 }
@@ -46,6 +47,18 @@ bool Config::Load()
 	is.open( path );
 	if( is.is_open() )
 	{
+		int v;
+		is >> v;
+
+		if (v < ver)
+		{
+			cout << "config file is out of date. updating" << endl;
+			is.close();
+			SetToDefault();
+			Save();
+			return Load();
+		}
+
 		std::string settingName;
 		while( true )
 		{
@@ -160,6 +173,8 @@ void Config::Save()
 	of.open(path);
 	if (of.is_open())
 	{
+		of << ver << "\n";
+
 		of << "ResolutionX " << data.resolutionX << "\n";
 		of << "ResolutionY " << data.resolutionY << "\n";
 		of << "WindowMode " << data.GetWindowModeString(data.windowStyle) << "\n";

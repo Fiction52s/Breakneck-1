@@ -453,7 +453,7 @@ void GrindJuggler::ComboKill(Enemy *e)
 
 void GrindJuggler::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	++data.currHits;
 	//data.moveFrame = 0;
 	if (hitLimit > 0 && data.currHits >= hitLimit)

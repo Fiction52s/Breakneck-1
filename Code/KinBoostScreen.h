@@ -53,6 +53,7 @@ struct KinBoostScreen : TransferLoadingScreen
 	float lightAccel[2];
 	PlayerSkinShader skinShader;
 	
+	
 	KinBoostScreen();
 	bool IsEnded();
 	void Draw(sf::RenderTarget *target);
@@ -61,7 +62,6 @@ struct KinBoostScreen : TransferLoadingScreen
 	void Update();
 	void End();
 	void DrawLateKin(sf::RenderTarget *target);
-	
 };
 
 #endif

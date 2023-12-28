@@ -2831,6 +2831,9 @@ void Session::RunFrameForParallelPractice()
 {
 	if (!IsParallelSession() && gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 	{
+		ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+		ppm->UpdateLobbyHUD();
+
 		ParallelMode *pm = (ParallelMode*)gameMode;
 		//ppm->ClearUpdateFlags();
 
@@ -2847,21 +2850,21 @@ void Session::RunFrameForParallelPractice()
 					prac.stateChangeMap.clear();
 					//prac.hasSequenceConfirmReady = false;
 
+					pm->parallelGames[i]->currLogField.Set(prac.logField);
+					pm->parallelGames[i]->currUpgradeField.Set(prac.upgradeField);
+					pm->parallelGames[i]->originalProgressionModeOn = prac.origProgression;
+
 					if (prac.syncStateBufSize > 0)
 					{
-						//fresh player
-						pm->parallelGames[i]->currLogField.Set(prac.logField);
-						pm->parallelGames[i]->currUpgradeField.Set(prac.upgradeField);
-						pm->parallelGames[i]->originalProgressionModeOn = prac.origProgression;
-
+						//fresh player mid-game
 						pm->parallelGames[i]->RestartLevel();
 						pm->parallelGames[i]->LoadState(prac.syncStateBuf, prac.syncStateBufSize);
-						
 
 						prac.ClearSyncStateBuf();
 					}
 					else
 					{
+						//fresh player at beginning of level
 						pm->parallelGames[i]->RestartLevel();
 					}
 
@@ -4637,6 +4640,13 @@ void Session::DrawHUD(sf::RenderTarget *target)
 		sf::View oldView = target->getView();
 		target->setView(uiView);
 		hud->Draw(target);
+
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
+		{
+			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+			ppm->DrawLobbyHUD(target);
+		}
+
 		target->setView(oldView);
 	}
 }
@@ -6643,6 +6653,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	DrawPracticeSessions(target, view );
 
 	DrawHUD(target);
+
+	
 
 	//DrawBossHUD(target);
 
@@ -10007,7 +10019,7 @@ void Session::SendPracticeStartMessageToAllNewPeers()
 	//sends the start to message to any new peers that join
 	PracticeStartMsg psm;
 	psm.skinIndex = GetPlayerNormalSkin(0);
-	psm.SetUpgradeField(currUpgradeField);//GetPlayer(0)->bStartHasUpgradeField);
+	psm.SetUpgradeField(currUpgradeField);//GetPlayer(0)->bStartHasUpgradeField);	
 	psm.SetLogField(currLogField);
 	psm.startFrame = totalGameFrames;
 	psm.wantsToPlay = netplayManager->wantsToPracticeRace;

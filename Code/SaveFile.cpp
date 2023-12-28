@@ -710,7 +710,17 @@ bool GlobalSaveFile::Load()
 
 	if (is.is_open())
 	{
-		is >> ver;
+		int v;
+		is >> v;
+
+		if (v < ver)
+		{
+			cout << "global save file is out of date. updating" << endl;
+			is.close();
+			SetToDefaults();
+			Save();
+			return Load();
+		}
 
 		skinField.Load(is);
 

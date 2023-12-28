@@ -107,11 +107,11 @@ void Shield::ConfirmKill()
 	if (!receivedHit.comboer)
 	{
 		//parent->sess->Pause(7);
-		data.pauseFrames = 7;
+		data.pauseFrames = 6;
 	}
 	else
 	{
-		data.pauseFrames = 7;
+		data.pauseFrames = 6;
 		//cout << "set pause frames 7" << endl;
 	}
 

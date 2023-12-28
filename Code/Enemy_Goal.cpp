@@ -65,7 +65,7 @@ Goal::Goal( ActorParams *ap )
 	miniSprite.setTexture(*ts_mini->texture);
 	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
 
-	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
+	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height / 2);
 	miniSprite.setPosition(currPosInfo.GetPositionF());
 	miniSprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	miniSprite.setScale(16, 16);

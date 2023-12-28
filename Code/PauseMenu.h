@@ -90,6 +90,7 @@ struct OptionsMenu
 struct GameSession;
 struct KinMenu;
 struct PauseMap;
+struct MapHeader;
 
 struct PauseMenu
 {
@@ -157,6 +158,10 @@ struct PauseMenu
 		ControllerState &currInput,
 		ControllerState &prevInput );
 	Tileset *ts_background;
+
+	void SetupMapBorderQuads(
+		bool *p_blackBorderOn, bool p_topBorderOn,
+		MapHeader *mapHeader);
 	
 
 	PaletteShader *bgPaletteShader;

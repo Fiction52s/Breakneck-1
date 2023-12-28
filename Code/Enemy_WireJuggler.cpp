@@ -440,7 +440,7 @@ void WireJuggler::FrameIncrement()
 
 void WireJuggler::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	++data.currHits;
 	/*if (hitLimit > 0 && data.currHits >= hitLimit)
 	{

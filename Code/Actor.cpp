@@ -1399,7 +1399,7 @@ void Actor::SetupExtraTilesets()
 
 	TilesetManager *tm = MainMenu::GetInstance();//sess->mainMenu;
 
-	Tileset *ts_mapIcon = tm->GetTileset("HUD/Minimap/minimap_icons_64x64.png", 64, 64);
+	ts_mapIcon = tm->GetSizedTileset("HUD/Minimap/minimap_kin_64x64.png");
 	ts_mapIcon->SetSpriteTexture(mapIconSpr);
 	ts_mapIcon->SetSubRect(mapIconSpr, 0);
 	//mapIconSpr.setScale(2, 2);
@@ -3398,7 +3398,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	exitAuraShader(PlayerSkinShader::ST_BOOST)
 	//originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
 	//originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
-	{
+{
 	shallowInit = false;
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
@@ -3441,6 +3441,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_180x30.png");
 	fxPaletteShader->SetPaletteIndex(0);
+
+	mapIconShader.SetSubRect(ts_mapIcon, ts_mapIcon->GetSubRect(0));
 
 	birdCommands.resize(3);
 	for (int i = 0; i < 3; ++i)
@@ -7522,6 +7524,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
+					//sess->cam.Ease(Vector2f(sess->goalNodePosFinal + V2d( 0, -500 )), 1, 60, CubicBezier());
 					SetAction(EXIT);
 					sess->Fade(false, 30, Color::Black, true);
 				}
@@ -21067,7 +21070,7 @@ void Actor::MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawNameTag,
 		mapIconSpr.setPosition(trueIconPos);
 		mapIconSpr.setScale(scale, scale);
 
-		target->draw(mapIconSpr);
+		target->draw(mapIconSpr, &mapIconShader.pShader);
 	}
 
 	if (drawNameTag && nameTag->IsActive())
@@ -25028,6 +25031,7 @@ void Actor::UpdateInHitlag()
 
 	 skinShader.SetSkin(currSkinIndex);
 	 fxPaletteShader->SetPaletteIndex(currSkinIndex);
+	 mapIconShader.SetSkin(currSkinIndex);
  }
 
  

@@ -19,6 +19,10 @@ PauseMap::PauseMap(TilesetManager *p_tm)
 	game = NULL;
 	
 
+	cameraRect.setFillColor(Color::Transparent);
+	cameraRect.setOutlineColor(Color( 0, 255, 0, 100 ));
+	cameraRect.setOutlineThickness(-5);
+
 	MainMenu *mm = MainMenu::GetInstance();
 
 	mapTex = mm->mapTexture;
@@ -134,9 +138,13 @@ void PauseMap::Update(ControllerState &currInput,
 }
 
 void PauseMap::SetupBorderQuads(
-	bool *blackBorder, bool topBorderOn,
+	bool *p_blackBorderOn, bool p_topBorderOn,
 	MapHeader *mapHeader)
 {
+	blackBorderOn[0] = p_blackBorderOn[0];
+	blackBorderOn[1] = p_blackBorderOn[1];
+	topBorderOn = p_topBorderOn;
+
 	int miniQuadWidth = 4000;
 	int inverseTerrainBorder = 4000;
 	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
@@ -172,13 +180,13 @@ void PauseMap::SetupBorderQuads(
 	Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
 	//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
 
-	if (blackBorder[0])
+	if (blackBorderOn[0])
 		SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
 	else
 	{
 		SetRectColor(blackBorderQuadsMini, Color::Transparent);
 	}
-	if (blackBorder[1])
+	if (blackBorderOn[1])
 		SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
 	else
 	{
@@ -199,6 +207,10 @@ void PauseMap::SetupBorderQuads(
 		topBorderQuadMini[2].position.y = mapHeader->topBounds;
 		topBorderQuadMini[3].position.y = mapHeader->topBounds;
 	}
+	else
+	{
+		SetRectColor(topBorderQuadMini, Color::Transparent);
+	}
 }
 
 void PauseMap::DrawToTex()
@@ -206,6 +218,12 @@ void PauseMap::DrawToTex()
 	//Actor *p0 = owner->GetPlayer(0);
 
 	//double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
+
+	cameraRect.setPosition(game->cam.GetPos());
+	float zoom = game->cam.GetZoom();
+	cameraRect.setSize(Vector2f(960 * zoom, 540 * zoom));
+	cameraRect.setOrigin(cameraRect.getLocalBounds().width / 2, cameraRect.getLocalBounds().height / 2);
+
 	V2d pos0 = game->GetPlayerPos(0);
 	View vv;
 	vv.setCenter(mapCenter.x, mapCenter.y);
@@ -240,6 +258,8 @@ void PauseMap::DrawToTex()
 	DrawMapBorders(mapTex);
 
 	DrawGates(minimapRect, mapTex);
+
+	//mapTex->draw(cameraRect);
 
 	game->DrawAllMapWires(mapTex);
 
@@ -360,8 +380,15 @@ void PauseMap::DrawSpecialTerrain(sf::Rect<double> &rect, sf::RenderTarget *targ
 void PauseMap::DrawMapBorders(
 	sf::RenderTarget *target)
 {
-	target->draw(blackBorderQuadsMini, 8, sf::Quads);
-	target->draw(topBorderQuadMini, 4, sf::Quads);
+	if (blackBorderOn[0] || blackBorderOn[1])
+	{
+		target->draw(blackBorderQuadsMini, 8, sf::Quads);
+	}
+
+	if (topBorderOn)
+	{
+		target->draw(topBorderQuadMini, 4, sf::Quads);
+	}
 }
 
 void PauseMap::DrawGates(sf::Rect<double> &rect,

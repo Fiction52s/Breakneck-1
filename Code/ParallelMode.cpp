@@ -4,6 +4,7 @@
 #include "GameSession.h"
 #include "NetplayManager.h"
 #include "ggponet.h"
+#include "ParallelPracticeLobbyHUD.h"
 
 using namespace std;
 using namespace sf;

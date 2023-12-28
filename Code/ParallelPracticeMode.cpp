@@ -7,6 +7,7 @@
 #include "GameSession.h"
 #include "NetplayManager.h"
 #include "PracticeInviteDisplay.h"
+#include "ParallelPracticeLobbyHUD.h"
 
 using namespace std;
 using namespace sf;
@@ -14,9 +15,11 @@ using namespace sf;
 ParallelPracticeMode::ParallelPracticeMode()
 {
 	practiceInviteDisplay = NULL;
+	lobbyHUD = NULL;
 	if (!sess->IsParallelSession())
 	{
 		practiceInviteDisplay = new PracticeInviteDisplay;
+		lobbyHUD = new ParallelPracticeLobbyHUD;
 	}
 }
 
@@ -24,6 +27,9 @@ ParallelPracticeMode::~ParallelPracticeMode()
 {
 	if(practiceInviteDisplay != NULL )
 		delete practiceInviteDisplay;
+
+	if (lobbyHUD != NULL)
+		delete lobbyHUD;
 }
 
 void ParallelPracticeMode::Setup()
@@ -90,6 +96,16 @@ void ParallelPracticeMode::SetInviteDisplayPrepareToLeave()
 void ParallelPracticeMode::DrawInviteDisplay(sf::RenderTarget *target)
 {
 	practiceInviteDisplay->Draw(target);
+}
+
+void ParallelPracticeMode::UpdateLobbyHUD()
+{
+	lobbyHUD->Update();
+}
+
+void ParallelPracticeMode::DrawLobbyHUD(sf::RenderTarget *target)
+{
+	lobbyHUD->Draw(target);
 }
 
 bool ParallelPracticeMode::IsInviteDisplayReadyToRun()

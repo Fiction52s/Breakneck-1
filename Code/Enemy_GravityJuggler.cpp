@@ -477,7 +477,7 @@ bool GravityJuggler::CanComboHit(Enemy *e)
 
 void GravityJuggler::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	++data.currHits;
 	if (data.hitLimit > 0 && data.currHits >= data.hitLimit)
 	{

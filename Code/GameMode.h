@@ -16,6 +16,7 @@ struct FightEndSequence;
 struct GameSession;
 struct GGPOSession;
 struct PracticeInviteDisplay;
+struct ParallelPracticeLobbyHUD;
 
 struct GameMode
 {
@@ -92,6 +93,7 @@ struct ParallelPracticeMode : ParallelMode
 	//bool updatePracticeSessions[MAX_PARALLEL_SESSIONS];
 
 	PracticeInviteDisplay *practiceInviteDisplay;
+	ParallelPracticeLobbyHUD *lobbyHUD; //for the corner display
 
 	ParallelPracticeMode();
 	~ParallelPracticeMode();
@@ -106,6 +108,8 @@ struct ParallelPracticeMode : ParallelMode
 	bool IsInviteDisplayReadyToRun();
 	bool UpdateInviteDisplay( const ControllerState & curr, const ControllerState &prev );
 	void DrawInviteDisplay(sf::RenderTarget *target);
+	void UpdateLobbyHUD();
+	void DrawLobbyHUD(sf::RenderTarget *target);
 	
 
 	//bool ClearUpdateFlags();

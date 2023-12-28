@@ -1733,11 +1733,11 @@ void Enemy::ConfirmHitNoKill()
 	HitboxInfo::HitboxType hType = receivedHit.hType;
 	if (receivedHit.comboer)
 	{
-		pauseFrames = 5;
+		pauseFrames = 6;
 	}
 	else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
 	{
-		pauseFrames = 5;
+		pauseFrames = 6;
 	}
 	else
 	{

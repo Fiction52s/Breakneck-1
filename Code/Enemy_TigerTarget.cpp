@@ -436,7 +436,7 @@ void TigerTarget::ProcessHit()
 
 void TigerTarget::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	//++currHits;
 	//if (currHits >= hitLimit)
 	{

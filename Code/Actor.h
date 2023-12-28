@@ -912,6 +912,10 @@ struct Actor : QuadTreeCollider,
 	PlayerSkinShader skinShader;
 	PlayerSkinShader exitAuraShader;
 
+	Tileset *ts_mapIcon;
+	PlayerSkinShader mapIconShader;
+
+	
 	PlayerSkinSwordShader swordShader;
 	int swordState;
 

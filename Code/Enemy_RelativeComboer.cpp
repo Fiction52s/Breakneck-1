@@ -402,8 +402,8 @@ void RelativeComboer::ComboKill(Enemy *e)
 
 void RelativeComboer::ComboHit()
 {
-	//pauseFrames = 5;
-	data.specialPauseFrames = 5;
+	//pauseFrames = 6;
+	data.specialPauseFrames = 6;
 	++data.currHits;
 	data.velocity = V2d(0, 0);
 	if (hitLimit > 0 && data.currHits >= hitLimit)

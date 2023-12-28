@@ -13,6 +13,7 @@ struct PauseMap
 {
 	TilesetManager *tm;
 
+	sf::RectangleShape cameraRect;
 	sf::Shader mapShader;
 	sf::Sprite mapSprite;
 	sf::Sprite kinMapIcon;
@@ -25,6 +26,10 @@ struct PauseMap
 	sf::Vertex blackBorderQuadsMini[4 * 2];
 	sf::Vertex topBorderQuadMini[4];
 	static sf::Color terrainColor;
+
+	bool blackBorderOn[2];
+	bool topBorderOn;
+
 
 	sf::Vector2f mapCenter;
 	float mapZoomFactor;

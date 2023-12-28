@@ -862,3 +862,11 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 	return R_NONE;
 }
+
+
+void PauseMenu::SetupMapBorderQuads(
+	bool *p_blackBorderOn, bool p_topBorderOn,
+	MapHeader *mapHeader)
+{
+	pauseMap->SetupBorderQuads(p_blackBorderOn, p_topBorderOn, mapHeader);
+}

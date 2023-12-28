@@ -2050,7 +2050,10 @@ bool GameSession::Load()
 		kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
 			kinMapSpawnIcon.getLocalBounds().height / 2);
 	}
-	
+	if (pauseMenu != NULL)
+	{
+		pauseMenu->SetupMapBorderQuads(blackBorder, topBorderOn, mapHeader);
+	}
 
 
 	

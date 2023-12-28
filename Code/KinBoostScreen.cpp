@@ -28,6 +28,8 @@ KinBoostScreen::KinBoostScreen()
 	ts_kinAura = GetSizedTileset("Kin/FX/exitaura_256x256.png");
 	ts_enterFX = GetSizedTileset("Kin/FX/enter_fx_320x320.png");
 
+	ts_mapPreview = NULL;
+
 	ts_enterFX->SetSpriteTexture(enterFXSpr);
 
 	kinSpr.setTexture(*ts_kinBoost->texture);
@@ -135,6 +137,8 @@ void KinBoostScreen::Reset()
 	{
 		lightFac[i] = 0;
 	}
+
+	//DestroyMapPreview();
 
 	starSpeed[0] = 1.f / 10000.f;
 	starSpeed[1] = 1.f / 10000.f;
@@ -354,6 +358,8 @@ void KinBoostScreen::Draw(RenderTarget *target)
 		{
 			target->draw(lightSpr[i], &scrollShaderLight[i]);
 		}
+
+		DrawMapPreview(target);
 
 		DrawLevelInfo(target);
 

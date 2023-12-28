@@ -3499,7 +3499,7 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 		sess->StoreBytes(tempBuffer);
 
 
-		cout << "sending start message with total game frames: " << sess->totalGameFrames;
+		/*cout << "sending start message with total game frames: " << sess->totalGameFrames;
 		if (sess->activeSequence != NULL)
 		{
 			cout << "and active sequence has a frame of: " << sess->activeSequence->seqData.frame << "\n";
@@ -3507,8 +3507,7 @@ void NetplayManager::SendPracticeStartMessageToAllNewPeers(PracticeStartMsg &pm)
 		else
 		{
 			cout << "no active sequence when joining" << endl;
-		}
-		
+		}*/
 	}
 
 	for (int i = 0; i < MAX_PRACTICE_PLAYERS; ++i)

@@ -366,7 +366,7 @@ void AttractJuggler::FrameIncrement()
 
 void AttractJuggler::ComboHit()
 {
-	pauseFrames = 5;
+	pauseFrames = 6;
 	++data.currHits;
 	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{

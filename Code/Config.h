@@ -32,6 +32,7 @@ struct Config
 private:
 	ConfigData data;
 	std::string path;
+	int ver;
 };
 
 #endif
