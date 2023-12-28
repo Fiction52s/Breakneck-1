@@ -20,6 +20,7 @@ struct WorldMap;
 struct RecordGhostMenu;
 struct WorldMapShip;
 struct AdventureManager;
+struct ParallelPracticeSettingsMenu;
 
 enum MapNodeState
 {
@@ -271,6 +272,7 @@ struct WorldMap : TilesetManager
 	enum State
 	{
 		PLANET_VISUAL_ONLY,
+		PLANET_PARALLEL_OPTIONS,
 		PLANET,
 		PlANET_TO_COLONY,
 		COLONY,
@@ -282,12 +284,12 @@ struct WorldMap : TilesetManager
 
 	//int totalWorlds;
 
+	ParallelPracticeSettingsMenu *parallelPracticeSettings;
+
 	State state;
 	WorldSelector *worldSelector;
 	MapSelector **selectors;
 	MainMenu *mainMenu;
-
-	
 
 	sf::Shader zoomShader;
 	sf::Shader asteroidShader;

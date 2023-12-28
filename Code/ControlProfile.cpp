@@ -895,6 +895,7 @@ void ControlProfileMenu::UpdateBoxesDebug()
 	}
 }
 
+
 void ControlProfileManager::ClearProfiles()
 {
 	for (int i = 0; i < CTYPE_NONE; ++i)
@@ -907,10 +908,8 @@ void ControlProfileManager::ClearProfiles()
 	}
 }
 
-bool ControlProfileManager::LoadProfiles()
+void ControlProfileManager::AddDefaultProfiles()
 {
-	ClearProfiles();
-
 	ControlProfile *defXBOX = new ControlProfile;
 	defXBOX->name = "Default";
 	defXBOX->editable = false;
@@ -934,8 +933,47 @@ bool ControlProfileManager::LoadProfiles()
 	defKeyboard->SetFilterDefault();
 
 	profiles[CTYPE_KEYBOARD].push_back(defKeyboard);
+}
 
-	is.open( "Resources/controlprofiles.txt" );
+void ControlProfileManager::AddDefaultCustomProfiles()
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		ControlProfile *defXBOX = new ControlProfile;
+		defXBOX->name = "Custom " + to_string( i + 1 );
+		defXBOX->editable = true;
+		defXBOX->SetControllerType(CTYPE_XBOX);
+		defXBOX->SetFilterDefault();
+
+		profiles[CTYPE_XBOX].push_back(defXBOX);
+
+		ControlProfile *defGCC = new ControlProfile;
+		defGCC->name = "Custom " + to_string( i + 1 );
+		defGCC->editable = true;
+		defGCC->SetControllerType(CTYPE_GAMECUBE);
+		defGCC->SetFilterDefault();
+
+		profiles[CTYPE_GAMECUBE].push_back(defGCC);
+
+		ControlProfile *defKeyboard = new ControlProfile;
+		defKeyboard->name = "Custom " + to_string( i + 1 );
+		defKeyboard->editable = true;
+		defKeyboard->SetControllerType(CTYPE_KEYBOARD);
+		defKeyboard->SetFilterDefault();
+
+		profiles[CTYPE_KEYBOARD].push_back(defKeyboard);
+	}
+}
+
+bool ControlProfileManager::LoadProfiles()
+{
+	ClearProfiles();
+
+	MainMenu *mm = MainMenu::GetInstance();
+
+	AddDefaultProfiles();
+
+	is.open( mm->appDataPath + "controlprofiles.txt" );
 
 	if( is.is_open() )
 	{
@@ -1020,6 +1058,8 @@ bool ControlProfileManager::LoadProfiles()
 	}
 	else
 	{
+		AddDefaultCustomProfiles();
+		WriteProfiles();
 	}
 
 	//WriteProfiles(); //debug, will be in other functions
@@ -1576,8 +1616,10 @@ void ControlProfileManager::WriteInputType(ofstream &of, const std::string &inpu
 
 void ControlProfileManager::WriteProfiles()
 {
+	MainMenu *mm = MainMenu::GetInstance();
+
 	ofstream of;
-	of.open( "Resources/controlprofiles.txt" );
+	of.open(mm->appDataPath + "controlprofiles.txt" );
 
 	int editableProfiles;
 

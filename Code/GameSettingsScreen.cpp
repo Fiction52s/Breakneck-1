@@ -113,11 +113,6 @@ void GameSettingsScreen::UpdateFromConfig()
 	showRunningTimerCheckBox->checked = cd.showRunningTimer;
 }
 
-void GameSettingsScreen::ApplyConfig()
-{
-
-}
-
 void GameSettingsScreen::Start()
 {
 	SetAction(A_ACTIVE);

@@ -43,6 +43,8 @@ struct ControlProfileManager
 	static ControllerSettings::ButtonType 
 		GetButtonTypeFromAction( const std::string &str );
 	void WriteProfiles();
+	void AddDefaultProfiles();
+	void AddDefaultCustomProfiles();
 private:
 	std::ifstream is;
 

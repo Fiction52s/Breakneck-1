@@ -53,7 +53,6 @@ struct GameSettingsScreen : TilesetManager, GUIHandler
 	void CancelCallback(Panel *p);
 	void ConfirmCallback(Panel *p);
 	void SetAction(int a);
-	void ApplyConfig();
 	void ButtonCallback(Button *b,
 		const std::string &e);
 

@@ -19,6 +19,9 @@ struct ConfigData
 	bool parallelPlayOn;
 	bool showRunningTimer;
 	bool showFPS;
+	bool parallelPracticeShowKinsOnMinimap;
+	bool parallelPracticeShowKinsOnPauseMap;
+	bool parallelPracticeShowLobby;
 };
 
 struct Config

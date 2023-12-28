@@ -26,6 +26,9 @@ void ConfigData::SetToDefault()
 	parallelPlayOn = true;
 	showRunningTimer = false;
 	showFPS = false;
+	parallelPracticeShowKinsOnMinimap = true;
+	parallelPracticeShowKinsOnPauseMap = true;
+	parallelPracticeShowLobby = true;
 }
 
 Config::Config()
@@ -121,6 +124,24 @@ bool Config::Load()
 				is >> fps;
 				data.showFPS = fps;
 			}
+			else if (settingName == "parallelpracticeshowkinsonminimap")
+			{
+				int minimap;
+				is >> minimap;
+				data.parallelPracticeShowKinsOnMinimap = minimap;
+			}
+			else if (settingName == "parallelpracticeshowkinsonpausemap")
+			{
+				int pausemap;
+				is >> pausemap;
+				data.parallelPracticeShowKinsOnPauseMap = pausemap;
+			}
+			else if (settingName == "parallelpracticeshowlobby")
+			{
+				int lobby;
+				is >> lobby;
+				data.parallelPracticeShowLobby = lobby;
+			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -183,6 +204,9 @@ void Config::Save()
 		of << "ParalelPlayOn " << (int)data.parallelPlayOn << "\n";
 		of << "ShowRunningTimer " << (int)data.showRunningTimer << "\n";
 		of << "ShowFPS " << (int)data.showFPS << "\n";
+		of << "ParallelPracticeShowKinsOnMinimap" << (int)data.parallelPracticeShowKinsOnMinimap << "\n";
+		of << "ParallelPracticeShowKinsOnPauseMap" << (int)data.parallelPracticeShowKinsOnPauseMap << "\n";
+		of << "ParallelPracticeShowLobby" << (int)data.parallelPracticeShowLobby << "\n";
 		of.close();
 	}
 	else

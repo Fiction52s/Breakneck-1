@@ -18,6 +18,7 @@
 #include "NetplayManager.h"
 #include "Leaderboard.h"
 #include "Config.h"
+#include "ParallelPracticeSettingsMenu.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -32,10 +33,12 @@ WorldMap::WorldMap()
 	if (mainMenu->steamOn)
 	{
 		adventureManager->parallelPracticeMode = mainMenu->config->GetData().parallelPlayOn;
+		parallelPracticeSettings = new ParallelPracticeSettingsMenu(mainMenu);
 	}
 	else
 	{
 		adventureManager->parallelPracticeMode = false;
+		parallelPracticeSettings = NULL;
 	}
 	
 	allUnlocked = true;
@@ -224,6 +227,11 @@ WorldMap::WorldMap()
 
 WorldMap::~WorldMap()
 {
+	if (parallelPracticeSettings != NULL)
+	{
+		delete parallelPracticeSettings;
+	}
+
 	delete worldSelector;
 	for (int i = 0; i < adventureManager->adventurePlanet->numWorlds; ++i)
 	{
@@ -660,6 +668,19 @@ void WorldMap::Update()
 			}
 			
 		}
+		else if (controllerInput->ButtonPressed_Y())
+		{
+			//if (MainMenu::GetInstance()->steamOn)
+			if( parallelPracticeSettings != NULL )
+			{
+				state = PLANET_PARALLEL_OPTIONS;
+				frame = 0;
+				parallelPracticeSettings->Start();
+				MOUSE.SetPosition(Vector2i(960, 540));
+				MOUSE.Show();
+				MOUSE.SetControllersOn(true);
+			}
+		}
 
 		if (!MainMenu::GetInstance()->steamOn)
 		{
@@ -925,6 +946,21 @@ void WorldMap::Update()
 		}
 		break;
 	}
+	case PLANET_PARALLEL_OPTIONS:
+	{
+		parallelPracticeSettings->Update();
+
+		if (parallelPracticeSettings->action == ParallelPracticeSettingsMenu::A_CANCEL)
+		{
+			state = PLANET;
+			frame = 0;
+
+			MOUSE.Hide();
+			MOUSE.SetControllersOn(false);
+		}
+		
+		break;
+	}
 		
 	}
 
@@ -974,6 +1010,11 @@ void WorldMap::Update()
 			zoomView.setSize(Vector2f(1920, 1080) * currScale);
 			zoomView.setCenter(960, 540);
 		}*/
+		break;
+	}
+	case PLANET_PARALLEL_OPTIONS:
+	{
+		
 		break;
 	}
 	}
@@ -1129,7 +1170,7 @@ void WorldMap::Draw( RenderTarget *target )
 
 	DrawAsteroids(rt, false);
 
-	if (state == PLANET || state == PLANET_VISUAL_ONLY )
+	if (state == PLANET || state == PLANET_VISUAL_ONLY || state == PLANET_PARALLEL_OPTIONS)
 	{
 		if (MainMenu::GetInstance()->steamOn)
 		{
@@ -1172,6 +1213,11 @@ void WorldMap::Draw( RenderTarget *target )
 	else
 	{
 		target->draw(extraPassSpr);
+	}
+
+	if (state == PLANET_PARALLEL_OPTIONS)
+	{
+		parallelPracticeSettings->Draw(target);
 	}
 }
 

@@ -35,6 +35,11 @@ void ParallelPracticeLobbyHUD::Update()
 	}
 	*/
 
+	for (int i = 0; i < 4; ++i)
+	{
+		memberNameText[i].setString("");
+	}
+
 	int index = 0;
 	auto &memberList = sess->netplayManager->lobbyManager->currentLobby.memberList;
 	for (auto it = memberList.begin(); it != memberList.end(); ++it)
