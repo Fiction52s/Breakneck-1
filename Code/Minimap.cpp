@@ -182,7 +182,7 @@ void Minimap::DrawToTex()
 
 	sess->DrawPlayersMini(minimapTex);
 
-	sess->DrawPlayersToMap(minimapTex, false, false, 1.f);
+	sess->DrawPlayersToMap(minimapTex, false, false, true, 1.f);
 
 	sf::View iconView;
 	iconView.setCenter(0, 0);

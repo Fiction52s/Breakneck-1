@@ -73,6 +73,7 @@
 #include "Minimap.h"
 #include "HitboxManager.h"
 #include "RandomPicker.h"
+#include "QuickplaySearchScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -861,6 +862,8 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	customMatchManager = new CustomMatchManager;
 
+	quickplaySearchScreen = new QuickplaySearchScreen;
+
 	workshopManager = new WorkshopManager; //needs to be made before any mapbrowsers
 
 	if (musicManager->songMap.empty())
@@ -1218,6 +1221,11 @@ MainMenu::~MainMenu()
 		delete customMatchManager;
 	}
 
+	if (quickplaySearchScreen != NULL)
+	{
+		delete quickplaySearchScreen;
+	}
+
 	if (workshopManager != NULL)
 	{
 		delete workshopManager;
@@ -1397,6 +1405,12 @@ void MainMenu::SetMode(Mode m)
 		//customCursor-
 	}
 
+	if (menuMode == QUICKPLAY_SEARCH)
+	{
+		quickplaySearchScreen->Reset();
+	}
+
+
 	if (menuMode == ONLINE_MENU)
 	{
 		MOUSE.Show();
@@ -1455,7 +1469,7 @@ void MainMenu::SetMode(Mode m)
 		adventureManager->worldMap->state = WorldMap::PLANET_VISUAL_ONLY;
 		adventureManager->worldMap->frame = 0;
 	}
-	if (menuMode == QUICKPLAY_TEST)
+	if (menuMode == QUICKPLAY_SEARCH)
 	{
 		MOUSE.Hide();
 	}
@@ -2680,6 +2694,44 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	case PRACTICE_CONNECT_TO_CUSTOM:
+	{
+		//same as old quickplay_search
+		while (window->pollEvent(ev))
+		{
+			switch (ev.type)
+			{
+			case sf::Event::KeyPressed:
+			{
+				//needs cleanup
+				if (ev.key.code == Keyboard::Escape)
+				{
+					MOUSE.Show();
+					netplayManager->Abort();
+					//quit = true;
+				}
+			}
+			}
+		}
+
+		loadingBackpack->Update();
+
+		netplayManager->Update();
+
+		if (netplayManager->action == NetplayManager::A_WAITING_FOR_START_MESSAGE
+			|| netplayManager->action == NetplayManager::A_READY_TO_RUN)
+		{
+
+			SetMode(QUICKPLAY_PRE_MATCH);
+			customMatchManager->StartQuickplayPreMatchScreen();
+
+			//SetMode(QUICKPLAY_PLAY);
+
+			//turned this off recently
+			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+		}
+		break;
+	}
 	case LOADINGMENUSTART:
 	{
 		//havent tested but should be necessary here
@@ -3521,7 +3573,7 @@ void MainMenu::HandleMenuMode()
 		case OnlineMenuScreen::A_QUICKPLAY:
 			netplayManager->FindQuickplayMatch();
 			MOUSE.Hide();
-			SetMode(QUICKPLAY_TEST);
+			SetMode(QUICKPLAY_SEARCH);
 			break;
 		case OnlineMenuScreen::A_CREATE_LOBBY:
 			customMatchManager->CreateCustomLobby();
@@ -3567,7 +3619,7 @@ void MainMenu::HandleMenuMode()
 			break;
 		case EditorMenuScreen::A_OPEN_MAP:
 			//netplayManager->FindQuickplayMatch();
-			//SetMode(QUICKPLAY_TEST);
+			//SetMode(QUICKPLAY_SEARCH);
 			RunEditor(TITLEMENU, editorMenuScreen->mapBrowserScreen->browserHandler->confirmedMapFilePath);
 			break;
 		case EditorMenuScreen::A_CANCELLED:
@@ -3606,7 +3658,7 @@ void MainMenu::HandleMenuMode()
 
 		if (customMatchManager->action == CustomMatchManager::A_READY)
 		{
-			SetMode(QUICKPLAY_TEST);
+			SetMode(QUICKPLAY_SEARCH);
 		}
 
 		break;
@@ -3626,7 +3678,7 @@ void MainMenu::HandleMenuMode()
 
 		if (customMatchManager->action == CustomMatchManager::A_READY)
 		{
-			SetMode(QUICKPLAY_TEST);
+			SetMode(QUICKPLAY_SEARCH);
 		}
 		break;
 	}
@@ -3646,7 +3698,8 @@ void MainMenu::HandleMenuMode()
 
 		if (customMatchManager->action == CustomMatchManager::A_READY)
 		{
-			SetMode(QUICKPLAY_TEST);
+			SetMode(PRACTICE_CONNECT_TO_CUSTOM);
+			//SetMode(QUICKPLAY_SEARCH); //this should be different later
 		}
 
 		break;
@@ -3799,33 +3852,51 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
-	case QUICKPLAY_TEST:
+	case QUICKPLAY_SEARCH:
 	{
 		while (window->pollEvent(ev))
 		{
-			switch (ev.type)
-			{
-			case sf::Event::KeyPressed:
-			{
-				//needs cleanup
-				if (ev.key.code == Keyboard::Escape)
-				{
-					MOUSE.Show();
-					netplayManager->Abort();
-					//quit = true;
-				}
-			}
-			}
+			//switch (ev.type)
+			//{
+			//case sf::Event::KeyPressed:
+			//{
+			//	//needs cleanup
+			//	if (ev.key.code == Keyboard::Escape)
+			//	{
+			//		MOUSE.Show();
+			//		netplayManager->Abort();
+			//		//quit = true;
+			//	}
+			//}
+			//}
 		}
 
-		loadingBackpack->Update();
+		quickplaySearchScreen->Update();
+
+		//if (!customMatchManager->Update())
+		//{
+		//	//update this soon
+		//	SetMode(ONLINE_MENU);
+		//	break;
+		//}
+
+		if (quickplaySearchScreen->IsCanceled())
+		{
+			MOUSE.Show();
+			netplayManager->Abort();
+			SetMode(ONLINE_MENU);
+			break;
+			//quit = true;
+		}
+
+		//loadingBackpack->Update();
 
 		netplayManager->Update();
 
 		if (netplayManager->action == NetplayManager::A_WAITING_FOR_START_MESSAGE
 			|| netplayManager->action == NetplayManager::A_READY_TO_RUN)
 		{
-
+			
 			SetMode(QUICKPLAY_PRE_MATCH);
 			customMatchManager->StartQuickplayPreMatchScreen();
 
@@ -4078,7 +4149,7 @@ void MainMenu::HandleMenuMode()
 
 			SetMode(QUICKPLAY_PLAY);
 			//QUICKPLAY_PLAY
-			//SetMode(QUICKPLAY_TEST);
+			//SetMode(QUICKPLAY_SEARCH);
 			break;
 		}
 		case CustomMatchManager::A_POST_MATCH_HOST_CHOOSE_MAP:
@@ -4165,7 +4236,7 @@ void MainMenu::HandleMenuMode()
 
 					netplayManager->HostLoadNextQuickplayMap();
 
-					SetMode(QUICKPLAY_TEST);
+					SetMode(QUICKPLAY_SEARCH);
 
 					//customMatchManager->BrowseForNextMap();
 					//SetMode(CUSTOM_MATCH_SETUP);
@@ -4191,7 +4262,7 @@ void MainMenu::HandleMenuMode()
 
 					netplayManager->CheckForMapAndSetMatchParams();
 
-					SetMode(QUICKPLAY_TEST);
+					SetMode(QUICKPLAY_SEARCH);
 
 					netplayManager->LoadMap();
 				}
@@ -4980,10 +5051,16 @@ void MainMenu::DrawMode( Mode m )
 		loadingBackpack->Draw(preScreenTexture);
 		break;
 	}
-	case QUICKPLAY_TEST:
+	case PRACTICE_CONNECT_TO_CUSTOM:
 	{
 		preScreenTexture->setView(v);
 		loadingBackpack->Draw(preScreenTexture);
+		break;
+	}
+	case QUICKPLAY_SEARCH:
+	{
+		preScreenTexture->setView(v);
+		quickplaySearchScreen->Draw(preScreenTexture);
 		break;
 	}
 	case QUICKPLAY_PRE_MATCH:

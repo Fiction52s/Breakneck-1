@@ -8,6 +8,7 @@
 #include "Actor.h"
 #include "EditorTerrain.h"
 
+
 using namespace sf;
 using namespace std;
 
@@ -268,8 +269,9 @@ void PauseMap::DrawToTex()
 	//game->DrawPlayersMini(mapTex);
 
 	bool drawKins = mapZoomFactor < 3.2;
+	game->DrawPlayersToMap(mapTex, drawKins, true, false, 2.f);
 
-	game->DrawPlayersToMap(mapTex, drawKins, true, 2.f );
+	
 	/*if (mapZoomFactor <= 3.2)
 	{
 		game->UpdateNameTagsPixelPos(mapTex);

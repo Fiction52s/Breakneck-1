@@ -53,5 +53,5 @@ int Actor::SKYDIVE_GetActionLength()
 
 const char * Actor::SKYDIVE_GetTilesetName()
 {
-	return "walljump_64x64.png";
+	return "wall_jump_64x64.png";
 }

@@ -124,5 +124,5 @@ int Actor::WALLJUMP_GetActionLength()
 
 const char * Actor::WALLJUMP_GetTilesetName()
 {
-	return "walljump_64x64.png";
+	return "wall_jump_64x64.png";
 }

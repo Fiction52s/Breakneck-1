@@ -1540,6 +1540,7 @@ void Actor::ActionTimeDepFrameInc()
 
 void Actor::SetupTilesets()
 {
+	
 	SetupSwordTilesets();
 	SetupExtraTilesets();
 	SetupActionTilesets();
@@ -3439,7 +3440,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	SetupActionFunctions();
 	SetupTilesets();
 
-	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_180x30.png");
+	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_256x30.png");
 	fxPaletteShader->SetPaletteIndex(0);
 
 	mapIconShader.SetSubRect(ts_mapIcon, ts_mapIcon->GetSubRect(0));

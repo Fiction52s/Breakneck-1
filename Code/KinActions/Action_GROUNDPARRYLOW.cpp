@@ -83,5 +83,5 @@ int Actor::GROUNDPARRYLOW_GetActionLength()
 
 const char * Actor::GROUNDPARRYLOW_GetTilesetName()
 {
-	return "parry_low_64x64.png";
+	return "parry_64x64.png";
 }

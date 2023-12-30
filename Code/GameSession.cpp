@@ -1919,16 +1919,16 @@ bool GameSession::Load()
 
 	myHash = md5file(filePathStr); //need the hash before you set up leaderboards
 
-	if (!IsParallelSession())
+	if (!IsParallelSession() )
 	{
 		if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 		{
-			if (IsParallelSession())
-			{
-				//shardMenu = mainMenu->adventureManager->pauseMenu->shardMenu; //dont need the shard menu but do I need the log menu?
-				logMenu = mainMenu->adventureManager->pauseMenu->logMenu;
-			}
-			else
+			//if (IsParallelSession())
+			//{
+			//	//shardMenu = mainMenu->adventureManager->pauseMenu->shardMenu; //dont need the shard menu but do I need the log menu?
+			//	logMenu = mainMenu->adventureManager->pauseMenu->logMenu;
+			//}
+			//else
 			{
 				mainMenu->adventureManager->SetBoards(this);
 
@@ -1964,9 +1964,20 @@ bool GameSession::Load()
 	}
 	else
 	{
+		if (mainMenu->adventureManager != NULL)
+		{
+			pauseMenu = mainMenu->adventureManager->pauseMenu;
+			logMenu = pauseMenu->logMenu;
+		}
+		else
+		{
+			pauseMenu = new PauseMenu(this);
+			pauseMenu->SetGame(this);
+
+			shardMenu = pauseMenu->shardMenu;
+			logMenu = pauseMenu->logMenu;
+		}
 		//dont set game to this, but I still need to access the log menu
-		pauseMenu = mainMenu->adventureManager->pauseMenu;
-		logMenu = pauseMenu->logMenu;
 	}
 	
 

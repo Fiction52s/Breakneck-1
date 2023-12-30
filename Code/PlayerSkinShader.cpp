@@ -9,7 +9,7 @@ using namespace sf;
 
 PlayerSkinShader::PlayerSkinShader(ShaderType sType)
 {
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_180x30.png");
+	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_256x30.png");
 
 	shaderType = sType;
 	string shaderStr;

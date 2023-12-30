@@ -97,9 +97,9 @@ void ParallelPracticeSettingsMenu::ConfirmCallback(Panel *p)
 	const ConfigData &cd = mainMenu->config->GetData();
 
 	ConfigData d = cd;
-	d.parallelPracticeShowKinsOnMinimap = showKinsOnMinimapCheckBox;
-	d.parallelPracticeShowKinsOnPauseMap = showKinsOnPauseMapCheckBox;
-	d.parallelPracticeShowLobby = showLobbyInCornerCheckBox;
+	d.parallelPracticeShowKinsOnMinimap = showKinsOnMinimapCheckBox->checked;
+	d.parallelPracticeShowKinsOnPauseMap = showKinsOnPauseMapCheckBox->checked;
+	d.parallelPracticeShowLobby = showLobbyInCornerCheckBox->checked;
 
 	mainMenu->config->SetData(d);
 	mainMenu->config->Save();

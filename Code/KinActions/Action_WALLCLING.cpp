@@ -82,5 +82,5 @@ int Actor::WALLCLING_GetActionLength()
 
 const char * Actor::WALLCLING_GetTilesetName()
 {
-	return "wallcling_64x64.png";
+	return "wall_cling_64x64.png";
 }

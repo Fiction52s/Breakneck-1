@@ -418,7 +418,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = false;
+	isSyncTest = true;
 
 	numPlayers = -1;
 
@@ -1108,7 +1108,7 @@ void NetplayManager::Update()
 			LobbyData ld;
 			ld.maxMembers = 2;
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
-			ld.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
+			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
 			ld.lobbyType = LobbyData::LOBBYTYPE_QUICKPLAY;
 			// set the name of the lobby if it's ours
 			string lobbyName = SteamFriends()->GetPersonaName();
@@ -2019,6 +2019,7 @@ std::string NetplayManager::GetNextQuickplayMapName()
 	//r = 0; //just for testing
 	//r = 1;
 
+	r = 0;
 	if (r == 0)
 	{
 		//return "Resources/Maps/W2/afighting6" + string(MAP_EXT);

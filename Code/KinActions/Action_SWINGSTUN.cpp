@@ -102,5 +102,5 @@ int Actor::SWINGSTUN_GetActionLength()
 
 const char * Actor::SWINGSTUN_GetTilesetName()
 {
-	return "swing_kin_64x64.png";
+	return "swing_64x64.png";
 }

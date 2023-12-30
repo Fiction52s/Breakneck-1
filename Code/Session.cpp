@@ -71,6 +71,7 @@
 #include "BasicTextMenu.h"
 #include <assert.h>
 #include "AdventureManager.h"
+#include "Config.h"
 
 //#include "ggpo\backends\backend.h"
 
@@ -4564,25 +4565,27 @@ void Session::DrawPlayersMini(sf::RenderTarget *target)
 	}
 }
 
-void Session::DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags, float scale )
+void Session::DrawPlayersToMap(sf::RenderTarget *target, bool drawKin, bool drawNameTags, bool p_isMinimap, float scale )
 {
-	//just not tested yet, could be right
 	if( gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession() )
 	{
-		ParallelMode *pm = (ParallelMode*)gameMode;
-		//pm->DrawParallelPlayersToMap(target, drawKin, drawNameTags, scale);
-		for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
+		const ConfigData &cd = mainMenu->config->GetData();
+		if ((cd.parallelPracticeShowKinsOnPauseMap && p_isMinimap) || ( cd.parallelPracticeShowKinsOnPauseMap && !p_isMinimap) )
 		{
-			if (pm->parallelGames[i] != NULL)
+			ParallelMode *pm = (ParallelMode*)gameMode;
+			//pm->DrawParallelPlayersToMap(target, drawKin, drawNameTags, scale);
+			for (int i = 0; i < ParallelMode::MAX_PARALLEL_SESSIONS; ++i)
 			{
-				if (netplayManager->practicePlayers[i].isConnectedTo)
+				if (pm->parallelGames[i] != NULL)
 				{
-					pm->parallelGames[i]->DrawPlayersToMap(target, drawKin, drawNameTags, scale);
+					if (netplayManager->practicePlayers[i].isConnectedTo)
+					{
+						pm->parallelGames[i]->DrawPlayersToMap(target, drawKin, drawNameTags, scale);
+					}
 				}
 			}
 		}
 	}
-
 
 
 	Actor *p = NULL;
@@ -4643,8 +4646,11 @@ void Session::DrawHUD(sf::RenderTarget *target)
 
 		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !IsParallelSession())
 		{
-			ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
-			ppm->DrawLobbyHUD(target);
+			if (mainMenu->config->GetData().parallelPracticeShowLobby)
+			{
+				ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
+				ppm->DrawLobbyHUD(target);
+			}
 		}
 
 		target->setView(oldView);
@@ -7220,6 +7226,8 @@ bool Session::OnlineFrozenGameModeUpdate()
 	ActiveSequenceUpdate();
 	if (switchGameState)
 	{
+		/*if( ggpo != NULL )
+			ggpo_advance_frame(ggpo);*/
 		return false;
 	}
 
@@ -7886,8 +7894,8 @@ bool Session::OnlineRunGameModeUpdate()
 
 		//good chance this will be a problem at some point since I moved ggpo_advance_frame out of the normal function for parallel races
 		//cout << "switch game state" << endl;
-		if( ggpo != NULL )
-			ggpo_advance_frame(ggpo);
+		//if( ggpo != NULL )
+		//	ggpo_advance_frame(ggpo);
 		return true;
 	}
 

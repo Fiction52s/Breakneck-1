@@ -55,5 +55,5 @@ int Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength()
 
 const char * Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetTilesetName()
 {
-	return "nexus_enter_384x256.png";
+	return NULL;//"nexus_enter_384x256.png";
 }

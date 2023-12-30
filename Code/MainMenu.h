@@ -71,6 +71,8 @@ struct GameSettingsScreen;
 
 struct RemoteStorageManager;
 
+struct QuickplaySearchScreen;
+
 #define ColorGL( c ) sf::Glsl::Vec4( c )// c.r, c.g, c.b, c.a )
 //#define _WIN32_WINNT 0x0601
 
@@ -152,6 +154,7 @@ struct MainMenu : TilesetManager
 		LOAD_ADVENTURE_MAP,
 		SETUP_PRACTICE_ADVENTURE_MAP,
 		SETUP_PRACTICE_ADVENTURE_MAP_BOOST,
+		PRACTICE_CONNECT_TO_CUSTOM,
 		LOADINGMENUSTART,
 		LOADINGMENULOOP,
 		LOADINGMENUEND,
@@ -181,7 +184,7 @@ struct MainMenu : TilesetManager
 		THANKS_FOR_PLAYING,
 		DOWNLOAD_WORKSHOP_MAP_START,
 		DOWNLOAD_WORKSHOP_MAP_LOOP,
-		QUICKPLAY_TEST,
+		QUICKPLAY_SEARCH,
 		QUICKPLAY_PLAY,
 		CUSTOM_MATCH_SETUP_FROM_PRACTICE,
 		CUSTOM_MATCH_SETUP,
@@ -266,6 +269,7 @@ struct MainMenu : TilesetManager
 		PTS_FX_EXITENERGY_2,
 	};
 
+	QuickplaySearchScreen *quickplaySearchScreen;
 
 	std::string appDataPath;
 	bool isCursorModeOn;

@@ -137,5 +137,5 @@ int Actor::DIAGDOWNATTACK_GetActionLength()
 
 const char * Actor::DIAGDOWNATTACK_GetTilesetName()
 {
-	return "airdash_attack_down_64x64.png";
+	return "airdash_att_down_64x64.png";
 }

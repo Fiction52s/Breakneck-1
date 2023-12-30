@@ -137,5 +137,5 @@ int Actor::DIAGUPATTACK_GetActionLength()
 
 const char * Actor::DIAGUPATTACK_GetTilesetName()
 {
-	return "airdash_attack_up_96x80.png";
+	return "airdash_att_up_96x80.png";
 }

@@ -355,9 +355,10 @@ void PoisonFrog::ProcessState()
 				{
 					//cout << "vel: " << velocity.y << endl;
 					V2d diff = playerPos - GetPosition();
+					double radTest = 400;
 					if (reverse)
 					{
-						if (groundMover->GetVel().y < -3 && length(diff) < 300 && diff.y > 0)
+						if (groundMover->GetVel().y < 3 && length(diff) < radTest && diff.y > 0)
 						{
 							data.hasDoubleJump = false;
 							groundMover->SetVelY(-jumpStrength.y);
@@ -365,10 +366,10 @@ void PoisonFrog::ProcessState()
 					}
 					else
 					{
-						if (groundMover->GetVel().y > 3 && length(diff) < 300 && diff.y < 0)
+						if (groundMover->GetVel().y > -3 && length(diff) < radTest && diff.y < 0)
 						{
 							data.hasDoubleJump = false;
-							groundMover->SetVelY(-jumpStrength.y);
+							groundMover->SetVelY(-jumpStrength.y - 4);
 						}
 					}
 					
