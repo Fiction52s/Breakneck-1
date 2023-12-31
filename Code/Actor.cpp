@@ -3440,7 +3440,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	SetupActionFunctions();
 	SetupTilesets();
 
-	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_256x30.png");
+	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/FX/kin_fx_palette_256x30.png");
 	fxPaletteShader->SetPaletteIndex(0);
 
 	mapIconShader.SetSubRect(ts_mapIcon, ts_mapIcon->GetSubRect(0));
@@ -9908,7 +9908,8 @@ V2d Actor::UpdateReversePhysics()
 				}
 				
 
-				if( approxEquals( m, 0 ) )
+				
+				if (false)
 				{
 					//cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					if( groundSpeed > 0 )
@@ -10099,6 +10100,10 @@ V2d Actor::UpdateReversePhysics()
 					//break;
 				}
 
+				if (approxEquals(m, 0))
+				{
+
+				}
 				else // is this correct?
 				//if( !approxEquals( m, 0 ) )
 				{	
@@ -13875,7 +13880,9 @@ void Actor::UpdatePhysics()
 				if (UpdateAutoRunPhysics(q, m))
 					return;
 
-				if( approxEquals( m, 0 ) )
+				
+
+				if( false )
 				{
 					//if( !simulationMode )
 					//	cout << "shouldn't be hit. movement issue with approxequals(0)" << endl;
@@ -13981,6 +13988,10 @@ void Actor::UpdatePhysics()
 				}
 
 				//only want this to fire if secret doesn't happen
+				if (approxEquals(m, 0))
+				{
+					//break;
+				}
 				else//if( !approxEquals( m, 0 ) )
 				{	
 					bool down = true;

@@ -249,6 +249,8 @@ void PlayerRecorder::StopRecording()
 	numTotalFrames = frame;
 	frame = -1;
 
+	cout << "stopped recording at : " << numTotalFrames << " frames" << endl;
+
 	//ghostHeader.gType = GhostHeader::G_SINGLE_LEVEL_COMPLETE;
 	//ghostHeader.numberOfPlayers = 1;
 }
@@ -381,10 +383,18 @@ void PlayerRecordHeader::SetFields()
 	}
 	else
 	{
+		Session *sess = Session::GetSession();
+		bUpgradeField.Set(sess->currUpgradeField);//sess->GetPlayer(0)->bStartHasUpgradeField);
+		bUpgradesTurnedOnField.Reset();
+
+		bLogField.Set(sess->currLogField);
+	}
+	/*else
+	{
 		bUpgradeField.Reset();
 		bUpgradesTurnedOnField.Reset();
 		bLogField.Reset();
-	}
+	}*/
 }
 
 bool PlayerRecordHeader::IsShardCaptured(int ind)
@@ -572,6 +582,7 @@ void PlayerRecordingManager::RecordReplayFrame( int index )
 
 void PlayerRecordingManager::RecordReplayFrames()
 {
+	cout << "recording replay frame" << endl;
 	for (auto it = recorderVec.begin(); it != recorderVec.end(); ++it)
 	{
 		(*it)->RecordReplayFrame();

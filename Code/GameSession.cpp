@@ -5352,14 +5352,6 @@ void GameSession::UpdateSoundNodeLists()
 	}
 }
 
-void GameSession::RecGhostRecordFrame()
-{
-	if (playerRecordingManager != NULL)
-	{
-		playerRecordingManager->RecordGhostFrames();
-	}
-}
-
 GameSession::DecorDraw::DecorDraw(sf::Vertex *q,
 	int numVerts,
 	Tileset *t)

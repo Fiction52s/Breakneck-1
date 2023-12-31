@@ -7226,8 +7226,6 @@ bool Session::OnlineFrozenGameModeUpdate()
 	ActiveSequenceUpdate();
 	if (switchGameState)
 	{
-		/*if( ggpo != NULL )
-			ggpo_advance_frame(ggpo);*/
 		return false;
 	}
 
@@ -8669,6 +8667,14 @@ void Session::RecPlayerRecordFrame( int index )
 	if (playerRecordingManager != NULL)
 	{
 		playerRecordingManager->RecordReplayFrame(index);
+	}
+}
+
+void Session::RecGhostRecordFrame()
+{
+	if (playerRecordingManager != NULL)
+	{
+		playerRecordingManager->RecordGhostFrames();
 	}
 }
 

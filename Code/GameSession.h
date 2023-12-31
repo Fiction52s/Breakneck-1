@@ -523,7 +523,6 @@ struct GameSession : RayCastHandler, Session
 	bool RunPreUpdate();
 	void UpdateSoundNodeLists();
 
-	void RecGhostRecordFrame();
 	bool RunPostUpdate();
 	bool PopupGameModeUpdate();
 	bool LeaderboardGameModeUpdate();

@@ -591,7 +591,7 @@ bool Sequence::PlayerPressedConfirm()
 
 		return hasConfirm;
 	}
-	else if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	else if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE || sess->gameModeType == MatchParams::GAME_MODE_FIGHT)
 	{
 		return true;
 	}

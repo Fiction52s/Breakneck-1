@@ -897,7 +897,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ActiveStorySequenceUpdate();
 	virtual int TryToActivateBonus() { return 0; }
 	virtual void RecPlayerRecordFrame( int pIndex );
-	virtual void RecGhostRecordFrame() {}
+	void RecGhostRecordFrame();
 	void UpdateReplayGhostSprites();
 	void ClearReplayGhosts();
 	bool RunGameModeUpdate();

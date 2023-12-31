@@ -291,24 +291,70 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 	Actor *pTemp;
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{
-		SetMode(EDIT);
-		/*if (gameCam)
+		if (debugReplayManager != NULL)
 		{
-		SetZoom(2);
-		}*/
+			delete debugReplayManager;
+			debugReplayManager = NULL;
 
-		pTemp = GetPlayer(0);
+			debugReplayManager = new PlayerReplayManager;
 
-		if (pTemp->ground != NULL) //doesn't work with bounce or grind
-		{
-			playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity),
-				pTemp->position);
+			string s = "Resources\\Recordings\\Debug\\editordebugreplay" + string(REPLAY_EXT);
+			bool canOpen = debugReplayManager->LoadFromFile(s);
+			debugReplayManager->ghostsActive = true;
+			debugReplayManager->replaysActive = true;
+			if (!canOpen)
+			{
+				delete debugReplayManager;
+				debugReplayManager = NULL;
+			}
 		}
-		//bounce and grind also later
 
-		playerTracker->SetOn(true);
-		playerTracker->CalcShownCircles();
+		debugReplayPlayerOn = true;
+		TryTestPlayerMode();
+		//SetMode(EDIT);
+		//pTemp = GetPlayer(0);
+
+		//if (pTemp->ground != NULL) //doesn't work with bounce or grind
+		//{
+		//	playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity),
+		//		pTemp->position);
+		//}
+		////bounce and grind also later
+
+		//playerTracker->SetOn(true);
+		//playerTracker->CalcShownCircles();
 		return true;
+	}
+	else if (GetCurrInput(0).back && !GetPrevInput(0).back)
+	{
+		if (playerRecordingManager != NULL)
+		{
+			playerRecordingManager->StopRecording();
+			//ss << saveFile->replayFolderName << saveFile->adventureFile->GetMap(level->index).name << "_" << myHash << "_best" << REPLAY_EXT;
+			string s = "Resources\\Recordings\\Debug\\editordebugreplay" + string(REPLAY_EXT);
+			playerRecordingManager->WriteToFile( s );
+
+			if (debugReplayManager != NULL)
+			{
+				delete debugReplayManager;
+				debugReplayManager = NULL;
+
+				debugReplayManager = new PlayerReplayManager;
+
+				bool canOpen = debugReplayManager->LoadFromFile(s);
+				debugReplayManager->ghostsActive = true;
+				debugReplayManager->replaysActive = true;
+				if (!canOpen)
+				{
+					delete debugReplayManager;
+					debugReplayManager = NULL;
+				}
+			}
+		}
+
+		debugReplayPlayerOn = true;
+		TryTestPlayerMode();
+		//TryTestPlayerMode();
 	}
 
 	return false;
@@ -659,14 +705,14 @@ void EditSession::TestPlayerMode()
 
 	scoreDisplay->Reset();
 
-	if (CONTROLLERS.KeyboardButtonHeld(Keyboard::LAlt))
+	/*if (CONTROLLERS.KeyboardButtonHeld(Keyboard::LAlt))
 	{
 		debugReplayPlayerOn = true;
 	}
 	else
 	{
 		debugReplayPlayerOn = false;
-	}
+	}*/
 
 	turnTimerOnCounter = -1;
 	timerOn = true;
@@ -769,6 +815,16 @@ void EditSession::TestPlayerMode()
 		activePlayerReplayManagers.push_back(debugReplayManager);
 
 		debugReplayManager->AddGhostsToVec(replayGhosts, false);
+	}
+
+	if (playerRecordingManager != NULL)
+	{
+		playerRecordingManager->RestartRecording();
+	}
+	else
+	{
+		playerRecordingManager = new PlayerRecordingManager(1);
+		playerRecordingManager->RestartRecording();
 	}
 
 	if (mode == TEST_PLAYER)
@@ -14048,6 +14104,7 @@ void EditSession::GeneralEventHandler()
 				}
 				else if (ev.key.code == Keyboard::T )
 				{
+					debugReplayPlayerOn = false;
 					TryTestPlayerMode();
 				}
 				else if (ev.key.code == Keyboard::Escape)
@@ -15226,11 +15283,12 @@ void EditSession::CreateTerrainModeUpdate()
 	
 	//UpdateInputNonGame();
 
-	if (GetCurrInput(0).start && !GetPrevInput(0).start)
+	/*if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{
+		debugReplayPlayerOn = true;
 		TryTestPlayerMode();
 		return;
-	}
+	}*/
 
 	bool back = CONTROLLERS.KeyboardButtonHeld(Keyboard::X) || CONTROLLERS.KeyboardButtonHeld(Keyboard::Delete) || UICONTROLLER.IsCancelHeld();
 
@@ -15710,11 +15768,11 @@ void EditSession::EditModeUpdate()
 
 	UpdateInputNonGame();
 
-	if (GetCurrInput(0).start && !GetPrevInput(0).start)
+	/*if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{
 		TryTestPlayerMode();
 		return;
-	}
+	}*/
 
 	if (focusedPanel == NULL)
 	{
