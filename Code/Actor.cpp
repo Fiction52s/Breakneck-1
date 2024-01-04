@@ -9321,7 +9321,8 @@ V2d Actor::UpdateReversePhysics()
 			}
 
 
-			double extra = 0;
+			//double extra = 0;
+			extra = 0;
 			bool leaveGround = false;
 			double q = edgeQuantity;
 
@@ -9711,7 +9712,13 @@ V2d Actor::UpdateReversePhysics()
 
 
 				//wire problem could arise later because i dont update anchors when i hit an edge.
-				if(!approxEquals( m, 0 ) )
+				if (approxEquals(m, 0))
+				{
+					//approxtesting reverse
+					offsetX = -offsetX;
+					break;
+				}
+				else
 				{
 				
 					V2d oldPos = position;
@@ -9863,17 +9870,6 @@ V2d Actor::UpdateReversePhysics()
 
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
-
-
-					
-
-				}
-				else
-				{
-					//cout << "yo" << endl;
-					//offsetX = -offsetX;
-					//break;
-					
 				}
 			}
 			else
@@ -9907,205 +9903,114 @@ V2d Actor::UpdateReversePhysics()
 					q += m;
 				}
 				
-
-				
-				if (false)
+				if( approxEquals(m, 0))
 				{
+					//approxtesting reverse
+
 					//cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
-					if( groundSpeed > 0 )
+					if (groundSpeed > 0)
 					{
-						double yDist = abs( gNormal.x ) * -groundSpeed;
+						Edge *next = ground->edge0;
+
+						if (next == NULL)
+						{
+							//using 1 instead of double grav since grav * 2 is 2, and I feel like that might be too much
+							LeaveGroundTransfer(true, V2d(0, 1));
+							break;
+						}
+						
+						/*double yDist = abs(gNormal.x) * -groundSpeed;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
-						if( next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						if (next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs(e0n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x))
 						{
-							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+							if (e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh)
 							{
-
-								if( e0->IsGateEdge())
+								if (!TryUnlockOnTransfer(e0))
 								{
-									cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY A" << endl;
-									Gate *g = (Gate*)e0->info;
-
-									if( CanUnlockGate( g ) )
-									{
-										UnlockGate( g );
-
-										SetTouchedGate(g);
-
-										offsetX = -offsetX;
-										break;
-									}
-
+									groundSpeed = 0;
 								}
-
-
-								groundSpeed = 0;
-								offsetX = -offsetX;
-								break;
-							}
-							else
-							{
-								//ground = next;
-								//q = length( ground->v1 - ground->v0 );	
-								cout << "possible bug reversed. solved secret??" << endl;
 							}
 						}
-						else if(next != NULL && abs( e0n.x ) >= wallThresh && !e0->IsInvisibleWall())
+						else if (next != NULL && abs(e0n.x) >= wallThresh && !e0->IsInvisibleWall())
 						{
-							if( e0->IsGateEdge())
+							if (!TryUnlockOnTransfer(e0))
 							{
-								Gate *g = (Gate*)e0->info;
-
-								if( CanUnlockGate( g ) )
+								if (bounceFlameOn && abs(groundSpeed) > 1)
 								{
-									UnlockGate( g );
-
-									SetTouchedGate(g);
-
-									offsetX = -offsetX;
-									break;
+									storedBounceGroundSpeed = groundSpeed * slowMultiple;
+									groundedWallBounce = true;
 								}
-
+								groundSpeed = 0;
 							}
-
-							if( bounceFlameOn && abs( groundSpeed ) > 1 )
-							{
-								storedBounceGroundSpeed = groundSpeed * slowMultiple;
-								groundedWallBounce = true;
-							}
-							//cout << "xxxxxx" << endl;
-							groundSpeed = 0;
-							offsetX = -offsetX;
-							break;
 						}
 						else
 						{
 							reversed = false;
-							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+							velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
+							movementVec = normalize(ground->v1 - ground->v0) * extra;
 							leftGround = true;
 
 							ground = NULL;
-						}
+						}*/
 					}
-					else if( groundSpeed < 0 )
+					else if (groundSpeed < 0)
 					{
-						//cout << "right"<< endl;
+
 						Edge *next = ground->edge1;
-						V2d nextNorm = e1n;
-						double yDist = abs( gNormal.x ) * -groundSpeed;
-						if(next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+
+
+						if (next == NULL)
 						{
-
-							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+							LeaveGroundTransfer(false, V2d(0, 1));
+							break;
+						}
+						//cout << "right"<< endl;
+						/*Edge *next = ground->edge1;
+						V2d nextNorm = e1n;
+						double yDist = abs(gNormal.x) * -groundSpeed;
+						if (next != NULL && !next->IsInvisibleWall() && nextNorm.y < 0 && abs(e1n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0))
+						{
+							if (e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh)
 							{
-								if (TryUnlockOnTransfer(e1))
+								if (!TryUnlockOnTransfer(e1))
 								{
-									offsetX = -offsetX;
-									break;
+									groundSpeed = 0;
 								}
-									
-								offsetX = -offsetX;
-								groundSpeed = 0;
-								//offsetX = -offsetX; //this is only in reverse...
-								break;
-								//if( e1->edgeType == Edge::CLOSED_GATE )
-								//{
-								////	cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY B" << endl;
-								//	Gate *g = (Gate*)e1->info;
-
-								//	if( CanUnlockGate( g ) )
-								//	{
-								//		UnlockGate( g );
-
-								//		if( e1 == g->edgeA )
-								//		{
-								//			gateTouched = g->edgeB;
-								//		}
-								//		else
-								//		{
-								//			gateTouched = g->edgeA;
-								//			
-								//		}
-
-								//		offsetX = -offsetX;
-								//		break;
-
-								//	}
-
-								//}
-
-
-								//groundSpeed = 0;
-								//offsetX = -offsetX;
-								//break;
-							}
-							else
-							{
-								offsetX = -offsetX;
-								//cout << "possible other bug reversed. solved secret??" << endl;
-								break;
-								//ground = next;
-								//q = 0;
 							}
 						}
-						else if(next != NULL && !e1->IsInvisibleWall() && abs( e1n.x ) >= wallThresh )
+						else if (next != NULL && !e1->IsInvisibleWall() && abs(e1n.x) >= wallThresh)
 						{
-							//attemping to fix reverse secret issues on gates
-							if( e1->IsGateEdge() )
+							if (!TryUnlockOnTransfer(e1))
 							{
-								Gate *g = (Gate*)e1->info;
-
-								if( CanUnlockGate( g ) )
+								if (bounceFlameOn && abs(groundSpeed) > 1)
 								{
-									UnlockGate( g );
-
-									SetTouchedGate(g);
-
-									offsetX = -offsetX;
-									break;
+									storedBounceGroundSpeed = groundSpeed * slowMultiple;
+									groundedWallBounce = true;
 								}
+								groundSpeed = 0;
 							}
-
-							if( bounceFlameOn && abs( groundSpeed ) > 1 )
-							{
-								storedBounceGroundSpeed = groundSpeed * slowMultiple;
-								groundedWallBounce = true;
-							}
-
-							offsetX = -offsetX;
-							groundSpeed = 0;
-							break;
 						}
 						else
 						{
-							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-						
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-						
+							velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
+
+							movementVec = normalize(ground->v1 - ground->v0) * extra;
+
 							leftGround = true;
 							reversed = false;
 							ground = NULL;
-						}
+						}*/
 
 					}
-					else
+
+					if (ground != NULL)
 					{
 						offsetX = -offsetX;
 						break;
 					}
-					//groundSpeed = 0;
-					//offsetX = -offsetX;
-					//break;
 				}
-
-				if (approxEquals(m, 0))
-				{
-
-				}
-				else // is this correct?
-				//if( !approxEquals( m, 0 ) )
+				else
 				{	
 					//wire problem could arise later because i dont update anchors when i hit an edge.
 					V2d oldPos = position;
@@ -13079,7 +12984,17 @@ void Actor::LeaveTipTransfer(bool right, V2d leaveExtra)
 
 	movementVec = along * extra;
 
-	movementVec.y -= .01;
+	//recently added this because it makes sense with LeaveGroundTransfer but haven't tested.
+	//originally was just movementVec.y -= .01; for all
+	if (!reversed)
+	{
+		movementVec.y -= .01;
+	}
+	else
+	{
+		movementVec.y += .01;
+	}
+
 	if (right)
 	{
 		if (movementVec.x <= .01)
@@ -13107,12 +13022,25 @@ void Actor::LeaveTipTransfer(bool right, V2d leaveExtra)
 
 void Actor::LeaveGroundTransfer(bool right, V2d leaveExtra )
 {
+	double speed = groundSpeed;
+	if (reversed)
+	{
+		speed = -groundSpeed;
+	}
+
 	V2d along = ground->Along();
-	velocity = along * groundSpeed + leaveExtra;//normalize(ground->v1 - ground->v0) * groundSpeed + leaveExtra;
+	velocity = along * speed + leaveExtra;//normalize(ground->v1 - ground->v0) * groundSpeed + leaveExtra;
 
 	movementVec = along * extra;
 
-	movementVec.y -= .01;
+	if (!reversed)
+	{
+		movementVec.y -= .01;
+	}
+	else
+	{
+		movementVec.y += .01;
+	}
 	if (right)
 	{
 		if (movementVec.x <= .01)
@@ -13130,6 +13058,7 @@ void Actor::LeaveGroundTransfer(bool right, V2d leaveExtra )
 	
 	//cout << "leave ground transfer: " << along.x << ", " << along.y << endl;
 
+	reversed = false;
 	leftGround = true;
 	ground = NULL;
 	SetAction(JUMP);
@@ -13399,7 +13328,7 @@ void Actor::UpdatePhysics()
 
 			if( approxEquals( q, 0 ) )
 				q = 0;
-			else if( approxEquals( q, groundLength ) )
+			else if( approxEquals(q, groundLength) )
 				q = groundLength;
 
 			if( approxEquals( offsetX, b.rw ) )
@@ -13695,23 +13624,14 @@ void Actor::UpdatePhysics()
 					movement = 0;
 
 					offsetX += m;
-					/*if ( m > 0 && offsetX + m < 0)
-					{
-						m = -offsetX;
-						offsetX = 0;
-					}
-					else if( m < 0 && offsetX + m > 0 )
-					{
-						m = -offsetX;
-						offsetX = 0;
-					}
-					else
-					{
-						offsetX += m;
-					}				*/	
 				}
 
-				if(!approxEquals( m, 0 ) )
+				if (approxEquals(m, 0))
+				{
+					//approxtesting
+					break;
+				}
+				else
 				{
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( m, 0 ));
@@ -13880,119 +13800,103 @@ void Actor::UpdatePhysics()
 				if (UpdateAutoRunPhysics(q, m))
 					return;
 
-				
-
-				if( false )
+				if (approxEquals(m, 0))
 				{
-					//if( !simulationMode )
-					//	cout << "shouldn't be hit. movement issue with approxequals(0)" << endl;
-					if( groundSpeed > 0 )
+					//approxtesting
+					if (groundSpeed > 0)
 					{
 						Edge *next = ground->edge1;
-						double yDist = abs( gNormal.x ) * groundSpeed;
-						if( next != NULL && next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
-						{
-							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
-							{
-								if (TryUnlockOnTransfer(e1))
-									break;
-								groundSpeed = 0;
-								break;
-							}
-							else
-							{
-								break;
-							}
-					
-						}
-						else if(next != NULL && abs( e1n.x ) >= wallThresh )
-						{
-							
-							if (TryUnlockOnTransfer(e1))
-							{
-								break;
-							}
 
-							if( bounceFlameOn && abs( groundSpeed ) > 1 )
-							{
-								storedBounceGroundSpeed = groundSpeed * slowMultiple;
-								groundedWallBounce = true;
-							}
 
-							groundSpeed = 0;
-							break;
-						}
-						else
+						if (next == NULL)
 						{
-							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-						
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-						
-							leftGround = true;
-							ground = NULL;
+							LeaveGroundTransfer(true, V2d(0, -gravity * 2));
 						}
-					}
-					else if( groundSpeed < 0 )
-					{
-						double yDist = abs( gNormal.x ) * groundSpeed;
-						Edge *next = ground->edge0;
-						if(next != NULL && next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+
+						/*double yDist = abs(gNormal.x) * groundSpeed;
+						if (next != NULL && next->Normal().y < 0 && abs(e1n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0))
 						{
-							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+							if (e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh)
 							{
-								if (TryUnlockOnTransfer(e0))
+								if (!TryUnlockOnTransfer(e1))
 								{
-									break;
+									groundSpeed = 0;
+								}	
+							}
+						}
+						else if (next != NULL && abs(e1n.x) >= wallThresh)
+						{
+							if (!TryUnlockOnTransfer(e1))
+							{
+								if (bounceFlameOn && abs(groundSpeed) > 1)
+								{
+									storedBounceGroundSpeed = groundSpeed * slowMultiple;
+									groundedWallBounce = true;
 								}
 
 								groundSpeed = 0;
-								break;
 							}
-							else
-							{
-								//cout << "possible bug. solved secret??" << endl;
-								//ground = next;
-								//q = length( ground->v1 - ground->v0 );	
-								break;
-							}
-						}
-						else if(next != NULL && abs( e0n.x ) >= wallThresh )
-						{
-							if (TryUnlockOnTransfer(e0))
-							{
-								break;
-							}
-
-							if( bounceFlameOn && abs( groundSpeed ) > 1 )
-							{
-								storedBounceGroundSpeed = groundSpeed * slowMultiple;
-								groundedWallBounce = true;
-							}
-
-							groundSpeed = 0;
-							break;
 						}
 						else
 						{
-							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+							velocity = normalize(ground->v1 - ground->v0) * groundSpeed;
+
+							movementVec = normalize(ground->v1 - ground->v0) * extra;
+
+							leftGround = true;
+							ground = NULL;
+						}*/
+					}
+					else if (groundSpeed < 0)
+					{
+						Edge *next = ground->edge0;
+
+						if (next == NULL)
+						{
+							LeaveGroundTransfer(false, V2d(0, -gravity * 2));
+						}
+
+						/*double yDist = abs(gNormal.x) * groundSpeed;
+						Edge *next = ground->edge0;
+						if (next != NULL && next->Normal().y < 0 && abs(e0n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x))
+						{
+							if (e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh)
+							{
+								if (!TryUnlockOnTransfer(e0))
+								{
+									groundSpeed = 0;
+								}
+							}
+						}
+						else if (next != NULL && abs(e0n.x) >= wallThresh)
+						{
+							if (!TryUnlockOnTransfer(e0))
+							{
+								if (bounceFlameOn && abs(groundSpeed) > 1)
+								{
+									storedBounceGroundSpeed = groundSpeed * slowMultiple;
+									groundedWallBounce = true;
+								}
+
+								groundSpeed = 0;
+							}
+						}
+						else
+						{
+							velocity = normalize(ground->v1 - ground->v0) * groundSpeed;
+							movementVec = normalize(ground->v1 - ground->v0) * extra;
 							leftGround = true;
 
 							ground = NULL;
-						}
+						}*/
 					}
-					else
-					{
-						break; //recently added for one last bug removal
-					}
-				}
 
-				//only want this to fire if secret doesn't happen
-				if (approxEquals(m, 0))
-				{
-					//break;
+					if (ground != NULL)
+					{
+						break;
+					}
 				}
-				else//if( !approxEquals( m, 0 ) )
+				else
 				{	
 					bool down = true;
 					V2d oldPos = position;
@@ -19488,104 +19392,104 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				//cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
-			if (c->weirdPoint)
-			{
-				cout << "weird point\n";
+			//if (c->weirdPoint)
+			//{
+			//	cout << "weird point\n";
 
-				//okay, I fixed the bugs involving this. There might still
-				//be cases where weirdpoint solves need to be implemented.
-				//ill put some prints here and then if someone encounters a bug
-				//ill know where to look.
+			//	//okay, I fixed the bugs involving this. There might still
+			//	//be cases where weirdpoint solves need to be implemented.
+			//	//ill put some prints here and then if someone encounters a bug
+			//	//ill know where to look.
 
-				Edge *edge = e;
-				Edge *prev = edge->edge0;
-				Edge *next = edge->edge1;
+			//	Edge *edge = e;
+			//	Edge *prev = edge->edge0;
+			//	Edge *next = edge->edge1;
 
-				V2d v0 = edge->v0;
-				V2d v1 = edge->v1;
+			//	V2d v0 = edge->v0;
+			//	V2d v1 = edge->v1;
 
-				//note: approxequals could be broken slightly
-				if (approxEquals(c->position.x, e->v0.x) && approxEquals(c->position.y, e->v0.y))
-				{
-					V2d pv0 = prev->v0;
-					V2d pv1 = prev->v1;
+			//	//note: approxequals could be broken slightly
+			//	if (approxEquals(c->position.x, e->v0.x) && approxEquals(c->position.y, e->v0.y))
+			//	{
+			//		V2d pv0 = prev->v0;
+			//		V2d pv1 = prev->v1;
 
-					V2d pn = prev->Normal();
-					V2d en = e->Normal();
+			//		V2d pn = prev->Normal();
+			//		V2d en = e->Normal();
 
-					//second weirdpoint glitch. remove for now. similar to the one
-					//below it where it can make you fall through terrain.
-					//i dont know which case i added this in for in the
-					//first place.
+			//		//second weirdpoint glitch. remove for now. similar to the one
+			//		//below it where it can make you fall through terrain.
+			//		//i dont know which case i added this in for in the
+			//		//first place.
 
-					//this causes a fallthrough on the launcher/water map
-					//if you land right on the corner.
-					if (ground == NULL && pn.y >= 0 && en.y < 0)
-					{
-						//falling off and you dont want to keep hitting the ground
-						//assert(!reversed);
-						//return;
-					}
+			//		//this causes a fallthrough on the launcher/water map
+			//		//if you land right on the corner.
+			//		if (ground == NULL && pn.y >= 0 && en.y < 0)
+			//		{
+			//			//falling off and you dont want to keep hitting the ground
+			//			//assert(!reversed);
+			//			//return;
+			//		}
 
-					//--end second weirdpoint glitch
+			//		//--end second weirdpoint glitch
 
-					//first weirdpointglitch is right here. 
-					//ground != NULL
-					if (pn.y < en.y)
-					{
-						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
-						//cout << "sfdfdsfsdfdsfds" << endl;
-
-
-						//commented the 2 lines below out because of a bug outlined below in the next case. 
-						//i dont remember what case this code is solving. if you find a weird bug, 
-						//come back and fix this code for both cases, as well as writing down
-						//what this code is here for.
-
-						//c->edge = prev;
-						//return;
-
-						//c->normal = V2d( 0, -1 );
-					}
-				}
-				else if (approxEquals(c->position.x, e->v1.x) && approxEquals(c->position.y, e->v1.y))
-				{
-					V2d nn = next->Normal();
-					V2d en = e->Normal();
-					if (ground == NULL && en.y < 0 && nn.y >= 0)
-					{
-						//falling off and you dont want to keep hitting the ground
-						//assert(!reversed);
-						//return;
-					}
-
-					//ground != NULL
-					if (nn.y < en.y)
-					{
-						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
-						//cout << "herererere" << endl;
-					//	return;
+			//		//first weirdpointglitch is right here. 
+			//		//ground != NULL
+			//		if (pn.y < en.y)
+			//		{
+			//			//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
+			//			//cout << "sfdfdsfsdfdsfds" << endl;
 
 
+			//			//commented the 2 lines below out because of a bug outlined below in the next case. 
+			//			//i dont remember what case this code is solving. if you find a weird bug, 
+			//			//come back and fix this code for both cases, as well as writing down
+			//			//what this code is here for.
 
-						//previously these next 2 lines were uncommented. It caused a bug where you'd fall through the terrain
-						//when you were wallsliding on a steep reverse slope with a very low ceiling above it.
-						//I don't know what case this is supposed to cover, but removing these 2 lines
-						//fixes the bug. 
+			//			//c->edge = prev;
+			//			//return;
+
+			//			//c->normal = V2d( 0, -1 );
+			//		}
+			//	}
+			//	else if (approxEquals(c->position.x, e->v1.x) && approxEquals(c->position.y, e->v1.y))
+			//	{
+			//		V2d nn = next->Normal();
+			//		V2d en = e->Normal();
+			//		if (ground == NULL && en.y < 0 && nn.y >= 0)
+			//		{
+			//			//falling off and you dont want to keep hitting the ground
+			//			//assert(!reversed);
+			//			//return;
+			//		}
+
+			//		//ground != NULL
+			//		if (nn.y < en.y)
+			//		{
+			//			//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
+			//			//cout << "herererere" << endl;
+			//		//	return;
 
 
-						//c->edge = next;
-						//return;
+
+			//			//previously these next 2 lines were uncommented. It caused a bug where you'd fall through the terrain
+			//			//when you were wallsliding on a steep reverse slope with a very low ceiling above it.
+			//			//I don't know what case this is supposed to cover, but removing these 2 lines
+			//			//fixes the bug. 
 
 
+			//			//c->edge = next;
+			//			//return;
 
 
 
 
-						//c->normal = V2d( 0, -1 );
-					}
-				}
-			}
+
+
+			//			//c->normal = V2d( 0, -1 );
+			//		}
+			//	}
+			//}
 
 			if (!col || (minContact.collisionPriority < 0)
 				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0))//|| ( closedGate && !minGate ) )

@@ -34,6 +34,8 @@ void Actor::WATERGLIDECHARGE_Change()
 	{
 		SetAction(WATERGLIDE);
 		frame = 0;
+
+		//velocity = (springVel + springExtra) * factor;
 	}
 	
 }

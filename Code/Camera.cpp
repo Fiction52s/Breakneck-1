@@ -946,6 +946,11 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 	{
 		pVel = player->storedBounceVel;
 	}
+	else if (player->action == Actor::GLIDE || player->action == Actor::SPRINGSTUNGLIDE || player->action == Actor::WATERGLIDE
+		|| player->action == Actor::WATERGLIDECHARGE || player->action == Actor::WATERGLIDE_HITSTUN)
+	{
+		pVel = normalize(player->velocity) * (length(player->velocity) + 20.0);
+	}
 	else
 	{
 		pVel = player->velocity;

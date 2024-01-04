@@ -29,11 +29,7 @@ void Actor::WATERGLIDE_Change()
 		return;
 	}
 
-	if (DashButtonPressed())
-	{
-		SetAction(WATERGLIDECHARGE);
-		frame = 0;
-	}
+	
 
 	/*if (!GlideAction())
 	{
@@ -59,16 +55,25 @@ void Actor::WATERGLIDE_Change()
 
 void Actor::WATERGLIDE_Update()
 {
+	double currTurnAccel = glideTurnAccel;
+	double currMaxTurn = maxGlideTurnFactor;
+
+	if (DashButtonHeld())
+	{
+		currMaxTurn *= 2;
+		currTurnAccel *= 2;
+	}
+
 	if (currInput.LUp())
 	{
 		if (glideTurnFactor < 0)
 		{
 			glideTurnFactor = 0;
 		}
-		glideTurnFactor += glideTurnAccel;
-		if (glideTurnFactor > maxGlideTurnFactor)
+		glideTurnFactor += currTurnAccel;
+		if (glideTurnFactor > currMaxTurn)
 		{
-			glideTurnFactor = maxGlideTurnFactor;
+			glideTurnFactor = currMaxTurn;
 		}
 	}
 	else if (currInput.LDown())
@@ -77,10 +82,10 @@ void Actor::WATERGLIDE_Update()
 		{
 			glideTurnFactor = 0;
 		}
-		glideTurnFactor -= glideTurnAccel;
-		if (glideTurnFactor < -maxGlideTurnFactor)
+		glideTurnFactor -= currTurnAccel;
+		if (glideTurnFactor < -currMaxTurn)
 		{
-			glideTurnFactor = -maxGlideTurnFactor;
+			glideTurnFactor = -currMaxTurn;
 		}
 	}
 	else

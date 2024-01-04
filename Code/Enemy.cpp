@@ -269,7 +269,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 1, false);
 		break;
 	case EnemyType::EN_AIRDASHER:
-		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 2, 2);
 		break;
 	case EnemyType::EN_BASICTURRET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
