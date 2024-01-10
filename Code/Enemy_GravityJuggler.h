@@ -29,6 +29,8 @@ struct GravityJuggler : Enemy
 	};
 	MyData data;
 
+
+	SoundInfo *myHitSound;
 	sf::Text numJugglesText;
 	bool reversedGrav;
 	bool limitedJuggles;

@@ -3113,7 +3113,24 @@ bool GameSession::RunMainLoopOnce()
 				netplayManager->Update();
 			}
 
-			//if (pauseMenu->currentTab == PauseMenu::PAUSE)
+			if (pauseMenu->currentTab == PauseMenu::PAUSE)
+			{
+				if (curr.B && curr.PRight() && !prev.PRight())
+				{
+					if (playerRecordingManager != NULL)
+					{
+						for (auto it = playerRecordingManager->recorderVec.begin(); it != playerRecordingManager->recorderVec.end(); ++it)
+						{
+							(*it)->numTotalFrames = (*it)->frame;
+						}
+						//playerRecordingManager->StopRecording();//StopRecording();
+						string s = "Resources\\Recordings\\Debug\\editordebugreplay" + string(REPLAY_EXT);
+						playerRecordingManager->WriteToFile(s);
+
+						ActivatePauseSound(GetSound("pause_off"));
+					}
+				}
+			}
 			//{
 			//	if (curr.Y && !prev.Y && !bestTimeGhostOn)
 			//	{

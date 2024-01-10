@@ -22,6 +22,8 @@ struct AntiTimeSlowBooster : Enemy
 	Tileset *ts;
 	Tileset *ts_refresh;
 
+	SoundInfo *boostSound;
+
 	int strength;
 
 	AntiTimeSlowBooster(ActorParams *ap);//sf::Vector2i &pos, int level);

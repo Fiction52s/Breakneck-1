@@ -19,6 +19,8 @@ PhaseSwitch::PhaseSwitch(ActorParams *ap)
 
 	scale = 1.0;
 
+	phaseSound = GetSound("Enemies/Boosters/booster_phase_switch");
+
 	ts = GetSizedTileset("Enemies/W4/phase_switch_192x192.png");
 
 	BasicCircleHurtBodySetup(100);
@@ -200,11 +202,13 @@ void PhaseSwitch::ProcessHit()
 
 		if (action == A_PHASE_OFF)
 		{
+			sess->ActivateSoundAtPos(GetPosition(), phaseSound);
 			action = A_SWITCHING_ON;
 			frame = 0;
 		}
 		else if (action == A_PHASE_ON)
 		{
+			sess->ActivateSoundAtPos(GetPosition(), phaseSound);
 			action = A_SWITCHING_OFF;
 			frame = 0;
 		}

@@ -23,6 +23,7 @@ struct BounceBooster : Enemy
 	Tileset *ts_refresh;
 	int strength;
 	bool upOnly;
+	SoundInfo *boostSound;
 
 	bool CountsForEnemyGate() { return false; }
 	bool IsHomingTarget() { return false; }

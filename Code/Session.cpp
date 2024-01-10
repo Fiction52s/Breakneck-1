@@ -3095,11 +3095,12 @@ bool Session::OneFrameModeUpdate()
 
 void Session::CleanupZones()
 {
-	if (zoneTree != NULL)
+	/*if (zoneTree != NULL)
 	{
 		delete zoneTree;
 		zoneTree = NULL;
-	}
+	}*/
+	zoneTree = NULL;
 	currentZone = NULL;
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
@@ -3939,16 +3940,17 @@ int Session::SetupZones()
 		}
 	}
 
-	if (zoneTree != NULL)
+	/*if (zoneTree != NULL)
 	{
 		delete zoneTree;
 		zoneTree = NULL;
-	}
+	}*/
+	zoneTree = NULL;
 
 	zoneTreeStart = originalZone;
 	zoneTreeEnd = goalZone;
 	zoneTree = new ZoneNode;
-	zoneTree->parent = NULL;
+	//zoneTree->parent = NULL;
 
 	//this is testing a black gate bug
 	if (zoneTreeStart == NULL)

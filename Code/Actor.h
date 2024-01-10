@@ -1760,6 +1760,8 @@ struct Actor : QuadTreeCollider,
 	void HandleWaterSituation(
 		int wType,
 		SpecialTerrainSituation sit);
+	void HandleWaterSounds(int wType,
+		SpecialTerrainSituation sit);
 	V2d GetTrueVel();
 	void RestoreDoubleJump();
 	void RestoreAirDash();

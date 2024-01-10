@@ -33,6 +33,8 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	ts = GetSizedTileset("Enemies/General/booster_512x512.png");
 	ts_refresh = GetSizedTileset("Enemies/General/booster_on_256x256.png");
 
+	boostSound = GetSound("Enemies/Boosters/booster_normal");
+
 	sprite.setScale(scale, scale);
 
 	double radius = 90;
@@ -94,6 +96,7 @@ bool Booster::Boost()
 	{
 		action = BOOST;
 		frame = 0;
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		return true;
 	}
 	return false;

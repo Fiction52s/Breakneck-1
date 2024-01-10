@@ -32,6 +32,8 @@ TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 
+	boostSound = GetSound("Enemies/Boosters/booster_time_slow");
+
 	sprite.setTexture(*ts->texture);
 	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 
@@ -95,6 +97,7 @@ bool TimeBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		action = BOOST;
 		frame = 0;
 

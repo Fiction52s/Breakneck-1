@@ -29,6 +29,7 @@ struct HungryComboer : Enemy, EnemyTracker
 	};
 	MyData data;
 
+	SoundInfo *myHitSound;
 	Tileset *ts;
 	
 	double origScale;

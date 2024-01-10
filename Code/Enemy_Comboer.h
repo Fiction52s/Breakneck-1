@@ -24,7 +24,7 @@ struct Comboer : Enemy
 
 	MyData data;
 
-
+	SoundInfo *myHitSound;
 	V2d velocity;
 	
 	int shootLimit;

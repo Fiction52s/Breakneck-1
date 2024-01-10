@@ -33,6 +33,7 @@ struct WireJuggler : Enemy
 	};
 	MyData data;
 
+	SoundInfo *myHitSound;
 	JuggleType jType;
 
 	double gravFactor;

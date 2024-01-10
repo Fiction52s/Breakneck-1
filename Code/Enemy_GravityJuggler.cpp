@@ -81,6 +81,8 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	numJugglesText.setOutlineColor(Color::Black);
 	numJugglesText.setOutlineThickness(3);
 	numJugglesText.setCharacterSize(32);
+
+	myHitSound = GetSound("Enemies/Comboers/comboer_grav");
 	
 
 	const string &typeName = ap->GetTypeName();
@@ -227,6 +229,7 @@ void GravityJuggler::Return()
 
 void GravityJuggler::Pop()
 {
+	sess->ActivateSoundAtPos(GetPosition(), myHitSound);
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;

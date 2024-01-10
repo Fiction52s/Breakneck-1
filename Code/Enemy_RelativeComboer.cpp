@@ -43,9 +43,12 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 	{
 		limitedKills = false;
 		detachOnKill = false;
+		myHitSound = GetSound("Enemies/Comboers/comboer_relative");
+		
 	}
 	else if (typeName == "relativecomboerdetach")
 	{
+		myHitSound = GetSound("Enemies/Comboers/comboer_return");
 		detachOnKill = true;
 		limitedKills = false;
 	}
@@ -186,6 +189,7 @@ void RelativeComboer::Return()
 
 void RelativeComboer::Pop()
 {
+	sess->ActivateSoundAtPos(GetPosition(), myHitSound);
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;

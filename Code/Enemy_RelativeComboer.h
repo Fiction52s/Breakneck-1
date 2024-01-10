@@ -33,6 +33,8 @@ struct RelativeComboer : Enemy
 	};
 	MyData data;
 
+	SoundInfo *myHitSound;
+
 	LineMovement *lineMovement;
 	MovementSequence flySeq;
 	bool limitedKills;

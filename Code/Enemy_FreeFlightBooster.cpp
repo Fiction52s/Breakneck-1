@@ -31,6 +31,8 @@ FreeFlightBooster::FreeFlightBooster(ActorParams *ap)//Vector2i &pos, int p_leve
 
 	strength = 360;
 
+	boostSound = GetSound("Enemies/Boosters/booster_flight");
+
 	ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -93,6 +95,7 @@ bool FreeFlightBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		action = BOOST;
 		frame = 0;
 		return true;

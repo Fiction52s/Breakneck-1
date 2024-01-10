@@ -72,7 +72,7 @@ Ball::Ball(ActorParams *ap)
 
 	CreateSurfaceMover(startPosInfo, 32, this);
 	
-	
+	myHitSound = GetSound("Enemies/Comboers/comboer_ball");
 
 	guidedDir = NULL;
 
@@ -191,6 +191,7 @@ void Ball::Return()
 
 void Ball::Pop()
 {
+	sess->ActivateSoundAtPos(GetPosition(), myHitSound);
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;

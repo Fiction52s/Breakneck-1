@@ -32,6 +32,10 @@ RewindBooster::RewindBooster(ActorParams *ap)
 
 	strength = 360;
 
+	boostSound = GetSound("Enemies/Boosters/booster_projectile");
+
+	
+
 	ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 	//ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
@@ -95,6 +99,7 @@ bool RewindBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		action = BOOST;
 		frame = 0;
 		return true;

@@ -110,7 +110,7 @@ void Actor::STANDATTACK4_TimeDepFrameInc()
 
 int Actor::STANDATTACK4_GetActionLength()
 {
-	return 23 * 2;
+	return 19 * 2;
 }
 
 const char * Actor::STANDATTACK4_GetTilesetName()

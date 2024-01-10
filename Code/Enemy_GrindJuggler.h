@@ -31,6 +31,9 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 
 	MyData data;
 
+	SoundInfo *myHitSoundCW;
+	SoundInfo *myHitSoundCCW;
+
 	float idleTurnDegrees;
 	float moveTurnDegrees;
 

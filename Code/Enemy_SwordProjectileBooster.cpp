@@ -48,6 +48,8 @@ SwordProjectileBooster::SwordProjectileBooster(ActorParams *ap)//Vector2i &pos, 
 	ts = GetSizedTileset("Enemies/General/Booster_512x512.png");
 	ts_refresh = GetSizedTileset("Enemies/General/Booster_on_256x256.png");
 
+	boostSound = GetSound("Enemies/Boosters/booster_projectile");
+
 	sprite.setScale(scale, scale);
 
 	double radius = 90;
@@ -107,6 +109,7 @@ bool SwordProjectileBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		action = BOOST;
 		frame = 0;
 		return true;

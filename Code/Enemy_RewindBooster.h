@@ -20,7 +20,7 @@ struct RewindBooster : Enemy
 	};
 	MyData data;
 
-
+	SoundInfo *boostSound;
 	Tileset *ts;
 	Tileset *ts_refresh;
 

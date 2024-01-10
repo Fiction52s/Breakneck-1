@@ -22,6 +22,7 @@ struct Booster : Enemy
 	Tileset *ts;
 	Tileset *ts_refresh;
 	int strength;
+	SoundInfo *boostSound;
 
 	Booster(ActorParams *ap);//sf::Vector2i &pos, int level);
 

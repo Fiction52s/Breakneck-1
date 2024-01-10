@@ -27,6 +27,7 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 	};
 	MyData data;
 
+	SoundInfo *myHitSound;
 	double flySpeed;
 
 	int hitLimit;

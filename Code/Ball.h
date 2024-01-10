@@ -26,6 +26,7 @@ struct Ball : Enemy, SurfaceMoverHandler
 	};
 	MyData data;
 
+	SoundInfo *myHitSound;
 	double flySpeed;
 
 	bool limitedJuggles;

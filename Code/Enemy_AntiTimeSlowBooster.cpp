@@ -36,6 +36,8 @@ AntiTimeSlowBooster::AntiTimeSlowBooster(ActorParams *ap)
 	//ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
+
+	boostSound = GetSound("Enemies/Boosters/booster_anti_timeslow");
 	//sprite.setColor(Color::Red);
 
 	double radius = 90;
@@ -95,6 +97,7 @@ bool AntiTimeSlowBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		action = BOOST;
 		frame = 0;
 		return true;

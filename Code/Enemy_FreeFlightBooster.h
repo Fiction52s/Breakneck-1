@@ -21,6 +21,7 @@ struct FreeFlightBooster : Enemy
 
 	Tileset *ts;
 	Tileset *ts_refresh;
+	SoundInfo *boostSound;
 
 	int strength;
 

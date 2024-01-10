@@ -44,14 +44,17 @@ WireJuggler::WireJuggler( ActorParams *ap )
 	if (typeName == "bluewirejuggler")
 	{
 		jType = T_BLUE;//testing
+		myHitSound = GetSound("Enemies/Comboers/comboer_wire_b");
 	}
 	else if (typeName == "redwirejuggler")
 	{
 		jType = T_RED;
+		myHitSound = GetSound("Enemies/Comboers/comboer_wire_r");
 	}
 	else if (typeName == "magentawirejuggler")
 	{
 		jType = T_MAGENTA;
+		myHitSound = GetSound("Enemies/Comboers/comboer_wire_m");
 	}
 	else
 	{
@@ -237,6 +240,7 @@ void WireJuggler::Return()
 
 void WireJuggler::Pop()
 {
+	sess->ActivateSoundAtPos(GetPosition(), myHitSound);
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;

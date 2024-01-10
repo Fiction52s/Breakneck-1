@@ -31,6 +31,8 @@ HomingBooster::HomingBooster(ActorParams *ap)
 
 	SetCurrPosInfo(startPosInfo);
 
+	boostSound = GetSound("Enemies/Boosters/booster_homing");
+
 	ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -94,6 +96,7 @@ bool HomingBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		action = BOOST;
 		frame = 0;
 		return true;

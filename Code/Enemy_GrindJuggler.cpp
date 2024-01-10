@@ -42,6 +42,10 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 
 	maxMoveFrames = 90;
 
+	myHitSoundCW = GetSound("Enemies/Comboers/comboer_grind_cw");
+	myHitSoundCCW = GetSound("Enemies/Comboers/comboer_grind_ccw");
+	
+
 	ts = GetSizedTileset("Enemies/General/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -180,6 +184,14 @@ void GrindJuggler::Return()
 
 void GrindJuggler::Pop()
 {
+	if (clockwise)
+	{
+		sess->ActivateSoundAtPos(GetPosition(), myHitSoundCW);
+	}
+	else
+	{
+		sess->ActivateSoundAtPos(GetPosition(), myHitSoundCCW);
+	}
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;

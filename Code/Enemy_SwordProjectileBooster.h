@@ -20,7 +20,7 @@ struct SwordProjectileBooster : Enemy
 	MyData data;
 
 	bool enemyProjectile;
-
+	SoundInfo *boostSound;
 	Tileset *ts;
 	Tileset *ts_refresh;
 

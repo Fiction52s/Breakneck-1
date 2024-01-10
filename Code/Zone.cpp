@@ -21,19 +21,25 @@ using namespace std;
 
 ZoneNode::ZoneNode()
 {
+	myZone = NULL;
 }
 
 ZoneNode::~ZoneNode()
 {
-	for (auto it = children.begin(); it != children.end(); ++it)
+	/*for (auto it = children.begin(); it != children.end(); ++it)
 	{
 		delete (*it);
-	}
+	}*/
 }
 
 bool ZoneNode::SetZone(Zone *p_myZone)
 {
 	Session *sess = Session::GetSession();
+
+	if (p_myZone == NULL)
+	{
+		assert(0);
+	}
 
 	myZone = p_myZone;
 
@@ -49,29 +55,33 @@ bool ZoneNode::SetZone(Zone *p_myZone)
 	{
 		if (!IsInMyBranch((*it)))
 		{
-			ZoneNode *zn = new ZoneNode;
-			zn->parent = this;
-			if (zn->SetZone((*it)))
+			if ((*it)->myNode != NULL)
 			{
-				children.push_back(zn);
+				(*it)->myNode->parents.push_back(this);
+				children.push_back((*it)->myNode);
+				//myZone = (*it);
 			}
 			else
 			{
-				delete zn;
+				ZoneNode *zn = new ZoneNode;
+				zn->parents.push_back(this);
+
+				if (zn->SetZone((*it)))
+				{
+					children.push_back(zn);
+				}
+				else
+				{
+					(*it)->myNode = NULL;
+					delete zn;
+				}
 			}
+			
 		}
 	}
 
 	if (children.size() == 0)
 		return false;
-
-	/*if( parent != NULL )
-	myZone->leadOutZones.insert(parent->myZone);
-
-	for (auto it = children.begin(); it != children.end(); ++it)
-	{
-	myZone->leadInZones.insert((*it)->myZone);
-	}*/
 
 	return true;
 }
@@ -79,21 +89,29 @@ bool ZoneNode::SetZone(Zone *p_myZone)
 
 bool ZoneNode::IsInMyBranch(Zone *z)
 {
-	ZoneNode *p = parent;
-	while (p != NULL)
+	ZoneNode *p = NULL;
+	for (auto it = parents.begin(); it != parents.end(); ++it)
 	{
+		p = (*it);
+
 		if (p->myZone == z)
 		{
 			return true;
 		}
 
-		p = p->parent;
+		if (p->IsInMyBranch(z))
+			return true;
 	}
+	
 	return false;
 }
 
 void ZoneNode::SetChildrenShouldNotReform()
 {
+	if (myZone == NULL)
+	{
+		assert(0);
+	}
 	myZone->SetShouldReform(false);
 	for (auto it = children.begin(); it != children.end(); ++it)
 	{
@@ -156,6 +174,11 @@ Zone::Zone( TerrainPolygon *tp )
 Zone::~Zone()
 {
 	delete zonePoly;
+
+	if (myNode != NULL)
+	{
+		delete myNode;
+	}
 
 	if (definedArea != NULL)
 	{

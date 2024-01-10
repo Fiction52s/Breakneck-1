@@ -20,6 +20,8 @@ struct MomentumBooster : Enemy
 	};
 	MyData data;
 
+	SoundInfo *boostSound;
+
 	Tileset *ts;
 	Tileset *ts_refresh;
 	int strength;

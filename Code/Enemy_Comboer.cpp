@@ -30,6 +30,7 @@ Comboer::Comboer(ActorParams *ap )
 	animFactor[S_SHOT] = 6;
 	animFactor[S_EXPLODE] = 1;
 
+	myHitSound = GetSound("Enemies/Comboers/comboer_normal");
 
 	SetLevel(ap->GetLevel());
 
@@ -137,6 +138,7 @@ void Comboer::ProcessHit()
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 		data.shootFrames = 0;
+		sess->ActivateSoundAtPos(GetPosition(), myHitSound);
 		action = S_SHOT;
 		frame = 0;
 		//SetHitboxes(hitBody, 0);

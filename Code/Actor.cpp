@@ -4189,6 +4189,41 @@ void Actor::InitSounds()
 	soundInfos[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
 
 	soundInfos[PlayerSounds::S_BOUNCEJUMP] = GetSound("Kin/bounce");
+
+
+	soundInfos[PlayerSounds::S_WATER_NORMAL_ENTER] = GetSound("Water/water_normal_enter");
+	soundInfos[PlayerSounds::S_WATER_NORMAL_EXIT] = GetSound("Water/water_normal_exit");
+	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_01] = GetSound("Water/water_normal_bubble_01");
+	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_02] = GetSound("Water/water_normal_bubble_02");
+	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_03] = GetSound("Water/water_normal_bubble_03");
+	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_04] = GetSound("Water/water_normal_bubble_04");
+	soundInfos[PlayerSounds::S_WATER_GLIDE_ENTER] = GetSound("Water/water_glide_enter");
+	soundInfos[PlayerSounds::S_WATER_GLIDE_EXIT] = GetSound("Water/water_glide_exit");
+	soundInfos[PlayerSounds::S_WATER_LOWGRAV_ENTER] = GetSound("Water/water_lowgrav_enter");
+	soundInfos[PlayerSounds::S_WATER_LOWGRAV_EXIT] = GetSound("Water/water_lowgrav_exit");
+	soundInfos[PlayerSounds::S_WATER_HEAVYGRAV_ENTER] = GetSound("Water/water_heavygrav_enter");
+	soundInfos[PlayerSounds::S_WATER_HEAVYGRAV_EXIT] = GetSound("Water/water_heavygrav_exit");
+	soundInfos[PlayerSounds::S_WATER_BUOYANCY_ENTER] = GetSound("Water/water_buoyancy_enter");
+	soundInfos[PlayerSounds::S_WATER_BUOYANCY_EXIT] = GetSound("Water/water_buoyancy_exit");
+	soundInfos[PlayerSounds::S_WATER_ACCEL_ENTER] = GetSound("Water/water_accel_enter");
+	soundInfos[PlayerSounds::S_WATER_ACCEL_EXIT] = GetSound("Water/water_accel_exit");
+	soundInfos[PlayerSounds::S_WATER_ZEROGRAV_ENTER] = GetSound("Water/water_zerograv_enter");
+	soundInfos[PlayerSounds::S_WATER_ZEROGRAV_EXIT] = GetSound("Water/water_zerograv_exit");
+	soundInfos[PlayerSounds::S_WATER_LAUNCHER_ENTER] = GetSound("Water/water_launcher_enter");
+	soundInfos[PlayerSounds::S_WATER_LAUNCHER_EXIT] = GetSound("Water/water_launcher_exit");
+	soundInfos[PlayerSounds::S_WATER_MOMENTUM_ENTER] = GetSound("Water/water_momentum_enter");
+	soundInfos[PlayerSounds::S_WATER_MOMENTUM_EXIT] = GetSound("Water/water_momentum_exit");
+	soundInfos[PlayerSounds::S_WATER_TIMESLOW_ENTER] = GetSound("Water/water_timeslow_enter");
+	soundInfos[PlayerSounds::S_WATER_TIMESLOW_EXIT] = GetSound("Water/water_timeslow_exit");
+	soundInfos[PlayerSounds::S_WATER_POISON_ENTER] = GetSound("Water/water_poison_enter");
+	soundInfos[PlayerSounds::S_WATER_POISON_EXIT] = GetSound("Water/water_poison_exit");
+	soundInfos[PlayerSounds::S_WATER_POISON_LOOP] = GetSound("Water/water_poison_loop");
+	soundInfos[PlayerSounds::S_WATER_FREEFLIGHT_ENTER] = GetSound("Water/water_freeflight_enter");
+	soundInfos[PlayerSounds::S_WATER_FREEFLIGHT_EXIT] = GetSound("Water/water_freeflight_exit");
+	soundInfos[PlayerSounds::S_WATER_INVERTEDINPUTS_ENTER] = GetSound("Water/water_invertedinputs_enter");
+	soundInfos[PlayerSounds::S_WATER_INVERTEDINPUTS_EXIT] = GetSound("Water/water_invertedinputs_exit");
+
+
 	//soundInfos[PlayerSounds::S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
 	/*soundInfos[S_DASH_START] = GetSound( "Kin/dash_02" );
@@ -9456,7 +9491,7 @@ V2d Actor::UpdateReversePhysics()
 						if( nextSteep && nextMovingDown )
 						{
 							jumpOff = true;
-							tip = true;
+							//tip = true;
 						}
 						else
 						{
@@ -9481,7 +9516,19 @@ V2d Actor::UpdateReversePhysics()
 				
 				if( jumpOff || unlockedGateJumpOff)
 				{	
-					reversed = false;
+					if (tip)
+					{
+						LeaveTipTransfer(true, V2d(0, 1));
+						//honestly not sure what causes this to hit here! LOL I removed one of the negative cases
+						//by commenting it out and idk when this happens now
+					}
+					else
+					{
+						LeaveGroundTransfer(true, V2d(0, 1));
+					}
+
+
+					/*reversed = false;
 
 					V2d along = ground->Along();
 
@@ -9499,14 +9546,11 @@ V2d Actor::UpdateReversePhysics()
 						movementVec.x = .1;
 					}
 
-					//cout << "airborne 2" << endl;
 					leftGround = true;
 					SetAction( JUMP );
 					frame = 1;
 					
-					ground = NULL;
-
-					//cout << "jumpoff a: " << along.x << ", " << along.y << endl;
+					ground = NULL;*/
 
 					leftGroundExtra = movementVec;
 					return leftGroundExtra;
@@ -9602,7 +9646,7 @@ V2d Actor::UpdateReversePhysics()
 						if( nextSteep && nextMovingDown )
 						{
 							jumpOff = true;
-							tip = true;
+							//tip = true;
 						}
 						else
 						{
@@ -9625,7 +9669,7 @@ V2d Actor::UpdateReversePhysics()
 
 				if( jumpOff || unlockedGateJumpOff)
 				{
-					reversed = false;
+					/*reversed = false;
 					
 					V2d along = ground->Along();
 
@@ -9647,7 +9691,19 @@ V2d Actor::UpdateReversePhysics()
 					SetAction( JUMP );
 					frame = 1;
 					ground = NULL;
-					holdJump = false;
+					holdJump = false;*/
+
+					if (tip)
+					{
+						LeaveTipTransfer(false, V2d(0, 1));
+						//honestly not sure what causes this to hit here! LOL I removed one of the negative cases
+						//by commenting it out and idk when this happens now
+					}
+					else
+					{
+						LeaveGroundTransfer(false, V2d(0, 1));
+					}
+
 
 					//cout << "jumpoff b: " << along.x << ", " << along.y << endl;
 
@@ -13597,6 +13653,8 @@ void Actor::UpdatePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
+				//some kind of bug in here for sure! deltashine got stuck on a rail while changing offset.
+
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -13626,7 +13684,7 @@ void Actor::UpdatePhysics()
 					offsetX += m;
 				}
 
-				if (approxEquals(m, 0))
+				if(approxEquals(m, 0))
 				{
 					//approxtesting
 					break;
@@ -16722,6 +16780,9 @@ void Actor::TryStartWaterGlide()
 void Actor::HandleWaterSituation(int wType,
 	SpecialTerrainSituation sit)
 {
+	HandleWaterSounds(wType, sit);
+
+
 	if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 	{
 		int skinChoice = SKIN_NORMAL;
@@ -17133,6 +17194,177 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		break;
 	}
+	}
+}
+
+void Actor::HandleWaterSounds(int wType,
+	SpecialTerrainSituation sit)
+{
+	if (sit == SPECIALT_ENTER)
+	{
+		switch (wType)
+		{
+		case TerrainPolygon::WATER_NORMAL:
+		{
+			ActivateSound(PlayerSounds::S_WATER_NORMAL_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_GLIDE:
+		{
+			ActivateSound(PlayerSounds::S_WATER_GLIDE_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_LOWGRAV:
+		{
+			ActivateSound(PlayerSounds::S_WATER_LOWGRAV_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_HEAVYGRAV:
+		{
+			ActivateSound(PlayerSounds::S_WATER_HEAVYGRAV_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_BUOYANCY:
+		{
+			ActivateSound(PlayerSounds::S_WATER_BUOYANCY_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_ACCEL:
+		{
+			ActivateSound(PlayerSounds::S_WATER_ACCEL_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_ZEROGRAV:
+		{
+			ActivateSound(PlayerSounds::S_WATER_ZEROGRAV_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_LAUNCHER:
+		{
+			ActivateSound(PlayerSounds::S_WATER_LAUNCHER_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_MOMENTUM:
+		{
+			ActivateSound(PlayerSounds::S_WATER_MOMENTUM_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_TIMESLOW:
+		{
+			ActivateSound(PlayerSounds::S_WATER_TIMESLOW_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_POISON:
+		{
+			ActivateSound(PlayerSounds::S_WATER_POISON_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_FREEFLIGHT:
+		{
+			ActivateSound(PlayerSounds::S_WATER_FREEFLIGHT_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_INVERTEDINPUTS:
+		{
+			ActivateSound(PlayerSounds::S_WATER_INVERTEDINPUTS_ENTER);
+			break;
+		}
+		case TerrainPolygon::WATER_REWIND:
+		{
+			break;
+		}
+		case TerrainPolygon::WATER_SWORDPROJECTILE:
+		{
+			break;
+		}
+		case TerrainPolygon::WATER_SUPER:
+		{
+			break;
+		}
+		}
+	}
+	else if (sit == SPECIALT_EXIT)
+	{
+		switch (wType)
+		{
+		case TerrainPolygon::WATER_NORMAL:
+		{
+			ActivateSound(PlayerSounds::S_WATER_NORMAL_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_GLIDE:
+		{
+			ActivateSound(PlayerSounds::S_WATER_GLIDE_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_LOWGRAV:
+		{
+			ActivateSound(PlayerSounds::S_WATER_LOWGRAV_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_HEAVYGRAV:
+		{
+			ActivateSound(PlayerSounds::S_WATER_HEAVYGRAV_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_BUOYANCY:
+		{
+			ActivateSound(PlayerSounds::S_WATER_BUOYANCY_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_ACCEL:
+		{
+			ActivateSound(PlayerSounds::S_WATER_ACCEL_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_ZEROGRAV:
+		{
+			ActivateSound(PlayerSounds::S_WATER_ZEROGRAV_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_LAUNCHER:
+		{
+			ActivateSound(PlayerSounds::S_WATER_LAUNCHER_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_MOMENTUM:
+		{
+			ActivateSound(PlayerSounds::S_WATER_MOMENTUM_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_TIMESLOW:
+		{
+			ActivateSound(PlayerSounds::S_WATER_TIMESLOW_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_POISON:
+		{
+			ActivateSound(PlayerSounds::S_WATER_POISON_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_FREEFLIGHT:
+		{
+			ActivateSound(PlayerSounds::S_WATER_FREEFLIGHT_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_INVERTEDINPUTS:
+		{
+			ActivateSound(PlayerSounds::S_WATER_INVERTEDINPUTS_EXIT);
+			break;
+		}
+		case TerrainPolygon::WATER_REWIND:
+		{
+			break;
+		}
+		case TerrainPolygon::WATER_SWORDPROJECTILE:
+		{
+			break;
+		}
+		case TerrainPolygon::WATER_SUPER:
+		{
+			break;
+		}
+		}
 	}
 }
 

@@ -37,6 +37,8 @@ HungryComboer::HungryComboer(ActorParams *ap)
 
 	action = S_FLOAT;
 
+	myHitSound = GetSound("Enemies/Comboers/comboer_hungry");
+
 	ts = GetSizedTileset("Enemies/W5/hungry_comboer_160x160.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -182,6 +184,7 @@ void HungryComboer::Return()
 
 void HungryComboer::Pop()
 {
+	sess->ActivateSoundAtPos(GetPosition(), myHitSound);
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;

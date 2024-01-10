@@ -21,7 +21,8 @@ struct ZoneNode
 	~ZoneNode();
 	Zone *myZone;
 	std::vector<ZoneNode*> children;
-	ZoneNode *parent;
+	std::vector<ZoneNode*> parents;
+	//ZoneNode *parent;
 	//int zoneNodeID;
 
 	void SetChildrenShouldNotReform();

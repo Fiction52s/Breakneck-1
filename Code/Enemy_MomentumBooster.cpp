@@ -30,6 +30,8 @@ MomentumBooster::MomentumBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	SetCurrPosInfo(startPosInfo);
 
+	boostSound = GetSound("Enemies/Boosters/booster_momentum");
+
 	strength = 300;
 
 	ts = GetSizedTileset("Enemies/W4/momentum_booster_192x256.png");
@@ -101,6 +103,7 @@ bool MomentumBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
+		sess->ActivateSoundAtPos(GetPosition(), boostSound);
 		action = BOOST;
 		frame = 0;
 		return true;

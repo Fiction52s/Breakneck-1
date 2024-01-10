@@ -25,11 +25,15 @@ BounceBooster::BounceBooster(ActorParams *ap)
 		strength = 40;
 		BasicCircleHitBodySetup(80, 0,V2d( 0, 50 ), V2d());
 		ts = GetSizedTileset("Enemies/W3/up_bounce_384x384.png");
+
+		boostSound = GetSound("Enemies/Boosters/booster_up");
 	}
 	else
 	{
 		BasicCircleHitBodySetup(128);
 		ts = GetSizedTileset("Enemies/General/boosters_384x384.png");
+
+		boostSound = GetSound("Enemies/Boosters/booster_omnibounce");
 	}
 
 	
@@ -90,6 +94,8 @@ bool BounceBooster::Boost()
 	//no refresh
 	action = BOOST;
 	frame = 0;
+
+	sess->ActivateSoundAtPos(GetPosition(), boostSound);
 
 	if (hasMonitor && !suppressMonitor)
 	{

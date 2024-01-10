@@ -29,6 +29,9 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	};
 	MyData data;
 
+	SoundInfo *myHitSoundCW;
+	SoundInfo *myHitSoundCCW;
+
 	bool limitedJuggles;
 	sf::Text numJugglesText;
 	int hitLimit;

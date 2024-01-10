@@ -36,6 +36,7 @@ struct PhaseSwitch : Enemy
 	};
 	MyData data;
 
+	SoundInfo *phaseSound;
 	
 	Tileset *ts;	
 
