@@ -46,6 +46,11 @@ void Actor::STEEPCLIMBATTACK_Change()
 			return;
 		}
 
+		if (TryGroundAttackCancelDash())
+		{
+			return;
+		}
+
 		if (TryBufferGrind()) return;
 
 

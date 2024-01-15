@@ -1564,6 +1564,7 @@ struct Actor : QuadTreeCollider,
 	void UpdatePhysics();
 	void PhysicsResponse();
 	bool TryGroundAttack();
+	bool TryGroundAttackCancelDash();
 	bool SteepSlideAttack();
 	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );

@@ -60,18 +60,8 @@ void Actor::DASHATTACK_Change()
 			return;
 		}
 
-		if (pauseBufferedDash || DashButtonPressed())
+		if (TryGroundAttackCancelDash())
 		{
-			if (currAttackHit)
-			{
-				if (standNDashBoostCurr == 0)
-				{
-					standNDashBoost = true;
-					standNDashBoostCurr = standNDashBoostCooldown;
-				}
-			}
-			SetAction(DASH);
-			frame = 0;
 			return;
 		}
 

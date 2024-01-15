@@ -52,8 +52,15 @@ void Actor::STEEPSLIDEATTACK_Change()
 		//if (SteepSlideAttack())
 		//	return;
 
-		V2d norm = GetGroundedNormal();
+		
 
+		if (TryGroundAttackCancelDash())
+		{
+			return;
+		}
+
+
+		/*V2d norm = GetGroundedNormal();
 		if (DashButtonPressed())
 		{
 			if (norm.x < 0 && currInput.LRight())
@@ -69,7 +76,7 @@ void Actor::STEEPSLIDEATTACK_Change()
 				frame = 0;
 			}
 			return;
-		}
+		}*/
 	}
 }
 

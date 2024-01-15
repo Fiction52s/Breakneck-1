@@ -295,18 +295,20 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 		{
 			delete debugReplayManager;
 			debugReplayManager = NULL;
+		}
 
-			debugReplayManager = new PlayerReplayManager;
 
-			string s = "Resources\\Recordings\\Debug\\editordebugreplay" + string(REPLAY_EXT);
-			bool canOpen = debugReplayManager->LoadFromFile(s);
-			debugReplayManager->ghostsActive = true;
-			debugReplayManager->replaysActive = true;
-			if (!canOpen)
-			{
-				delete debugReplayManager;
-				debugReplayManager = NULL;
-			}
+
+		debugReplayManager = new PlayerReplayManager;
+
+		string s = "Resources\\Recordings\\Debug\\editordebugreplay" + string(REPLAY_EXT);
+		bool canOpen = debugReplayManager->LoadFromFile(s);
+		debugReplayManager->ghostsActive = true;
+		debugReplayManager->replaysActive = true;
+		if (!canOpen)
+		{
+			delete debugReplayManager;
+			debugReplayManager = NULL;
 		}
 
 		debugReplayPlayerOn = true;
@@ -6790,13 +6792,26 @@ void EditSession::MoveSelectedPoints()
 
 			if (prevEdgeLen != oldPrevLength)
 			{
-				auto enemyIt = poly->enemies.find(prev);
-				if (enemyIt != poly->enemies.end())
+				bool prevSelected = false;
+				for (auto pit2 = (*it).second.begin(); pit2 != (*it).second.end(); ++pit2)
 				{
-					list<ActorPtr> &enemies = (*enemyIt).second;
-					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					if ((*pit2).pointIndex == prev->index)
 					{
-						(*ait)->posInfo.groundQuantity -= (oldPrevLength - prevEdgeLen);
+						prevSelected = true;
+						break;
+					}
+				}
+
+				if (!prevSelected)
+				{
+					auto enemyIt = poly->enemies.find(prev);
+					if (enemyIt != poly->enemies.end())
+					{
+						list<ActorPtr> &enemies = (*enemyIt).second;
+						for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+						{
+							(*ait)->posInfo.groundQuantity -= (oldPrevLength - prevEdgeLen);
+						}
 					}
 				}
 			}
@@ -6838,6 +6853,109 @@ void EditSession::MoveSelectedPoints()
 				}
 
 				
+			}
+
+			poly->UpdateLineColor(prev->index);
+			poly->UpdateLineColor(i);
+
+			affected = true;
+
+			auto currIt = poly->enemies.find(curr);
+			if (currIt != poly->enemies.end())
+			{
+				list<ActorPtr> &currList = (*currIt).second;
+				for (auto it = currList.begin(); it != currList.end(); ++it)
+				{
+					if ((*it)->myEnemy != NULL)
+						(*it)->myEnemy->UpdateOnEditPlacement();
+
+					(*it)->UpdateGroundedSprite();
+					(*it)->SetBoundingQuad();
+				}
+			}
+			currIt = poly->enemies.find(prev);
+			if (currIt != poly->enemies.end())
+			{
+				list<ActorPtr> &currList = (*currIt).second;
+				for (auto it = currList.begin(); it != currList.end(); ++it)
+				{
+					//this is only on prev because the ground quant is not changed on curr
+					if ((*it)->myEnemy != NULL)
+					{
+						(*it)->myEnemy->UpdateOnEditPlacement();
+					}
+					(*it)->UpdateGroundedSprite();
+					(*it)->SetBoundingQuad();
+				}
+			}
+
+		}
+
+		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+		{
+			i = (*pit).pointIndex;
+
+			curr = poly->GetPoint(i);
+			prev = poly->GetPrevPoint(i);
+
+			edge = poly->GetEdge(i);
+			prevEdge = poly->GetPrevEdge(i);
+
+			oldPrevLength = prevEdge->GetLength();
+
+			edgeLen = edge->GetLength();
+			prevEdgeLen = prevEdge->GetLength();
+
+			if (prevEdgeLen != oldPrevLength)
+			{
+				auto enemyIt = poly->enemies.find(prev);
+				if (enemyIt != poly->enemies.end())
+				{
+					list<ActorPtr> &enemies = (*enemyIt).second;
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						(*ait)->posInfo.groundQuantity -= (oldPrevLength - prevEdgeLen);
+					}
+				}
+			}
+
+			//doesnt yet cover both sides at once
+			double maxQuant;
+			ActorPtr furthest = poly->GetFurthestEnemy(i, maxQuant);
+			if (furthest != NULL && maxQuant > edgeLen)
+			{
+				//double along = dot(-V2d(pointGrabDelta), edge->Along());
+				//poly->MovePoint(i, -pointGrabDelta);
+				revert = true;
+				break;
+				//poly->MovePoint(i, Vector2i( edge->Along() * along ));
+				//poly->SetPointPos(i, Vector2i(edge->v1 - edge->Along() * maxQuant)); //works!
+			}
+
+			double minQuant;
+			ActorPtr closest = poly->GetClosestEnemy(prev->GetIndex(), minQuant);
+			if (closest != NULL && minQuant < 0)
+			{
+				revert = true;
+				break;
+				//poly->MovePoint(i, -pointGrabDelta);
+
+				//poly->SetPointPos(i, Vector2i(prevEdge->v0 + prevEdge->Along() * (prevEdgeLen - minQuant)));
+				//cout << "oldlen: " << oldPrevLength << ", prevEdgeLen: " << prevEdgeLen << "minQuant: " << minQuant << endl;
+				if (prevEdgeLen != oldPrevLength)
+				{
+					auto enemyIt = poly->enemies.find(prev);
+					if (enemyIt != poly->enemies.end())
+					{
+						list<ActorPtr> &enemies = (*enemyIt).second;
+						for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+						{
+							(*ait)->posInfo.groundQuantity = (*ait)->oldQuant;//-minQuant;
+						}
+					}
+				}
+
+
 			}
 
 			poly->UpdateLineColor(prev->index);

@@ -7318,7 +7318,7 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-	//cout << "groundspeed: " << groundSpeed << "\n";
+	cout << "groundspeed: " << groundSpeed << "\n";
 	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
 	/*if (homingFrames > 0)
 	{
@@ -7747,7 +7747,7 @@ void Actor::SetAction( int a )
 
 bool Actor::TryClimbBoost()
 {
-	if (DashButtonPressed())
+	if ( pauseBufferedDash || DashButtonPressed()) //the pauseBufferedDash is here for when you cancel an attack with a climb.
 	{
 		V2d norm = GetGroundedNormal();
 		double sp = steepClimbBoostStart + GetDashSpeed();//steepClimbBoostStart;// 8;//13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
@@ -14905,6 +14905,61 @@ bool Actor::TryGroundAttack()
 	//	action = DASHATTACK;
 	//	frame = 0;
 	//}
+}
+
+bool Actor::TryGroundAttackCancelDash()
+{
+	if (pauseBufferedDash || DashButtonPressed())
+	{
+		if (IsOnSteepGround())
+		{
+			V2d norm = GetGroundedNormal();
+
+			//up and away from a steep slope shouldn't make you climb out of a slide!
+			if (groundSpeed < 0 && norm.x < 0 && (currInput.LRight() || HoldingRelativeUp()) && !currInput.LLeft() && !HoldingRelativeDown())
+			{
+				SetAction(STEEPCLIMB);
+				if (groundSpeed < steepClimbBoostStart)
+				{
+					groundSpeed = steepClimbBoostStart;
+				}
+				
+				//groundSpeed = 0;//steepClimbBoostStart;
+				//groundSpeed = steepClimbBoostStart;
+				frame = 0;
+
+				return true;
+			}
+			else if (groundSpeed > 0 && norm.x > 0 && (currInput.LLeft() || HoldingRelativeUp()) && !currInput.LRight() && !HoldingRelativeDown())
+			{
+				SetAction(STEEPCLIMB);
+
+				if (groundSpeed > -steepClimbBoostStart)
+				{
+					groundSpeed = -steepClimbBoostStart;
+				}
+				
+				//groundSpeed = 0;//-steepClimbBoostStart;
+				//groundSpeed = -steepClimbBoostStart;
+				frame = 0;
+
+				return true;
+			}
+		}
+		else
+		{
+			if ( currAttackHit && standNDashBoostCurr == 0)
+			{
+				standNDashBoost = true;
+				standNDashBoostCurr = standNDashBoostCooldown;
+			}
+			SetAction(DASH);
+			frame = 0;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Actor::HandleTouchedGate()
@@ -23783,11 +23838,11 @@ void Actor::ExecuteDoubleJump()
 			{
 				if (facingRight)
 				{
-					velocity.x = -GetDashSpeed();
+					velocity.x = min( velocity.x, -GetDashSpeed() );
 				}
 				else
 				{
-					velocity.x = GetDashSpeed();
+					velocity.x = max( velocity.x, GetDashSpeed() );
 				}
 				facingRight = !facingRight;
 			}

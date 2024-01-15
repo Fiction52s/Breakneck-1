@@ -288,8 +288,12 @@ void Owl::ProcessState()
 		{
 			if( PlayerDist() < DEFAULT_DETECT_RADIUS )
 			{
-				action = SPIN;
+				action = FIRE;//SPIN;
 				frame = 0;
+
+				launchers[0]->position = pos + fireDir * 40.0;
+				fireDir = normalize(playerPos - pos);
+				ang = atan2(fireDir.x, -fireDir.y);
 			}
 		}
 		break;

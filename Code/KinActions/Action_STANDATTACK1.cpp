@@ -55,7 +55,7 @@ void Actor::STANDATTACK1_Change()
 			return;
 		}
 
-		if (pauseBufferedDash || DashButtonPressed())
+		/*if (pauseBufferedDash || DashButtonPressed())
 		{
 			if (standNDashBoostCurr == 0)
 			{
@@ -64,6 +64,11 @@ void Actor::STANDATTACK1_Change()
 			}
 			SetAction(DASH);
 			frame = 0;
+			return;
+		}*/
+
+		if (TryGroundAttackCancelDash())
+		{
 			return;
 		}
 

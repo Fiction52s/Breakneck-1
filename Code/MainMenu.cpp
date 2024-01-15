@@ -364,6 +364,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
+	case QUICKPLAY_SEARCH:
+	{
+		assert(quickplaySearchScreen != NULL);
+		delete quickplaySearchScreen;
+		quickplaySearchScreen = NULL;
+		break;
+	}
 
 	}
 
@@ -618,6 +625,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		saveMenu = NULL;*/
 		break;
 	}
+	case QUICKPLAY_SEARCH:
+	{
+		assert(quickplaySearchScreen == NULL);
+		quickplaySearchScreen = new QuickplaySearchScreen;
+		break;
+	}
 	}
 }
 
@@ -862,7 +875,7 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	customMatchManager = new CustomMatchManager;
 
-	quickplaySearchScreen = new QuickplaySearchScreen;
+	quickplaySearchScreen = NULL;//new QuickplaySearchScreen;
 
 	workshopManager = new WorkshopManager; //needs to be made before any mapbrowsers
 
@@ -1403,11 +1416,6 @@ void MainMenu::SetMode(Mode m)
 		//MOUSE.Show();
 		customCursor->SetMode(CustomCursor::M_REGULAR);
 		//customCursor-
-	}
-
-	if (menuMode == QUICKPLAY_SEARCH)
-	{
-		quickplaySearchScreen->Reset();
 	}
 
 
@@ -3573,7 +3581,7 @@ void MainMenu::HandleMenuMode()
 		case OnlineMenuScreen::A_QUICKPLAY:
 			netplayManager->FindQuickplayMatch();
 			MOUSE.Hide();
-			SetMode(QUICKPLAY_SEARCH);
+			LoadMode(QUICKPLAY_SEARCH);
 			break;
 		case OnlineMenuScreen::A_CREATE_LOBBY:
 			customMatchManager->CreateCustomLobby();
@@ -3884,7 +3892,8 @@ void MainMenu::HandleMenuMode()
 		{
 			MOUSE.Show();
 			netplayManager->Abort();
-			SetMode(ONLINE_MENU);
+			LoadMode(ONLINE_MENU);
+			//SetMode(ONLINE_MENU);
 			break;
 			//quit = true;
 		}

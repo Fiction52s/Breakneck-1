@@ -3013,6 +3013,7 @@ bool TerrainPolygon::LinesIntersectMyself()
 
 			if (!li.parallel)
 			{
+				cout << "lines intersect myself. curr: " << currI->pos.x << ", " << currI->pos.y << ", prev:" << prevJ->pos.x << ", " << prevJ->pos.y << "\n";
 				return true;
 			}
 		}
