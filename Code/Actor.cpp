@@ -6252,6 +6252,13 @@ void Actor::ProcessGravModifier()
 
 void Actor::ProcessBooster()
 {
+	if (action == JUMPSQUAT)
+	{
+		//ignore during jumpsquat
+		currBooster = NULL;
+		return;
+	}
+
 	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH && currBooster->Boost())
 	{
 		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
@@ -6277,13 +6284,28 @@ void Actor::ProcessBooster()
 		}
 		else if (ground != NULL)
 		{
-			if (groundSpeed > 0)
+			if (action == GRAVREVERSE)
 			{
-				groundSpeed += currBooster->strength;
+				//haven't tested this but it seems right
+				if (storedReverseSpeed > 0)
+				{
+					storedReverseSpeed += currBooster->strength;
+				}
+				else if (storedReverseSpeed < 0)
+				{
+					storedReverseSpeed -= currBooster->strength;
+				}
 			}
-			else if (groundSpeed < 0)
+			else
 			{
-				groundSpeed -= currBooster->strength;
+				if (groundSpeed > 0)
+				{
+					groundSpeed += currBooster->strength;
+				}
+				else if (groundSpeed < 0)
+				{
+					groundSpeed -= currBooster->strength;
+				}
 			}
 		}
 	}
@@ -7318,7 +7340,7 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-	cout << "groundspeed: " << groundSpeed << "\n";
+	//cout << "groundspeed: " << groundSpeed << "\n";
 	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
 	/*if (homingFrames > 0)
 	{
@@ -9557,8 +9579,8 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else if( nextSteep && nextMovingUp )
 				{
-					if( groundSpeed <= steepClimbSpeedThresh && action != STEEPCLIMB 
-						&& action != STEEPCLIMBATTACK)
+					if( groundSpeed <= steepClimbSpeedThresh )
+						//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 					{
 						offsetX = -offsetX;
 						groundSpeed = 0;
@@ -9712,9 +9734,8 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else if( nextSteep && nextMovingUp )
 				{
-					if( groundSpeed >= -steepClimbSpeedThresh
-						&& action != STEEPCLIMB
-						&& action != STEEPCLIMBATTACK)
+					if( groundSpeed >= -steepClimbSpeedThresh )
+						//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 					{
 						groundSpeed = 0;
 						offsetX = -offsetX;
@@ -10219,7 +10240,8 @@ V2d Actor::UpdateReversePhysics()
 										}
 									}
 									else if (minContact.normal.y < 0 && minContact.normal.y > -steepThresh
-										&& (action == STEEPCLIMB || action == STEEPCLIMBATTACK)
+										//&& (action == STEEPCLIMB || action == STEEPCLIMBATTACK) //dont think this is necessary, because
+										//sometimes dash attack etc can make it to this position
 										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0))
 										/*&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
 										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
@@ -13432,8 +13454,8 @@ void Actor::UpdatePhysics()
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
-						if( groundSpeed >= -steepClimbSpeedThresh &&
-							action != STEEPCLIMB && action != STEEPCLIMBATTACK)
+						if( groundSpeed >= -steepClimbSpeedThresh )
+							//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 						{
 							groundSpeed = 0;
 							break;
@@ -13547,8 +13569,8 @@ void Actor::UpdatePhysics()
 
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
-						if( groundSpeed <= steepClimbSpeedThresh && action != STEEPCLIMB
-							&& action != STEEPCLIMBATTACK)
+						if( groundSpeed <= steepClimbSpeedThresh )
+							//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 						{
 							groundSpeed = 0;
 							break;

@@ -84,7 +84,7 @@ Badger::Badger(ActorParams *ap)
 	hurtBody.SetupNumFrames(2);
 	hurtBody.SetupNumBoxesOnFrame(0, 1);
 	hurtBody.SetupNumBoxesOnFrame(1, 1);
-	hurtBody.AddBasicRect(0, 70, 30, 0, V2d(-15, 12));
+	hurtBody.AddBasicRect(0, 70, 40, 0, V2d(-15, 12));
 	hurtBody.AddBasicCircle(1, 40, 0, V2d());
 
 	//BasicRectHitBodySetup(60, 25, 0, V2d(0, 0), V2d());
