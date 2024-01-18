@@ -10242,6 +10242,8 @@ V2d Actor::UpdateReversePhysics()
 									else if (minContact.normal.y < 0 && minContact.normal.y > -steepThresh
 										//&& (action == STEEPCLIMB || action == STEEPCLIMBATTACK) //dont think this is necessary, because
 										//sometimes dash attack etc can make it to this position
+										&& action != GRAVREVERSE //never transition to ground from gravreverse state
+										&& ( ground->IsSteepGround() || HoldingRelativeUp() )
 										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0))
 										/*&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
 										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
