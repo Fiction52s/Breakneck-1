@@ -48,18 +48,19 @@ Owl::Owl(ActorParams *ap)
 	actionLength[REST] = 60;
 	actionLength[SPIN] = 40;
 
-	bulletSpeed = 10;
+	bulletSpeed = 12;
 	framesBetween = 60;
 	
 	SetNumLaunchers(2);
 
-	launchers[0] = new Launcher( this, BasicBullet::OWL, 16, 3, GetPosition(), V2d( 1, 0 ), PI / 12, 300 );
+	//PI / 12
+	launchers[0] = new Launcher( this, BasicBullet::OWL, 16, 3, GetPosition(), V2d( 1, 0 ), PI / 4, 120 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::YELLOW;
 	launchers[0]->Reset();
 
-	launchers[1] = new Launcher(this, BasicBullet::BIG_OWL, 16, 6, GetPosition(), V2d(0, -1), 2 * PI, 300);
+	launchers[1] = new Launcher(this, BasicBullet::BIG_OWL, 16, 6, GetPosition(), V2d(0, -1), 2 * PI, 120);
 	launchers[1]->SetBulletSpeed(bulletSpeed);
 	launchers[1]->hitboxInfo->damage = 60;
 	launchers[1]->hitboxInfo->hType = HitboxInfo::YELLOW;
@@ -143,7 +144,7 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 		V2d ref = b->velocity - (2.0 * d * en);
 		b->velocity = ref;
 		b->bounceCount++;
-		b->framesToLive = b->launcher->maxFramesToLive;
+		//b->framesToLive = b->launcher->maxFramesToLive;
 	}
 }
 
@@ -281,6 +282,7 @@ void Owl::ProcessState()
 
 	
 	double ignoreDistance = 1300;
+	//double detectRadius = DEFAULT_DETECT_RADIUS + 200;
 	
 	switch( action )
 	{
@@ -289,9 +291,7 @@ void Owl::ProcessState()
 			if( PlayerDist() < DEFAULT_DETECT_RADIUS )
 			{
 				action = FIRE;//SPIN;
-				frame = 0;
-
-				launchers[0]->position = pos + fireDir * 40.0;
+				frame = 10;//3 * 6 - 1;
 				fireDir = normalize(playerPos - pos);
 				ang = atan2(fireDir.x, -fireDir.y);
 			}
@@ -358,6 +358,10 @@ void Owl::ProcessState()
 
 	if( action == FIRE && frame == 3 * 6 - 1  )// frame == 0 && slowCounter == 1 )
 	{
+		launchers[0]->position = pos + fireDir * 40.0;
+		fireDir = normalize(playerPos - pos);
+		ang = atan2(fireDir.x, -fireDir.y);
+
 		launchers[0]->position = pos;
 		launchers[0]->facingDir = fireDir;//normalize( owner->GetPlayer( 0 )->position - position );
 		launchers[0]->Fire();
@@ -395,6 +399,7 @@ void Owl::UpdateSprite()
 		{
 			sprite.setRotation( ang / PI * 180.f + 90 );
 			sprite.setTextureRect( ts->GetSubRect( frame / 6 + 27 ) );
+			assert(frame/6 + 27 < 37);
 		}
 		break;
 	}

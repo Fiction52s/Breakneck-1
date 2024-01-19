@@ -1308,6 +1308,7 @@ struct Actor : QuadTreeCollider,
 	bool IsNormalSkin();
 	static int GetSkinIndexFromString(const std::string &s);
 	bool CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos );
+	bool CanBlockBullet(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight );
 	void RestoreAirOptions();
 	bool CanCancelAttack();
 	int MostRecentFrameCurrAttackBlocked();

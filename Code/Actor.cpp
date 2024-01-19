@@ -7340,7 +7340,7 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-	//cout << "groundspeed: " << groundSpeed << "\n";
+	cout << "groundspeed: " << groundSpeed << "\n";
 	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
 	/*if (homingFrames > 0)
 	{
@@ -13456,13 +13456,13 @@ void Actor::UpdatePhysics()
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
-						if( groundSpeed >= -steepClimbSpeedThresh )
-							//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
-						{
-							groundSpeed = 0;
-							break;
-						}
-						else
+						//if( groundSpeed >= -steepClimbSpeedThresh )
+						//	//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
+						//{
+						//	groundSpeed = 0;
+						//	break;
+						//}
+						//else
 						{
 							ground = next;
 							q = length( ground->v1 - ground->v0 );	
@@ -21432,11 +21432,13 @@ void Actor::DefaultGroundLanding( double &movement )
 
 bool Actor::DefaultGravReverseCheck()
 {
+	bool steepTransferCheck = ground != NULL && ground->IsSteepGround() && minContact.edge->IsSteepGround();
+
 	return ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& (((DashButtonHeld() && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -24248,6 +24250,106 @@ bool Actor::CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos )
 	return false;
 }
 
+bool Actor::CanBlockBullet(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight )
+{
+	//lenient. if you are facing its position OR if its momentum is opposite to your shield you 
+	//will be able to block it.
+	bool facingHitbox = ((facingRight && position.x - hitPos.x <= 0)
+		|| (!facingRight && position.x - hitPos.x >= 0)) || facingRight != attackFacingRight;
+
+	//basically changed the block to include 180+ degrees instead of <180
+	if (action == GROUNDBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
+			return true;
+	}
+	else if (action == GROUNDBLOCKDOWNFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::GROUND
+				|| hpt == HitboxInfo::HitPosType::GROUNDLOW)))
+			return true;
+	}
+	else if (action == GROUNDBLOCKFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::GROUND))
+			return true;
+	}
+	else if (action == GROUNDBLOCKUPFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)))
+			return true;
+	}
+	else if (action == GROUNDBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWNFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| (facingHitbox && (hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKUPFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			return true;
+	}
+
+	return false;
+}
+
 bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
 {
 	bool facingHitbox = (facingRight && position.x - hitPos.x <= 0)
@@ -24503,7 +24605,7 @@ Actor::HitResult Actor::CheckIfImHitByBullet( BasicBullet *hitter, CollisionBox 
 		{
 			return HitResult::INVINCIBLEHIT;
 		}
-		else if (canBeBlocked && CanBlockEnemy(hpt, hitPos))
+		else if (canBeBlocked && CanBlockBullet(hpt, hitPos, attackFacingRight))//, hitPos))
 		{
 			return HitResult::FULLBLOCK;
 		}
