@@ -17301,7 +17301,7 @@ void Actor::HandleWaterSituation(int wType,
 					wallNormal = V2d(0, 0);
 					velocity = V2d(0, 0);
 					currWall = NULL;
-					double speed = 30;
+					double speed = 40;
 
 					springVel = norm * speed;
 

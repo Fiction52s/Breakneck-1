@@ -79,8 +79,8 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	kinMaskShowPos = kinMask->GetTopLeft();
 	kinMaskHidePos = Vector2f(-500, kinMaskShowPos.y);
 
-	keyMarkerShowPos = Vector2f(1920 - 50, 50);//keyMarkers[0]->GetPosition();
-	keyMarkerHidePos = Vector2f(1920 + 200, keyMarkerShowPos.y);
+	keyMarkerShowPos = Vector2f(960, 1080 - 45);//Vector2f(1920 - 50, 50);
+	keyMarkerHidePos = Vector2f(960, 1080 + 100);//Vector2f(1920 + 200, keyMarkerShowPos.y);
 
 	bossHealthShowPos = Vector2f(1920 - 100, 200);
 	bossHealthHidePos = bossHealthShowPos + Vector2f(500, 0);
@@ -243,6 +243,7 @@ void AdventureHUD::Hide(int frames)
 		{
 			//keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
 			keyMarkers[i]->SetTopRight(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+			//keyMarkers[i]->SetTopLeft(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
 		}
 		kinMask->SetTopLeft(kinMaskHidePos);
 		powerSelector->SetPosition(powerSelectorHidePos);
@@ -269,10 +270,16 @@ void AdventureHUD::Show(int frames)
 		frame = 0;
 		mini->SetCenter(miniShowPos);
 		kinMask->SetTopLeft(kinMaskShowPos);
-		for (int i = 0; i < keyMarkers.size(); ++i)
+
+		if (keyMarkers.size() == 1)
 		{
-			//keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
-			keyMarkers[i]->SetTopRight(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
+			keyMarkers[0]->SetCenter(keyMarkerShowPos);
+		}
+		else if( keyMarkers.size() == 2 )
+		{
+			float move = 20;
+			keyMarkers[0]->SetTopRight(keyMarkerShowPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+			keyMarkers[1]->SetTopLeft(keyMarkerShowPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 		}
 		flyCountText.setPosition(flyCountTextShowPos);
 		timer->SetCenter(timerShowPos);
