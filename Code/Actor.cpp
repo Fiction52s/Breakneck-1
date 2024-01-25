@@ -1434,6 +1434,9 @@ void Actor::SetupExtraTilesets()
 	ts_homingAttackBall = tm->GetSizedTileset("Kin/FX/homing_att_ball_256x256.png");
 	ts_homingAttackBall->SetSpriteTexture(homingAttackBallSprite);
 
+	ts_glideIndicator = tm->GetSizedTileset("Kin/FX/glide_ring_160x160.png");
+	ts_glideIndicator->SetSpriteTexture(glideIndicatorSprite);
+
 	ts_antiTimeSlowRing = tm->GetSizedTileset("Kin/FX/anti_timeslow_ring_128x128.png");
 
 	ts_fx_boosterParticles = tm->GetSizedTileset("Kin/FX/booster_particles_32x32.png");
@@ -3456,6 +3459,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		swordProjectiles[i] = new SwordProjectile(this);
 	}
 
+	
+
 	LoadHitboxes();
 
 	currPowerMode = PMODE_SHIELD;
@@ -3465,7 +3470,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	attackLevelCounterLimit = 60;
 
 	
-
+	//return;
 	
 
 	rpu = new RisingParticleUpdater( this );
@@ -3935,7 +3940,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	offSlopeByWallThresh = dashSpeed;//18;
 	slopeLaunchMinSpeed = 5;//dashSpeed * .7;
-	steepClimbSpeedThresh = dashSpeed - 1;
+	steepClimbSpeedThresh = 4;//dashSpeed - 1;
 	slideGravFactor = .25;//.25;//.3;//.45;
 
 		
@@ -4193,10 +4198,10 @@ void Actor::InitSounds()
 
 	soundInfos[PlayerSounds::S_WATER_NORMAL_ENTER] = GetSound("Water/water_normal_enter");
 	soundInfos[PlayerSounds::S_WATER_NORMAL_EXIT] = GetSound("Water/water_normal_exit");
-	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_01] = GetSound("Water/water_normal_bubble_01");
+	/*soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_01] = GetSound("Water/water_normal_bubble_01");
 	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_02] = GetSound("Water/water_normal_bubble_02");
 	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_03] = GetSound("Water/water_normal_bubble_03");
-	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_04] = GetSound("Water/water_normal_bubble_04");
+	soundInfos[PlayerSounds::S_WATER_NORMAL_BUBBLE_04] = GetSound("Water/water_normal_bubble_04");*/
 	soundInfos[PlayerSounds::S_WATER_GLIDE_ENTER] = GetSound("Water/water_glide_enter");
 	soundInfos[PlayerSounds::S_WATER_GLIDE_EXIT] = GetSound("Water/water_glide_exit");
 	soundInfos[PlayerSounds::S_WATER_LOWGRAV_ENTER] = GetSound("Water/water_lowgrav_enter");
@@ -4213,11 +4218,11 @@ void Actor::InitSounds()
 	soundInfos[PlayerSounds::S_WATER_LAUNCHER_EXIT] = GetSound("Water/water_launcher_exit");
 	soundInfos[PlayerSounds::S_WATER_MOMENTUM_ENTER] = GetSound("Water/water_momentum_enter");
 	soundInfos[PlayerSounds::S_WATER_MOMENTUM_EXIT] = GetSound("Water/water_momentum_exit");
-	soundInfos[PlayerSounds::S_WATER_TIMESLOW_ENTER] = GetSound("Water/water_timeslow_enter");
-	soundInfos[PlayerSounds::S_WATER_TIMESLOW_EXIT] = GetSound("Water/water_timeslow_exit");
+	//soundInfos[PlayerSounds::S_WATER_TIMESLOW_ENTER] = GetSound("Water/water_timeslow_enter");
+	//soundInfos[PlayerSounds::S_WATER_TIMESLOW_EXIT] = GetSound("Water/water_timeslow_exit");
 	soundInfos[PlayerSounds::S_WATER_POISON_ENTER] = GetSound("Water/water_poison_enter");
 	soundInfos[PlayerSounds::S_WATER_POISON_EXIT] = GetSound("Water/water_poison_exit");
-	soundInfos[PlayerSounds::S_WATER_POISON_LOOP] = GetSound("Water/water_poison_loop");
+	//soundInfos[PlayerSounds::S_WATER_POISON_LOOP] = GetSound("Water/water_poison_loop");
 	soundInfos[PlayerSounds::S_WATER_FREEFLIGHT_ENTER] = GetSound("Water/water_freeflight_enter");
 	soundInfos[PlayerSounds::S_WATER_FREEFLIGHT_EXIT] = GetSound("Water/water_freeflight_exit");
 	soundInfos[PlayerSounds::S_WATER_INVERTEDINPUTS_ENTER] = GetSound("Water/water_invertedinputs_enter");
@@ -6142,9 +6147,13 @@ void Actor::UpdateBounceFlameOn()
 
 	if (bounceFlameOn)
 	{
-		if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || !BounceButtonHeld() )//BounceButtonPressed())
+		//if (action != BOUNCEAIR && action != BOUNCEGROUND && action != BOUNCEGROUNDEDWALL )
+		if( bounceEdge == NULL )
 		{
-			BounceFlameOff();
+			if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || !BounceButtonHeld())//BounceButtonPressed())
+			{
+				BounceFlameOff();
+			}
 		}
 	}
 	else
@@ -7340,7 +7349,7 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-	cout << "groundspeed: " << groundSpeed << "\n";
+	//cout << "groundspeed: " << groundSpeed << "\n";
 	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
 	/*if (homingFrames > 0)
 	{
@@ -9579,7 +9588,8 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else if( nextSteep && nextMovingUp )
 				{
-					if( groundSpeed <= steepClimbSpeedThresh )
+					//steeptesting 1 reverse
+					if( groundSpeed <= steepClimbSpeedThresh && ( !ground->IsSteepGround() || movingDown) )
 						//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 					{
 						offsetX = -offsetX;
@@ -9734,7 +9744,8 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else if( nextSteep && nextMovingUp )
 				{
-					if( groundSpeed >= -steepClimbSpeedThresh )
+					//steeptesting 2 reverse
+					if( groundSpeed >= -steepClimbSpeedThresh && (!ground->IsSteepGround() || movingDown) )
 						//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 					{
 						groundSpeed = 0;
@@ -9789,14 +9800,46 @@ V2d Actor::UpdateReversePhysics()
 
 
 				//wire problem could arise later because i dont update anchors when i hit an edge.
-				if (approxEquals(m, 0))
+				//if (approxEquals(m, 0))
+				//{
+				//	offsetX = -offsetX;
+				//	break;
+				//}
+				//else
 				{
-					//approxtesting reverse
-					offsetX = -offsetX;
-					break;
-				}
-				else
-				{
+					//new approxtesting reverse changeoffset
+					if (approxEquals(m, 0))
+					{
+						if (movement > 0)
+						{
+							/*Edge *next = ground->edge1;
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
+								break;
+							}
+							else*/
+							{
+								m = .01;
+							}
+						}
+						else if (movement < 0)
+						{
+							/*Edge *next = ground->edge0;
+
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(false, V2d(0, -gravity * 2));
+								break;
+							}
+							else*/
+							{
+								m = -.01;
+							}
+						}
+					}
+
+
 				
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( -m, 0 ));
@@ -9980,9 +10023,11 @@ V2d Actor::UpdateReversePhysics()
 					q += m;
 				}
 				
-				if( approxEquals(m, 0))
+				
+
+				//if( approxEquals(m, 0))
+				if( false )
 				{
-					//approxtesting reverse
 
 					//cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					if (groundSpeed > 0)
@@ -10089,6 +10134,40 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else
 				{	
+					//new approxtesting reverse
+					if (approxEquals(m, 0))
+					{
+						if (movement > 0)
+						{
+							Edge *next = ground->edge1;
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(true, V2d(0, 1));
+								break;
+							}
+							else
+							{
+								m = .01;
+							}
+						}
+						else if (movement < 0)
+						{
+							Edge *next = ground->edge0;
+
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(false, V2d(0, 1));
+								break;
+							}
+							else
+							{
+								m = -.01;
+							}
+						}
+					}
+
+
+
 					//wire problem could arise later because i dont update anchors when i hit an edge.
 					V2d oldPos = position;
 					//cout << "moving: " << (normalize( ground->v1 - ground->v0 ) * m).x << ", " << 
@@ -10229,8 +10308,11 @@ V2d Actor::UpdateReversePhysics()
 								{
 									if (bounceFlameOn && abs(groundSpeed) > 1)
 									{
+										//steeptesting 3 reverse
+
 										//if (action != STEEPCLIMB
 										//	&& action != STEEPCLIMBATTACK)
+										//if( gNormal.x < 0 && movement )
 										{
 
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
@@ -13456,13 +13538,15 @@ void Actor::UpdatePhysics()
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
-						//if( groundSpeed >= -steepClimbSpeedThresh )
-						//	//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
-						//{
-						//	groundSpeed = 0;
-						//	break;
-						//}
-						//else
+						//steeptesting 4
+
+						bool movingDown = gNormal.x < 0;
+						if( groundSpeed >= -steepClimbSpeedThresh && (!ground->IsSteepGround() || movingDown ) )
+						{
+							groundSpeed = 0;
+							break;
+						}
+						else
 						{
 							ground = next;
 							q = length( ground->v1 - ground->v0 );	
@@ -13571,7 +13655,9 @@ void Actor::UpdatePhysics()
 
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
-						if( groundSpeed <= steepClimbSpeedThresh )
+						//steeptesting 5
+						bool movingDown = gNormal.x > 0;
+						if( groundSpeed <= steepClimbSpeedThresh && (!ground->IsSteepGround() || movingDown ) )
 							//&& action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 						{
 							groundSpeed = 0;
@@ -13708,13 +13794,50 @@ void Actor::UpdatePhysics()
 					offsetX += m;
 				}
 
-				if(approxEquals(m, 0))
+
+				
+
+				
+				//if(approxEquals(m, 0))
+				//{
+				//	break;
+				//}
+				//else
 				{
-					//approxtesting
-					break;
-				}
-				else
-				{
+					//new approxtesting changeoffset
+					if (approxEquals(m, 0))
+					{
+						if (groundSpeed > 0)
+						{
+							/*Edge *next = ground->edge1;
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
+								break;
+							}
+							else*/
+							{
+								m = .01;
+							}
+						}
+						else if (groundSpeed < 0)
+						{
+							/*Edge *next = ground->edge0;
+
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(false, V2d(0, -gravity * 2));
+								break;
+							}
+							else*/
+							{
+								m = -.01;
+							}
+						}
+					}
+
+
+
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( m, 0 ));
 
@@ -13882,104 +14005,138 @@ void Actor::UpdatePhysics()
 				if (UpdateAutoRunPhysics(q, m))
 					return;
 
-				if (approxEquals(m, 0))
-				{
-					//approxtesting
-					if (groundSpeed > 0)
+				
+				//else
+				{	
+					//if (approxEquals(m, 0))
+					if( false )
 					{
-						Edge *next = ground->edge1;
-
-
-						if (next == NULL)
+						if (groundSpeed > 0)
 						{
-							LeaveGroundTransfer(true, V2d(0, -gravity * 2));
-						}
+							Edge *next = ground->edge1;
 
-						/*double yDist = abs(gNormal.x) * groundSpeed;
-						if (next != NULL && next->Normal().y < 0 && abs(e1n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0))
-						{
+
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
+							}
+
+							/*double yDist = abs(gNormal.x) * groundSpeed;
+							if (next != NULL && next->Normal().y < 0 && abs(e1n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0))
+							{
 							if (e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh)
 							{
-								if (!TryUnlockOnTransfer(e1))
-								{
-									groundSpeed = 0;
-								}	
-							}
-						}
-						else if (next != NULL && abs(e1n.x) >= wallThresh)
-						{
 							if (!TryUnlockOnTransfer(e1))
 							{
-								if (bounceFlameOn && abs(groundSpeed) > 1)
-								{
-									storedBounceGroundSpeed = groundSpeed * slowMultiple;
-									groundedWallBounce = true;
-								}
-
-								groundSpeed = 0;
+							groundSpeed = 0;
 							}
-						}
-						else
-						{
+							}
+							}
+							else if (next != NULL && abs(e1n.x) >= wallThresh)
+							{
+							if (!TryUnlockOnTransfer(e1))
+							{
+							if (bounceFlameOn && abs(groundSpeed) > 1)
+							{
+							storedBounceGroundSpeed = groundSpeed * slowMultiple;
+							groundedWallBounce = true;
+							}
+
+							groundSpeed = 0;
+							}
+							}
+							else
+							{
 							velocity = normalize(ground->v1 - ground->v0) * groundSpeed;
 
 							movementVec = normalize(ground->v1 - ground->v0) * extra;
 
 							leftGround = true;
 							ground = NULL;
-						}*/
-					}
-					else if (groundSpeed < 0)
-					{
-						Edge *next = ground->edge0;
-
-						if (next == NULL)
-						{
-							LeaveGroundTransfer(false, V2d(0, -gravity * 2));
+							}*/
 						}
-
-						/*double yDist = abs(gNormal.x) * groundSpeed;
-						Edge *next = ground->edge0;
-						if (next != NULL && next->Normal().y < 0 && abs(e0n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x))
+						else if (groundSpeed < 0)
 						{
+							Edge *next = ground->edge0;
+
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(false, V2d(0, -gravity * 2));
+							}
+
+							/*double yDist = abs(gNormal.x) * groundSpeed;
+							Edge *next = ground->edge0;
+							if (next != NULL && next->Normal().y < 0 && abs(e0n.x) < wallThresh && !(HoldingRelativeUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x))
+							{
 							if (e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh)
 							{
-								if (!TryUnlockOnTransfer(e0))
-								{
-									groundSpeed = 0;
-								}
-							}
-						}
-						else if (next != NULL && abs(e0n.x) >= wallThresh)
-						{
 							if (!TryUnlockOnTransfer(e0))
 							{
-								if (bounceFlameOn && abs(groundSpeed) > 1)
-								{
-									storedBounceGroundSpeed = groundSpeed * slowMultiple;
-									groundedWallBounce = true;
-								}
-
-								groundSpeed = 0;
+							groundSpeed = 0;
 							}
-						}
-						else
-						{
+							}
+							}
+							else if (next != NULL && abs(e0n.x) >= wallThresh)
+							{
+							if (!TryUnlockOnTransfer(e0))
+							{
+							if (bounceFlameOn && abs(groundSpeed) > 1)
+							{
+							storedBounceGroundSpeed = groundSpeed * slowMultiple;
+							groundedWallBounce = true;
+							}
+
+							groundSpeed = 0;
+							}
+							}
+							else
+							{
 							velocity = normalize(ground->v1 - ground->v0) * groundSpeed;
 							movementVec = normalize(ground->v1 - ground->v0) * extra;
 							leftGround = true;
 
 							ground = NULL;
+							}*/
+						}
+
+						/*if (ground != NULL)
+						{
+							break;
 						}*/
 					}
 
-					if (ground != NULL)
+					//new approxtesting
+					if (approxEquals(m,0))
 					{
-						break;
+						if (groundSpeed > 0)
+						{
+							Edge *next = ground->edge1;
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
+								break;
+							}
+							else
+							{
+								m = .01;
+							}
+						}
+						else if (groundSpeed < 0)
+						{
+							Edge *next = ground->edge0;
+
+							if (next == NULL)
+							{
+								LeaveGroundTransfer(false, V2d(0, -gravity * 2));
+								break;
+							}
+							else
+							{
+								m = -.01;
+							}
+						}
 					}
-				}
-				else
-				{	
+
 					bool down = true;
 					V2d oldPos = position;
 					
@@ -14143,6 +14300,7 @@ void Actor::UpdatePhysics()
 								{
 									if( bounceFlameOn && abs( groundSpeed ) > 1)
 									{
+										//steeptesting 6
 										//if( action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 										{
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
@@ -21671,6 +21829,11 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw(boosterRingSprite);
 	}
 
+	if (action == SPRINGSTUNGLIDE)
+	{
+		target->draw(glideIndicatorSprite);
+	}
+
 	if( bounceFlameOn && !IsExitAction( action ) && !IsGoalKillAction(action) && action != GRINDBALL 
 		&& action != RAILGRIND )
 	{
@@ -22291,6 +22454,10 @@ void Actor::UpdateSprite()
 	boosterRingSprite.setPosition(Vector2f(spriteCenter));
 	boosterRingSprite.setOrigin(boosterRingSprite.getLocalBounds().width / 2,
 		boosterRingSprite.getLocalBounds().height / 2);
+
+	glideIndicatorSprite.setPosition(Vector2f(spriteCenter));
+	glideIndicatorSprite.setOrigin(glideIndicatorSprite.getLocalBounds().width / 2,
+		glideIndicatorSprite.getLocalBounds().height / 2);
 
 	UpdateRisingAura();
 

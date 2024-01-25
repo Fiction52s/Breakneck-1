@@ -36,8 +36,8 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	actionLength[RECOVER] = 14;//60
 
 	animFactor[IDLE] = 4;
-	animFactor[CHARGE] = 20;
-	animFactor[FIRE] = 3;
+	animFactor[CHARGE] = 13;
+	animFactor[FIRE] = 1;
 	animFactor[RECOVER] = 5;
 
 	SetLevel(ap->GetLevel());
@@ -234,7 +234,7 @@ void PalmTurret::ProcessState()
 	{
 	case IDLE:
 	{
-		if (PlayerDist() < DEFAULT_DETECT_RADIUS )// + 1200)
+		if (PlayerDist() < DEFAULT_DETECT_RADIUS + 600 )// + 1200)
 		{
 			StartCharge();
 		}

@@ -5,34 +5,34 @@ EarlyAccess\World 1\Movement Intro\Bearings
 EarlyAccess\World 1\Movement Intro\Descent
 EarlyAccess\World 1\Movement Intro\Ascent
 EarlyAccess\World 1\Enemy Intro\Crawling
-EarlyAccess\World 1\Enemy Intro\Nest
-EarlyAccess\World 1\Enemy Intro\Hatch
 EarlyAccess\World 1\Post-Intro\Resistance
+EarlyAccess\World 1\Enemy Intro\Hatch
+EarlyAccess\World 1\Enemy Intro\Nest
 EarlyAccess\World 1\Item Intro\Combo
 EarlyAccess\World 1\Item Intro\Launch
 EarlyAccess\World 1\Post-Intro\Scavenge
 EarlyAccess\World 1\Item Intro\Faster
-EarlyAccess\World 1\Item Intro\Construction
+EarlyAccess\World 1\Post-Intro\Prism
 EarlyAccess\World 1\Item Intro\Not So Fast
 EarlyAccess\World 1\Item Intro\Reaching Higher
 EarlyAccess\World 1\Item Intro\Regenerate
 EarlyAccess\World 1\Item Intro\Fluid
 EarlyAccess\World 1\Enemy Intro\Security
 EarlyAccess\World 1\Item Intro\Blockade
-EarlyAccess\World 1\Post-Intro\Soar
 EarlyAccess\World 1\Post-Intro\Cavern
+EarlyAccess\World 1\Item Intro\Construction
 EarlyAccess\World 1\Post-Intro\Outcropping
 EarlyAccess\World 1\Post-Intro\Threshold
 EarlyAccess\World 1\Enemy Intro\Detected
 EarlyAccess\World 1\Post-Intro\Infiltration
-EarlyAccess\World 1\Post-Intro\Elevate
+EarlyAccess\World 1\Post-Intro\Ridge
 EarlyAccess\World 1\Post-Intro\Violence
-EarlyAccess\World 1\Post-Intro\Prism
 EarlyAccess\World 1\Post-Intro\The Easy Road
 EarlyAccess\World 1\Post-Intro\Rocket
+EarlyAccess\World 1\Post-Intro\Soar
 EarlyAccess\World 1\Post-Intro\Fissure
 EarlyAccess\World 1\Post-Intro\Low Profile
-EarlyAccess\World 1\Post-Intro\Ridge
+EarlyAccess\World 1\Post-Intro\Elevate
 EarlyAccess\World 1\Post-Intro\Surface Tension
 EarlyAccess\World 1\Power\Breathe
 ----
@@ -65,30 +65,30 @@ EarlyAccess\World 1\Power\Breathe
 ----
 ----
 EarlyAccess\World 2\Enemy Intro\Rampage
-EarlyAccess\World 2\Enemy Intro\Photosynthesis
-EarlyAccess\World 2\Enemy Intro\Leap
-EarlyAccess\World 2\Enemy Intro\Unwelcome
-EarlyAccess\World 2\Enemy Intro\Crush
 EarlyAccess\World 2\Item Intro\Liftoff
 EarlyAccess\World 2\Item Intro\Heavy Mettle
 EarlyAccess\World 2\Item Intro\Burdens Lifted
-EarlyAccess\World 2\Item Intro\Consequence
-EarlyAccess\World 2\Item Intro\Rising
-EarlyAccess\World 2\Item Intro\Icarus
-EarlyAccess\World 2\Item Intro\Floating
-EarlyAccess\World 2\Item Intro\Stay Down
-EarlyAccess\World 2\Item Intro\Buoyant
-EarlyAccess\World 2\Item Intro\Floor
-EarlyAccess\World 2\Item Intro\Ceiling
+EarlyAccess\World 2\Enemy Intro\Crush
 EarlyAccess\World 2\Item Intro\Altered
-EarlyAccess\World 2\Post-Intro\Pond
-EarlyAccess\World 2\Post-Intro\Dive
-EarlyAccess\World 2\Post-Intro\Guide
-EarlyAccess\World 2\Post-Intro\Weave
 EarlyAccess\World 2\Post-Intro\Valley
-EarlyAccess\World 2\Post-Intro\Switchback
+EarlyAccess\World 2\Item Intro\Consequence
+EarlyAccess\World 2\Item Intro\Icarus
+EarlyAccess\World 2\Item Intro\Stay Down
+EarlyAccess\World 2\Item Intro\Floating
+EarlyAccess\World 2\Enemy Intro\Photosynthesis
+EarlyAccess\World 2\Item Intro\Rising
+EarlyAccess\World 2\Post-Intro\Pond
+EarlyAccess\World 2\Item Intro\Floor
+EarlyAccess\World 2\Item Intro\Buoyant
 EarlyAccess\World 2\Post-Intro\Tributary
 EarlyAccess\World 2\Post-Intro\Bouldering
+EarlyAccess\World 2\Post-Intro\Weave
+EarlyAccess\World 2\Post-Intro\Guide
+EarlyAccess\World 2\Enemy Intro\Unwelcome
+EarlyAccess\World 2\Enemy Intro\Leap
+EarlyAccess\World 2\Post-Intro\Switchback
+EarlyAccess\World 2\Post-Intro\Dive
+EarlyAccess\World 2\Item Intro\Ceiling
 EarlyAccess\World 2\Power\Forbidden Ground
 ----
 ----

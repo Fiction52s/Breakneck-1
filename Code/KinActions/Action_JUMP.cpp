@@ -75,7 +75,7 @@ void Actor::JUMP_Update()
 						if ((leftEdge->Normal().y <= 0 || leftEdge->IsSteepGround()) && groundSpeed > 0)
 						{
 							//cout << "case a" << "\n";
-							along = V2d(1, 0);
+							along = V2d(-1, 0);
 						}
 						else if ((rightEdge->Normal().y <= 0 || rightEdge->IsSteepGround()) && groundSpeed < 0)
 						{

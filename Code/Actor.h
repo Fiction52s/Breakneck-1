@@ -939,6 +939,9 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_blockShield;
 	Tileset *ts_homingAttackBall;
 
+	Tileset *ts_glideIndicator;
+	sf::Sprite glideIndicatorSprite;
+
 	Tileset *ts_wire;
 	Tileset *ts_wireNode;
 	Tileset *ts_wireTip;

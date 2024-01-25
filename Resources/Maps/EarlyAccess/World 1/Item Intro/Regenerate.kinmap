@@ -11,11 +11,11 @@ no description
 1
 w1_Chase
 100
-
-0
+fiction52s
+76561198058577095
 1
 1
-31
+32
 11849
 7044
 w1_01
@@ -402,7 +402,7 @@ borderpoly
 0
 0
 1
--- 31
+-- 32
 regentarget 321 -174
 0
 tutorialobject -389 53
@@ -428,49 +428,51 @@ hitting enemies gives you your
 double jump back. Walljumping
 gives your double jump back.
 Combine them to climb higher!
-regentarget 5011 -2904
+regentarget 5005 -2868
 0
-regentarget 5340 -3013
+regentarget 5450 -3043
 0
-regentarget 5632 -3125
+regentarget 5340 -2676
 0
-regentarget 5878 -3245
+regentarget 5872 -3209
 0
-regentarget 5655 -4789
+regentarget 5649 -4753
 0
-regentarget 5351 -4968
+regentarget 5345 -4932
 0
-regentarget 5043 -5136
+regentarget 5037 -5100
 0
-regentarget 4728 -5339
+regentarget 4722 -5303
 0
-regentarget 5050 -5538
+regentarget 5044 -5502
 0
-regentarget 5375 -5717
+regentarget 5369 -5681
 0
-regentarget 5708 -5885
+regentarget 5702 -5849
 0
-regentarget 7639 -4548
+regentarget 7633 -4512
 0
-regentarget 8007 -4679
+regentarget 8001 -4643
 0
 log 3018 -1677
 0 8
-shard 6414 -6222
+shard 6408 -6186
 0 4
-regentarget 7369 -4288
+regentarget 7363 -4252
 0
-regentarget 7447 -5174
+regentarget 7441 -5138
 0
-regentarget 7707 -5122
+regentarget 7701 -5086
 0
-regentarget 5977 -6029
+regentarget 5971 -5993
 0
 regentarget 3531 -367
 0
 regentarget 967 105
 0
 goal -1 285 210
+regentarget 5759 -2809
+0
 6
 7 0 -1 26 -1 326
 0 0 0 -1 33 -1 234

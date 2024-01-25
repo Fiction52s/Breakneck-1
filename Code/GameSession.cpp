@@ -4142,6 +4142,8 @@ void GameSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
 
 void GameSession::UpdateDebugModifiers()
 {
+	//return; //turned off for release
+
 	if (CONTROLLERS.KeyboardButtonHeld(Keyboard::Num1))
 	{
 		showDebugDraw = true;

@@ -168,7 +168,7 @@ void Turtle::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		if (PlayerDist(0) <= 600)
+		if (PlayerDist(0) <= DEFAULT_DETECT_RADIUS)
 		{
 			action = FIRE;
 			frame = 0;

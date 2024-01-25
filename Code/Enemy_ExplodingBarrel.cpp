@@ -25,7 +25,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	actionLength[S_IDLE] = 15;
 	actionLength[S_TINYCHARGE] = 3;
 	actionLength[S_CHARGE] = 16;
-	actionLength[S_ABOUT_TO_EXPLODE] = 60;
+	actionLength[S_ABOUT_TO_EXPLODE] = 40;
 	actionLength[S_EXPLODE] = 20;
 
 	animFactor[S_IDLE] = 1;
@@ -151,12 +151,20 @@ void ExplodingBarrel::ResetEnemy()
 	rootPos = GetPosition();
 }
 
-void ExplodingBarrel::StartHeatingUp()
+void ExplodingBarrel::StartHeatingUp( bool instantExplode )
 {
 	sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 
 	action = S_ABOUT_TO_EXPLODE;
-	frame = 0;
+
+	if (instantExplode)
+	{
+		frame = actionLength[S_ABOUT_TO_EXPLODE] * animFactor[S_ABOUT_TO_EXPLODE] - 5;
+	}
+	else
+	{
+		frame = 0;
+	}
 
 	//need to set action before playing death sound
 	PlayDeathSound();
@@ -217,7 +225,13 @@ void ExplodingBarrel::ProcessHit()
 			pauseBeganThisFrame = true;
 			pauseFramesFromAttacking = false;
 
-			StartHeatingUp();
+			bool instantExplode = false;
+
+			if (receivedHit.comboer)
+			{
+				instantExplode = true;
+			}
+			StartHeatingUp(instantExplode);
 		}
 		else
 		{
@@ -293,7 +307,7 @@ void ExplodingBarrel::ProcessState()
 		&& (action == S_CHARGE || action == S_TINYCHARGE || action == S_IDLE)
 		&& PlayerDist() < explosionRadius)
 	{
-		StartHeatingUp();
+		StartHeatingUp(false);
 	}
 }
 

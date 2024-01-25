@@ -101,6 +101,19 @@ void Actor::SPRINGSTUNGLIDE_Update()
 
 void Actor::SPRINGSTUNGLIDE_UpdateSprite()
 {
+	if (currInput.LUp())
+	{
+		ts_glideIndicator->SetSubRect(glideIndicatorSprite, 1, !facingRight);
+	}
+	else if (currInput.LDown())
+	{
+		ts_glideIndicator->SetSubRect(glideIndicatorSprite, 2, !facingRight);
+	}
+	else
+	{
+		ts_glideIndicator->SetSubRect(glideIndicatorSprite, 0, !facingRight);
+	}
+
 	SetSpriteTexture(action);
 
 	SetSpriteTile(0, facingRight);

@@ -36,7 +36,7 @@ struct ExplodingBarrel : Enemy
 
 	bool CountsForEnemyGate();
 	void SetLevel(int lev);
-	void StartHeatingUp();
+	void StartHeatingUp( bool instantExplode );
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();

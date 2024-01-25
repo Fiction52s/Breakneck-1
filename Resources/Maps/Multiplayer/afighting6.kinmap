@@ -4,14 +4,15 @@ afighting6
 14
 no description
 0
-0
+1
+0 0
 0
 0
 fiction52s
 76561198058577095
 3
 1
-3
+4
 4484
 3523
 w1_04
@@ -385,12 +386,14 @@ borderpoly
 0
 0
 1
--- 3
+-- 4
 goal -1 214 138
-airdasher -2565 1899
+airdasher -1505 2071
 0
 1
 gravitydecreaser -4174 1969
 0
 1
+log -3440 1873
+0 0
 0

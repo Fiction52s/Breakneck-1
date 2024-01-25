@@ -395,7 +395,7 @@ SoundInfo * SoundManager::GetSound( const std::string &name )
 	//not found
 
 	SoundInfo *si = new SoundInfo;
-	sounds.push_back( si );
+	
 	//SoundInfo &info = sounds.back();
 	
 
@@ -411,13 +411,13 @@ SoundInfo * SoundManager::GetSound( const std::string &name )
 		cout << "failed to load sound: " << fullName << endl;
 		//delete si->buffer;
 		delete si;
-		sounds.pop_back();
+		//sounds.pop_back();
 
 		return NULL;
 		//assert( false );
 	}
 	
-
+	sounds.push_back(si);
 	return si;
 	//make sure to set up tileset here
 }
