@@ -68,7 +68,7 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	ts_go->SetSpriteTexture(goSpr);
 	ts_go->SetSubRect(goSpr, 2);
 
-	goSpr.setOrigin(goSpr.getLocalBounds().width, 0);
+	goSpr.setOrigin(goSpr.getLocalBounds().width / 2, goSpr.getLocalBounds().height / 2);
 	
 
 	miniShowPos = mini->minimapSprite.getPosition();
@@ -239,11 +239,21 @@ void AdventureHUD::Hide(int frames)
 		state = HIDDEN;
 		frame = 0;
 		mini->SetCenter(miniHidePos);
-		for (int i = 0; i < keyMarkers.size(); ++i)
+		//for (int i = 0; i < keyMarkers.size(); ++i)
+		//{
+		//	//keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+		//	keyMarkers[i]->SetTopRight(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+		//	//keyMarkers[i]->SetTopLeft(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+		//}
+		if (numActiveKeyMarkers == 1)
 		{
-			//keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
-			keyMarkers[i]->SetTopRight(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
-			//keyMarkers[i]->SetTopLeft(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+			keyMarkers[0]->SetCenter(keyMarkerHidePos);
+		}
+		else if (numActiveKeyMarkers == 2)
+		{
+			float move = 20;
+			keyMarkers[0]->SetTopRight(keyMarkerHidePos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+			keyMarkers[1]->SetTopLeft(keyMarkerHidePos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 		}
 		kinMask->SetTopLeft(kinMaskHidePos);
 		powerSelector->SetPosition(powerSelectorHidePos);
@@ -271,11 +281,11 @@ void AdventureHUD::Show(int frames)
 		mini->SetCenter(miniShowPos);
 		kinMask->SetTopLeft(kinMaskShowPos);
 
-		if (keyMarkers.size() == 1)
+		if (numActiveKeyMarkers == 1)
 		{
 			keyMarkers[0]->SetCenter(keyMarkerShowPos);
 		}
-		else if( keyMarkers.size() == 2 )
+		else if(numActiveKeyMarkers == 2 )
 		{
 			float move = 20;
 			keyMarkers[0]->SetTopRight(keyMarkerShowPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
@@ -322,10 +332,15 @@ void AdventureHUD::Update()
 			frame = 0;
 			mini->SetCenter(miniShowPos);
 			kinMask->SetTopLeft(kinMaskShowPos);
-			for (int i = 0; i < keyMarkers.size(); ++i)
+			if (numActiveKeyMarkers == 1)
 			{
-				//keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
-				keyMarkers[i]->SetTopRight(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
+				keyMarkers[0]->SetCenter(keyMarkerShowPos);
+			}
+			else if (numActiveKeyMarkers == 2)
+			{
+				float move = 20;
+				keyMarkers[0]->SetTopRight(keyMarkerShowPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+				keyMarkers[1]->SetTopLeft(keyMarkerShowPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 			flyCountText.setPosition(flyCountTextShowPos);
 			powerSelector->SetPosition(powerSelectorShowPos);
@@ -345,11 +360,23 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskHidePos * (1.f - a) + a * kinMaskShowPos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f keyMarkerPos = keyMarkerHidePos * (1.f - a) + a * keyMarkerShowPos;
-			for (int i = 0; i < keyMarkers.size(); ++i)
+			//for (int i = 0; i < keyMarkers.size(); ++i)
+			//{
+			//	//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
+			//	keyMarkers[i]->SetTopRight(keyMarkerPos + Vector2f(0, i * keyMarkerYOffset));
+			//}
+
+			if (numActiveKeyMarkers == 1)
 			{
-				//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
-				keyMarkers[i]->SetTopRight(keyMarkerPos + Vector2f(0, i * keyMarkerYOffset));
+				keyMarkers[0]->SetCenter(keyMarkerPos);
 			}
+			else if (numActiveKeyMarkers == 2)
+			{
+				float move = 20;
+				keyMarkers[0]->SetTopRight(keyMarkerPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+				keyMarkers[1]->SetTopLeft(keyMarkerPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+			}
+			
 			goSpr.setPosition(keyMarkerPos);
 			Vector2f countPos = flyCountTextHidePos * (1.f - a) + a * flyCountTextShowPos;
 			flyCountText.setPosition(countPos);
@@ -374,11 +401,23 @@ void AdventureHUD::Update()
 			state = HIDDEN;
 			frame = 0;
 			mini->SetCenter(miniHidePos);
-			for (int i = 0; i < keyMarkers.size(); ++i)
+			
+			//for (int i = 0; i < keyMarkers.size(); ++i)
+			//{
+			//	//keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+			//	keyMarkers[i]->SetTopRight(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+			//}
+			if (numActiveKeyMarkers == 1)
 			{
-				//keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
-				keyMarkers[i]->SetTopRight(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+				keyMarkers[0]->SetCenter(keyMarkerHidePos);
 			}
+			else if (numActiveKeyMarkers == 2)
+			{
+				float move = 20;
+				keyMarkers[0]->SetTopRight(keyMarkerHidePos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+				keyMarkers[1]->SetTopLeft(keyMarkerHidePos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+			}
+
 			goSpr.setPosition(keyMarkerHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
 			flyCountText.setPosition(flyCountTextHidePos);
@@ -398,11 +437,23 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskShowPos * (1.f - a) + a * kinMaskHidePos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f keyMarkerPos = keyMarkerShowPos * (1.f - a) + a * keyMarkerHidePos;
-			for (int i = 0; i < keyMarkers.size(); ++i)
+
+			if (numActiveKeyMarkers == 1)
 			{
-				//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
-				keyMarkers[i]->SetTopRight(keyMarkerPos + Vector2f(0, i * keyMarkerYOffset));
+				keyMarkers[0]->SetCenter(keyMarkerPos);
 			}
+			else if (numActiveKeyMarkers == 2)
+			{
+				float move = 20;
+				keyMarkers[0]->SetTopRight(keyMarkerPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+				keyMarkers[1]->SetTopLeft(keyMarkerPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
+			}
+
+			//for (int i = 0; i < keyMarkers.size(); ++i)
+			//{
+			//	//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
+			//	keyMarkers[i]->SetTopRight(keyMarkerPos + Vector2f(0, i * keyMarkerYOffset));
+			//}
 			goSpr.setPosition(keyMarkerPos);
 			Vector2f countPos = flyCountTextShowPos * (1.f - a) + a * flyCountTextHidePos;
 			flyCountText.setPosition(countPos);

@@ -287,43 +287,70 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 		movement = 0;
 		q += m;
 	}
-				
-	if( !approxEquals( m, 0 ) )//	if(m != 0 )
+
+	if( approxEquals( m, 0 ) )//	if(m != 0 )
 	{	
-		bool down = true;
-		bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
-		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+		if (surfaceMoverData.groundSpeed > 0)
 		{
-			HitTerrain( q );
-			//if (surfaceHandler != NULL)
-			//	surfaceHandler->TransferEdge(ground);
-			return true;
-			//return false;
+			Edge *next = ground->edge1;
+			if (next == NULL)
+			{
+				//LeaveGroundTransfer(true, V2d(0, -gravity * 2));
+				//break;
+				assert(0); //useful for rails
+			}
+			else
+			{
+				m = .01;
+			}
 		}
-		else if (hit)
+		else if (surfaceMoverData.groundSpeed < 0)
 		{
-			int xx = 5;
-		}
-	}
-	else
-	{
-		if(surfaceMoverData.groundSpeed > 0 )
-		{
-			//cout << "t33" << endl;
-			ground = ground->edge1;
-			q = 0;
-			
-		}
-		else
-		{
-			//cout << "here>? " << endl;
-			ground = ground->edge0;
-			q = length( ground->edge0->v1 - ground->edge0->v0 );
+			Edge *next = ground->edge0;
+
+			if (next == NULL)
+			{
+				//LeaveGroundTransfer(false, V2d(0, -gravity * 2));
+				//break;
+				assert(0);
+			}
+			else
+			{
+				m = -.01;
+			}
 		}
 
-		if( surfaceHandler != NULL )
-			surfaceHandler->TransferEdge( ground );
-				
+		//if (surfaceMoverData.groundSpeed > 0)
+		//{
+		//	//cout << "t33" << endl;
+		//	ground = ground->edge1;
+		//	q = 0;
+
+		//}
+		//else
+		//{
+		//	//cout << "here>? " << endl;
+		//	ground = ground->edge0;
+		//	q = length(ground->edge0->v1 - ground->edge0->v0);
+		//}
+
+		//if (surfaceHandler != NULL)
+		//	surfaceHandler->TransferEdge(ground);
+	}
+
+	bool down = true;
+	bool hit = ResolvePhysics(normalize(ground->v1 - ground->v0) * m);
+	if (hit && ((m > 0 && minContact.edge != ground->edge0) || (m < 0 && minContact.edge != ground->edge1)))
+	{
+		HitTerrain(q);
+		//if (surfaceHandler != NULL)
+		//	surfaceHandler->TransferEdge(ground);
+		return true;
+		//return false;
+	}
+	else if (hit)
+	{
+		int xx = 5;
 	}
 
 	return false;
@@ -665,7 +692,13 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 		int xxxxxx = 6;
 	}
 
-	bool hit = ResolvePhysics( newPos - surfaceMoverData.physBody.globalPosition );
+	V2d diff = newPos - surfaceMoverData.physBody.globalPosition;
+	double thresh = .0001;
+	if (length(diff) < thresh)
+	{
+		diff = normalize(diff) * thresh;
+	}
+	bool hit = ResolvePhysics( diff );
 	if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 	{
 		HitTerrain(q);

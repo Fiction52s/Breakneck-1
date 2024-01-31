@@ -8,6 +8,7 @@
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
 #include "MainMenu.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -232,6 +233,37 @@ void GroundedGrindJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
+			/*Actor *player = sess->GetPlayer(GetReceivedHitPlayerIndex());
+
+			double pSpeed = 0;
+			if (player->grindEdge != NULL)
+			{
+				pSpeed = player->grindSpeed;
+			}
+			else if (player->bounceEdge != NULL)
+			{
+				pSpeed = 0;
+			}
+			else if (player->ground != NULL)
+			{
+				pSpeed = player->groundSpeed;
+			}
+			else
+			{
+				pSpeed = dot(player->velocity, surfaceMover->ground->Along());
+			}
+
+			double currPush = pushStart;
+
+			if (clockwise && pSpeed > pushStart)
+			{
+				currPush = pSpeed;
+			}
+			else if (!clockwise && -pSpeed > pushStart)
+			{
+				currPush = -pSpeed;
+			}*/
+
 			if ( limitedJuggles && data.currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
@@ -246,6 +278,10 @@ void GroundedGrindJuggler::ProcessHit()
 
 				action = S_GRIND;
 				frame = 0;
+
+				
+				
+
 				Push(pushStart);
 
 				data.doneBeingHittable = true;

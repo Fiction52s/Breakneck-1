@@ -1754,6 +1754,7 @@ bool GameSession::Load()
 		ts_goal = mainMenu->adventureManager->ts_goal;
 		ts_goalCrack = mainMenu->adventureManager->ts_goalCrack;
 		ts_goalExplode = mainMenu->adventureManager->ts_goalExplode;
+		currWorldDependentTilesetWorldIndex = mainMenu->adventureManager->currWorldDependentTilesetWorldIndex;
 	}
 	else
 	{

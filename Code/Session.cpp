@@ -9241,6 +9241,11 @@ void Session::SetKeyMarkerToCurrentZone()
 	{
 		ah->keyMarkers[i]->Reset();
 	}
+
+	if (ah->numActiveKeyMarkers > 0)
+	{
+		ah->Show(); //the positions are wrong without this
+	}
 	
 	//ah->keyMarker->Reset();
 }

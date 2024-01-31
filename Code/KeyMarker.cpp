@@ -12,8 +12,6 @@ KeyMarker::KeyMarker(TilesetManager *tm )
 {
 	sess = NULL;
 
-	ts_keyIcon = NULL;
-
 	showMaxKeys = false;
 
 	frame = 0;
@@ -42,7 +40,7 @@ KeyMarker::KeyMarker(TilesetManager *tm )
 	ts_keyNumDark = tm->GetSizedTileset("HUD/keynum_dark_80x80.png");
 	ts_enemyNumLight = tm->GetSizedTileset("HUD/keynum_red_light_80x80.png");
 	ts_enemyNumDark = tm->GetSizedTileset("HUD/keynum_red_dark_80x80.png");
-	ts_enemyIcon = tm->GetSizedTileset("HUD/enemy_hud_icon_64x64.png");
+	ts_icon = tm->GetSizedTileset("HUD/keymarker_icon_96x96.png");
 
 	float textSpacingFactor = .7;
 
@@ -74,7 +72,6 @@ KeyMarker::~KeyMarker()
 void KeyMarker::SetSession(Session *p_sess)
 {
 	sess = p_sess;
-	ts_keyIcon = sess->ts_key;
 
 	SetMarkerType(markerType);
 }
@@ -117,8 +114,11 @@ void KeyMarker::SetTopRight(sf::Vector2f &pos)
 
 	//new ^
 
-	keyNumberNeededHUD->SetTopRight(Vector2f( currRight, anchor.y ));
-	keyNumberNeededHUDBack->SetTopRight(Vector2f(currRight, anchor.y));
+
+	keyNumberAnchor = Vector2f(currRight, anchor.y);
+
+	keyNumberNeededHUD->SetTopRight(keyNumberAnchor);
+	keyNumberNeededHUDBack->SetTopRight(keyNumberAnchor);
 	currRight -= keyNumberNeededHUD->GetWidth();
 
 	float keySpacing = 20;
@@ -154,21 +154,25 @@ void KeyMarker::SetTopLeft(sf::Vector2f &pos)
 	float keySpacing = 20;
 	float iconSpacing = 10;
 
-	float iconExtraY = 0;
+
+	Vector2f iconPos = Vector2f(currLeft + keyWidth / 2, anchor.y + keyNumberNeededHUD->GetHeight() / 2.f);
+
+	keyIconSpr.setPosition(iconPos);
+	currLeft += keyWidth + keySpacing;
+
 	if (markerType == ENEMY)
 	{
-		iconExtraY = 0;
+		currLeft -= 10;
 	}
-
-	keyIconSpr.setPosition(Vector2f(currLeft + keyWidth / 2, anchor.y + keyNumberNeededHUD->GetHeight() / 2.f + iconExtraY));
-	currLeft += keyWidth + keySpacing;
 
 	xKeyText.setPosition(Vector2f(currLeft + (xKeyText.getGlobalBounds().width / 2), anchor.y + keyNumberNeededHUD->GetHeight() / 2.f));
 
 	currLeft += xKeyText.getGlobalBounds().width + keySpacing;
 
-	keyNumberNeededHUD->SetTopLeft(Vector2f(currLeft, anchor.y));
-	keyNumberNeededHUDBack->SetTopLeft(Vector2f(currLeft, anchor.y));
+	keyNumberAnchor = Vector2f(currLeft, anchor.y);
+
+	keyNumberNeededHUD->SetTopLeft(keyNumberAnchor);
+	keyNumberNeededHUDBack->SetTopLeft(keyNumberAnchor);
 	currLeft += keyNumberNeededHUD->GetWidth();
 
 	if (showMaxKeys && markerType == KEY)
@@ -200,21 +204,26 @@ void KeyMarker::SetCenter(sf::Vector2f &pos)
 	float keySpacing = 10;
 	float iconSpacing = 10;
 
-	float iconExtraY = 0;
-	if (markerType == ENEMY)
-	{
-		iconExtraY = 0;
-	}
+	
 
 	xKeyText.setPosition(Vector2f(anchor.x, anchor.y));// +keyNumberNeededHUD->GetHeight() / 2.f));
 
-	keyIconSpr.setPosition(Vector2f(anchor.x - (keyWidth / 2 + keySpacing + halfXWidth), anchor.y + iconExtraY));// +keyNumberNeededHUD->GetHeight() / 2.f));
+	Vector2f iconPos = Vector2f(anchor.x - (keyWidth / 2 + keySpacing + halfXWidth), anchor.y);
+
+	if (markerType == ENEMY)
+	{
+		iconPos.x += 10;
+	}
+
+	keyIconSpr.setPosition(iconPos);// +keyNumberNeededHUD->GetHeight() / 2.f));
 
 	Vector2f numTopLeft = anchor;
 	numTopLeft += Vector2f(halfXWidth + keySpacing, -halfNumberHeight);
 
-	keyNumberNeededHUD->SetTopLeft(numTopLeft);
-	keyNumberNeededHUDBack->SetTopLeft(numTopLeft);
+	keyNumberAnchor = numTopLeft;
+
+	keyNumberNeededHUD->SetTopLeft(keyNumberAnchor);
+	keyNumberNeededHUDBack->SetTopLeft(keyNumberAnchor);
 
 	numTopLeft.x += keyNumberNeededHUD->GetWidth();
 
@@ -257,44 +266,40 @@ Vector2f KeyMarker::GetPosition()
 
 void KeyMarker::SetMarkerType(int k)
 {
-	if (sess != NULL)
-	{
-		ts_keyIcon = sess->ts_key;
-	}
 	markerType = (MarkerType)k;
 
-	Tileset *ts_icon = NULL;
 	if (markerType == KEY)
 	{
-		ts_icon = ts_keyIcon;
-
 		keyNumberNeededHUD->ts = ts_keyNumDark;
 		keyNumberNeededHUDBack->ts = ts_keyNumLight;
 	}
 	else if (markerType == ENEMY)
 	{
-		ts_icon = ts_enemyIcon;
-
 		keyNumberNeededHUD->ts = ts_enemyNumDark;
 		keyNumberNeededHUDBack->ts = ts_enemyNumLight;
 	}
 
-	if (ts_icon != NULL)
+	if (sess != NULL)
 	{
 		keyIconSpr.setTexture(*ts_icon->texture);
 		keyIconSpr.setTextureRect(ts_icon->GetSubRect(0));
 
-		keyIconSpr.setOrigin(keyIconSpr.getLocalBounds().width / 2,
-			keyIconSpr.getLocalBounds().height / 2);
+		keyIconSpr.setScale(scale / .75, scale / .75);
 
 		if (markerType == ENEMY)
 		{
-			keyIconSpr.setScale(scale * 2, scale * 2);
+			keyIconSpr.setTextureRect(ts_icon->GetSubRect(8));
+			//keyIconSpr.setScale(scale * 2, scale * 2);
 		}
 		else
 		{
-			keyIconSpr.setScale(scale, scale);
+			assert(sess->currWorldDependentTilesetWorldIndex >= 0);
+			keyIconSpr.setTextureRect(ts_icon->GetSubRect(sess->currWorldDependentTilesetWorldIndex));
 		}
+
+		keyIconSpr.setOrigin(keyIconSpr.getLocalBounds().width / 2,
+			keyIconSpr.getLocalBounds().height / 2);
+
 	}
 }
 
@@ -460,7 +465,7 @@ void KeyMarker::Draw( sf::RenderTarget *target )
 
 	if (action == VIBRATING && frame < 20 )
 	{
-		//keyNumberNeededHUDBack->Draw(target);
+		keyNumberNeededHUDBack->Draw(target);
 	}
 	
 
@@ -506,9 +511,26 @@ void KeyMarker::Update()
 		{
 			int rx = (rand() % 3) - 1;
 			int ry = (rand() % 3) - 1;
-			rx *= 10;
-			ry *= 10;
-			keyNumberNeededHUDBack->SetTopRight(keyNumberNeededHUD->anchor + Vector2f(rx, ry));
+			int amount = 5;
+			rx *= amount;
+			ry *= amount;
+			//keyNumberNeededHUDBack->SetTopRight(keyNumberNeededHUD->anchor + Vector2f(rx, ry));
+
+			//keyNumberNeededHUDBack->SetTopLeft(keyNumberNeededHUD->anchor + Vector2f(rx, ry));
+			
+			if (keyNumberNeededHUDBack->posType == ImageText::PositionType::TOP_LEFT)
+			{
+				keyNumberNeededHUDBack->SetTopLeft(keyNumberAnchor + Vector2f(rx, ry));
+			}
+			if (keyNumberNeededHUDBack->posType == ImageText::PositionType::TOP_RIGHT)
+			{
+				keyNumberNeededHUDBack->SetTopRight(keyNumberAnchor + Vector2f(rx, ry));
+			}
+			if (keyNumberNeededHUDBack->posType == ImageText::PositionType::CENTER)
+			{
+				keyNumberNeededHUDBack->SetCenter(keyNumberAnchor + Vector2f(rx, ry));
+			}
+			
 			keyNumberNeededHUDBack->UpdateSprite();
 
 			int rx1 = (rand() % 3) - 1;
@@ -516,7 +538,20 @@ void KeyMarker::Update()
 			rx1 *= 2;
 			ry1 *= 2;
 
-			keyNumberNeededHUD->SetTopRight(keyNumberNeededHUD->anchor + Vector2f(rx1, ry1));
+
+			if (keyNumberNeededHUD->posType == ImageText::PositionType::TOP_LEFT)
+			{
+				keyNumberNeededHUD->SetTopLeft(keyNumberAnchor + Vector2f(rx1, ry1));
+			}
+			if (keyNumberNeededHUD->posType == ImageText::PositionType::TOP_RIGHT)
+			{
+				keyNumberNeededHUD->SetTopRight(keyNumberAnchor + Vector2f(rx1, ry1));
+			}
+			if (keyNumberNeededHUD->posType == ImageText::PositionType::CENTER)
+			{
+				keyNumberNeededHUD->SetCenter(keyNumberAnchor + Vector2f(rx1, ry1));
+			}
+
 			keyNumberNeededHUD->UpdateSprite();
 		}
 		else if (frame == 20)

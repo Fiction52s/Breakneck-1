@@ -22564,11 +22564,12 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 	{
 		ActivateSound( soundBuffers[S_HIT_AND_KILL] );
 	}*/
+
 	enemiesKilledThisFrame++;
 
 	TryThrowEnemySwordProjectileBasic();
 
-	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE && !sess->IsParallelSession() )
+	if ( e->CountsForEnemyGate() && sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE && !sess->IsParallelSession())
 	{
 		AdventureHUD *ah = (AdventureHUD*)sess->hud;
 		ah->UpdateEnemyNumbers();

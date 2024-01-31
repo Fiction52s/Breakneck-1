@@ -31,6 +31,7 @@ struct KeyMarker
 		Count
 	};
 
+	sf::Vector2f keyNumberAnchor;
 	PositionType posType;
 	sf::Vector2f anchor;
 	Action action;
@@ -74,8 +75,7 @@ struct KeyMarker
 	sf::Sprite keyIconSpr;
 	sf::Sprite enemyIconSpr;
 
-	Tileset *ts_keyIcon;
-	Tileset *ts_enemyIcon;
+	Tileset *ts_icon;
 	sf::Sprite keyNumberSpecialSpr;
 	Tileset *ts_keyNumLight;
 	Tileset *ts_keyNumDark;

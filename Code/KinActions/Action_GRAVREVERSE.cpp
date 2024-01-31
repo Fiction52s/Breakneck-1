@@ -62,7 +62,7 @@ void Actor::GRAVREVERSE_Change()
 			if ((DashButtonHeld() && !(reversed && (!currInput.LLeft() && !currInput.LRight()))) || !canStandUp)
 			{
 				//cout << "storedreversesddddpeed: " << storedReverseSpeed << endl;
-				groundSpeed = storedReverseSpeed;
+				groundSpeed = -storedReverseSpeed;
 				//action = DASH;
 				//frame = 0;
 				SetAction(DASH);
@@ -75,9 +75,14 @@ void Actor::GRAVREVERSE_Change()
 			else if (currInput.LLeft() || currInput.LRight())
 			{
 				//cout << "storedreversespeed: " << storedReverseSpeed << endl;
-				groundSpeed = storedReverseSpeed;
+				groundSpeed = -storedReverseSpeed;
 				SetAction(RUN);
 				frame = 0;
+
+				/*if (currInput.LLeft())
+					facingRight = false;
+				else if (currInput.LRight())
+					facingRight = true;*/
 			}
 			else if (TryGroundAttack())
 			{
