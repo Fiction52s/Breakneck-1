@@ -52,14 +52,15 @@ Badger::Badger(ActorParams *ap)
 
 	attackMult = 10;
 
-	double width = 192;
-	double height = 128;
+	//double width = 192;
+	//double height = 128;
 
 	CreateGroundMover(startPosInfo, 32, true, this);
 	groundMover->SetSpeed(0);
 	groundMover->AddAirForce(gravity);
 
-	ts = GetSizedTileset("Enemies/W3/badger_192x128.png");
+	//ts = GetSizedTileset("Enemies/W3/badger_192x128.png");
+	ts = GetSizedTileset("Enemies/W3/badger_240x160.png");
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
@@ -77,15 +78,15 @@ Badger::Badger(ActorParams *ap)
 	hitBody.SetupNumFrames(2);
 	hitBody.SetupNumBoxesOnFrame(0, 1);
 	hitBody.SetupNumBoxesOnFrame(1, 1);
-	hitBody.AddBasicRect(0, 65, 25, 0, V2d(-15, 12));
-	hitBody.AddBasicCircle(1, 32, 0, V2d());
+	hitBody.AddBasicRect(0, 82, 32, 0, V2d(-20, 15));
+	hitBody.AddBasicCircle(1, 40, 0, V2d());
 
 	hurtBody.ResetFrames();
 	hurtBody.SetupNumFrames(2);
 	hurtBody.SetupNumBoxesOnFrame(0, 1);
 	hurtBody.SetupNumBoxesOnFrame(1, 1);
-	hurtBody.AddBasicRect(0, 70, 40, 0, V2d(-15, 12));
-	hurtBody.AddBasicCircle(1, 40, 0, V2d());
+	hurtBody.AddBasicRect(0, 88, 50, 0, V2d(-20, 15));
+	hurtBody.AddBasicCircle(1, 50, 0, V2d());
 
 	//BasicRectHitBodySetup(60, 25, 0, V2d(0, 0), V2d());
 	//BasicRectHurtBodySetup(60, 25, 0, V2d(0, 0), V2d());
@@ -111,7 +112,7 @@ void Badger::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.25;
+		scale = 1.0;
 		break;
 	case 2:
 		scale = 2.0;

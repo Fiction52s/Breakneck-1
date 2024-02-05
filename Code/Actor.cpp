@@ -3463,7 +3463,15 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	LoadHitboxes();
 
-	currPowerMode = PMODE_SHIELD;
+	if ( owner != NULL && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && adventureManager != NULL && adventureManager->transferPlayerPowerMode >= 0)
+	{
+		//transferred from another map, keep the playermode
+		currPowerMode = adventureManager->transferPlayerPowerMode;
+	}
+	else
+	{
+		currPowerMode = PMODE_SHIELD;
+	}
 	simulationMode = false;
 	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
@@ -7349,6 +7357,7 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
+	//cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
 	//cout << "groundspeed: " << groundSpeed << "\n";
 	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
 	/*if (homingFrames > 0)

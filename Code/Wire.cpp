@@ -279,7 +279,11 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			bool b = !touchEdgeWithWire;
 			
 			bool d = triggerDown;
-			bool e = player->oldAction != Actor::WALLCLING && player->oldAction != Actor::WALLATTACK && player->action != Actor::WALLATTACK;
+			bool e = player->oldAction != Actor::WALLCLING && player->action != Actor::WALLCLING 
+				&& player->oldAction != Actor::WALLATTACK && player->action != Actor::WALLATTACK;
+
+			//bool e = player->action != Actor::WALLCLING && player->action != Actor::WALLATTACK;
+			//bool e = player->action != Actor::WALLATTACK;
 			bool f = ( !player->bounceFlameOn || player->framesSinceBounce > 8 || player->oldBounceEdge == NULL ) && player->bounceEdge == NULL;
 			
 			if( a && b && hitStallFinished && d && e && f )

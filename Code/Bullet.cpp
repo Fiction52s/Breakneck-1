@@ -314,7 +314,7 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 	case BasicBullet::PARROT:
 		return 20;
 	case BasicBullet::GROWING_TREE:
-		return 20;
+		return 30;//20;
 	case BasicBullet::COPYCAT:
 		return 20;
 	case BasicBullet::SPECTER:
@@ -1245,6 +1245,9 @@ void BasicBullet::UpdateSprite()
 		dims = Vector2f(64, 64);
 		break;
 	case SPECTER:
+		dims = Vector2f(64, 64);
+		break;
+	case GROWING_TREE:
 		dims = Vector2f(64, 64);
 		break;
 	}

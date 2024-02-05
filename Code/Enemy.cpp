@@ -556,6 +556,8 @@ void Enemy::OnCreate(ActorParams *ap,
 		name = ap->GetTypeName();
 	}
 
+
+	ignorePauseFrames = false;
 	enemyDrawLayer = ENEMYDRAWLAYER_DEFAULT;
 
 	RegisterCollisionBody(hitBody);
@@ -1441,7 +1443,7 @@ void Enemy::UpdatePrePhysics()
 	if (pauseFrames > 0)
 	{
 		--pauseFrames;
-		if( pauseFrames > 0 )
+		if( pauseFrames > 0 && !ignorePauseFrames)
 			return;
 		else
 		{
@@ -1548,7 +1550,7 @@ void Enemy::UpdatePostPhysics()
 		}
 	}
 
-	if (pauseFrames > 0 && !pauseBeganThisFrame )
+	if (pauseFrames > 0 && !pauseBeganThisFrame && !ignorePauseFrames)
 	{
 		return;
 	}
@@ -2236,7 +2238,7 @@ void Enemy::UpdatePhysics( int substep )
 		return;
 	}
 
-	if (pauseFrames > 0)
+	if (pauseFrames > 0 && !ignorePauseFrames)
 	{
 		//recently added to fix the issue where a comboer that hits both enemies and player (air mine) would not hit the player
 		//until it was done hitting enemies in the area

@@ -47,6 +47,8 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	numJugglesText.setOutlineThickness(3);
 	numJugglesText.setCharacterSize(32);
 
+	//ignorePauseFrames = true;
+
 	friction = .6;//.4
 
 	pushStart = 25;
@@ -233,7 +235,8 @@ void GroundedGrindJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			/*Actor *player = sess->GetPlayer(GetReceivedHitPlayerIndex());
+			Actor *player = sess->GetPlayer(GetReceivedHitPlayerIndex());
+			double currPush = pushStart;
 
 			double pSpeed = 0;
 			if (player->grindEdge != NULL)
@@ -253,7 +256,7 @@ void GroundedGrindJuggler::ProcessHit()
 				pSpeed = dot(player->velocity, surfaceMover->ground->Along());
 			}
 
-			double currPush = pushStart;
+			
 
 			if (clockwise && pSpeed > pushStart)
 			{
@@ -262,7 +265,7 @@ void GroundedGrindJuggler::ProcessHit()
 			else if (!clockwise && -pSpeed > pushStart)
 			{
 				currPush = -pSpeed;
-			}*/
+			}
 
 			if ( limitedJuggles && data.currJuggle == juggleReps - 1)
 			{
@@ -282,7 +285,7 @@ void GroundedGrindJuggler::ProcessHit()
 				
 				
 
-				Push(pushStart);
+				Push(currPush);
 
 				data.doneBeingHittable = true;
 			}
@@ -304,7 +307,7 @@ void GroundedGrindJuggler::ProcessHit()
 
 				action = S_GRIND;
 				frame = 0;
-				Push(pushStart);
+				Push(currPush);
 			}
 		}
 		else
@@ -446,6 +449,15 @@ void GroundedGrindJuggler::FrameIncrement()
 	}
 }
 
+bool GroundedGrindJuggler::CanComboHit(Enemy *e)
+{
+	if (e->type == EN_GROUNDEDGRINDJUGGLER)
+	{
+		return false;
+	}
+
+	return true;
+}
 
 void GroundedGrindJuggler::ComboKill(Enemy *e)
 {

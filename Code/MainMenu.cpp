@@ -2935,6 +2935,7 @@ void MainMenu::HandleMenuMode()
 			break;
 		}
 
+		adventureManager->transferPlayerPowerMode = -1;
 		adventureManager->leaderboard->Reset();
 
 		if (result == GameSession::GR_EXIT_PRACTICE_TO_RACE)

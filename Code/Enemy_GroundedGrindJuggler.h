@@ -50,6 +50,7 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	void UpdateParamsSettings();
 	void SetLevel(int lev);
 	void ProcessState();
+	bool CanComboHit(Enemy *e);
 	void ProcessHit();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();

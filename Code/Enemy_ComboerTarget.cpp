@@ -62,6 +62,7 @@ ComboerTarget::ComboerTarget(ActorParams *ap)
 	{
 		targetType = TARGET_COMBOER_ORANGE;
 		skinIndex = 3;
+		maxHealth = 1; //grounded grind juggler should move past this easier with maxhealth of 1
 	}
 	else if (typeName == "redcomboertarget")
 	{

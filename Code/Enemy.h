@@ -147,6 +147,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	const static int DEFAULT_DETECT_RADIUS;//default values
 	const static int DEFAULT_IGNORE_RADIUS;//default values
 
+	bool ignorePauseFrames;
 	int enemyDrawLayer; //0 is default, higher numbers are in back, lower numbers are in front
 	bool facingRight;
 	PositionInfo currPosInfo;

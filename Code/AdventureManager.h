@@ -30,7 +30,7 @@ struct AdventureManager : TilesetManager
 	Tileset *ts_goalCrack;
 	Tileset *ts_goalExplode;
 
-
+	int transferPlayerPowerMode;
 	PauseMenu *pauseMenu;
 	WorldMap *worldMap;
 	KinBoostScreen *kinBoostScreen;

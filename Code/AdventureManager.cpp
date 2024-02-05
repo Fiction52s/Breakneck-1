@@ -29,6 +29,8 @@ AdventureManager::AdventureManager()
 	controllerInput = NULL;
 	currProfile = NULL;
 
+	transferPlayerPowerMode = -1;
+
 	adventureHUD = new AdventureHUD(this);
 
 	currWorldDependentTilesetWorldIndex = -1;
@@ -298,6 +300,9 @@ bool AdventureManager::TryToGoToNextLevel()
 	}
 
 	Level *lev = adventurePlanet->worlds[w].sectors[s].GetLevel(m);
+
+
+	transferPlayerPowerMode = currLevel->GetPlayer(0)->currPowerMode;
 
 	if (w == origW)
 	{
