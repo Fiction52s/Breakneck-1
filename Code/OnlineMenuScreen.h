@@ -4,12 +4,13 @@
 
 #include <SFML/Graphics.hpp>
 #include "GUI.h"
+#include "Tileset.h"
 
 struct MainMenu;
 struct ControllerDualStateQueue;
 struct ControlProfile;
 
-struct OnlineMenuScreen : GUIHandler
+struct OnlineMenuScreen : GUIHandler, TilesetManager
 {
 	enum Action
 	{
@@ -27,6 +28,7 @@ struct OnlineMenuScreen : GUIHandler
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 	Panel *panel;
+	Tileset *ts_bg;
 
 	OnlineMenuScreen(MainMenu *mm);
 	~OnlineMenuScreen();

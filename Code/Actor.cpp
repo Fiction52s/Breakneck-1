@@ -4226,8 +4226,8 @@ void Actor::InitSounds()
 	soundInfos[PlayerSounds::S_WATER_LAUNCHER_EXIT] = GetSound("Water/water_launcher_exit");
 	soundInfos[PlayerSounds::S_WATER_MOMENTUM_ENTER] = GetSound("Water/water_momentum_enter");
 	soundInfos[PlayerSounds::S_WATER_MOMENTUM_EXIT] = GetSound("Water/water_momentum_exit");
-	//soundInfos[PlayerSounds::S_WATER_TIMESLOW_ENTER] = GetSound("Water/water_timeslow_enter");
-	//soundInfos[PlayerSounds::S_WATER_TIMESLOW_EXIT] = GetSound("Water/water_timeslow_exit");
+	soundInfos[PlayerSounds::S_WATER_TIMESLOW_ENTER] = GetSound("Water/water_timeslow_enter");
+	soundInfos[PlayerSounds::S_WATER_TIMESLOW_EXIT] = GetSound("Water/water_timeslow_exit");
 	soundInfos[PlayerSounds::S_WATER_POISON_ENTER] = GetSound("Water/water_poison_enter");
 	soundInfos[PlayerSounds::S_WATER_POISON_EXIT] = GetSound("Water/water_poison_exit");
 	//soundInfos[PlayerSounds::S_WATER_POISON_LOOP] = GetSound("Water/water_poison_loop");
@@ -9163,7 +9163,7 @@ bool Actor::CheckStandUp()
 
 bool Actor::CheckStandUpToDash()
 {
-	double ex = .05;//.1 //needs to be smaller than the extra amount given to grind for 
+	double ex = .08;//.1 //needs to be smaller than the extra amount given to grind for 
 					//standup to work for grind.
 	Rect<double> r;
 
@@ -10562,25 +10562,27 @@ bool Actor::ExitGrind(bool jump)
 
 	if (grindNorm.y < 0)
 	{
+		//removed extra because we actually do wanna check for you being on the ground. only the one where it checks
+		//you being in the air needs the extra offset to move it away from any edges. When ground is set it works.
 		double extra = 0;
 		if (grindNorm.x > 0)
 		{
 			offsetX = b.rw;
-			extra = .1;
+			//extra = .1;
 		}
 		else if (grindNorm.x < 0)
 		{
 			offsetX = -b.rw;
-			extra = -.1;
+			//extra = -.1;
 		}
 		else
 		{
 			offsetX = 0;
 		}
 
-		position.x += offsetX + extra;
+		position.x += offsetX;// +extra;
 
-		position.y -= normalHeight + .1;
+		position.y -= normalHeight;// +.1;
 
 		if (!CheckStandUp())
 		{
@@ -10707,15 +10709,15 @@ bool Actor::ExitGrind(bool jump)
 	{
 		if (grindNorm.x > 0)
 		{
-			position.x += b.rw + .1;
+			position.x += b.rw;// +.1;
 		}
 		else if (grindNorm.x < 0)
 		{
-			position.x += -b.rw - .1;
+			position.x += -b.rw;// -.1;
 		}
 
 		//if (grindNorm.y > 0)
-		position.y += normalHeight + .1;
+		position.y += normalHeight;// +.1;
 
 		bool oldReversed = reversed;
 		reversed = true;

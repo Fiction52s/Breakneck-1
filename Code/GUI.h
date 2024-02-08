@@ -37,6 +37,7 @@ struct MenuDropdown;
 struct TerrainRail;
 struct TabGroup;
 struct ScrollBar;
+struct ColorShifter;
 
 struct Brush;
 
@@ -874,7 +875,7 @@ struct Panel
 	sf::Vertex *imageChooseRectQuads;
 	sf::Vertex *textChooseRectQuads;
 	sf::Vertex *lobbyChooseRectQuads;
-
+	int frame;
 	const sf::Vector2i &GetMousePos();
 
 	sf::Vector2i pos;
@@ -893,6 +894,13 @@ struct Panel
 	bool IsPopup();
 	bool active;
 	PanelUpdater *extraUpdater;
+	sf::Shader defaultQuadShader;
+	Tileset *ts_slide;
+
+	sf::Vertex slideQuad[4]; //just testing for now
+	ColorShifter *slideShifter;
+	ColorShifter *quadColorShifter;
+	ColorShifter *quadHighlightColorShifter;
 
 
 	int toolTipCounter;

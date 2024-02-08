@@ -346,6 +346,15 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
+	case ONLINE_MENU:
+	{
+		if (onlineMenuScreen != NULL)
+		{
+			delete onlineMenuScreen;
+			onlineMenuScreen = NULL;
+		}
+		break;
+	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
@@ -596,6 +605,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		break;
 	}
+	case ONLINE_MENU:
+	{
+		assert(onlineMenuScreen == NULL);
+		onlineMenuScreen = new OnlineMenuScreen(this);
+		onlineMenuScreen->Start();
+		break;
+	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
@@ -781,6 +797,7 @@ MainMenu::MainMenu( bool p_steamOn)
 	currTutorialSession = NULL;
 	currFreePlaySession = NULL;
 	freeplayScreen = NULL;
+	onlineMenuScreen = NULL;
 	singlePlayerControllerJoinScreen = NULL;
 
 	arial.loadFromFile("Resources/Fonts/Kinetic_Font_01.ttf");
@@ -3597,7 +3614,6 @@ void MainMenu::HandleMenuMode()
 			//SetMode(TITLEMENU);
 			break;
 		}
-		
 		break;
 	}
 	case EDITOR_MENU:

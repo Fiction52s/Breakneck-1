@@ -35,6 +35,8 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 
+	Tileset *ts_bg;
+
 	Panel *panel;
 
 	MapNode *selectedMap;

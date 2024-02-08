@@ -10,16 +10,21 @@ OnlineMenuScreen::OnlineMenuScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
+	ts_bg = GetTileset("Menu/Load/load_w8.png");
+
+
 	panel = new Panel("onlinemenu", 1600,
 		500, this, true);
 
 	panel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(30, 0));
 
+	
+
 	//panel->AddHyperLink("test", Vector2i(0, 0), 30, "test link", "blah");
 
 	panel->ReserveImageRects(Action::Count);
 
-	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i( 20, 0 ));
+	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i( 30, 0 ));
 	ImageChooseRect *icr = NULL;
 	icr = panel->AddImageRect(ChooseRect::I_ONLINEMENU_WORKSHOP, Vector2f(0, 0), NULL, sf::IntRect(), 200);
 	icr->SetName("Browse Workshop");
@@ -42,14 +47,15 @@ OnlineMenuScreen::OnlineMenuScreen(MainMenu *mm)
 	//panel->confirmButton =
 	//	panel->AddButton("ok", Vector2i(0, 0), Vector2f(60, 30), "Host");
 	panel->cancelButton =
-		panel->AddButton("back", Vector2i(0, 0), Vector2f(80, 30), "Back");
+		panel->AddButton("back", Vector2i(0, 0), Vector2f(120, 50), "Back");
 
 	panel->StopAutoSpacing();
 
 	panel->SetCenterPos(Vector2i(960, 540));
 
-	SetRectColor(bgQuad, Color::Blue);
+	//SetRectColor(bgQuad, Color::Blue);
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
+	SetRectSubRect(bgQuad, ts_bg->GetSubRect(0));
 
 	action = A_NONE;
 }
@@ -126,10 +132,11 @@ void OnlineMenuScreen::Update()
 
 void OnlineMenuScreen::Draw(sf::RenderTarget *target)
 {
+
 	/*if (browserHandler->chooser->action == MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD)
 	{
 	SetRectColor(downloadingQuad, Color::Red);
 	}*/
-	//target->draw(bgQuad, 4, sf::Quads);
+	target->draw(bgQuad, 4, sf::Quads, ts_bg->texture);
 	panel->Draw(target);
 }

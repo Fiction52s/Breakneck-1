@@ -4,12 +4,13 @@
 
 #include <SFML/Graphics.hpp>
 #include "GUI.h"
+#include "Tileset.h"
 
 struct MainMenu;
 struct MapNode;
 struct MapBrowserScreen;
 
-struct EditorMenuScreen : GUIHandler
+struct EditorMenuScreen : GUIHandler, TilesetManager
 {
 	enum Action
 	{
@@ -26,7 +27,10 @@ struct EditorMenuScreen : GUIHandler
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 	Panel *panel;
+	Tileset *ts_bg;
+	Tileset *ts_title;
 	MapBrowserScreen * mapBrowserScreen;
+	sf::Sprite titleSpr;
 
 	EditorMenuScreen(MainMenu *mm);
 	~EditorMenuScreen();

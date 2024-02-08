@@ -11,16 +11,25 @@ EditorMenuScreen::EditorMenuScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
-	panel = new Panel("editormenu", 1600,
-		500, this, true);
+	panel = new Panel("editormenu", 700,
+		400, this, true);
 
+	//panel->SetColor(Color::Transparent);
 	panel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(30, 0));
+
+	ts_bg = GetTileset("Menu/Load/load_w7.png");
+	ts_title = GetSizedTileset("Menu/leveleditortitle_1034x324.png");
+
+	titleSpr.setTexture(*ts_title->texture);
+	titleSpr.setTextureRect(ts_title->GetSubRect(0));
+	titleSpr.setOrigin(titleSpr.getLocalBounds().width / 2, titleSpr.getLocalBounds().height / 2);
+	titleSpr.setPosition(960, 100);
 
 	//panel->AddHyperLink("test", Vector2i(0, 0), 30, "test link", "blah");
 
 	panel->ReserveImageRects(Action::Count);
 
-	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i(20, 0));
+	panel->SetAutoSpacing(true, false, Vector2i(140, 110), Vector2i(20, 0));
 	ImageChooseRect *icr = NULL;
 	icr = panel->AddImageRect(ChooseRect::I_EDITORMENU_NEW, Vector2f(0, 0), NULL, sf::IntRect(), 200);
 	icr->SetName("New Map");
@@ -43,8 +52,9 @@ EditorMenuScreen::EditorMenuScreen(MainMenu *mm)
 
 	panel->SetCenterPos(Vector2i(960, 540));
 
-	SetRectColor(bgQuad, Color::Blue);
+	//SetRectColor(bgQuad, Color::Blue);
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
+	SetRectSubRect(bgQuad, ts_bg->GetSubRect( 0 ));
 
 	action = A_NONE;
 }
@@ -185,10 +195,13 @@ void EditorMenuScreen::Draw(sf::RenderTarget *target)
 {
 	if (action == A_CHOOSE_MAP)
 	{
+		target->draw(bgQuad, 4, sf::Quads, ts_bg->texture);
 		mapBrowserScreen->Draw(target);
 	}
 	else
 	{
+		target->draw(bgQuad, 4, sf::Quads, ts_bg->texture);
+		target->draw(titleSpr);
 		panel->Draw(target);
 	}
 	

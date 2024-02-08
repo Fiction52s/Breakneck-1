@@ -29,10 +29,11 @@ FreeplayScreen::FreeplayScreen()
 
 	//inviteButton = panel->AddButton("invite", Vector2i(20 + 200, panel->size.y - 200), Vector2f(270, 40), "INVITE FRIEND");
 
-	SetRectColor(bgQuad, Color( 100, 100, 100 ));
+	//SetRectColor(bgQuad, Color( 100, 100, 100 ));
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
 
-	
+	ts_bg = GetTileset("Menu/Load/load_w2.png");
+	SetRectSubRect(bgQuad, ts_bg->GetSubRect(0));
 
 	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_FREEPLAY);
 
@@ -322,7 +323,7 @@ void FreeplayScreen::Draw(sf::RenderTarget *target)
 	case A_BACK:
 	case A_WAITING_FOR_PLAYERS:
 	{
-		target->draw(bgQuad, 4, sf::Quads);
+		target->draw(bgQuad, 4, sf::Quads, ts_bg->texture);
 
 		playerBoxGroup->Draw(target);
 

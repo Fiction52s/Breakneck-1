@@ -7,6 +7,8 @@
 #include "MusicSelector.h"
 #include "LobbyBrowser.h"
 #include "UIMouse.h"
+#include "MovingGeo.h"
+#include "ColorShifter.h"
 
 using namespace sf;
 using namespace std;
@@ -26,10 +28,47 @@ Panel::Panel(const string &n, int width, int height, GUIHandler *h, bool pop)
 	arial.loadFromFile("Resources/Fonts/Kinetic_Font_01.ttf"); //each panel loads the font separately, this is bad
 	SetPosition(Vector2i(0, 0));
 	extraUpdater = NULL;
+	frame = 0;
 
-	Color defaultColor(83, 102, 188);
-	SetRectColor(quad, defaultColor);
+	MainMenu *mm = MainMenu::GetInstance();
+	ts_slide = mm->GetSizedTileset("Menu/menu_texture_256x256.png");
+
+	if (!defaultQuadShader.loadFromFile("Resources/Shader/panel.frag", sf::Shader::Fragment))
+	{
+		assert(0);
+	}
+
+	defaultQuadShader.setUniform("u_slideTexture", *ts_slide->texture);//sf::Shader::CurrentTexture);
+	defaultQuadShader.setUniform("blendColor", ColorGL(Color::White));
+
+	//Color defaultColor(83, 102, 188);
+
+
+	//Color defaultColor(0, 0, 0xbb);
+	//Color defaultHighlight(0, 0x44, 0xff);
+
+	Color defaultColor(22, 116, 200);
+	Color defaultHighlight(104, 186, 220);
+
+	defaultQuadShader.setUniform("baseColor", ColorGL(defaultColor));
+	defaultQuadShader.setUniform("highlightColor", ColorGL(defaultHighlight));
+	defaultQuadShader.setUniform("Resolution", Vector2f(1920, 1080));// window->getSize().x, window->getSize().y);
+	SetColor(defaultColor);
+	//SetRectColor(quad, defaultColor);
 	SetRectTopLeft(quad, size.x, size.y, Vector2f(0, 0));
+	SetRectSubRect(quad, FloatRect(Vector2f(0, 0), Vector2f(1, 1)));
+
+
+
+	Image palette;
+	bool loadPalette = palette.loadFromFile("Resources/Menu/Pause/pause_kin_aura_color.png");
+	assert(loadPalette);
+
+	slideShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+	quadColorShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+	quadHighlightColorShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+
+	slideShifter->SetColors(palette, 0);
 
 	slideFrame = 0;
 	slideDuration = -1;
@@ -48,6 +87,10 @@ Panel::Panel(const string &n, int width, int height, GUIHandler *h, bool pop)
 
 Panel::~Panel()
 {
+	delete slideShifter;
+	delete quadColorShifter;
+	delete quadHighlightColorShifter;
+
 	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
 	{
 		delete (*it).second;
@@ -278,6 +321,23 @@ bool Panel::IsPopup()
 void Panel::SetColor(sf::Color c)
 {
 	SetRectColor(quad, c);
+	//if (c == Color::Transparent)
+	//{
+	//	
+	//}
+	//else
+	//{
+	//	Color d = c;
+	//	c = Color::Black;
+	//	d = Color::White;//GetBlendColor(d, Color::White, .3);
+	//	quad[0].color = d;
+	//	quad[1].color = c;
+	//	quad[2].color = c;
+	//	quad[3].color = c;
+	//}
+	
+
+	//
 }
 
 void Panel::SetPosition(const sf::Vector2i &p_pos)
@@ -352,6 +412,26 @@ const sf::Vector2i &Panel::GetMousePos()
 //checkcontained is mostly for debug, have to redo panels better soon
 bool Panel::MouseUpdate()
 {
+	int scrollFrames1 = 120 * 6;
+	int scrollFrames2 = 240 * 6;
+	float xSlide = ((float)(frame % scrollFrames1)) / scrollFrames1;
+	float ySlide = ((float)(frame % scrollFrames2)) / scrollFrames2;
+	defaultQuadShader.setUniform("slideVec", Vector2f( xSlide, ySlide ));
+
+	int breatheFrames = 180;
+	int fullBreatheFrames = breatheFrames * 2;
+	float breathe = (float)(frame % fullBreatheFrames) / fullBreatheFrames;
+	breathe *= 2.f;
+
+	if (breathe > 1.0)
+	{
+		breathe = 2.f - breathe;
+	}
+	//breathe *= .1;
+
+	defaultQuadShader.setUniform("breathe", breathe);
+	++frame;
+
 	MainMenu *mm = MainMenu::GetInstance();
 
 	ControllerUpdate();
@@ -1063,7 +1143,15 @@ bool Panel::ContainsPoint(sf::Vector2i &point)
 
 void Panel::DrawQuad(RenderTarget *target)
 {
-	target->draw(quad, 4, sf::Quads);
+	defaultQuadShader.setUniform("slideBlendColor", ColorGL(slideShifter->GetCurrColor()));
+
+	if (quad[0].color != Color::Transparent)
+	{
+		target->draw(quad, 4, sf::Quads, &defaultQuadShader);
+	}
+	
+
+	//target->draw(slideSpr, &scrollShader1);
 }
 
 void Panel::SetSize(sf::Vector2f &p_size)

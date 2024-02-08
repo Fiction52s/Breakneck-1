@@ -14,14 +14,16 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	:PanelMember(p), quad(v), boxSize(bSize), pos(p_pos), chooseRectType(crType),
 	rectIdentity(ident), circleMode(false)
 {
+	int alpha = 150;
+
 	idleColor = Color::Black;
-	idleColor.a = 100;
+	idleColor.a = alpha;
 
 	selectedIdleColor = Color::Magenta;
-	selectedIdleColor.a = 100;
+	selectedIdleColor.a = alpha;
 
 	selectedMouseOverColor = Color::Red;
-	selectedMouseOverColor.a = 100;
+	selectedMouseOverColor.a = alpha;
 
 	showName = true;
 
@@ -30,7 +32,7 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	defaultIdleColor = idleColor;
 
 	mouseOverColor = Color::Green;
-	mouseOverColor.a = 100;
+	mouseOverColor.a = alpha;
 
 	SetShown(false);
 
