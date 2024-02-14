@@ -47,8 +47,12 @@ Panel::Panel(const string &n, int width, int height, GUIHandler *h, bool pop)
 	//Color defaultColor(0, 0, 0xbb);
 	//Color defaultHighlight(0, 0x44, 0xff);
 
-	Color defaultColor(22, 116, 200);
-	Color defaultHighlight(104, 186, 220);
+	//Color defaultColor(22, 116, 200);
+	//Color defaultHighlight(104, 186, 220);
+
+	Color defaultColor(0x55, 0x55, 0xbb);
+	Color defaultHighlight(0x99, 0x99, 0xcc);
+	
 
 	defaultQuadShader.setUniform("baseColor", ColorGL(defaultColor));
 	defaultQuadShader.setUniform("highlightColor", ColorGL(defaultHighlight));

@@ -10,11 +10,11 @@ OnlineMenuScreen::OnlineMenuScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
-	ts_bg = GetTileset("Menu/Load/load_w8.png");
+	ts_bg = GetSizedTileset("Menu/Online/menu_online_1920x1080.png");
 
 
-	panel = new Panel("onlinemenu", 1600,
-		500, this, true);
+	panel = new Panel("onlinemenu", 1100,
+		240, this, true);
 
 	panel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(30, 0));
 
@@ -24,7 +24,7 @@ OnlineMenuScreen::OnlineMenuScreen(MainMenu *mm)
 
 	panel->ReserveImageRects(Action::Count);
 
-	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i( 30, 0 ));
+	panel->SetAutoSpacing(true, false, Vector2i(20, 20), Vector2i( 30, 0 ));
 	ImageChooseRect *icr = NULL;
 	icr = panel->AddImageRect(ChooseRect::I_ONLINEMENU_WORKSHOP, Vector2f(0, 0), NULL, sf::IntRect(), 200);
 	icr->SetName("Browse Workshop");

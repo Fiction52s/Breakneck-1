@@ -9,6 +9,11 @@ ClosedBetaScreen::ClosedBetaScreen()
 {
 	MainMenu *mm = MainMenu::GetInstance();
 
+	ts_bg = GetSizedTileset("Menu/EarlyAccess/early_access_screen_1920x1080.png");
+	ts_bg->SetSpriteTexture(bgSpr);
+	ts_bg->SetSubRect(bgSpr, 0);
+	bgSpr.setPosition(0, 0);
+
 	text.setFont(mm->arial);
 	text.setCharacterSize(40);
 	text.setString("The following is a WORK IN PROGRESS. All assets, levels, and mechanics are subject to change.\nWe recommend using a controller. "
@@ -51,5 +56,6 @@ void ClosedBetaScreen::Update()
 void ClosedBetaScreen::Draw(sf::RenderTarget *target)
 {
 	target->draw(quad, 4, sf::Quads);
+	target->draw(bgSpr);
 	target->draw(text);
 }

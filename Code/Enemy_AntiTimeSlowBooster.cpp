@@ -37,7 +37,7 @@ AntiTimeSlowBooster::AntiTimeSlowBooster(ActorParams *ap)
 
 	sprite.setScale(scale, scale);
 
-	boostSound = GetSound("Enemies/Boosters/booster_anti_timeslow");
+	boostSound = GetSound("Enemies/Boosters/booster_anti_time_slow");
 	//sprite.setColor(Color::Red);
 
 	double radius = 90;

@@ -168,6 +168,7 @@ void SinglePlayerControllerJoinScreen::Update()
 
 		if (playerBoxGroup->CheckControllerJoins())
 		{
+			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundInfos[MainMenu::S_PLAYER_JOIN]);
 			SetAction(A_READY);
 			startBox.SetControllerType(playerBoxGroup->GetControllerStates(0)->GetControllerType());
 			//SetRectColor(bgQuad, Color(83, 102, 188));
@@ -179,6 +180,7 @@ void SinglePlayerControllerJoinScreen::Update()
 	{
 		if (CONTROLLERS.ButtonPressed_B())
 		{
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundInfos[MainMenu::S_PLAYER_UNJOIN]);
 			Start();
 			break;
 		}

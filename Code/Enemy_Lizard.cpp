@@ -134,6 +134,15 @@ void Lizard::ResetEnemy()
 		facingRight = false;
 	}
 
+	if (groundMover->ground != NULL)
+	{
+		if (groundMover->ground->Normal().y > 0)
+		{
+			groundMover->SetReverse(true);
+			facingRight = !facingRight;
+		}
+	}
+
 	action = IDLE;
 
 	DefaultHurtboxesOn();
@@ -188,6 +197,8 @@ void Lizard::ProcessState()
 
 	double dist = PlayerDist();
 
+	bool ceiling = groundMover->ground != NULL && groundMover->ground->Normal().y > 0;
+
 	ActionEnded();
 
 	switch (action)
@@ -227,20 +238,41 @@ void Lizard::ProcessState()
 		//cout << "idle: " << frame << endl;
 		break;
 	case RUN:
-		if (facingRight)
+		if (ceiling)
 		{
-			if (playerPos.x < position.x - 50)
+			if (facingRight)
 			{
-				facingRight = false;
+				if (playerPos.x > position.x + 50)
+				{
+					facingRight = false;
+				}
+			}
+			else
+			{
+				if (playerPos.x < position.x - 50)
+				{
+					facingRight = true;
+				}
 			}
 		}
 		else
 		{
-			if (playerPos.x > position.x + 50)
+			if (facingRight)
 			{
-				facingRight = true;
+				if (playerPos.x < position.x - 50)
+				{
+					facingRight = false;
+				}
+			}
+			else
+			{
+				if (playerPos.x > position.x + 50)
+				{
+					facingRight = true;
+				}
 			}
 		}
+
 
 		if (facingRight) //clockwise
 		{
@@ -267,14 +299,14 @@ void Lizard::ProcessState()
 			groundMover->SetSpeed(-maxGroundSpeed);
 		break;
 	case JUMP:
-		if (facingRight)
+		/*if (facingRight)
 		{
 			groundMover->SetVelX(maxGroundSpeed);
 		}
 		else
 		{
 			groundMover->SetVelX(-maxGroundSpeed);
-		}
+		}*/
 		//cout << "jump: " << frame << endl;
 		break;
 		//	case ATTACK:
@@ -423,9 +455,21 @@ void Lizard::FinishedRoll()
 void Lizard::HitOther()
 {
 	//cout << "hit other" << endl;
+	
 
+	
 	if (action == RUN)
 	{
+		if ((groundMover->minContact.normal.y >= 0 && !groundMover->groundMoverData.reverse)
+			|| (groundMover->minContact.normal.y <= 0 && groundMover->groundMoverData.reverse ) )
+		{
+			return;
+		}
+
+
+		bool ceiling = groundMover->ground->Normal().y > 0;
+
+
 		if ((facingRight && groundMover->GetGroundSpeed() < 0)
 			|| (!facingRight && groundMover->GetGroundSpeed() > 0))
 		{
@@ -435,6 +479,14 @@ void Lizard::HitOther()
 		else if (facingRight && groundMover->GetGroundSpeed() > 0)
 		{
 			V2d v = V2d(maxGroundSpeed, -10);
+			if (ceiling)
+			{
+				v.x = -v.x;
+				v.y = 2;
+				facingRight = !facingRight;
+				groundMover->SetReverse(false);
+			}
+				
 			groundMover->Jump(v);
 			action = JUMP;
 			frame = 0;
@@ -442,6 +494,14 @@ void Lizard::HitOther()
 		else if (!facingRight && groundMover->GetGroundSpeed() < 0)
 		{
 			V2d v = V2d(-maxGroundSpeed, -10);
+			if (ceiling)
+			{
+				v.x = -v.x;
+				v.y = 2;
+				facingRight = !facingRight;
+				groundMover->SetReverse(false);
+			}
+				
 			groundMover->Jump(v);
 			action = JUMP;
 			frame = 0;
@@ -471,6 +531,15 @@ void Lizard::ReachCliff()
 		v = V2d(-maxGroundSpeed, jumpStrength);
 	}
 
+	bool ceiling = groundMover->ground->Normal().y > 0;
+	if (ceiling)
+	{
+		v.x = -v.x;
+		v.y = 2;
+		facingRight = !facingRight;
+		groundMover->SetReverse(false);
+	}
+
 	groundMover->Jump(v);
 
 	action = JUMP;
@@ -486,6 +555,20 @@ void Lizard::Land()
 {
 	action = LAND;
 	frame = 0;
+
+	if (groundMover->GetVel().x == maxGroundSpeed)
+	{
+		groundMover->SetSpeed(maxGroundSpeed);
+	}
+	else if (groundMover->GetVel().x == -maxGroundSpeed)
+	{
+		groundMover->SetSpeed(-maxGroundSpeed);
+	}
+	else
+	{
+		groundMover->SetSpeed(0);
+	}
+	//if( groundMover->GetVel().x )
 }
 
 void Lizard::BulletHitTerrain(BasicBullet *b,
@@ -504,14 +587,30 @@ void Lizard::Shock()
 {
 	//ground has to be not null.
 
-	if (PlayerDir().x >= 0)
+	bool ceiling = groundMover->ground->Normal().y > 0;
+	if (ceiling)
 	{
-		facingRight = true;
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = false;
+		}
+		else
+		{
+			facingRight = true;
+		}
 	}
 	else
 	{
-		facingRight = false;
+		if (PlayerDir().x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
 	}
+	
 
 	launchers[0]->position = GetPosition();
 

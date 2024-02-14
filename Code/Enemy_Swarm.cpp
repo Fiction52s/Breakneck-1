@@ -109,6 +109,11 @@ void SwarmMember::Explode()
 	data.velocity = V2d(0, 0);
 }
 
+void SwarmMember::Die()
+{
+
+}
+
 //void SwarmMember::HandleNoHealth()
 //{
 //	active = false;
@@ -203,7 +208,7 @@ void SwarmMember::ConfirmKill()
 	}
 
 	HandleNoHealth();
-	PlayDeathSound();
+	//PlayDeathSound();
 }
 
 void SwarmMember::Throw( V2d &pos )
@@ -354,6 +359,10 @@ int SwarmMember::GetNumEnergyAbsorbParticles()
 	return 1;
 }
 
+bool SwarmMember::CountsForEnemyGate()
+{
+	return false;
+}
 
 Swarm::Swarm( ActorParams *ap )
 	:Enemy( EnemyType::EN_SWARM, ap)
@@ -584,6 +593,15 @@ void Swarm::HandleNoHealth()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 	data.dying = true;
+
+	//members surviving feels better
+	/*for (int i = 0; i < NUM_SWARM; ++i)
+	{
+		if (members[i]->active)
+		{
+			members[i]->Explode();
+		}
+	}*/
 }
 
 void Swarm::EnemyDraw(sf::RenderTarget *target )
@@ -618,6 +636,46 @@ void Swarm::UpdateSprite()
 			sprite.getLocalBounds().height / 2 );
 		sprite.setPosition( GetPositionF() );
 	}
+}
+
+bool Swarm::CountsForEnemyGate()
+{
+	if (data.dying)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+void Swarm::DirectKill()
+{
+	if (!dead)
+	{
+
+		//sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
+
+		dead = true;
+
+		numHealth = 0;
+		HandleNoHealth();
+		receivedHit.SetEmpty();
+
+		if (!data.dying)
+		{
+			if (cutObject != NULL)
+			{
+				SyncCutObject();
+				cutObject->SetCutRootPos(GetPositionF());
+			}
+		}
+		
+	}
+
+	if (comboObj != NULL)
+		sess->PlayerRemoveActiveComboer(comboObj);
 }
 
 int Swarm::GetNumEnergyAbsorbParticles()

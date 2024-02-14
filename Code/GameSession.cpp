@@ -254,7 +254,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 	else if ((matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 		&& mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && scoreDisplay->waiting)
 	{
-		if (CONTROLLERS.KeyboardButtonPressed(Keyboard::F1))
+		if ( mainMenu->steamOn && CONTROLLERS.KeyboardButtonPressed(Keyboard::F1))
 		{
 			gameState = FEEDBACK_FORM;
 			mainMenu->adventureManager->feedbackForm->Activate(this);

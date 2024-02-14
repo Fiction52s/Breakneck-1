@@ -984,6 +984,8 @@ struct Actor : QuadTreeCollider,
 	MovingGeoGroup *enoughKeysToExitRingGroup;
 	MovingGeoGroup *gravityDecreaserOnRingGroup;
 	MovingGeoGroup *gravityDecreaserOffRingGroup;
+	MovingGeoGroup *gravityIncreaserOnRingGroup;
+	MovingGeoGroup *gravityIncreaserOffRingGroup;
 
 	EffectPool *dustParticles;
 	RisingParticleUpdater *rpu;
@@ -1379,6 +1381,8 @@ struct Actor : QuadTreeCollider,
 	void CreateEnoughKeysRing();
 	void CreateGravityDecreaserOnRing();
 	void CreateGravityDecreaserOffRing();
+	void CreateGravityIncreaserOnRing();
+	void CreateGravityIncreaserOffRing();
 	void CollectFly(HealthFly *hf);
 	bool CheckSetToAerialFromNormalWater();
 	void SetupActionFunctions();

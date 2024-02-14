@@ -1504,6 +1504,12 @@ void GrindBullet::UpdatePrePhysics()
 		launcher->handler->UpdateBullet(this);
 	}
 
+
+	if (grindEdge != NULL && grindEdge->IsUnlockedGateEdge() )
+	{
+		Kill(grindEdge->Normal());
+	}
+
 	double len = length(position - playerPos);
 	if (len > MAX_VELOCITY * 2)
 	{
@@ -1520,6 +1526,12 @@ void GrindBullet::UpdatePrePhysics()
 
 bool GrindBullet::HitTerrain()
 {
+	if (minContact.edge->IsUnlockedGateEdge() )
+	{
+		Kill(minContact.edge->Normal());
+		return true;
+	}
+
 	launcher->handler->BulletHitTerrain(this,
 		minContact.edge, minContact.position);
 	grindEdge = minContact.edge;

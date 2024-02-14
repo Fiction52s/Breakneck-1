@@ -355,6 +355,14 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
+	case EDITOR_MENU:
+	{
+		if (editorMenuScreen != NULL)
+		{
+			delete editorMenuScreen;
+			editorMenuScreen = NULL;
+		}
+	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
@@ -378,6 +386,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		assert(quickplaySearchScreen != NULL);
 		delete quickplaySearchScreen;
 		quickplaySearchScreen = NULL;
+		break;
+	}
+	case CLOSED_BETA:
+	{
+		delete closedBetaScreen;
+		closedBetaScreen = NULL;
 		break;
 	}
 
@@ -612,6 +626,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		onlineMenuScreen->Start();
 		break;
 	}
+	case EDITOR_MENU:
+	{
+		assert(editorMenuScreen == NULL);
+		editorMenuScreen = new EditorMenuScreen(this);
+		editorMenuScreen->Start();
+	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
@@ -798,6 +818,8 @@ MainMenu::MainMenu( bool p_steamOn)
 	currFreePlaySession = NULL;
 	freeplayScreen = NULL;
 	onlineMenuScreen = NULL;
+	editorMenuScreen = NULL;
+
 	singlePlayerControllerJoinScreen = NULL;
 
 	arial.loadFromFile("Resources/Fonts/Kinetic_Font_01.ttf");
@@ -973,9 +995,8 @@ MainMenu::MainMenu( bool p_steamOn)
 		SetRectCenter(mainMenuOptionHighlight + i * 4, 512, 64, textBase + Vector2f(512 / 2, 32 + i * (64 + textOptionSpacing)));
 	}
 
-	menuOptionsBG.setFillColor(Color( 0, 0, 0, 70 ));
-	menuOptionsBG.setPosition(textBase);
-	menuOptionsBG.setSize(Vector2f(600, (64 + textOptionSpacing) * M_Count));
+	SetRectColor(menuOptionsBGQuad, Color(0, 0, 0, 70));
+	SetRectTopLeft(menuOptionsBGQuad, 400, (64 + textOptionSpacing) * M_Count, textBase);
 
 	soundNodeList = new SoundNodeList( 20 );
 	soundNodeList->SetSoundVolume(config->GetData().soundVolume);
@@ -1029,10 +1050,6 @@ MainMenu::MainMenu( bool p_steamOn)
 	mapBrowserScreen = new MapBrowserScreen(this);
 
 	workshopBrowser = NULL;
-
-	onlineMenuScreen = new OnlineMenuScreen(this);
-
-	editorMenuScreen = new EditorMenuScreen(this);
 
 	matchResultsScreen = NULL;
 
@@ -1230,7 +1247,7 @@ MainMenu::~MainMenu()
 		delete remoteStorageManager;
 	}
 
-	delete closedBetaScreen;
+	//delete closedBetaScreen;
 
 	delete menuMatchParams;
 
@@ -1300,8 +1317,6 @@ MainMenu::~MainMenu()
 	
 	delete gameSettingsScreen;
 	delete mapBrowserScreen;
-	delete onlineMenuScreen;
-	delete editorMenuScreen;
 
 	if (workshopBrowser != NULL)
 	{
@@ -1344,6 +1359,8 @@ void MainMenu::Init()
 	soundInfos[S_DOWN] = soundManager.GetSound( "menu_down" );
 	soundInfos[S_UP] = soundManager.GetSound( "menu_up" );
 	soundInfos[S_SELECT] = soundManager.GetSound( "menu_select" );
+	soundInfos[S_PLAYER_JOIN] = soundManager.GetSound("Menu/player_join");
+	soundInfos[S_PLAYER_UNJOIN] = soundManager.GetSound("Menu/player_unjoin");
 
 	ts_loadBG = NULL;
 
@@ -1526,7 +1543,7 @@ void MainMenu::SetMode(Mode m)
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
 {
-	target->draw(menuOptionsBG);
+	target->draw(menuOptionsBGQuad, 4, sf::Quads );
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
 		target->draw(mainMenuOptionQuads, M_Count * 4, sf::Quads, ts_mainOption->texture);
@@ -1859,11 +1876,11 @@ sf::IntRect MainMenu::GetButtonIconTile(ControllerSettings::ButtonType button, C
 		{
 			int diff = button - ControllerSettings::BUTTONTYPE_LLEFT;
 
-			buttonIndex = (XBOX_LLEFT + diff) + 16 * 2;
+			buttonIndex = (XBOX_LLEFT + diff) + 24 * 2;
 		}
 		else
 		{
-			buttonIndex = profile->Filter(button) + 16 * 2;//0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
+			buttonIndex = profile->Filter(button) + 24 * 2;//0;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
 
 			if (buttonIndex == XBOX_BLANK)
 			{
@@ -1926,7 +1943,7 @@ sf::IntRect MainMenu::GetButtonIconTileForMenu(int controllerType, XBoxButton bu
 	}
 	case CTYPE_GAMECUBE:
 	{
-		buttonIndex = button + 16 * 2;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
+		buttonIndex = button + 24 * 2;//(controllerInput->con->filter[button]) + 16 * 2;// - 1) + 16 * 2;
 		break;
 	}
 	case CTYPE_PS4:
@@ -4570,7 +4587,8 @@ void MainMenu::TitleMenuModeUpdate()
 
 	if (isCursorModeOn)
 	{
-		if (QuadContainsPoint(mainMenuOptionQuads + saSelector->currIndex * 4,
+		if (QuadContainsPoint(menuOptionsBGQuad, MOUSE.GetFloatPos())
+			&& QuadContainsPoint(mainMenuOptionQuads + saSelector->currIndex * 4,
 			MOUSE.GetFloatPos()) && MOUSE.IsMouseLeftClicked())
 		{
 			currOptionPressed = true;
@@ -4729,7 +4747,8 @@ void MainMenu::TitleMenuModeUpdate()
 			{
 				if (activatedMainMenuOptions[i] && saSelector->currIndex != i)
 				{
-					if (QuadContainsPoint(mainMenuOptionQuads + i * 4,
+					if (QuadContainsPoint(menuOptionsBGQuad, MOUSE.GetFloatPos())
+						&& QuadContainsPoint(mainMenuOptionQuads + i * 4,
 						MOUSE.GetFloatPos()))
 					{
 						saSelector->SetIndex(i);

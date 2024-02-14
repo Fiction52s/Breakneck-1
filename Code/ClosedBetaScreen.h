@@ -2,8 +2,9 @@
 #define __CLOSED_BETA_SCREEN_H_
 
 #include <SFML/Graphics.hpp>
+#include "Tileset.h"
 
-struct ClosedBetaScreen
+struct ClosedBetaScreen : TilesetManager
 {
 	enum Action
 	{
@@ -16,6 +17,8 @@ struct ClosedBetaScreen
 
 	sf::Vertex quad[4];
 	sf::Text text;
+	Tileset *ts_bg;
+	sf::Sprite bgSpr;
 
 	ClosedBetaScreen();
 	void Update();

@@ -601,6 +601,13 @@ bool PlayerBoxGroup::BackButtonPressed()
 			states = CONTROLLERS.GetStateQueue(i, j);
 			if (states != NULL && states->ButtonPressed_B() && !IsStateChangingControls(states) )
 			{
+				/*for (auto it = playerBoxes.begin(); it != playerBoxes.end(); ++it)
+				{
+					if ((*it)->controllerStates == NULL)
+					{
+						return false;
+					}
+				}*/
 				return true;
 			}
 		}
@@ -702,6 +709,8 @@ bool PlayerBoxGroup::TryControllerJoin(ControllerDualStateQueue *conStates)
 	if (IsFull())
 		return false;
 
+	MainMenu *mm = MainMenu::GetInstance();
+
 	if (!AlreadyJoined(conStates))
 	{
 		int numBoxes = playerBoxes.size();
@@ -711,6 +720,7 @@ bool PlayerBoxGroup::TryControllerJoin(ControllerDualStateQueue *conStates)
 			{
 				SetControllerStates(i, conStates, GetFirstAvailableSkinIndex());
 				cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;
+				mm->soundNodeList->ActivateSound(mm->soundInfos[MainMenu::S_PLAYER_JOIN]);
 				return true;
 			}
 		}

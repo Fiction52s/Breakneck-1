@@ -45,7 +45,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	ts_energy = GetTileset("Menu/Title/energy_1920x1080.png", 1920, 1080);
 	energySpr.setTexture(*ts_energy->texture);
 
-	ts_discord = GetSizedTileset("Menu/Title/discord_256x256.png");
+	ts_discord = GetSizedTileset("Menu/Title/kinetic_discord_256x256.png");//GetSizedTileset("Menu/Title/discord_256x256.png");
 
 	ImageChooseRect *icr = panel->AddImageRect(ChooseRect::I_DISCORD_LINK, Vector2f(1920 - 300, 1080 - 300), ts_discord, 0, 256);
 	icr->Init();

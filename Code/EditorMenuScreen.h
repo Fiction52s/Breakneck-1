@@ -31,6 +31,8 @@ struct EditorMenuScreen : GUIHandler, TilesetManager
 	Tileset *ts_title;
 	MapBrowserScreen * mapBrowserScreen;
 	sf::Sprite titleSpr;
+	Tileset *ts_newFile;
+	Tileset *ts_openFile;
 
 	EditorMenuScreen(MainMenu *mm);
 	~EditorMenuScreen();

@@ -32,7 +32,7 @@ FreeplayScreen::FreeplayScreen()
 	//SetRectColor(bgQuad, Color( 100, 100, 100 ));
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
 
-	ts_bg = GetTileset("Menu/Load/load_w2.png");
+	ts_bg = GetSizedTileset("Menu/Freeplay/menu_free_play_1920x1080.png");
 	SetRectSubRect(bgQuad, ts_bg->GetSubRect(0));
 
 	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_FREEPLAY);

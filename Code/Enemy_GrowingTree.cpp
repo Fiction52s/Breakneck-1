@@ -77,7 +77,7 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	//BasicBullet::GROWING_TREE
 	SetNumLaunchers(1);
 
-	launchers[0] = new Launcher(this, BasicBullet::GROWING_TREE, 8, 3, GetPosition(), V2d(1, 0), /*PI * 2*/ PI * 2, 90, false);
+	launchers[0] = new Launcher(this, BasicBullet::GROWING_TREE, 8, 3, GetPosition(), V2d(1, 0), /*PI * 2*/ PI * 2, 70, false);
 	launchers[0]->SetBulletSpeed(bulletSpeed0);
 	launchers[0]->hitboxInfo->damage = 60;
 	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;

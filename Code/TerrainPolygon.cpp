@@ -3063,6 +3063,7 @@ bool TerrainPolygon::IntersectsMyOwnEnemies()
 			//	Vector2i(bva[1].position.x, bva[1].position.y), Vector2i(bva[2].position.x, bva[2].position.y),
 			//	Vector2i(bva[3].position.x, bva[3].position.y))*/)
 			{
+				cout << "intersects enemy at: " << (*ait)->posInfo.GetPosition().x << ", " << (*ait)->posInfo.GetPosition().y << "\n";
 				return true;
 			}
 		}

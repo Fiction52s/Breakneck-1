@@ -172,6 +172,8 @@ bool FeedbackForm::Submit()
 
 	stringstream ss;
 
+	assert(MainMenu::GetInstance()->steamOn);
+
 	ss << "Map: " << levelName << "\n";
 	ss << "Username: " << SteamFriends()->GetPersonaName() << "\n";
 	ss << "SteamID: " << SteamUser()->GetSteamID().ConvertToUint64() << "\n";

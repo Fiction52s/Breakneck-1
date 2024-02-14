@@ -187,7 +187,11 @@ void Actor::BOUNCEGROUND_Change()
 		
 		V2d vDir = normalize(velocity);
 
-		if (bn.y != 0)
+
+		bool steep = (abs(bn.y) <= Edge::GetSteepThresh() && abs(bn.x) < 1.0);
+		
+		
+		if (bn.y != 0 && ( !steep || storedBounceVel.y > 0 ))
 		{
 			if ((bn.x > 0 && velocity.x > 0) || (bn.x < 0 && velocity.x < 0))
 			{

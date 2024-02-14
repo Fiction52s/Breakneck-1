@@ -207,6 +207,9 @@ struct MainMenu : TilesetManager
 		S_DOWN,
 		S_UP,
 		S_SELECT,
+		S_PLAYER_JOIN,
+		S_PLAYER_UNJOIN,
+		S_JOIN_SCREEN_COMPLETE,
 		S_Count
 	};
 
@@ -530,7 +533,7 @@ struct MainMenu : TilesetManager
 	
 	Tileset *ts_mainOption;
 	Tileset *ts_menuSelector;
-	sf::RectangleShape menuOptionsBG;
+	sf::Vertex menuOptionsBGQuad[4];
 	sf::Sprite selectorSprite;
 	int selectorAnimFrame;
 	int selectorAnimDuration;

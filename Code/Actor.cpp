@@ -1299,6 +1299,22 @@ void Actor::SetupFX()
 		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
 	gravityDecreaserOffRingGroup->Init();
 
+	Color incColor = Color(0xdf, 0x71, 0x26);
+	Color invIncColor = incColor;
+	invIncColor.a = 0;
+
+	gravityIncreaserOnRingGroup = new MovingGeoGroup;
+	gravityIncreaserOnRingGroup->AddGeo(new MovingRing(32, 120, 1, 8, 8, Vector2f(0, 0), Vector2f(0, 0),
+		incColor, invIncColor,
+		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
+	gravityIncreaserOnRingGroup->Init();
+
+
+	gravityIncreaserOffRingGroup = new MovingGeoGroup;
+	gravityIncreaserOffRingGroup->AddGeo(new MovingRing(32, 1, 120, 8, 8, Vector2f(0, 0), Vector2f(0, 0),
+		incColor, invIncColor,
+		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
+	gravityIncreaserOffRingGroup->Init();
 
 	
 
@@ -4123,6 +4139,9 @@ Actor::~Actor()
 	delete gravityDecreaserOnRingGroup;
 	delete gravityDecreaserOffRingGroup;
 
+	delete gravityIncreaserOnRingGroup;
+	delete gravityIncreaserOffRingGroup;
+
 	
 	delete gravityIncreaserTrailEmitter;
 	delete gravityDecreaserTrailEmitter;
@@ -4637,6 +4656,23 @@ void Actor::CreateGravityDecreaserOffRing()
 	gravityDecreaserOffRingGroup->Start();
 }
 
+void Actor::CreateGravityIncreaserOnRing()
+{
+	Vector2f floatPos(position);
+	gravityIncreaserOnRingGroup->SetBase(floatPos);
+	gravityIncreaserOnRingGroup->Reset();
+	gravityIncreaserOnRingGroup->Start();
+}
+
+
+void Actor::CreateGravityIncreaserOffRing()
+{
+	Vector2f floatPos(position);
+	gravityIncreaserOffRingGroup->SetBase(floatPos);
+	gravityIncreaserOffRingGroup->Reset();
+	gravityIncreaserOffRingGroup->Start();
+}
+
 void Actor::CreateGateExplosion( int gateCategory )
 {
 	Vector2f floatPos(position);
@@ -5049,6 +5085,9 @@ void Actor::Respawn( bool setStartPos )
 	enoughKeysToExitRingGroup->Reset();
 	gravityDecreaserOnRingGroup->Reset();
 	gravityDecreaserOffRingGroup->Reset();
+
+	gravityIncreaserOnRingGroup->Reset();
+	gravityIncreaserOffRingGroup->Reset();
 	numKeysHeld = 0;
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
@@ -6247,12 +6286,16 @@ void Actor::ProcessGravModifier()
 
 		if (boosterExtraGravityModifier > 1.0)
 		{
+			gravityDecreaserTrailEmitter->SetOn(false);
 			gravityIncreaserTrailEmitter->SetOn(true);
 			sess->AddEmitter(gravityIncreaserTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+			CreateGravityIncreaserOnRing();
 		}
 		else if (boosterExtraGravityModifier < 1.0)
 		{
+			gravityIncreaserTrailEmitter->SetOn(false);
 			gravityDecreaserTrailEmitter->SetOn(true);
+			
 			sess->AddEmitter(gravityDecreaserTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 			CreateGravityDecreaserOnRing();
 		}
@@ -18321,6 +18364,9 @@ void Actor::UpdatePostPhysics()
 	gravityDecreaserOnRingGroup->SetBase(Vector2f(position));
 	gravityDecreaserOffRingGroup->SetBase(Vector2f(position));
 
+	gravityIncreaserOnRingGroup->SetBase(Vector2f(position));
+	gravityIncreaserOffRingGroup->SetBase(Vector2f(position));
+
 	gravityIncreaserTrailEmitter->SetPos(Vector2f(position));
 	gravityDecreaserTrailEmitter->SetPos(Vector2f(position));
 	if (startBoosterGravModifyFrames > 0)
@@ -18763,6 +18809,7 @@ void Actor::UpdateModifiedGravity()
 			if (boosterExtraGravityModifier > 1.0)
 			{
 				gravityIncreaserTrailEmitter->SetOn(false);
+				CreateGravityIncreaserOffRing();
 			}
 			else if (boosterExtraGravityModifier < 1.0)
 			{
@@ -22129,8 +22176,12 @@ void Actor::Draw( sf::RenderTarget *target )
 	enemyExplodeRingGroup->Draw(target);
 	enemiesClearedRingGroup->Draw(target);
 	enoughKeysToExitRingGroup->Draw(target);
+	
 	gravityDecreaserOnRingGroup->Draw(target);
 	gravityDecreaserOffRingGroup->Draw(target);
+
+	gravityIncreaserOnRingGroup->Draw(target);
+	gravityIncreaserOffRingGroup->Draw(target);
 	//keyExplodePool->Draw(target);
 }
 
@@ -22459,6 +22510,9 @@ void Actor::UpdateSprite()
 	enoughKeysToExitRingGroup->Update();
 	gravityDecreaserOnRingGroup->Update();
 	gravityDecreaserOffRingGroup->Update();
+
+	gravityIncreaserOnRingGroup->Update();
+	gravityIncreaserOffRingGroup->Update();
 
 	UpdateSmallLightning();
 

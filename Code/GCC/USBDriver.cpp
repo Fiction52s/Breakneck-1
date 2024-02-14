@@ -67,11 +67,13 @@ namespace GCC
 	{
 
 		mEnabled = false;
+		mStatus = Status::READY;
 
 		int s = libusb_init(&mUSBContext);
 
 		if (s < 0)
 		{
+			//cout << "error initializing libusb" << endl;
 			mStatus = Status::ERR;
 			return;
 		}
@@ -99,18 +101,41 @@ namespace GCC
 
 
 
-		libusb_set_debug(mUSBContext, 3);
+		libusb_set_debug(mUSBContext, 1);
 
 
 		mHandle = NULL;
-		for (int i = 0; i < NUM_USB_TYPES; ++i)
+		/*for (int i = 0; i < NUM_USB_TYPES; ++i)
 		{
 			mHandle = libusb_open_device_with_vid_pid(mUSBContext, vendorID[i], productID[i]);
 			if (mHandle != NULL)
 			{
 				break;
 			}
+		}*/
+
+		
+		mHandle = libusb_open_device_with_vid_pid(mUSBContext, vendorID[0], productID[0]);
+		if (mHandle == NULL)
+		{
+			//mStatus = Status::ERR;
+			mStatus = Status::ERR;
+			//cout << "error opening usb device. Might just not be present" << endl;
+			return;
 		}
+
+
+		//not sure if i need this
+		//int result = libusb_claim_interface(mHandle, 0);
+		//if (result < 0) {
+		//	std::cerr << "Error claiming interface: " << libusb_error_name(result) << std::endl;
+		//	libusb_close(mHandle);
+		//	mStatus = Status::ERR;
+		//	//libusb_exit(context);
+		//	//return result;
+		//	return;
+		//}
+		
 
 		if (!mHandle)
 		{
