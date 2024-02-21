@@ -8,6 +8,8 @@
 using namespace std;
 using namespace sf;
 
+//#define CANMAKEADVENTURES
+
 GeneralUI::GeneralUI()
 {
 	edit = EditSession::GetSession();
@@ -94,13 +96,17 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		}
 		case EDIT_ADVENTURE:
 		{
+#ifdef CANMAKEADVENTURES
 			edit->mapBrowserHandler->chooser->StartRelative(ADVENTURE_EXT, MapBrowser::EDITOR_OPEN, "Resources/Adventure");
+#endif
 			//edit->fileChooser->chooser->StartRelative(ADVENTURE_EXT, FileChooser::OPEN, "");
 			break;
 		}
 		case CREATE_ADVENTURE:
 		{
+#ifdef CANMAKEADVENTURES
 			edit->adventureCreator->Open();
+#endif
 			break;
 		}
 		case PUBLISH:

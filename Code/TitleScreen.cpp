@@ -74,7 +74,11 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	creditsMenuScreen = new CreditsMenuScreen;
 
-	
+	Label *lab = panel->AddLabel("ealabel", Vector2i(960, 1080 - 30), 40, "Early Access ver. 1.0");
+	auto lb = lab->text.getLocalBounds();
+	lab->text.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+	lab->text.setFillColor(Color::White);
+
 	titleMusic = mainMenu->musicManager->songMap["w0_Title"];
 	if (titleMusic != NULL)
 	{
@@ -116,10 +120,16 @@ void TitleScreen::Update()
 
 	panel->MouseUpdate();
 
+	if (frame == 0)
+	{
+		mainMenu->musicPlayer->PlayMusic(titleMusic);
+	}
+	
+
 	if (frame == 60)
 	{
 		//mainMenu->fader->CrossFade(60, 60, Color::Red);
-		mainMenu->musicPlayer->PlayMusic(titleMusic);
+		
 	}
 
 	Vector2f empty(0, 0);

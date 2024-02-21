@@ -319,6 +319,35 @@ bool AdventureManager::TryToGoToNextLevel()
 	return true;
 }
 
+bool AdventureManager::IsLastLevel()
+{
+	int w = 0;
+	int s = 0;
+	int m = 0;
+	adventureFile.GetMapIndexes(currLevel->level->index, w, s, m);
+
+	int origW = w;
+	int origS = s;
+	int origM = m;
+
+	World &world = adventurePlanet->worlds[w];
+	Sector &sector = world.sectors[s];
+
+	AdventureWorld &adventureWorld = adventureFile.GetWorld(w);
+	AdventureSector &adventureSector = adventureFile.GetSector(w, s);
+
+	bool keepGoingAfterSectorEnd = true;
+
+	if (m == adventureSector.GetNumExistingMaps() - 1
+		&& s == adventureWorld.GetNumExistingSectors() - 1
+		&& w == adventureFile.GetNumExistingWorlds() - 1)
+	{
+		return true;
+	}
+	
+	return false;
+}
+
 //returns true if you make a record!
 bool AdventureManager::CompleteCurrentMap(GameSession *game)
 {
@@ -341,6 +370,8 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 	}
 
 	bool isRecordSet = currSaveFile->TrySetRecordTime(totalFrames, lev);
+
+
 	if (isRecordSet)
 	{
 		//if (game->recPlayer != NULL)
@@ -356,7 +387,10 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 		//	game->recGhost->WriteToFile(game->GetBestTimeGhostPath());
 		//	game->SetupBestTimeGhost(); //only if ghost is already on
 		//}
+		if (originalProgressionMode)
+		{
 
+		}
 		if (game->playerRecordingManager != NULL)
 		{
 			game->playerRecordingManager->RecordReplayFrames();

@@ -769,7 +769,7 @@ void MapBrowser::AddFolder(const path &p_filePath)
 	mapNode->filePath = p_filePath;
 	mapNode->type = MapNode::FOLDER;
 
-	string previewPath = "Resources/Menu/foldericon_100x100.png";
+	string previewPath = "Resources/Menu/folder_128x128.png";
 	mapNode->ts_preview = GetSizedTileset(previewPath);
 
 	mapNode->fileName = mapNode->filePath.filename().stem().string();

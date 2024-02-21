@@ -229,10 +229,10 @@ bool OptionsMenu::CanChangeTab()
 {
 	if (state == CONTROL)
 	{
-		/*if (csm->IsEditingButtons())
+		if (playerBoxGroup->IsBoxChangingControls(0))
 		{
-		return false;
-		}*/
+			return false;
+		}
 	}
 
 	return true;

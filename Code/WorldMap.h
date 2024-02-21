@@ -308,6 +308,7 @@ struct WorldMap : TilesetManager
 	sf::Sprite colonySelectSpr;
 	sf::Sprite colonySelectSprZoomed;
 	sf::Sprite parallelPlayMarkerSpr;
+	sf::Sprite parallelPlaySettingsMarkerSpr;
 
 	float colonyRadius;
 
@@ -322,6 +323,7 @@ struct WorldMap : TilesetManager
 
 	
 	sf::Vertex parallelPlayButtonQuad[4 * 1];
+	sf::Vertex parallelPlaySettingsButtonQuad[4 * 1];
 
 	sf::Vertex infoNameBG[4];
 	sf::Vertex infoQuadBG[4];
@@ -355,6 +357,7 @@ struct WorldMap : TilesetManager
 	Tileset * ts_colony[ADVENTURE_MAX_NUM_WORLDS];
 	Tileset *ts_selectableRing;
 	Tileset *ts_parallelPlayMarker;
+	Tileset *ts_parallelPlaySettingsMarker;
 
 	AdventureManager *adventureManager;
 

@@ -1108,7 +1108,7 @@ void NetplayManager::Update()
 			LobbyData ld;
 			ld.maxMembers = 2;
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
-			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
+			ld.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
 			ld.lobbyType = LobbyData::LOBBYTYPE_QUICKPLAY;
 			// set the name of the lobby if it's ours
 			string lobbyName = SteamFriends()->GetPersonaName();
@@ -2013,23 +2013,34 @@ void NetplayManager::OnConnectStatusChangedPractice(SteamNetConnectionStatusChan
 
 std::string NetplayManager::GetNextQuickplayMapName()
 {
-	int r = rand() % 2;
+	int r = rand() % 3;
 	cout << "choosing quickplay map: " << r << endl;
 
 	//r = 0; //just for testing
 	//r = 1;
 
-	r = 0;
-	if (r == 0)
+	//r = 0;
+
+	switch (r)
 	{
-		//return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
-		return "Resources/Maps/Multiplayer/afighting6" + string(MAP_EXT);
+	case 0:
+		return "Resources/Maps/Multiplayer/qp1" + string(MAP_EXT);
+	case 1:
+		return "Resources/Maps/Multiplayer/qp2" + string(MAP_EXT);
+	case 2:
+		return "Resources/Maps/Multiplayer/qp3" + string(MAP_EXT);
 	}
-	else
-	{
-		return "Resources/Maps/Multiplayer/afighting2" + string(MAP_EXT);
-	}
-	
+	//if (r == 0)
+	//{
+	//	//return "Resources/Maps/W2/afighting6" + string(MAP_EXT);
+	//	return "Resources/Maps/Multiplayer/qp1" + string(MAP_EXT);
+	//}
+	//else if r == 1 )
+	//{
+	//	return "Resources/Maps/Multiplayer/afighting2" + string(MAP_EXT);
+	//}
+
+	return "Resources/Maps/Multiplayer/qp1" + string(MAP_EXT);
 }
 
 CSteamID NetplayManager::GetHostID()
@@ -2179,7 +2190,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = GetNextQuickplayMapName();//"Resources/Maps/W2/afighting6" + string(MAP_EXT);
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//
+		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_FIGHT;;//MatchParams::GAME_MODE_FIGHT;//MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_FIGHT;//
 		//matchParams.controllerStateVec[0] = myControllerInput;
 		//matchParams.controlProfiles[0] = myCurrProfile;
 

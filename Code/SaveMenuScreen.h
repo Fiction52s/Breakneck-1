@@ -15,6 +15,7 @@ struct MessagePopup;
 struct ConfirmPopup;
 struct AdventurePlanet;
 struct GamePopup;
+struct MusicInfo;
 
 struct SaveFileDisplay
 {
@@ -63,6 +64,7 @@ struct SaveMenuScreen : TilesetManager
 
 	int copiedIndex;
 	GamePopup *decisionPopup;
+	MusicInfo *myMusic;
 	//MessagePopup *messagePopup;
 	//ConfirmPopup *confirmPopup;
 
@@ -81,6 +83,7 @@ struct SaveMenuScreen : TilesetManager
 	Tileset *ts_skinButton;
 	sf::Vector2f GetTopLeftSaveSlot(int index);
 	void SaveSelectedFile();
+	void Start();
 	void SetSkin(int index);
 	void SaveCurrSkin();
 	bool Update();

@@ -15,16 +15,18 @@ WorldTransferScreen::WorldTransferScreen()
 	:skinShader(PlayerSkinShader::ST_BOOST)
 {
 	ts_bg = GetSizedTileset("Menu/WorldTransfer/world_transfer_bg_1920x1080.png");
-	ts_planet = GetSizedTileset("Menu/WorldTransfer/world_transfer_world_1920x300.png");
+	ts_planet = GetSizedTileset("Menu/WorldTransfer/world_transfer_world_1920x310.png");
 	ts_bgShape = GetTileset("Menu/KinBoost/kinboost_BG1_shape.png", 1920, 1080);
 
-	ts_light[0] = GetTileset("Menu/KinBoost/kinboost_light_01a.png", 1920, 1080);
-	ts_light[1] = GetTileset("Menu/KinBoost/kinboost_light_01b.png", 1920, 1080);
+	//ts_light[0] = GetTileset("Menu/KinBoost/kinboost_light_01a.png", 1920, 1080);
+	//ts_light[1] = GetTileset("Menu/KinBoost/kinboost_light_01b.png", 1920, 1080);
 
-	ts_stars[0] = GetTileset("Menu/KinBoost/kinboost_stars_01a.png", 1920, 1080);
+	/*ts_stars[0] = GetTileset("Menu/KinBoost/kinboost_stars_01a.png", 1920, 1080);
 	ts_stars[1] = GetTileset("Menu/KinBoost/kinboost_stars_01b.png", 1920, 1080);
 	ts_stars[2] = GetTileset("Menu/KinBoost/kinboost_stars_01c.png", 1920, 1080);
-	ts_stars[3] = GetTileset("Menu/KinBoost/kinboost_stars_01d.png", 1920, 1080);
+	ts_stars[3] = GetTileset("Menu/KinBoost/kinboost_stars_01d.png", 1920, 1080);*/
+
+	ts_stars[0] = GetSizedTileset("Menu/WorldTransfer/world_transfer_stars_1920x1080.png");
 
 	ts_planet->SetSpriteTexture(planetSpr);
 	planetSpr.setPosition(0, 1080 - planetSpr.getGlobalBounds().height);
@@ -65,17 +67,17 @@ WorldTransferScreen::WorldTransferScreen()
 	bgSpr.setTexture(*ts_bg->texture);
 	bgShapeSpr.setTexture(*ts_bgShape->texture);
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		starSpr[i].setTexture(*ts_stars[i]->texture);
 	}
 
-	for (int i = 0; i < 2; ++i)
+	/*for (int i = 0; i < 2; ++i)
 	{
 		lightSpr[i].setTexture(*ts_light[i]->texture);
-	}
+	}*/
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		if (!scrollShaderStars[i].loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))
 		{
@@ -84,14 +86,14 @@ WorldTransferScreen::WorldTransferScreen()
 		scrollShaderStars[i].setUniform("u_texture", sf::Shader::CurrentTexture);
 	}
 
-	for (int i = 0; i < 2; ++i)
+	/*for (int i = 0; i < 2; ++i)
 	{
 		if (!scrollShaderLight[i].loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))
 		{
 			assert(0);
 		}
 		scrollShaderLight[i].setUniform("u_texture", sf::Shader::CurrentTexture);
-	}
+	}*/
 }
 
 void WorldTransferScreen::End()
@@ -301,9 +303,10 @@ void WorldTransferScreen::Draw(RenderTarget *target)
 			//return;
 		}
 		//target->draw(bgShapeSpr);
-		for (int i = 3; i >= 0; --i)
+		//for (int i = 3; i >= 0; --i)
+
 		{
-			target->draw(starSpr[i], &scrollShaderStars[i]);
+			target->draw(starSpr[0], &scrollShaderStars[0]);
 		}
 
 		/*for (int i = 1; i >= 0; --i)

@@ -63,6 +63,7 @@
 #include "GameSettingsScreen.h"
 #include "globals.h"
 #include "ClosedBetaScreen.h"
+#include "ThanksForPlayingScreen.h"
 #include "CreditsMenuScreen.h"
 
 #include "RemoteStorageManager.h"
@@ -79,7 +80,7 @@ using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
 
-#define TUTORIAL_PATH "Resources/Maps/EarlyAccess/Tutorial/tut1" + string(MAP_EXT)
+#define TUTORIAL_PATH "Resources/Maps/EarlyAccess/Tutorial/Tutorial" + string(MAP_EXT)
 #define TIMESTEP (1.0 / 60.0)
 
 sf::RenderTexture *MainMenu::preScreenTexture = NULL;
@@ -394,6 +395,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		closedBetaScreen = NULL;
 		break;
 	}
+	case THANKS_FOR_PLAYING:
+	{
+		delete thanksForPlayingScreen;
+		thanksForPlayingScreen = NULL;
+		break;
+	}
 
 	}
 
@@ -454,7 +461,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 				adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 			}
 		}
-		else if (fromMode == RUN_ADVENTURE_MAP)
+		else if (fromMode == RUN_ADVENTURE_MAP || fromMode == THANKS_FOR_PLAYING)
 		{
 
 
@@ -667,6 +674,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		quickplaySearchScreen = new QuickplaySearchScreen;
 		break;
 	}
+	case THANKS_FOR_PLAYING:
+	{
+		assert(thanksForPlayingScreen == NULL);
+		thanksForPlayingScreen = new ThanksForPlayingScreen;
+		//thanksForPlayingScreen->Start();
+		break;
+	}
 	}
 }
 
@@ -819,6 +833,7 @@ MainMenu::MainMenu( bool p_steamOn)
 	freeplayScreen = NULL;
 	onlineMenuScreen = NULL;
 	editorMenuScreen = NULL;
+	thanksForPlayingScreen = NULL;
 
 	singlePlayerControllerJoinScreen = NULL;
 
@@ -878,7 +893,6 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	ts_buttonIcons = GetSizedTileset("Menu/button_icon_128x128.png");
 	ts_keyboardIcons = GetSizedTileset("Menu/keyboard_icons_64x64.png");
-	ts_thanksForPlaying = NULL;
 
 	selectorSprite.setTexture(*ts_menuSelector->texture);
 
@@ -1033,6 +1047,8 @@ MainMenu::MainMenu( bool p_steamOn)
 	currentMenuSelect = 0;
 
 	SetupWindow();
+	MOUSE.Hide();
+	MOUSE.SetControllersOn(false);
 
 	betaText.setString( " Press any button to start \n For help and info check \n - beta_info.txt\n Breakneck Beta\n Updated 9/2/2016");
 	betaText.setCharacterSize( 20 );
@@ -1091,12 +1107,8 @@ void MainMenu::SetupWindow()
 
 	MOUSE.SetCustomCursor(customCursor);
 
-	MOUSE.Hide();
-	MOUSE.SetControllersOn(false);
-
-	//window->setMouseCursorVisible(false);
-
-	//customCursor->Grab();
+	/*MOUSE.Hide();
+	MOUSE.SetControllersOn(false);*/
 
 	assert(window != NULL);
 	window->setVerticalSyncEnabled(true);
@@ -1475,7 +1487,8 @@ void MainMenu::SetMode(Mode m)
 	{
 		if (oldMode != WORLDMAP)
 		{
-			musicPlayer->PlayMusic(menuMusic);
+			adventureManager->saveMenu->Start();
+			//musicPlayer->PlayMusic(menuMusic);
 		}
 
 		if (adventureManager->currSaveFile == NULL)
@@ -1528,9 +1541,9 @@ void MainMenu::SetMode(Mode m)
 		MOUSE.Hide();
 	}
 
-	if (menuMode == THANKS_FOR_PLAYING)
+	/*if (menuMode == THANKS_FOR_PLAYING)
 	{
-		ts_thanksForPlaying = GetTileset("Story/Ship_04.png", 1920, 1080);
+		ts_thanksForPlaying = GetSizedTileset("Menu/thanks_1920_1080.png");
 		ts_thanksForPlaying->SetQuadSubRect(thanksQuad, 0);
 		SetRectTopLeft(thanksQuad, 1920, 1080, Vector2f(0, 0));
 	}
@@ -1538,7 +1551,7 @@ void MainMenu::SetMode(Mode m)
 	{
 		DestroyTileset(ts_thanksForPlaying);
 		ts_thanksForPlaying = NULL;
-	}
+	}*/
 }
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
@@ -2546,23 +2559,30 @@ void MainMenu::UpdateMenuMode()
 
 void MainMenu::ReturnToWorldAfterLevel()
 {
+	//WorldMap *worldMap = adventureManager->worldMap;
 	//SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
 	//int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+	//int numSectors = worldMap->selectors[worldMap->selectedColony]->numSectors;
+	//int sectorInd = worldMap->selectors[worldMap->selectedColony]->sectorSASelector->currIndex;
 
-	musicPlayer->StopCurrentMusic();
-	LoadMode(WORLDMAP_COLONY);
-	//int numWorlds = worldMap->adventurePlanet->numWorlds;
-	//if (worldMap->selectedColony == numWorlds - 1)
+	//int numWorlds = adventureManager->adventurePlanet->numWorlds;
+	//if (adventureManager->worldMap->selectedColony == numWorlds - 1
+	//	&& sectorInd == numSectors - 1 && sa->currIndex == numLevels - 1)
 	//{
-	//	if (sa->currIndex == numLevels - 1)
+	//	//if (sa->currIndex == numLevels - 1)
 	//	{
-	//		if (currSaveFile->GetNumCompleteWorlds(worldMap->adventurePlanet) == numWorlds)
+	//		//if (adventureManager->currSaveFile->GetNumCompleteWorlds(adventureManager->adventurePlanet) == numWorlds)
 	//		{
 	//			SetMode(THANKS_FOR_PLAYING);
 	//			//return;
 	//		}
 	//	}
 	//}
+
+	musicPlayer->StopCurrentMusic();
+	LoadMode(WORLDMAP_COLONY);
+	
+	
 
 	/*if (menuMode != THANKS_FOR_PLAYING)
 	{
@@ -3038,15 +3058,29 @@ void MainMenu::HandleMenuMode()
 			//currLevel = NULL;
 			fader->Clear();
 
-			ReturnToWorldAfterLevel();
+			if (adventureManager->IsLastLevel())
+			{
+				LoadMode(THANKS_FOR_PLAYING);
+			}
+			else
+			{
+				ReturnToWorldAfterLevel();
+			}
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
 		{
 			if (!adventureManager->TryToGoToNextLevel())
 			{
-				
+				if (adventureManager->IsLastLevel())
+				{
+					LoadMode(THANKS_FOR_PLAYING);
+				}
+				else
+				{
+					ReturnToWorldAfterLevel();
+				}
 
-				ReturnToWorldAfterLevel();
+				//ReturnToWorldAfterLevel();
 			}
 			//int w = 0;
 			//int s = 0;
@@ -3465,6 +3499,22 @@ void MainMenu::HandleMenuMode()
 	}
 	case THANKS_FOR_PLAYING:
 	{
+	
+		//while (window->pollEvent(ev))
+		//{
+
+		//}
+
+		//thanksForPlayingScreen->Update();
+
+		//if (thanksForPlayingScreen->action == ClosedBetaScreen::A_DONE)
+		//{
+		//	ReturnToWorldAfterLevel();
+		//	//LoadMode(TITLEMENU);
+		//}
+		//break;
+
+
 		while (window->pollEvent(ev))
 		{
 
@@ -3472,17 +3522,18 @@ void MainMenu::HandleMenuMode()
 
 		if (CONTROLLERS.ButtonPressed_A())
 		{
+			ReturnToWorldAfterLevel();
 			//this will break because worldmap doesnt exist at this point i think
-			adventureManager->worldMap->CurrSelector()->ReturnFromMap();
-			SetMode(WORLDMAP_COLONY);
-			adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
-			adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateStats();
-			adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+			//adventureManager->worldMap->CurrSelector()->ReturnFromMap();
+			//SetMode(WORLDMAP_COLONY);
+			//adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+			//adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+			//adventureManager->worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 
-			//menuCurrInput.Clear();
-			//worldMap->Update(menuPrevInput, menuCurrInput);
+			////menuCurrInput.Clear();
+			////worldMap->Update(menuPrevInput, menuCurrInput);
 
-			musicPlayer->TransitionMusic(menuMusic, 60);
+			//musicPlayer->TransitionMusic(menuMusic, 60);
 			//SetMode(WORLDMAP);
 		}
 		break;
@@ -4435,6 +4486,7 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	
 	}
 
 	
@@ -4517,8 +4569,8 @@ void MainMenu::TitleMenuModeUpdate()
 			else if (ev.key.code == Keyboard::M && ev.key.alt)
 			{
 				//turned off for the beta
-				musicPlayer->StopCurrentMusic();
-				CustomMapsOption();
+				//musicPlayer->StopCurrentMusic();
+				//CustomMapsOption();
 			}
 			else if (ev.key.code == Keyboard::P)
 			{
@@ -5024,7 +5076,7 @@ void MainMenu::DrawMode( Mode m )
 	case THANKS_FOR_PLAYING:
 	{
 		preScreenTexture->setView(v);
-		preScreenTexture->draw(thanksQuad, 4, sf::Quads, ts_thanksForPlaying->texture);
+		thanksForPlayingScreen->Draw(preScreenTexture);
 		break;
 	}
 	case RUN_ADVENTURE_MAP:

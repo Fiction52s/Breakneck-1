@@ -11,6 +11,8 @@
 #include "UIMouse.h"
 #include "CustomCursor.h"
 #include "GamePopup.h"
+#include "MusicPlayer.h"
+#include "MusicSelector.h"
 
 using namespace sf;
 using namespace std;
@@ -282,6 +284,13 @@ SaveMenuScreen::SaveMenuScreen()
 
 	SetSelectedIndex(mainMenu->adventureManager->currSaveFileIndex);
 
+	
+	myMusic = mainMenu->musicManager->songMap["w0_Save_Menu"];
+	if (myMusic != NULL)
+	{
+		myMusic->Load();
+	}
+
 	Reset();
 	//kinFace.setPosition(topLeftPos + Vector2f( 50, 0 ));
 }
@@ -333,6 +342,11 @@ void SaveMenuScreen::UpdateButtonIconsWhenControllerIsChanged()
 	{
 		skinButtonIconSpr.setScale(1.0, 1.0);
 	}
+}
+
+void SaveMenuScreen::Start()
+{
+	mainMenu->musicPlayer->PlayMusic(myMusic);
 }
 
 void SaveMenuScreen::SaveSelectedFile()

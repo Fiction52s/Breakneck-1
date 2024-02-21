@@ -844,7 +844,8 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 	switch (action)
 	{
 	case A_LOBBY_BROWSER:
-		lobbyBrowser->panel->Draw(target);
+		//lobbyBrowser->panel->Draw(target);
+		lobbyBrowser->SpecialDraw(target);
 		break;
 	case A_CHOOSE_MAP:
 		mapBrowserScreen->Draw(target);
@@ -918,7 +919,8 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 	}
 	case A_POST_MATCH_WAIT_TO_JOIN_LOBBY:
 	{
-		lobbyBrowser->panel->Draw(target);
+		//lobbyBrowser->panel->Draw(target);
+		lobbyBrowser->SpecialDraw(target);
 		break;
 	}
 	}

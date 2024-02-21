@@ -63,8 +63,11 @@ struct LobbyBrowser : PanelUpdater, GUIHandler
 	int totalRects;
 	LobbyChooseRect **lobbyRects;
 	Panel *panel;
+	Panel *bgPanel;
 	Button *joinButton;
 	LobbyChooseRect *currSelectedRect;
+
+	sf::Vertex *lobbyBars;
 
 
 	Action action;
@@ -74,6 +77,7 @@ struct LobbyBrowser : PanelUpdater, GUIHandler
 	~LobbyBrowser();
 	void Update();
 	void Draw(sf::RenderTarget *target);
+	void SpecialDraw(sf::RenderTarget *target);
 	void OpenPopup();
 	void ClosePopup();
 	void SetAction(Action a);

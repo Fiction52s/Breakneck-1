@@ -288,6 +288,8 @@ void EditSession::DeselectActorType(const std::string &typeName)
 
 bool EditSession::UpdateRunModeBackAndStartButtons()
 {
+	return false;
+
 	Actor *pTemp;
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{

@@ -10,22 +10,40 @@ using namespace std;
 
 LobbyBrowser::LobbyBrowser()
 {
-	totalRects = 10;
+	totalRects = 20;
 	topRow = 0;
 	maxTopRow = 0;
 	numEntries = 0;//10; //this should be the number of current entries
 
 	lobbyRects = new LobbyChooseRect*[totalRects];
 
-	panel = new Panel("listchooser", 1000, 500, this, true);
+	lobbyBars = new Vertex[totalRects * 4];
+
+	
+
+
+	panel = new Panel("listchooser", 500, 1000, this, true);
 	panel->SetCenterPos(Vector2i(960, 540));
+	panel->SetColor(Color::Transparent);
+
+	bgPanel = new Panel("bg", 500, 1000, this, true);
+	bgPanel->SetCenterPos(Vector2i(960, 540));
+	
+
+
+	Label *title = panel->AddLabel("titlelabel", Vector2i(panel->size.x / 2, 50), 30, "Lobby Browser");
+	auto lb = title->text.getLocalBounds();
+	title->text.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+
 	//panel->ReserveTextRects(totalRects);
 	panel->extraUpdater = this;
 
-	Vector2f startRects(10, 80);
+
+
+	Vector2f startRects(10, 150);
 	Vector2f spacing(60, 2);
 	Vector2f myRectSpacing(0, 30);
-	Vector2f boxSize(300, 30);
+	Vector2f boxSize(400, 30);
 	float myMusicRectsXStart = startRects.x + boxSize.x + 100;
 
 	numEntries = 0;
@@ -37,12 +55,25 @@ LobbyBrowser::LobbyBrowser()
 	currSelectedRect = NULL;
 
 	panel->ReserveLobbyRects(totalRects);
+	Vector2f rectPos;
+	Color evenColor(100, 100, 100);
+	Color oddcolor(200, 200, 200);
 	for (int i = 0; i < totalRects; ++i)
 	{
-		lobbyRects[i] = panel->AddLobbyRect(Vector2f(startRects.x, startRects.y + (boxSize.y + spacing.y) * i),
-			boxSize);
+		rectPos = Vector2f(startRects.x, startRects.y + (boxSize.y + spacing.y) * i);
+		lobbyRects[i] = panel->AddLobbyRect(rectPos,boxSize);
 		lobbyRects[i]->SetShown(false);
 		lobbyRects[i]->Init();
+
+		SetRectTopLeft(lobbyBars + i * 4, boxSize.x, boxSize.y, rectPos + Vector2f(panel->pos));
+		if (i % 2 == 0)
+		{
+			SetRectColor(lobbyBars + i * 4, evenColor);
+		}
+		else
+		{
+			SetRectColor(lobbyBars + i * 4, oddcolor);
+		}
 	}
 
 	joinButton = panel->AddButton("join", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "JOIN");
@@ -54,6 +85,9 @@ LobbyBrowser::~LobbyBrowser()
 {
 	delete[] lobbyRects;
 	delete panel;
+	delete bgPanel;
+
+	delete[]lobbyBars;
 }
 
 void LobbyBrowser::Update()
@@ -342,4 +376,11 @@ void LobbyBrowser::Draw(sf::RenderTarget *target)
 {
 	//panel->Draw(target);
 	//panel->Draw(target);
+}
+
+void LobbyBrowser::SpecialDraw(sf::RenderTarget *target)
+{
+	bgPanel->Draw(target);
+	target->draw(lobbyBars, 4 * totalRects, sf::Quads);
+	panel->Draw(target);
 }

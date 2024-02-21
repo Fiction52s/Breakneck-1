@@ -47,12 +47,12 @@ void Actor::EXITBOOST_UpdateSprite()
 	{
 		//wtf are independent effects LOL
 		owner->mainMenu->ActivateIndEffect(
-			owner->mainMenu->GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), V2d(960, 540), false, 0, 4, 2, true, 2);
+			owner->mainMenu->GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), V2d(960, 540 + 50), false, 0, 4, 2, true, 2);
 	}
 	else if (frame == 63 * 2)
 	{
 		owner->mainMenu->ActivateIndEffect(
-			owner->mainMenu->GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), V2d(960, 540), false, 0, 6, 2, true);
+			owner->mainMenu->GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), V2d(960, 540 + 50), false, 0, 6, 2, true);
 	}
 }
 

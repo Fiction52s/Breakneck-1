@@ -41,7 +41,7 @@ WorldMap::WorldMap()
 		parallelPracticeSettings = NULL;
 	}
 	
-	allUnlocked = true;
+	allUnlocked = false;
 
 	UpdateButtonIconsWhenControllerIsChanged();
 
@@ -103,7 +103,18 @@ WorldMap::WorldMap()
 	{
 		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 1);
 	}
-	
+
+	ts_parallelPlaySettingsMarker = GetSizedTileset("Menu/parallel_play_settings_384x64.png");
+	ts_parallelPlaySettingsMarker->SetSpriteTexture(parallelPlaySettingsMarkerSpr);
+
+	Vector2f parallelPlaySettingsMarkerPos = parallelPlayMarkerPos + Vector2f(0, ts_parallelPlayMarker->tileHeight);
+
+	parallelPlaySettingsMarkerSpr.setPosition(parallelPlaySettingsMarkerPos);
+
+	ts_parallelPlaySettingsMarker->SetSubRect(parallelPlaySettingsMarkerSpr, 0);
+
+	SetRectTopLeft(parallelPlaySettingsButtonQuad, 64, 64, parallelPlaySettingsMarkerPos + buttonIconOffset);
+
 	ts_colonyActive[0] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
 	ts_colonyActive[1] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
 	ts_colonyActive[2] = GetTileset("Menu/WorldMap/w1_select.png", 1920, 1080);
@@ -563,9 +574,13 @@ void WorldMap::UpdateButtonIconsWhenControllerIsChanged()
 
 	int cType = mainMenu->adventureManager->controllerInput->GetControllerType();
 
-	auto button = XBOX_START;
+	auto button = XBOX_R1;
 	IntRect ir = mainMenu->GetButtonIconTileForMenu(cType, button);
 	SetRectSubRect(parallelPlayButtonQuad, ir);
+
+	button = XBOX_Y;
+	ir = mainMenu->GetButtonIconTileForMenu(cType, button);
+	SetRectSubRect(parallelPlaySettingsButtonQuad, ir);
 }
 
 void WorldMap::Update()
@@ -576,7 +591,7 @@ void WorldMap::Update()
 	bool keyboardBack = controllerInput->GetControllerType() != CTYPE_KEYBOARD && (CONTROLLERS.KeyboardButtonPressed(Keyboard::BackSpace)
 		|| CONTROLLERS.KeyboardButtonPressed(Keyboard::Escape));
 
-	bool keyboardAllLevelsUnlockedCheat = CONTROLLERS.KeyboardButtonPressed(Keyboard::F1);
+	bool keyboardAllLevelsUnlockedCheat = false;//CONTROLLERS.KeyboardButtonPressed(Keyboard::F1);
 
 	int trans = 20;
 	switch( state )
@@ -1176,6 +1191,9 @@ void WorldMap::Draw( RenderTarget *target )
 		{
 			rt->draw(parallelPlayMarkerSpr);
 			rt->draw(parallelPlayButtonQuad, 4, sf::Quads, ts_buttons->texture);
+
+			rt->draw(parallelPlaySettingsMarkerSpr);
+			rt->draw(parallelPlaySettingsButtonQuad, 4, sf::Quads, ts_buttons->texture);
 		}
 	}
 

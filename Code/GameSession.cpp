@@ -1260,7 +1260,7 @@ void GameSession::UnlockUpgrade(int upgradeType, int playerIndex )
 		//GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
 		//do I need to set the currUpgradeField here?
 
-		return;
+		//return;
 	}
 	else if (saveFile != NULL && !IsParallelSession())
 	{

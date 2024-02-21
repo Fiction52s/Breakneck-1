@@ -20,6 +20,7 @@
 struct AdventureManager;
 struct MapHeader;
 struct ClosedBetaScreen;
+struct ThanksForPlayingScreen;
 struct HitboxManager;
 struct Config;
 
@@ -288,6 +289,7 @@ struct MainMenu : TilesetManager
 	MatchResultsScreen *matchResultsScreen;
 	FreeplayScreen *freeplayScreen;
 	ClosedBetaScreen *closedBetaScreen;
+	ThanksForPlayingScreen *thanksForPlayingScreen;
 	SinglePlayerControllerJoinScreen *singlePlayerControllerJoinScreen;
 
 	std::map<PlayerTilesetOptions, Tileset*> playerTilesetMap;
@@ -418,8 +420,6 @@ struct MainMenu : TilesetManager
 
 	Tileset *ts_buttonIcons;
 	Tileset *ts_keyboardIcons;
-	Tileset *ts_thanksForPlaying;
-	sf::Vertex thanksQuad[4];
 	//GameController controller;
 	//GameController controller2;
 	SoundManager soundManager;

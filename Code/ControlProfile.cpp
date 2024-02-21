@@ -613,10 +613,11 @@ void ControlProfileMenu::Update()
 			}
 			else if (controllerInput->ButtonPressed_B())
 			{
-				if (actionButtonGroup->AllButtonsAssigned())
+				action = A_SHOWING_OPTIONS;
+				/*if (actionButtonGroup->AllButtonsAssigned())
 				{
-					action = A_SHOWING_OPTIONS;
-				}
+					
+				}*/
 			}
 			else if (controllerInput->ButtonPressed_X())
 			{
