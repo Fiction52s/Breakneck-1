@@ -253,10 +253,10 @@ void TutorialBox::UpdateButtonIconsWhenControllerIsChanged()
 		return;
 
 	int sessControllerType = sess->controllerStates[0]->GetControllerType();
-	if (currControllerType == sessControllerType )
+	/*if (currControllerType == sessControllerType )
 	{
 		return;
-	}
+	}*/
 
 	currControllerType = sessControllerType;
 	for (int i = 0; i < buttonInfos.size(); ++i)

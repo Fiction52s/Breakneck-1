@@ -189,6 +189,31 @@ void MapSelector::DestroyBGs()
 	}
 }
 
+bool MapSelector::UpdateSectorIndex(bool left, bool right)
+{
+	int changed = sectorSASelector->UpdateIndex(left, right);
+	int numCurrLevels = FocusedSector()->unlockedLevelCount;
+	if (changed != 0)
+	{
+		mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
+
+		//mapSelector->SetTotalSize(numCurrLevels);
+
+		/*loadIndex = sectorSASelector->currIndex;
+		sectorSASelector->currIndex = oldIndex;
+		bgLoadFinished = false;
+		state = S_CHANGINGSECTORS;*/
+
+		FocusedSector()->UpdateLevelStats();
+
+		FocusedSector()->mapSASelector->SetIndex(0);
+
+		return true;
+	}
+
+	return false;
+}
+
 bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 {
 	ControllerState empty;
@@ -218,26 +243,10 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 		}
 		else
 		{
-			int oldIndex = sectorSASelector->currIndex;
+			bool left = controllerInput->GetCurrState().LLeft() || controllerInput->ButtonHeld_PadLeft() || controllerInput->GetCurrState().LeftTriggerPressed();
+			bool right = controllerInput->GetCurrState().LRight() || controllerInput->ButtonHeld_PadRight() || controllerInput->GetCurrState().RightTriggerPressed();
 
-			bool left = controllerInput->GetCurrState().LLeft() || controllerInput->ButtonHeld_PadLeft();
-			bool right = controllerInput->GetCurrState().LRight() || controllerInput->ButtonHeld_PadRight();
-
-			int changed = sectorSASelector->UpdateIndex(left, right);
-			int numCurrLevels = FocusedSector()->unlockedLevelCount;
-			if (changed != 0)
-			{
-				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
-
-				//mapSelector->SetTotalSize(numCurrLevels);
-
-				/*loadIndex = sectorSASelector->currIndex;
-				sectorSASelector->currIndex = oldIndex;
-				bgLoadFinished = false;
-				state = S_CHANGINGSECTORS;*/
-
-				FocusedSector()->UpdateLevelStats();
-			}
+			UpdateSectorIndex(left, right);
 		}		
 		break;
 	}
@@ -270,6 +279,20 @@ bool MapSelector::Update(ControllerDualStateQueue *controllerInput)
 				}
 				break;
 			}
+			
+			int oldIndex = sectorSASelector->currIndex;
+
+			bool left = controllerInput->GetCurrState().LeftTriggerPressed();
+			bool right = controllerInput->GetCurrState().RightTriggerPressed();
+			bool sectorChanged = UpdateSectorIndex(left, right);
+
+			if (sectorChanged)
+			{
+				FocusedSector()->UpdateLevelStats();
+				FocusedSector()->UpdateMapPreview();
+				break;
+			}
+
 
 			if (!FocusedSector()->Update(controllerInput))
 			{

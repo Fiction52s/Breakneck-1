@@ -284,8 +284,6 @@ void PauseMenu::SetGame(GameSession *p_game)
 	kinMenu->SetGame(p_game);
 	optionsMenu->SetGame(p_game);
 	pauseMap->SetGame(p_game);
-
-	
 }
 
 void PauseMenu::UpdatePauseOptions()

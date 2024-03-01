@@ -391,8 +391,8 @@ void EditModeUI::CreateLayerPanel()
 		reverseLayerMap[(*it).second] = (*it).first;
 	}
 
-	vector<string> dropdownOptions{ "testing", "shephard", "water", "terrain" };
-	layerPanel->AddDropdown("test", Vector2i(10, 20), Vector2i(150, 24), dropdownOptions, 0);
+	//vector<string> dropdownOptions{ "testing", "shephard", "water", "terrain" };
+	//layerPanel->AddDropdown("test", Vector2i(10, 20), Vector2i(150, 24), dropdownOptions, 0);
 
 	float maxFloatValue = 5.f;
 	float floatStep = .25;

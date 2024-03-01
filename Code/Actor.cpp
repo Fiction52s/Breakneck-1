@@ -8625,6 +8625,14 @@ void Actor::SetAllUpgrades(const BitField &b)
 {
 	bStartHasUpgradeField.Set(b);
 	bHasUpgradeField.Set(b);
+
+	/*for (int i = 0; i < 32; ++i)
+	{
+		if (HasUpgrade(i))
+		{
+			cout << "has upgrade: " << i << endl;
+		}
+	}*/
 }
 
 bool Actor::HasUpgrade(int index)

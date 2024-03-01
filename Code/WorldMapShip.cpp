@@ -8,6 +8,7 @@ using namespace sf;
 
 WorldMapShip::WorldMapShip(WorldMap *wm)
 {
+	//ts = wm->GetSizedTileset("Menu/WorldMap/ship_160x160.png");
 	ts = wm->GetSizedTileset("Menu/WorldMap/ship_128x128.png");
 	SetAlpha(1.0);
 	facingIndex = 0;
@@ -211,6 +212,7 @@ sf::Vector2f WorldMapShip::GetPosition()
 void WorldMapShip::UpdateQuads()
 {
 	ts->SetQuadSubRect(shipQuad, facingIndex * 5 + (( frame / 2 ) % 5));
+	//ts->SetQuadSubRect(shipQuad, facingIndex * 6 + ((frame / 4) % 6));
 	SetRectCenter(shipQuad, ts->tileWidth * scale, ts->tileHeight * scale, position);
 }
 

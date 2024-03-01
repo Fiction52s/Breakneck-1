@@ -377,9 +377,18 @@ void PlayerRecordHeader::SetFields()
 	if (game != NULL && game->saveFile != NULL)
 	{
 		bUpgradeField.Set(game->saveFile->upgradeField);//sess->GetPlayer(0)->bStartHasUpgradeField);
+
+		if (game->originalProgressionModeOn)
+		{
+			bUpgradeField.And(game->originalProgressionPlayerOptionsField);
+		}
 		bUpgradesTurnedOnField.Reset();
 
 		bLogField.Set(game->saveFile->logField);
+		if (game->originalProgressionModeOn)
+		{
+			bLogField.And(game->originalProgressionLogField);
+		}
 	}
 	else
 	{

@@ -11,6 +11,7 @@
 #include "PauseMenu.h"
 #include "HUD.h"
 #include "WorldTransferScreen.h"
+#include "globals.h"
 
 using namespace std;
 using namespace sf;
@@ -371,65 +372,31 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 
 	bool isRecordSet = currSaveFile->TrySetRecordTime(totalFrames, lev);
 
+	string tempReplayPath = string("Resources/temp_replay") + REPLAY_EXT;
 
-	if (isRecordSet)
+	if (game->playerRecordingManager != NULL)
 	{
-		//if (game->recPlayer != NULL)
-		//{
-		//	game->recPlayer->RecordFrame();
-		//	game->recPlayer->StopRecording();
-		//	game->recPlayer->WriteToFile(game->GetBestReplayPath());
-		//}
+		game->playerRecordingManager->RecordReplayFrames();
+		game->playerRecordingManager->RecordGhostFrames(); //added this rn
 
-		//if (game->recGhost != NULL)
-		//{
-		//	game->recGhost->StopRecording();
-		//	game->recGhost->WriteToFile(game->GetBestTimeGhostPath());
-		//	game->SetupBestTimeGhost(); //only if ghost is already on
-		//}
-		if (originalProgressionMode)
+		game->playerRecordingManager->StopRecording();
+		game->playerRecordingManager->WriteToFile(tempReplayPath);
+
+		if (isRecordSet)
 		{
-
-		}
-		if (game->playerRecordingManager != NULL)
-		{
-			game->playerRecordingManager->RecordReplayFrames();
-			game->playerRecordingManager->RecordGhostFrames(); //added this rn
-
 			string bestReplayPath = game->GetBestReplayPath();
-
-			game->playerRecordingManager->StopRecording();
-			game->playerRecordingManager->WriteToFile(bestReplayPath);
-
-			//just turned this off
-			//game->SetupPlayerReplayerManagers();
-
-			//string currPath = boost::filesystem::current_path().string();
-			//string fullReplayPath = currPath + "\\" + bestReplayPath;
-			
-			/*string leaderBoardStr;
-			if (leaderboard->IsAnyPowersMode())
-			{
-				leaderBoardStr = GetLeaderboardNameAnyPowers(game);
-			}
-			else
-			{
-				leaderBoardStr = GetLeaderboardNameOriginalPowers(game);
-			}*/
-
-			//leaderboard->manager.UploadScore(leaderBoardStr,
-			//	totalFrames, bestReplayPath);
-
-			if (MainMenu::GetInstance()->steamOn)
-			{
-				leaderboard->UploadScore(totalFrames, bestReplayPath, game->originalProgressionCompatible);
-			}
-
-			//leaderboardMan->UploadScore(totalFrames);
-			//leaderboard stuff here!
+			boost::filesystem::copy_file(tempReplayPath, bestReplayPath, boost::filesystem::copy_option::overwrite_if_exists);
 		}
-		//create a flag so that you can get hype over this
+
+		if (MainMenu::GetInstance()->steamOn)
+		{
+			leaderboard->UploadScore(totalFrames, tempReplayPath, game->originalProgressionCompatible);
+		}
+		//leaderboardMan->UploadScore(totalFrames);
+		//leaderboard stuff here!
 	}
+
+	
 
 	SaveCurrFile();
 

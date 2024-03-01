@@ -2436,7 +2436,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
 	
 	//do this when using practice mode!
-	if (adventureManager->parallelPracticeMode )
+	if (adventureManager->parallelPracticeMode )// && !loadParams.bestReplayOn && !adventureManager->leaderboard->IsTryingToStartReplay())
 	{
 		mp.gameModeType = MatchParams::GAME_MODE_PARALLEL_PRACTICE;
 		mp.netplayManager = netplayManager;

@@ -670,7 +670,7 @@ void WorldMap::Update()
 			//transition back up later instead of just turning off
 			break;
 		}
-		else if (controllerInput->ButtonPressed_Start())
+		else if (controllerInput->ButtonPressed_RightShoulder())
 		{
 			if (MainMenu::GetInstance()->steamOn)
 			{

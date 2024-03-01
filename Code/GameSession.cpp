@@ -3732,6 +3732,8 @@ int GameSession::Run()
 			bool res = AddGhostsForReplay(prm);
 
 			mainMenu->adventureManager->leaderboard->Hide();
+
+			RestartLevel();
 		}
 		else if (mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
 		{

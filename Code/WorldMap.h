@@ -243,6 +243,7 @@ struct MapSelector
 	void Init();
 	~MapSelector();
 	MapSector *FocusedSector();
+	bool UpdateSectorIndex(bool left, bool right);
 	void UpdateSprites();
 	bool Update(ControllerDualStateQueue *controllerInput);
 	void Draw(sf::RenderTarget *target);

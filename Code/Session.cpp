@@ -3025,8 +3025,13 @@ bool Session::OneFrameModeUpdate()
 		{
 			skipInput = true;
 		}*/
+		bool stopSkippingInput = false;
 
-		bool stopSkippingInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageDown);
+#ifdef _DEBUG
+		stopSkippingInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageDown);
+#else
+		stopSkippingInput = CONTROLLERS.KeyboardButtonHeld(Keyboard::PageDown) && IsSessTypeEdit();
+#endif
 		/*if (GetCurrInput(0).PRight())
 		{
 			stopSkippingInput = true;
@@ -6893,6 +6898,14 @@ bool Session::RunGameModeUpdate()
 			if (UpdateRunModeBackAndStartButtons())
 			{
 
+			}
+
+			if (IsReplayOn() && IsSessTypeGame())
+			{
+				//this was added so hopefully pausing a replay doesn't completely blow up parallel play
+				//we'll see if it causes any issues
+				RunFrameForParallelPractice();
+				SteamAPI_RunCallbacks();
 			}
 			break;
 		}
