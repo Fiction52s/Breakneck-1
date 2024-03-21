@@ -7,7 +7,7 @@ struct ShardInfo
 	const static int MAX_SHARDS = 128;
 
 	ShardInfo()
-		:world(0), localIndex(0 )
+		:world(-1), localIndex(-1 )
 	{
 
 	}

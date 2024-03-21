@@ -355,6 +355,7 @@ struct SaveGameState
 	bool nextFrameRestartGame;
 	bool phaseOn; //for phase switches
 	bool timerOn; //for adventure timer
+	bool usedWarp;
 
 	SaveGameState();
 	void Print();

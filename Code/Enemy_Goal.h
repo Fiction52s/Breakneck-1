@@ -39,12 +39,14 @@ struct Goal : Enemy
 	int animationFactor;
 	V2d gn;
 
+
+
 	Goal(ActorParams *ap);
 	~Goal();
 	bool CanBeHitByComboer() { return false; }
 	bool CanBeHitByWireTip(bool red) { return false; }
 	bool CanBeAnchoredByWire(bool red) { return false; }
-	void SetMapGoalPos();
+	//void SetMapGoalPos();
 	bool CountsForEnemyGate() { return false; }
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
@@ -55,6 +57,8 @@ struct Goal : Enemy
 	void ProcessState();
 	void ConfirmKill();
 	int GetNumStoredBytes();
+	V2d GetGoalNodePos();
+	V2d GetGoalNodePosFinal();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 };

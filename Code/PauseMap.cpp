@@ -7,6 +7,8 @@
 #include "MainMenu.h"
 #include "Actor.h"
 #include "EditorTerrain.h"
+#include "Enemy_Goal.h"
+#include "ShipPickup.h"
 
 
 using namespace sf;
@@ -287,7 +289,7 @@ void PauseMap::DrawToTex()
 
 	Vector2i kinIconPixel = mapTex->mapCoordsToPixel(Vector2f(pos0));
 
-	Vector2i goalIconPixel = mapTex->mapCoordsToPixel(Vector2f(game->goalPos));
+	Vector2i goalIconPixel = mapTex->mapCoordsToPixel(Vector2f(game->GetLevelFinisherPos()));
 
 	sf::View iconView;
 	iconView.setCenter(0, 0);

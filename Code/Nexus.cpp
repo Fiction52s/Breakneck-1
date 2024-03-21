@@ -175,7 +175,7 @@ void Nexus::Setup()
 {
 	Enemy::Setup();
 
-	sess->goalNodePos = GetKillPos();
+	//sess->goalNodePos = GetKillPos();
 }
 
 V2d Nexus::GetKillPos()

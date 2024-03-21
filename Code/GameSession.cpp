@@ -2130,7 +2130,7 @@ bool GameSession::Load()
 
 	SetupGoalPulse();
 
-	if (hasGoal)
+	if (goal != NULL)
 	{
 		if (!IsParallelSession())
 		{
@@ -3896,7 +3896,8 @@ void GameSession::Init()
 
 	shadersLoaded = false;
 
-	hasGoal = false;
+	goal = NULL;
+	shipPickup = NULL;
 	boostIntro = false;
 	nextFrameRestartGame = false;
 	showTerrainDecor = true;
@@ -4438,10 +4439,13 @@ void GameSession::RestartLevel()
 	}
 
 	phaseOn = false;
+	usedWarp = false;
 	skipOneReplayFrame = false;
 
 	turnTimerOnCounter = -1;
 	timerOn = true;
+
+	
 
 	onlinePauseMenuOn = false;
 	gameState = GameSession::RUN;

@@ -6,6 +6,8 @@
 #include "AdventureManager.h"
 #include "MainMenu.h"
 #include "Wire.h"
+#include "Enemy_Goal.h"
+#include "MapHeader.h"
 
 using namespace sf;
 using namespace std;
@@ -19,8 +21,10 @@ void Actor::GOALKILL_Start()
 	velocity = V2d(0, 0);
 	groundSpeed = 0;
 	grindSpeed = 0;
-	position = sess->goalNodePos;
-	sess->cam.Ease(Vector2f(sess->goalNodePosFinal), 1, 60, CubicBezier());
+
+	assert(sess->goal != NULL);
+	position = sess->goal->GetGoalNodePos();
+	sess->cam.Ease(Vector2f(sess->goal->GetGoalNodePosFinal()), 1, 60, CubicBezier());
 	rightWire->Reset();
 	leftWire->Reset();
 	hitGoal = false;
@@ -41,6 +45,20 @@ void Actor::GOALKILL_Start()
 	if (setRecord)
 	{
 		owner->scoreDisplay->madeRecord = true;
+	}
+
+	int totalFrames = sess->totalFramesBeforeGoal;
+	if (totalFrames < sess->mapHeader->goldSeconds * 60)
+	{
+		cout << "gold!" << endl;
+	}
+	if (totalFrames < sess->mapHeader->silverSeconds * 60)
+	{
+		cout << "silver!" << endl;
+	}
+	if (totalFrames < sess->mapHeader->bronzeSeconds * 60)
+	{
+		cout << "bronze!" << endl;
 	}
 
 	//WriteBestTimeRecordings();
@@ -126,9 +144,9 @@ void Actor::GOALKILL_UpdateSprite()
 
 									   //cb.GetValue()
 
-		V2d start = sess->goalNodePos;
+		V2d start = sess->goal->GetGoalNodePos();
 
-		V2d end = sess->goalNodePosFinal;
+		V2d end = sess->goal->GetGoalNodePosFinal();
 		int st = 48 * 2;
 		if (frame >= st)
 		{
@@ -152,7 +170,6 @@ void Actor::GOALKILL_UpdateSprite()
 		}*/
 	}
 
-	//sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//- 24.f );
 	sprite->setPosition(Vector2f(position));
 	sprite->setRotation(0);
 }

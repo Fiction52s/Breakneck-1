@@ -416,6 +416,8 @@ struct Actor : QuadTreeCollider,
 		UPTILT3,
 		SEQ_GATORSTUN,
 		HIDDEN,
+		WARP_CHARGE,
+		WARP,
 		Count
 	};
 
@@ -3427,6 +3429,28 @@ struct Actor : QuadTreeCollider,
 	void WALLTECH_TimeDepFrameInc();
 	int WALLTECH_GetActionLength();
 	const char * WALLTECH_GetTilesetName();
+
+	void WARP_CHARGE_Start();
+	void WARP_CHARGE_End();
+	void WARP_CHARGE_Change();
+	void WARP_CHARGE_Update();
+	void WARP_CHARGE_UpdateSprite();
+	void WARP_CHARGE_TransitionToAction(int a);
+	void WARP_CHARGE_TimeIndFrameInc();
+	void WARP_CHARGE_TimeDepFrameInc();
+	int WARP_CHARGE_GetActionLength();
+	const char * WARP_CHARGE_GetTilesetName();
+
+	void WARP_Start();
+	void WARP_End();
+	void WARP_Change();
+	void WARP_Update();
+	void WARP_UpdateSprite();
+	void WARP_TransitionToAction(int a);
+	void WARP_TimeIndFrameInc();
+	void WARP_TimeDepFrameInc();
+	int WARP_GetActionLength();
+	const char * WARP_GetTilesetName();
 
 	void WATERGLIDE_Start();
 	void WATERGLIDE_End();

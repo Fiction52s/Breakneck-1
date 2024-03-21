@@ -195,6 +195,9 @@ struct ChooseRect : PanelMember
 		I_EDITORMENU_OPEN,
 		I_DISCORD_LINK,
 		I_FEEDBACK_RATING,
+		I_CHOOSE_GOLD_REWARD,
+		I_CHOOSE_SILVER_REWARD,
+		I_CHOOSE_BRONZE_REWARD,
 	};
 
 	sf::Text nameText;
@@ -1053,6 +1056,7 @@ struct MessagePopup : GUIHandler
 
 struct MapOptionsUI : GUIHandler
 {
+	Panel *shardTypePanel;
 	Panel *mapOptionsPanel;
 	Panel *bgOptionsPanel;
 	std::string *bgNameArr;
@@ -1062,14 +1066,23 @@ struct MapOptionsUI : GUIHandler
 	TextBox *mapNameBox;
 	TextBox *descriptionBox;
 	Button *okButton;
-	TextBox* drainTextbox;
+	TextBox* drainTextBox;
+	TextBox *bronzeTextBox;
+	TextBox *silverTextBox;
+	TextBox *goldTextBox;
 	Dropdown *preDropdown;
 	Dropdown *postDropdown;
 	Slider *numPlayersSlider;
 	int oldMode;
+	ImageChooseRect *goldRewardRect;
+	ImageChooseRect *silverRewardRect;
+	ImageChooseRect *bronzeRewardRect;
 
 	MapOptionsUI();
 	~MapOptionsUI();
+
+	void ChooseShardType(ImageChooseRect *icRect);
+	void ExpandShardLibrary();
 	void CloseMapOptionsPopup();
 	void OpenMapOptionsPopup();
 	void SliderCallback(Slider *slider);

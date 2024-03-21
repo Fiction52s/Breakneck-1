@@ -29,8 +29,6 @@ void Actor::SEQ_GATORSTUN_UpdateSprite()
 	sprite->setOrigin(sprite->getLocalBounds().width / 2,
 		sprite->getLocalBounds().height / 2);
 	sprite->setPosition(Vector2f(position));
-	//sprite->setPosition(owner->goalNodePos.x, owner->goalNodePos.y - 24.f);//- 24.f );
-	//sprite->setPosition(Vector2f(position));
 	sprite->setRotation(0);
 }
 

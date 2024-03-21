@@ -1498,6 +1498,9 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	}
 
 	phaseOn = false;
+	usedWarp = false;
+	goal = NULL;
+	shipPickup = NULL;
 
 	activePlayerReplayManagers.reserve(10);
 
@@ -4013,6 +4016,83 @@ int Session::SetupZones()
 	return 0;
 }
 
+void Session::WarpToZone(Zone *z)
+{
+	if (z == NULL)
+		return;
+
+	bool didZoneActivateForFirstTime = z->Activate(false);
+
+	if (currentZone != NULL && z->zType != Zone::SECRET && currentZone->zType != Zone::SECRET)
+	{
+		currentZone->SetClosing(z->openFrames); //this is how it worked before, but openFrames is constant
+												//probably meant this or something like it:
+												//currentZone->SetClosing(z->data.frame);
+
+		//bool foundNode = false;
+		//ZoneNode *currZoneNode = currentZone->myNode;
+		//for (auto it = currZoneNode->children.begin();
+		//	it != currZoneNode->children.end(); ++it)
+		//{
+		//	if ((*it)->myZone == z)
+		//	{
+		//		foundNode = true;
+		//		break;
+		//	}
+		//}
+
+		////zones were accessed out of order somehow
+		//if (!foundNode)
+		//{
+		//	assert(foundNode);
+		//}
+
+		KillAllEnemies();
+
+		phaseOn = false; //for phase terrain to reset each gate makes the most sense to me.
+
+		Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->ResetBoosterEffects();
+			}
+		}
+
+		currentZone = z;
+
+		CloseOffLimitZones();
+	}
+	else
+	{
+		Zone *oldZone = currentZone;
+		currentZone = z;
+
+		if (oldZone == NULL) //for starting the map
+		{
+
+		}
+	}
+
+	Gate *g;
+	for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
+	{
+		g = (Gate*)(*it)->info;
+		if (g->category == Gate::ALLKEY)
+		{
+			g->SetNumToOpen(currentZone->totalNumKeys);
+		}
+	}
+
+	if (gateMarkers != NULL)
+	{
+		gateMarkers->SetToZone(currentZone);
+	}
+}
+
+
 void Session::ActivateZone(Zone * z, bool instant)
 {
 	if (z == NULL)
@@ -6222,6 +6302,9 @@ void Session::LayeredDraw(EffectLayer ef, sf::RenderTarget *target)
 typedef pair<V2d, V2d> pairV2d;
 void Session::SetupGoalFlow()
 {
+	if (goal == NULL)
+		return;
+
 	//is still created in a bonus level
 
 	CleanupGoalFlow();
@@ -6243,6 +6326,8 @@ void Session::SetupGoalFlow()
 
 	list<list<pair<V2d, bool>>> allInfo;
 	double rayCheck = 0;
+
+	V2d goalPos = GetLevelFinisherPos();
 
 	for (int i = 0; i < divs; ++i)
 	{
@@ -8367,6 +8452,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	
 
 	currSaveState->phaseOn = phaseOn;
+	currSaveState->usedWarp = usedWarp;
 	currSaveState->pauseFrames = pauseFrames;
 	currSaveState->currSuperPlayerIndex = GetPlayerIndex(currSuperPlayer);
 	currSaveState->gameState = gameState;
@@ -8522,6 +8608,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 	timerOn = currSaveState->timerOn;
 
 	phaseOn = currSaveState->phaseOn;
+	usedWarp = currSaveState->usedWarp;
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = GetPlayer(currSaveState->currSuperPlayerIndex);
 	randomState = currSaveState->randomState;
@@ -10101,4 +10188,28 @@ void Session::DrawPracticeSessions(sf::RenderTarget *target, sf::View practiceVi
 
 		target->setView(oldView);
 	}
+}
+
+bool Session::HasLevelFinisher()
+{
+	if (goal != NULL || shipPickup != NULL)
+		return true;
+
+	return false;
+}
+
+V2d Session::GetLevelFinisherPos()
+{
+	if (goal != NULL)
+	{
+		return goal->GetPosition();
+	}
+	else if (shipPickup != NULL)
+	{
+		return shipPickup->GetPosition();
+	}
+
+	assert(0);
+
+	return V2d(0, 0);
 }

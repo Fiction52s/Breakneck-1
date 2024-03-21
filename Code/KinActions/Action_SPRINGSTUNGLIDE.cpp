@@ -41,59 +41,58 @@ void Actor::SPRINGSTUNGLIDE_Update()
 {
 	if (frame > SPRINGSTUNGLIDE_GetActionLength() - 2)
 	{
-		if (currInput.LUp())
-		{
-			if (glideTurnFactor < 0)
-			{
-				glideTurnFactor = 0;
-			}
-			glideTurnFactor += glideTurnAccel;
-			if (glideTurnFactor > maxGlideTurnFactor)
-			{
-				glideTurnFactor = maxGlideTurnFactor;
-			}
-			//RotateCCW(springVel, glideTurnFactor);
-		}
-		else if (currInput.LDown())
-		{
-			if (glideTurnFactor > 0)
-			{
-				glideTurnFactor = 0;
-			}
-			glideTurnFactor -= glideTurnAccel;
-			if (glideTurnFactor < -maxGlideTurnFactor)
-			{
-				glideTurnFactor = -maxGlideTurnFactor;
-			}
-			//RotateCCW(springVel, glideTurnFactor);
-			//grav = AddGravity(V2d(0, 0));
-		}
-		else
-		{
-			glideTurnFactor = 0;
-		}
+		V2d targetDir = currInput.GetLeft8Dir();
+
+		double turnFactor;
+
+		double len = length(springVel);
+		springVel += targetDir * len * .1;//.2;
+		springVel = normalize(springVel) * len;
 
 
-		if (facingRight)
-		{
-			RotateCCW(springVel, glideTurnFactor);
-		}
-		else
-		{
-			RotateCCW(springVel, -glideTurnFactor);
-		}
+
+		//if (currInput.LUp())
+		//{
+		//	if (glideTurnFactor < 0)
+		//	{
+		//		glideTurnFactor = 0;
+		//	}
+		//	glideTurnFactor += glideTurnAccel;
+		//	if (glideTurnFactor > maxGlideTurnFactor)
+		//	{
+		//		glideTurnFactor = maxGlideTurnFactor;
+		//	}
+		//	//RotateCCW(springVel, glideTurnFactor);
+		//}
+		//else if (currInput.LDown())
+		//{
+		//	if (glideTurnFactor > 0)
+		//	{
+		//		glideTurnFactor = 0;
+		//	}
+		//	glideTurnFactor -= glideTurnAccel;
+		//	if (glideTurnFactor < -maxGlideTurnFactor)
+		//	{
+		//		glideTurnFactor = -maxGlideTurnFactor;
+		//	}
+		//	//RotateCCW(springVel, glideTurnFactor);
+		//	//grav = AddGravity(V2d(0, 0));
+		//}
+		//else
+		//{
+		//	glideTurnFactor = 0;
+		//}
+
+
+		//if (facingRight)
+		//{
+		//	RotateCCW(springVel, glideTurnFactor);
+		//}
+		//else
+		//{
+		//	RotateCCW(springVel, -glideTurnFactor);
+		//}
 	}
-	//springExtra = AddGravity(springExtra);
-	//if (springVel.y > 0)
-	//if (false)
-	//{
-	//	double gFac = 1.0;
-	//	V2d nsv = normalize(springVel);
-	//	springVel = nsv * (length(springVel) + gFac * nsv.y);//AddGravity(springVel);
-	//}
-
-
-	//springExtra = tempVel - springVel;
 	velocity = springVel + springExtra;
 
 	ActivateLauncherEffect(2);

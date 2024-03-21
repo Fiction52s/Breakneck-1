@@ -93,6 +93,8 @@ struct DeathSequece;
 
 struct ShardMenu;
 struct LogMenu;
+struct Goal;
+struct ShipPickup;
 
 struct SuperSequence;
 struct BasicBossScene;
@@ -438,10 +440,9 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	ShapeEmitter *emitterLists[EffectLayer::EFFECTLAYER_Count];
 
-	bool hasGoal;
-	V2d goalPos;
-	V2d goalNodePos;
-	V2d goalNodePosFinal;
+	bool usedWarp;
+	Goal *goal;
+	ShipPickup *shipPickup;
 
 	std::string rayMode;
 	Edge *rayIgnoreEdge;
@@ -536,6 +537,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AdjustBoundsFromTerrain();
 	void AdjustBoundsHeightFromTerrain();
 	void ActivateZone(Zone * z, bool instant = false);
+	void WarpToZone(Zone *z);
 	void SetPlayerOptionField(int pIndex);
 	void SetupSoundLists();
 	void SetupTimeBubbles();
@@ -1031,6 +1033,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SendPracticeStartMessageToAllNewPeers();
 
 	void DrawPracticeSessions(sf::RenderTarget *target, sf::View practiceView );
+
+	bool HasLevelFinisher();
+	V2d GetLevelFinisherPos();
 };
 
 #endif

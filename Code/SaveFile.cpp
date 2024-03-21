@@ -53,7 +53,11 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	defaultSkinIndex( 0 ),
 	mostRecentWorldSelected( 0 )
 {
-	SetVer(1);
+	//version 1 is early access launch
+	//version 2 is post-medals
+
+
+	SetVer(2);
 
 	string dataFolder = MainMenu::GetInstance()->appDataPath + "SaveData\\";
 

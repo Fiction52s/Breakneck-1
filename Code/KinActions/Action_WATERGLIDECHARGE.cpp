@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "VisualEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -42,58 +43,103 @@ void Actor::WATERGLIDECHARGE_Change()
 
 void Actor::WATERGLIDECHARGE_Update()
 {
-	if (currInput.LUp())
-	{
-		if (glideTurnFactor < 0)
-		{
-			glideTurnFactor = 0;
-		}
-		glideTurnFactor += glideTurnAccel;
-		if (glideTurnFactor > maxGlideTurnFactor)
-		{
-			glideTurnFactor = maxGlideTurnFactor;
-		}
-	}
-	else if (currInput.LDown())
-	{
-		if (glideTurnFactor > 0)
-		{
-			glideTurnFactor = 0;
-		}
-		glideTurnFactor -= glideTurnAccel;
-		if (glideTurnFactor < -maxGlideTurnFactor)
-		{
-			glideTurnFactor = -maxGlideTurnFactor;
-		}
-	}
-	else
-	{
-		glideTurnFactor = 0;
-	}
+	V2d targetDir = currInput.GetLeft8Dir();
 
-	if (facingRight)
-	{
-		RotateCCW(springVel, glideTurnFactor);
-	}
-	else
-	{
-		RotateCCW(springVel, -glideTurnFactor);
-	}
+	double turnFactor;
 
-	double startSlowFactor = 1.0;
-	double minSlowSpeed = 10.0;
-	//double minSlowFactor = .5;
-	double factor = startSlowFactor - .02 * frame;
+	double len = length(springVel);
+	/*double minSpeed = 25;
 
-	double len = length(springVel + springExtra) * factor;
-	if (len < minSlowSpeed)
+	if (len < minSpeed)
 	{
-		velocity = normalize(springVel + springExtra) * minSlowSpeed;
-	}
-	else
+		springVel = normalize(springVel) * minSpeed;
+		len = minSpeed;
+	}*/
+
+	springVel += targetDir * len * .03;//.2;
+	springVel = normalize(springVel) * len;
+
+	double accel = .2;//.3;//.5;
+	double decel = .1;
+	double accelLimit = 40;
+
+	if (len < accelLimit)
 	{
-		velocity = (springVel + springExtra) * factor;
+		len += accel;
+		if (len > accelLimit)
+		{
+			len = accelLimit;
+		}
 	}
+	
+
+	springVel = normalize(springVel) * len;
+
+	V2d v = springVel + springExtra;
+	double ang = GetVectorAngleCW(v);// / PI * 180.0;
+	EffectInstance params;
+	Transform t;
+
+	//apparently you must rotate before scaling to get accurate results!
+	t.rotate(ang / PI * 180.0);
+	t.scale(1, 1);
+	params.SetParams(Vector2f(position), t, 5, 4, 1);
+	ActivateEffect(PLAYERFX_DASH_BOOST, &params);
+
+	velocity = springVel + springExtra;
+
+	//if (currInput.LUp())
+	//{
+	//	if (glideTurnFactor < 0)
+	//	{
+	//		glideTurnFactor = 0;
+	//	}
+	//	glideTurnFactor += glideTurnAccel;
+	//	if (glideTurnFactor > maxGlideTurnFactor)
+	//	{
+	//		glideTurnFactor = maxGlideTurnFactor;
+	//	}
+	//}
+	//else if (currInput.LDown())
+	//{
+	//	if (glideTurnFactor > 0)
+	//	{
+	//		glideTurnFactor = 0;
+	//	}
+	//	glideTurnFactor -= glideTurnAccel;
+	//	if (glideTurnFactor < -maxGlideTurnFactor)
+	//	{
+	//		glideTurnFactor = -maxGlideTurnFactor;
+	//	}
+	//}
+	//else
+	//{
+	//	glideTurnFactor = 0;
+	//}
+
+	//if (facingRight)
+	//{
+	//	RotateCCW(springVel, glideTurnFactor);
+	//}
+	//else
+	//{
+	//	RotateCCW(springVel, -glideTurnFactor);
+	//}
+
+	//double startSlowFactor = 1.0;
+	//double minSlowSpeed = 10.0;
+	////double minSlowFactor = .5;
+	//double factor = startSlowFactor - .02 * frame;
+
+	//double len = length(springVel + springExtra) * factor;
+	//if (len < minSlowSpeed)
+	//{
+	//	velocity = normalize(springVel + springExtra) * minSlowSpeed;
+	//}
+	//else
+	//{
+	//	velocity = (springVel + springExtra) * factor;
+	//}
 	//cout << "springVel: " << springVel.x << ", " << springVel.y << endl;
 	//velocity = (springVel + springExtra) * factor;
 }

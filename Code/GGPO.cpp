@@ -28,7 +28,9 @@ void SaveGameState::Clear()
 	activeSequenceID = -1;
 	randomState = 0;
 	phaseOn = false;
+	usedWarp = false;
 	timerOn = false;
+	usedWarp = false;
 	turnTimerOnCounter = -1;
 	cam.Reset();
 }

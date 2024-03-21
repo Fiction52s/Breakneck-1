@@ -30,6 +30,7 @@ struct MapNode : TilesetManager
 	Action action;
 	boost::filesystem::path filePath;
 	Tileset *ts_preview;
+	std::string largePreviewFileName;
 	bool previewOwner;
 	int index;
 
@@ -114,6 +115,8 @@ struct MapBrowserHandler : GUIHandler
 	virtual void Draw(sf::RenderTarget *target);
 	void ChangePath();
 	
+	//void SetPreview( )
+	void ClearLargePreview();
 	void Clear();
 	void ClearSelection();
 	void SelectRect(ChooseRect *cr);

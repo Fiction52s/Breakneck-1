@@ -16,7 +16,7 @@ void Actor::NEXUSKILL_Start()
 	groundSpeed = 0;
 	grindSpeed = 0;
 
-	position = sess->goalNodePos;
+	//position = //sess->goalNodePos;
 	rightWire->Reset();
 	leftWire->Reset();
 

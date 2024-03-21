@@ -134,10 +134,12 @@ void MapNode::ClearPreview()
 			{
 				//assert(myBrowser != NULL);
 				//myBrowser->DestroyTileset(ts_preview);
-				if (myBrowser->handler->ts_largePreview == ts_preview)
+
+				//shouldn't ever happen now bc of small thumbnails
+				/*if (myBrowser->handler->ts_largePreview == ts_preview)
 				{
 					myBrowser->handler->ts_largePreview = NULL;
-				}
+				}*/
 
 				DestroyTileset(ts_preview);
 			}
@@ -162,7 +164,8 @@ void MapNode::CreatePreview()
 		string pathStr = filePath.string();
 		auto d = pathStr.find(".");
 		string middleTest = pathStr.substr(0, d);
-		string previewPath = middleTest + ".png";
+		string previewPath = middleTest + "_thumbnail.png";
+		largePreviewFileName = middleTest + ".png";
 
 		if (ts_preview != NULL)
 		{
@@ -1648,7 +1651,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else
 		{
-			ts_largePreview = NULL;
+			ClearLargePreview();
 			chooser->QueryMaps();
 		}
 	}
@@ -1661,7 +1664,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else
 		{
-			ts_largePreview = NULL;
+			ClearLargePreview();
 			chooser->QueryMaps();
 		}
 	}
@@ -1745,7 +1748,7 @@ void MapBrowserHandler::SetPreviewTopLeft(sf::Vector2f &pos)
 
 void MapBrowserHandler::ChangePath()
 {
-	ts_largePreview = NULL;
+	ClearLargePreview();
 	//chooser->ClearTilesets();
 }
 
@@ -1781,16 +1784,16 @@ void MapBrowserHandler::BasicUpdate()
 		{
 			if (mn->ts_preview != NULL)
 			{
-				ts_largePreview = mn->ts_preview;
+				ts_largePreview = chooser->GetTileset(mn->largePreviewFileName);
 			}
 			else
 			{
-				ts_largePreview = NULL;
+				ClearLargePreview();
 			}
 		}
 		else
 		{
-			ts_largePreview = NULL;
+			ClearLargePreview();
 		}
 	}
 }
@@ -1814,6 +1817,15 @@ void MapBrowserHandler::Clear()
 	ClearSelection();
 	chooser->ClearNodes();
 	confirmedMapFilePath = "";
+}
+
+void MapBrowserHandler::ClearLargePreview()
+{
+	if (ts_largePreview != NULL)
+	{
+		chooser->DestroyTileset(ts_largePreview);
+		ts_largePreview = NULL;
+	}
 }
 
 void MapBrowserHandler::Confirm()
@@ -2028,7 +2040,16 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 
 	if (mn != NULL)
 	{
-		ts_largePreview = mn->ts_preview;
+		if (mn->ts_preview != NULL)
+		{
+			ts_largePreview = chooser->GetTileset(mn->largePreviewFileName);
+		}
+		else
+		{
+			ClearLargePreview();
+		}
+		
+		//ts_largePreview = mn->ts_preview;
 
 		if (chooser->ext == MAP_EXT)
 		{
@@ -2052,7 +2073,7 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 	}
 	else
 	{
-		ts_largePreview = NULL;
+		ClearLargePreview();
 
 		if (chooser->ext == MAP_EXT)
 		{
@@ -2068,7 +2089,7 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 
 void MapBrowserHandler::ClearFocus()
 {
-	ts_largePreview = NULL;
+	ClearLargePreview();
 	focusedRect = NULL;
 	descriptionText.setString("");
 	fullNameText.setString("");

@@ -10,7 +10,12 @@ using namespace std;
 
 void PanelMember::SetToolTip(const std::string &str)
 {
-	assert(toolTip == NULL);
+	if (toolTip != NULL)
+	{
+		delete toolTip;
+		toolTip = NULL;
+	}
+	//assert(toolTip == NULL);
 	toolTip = new ToolTip(str);
 }
 

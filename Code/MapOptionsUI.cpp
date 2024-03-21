@@ -8,7 +8,12 @@ using namespace std;
 MapOptionsUI::MapOptionsUI()
 {
 	edit = EditSession::GetSession();
-	mapOptionsPanel = new Panel("mapoptions", 700, 800, this, true);
+
+	shardTypePanel = edit->shardTypePanel;
+
+	mapOptionsPanel = new Panel("mapoptions", 1400, 1000, this, true);
+
+	mapOptionsPanel->ReserveImageRects(3);
 
 	mapOptionsPanel->SetCenterPos(Vector2i(960, 540));
 
@@ -19,8 +24,9 @@ MapOptionsUI::MapOptionsUI()
 
 	descriptionBox = mapOptionsPanel->AddLabeledTextBox("description", Vector2i(0, 30), false, 600, 5, 20, 1000, "", "Description:");
 
-	drainTextbox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 20), true, 300, 1, 20, 10, "", "Time to Drain (seconds): ");
-	drainTextbox->SetNumbersOnly(true);
+	drainTextBox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 20), true, 300, 1, 20, 10, "", "Time to Drain (seconds): ");
+	drainTextBox->SetNumbersOnly(true);
+
 	bgButton = mapOptionsPanel->AddButton("bgbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Environment");
 	musicButton = mapOptionsPanel->AddButton("musicbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Music");
 
@@ -66,8 +72,46 @@ MapOptionsUI::MapOptionsUI()
 
 	
 
-	okButton = mapOptionsPanel->AddButton("ok", Vector2i(0, 70), Vector2f(60, 30), "OK");
+	okButton = mapOptionsPanel->AddButton("ok", Vector2i(0, 30), Vector2f(150, 100), "OK");
 	mapOptionsPanel->SetConfirmButton(okButton);
+
+	mapOptionsPanel->SetAutoSpacing(false, true, Vector2i(40 + descriptionBox->pos.x + descriptionBox->width, descriptionBox->pos.y), Vector2i(0, 30));
+
+	goldTextBox = mapOptionsPanel->AddLabeledTextBox("gold", Vector2i(0, 20), true, 300, 1, 20, 10, "", "Gold Medal (seconds): ");
+	goldTextBox->SetNumbersOnly(true);
+
+	Label *goldRewardLabel = mapOptionsPanel->AddLabel("goldreward", Vector2i(50, 0), 24, "Gold reward: ");
+
+	silverTextBox = mapOptionsPanel->AddLabeledTextBox("silver", Vector2i(-50, 140), true, 300, 1, 20, 10, "", "Silver Medal (seconds): ");
+	silverTextBox->SetNumbersOnly(true);
+
+	Label *silverRewardLabel = mapOptionsPanel->AddLabel("silverreward", Vector2i(50, 0), 24, "Silver reward: ");
+
+	bronzeTextBox = mapOptionsPanel->AddLabeledTextBox("bronze", Vector2i(-50, 140), true, 300, 1, 20, 10, "", "Bronze Medal (seconds): ");
+	bronzeTextBox->SetNumbersOnly(true);
+
+	Label *bronzeRewardLabel = mapOptionsPanel->AddLabel("bronzereward", Vector2i(50, 0), 24, "Bronze reward: ");
+
+	mapOptionsPanel->StopAutoSpacing();
+
+	float extraSpacing = 0;//300;
+
+	
+	goldRewardRect = mapOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_CHOOSE_GOLD_REWARD,
+		Vector2f(goldRewardLabel->GetBottomLeft().x, goldRewardLabel->GetBottomLeft().y + 10), NULL, 0, 125);
+	goldRewardRect->Init();
+	goldRewardRect->SetShown(true);
+
+
+	silverRewardRect = mapOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_CHOOSE_SILVER_REWARD,
+		Vector2f(silverRewardLabel->GetBottomLeft().x, silverRewardLabel->GetBottomLeft().y + 10), NULL, 0, 125);
+	silverRewardRect->Init();
+	silverRewardRect->SetShown(true);
+
+	bronzeRewardRect = mapOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_CHOOSE_BRONZE_REWARD,
+		Vector2f(bronzeRewardLabel->GetBottomLeft().x, bronzeRewardLabel->GetBottomLeft().y + 10), NULL, 0, 125);
+	bronzeRewardRect->Init();
+	bronzeRewardRect->SetShown(true);
 	
 
 	bgOptionsPanel = new Panel("bgoptions", 125 * 8, 125 * 8, this, true);
@@ -120,7 +164,11 @@ MapOptionsUI::~MapOptionsUI()
 
 void MapOptionsUI::OpenMapOptionsPopup()
 {
-	drainTextbox->SetString(to_string(edit->mapHeader->drainSeconds));
+	drainTextBox->SetString(to_string(edit->mapHeader->drainSeconds));
+	goldTextBox->SetString(to_string(edit->mapHeader->goldSeconds));
+	silverTextBox->SetString(to_string(edit->mapHeader->silverSeconds));
+	bronzeTextBox->SetString(to_string(edit->mapHeader->bronzeSeconds));
+
 	edit->AddActivePanel(mapOptionsPanel);
 	bool res = preDropdown->SetSelectedText(edit->mapHeader->preLevelSceneName);
 	assert(res);
@@ -136,7 +184,7 @@ void MapOptionsUI::OpenMapOptionsPopup()
 void MapOptionsUI::CloseMapOptionsPopup()
 {
 	stringstream ss;
-	ss << drainTextbox->GetString();
+	ss << drainTextBox->GetString();
 	int dSeconds;
 	ss >> dSeconds;
 	if (!ss.fail())
@@ -147,13 +195,50 @@ void MapOptionsUI::CloseMapOptionsPopup()
 		}
 	}
 
+	int gold, silver, bronze;
+
+	ss.clear();
+	ss << goldTextBox->GetString();
+	ss >> gold;
+	if (!ss.fail())
+	{
+		if (gold > 0)
+		{
+			edit->mapHeader->goldSeconds = gold;
+		}
+	}
+
+	ss.clear();
+	ss << silverTextBox->GetString();
+	ss >> silver;
+	if (!ss.fail())
+	{
+		if (silver > 0)
+		{
+			edit->mapHeader->silverSeconds = silver;
+		}
+	}
+
+	ss.clear();
+	ss << bronzeTextBox->GetString();
+	ss >> bronze;
+	if (!ss.fail())
+	{
+		if (bronze > 0)
+		{
+			edit->mapHeader->bronzeSeconds = bronze;
+		}
+	}
+
+	edit->mapHeader->goldRewardCategory = 0;
+	edit->mapHeader->goldRewardIndex = 
+
 	edit->mapHeader->preLevelSceneName = preDropdown->GetSelectedText();
 	edit->mapHeader->postLevelSceneName = postDropdown->GetSelectedText();
 	edit->SetNumPlayers( false, numPlayersSlider->GetCurrValue());
 
 	edit->mapHeader->fullName = mapNameBox->GetString();
 	edit->mapHeader->description = descriptionBox->GetString();
-	//edit->SetGameMode(gameModeDropdown->selectedIndex);
 	edit->RemoveActivePanel(mapOptionsPanel);
 
 	edit->SetMode((EditSession::Emode)oldMode);
@@ -161,8 +246,8 @@ void MapOptionsUI::CloseMapOptionsPopup()
 
 void MapOptionsUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
-	if (eventType == ChooseRect::E_LEFTCLICKED ||
-		eventType == ChooseRect::E_LEFTRELEASED)
+	if (eventType == ChooseRect::E_LEFTCLICKED)// ||
+		//eventType == ChooseRect::E_LEFTRELEASED)
 	{
 		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
 		if (icRect != NULL)
@@ -176,8 +261,73 @@ void MapOptionsUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				edit->RemoveActivePanel(bgOptionsPanel);
 			}
+			else if (icRect->rectIdentity == ChooseRect::I_CHOOSE_GOLD_REWARD)
+			{
+				ExpandShardLibrary();
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)
+			{
+				ChooseShardType(icRect);
+			}
 		}
 	}
+	else if (eventType == ChooseRect::E_FOCUSED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)
+			{
+				edit->showChoiceNameText = true;
+				edit->choiceNameText.setString(icRect->nameText.getString());
+				edit->choiceNameText.setOrigin(edit->choiceNameText.getLocalBounds().left
+					+ edit->choiceNameText.getLocalBounds().width / 2, 0);
+				edit->choiceNameText.setPosition(icRect->GetGlobalCenterPos() + Vector2f(0, -(icRect->boxSize.y + 20)));
+			}
+		}
+	}
+}
+
+void MapOptionsUI::ExpandShardLibrary()
+{
+	shardTypePanel->SetCenterPos(Vector2i( 960, 540 ));
+	shardTypePanel->handler = this;
+	edit->AddActivePanel(shardTypePanel);
+	/*if (shardGateTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(shardGateTypePanel);
+	}
+	else
+	{
+		shardGateTypePanel->SetPosition(popupPanelPos);
+		shardGateTypePanel->handler = this;
+		edit->AddActivePanel(shardGateTypePanel);
+	}*/
+
+}
+
+void MapOptionsUI::ChooseShardType(ImageChooseRect *icRect)
+{
+	goldRewardRect->SetImage(icRect->ts, icRect->spr.getTextureRect());
+
+	goldRewardRect->SetName(icRect->nameText.getString());
+	goldRewardRect->SetToolTip(icRect->toolTip->toolTipText.getString());
+	//goldRewardRect->SetToolTip( icRect->)
+
+	float test = 64;
+
+	int x = icRect->pos.x / test;
+	int y = icRect->pos.y / (test * 2);
+
+	int world = y / edit->shardNumY;
+	int localIndex = (y % edit->shardNumY) * edit->shardNumX + x;
+
+	
+	int currShardWorld = world;
+	int currShardLocalIndex = localIndex;
+
+	edit->RemoveActivePanel(shardTypePanel);
+	edit->showChoiceNameText = false;
 }
 
 void MapOptionsUI::ButtonCallback(Button *b, const std::string & e)
@@ -196,10 +346,16 @@ void MapOptionsUI::ButtonCallback(Button *b, const std::string & e)
 	}
 }
 
+
+
 void MapOptionsUI::PanelCallback(Panel *p, const std::string & e)
 {
 	if (e == "leftclickoffpopup")
 	{
+		if (p == shardTypePanel)
+		{
+			edit->RemoveActivePanel(shardTypePanel);
+		}
 		/*if (p == mapOptionsPanel)
 		{
 			CloseMapOptionsPopup();

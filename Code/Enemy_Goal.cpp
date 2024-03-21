@@ -59,7 +59,7 @@ Goal::Goal( ActorParams *ap )
 	//clean this up 
 	if (sess->IsSessTypeGame())
 	{
-		SetMapGoalPos();
+		sess->goal = this;
 	}
 
 	miniSprite.setTexture(*ts_mini->texture);
@@ -101,16 +101,26 @@ Goal::~Goal()
 {
 }
 
-void Goal::SetMapGoalPos()
-{
-	sess->hasGoal = true;
-	sess->goalPos = GetPosition();
+//void Goal::SetMapGoalPos()
+//{
+//	sess->goal = this;
+//}
 
+V2d Goal::GetGoalNodePos()
+{
 	double nodeHeight = 104;
-	sess->goalNodePos = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), nodeHeight);
-	float space = 78.f;
-	sess->goalNodePosFinal = V2d(sess->goalNodePos.x, sess->goalNodePos.y - space);
+	V2d nodePos = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), nodeHeight);
+	return nodePos;
 }
+
+V2d Goal::GetGoalNodePosFinal()
+{
+	float space = 78.f;
+	V2d nodePos = GetGoalNodePos();
+	V2d finalPos = V2d(nodePos.x, nodePos.y - space);
+	return finalPos;
+}
+
 
 void Goal::ResetEnemy()
 {
@@ -136,35 +146,7 @@ void Goal::ProcessState()
 			//owner->cam.Ease(Vector2f(position), 1, 60, CubicBezier());
 		}
 
-		//if (frame == 1)
-		//{
-		//	//owner->cam.manual = true;
-		//	goalKillStartZoom = owner->cam.zoomFactor;
-		//	goalKillStartPos = owner->cam.pos;
-		//	//
-		//}
-		//if (frame <= 31 && frame > 1)
-		//{
-		//	CubicBezier bez(0, 0, 1, 1);
-		//	float z = bez.GetValue((double)(frame - 1) / 30);
-
-		//	Vector2f po = goalKillStartPos * (1.f - z) + Vector2f(owner->goalNodePos.x,
-		//		owner->goalNodePos.y) * z;
-
-		//	CubicBezier bez1(0, 0, 1, 1);
-		//	float z1 = bez1.GetValue((double)(frame - 1) / 30);
-
-		//	float zoom = goalKillStartZoom * (1.f - z) + 1.f * z;
-
-		//	owner->cam.manual = true;
-		//	
-		//	//owner->cam.manual = true;
-		//	//owner->cam.Set(po, zoom, 0);
-		//	///Vector2f trueSpot = dropSpot + extra0;
-		//	//owner->cam.Set( ( //trueSpot * 1.f/60.f + owner->cam.pos * 59.f/60.f ),
-		//	//	1, 0 );
-
-		//}
+		
 		if (frame == 46 * 2)
 		{
 			action = A_EXPLODING;

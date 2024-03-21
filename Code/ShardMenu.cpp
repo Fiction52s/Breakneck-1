@@ -55,8 +55,6 @@ ShardMenu::ShardMenu(TilesetManager *p_tm)
 
 	SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(0));
 
-	numShardsTotal = 1;
-	shardQuads = new Vertex[numShardsTotal * 4];
 	imagePos = Vector2f(1243, 66);
 
 	state = PAUSED;
@@ -162,6 +160,11 @@ void ShardMenu::SetTopLeft(sf::Vector2f &pos)
 		{
 			index = (i * xSelector->totalItems + j);
 
+			if (index >= 20)
+			{
+				assert(0);
+			}
+
 			SetRectCenter(shardSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
 		}
 	}
@@ -182,10 +185,18 @@ void ShardMenu::UpdateShardQuads()
 	{
 		if (shardInfo[worldSelector->currIndex][i].name == "")
 		{
+			if (i >= 20)
+			{
+				assert(0);
+			}
 			SetRectSubRect(shardSelectQuads + i * 4, sf::FloatRect());
 		}
 		else
 		{
+			if (i >= 20)
+			{
+				assert(0);
+			}
 			SetRectSubRect(shardSelectQuads + i * 4,
 				ts_shards[worldSelector->currIndex]->GetSubRect(i));
 		}
@@ -221,7 +232,6 @@ ShardMenu::~ShardMenu()
 	delete ySelector;
 	delete worldSelector;
 
-	delete[] shardQuads;
 	delete[] shardSelectQuads;
 	delete sparklePool;
 }
@@ -332,11 +342,19 @@ void ShardMenu::UpdateUnlockedShards()
 	{
 		if (IsShardCaptured(world, i))
 		{
+			if (i >= 20)
+			{
+				assert(0);
+			}
 			SetRectColor(shardSelectQuads + i * 4, Color(Color::White));
 			//SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
 		}
 		else
 		{
+			if (i >= 20)
+			{
+				assert(0);
+			}
 			SetRectColor(shardSelectQuads + i * 4, Color(Color::Black));
 			//SetRectSubRect(shardSelectQuads + index, FloatRect());
 		}

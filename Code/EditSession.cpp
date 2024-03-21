@@ -722,6 +722,7 @@ void EditSession::TestPlayerMode()
 	timerOn = true;
 
 	phaseOn = false;
+	usedWarp = false;
 
 	goalDestroyed = false;
 	gameState = Session::RUN;
@@ -1202,7 +1203,8 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	hasGoal = false;
+	goal = NULL;
+	shipPickup = NULL;
 
 	bool foundShipEnter = false;
 	bool foundShipExit = false;
@@ -1281,10 +1283,10 @@ void EditSession::TestPlayerMode()
 				}
 				foundShipExit = true;
 			}
-			else if ((*enit)->type == types["goal"] && !hasGoal )
+			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
 				Goal *g = (Goal*)((*enit)->myEnemy);
-				g->SetMapGoalPos();
+				goal = g;
 			}
 		}
 	}
@@ -1380,7 +1382,7 @@ void EditSession::TestPlayerMode()
 
 	SetupGoalPulse();
 
-	if (hasGoal)
+	if (HasLevelFinisher())
 	{
 		SetupGoalFlow();
 	}
@@ -1853,6 +1855,8 @@ void EditSession::CleanupForReload()
 	waterPolygons.clear();
 	flyPolygons.clear();
 
+	
+
 	CleanupBackground();
 
 	for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -1888,6 +1892,11 @@ void EditSession::CleanupForReload()
 	StopCurrentMusic();
 
 	selectedBrush->Clear();
+
+	zoneTreeStart = NULL;
+	zoneTreeEnd = NULL;
+	currentZone = NULL;
+
 	//StopMusic(originalMusic);
 	//StopMusic(previewMusic);
 }
@@ -3071,14 +3080,6 @@ bool EditSession::WriteFile()
 	saveUpdated = true;
 	
 	
-
-	/*if( !hasGoal )
-	{
-		MessagePop( "Map not saved because no goal is in place. \nPlease add it from the CREATE ENEMIES mode." );
-		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
-			<< endl;
-		return;
-	}*/
 	//boost::filesystem::copy_file()
 	string tempMap = "tempmap";
 
@@ -3893,6 +3894,7 @@ void EditSession::SetupShardSelectPanel()
 					shardTypeRects[shardT]->Init();
 					shardTypeRects[shardT]->SetShown(true);
 					shardTypeRects[shardT]->SetName(shardMenu->GetShardName(w, shardLocalIndex));
+					shardTypeRects[shardT]->SetToolTip(shardMenu->GetShardDesc(w, shardLocalIndex));
 					shardTypeRects[shardT]->ShowName(false);
 				}
 			}
@@ -8703,7 +8705,8 @@ void EditSession::TestPlayerModeForPreview()
 
 	int setupZoneStatus = SetupZones();
 
-	hasGoal = false;
+	goal = NULL;
+	shipPickup = NULL;
 
 	bool foundShipEnter = false;
 	bool foundShipExit = false;
@@ -8750,10 +8753,10 @@ void EditSession::TestPlayerModeForPreview()
 				}
 				foundShipExit = true;
 			}
-			else if ((*enit)->type == types["goal"] && !hasGoal)
+			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
 				Goal *g = (Goal*)((*enit)->myEnemy);
-				g->SetMapGoalPos();
+				goal = g;
 			}
 		}
 	}

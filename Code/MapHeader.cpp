@@ -11,6 +11,13 @@ using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
 
+
+//early access launched on version 8
+//added medals in version 9
+
+//current version: 9
+
+
 //enum GameModeType
 //{
 //	GAME_MODE_BASIC,
@@ -19,6 +26,46 @@ using namespace boost::filesystem;
 //	GAME_MODE_RACE,
 //	GAME_MODE_PARALLEL_RACE,
 //};
+
+MapHeader::MapHeader()
+{
+	Clear();
+}
+
+void MapHeader::Clear()
+{
+	ver1 = 0;
+	ver2 = 0;
+	description = "no description";
+	numPlayerSpawns = 1;
+	leftBounds = 0;
+	topBounds = 0;
+	boundsWidth = 0;
+	boundsHeight = 0;
+	numVertices = -1;
+	songLevelsModified = false;
+	numShards = 0;
+	numLogs = 0;
+	drainSeconds = 60;
+	goldSeconds = 0;
+	silverSeconds = 0;
+	bronzeSeconds = 0;
+	bossFightType = 0;
+	envName = "w1_01";
+	envWorldType = -1;
+	preLevelSceneName = "NONE";
+	postLevelSceneName = "NONE";
+	creatorID = 0;
+	possibleGameModeTypeFlags = 0;
+	numGameObjects = -1;
+	functionalWidth = -1;
+	functionalHeight = -1;
+
+	goldRewardShardInfo.world = -1;
+	goldRewardShardInfo.localIndex = -1;
+	silverRewardCategory = -1;
+	silverRewardIndex = -1;
+}
 
 bool MapHeader::CanRunAsMode(int gm )
 {
@@ -243,6 +290,7 @@ bool MapHeader::Load(std::ifstream &is)
 
 	description = descriptionSS.str();
 
+
 	is >> numShards;
 	shardInfoVec.reserve(16);
 	int w, li;
@@ -396,6 +444,26 @@ bool MapHeader::Load(std::ifstream &is)
 	is >> boundsWidth;
 	is >> boundsHeight;
 	is >> drainSeconds;
+
+	if (ver1 >= 9)
+	{
+		is >> goldSeconds;
+		is >> goldRewardShardInfo.world;
+		is >> goldRewardShardInfo.localIndex;
+		is >> silverSeconds;
+		is >> silverRewardCategory;
+		is >> silverRewardIndex;
+		is >> bronzeSeconds;
+		is >> bronzeRewardCategory;
+		is >> bronzeRewardIndex;
+	}
+	else
+	{
+		goldSeconds = 0;
+		silverSeconds = 0;
+		bronzeSeconds = 0;
+	}
+
 	is >> bossFightType;
 	is >> numVertices;
 
@@ -467,6 +535,12 @@ void MapHeader::Save(std::ofstream &of)
 	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
 
 	of << drainSeconds << endl;
+
+	of << goldSeconds << " " << goldRewardShardInfo.world << " " << goldRewardShardInfo.localIndex << endl;
+
+	of << silverSeconds << " " << silverRewardCategory << " " << silverRewardIndex << endl;
+
+	of << bronzeSeconds << " " << bronzeRewardCategory << " " << bronzeRewardIndex << endl;
 
 	of << bossFightType << endl;
 

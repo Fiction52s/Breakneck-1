@@ -32,6 +32,8 @@ AdventureManager::AdventureManager()
 
 	transferPlayerPowerMode = -1;
 
+	
+
 	adventureHUD = new AdventureHUD(this);
 
 	currWorldDependentTilesetWorldIndex = -1;
@@ -53,15 +55,20 @@ AdventureManager::AdventureManager()
 
 	LoadAdventure("tadventure");
 
+	worldTransferScreen = new WorldTransferScreen;
+
 	kinBoostScreen = new KinBoostScreen;
 
-	worldTransferScreen = new WorldTransferScreen;
+	
+	//worldTransferScreen = new WorldTransferScreen;
 
 	std::vector<string> saveNames = { "blue", "green", "yellow", "orange", "red", "magenta" };
 	for (int i = 0; i < 6; ++i)
 	{
 		files[i] = new SaveFile(saveNames[i], &adventureFile);
 	}
+
+	
 
 	//CreateSaveMenu();
 
@@ -370,32 +377,36 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 		//lev.justBeaten = false;
 	}
 
-	bool isRecordSet = currSaveFile->TrySetRecordTime(totalFrames, lev);
+	bool isRecordSet = false;
 
-	string tempReplayPath = string("Resources/temp_replay") + REPLAY_EXT;
-
-	if (game->playerRecordingManager != NULL)
+	if (!game->usedWarp)
 	{
-		game->playerRecordingManager->RecordReplayFrames();
-		game->playerRecordingManager->RecordGhostFrames(); //added this rn
+		isRecordSet = currSaveFile->TrySetRecordTime(totalFrames, lev);
 
-		game->playerRecordingManager->StopRecording();
-		game->playerRecordingManager->WriteToFile(tempReplayPath);
+		string tempReplayPath = string("Resources/temp_replay") + REPLAY_EXT;
 
-		if (isRecordSet)
+		if (game->playerRecordingManager != NULL)
 		{
-			string bestReplayPath = game->GetBestReplayPath();
-			boost::filesystem::copy_file(tempReplayPath, bestReplayPath, boost::filesystem::copy_option::overwrite_if_exists);
-		}
+			game->playerRecordingManager->RecordReplayFrames();
+			game->playerRecordingManager->RecordGhostFrames(); //added this rn
 
-		if (MainMenu::GetInstance()->steamOn)
-		{
-			leaderboard->UploadScore(totalFrames, tempReplayPath, game->originalProgressionCompatible);
+			game->playerRecordingManager->StopRecording();
+			game->playerRecordingManager->WriteToFile(tempReplayPath);
+
+			if (isRecordSet)
+			{
+				string bestReplayPath = game->GetBestReplayPath();
+				boost::filesystem::copy_file(tempReplayPath, bestReplayPath, boost::filesystem::copy_option::overwrite_if_exists);
+			}
+
+			if (MainMenu::GetInstance()->steamOn)
+			{
+				leaderboard->UploadScore(totalFrames, tempReplayPath, game->originalProgressionCompatible);
+			}
+			//leaderboardMan->UploadScore(totalFrames);
+			//leaderboard stuff here!
 		}
-		//leaderboardMan->UploadScore(totalFrames);
-		//leaderboard stuff here!
 	}
-
 	
 
 	SaveCurrFile();

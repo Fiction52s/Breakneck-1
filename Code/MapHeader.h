@@ -19,20 +19,8 @@ struct MapHeader
 		MI_HAS_BASES,
 	};
 
-	MapHeader()
-		:ver1(0), ver2(0),
-		description("no description"), numPlayerSpawns(1),
-		leftBounds(0), topBounds(0), boundsWidth(0), boundsHeight(0),
-		numVertices(-1), songLevelsModified(false), numShards(0),
-		numLogs(0),drainSeconds(60), bossFightType(0), envName("w1_01"),
-		envWorldType(-1), preLevelSceneName("NONE"),
-		postLevelSceneName("NONE"), creatorID( 0 ),
-		possibleGameModeTypeFlags(0),
-		numGameObjects(-1),functionalWidth(-1),functionalHeight(-1)
-	{
-
-	}
-
+	MapHeader();
+	void Clear();
 	bool CanRunAsMode(int gm);
 	bool CanRunAsMode(int numP, int gm);
 	bool CanRun(std::vector<int> & numPlayers, std::vector<int> &gameModes );
@@ -55,6 +43,16 @@ struct MapHeader
 	std::string description;
 	
 	int drainSeconds;
+	int goldSeconds;
+	int silverSeconds;
+	int bronzeSeconds;
+
+	ShardInfo goldRewardShardInfo;
+	int silverRewardCategory;
+	int silverRewardIndex;
+	int bronzeRewardCategory;
+	int bronzeRewardIndex;
+
 	std::string envName;
 	int envWorldType;
 	int leftBounds;

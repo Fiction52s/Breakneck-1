@@ -1161,7 +1161,7 @@ void Actor::SetupFX()
 	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		true, false);
 
-	effectPools[PLAYERFX_DASH_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DASH_BOOST), EffectType::FX_REGULAR, 4);
+	effectPools[PLAYERFX_DASH_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DASH_BOOST), EffectType::FX_REGULAR, 8);
 
 	effectPools[PLAYERFX_SPRINT_STAR].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SPRINT_STAR), EffectType::FX_RELATIVE, 100);
 
@@ -3302,6 +3302,30 @@ void Actor::SetupActionFunctions()
 		&Actor::WALLTECH_GetActionLength,
 		&Actor::WALLTECH_GetTilesetName);
 
+	SetupFuncsForAction(WARP_CHARGE,
+		&Actor::WARP_CHARGE_Start,
+		&Actor::WARP_CHARGE_End,
+		&Actor::WARP_CHARGE_Change,
+		&Actor::WARP_CHARGE_Update,
+		&Actor::WARP_CHARGE_UpdateSprite,
+		&Actor::WARP_CHARGE_TransitionToAction,
+		&Actor::WARP_CHARGE_TimeIndFrameInc,
+		&Actor::WARP_CHARGE_TimeDepFrameInc,
+		&Actor::WARP_CHARGE_GetActionLength,
+		&Actor::WARP_CHARGE_GetTilesetName);
+
+	SetupFuncsForAction(WARP,
+		&Actor::WARP_Start,
+		&Actor::WARP_End,
+		&Actor::WARP_Change,
+		&Actor::WARP_Update,
+		&Actor::WARP_UpdateSprite,
+		&Actor::WARP_TransitionToAction,
+		&Actor::WARP_TimeIndFrameInc,
+		&Actor::WARP_TimeDepFrameInc,
+		&Actor::WARP_GetActionLength,
+		&Actor::WARP_GetTilesetName);
+
 	SetupFuncsForAction(WATERGLIDE,
 		&Actor::WATERGLIDE_Start,
 		&Actor::WATERGLIDE_End,
@@ -4881,7 +4905,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn( bool setStartPos )
 {
 	swordShader.SetSkin(0);
-	
+
 
 	gravityIncreaserTrailEmitter->Reset();
 	gravityDecreaserTrailEmitter->Reset();
@@ -6795,7 +6819,9 @@ void Actor::LimitMaxSpeeds()
 		&& action != GLIDE
 		&& !IsSpringAction( action )
 		&& freeFlightFrames == 0
-		&& action != HOMINGATTACK)
+		&& action != HOMINGATTACK
+		&& action != WARP_CHARGE
+		&& action != WARP )
 		//&& action != INVERSEINPUTSTUN )
 		//&& action != SPRINGSTUN:
 		//&& action != SPRINGSTUNGLIDE
@@ -7643,7 +7669,6 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					//sess->cam.Ease(Vector2f(sess->goalNodePosFinal + V2d( 0, -500 )), 1, 60, CubicBezier());
 					SetAction(EXIT);
 					sess->Fade(false, 30, Color::Black, true);
 				}
@@ -9244,7 +9269,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	
 	position += vel;
 
-	if (action == SPRINGSTUNTELEPORT )
+	if (action == SPRINGSTUNTELEPORT || action == WARP )
 		return false;
 	
 	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -11475,6 +11500,12 @@ bool Actor::BasicAirAction()
 	if (TryWallJump()) return true;
 
 	if( AirAttack()) return true;
+
+	if (SpecialButtonPressed() && sess->HasLevelFinisher() )
+	{
+		SetAction(WARP_CHARGE); 
+		return true;
+	}
 
 	return false;
 }

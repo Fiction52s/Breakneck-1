@@ -201,12 +201,12 @@ void Config::Save()
 		of << "WindowMode " << data.GetWindowModeString(data.windowStyle) << "\n";
 		of << "MusicVolume " << data.musicVolume << "\n";
 		of << "SoundVolume " << data.soundVolume << "\n";
-		of << "ParalelPlayOn " << (int)data.parallelPlayOn << "\n";
+		of << "ParallelPlayOn " << (int)data.parallelPlayOn << "\n";
 		of << "ShowRunningTimer " << (int)data.showRunningTimer << "\n";
 		of << "ShowFPS " << (int)data.showFPS << "\n";
-		of << "ParallelPracticeShowKinsOnMinimap" << (int)data.parallelPracticeShowKinsOnMinimap << "\n";
-		of << "ParallelPracticeShowKinsOnPauseMap" << (int)data.parallelPracticeShowKinsOnPauseMap << "\n";
-		of << "ParallelPracticeShowLobby" << (int)data.parallelPracticeShowLobby << "\n";
+		of << "ParallelPracticeShowKinsOnMinimap " << (int)data.parallelPracticeShowKinsOnMinimap << "\n";
+		of << "ParallelPracticeShowKinsOnPauseMap " << (int)data.parallelPracticeShowKinsOnPauseMap << "\n";
+		of << "ParallelPracticeShowLobby " << (int)data.parallelPracticeShowLobby << "\n";
 		of.close();
 	}
 	else

@@ -620,6 +620,20 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		
 			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
 
+			if (index >= LogInfo::MAX_LOGS_PER_WORLD)
+			{
+				for (int i = ySelector->totalItems - 1; i >= 1; --i)
+				{
+					ySelector->currIndex--;
+					testIndex = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+
+					if (testIndex < LogInfo::MAX_LOGS_PER_WORLD)
+					{
+						index = testIndex;
+						break;
+					}
+				}
+			}
 			assert(index < LogInfo::MAX_LOGS_PER_WORLD);
 
 			LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][index];

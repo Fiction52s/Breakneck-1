@@ -100,7 +100,6 @@ struct ShardMenu
 	Session *sess;
 
 	int currSelectMode;
-	int numShardsTotal;
 	int selectedIndex;
 	int totalFrame;
 
@@ -112,7 +111,6 @@ struct ShardMenu
 	SingleAxisSelector *ySelector;
 	SingleAxisSelector *worldSelector;
 
-	sf::Vertex *shardQuads;
 	sf::Vertex selectedBGQuad[4];
 	sf::Vertex *shardSelectQuads;
 	sf::Vertex shardBGQuad[4];

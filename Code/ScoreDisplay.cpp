@@ -266,13 +266,18 @@ void ScoreDisplay::Activate()
 
 	MainMenu *mm = MainMenu::GetInstance();
 
+	includeExtraSelectBars = false;
+
 	if (mm->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE)
 	{
-		includeExtraSelectBars = true;
-	}
-	else
-	{
-		includeExtraSelectBars = false;
+		if (game != NULL)
+		{
+			int score = game->saveFile->GetBestFramesLevel(game->level->index);
+			if (score > 0)
+			{
+				includeExtraSelectBars = true;
+			}
+		}
 	}
 
 	PopOutBar(0);
@@ -525,7 +530,7 @@ void ScoreBar::PopOut()
 
 	if (row == 0)
 	{
-		if (game != NULL && game->saveFile != NULL)
+		if (game != NULL && game->saveFile != NULL )
 		{
 			if (parent->madeRecord)
 			{
@@ -545,7 +550,7 @@ void ScoreBar::PopOut()
 	}
 	else if (row == 1)
 	{
-		if( game != NULL )
+		if( game != NULL && !game->usedWarp)
 		{
 			if (parent->madeRecord)
 			{
@@ -561,8 +566,16 @@ void ScoreBar::PopOut()
 		else
 		{
 			Session *sess = Session::GetSession();
-			SetText(GetTimeStr(sess->totalFramesBeforeGoal),
-				Color::White);
+			if (sess->usedWarp)
+			{
+				SetText("-----", Color::White);
+			}
+			else
+			{
+				SetText(GetTimeStr(sess->totalFramesBeforeGoal),
+					Color::White);
+			}
+			
 		}
 	}
 	else if( row == 2 )
