@@ -127,7 +127,7 @@ void WorldTransferScreen::Reset()
 
 	auto *mainMenu = MainMenu::GetInstance();
 
-	skinShader.SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
+	skinShader.SetSkin(mainMenu->adventureManager->currSaveFile->visualInfo.skinIndex);
 
 	for (int i = 0; i < 4; ++i)
 	{

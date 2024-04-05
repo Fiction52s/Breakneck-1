@@ -187,6 +187,7 @@ void ShardMenu::UpdateShardQuads()
 		{
 			if (i >= 20)
 			{
+				break;
 				assert(0);
 			}
 			SetRectSubRect(shardSelectQuads + i * 4, sf::FloatRect());
@@ -195,6 +196,7 @@ void ShardMenu::UpdateShardQuads()
 		{
 			if (i >= 20)
 			{
+				break;
 				assert(0);
 			}
 			SetRectSubRect(shardSelectQuads + i * 4,
@@ -344,6 +346,7 @@ void ShardMenu::UpdateUnlockedShards()
 		{
 			if (i >= 20)
 			{
+				break;
 				assert(0);
 			}
 			SetRectColor(shardSelectQuads + i * 4, Color(Color::White));
@@ -353,6 +356,7 @@ void ShardMenu::UpdateUnlockedShards()
 		{
 			if (i >= 20)
 			{
+				break;
 				assert(0);
 			}
 			SetRectColor(shardSelectQuads + i * 4, Color(Color::Black));
@@ -493,7 +497,9 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 
 			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
 
+			
 			assert(index < ShardInfo::MAX_SHARDS_PER_WORLD);
+			//if( index >= ShardInfo::MAX_SHARDS_PER_WORLD)
 
 			ShardDetailedInfo &currInfo = shardInfo[worldSelector->currIndex][index];
 

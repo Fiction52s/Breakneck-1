@@ -418,7 +418,7 @@ void PauseMenu::SetTab( Tab t )
 		int skinInd = 0;
 		if (sf != NULL)
 		{
-			skinInd = sf->defaultSkinIndex;
+			skinInd = sf->visualInfo.skinIndex;
 		}
 
 		kinMenu->playerSkinShader.SetSkin(skinInd);

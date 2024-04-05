@@ -30,34 +30,48 @@ LevelScore::LevelScore()
 void LevelScore::Reset()
 {
 	bestFramesToBeat = 0;
+	medalLevel = 0; //no medals
 }
 
 void LevelScore::Save(ofstream &of)
 {
-	of << bestFramesToBeat << "\n";
+	of << bestFramesToBeat << " " << medalLevel << "\n";
 }
 
 void LevelScore::Load(ifstream &is)
 {
 	is >> bestFramesToBeat;
+	is >> medalLevel;
 }
 
+bool LevelScore::HasBronze()
+{
+	return medalLevel >= 1;
+}
+
+bool LevelScore::HasSilver()
+{
+	return medalLevel >= 2;
+}
+
+bool LevelScore::HasGold()
+{
+	return medalLevel >= 3;
+}
+
+
 SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
-	:levelsBeatenField(512),
+	:levelsJustBeatenField(ADVENTURE_MAX_NUM_LEVELS), 
+	levelsBeatenField(ADVENTURE_MAX_NUM_LEVELS),
 	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	upgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
+	visualRewardsField(ADVENTURE_MAX_NUM_LEVELS),
 	logField(LogDetailedInfo::MAX_LOGS),
-	levelsJustBeatenField( 512 ),
 	adventureFile( p_adventure ),
 	name( p_name ),
-	defaultSkinIndex( 0 ),
 	mostRecentWorldSelected( 0 )
 {
-	//version 1 is early access launch
-	//version 2 is post-medals
-
-
-	SetVer(2);
+	SetAsDefault();
 
 	string dataFolder = MainMenu::GetInstance()->appDataPath + "SaveData\\";
 
@@ -70,8 +84,6 @@ SaveFile::~SaveFile()
 {
 }
 
-
-
 void SaveFile::CreateSaveWorlds()
 {
 	
@@ -82,7 +94,7 @@ int SaveFile::GetBestFrames()
 	int total = 0;
 	int temp;
 
-	for (int i = 0; i < 512; ++i)
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
@@ -123,8 +135,8 @@ std::string SaveFile::GetBestTimeString()
 int SaveFile::GetBestFramesWorld(int w)
 {
 	int total = 0;
-	int wStart = w * 64;
-	int wEnd = (w + 1) * 64;
+	int wStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	int wEnd = (w + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
 	for (int i = wStart; i < wEnd; ++i)
 	{
 		if (adventureFile->GetMap(i).Exists())
@@ -139,8 +151,8 @@ int SaveFile::GetBestFramesWorld(int w)
 int SaveFile::GetBestFramesSector(int w, int s)
 {
 	int total = 0;
-	int sStart = w * 64 + s * 8;
-	int sEnd = w * 64 + (s + 1) * 8;
+	int sStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
+	int sEnd = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + (s + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
 
 	for (int i = sStart; i < sEnd; ++i)
 	{
@@ -155,7 +167,7 @@ int SaveFile::GetBestFramesSector(int w, int s)
 
 int SaveFile::GetBestFramesLevel(int w, int s, int m)
 {
-	int i = w * 64 + s * 8 + m;
+	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
 	if (adventureFile->GetMap(i).Exists())
 	{
 		return levelScores[i].bestFramesToBeat;
@@ -175,22 +187,244 @@ int SaveFile::GetBestFramesLevel(int index)
 }
 
 
+int SaveFile::GetNumGolds()
+{
+	int total = 0;
+	int temp;
+
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists())
+		{
+			if (levelScores[i].HasGold() )
+			{
+				total++;
+			}
+			
+		}
+	}
+
+	return total;
+}
+
+int SaveFile::GetNumGoldsWorld(int w)
+{
+	int total = 0;
+	int wStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	int wEnd = (w + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	for (int i = wStart; i < wEnd; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasGold())
+		{
+			total++;
+		}
+	}
+
+	return total;
+}
+
+int SaveFile::GetNumGoldsSector(int w, int s)
+{
+	int total = 0;
+	int sStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
+	int sEnd = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + (s + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
+
+	for (int i = sStart; i < sEnd; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasGold())
+		{
+			total++;
+		}
+	}
+
+	return total;
+}
+
+bool SaveFile::HasGoldForLevel(int w, int s, int m)
+{
+	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
+	if (adventureFile->GetMap(i).Exists() && levelScores[i].HasGold())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool SaveFile::HasGoldForLevel(int index)
+{
+	if (adventureFile->GetMap(index).Exists() && levelScores[index].HasGold() )
+	{
+		return true;
+	}
+
+	return false;
+}
+
+int SaveFile::GetNumSilvers()
+{
+	int total = 0;
+	int temp;
+
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists())
+		{
+			if (levelScores[i].HasSilver() )
+			{
+				total++;
+			}
+
+		}
+	}
+
+	return total;
+}
+
+int SaveFile::GetNumSilversWorld(int w)
+{
+	int total = 0;
+	int wStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	int wEnd = (w + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	for (int i = wStart; i < wEnd; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasSilver())
+		{
+			total++;
+		}
+	}
+
+	return total;
+}
+
+int SaveFile::GetNumSilversSector(int w, int s)
+{
+	int total = 0;
+	int sStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
+	int sEnd = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + (s + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
+
+	for (int i = sStart; i < sEnd; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasSilver())
+		{
+			total++;
+		}
+	}
+
+	return total;
+}
+
+bool SaveFile::HasSilverForLevel(int w, int s, int m)
+{
+	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
+	if (adventureFile->GetMap(i).Exists() && levelScores[i].HasSilver())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool SaveFile::HasSilverForLevel(int index)
+{
+	if (adventureFile->GetMap(index).Exists() && levelScores[index].HasSilver())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+int SaveFile::GetNumBronzes()
+{
+	int total = 0;
+	int temp;
+
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists())
+		{
+			if (levelScores[i].HasBronze() )
+			{
+				total++;
+			}
+
+		}
+	}
+
+	return total;
+}
+
+int SaveFile::GetNumBronzesWorld(int w)
+{
+	int total = 0;
+	int wStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	int wEnd = (w + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	for (int i = wStart; i < wEnd; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasBronze())
+		{
+			total++;
+		}
+	}
+
+	return total;
+}
+
+int SaveFile::GetNumBronzesSector(int w, int s)
+{
+	int total = 0;
+	int sStart = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
+	int sEnd = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + (s + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
+
+	for (int i = sStart; i < sEnd; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasBronze())
+		{
+			total++;
+		}
+	}
+
+	return total;
+}
+
+bool SaveFile::HasBronzeForLevel(int w, int s, int m)
+{
+	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
+	if (adventureFile->GetMap(i).Exists() && levelScores[i].HasBronze())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool SaveFile::HasBronzeForLevel(int index)
+{
+	if (adventureFile->GetMap(index).Exists() && levelScores[index].HasBronze())
+	{
+		return true;
+	}
+
+	return false;
+}
+
 int SaveFile::GetWorldStart(int w)
 {
-	return 64 * w;
+	return ADVENTURE_MAX_NUM_LEVELS_PER_WORLD * w;
 }
 int SaveFile::GetWorldEnd(int w)
 {
-	return 64 * (w + 1);
+	return ADVENTURE_MAX_NUM_LEVELS_PER_WORLD * (w + 1);
 }
 
 int SaveFile::GetSectorStart(int w, int s)
 {
-	return 64 * w + 8 * s;
+	return ADVENTURE_MAX_NUM_LEVELS_PER_WORLD * w + ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR * s;
 }
 int SaveFile::GetSectorEnd(int w, int s)
 {
-	return 64 * w + 8 * (s + 1);
+	return ADVENTURE_MAX_NUM_LEVELS_PER_WORLD * w + ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR * (s + 1);
 }
 
 int SaveFile::GetMapIndex(int w, int s, int m)
@@ -255,7 +489,7 @@ void SaveFile::CalcLogProgress(BitField &b, float &totalLogs,
 int SaveFile::GetTotalMaps()
 {
 	int totalMaps = 0;
-	for (int i = 0; i < 512; ++i)
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
@@ -267,7 +501,7 @@ int SaveFile::GetTotalMaps()
 int SaveFile::GetTotalMapsBeaten()
 {
 	int totalMapsBeaten = 0;
-	for (int i = 0; i < 512; ++i)
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
@@ -307,7 +541,7 @@ float SaveFile::CalcCompletionPercentage(int start, int end, BitField & b)
 
 float SaveFile::GetCompletionPercentage()
 {
-	return CalcCompletionPercentage(0, 512, adventureFile->hasShardField);
+	return CalcCompletionPercentage(0, ADVENTURE_MAX_NUM_LEVELS, adventureFile->hasShardField);
 }
 
 float SaveFile::GetCompletionPercentageWorld(int w)
@@ -382,15 +616,66 @@ bool SaveFile::TrySetRecordTime(int totalFrames,
 	return false;
 }
 
+bool SaveFile::TryUnlockGoldMedal(int totalFrames, Level *lev)
+{
+	int index = lev->index;
+	
+	if (!HasGoldForLevel(index))
+	{
+		int goldFrames = adventureFile->GetMap(index).headerInfo.goldSeconds * 60;
+		if (totalFrames <= goldFrames)
+		{
+			levelScores[index].medalLevel = 3;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool SaveFile::TryUnlockSilverMedal(int totalFrames, Level *lev)
+{
+	int index = lev->index;
+
+	if (!HasSilverForLevel(index))
+	{
+		int silverFrames = adventureFile->GetMap(index).headerInfo.silverSeconds * 60;
+		if (totalFrames <= silverFrames)
+		{
+			levelScores[index].medalLevel = 2;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool SaveFile::TryUnlockBronzeMedal(int totalFrames, Level *lev)
+{
+	int index = lev->index;
+
+	if (!HasBronzeForLevel(index))
+	{
+		int bronzeFrames = adventureFile->GetMap(index).headerInfo.bronzeSeconds * 60;
+		if (totalFrames <= bronzeFrames)
+		{
+			levelScores[index].medalLevel = 1;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool SaveFile::IsLevelLastInSector( Level *lev )
 {
 	int levIndex = lev->index;
-	int world = levIndex / 64;
-	int sector = (levIndex % 64) / 8;
+	int world = levIndex / ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
+	int sector = (levIndex % ADVENTURE_MAX_NUM_LEVELS_PER_WORLD) / ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
 	int ind = (levIndex % 8);
 
 	AdventureSector &as = adventureFile->GetSector(world, sector);
-	for (int i = ind+1; i < 8; ++i)
+	for (int i = ind+1; i < ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR; ++i)
 	{
 		if (as.maps[i].Exists())
 		{
@@ -466,12 +751,24 @@ bool SaveFile::IsUnlockedSector( World *world, Sector *sector)
 
 bool SaveFile::HasUpgrade(int pow)
 {
+	assert(pow < ADVENTURE_MAX_NUM_LEVELS);
 	return upgradeField.GetBit(pow);
 }
 
 void SaveFile::UnlockUpgrade(int pow)
 {
+	assert(pow < ADVENTURE_MAX_NUM_LEVELS);
 	upgradeField.SetBit(pow, true);
+}
+
+bool SaveFile::HasVisualReward(int pType)
+{
+	return visualRewardsField.GetBit(pType);
+}
+
+void SaveFile::UnlockVisualReward(int pType)
+{
+	visualRewardsField.SetBit(pType, true);
 }
 
 bool SaveFile::HasLog(int lType)
@@ -498,21 +795,74 @@ bool SaveFile::LoadInfo(ifstream &is)
 {
 	if (is.is_open())
 	{
-		is >> ver;
+		int v;
+
+		is >> v;
+
+		if (v < ver)
+		{
+			if (v == 1)
+			{
+				SetAsDefault();
+				//this should be the only possibility for now
+
+				int defaultSkinIndex;
+				is >> defaultSkinIndex;
+
+				visualInfo.skinIndex = defaultSkinIndex;
+
+				is >> mostRecentWorldSelected;
+
+				levelsBeatenField.Load(is);
+
+				for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
+				{
+					is >> levelScores[i].bestFramesToBeat; //since its just this int here
+				}
+
+				BitField oldUpgradeField(256);
+				BitField oldUpgradeTurnedOnField(256);
+
+				oldUpgradeField.Load(is);
+				oldUpgradeTurnedOnField.Load(is);
+				//never converts this to the new shards, so your upgrades are reset
+
+
+				logField.Load(is);
+
+				is.close();
+
+				Save();
+				return Load();
+
+			}
+			else
+			{
+				assert(0);
+				return false;
+			}
+		}
 		
-		is >> defaultSkinIndex;
+		visualInfo.Load(is);
+		
 		is >> mostRecentWorldSelected;
+
+		is >> warpCharge;
 
 		levelsBeatenField.Load(is);
 
-		for (int i = 0; i < 512; ++i)
+		for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 		{
 			levelScores[i].Load(is);
 		}
 		
 		upgradeField.Load(is);
 		upgradesTurnedOnField.Load(is);
+
+		visualRewardsField.Load(is);
+
 		logField.Load(is);
+
 		is.close();
 		return true;
 	}
@@ -614,19 +964,24 @@ void SaveFile::Save()
 	{
 		of << ver << endl;
 
-		of << defaultSkinIndex << endl;
+		visualInfo.Save(of);
 
 		of << mostRecentWorldSelected << endl;
 
+		of << warpCharge << endl;
+
 		levelsBeatenField.Save(of);
 
-		for (int i = 0; i < 512; ++i)
+		for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 		{
 			levelScores[i].Save(of);
 		}
 
 		upgradeField.Save(of);
 		upgradesTurnedOnField.Save(of);
+
+		visualRewardsField.Save(of);
+
 		logField.Save(of);
 
 		of.close();
@@ -660,15 +1015,19 @@ void SaveFile::SetAndSave(SaveFile *saveFile)
 {
 	levelsBeatenField.Set(saveFile->levelsBeatenField);
 
-	for (int i = 0; i < 512; ++i)
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 	{
 		levelScores[i] = saveFile->levelScores[i];
 	}
+
 	upgradeField.Set(saveFile->upgradeField);
 	upgradesTurnedOnField.Set(saveFile->upgradesTurnedOnField);
+
+	visualRewardsField.Set(saveFile->visualRewardsField);
+
 	logField.Set(saveFile->logField);
 
-	defaultSkinIndex = saveFile->defaultSkinIndex;
+	visualInfo = saveFile->visualInfo;
 
 	Save();
 
@@ -683,25 +1042,35 @@ void SaveFile::SetAndSave(SaveFile *saveFile)
 
 void SaveFile::SetAsDefault()
 {
+	//version 1 is early access launch
+	//version 2 is post-medals
+	SetVer(2);
+
 	levelsBeatenField.Reset();
 
 	mostRecentWorldSelected = 0;
 	
-	for (int i = 0; i < 512; ++i)
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 	{
 		levelScores[i].Reset();
 	}
 
 	upgradeField.Reset();
 	upgradesTurnedOnField.Reset();
+
+	visualRewardsField.Reset();
+
 	logField.Reset();
 
-	defaultSkinIndex = 0;
+	visualInfo.Reset();
+
+	warpCharge = 0;
 }
 
 GlobalSaveFile::GlobalSaveFile()
-	:skinField(64)
+	:visualRewardsField(ADVENTURE_MAX_NUM_LEVELS)
 {
+	
 	fileName = MainMenu::GetInstance()->appDataPath + "globalsave" + string(GLOBAL_SAVE_EXT);
 	SetToDefaults();
 }
@@ -725,8 +1094,13 @@ bool GlobalSaveFile::Load()
 			Save();
 			return Load();
 		}
+		else
+		{
+			//cout << "global save file is newer than the version I'm trying to use" << endl;
+			//assert(ver == v);
+		}
 
-		skinField.Load(is);
+		visualRewardsField.Load(is);
 
 		//add more later
 		is.close();
@@ -755,7 +1129,7 @@ void GlobalSaveFile::Save()
 	{
 		of << ver << endl;
 
-		skinField.Save(of);
+		visualRewardsField.Save(of);
 
 		of.close();
 	}
@@ -766,24 +1140,23 @@ void GlobalSaveFile::Save()
 	}
 }
 
-void GlobalSaveFile::UnlockSkin(int skinIndex)
+void GlobalSaveFile::UnlockVisual(int visIndex)
 {
-	if (!skinField.GetBit(skinIndex))
+	if (!visualRewardsField.GetBit(visIndex))
 	{
-		skinField.SetBit(skinIndex, true);
+		visualRewardsField.SetBit(visIndex, true);
 		Save();
 	}
 }
 
-bool GlobalSaveFile::IsSkinUnlocked(int skinIndex)
+bool GlobalSaveFile::IsVisualRewardUnlocked(int visIndex)
 {
-	return skinField.GetBit(skinIndex);
+	return visualRewardsField.GetBit(visIndex);
 }
 
 void GlobalSaveFile::SetToDefaults()
 {
-	SetVer(1);
-	skinField.Reset();
-	skinField.SetBit(0, true);
+	SetVer(2);
+	visualRewardsField.Reset();
 
 }

@@ -12,6 +12,7 @@
 #include "HUD.h"
 #include "WorldTransferScreen.h"
 #include "globals.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;
@@ -356,16 +357,20 @@ bool AdventureManager::IsLastLevel()
 	return false;
 }
 
-//returns true if you make a record!
-bool AdventureManager::CompleteCurrentMap(GameSession *game)
+void AdventureManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze)
 {
+	setRecord = false;
+	gotGold = false;
+	gotSilver = false;
+	gotBronze = false;
+
 	Level *lev = game->level;
 	int totalFrames = game->totalFramesBeforeGoal;
 
 	if (currSaveFile == NULL)
 	{
 		assert(0);
-		return false;
+		return;
 	}
 
 	if (!currSaveFile->IsCompleteLevel(lev))
@@ -377,11 +382,35 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 		//lev.justBeaten = false;
 	}
 
-	bool isRecordSet = false;
-
 	if (!game->usedWarp)
 	{
-		isRecordSet = currSaveFile->TrySetRecordTime(totalFrames, lev);
+		setRecord = currSaveFile->TrySetRecordTime(totalFrames, lev);
+
+		gotGold = currSaveFile->TryUnlockGoldMedal(totalFrames, lev);
+		if (gotGold)
+		{
+			cout << "unlocked the gold medal for this level!" << endl;
+			if (game->mapHeader->goldRewardShardInfo.world >= 0)
+			{
+				int upgradeIndex = game->mapHeader->goldRewardShardInfo.GetTrueIndex() + Actor::SHARD_START_INDEX;
+				currSaveFile->UnlockUpgrade();
+				cout << "unlocked upgrade: "
+			}
+			
+			
+		}
+
+		gotSilver = currSaveFile->TryUnlockSilverMedal(totalFrames, lev);
+		if (gotSilver)
+		{
+			cout << "unlocked the silver medal for this level!" << endl;
+		}
+
+		gotBronze = currSaveFile->TryUnlockBronzeMedal(totalFrames, lev);
+		if (gotBronze)
+		{
+			cout << "unlocked the bronze medal for this level!" << endl;
+		}
 
 		string tempReplayPath = string("Resources/temp_replay") + REPLAY_EXT;
 
@@ -393,7 +422,7 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 			game->playerRecordingManager->StopRecording();
 			game->playerRecordingManager->WriteToFile(tempReplayPath);
 
-			if (isRecordSet)
+			if (setRecord)
 			{
 				string bestReplayPath = game->GetBestReplayPath();
 				boost::filesystem::copy_file(tempReplayPath, bestReplayPath, boost::filesystem::copy_option::overwrite_if_exists);
@@ -410,8 +439,6 @@ bool AdventureManager::CompleteCurrentMap(GameSession *game)
 	
 
 	SaveCurrFile();
-
-	return isRecordSet;
 }
 
 void AdventureManager::CreateWorldMap()
@@ -488,9 +515,9 @@ void AdventureManager::SaveCurrFile()
 
 void AdventureManager::StartDefaultSaveFile( int index )
 {
-	int savedSkin = files[index]->defaultSkinIndex;
+	int savedSkin = files[index]->visualInfo.skinIndex;
 	files[index]->SetAsDefault();
-	files[index]->defaultSkinIndex = savedSkin;
+	files[index]->visualInfo.skinIndex = savedSkin;
 	files[index]->Save();
 }
 

@@ -150,7 +150,7 @@ enum BonusType
 
 struct Session : TilesetManager, QuadTreeCollider
 {
-	const static int PLAYER_OPTION_BIT_COUNT = 32 * 8;
+	const static int PLAYER_OPTION_BIT_COUNT = 512 + 32;
 	const static int MAX_PLAYERS = 4;
 	const static int MAX_BUBBLES = 5;
 	const static int MAX_TOTAL_BUBBLES = MAX_PLAYERS * MAX_BUBBLES;

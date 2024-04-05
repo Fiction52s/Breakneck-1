@@ -252,7 +252,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 		}
 	}
 	else if ((matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
-		&& mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && scoreDisplay->waiting)
+		&& mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && scoreDisplay->IsWaiting())
 	{
 		if ( mainMenu->steamOn && CONTROLLERS.KeyboardButtonPressed(Keyboard::F1))
 		{
@@ -5424,46 +5424,6 @@ int GameSession::GetBonusType()
 		return bonusType;
 	}
 }
-
-//int GameSession::GetPlayerNormalSkin(int index)
-//{
-//	if (saveFile != NULL)
-//	{
-//		return saveFile->defaultSkinIndex;
-//	}
-//	else if (netplayManager != NULL)
-//	{
-//		int realIndex = index;
-//		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
-//		{
-//			int adjustedIndex = index;
-//			if (IsParallelSession())
-//			{
-//				assert(index == 0); //each parallel session can only have 1 player so far
-//
-//				adjustedIndex = parallelSessionIndex + 1;
-//			}
-//
-//			realIndex = adjustedIndex;
-//			if (adjustedIndex == 0)
-//			{
-//				realIndex = netplayManager->playerIndex;
-//			}
-//			else if (adjustedIndex <= netplayManager->playerIndex)
-//			{
-//				realIndex = adjustedIndex - 1;
-//			}
-//		}
-//
-//		return netplayManager->netplayPlayers[realIndex].skinIndex;
-//	}
-//	else
-//	{
-//		return matchParams.playerSkins[index];
-//	}
-//
-//	return Actor::SKIN_NORMAL;
-//}
 
 MatchResultsScreen *GameSession::CreateResultsScreen()
 {

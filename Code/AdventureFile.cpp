@@ -33,6 +33,14 @@ void AdventureMapHeaderInfo::Clear()
 
 	hasShardField.Reset();
 	hasLogField.Reset();
+
+	goldSeconds = 0;
+	silverSeconds = 0;
+	bronzeSeconds = 0;
+
+	goldRewardShardInfo.Clear();
+	silverRewardCategory = -1;
+	silverRewardIndex = -1;
 }
 
 void AdventureMapHeaderInfo::Set(AdventureMapHeaderInfo &info)
@@ -46,6 +54,14 @@ void AdventureMapHeaderInfo::Set(AdventureMapHeaderInfo &info)
 	hasLogField.Set(info.hasLogField);
 
 	powerVec = info.powerVec;
+
+	goldSeconds = info.goldSeconds;
+	silverSeconds = info.silverSeconds;
+	bronzeSeconds = info.bronzeSeconds;
+
+	goldRewardShardInfo = info.goldRewardShardInfo;
+	silverRewardCategory = info.silverRewardCategory;
+	silverRewardIndex = info.silverRewardIndex;
 }
 
 AdventurePlanet::AdventurePlanet(AdventureFile &adventureFile)
@@ -212,6 +228,13 @@ bool AdventureMap::LoadHeaderInfo()
 		}
 
 		headerInfo.powerVec = mh.powerVec;
+
+		headerInfo.goldSeconds = mh.goldSeconds;
+		headerInfo.silverSeconds = mh.silverSeconds;
+		headerInfo.bronzeSeconds = mh.bronzeSeconds;
+
+		headerInfo.goldRewardShardInfo = mh.goldRewardShardInfo;
+		headerInfo.silverRewardCategory = mh.silverRewardCategory;
 
 		is.close();
 	}

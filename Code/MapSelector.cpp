@@ -131,7 +131,7 @@ MapSelector::~MapSelector()
 
 void MapSelector::Init()
 {
-	playerSkinShader.SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
+	playerSkinShader.SetSkin(mainMenu->adventureManager->currSaveFile->visualInfo.skinIndex);
 	for (int i = 0; i < numSectors; ++i)
 	{
 		sectors[i]->Init(mainMenu->adventureManager->currSaveFile);

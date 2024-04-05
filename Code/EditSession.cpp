@@ -2552,8 +2552,9 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//mapHeader->description = "no description"; //just for now so that I can save all the maps correctly
 
 	//version 8 includes the powerVec and powers in the header
+	//version 9 is post-medals
 
-	mapHeader->ver1 = 8;
+	mapHeader->ver1 = 9;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;

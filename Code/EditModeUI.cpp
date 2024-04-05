@@ -119,7 +119,6 @@ EditModeUI::~EditModeUI()
 	delete grassTypePanel;
 }
 
-
 void EditModeUI::AddKinOption( int world, const std::string &text, const std::string &toolTipText, int upgradeIndex)
 {
 	kinCheckboxes[world][upgradeIndex] = kinOptionsPanel->AddLabeledCheckBox(

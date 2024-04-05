@@ -243,7 +243,7 @@ void PowerItem::DissipateOnTouch()
 
 void PowerItem::Capture()
 {
-	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+	int upgradeIndex = powerIndex;
 
 	sess->UnlockUpgrade(upgradeIndex);
 

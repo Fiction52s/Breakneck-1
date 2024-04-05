@@ -5,6 +5,7 @@
 #include <list>
 #include "Movement.h"
 #include <vector>
+#include "ShardInfo.h"
 
 struct Panel;
 struct GUIHandler;
@@ -1077,6 +1078,8 @@ struct MapOptionsUI : GUIHandler
 	ImageChooseRect *goldRewardRect;
 	ImageChooseRect *silverRewardRect;
 	ImageChooseRect *bronzeRewardRect;
+
+	ShardInfo goldShardInfo;
 
 	MapOptionsUI();
 	~MapOptionsUI();

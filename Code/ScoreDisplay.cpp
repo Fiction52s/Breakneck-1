@@ -8,6 +8,8 @@
 #include "MapHeader.h"
 #include "AdventureManager.h"
 #include "FeedbackInputBox.h"
+#include "Medal.h"
+#include "MedalSequence.h"
 
 using namespace std;
 using namespace sf;
@@ -37,13 +39,13 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 		ts_scoreIcons = sess->GetSizedTileset("HUD/score_icons_128x96.png");
 	}
 	
-	
+	medalSeq = new MedalSequence;
+	medalSeq->Init();
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		bars[i] = new ScoreBar(i, this);
 	}
-
 
 	numShownSelectBars = NUM_SELECT_BARS;
 	if (!MainMenu::GetInstance()->steamOn)
@@ -62,22 +64,18 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 
 	SetRectColor(nameBGQuad, Color::Black);
 
-	//bars[0]->SetText("", Color::White);
-	//bars[1]->SetText("", Color::White);
-	//bars[2]->SetText("", Color::White);
-
-
 	selectOffset = NUM_BARS * 100 + 20;
 
-	active = false;
-	waiting = false;
-
 	includeExtraSelectBars = false;
+
+	Reset();
 }
 
 ScoreDisplay::~ScoreDisplay()
 {
 	delete feedbackInputBox;
+
+	delete medalSeq;
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
@@ -92,13 +90,13 @@ ScoreDisplay::~ScoreDisplay()
 
 void ScoreDisplay::Draw(RenderTarget *target)
 {
-	if (active)
+	if (IsActive())
 	{
 		target->draw(nameBGQuad, 4, sf::Quads);
 		target->draw(levelNameText);
 
 
-		if (waiting && MainMenu::GetInstance()->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE )
+		if (action == A_WAIT && MainMenu::GetInstance()->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE )
 		{
 			feedbackInputBox->Draw(target);
 		}
@@ -134,6 +132,11 @@ void ScoreDisplay::Draw(RenderTarget *target)
 			//target->draw(shardSprite);
 			//target->draw(keys);
 		}
+
+		if (action == A_GIVE_GOLD || action == A_GIVE_SILVER || action == A_GIVE_BRONZE )
+		{
+			medalSeq->Draw(target, EffectLayer::UI_FRONT );
+		}
 	}
 }
 
@@ -162,59 +165,166 @@ int ScoreDisplay::GetNumSelectBars()
 	return selectBarNum;
 }
 
+bool ScoreDisplay::IsActive()
+{
+	return action != A_IDLE;
+}
+
+bool ScoreDisplay::IsWaiting()
+{
+	return action == A_WAIT;
+}
+
 void ScoreDisplay::Update()
 {
-	if (!active)
+	if (!IsActive())
 		return;
 
-	bool allNone = true;
-	bool allDisplay = true;
-	for (int i = 0; i < NUM_BARS; ++i)
+	if (action == A_ENTER )//|| action == A_WAIT )
 	{
-		bars[i]->Update();
-		if (bars[i]->state != ScoreBar::NONE)
+		bool allNone = true;
+		bool allDisplay = true;
+		for (int i = 0; i < NUM_BARS; ++i)
 		{
-			allNone = false;
-		}
-		if (bars[i]->state != ScoreBar::SHEET_DISPLAY)
-		{
-			allDisplay = false;
+			bars[i]->Update();
+			if (bars[i]->state != ScoreBar::NONE)
+			{
+				allNone = false;
+			}
+			if (bars[i]->state != ScoreBar::SHEET_DISPLAY)
+			{
+				allDisplay = false;
+			}
 		}
 
-		
-	}
-
-	int activeSelectBars = GetNumSelectBars();
-	for (int i = 0; i < activeSelectBars; ++i)
-	{
-		selectBars[i]->Update();
-		if (selectBars[i]->state != SelectBar::NONE)
+		int activeSelectBars = GetNumSelectBars();
+		for (int i = 0; i < activeSelectBars; ++i)
 		{
-			allNone = false;
+			selectBars[i]->Update();
+			if (selectBars[i]->state != SelectBar::NONE)
+			{
+				allNone = false;
+			}
+			if (selectBars[i]->state != SelectBar::DISPLAY)
+			{
+				allDisplay = false;
+			}
 		}
-		if (selectBars[i]->state != SelectBar::DISPLAY)
+
+		if (allNone)
 		{
-			allDisplay = false;
+			action = A_IDLE;
+			frame = 0;
+		}
+
+		if (allDisplay)
+		{
+			if (gotGold)
+			{
+				action = A_GIVE_GOLD;
+				frame = 0;
+				medalSeq->Reset();
+				medalSeq->medalType = Medal::MEDAL_GOLD;
+				medalSeq->StartRunning();
+			}
+			else if (gotSilver)
+			{
+				action = A_GIVE_SILVER;
+				frame = 0;
+				medalSeq->Reset();
+				medalSeq->medalType = Medal::MEDAL_SILVER;
+				medalSeq->StartRunning();
+			}
+			else if (gotBronze)
+			{
+				action = A_GIVE_BRONZE;
+				frame = 0;
+				medalSeq->Reset();
+				medalSeq->medalType = Medal::MEDAL_BRONZE;
+				medalSeq->StartRunning();
+			}
+			else
+			{
+				action = A_WAIT;
+				frame = 0;
+			}
 		}
 	}
-	
-
-	if (allNone)
+	else if (action == A_GIVE_GOLD)
 	{
-		active = false;
+		if (medalSeq->Update())
+		{
+
+		}
+		else
+		{
+			action = A_WAIT;
+			frame = 0;
+		}
+		/*if (medalSeq->IsLastFrame())
+		{
+			action = A_WAIT;
+			frame = 0;
+		}
+		else
+		{
+			medalSeq->Update();
+		}*/
 	}
-	if (allDisplay)
+	else if (action == A_GIVE_SILVER)
 	{
-		waiting = true;
+		if (medalSeq->Update())
+		{
+
+		}
+		else
+		{
+			action = A_WAIT;
+			frame = 0;
+		}
+		/*if (medalSeq->IsLastFrame())
+		{
+			action = A_WAIT;
+			frame = 0;
+		}
+		else
+		{
+			medalSeq->Update();
+		}*/
+	}
+	else if (action == A_GIVE_BRONZE)
+	{
+		if (medalSeq->Update())
+		{
+
+		}
+		else
+		{
+			action = A_WAIT;
+			frame = 0;
+		}
+		/*if (medalSeq->IsLastFrame())
+		{
+			action = A_WAIT;
+			frame = 0;
+		}
+		else
+		{
+			medalSeq->Update();
+		}*/
 	}
 
+	++frame;
 }
 
 void ScoreDisplay::Reset()
 {
-	waiting = false;
-	active = false;
+	action = A_IDLE;
+	frame = 0;
 	madeRecord = false;
+	gotGold = false;
+	gotSilver = false;
+	gotBronze = false;
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		bars[i]->Reset();
@@ -228,8 +338,8 @@ void ScoreDisplay::Reset()
 
 void ScoreDisplay::Activate()
 {
-	active = true;
-	waiting = false;
+	action = A_ENTER;
+	frame = 0;
 
 	GameSession *game = GameSession::GetSession();
 	EditSession *edit = EditSession::GetSession();
@@ -254,15 +364,6 @@ void ScoreDisplay::Activate()
 	auto gb = levelNameText.getGlobalBounds();
 	SetRectTopLeft(nameBGQuad, gb.width + 20, gb.height + 20, Vector2f( gb.left - 10, gb.top - 10 ));
 
-	/*if (game != NULL && game->saveFile != NULL)
-	{
-		int recordScore = 0;
-		recordScore = game->saveFile->GetBestFramesLevel(game->level->index);
-		if (recordScore == 0 || game->totalFramesBeforeGoal < recordScore)
-		{
-			madeRecord = true;
-		}
-	}*/
 
 	MainMenu *mm = MainMenu::GetInstance();
 
@@ -317,7 +418,8 @@ void ScoreDisplay::Deactivate()
 		selectBars[i]->Retract();
 	}
 
-	waiting = false;
+	action = A_IDLE;
+	frame = 0;
 }
 
 ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)

@@ -9,6 +9,8 @@ struct Session;
 struct ScoreDisplay;
 struct GameSession;
 struct FeedbackInputBox;
+struct Medal;
+struct MedalSequence;
 
 struct ScoreBar
 {
@@ -87,8 +89,19 @@ struct SelectBar
 
 struct ScoreDisplay
 {
-	bool active;
-	bool waiting;
+	enum Action
+	{
+		A_IDLE,
+		A_ENTER,
+		A_WAIT,
+		A_GIVE_GOLD,
+		A_GIVE_SILVER,
+		A_GIVE_BRONZE,
+		A_Count
+	};
+
+	int action;
+	int frame;
 
 	FeedbackInputBox *feedbackInputBox;
 
@@ -106,6 +119,9 @@ struct ScoreDisplay
 	int numShownSelectBars;
 
 	bool madeRecord;
+	bool gotGold;
+	bool gotSilver;
+	bool gotBronze;
 
 	int includeExtraSelectBars;
 
@@ -117,6 +133,8 @@ struct ScoreDisplay
 	float selectOffset;
 
 	sf::Font &font;
+
+	MedalSequence *medalSeq;
 
 	ScoreDisplay(sf::Vector2f &position,
 		sf::Font & testFont);
@@ -132,6 +150,8 @@ struct ScoreDisplay
 	void Deactivate();
 	void PopOutBar(int row);
 	void PopOutSelectBars();
+	bool IsActive();
+	bool IsWaiting();
 	void Update();
 };
 

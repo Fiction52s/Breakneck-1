@@ -363,7 +363,7 @@ void SaveMenuScreen::SetSkin(int index)
 
 void SaveMenuScreen::SaveCurrSkin()
 {
-	mainMenu->adventureManager->currSaveFile->defaultSkinIndex = currSkin;
+	mainMenu->adventureManager->currSaveFile->visualInfo.skinIndex = currSkin;
 	SaveSelectedFile();
 }
 
@@ -519,7 +519,7 @@ bool SaveMenuScreen::Update()
 				{
 					action = SKINMENU;
 					frame = 0;
-					skinMenu->SetSelectedIndex(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
+					skinMenu->SetSelectedIndex(mainMenu->adventureManager->currSaveFile->visualInfo.skinIndex);
 					changedToSkin = true; //so you dont exit the same frame you open
 				}
 			}
@@ -775,7 +775,7 @@ bool SaveMenuScreen::Update()
 			{
 				action = WAIT;
 				frame = 0;
-				SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
+				SetSkin(mainMenu->adventureManager->currSaveFile->visualInfo.skinIndex);
 			}
 		}
 		break;
@@ -815,39 +815,6 @@ bool SaveMenuScreen::Update()
 	asteroid1.setPosition(a1start * (float)(1.0 - v) + a1end * (float)v);
 	asteroid2.setPosition(a2start * (float)(1.0 - v1) + a2end * (float)v1);
 
-	
-	//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
-	//{
-	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );
-	//}
-	//else
-	//{
-	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
-	//}
-
-	//if( kinFaceFrame < saveJumpLength * saveJumpFactor )
-	//{
-	//	if( kinFaceFrame == 0 )
-	//	{
-	//		saveKinJump.setTexture( *ts_saveKinJump1->texture );
-	//	}
-	//	else if( kinFaceFrame == 3 * saveJumpFactor )
-	//	{
-	//		saveKinJump.setTexture( *ts_saveKinJump2->texture );
-	//	}
-
-	//	int f = kinFaceFrame / saveJumpFactor;
-	//	if( kinFaceFrame < 3 * saveJumpFactor )
-	//	{
-	//		saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
-	//	}
-	//	else
-	//	{
-	//		saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
-	//	}
-
-	//	saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
-	//}
 
 	++frame;
 	
@@ -859,7 +826,7 @@ void SaveMenuScreen::SetSelectedIndex(int index)
 	mainMenu->adventureManager->SetCurrSaveFile(index);
 	if (action != COPY)
 	{
-		SetSkin(mainMenu->adventureManager->currSaveFile->defaultSkinIndex);
+		SetSkin(mainMenu->adventureManager->currSaveFile->visualInfo.skinIndex);
 	}
 
 	int currColonyIndex = 0;

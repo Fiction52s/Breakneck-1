@@ -179,6 +179,8 @@ void MapOptionsUI::OpenMapOptionsPopup()
 
 	mapNameBox->SetString(edit->mapHeader->fullName);
 	descriptionBox->SetString(edit->mapHeader->description);
+
+	goldShardInfo = edit->mapHeader->goldRewardShardInfo;
 }
 
 void MapOptionsUI::CloseMapOptionsPopup()
@@ -230,8 +232,8 @@ void MapOptionsUI::CloseMapOptionsPopup()
 		}
 	}
 
-	edit->mapHeader->goldRewardCategory = 0;
-	edit->mapHeader->goldRewardIndex = 
+	edit->mapHeader->goldRewardShardInfo = goldShardInfo;
+	//edit->mapHeader->goldRewardShardInfo
 
 	edit->mapHeader->preLevelSceneName = preDropdown->GetSelectedText();
 	edit->mapHeader->postLevelSceneName = postDropdown->GetSelectedText();
@@ -321,6 +323,9 @@ void MapOptionsUI::ChooseShardType(ImageChooseRect *icRect)
 
 	int world = y / edit->shardNumY;
 	int localIndex = (y % edit->shardNumY) * edit->shardNumX + x;
+
+	goldShardInfo.world = world;
+	goldShardInfo.localIndex = localIndex;
 
 	
 	int currShardWorld = world;

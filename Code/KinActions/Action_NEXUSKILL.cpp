@@ -3,6 +3,7 @@
 #include "Wire.h"
 #include "MainMenu.h"
 #include "AdventureManager.h"
+#include "EditSession.h"
 
 using namespace sf;
 using namespace std;
@@ -22,22 +23,7 @@ void Actor::NEXUSKILL_Start()
 
 	SetKinMode(K_NORMAL);
 
-	bool setRecord = false;
-	if (owner != NULL)
-	{
-		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-		{
-			if (!owner->IsReplayOn() && !owner->IsParallelSession())
-			{
-				setRecord = adventureManager->CompleteCurrentMap(owner);
-			}
-		}
-	}
-
-	if (setRecord)
-	{
-		owner->scoreDisplay->madeRecord = true;
-	}
+	CompleteCurrentMap();
 }
 
 void Actor::NEXUSKILL_End()

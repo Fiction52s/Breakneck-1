@@ -30,38 +30,7 @@ void Actor::GOALKILL_Start()
 	hitGoal = false;
 	slowMultiple = 1;
 
-	bool setRecord = false;
-	if (owner != NULL)
-	{
-		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-		{
-			if (!owner->IsReplayOn() && !owner->IsParallelSession() )
-			{
-				setRecord = adventureManager->CompleteCurrentMap(owner);//owner->GetTopParentGame());
-			}
-		}
-	}
-
-	if (setRecord)
-	{
-		owner->scoreDisplay->madeRecord = true;
-	}
-
-	int totalFrames = sess->totalFramesBeforeGoal;
-	if (totalFrames < sess->mapHeader->goldSeconds * 60)
-	{
-		cout << "gold!" << endl;
-	}
-	if (totalFrames < sess->mapHeader->silverSeconds * 60)
-	{
-		cout << "silver!" << endl;
-	}
-	if (totalFrames < sess->mapHeader->bronzeSeconds * 60)
-	{
-		cout << "bronze!" << endl;
-	}
-
-	//WriteBestTimeRecordings();
+	CompleteCurrentMap();
 }
 
 void Actor::GOALKILL_End()

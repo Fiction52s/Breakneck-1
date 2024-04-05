@@ -1497,7 +1497,7 @@ void MainMenu::SetMode(Mode m)
 		}
 		else
 		{
-			adventureManager->saveMenu->SetSkin(adventureManager->currSaveFile->defaultSkinIndex);
+			adventureManager->saveMenu->SetSkin(adventureManager->currSaveFile->visualInfo.skinIndex);
 		}
 	}
 	else if (menuMode == BROWSE_WORKSHOP)
@@ -2433,7 +2433,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.mapPath = levelPath;
 	mp.controllerStateVec[0] = adventureManager->controllerInput;
 	mp.controlProfiles[0] = adventureManager->currProfile;
-	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
+	mp.playerSkins[0] = adventureManager->currSaveFile->visualInfo.skinIndex;
 	
 	//do this when using practice mode!
 	if (adventureManager->parallelPracticeMode )// && !loadParams.bestReplayOn && !adventureManager->leaderboard->IsTryingToStartReplay())
@@ -2532,7 +2532,7 @@ void MainMenu::GoToNextLevel(AdventureMap *am,
 	mp.mapPath = levelPath;
 	mp.controllerStateVec[0] = adventureManager->controllerInput;
 	mp.controlProfiles[0] = adventureManager->currProfile;
-	mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
+	mp.playerSkins[0] = adventureManager->currSaveFile->visualInfo.skinIndex;
 
 	//do this when using practice mode!
 	if (adventureManager->parallelPracticeMode)
@@ -3281,7 +3281,7 @@ void MainMenu::HandleMenuMode()
 
 				mp.controllerStateVec[0] = adventureManager->controllerInput;
 				mp.controlProfiles[0] = adventureManager->currProfile;
-				mp.playerSkins[0] = adventureManager->currSaveFile->defaultSkinIndex;
+				mp.playerSkins[0] = adventureManager->currSaveFile->visualInfo.skinIndex;
 
 				*menuMatchParams = mp;
 
@@ -4530,12 +4530,15 @@ void MainMenu::StartLoadModeScreen()
 
 void MainMenu::UnlockSkin(int skinIndex)
 {
-	globalFile->UnlockSkin(skinIndex);
+	//depreciated, fix soon when adding silver medal stuff
+	//globalFile->UnlockSkin(skinIndex);
 }
 
 bool MainMenu::IsSkinUnlocked(int skinIndex)
 {
-	return globalFile->IsSkinUnlocked(skinIndex);
+	//depreciated, will check again when doing silver medal stuff
+	return true;
+	//return globalFile->IsSkinUnlocked(skinIndex);
 }
 
 

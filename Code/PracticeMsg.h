@@ -32,10 +32,13 @@ struct PracticeMsgHeader
 
 struct PracticeStartMsg
 {
+	const static int NUM_UPGRADE_FIELDS = (512 + 32) / 32;
+	const static int NUM_LOG_FIELDS = 8;
+
 	PracticeMsgHeader header;
 	sf::Uint32 skinIndex;
-	sf::Uint32 upgradeField[8];
-	sf::Uint32 logField[8];
+	sf::Uint32 upgradeField[NUM_UPGRADE_FIELDS];
+	sf::Uint32 logField[NUM_LOG_FIELDS];
 	int numSyncBytes;
 	int startFrame;
 	bool wantsToPlay;

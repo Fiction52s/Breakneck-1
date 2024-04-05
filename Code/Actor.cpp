@@ -7610,7 +7610,7 @@ void Actor::UpdatePrePhysics()
 				{
 					editOwner->TestPlayerMode();
 				}
-				else if ((sess->scoreDisplay == NULL || !sess->scoreDisplay->active) && sess->activeSequence == NULL)
+				else if ((sess->scoreDisplay == NULL || !sess->scoreDisplay->IsActive()) && sess->activeSequence == NULL)
 				{
 					sess->SetActiveSequence(sess->shipExitScene);
 					sess->shipExitScene->Reset();
@@ -7660,7 +7660,7 @@ void Actor::UpdatePrePhysics()
 			{
 				editOwner->TestPlayerMode();
 			}
-			else if (!sess->scoreDisplay->active)
+			else if (!sess->scoreDisplay->IsActive())
 			{
 				if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
 				{
@@ -8716,6 +8716,45 @@ void Actor::ReverseSteepSlideJump()
 	velocity = alongSpeed;
 }
 
+void Actor::CompleteCurrentMap()
+{
+	bool setRecord = false;
+	bool gotGold = false;
+	bool gotSilver = false;
+	bool gotBronze = false;
+	if (owner != NULL)
+	{
+		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+		{
+			if (!owner->IsReplayOn() && !owner->IsParallelSession())
+			{
+				adventureManager->CompleteCurrentMap(owner, setRecord, gotGold, gotSilver, gotBronze);
+			}
+		}
+
+		owner->scoreDisplay->madeRecord = setRecord;
+	}
+	else if (editOwner != NULL)
+	{
+		if (!editOwner->usedWarp)
+		{
+			int totalFrames = editOwner->totalFramesBeforeGoal;
+
+			int goldFrames = editOwner->mapHeader->goldSeconds * 60;
+			int silverFrames = editOwner->mapHeader->silverSeconds * 60;
+			int bronzeFrames = editOwner->mapHeader->bronzeSeconds * 60;
+
+			gotGold = totalFrames <= goldFrames;
+			gotSilver = totalFrames <= silverFrames;
+			gotBronze = totalFrames <= bronzeFrames;
+		}
+	}
+
+	sess->scoreDisplay->gotGold = gotGold;
+	sess->scoreDisplay->gotSilver = gotSilver;
+	sess->scoreDisplay->gotBronze = gotBronze;
+}
+
 void Actor::HandleWaitingScoreDisplay()
 {
 	if (sess->IsParallelSession())
@@ -8723,7 +8762,7 @@ void Actor::HandleWaitingScoreDisplay()
 		return;
 	}
 
-	if (sess->scoreDisplay != NULL && sess->scoreDisplay->waiting)
+	if (sess->scoreDisplay != NULL && sess->scoreDisplay->IsWaiting())
 	{
 		bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
 		bool xPressed = sess->controllerStates[actorIndex]->ButtonPressed_X();
@@ -22305,22 +22344,7 @@ void Actor::ShipPickupPoint( V2d pos, bool fr )
 
 		SetAction(WAITFORSHIP);
 
-		bool setRecord = false;
-		if (owner != NULL)
-		{
-			if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-			{
-				if (!owner->IsReplayOn() && !owner->IsParallelSession())
-				{
-					setRecord = adventureManager->CompleteCurrentMap(owner);//owner->GetTopParentGame());
-				}
-			}
-		}
-
-		if (setRecord)
-		{
-			owner->scoreDisplay->madeRecord = true;
-		}
+		CompleteCurrentMap();
 
 		if (sess->scoreDisplay != NULL)
 		{
@@ -25645,38 +25669,6 @@ void Actor::UpdateInHitlag()
  bool Actor::IsNormalSkin()
  {
 	 return (currSkinIndex == sess->GetPlayerNormalSkin(actorIndex));
-	
-
-	 //if (owner != NULL )
-	 //{
-		// if (owner->saveFile != NULL)
-		// {
-		//	 int defaultSkin = owner->saveFile->defaultSkinIndex;
-		//	 if (currSkinIndex == defaultSkin)
-		//	 {
-		//		 return true;
-		//	 }
-		// }
-		// else
-		// {
-		//	 int defaultSkin = owner->matchParams.playerSkins[actorIndex];
-		//	 if (currSkinIndex == defaultSkin)
-		//	 {
-		//		 return true;
-		//	 }
-		// }
-	 //}
-	 //else
-	 //{
-		// //for editor
-		// if (currSkinIndex == SKIN_NORMAL + actorIndex)
-		// {
-		//	 return true;
-		// }
-	 //}
-
-	 //return false;
-
  }
 
  int Actor::GetSkinIndexFromString(const std::string &s)

@@ -2221,9 +2221,19 @@ bool Session::ReadPlayersStartPos(std::ifstream &is)
 
 bool Session::ReadPlayerOptions(std::ifstream &is)
 {
-	if ((mapHeader->ver1 == 2 && mapHeader->ver2 >= 1) || mapHeader->ver1 > 2)
+	if (mapHeader->ver1 >= 9)
 	{
-		return defaultStartingPlayerOptionsField.Load(is);
+		defaultStartingPlayerOptionsField.Load(is);
+	}
+	else if ((mapHeader->ver1 == 2 && mapHeader->ver2 >= 1) || mapHeader->ver1 > 2)
+	{
+		defaultStartingPlayerOptionsField.Reset();
+		BitField oldOptions(256);
+		oldOptions.Load(is);
+		for (int i = 0; i < 256; ++i)
+		{
+			defaultStartingPlayerOptionsField.SetBit(i, oldOptions.GetBit(i));
+		}
 	}
 	else
 	{
@@ -4969,7 +4979,7 @@ void Session::AddBarrier(XBarrierParams *xbp, bool warp )
 	barriers.push_back(b);
 }
 
-void Session::UnlockUpgrade(int upgradeType, int playerIndex )
+void Session::UnlockUpgrade(int upgradeType, int playerIndex)
 {
 	currUpgradeField.SetBit(upgradeType, true);
 	GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
@@ -6624,7 +6634,7 @@ void Session::DrawFrameRate(sf::RenderTarget *target)
 
 void Session::DrawRunningTimer(sf::RenderTarget *target)
 {
-	if (runningTimerDisplay.showRunningTimer && (scoreDisplay == NULL || !scoreDisplay->active) )
+	if (runningTimerDisplay.showRunningTimer && (scoreDisplay == NULL || !scoreDisplay->IsActive()) )
 	{
 		target->draw(runningTimerDisplay.runningTimerText);
 	}
@@ -6914,7 +6924,7 @@ void Session::RunningTimerDisplay::Reset()
 
 void Session::UpdateRunningTimerText()
 {
-	if (runningTimerDisplay.showRunningTimer && (scoreDisplay == NULL || !scoreDisplay->active))
+	if (runningTimerDisplay.showRunningTimer && (scoreDisplay == NULL || !scoreDisplay->IsActive()))
 	{
 		int tFrames = totalGameFrames;
 		if (totalFramesBeforeGoal >= 0)

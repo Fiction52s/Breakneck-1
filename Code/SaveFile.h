@@ -9,6 +9,7 @@
 #include "ShardInfo.h"
 #include "steam/steam_api.h"
 #include "LogInfo.h"
+#include "PlayerVisualInfo.h"
 //#include "Actor.h"
 
 struct Actor;
@@ -17,6 +18,8 @@ struct AdventureFile;
 const static int ADVENTURE_MAX_NUM_WORLDS = 8;
 const static int ADVENTURE_MAX_NUM_SECTORS_PER_WORLD = 8;
 const static int ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR = 8;
+const static int ADVENTURE_MAX_NUM_LEVELS_PER_WORLD = ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR * ADVENTURE_MAX_NUM_SECTORS_PER_WORLD;
+const static int ADVENTURE_MAX_NUM_LEVELS = ADVENTURE_MAX_NUM_WORLDS * ADVENTURE_MAX_NUM_SECTORS_PER_WORLD * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
 
 struct Level
 {
@@ -73,6 +76,13 @@ struct AdventureMapHeaderInfo
 	BitField hasLogField;
 	std::vector<LogInfo> logInfoVec;
 	std::vector<int> powerVec;
+	int goldSeconds;
+	int silverSeconds;
+	int bronzeSeconds;
+
+	ShardInfo goldRewardShardInfo;
+	int silverRewardCategory;
+	int silverRewardIndex;
 
 	AdventureMapHeaderInfo();
 	void Set(AdventureMapHeaderInfo &inf);
@@ -168,11 +178,15 @@ struct AdventureFile
 struct LevelScore
 {
 	int bestFramesToBeat;
+	int medalLevel;
 
 	LevelScore();
 	void Reset();
 	void Save(std::ofstream &of);
 	void Load(std::ifstream &is);
+	bool HasBronze();
+	bool HasSilver();
+	bool HasGold();
 };
 
 struct SaveFile
@@ -210,6 +224,27 @@ struct SaveFile
 	int GetBestFramesLevel(int w, int s, int m);
 	int GetBestFramesLevel(int index);
 
+	int GetNumGolds();
+	int GetNumGoldsWorld(int w);
+	int GetNumGoldsSector(int w, int s);
+	bool HasGoldForLevel(int w, int s, int m);
+	bool HasGoldForLevel(int index);
+
+	int GetNumSilvers();
+	int GetNumSilversWorld(int w);
+	int GetNumSilversSector(int w, int s);
+	bool HasSilverForLevel(int w, int s, int m);
+	bool HasSilverForLevel(int index);
+
+	int GetNumBronzes();
+	int GetNumBronzesWorld(int w);
+	int GetNumBronzesSector(int w, int s);
+	bool HasBronzeForLevel(int w, int s, int m);
+	bool HasBronzeForLevel(int index);
+
+	bool HasVisualReward(int pType);
+	void UnlockVisualReward(int pType);
+
 	bool HasUpgrade(int pType);
 	void UnlockUpgrade(int pType);
 	bool HasLog(int lType);
@@ -224,6 +259,12 @@ struct SaveFile
 	bool IsUnlockedSector( World *world, Sector *sector);
 	bool TrySetRecordTime(int totalFrames,
 		Level *lev );
+	bool TryUnlockGoldMedal(int totalFrames,
+		Level *lev);
+	bool TryUnlockSilverMedal(int totalFrames,
+		Level *lev);
+	bool TryUnlockBronzeMedal(int totalFrames,
+		Level *lev);
 
 	int GetNumShardsCaptured();
 	int GetNumShardsTotal();
@@ -260,11 +301,15 @@ struct SaveFile
 	
 	BitField levelsBeatenField;
 	LevelScore levelScores[512];
-	BitField upgradeField;
-	BitField upgradesTurnedOnField;
-	BitField logField;
 
-	int defaultSkinIndex;
+	PlayerVisualInfo visualInfo; //skin, etc.
+
+	BitField upgradeField; //then 32 for power + 512 for shards
+	BitField upgradesTurnedOnField;
+	BitField visualRewardsField;
+	
+	BitField logField;
+	int warpCharge;
 
 	int ver;
 
@@ -288,7 +333,7 @@ private:
 
 struct GlobalSaveFile
 {
-	BitField skinField;
+	BitField visualRewardsField;
 	std::string fileName;
 	int ver;
 
@@ -297,8 +342,8 @@ struct GlobalSaveFile
 	void Save();
 	bool Load();
 	void SetVer(int v);
-	bool IsSkinUnlocked(int skinIndex);
-	void UnlockSkin(int skinIndex);
+	bool IsVisualRewardUnlocked(int skinIndex);
+	void UnlockVisual(int skinIndex);
 };
 
 

@@ -30,9 +30,14 @@ void PracticeStartMsg::Clear()
 
 	numSyncBytes = 0;
 
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < NUM_UPGRADE_FIELDS; ++i)
 	{
 		upgradeField[i] = 0;
+	}
+
+	for (int i = 0; i < NUM_LOG_FIELDS; ++i)
+	{
+		
 		logField[i] = 0;
 	}
 
@@ -43,8 +48,8 @@ void PracticeStartMsg::Clear()
 
 void PracticeStartMsg::SetUpgradeField(BitField &bf)
 {
-	assert(bf.numFields == 8);
-	for (int i = 0; i < bf.numFields; ++i)
+	assert(bf.numFields == NUM_UPGRADE_FIELDS);
+	for (int i = 0; i < NUM_UPGRADE_FIELDS; ++i)
 	{
 		upgradeField[i] = bf.optionField[i];
 	}
@@ -52,8 +57,8 @@ void PracticeStartMsg::SetUpgradeField(BitField &bf)
 
 void PracticeStartMsg::SetLogField(BitField &bf)
 {
-	assert(bf.numFields == 8);
-	for (int i = 0; i < bf.numFields; ++i)
+	assert(bf.numFields == NUM_LOG_FIELDS);
+	for (int i = 0; i < NUM_LOG_FIELDS; ++i)
 	{
 		logField[i] = bf.optionField[i];
 	}

@@ -65,7 +65,7 @@ struct AdventureManager : TilesetManager
 	~AdventureManager();
 	void UpdateWorldDependentTileset(int worldIndex);
 	void LoadAdventure( const std::string &adventureName );
-	bool CompleteCurrentMap(GameSession *game );
+	void CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze );
 	void DrawWorldMap(sf::RenderTarget *target);
 	void SetBoards(GameSession *game );
 	void SetBoards(int levelIndex, const std::string &myHash );
