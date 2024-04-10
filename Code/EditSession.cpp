@@ -26,6 +26,7 @@
 #include "clipper.hpp"
 
 #include "TransformTools.h"
+#include "ScoreDisplay.h"
 
 #include "CircleGroup.h"
 
@@ -4129,6 +4130,8 @@ void EditSession::Init()
 	SetupPokeTriangleScreenGroup();
 
 	SetupDeathSequence();
+
+	TryCreateShardResources();
 
 	if (filePathStr == "")
 	{

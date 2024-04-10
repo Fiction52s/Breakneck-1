@@ -224,24 +224,22 @@ void ScoreDisplay::Update()
 				action = A_GIVE_GOLD;
 				frame = 0;
 				medalSeq->Reset();
-				medalSeq->medalType = Medal::MEDAL_GOLD;
-				medalSeq->StartRunning();
+
+				medalSeq->StartGold(sess->mapHeader->goldRewardShardInfo.world, sess->mapHeader->goldRewardShardInfo.localIndex);
 			}
 			else if (gotSilver)
 			{
 				action = A_GIVE_SILVER;
 				frame = 0;
 				medalSeq->Reset();
-				medalSeq->medalType = Medal::MEDAL_SILVER;
-				medalSeq->StartRunning();
+				medalSeq->StartSilver();
 			}
 			else if (gotBronze)
 			{
 				action = A_GIVE_BRONZE;
 				frame = 0;
 				medalSeq->Reset();
-				medalSeq->medalType = Medal::MEDAL_BRONZE;
-				medalSeq->StartRunning();
+				medalSeq->StartBronze();
 			}
 			else
 			{

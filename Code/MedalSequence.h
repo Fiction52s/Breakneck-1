@@ -4,12 +4,15 @@
 #include "Sequence.h"
 
 struct Medal;
+struct ShardPopup;
 
 struct MedalSequence : Sequence
 {
 	enum State
 	{
 		SHOW_MEDAL,
+		AWARD_SHARD,
+		END,
 		Count
 	};
 
@@ -23,11 +26,19 @@ struct MedalSequence : Sequence
 	Tileset *ts_ship;
 	sf::Sprite shipSprite;*/
 
+	sf::Vertex overlayRect[4];
 	Medal *shownMedal;
-	int medalType;
+	ShardPopup *shardPop;
+
+	int shardWorld;
+	int shardLocalIndex;
 
 	MedalSequence();
 	~MedalSequence();
+
+	void StartGold(int world, int localIndex);
+	void StartSilver();
+	void StartBronze();
 	void StartRunning();
 	void SetupStates();
 	void ReturnToGame();

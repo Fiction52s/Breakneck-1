@@ -17,9 +17,11 @@
 #include "EditorActors.h"
 #include "Enemy_BasicEffect.h"
 #include "BitField.h"
-#include "ScoreDisplay.h"
+
+
 #include "steam/steam_api.h"
 #include "MatchParams.h"
+
 
 struct Launcher;
 struct EdgeInfo;

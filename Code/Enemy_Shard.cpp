@@ -114,7 +114,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 
 	data.alreadyCollected = false;
 
-	sess->TryCreateShardResources();
+	//sess->TryCreateShardResources();
 
 	testEmitter = NULL;
 	ts_sparkle = NULL;

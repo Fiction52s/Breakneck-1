@@ -2105,6 +2105,8 @@ bool GameSession::Load()
 
 	SetupDeathSequence();
 
+	TryCreateShardResources();
+
 	if (deathSeq != NULL && parentGame == NULL)
 	{
 		deathSeq->SetIDAndAddToAllSequencesVec();
