@@ -10,6 +10,34 @@
 #include <boost/filesystem.hpp>
 #include "steam\steamtypes.h"
 #include "MatchParams.h"
+#include "BitField.h"
+
+struct SpecialItemInfo
+{
+	enum SpecialItemType
+	{
+		SI_POWER,
+		SI_LOG,
+	};
+
+	int itemType;
+	int itemIndex0;
+	int itemIndex1;
+
+	SpecialItemInfo()
+		:itemType(-1), itemIndex0(-1), itemIndex1(-1)
+	{
+
+	}
+
+	SpecialItemInfo( int it, int iv0 = -1, int iv1 = -1)
+		:itemType(it), itemIndex0(iv0), itemIndex1(iv1)
+	{
+
+	}
+	
+	
+};
 
 struct MapHeader
 {
@@ -47,12 +75,6 @@ struct MapHeader
 	int silverSeconds;
 	int bronzeSeconds;
 
-	ShardInfo goldRewardShardInfo;
-	int silverRewardCategory;
-	int silverRewardIndex;
-	int bronzeRewardCategory;
-	int bronzeRewardIndex;
-
 	std::string envName;
 	int envWorldType;
 	int leftBounds;
@@ -60,25 +82,19 @@ struct MapHeader
 	int boundsWidth;
 	int boundsHeight;
 	int numVertices;
-	int numShards;
-	int numLogs;
-	int numPowers;
+	
 	int bossFightType;
-	std::vector<ShardInfo> shardInfoVec;
-	std::vector<LogInfo> logInfoVec;
-	std::vector<int> powerVec;
+
+	std::vector<SpecialItemInfo> specialItemInfoVec;
+	
 	std::string preLevelSceneName;
 	std::string postLevelSceneName;
 	uint64 creatorID;
 	std::string creatorName;
-	
 
 	std::map < std::string, int > songLevels;
 	std::vector<std::string> songOrder;
 
-	bool songLevelsModified;
-
-	//int gameMode;
 	int numPlayerSpawns;
 	int possibleGameModeTypeFlags;
 	int numGameObjects;

@@ -54,24 +54,24 @@ void ShardAndLogDisplay::SetLevel(Level *lev)
 	{
 		AdventureMapHeaderInfo &amhi =
 			mm->adventureManager->adventureFile.GetMapHeaderInfo(lev->index);
-		totalShards = amhi.shardInfoVec.size();
+		totalShards = 0;//amhi.shardInfoVec.size();
 
 		SaveFile *saveFile = mm->adventureManager->currSaveFile;
 		for (int j = 0; j < totalShards; ++j)
 		{
-			if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
+			/*if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
 			{
 				++numShardsCaptured;
-			}
+			}*/
 		}
 
-		totalLogs = amhi.logInfoVec.size();
+		totalLogs = 0;//amhi.logInfoVec.size();
 		for (int j = 0; j < totalLogs; ++j)
 		{
-			if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
+			/*if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
 			{
 				++numLogsCaptured;
-			}
+			}*/
 		}
 	}
 	else
@@ -110,23 +110,23 @@ void ShardAndLogDisplay::SetFromGame(GameSession *game)
 
 	MapHeader *mh = game->mapHeader;
 
-	totalShards = mh->shardInfoVec.size();
+	totalShards = 0;//mh->shardInfoVec.size();
 
 	for (int j = 0; j < totalShards; ++j)
 	{
-		if (game->IsShardCaptured(mh->shardInfoVec[j].GetTrueIndex()))
+		/*if (game->IsShardCaptured(mh->shardInfoVec[j].GetTrueIndex()))
 		{
 			++numShardsCaptured;
-		}
+		}*/
 	}
 
-	totalLogs = mh->logInfoVec.size();
+	totalLogs = 0;// mh->logInfoVec.size();
 	for (int j = 0; j < totalLogs; ++j)
 	{
-		if (game->HasLog(mh->logInfoVec[j].GetTrueIndex()))
+		/*if (game->HasLog(mh->logInfoVec[j].GetTrueIndex()))
 		{
 			++numLogsCaptured;
-		}
+		}*/
 	}
 
 	stringstream ss;

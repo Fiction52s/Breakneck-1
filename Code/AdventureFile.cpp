@@ -11,8 +11,6 @@
 using namespace std;
 
 AdventureMapHeaderInfo::AdventureMapHeaderInfo()
-	:hasShardField(ShardInfo::MAX_SHARDS),
-	hasLogField(LogDetailedInfo::MAX_LOGS)
 {
 	Clear();
 }
@@ -26,42 +24,22 @@ void AdventureMapHeaderInfo::Clear()
 {
 	mapType = -1;
 	
-	shardInfoVec.clear();
 	mainSongName = "";
-	powerVec.clear();
-	
-
-	hasShardField.Reset();
-	hasLogField.Reset();
 
 	goldSeconds = 0;
 	silverSeconds = 0;
 	bronzeSeconds = 0;
-
-	goldRewardShardInfo.Clear();
-	silverRewardCategory = -1;
-	silverRewardIndex = -1;
 }
 
 void AdventureMapHeaderInfo::Set(AdventureMapHeaderInfo &info)
 {
 	mapType = info.mapType;
 	
-	shardInfoVec = info.shardInfoVec;
 	mainSongName = info.mainSongName;
-
-	hasShardField.Set(info.hasShardField);
-	hasLogField.Set(info.hasLogField);
-
-	powerVec = info.powerVec;
 
 	goldSeconds = info.goldSeconds;
 	silverSeconds = info.silverSeconds;
 	bronzeSeconds = info.bronzeSeconds;
-
-	goldRewardShardInfo = info.goldRewardShardInfo;
-	silverRewardCategory = info.silverRewardCategory;
-	silverRewardIndex = info.silverRewardIndex;
 }
 
 AdventurePlanet::AdventurePlanet(AdventureFile &adventureFile)
@@ -204,8 +182,7 @@ bool AdventureMap::LoadHeaderInfo()
 		mh.Load(is);
 
 		headerInfo.mapType = mh.bossFightType;
-		headerInfo.shardInfoVec = mh.shardInfoVec;
-		headerInfo.logInfoVec = mh.logInfoVec;
+		headerInfo.specialItemInfoVec = mh.specialItemInfoVec;
 		if (mh.GetNumSongs() > 0)
 		{
 			headerInfo.mainSongName = mh.songOrder[0];
@@ -215,26 +192,9 @@ bool AdventureMap::LoadHeaderInfo()
 			headerInfo.mainSongName = "";
 		}
 
-		for (auto it = headerInfo.shardInfoVec.begin();
-			it != headerInfo.shardInfoVec.end(); ++it)
-		{
-			headerInfo.hasShardField.SetBit((*it).GetTrueIndex(), true);
-		}
-
-		for (auto it = headerInfo.logInfoVec.begin();
-			it != headerInfo.logInfoVec.end(); ++it)
-		{
-			headerInfo.hasLogField.SetBit((*it).GetTrueIndex(), true);
-		}
-
-		headerInfo.powerVec = mh.powerVec;
-
 		headerInfo.goldSeconds = mh.goldSeconds;
 		headerInfo.silverSeconds = mh.silverSeconds;
 		headerInfo.bronzeSeconds = mh.bronzeSeconds;
-
-		headerInfo.goldRewardShardInfo = mh.goldRewardShardInfo;
-		headerInfo.silverRewardCategory = mh.silverRewardCategory;
 
 		is.close();
 	}
@@ -600,23 +560,23 @@ void AdventureFile::GetOriginalProgressionUpgradeField(int mapIndex, BitField &b
 		auto &mhi = GetMapHeaderInfo(i);
 		assert(mhi.IsLoaded());
 
-		for (int j = 0; j < mhi.hasShardField.numOptions; ++j)
-		{
-			bf.SetBit(Actor::SHARD_START_INDEX + j, bf.GetBit(Actor::SHARD_START_INDEX + j) || mhi.hasShardField.GetBit(j)); //Or(mhi.hasShardField);
-		}
+		//for (int j = 0; j < mhi.hasShardField.numOptions; ++j)
+		//{
+		//	bf.SetBit(Actor::SHARD_START_INDEX + j, bf.GetBit(Actor::SHARD_START_INDEX + j) || mhi.hasShardField.GetBit(j)); //Or(mhi.hasShardField);
+		//}
 
-		for (auto it = mhi.powerVec.begin(); it != mhi.powerVec.end(); ++it)
-		{
-			if ((*it) == Actor::UPGRADE_POWER_RWIRE)
-			{
-				bf.SetBit((*it), true);
-				bf.SetBit((*it) + 1, true);
-			}
-			else
-			{
-				bf.SetBit((*it), true);
-			}
-		}
+		//for (auto it = mhi.powerVec.begin(); it != mhi.powerVec.end(); ++it)
+		//{
+		//	if ((*it) == Actor::UPGRADE_POWER_RWIRE)
+		//	{
+		//		bf.SetBit((*it), true);
+		//		bf.SetBit((*it) + 1, true);
+		//	}
+		//	else
+		//	{
+		//		bf.SetBit((*it), true);
+		//	}
+		//}
 
 		//for (int j = 0; j < mhi.po.numOptions; ++j)
 	}

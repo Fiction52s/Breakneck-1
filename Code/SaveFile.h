@@ -10,6 +10,7 @@
 #include "steam/steam_api.h"
 #include "LogInfo.h"
 #include "PlayerVisualInfo.h"
+#include "MapHeader.h"
 //#include "Actor.h"
 
 struct Actor;
@@ -70,19 +71,14 @@ struct AdventurePlanet
 struct AdventureMapHeaderInfo
 {
 	int mapType;
-	std::vector<ShardInfo> shardInfoVec;
+
+	std::vector<SpecialItemInfo> specialItemInfoVec;
+
 	std::string mainSongName;
-	BitField hasShardField;
-	BitField hasLogField;
-	std::vector<LogInfo> logInfoVec;
-	std::vector<int> powerVec;
+	
 	int goldSeconds;
 	int silverSeconds;
 	int bronzeSeconds;
-
-	ShardInfo goldRewardShardInfo;
-	int silverRewardCategory;
-	int silverRewardIndex;
 
 	AdventureMapHeaderInfo();
 	void Set(AdventureMapHeaderInfo &inf);

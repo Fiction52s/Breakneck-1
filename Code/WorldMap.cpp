@@ -331,24 +331,24 @@ void WorldMap::UpdateWorldStats()
 			levIndex = world.sectors[i].GetLevelIndex(j);
 			AdventureMapHeaderInfo &amhi = adventureManager->adventureFile.GetMapHeaderInfo(levIndex);
 
-			numShardsInLevel = amhi.shardInfoVec.size();
+			numShardsInLevel = 0;//amhi.shardInfoVec.size();
 			numTotalShards += numShardsInLevel;
 			for (int k = 0; k < numShardsInLevel; ++k)
 			{
-				if (saveFile->IsShardCaptured(amhi.shardInfoVec[k].GetTrueIndex()))
+				/*if (saveFile->IsShardCaptured(amhi.shardInfoVec[k].GetTrueIndex()))
 				{
 					++totalShardsCaptured;
-				}
+				}*/
 			}
 
-			numLogsInLevel = amhi.logInfoVec.size();
+			numLogsInLevel = 0;//amhi.logInfoVec.size();
 			numTotalLogs += numLogsInLevel;
 			for (int k = 0; k < numLogsInLevel; ++k)
 			{
-				if (saveFile->HasLog(amhi.logInfoVec[k].GetTrueIndex()))
+				/*if (saveFile->HasLog(amhi.logInfoVec[k].GetTrueIndex()))
 				{
 					++totalLogsCaptured;
-				}
+				}*/
 			}
 
 		}

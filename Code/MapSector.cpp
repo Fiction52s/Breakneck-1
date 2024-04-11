@@ -616,7 +616,7 @@ void MapSector::UpdateStats()
 	int numShardsPerLevel = 0;
 	int numLogsPerLevel = 0;
 
-	for (int i = 0; i < numLevels; ++i)
+	/*for (int i = 0; i < numLevels; ++i)
 	{
 		AdventureMapHeaderInfo &amhi =
 			adventureFile.GetMapHeaderInfo(sec->GetLevelIndex(i));
@@ -639,7 +639,7 @@ void MapSector::UpdateStats()
 				++numLogsCaptured;
 			}
 		}
-	}
+	}*/
 	
 	ss.str("");
 	ss.clear();
@@ -715,13 +715,13 @@ void MapSector::UpdateLevelStats()
 	auto lb = levelNameText.getLocalBounds();
 	levelNameText.setOrigin(lb.left + lb.width / 2, 0);
 
-	int totalNumShards = headerInfo.shardInfoVec.size();
-	int totalNumLogs = headerInfo.logInfoVec.size();
+	int totalNumShards = 0;//headerInfo.shardInfoVec.size();
+	int totalNumLogs = 0;//headerInfo.logInfoVec.size();
 
 	int numShardsCollected = 0;
 	int numLogsCollected = 0;
 
-	for (auto it = headerInfo.shardInfoVec.begin(); it !=
+	/*for (auto it = headerInfo.shardInfoVec.begin(); it !=
 		headerInfo.shardInfoVec.end(); ++it)
 	{
 		if (saveFile->IsShardCaptured((*it).GetTrueIndex()))
@@ -736,7 +736,7 @@ void MapSector::UpdateLevelStats()
 		{
 			numLogsCollected++;
 		}
-	}
+	}*/
 
 	stringstream ss;
 	ss << numShardsCollected << "/" << totalNumShards;
@@ -1169,17 +1169,17 @@ void MapSector::UpdateMapPreview()
 	AdventureMapHeaderInfo &headerInfo =
 		saveFile->adventureFile->GetMapHeaderInfo(level->index);
 
-	int totalNumShards = headerInfo.shardInfoVec.size();
+	int totalNumShards = 0;//headerInfo.shardInfoVec.size();
 
 	int numCollected = 0;
-	for (auto it = headerInfo.shardInfoVec.begin(); it !=
+	/*for (auto it = headerInfo.shardInfoVec.begin(); it !=
 		headerInfo.shardInfoVec.end(); ++it)
 	{
 		if (saveFile->IsShardCaptured((*it).GetTrueIndex()))
 		{
 			numCollected++;
 		}
-	}
+	}*/
 
 	if (numCollected == totalNumShards)
 	{

@@ -683,24 +683,25 @@ void ScoreBar::PopOut()
 		Session *sess = parent->sess;
 
 		
-		int totalShards = sess->mapHeader->numShards;
+		int totalShards = 0;//sess->mapHeader->numShards;
 		int currShardsCaptured = 0;
-		for (auto it = sess->mapHeader->shardInfoVec.begin();
+		/*for (auto it = sess->mapHeader->shardInfoVec.begin();
 			it != sess->mapHeader->shardInfoVec.end(); ++it)
 		{
 			if (sess->IsShardCaptured( (*it).GetTrueIndex() ) )
 			{
 				currShardsCaptured++;
 			}
-		}
+		}*/
 
 		stringstream ss;
 		ss << currShardsCaptured << "/" << totalShards;
 		SetText(ss.str(), Color::White);
 
 
-		int totalLogs = sess->mapHeader->numLogs;
+		int totalLogs = 0;// sess->mapHeader->numLogs;
 		int currLogsCaptured = 0;
+		/*
 		for (auto it = sess->mapHeader->logInfoVec.begin();
 			it != sess->mapHeader->logInfoVec.end(); ++it)
 		{
@@ -708,7 +709,7 @@ void ScoreBar::PopOut()
 			{
 				currLogsCaptured++;
 			}
-		}
+		}*/
 
 		ss.str("");
 		ss.clear();

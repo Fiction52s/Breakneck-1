@@ -391,18 +391,6 @@ void AdventureManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bo
 		if (gotGold)
 		{
 			cout << "unlocked the gold medal for this level!" << endl;
-			if (game->mapHeader->goldRewardShardInfo.world >= 0)
-			{
-				int upgradeIndex = game->mapHeader->goldRewardShardInfo.GetTrueIndex() + Actor::SHARD_START_INDEX;
-				currSaveFile->UnlockUpgrade(upgradeIndex);
-				string sName = game->shardMenu->GetShardName(game->mapHeader->goldRewardShardInfo.world,
-					game->mapHeader->goldRewardShardInfo.localIndex);
-				cout << "unlocked upgrade: " << sName << ", index: " << game->mapHeader->goldRewardShardInfo.GetTrueIndex() << endl;
-			}
-			else
-			{
-				cout << "no shard assigned" << endl;
-			}
 		}
 
 		gotSilver = currSaveFile->TryUnlockSilverMedal(totalFrames, lev);

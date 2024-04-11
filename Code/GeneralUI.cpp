@@ -8,7 +8,7 @@
 using namespace std;
 using namespace sf;
 
-//#define CANMAKEADVENTURES
+#define CANMAKEADVENTURES
 
 GeneralUI::GeneralUI()
 {

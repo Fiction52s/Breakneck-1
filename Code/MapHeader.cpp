@@ -43,9 +43,6 @@ void MapHeader::Clear()
 	boundsWidth = 0;
 	boundsHeight = 0;
 	numVertices = -1;
-	songLevelsModified = false;
-	numShards = 0;
-	numLogs = 0;
 	drainSeconds = 60;
 	goldSeconds = 0;
 	silverSeconds = 0;
@@ -60,11 +57,7 @@ void MapHeader::Clear()
 	numGameObjects = -1;
 	functionalWidth = -1;
 	functionalHeight = -1;
-
-	goldRewardShardInfo.world = -1;
-	goldRewardShardInfo.localIndex = -1;
-	silverRewardCategory = -1;
-	silverRewardIndex = -1;
+	specialItemInfoVec.clear();
 }
 
 bool MapHeader::CanRunAsMode(int gm )
@@ -290,39 +283,61 @@ bool MapHeader::Load(std::ifstream &is)
 
 	description = descriptionSS.str();
 
-
-	is >> numShards;
-	shardInfoVec.reserve(16);
-	int w, li;
-	for (int i = 0; i < numShards; ++i)
+	if (ver1 <= 8)
 	{
-		is >> w;
-		is >> li;
-		shardInfoVec.push_back(ShardInfo(w, li));
-	}
+		std::vector<ShardInfo> shardInfoVec;
+		std::vector<LogInfo> logInfoVec;
+		std::vector<int> powerVec;
 
-	if (ver1 > 2 || (ver1 == 2 && ver2 >= 7))
-	{
-		is >> numLogs;
-		logInfoVec.reserve(16);
-		for (int i = 0; i < numLogs; ++i)
+		int numShards;
+		int numLogs;
+		int numPowers;
+
+		is >> numShards;
+		shardInfoVec.reserve(16);
+		int w, li;
+		for (int i = 0; i < numShards; ++i)
 		{
 			is >> w;
 			is >> li;
-			logInfoVec.push_back(LogInfo(w, li));
+			shardInfoVec.push_back(ShardInfo(w, li));
+		}
+
+		if (ver1 > 2 || (ver1 == 2 && ver2 >= 7))
+		{
+			is >> numLogs;
+			logInfoVec.reserve(16);
+			for (int i = 0; i < numLogs; ++i)
+			{
+				is >> w;
+				is >> li;
+				logInfoVec.push_back(LogInfo(w, li));
+			}
+		}
+
+		if (ver1 == 8)
+		{
+			is >> numPowers;
+			powerVec.reserve(7);
+
+			int powerIndex;
+			for (int i = 0; i < numPowers; ++i)
+			{
+				is >> powerIndex;
+				powerVec.push_back(powerIndex);
+			}
 		}
 	}
-
-	if (ver1 >= 8)
+	else
 	{
-		is >> numPowers;
-		powerVec.reserve(7);
-
-		int powerIndex;
-		for (int i = 0; i < numPowers; ++i)
+		int numSpecialItems;
+		is >> numSpecialItems;
+		specialItemInfoVec.resize(numSpecialItems);
+		for (int i = 0; i < numSpecialItems; ++i)
 		{
-			is >> powerIndex;
-			powerVec.push_back(powerIndex);
+			is >> specialItemInfoVec[i].itemType;
+			is >> specialItemInfoVec[i].itemIndex0;
+			is >> specialItemInfoVec[i].itemIndex1;
 		}
 	}
 
@@ -448,14 +463,8 @@ bool MapHeader::Load(std::ifstream &is)
 	if (ver1 >= 9)
 	{
 		is >> goldSeconds;
-		is >> goldRewardShardInfo.world;
-		is >> goldRewardShardInfo.localIndex;
 		is >> silverSeconds;
-		is >> silverRewardCategory;
-		is >> silverRewardIndex;
 		is >> bronzeSeconds;
-		is >> bronzeRewardCategory;
-		is >> bronzeRewardIndex;
 	}
 	else
 	{
@@ -492,22 +501,10 @@ void MapHeader::Save(std::ofstream &of)
 	of << description << "\n";
 	//of << description << "<>\n";
 
-	of << numShards << "\n";
-	for (auto it = shardInfoVec.begin(); it != shardInfoVec.end(); ++it)
+	of << specialItemInfoVec.size() << "\n";
+	for (auto it = specialItemInfoVec.begin(); it != specialItemInfoVec.end(); ++it)
 	{
-		of << (*it).world << " " << (*it).localIndex << "\n";
-	}
-
-	of << numLogs << "\n";
-	for (auto it = logInfoVec.begin(); it != logInfoVec.end(); ++it)
-	{
-		of << (*it).world << " " << (*it).localIndex << "\n";
-	}
-
-	of << numPowers << "\n";
-	for (auto it = powerVec.begin(); it != powerVec.end(); ++it)
-	{
-		of << (*it) << "\n";
+		of << (*it).itemType << " " << (*it).itemIndex0 << " " << (*it).itemIndex1 << "\n";
 	}
 
 	of << songOrder.size() << "\n";
@@ -536,11 +533,11 @@ void MapHeader::Save(std::ofstream &of)
 
 	of << drainSeconds << endl;
 
-	of << goldSeconds << " " << goldRewardShardInfo.world << " " << goldRewardShardInfo.localIndex << endl;
+	of << goldSeconds << " " << "\n";
 
-	of << silverSeconds << " " << silverRewardCategory << " " << silverRewardIndex << endl;
+	of << silverSeconds << " " << "\n";
 
-	of << bronzeSeconds << " " << bronzeRewardCategory << " " << bronzeRewardIndex << endl;
+	of << bronzeSeconds << " " << "\n";
 
 	of << bossFightType << endl;
 
@@ -600,8 +597,6 @@ bool MapHeader::Replace(boost::filesystem::path &p )
 		cout << "file already exists!" << endl;
 		assert(0);
 	}
-
-	//mh->songLevelsModified = false;
 
 	return true;
 }

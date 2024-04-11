@@ -76,24 +76,24 @@ void TransferLoadingScreen::UpdateMapPreview()
 	{
 		AdventureMapHeaderInfo &amhi =
 			mm->adventureManager->adventureFile.GetMapHeaderInfo(level->index);
-		totalShards = amhi.shardInfoVec.size();
+		totalShards = 0;//amhi.shardInfoVec.size();
 
 		SaveFile *saveFile = mm->adventureManager->currSaveFile;
 		for (int j = 0; j < totalShards; ++j)
 		{
-			if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
+			/*if (saveFile->IsShardCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
 			{
 				++numShardsCaptured;
-			}
+			}*/
 		}
 
-		totalLogs = amhi.logInfoVec.size();
+		totalLogs = 0;//amhi.logInfoVec.size();
 		for (int j = 0; j < totalLogs; ++j)
 		{
-			if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
+			/*if (saveFile->HasLog(amhi.logInfoVec[j].GetTrueIndex()))
 			{
 				++numLogsCaptured;
-			}
+			}*/
 		}
 	}
 	else
