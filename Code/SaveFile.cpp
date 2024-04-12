@@ -16,57 +16,77 @@
 //#include <windows.h>
 //#include <KnownFolders.h>
 
-
-
-
 using namespace std;
 using namespace boost::filesystem;
 
-LevelScore::LevelScore()
+LevelData::LevelData()
 {
 	Reset();
 }
 
-void LevelScore::Reset()
+bool LevelData::IsBeaten()
 {
-	bestFramesToBeat = 0;
+	return levelState > 0;
+}
+
+void LevelData::BeatLevel()
+{
+	levelState = 1;
+}
+
+void LevelData::Reset()
+{
+	levelState = 0; //unbeaten
+	bestFrames = 0;
 	medalLevel = 0; //no medals
+	specialUnlockedItemsVec.clear();
 }
 
-void LevelScore::Save(ofstream &of)
+void LevelData::Save(ofstream &of)
 {
-	of << bestFramesToBeat << " " << medalLevel << "\n";
+	of << levelState << " " << bestFrames << " " << medalLevel << "\n";
+
+	of << specialUnlockedItemsVec.size() << "\n";
+	for (auto it = specialUnlockedItemsVec.begin(); it != specialUnlockedItemsVec.end(); ++it)
+	{
+		(*it).Save(of);
+	}
 }
 
-void LevelScore::Load(ifstream &is)
+void LevelData::Load(ifstream &is)
 {
-	is >> bestFramesToBeat;
+	is >> levelState;
+	is >> bestFrames;
 	is >> medalLevel;
+
+	int numSpecialItems;
+	is >> numSpecialItems;
+	specialUnlockedItemsVec.clear();
+	specialUnlockedItemsVec.resize(numSpecialItems);
+	for (int i = 0; i < numSpecialItems; ++i)
+	{
+		specialUnlockedItemsVec[i].Load(is);
+	}
 }
 
-bool LevelScore::HasBronze()
+bool LevelData::HasBronze()
 {
 	return medalLevel >= 1;
 }
 
-bool LevelScore::HasSilver()
+bool LevelData::HasSilver()
 {
 	return medalLevel >= 2;
 }
 
-bool LevelScore::HasGold()
+bool LevelData::HasGold()
 {
 	return medalLevel >= 3;
 }
 
 
 SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
-	:levelsJustBeatenField(ADVENTURE_MAX_NUM_LEVELS), 
-	levelsBeatenField(ADVENTURE_MAX_NUM_LEVELS),
-	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	upgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
-	visualRewardsField(ADVENTURE_MAX_NUM_LEVELS),
-	logField(LogDetailedInfo::MAX_LOGS),
+	:kinOptionField(Session::PLAYER_OPTION_BIT_COUNT),
 	adventureFile( p_adventure ),
 	name( p_name ),
 	mostRecentWorldSelected( 0 )
@@ -98,7 +118,7 @@ int SaveFile::GetBestFrames()
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
-			total += levelScores[i].bestFramesToBeat;
+			total += levelData[i].bestFrames;
 		}
 	}
 
@@ -141,7 +161,7 @@ int SaveFile::GetBestFramesWorld(int w)
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
-			total += levelScores[i].bestFramesToBeat;
+			total += levelData[i].bestFrames;
 		}
 	}
 
@@ -158,7 +178,7 @@ int SaveFile::GetBestFramesSector(int w, int s)
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
-			total += levelScores[i].bestFramesToBeat;
+			total += levelData[i].bestFrames;
 		}
 	}
 	
@@ -170,7 +190,7 @@ int SaveFile::GetBestFramesLevel(int w, int s, int m)
 	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
 	if (adventureFile->GetMap(i).Exists())
 	{
-		return levelScores[i].bestFramesToBeat;
+		return levelData[i].bestFrames;
 	}
 
 	return -1;
@@ -180,7 +200,7 @@ int SaveFile::GetBestFramesLevel(int index)
 {
 	if (adventureFile->GetMap(index).Exists())
 	{
-		return levelScores[index].bestFramesToBeat;
+		return levelData[index].bestFrames;
 	}
 
 	return -1;
@@ -196,7 +216,7 @@ int SaveFile::GetNumGolds()
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
-			if (levelScores[i].HasGold() )
+			if (levelData[i].HasGold() )
 			{
 				total++;
 			}
@@ -214,7 +234,7 @@ int SaveFile::GetNumGoldsWorld(int w)
 	int wEnd = (w + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
 	for (int i = wStart; i < wEnd; ++i)
 	{
-		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasGold())
+		if (adventureFile->GetMap(i).Exists() && levelData[i].HasGold())
 		{
 			total++;
 		}
@@ -231,7 +251,7 @@ int SaveFile::GetNumGoldsSector(int w, int s)
 
 	for (int i = sStart; i < sEnd; ++i)
 	{
-		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasGold())
+		if (adventureFile->GetMap(i).Exists() && levelData[i].HasGold())
 		{
 			total++;
 		}
@@ -243,7 +263,7 @@ int SaveFile::GetNumGoldsSector(int w, int s)
 bool SaveFile::HasGoldForLevel(int w, int s, int m)
 {
 	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
-	if (adventureFile->GetMap(i).Exists() && levelScores[i].HasGold())
+	if (adventureFile->GetMap(i).Exists() && levelData[i].HasGold())
 	{
 		return true;
 	}
@@ -253,7 +273,7 @@ bool SaveFile::HasGoldForLevel(int w, int s, int m)
 
 bool SaveFile::HasGoldForLevel(int index)
 {
-	if (adventureFile->GetMap(index).Exists() && levelScores[index].HasGold() )
+	if (adventureFile->GetMap(index).Exists() && levelData[index].HasGold() )
 	{
 		return true;
 	}
@@ -270,7 +290,7 @@ int SaveFile::GetNumSilvers()
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
-			if (levelScores[i].HasSilver() )
+			if (levelData[i].HasSilver() )
 			{
 				total++;
 			}
@@ -288,7 +308,7 @@ int SaveFile::GetNumSilversWorld(int w)
 	int wEnd = (w + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
 	for (int i = wStart; i < wEnd; ++i)
 	{
-		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasSilver())
+		if (adventureFile->GetMap(i).Exists() && levelData[i].HasSilver())
 		{
 			total++;
 		}
@@ -305,7 +325,7 @@ int SaveFile::GetNumSilversSector(int w, int s)
 
 	for (int i = sStart; i < sEnd; ++i)
 	{
-		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasSilver())
+		if (adventureFile->GetMap(i).Exists() && levelData[i].HasSilver())
 		{
 			total++;
 		}
@@ -317,7 +337,7 @@ int SaveFile::GetNumSilversSector(int w, int s)
 bool SaveFile::HasSilverForLevel(int w, int s, int m)
 {
 	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
-	if (adventureFile->GetMap(i).Exists() && levelScores[i].HasSilver())
+	if (adventureFile->GetMap(i).Exists() && levelData[i].HasSilver())
 	{
 		return true;
 	}
@@ -327,7 +347,7 @@ bool SaveFile::HasSilverForLevel(int w, int s, int m)
 
 bool SaveFile::HasSilverForLevel(int index)
 {
-	if (adventureFile->GetMap(index).Exists() && levelScores[index].HasSilver())
+	if (adventureFile->GetMap(index).Exists() && levelData[index].HasSilver())
 	{
 		return true;
 	}
@@ -344,7 +364,7 @@ int SaveFile::GetNumBronzes()
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
-			if (levelScores[i].HasBronze() )
+			if (levelData[i].HasBronze() )
 			{
 				total++;
 			}
@@ -362,7 +382,7 @@ int SaveFile::GetNumBronzesWorld(int w)
 	int wEnd = (w + 1) * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD;
 	for (int i = wStart; i < wEnd; ++i)
 	{
-		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasBronze())
+		if (adventureFile->GetMap(i).Exists() && levelData[i].HasBronze())
 		{
 			total++;
 		}
@@ -379,7 +399,7 @@ int SaveFile::GetNumBronzesSector(int w, int s)
 
 	for (int i = sStart; i < sEnd; ++i)
 	{
-		if (adventureFile->GetMap(i).Exists() && levelScores[i].HasBronze())
+		if (adventureFile->GetMap(i).Exists() && levelData[i].HasBronze())
 		{
 			total++;
 		}
@@ -391,7 +411,7 @@ int SaveFile::GetNumBronzesSector(int w, int s)
 bool SaveFile::HasBronzeForLevel(int w, int s, int m)
 {
 	int i = w * ADVENTURE_MAX_NUM_LEVELS_PER_WORLD + s * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR + m;
-	if (adventureFile->GetMap(i).Exists() && levelScores[i].HasBronze())
+	if (adventureFile->GetMap(i).Exists() && levelData[i].HasBronze())
 	{
 		return true;
 	}
@@ -401,7 +421,7 @@ bool SaveFile::HasBronzeForLevel(int w, int s, int m)
 
 bool SaveFile::HasBronzeForLevel(int index)
 {
-	if (adventureFile->GetMap(index).Exists() && levelScores[index].HasBronze())
+	if (adventureFile->GetMap(index).Exists() && levelData[index].HasBronze())
 	{
 		return true;
 	}
@@ -442,7 +462,8 @@ void SaveFile::CalcProgress(int start, int end, float &totalMaps,
 		if (adventureFile->GetMap(i).Exists())
 		{
 			++totalMaps;
-			if (levelsBeatenField.GetBit(i))
+
+			if (levelData[i].IsBeaten())
 			{
 				++totalBeaten;
 			}
@@ -450,30 +471,13 @@ void SaveFile::CalcProgress(int start, int end, float &totalMaps,
 	}
 }
 
-void SaveFile::CalcShardProgress(BitField &b, float &totalShards,
-	float &totalCaptured)
-{
-	totalShards = 0;
-	totalCaptured = 0;
-	for (int i = 0; i < ShardInfo::MAX_SHARDS; ++i)
-	{
-		if (b.GetBit(i))
-		{
-			++totalShards;
-			if (IsShardCaptured(i))
-			{
-				++totalCaptured;
-			}
-		}
-	}
-}
-
-void SaveFile::CalcLogProgress(BitField &b, float &totalLogs,
+void SaveFile::CalcLogProgress(float &totalLogs,
 	float &totalCaptured)
 {
 	totalLogs = 0;
 	totalCaptured = 0;
-	for (int i = 0; i < LogDetailedInfo::MAX_LOGS; ++i)
+
+	/*for (int i = 0; i < LogDetailedInfo::MAX_LOGS; ++i)
 	{
 		if (b.GetBit(i))
 		{
@@ -483,7 +487,7 @@ void SaveFile::CalcLogProgress(BitField &b, float &totalLogs,
 				++totalCaptured;
 			}
 		}
-	}
+	}*/
 }
 
 int SaveFile::GetTotalMaps()
@@ -505,7 +509,7 @@ int SaveFile::GetTotalMapsBeaten()
 	{
 		if (adventureFile->GetMap(i).Exists())
 		{
-			if (levelsBeatenField.GetBit(i))
+			if (levelData[i].IsBeaten())
 			{
 				++totalMapsBeaten;
 			}
@@ -514,12 +518,17 @@ int SaveFile::GetTotalMapsBeaten()
 	return totalMapsBeaten;
 }
 
-float SaveFile::CalcCompletionPercentage(int start, int end, BitField & b)
+float SaveFile::CalcCompletionPercentage(int start, int end )
 {
-	float totalMaps, totalBeaten, totalShards, totalCaptured;
+	float totalMaps, totalBeaten;
 
 	CalcProgress(start, end, totalMaps, totalBeaten);
-	CalcShardProgress(b, totalShards, totalCaptured);
+
+	float portion = totalBeaten / totalMaps;
+
+	return portion * 100.f;
+
+	/*CalcShardProgress(b, totalShards, totalCaptured);
 
 	float shardPortion = 0;
 	if (totalShards > 0)
@@ -536,24 +545,22 @@ float SaveFile::CalcCompletionPercentage(int start, int end, BitField & b)
 	if (totalPortion > .99f)
 		totalPortion = 1.0f;
 
-	return totalPortion * 100.f;
+	return totalPortion * 100.f;*/
 }
 
 float SaveFile::GetCompletionPercentage()
 {
-	return CalcCompletionPercentage(0, ADVENTURE_MAX_NUM_LEVELS, adventureFile->hasShardField);
+	return CalcCompletionPercentage(0, ADVENTURE_MAX_NUM_LEVELS );
 }
 
 float SaveFile::GetCompletionPercentageWorld(int w)
 {
-	return CalcCompletionPercentage(GetWorldStart(w), GetWorldEnd(w), 
-		adventureFile->worlds[w].hasShardField);
+	return CalcCompletionPercentage(GetWorldStart(w), GetWorldEnd(w) );
 }
 
 float SaveFile::GetCompletionPercentageSector(int w, int s)
 {
-	return CalcCompletionPercentage(GetSectorStart(w,s), GetSectorEnd(w,s), 
-		adventureFile->worlds[w].sectors[s].hasShardField );
+	return CalcCompletionPercentage(GetSectorStart(w,s), GetSectorEnd(w,s) );
 }
 
 bool SaveFile::IsRangeComplete(int start, int end)
@@ -562,7 +569,7 @@ bool SaveFile::IsRangeComplete(int start, int end)
 	for (int i = start; i < end; ++i)
 	{
 		AdventureMap &am = adventureFile->GetMap(i);
-		if (am.Exists() && !levelsBeatenField.GetBit( i ) )
+		if (am.Exists() && !levelData[i].IsBeaten() )
 		{
 			complete = false;
 			break;
@@ -572,44 +579,96 @@ bool SaveFile::IsRangeComplete(int start, int end)
 	return complete;
 }
 
-int SaveFile::GetNumShardsCaptured()
+int SaveFile::GetNumLogsCollected()
 {
-	return upgradeField.GetOnCount(Actor::SHARD_START_INDEX);
-}
+	std::vector<SpecialItemInfo> collectedLogVec; //excluding reps
+	collectedLogVec.reserve(256);
 
-int SaveFile::GetNumShardsTotal()
-{
-	return adventureFile->hasShardField.GetOnCount();
-}
+	bool found = false;
 
-int SaveFile::GetNumLogsCaptured()
-{
-	return logField.GetOnCount();
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
+	{
+		AdventureMap &am = adventureFile->GetMap(i);
+		if (am.Exists())
+		{
+			std::vector<SpecialItemInfo> &vec = levelData[i].specialUnlockedItemsVec;
+			for (auto it = vec.begin(); it != vec.end(); ++it)
+			{
+				if ((*it).itemType == SpecialItemInfo::SI_LOG)
+				{
+					found = false;
+					for (auto logIt = collectedLogVec.begin(); logIt != collectedLogVec.end(); ++logIt)
+					{
+						if ((*logIt).itemIndex0 == (*it).itemIndex0 && (*logIt).itemIndex1 == (*it).itemIndex1)
+						{
+							found = true;
+							break;
+						}
+					}
+
+					if (!found)
+					{
+						collectedLogVec.push_back((*it));
+					}
+				}
+			}
+
+			break;
+		}
+	}
+
+	return collectedLogVec.size();
 }
 
 int SaveFile::GetNumLogsTotal()
 {
-	return adventureFile->hasLogField.GetOnCount();
-}
+	std::vector<SpecialItemInfo> allLogVec; //excluding reps
+	allLogVec.reserve(256);
 
-bool SaveFile::IsLevelJustBeaten(Level *lev)
-{
-	return levelsJustBeatenField.GetBit(lev->index);
-}
+	bool found = false;
 
-void SaveFile::SetLevelNotJustBeaten(Level *lev)
-{
-	levelsJustBeatenField.SetBit(lev->index, false);
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
+	{
+		AdventureMap &am = adventureFile->GetMap(i);
+		if (am.Exists())
+		{
+			std::vector<SpecialItemInfo> &vec = am.headerInfo.specialItemInfoVec; //use the adventure map vector rather than the save data
+			for (auto it = vec.begin(); it != vec.end(); ++it)
+			{
+				if ((*it).itemType == SpecialItemInfo::SI_LOG)
+				{
+					found = false;
+					for (auto logIt = allLogVec.begin(); logIt != allLogVec.end(); ++logIt)
+					{
+						if ((*logIt).itemIndex0 == (*it).itemIndex0 && (*logIt).itemIndex1 == (*it).itemIndex1)
+						{
+							found = true;
+							break;
+						}
+					}
+
+					if (!found)
+					{
+						allLogVec.push_back((*it));
+					}
+				}
+			}
+			
+			break;
+		}
+	}
+
+	return allLogVec.size();
 }
 
 bool SaveFile::TrySetRecordTime(int totalFrames,
 	Level *lev )
 {
 	int index = lev->index;//GetMapIndex(w, s, m);
-	int toBeat = levelScores[index].bestFramesToBeat;
+	int toBeat = levelData[index].bestFrames;
 	if ( toBeat == 0 || totalFrames < toBeat)
 	{
-		levelScores[index].bestFramesToBeat = totalFrames;
+		levelData[index].bestFrames = totalFrames;
 		return true;
 	}
 
@@ -625,7 +684,7 @@ bool SaveFile::TryUnlockGoldMedal(int totalFrames, Level *lev)
 		int goldFrames = adventureFile->GetMap(index).headerInfo.goldSeconds * 60;
 		if (totalFrames <= goldFrames)
 		{
-			levelScores[index].medalLevel = 3;
+			levelData[index].medalLevel = 3;
 			return true;
 		}
 	}
@@ -642,7 +701,7 @@ bool SaveFile::TryUnlockSilverMedal(int totalFrames, Level *lev)
 		int silverFrames = adventureFile->GetMap(index).headerInfo.silverSeconds * 60;
 		if (totalFrames <= silverFrames)
 		{
-			levelScores[index].medalLevel = 2;
+			levelData[index].medalLevel = 2;
 			return true;
 		}
 	}
@@ -659,7 +718,7 @@ bool SaveFile::TryUnlockBronzeMedal(int totalFrames, Level *lev)
 		int bronzeFrames = adventureFile->GetMap(index).headerInfo.bronzeSeconds * 60;
 		if (totalFrames <= bronzeFrames)
 		{
-			levelScores[index].medalLevel = 1;
+			levelData[index].medalLevel = 1;
 			return true;
 		}
 	}
@@ -703,8 +762,8 @@ int SaveFile::GetNumCompleteWorlds( AdventurePlanet *planet )
 void SaveFile::CompleteLevel(Level *lev)
 {
 	int index = lev->index;
-	levelsJustBeatenField.SetBit(index, true);
-	levelsBeatenField.SetBit(index, true);
+
+	levelData[index].BeatLevel();
 }
 
 bool SaveFile::IsCompleteWorld( World *world )
@@ -725,7 +784,7 @@ bool SaveFile::IsCompleteLevel(Level *lev)
 {
 	int index = lev->index;
 	AdventureMap &am = adventureFile->GetMap(index);
-	if (am.Exists() && levelsBeatenField.GetBit(index))
+	if (am.Exists() && levelData[index].IsBeaten())
 	{
 		return true;
 	}
@@ -749,41 +808,24 @@ bool SaveFile::IsUnlockedSector( World *world, Sector *sector)
 	return true;
 }
 
-bool SaveFile::HasUpgrade(int pow)
+bool SaveFile::IsKinOptionOn(int i)
 {
-	assert(pow < ADVENTURE_MAX_NUM_LEVELS);
-	return upgradeField.GetBit(pow);
+	return kinOptionField.GetBit(i);
 }
 
-void SaveFile::UnlockUpgrade(int pow)
+void SaveFile::SetKinOption(int i, bool b)
 {
-	assert(pow < ADVENTURE_MAX_NUM_LEVELS);
-	upgradeField.SetBit(pow, true);
-}
-
-bool SaveFile::HasVisualReward(int pType)
-{
-	return visualRewardsField.GetBit(pType);
-}
-
-void SaveFile::UnlockVisualReward(int pType)
-{
-	visualRewardsField.SetBit(pType, true);
+	kinOptionField.SetBit(i, b);
 }
 
 bool SaveFile::HasLog(int lType)
 {
-	return logField.GetBit(lType);
+	return false;//logField.GetBit(lType);
 }
 
 void SaveFile::UnlockLog(int lType)
 {
-	logField.SetBit(lType, true);
-}
-
-bool SaveFile::IsShardCaptured(int sType)
-{
-	return upgradeField.GetBit( Actor::SHARD_START_INDEX + sType  );
+	//logField.SetBit(lType, true);
 }
 
 void SaveFile::SetVer(int v)
@@ -804,31 +846,6 @@ bool SaveFile::LoadInfo(ifstream &is)
 			if (v == 1)
 			{
 				SetAsDefault();
-				//this should be the only possibility for now
-
-				int defaultSkinIndex;
-				is >> defaultSkinIndex;
-
-				visualInfo.skinIndex = defaultSkinIndex;
-
-				is >> mostRecentWorldSelected;
-
-				levelsBeatenField.Load(is);
-
-				for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
-				{
-					is >> levelScores[i].bestFramesToBeat; //since its just this int here
-				}
-
-				BitField oldUpgradeField(256);
-				BitField oldUpgradeTurnedOnField(256);
-
-				oldUpgradeField.Load(is);
-				oldUpgradeTurnedOnField.Load(is);
-				//never converts this to the new shards, so your upgrades are reset
-
-
-				logField.Load(is);
 
 				is.close();
 
@@ -843,25 +860,17 @@ bool SaveFile::LoadInfo(ifstream &is)
 			}
 		}
 		
-		visualInfo.Load(is);
-		
 		is >> mostRecentWorldSelected;
 
-		is >> warpCharge;
-
-		levelsBeatenField.Load(is);
-
+		visualInfo.Load(is);
+		kinOptionField.Load(is);
+		is >> exp;
+		is >> currency;
+		
 		for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 		{
-			levelScores[i].Load(is);
+			levelData[i].Load(is);
 		}
-		
-		upgradeField.Load(is);
-		upgradesTurnedOnField.Load(is);
-
-		visualRewardsField.Load(is);
-
-		logField.Load(is);
 
 		is.close();
 		return true;
@@ -902,16 +911,8 @@ bool SaveFile::IsFullyCompleteLevel(Level *lev)
 		bool hasAllShards = false;
 		bool hasAllLogs = false;
 
-		float totalShards, totalCaptured;
-		CalcShardProgress(am.headerInfo.hasShardField, totalShards, totalCaptured);
-
-		if (totalShards == totalCaptured)
-		{
-			hasAllShards = true;
-		}
-
 		float totalLogs, totalLogsCaptured;
-		CalcLogProgress(am.headerInfo.hasLogField, totalLogs, totalLogsCaptured);
+		CalcLogProgress(totalLogs, totalLogsCaptured);
 
 		if (totalLogs == totalLogsCaptured)
 		{
@@ -964,25 +965,16 @@ void SaveFile::Save()
 	{
 		of << ver << endl;
 
-		visualInfo.Save(of);
-
 		of << mostRecentWorldSelected << endl;
 
-		of << warpCharge << endl;
-
-		levelsBeatenField.Save(of);
+		visualInfo.Save(of);
+		kinOptionField.Save(of);
+		of << exp << " " << currency << endl;
 
 		for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 		{
-			levelScores[i].Save(of);
+			levelData[i].Save(of);
 		}
-
-		upgradeField.Save(of);
-		upgradesTurnedOnField.Save(of);
-
-		visualRewardsField.Save(of);
-
-		logField.Save(of);
 
 		of.close();
 	}
@@ -1013,21 +1005,14 @@ void SaveFile::Delete()
 
 void SaveFile::SetAndSave(SaveFile *saveFile)
 {
-	levelsBeatenField.Set(saveFile->levelsBeatenField);
+	mostRecentWorldSelected = saveFile->mostRecentWorldSelected;
+	visualInfo = saveFile->visualInfo;
+	kinOptionField.Set(saveFile->kinOptionField);
 
 	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
 	{
-		levelScores[i] = saveFile->levelScores[i];
+		levelData[i] = saveFile->levelData[i];
 	}
-
-	upgradeField.Set(saveFile->upgradeField);
-	upgradesTurnedOnField.Set(saveFile->upgradesTurnedOnField);
-
-	visualRewardsField.Set(saveFile->visualRewardsField);
-
-	logField.Set(saveFile->logField);
-
-	visualInfo = saveFile->visualInfo;
 
 	Save();
 
@@ -1046,31 +1031,24 @@ void SaveFile::SetAsDefault()
 	//version 2 is post-medals
 	SetVer(2);
 
-	levelsBeatenField.Reset();
-
 	mostRecentWorldSelected = 0;
-	
-	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
-	{
-		levelScores[i].Reset();
-	}
-
-	upgradeField.Reset();
-	upgradesTurnedOnField.Reset();
-
-	visualRewardsField.Reset();
-
-	logField.Reset();
 
 	visualInfo.Reset();
 
-	warpCharge = 0;
+	kinOptionField.Reset();
+
+	exp = 0;
+	currency = 0;
+	
+	for (int i = 0; i < ADVENTURE_MAX_NUM_LEVELS; ++i)
+	{
+		levelData[i].Reset();
+	}
 }
 
 GlobalSaveFile::GlobalSaveFile()
-	:visualRewardsField(ADVENTURE_MAX_NUM_LEVELS)
+	:cosmeticsField(MAX_COSMETICS)
 {
-	
 	fileName = MainMenu::GetInstance()->appDataPath + "globalsave" + string(GLOBAL_SAVE_EXT);
 	SetToDefaults();
 }
@@ -1100,7 +1078,7 @@ bool GlobalSaveFile::Load()
 			//assert(ver == v);
 		}
 
-		visualRewardsField.Load(is);
+		cosmeticsField.Load(is);
 
 		//add more later
 		is.close();
@@ -1129,7 +1107,7 @@ void GlobalSaveFile::Save()
 	{
 		of << ver << endl;
 
-		visualRewardsField.Save(of);
+		cosmeticsField.Save(of);
 
 		of.close();
 	}
@@ -1140,23 +1118,23 @@ void GlobalSaveFile::Save()
 	}
 }
 
-void GlobalSaveFile::UnlockVisual(int visIndex)
+void GlobalSaveFile::UnlockCosmetic(int visIndex)
 {
-	if (!visualRewardsField.GetBit(visIndex))
+	if (!cosmeticsField.GetBit(visIndex))
 	{
-		visualRewardsField.SetBit(visIndex, true);
+		cosmeticsField.SetBit(visIndex, true);
 		Save();
 	}
 }
 
-bool GlobalSaveFile::IsVisualRewardUnlocked(int visIndex)
+bool GlobalSaveFile::IsCosmeticUnlocked(int visIndex)
 {
-	return visualRewardsField.GetBit(visIndex);
+	return cosmeticsField.GetBit(visIndex);
 }
 
 void GlobalSaveFile::SetToDefaults()
 {
 	SetVer(2);
-	visualRewardsField.Reset();
+	cosmeticsField.Reset();
 
 }

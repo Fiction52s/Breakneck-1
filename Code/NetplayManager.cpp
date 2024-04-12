@@ -22,7 +22,7 @@ using namespace std;
 using namespace sf;
 
 PracticePlayer::PracticePlayer()
-	:upgradeField(Session::PLAYER_OPTION_BIT_COUNT), logField( LogInfo::MAX_LOGS_PER_WORLD * 8 )
+	:playerOptionField(Session::PLAYER_OPTION_BIT_COUNT), logField( LogInfo::MAX_LOGS_PER_WORLD * 8 )
 {
 	syncStateBuf = NULL;
 	Clear();
@@ -50,7 +50,7 @@ void PracticePlayer::Clear()
 
 	ClearSyncStateBuf();
 
-	upgradeField.Reset();
+	playerOptionField.Reset();
 	logField.Reset();
 	skinIndex = 0;
 
@@ -290,7 +290,7 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 
 		for (int i = 0; i < 8; ++i)
 		{
-			upgradeField.optionField[i] = msg->upgradeField[i];
+			playerOptionField.optionField[i] = msg->playerOptionField[i];
 			logField.optionField[i] = msg->logField[i];
 		}
 

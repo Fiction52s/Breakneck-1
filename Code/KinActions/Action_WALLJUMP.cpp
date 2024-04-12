@@ -9,7 +9,7 @@ void Actor::WALLJUMP_Start()
 	{
 		hasAirDash = true;
 
-		/*if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+		/*if (IsOptionOn(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
 		{
 			numRemainingExtraAirdashBoosts = 1;
 		}

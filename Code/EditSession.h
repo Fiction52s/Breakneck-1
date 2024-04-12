@@ -854,7 +854,6 @@ struct EditSession : GUIHandler, Session
 	bool HoldingAlt();
 	void InitDecorPanel();
 	void SetupGates();
-	bool IsShardCaptured(int sType);
 	bool UpdateRunModeBackAndStartButtons();
 	void UpdateCamera();
 	bool RunPostUpdate();

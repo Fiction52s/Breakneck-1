@@ -169,8 +169,8 @@ PowerItem::~PowerItem()
 void PowerItem::ResetEnemy()
 {
 	//implement for power
-	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
-	data.alreadyCollected = sess->GetPlayer(0)->HasUpgrade(upgradeIndex);
+	int optionIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+	data.alreadyCollected = sess->GetPlayer(0)->IsOptionOn(optionIndex);
 	
 	SetCurrPosInfo(startPosInfo);
 
@@ -243,14 +243,14 @@ void PowerItem::DissipateOnTouch()
 
 void PowerItem::Capture()
 {
-	int upgradeIndex = powerIndex;
+	int optionIndex = powerIndex;
 
-	sess->UnlockUpgrade(upgradeIndex);
+	sess->SetPlayerOption(optionIndex, true);
 
 	if (powerIndex == 5)
 	{
 		//left wire also
-		sess->UnlockUpgrade(upgradeIndex + 1);
+		sess->SetPlayerOption(optionIndex + 1, true);
 	}
 
 	sess->TrySaveCurrentSaveFile();

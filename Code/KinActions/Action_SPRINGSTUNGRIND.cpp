@@ -127,7 +127,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 			}
 			else
 			{
-				if (!HasUpgrade(UPGRADE_POWER_GRAV) 
+				if (!IsOptionOn(UPGRADE_POWER_GRAV)
 					|| (abs(grindNorm.x) >= wallThresh) 
 					|| j || grindEdge->IsInvisibleWall())
 				{
@@ -230,7 +230,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (false)//DashButtonPressed() && HasUpgrade(UPGRADE_W5_GRIND_LUNGE)
+	else if (false)//DashButtonPressed() && IsOptionOn(UPGRADE_W5_GRIND_LUNGE)
 	{
 		V2d op = position;
 

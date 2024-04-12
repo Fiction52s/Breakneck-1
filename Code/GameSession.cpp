@@ -1251,26 +1251,19 @@ void GameSession::CheckSinglePlayerInputDefaultKeyboard()
 	}
 }
 
-void GameSession::UnlockUpgrade(int upgradeType, int playerIndex )
+void GameSession::SetPlayerOption(int optionType, bool isOn, int playerIndex)
 {
 	if (IsReplayOn())
 	{
 		//replay on
-		//currUpgradeField.SetBit(upgradeType, true);
-		//GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
-		//do I need to set the currUpgradeField here?
-
-		//return;
 	}
 	else if (saveFile != NULL && !IsParallelSession())
 	{
-		saveFile->UnlockUpgrade(upgradeType);
+		//saveFile->kinFlagField.SetBit(flagType, isOn);
 	}
 
-	currUpgradeField.SetBit(upgradeType, true);
-	GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
-
-	//GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
+	currPlayerOptionsField.SetBit(optionType, isOn);
+	GetPlayer(playerIndex)->SetStartOption(optionType, isOn);
 }
 
 bool GameSession::TrySaveCurrentSaveFile()
@@ -1769,8 +1762,8 @@ bool GameSession::Load()
 
 	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE )
 	{
-		saveFile->adventureFile->GetOriginalProgressionUpgradeField(level->index, originalProgressionPlayerOptionsField);
-		saveFile->adventureFile->GetOriginalProgressionLogField(level->index, originalProgressionLogField);
+		saveFile->adventureFile->GetOriginalProgressionOptionField(level->index, originalProgressionPlayerOptionsField);
+		//saveFile->adventureFile->GetOriginalProgressionLogField(level->index, originalProgressionLogField);
 	}
 
 
@@ -3672,12 +3665,13 @@ int GameSession::Run()
 		SetupGameMode();
 	}
 
-	currUpgradeField.Reset();
+	currPlayerOptionsField.Reset();
 	currLogField.Reset();
 	if( saveFile != NULL && !originalProgressionModeOn )
 	{
-		currLogField.Set(saveFile->logField);
-		currUpgradeField.Set(saveFile->upgradeField);
+		//currLogField.Set(saveFile->logField); //temp turned off. will have to account for other item types soon
+		currPlayerOptionsField.Set(saveFile->kinOptionField); //remember that the save file wont have the upgrades, only powers
+		//give level powers here? 
 	}
 
 
@@ -4426,18 +4420,19 @@ void GameSession::RestartLevel()
 	if (saveFile == NULL && !IsParallelSession())
 	{
 		//currUpgradeField.Reset();
-		currUpgradeField.Set(defaultStartingPlayerOptionsField);
+		currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 		currLogField.Reset();
 	}
 
 	if ( saveFile != NULL && originalProgressionModeOn)
 	{
 		//if orig progression on, set the log field to the orig progression, otherwise, let it stack up.
-		currLogField.Set(saveFile->logField);
-		currLogField.And(originalProgressionLogField);
 
-		currUpgradeField.Set(saveFile->upgradeField);
-		currUpgradeField.And(originalProgressionPlayerOptionsField);
+		//currLogField.Set(saveFile->logField);
+		//currLogField.And(originalProgressionLogField);
+
+		currPlayerOptionsField.Set(saveFile->kinOptionField);
+		currPlayerOptionsField.And(originalProgressionPlayerOptionsField);
 	}
 
 	phaseOn = false;
@@ -4479,9 +4474,9 @@ void GameSession::RestartLevel()
 		if (!originalProgressionModeOn)
 		{
 			//if original progression is not being forced, check to see if we are compatible with it.
-			for (int i = 0; i < saveFile->upgradeField.numOptions; ++i)
+			for (int i = 0; i < saveFile->kinOptionField.numOptions; ++i)
 			{
-				if (saveFile->upgradeField.GetBit(i) && !originalProgressionPlayerOptionsField.GetBit(i))
+				if (saveFile->kinOptionField.GetBit(i) && !originalProgressionPlayerOptionsField.GetBit(i))
 				{
 					originalProgressionCompatible = false;
 					break;
@@ -4490,14 +4485,14 @@ void GameSession::RestartLevel()
 
 			if (originalProgressionCompatible)
 			{
-				for (int i = 0; i < saveFile->logField.numOptions; ++i)
+				/*for (int i = 0; i < saveFile->logField.numOptions; ++i)
 				{
 					if (saveFile->logField.GetBit(i) && !originalProgressionLogField.GetBit(i))
 					{
 						originalProgressionCompatible = false;
 						break;
 					}
-				}
+				}*/
 			}
 		}
 	}
@@ -4761,16 +4756,6 @@ void GameSession::RemoveGravityGrassFromExplodeList(Grass *g)
 			g->next->prev = g->prev;
 		g->SetVisible(false);
 	}
-}
-
-bool GameSession::IsShardCaptured(int shardType)
-{
-	if (IsReplayOn())
-	{
-		return activePlayerReplayManagers[0]->header.IsShardCaptured(shardType);
-	}
-
-	return currUpgradeField.GetBit(shardType + Actor::SHARD_START_INDEX);
 }
 
 bool GameSession::PopupGameModeUpdate()

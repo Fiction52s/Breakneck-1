@@ -870,17 +870,17 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 		int lastBeaten = -1;
 		for (int i = 0; i < numLevels; ++i)
 		{
-			if (saveFile->IsLevelJustBeaten( sec->GetLevel( i ) ) )
-			{
-				state = LEVELCOMPLETEDWAIT;
+			//if (saveFile->IsLevelJustBeaten( sec->GetLevel( i ) ) )
+			//{
+			//	state = LEVELCOMPLETEDWAIT;
 
-				stateFrame = 0;
-				unlockedIndex = i;//saSelector->currIndex;
-								  //unlockFrame = frame;
-				saveFile->SetLevelNotJustBeaten(sec->GetLevel(i));
-				lastBeaten = i;
-				//break;
-			}
+			//	stateFrame = 0;
+			//	unlockedIndex = i;//saSelector->currIndex;
+			//					  //unlockFrame = frame;
+			//	saveFile->SetLevelNotJustBeaten(sec->GetLevel(i));
+			//	lastBeaten = i;
+			//	//break;
+			//}
 		}
 		if (lastBeaten >= 0)
 		{

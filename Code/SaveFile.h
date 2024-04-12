@@ -18,7 +18,7 @@ struct AdventureFile;
 
 const static int ADVENTURE_MAX_NUM_WORLDS = 8;
 const static int ADVENTURE_MAX_NUM_SECTORS_PER_WORLD = 8;
-const static int ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR = 8;
+const static int ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR = 4;
 const static int ADVENTURE_MAX_NUM_LEVELS_PER_WORLD = ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR * ADVENTURE_MAX_NUM_SECTORS_PER_WORLD;
 const static int ADVENTURE_MAX_NUM_LEVELS = ADVENTURE_MAX_NUM_WORLDS * ADVENTURE_MAX_NUM_SECTORS_PER_WORLD * ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR;
 
@@ -107,8 +107,6 @@ struct AdventureMap
 struct AdventureSector
 {	
 	AdventureSector();
-	BitField hasShardField;
-	BitField hasLogField;
 	AdventureMap maps[ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR];
 	void Clear();
 	void Load(std::ifstream &is, int ver, int copyMode );
@@ -118,8 +116,6 @@ struct AdventureSector
 
 struct AdventureWorld
 {
-	BitField hasShardField;
-	BitField hasLogField;
 	AdventureSector sectors[ADVENTURE_MAX_NUM_SECTORS_PER_WORLD];
 
 	AdventureWorld();
@@ -137,11 +133,8 @@ struct AdventureFile
 		COPY,
 	};
 
-
-
 	CopyMode copyMode;
-	BitField hasShardField;
-	BitField hasLogField;
+
 	AdventureWorld worlds[ADVENTURE_MAX_NUM_WORLDS];
 	int ver;
 
@@ -153,13 +146,12 @@ struct AdventureFile
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
-	void GetOriginalProgressionUpgradeField( int mapIndex, BitField &bf);
-	void GetOriginalProgressionLogField(int mapIndex, BitField &bf);
 	AdventureMap &GetMap(int index);
 	AdventureMapHeaderInfo &GetMapHeaderInfo(int index);
 	static void GetMapIndexes( int mIndex, int &w, int &s, int &m);
 	std::string GetLeaderboardName(int mIndex);
 	std::string GetLeaderboardDisplayName(int mIndex);
+	void GetOriginalProgressionOptionField(int mapIndex, BitField &bf);
 
 	AdventureSector &GetSector(int w, int s);
 	AdventureSector &GetAdventureSector(Sector *sec);
@@ -170,13 +162,16 @@ struct AdventureFile
 	bool LoadMapHeaders();
 };
 
-
-struct LevelScore
+struct LevelData
 {
-	int bestFramesToBeat;
+	int bestFrames;
 	int medalLevel;
+	int levelState; //0 is unbeaten, 1 is complete (for now)
+	std::vector<SpecialItemInfo> specialUnlockedItemsVec;
 
-	LevelScore();
+	LevelData();
+	void BeatLevel();
+	bool IsBeaten();
 	void Reset();
 	void Save(std::ofstream &of);
 	void Load(std::ifstream &is);
@@ -187,6 +182,27 @@ struct LevelScore
 
 struct SaveFile
 {
+	int ver;
+
+	//info
+	std::string name;
+	std::string fileName;
+	std::string replayFolderName;
+	std::string myFolderName;
+	AdventureFile *adventureFile;
+	int mostRecentWorldSelected;
+
+
+	//state that gets saved out
+	PlayerVisualInfo visualInfo; //skin, etc.
+	BitField kinOptionField; //store powers, store other variables. upgrades are not stored here. They are availabled based on your level/exp
+	int exp;
+	int currency;
+	
+	LevelData levelData[ADVENTURE_MAX_NUM_LEVELS];
+	
+
+
 	SaveFile( const std::string &name,
 		AdventureFile *adventureFile );
 	~SaveFile();
@@ -238,14 +254,11 @@ struct SaveFile
 	bool HasBronzeForLevel(int w, int s, int m);
 	bool HasBronzeForLevel(int index);
 
-	bool HasVisualReward(int pType);
-	void UnlockVisualReward(int pType);
+	bool IsKinOptionOn(int i);
+	void SetKinOption(int i, bool b);
 
-	bool HasUpgrade(int pType);
-	void UnlockUpgrade(int pType);
 	bool HasLog(int lType);
 	void UnlockLog(int lType);
-	bool IsShardCaptured(int sType);
 
 	bool IsCompleteSector(Sector *sector);
 	bool IsCompleteWorld(World *world);
@@ -262,62 +275,26 @@ struct SaveFile
 	bool TryUnlockBronzeMedal(int totalFrames,
 		Level *lev);
 
-	int GetNumShardsCaptured();
-	int GetNumShardsTotal();
-
-	int GetNumLogsCaptured();
+	int GetNumLogsCollected();
 	int GetNumLogsTotal();
 
 	int GetNumCompleteWorlds( AdventurePlanet *planet );
 
 	bool IsLevelLastInSector( Level *lev );
 
-	bool IsLevelJustBeaten(Level *lev);
-	void SetLevelNotJustBeaten(Level *lev);
-
 	bool IsUnlockedLevel(Sector *sec, int index );
 	bool IsFullyCompleteLevel(Level *lev);
 	void SetVer(int v);
 
-	const static int MAX_SECTORS = 8;
-	const static int MAX_LEVELS_PER_SECTOR = 8;
-
-	//info
-	std::string name;
-	std::string fileName;
-	std::string replayFolderName;
-	std::string myFolderName;
-	AdventureFile *adventureFile;
-	int mostRecentWorldSelected;
 	
-	//state
-	BitField levelsJustBeatenField;
-
-	//state that gets saved out
-	
-	BitField levelsBeatenField;
-	LevelScore levelScores[512];
-
-	PlayerVisualInfo visualInfo; //skin, etc.
-
-	BitField upgradeField; //then 32 for power + 512 for shards
-	BitField upgradesTurnedOnField;
-	BitField visualRewardsField;
-	
-	BitField logField;
-	int warpCharge;
-
-	int ver;
 
 private:
 	void CalcProgress(int start, int end, float &totalMaps,
 		float &totalBeaten);
-	void CalcShardProgress(BitField &b, float &totalShards,
-		float &totalCaptured);
-	void CalcLogProgress(BitField &b, float &totalLogs,
+	void CalcLogProgress(float &totalLogs,
 		float &totalLogsCaptured);
 	float CalcCompletionPercentage(
-		int start, int end, BitField &b);
+		int start, int end);
 	bool IsRangeComplete(int start, int end);
 	int GetWorldStart(int w);
 	int GetWorldEnd(int w);
@@ -327,9 +304,11 @@ private:
 
 };
 
+const static int MAX_COSMETICS = 512;
+
 struct GlobalSaveFile
 {
-	BitField visualRewardsField;
+	BitField cosmeticsField;
 	std::string fileName;
 	int ver;
 
@@ -338,8 +317,8 @@ struct GlobalSaveFile
 	void Save();
 	bool Load();
 	void SetVer(int v);
-	bool IsVisualRewardUnlocked(int skinIndex);
-	void UnlockVisual(int skinIndex);
+	bool IsCosmeticUnlocked(int skinIndex);
+	void UnlockCosmetic(int skinIndex);
 };
 
 

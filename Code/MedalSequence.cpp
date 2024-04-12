@@ -38,7 +38,7 @@ void MedalSequence::SetupStates()
 	stateLength[END] = -1;
 }
 
-void MedalSequence::StartGold(int world, int localIndex)
+void MedalSequence::StartGold()
 {
 	shownMedal->Reset();
 	shownMedal->SetType(Medal::MEDAL_GOLD);

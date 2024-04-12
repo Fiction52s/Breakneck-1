@@ -737,11 +737,12 @@ bool Gate::CanSoften()
 		}
 		case SHARD:
 		{
-			double len = length(sess->GetPlayer(0)->position - GetCenter());
+			okayToSoften = true;
+			/*double len = length(sess->GetPlayer(0)->position - GetCenter());
 			if (sess->IsShardCaptured(shardType) && len < 300)
 			{
 				okayToSoften = true;
-			}
+			}*/
 			break;
 		}
 		case PICKUP:

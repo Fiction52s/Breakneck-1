@@ -73,7 +73,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 	sprite.setPosition(pos);
 
 	Actor *player = sess->GetPlayer(0);
-	if (player->HasUpgrade(Actor::UPGRADE_POWER_BOUNCE))
+	if (player->IsOptionOn(Actor::UPGRADE_POWER_BOUNCE))
 	{
 		ClearRect(deactivatedQuads);
 	}
@@ -83,7 +83,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 			Vector2f(sprite.getPosition()));
 	}
 
-	if (player->HasUpgrade(Actor::UPGRADE_POWER_GRIND))
+	if (player->IsOptionOn(Actor::UPGRADE_POWER_GRIND))
 	{
 		ClearRect(deactivatedQuads + 4);
 	}
@@ -93,7 +93,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 			Vector2f(sprite.getPosition()));
 	}
 
-	if (player->HasUpgrade(Actor::UPGRADE_POWER_TIME))
+	if (player->IsOptionOn(Actor::UPGRADE_POWER_TIME))
 	{
 		ClearRect(deactivatedQuads + 8);
 	}

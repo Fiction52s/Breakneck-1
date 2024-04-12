@@ -282,7 +282,7 @@ void KinMenu::UpdateTutorial()
 
 void KinMenu::UpdatePowers(Actor *player)
 {
-	if (player->HasUpgrade( Actor::UPGRADE_POWER_AIRDASH ) )
+	if (player->IsOptionOn( Actor::UPGRADE_POWER_AIRDASH ) )
 	{
 		secondRowMax = 1;
 	}

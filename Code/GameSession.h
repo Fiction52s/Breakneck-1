@@ -481,11 +481,10 @@ struct GameSession : RayCastHandler, Session
 	void UpdateDebugModifiers();
 	void SetStorySeq(StorySequence *storySeq);
 	void SuppressEnemyKeys(Gate *g);
-	bool IsShardCaptured(int sType);
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
 	void UpdateEnvShaders();
-	void UnlockUpgrade(int upgradeType, int playerIndex = 0 );
+	void SetPlayerOption(int optionIndex, bool on, int playerIndex = 0);
 	bool TrySaveCurrentSaveFile();
 	void UnlockLog(int lType, int playerIndex = 0);
 	void UpdateExplodingGravityGrass();

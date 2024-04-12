@@ -182,7 +182,7 @@ Shard::~Shard()
 
 void Shard::ResetEnemy()
 {
-	data.alreadyCollected = sess->IsShardCaptured(shardType);
+	data.alreadyCollected = false;//sess->IsShardCaptured(shardType);
 
 	/*if (!data.alreadyCollected)
 	{
@@ -284,9 +284,9 @@ void Shard::Capture()
 
 	int upgradeIndex = shardType + Actor::SHARD_START_INDEX;
 
-	sess->UnlockUpgrade(upgradeIndex);
+	//sess->UnlockUpgrade(upgradeIndex);
 
-	sess->TrySaveCurrentSaveFile();
+	//sess->TrySaveCurrentSaveFile();
 }
 
 void Shard::DirectKill()

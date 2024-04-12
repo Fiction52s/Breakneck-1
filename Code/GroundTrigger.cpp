@@ -50,14 +50,14 @@ GroundTrigger::GroundTrigger(ActorParams*ap)//Edge *g, double q, bool p_facingRi
 		break;
 	case TRIGGER_GETAIRDASH:
 		sess->SetDrainOn(false);
-		if (sess->GetPlayer(0)->HasUpgrade( 
-			Actor::UpgradeType::UPGRADE_POWER_AIRDASH) )
-		{
-		}
-		else
-		{
-			gameSequence = new GetAirdashPowerScene;//GetAirdashPowerSeq(game);
-		}
+		//if (sess->GetPlayer(0)->HasUpgrade( 
+		//	Actor::UpgradeType::UPGRADE_POWER_AIRDASH) )
+		//{
+		//}
+		//else
+		//{
+		//	gameSequence = new GetAirdashPowerScene;//GetAirdashPowerSeq(game);
+		//}
 
 		//storySeq = new StorySequence(game);
 		//storySeq->Load("getairdash");
@@ -107,11 +107,11 @@ void GroundTrigger::ResetEnemy()
 	{
 	case TRIGGER_GETAIRDASH:
 	{
-		if (sess->GetPlayer(0)->HasUpgrade(
+		/*if (sess->GetPlayer(0)->HasUpgrade(
 			Actor::UpgradeType::UPGRADE_POWER_AIRDASH) )
 		{
 			action = DONE;
-		}
+		}*/
 		break;
 	}
 	}

@@ -41,15 +41,14 @@ struct PlayerRecordHeader
 	int numberOfPlayers;
 	int ver;
 
-	BitField bUpgradeField;
-	BitField bUpgradesTurnedOnField;
-	BitField bLogField;
+	BitField playerOptionField;
+	//BitField bLogField;
 
 	PlayerRecordHeader();
 	~PlayerRecordHeader();
 
 	void SetFields();
-	bool IsShardCaptured(int ind);
+	//bool IsShardCaptured(int ind);
 	bool IsLogCaptured(int ind);
 	void SetVer(int v);
 	void Read(std::istream &is);

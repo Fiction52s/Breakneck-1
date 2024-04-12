@@ -30,14 +30,13 @@ void PracticeStartMsg::Clear()
 
 	numSyncBytes = 0;
 
-	for (int i = 0; i < NUM_UPGRADE_FIELDS; ++i)
+	for (int i = 0; i < NUM_PLAYER_OPTION_FIELDS; ++i)
 	{
-		upgradeField[i] = 0;
+		playerOptionField[i] = 0;
 	}
 
 	for (int i = 0; i < NUM_LOG_FIELDS; ++i)
 	{
-		
 		logField[i] = 0;
 	}
 
@@ -46,12 +45,12 @@ void PracticeStartMsg::Clear()
 	origProgression = false;
 }
 
-void PracticeStartMsg::SetUpgradeField(BitField &bf)
+void PracticeStartMsg::SetPlayerOptionField(BitField &bf)
 {
-	assert(bf.numFields == NUM_UPGRADE_FIELDS);
-	for (int i = 0; i < NUM_UPGRADE_FIELDS; ++i)
+	assert(bf.numFields == NUM_PLAYER_OPTION_FIELDS);
+	for (int i = 0; i < NUM_PLAYER_OPTION_FIELDS; ++i)
 	{
-		upgradeField[i] = bf.optionField[i];
+		playerOptionField[i] = bf.optionField[i];
 	}
 }
 

@@ -317,7 +317,8 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 		SaveFile *saveFile = sess->mainMenu->adventureManager->currSaveFile;
 		if (saveFile != NULL)
 		{
-			return saveFile->IsShardCaptured(shardType);
+			return false;
+			//return saveFile->IsShardCaptured(shardType);
 		}
 		else
 		{
@@ -326,7 +327,7 @@ bool ShardMenu::IsShardCaptured(int w, int li)
 	}
 	else
 	{
-		return sess->IsShardCaptured(shardType);
+		return false;//sess->IsShardCaptured(shardType);
 	}
 }
 

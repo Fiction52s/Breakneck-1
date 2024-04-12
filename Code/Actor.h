@@ -963,7 +963,10 @@ struct Actor : QuadTreeCollider,
 	sf::Shader playerDespShader;
 	sf::Shader playerSuperShader;
 	bool showExitAura;
-	BitField bStartHasUpgradeField;
+	BitField startOptionField;
+	BitField optionField;
+
+	BitField originalProgressionOptionField;
 	//BitField originalProgressionUpgradeField;
 	//BitField originalProgressionLogField;
 	bool canStandUp;
@@ -1035,7 +1038,7 @@ struct Actor : QuadTreeCollider,
 	//EffectPool *testPool;
 	//ShapeEmitter *glideEmitter;
 
-	BitField bHasUpgradeField;
+	
 	int numKeysHeld;	
 	KinMask *kinMask;
 	sf::Color currentDespColor;
@@ -1784,11 +1787,10 @@ struct Actor : QuadTreeCollider,
 	int GetBubbleTimeFactor();
 	int GetBeingSlowedFactor();
 	bool IsBeingSlowed();
-	void SetAllUpgrades(const BitField &b);
-	bool HasUpgrade(int index);
-	int NumUpgradeRange(int index, int numUpgrades);
-	void SetUpgrade(int upgrade, bool on);
-	void SetStartUpgrade(int upgrade, bool on);
+	void SetAllOptions(const BitField &b);
+	bool IsOptionOn(int index);
+	void SetOption(int option, bool on);
+	void SetStartOption(int optionIndex, bool on);
 	bool SpringLaunch();
 	bool ScorpionLaunch();
 	bool TeleporterLaunch();

@@ -32,13 +32,13 @@ struct PracticeMsgHeader
 
 struct PracticeStartMsg
 {
-	const static int NUM_UPGRADE_FIELDS = (512 + 32) / 32;
+	const static int NUM_PLAYER_OPTION_FIELDS = (512 + 32) / 32;
 	const static int NUM_LOG_FIELDS = 8;
 
 	PracticeMsgHeader header;
 	sf::Uint32 skinIndex;
-	sf::Uint32 upgradeField[NUM_UPGRADE_FIELDS];
-	sf::Uint32 logField[NUM_LOG_FIELDS];
+	sf::Uint32 playerOptionField[NUM_PLAYER_OPTION_FIELDS];
+	sf::Uint32 logField[NUM_LOG_FIELDS]; //needs to get replaced to have all kinds of pickups not just logs
 	int numSyncBytes;
 	int startFrame;
 	bool wantsToPlay;
@@ -46,7 +46,7 @@ struct PracticeStartMsg
 
 	PracticeStartMsg();
 	void Clear();
-	void SetUpgradeField(BitField &bf);
+	void SetPlayerOptionField(BitField &bf);
 	void SetLogField(BitField &bf);
 };
 

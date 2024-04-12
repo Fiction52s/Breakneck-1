@@ -225,7 +225,7 @@ void ScoreDisplay::Update()
 				frame = 0;
 				medalSeq->Reset();
 
-				medalSeq->StartGold(sess->mapHeader->goldRewardShardInfo.world, sess->mapHeader->goldRewardShardInfo.localIndex);
+				medalSeq->StartGold();
 			}
 			else if (gotSilver)
 			{

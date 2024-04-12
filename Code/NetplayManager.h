@@ -66,7 +66,7 @@ struct PracticePlayer
 	int indexInLobby;
 
 	int skinIndex;
-	BitField upgradeField;
+	BitField playerOptionField;
 	BitField logField;
 
 	int waitingForFrame;

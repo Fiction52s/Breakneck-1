@@ -312,7 +312,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
 	BitField defaultStartingPlayerOptionsField;
-	BitField currUpgradeField;
+	BitField currPlayerOptionsField;
 	BitField currLogField;
 	BitField originalProgressionPlayerOptionsField;
 	BitField originalProgressionLogField;
@@ -787,7 +787,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetNumGates(int nGates);
 	void LockGate(Gate *g);
 	void UnlockGate(Gate *g);
-	virtual void UnlockUpgrade(int upgradeType, int playerIndex = 0 );
+	virtual void SetPlayerOption(int optionType, bool isOn, int playerIndex = 0 );
 	virtual void UnlockLog(int logType, int playerIndex = 0);
 	virtual bool TrySaveCurrentSaveFile() { return false; };
 	void DrawGates(sf::RenderTarget *target);
@@ -817,7 +817,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void TryCreateShardResources();
 	void TryCreateLogResources();
 	void TryCreatePowerItemResources();
-	virtual bool IsShardCaptured(int sType);
 	void SetActiveSequence(Sequence *activeSeq);
 	void ActiveSequenceUpdate();
 	void AddEmitter(ShapeEmitter *emit,
@@ -994,7 +993,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsParallelGameModeType();
 	void RunPracticeModeUpdate();
 	void SetView(const sf::View &p_view);
-	const BitField & GetPracticeUpgradeField();
+	const BitField & GetPracticePlayerOptionField();
 	Edge *GetEdge(EdgeInfo * ei);
 	PolyPtr GetPolyFromID(int id);
 	RailPtr GetRailFromID(int id);

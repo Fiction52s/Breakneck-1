@@ -27,6 +27,31 @@ using namespace boost::filesystem;
 //	GAME_MODE_PARALLEL_RACE,
 //};
 
+SpecialItemInfo::SpecialItemInfo()
+	:itemType(-1), itemIndex0(-1), itemIndex1(-1)
+{
+
+}
+
+SpecialItemInfo::SpecialItemInfo(int it, int iv0, int iv1)
+	:itemType(it), itemIndex0(iv0), itemIndex1(iv1)
+{
+
+}
+
+void SpecialItemInfo::Load(std::ifstream &is)
+{
+	is >> itemType;
+	is >> itemIndex0;
+	is >> itemIndex1;
+}
+
+void SpecialItemInfo::Save(std::ofstream &of)
+{
+	of << itemType << " " << itemIndex0 << " " << itemIndex1 << "\n";
+}
+
+
 MapHeader::MapHeader()
 {
 	Clear();

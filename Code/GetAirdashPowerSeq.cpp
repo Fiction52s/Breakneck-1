@@ -175,8 +175,8 @@ bool GetAirdashPowerSeq::Update()
 				sess->SetGameSessionState(GameSession::RUN);
 				sess->Fade(true, 60, Color::Black, true);
 				sess->ShowHUD(60);
-				sess->mainMenu->adventureManager->currSaveFile
-					->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
+				//sess->mainMenu->adventureManager->currSaveFile
+				//	->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
 			}
 		}
 

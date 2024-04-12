@@ -21,7 +21,7 @@ struct MedalSequence : Sequence
 	MedalSequence();
 	~MedalSequence();
 
-	void StartGold(int world, int localIndex);
+	void StartGold();
 	void StartSilver();
 	void StartBronze();
 	void StartRunning();

@@ -91,16 +91,6 @@ const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
 EditSession * EditSession::currSession = NULL;
 
-bool EditSession::IsShardCaptured(int sType)
-{
-	if (IsReplayOn())
-	{
-		return activePlayerReplayManagers[0]->header.IsShardCaptured(sType);
-	}
-
-	return currUpgradeField.GetBit(sType + Actor::SHARD_START_INDEX );
-}
-
 void EditSession::SetupGates()
 {
 	if (gates.size() > 0)
@@ -706,7 +696,7 @@ void EditSession::TestPlayerMode()
 		(*it)->CancelTransformation();
 	}
 
-	currUpgradeField.Reset();
+	currPlayerOptionsField.Reset();
 
 	scoreDisplay->Reset();
 
@@ -743,7 +733,7 @@ void EditSession::TestPlayerMode()
 
 	pokeTriangleScreenGroup->Reset();
 	
-	currUpgradeField.Set(defaultStartingPlayerOptionsField);
+	currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 
 	/*for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -2722,14 +2712,14 @@ void EditSession::WriteMapHeader(ofstream &of)
 				{
 					lp = (LogParams*)(*ait);
 
-					specialItemInfoVec.push_back(SpecialItemInfo(SpecialItemInfo::SI_LOG, lp->lInfo.world, lp->lInfo.localIndex);
+					specialItemInfoVec.push_back(SpecialItemInfo(SpecialItemInfo::SI_LOG, lp->lInfo.world, lp->lInfo.localIndex));
 				}
 				else if ((*ait)->myEnemy != NULL && (*ait)->myEnemy->type == EnemyType::EN_POWERITEM)
 				{
 					PowerItem *pItem = (PowerItem*)((*ait)->myEnemy);
 					int powerIndex = pItem->powerIndex;
 
-					specialItemInfoVec.push_back(SpecialItemInfo(SpecialItemInfo::SI_POWER, powerIndex);
+					specialItemInfoVec.push_back(SpecialItemInfo(SpecialItemInfo::SI_POWER, powerIndex));
 				}
 			}
 		}
@@ -12042,7 +12032,7 @@ void EditSession::CleanupTestPlayerMode()
 		originalMusic->music->stop();
 	}*/
 
-	currUpgradeField.Reset();
+	currPlayerOptionsField.Reset();
 	fader->Reset();
 	swiper->Reset();
 

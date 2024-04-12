@@ -101,12 +101,12 @@ void SaveFileDisplay::SetValues(SaveFile *sf, AdventurePlanet *adventurePlanet)
 
 		ss.str("");
 
-		ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards collected";
-		capturedShardsText.setString(ss.str());
+		//ss << //sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards collected";
+		//capturedShardsText.setString(ss.str());
 
-		ss.str("");
+		//ss.str("");
 
-		ss << sf->GetNumLogsCaptured() << " / " << sf->GetNumLogsTotal() << " Logs collected";
+		ss << sf->GetNumLogsCollected() << " / " << sf->GetNumLogsTotal() << " Logs collected";
 		capturedLogsText.setString(ss.str());
 
 		/*ss.str("");

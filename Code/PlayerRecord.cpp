@@ -192,7 +192,7 @@ void ReplayPlayer::Read(istream &is)
 void ReplayPlayer::Reset()
 {
 	SetToStart();
-	pReplayer->player->SetAllUpgrades(pReplayer->replayManager->header.bUpgradeField);//pReplayer->//pReplayer->bUpgradeField);
+	pReplayer->player->SetAllOptions(pReplayer->replayManager->header.playerOptionField);//pReplayer->//pReplayer->bUpgradeField);
 	pReplayer->player->currPowerMode = pReplayer->startPowerMode;
 	pReplayer->player->nameTag->SetActive(true);
 	pReplayer->player->nameTag->SetName(pReplayer->displayName);
@@ -355,9 +355,8 @@ void PlayerRecorder::StopRecordingAndWriteToFile(const std::string &fileName)
 
 PlayerRecordHeader::PlayerRecordHeader()
 	:numberOfPlayers(0),
-	bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	bUpgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
-	bLogField(LogDetailedInfo::MAX_LOGS)
+	playerOptionField(Session::PLAYER_OPTION_BIT_COUNT)
+	//bLogField(LogDetailedInfo::MAX_LOGS)
 {
 	SetVer(2);
 }
@@ -376,27 +375,25 @@ void PlayerRecordHeader::SetFields()
 	GameSession *game = GameSession::GetSession();
 	if (game != NULL && game->saveFile != NULL)
 	{
-		bUpgradeField.Set(game->saveFile->upgradeField);//sess->GetPlayer(0)->bStartHasUpgradeField);
+		playerOptionField.Set(game->saveFile->kinOptionField);//sess->GetPlayer(0)->bStartHasUpgradeField);
 
 		if (game->originalProgressionModeOn)
 		{
-			bUpgradeField.And(game->originalProgressionPlayerOptionsField);
+			playerOptionField.And(game->originalProgressionPlayerOptionsField);
 		}
-		bUpgradesTurnedOnField.Reset();
 
-		bLogField.Set(game->saveFile->logField);
+		/*bLogField.Set(game->saveFile->logField);
 		if (game->originalProgressionModeOn)
 		{
 			bLogField.And(game->originalProgressionLogField);
-		}
+		}*/
 	}
 	else
 	{
 		Session *sess = Session::GetSession();
-		bUpgradeField.Set(sess->currUpgradeField);//sess->GetPlayer(0)->bStartHasUpgradeField);
-		bUpgradesTurnedOnField.Reset();
+		playerOptionField.Set(sess->currPlayerOptionsField);//sess->GetPlayer(0)->bStartHasUpgradeField);
 
-		bLogField.Set(sess->currLogField);
+		//bLogField.Set(sess->currLogField);
 	}
 	/*else
 	{
@@ -406,14 +403,9 @@ void PlayerRecordHeader::SetFields()
 	}*/
 }
 
-bool PlayerRecordHeader::IsShardCaptured(int ind)
-{
-	return bUpgradeField.GetBit(Actor::SHARD_START_INDEX + ind);
-}
-
 bool PlayerRecordHeader::IsLogCaptured(int ind)
 {
-	return bLogField.GetBit(ind);
+	return false;//bLogField.GetBit(ind);
 }
 
 void PlayerRecordHeader::Read(std::istream &is)
@@ -421,9 +413,8 @@ void PlayerRecordHeader::Read(std::istream &is)
 	is.read((char*)&ver, sizeof(ver)); //read in the basic vars
 	is.read((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 
-	bUpgradeField.LoadBinary(is);
-	bUpgradesTurnedOnField.LoadBinary(is);
-	bLogField.LoadBinary(is);
+	playerOptionField.LoadBinary(is);
+	//bLogField.LoadBinary(is);
 
 	assert(numberOfPlayers > 0 && numberOfPlayers <= 4);
 }
@@ -433,9 +424,9 @@ void PlayerRecordHeader::Write(std::ofstream &of)
 	of.write((char*)&ver, sizeof(ver));
 	of.write((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 
-	bUpgradeField.SaveBinary(of);
-	bUpgradesTurnedOnField.SaveBinary(of);
-	bLogField.SaveBinary(of);
+	playerOptionField.SaveBinary(of);
+	//bUpgradesTurnedOnField.SaveBinary(of);
+	//bLogField.SaveBinary(of);
 }
 
 PlayerReplayer::PlayerReplayer(PlayerReplayManager *p_replayManager)

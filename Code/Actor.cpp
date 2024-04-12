@@ -3416,10 +3416,10 @@ void Actor::UpdateActionSprite()
 }
 
 Actor::Actor()
-	:dead(false), actorIndex(0), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST)
-	//originalProgressionUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	:dead(false), actorIndex(0), optionField(Session::PLAYER_OPTION_BIT_COUNT),
+	startOptionField(Session::PLAYER_OPTION_BIT_COUNT),
+	exitAuraShader(PlayerSkinShader::ST_BOOST),
+	originalProgressionOptionField(Session::PLAYER_OPTION_BIT_COUNT)
 	//originalProgressionLogField(LogDetailedInfo::MAX_LOGS)
 {
 	shallowInit = true;
@@ -3437,10 +3437,10 @@ Actor::Actor()
 }
 
 Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
-	:dead(false), actorIndex(p_actorIndex), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	exitAuraShader(PlayerSkinShader::ST_BOOST)
-	//originalProgressionUpgradeField( Session::PLAYER_OPTION_BIT_COUNT ),
+	:dead(false), actorIndex(p_actorIndex), optionField(Session::PLAYER_OPTION_BIT_COUNT),
+	startOptionField(Session::PLAYER_OPTION_BIT_COUNT),
+	exitAuraShader(PlayerSkinShader::ST_BOOST),
+	originalProgressionOptionField(Session::PLAYER_OPTION_BIT_COUNT)
 	//originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
 	shallowInit = false;
@@ -4047,8 +4047,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	bubbleLifeSpan = 240;
 
-	bHasUpgradeField.Reset();
-	bStartHasUpgradeField.Reset();
+	optionField.Reset();
+	startOptionField.Reset();
 
 	
 
@@ -4373,7 +4373,7 @@ double Actor::GetBounceBoostSpeed()
 	double currBounceBoostSpeed = bounceBoostSpeed;
 
 	double upgradeAmount = 5.0;//2.0;
-	int numUpgrades = HasUpgrade(UPGRADE_W4_SCORPION_BOUNCE);
+	int numUpgrades = IsOptionOn(UPGRADE_W4_SCORPION_BOUNCE);
 	currBounceBoostSpeed += upgradeAmount * numUpgrades;
 
 	return currBounceBoostSpeed;
@@ -4992,7 +4992,7 @@ void Actor::Respawn( bool setStartPos )
 	}
 	else
 	{
-		SetAllUpgrades(sess->currUpgradeField);
+		SetAllOptions(sess->currPlayerOptionsField);
 	}
 
 	/*if (parallelPracticeAndImParallel)
@@ -5127,7 +5127,7 @@ void Actor::Respawn( bool setStartPos )
 	currAirTrigger = NULL;
 
 
-	bHasUpgradeField.Set(bStartHasUpgradeField);
+	optionField.Set(startOptionField);
 
 	activeComboObjList = NULL;
 
@@ -5162,22 +5162,22 @@ void Actor::Respawn( bool setStartPos )
 		switch (sess->mapHeader->envWorldType)
 		{
 		case 0:
-			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_STARTING_MOMENTUM);
+			hasStartMomentumUpgrade = IsOptionOn(UPGRADE_W1_INCREASE_STARTING_MOMENTUM);
 			break;
 		case 1:
-			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_STARTING_MOMENTUM);
+			hasStartMomentumUpgrade = IsOptionOn(UPGRADE_W2_INCREASE_STARTING_MOMENTUM);
 			break;
 		case 2:
-			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_STARTING_MOMENTUM);
+			hasStartMomentumUpgrade = IsOptionOn(UPGRADE_W3_INCREASE_STARTING_MOMENTUM);
 			break;
 		case 3:
-			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_STARTING_MOMENTUM);
+			hasStartMomentumUpgrade = IsOptionOn(UPGRADE_W4_INCREASE_STARTING_MOMENTUM);
 			break;
 		case 4:
-			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_STARTING_MOMENTUM);
+			hasStartMomentumUpgrade = IsOptionOn(UPGRADE_W5_INCREASE_STARTING_MOMENTUM);
 			break;
 		case 5:
-			hasStartMomentumUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_STARTING_MOMENTUM);
+			hasStartMomentumUpgrade = IsOptionOn(UPGRADE_W6_INCREASE_STARTING_MOMENTUM);
 			break;
 		}
 	}
@@ -5279,11 +5279,11 @@ void Actor::Respawn( bool setStartPos )
 	
 
 
-	if( HasUpgrade( UPGRADE_POWER_LWIRE ) )
+	if(IsOptionOn( UPGRADE_POWER_LWIRE ) )
 	{
 		leftWire->Reset();
 	}
-	if(HasUpgrade(UPGRADE_POWER_RWIRE))
+	if(IsOptionOn(UPGRADE_POWER_RWIRE))
 	{
 		rightWire->Reset();
 	}
@@ -5450,35 +5450,35 @@ void Actor::KinModeUpdate()
 
 		bool allColorsOn = true;
 
-		if( HasUpgrade( UPGRADE_POWER_AIRDASH ) || allColorsOn)
+		if(IsOptionOn( UPGRADE_POWER_AIRDASH ) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0x55, 0xff );
 			cIndex++;
 		}
-		if(HasUpgrade(UPGRADE_POWER_GRAV) || allColorsOn)
+		if(IsOptionOn(UPGRADE_POWER_GRAV) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0xff, 0x88 );
 			cIndex++;
 		}
-		if(HasUpgrade(UPGRADE_POWER_BOUNCE) || allColorsOn)
+		if(IsOptionOn(UPGRADE_POWER_BOUNCE) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0xff, 0x33 );
 			cIndex++;
 		}
 
-		if(HasUpgrade(UPGRADE_POWER_GRIND) || allColorsOn)
+		if(IsOptionOn(UPGRADE_POWER_GRIND) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x88, 0x00 );
 			cIndex++;
 		}
 
-		if(HasUpgrade(UPGRADE_POWER_TIME ) || allColorsOn)
+		if(IsOptionOn(UPGRADE_POWER_TIME ) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x00, 0x00 );
 			cIndex++;
 		}
 
-		if(HasUpgrade(UPGRADE_POWER_LWIRE) || HasUpgrade(UPGRADE_POWER_RWIRE) || allColorsOn)
+		if(IsOptionOn(UPGRADE_POWER_LWIRE) || IsOptionOn(UPGRADE_POWER_RWIRE) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x33, 0xaa );
 			cIndex++;
@@ -5850,32 +5850,32 @@ void Actor::ReactToBeingHit()
 		{
 		case HitboxInfo::BLUE:
 		{
-			hasDamageUpgrade = HasUpgrade(UPGRADE_W1_DECREASE_ENEMY_DAMAGE);
+			hasDamageUpgrade = IsOptionOn(UPGRADE_W1_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::GREEN:
 		{
-			hasDamageUpgrade = HasUpgrade(UPGRADE_W2_DECREASE_ENEMY_DAMAGE);
+			hasDamageUpgrade = IsOptionOn(UPGRADE_W2_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::YELLOW:
 		{
-			hasDamageUpgrade = HasUpgrade(UPGRADE_W3_DECREASE_ENEMY_DAMAGE);
+			hasDamageUpgrade = IsOptionOn(UPGRADE_W3_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::ORANGE:
 		{
-			hasDamageUpgrade = HasUpgrade(UPGRADE_W4_DECREASE_ENEMY_DAMAGE);
+			hasDamageUpgrade = IsOptionOn(UPGRADE_W4_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::RED:
 		{
-			hasDamageUpgrade = HasUpgrade(UPGRADE_W5_DECREASE_ENEMY_DAMAGE);
+			hasDamageUpgrade = IsOptionOn(UPGRADE_W5_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		case HitboxInfo::MAGENTA:
 		{
-			hasDamageUpgrade = HasUpgrade(UPGRADE_W6_DECREASE_ENEMY_DAMAGE);
+			hasDamageUpgrade = IsOptionOn(UPGRADE_W6_DECREASE_ENEMY_DAMAGE);
 			break;
 		}
 		/*case HitboxInfo::GREY:
@@ -5991,7 +5991,7 @@ void Actor::ReactToBeingHit()
 				{
 					//abs( e0n.x ) < wallThresh )
 
-					if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+					if (!IsOptionOn(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 					{
 						HitOutOfCeilingGrindIntoAir();
 					}
@@ -6163,7 +6163,7 @@ void Actor::ProcessGravityGrass()
 	if (ground != NULL && reversed
 		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
 		&& action != GROUNDTECHINPLACE
-		&& ((!HasUpgrade(UPGRADE_POWER_GRAV) 
+		&& ((!IsOptionOn(UPGRADE_POWER_GRAV)
 		&& !touchedGrass[Grass::GRAVREVERSE]) 
 		|| touchedGrass[Grass::ANTIGRAVREVERSE]))
 	{
@@ -6221,7 +6221,7 @@ void Actor::UpdateBounceFlameOn()
 		//if (action != BOUNCEAIR && action != BOUNCEGROUND && action != BOUNCEGROUNDEDWALL )
 		if( bounceEdge == NULL )
 		{
-			if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || !BounceButtonHeld())//BounceButtonPressed())
+			if (!IsOptionOn(UPGRADE_POWER_BOUNCE) || !BounceButtonHeld())//BounceButtonPressed())
 			{
 				BounceFlameOff();
 			}
@@ -6229,7 +6229,7 @@ void Actor::UpdateBounceFlameOn()
 	}
 	else
 	{
-		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && BounceButtonHeld() )//BounceButtonPressed())
+		if (IsOptionOn(UPGRADE_POWER_BOUNCE) && BounceButtonHeld() )//BounceButtonPressed())
 		{
 			BounceFlameOn();
 		}
@@ -6245,7 +6245,7 @@ void Actor::UpdateBounceFlameOn()
 			bool turnOffWhileToggleOff = !toggleBounceInput 
 				&& !currInput.PowerButtonDown();
 
-			if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || turnOffWhileToggleOff
+			if (!IsOptionOn(UPGRADE_POWER_BOUNCE) || turnOffWhileToggleOff
 				|| turnOffWhileToggleOn )
 			{
 				if (toggleBounceInput)
@@ -6269,7 +6269,7 @@ void Actor::UpdateBounceFlameOn()
 			&& !prevInput.PowerButtonDown();
 		bool turnOnWhileToggleOff = !toggleBounceInput && currInput.PowerButtonDown();
 
-		if (currPowerMode == PMODE_BOUNCE && HasUpgrade(UPGRADE_POWER_BOUNCE)
+		if (currPowerMode == PMODE_BOUNCE && IsOptionOn(UPGRADE_POWER_BOUNCE)
 			&& ( turnOnWhileToggleOn || turnOnWhileToggleOff ) )
 		{
 			if (toggleBounceInput)
@@ -6284,14 +6284,14 @@ void Actor::UpdateBounceFlameOn()
 
 void Actor::UpdateWireStates()
 {
-	if (HasUpgrade(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
+	if (IsOptionOn(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
 	{
 		leftWire->ClearDebug();
 		leftWire->SetStoredPlayerPos(leftWire->GetPlayerPos());
 		leftWire->UpdateState(touchEdgeWithLeftWire);
 	}
 
-	if (HasUpgrade(UPGRADE_POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
+	if (IsOptionOn(UPGRADE_POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
 	{
 		rightWire->ClearDebug();
 		rightWire->SetStoredPlayerPos(rightWire->GetPlayerPos());
@@ -6978,7 +6978,7 @@ void Actor::ActivateLauncherEffect(int tile)
 
 bool Actor::CheckExtendedAirdash()
 {
-	return (( inBubble && HasUpgrade( UPGRADE_W6_BUBBLE_AIRDASH ) )//UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES ) 
+	return (( inBubble && IsOptionOn( UPGRADE_W6_BUBBLE_AIRDASH ) )//UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES ) 
 		|| InWater(TerrainPolygon::WATER_ZEROGRAV));
 		//|| InWater( TerrainPolygon::WATER_MOMENTUM ));
 }
@@ -7013,7 +7013,7 @@ void Actor::UpdateBubbles()
 	oldInBubble = inBubble;
 	inBubble = false;
 
-	if (HasUpgrade(UPGRADE_POWER_TIME))
+	if (IsOptionOn(UPGRADE_POWER_TIME))
 	{
 		//calculate this all the time so I can give myself infinite airdash
 		for (int i = 0; i < MAX_BUBBLES; ++i)
@@ -7077,7 +7077,7 @@ void Actor::UpdateBubbles()
 	}
 
 	bool powerSlow = CanCreateTimeBubble()
-		&& HasUpgrade(UPGRADE_POWER_TIME)
+		&& IsOptionOn(UPGRADE_POWER_TIME)
 		&& PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW;
 
@@ -7866,13 +7866,13 @@ bool Actor::TryClimbBoost()
 
 		if (reversed)
 		{
-			int numCeilingClimbUpgrades = HasUpgrade(UPGRADE_W3_CEILING_STEEP_CLIMB_1) + HasUpgrade(UPGRADE_W4_CEILING_STEEP_CLIMB_2) + HasUpgrade(UPGRADE_W5_CEILING_STEEP_CLIMB_3);
+			int numCeilingClimbUpgrades = IsOptionOn(UPGRADE_W3_CEILING_STEEP_CLIMB_1) + IsOptionOn(UPGRADE_W4_CEILING_STEEP_CLIMB_2) + IsOptionOn(UPGRADE_W5_CEILING_STEEP_CLIMB_3);
 
 			extra += numCeilingClimbUpgrades * upgradeAmount;
 		}
 		else
 		{
-			int numClimbUpgrades = HasUpgrade(UPGRADE_W1_STEEP_CLIMB_1) + HasUpgrade(UPGRADE_W2_STEEP_CLIMB_2) + HasUpgrade(UPGRADE_W6_STEEP_CLIMB_3);
+			int numClimbUpgrades = IsOptionOn(UPGRADE_W1_STEEP_CLIMB_1) + IsOptionOn(UPGRADE_W2_STEEP_CLIMB_2) + IsOptionOn(UPGRADE_W6_STEEP_CLIMB_3);
 			extra += numClimbUpgrades * upgradeAmount;
 		}
 
@@ -8607,7 +8607,7 @@ bool Actor::CanRailSlide()
 
 bool Actor::CanRailGrind()
 {
-	if (HasUpgrade(UPGRADE_POWER_GRIND))
+	if (IsOptionOn(UPGRADE_POWER_GRIND))
 	{
 		if (!PowerButtonHeld() && prevInput.PowerButtonDown())
 		{
@@ -8646,49 +8646,28 @@ bool Actor::IsRailSlideFacingRight()
 	return r;
 }
 
-void Actor::SetAllUpgrades(const BitField &b)
+void Actor::SetAllOptions(const BitField &b)
 {
-	bStartHasUpgradeField.Set(b);
-	bHasUpgradeField.Set(b);
-
-	/*for (int i = 0; i < 32; ++i)
-	{
-		if (HasUpgrade(i))
-		{
-			cout << "has upgrade: " << i << endl;
-		}
-	}*/
+	startOptionField.Set(b);
+	optionField.Set(b);
 }
 
-bool Actor::HasUpgrade(int index)
+bool Actor::IsOptionOn(int index)
 {
-	return bHasUpgradeField.GetBit(index);
+	return optionField.GetBit(index);
 }
 
-int Actor::NumUpgradeRange(int index, int numUpgrades)
+void Actor::SetOption(int optionIndex, bool on)
 {
-	int numOn = 0;
-	for (int i = 0; i < numUpgrades; ++i)
-	{
-		numOn += bHasUpgradeField.GetBit(index + i);
-	}
-
-	return numOn;
-}
-
-
-void Actor::SetUpgrade(int upgrade, bool on)
-{
-	bHasUpgradeField.SetBit(upgrade, on);
+	optionField.SetBit(optionIndex, on);
 	UpdatePowersMenu();
 }
 
-void Actor::SetStartUpgrade(int upgrade, bool on)
+void Actor::SetStartOption(int optionIndex, bool on)
 {
-	bStartHasUpgradeField.SetBit(upgrade, on);
-	SetUpgrade(upgrade, on);	
+	startOptionField.SetBit(optionIndex, on);
+	SetOption(optionIndex, on);
 }
-
 
 void Actor::ReverseSteepSlideJump()
 {
@@ -10451,9 +10430,9 @@ V2d Actor::UpdateReversePhysics()
 										&& action != GRAVREVERSE //never transition to ground from gravreverse state
 										&& ( ground->IsSteepGround() || HoldingRelativeUp() )
 										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0))
-										/*&& (HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
+										/*&& (IsOptionOn(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
 										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))*/
+										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (IsOptionOn(UPGRADE_POWER_GRIND) && GrindButtonHeld()))*/
 										&& !minContact.edge->IsInvisibleWall())
 									{
 										collision = true;
@@ -10851,7 +10830,7 @@ bool Actor::ExitGrind(bool jump)
 
 				framesNotGrinding = 0;
 
-				if (!HasUpgrade(UPGRADE_POWER_GRAV) || jump)
+				if (!IsOptionOn(UPGRADE_POWER_GRAV) || jump)
 				{
 					if (grindNorm.x > 0)
 					{
@@ -10952,7 +10931,7 @@ bool Actor::ExitGrind(bool jump)
 		else
 		{
 			reversed = oldReversed;
-			if (!HasUpgrade( UPGRADE_POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
+			if (!IsOptionOn( UPGRADE_POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
 				{
@@ -11262,7 +11241,7 @@ double Actor::GetDashSpeed()
 {
 	double dSpeed = GetOriginalDashSpeed();
 
-	int numBaseDashUpgrades = HasUpgrade(UPGRADE_W1_BASE_DASH_1) + HasUpgrade(UPGRADE_W3_BASE_DASH_2) + HasUpgrade(UPGRADE_W6_BASE_DASH_3);
+	int numBaseDashUpgrades = IsOptionOn(UPGRADE_W1_BASE_DASH_1) + IsOptionOn(UPGRADE_W3_BASE_DASH_2) + IsOptionOn(UPGRADE_W6_BASE_DASH_3);
 	double upgradeAmount = 3;
 	dSpeed += upgradeAmount * numBaseDashUpgrades;
 
@@ -11287,7 +11266,7 @@ double Actor::GetAirDashSpeed()
 
 	double dSpeed = GetOriginalDashSpeed();
 
-	int numBaseAirdashUpgrades = HasUpgrade(UPGRADE_W2_BASE_AIRDASH_1) + HasUpgrade(UPGRADE_W5_BASE_AIRDASH_2) + HasUpgrade(UPGRADE_W6_BASE_AIRDASH_3);
+	int numBaseAirdashUpgrades = IsOptionOn(UPGRADE_W2_BASE_AIRDASH_1) + IsOptionOn(UPGRADE_W5_BASE_AIRDASH_2) + IsOptionOn(UPGRADE_W6_BASE_AIRDASH_3);
 	double upgradeAmount = 3;
 	dSpeed += upgradeAmount * numBaseAirdashUpgrades;
 
@@ -11389,9 +11368,9 @@ void Actor::TryChangePowerMode()
 	bool noHoriz = !currInput.RLeft() && !currInput.RRight();
 	bool noVert = !currInput.RUp() && !currInput.RDown();
 
-	bool hasTimeSlow = HasUpgrade(UPGRADE_POWER_TIME);
-	bool hasGrind = HasUpgrade(UPGRADE_POWER_GRIND);
-	bool hasBounce = HasUpgrade(UPGRADE_POWER_BOUNCE);
+	bool hasTimeSlow = IsOptionOn(UPGRADE_POWER_TIME);
+	bool hasGrind = IsOptionOn(UPGRADE_POWER_GRIND);
+	bool hasBounce = IsOptionOn(UPGRADE_POWER_BOUNCE);
 
 	int oldPowerMode = currPowerMode;
 
@@ -11691,7 +11670,7 @@ bool Actor::TryWallJump()
 
 void Actor::TryDashBoost()
 {
-	if (!HasUpgrade(UPGRADE_W1_DASH_BOOST))
+	if (!IsOptionOn(UPGRADE_W1_DASH_BOOST))
 	{
 		return;
 	}
@@ -11806,7 +11785,7 @@ void Actor::TryDashBoost()
 
 void Actor::TryAirdashBoost()
 {
-	if (!HasUpgrade(UPGRADE_W2_AIRDASH_BOOST))
+	if (!IsOptionOn(UPGRADE_W2_AIRDASH_BOOST))
 	{
 		return;
 	}
@@ -11821,7 +11800,7 @@ void Actor::TryAirdashBoost()
 
 void Actor::TryExtraAirdashBoost()
 {
-	//if (!HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	//if (!IsOptionOn(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
 	{
 		return;
 	}
@@ -12089,7 +12068,7 @@ bool Actor::IntersectMySlowboxes(CollisionBody *cb, int cbFrame )
 
 int Actor::GetMaxBubbles()
 {
-	int numBubbles = 1 + HasUpgrade(UPGRADE_W6_EXTRA_BUBBLES_1) * 2 + HasUpgrade(UPGRADE_W6_EXTRA_BUBBLES_2) * 2;
+	int numBubbles = 1 + IsOptionOn(UPGRADE_W6_EXTRA_BUBBLES_1) * 2 + IsOptionOn(UPGRADE_W6_EXTRA_BUBBLES_2) * 2;
 	return numBubbles;
 }
 
@@ -12097,7 +12076,7 @@ int Actor::GetMaxBubbles()
 
 int Actor::GetBubbleRadius()
 {
-	bool hasBubbleSizeUpgrade = HasUpgrade(UPGRADE_W6_BUBBLE_SIZE);
+	bool hasBubbleSizeUpgrade = IsOptionOn(UPGRADE_W6_BUBBLE_SIZE);
 	int upgradeFactor = 30;//15;
 
 	int currRad = bubbleRadius;
@@ -12116,7 +12095,7 @@ int Actor::GetBubbleTimeFactor()
 
 int Actor::GetBeingSlowedFactor()
 {
-	bool hasBeingSlowedUpgrade = HasUpgrade(UPGRADE_W5_SLOW_RESISTANCE);
+	bool hasBeingSlowedUpgrade = IsOptionOn(UPGRADE_W5_SLOW_RESISTANCE);
 	int mult = baseTimeSlowedMultiple;
 
 	if (hasBeingSlowedUpgrade)
@@ -12146,12 +12125,12 @@ double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
 
 	if (reversed)
 	{
-		int numCeilingSprintUpgrades = HasUpgrade(UPGRADE_W3_CEILING_SPRINT_1) + HasUpgrade(UPGRADE_W4_CEILING_SPRINT_2) + HasUpgrade(UPGRADE_W5_CEILING_SPRINT_3);
+		int numCeilingSprintUpgrades = IsOptionOn(UPGRADE_W3_CEILING_SPRINT_1) + IsOptionOn(UPGRADE_W4_CEILING_SPRINT_2) + IsOptionOn(UPGRADE_W5_CEILING_SPRINT_3);
 		extraSprintAccel += extraSprintAccel * numCeilingSprintUpgrades;
 	}
 	else
 	{
-		int numSprintUpgrades = HasUpgrade(UPGRADE_W1_SPRINT_1) + HasUpgrade(UPGRADE_W2_SPRINT_2) + HasUpgrade(UPGRADE_W6_SPRINT_3);
+		int numSprintUpgrades = IsOptionOn(UPGRADE_W1_SPRINT_1) + IsOptionOn(UPGRADE_W2_SPRINT_2) + IsOptionOn(UPGRADE_W6_SPRINT_3);
 		extraSprintAccel += upgradeSprintAmount * numSprintUpgrades;
 	}
 
@@ -12205,14 +12184,14 @@ void Actor::GroundExtraAccel()
 
 	if (reversed)
 	{
-		int numPassiveCeilingAccelUpgrades = HasUpgrade(UPGRADE_W3_CEILING_PASSIVE_GROUND_1) 
-			+ HasUpgrade(UPGRADE_W4_CEILING_PASSIVE_GROUND_2) 
-			+ HasUpgrade(UPGRADE_W5_CEILING_PASSIVE_GROUND_3);
+		int numPassiveCeilingAccelUpgrades = IsOptionOn(UPGRADE_W3_CEILING_PASSIVE_GROUND_1)
+			+ IsOptionOn(UPGRADE_W4_CEILING_PASSIVE_GROUND_2)
+			+ IsOptionOn(UPGRADE_W5_CEILING_PASSIVE_GROUND_3);
 		extraAccel = numPassiveCeilingAccelUpgrades * upgradeFactor;
 	}
 	else
 	{
-		int numPassiveAccelUpgrades = HasUpgrade(UPGRADE_W1_PASSIVE_GROUND_1) + HasUpgrade(UPGRADE_W2_PASSIVE_GROUND_2) + HasUpgrade(UPGRADE_W6_PASSIVE_GROUND_3);
+		int numPassiveAccelUpgrades = IsOptionOn(UPGRADE_W1_PASSIVE_GROUND_1) + IsOptionOn(UPGRADE_W2_PASSIVE_GROUND_2) + IsOptionOn(UPGRADE_W6_PASSIVE_GROUND_3);
 		extraAccel = numPassiveAccelUpgrades * upgradeFactor;
 	}
 
@@ -12318,7 +12297,7 @@ void Actor::StopGrind()
 		}
 		else
 		{
-			if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+			if (!IsOptionOn(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
 				{
@@ -12517,7 +12496,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 					grindEdge = e1;
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
+						if (IsOptionOn(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
 						{
 							RestoreAirOptions();
 						}
@@ -12603,7 +12582,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
+						if (IsOptionOn(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
 						{
 							RestoreAirOptions();
 						}
@@ -15046,7 +15025,7 @@ void Actor::UpdatePhysics()
 			else if(!touchedGrass[Grass::ANTIGRIND] 
 				&& tempCollision //&& currPowerMode == PMODE_GRIND 
 				&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
-				&& HasUpgrade(UPGRADE_POWER_GRIND) 
+				&& IsOptionOn(UPGRADE_POWER_GRIND)
 				&& CanBufferGrind()//PowerButtonHeld()
 				&& velocity.y != 0 //remove this soon
 				&& abs( minContact.normal.x ) >= wallThresh 
@@ -21728,11 +21707,11 @@ bool Actor::DefaultGravReverseCheck()
 {
 	bool steepTransferCheck = ground != NULL && ground->IsSteepGround() && minContact.edge->IsSteepGround();
 
-	return ((HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
+	return ((IsOptionOn(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (IsOptionOn(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -22754,33 +22733,33 @@ void Actor::ConfirmHit( Enemy *e )
 	{
 	case 1:
 		c = COLOR_BLUE;
-		hasMomentumUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_ENEMY_MOMENTUM);
-		hasRegenUpgrade = HasUpgrade(UPGRADE_W1_INCREASE_ENEMY_REGEN);
+		hasMomentumUpgrade = IsOptionOn(UPGRADE_W1_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = IsOptionOn(UPGRADE_W1_INCREASE_ENEMY_REGEN);
 		break;
 	case 2:
 		c = COLOR_GREEN;
-		hasMomentumUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_ENEMY_MOMENTUM);
-		hasRegenUpgrade = HasUpgrade(UPGRADE_W2_INCREASE_ENEMY_REGEN);
+		hasMomentumUpgrade = IsOptionOn(UPGRADE_W2_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = IsOptionOn(UPGRADE_W2_INCREASE_ENEMY_REGEN);
 		break;
 	case 3:
 		c = COLOR_YELLOW;
-		hasMomentumUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_ENEMY_MOMENTUM);
-		hasRegenUpgrade = HasUpgrade(UPGRADE_W3_INCREASE_ENEMY_REGEN);
+		hasMomentumUpgrade = IsOptionOn(UPGRADE_W3_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = IsOptionOn(UPGRADE_W3_INCREASE_ENEMY_REGEN);
 		break;
 	case 4:
 		c = COLOR_ORANGE;
-		hasMomentumUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_ENEMY_MOMENTUM);
-		hasRegenUpgrade = HasUpgrade(UPGRADE_W4_INCREASE_ENEMY_REGEN);
+		hasMomentumUpgrade = IsOptionOn(UPGRADE_W4_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = IsOptionOn(UPGRADE_W4_INCREASE_ENEMY_REGEN);
 		break;
 	case 5:
 		c = COLOR_RED;
-		hasMomentumUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_ENEMY_MOMENTUM);
-		hasRegenUpgrade = HasUpgrade(UPGRADE_W5_INCREASE_ENEMY_REGEN);
+		hasMomentumUpgrade = IsOptionOn(UPGRADE_W5_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = IsOptionOn(UPGRADE_W5_INCREASE_ENEMY_REGEN);
 		break;
 	case 6:
 		c = COLOR_MAGENTA;
-		hasMomentumUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_ENEMY_MOMENTUM);
-		hasRegenUpgrade = HasUpgrade(UPGRADE_W6_INCREASE_ENEMY_REGEN);
+		hasMomentumUpgrade = IsOptionOn(UPGRADE_W6_INCREASE_ENEMY_MOMENTUM);
+		hasRegenUpgrade = IsOptionOn(UPGRADE_W6_INCREASE_ENEMY_REGEN);
 		break;
 	case 7:
 		c = Color::White;
@@ -23512,13 +23491,13 @@ void Actor::AirMovement()
 
 void Actor::DrawWires(sf::RenderTarget *target)
 {
-	if (HasUpgrade(UPGRADE_POWER_LWIRE) &&
+	if (IsOptionOn(UPGRADE_POWER_LWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| leftWire->IsRetracting()))
 	{
 		leftWire->Draw(target);
 	}
-	if (HasUpgrade(UPGRADE_POWER_RWIRE) &&
+	if (IsOptionOn(UPGRADE_POWER_RWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| rightWire->IsRetracting()))
 	{
@@ -23528,10 +23507,10 @@ void Actor::DrawWires(sf::RenderTarget *target)
 
 void Actor::UpdateWireQuads()
 {
-	if (HasUpgrade(UPGRADE_POWER_LWIRE))
+	if (IsOptionOn(UPGRADE_POWER_LWIRE))
 		leftWire->UpdateQuads();
 
-	if (HasUpgrade(UPGRADE_POWER_RWIRE))
+	if (IsOptionOn(UPGRADE_POWER_RWIRE))
 		rightWire->UpdateQuads();
 }
 
@@ -23802,7 +23781,7 @@ bool Actor::CanBufferGrind()
 	return !touchedGrass[Grass::ANTIGRIND]
 		&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
 		&& currPowerMode == PMODE_GRIND 
-		&& HasUpgrade(UPGRADE_POWER_GRIND) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
+		&& IsOptionOn(UPGRADE_POWER_GRIND) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
 }
 
 bool Actor::CanPressGrind()
@@ -24114,7 +24093,7 @@ void Actor::ExecuteDoubleJump()
 	}
 
 	double scorpionExtra = 10;
-	if (bounceFlameOn && HasUpgrade( UPGRADE_W4_SCORPION_DOUBLE_JUMP))
+	if (bounceFlameOn && IsOptionOn( UPGRADE_W4_SCORPION_DOUBLE_JUMP))
 	{
 		currStrength += scorpionExtra;
 	}
@@ -24273,7 +24252,7 @@ int Actor::GetDoubleJump()
 
 bool Actor::CanDoubleJump()
 {
-	return ( (hasDoubleJump || extraDoubleJump || ( HasUpgrade( UPGRADE_W6_BUBBLE_AIRDASH) && inBubble ) ) && 
+	return ( (hasDoubleJump || extraDoubleJump || (IsOptionOn( UPGRADE_W6_BUBBLE_AIRDASH) && inBubble ) ) &&
 		(JumpButtonPressed() || pauseBufferedJump ) && !IsSingleWirePulling() );
 }
 
@@ -24322,7 +24301,7 @@ bool Actor::TryDoubleJump()
 
 bool Actor::TryAirDash()
 {
-	if (HasUpgrade(UPGRADE_POWER_AIRDASH) && !IsSingleWirePulling())
+	if (IsOptionOn(UPGRADE_POWER_AIRDASH) && !IsSingleWirePulling())
 	{
 		//removed infinite airdash within bubbles, going to replace it as a shard
 		if (hasAirDash && (DashButtonPressed() || pauseBufferedDash))
@@ -24339,8 +24318,8 @@ bool Actor::TryAirDash()
 
 bool Actor::TryGlide()
 {
-	bool ad = (HasUpgrade(UPGRADE_POWER_AIRDASH) && !hasAirDash) 
-		|| !HasUpgrade(UPGRADE_POWER_AIRDASH);
+	bool ad = (IsOptionOn(UPGRADE_POWER_AIRDASH) && !hasAirDash)
+		|| !IsOptionOn(UPGRADE_POWER_AIRDASH);
 	if (DashButtonPressed())
 	{
 		SetAction(GLIDE);
@@ -25172,12 +25151,12 @@ void Actor::SteepSlideMovement()
 
 		if (reversed)
 		{
-			int numCeilingSlideUpgrades = HasUpgrade(UPGRADE_W3_CEILING_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W4_CEILING_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W5_CEILING_STEEP_SLIDE_3);
+			int numCeilingSlideUpgrades = IsOptionOn(UPGRADE_W3_CEILING_STEEP_SLIDE_1) + IsOptionOn(UPGRADE_W4_CEILING_STEEP_SLIDE_2) + IsOptionOn(UPGRADE_W5_CEILING_STEEP_SLIDE_3);
 			currFactor = steepSlideFastGravFactor + upgradeAmount * numCeilingSlideUpgrades;
 		}
 		else
 		{
-			int numSlideUpgrades = HasUpgrade(UPGRADE_W1_STEEP_SLIDE_1) + HasUpgrade(UPGRADE_W2_STEEP_SLIDE_2) + HasUpgrade(UPGRADE_W6_STEEP_SLIDE_3);
+			int numSlideUpgrades = IsOptionOn(UPGRADE_W1_STEEP_SLIDE_1) + IsOptionOn(UPGRADE_W2_STEEP_SLIDE_2) + IsOptionOn(UPGRADE_W6_STEEP_SLIDE_3);
 			currFactor = steepSlideFastGravFactor + upgradeAmount * numSlideUpgrades;
 		}
 

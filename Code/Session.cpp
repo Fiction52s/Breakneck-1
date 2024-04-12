@@ -214,7 +214,7 @@ void Session::SetParentGame(GameSession *game)
 
 void Session::SetPlayerOptionField(int pIndex)
 {
-	GetPlayer(pIndex)->SetAllUpgrades(defaultStartingPlayerOptionsField);
+	GetPlayer(pIndex)->SetAllOptions(defaultStartingPlayerOptionsField);
 }
 
 void Session::SetupEnemyType(ParamsInfo &pi, bool unlisted )
@@ -1477,7 +1477,7 @@ void Session::DrawBullets(sf::RenderTarget *target)
 
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT),
-	currUpgradeField(Session::PLAYER_OPTION_BIT_COUNT), currLogField( LogDetailedInfo::MAX_LOGS),
+	currPlayerOptionsField(Session::PLAYER_OPTION_BIT_COUNT), currLogField( LogDetailedInfo::MAX_LOGS),
 	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
 	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
 {
@@ -2865,7 +2865,7 @@ void Session::RunFrameForParallelPractice()
 					//prac.hasSequenceConfirmReady = false;
 
 					pm->parallelGames[i]->currLogField.Set(prac.logField);
-					pm->parallelGames[i]->currUpgradeField.Set(prac.upgradeField);
+					pm->parallelGames[i]->currPlayerOptionsField.Set(prac.playerOptionField);
 					pm->parallelGames[i]->originalProgressionModeOn = prac.origProgression;
 
 					if (prac.syncStateBufSize > 0)
@@ -4979,10 +4979,10 @@ void Session::AddBarrier(XBarrierParams *xbp, bool warp )
 	barriers.push_back(b);
 }
 
-void Session::UnlockUpgrade(int upgradeType, int playerIndex)
+void Session::SetPlayerOption(int optionType, bool isOn, int playerIndex)
 {
-	currUpgradeField.SetBit(upgradeType, true);
-	GetPlayer(playerIndex)->SetStartUpgrade(upgradeType, true);
+	currPlayerOptionsField.SetBit(optionType, true);
+	GetPlayer(playerIndex)->SetStartOption(optionType, true);
 }
 
 void Session::UnlockLog(int logType, int playerIndex )
@@ -5588,16 +5588,6 @@ void Session::DrawActiveSequence(EffectLayer layer, sf::RenderTarget *target)
 			target->setView(oldView);
 		}
 	}
-}
-
-bool Session::IsShardCaptured(int s)
-{
-	if (IsReplayOn())
-	{
-		return activePlayerReplayManagers[0]->header.IsShardCaptured(s);
-	}
-
-	return currUpgradeField.GetBit(s + Actor::SHARD_START_INDEX);
 }
 
 bool Session::HasLog(int logIndex)
@@ -9712,12 +9702,12 @@ void Session::SetView(const sf::View &p_view)
 	extraScreenTex->setView(p_view);
 }
 
-const BitField & Session::GetPracticeUpgradeField()
+const BitField & Session::GetPracticePlayerOptionField()
 {
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
 	{
 		assert(netplayManager != NULL);
-		return netplayManager->practicePlayers[parallelSessionIndex].upgradeField;
+		return netplayManager->practicePlayers[parallelSessionIndex].playerOptionField;
 	}
 	else
 	{
@@ -10150,7 +10140,7 @@ void Session::SendPracticeStartMessageToAllNewPeers()
 	//sends the start to message to any new peers that join
 	PracticeStartMsg psm;
 	psm.skinIndex = GetPlayerNormalSkin(0);
-	psm.SetUpgradeField(currUpgradeField);//GetPlayer(0)->bStartHasUpgradeField);	
+	psm.SetPlayerOptionField(currPlayerOptionsField);//GetPlayer(0)->bStartHasUpgradeField);	
 	psm.SetLogField(currLogField);
 	psm.startFrame = totalGameFrames;
 	psm.wantsToPlay = netplayManager->wantsToPracticeRace;

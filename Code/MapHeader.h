@@ -24,18 +24,11 @@ struct SpecialItemInfo
 	int itemIndex0;
 	int itemIndex1;
 
-	SpecialItemInfo()
-		:itemType(-1), itemIndex0(-1), itemIndex1(-1)
-	{
+	SpecialItemInfo();
+	SpecialItemInfo(int it, int iv0 = -1, int iv1 = -1);
 
-	}
-
-	SpecialItemInfo( int it, int iv0 = -1, int iv1 = -1)
-		:itemType(it), itemIndex0(iv0), itemIndex1(iv1)
-	{
-
-	}
-	
+	void Load(std::ifstream &is);
+	void Save(std::ofstream &of);
 	
 };
 
