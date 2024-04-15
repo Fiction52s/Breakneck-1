@@ -285,12 +285,11 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("fill", Vector2i(0, 0), true);
 		p->AddButton("createchain", Vector2i(0, 0), Vector2f(200, 28 + 4), "Create Chain");
 	}
-	else if (name == "healthfly")
+	else if (name == "currencyitem")
 	{
 		p = CreateDefaultPanel();
-		std::vector<string> fTypes{ "Grey", "Blue", "Green", "Yellow",
-			"Orange", "Red", "Magenta", "Black" };
-		p->AddDropdown("ftype", Vector2i(0, 10), Vector2i(200, 28), fTypes, 0);
+		std::vector<string> cTypes{ "Normal", "Bonus" };
+		p->AddDropdown("ctype", Vector2i(0, 10), Vector2i(200, 28), cTypes, 0);
 		AddLabeledSlider(p, "spacing", "Spacing:", 40, 300, 40);
 		p->AddLabel("fill", Vector2i(0, 0), 28, "Fill Mode:");
 		p->AddCheckBox("fill", Vector2i(0, 0), true);

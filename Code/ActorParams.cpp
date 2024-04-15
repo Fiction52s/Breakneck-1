@@ -997,7 +997,7 @@ ActorParams *BlockerParams::Copy()
 	return bp;
 }
 
-FlyParams::FlyParams(ActorType *at, ifstream &is)
+CurrencyItemParams::CurrencyItemParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
 	lines = NULL;
@@ -1005,32 +1005,32 @@ FlyParams::FlyParams(ActorType *at, ifstream &is)
 
 	//LoadGlobalPath(is);
 
-	int ifType;
-	is >> ifType;
-	fType = ifType;
+	int icType;
+	is >> icType;
+	currencyItemType = icType;
 
 	is >> spacing;
 
 	LoadEnemyLevel(is);
 }
 
-FlyParams::FlyParams(ActorType *at, int level)
+CurrencyItemParams::CurrencyItemParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	lines = NULL;
 	PlaceAerial(Vector2i(0, 0));
 
-	fType = 0;
+	currencyItemType = 0;
 
 	spacing = 60;
 }
 
-void FlyParams::SetParams()
+void CurrencyItemParams::SetParams()
 {
 	Panel *p = type->panel;
 	fill = p->checkBoxes["fill"]->checked;
 
-	fType = p->dropdowns["ftype"]->selectedIndex;
+	currencyItemType = p->dropdowns["ctype"]->selectedIndex;
 
 	spacing = p->sliders["spacing"]->GetCurrValue();
 
@@ -1040,10 +1040,10 @@ void FlyParams::SetParams()
 	}
 }
 
-void FlyParams::SetPanelInfo()
+void CurrencyItemParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->dropdowns["ftype"]->SetSelectedIndex(fType);
+	p->dropdowns["ctype"]->SetSelectedIndex(currencyItemType);
 	p->checkBoxes["fill"]->checked = fill;
 	p->sliders["spacing"]->SetCurrValue(spacing);
 
@@ -1051,7 +1051,7 @@ void FlyParams::SetPanelInfo()
 	MakeGlobalPath(edit->patrolPath);
 }
 
-void FlyParams::Draw(sf::RenderTarget *target)
+void CurrencyItemParams::Draw(sf::RenderTarget *target)
 {
 	int localPathSize = localPath.size();
 
@@ -1077,20 +1077,20 @@ void FlyParams::Draw(sf::RenderTarget *target)
 	ActorParams::Draw(target);
 }
 
-void FlyParams::WriteParamFile(ofstream &of)
+void CurrencyItemParams::WriteParamFile(ofstream &of)
 {
 	//WritePath(of);
 
-	of << fType << "\n";
+	of << currencyItemType << "\n";
 
 	of << spacing << endl;
 
 	WriteLevel(of);
 }
 
-ActorParams *FlyParams::Copy()
+ActorParams *CurrencyItemParams::Copy()
 {
-	FlyParams *fp = new FlyParams(*this);
+	CurrencyItemParams *fp = new CurrencyItemParams(*this);
 	fp->lines = NULL;
 	fp->myEnemy = NULL;
 	fp->SetSelected(false);
@@ -1098,7 +1098,7 @@ ActorParams *FlyParams::Copy()
 }
 
 
-void FlyParams::OnCreate()
+void CurrencyItemParams::OnCreate()
 {
 	EditSession *edit = EditSession::GetSession();
 	edit->CreateChainButton(this);

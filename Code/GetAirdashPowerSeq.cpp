@@ -176,7 +176,7 @@ bool GetAirdashPowerSeq::Update()
 				sess->Fade(true, 60, Color::Black, true);
 				sess->ShowHUD(60);
 				//sess->mainMenu->adventureManager->currSaveFile
-				//	->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
+				//	->UnlockUpgrade(Actor::UpgradeType::POWER_AIRDASH);
 			}
 		}
 

@@ -55,7 +55,7 @@ struct RelEffectInstance;
 struct VertexBuf;
 struct Kin;
 struct MovingGeoGroup;
-struct HealthFly;
+struct CurrencyItem;
 
 struct TerrainRail;
 struct Nexus;
@@ -116,15 +116,15 @@ struct Actor : QuadTreeCollider,
 
 	const static int MAX_POWERS = 32; //won't get up to this number, but its nice for 4 byte spacing
 
-	enum UpgradeType
+	enum PlayerOption
 	{
-		UPGRADE_POWER_AIRDASH,
-		UPGRADE_POWER_GRAV,
-		UPGRADE_POWER_BOUNCE,
-		UPGRADE_POWER_GRIND,
-		UPGRADE_POWER_TIME,
-		UPGRADE_POWER_RWIRE,
-		UPGRADE_POWER_LWIRE,
+		POWER_AIRDASH,
+		POWER_GRAV,
+		POWER_BOUNCE,
+		POWER_GRIND,
+		POWER_TIME,
+		POWER_RWIRE,
+		POWER_LWIRE,
 
 
 		//W1
@@ -1170,7 +1170,7 @@ struct Actor : QuadTreeCollider,
 	double airDashSpeed0;
 	double airDashSpeed1;
 	double airDashSpeed2;
-	int flyCounter;
+	int currencyCounter;
 	
 	ComboObject *activeComboObjList;
 	CollisionBody *currHurtboxes;
@@ -1392,7 +1392,7 @@ struct Actor : QuadTreeCollider,
 	void CreateGravityDecreaserOffRing();
 	void CreateGravityIncreaserOnRing();
 	void CreateGravityIncreaserOffRing();
-	void CollectFly(HealthFly *hf);
+	void CollectCurrency(CurrencyItem *ci);
 	bool CheckSetToAerialFromNormalWater();
 	void SetupActionFunctions();
 	void StartAction();
@@ -1736,7 +1736,7 @@ struct Actor : QuadTreeCollider,
 	void StopRepeatingSound();
 	double GetOriginalDashSpeed();
 	double GetAirDashSpeed();
-	void AddToFlyCounter(int count);
+	void AddToCurrencyCounter(int count);
 	void SetCurrHitboxes(CollisionBody *cBody,
 		int p_frame);
 	void AddActiveComboObj(ComboObject *c);

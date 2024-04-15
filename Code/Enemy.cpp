@@ -1352,7 +1352,7 @@ void Enemy::DirectKill()
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 {
 	/*Actor *player = sess->GetPlayer(0);
-	if( player->HasUpgrade(Actor::UPGRADE_POWER_RWIRE))
+	if( player->HasUpgrade(Actor::POWER_RWIRE))
 	{
 		WireCharge *charge = player->rightWire->activeChargeList;
 		while( charge != NULL )
@@ -1374,7 +1374,7 @@ bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 {
 	/*Actor *player = sess->GetPlayer(0);
-	if(player->HasUpgrade(Actor::UPGRADE_POWER_LWIRE))
+	if(player->HasUpgrade(Actor::POWER_LWIRE))
 	{
 		WireCharge *charge = player->leftWire->activeChargeList;
 		while( charge != NULL )

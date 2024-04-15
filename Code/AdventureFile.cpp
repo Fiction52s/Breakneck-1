@@ -550,7 +550,7 @@ void AdventureFile::GetOriginalProgressionOptionField(int mapIndex, BitField &bf
 
 		//for (auto it = mhi.powerVec.begin(); it != mhi.powerVec.end(); ++it)
 		//{
-		//	if ((*it) == Actor::UPGRADE_POWER_RWIRE)
+		//	if ((*it) == Actor::POWER_RWIRE)
 		//	{
 		//		bf.SetBit((*it), true);
 		//		bf.SetBit((*it) + 1, true);

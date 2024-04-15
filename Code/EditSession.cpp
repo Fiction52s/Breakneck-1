@@ -968,6 +968,8 @@ void EditSession::TestPlayerMode()
 		enemyTree->Clear();
 		railDrawTree->Clear();
 		specterTree->Clear();
+
+		itemTerrainTree->Clear();
 		
 
 		Enemy *currEnemy;
@@ -1017,6 +1019,8 @@ void EditSession::TestPlayerMode()
 		railDrawTree = new QuadTree(1000000, 1000000);
 
 		specterTree = new QuadTree(1000000, 1000000);
+
+		itemTerrainTree = new QuadTree(1000000, 1000000);
 		//Actor *p;
 		
 		/*for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -1126,6 +1130,14 @@ void EditSession::TestPlayerMode()
 		allSpecialPolysVec.push_back((*it));
 
 		specialTerrainTree->Insert((*it));
+	}
+
+	auto &testPolys2 = GetCorrectPolygonList(2);
+	for (auto it = testPolys2.begin(); it != testPolys2.end(); ++it)
+	{
+		(*it)->AddItemsToWorldTrees();
+		(*it)->AddItemsToQuadTree(enemyTree);
+		itemTerrainTree->Insert((*it));
 	}
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
@@ -1907,6 +1919,11 @@ EditSession::~EditSession()
 		delete debugReplayManager;
 	}
 
+	if (playerRecordingManager != NULL)
+	{
+		delete playerRecordingManager;
+	}
+
 	delete removeProgressPointWaiter;
 
 	delete variationSelector;
@@ -2104,7 +2121,7 @@ void EditSession::Draw()
 
 	DrawSpecialTerrain(preScreenTex);
 
-	DrawFlyTerrain(preScreenTex);
+	DrawItemTerrain(preScreenTex);
 
 	DrawTerrain(preScreenTex);
 
@@ -3613,7 +3630,7 @@ void EditSession::SetupTerrainSelectPanel()
 	int numTypeRects = 8 * maxTerrainVarPerWorld;
 
 	int numWaterTypeRects = TerrainPolygon::WATER_Count;
-	int numPickupTypeRects = 1 * maxTerrainVarPerWorld;
+	int numPickupTypeRects = 1;//1 * maxTerrainVarPerWorld;
 
 	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects;
 
@@ -3695,30 +3712,44 @@ void EditSession::SetupTerrainSelectPanel()
 	//	}
 	//}
 
-	matTypeRects[TERRAINLAYER_FLY].resize(numPickupTypeRects);
+	matTypeRects[TERRAINLAYER_ITEM].resize(numPickupTypeRects);
 
-	int startWorldPickup = 16;
-	for (int worldI = startWorldPickup; worldI < startWorldPickup + 1; ++worldI)
+	Tileset *ts_item = GetSizedTileset("Enemies/General/healthfly_64x64.png"); //just for testing for now
+	for (int i = 0; i < numPickupTypeRects; ++i)
 	{
-		int ind;
-		int trueWorld = worldI - startWorldPickup;
-		for (int i = 0; i < maxTerrainVarPerWorld; ++i)
+		matTypeRects[TERRAINLAYER_ITEM][i] = matTypePanel->AddImageRect(
+			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+			Vector2f(i * terrainGridSize, 0 * terrainGridSize),
+			ts_item, 0,terrainGridSize);
+		matTypeRects[TERRAINLAYER_ITEM][i]->Init();
+		if (matTypeRects[TERRAINLAYER_ITEM][i]->ts != NULL)
 		{
-			ind = trueWorld * maxTerrainVarPerWorld + i;
-
-			matTypeRects[TERRAINLAYER_FLY][ind] = matTypePanel->AddImageRect(
-				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
-				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
-				mainMenu->ts_terrain,
-				IntRect(0, 0, 128, 128),
-				terrainGridSize);
-			matTypeRects[TERRAINLAYER_FLY][ind]->Init();
-			if (matTypeRects[TERRAINLAYER_FLY][ind]->ts != NULL)
-			{
-				//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
-			}
+			//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
 		}
 	}
+
+	//int startWorldPickup = 16;
+	//for (int worldI = startWorldPickup; worldI < startWorldPickup + 1; ++worldI)
+	//{
+	//	int ind;
+	//	int trueWorld = worldI - startWorldPickup;
+	//	for (int i = 0; i < maxTerrainVarPerWorld; ++i)
+	//	{
+	//		ind = trueWorld * maxTerrainVarPerWorld + i;
+
+	//		matTypeRects[TERRAINLAYER_ITEM][ind] = matTypePanel->AddImageRect(
+	//			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+	//			Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
+	//			mainMenu->ts_terrain,
+	//			IntRect(0, 0, 128, 128),
+	//			terrainGridSize);
+	//		matTypeRects[TERRAINLAYER_ITEM][ind]->Init();
+	//		if (matTypeRects[TERRAINLAYER_ITEM][ind]->ts != NULL)
+	//		{
+	//			//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
+	//		}
+	//	}
+	//}
 
 }
 
@@ -3941,8 +3972,8 @@ void EditSession::Init()
 	currTerrainWorld[TERRAINLAYER_WATER] = 8;
 	currTerrainVar[TERRAINLAYER_WATER] = 0;
 
-	currTerrainWorld[TERRAINLAYER_FLY] = 9;
-	currTerrainVar[TERRAINLAYER_FLY] = 0;
+	currTerrainWorld[TERRAINLAYER_ITEM] = 9;
+	currTerrainVar[TERRAINLAYER_ITEM] = 0;
 
 	shardMenu = new ShardMenu(this);
 	shardMenu->SetSession(this);
@@ -8448,6 +8479,8 @@ void EditSession::TestPlayerModeForPreview()
 		railDrawTree->Clear();
 		specterTree->Clear();
 
+		itemTerrainTree->Clear();
+
 
 		Enemy *currEnemy;
 		for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -8498,6 +8531,8 @@ void EditSession::TestPlayerModeForPreview()
 		railDrawTree = new QuadTree(1000000, 1000000);
 
 		specterTree = new QuadTree(1000000, 1000000);
+
+		itemTerrainTree = new QuadTree(1000000, 1000000);
 		//Actor *p;
 
 		/*for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -8564,6 +8599,14 @@ void EditSession::TestPlayerModeForPreview()
 		allSpecialPolysVec.push_back((*it));
 
 		specialTerrainTree->Insert((*it));
+	}
+
+	auto &testPolys2 = GetCorrectPolygonList(2);
+	for (auto it = testPolys2.begin(); it != testPolys2.end(); ++it)
+	{
+		(*it)->AddItemsToWorldTrees();
+		(*it)->AddItemsToQuadTree(enemyTree);
+		itemTerrainTree->Insert((*it));
 	}
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
@@ -9433,7 +9476,15 @@ void EditSession::ExecuteRailCompletion()
 						railInProgress->enemyParams = testParams;
 					}
 
-					railInProgress->Finalize();
+					if(trackingEnemyParams == NULL && railInProgress->enemyParams == NULL )
+					{
+						railInProgress->Finalize();	
+					}
+					else
+					{
+						railInProgress->FinalizeEnemyRail();
+					}
+					
 
 					progressBrush->Clear();
 					
@@ -13226,7 +13277,7 @@ void EditSession::DrawTerrain(sf::RenderTarget *target)
 	}
 }
 
-void EditSession::DrawFlyTerrain(sf::RenderTarget *target)
+void EditSession::DrawItemTerrain(sf::RenderTarget *target)
 {
 	bool showPoints = IsShowingPoints();
 

@@ -51,7 +51,7 @@ GroundTrigger::GroundTrigger(ActorParams*ap)//Edge *g, double q, bool p_facingRi
 	case TRIGGER_GETAIRDASH:
 		sess->SetDrainOn(false);
 		//if (sess->GetPlayer(0)->HasUpgrade( 
-		//	Actor::UpgradeType::UPGRADE_POWER_AIRDASH) )
+		//	Actor::UpgradeType::POWER_AIRDASH) )
 		//{
 		//}
 		//else
@@ -108,7 +108,7 @@ void GroundTrigger::ResetEnemy()
 	case TRIGGER_GETAIRDASH:
 	{
 		/*if (sess->GetPlayer(0)->HasUpgrade(
-			Actor::UpgradeType::UPGRADE_POWER_AIRDASH) )
+			Actor::UpgradeType::POWER_AIRDASH) )
 		{
 			action = DONE;
 		}*/

@@ -77,7 +77,7 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	data.alreadyCollected = false;
 
-	//int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+	//int upgradeIndex = Actor::POWER_AIRDASH + powerIndex;
 	/*if (sess->GetPlayer(0)->HasUpgrade(upgradeIndex))
 	{
 		data.alreadyCollected = true;
@@ -169,7 +169,7 @@ PowerItem::~PowerItem()
 void PowerItem::ResetEnemy()
 {
 	//implement for power
-	int optionIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+	int optionIndex = Actor::POWER_AIRDASH + powerIndex;
 	data.alreadyCollected = sess->GetPlayer(0)->IsOptionOn(optionIndex);
 	
 	SetCurrPosInfo(startPosInfo);

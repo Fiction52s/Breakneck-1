@@ -187,7 +187,7 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 		break;
 	}
 
-	randomStartFrame = 
+	randomStartFrame = 0;
 
 	minimapCirclePoints = 20;
 	

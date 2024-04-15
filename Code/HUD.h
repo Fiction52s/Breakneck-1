@@ -116,7 +116,7 @@ struct AdventureHUD : HUD
 	Tileset *ts_go;
 	sf::Sprite goSpr;
 
-	sf::Text flyCountText;
+	sf::Text currencyCountText;
 
 	sf::Vector2f timerShowPos;
 	sf::Vector2f timerHidePos;
@@ -139,8 +139,8 @@ struct AdventureHUD : HUD
 	CubicBezier showBez;
 	CubicBezier hideBez;
 
-	sf::Vector2f flyCountTextShowPos;
-	sf::Vector2f flyCountTextHidePos;
+	sf::Vector2f currencyCountTextShowPos;
+	sf::Vector2f currencyCountTextHidePos;
 
 	KinMask *kinMask;
 	std::vector<KeyMarker*> keyMarkers;

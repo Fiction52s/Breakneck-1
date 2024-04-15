@@ -203,7 +203,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		QUERY_ENEMY,
 		QUERY_BORDER,
 		QUERY_SPECIALTERRAIN,
-		QUERY_FLYTERRAIN,
+		QUERY_ITEMTERRAIN,
 		QUERY_INVERSEBORDER,
 		QUERY_GATE,
 		QUERY_ENVPLANT,
@@ -360,7 +360,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	Background *background;
 	QuadTree * terrainTree;
 	QuadTree *specialTerrainTree;
-	QuadTree *flyTerrainTree;
+	QuadTree *itemTerrainTree;
 	QuadTree *railEdgeTree;
 	QuadTree *barrierTree;
 	QuadTree *borderTree;
@@ -396,7 +396,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::Rect<double> tempSpawnRect;
 	PolyPtr polyQueryList;
 	PolyPtr specialPieceList;
-	PolyPtr flyTerrainList;
+	PolyPtr itemTerrainList;
 	int testGateCount;
 	RailPtr railDrawList;
 	Edge *inverseEdgeList;
@@ -746,7 +746,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void QueryRailDrawTree(sf::Rect<double>&rect);
 	void QueryGateTree(sf::Rect<double>&rect);
 	void QuerySpecialTerrainTree(sf::Rect<double>&rect);
-	void QueryFlyTerrainTree(sf::Rect<double>&rect);
+	void QueryItemTerrainTree(sf::Rect<double>&rect);
 
 	int GetNumTotalEnergyParticles(int absorbType);
 
@@ -768,7 +768,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void TrySpawnEnemy(QuadTreeEntrant *qte);
 	void TryAddPolyToQueryList(QuadTreeEntrant *qte);
 	void TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte);
-	void TryAddFlyPolyToQueryList(QuadTreeEntrant *qte);
+	void TryAddItemPolyToQueryList(QuadTreeEntrant *qte);
 	void TryAddGateToQueryList(QuadTreeEntrant *qte);
 	void TryAddRailToQueryList(QuadTreeEntrant *qte);
 	void SetQueriedInverseEdge(QuadTreeEntrant *qte);
@@ -861,7 +861,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual bool UpdateRunModeBackAndStartButtons() = 0;
 	virtual void DrawSpecialTerrain(sf::RenderTarget *target) = 0;
 	virtual void DrawTerrain(sf::RenderTarget *target) = 0;
-	virtual void DrawFlyTerrain(sf::RenderTarget *target) = 0;
+	virtual void DrawItemTerrain(sf::RenderTarget *target) = 0;
 	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
 	void DrawGateMarkers(sf::RenderTarget *target);
 	virtual void DrawDecor(EffectLayer ef, sf::RenderTarget *target) = 0;

@@ -18,7 +18,7 @@
 #include "TerrainDecor.h"
 #include "EditorRail.h"
 #include "TouchGrass.h"
-#include "Enemy_HealthFly.h"
+#include "Enemy_CurrencyItem.h"
 #include "RandomPicker.h"
 
 using namespace std;
@@ -76,7 +76,7 @@ Brush * PointMover::MakeBrush()
 
 
 
-//for creating blockers and flies..for now
+//for creating blockers and item rails..for now
 void TerrainPolygon::MakeGlobalPath(V2d &startPos, std::vector<sf::Vector2i> &path )
 {
 	int numP = GetNumPoints();
@@ -173,38 +173,37 @@ sf::FloatRect TerrainPolygon::GetAngledAABB(float rotation)
 	//return FloatRect(topLeft.x, topLeft.y, maxAlong - minAlong, maxOther - minOther);
 }
 
-void TerrainPolygon::GenerateMyFlies()
+void TerrainPolygon::GenerateMyItems()
 {
-	if (terrainWorldType != FLY)
+	if (terrainWorldType != ITEM)
 		return;
 
-	ts_fly = sess->GetTileset("Enemies/General/healthfly_64x64.png", 64, 64);
+	ts_item = sess->GetTileset("Enemies/General/healthfly_64x64.png", 64, 64);
 
-	SetRenderMode(RENDERMODE_FLIES);
+	SetRenderMode(RENDERMODE_ITEMS);
 
-	int flyGridDist = 64;
+	int gridDist = 64;
 
-	int flyLevel = 0;
-	int numFlies = 0;
-	int flyCounter = 0;
+	int itemLevel = 1;
+	int numItems = 0;
+	int itemCounter = 0;
 
-	FloatRect rotatedBox = GetAngledAABB(flyTransRotate);
+	FloatRect rotatedBox = GetAngledAABB(itemTransRotate);
 	
 
-	int xGridDist = flyGridDist * flyTransScale.x;
-	int yGridDist = flyGridDist * flyTransScale.y;
+	int xGridDist = gridDist * itemTransScale.x;
+	int yGridDist = gridDist * itemTransScale.y;
 	int width = (rotatedBox.width) / xGridDist + 1;
 	int height = (rotatedBox.height) / yGridDist + 1;
-	vector<bool> hasFly;
-	hasFly.resize(width * height);
+	vector<bool> hasItem;
+	hasItem.resize(width * height);
 
 	sf::Transform t;
-	t.rotate(flyTransRotate);
+	t.rotate(itemTransRotate);
 	
 	sf::Transform backT;
-	backT.rotate(flyTransRotate);
+	backT.rotate(itemTransRotate);
 
-	//bool *hasFly = new bool[width * height];
 	int index;
 	IntRect r;
 	int rSize = 3;
@@ -222,24 +221,24 @@ void TerrainPolygon::GenerateMyFlies()
 			if (Intersects( r ) )
 			{
 				index = x * height + y;
-				hasFly[index] = true;
-				++numFlies;
+				hasItem[index] = true;
+				++numItems;
 			}
 		}
 	}
 
 	
 
-	if (!myFlies.empty())
+	if (!myItems.empty())
 	{
-		myFlies.clear();
-		delete[] flyQuads;
-		flyQuads = NULL;
+		myItems.clear();
+		delete[] itemQuads;
+		itemQuads = NULL;
 	}
 
-	myFlies.reserve(numFlies);
+	myItems.reserve(numItems);
 	
-	flyQuads = new Vertex[numFlies * 4];
+	itemQuads = new Vertex[numItems * 4];
 	
 	
 	for (int x = 0; x < width; ++x)
@@ -247,16 +246,14 @@ void TerrainPolygon::GenerateMyFlies()
 		for (int y = 0; y < height; ++y)
 		{
 			index = x * height + y;
-			if (hasFly[index])
+			if (hasItem[index])
 			{
 				currPos = V2d(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
 					rotatedBox.top + y * yGridDist)));
 
-				myFlies.push_back(new HealthFly( NULL, flyCounter, currPos,
-					flyLevel, flyQuads + flyCounter * 4, ts_fly));
-				//myFlies.push_back(new HealthFly(Vector2i(left + x * xGridDist, top + y * yGridDist),
-				//	flyLevel, flyQuads + flyCounter * 4, ts_fly));
-				++flyCounter;
+				myItems.push_back(new CurrencyItem( NULL, itemCounter, currPos,
+					itemLevel, itemQuads + itemCounter * 4, ts_item));
+				++itemCounter;
 			}
 		}
 	}
@@ -1223,9 +1220,9 @@ TerrainPolygon::TerrainPolygon()
 	grassBufferForAABBOn = false;
 	copiedInverse = false;
 	isGrassBackedUp = false;
-	flyTransScale = Vector2f(1.f, 1.f);
-	flyTransRotate = 0;
-	flyQuads = NULL;
+	itemTransScale = Vector2f(1.f, 1.f);
+	itemTransRotate = 0;
+	itemQuads = NULL;
 	pShader = NULL;
 	miniShader = NULL;
 	decorTree = new QuadTree(1000000, 1000000);
@@ -1274,9 +1271,9 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	grassBufferForAABBOn = false;
 	copiedInverse = false;
 	isGrassBackedUp = false;
-	flyTransScale = Vector2f(1.f, 1.f);
-	flyTransRotate = 0;
-	flyQuads = NULL;
+	itemTransScale = Vector2f(1.f, 1.f);
+	itemTransRotate = 0;
+	itemQuads = NULL;
 	pShader = NULL;
 	miniShader = NULL;
 	numGrassTotal = 0;
@@ -1351,31 +1348,31 @@ TerrainPolygon::~TerrainPolygon()
 		delete (*it);
 	}
 
-	if (!myFlies.empty())
+	if (!myItems.empty())
 	{
-		for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+		for (auto it = myItems.begin(); it != myItems.end(); ++it)
 		{
 			delete (*it);
 		}
 
-		delete[] flyQuads;
-		flyQuads = NULL;
+		delete[] itemQuads;
+		itemQuads = NULL;
 	}
 
 	ClearPoints();
 }
 
-void TerrainPolygon::AddFliesToWorldTrees()
+void TerrainPolygon::AddItemsToWorldTrees()
 {
-	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	for (auto it = myItems.begin(); it != myItems.end(); ++it)
 	{
 		(*it)->AddToWorldTrees();
 	}
 }
 
-void TerrainPolygon::AddFliesToQuadTree(QuadTree *tree)
+void TerrainPolygon::AddItemsToQuadTree(QuadTree *tree)
 {
-	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	for (auto it = myItems.begin(); it != myItems.end(); ++it)
 	{
 		tree->Insert((*it));
 	}
@@ -2741,7 +2738,7 @@ void TerrainPolygon::WriteFile(std::ofstream & of)
 	}
 	else if (specialIndex == 2)
 	{
-		of << flyTransScale.x << " " << flyTransScale.y << " " << flyTransRotate << "\n";
+		of << itemTransScale.x << " " << itemTransScale.y << " " << itemTransRotate << "\n";
 	}
 }
 
@@ -3638,7 +3635,7 @@ void TerrainPolygon::Move(Vector2i move )
 		(*it)->Move(fMove);
 	}
 
-	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	for (auto it = myItems.begin(); it != myItems.end(); ++it)
 	{
 		(*it)->SetStartPosition((*it)->GetPosition() + dMove);
 		(*it)->preTransformPos = (*it)->GetPosition();
@@ -3737,7 +3734,7 @@ int TerrainPolygon::GetSpecialPolyIndex()
 {
 	if (terrainWorldType >= TerrainPolygon::W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
 		return 1;
-	else if (terrainWorldType == FLY)
+	else if (terrainWorldType == ITEM)
 		return 2;
 	else
 		return 0;
@@ -4248,7 +4245,7 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 
 		GenerateBorderMesh();
 
-		GenerateMyFlies();
+		GenerateMyItems();
 	}
 }
 
@@ -5341,16 +5338,16 @@ void TerrainPolygon::SetRenderMode(RenderMode rm)
 
 	if (rm == RENDERMODE_NORMAL && GetSpecialPolyIndex() == 2)
 	{
-		rm = RENDERMODE_FLIES;
+		rm = RENDERMODE_ITEMS;
 	}
 
 	renderMode = rm;
 }
 
-void TerrainPolygon::SetFlyTransform( PolyPtr poly, TransformTools *tr)
+void TerrainPolygon::SetItemTransform( PolyPtr poly, TransformTools *tr)
 {
-	flyTransScale = tr->scale + ( poly->flyTransScale - Vector2f( 1, 1 ) );
-	flyTransRotate = tr->rotation + poly->flyTransRotate;
+	itemTransScale = tr->scale + ( poly->itemTransScale - Vector2f( 1, 1 ) );
+	itemTransRotate = tr->rotation + poly->itemTransRotate;
 }
 
 void TerrainPolygon::CancelTransformation()
@@ -5359,7 +5356,7 @@ void TerrainPolygon::CancelTransformation()
 	UpdateLineColors();
 	SetRenderMode(RENDERMODE_NORMAL);
 
-	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	for (auto it = myItems.begin(); it != myItems.end(); ++it)
 	{
 		(*it)->SetStartPosition((*it)->preTransformPos);
 	}
@@ -5373,7 +5370,7 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 	{
 		SetRenderMode(RENDERMODE_NORMAL);
 
-		for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+		for (auto it = myItems.begin(); it != myItems.end(); ++it)
 		{
 			(*it)->SetStartPosition((*it)->preTransformPos);
 		}
@@ -5398,7 +5395,7 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 
 		UpdateLinePositions();
 
-		newPoly->SetFlyTransform( this, tr);
+		newPoly->SetItemTransform( this, tr);
 
 		
 
@@ -5459,7 +5456,7 @@ void TerrainPolygon::UpdateTransformation(TransformTools *tr)
 		}
 	}
 
-	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	for (auto it = myItems.begin(); it != myItems.end(); ++it)
 	{
 		fCurr = Vector2f((*it)->preTransformPos);//(*it)->GetPositionF();
 		fDiff = fCurr - center;
@@ -5527,11 +5524,11 @@ void TerrainPolygon::DrawPoints(sf::RenderTarget *rt, double zoomMultiple, Terra
 	}
 }
 
-void TerrainPolygon::DrawFlies(RenderTarget *target)
+void TerrainPolygon::DrawItems(RenderTarget *target)
 {
-	if (!myFlies.empty())
+	if (!myItems.empty())
 	{
-		target->draw(flyQuads, myFlies.size() * 4, sf::Quads, ts_fly->texture);
+		target->draw(itemQuads, myItems.size() * 4, sf::Quads, ts_item->texture);
 	}
 }
 
@@ -5623,7 +5620,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	{
 		if (GetSpecialPolyIndex() == 2)
 		{
-			//just like the flies
+			//just like the items
 			if (showPoints)
 			{
 				DrawPoints(rt, zoomMultiple, dontShow);
@@ -5631,7 +5628,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 			rt->draw(lines, numP * 2, sf::Lines);
 
-			DrawFlies(rt);
+			DrawItems(rt);
 			return;
 		}
 
@@ -5651,7 +5648,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		rt->draw(lines, numP * 2, sf::Lines);
 		return;
 	}
-	else if (renderMode == RENDERMODE_FLIES)
+	else if (renderMode == RENDERMODE_ITEMS)
 	{
 		if (showPoints)
 		{
@@ -5660,7 +5657,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		rt->draw(lines, numP * 2, sf::Lines);
 
-		DrawFlies(rt);
+		DrawItems(rt);
 
 		return;
 	}
@@ -7483,9 +7480,9 @@ bool TerrainPolygon::Load(std::ifstream &is)
 	int specialIndex = GetSpecialPolyIndex();
 	if ( specialIndex == 2)
 	{
-		is >> flyTransScale.x;
-		is >> flyTransScale.y; 
-		is >> flyTransRotate;
+		is >> itemTransScale.x;
+		is >> itemTransScale.y;
+		is >> itemTransRotate;
 	}
 
 	return true;

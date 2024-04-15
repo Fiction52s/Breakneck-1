@@ -929,9 +929,9 @@ void GetAirdashPowerScene::UpdateState()
 			SaveFile *sf = sess->mainMenu->adventureManager->currSaveFile;
 			if (sf != NULL)
 			{
-				//sf->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
+				//sf->UnlockUpgrade(Actor::UpgradeType::POWER_AIRDASH);
 			}
-			//sess->GetPlayer(0)->SetUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH, true );
+			//sess->GetPlayer(0)->SetUpgrade(Actor::UpgradeType::POWER_AIRDASH, true );
 		}
 		break;
 	}

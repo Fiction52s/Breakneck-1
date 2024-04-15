@@ -29,7 +29,7 @@ void Actor::LAND_Change()
 	if ( CanBufferGrind() )
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
-		if (!reversed || (IsOptionOn(UPGRADE_POWER_GRAV) && reversed))
+		if (!reversed || (IsOptionOn(POWER_GRAV) && reversed))
 		{
 			SetActionGrind();
 			return;

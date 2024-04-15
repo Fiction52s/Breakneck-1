@@ -55,7 +55,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		REDBLOCKER,
 		MAGENTABLOCKER,
 		BLACKBLOCKER,*/
-		FLY,
+		CURRENCY,
 		/*NORMAL,
 		LOCKED,
 		TIMESLOW,
@@ -214,6 +214,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void RemoveSelectedPoints();
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
+	void FinalizeEnemyRail();
 	void Reset();
 	void SoftReset();
 	bool AlignExtremes(std::list<PointMoveInfo> &lockPoints, std::list<PointMoveInfo> &addedLockPoints);

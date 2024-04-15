@@ -145,11 +145,14 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	//set up rectangles for starting material
 	auto &mtr0 = edit->matTypeRects[0];
 	auto &mtr1 = edit->matTypeRects[1];
+	auto &mtr2 = edit->matTypeRects[2];
 
 	terrainLayerDropdown->SetSelectedIndex(0);
 	ChooseMatType(mtr0.at(0));
 	terrainLayerDropdown->SetSelectedIndex(1);
 	ChooseMatType(mtr1.at(0));
+	terrainLayerDropdown->SetSelectedIndex(2);
+	ChooseMatType(mtr2.at(0));
 
 	terrainLayerDropdown->SetSelectedIndex(0);
 }

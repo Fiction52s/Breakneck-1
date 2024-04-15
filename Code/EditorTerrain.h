@@ -12,10 +12,8 @@
 #include "PositionInfo.h"
 #include "Grass.h"
 #include "SpecialTerrainTypes.h"
-//#include "Enemy_HealthFly.h"
-//#include "ActorParamsBase.h"
 
-struct HealthFly;
+struct CurrencyItem;
 struct TouchGrassCollection;
 
 struct Session;
@@ -208,7 +206,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_NORMAL,
 		RENDERMODE_MOVING_POINTS,
 		RENDERMODE_TRANSFORM,
-		RENDERMODE_FLIES,
+		RENDERMODE_ITEMS,
 		RENDERMODE_PHASED,
 		RENDERMODE_BASIC_PREVIEW,
 		RENDERMODE_EDITOR_PREVIEW,
@@ -254,7 +252,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		W6_SPECIAL,
 		W7_SPECIAL,
 		W8_SPECIAL,
-		FLY,
+		ITEM, //currency
 		Count
 	};
 
@@ -321,16 +319,22 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		V2d &startPos,
 		std::vector<sf::Vector2i> &path);
 	void UpdateAttachedGateLines();
-	void SetFlyTransform( PolyPtr poly, TransformTools *tr);
 	void UpdateState();
-	sf::Vector2f flyTransScale;
-	float flyTransRotate;
-	void GenerateMyFlies();
-	std::vector<HealthFly*> myFlies;
-	void AddFliesToQuadTree(QuadTree *tree);
-	void AddFliesToWorldTrees();
-	sf::Vertex *flyQuads;
-	Tileset *ts_fly;
+
+
+	//currency stuff
+	void SetItemTransform( PolyPtr poly, TransformTools *tr);
+	sf::Vector2f itemTransScale;
+	float itemTransRotate;
+	void GenerateMyItems();
+	std::vector<CurrencyItem*> myItems;
+	void AddItemsToQuadTree(QuadTree *tree);
+	void AddItemsToWorldTrees();
+	sf::Vertex *itemQuads;
+	Tileset *ts_item;
+
+
+
 
 	Edge *playerEdge;
 	double playerQuant;
@@ -574,7 +578,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void Draw(bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow);
 	void DrawInnerArea(sf::RenderTarget *target);
 	void DrawAsSecretCover(sf::RenderTarget *target, bool preview );
-	void DrawFlies(sf::RenderTarget *target);
+	void DrawItems(sf::RenderTarget *target);
 	void DrawGrass(sf::RenderTarget *target);
 	void DrawPreviewGrass(sf::RenderTarget *target, bool hideSecret);
 	void FixWinding();

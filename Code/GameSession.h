@@ -509,7 +509,7 @@ struct GameSession : RayCastHandler, Session
 	
 	
 	void DrawSpecialTerrain(sf::RenderTarget *target);
-	void DrawFlyTerrain(sf::RenderTarget *target);
+	void DrawItemTerrain(sf::RenderTarget *target);
 	void DrawTerrain(sf::RenderTarget *target);
 	void DrawSceneToPostProcess(sf::RenderTexture *tex);
 	void DrawShockwaves(sf::RenderTarget *target);

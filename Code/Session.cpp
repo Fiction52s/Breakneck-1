@@ -261,7 +261,7 @@ void Session::RegisterGeneralEnemies()
 		false, false, false, false, true, false, false);
 	AddExtraEnemy("Booster", "booster", normalRow, CreateEnemy<Booster>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
-	AddExtraEnemy("Health Fly", "healthfly", normalRow, CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
+	AddExtraEnemy("Currency Item", "currencyitem", normalRow, CreateEnemy<CurrencyItemChain>, SetParamsType<CurrencyItemParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 	AddExtraEnemy("Blocker", "blocker", normalRow, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
@@ -1638,7 +1638,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	pauseSoundNodeList = NULL;
 	
 	railDrawTree = NULL;
-	flyTerrainTree = NULL;
+	itemTerrainTree = NULL;
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
 	specterTree = NULL;
@@ -1773,10 +1773,10 @@ Session::~Session()
 		railEdgeTree = NULL;
 	}
 	
-	if (flyTerrainTree != NULL)
+	if (itemTerrainTree != NULL)
 	{
-		delete flyTerrainTree;
-		flyTerrainTree = NULL;
+		delete itemTerrainTree;
+		itemTerrainTree = NULL;
 	}
 
 	if (borderTree != NULL)
@@ -4338,8 +4338,8 @@ void Session::HandleEntrant(QuadTreeEntrant *qte)
 	case QUERY_SPECIALTERRAIN:
 		TryAddSpecialPolyToQueryList(qte);
 		break;
-	case QUERY_FLYTERRAIN:
-		TryAddFlyPolyToQueryList(qte);
+	case QUERY_ITEMTERRAIN:
+		TryAddItemPolyToQueryList(qte);
 		break;
 	case QUERY_INVERSEBORDER:
 		SetQueriedInverseEdge(qte);
@@ -4442,19 +4442,19 @@ void Session::TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte)
 	}
 }
 
-void Session::TryAddFlyPolyToQueryList(QuadTreeEntrant *qte)
+void Session::TryAddItemPolyToQueryList(QuadTreeEntrant *qte)
 {
 	PolyPtr p = (PolyPtr)qte;
 
-	if (flyTerrainList == NULL)
+	if (itemTerrainList == NULL)
 	{
-		flyTerrainList = p;
-		flyTerrainList->queryNext = NULL;
+		itemTerrainList = p;
+		itemTerrainList->queryNext = NULL;
 	}
 	else
 	{
 		PolyPtr tva = p;
-		PolyPtr temp = flyTerrainList;
+		PolyPtr temp = itemTerrainList;
 		bool okay = true;
 		while (temp != NULL)
 		{
@@ -4468,8 +4468,8 @@ void Session::TryAddFlyPolyToQueryList(QuadTreeEntrant *qte)
 
 		if (okay)
 		{
-			tva->queryNext = flyTerrainList;
-			flyTerrainList = tva;
+			tva->queryNext = itemTerrainList;
+			itemTerrainList = tva;
 		}
 	}
 }
@@ -6230,13 +6230,13 @@ void Session::QuerySpecialTerrainTree(sf::Rect<double>&rect)
 	}
 }
 
-void Session::QueryFlyTerrainTree(sf::Rect<double>&rect)
+void Session::QueryItemTerrainTree(sf::Rect<double>&rect)
 {
-	if (flyTerrainTree != NULL)
+	if (itemTerrainTree != NULL)
 	{
-		flyTerrainList = NULL;
-		queryMode = QUERY_FLYTERRAIN;
-		flyTerrainTree->Query(this, rect);
+		itemTerrainList = NULL;
+		queryMode = QUERY_ITEMTERRAIN;
+		itemTerrainTree->Query(this, rect);
 	}
 }
 
@@ -6742,7 +6742,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawSpecialTerrain(target);
 
-	DrawFlyTerrain(target);
+	DrawItemTerrain(target);
 
 	DrawTerrain(target);
 
@@ -7253,7 +7253,7 @@ bool Session::RunGameModeUpdate()
 
 		//QueryRailDrawTree(screenRect);
 
-		QueryFlyTerrainTree(screenRect);
+		QueryItemTerrainTree(screenRect);
 
 		UpdateDecorSprites();
 		UpdateDecorLayers();
@@ -8098,7 +8098,7 @@ bool Session::OnlineRunGameModeUpdate()
 
 	QuerySpecialTerrainTree(screenRect);
 
-	QueryFlyTerrainTree(screenRect);
+	QueryItemTerrainTree(screenRect);
 
 	UpdateDecorSprites();
 	UpdateDecorLayers();

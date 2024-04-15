@@ -50,19 +50,19 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	powerSelectorShowPos = Vector2f(288, 140);
 	powerSelectorHidePos = Vector2f(288-500, 140);
 
-	flyCountTextShowPos = Vector2f(1920 - 30, 10);
-	flyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);
+	currencyCountTextShowPos = Vector2f(1920 - 30, 10);
+	currencyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);
 
 	MainMenu *mm = MainMenu::GetInstance();
 
-	flyCountText.setCharacterSize(40);
-	flyCountText.setFont(mm->arial);
-	flyCountText.setFillColor(Color::White);
-	flyCountText.setString("x100");
-	flyCountText.setOrigin(flyCountText.getLocalBounds().left +
-		flyCountText.getLocalBounds().width, 0);
-	flyCountText.setString("x0");
-	flyCountText.setPosition(flyCountTextShowPos);
+	currencyCountText.setCharacterSize(40);
+	currencyCountText.setFont(mm->arial);
+	currencyCountText.setFillColor(Color::White);
+	currencyCountText.setString("x100");
+	currencyCountText.setOrigin(currencyCountText.getLocalBounds().left +
+		currencyCountText.getLocalBounds().width, 0);
+	currencyCountText.setString("x0");
+	currencyCountText.setPosition(currencyCountTextShowPos);
 
 	ts_go = tm->GetSizedTileset("Zone/gate_orb_64x64.png");
 	ts_go->SetSpriteTexture(goSpr);
@@ -257,7 +257,7 @@ void AdventureHUD::Hide(int frames)
 		}
 		kinMask->SetTopLeft(kinMaskHidePos);
 		powerSelector->SetPosition(powerSelectorHidePos);
-		flyCountText.setPosition(flyCountTextHidePos);
+		currencyCountText.setPosition(currencyCountTextHidePos);
 		timer->SetCenter(timerHidePos);
 		if (bossHealthBar != NULL)
 		{
@@ -291,7 +291,7 @@ void AdventureHUD::Show(int frames)
 			keyMarkers[0]->SetTopRight(keyMarkerShowPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			keyMarkers[1]->SetTopLeft(keyMarkerShowPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 		}
-		flyCountText.setPosition(flyCountTextShowPos);
+		currencyCountText.setPosition(currencyCountTextShowPos);
 		timer->SetCenter(timerShowPos);
 		powerSelector->SetPosition(powerSelectorShowPos);
 		goSpr.setPosition(keyMarkerShowPos);
@@ -342,7 +342,7 @@ void AdventureHUD::Update()
 				keyMarkers[0]->SetTopRight(keyMarkerShowPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 				keyMarkers[1]->SetTopLeft(keyMarkerShowPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
-			flyCountText.setPosition(flyCountTextShowPos);
+			currencyCountText.setPosition(currencyCountTextShowPos);
 			powerSelector->SetPosition(powerSelectorShowPos);
 			timer->SetCenter(timerShowPos);
 			if (bossHealthBar != NULL)
@@ -378,8 +378,8 @@ void AdventureHUD::Update()
 			}
 			
 			goSpr.setPosition(keyMarkerPos);
-			Vector2f countPos = flyCountTextHidePos * (1.f - a) + a * flyCountTextShowPos;
-			flyCountText.setPosition(countPos);
+			Vector2f countPos = currencyCountTextHidePos * (1.f - a) + a * currencyCountTextShowPos;
+			currencyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorHidePos * (1.f - a) + a * powerSelectorShowPos;
 			powerSelector->SetPosition(powerPos);
 
@@ -420,7 +420,7 @@ void AdventureHUD::Update()
 
 			goSpr.setPosition(keyMarkerHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
-			flyCountText.setPosition(flyCountTextHidePos);
+			currencyCountText.setPosition(currencyCountTextHidePos);
 			powerSelector->SetPosition(powerSelectorHidePos);
 			if (bossHealthBar != NULL)
 			{
@@ -455,8 +455,8 @@ void AdventureHUD::Update()
 			//	keyMarkers[i]->SetTopRight(keyMarkerPos + Vector2f(0, i * keyMarkerYOffset));
 			//}
 			goSpr.setPosition(keyMarkerPos);
-			Vector2f countPos = flyCountTextShowPos * (1.f - a) + a * flyCountTextHidePos;
-			flyCountText.setPosition(countPos);
+			Vector2f countPos = currencyCountTextShowPos * (1.f - a) + a * currencyCountTextHidePos;
+			currencyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorShowPos * (1.f - a) + a * powerSelectorHidePos;
 			powerSelector->SetPosition(powerPos);
 
@@ -586,7 +586,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 			bossHealthBar->Draw(target);
 		}
 
-		//target->draw(flyCountText);
+		//target->draw(currencyCountText);
 		
 	}
 }

@@ -91,7 +91,6 @@
 //#infclude "Enemy_StagBeetle.h"
 //#include "Enemy_Cactus.h"
 //#include "Enemy_GravityModifier.h"
-//#include "Enemy_HealthFly.h"
 //#include "Enemy_GrindJuggler.h"
 //#include "Enemy_GroundedGrindJuggler.h"
 //#include "Enemy_Cheetah.h"
@@ -462,12 +461,12 @@ void GameSession::DrawTerrain(sf::RenderTarget *target)
 	}
 }
 
-void GameSession::DrawFlyTerrain(sf::RenderTarget *target)
+void GameSession::DrawItemTerrain(sf::RenderTarget *target)
 {
-	PolyPtr fp = flyTerrainList;
+	PolyPtr fp = itemTerrainList;
 	while (fp != NULL)
 	{
-		fp->DrawFlies(preScreenTex);
+		fp->DrawItems(preScreenTex);
 		fp = fp->queryNext;
 	}
 }
@@ -931,12 +930,6 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	allSpecialPolysVec.clear();
 
-	/*for (auto it = flyTerrain.begin(); it != flyTerrain.end(); ++it)
-	{
-		delete (*it);
-	}
-	flyTerrain.clear();*/
-
 	for (auto it = allEnvPlants.begin(); it != allEnvPlants.end(); ++it)
 	{
 		delete (*it);
@@ -1069,12 +1062,6 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 	allRailsVec.clear();
-
-	/*for (auto it = flyTerrain.begin(); it != flyTerrain.end(); ++it)
-	{
-		delete (*it);
-	}
-	flyTerrain.clear();*/
 
 	for (auto it = allEnvPlants.begin(); it != allEnvPlants.end(); ++it)
 	{
@@ -1346,10 +1333,10 @@ void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 	}
 	else if (specialType == 2)
 	{
-		poly->AddFliesToWorldTrees();
-		poly->AddFliesToQuadTree(enemyTree);
+		poly->AddItemsToWorldTrees();
+		poly->AddItemsToQuadTree(enemyTree);
 		allSpecialPolysVec.push_back(poly);
-		flyTerrainTree->Insert(poly);
+		itemTerrainTree->Insert(poly);
 	}
 	//matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
 	
@@ -2398,7 +2385,7 @@ void GameSession::SetupQuadTrees()
 		terrainTree->Clear();
 		barrierTree->Clear();
 		specialTerrainTree->Clear();
-		flyTerrainTree->Clear();
+		itemTerrainTree->Clear();
 		inverseEdgeTree->Clear();
 		staticItemTree->Clear();
 		railDrawTree->Clear();
@@ -2424,7 +2411,7 @@ void GameSession::SetupQuadTrees()
 
 	specialTerrainTree = new QuadTree(1000000, 1000000);
 
-	flyTerrainTree = new QuadTree(1000000, 1000000);
+	itemTerrainTree = new QuadTree(1000000, 1000000);
 
 	inverseEdgeTree = new QuadTree(1000000, 1000000);
 
@@ -3882,7 +3869,7 @@ void GameSession::Init()
 	explodingGravityGrass = NULL;
 	polyQueryList = NULL;
 	specialPieceList = NULL;
-	flyTerrainList = NULL;
+	itemTerrainList = NULL;
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
 	for (int i = 0; i < 4; ++i)

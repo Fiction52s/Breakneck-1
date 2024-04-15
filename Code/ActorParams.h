@@ -364,10 +364,10 @@ struct BlockerParams : public ActorParams
 	//will have multiple types
 };
 
-struct FlyParams : public ActorParams
+struct CurrencyItemParams : public ActorParams
 {
-	FlyParams(ActorType *at, int level);
-	FlyParams(ActorType *at,
+	CurrencyItemParams(ActorType *at, int level);
+	CurrencyItemParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
@@ -379,7 +379,7 @@ struct FlyParams : public ActorParams
 
 	bool fill;
 	int spacing;
-	int fType;
+	int currencyItemType;
 	//will have multiple types
 };
 

@@ -31,7 +31,7 @@
 #include "TouchGrass.h"
 #include "Enemy_GravityModifier.h"
 #include "ParticleEffects.h"
-#include "Enemy_HealthFly.h"
+#include "Enemy_CurrencyItem.h"
 #include "StorySequence.h"
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Teleporter.h"
@@ -4057,7 +4057,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	//	SetStartUpgrade(i, true);
 	//}
 
-	//SetStartUpgrade(UPGRADE_POWER_AIRDASH, false);
+	//SetStartUpgrade(POWER_AIRDASH, false);
 
 	SetupTimeBubbles();
 
@@ -5099,7 +5099,7 @@ void Actor::Respawn( bool setStartPos )
 	framesSinceDownTilt = 0;
 
 	standNDashBoost = false;
-	flyCounter = 0;
+	currencyCounter = 0;
 	kinMode = K_NORMAL;
 	action = -1;
 	framesStanding = 0;
@@ -5279,11 +5279,11 @@ void Actor::Respawn( bool setStartPos )
 	
 
 
-	if(IsOptionOn( UPGRADE_POWER_LWIRE ) )
+	if(IsOptionOn( POWER_LWIRE ) )
 	{
 		leftWire->Reset();
 	}
-	if(IsOptionOn(UPGRADE_POWER_RWIRE))
+	if(IsOptionOn(POWER_RWIRE))
 	{
 		rightWire->Reset();
 	}
@@ -5450,35 +5450,35 @@ void Actor::KinModeUpdate()
 
 		bool allColorsOn = true;
 
-		if(IsOptionOn( UPGRADE_POWER_AIRDASH ) || allColorsOn)
+		if(IsOptionOn( POWER_AIRDASH ) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0x55, 0xff );
 			cIndex++;
 		}
-		if(IsOptionOn(UPGRADE_POWER_GRAV) || allColorsOn)
+		if(IsOptionOn(POWER_GRAV) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0xff, 0x88 );
 			cIndex++;
 		}
-		if(IsOptionOn(UPGRADE_POWER_BOUNCE) || allColorsOn)
+		if(IsOptionOn(POWER_BOUNCE) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0xff, 0x33 );
 			cIndex++;
 		}
 
-		if(IsOptionOn(UPGRADE_POWER_GRIND) || allColorsOn)
+		if(IsOptionOn(POWER_GRIND) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x88, 0x00 );
 			cIndex++;
 		}
 
-		if(IsOptionOn(UPGRADE_POWER_TIME ) || allColorsOn)
+		if(IsOptionOn(POWER_TIME ) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x00, 0x00 );
 			cIndex++;
 		}
 
-		if(IsOptionOn(UPGRADE_POWER_LWIRE) || IsOptionOn(UPGRADE_POWER_RWIRE) || allColorsOn)
+		if(IsOptionOn(POWER_LWIRE) || IsOptionOn(POWER_RWIRE) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x33, 0xaa );
 			cIndex++;
@@ -5991,7 +5991,7 @@ void Actor::ReactToBeingHit()
 				{
 					//abs( e0n.x ) < wallThresh )
 
-					if (!IsOptionOn(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+					if (!IsOptionOn(POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 					{
 						HitOutOfCeilingGrindIntoAir();
 					}
@@ -6163,7 +6163,7 @@ void Actor::ProcessGravityGrass()
 	if (ground != NULL && reversed
 		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
 		&& action != GROUNDTECHINPLACE
-		&& ((!IsOptionOn(UPGRADE_POWER_GRAV)
+		&& ((!IsOptionOn(POWER_GRAV)
 		&& !touchedGrass[Grass::GRAVREVERSE]) 
 		|| touchedGrass[Grass::ANTIGRAVREVERSE]))
 	{
@@ -6221,7 +6221,7 @@ void Actor::UpdateBounceFlameOn()
 		//if (action != BOUNCEAIR && action != BOUNCEGROUND && action != BOUNCEGROUNDEDWALL )
 		if( bounceEdge == NULL )
 		{
-			if (!IsOptionOn(UPGRADE_POWER_BOUNCE) || !BounceButtonHeld())//BounceButtonPressed())
+			if (!IsOptionOn(POWER_BOUNCE) || !BounceButtonHeld())//BounceButtonPressed())
 			{
 				BounceFlameOff();
 			}
@@ -6229,7 +6229,7 @@ void Actor::UpdateBounceFlameOn()
 	}
 	else
 	{
-		if (IsOptionOn(UPGRADE_POWER_BOUNCE) && BounceButtonHeld() )//BounceButtonPressed())
+		if (IsOptionOn(POWER_BOUNCE) && BounceButtonHeld() )//BounceButtonPressed())
 		{
 			BounceFlameOn();
 		}
@@ -6245,7 +6245,7 @@ void Actor::UpdateBounceFlameOn()
 			bool turnOffWhileToggleOff = !toggleBounceInput 
 				&& !currInput.PowerButtonDown();
 
-			if (!IsOptionOn(UPGRADE_POWER_BOUNCE) || turnOffWhileToggleOff
+			if (!IsOptionOn(POWER_BOUNCE) || turnOffWhileToggleOff
 				|| turnOffWhileToggleOn )
 			{
 				if (toggleBounceInput)
@@ -6269,7 +6269,7 @@ void Actor::UpdateBounceFlameOn()
 			&& !prevInput.PowerButtonDown();
 		bool turnOnWhileToggleOff = !toggleBounceInput && currInput.PowerButtonDown();
 
-		if (currPowerMode == PMODE_BOUNCE && IsOptionOn(UPGRADE_POWER_BOUNCE)
+		if (currPowerMode == PMODE_BOUNCE && IsOptionOn(POWER_BOUNCE)
 			&& ( turnOnWhileToggleOn || turnOnWhileToggleOff ) )
 		{
 			if (toggleBounceInput)
@@ -6284,14 +6284,14 @@ void Actor::UpdateBounceFlameOn()
 
 void Actor::UpdateWireStates()
 {
-	if (IsOptionOn(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
+	if (IsOptionOn(POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
 	{
 		leftWire->ClearDebug();
 		leftWire->SetStoredPlayerPos(leftWire->GetPlayerPos());
 		leftWire->UpdateState(touchEdgeWithLeftWire);
 	}
 
-	if (IsOptionOn(UPGRADE_POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
+	if (IsOptionOn(POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
 	{
 		rightWire->ClearDebug();
 		rightWire->SetStoredPlayerPos(rightWire->GetPlayerPos());
@@ -7005,6 +7005,7 @@ void Actor::UpdateBubbles()
 		{
 			bubbleFramesToLive[i]--;
 			SetFBubbleFrame(i, bubbleFramesToLive[i]);
+			bubblePos[i] = position;
 		}
 	}
 
@@ -7013,7 +7014,7 @@ void Actor::UpdateBubbles()
 	oldInBubble = inBubble;
 	inBubble = false;
 
-	if (IsOptionOn(UPGRADE_POWER_TIME))
+	if (IsOptionOn(POWER_TIME))
 	{
 		//calculate this all the time so I can give myself infinite airdash
 		for (int i = 0; i < MAX_BUBBLES; ++i)
@@ -7077,7 +7078,7 @@ void Actor::UpdateBubbles()
 	}
 
 	bool powerSlow = CanCreateTimeBubble()
-		&& IsOptionOn(UPGRADE_POWER_TIME)
+		&& IsOptionOn(POWER_TIME)
 		&& PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW;
 
@@ -8607,7 +8608,7 @@ bool Actor::CanRailSlide()
 
 bool Actor::CanRailGrind()
 {
-	if (IsOptionOn(UPGRADE_POWER_GRIND))
+	if (IsOptionOn(POWER_GRIND))
 	{
 		if (!PowerButtonHeld() && prevInput.PowerButtonDown())
 		{
@@ -10430,9 +10431,9 @@ V2d Actor::UpdateReversePhysics()
 										&& action != GRAVREVERSE //never transition to ground from gravreverse state
 										&& ( ground->IsSteepGround() || HoldingRelativeUp() )
 										&& ((ground->Normal().x > 0 && groundSpeed < 0) || (ground->Normal().x < 0 && groundSpeed > 0))
-										/*&& (IsOptionOn(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
+										/*&& (IsOptionOn(POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE])
 										&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (IsOptionOn(UPGRADE_POWER_GRIND) && GrindButtonHeld()))*/
+										&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE]) || (IsOptionOn(POWER_GRIND) && GrindButtonHeld()))*/
 										&& !minContact.edge->IsInvisibleWall())
 									{
 										collision = true;
@@ -10830,7 +10831,7 @@ bool Actor::ExitGrind(bool jump)
 
 				framesNotGrinding = 0;
 
-				if (!IsOptionOn(UPGRADE_POWER_GRAV) || jump)
+				if (!IsOptionOn(POWER_GRAV) || jump)
 				{
 					if (grindNorm.x > 0)
 					{
@@ -10931,7 +10932,7 @@ bool Actor::ExitGrind(bool jump)
 		else
 		{
 			reversed = oldReversed;
-			if (!IsOptionOn( UPGRADE_POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
+			if (!IsOptionOn( POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
 				{
@@ -11368,9 +11369,9 @@ void Actor::TryChangePowerMode()
 	bool noHoriz = !currInput.RLeft() && !currInput.RRight();
 	bool noVert = !currInput.RUp() && !currInput.RDown();
 
-	bool hasTimeSlow = IsOptionOn(UPGRADE_POWER_TIME);
-	bool hasGrind = IsOptionOn(UPGRADE_POWER_GRIND);
-	bool hasBounce = IsOptionOn(UPGRADE_POWER_BOUNCE);
+	bool hasTimeSlow = IsOptionOn(POWER_TIME);
+	bool hasGrind = IsOptionOn(POWER_GRIND);
+	bool hasBounce = IsOptionOn(POWER_BOUNCE);
 
 	int oldPowerMode = currPowerMode;
 
@@ -11610,7 +11611,7 @@ bool Actor::IsHomingAttackAction(int a)
 void Actor::CheckBounceFlame()
 {
 	//currInput.X
-	/*if ( HasUpgrade( UPGRADE_POWER_BOUNCE ) )
+	/*if ( HasUpgrade( POWER_BOUNCE ) )
 	{
 		if (currPowerMode == PMODE_BOUNCE 
 			&& PowerButtonHeld() && !bounceFlameOn && !justToggledBounce)
@@ -12297,7 +12298,7 @@ void Actor::StopGrind()
 		}
 		else
 		{
-			if (!IsOptionOn(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+			if (!IsOptionOn(POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
 				{
@@ -12496,7 +12497,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 					grindEdge = e1;
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						if (IsOptionOn(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
+						if (IsOptionOn(POWER_GRAV) || grindEdge->Normal().y < 0)
 						{
 							RestoreAirOptions();
 						}
@@ -12582,7 +12583,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						if (IsOptionOn(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
+						if (IsOptionOn(POWER_GRAV) || grindEdge->Normal().y < 0)
 						{
 							RestoreAirOptions();
 						}
@@ -15025,7 +15026,7 @@ void Actor::UpdatePhysics()
 			else if(!touchedGrass[Grass::ANTIGRIND] 
 				&& tempCollision //&& currPowerMode == PMODE_GRIND 
 				&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
-				&& IsOptionOn(UPGRADE_POWER_GRIND)
+				&& IsOptionOn(POWER_GRIND)
 				&& CanBufferGrind()//PowerButtonHeld()
 				&& velocity.y != 0 //remove this soon
 				&& abs( minContact.normal.x ) >= wallThresh 
@@ -19514,17 +19515,17 @@ void Actor::SeqAfterCrawlerFight()
 	frame = 0;
 }
 
-void Actor::AddToFlyCounter(int count)
+void Actor::AddToCurrencyCounter(int count)
 {
-	flyCounter += count;
-	if (flyCounter > 100)
+	currencyCounter += count;
+	if (currencyCounter > 100)
 	{
-		SetKinMode(K_SUPER);
-		flyCounter = flyCounter % 100;
+		//SetKinMode(K_SUPER);
+		//currencyCounter = currencyCounter % 100;
 	}
 
 	AdventureHUD *ah = sess->GetAdventureHUD();
-	if( ah != NULL ) ah->flyCountText.setString("x" + to_string(flyCounter));
+	if( ah != NULL ) ah->currencyCountText.setString("x" + to_string(currencyCounter));
 }
 
 void Actor::HandleEntrant(QuadTreeEntrant *qte)
@@ -21707,11 +21708,11 @@ bool Actor::DefaultGravReverseCheck()
 {
 	bool steepTransferCheck = ground != NULL && ground->IsSteepGround() && minContact.edge->IsSteepGround();
 
-	return ((IsOptionOn(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
+	return ((IsOptionOn(POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (IsOptionOn(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
+		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (IsOptionOn(POWER_GRIND) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -23491,13 +23492,13 @@ void Actor::AirMovement()
 
 void Actor::DrawWires(sf::RenderTarget *target)
 {
-	if (IsOptionOn(UPGRADE_POWER_LWIRE) &&
+	if (IsOptionOn(POWER_LWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| leftWire->IsRetracting()))
 	{
 		leftWire->Draw(target);
 	}
-	if (IsOptionOn(UPGRADE_POWER_RWIRE) &&
+	if (IsOptionOn(POWER_RWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| rightWire->IsRetracting()))
 	{
@@ -23507,10 +23508,10 @@ void Actor::DrawWires(sf::RenderTarget *target)
 
 void Actor::UpdateWireQuads()
 {
-	if (IsOptionOn(UPGRADE_POWER_LWIRE))
+	if (IsOptionOn(POWER_LWIRE))
 		leftWire->UpdateQuads();
 
-	if (IsOptionOn(UPGRADE_POWER_RWIRE))
+	if (IsOptionOn(POWER_RWIRE))
 		rightWire->UpdateQuads();
 }
 
@@ -23781,7 +23782,7 @@ bool Actor::CanBufferGrind()
 	return !touchedGrass[Grass::ANTIGRIND]
 		&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
 		&& currPowerMode == PMODE_GRIND 
-		&& IsOptionOn(UPGRADE_POWER_GRIND) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
+		&& IsOptionOn(POWER_GRIND) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
 }
 
 bool Actor::CanPressGrind()
@@ -24301,7 +24302,7 @@ bool Actor::TryDoubleJump()
 
 bool Actor::TryAirDash()
 {
-	if (IsOptionOn(UPGRADE_POWER_AIRDASH) && !IsSingleWirePulling())
+	if (IsOptionOn(POWER_AIRDASH) && !IsSingleWirePulling())
 	{
 		//removed infinite airdash within bubbles, going to replace it as a shard
 		if (hasAirDash && (DashButtonPressed() || pauseBufferedDash))
@@ -24318,8 +24319,8 @@ bool Actor::TryAirDash()
 
 bool Actor::TryGlide()
 {
-	bool ad = (IsOptionOn(UPGRADE_POWER_AIRDASH) && !hasAirDash)
-		|| !IsOptionOn(UPGRADE_POWER_AIRDASH);
+	bool ad = (IsOptionOn(POWER_AIRDASH) && !hasAirDash)
+		|| !IsOptionOn(POWER_AIRDASH);
 	if (DashButtonPressed())
 	{
 		SetAction(GLIDE);
@@ -25364,11 +25365,11 @@ void Actor::UpdateInHitlag()
 	return pair<bool, bool>(false,false);
 }
 
- void Actor::CollectFly(HealthFly *hf)
+ void Actor::CollectCurrency(CurrencyItem *ci)
  {
-	 HealTimer(hf->GetHealAmount());
-	 hf->Collect();
-	 AddToFlyCounter(hf->GetCounterAmount());
+	 HealTimer(ci->GetHealAmount());
+	 ci->Collect();
+	 AddToCurrencyCounter(ci->GetCounterAmount());
  }
 
  void Actor::SetAirBlockAction()

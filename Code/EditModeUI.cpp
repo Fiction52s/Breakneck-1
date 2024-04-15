@@ -167,13 +167,13 @@ void EditModeUI::CreateKinOptionsPanel()
 	currVerticalSpacing += vertSpacing;
 
 	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	AddKinOption(0, "Airdash:", "Toggle Airdash Power", Actor::UPGRADE_POWER_AIRDASH);
-	AddKinOption(1, "Gravity Reverse: ", "Toggle Gravity Reverse Power", Actor::UPGRADE_POWER_GRAV);
-	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", Actor::UPGRADE_POWER_BOUNCE);
-	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", Actor::UPGRADE_POWER_GRIND);
-	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", Actor::UPGRADE_POWER_TIME);
-	AddKinOption(5, "Left Wire:", "Toggle Left Wire Power", Actor::UPGRADE_POWER_LWIRE);
-	AddKinOption(5, "Right Wire:", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
+	AddKinOption(0, "Airdash:", "Toggle Airdash Power", Actor::POWER_AIRDASH);
+	AddKinOption(1, "Gravity Reverse: ", "Toggle Gravity Reverse Power", Actor::POWER_GRAV);
+	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", Actor::POWER_BOUNCE);
+	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", Actor::POWER_GRIND);
+	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", Actor::POWER_TIME);
+	AddKinOption(5, "Left Wire:", "Toggle Left Wire Power", Actor::POWER_LWIRE);
+	AddKinOption(5, "Right Wire:", "Toggle Right Wire Power", Actor::POWER_RWIRE);
 
 	//currVerticalSpacing += vertSpacing;//10;
 
@@ -209,7 +209,7 @@ void EditModeUI::CreateKinOptionsPanel()
 
 	
 		currName = edit->shardMenu->GetShardName(w, li);
-		upgradeIndex = i + (Actor::UPGRADE_POWER_LWIRE + 1);
+		upgradeIndex = i + (Actor::POWER_LWIRE + 1);
 
 		if (currName == "")
 		{
@@ -449,7 +449,7 @@ void EditModeUI::ChooseMatType(ImageChooseRect *icRect)
 	{
 		world += 8;
 	}
-	else if (edit->matTypeRectsCurrLayer == TERRAINLAYER_FLY)
+	else if (edit->matTypeRectsCurrLayer == TERRAINLAYER_ITEM)
 	{
 		world += 9;
 	}

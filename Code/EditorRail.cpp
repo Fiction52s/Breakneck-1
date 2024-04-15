@@ -459,14 +459,14 @@ void TerrainRail::Load(std::ifstream &is)
 
 	//a little messy but it works for these. Shouldn't need to do anything more special
 	//this allows for special parameters for each enemy to be saved, such as spacing between
-	//flies/blockers
+	//items/blockers
 	if (rType == RailType::BLOCKER )
 	{
 		enemyParams = new BlockerParams(sess->types[enemyTypeName], is);
 	}
-	else if (rType == RailType::FLY)
+	else if (rType == RailType::CURRENCY)
 	{
-		enemyParams = new FlyParams(sess->types["healthfly"], is);
+		enemyParams = new CurrencyItemParams(sess->types["currencyitem"], is);
 	}
 
 	int numRailPoints;
@@ -1277,6 +1277,23 @@ void TerrainRail::Finalize()
 	TryCreateEnemyChain();
 }
 
+void TerrainRail::FinalizeEnemyRail()
+{
+	finalized = true;
+	int numP = GetNumPoints();
+	numLineVerts = (numP - 1) * 2;
+	numColoredQuads = (numP - 1);
+	lines = new sf::Vertex[numLineVerts];
+
+	numTexturedQuads = 0;
+
+	UpdateLines();
+
+	UpdateBounds();
+
+	TryCreateEnemyChain();
+}
+
 int TerrainRail::GetRailType()
 {
 	return rType; 
@@ -1311,21 +1328,6 @@ void TerrainRail::TryCreateEnemyChain()
 	{
 		return;
 	}
-
-	/*string typeString;
-	if (rType == BLOCKER)
-	{
-		typeString = "blocker";
-
-	}
-	else if (rType == FLY)
-	{
-		typeString = "healthfly";
-	}
-	else
-	{
-		return;
-	}*/
 
 	if (enemyParams != NULL)
 	{
@@ -1584,6 +1586,9 @@ void TerrainRail::UpdateLineColor(sf::Vertex *li, int i, int index)
 
 void TerrainRail::UpdateColoredQuads()
 {
+	if (coloredQuads == NULL)
+		return;
+
 	int numP = GetNumPoints();
 	assert(numP > 1);
 	
@@ -2047,8 +2052,8 @@ void TerrainRail::SetRailToActorType(ActorParams *ap)
 		t = RailType::BLOCKER;
 		enemyTypeName = ap->myEnemy->editParams->GetTypeName();
 		break;
-	case EnemyType::EN_FLYCHAIN:
-		t = RailType::FLY;
+	case EnemyType::EN_CURRENCYCHAIN:
+		t = RailType::CURRENCY;
 		enemyTypeName = ap->myEnemy->editParams->GetTypeName();
 		break;
 	}
@@ -2061,13 +2066,6 @@ void TerrainRail::SetRailToActorType(ActorParams *ap)
 void TerrainRail::CancelTransformation()
 {
 	UpdateLines();
-	
-	/*for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
-	{
-		(*it)->SetPosition((*it)->preTransformPos);
-	}*/
-
-	//triBackups.clear();
 }
 
 RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
@@ -2383,7 +2381,7 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 				sf::Quads, ts_rail->texture);
 			break;
 		}
-		case FLY:
+		case CURRENCY:
 		case BLOCKER:
 		{
 			enemyParams->Draw(target);

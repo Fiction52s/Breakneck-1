@@ -1,12 +1,11 @@
 #include "Enemy.h"
-#include "Enemy_HealthFly.h"
+#include "Enemy_CurrencyItem.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
 #include "CircleGroup.h"
 #include "Actor.h"
-
 #include "Enemy_Blocker.h"
 
 using namespace std;
@@ -22,8 +21,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-FlyChain::FlyChain(ActorParams *ap)
-	:EnemyChain( ap, EN_FLYCHAIN )
+CurrencyItemChain::CurrencyItemChain(ActorParams *ap)
+	:EnemyChain(ap, EN_CURRENCYCHAIN)
 {
 	CurrencyItemParams *cParams = (CurrencyItemParams*)ap;
 
@@ -34,34 +33,34 @@ FlyChain::FlyChain(ActorParams *ap)
 	UpdateParams(ap);
 }
 
-void FlyChain::UpdateStartPosition(int ind, V2d &pos)
+void CurrencyItemChain::UpdateStartPosition(int ind, V2d &pos)
 {
-	((HealthFly*)enemies[ind])->SetStartPosition(pos);
+	((CurrencyItem*)enemies[ind])->SetStartPosition(pos);
 }
 
-Tileset *FlyChain::GetTileset(int variation)
+Tileset *CurrencyItemChain::GetTileset(int variation)
 {
 	return GetSizedTileset("Enemies/General/healthfly_64x64.png");
 }
 
-Enemy *FlyChain::CreateEnemy(V2d &pos, int ind)
+Enemy *CurrencyItemChain::CreateEnemy(V2d &pos, int ind)
 {
-	return new HealthFly(this, ind, pos, level, va + ind * 4, ts);
+	return new CurrencyItem(this, ind, pos, level, va + ind * 4, ts);
 }
 
 
-void FlyChain::ReadParams(ActorParams *params)
+void CurrencyItemChain::ReadParams(ActorParams *params)
 {
-	FlyParams *fParams = (FlyParams*)params;
+	CurrencyItemParams *cParams = (CurrencyItemParams*)params;
 	fill = true;
-	paramsVariation = fParams->fType;
-	paramsSpacing = fParams->spacing;
-	fill = fParams->fill;
+	paramsVariation = cParams->currencyItemType;
+	paramsSpacing = cParams->spacing;
+	fill = cParams->fill;
 }
 
-int HealthFly::GetCounterAmount()
+int CurrencyItem::GetCounterAmount()
 {
-	switch (level)
+	/*switch (level)
 	{
 	case 1:
 		return 1;
@@ -72,12 +71,15 @@ int HealthFly::GetCounterAmount()
 	case 3:
 		return 20;
 		break;
-	}
+	}*/
+
+	return 1;
 }
 
-int HealthFly::GetHealAmount()
+int CurrencyItem::GetHealAmount()
 {
-	switch (level)
+	return 20;
+	/*switch (level)
 	{
 	case 1:
 		return 20;
@@ -88,15 +90,15 @@ int HealthFly::GetHealAmount()
 	case 3:
 		return 80;
 		break;
-	}
+	}*/
 }
 
-void HealthFly::AddToWorldTrees()
+void CurrencyItem::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
 }
 
-void HealthFly::SetLevel(int lev)
+void CurrencyItem::SetLevel(int lev)
 {
 	level = lev;
 
@@ -116,14 +118,14 @@ void HealthFly::SetLevel(int lev)
 	}
 }
 
-HealthFly::HealthFly(HealthFly &hf)
-	:HealthFly( hf.chain, hf.index, hf.GetPosition(), hf.level, hf.quad, hf.ts )
+CurrencyItem::CurrencyItem(CurrencyItem &hf)
+	:CurrencyItem(hf.chain, hf.index, hf.GetPosition(), hf.level, hf.quad, hf.ts)
 {
 
 }
 
-HealthFly::HealthFly( FlyChain *fc, int p_index, V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
-	:Enemy(EnemyType::EN_HEALTHFLY, NULL), chain( fc ), index( p_index )
+CurrencyItem::CurrencyItem(CurrencyItemChain *fc, int p_index, V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts)
+	: Enemy(EnemyType::EN_CURRENCYITEM, NULL), chain(fc), index(p_index)
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
@@ -154,34 +156,34 @@ HealthFly::HealthFly( FlyChain *fc, int p_index, V2d &pos, int p_level, sf::Vert
 	SetSpawnRect();
 }
 
-void HealthFly::SetStartPosition(V2d &pos)
+void CurrencyItem::SetStartPosition(V2d &pos)
 {
 	startPosInfo.position = pos;
 	SetCurrPosInfo(startPosInfo);
 	UpdateSprite();
 }
 
-//bool HealthFly::IsTouchingBox(const sf::Rect<double> &r)
+//bool CurrencyItem::IsTouchingBox(const sf::Rect<double> &r)
 //{
 //	return r.intersects(spawnRect);
 //}
 
-sf::FloatRect HealthFly::GetAABB()
+sf::FloatRect CurrencyItem::GetAABB()
 {
 	return GetQuadAABB(quad);
 }
 
-void HealthFly::ProcessHit()
+void CurrencyItem::ProcessHit()
 {
 	if (IsCollectible() && HasReceivedHit())
 	{
 		Collect();
-		sess->GetPlayer(receivedHitPlayerIndex)->CollectFly(this);
+		sess->GetPlayer(receivedHitPlayerIndex)->CollectCurrency(this);
 	}
 }
 
 //making it not heal when its dead!
-//void HealthFly::HandleQuery(QuadTreeCollider * qtc)
+//void CurrencyItem::HandleQuery(QuadTreeCollider * qtc)
 //{
 //	if (!dead)
 //	{
@@ -192,17 +194,17 @@ void HealthFly::ProcessHit()
 //	}
 //}
 
-void HealthFly::IHitPlayer(int index)
+void CurrencyItem::IHitPlayer(int index)
 {
 	if (IsCollectible())
 	{
 		Actor *p = sess->GetPlayer(index);
 		Collect();
-		p->CollectFly(this);
+		p->CollectCurrency(this);
 	}
 }
 
-bool HealthFly::Collect()
+bool CurrencyItem::Collect()
 {
 	if (action == NEUTRAL)
 	{
@@ -215,12 +217,12 @@ bool HealthFly::Collect()
 	return false;
 }
 
-bool HealthFly::IsCollectible()
+bool CurrencyItem::IsCollectible()
 {
 	return action == NEUTRAL;
 }
 
-void HealthFly::ResetEnemy()
+void CurrencyItem::ResetEnemy()
 {
 	action = NEUTRAL;
 	dead = false;
@@ -236,7 +238,7 @@ void HealthFly::ResetEnemy()
 	UpdateSprite();
 }
 
-void HealthFly::ProcessState()
+void CurrencyItem::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -258,12 +260,12 @@ void HealthFly::ProcessState()
 	}
 }
 
-void HealthFly::ClearSprite()
+void CurrencyItem::ClearSprite()
 {
 	ClearRect(quad);
 }
 
-void HealthFly::UpdateSprite()
+void CurrencyItem::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
@@ -283,20 +285,20 @@ void HealthFly::UpdateSprite()
 	SetRectCenter(quad, ts->tileWidth * scale, ts->tileHeight* scale, GetPositionF());
 }
 
-void HealthFly::EnemyDraw(sf::RenderTarget *target)
+void CurrencyItem::EnemyDraw(sf::RenderTarget *target)
 {
 }
 
-void HealthFly::DrawMinimap(sf::RenderTarget *target)
+void CurrencyItem::DrawMinimap(sf::RenderTarget *target)
 {
 	/*if (!dead)
 	{
-		CircleShape enemyCircle;
-		enemyCircle.setFillColor(COLOR_BLUE);
-		enemyCircle.setRadius(50);
-		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
-		enemyCircle.setPosition(position.x, position.y);
-		target->draw(enemyCircle);
+	CircleShape enemyCircle;
+	enemyCircle.setFillColor(COLOR_BLUE);
+	enemyCircle.setRadius(50);
+	enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
+	enemyCircle.setPosition(position.x, position.y);
+	target->draw(enemyCircle);
 	}*/
 }
 

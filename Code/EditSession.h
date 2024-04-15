@@ -81,7 +81,7 @@ enum TerrainLayers : int
 {
 	TERRAINLAYER_NORMAL,
 	TERRAINLAYER_WATER,
-	TERRAINLAYER_FLY,
+	TERRAINLAYER_ITEM,
 	TERRAINLAYER_Count,
 };
 
@@ -689,7 +689,7 @@ struct EditSession : GUIHandler, Session
 	bool IsSnapPointsOn();
 	void DrawSpecialTerrain(sf::RenderTarget *target);
 	void DrawTerrain(sf::RenderTarget *target);
-	void DrawFlyTerrain(sf::RenderTarget *target);
+	void DrawItemTerrain(sf::RenderTarget *target);
 	void DrawRails(sf::RenderTarget *target);
 	void DrawPolygonInProgress();
 	void DrawRailInProgress();

@@ -100,7 +100,7 @@ CreateRailModeUI::CreateRailModeUI()
 	std::vector<ActorType*> types;
 	types.reserve(numEnemyTypes);
 	types.push_back(edit->types["blocker"]);
-	types.push_back(edit->types["healthfly"]);
+	types.push_back(edit->types["currencyitem"]);
 
 	for (int i = 0; i < numEnemyTypes; ++i)
 	{
