@@ -481,7 +481,14 @@ void TerrainRail::Load(std::ifstream &is)
 		AddPoint(Vector2i(x, y), false);
 	}
 
-	Finalize();
+	if (enemyParams != NULL)
+	{
+		FinalizeEnemyRail();
+	}
+	else
+	{
+		Finalize();
+	}
 }
 
 bool TerrainRail::RequiresPowerToGrind()

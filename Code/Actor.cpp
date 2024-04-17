@@ -21332,16 +21332,9 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			CurrencyItem *ci = (CurrencyItem*)qte;
 
-			if (currBooster == NULL)
+			if (ci->hurtBody.Intersects(ci->currHurtboxFrame, &hurtBody) && ci->IsCollectable())
 			{
-				if (ci->hurtBody.Intersects(ci->currHurtboxFrame, &hurtBody) && ci->IsCollectable())
-				{
-					CollectCurrency(ci);
-				}
-			}
-			else
-			{
-				//some replacement formula later
+				CollectCurrency(ci);
 			}
 		}
 	}

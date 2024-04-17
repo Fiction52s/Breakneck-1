@@ -64,6 +64,8 @@ struct CurrencyItem : Enemy, ChainableObject
 	int GetHealAmount();
 	int GetCounterAmount();
 
+	void HandleQuery(QuadTreeCollider * qtc);
+
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

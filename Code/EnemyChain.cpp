@@ -39,6 +39,7 @@ void EnemyChain::AddToWorldTrees()
 {
 	for (int i = 0; i < numEnemies; ++i)
 	{
+		enemies[i]->AddToWorldTrees(); //currency needed to get added here, blocker doesn't use a custom world tree add so its fine
 		//sess->enemyTree->Insert(enemies[i]);
 		//sess->activeItemTree->Insert(enemies[i]);
 	}

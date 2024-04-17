@@ -140,7 +140,7 @@ CurrencyItem::CurrencyItem(CurrencyItemChain *fc, int p_index, V2d &pos, int p_l
 	SetCurrPosInfo(startPosInfo);
 
 	double radius = 40;
-	BasicCircleHitBodySetup(radius);
+	//BasicCircleHitBodySetup(radius);
 	BasicCircleHurtBodySetup(radius);
 
 	ts = p_ts;
@@ -188,16 +188,16 @@ void CurrencyItem::ProcessHit()
 }
 
 //making it not heal when its dead!
-//void CurrencyItem::HandleQuery(QuadTreeCollider * qtc)
-//{
-//	if (!dead)
-//	{
-//		if (qtc != NULL)
-//		{
-//			qtc->HandleEntrant(this);
-//		}
-//	}
-//}
+void CurrencyItem::HandleQuery(QuadTreeCollider * qtc)
+{
+	if (action == NEUTRAL)
+	{
+		if (qtc != NULL)
+		{
+			qtc->HandleEntrant(this);
+		}
+	}
+}
 
 void CurrencyItem::IHitPlayer(int index)
 {
