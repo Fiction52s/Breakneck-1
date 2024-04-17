@@ -19,6 +19,45 @@
 using namespace std;
 using namespace boost::filesystem;
 
+Sector::Sector()
+{
+	index = -1;
+	numLevels = 0;
+	levels = NULL;
+	worldIndex = -1;
+}
+
+Level *Sector::GetLevel(int ind)
+{
+	return &levels[ind];
+}
+int Sector::GetLevelIndex(int ind)
+{
+	return levels[ind].index;
+}
+Sector::~Sector()
+{
+	if (levels != NULL)
+	{
+		delete[] levels;
+	}
+}
+
+World::World()
+{
+	index = -1;
+	numSectors = 0;
+	sectors = NULL;
+}
+
+World::~World()
+{
+	if (sectors != NULL)
+	{
+		delete sectors;
+	}
+}
+
 LevelData::LevelData()
 {
 	Reset();

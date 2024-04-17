@@ -267,6 +267,7 @@ void AdventureMap::Save(std::ofstream &of, int copyMode)
 
 AdventureSector::AdventureSector()
 {
+	Clear();
 }
 
 void AdventureSector::Clear()
@@ -325,7 +326,7 @@ int AdventureWorld::GetNumExistingSectors()
 
 AdventureWorld::AdventureWorld()
 {
-
+	Clear();
 }
 
 void AdventureWorld::Clear()

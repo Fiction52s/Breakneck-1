@@ -25,6 +25,12 @@ struct CurrencyItem : Enemy, ChainableObject
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	CurrencyItemChain *chain;
 
 	int index;
@@ -41,6 +47,7 @@ struct CurrencyItem : Enemy, ChainableObject
 	void SetLevel(int lev);
 	void AddToWorldTrees();
 	void ProcessHit();
+	bool IsCollectable();
 	//bool IsTouchingBox(const sf::Rect<double> &r);
 	sf::FloatRect GetAABB();
 	void SetStartPosition(V2d &pos);
@@ -56,6 +63,10 @@ struct CurrencyItem : Enemy, ChainableObject
 
 	int GetHealAmount();
 	int GetCounterAmount();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

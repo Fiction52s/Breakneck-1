@@ -481,6 +481,9 @@ void Actor::PopulateState(PState *ps)
 	ps->springVel = springVel;
 	ps->glideTurnFactor = glideTurnFactor;
 
+	ps->currencyCounter = currencyCounter;
+
+
 	ps->hitGoal = hitGoal;
 
 	ps->currTouchedGateID = sess->GetGateID(gateTouched);
@@ -763,6 +766,8 @@ void Actor::PopulateFromState(PState *ps)
 
 	springVel = ps->springVel;
 	glideTurnFactor = ps->glideTurnFactor;
+
+	currencyCounter = ps->currencyCounter;
 
 	hitGoal = ps->hitGoal;
 
@@ -5100,6 +5105,21 @@ void Actor::Respawn( bool setStartPos )
 
 	standNDashBoost = false;
 	currencyCounter = 0;
+
+	if (owner != NULL)
+	{
+		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+		{
+			//if (!owner->IsReplayOn() && !owner->IsParallelSession())
+			if (!owner->IsParallelSession())
+			{
+				SaveFile *currFile = adventureManager->currSaveFile;
+				currencyCounter = currFile->currency;
+				AddToCurrencyCounter(0);
+			}
+		}
+	}
+
 	kinMode = K_NORMAL;
 	action = -1;
 	framesStanding = 0;
@@ -19518,12 +19538,7 @@ void Actor::SeqAfterCrawlerFight()
 void Actor::AddToCurrencyCounter(int count)
 {
 	currencyCounter += count;
-	if (currencyCounter > 100)
-	{
-		//SetKinMode(K_SUPER);
-		//currencyCounter = currencyCounter % 100;
-	}
-
+	
 	AdventureHUD *ah = sess->GetAdventureHUD();
 	if( ah != NULL ) ah->currencyCountText.setString("x" + to_string(currencyCounter));
 }
@@ -21311,6 +21326,22 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				{
 					currAimLauncher = al;
 				}
+			}
+		}
+		else if (en->type == EnemyType::EN_CURRENCYITEM)
+		{
+			CurrencyItem *ci = (CurrencyItem*)qte;
+
+			if (currBooster == NULL)
+			{
+				if (ci->hurtBody.Intersects(ci->currHurtboxFrame, &hurtBody) && ci->IsCollectable())
+				{
+					CollectCurrency(ci);
+				}
+			}
+			else
+			{
+				//some replacement formula later
 			}
 		}
 	}

@@ -523,6 +523,8 @@ void AdventureHUD::Reset()
 	timer->Reset();
 	modifierTimer->Reset();
 
+	currencyCountText.setString("x0");
+
 	Show();
 
 	//mini->SetCenter(miniShowPos);
@@ -586,7 +588,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 			bossHealthBar->Draw(target);
 		}
 
-		//target->draw(currencyCountText);
+		target->draw(currencyCountText);
 		
 	}
 }

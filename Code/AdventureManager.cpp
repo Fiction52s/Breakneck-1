@@ -430,6 +430,9 @@ void AdventureManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bo
 		}
 	}
 	
+	Actor *a = game->GetPlayer(0);
+
+	currSaveFile->currency += a->currencyCounter;
 
 	SaveCurrFile();
 }

@@ -173,11 +173,16 @@ sf::FloatRect CurrencyItem::GetAABB()
 	return GetQuadAABB(quad);
 }
 
+bool CurrencyItem::IsCollectable()
+{
+	return action == NEUTRAL;
+}
+
 void CurrencyItem::ProcessHit()
 {
 	if (IsCollectible() && HasReceivedHit())
 	{
-		Collect();
+		//Collect();
 		sess->GetPlayer(receivedHitPlayerIndex)->CollectCurrency(this);
 	}
 }
@@ -302,3 +307,21 @@ void CurrencyItem::DrawMinimap(sf::RenderTarget *target)
 	}*/
 }
 
+int CurrencyItem::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void CurrencyItem::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void CurrencyItem::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

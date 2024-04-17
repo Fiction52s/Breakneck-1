@@ -327,6 +327,8 @@ struct PState
 	V2d springVel;
 	double glideTurnFactor;
 
+	int currencyCounter;
+
 	bool hitGoal;
 
 	void Print();

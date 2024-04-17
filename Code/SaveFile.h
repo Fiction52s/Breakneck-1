@@ -33,19 +33,11 @@ struct Sector
 	int numLevels;
 	Level * levels;
 	int worldIndex;
-	Level *GetLevel(int ind)
-	{
-		return &levels[ind];
-	}
-	int GetLevelIndex(int ind)
-	{
-		return levels[ind].index;
-	}
-	~Sector()
-	{
-		delete[] levels;
-	}
 
+	Sector();
+	~Sector();
+	Level *GetLevel(int ind);
+	int GetLevelIndex(int ind);
 };
 
 struct World
@@ -54,10 +46,8 @@ struct World
 	int numSectors;
 	Sector *sectors;
 
-	~World()
-	{
-		delete[] sectors;
-	}
+	World();
+	~World();
 };
 
 struct AdventurePlanet
