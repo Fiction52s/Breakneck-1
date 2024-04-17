@@ -98,6 +98,9 @@ struct AdventureSector
 {	
 	AdventureSector();
 	AdventureMap maps[ADVENTURE_MAX_NUM_LEVELS_PER_SECTOR];
+	std::string name;
+	int numMaps;
+
 	void Clear();
 	void Load(std::ifstream &is, int ver, int copyMode );
 	void Save(std::ofstream &of, int ver, int copyMode );
@@ -107,6 +110,7 @@ struct AdventureSector
 struct AdventureWorld
 {
 	AdventureSector sectors[ADVENTURE_MAX_NUM_SECTORS_PER_WORLD];
+	int numActiveSectors;
 
 	AdventureWorld();
 	void Clear();
@@ -127,6 +131,7 @@ struct AdventureFile
 
 	AdventureWorld worlds[ADVENTURE_MAX_NUM_WORLDS];
 	int ver;
+	int numActiveWorlds;
 
 	AdventureFile();
 	~AdventureFile();

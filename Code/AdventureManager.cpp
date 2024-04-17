@@ -55,7 +55,8 @@ AdventureManager::AdventureManager()
 
 	originalProgressionMode = false;
 
-	LoadAdventure("tadventure");
+	//LoadAdventure("tadventure");
+	LoadAdventure("newadventure");
 
 	worldTransferScreen = new WorldTransferScreen;
 

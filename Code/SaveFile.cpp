@@ -54,7 +54,7 @@ World::~World()
 {
 	if (sectors != NULL)
 	{
-		delete sectors;
+		delete []sectors;
 	}
 }
 
