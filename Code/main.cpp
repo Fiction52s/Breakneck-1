@@ -258,6 +258,7 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	mm->Run();
 	delete mm;
 
+
 	if (steamOn)
 	{
 		SteamAPI_Shutdown();

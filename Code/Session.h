@@ -113,6 +113,7 @@ struct Session;
 struct GoalPulse;
 struct Rain;
 struct ScoreDisplay;
+
 struct InputVisualizer;
 struct PState;
 struct GameMode;
@@ -453,6 +454,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	FlowHandler flowHandler;
 	Rain *rain;
 	ScoreDisplay *scoreDisplay;
+
 	InputVisualizer *inputVis;
 	PokeTriangleScreenGeoGroup *pokeTriangleScreenGroup;
 
@@ -878,6 +880,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupRain();
 	void UpdateRain();
 	void DrawRain(sf::RenderTarget *target);
+	bool IsAdventureSession();
+	void ActivateScoreDisplay( int hideHUDFrames = 0 );
 	virtual void DrawRails(sf::RenderTarget *target) = 0;
 	virtual void DrawScoreDisplay(sf::RenderTarget *target);
 	virtual void DrawLeaderboard(sf::RenderTarget *target);

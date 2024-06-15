@@ -19,6 +19,7 @@ struct PauseMenu;
 struct AdventureHUD;
 struct Background;
 struct WorldTransferScreen;
+struct AdventureScoreDisplay;
 
 struct AdventureManager : TilesetManager
 {
@@ -40,6 +41,7 @@ struct AdventureManager : TilesetManager
 	SaveFile *currSaveFile;
 	int currSaveFileIndex;
 	AdventureHUD *adventureHUD;
+	AdventureScoreDisplay *adventureScoreDisplay;
 
 	Background *background;
 

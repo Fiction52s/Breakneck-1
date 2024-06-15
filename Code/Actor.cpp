@@ -8829,21 +8829,21 @@ void Actor::HandleWaitingScoreDisplay()
 			}
 			return;
 		}
-		else if (yPressed && sess->scoreDisplay->includeExtraSelectBars )
+		else if (yPressed && sess->scoreDisplay->IsIncludingExtraOptions())
 		{
 			if (owner != NULL )
 			{
 				owner->TryStartGhosts();
 			}
 		}
-		else if (r1Pressed && sess->scoreDisplay->includeExtraSelectBars)
+		else if (r1Pressed && sess->scoreDisplay->IsIncludingExtraOptions())
 		{
 			if (owner != NULL)
 			{
 				owner->TryStartMyBestReplay();
 			}
 		}
-		else if (startPressed && sess->scoreDisplay->includeExtraSelectBars)
+		else if (startPressed && sess->scoreDisplay->IsIncludingExtraOptions())
 		{
 			if (owner != NULL && owner->mainMenu->steamOn )
 			{
@@ -8855,8 +8855,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 void Actor::EndLevelWithoutGoal()
 {
-	sess->HideHUD(60);
-	sess->scoreDisplay->Activate();
+	sess->ActivateScoreDisplay(60);
 	SetAction(Actor::GOALKILLWAIT);
 	frame = 0;
 
@@ -22352,8 +22351,7 @@ void Actor::ShipPickupPoint( V2d pos, bool fr )
 
 		if (sess->scoreDisplay != NULL)
 		{
-			sess->scoreDisplay->Activate();
-			sess->HideHUD(60);
+			sess->ActivateScoreDisplay(60);
 		}
 	}
 }

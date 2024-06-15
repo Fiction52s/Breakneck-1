@@ -35,7 +35,7 @@ struct Medal
 	int medalType;
 
 
-	Medal();
+	Medal(TilesetManager *tm );
 	void Reset();
 	void SetCenter(sf::Vector2f pos);
 	void SetTopLeft(sf::Vector2f pos);

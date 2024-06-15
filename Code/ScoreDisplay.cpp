@@ -14,21 +14,48 @@
 using namespace std;
 using namespace sf;
 
-ScoreDisplay::ScoreDisplay(Vector2f &position,
-	sf::Font &testFont)
-	:font(testFont)
+ScoreDisplay::ScoreDisplay(TilesetManager *tm, sf::Font &f)
+	:font(f)
 {
+	Reset();
+	if (tm == NULL)
+	{
+		tm = sess;
+		assert(sess != NULL);
+	}
 	feedbackInputBox = new FeedbackInputBox;
-
 	feedbackInputBox->SetCenter(Vector2f(960, 100));
+	medalSeq = new MedalSequence(tm);
+	medalSeq->Init();
+}
 
+ScoreDisplay::~ScoreDisplay()
+{
+	delete feedbackInputBox;
+	delete medalSeq;
+}
+
+void ScoreDisplay::Reset()
+{
+	action = -1;
+	frame = -1;
+	madeRecord = false;
+	gotGold = false;
+	gotSilver = false;
+	gotBronze = false;
 	sess = Session::GetSession();
 	game = GameSession::GetSession();
+}
+
+DefaultScoreDisplay::DefaultScoreDisplay(Vector2f &position,
+	sf::Font &testFont)
+	:ScoreDisplay(NULL, testFont)
+{
 	basePos = position;
 
 	basePos += Vector2f(0, 80); //for name box
 
-	if (sess->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && sess->mainMenu->adventureManager != NULL)
+	if (sess->IsAdventureSession())
 	{
 		ts_score = sess->mainMenu->adventureManager->GetSizedTileset("HUD/score_384x96.png");
 		ts_scoreIcons = sess->mainMenu->adventureManager->GetSizedTileset("HUD/score_icons_128x96.png");
@@ -39,9 +66,6 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 		ts_scoreIcons = sess->GetSizedTileset("HUD/score_icons_128x96.png");
 	}
 	
-	medalSeq = new MedalSequence;
-	medalSeq->Init();
-
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		bars[i] = new ScoreBar(i, this);
@@ -71,12 +95,8 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	Reset();
 }
 
-ScoreDisplay::~ScoreDisplay()
+DefaultScoreDisplay::~DefaultScoreDisplay()
 {
-	delete feedbackInputBox;
-
-	delete medalSeq;
-
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		delete bars[i];
@@ -88,7 +108,7 @@ ScoreDisplay::~ScoreDisplay()
 	}
 }
 
-void ScoreDisplay::Draw(RenderTarget *target)
+void DefaultScoreDisplay::Draw(RenderTarget *target)
 {
 	if (IsActive())
 	{
@@ -96,7 +116,7 @@ void ScoreDisplay::Draw(RenderTarget *target)
 		target->draw(levelNameText);
 
 
-		if (action == A_WAIT && MainMenu::GetInstance()->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE )
+		if (action == A_WAIT && sess->IsAdventureSession() )
 		{
 			feedbackInputBox->Draw(target);
 		}
@@ -140,12 +160,12 @@ void ScoreDisplay::Draw(RenderTarget *target)
 	}
 }
 
-void ScoreDisplay::PopOutBar(int row)
+void DefaultScoreDisplay::PopOutBar(int row)
 {
 	bars[row]->PopOut();
 }
 
-void ScoreDisplay::PopOutSelectBars()
+void DefaultScoreDisplay::PopOutSelectBars()
 {
 	int numSelectBars = GetNumSelectBars();
 	for (int i = 0; i < numSelectBars; ++i)
@@ -154,7 +174,7 @@ void ScoreDisplay::PopOutSelectBars()
 	}
 }
 
-int ScoreDisplay::GetNumSelectBars()
+int DefaultScoreDisplay::GetNumSelectBars()
 {
 	int selectBarNum = numShownSelectBars;
 	if (!includeExtraSelectBars)
@@ -165,17 +185,17 @@ int ScoreDisplay::GetNumSelectBars()
 	return selectBarNum;
 }
 
-bool ScoreDisplay::IsActive()
+bool DefaultScoreDisplay::IsActive()
 {
 	return action != A_IDLE;
 }
 
-bool ScoreDisplay::IsWaiting()
+bool DefaultScoreDisplay::IsWaiting()
 {
 	return action == A_WAIT;
 }
 
-void ScoreDisplay::Update()
+void DefaultScoreDisplay::Update()
 {
 	if (!IsActive())
 		return;
@@ -315,14 +335,17 @@ void ScoreDisplay::Update()
 	++frame;
 }
 
-void ScoreDisplay::Reset()
+bool DefaultScoreDisplay::IsIncludingExtraOptions()
 {
+	return includeExtraSelectBars;
+}
+
+void DefaultScoreDisplay::Reset()
+{
+	ScoreDisplay::Reset();
 	action = A_IDLE;
 	frame = 0;
-	madeRecord = false;
-	gotGold = false;
-	gotSilver = false;
-	gotBronze = false;
+
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		bars[i]->Reset();
@@ -334,7 +357,7 @@ void ScoreDisplay::Reset()
 	}
 }
 
-void ScoreDisplay::Activate()
+void DefaultScoreDisplay::Activate()
 {
 	action = A_ENTER;
 	frame = 0;
@@ -367,7 +390,7 @@ void ScoreDisplay::Activate()
 
 	includeExtraSelectBars = false;
 
-	if (mm->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE)
+	if (sess->IsAdventureSession())
 	{
 		if (game != NULL)
 		{
@@ -404,7 +427,7 @@ void ScoreDisplay::Activate()
 	//frame = 0;
 }
 
-void ScoreDisplay::Deactivate()
+void DefaultScoreDisplay::Deactivate()
 {
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
@@ -420,7 +443,7 @@ void ScoreDisplay::Deactivate()
 	frame = 0;
 }
 
-ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)
+DefaultScoreDisplay::ScoreBar::ScoreBar(int p_row, DefaultScoreDisplay *p_parent)
 	:row(p_row), parent( p_parent )
 {
 	barSprite.setTexture(*parent->ts_score->texture);
@@ -455,7 +478,7 @@ ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)
 	Reset();
 }
 
-void ScoreBar::Reset()
+void DefaultScoreDisplay::ScoreBar::Reset()
 {
 	SetBarPos(0);
 	state = NONE;
@@ -464,7 +487,7 @@ void ScoreBar::Reset()
 	extraSymbolSprite.setColor(Color::Transparent);
 }
 
-void ScoreBar::SetBarPos(float xDiff)
+void DefaultScoreDisplay::ScoreBar::SetBarPos(float xDiff)
 {
 	int rowHeight = 100;
 	xDiffPos = xDiff;
@@ -487,7 +510,7 @@ void ScoreBar::SetBarPos(float xDiff)
 	extraText.setPosition(text.getPosition() + Vector2f(160, 0));
 }
 
-void ScoreBar::Update()
+void DefaultScoreDisplay::ScoreBar::Update()
 {
 	if (frame == stateLength[state])
 	{
@@ -580,7 +603,7 @@ void ScoreBar::Update()
 	++frame;
 }
 
-void ScoreBar::Draw(sf::RenderTarget *target)
+void DefaultScoreDisplay::ScoreBar::Draw(sf::RenderTarget *target)
 {
 	target->draw(barSprite);
 
@@ -598,7 +621,7 @@ void ScoreBar::Draw(sf::RenderTarget *target)
 	
 }
 
-void ScoreBar::SetText(const std::string &str,
+void DefaultScoreDisplay::ScoreBar::SetText(const std::string &str,
 	sf::Color c)
 {
 	textColor = c;
@@ -608,7 +631,7 @@ void ScoreBar::SetText(const std::string &str,
 	text.setOutlineThickness(2);
 }
 
-void ScoreBar::PopOut()
+void DefaultScoreDisplay::ScoreBar::PopOut()
 {
 	Reset();
 	state = POP_OUT;
@@ -723,13 +746,13 @@ void ScoreBar::PopOut()
 	}
 }
 
-void ScoreBar::Retract()
+void DefaultScoreDisplay::ScoreBar::Retract()
 {
 	state = RETRACT;
 	frame = 0;
 }
 
-SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
+DefaultScoreDisplay::SelectBar::SelectBar(int p_row, DefaultScoreDisplay *p_parent)
 	:row(p_row), parent(p_parent)
 {
 	extraText.setFont(MainMenu::GetInstance()->arial);
@@ -758,7 +781,7 @@ SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 	Reset();
 }
 
-void SelectBar::Reset()
+void DefaultScoreDisplay::SelectBar::Reset()
 {
 	SetBarPos(0);
 	state = NONE;
@@ -807,7 +830,7 @@ void SelectBar::Reset()
 	}
 }
 
-void SelectBar::SetBarPos(float xDiff)
+void DefaultScoreDisplay::SelectBar::SetBarPos(float xDiff)
 {
 	int rowHeight = 100;
 	xDiffPos = xDiff;
@@ -820,7 +843,7 @@ void SelectBar::SetBarPos(float xDiff)
 	extraText.setPosition(newPos + Vector2f(278 + 20, 35));
 }
 
-void SelectBar::Update()
+void DefaultScoreDisplay::SelectBar::Update()
 {
 	if (frame == stateLength[state])
 	{
@@ -893,14 +916,14 @@ void SelectBar::Update()
 	++frame;
 }
 
-void SelectBar::Draw(sf::RenderTarget *target)
+void DefaultScoreDisplay::SelectBar::Draw(sf::RenderTarget *target)
 {
 	target->draw(barSprite);
 	target->draw(buttonIconSprite);
 	target->draw(extraText);
 }
 
-void SelectBar::PopOut()
+void DefaultScoreDisplay::SelectBar::PopOut()
 {
 	Reset();
 	state = POP_OUT;
@@ -908,7 +931,7 @@ void SelectBar::PopOut()
 
 }
 
-void SelectBar::Retract()
+void DefaultScoreDisplay::SelectBar::Retract()
 {
 	state = RETRACT;
 	frame = 0;

@@ -18,7 +18,7 @@ struct MedalSequence : Sequence
 	sf::Vertex overlayRect[4];
 	Medal *shownMedal;
 
-	MedalSequence();
+	MedalSequence( TilesetManager *tm );
 	~MedalSequence();
 
 	void StartGold();

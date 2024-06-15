@@ -119,8 +119,7 @@ void NexusCoreSeq::ReturnToGame()
 	player->SetAction(Actor::GOALKILLWAIT);
 	player->frame = 0;
 	
-	sess->scoreDisplay->Activate();
-	sess->HideHUD();
+	sess->ActivateScoreDisplay();
 }
 
 void NexusCoreSeq::UpdateState()

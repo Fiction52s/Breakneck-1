@@ -14,6 +14,7 @@
 #include "globals.h"
 #include "MapHeader.h"
 #include "ShardMenu.h"
+#include "AdventureScoreDisplay.h"
 
 using namespace std;
 using namespace sf;
@@ -34,7 +35,8 @@ AdventureManager::AdventureManager()
 
 	transferPlayerPowerMode = -1;
 
-	
+	MainMenu * mm = MainMenu::GetInstance();
+	adventureScoreDisplay = new AdventureScoreDisplay(this, mm->arial);
 
 	adventureHUD = new AdventureHUD(this);
 
@@ -131,6 +133,11 @@ AdventureManager::~AdventureManager()
 	for (int i = 0; i < 6; ++i)
 	{
 		delete files[i];
+	}
+
+	if (adventureScoreDisplay != NULL)
+	{
+		delete adventureScoreDisplay;
 	}
 }
 

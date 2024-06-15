@@ -73,6 +73,8 @@
 #include "AdventureManager.h"
 #include "Config.h"
 
+#include "AdventureScoreDisplay.h"
+
 //#include "ggpo\backends\backend.h"
 
 using namespace sf;
@@ -1710,7 +1712,7 @@ Session::~Session()
 		absorbDarkParticles = NULL;
 	}
 
-	if (!(mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL))
+	if (!IsAdventureSession())
 	{
 		if (hud != NULL)
 		{
@@ -4710,7 +4712,7 @@ void Session::SetupHUD()
 		}
 		else
 		{
-			if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL )
+			if (IsAdventureSession())
 			{
 				hud = mainMenu->adventureManager->adventureHUD;
 				hud->SetSession(this);
@@ -6689,10 +6691,35 @@ void Session::FrameRateDisplay::Reset()
 	frameRateTimeTotal = 0;
 }
 
+bool Session::IsAdventureSession()
+{
+	return mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL;
+}
+
+void Session::ActivateScoreDisplay(int hideHUDFrames )
+{
+	if (IsAdventureSession())
+	{
+		mainMenu->adventureManager->adventureScoreDisplay->Activate();
+	}
+	else
+	{
+		scoreDisplay->Activate();
+	}
+	
+	HideHUD(hideHUDFrames);
+}
+
 void Session::DrawScoreDisplay(sf::RenderTarget *target)
 {
-	if( scoreDisplay != NULL )
+	if (IsAdventureSession())
+	{
+		mainMenu->adventureManager->adventureScoreDisplay->Draw(target);
+	}
+	else if (scoreDisplay != NULL)
+	{
 		scoreDisplay->Draw(target);
+	}
 }
 
 void Session::SetupInputVis()
@@ -8717,8 +8744,15 @@ void Session::SetupScoreDisplay()
 		scoreDisplay = parentGame->scoreDisplay;
 		scoreDisplay->Reset();
 	}
+	else if (IsAdventureSession())
+	{
+		assert(scoreDisplay == NULL);
+		scoreDisplay = mainMenu->adventureManager->adventureScoreDisplay;
+	}
 	else if (scoreDisplay == NULL)
-		scoreDisplay = new ScoreDisplay(Vector2f(1920, 0), mainMenu->arial);
+	{
+		scoreDisplay = new DefaultScoreDisplay(Vector2f(1920, 0), mainMenu->arial);
+	}
 	else
 	{
 		scoreDisplay->Reset();
@@ -8727,11 +8761,16 @@ void Session::SetupScoreDisplay()
 
 void Session::CleanupScoreDisplay()
 {
-	if (parentGame == NULL && scoreDisplay != NULL)
+	if (IsAdventureSession())
 	{
-		delete scoreDisplay;
-		scoreDisplay = NULL;
+
 	}
+	else if ( parentGame == NULL && scoreDisplay != NULL)
+	{
+		delete scoreDisplay;	
+	}
+
+	scoreDisplay = NULL;
 }
 
 void Session::EndLevel()
@@ -9948,7 +9987,7 @@ void Session::CleanupGameMode()
 
 void Session::UpdateWorldDependentTileset( int worldIndex)
 {
-	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	if(IsAdventureSession())
 	{
 		mainMenu->adventureManager->UpdateWorldDependentTileset(worldIndex);
 		ts_key = mainMenu->adventureManager->ts_key;

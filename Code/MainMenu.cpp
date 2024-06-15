@@ -859,11 +859,12 @@ MainMenu::MainMenu( bool p_steamOn)
 	transFrame = 0;
 
 	config = new Config();
-	if (!config->Load())
+	config->SetToDefault();
+	/*if (!config->Load())
 	{
 		config->SetToDefault();
 		config->Save();
-	}
+	}*/
 	
 	//config->Load();
 	//config->WaitForLoad();
@@ -1076,6 +1077,7 @@ MainMenu::MainMenu( bool p_steamOn)
 
 void MainMenu::SetupWindow()
 {
+	//return;
 	if (window != NULL)
 	{
 		window->close();
@@ -1113,11 +1115,15 @@ void MainMenu::SetupWindow()
 	assert(window != NULL);
 	window->setVerticalSyncEnabled(true);
 
-	auto vMode = VideoMode::getDesktopMode();
+	if (config->GetData().windowStyle != Style::Fullscreen)
+	{
+		auto vMode = VideoMode::getDesktopMode();
 
-	Vector2i border((vMode.width - windowWidth) / 2, (vMode.height - windowHeight) / 2 );
+		Vector2i border((vMode.width - windowWidth) / 2, (vMode.height - windowHeight) / 2);
 
-	window->setPosition(border);
+		window->setPosition(border);
+	}
+	
 
 	Session *sess = Session::GetSession();
 	if (sess != NULL)
@@ -2148,10 +2154,12 @@ void MainMenu::Slide()
 	slideCurrFrame++;
 }
 
-
 //#define USE_MOVIE_TEST
 void MainMenu::Run()
 {
+	//TESTTEST();
+	//return;
+
 	/*RemoteStorageManager rsm;
 	rsm.LoadAll();
 	rsm.Test();*/

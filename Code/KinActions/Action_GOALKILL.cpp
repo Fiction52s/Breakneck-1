@@ -38,8 +38,7 @@ void Actor::GOALKILL_End()
 	facingRight = true;
 	SetAction(GOALKILLWAIT);
 	frame = 0;
-	sess->scoreDisplay->Activate();
-	sess->HideHUD(60);
+	sess->ActivateScoreDisplay(60);
 	ActivateSound(PlayerSounds::S_LEVEL_COMPLETE);
 }
 

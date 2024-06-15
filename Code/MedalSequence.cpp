@@ -12,9 +12,9 @@
 using namespace std;
 using namespace sf;
 
-MedalSequence::MedalSequence()
+MedalSequence::MedalSequence( TilesetManager *tm )
 {
-	shownMedal = new Medal;
+	shownMedal = new Medal(tm);
 
 	SetRectColor(overlayRect, Color(100, 100, 100, 100));
 	SetRectCenter(overlayRect, 1920, 1080, Vector2f(960, 540));

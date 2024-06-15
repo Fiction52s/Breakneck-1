@@ -4,11 +4,9 @@
 
 using namespace sf;
 
-Medal::Medal()
+Medal::Medal( TilesetManager *tm)
 {
-	Session *sess = Session::GetSession();
-
-	ts_medals = sess->GetSizedTileset("HUD/medals_128x128.png");
+	ts_medals = tm->GetSizedTileset("HUD/medals_128x128.png");
 
 	actionLength[A_HIDDEN] = 1;
 	actionLength[A_APPEAR] = 6;
