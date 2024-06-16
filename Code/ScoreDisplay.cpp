@@ -195,6 +195,11 @@ bool DefaultScoreDisplay::IsWaiting()
 	return action == A_WAIT;
 }
 
+bool DefaultScoreDisplay::IsConfirmable()
+{
+	return false;
+}
+
 void DefaultScoreDisplay::Update()
 {
 	if (!IsActive())
@@ -441,6 +446,11 @@ void DefaultScoreDisplay::Deactivate()
 
 	action = A_IDLE;
 	frame = 0;
+}
+
+void DefaultScoreDisplay::Confirm()
+{
+	//blank
 }
 
 DefaultScoreDisplay::ScoreBar::ScoreBar(int p_row, DefaultScoreDisplay *p_parent)

@@ -15,6 +15,7 @@
 #include "MapHeader.h"
 #include "ShardMenu.h"
 #include "AdventureScoreDisplay.h"
+#include "KinExperienceBar.h"
 
 using namespace std;
 using namespace sf;
@@ -24,6 +25,7 @@ AdventureManager::AdventureManager()
 	leaderboard = new LeaderboardDisplay;
 	feedbackForm = new FeedbackForm;
 	pauseMenu = new PauseMenu(this);
+	expBar = new KinExperienceBar(this);
 	worldMap = NULL;
 	background = NULL;
 	kinBoostScreen = NULL;
@@ -36,7 +38,7 @@ AdventureManager::AdventureManager()
 	transferPlayerPowerMode = -1;
 
 	MainMenu * mm = MainMenu::GetInstance();
-	adventureScoreDisplay = new AdventureScoreDisplay(this, mm->arial);
+	adventureScoreDisplay = new AdventureScoreDisplay(this, expBar, mm->arial);
 
 	adventureHUD = new AdventureHUD(this);
 
@@ -85,6 +87,11 @@ AdventureManager::~AdventureManager()
 	if (adventureHUD != NULL)
 	{
 		delete adventureHUD;
+	}
+
+	if (expBar != NULL)
+	{
+		delete expBar;
 	}
 
 	if (pauseMenu != NULL)

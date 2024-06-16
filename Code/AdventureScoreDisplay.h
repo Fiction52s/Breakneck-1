@@ -5,11 +5,14 @@
 #include "ScoreDisplay.h"
 #include "Tileset.h"
 
+struct KinExperienceBar;
+
 struct AdventureScoreDisplay : ScoreDisplay
 {
 	enum Action
 	{
 		A_IDLE,
+		A_EXPBAR,
 		A_SHOW,
 		A_GIVE_GOLD,
 		A_GIVE_SILVER,
@@ -19,13 +22,16 @@ struct AdventureScoreDisplay : ScoreDisplay
 
 	Tileset *ts_test;
 	sf::Sprite testSpr;
+	KinExperienceBar *expBar;
 
-	AdventureScoreDisplay(TilesetManager *p_tm, sf::Font &f );
+	AdventureScoreDisplay(TilesetManager *p_tm, KinExperienceBar *p_expBar, sf::Font &f );
 	void Reset();
 	void Activate();
 	void Deactivate();
+	void Confirm();
 	void Update();
 	bool IsActive();
+	bool IsConfirmable();
 	bool IsWaiting();
 	bool IsIncludingExtraOptions();
 

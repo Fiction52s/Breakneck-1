@@ -34,9 +34,11 @@ struct ScoreDisplay
 	virtual void Activate() = 0;
 	virtual void Deactivate() = 0;
 	virtual void Update() = 0;
+	virtual void Confirm() = 0;
 	
 	
 	virtual bool IsActive() = 0;
+	virtual bool IsConfirmable() = 0;
 	virtual bool IsWaiting() = 0;
 	virtual bool IsIncludingExtraOptions() = 0;
 
@@ -157,11 +159,13 @@ struct DefaultScoreDisplay : ScoreDisplay
 	void Reset();
 	void Activate();
 	void Deactivate();
+	void Confirm();
 	void Update();
 
 	
 	bool IsActive();
 	bool IsWaiting();
+	bool IsConfirmable();
 	bool IsIncludingExtraOptions();
 
 	void Draw(sf::RenderTarget *target);

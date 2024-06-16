@@ -8762,7 +8762,15 @@ void Actor::HandleWaitingScoreDisplay()
 		return;
 	}
 
-	if (sess->scoreDisplay != NULL && sess->scoreDisplay->IsWaiting())
+	if (sess->scoreDisplay != NULL && sess->scoreDisplay->IsConfirmable())
+	{
+		bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
+		if (aPressed)
+		{
+			sess->scoreDisplay->Confirm();
+		}
+	}
+	else if (sess->scoreDisplay != NULL && sess->scoreDisplay->IsWaiting())
 	{
 		bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
 		bool xPressed = sess->controllerStates[actorIndex]->ButtonPressed_X();

@@ -20,6 +20,7 @@ struct AdventureHUD;
 struct Background;
 struct WorldTransferScreen;
 struct AdventureScoreDisplay;
+struct KinExperienceBar;
 
 struct AdventureManager : TilesetManager
 {
@@ -59,6 +60,7 @@ struct AdventureManager : TilesetManager
 	
 	FeedbackForm *feedbackForm;
 
+	KinExperienceBar *expBar;
 
 	bool parallelPracticeMode;
 	bool originalProgressionMode;
