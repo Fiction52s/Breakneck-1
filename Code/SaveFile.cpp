@@ -1085,6 +1085,69 @@ void SaveFile::SetAsDefault()
 	}
 }
 
+int SaveFile::GetRelativeExp()
+{
+	int totalExp = exp;
+	int relExp = 0;
+	int currKinLevel = 1;
+	int nextLevelExp;
+
+	while (true)
+	{
+		nextLevelExp = GetExpForNextKinLevel(currKinLevel);
+
+		if (totalExp > nextLevelExp)
+		{
+			currKinLevel += 1;
+			totalExp -= nextLevelExp;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return totalExp;
+}
+
+int SaveFile::GetKinLevelFromExp()
+{
+	int totalExp = exp;
+	int relExp = 0;
+	int currKinLevel = 1;
+	int nextLevelExp;
+
+	while( true )
+	{
+		nextLevelExp = GetExpForNextKinLevel(currKinLevel);
+
+		if (totalExp > nextLevelExp)
+		{
+			currKinLevel += 1;
+			totalExp -= nextLevelExp;
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	return currKinLevel;
+}
+
+int SaveFile::GetExpForNextKinLevel(int lev)
+{
+	switch (lev)
+	{
+	case 1:
+		return 50;
+	case 2:
+		return 50;
+	default:
+		return 50;
+	}
+}
+
 GlobalSaveFile::GlobalSaveFile()
 	:cosmeticsField(MAX_COSMETICS)
 {

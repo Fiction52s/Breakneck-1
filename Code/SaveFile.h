@@ -273,6 +273,10 @@ struct SaveFile
 	int GetNumLogsCollected();
 	int GetNumLogsTotal();
 
+	int GetKinLevelFromExp();
+	int GetRelativeExp();
+	int GetExpForNextKinLevel(int lev);
+
 	int GetNumCompleteWorlds( AdventurePlanet *planet );
 
 	bool IsLevelLastInSector( Level *lev );

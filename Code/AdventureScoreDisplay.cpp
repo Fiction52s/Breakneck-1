@@ -2,15 +2,19 @@
 #include "Medal.h"
 #include "MedalSequence.h"
 #include "KinExperienceBar.h"
+#include "Session.h"
+#include "MainMenu.h"
+#include "AdventureManager.h"
 
-AdventureScoreDisplay::AdventureScoreDisplay(TilesetManager *p_tm, KinExperienceBar *p_expBar, sf::Font &f)
-	:ScoreDisplay( p_tm, f)
+AdventureScoreDisplay::AdventureScoreDisplay(AdventureManager *p_adventureManager, KinExperienceBar *p_expBar, sf::Font &f)
+	:ScoreDisplay(p_adventureManager, f)
 {
 	expBar = p_expBar;
+	adventureManager = p_adventureManager;
 
 	Reset();
 
-	ts_test = p_tm->GetSizedTileset( "Menu/AdventureScoreDisplay/adventurescoretest_1920x1080.png");
+	ts_test = adventureManager->GetSizedTileset( "Menu/AdventureScoreDisplay/adventurescoretest_1920x1080.png");
 	ts_test->SetSpriteTexture(testSpr);
 
 	testSpr.setPosition(0, 0);
@@ -27,6 +31,10 @@ void AdventureScoreDisplay::Activate()
 {
 	action = A_EXPBAR;
 	frame = 0;
+
+	expBar->Setup(adventureManager->currSaveFile->GetKinLevelFromExp(),
+		adventureManager->currSaveFile->GetRelativeExp());
+	expBar->AddExp(40);
 }
 
 void AdventureScoreDisplay::Confirm()
@@ -55,6 +63,8 @@ void AdventureScoreDisplay::Update()
 		frame = 0;
 	}
 
+	expBar->Update();
+
 	++frame;
 }
 
@@ -65,7 +75,7 @@ bool AdventureScoreDisplay::IsActive()
 
 bool AdventureScoreDisplay::IsConfirmable()
 {
-	return action == A_EXPBAR;
+	return action == A_EXPBAR && expBar->action == A_IDLE;
 }
 
 bool AdventureScoreDisplay::IsWaiting()

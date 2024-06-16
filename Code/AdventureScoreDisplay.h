@@ -6,6 +6,7 @@
 #include "Tileset.h"
 
 struct KinExperienceBar;
+struct AdventureManager;
 
 struct AdventureScoreDisplay : ScoreDisplay
 {
@@ -23,8 +24,9 @@ struct AdventureScoreDisplay : ScoreDisplay
 	Tileset *ts_test;
 	sf::Sprite testSpr;
 	KinExperienceBar *expBar;
+	AdventureManager *adventureManager;
 
-	AdventureScoreDisplay(TilesetManager *p_tm, KinExperienceBar *p_expBar, sf::Font &f );
+	AdventureScoreDisplay(AdventureManager *p_adventureManager, KinExperienceBar *p_expBar, sf::Font &f );
 	void Reset();
 	void Activate();
 	void Deactivate();
