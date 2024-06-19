@@ -9,6 +9,9 @@
 #include "Enemy_Goal.h"
 #include "MapHeader.h"
 
+#include "MainMenu.h"
+#include "RushManager.h"
+
 using namespace sf;
 using namespace std;
 
@@ -35,11 +38,35 @@ void Actor::GOALKILL_Start()
 
 void Actor::GOALKILL_End()
 {
-	facingRight = true;
-	SetAction(GOALKILLWAIT);
-	frame = 0;
-	sess->ActivateScoreDisplay(60);
-	ActivateSound(PlayerSounds::S_LEVEL_COMPLETE);
+	if (sess->mainMenu->rushManager != NULL)
+	{
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *g = (GameSession*)sess;
+			if (sess->mainMenu->rushManager->TryToGoToNextLevel(g))
+			{
+				V2d pos = position;
+				SetAirPos(pos, true);
+			}
+			else
+			{
+				facingRight = true;
+				SetAction(GOALKILLWAIT);
+				frame = 0;
+				sess->ActivateScoreDisplay(60);
+				ActivateSound(PlayerSounds::S_LEVEL_COMPLETE);
+			}
+		}
+	}
+	else
+	{
+		facingRight = true;
+		SetAction(GOALKILLWAIT);
+		frame = 0;
+		sess->ActivateScoreDisplay(60);
+		ActivateSound(PlayerSounds::S_LEVEL_COMPLETE);
+	}
+	
 }
 
 void Actor::GOALKILL_Change()

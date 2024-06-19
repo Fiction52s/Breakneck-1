@@ -76,6 +76,8 @@
 #include "RandomPicker.h"
 #include "QuickplaySearchScreen.h"
 
+#include "RushManager.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -320,6 +322,11 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	{
 		break;
 	}
+	case TEST_RUSH:
+	{
+
+		break;
+	}
 	case RUN_FREEPLAY_MAP:
 	{
 		if (currFreePlaySession != NULL)
@@ -364,6 +371,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			editorMenuScreen = NULL;
 		}
 	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_RUSH:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
@@ -371,6 +379,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		if (singlePlayerControllerJoinScreen != NULL)
 		{
 			if (toMode == SAVEMENU)
+			{
+				storedControllerStates = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
+				storedControlProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+				storedSkin = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
+			}
+			else if (toMode == TEST_RUSH)
 			{
 				storedControllerStates = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
 				storedControlProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
@@ -499,7 +513,18 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			adventureManager->currProfile = storedControlProfile;
 			adventureManager->CreateWorldMap();
 			adventureManager->CreateSaveMenu();
-
+		}
+		break;
+	}
+	case TEST_RUSH:
+	{
+		if (fromMode == SINGLE_PLAYER_CONTROLLER_JOIN_RUSH)
+		{
+			assert(rushManager == NULL);
+			rushManager = new RushManager;
+			rushManager->controllerInput = storedControllerStates;
+			rushManager->currProfile = storedControlProfile;
+			rushManager->Load();
 		}
 		break;
 	}
@@ -639,6 +664,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		editorMenuScreen = new EditorMenuScreen(this);
 		editorMenuScreen->Start();
 	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_RUSH:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
@@ -795,6 +821,7 @@ MainMenu::MainMenu( bool p_steamOn)
 	//steamOn = false;
 
 	adventureManager = NULL;
+	rushManager = NULL;
 
 	customCursor = NULL;
 	window = NULL;
@@ -1299,6 +1326,11 @@ MainMenu::~MainMenu()
 	if (adventureManager != NULL)
 	{
 		delete adventureManager;
+	}
+
+	if (rushManager != NULL)
+	{
+		delete rushManager;
 	}
 
 	delete messagePopup;
@@ -2972,7 +3004,94 @@ void MainMenu::HandleMenuMode()
 		adventureManager->worldTransferScreen->Update();
 		break;
 	}
+	case TEST_RUSH:
+	{
+		while (window->pollEvent(ev))
+		{
 
+		}
+		View oldView = window->getView();
+		//cout << "running currLevel: " << currLevel << endl;
+		GameSession::GameResultType result =
+			(GameSession::GameResultType)rushManager->firstMap->Run();
+
+		switch (result)
+		{
+		case GameSession::GR_EXITLEVEL:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITTITLE:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITGAME:
+			//currFile->Save();
+			break;
+		}
+
+		rushManager->transferPlayerPowerMode = -1;
+
+		window->setView(oldView);
+
+		//JUST FOR TESTING
+		//worldMap = new WorldMap(this);
+		//saveMenu = new SaveMenuScreen(this);
+		//saveMenu->Reset();
+		//----ENDING JUST FOR TESTING
+
+		//SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
+		//int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+
+		if (result == GameSession::GR_WIN)
+		{
+			//currFile->Save();
+
+			//delete currLevel;
+			//currLevel = NULL;
+			fader->Clear();
+
+			if (adventureManager->IsLastLevel())
+			{
+				LoadMode(THANKS_FOR_PLAYING);
+			}
+			else
+			{
+				LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
+			}
+		}
+		else if (result == GameSession::GR_WINCONTINUE)
+		{
+			LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
+			//if (!rushManager->TryToGoToNextLevel())
+			//{
+			//	if (rushManager->IsLastLevel())
+			//	{
+			//		LoadMode(THANKS_FOR_PLAYING);
+			//	}
+			//	else
+			//	{
+			//		//ReturnToWorldAfterLevel();
+			//		LoadMode(TITLEMENU);
+			//	}
+			//}
+		}
+		else if (result == GameSession::GR_EXITTITLE)
+		{
+			LoadMode(TITLEMENU);
+		}
+		else if (result == GameSession::GR_EXITGAME)
+		{
+			delete currLevel;
+			currLevel = NULL;
+
+			SetMode(EXITING);
+			quit = true;
+		}
+		else
+		{
+			LoadMode(TITLEMENU);
+		}
+		break;
+	}
 	case RUN_ADVENTURE_MAP:
 	{
 		while (window->pollEvent(ev))
@@ -3879,6 +3998,38 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_RUSH:
+	{
+		while (window->pollEvent(ev))
+		{
+			singlePlayerControllerJoinScreen->HandleEvent(ev);
+		}
+
+		singlePlayerControllerJoinScreen->Update();
+
+		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
+		{
+			LoadMode(TEST_RUSH);
+
+			/*MatchParams mp;
+			mp.mapPath = TUTORIAL_PATH;
+			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
+			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
+			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
+			mp.randSeed = time(0);
+			mp.numPlayers = 1;
+			mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+			*menuMatchParams = mp;
+
+			LoadMode(TUTORIAL);*/
+		}
+		else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
+		{
+			LoadMode(TITLEMENU);
+		}
+		break;
+	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	{
 		while (window->pollEvent(ev))
@@ -4674,13 +4825,13 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 		case M_ADVENTURE:
 		{
-			//SetMode(MATCH_RESULTS);
-			//matchResultsScreen = netplayManager->CreateResultsScreen();
-			MOUSE.Hide();
-			musicPlayer->FadeOutCurrentMusic(30);
-			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
-			//customCursor->SetMode(CustomCursor::M_SHIP);
+			//MOUSE.Hide();
+			//musicPlayer->FadeOutCurrentMusic(30);
+			//LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
 
+			musicPlayer->FadeOutCurrentMusic(30);
+			customCursor->Hide();
+			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_RUSH);
 			break;
 		}
 		case M_FREE_PLAY:
@@ -4736,8 +4887,6 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_TUTORIAL:
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
-			//LoadMode(TUTORIAL);
-			//singlePlayerControllerJoinScreen->
 			customCursor->Hide();
 			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL);
 			break;
@@ -5094,6 +5243,10 @@ void MainMenu::DrawMode( Mode m )
 	{
 		break;
 	}
+	case TEST_RUSH:
+	{
+		break;
+	}
 	case BROWSE_WORKSHOP:
 	{
 		preScreenTexture->setView(v);
@@ -5134,6 +5287,11 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
+	{
+		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
+		break;
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_RUSH:
 	{
 		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
 		break;

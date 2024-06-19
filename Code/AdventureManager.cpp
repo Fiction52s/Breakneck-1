@@ -17,11 +17,18 @@
 #include "AdventureScoreDisplay.h"
 #include "KinExperienceBar.h"
 
+
+#include "RushFile.h"
+
 using namespace std;
 using namespace sf;
 
 AdventureManager::AdventureManager()
 {
+	//	adventureFile.Load("Resources/Adventure", adventureName);
+	//adventureFile.LoadMapHeaders();
+	//adventurePlanet = new AdventurePlanet(adventureFile);
+
 	leaderboard = new LeaderboardDisplay;
 	feedbackForm = new FeedbackForm;
 	pauseMenu = new PauseMenu(this);

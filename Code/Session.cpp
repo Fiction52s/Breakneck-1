@@ -1700,7 +1700,7 @@ Session::~Session()
 		bigBulletVA = NULL;
 	}
 
-	if (parentGame == NULL && absorbParticles != NULL)
+	if (absorbParticles != NULL)
 	{
 		delete absorbParticles;
 		absorbParticles = NULL;
@@ -3874,16 +3874,17 @@ int Session::SetupZones()
 
 	cout << "2" << endl;
 	//which zone is the player in?
+
+	V2d playerPos(playerOrigPos[0]);
 	for (auto zit = zones.begin(); zit != zones.end(); ++zit)
 	{
-		//Vector2i truePos = Vector2i( player->position.x, player->position.y );
-		bool hasPoint = (*zit)->ContainsPoint(GetPlayer(0)->position);
+		bool hasPoint = (*zit)->ContainsPoint(playerPos);//GetPlayer(0)->position);
 		if (hasPoint)
 		{
 			bool mostSpecific = true;
 			for (auto zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
 			{
-				if ((*zit2)->ContainsPoint(GetPlayer(0)->position))
+				if ((*zit2)->ContainsPoint(playerPos))//GetPlayer(0)->position))
 				{
 					mostSpecific = false;
 					break;
@@ -4815,12 +4816,13 @@ void Session::HitlagUpdate()
 
 void Session::SetupAbsorbParticles()
 {
-	if (parentGame != NULL)
+	//every session would probably need its own absorb particles since they have different numbers of enemies
+	/*if (parentGame != NULL)
 	{
 		absorbParticles = parentGame->absorbParticles;
 		absorbDarkParticles = parentGame->absorbDarkParticles;
 	}
-	else
+	else*/
 	{
 		if (absorbParticles != NULL)
 		{

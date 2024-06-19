@@ -12,5 +12,6 @@
 #define REPLAY_EXT ".kinreplay"
 #define BRUSH_EXT ".kinbrush"
 #define ADVENTURE_EXT ".kinadventure"
+#define RUSH_EXT ".rush"
 
 #endif

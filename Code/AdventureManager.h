@@ -22,6 +22,9 @@ struct WorldTransferScreen;
 struct AdventureScoreDisplay;
 struct KinExperienceBar;
 
+
+struct RushFile;
+
 struct AdventureManager : TilesetManager
 {
 	int currWorldDependentTilesetWorldIndex;

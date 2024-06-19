@@ -17,6 +17,7 @@
 #include <boost/filesystem.hpp>
 #include "steam/steam_api.h"
 
+struct RushManager;
 struct AdventureManager;
 struct MapHeader;
 struct ClosedBetaScreen;
@@ -198,9 +199,11 @@ struct MainMenu : TilesetManager
 		SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL,
 		SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE,
 		SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE,
+		SINGLE_PLAYER_CONTROLLER_JOIN_RUSH,
 		CLOSED_BETA,
 		QUICKPLAY_PRE_MATCH,
 		EXITING,
+		TEST_RUSH,
 	};
 
 	enum SoundType
@@ -220,6 +223,7 @@ struct MainMenu : TilesetManager
 		GRT_TUTORIAL,
 		GRT_FREEPLAY,
 		GRT_QUICKPLAY,
+		GRT_RUSH,
 	};
 
 	enum PlayerTilesetOptions
@@ -366,6 +370,7 @@ struct MainMenu : TilesetManager
 	FillRing *testRing;
 
 	AdventureManager *adventureManager;
+	RushManager *rushManager;
 
 	Tileset *ts_water;
 	sf::Shader *waterShaders;

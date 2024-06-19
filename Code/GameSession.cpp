@@ -86,6 +86,7 @@
 #include "FeedbackForm.h"
 #include "Leaderboard.h"
 #include "ReplayHUD.h"
+#include "RushManager.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -497,6 +498,8 @@ int GameSession::TryToActivateBonus()
 				}
 			}
 
+			hud->SetSession(bonusGame);
+
 			pauseMenu->game = bonusGame;
 
 			bonusGame->oneFrameMode = oneFrameMode;
@@ -511,8 +514,6 @@ int GameSession::TryToActivateBonus()
 
 			bonusGame->replayGhosts = replayGhosts;
 
-			bonusGame->RestartLevel();
-
 			Actor *p;
 			for (int i = 0; i < MAX_PLAYERS; ++i)
 			{
@@ -523,6 +524,18 @@ int GameSession::TryToActivateBonus()
 				}
 			}
 
+			bonusGame->RestartLevel();
+
+			/*Actor *p;
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->position = V2d(bonusGame->playerOrigPos[i]);
+				}
+			}*/
+
 
 			bonusGame->Run();
 
@@ -530,6 +543,9 @@ int GameSession::TryToActivateBonus()
 			
 			pauseMenu->game = this;
 			currSession = this;
+
+			hud->SetSession(this);
+
 			for (int i = 0; i < MAX_PLAYERS; ++i)
 			{
 				p = GetPlayer(i);
@@ -654,6 +670,9 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 	GameSession *newBonus = new GameSession(&mp);
 	newBonus->bonusType = p_bonusType;
 	newBonus->SetParentGame(this);
+
+
+
 	newBonus->Load();
 
 	numSimulatedFramesRequired = max(numSimulatedFramesRequired,
@@ -4404,6 +4423,11 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
+	if ( parentGame == NULL && mainMenu->gameRunType == MainMenu::GRT_RUSH && mainMenu->rushManager != NULL)
+	{
+		mainMenu->rushManager->currRushMapIndex = 0;
+	}
+
 	if (saveFile == NULL && !IsParallelSession())
 	{
 		//currUpgradeField.Reset();
