@@ -887,11 +887,11 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	config = new Config();
 	config->SetToDefault();
-	/*if (!config->Load())
+	if (!config->Load())
 	{
 		config->SetToDefault();
 		config->Save();
-	}*/
+	}
 	
 	//config->Load();
 	//config->WaitForLoad();

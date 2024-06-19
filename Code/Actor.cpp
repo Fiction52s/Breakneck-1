@@ -78,6 +78,8 @@
 #include "LogMenu.h"
 #include "NetplayManager.h"
 
+#include "RushManager.h"
+
 using namespace sf;
 using namespace std;
 
@@ -17922,7 +17924,18 @@ void Actor::ProcessHitGoal()
 
 	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
-		SetAction(GOALKILL);
+		if (owner != NULL && owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+		{
+			V2d pos = position;
+			SetAirPos(pos, true);
+			velocity = V2d(0, 0);
+			hitGoal = false;
+		}
+		else
+		{
+			SetAction(GOALKILL);
+		}
+		
 	}
 	else if (hitNexus != NULL && action != NEXUSKILL && action != SEQ_FLOAT_TO_NEXUS_OPENING
 		&& action != SEQ_FADE_INTO_NEXUS)

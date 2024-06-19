@@ -208,8 +208,10 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 {
 	if (currRushMapIndex < rushFile.numMaps - 1)
 	{
-		game->SetBonus(bonusVec[currRushMapIndex], V2d(0,0));
-		currRushMapIndex++;
+		int r = rand() % (rushFile.numMaps - 1);
+		game->SetBonus(bonusVec[r], V2d(0, 0));
+		//game->SetBonus(bonusVec[currRushMapIndex], V2d(0,0));
+		//currRushMapIndex++;
 		return true;
 	}
 	else

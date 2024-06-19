@@ -539,7 +539,7 @@ int GameSession::TryToActivateBonus()
 
 			bonusGame->Run();
 
-			
+			mainMenu->musicPlayer->PlayMusic(originalMusic);
 			
 			pauseMenu->game = this;
 			currSession = this;
