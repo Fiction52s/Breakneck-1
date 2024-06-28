@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include <assert.h>
+#include "KinUpgrades.h"
 
 using namespace sf;
 using namespace std;

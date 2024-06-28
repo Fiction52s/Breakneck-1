@@ -79,6 +79,7 @@
 #include "NetplayManager.h"
 
 #include "RushManager.h"
+#include "KinUpgrades.h"
 
 using namespace sf;
 using namespace std;
@@ -7685,17 +7686,57 @@ void Actor::UpdatePrePhysics()
 			}
 			else if (!sess->scoreDisplay->IsActive())
 			{
-				if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
+				if (sess->IsRushSession())
 				{
-					SetAction(EXITBOOST);
-					owner->Fade(false, 30, Color::Black, true);
+					if (owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+					{
+						V2d pos = position;
+						SetAirPos(pos, true);
+						velocity = V2d(0, 0);
+						hitGoal = false;
+					}
+					else
+					{
+						if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
+						{
+							SetAction(EXITBOOST);
+							owner->Fade(false, 30, Color::Black, true);
+						}
+						else
+						{
+							SetAction(EXIT);
+							sess->Fade(false, 30, Color::Black, true);
+						}
+						frame = 0;
+					}
+					/*if (owner != NULL && owner->IsRushSession() && )
+					{
+					V2d pos = position;
+					SetAirPos(pos, true);
+					velocity = V2d(0, 0);
+					hitGoal = false;
+					}
+					else
+					{
+					SetAction(GOALKILL);
+					}*/
 				}
 				else
 				{
-					SetAction(EXIT);
-					sess->Fade(false, 30, Color::Black, true);
+					if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
+					{
+						SetAction(EXITBOOST);
+						owner->Fade(false, 30, Color::Black, true);
+					}
+					else
+					{
+						SetAction(EXIT);
+						sess->Fade(false, 30, Color::Black, true);
+					}
+					frame = 0;
 				}
-				frame = 0;
+
+				
 			}
 		}
 		return;
@@ -8781,6 +8822,16 @@ void Actor::HandleWaitingScoreDisplay()
 		bool bPressed = sess->controllerStates[actorIndex]->ButtonPressed_B();
 		bool startPressed = sess->controllerStates[actorIndex]->ButtonPressed_Start();
 
+		if (owner->IsRushSession() )
+		{
+			if (aPressed)
+			{
+				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+				sess->scoreDisplay->Deactivate();
+			}
+			return;
+		}
+
 		if (aPressed || bPressed)
 		{
 			if (owner != NULL)
@@ -8788,7 +8839,7 @@ void Actor::HandleWaitingScoreDisplay()
 				//bool levValid = owner->level != NULL; 
 				if (aPressed )// && levValid)
 				{
-					if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+					if (owner->IsAdventureSession())
 					{
 						assert(owner->level != NULL);
 						assert(adventureManager != NULL);
@@ -17924,7 +17975,9 @@ void Actor::ProcessHitGoal()
 
 	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
-		if (owner != NULL && owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+		SetAction(GOALKILL);
+
+		/*if (owner != NULL && owner->IsRushSession() && owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
 		{
 			V2d pos = position;
 			SetAirPos(pos, true);
@@ -17934,8 +17987,7 @@ void Actor::ProcessHitGoal()
 		else
 		{
 			SetAction(GOALKILL);
-		}
-		
+		}*/
 	}
 	else if (hitNexus != NULL && action != NEXUSKILL && action != SEQ_FLOAT_TO_NEXUS_OPENING
 		&& action != SEQ_FADE_INTO_NEXUS)

@@ -17,6 +17,7 @@
 #include "Enemy_PowerItem.h"
 #include "TutorialBox.h"
 #include "PlayerRecord.h"
+#include "KinUpgrades.h"
 
 using namespace std;
 using namespace sf;
@@ -169,7 +170,7 @@ PowerItem::~PowerItem()
 void PowerItem::ResetEnemy()
 {
 	//implement for power
-	int optionIndex = Actor::POWER_AIRDASH + powerIndex;
+	int optionIndex = POWER_AIRDASH + powerIndex;
 	data.alreadyCollected = sess->GetPlayer(0)->IsOptionOn(optionIndex);
 	
 	SetCurrPosInfo(startPosInfo);

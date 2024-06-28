@@ -14,6 +14,7 @@
 #include "Actor.h"
 #include "PauseMenu.h"
 #include "TutorialBox.h"
+#include "KinUpgrades.h"
 
 
 using namespace sf;
@@ -282,7 +283,7 @@ void KinMenu::UpdateTutorial()
 
 void KinMenu::UpdatePowers(Actor *player)
 {
-	if (player->IsOptionOn( Actor::POWER_AIRDASH ) )
+	if (player->IsOptionOn( POWER_AIRDASH ) )
 	{
 		secondRowMax = 1;
 	}

@@ -9,6 +9,7 @@
 #include "Actor.h"
 #include "ShardMenu.h"
 #include "Enemy_Shard.h"
+#include "KinUpgrades.h"
 
 using namespace std;
 using namespace sf;
@@ -167,13 +168,13 @@ void EditModeUI::CreateKinOptionsPanel()
 	currVerticalSpacing += vertSpacing;
 
 	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	AddKinOption(0, "Airdash:", "Toggle Airdash Power", Actor::POWER_AIRDASH);
-	AddKinOption(1, "Gravity Reverse: ", "Toggle Gravity Reverse Power", Actor::POWER_GRAV);
-	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", Actor::POWER_BOUNCE);
-	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", Actor::POWER_GRIND);
-	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", Actor::POWER_TIME);
-	AddKinOption(5, "Left Wire:", "Toggle Left Wire Power", Actor::POWER_LWIRE);
-	AddKinOption(5, "Right Wire:", "Toggle Right Wire Power", Actor::POWER_RWIRE);
+	AddKinOption(0, "Airdash:", "Toggle Airdash Power", POWER_AIRDASH);
+	AddKinOption(1, "Gravity Reverse: ", "Toggle Gravity Reverse Power", POWER_GRAV);
+	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", POWER_BOUNCE);
+	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", POWER_GRIND);
+	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", POWER_TIME);
+	AddKinOption(5, "Left Wire:", "Toggle Left Wire Power", POWER_LWIRE);
+	AddKinOption(5, "Right Wire:", "Toggle Right Wire Power",POWER_RWIRE);
 
 	//currVerticalSpacing += vertSpacing;//10;
 
@@ -209,7 +210,7 @@ void EditModeUI::CreateKinOptionsPanel()
 
 	
 		currName = edit->shardMenu->GetShardName(w, li);
-		upgradeIndex = i + (Actor::POWER_LWIRE + 1);
+		upgradeIndex = i + (POWER_LWIRE + 1);
 
 		if (currName == "")
 		{
@@ -648,7 +649,7 @@ void EditModeUI::UpdateLayerLock(int layer, bool lock)
 
 void EditModeUI::SaveKinOptions()
 {
-	for (int i = 0; i < Actor::UPGRADE_Count; ++i)
+	for (int i = 0; i < UPGRADE_Count; ++i)
 	{
 		for (int w = 0; w < 7; ++w)
 		{
@@ -1083,7 +1084,7 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 void EditModeUI::UpdateAllAbilitiesCheckbox()
 {
 	bool allChecked = true;
-	for (int i = 0; i < Actor::UPGRADE_Count; ++i)
+	for (int i = 0; i < UPGRADE_Count; ++i)
 	{
 		if (!edit->defaultStartingPlayerOptionsField.GetBit(i))
 		{

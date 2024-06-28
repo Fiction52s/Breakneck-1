@@ -13,6 +13,7 @@
 #include "LogMenu.h"
 #include "ReplayHUD.h"
 #include "NameTag.h"
+#include "RushManager.h"
 
 using namespace sf;
 using namespace std;
@@ -387,6 +388,10 @@ void PlayerRecordHeader::SetFields()
 		{
 			bLogField.And(game->originalProgressionLogField);
 		}*/
+	}
+	else if (game != NULL && game->IsRushSession())
+	{
+		playerOptionField.Set(game->mainMenu->rushManager->kinOptionField );
 	}
 	else
 	{

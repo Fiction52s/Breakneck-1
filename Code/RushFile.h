@@ -47,11 +47,17 @@ struct RushMap
 
 };
 
+struct RushWorld
+{
+	std::vector<RushMap> maps;
+};
+
 struct RushFile
 {
 	int ver;
-	int numMaps;
-	std::vector<RushMap> maps;
+	int numWorlds;
+	int numMapsPerWorld;
+	std::vector<RushWorld> worlds;
 	//int numActiveWorlds;
 
 	RushFile();

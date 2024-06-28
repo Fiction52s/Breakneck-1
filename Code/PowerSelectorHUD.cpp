@@ -1,6 +1,7 @@
 #include "PowerSelectorHUD.h"
 #include "Session.h"
 #include "Actor.h"
+#include "KinUpgrades.h"
 
 using namespace std;
 using namespace sf;
@@ -73,7 +74,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 	sprite.setPosition(pos);
 
 	Actor *player = sess->GetPlayer(0);
-	if (player->IsOptionOn(Actor::POWER_BOUNCE))
+	if (player->IsOptionOn(POWER_BOUNCE))
 	{
 		ClearRect(deactivatedQuads);
 	}
@@ -83,7 +84,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 			Vector2f(sprite.getPosition()));
 	}
 
-	if (player->IsOptionOn(Actor::POWER_GRIND))
+	if (player->IsOptionOn(POWER_GRIND))
 	{
 		ClearRect(deactivatedQuads + 4);
 	}
@@ -93,7 +94,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 			Vector2f(sprite.getPosition()));
 	}
 
-	if (player->IsOptionOn(Actor::POWER_TIME))
+	if (player->IsOptionOn(POWER_TIME))
 	{
 		ClearRect(deactivatedQuads + 8);
 	}

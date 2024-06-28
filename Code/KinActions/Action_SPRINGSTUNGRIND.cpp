@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "SoundTypes.h"
 #include "EditorTerrain.h"
+#include "KinUpgrades.h"
 
 using namespace sf;
 using namespace std;

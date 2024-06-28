@@ -25,6 +25,8 @@ struct ThanksForPlayingScreen;
 struct HitboxManager;
 struct Config;
 
+struct RushMap;
+
 struct SaveFile;
 struct MapBrowserScreen;
 struct WorkshopBrowser;
@@ -162,6 +164,7 @@ struct MainMenu : TilesetManager
 		LOADINGMENUEND,
 		KINBOOSTLOADINGMAP,
 		WORLDTRANSFERLOADINGMAP,
+		WORLDTRANSFERLOADINGMAPRUSH,
 		RUN_ADVENTURE_MAP,
 		RUN_EDITOR_MAP,
 		SAVEMENU,
@@ -407,6 +410,7 @@ struct MainMenu : TilesetManager
 	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 	void SetModeWorldTransferLoadingMap(int variation);
+	void SetModeWorldTransferLoadingMapRush(int variation);
 	void CreatePlayerTilesets();
 
 	sf::IntRect GetKeyboardKeyIconTile(sf::Keyboard::Key key);
@@ -478,7 +482,11 @@ struct MainMenu : TilesetManager
 	static void sGoToNextLevel(MainMenu *m,
 		AdventureMap *am,
 		Level *lev);
+	static void sGoToNextLevelRush(MainMenu *m,
+		RushMap *rm, Level *lev);
 	void GoToNextLevel(AdventureMap *am,
+		Level *lev);
+	void GoToNextLevelRush(RushMap *rm,
 		Level *lev);
 
 	static void copyDirectoryRecursively(

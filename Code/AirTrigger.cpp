@@ -1,6 +1,7 @@
 #include "AirTrigger.h"
 #include "GameSession.h"
 #include "Actor.h"
+#include "KinUpgrades.h"
 
 using namespace sf;
 using namespace std;
@@ -54,7 +55,7 @@ void AirTrigger::Reset()
 	switch (triggerType)
 	{
 	case AUTORUNRIGHTAIRDASH:
-		if (owner->GetPlayer(0)->IsOptionOn(Actor::POWER_AIRDASH))
+		if (owner->GetPlayer(0)->IsOptionOn(POWER_AIRDASH))
 		{
 			triggered = true;
 		}

@@ -282,7 +282,7 @@ void Shard::Capture()
 {
 	assert(shardType != -1);
 
-	int upgradeIndex = shardType + Actor::SHARD_START_INDEX;
+	int upgradeIndex = shardType;// +SHARD_START_INDEX;
 
 	//sess->UnlockUpgrade(upgradeIndex);
 

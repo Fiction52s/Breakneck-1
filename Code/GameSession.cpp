@@ -1746,7 +1746,7 @@ bool GameSession::ShouldContinueLoading()
 
 bool GameSession::Load()
 {
-	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
+	if (IsAdventureSession())
 	{
 		ts_key = mainMenu->adventureManager->ts_key;
 		ts_keyExplode = mainMenu->adventureManager->ts_keyExplode;
@@ -1754,6 +1754,15 @@ bool GameSession::Load()
 		ts_goalCrack = mainMenu->adventureManager->ts_goalCrack;
 		ts_goalExplode = mainMenu->adventureManager->ts_goalExplode;
 		currWorldDependentTilesetWorldIndex = mainMenu->adventureManager->currWorldDependentTilesetWorldIndex;
+	}
+	else if (IsRushSession())
+	{
+		ts_key = mainMenu->rushManager->ts_key;
+		ts_keyExplode = mainMenu->rushManager->ts_keyExplode;
+		ts_goal = mainMenu->rushManager->ts_goal;
+		ts_goalCrack = mainMenu->rushManager->ts_goalCrack;
+		ts_goalExplode = mainMenu->rushManager->ts_goalExplode;
+		currWorldDependentTilesetWorldIndex = mainMenu->rushManager->currWorldDependentTilesetWorldIndex;
 	}
 	else
 	{
@@ -3209,7 +3218,17 @@ bool GameSession::RunMainLoopOnce()
 			}
 			case PauseMenu::R_P_RESPAWN:
 			{
-				if (parentGame != NULL)
+				if (IsRushSession())
+				{
+					RestartLevel();
+
+					/*if (IsReplayHUDOn())
+					{
+						oneFrameMode = false;
+						UpdateControllers();
+					}*/
+				}
+				else if (parentGame != NULL)
 				{
 					//parentGame->RestartGame();
 					quit = true;
@@ -3678,6 +3697,10 @@ int GameSession::Run()
 		//currLogField.Set(saveFile->logField); //temp turned off. will have to account for other item types soon
 		currPlayerOptionsField.Set(saveFile->kinOptionField); //remember that the save file wont have the upgrades, only powers
 		//give level powers here? 
+	}
+	else if (IsRushSession())
+	{
+		currPlayerOptionsField.Set(mainMenu->rushManager->kinOptionField);
 	}
 
 
@@ -4403,6 +4426,12 @@ SaveFile *GameSession::GetCurrSaveFile()
 
 void GameSession::NextFrameRestartLevel()
 {
+	if (IsRushSession())
+	{
+		nextFrameRestartGame = true;
+		return;
+	}
+
 	if (parentGame != NULL)
 	{
 		parentGame->nextFrameRestartGame = true;
@@ -4423,19 +4452,18 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
-	if ( parentGame == NULL && mainMenu->gameRunType == MainMenu::GRT_RUSH && mainMenu->rushManager != NULL)
+	if ( parentGame == NULL && IsRushSession())
 	{
-		mainMenu->rushManager->currRushMapIndex = 0;
+		//mainMenu->rushManager->currRushMapIndex = 0;
 	}
 
-	if (saveFile == NULL && !IsParallelSession())
+	if ( !IsRushSession() && saveFile == NULL && !IsParallelSession())
 	{
 		//currUpgradeField.Reset();
 		currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 		currLogField.Reset();
 	}
-
-	if ( saveFile != NULL && originalProgressionModeOn)
+	else if ( saveFile != NULL && originalProgressionModeOn)
 	{
 		//if orig progression on, set the log field to the orig progression, otherwise, let it stack up.
 
@@ -4445,6 +4473,11 @@ void GameSession::RestartLevel()
 		currPlayerOptionsField.Set(saveFile->kinOptionField);
 		currPlayerOptionsField.And(originalProgressionPlayerOptionsField);
 	}
+	else if (IsRushSession())
+	{
+		currPlayerOptionsField.Set(mainMenu->rushManager->kinOptionField);
+	}
+
 
 	phaseOn = false;
 	usedWarp = false;
@@ -4544,7 +4577,10 @@ void GameSession::RestartLevel()
 	if( background != NULL )
 		background->Reset();
 	//keeps lighting the same when going into bonuses with the same bg
-	if (parentGame != NULL)
+
+
+
+	if (parentGame != NULL && !IsRushSession() )
 	{
 		if (parentGame->background != NULL)
 		{
@@ -4552,13 +4588,12 @@ void GameSession::RestartLevel()
 		}
 	}
 
-	if (parentGame == NULL)
+	if (parentGame == NULL || IsRushSession() )
 	{
 		if (soundNodeList != NULL)
 		{
 			soundNodeList->Clear();
 		}
-		
 	}
 
 	//DONT RESET totalGameFramesIncludingRespawns
@@ -4570,7 +4605,7 @@ void GameSession::RestartLevel()
 	//f->Reset();
 
 
-	if (parentGame == NULL)
+	if (parentGame == NULL || IsRushSession() )
 	{
 		fader->Reset();
 	}
@@ -4602,7 +4637,7 @@ void GameSession::RestartLevel()
 	/*if (playerReplayManager != NULL && parentGame == NULL )
 		playerReplayManager->SetToStart();*/
 
-	if (parentGame == NULL)
+	if (parentGame == NULL || IsRushSession() )
 	{
 		for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 		{
@@ -4623,7 +4658,7 @@ void GameSession::RestartLevel()
 		filteredPrevInput[i].Clear();
 	}
 
-	if (parentGame == NULL)
+	if (parentGame == NULL || IsRushSession())
 	{
 		for (auto it = activePlayerReplayManagers.begin(); it != activePlayerReplayManagers.end(); ++it)
 		{

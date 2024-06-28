@@ -881,6 +881,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateRain();
 	void DrawRain(sf::RenderTarget *target);
 	bool IsAdventureSession();
+	bool IsRushSession();
 	void ActivateScoreDisplay( int hideHUDFrames = 0 );
 	virtual void DrawRails(sf::RenderTarget *target) = 0;
 	virtual void DrawScoreDisplay(sf::RenderTarget *target);

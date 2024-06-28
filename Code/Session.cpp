@@ -74,6 +74,8 @@
 #include "Config.h"
 
 #include "AdventureScoreDisplay.h"
+#include "RushManager.h"
+#include "RushScoreDisplay.h"
 
 //#include "ggpo\backends\backend.h"
 
@@ -1712,7 +1714,7 @@ Session::~Session()
 		absorbDarkParticles = NULL;
 	}
 
-	if (!IsAdventureSession())
+	if (!IsAdventureSession() && mainMenu->rushManager == NULL ) //fix the conditional for this soon
 	{
 		if (hud != NULL)
 		{
@@ -6698,11 +6700,20 @@ bool Session::IsAdventureSession()
 	return mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL;
 }
 
+bool Session::IsRushSession()
+{
+	return mainMenu->gameRunType == MainMenu::GRT_RUSH && mainMenu->rushManager != NULL;
+}
+
 void Session::ActivateScoreDisplay(int hideHUDFrames )
 {
 	if (IsAdventureSession())
 	{
 		mainMenu->adventureManager->adventureScoreDisplay->Activate();
+	}
+	else if (IsRushSession())
+	{
+		mainMenu->rushManager->rushScoreDisplay->Activate();
 	}
 	else
 	{
@@ -6717,6 +6728,10 @@ void Session::DrawScoreDisplay(sf::RenderTarget *target)
 	if (IsAdventureSession())
 	{
 		mainMenu->adventureManager->adventureScoreDisplay->Draw(target);
+	}
+	else if (IsRushSession())
+	{
+		mainMenu->rushManager->rushScoreDisplay->Draw(target);
 	}
 	else if (scoreDisplay != NULL)
 	{
@@ -8751,6 +8766,11 @@ void Session::SetupScoreDisplay()
 		assert(scoreDisplay == NULL);
 		scoreDisplay = mainMenu->adventureManager->adventureScoreDisplay;
 	}
+	else if (IsRushSession())
+	{
+		assert(scoreDisplay == NULL);
+		scoreDisplay = mainMenu->rushManager->rushScoreDisplay;
+	}
 	else if (scoreDisplay == NULL)
 	{
 		scoreDisplay = new DefaultScoreDisplay(Vector2f(1920, 0), mainMenu->arial);
@@ -8764,6 +8784,10 @@ void Session::SetupScoreDisplay()
 void Session::CleanupScoreDisplay()
 {
 	if (IsAdventureSession())
+	{
+
+	}
+	else if (IsRushSession())
 	{
 
 	}
@@ -9997,6 +10021,16 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 		ts_goal = mainMenu->adventureManager->ts_goal;
 		ts_goalCrack = mainMenu->adventureManager->ts_goalCrack;
 		ts_goalExplode = mainMenu->adventureManager->ts_goalExplode;
+		return;
+	}
+	else if (IsRushSession())
+	{
+		mainMenu->rushManager->UpdateWorldDependentTileset(worldIndex);
+		ts_key = mainMenu->rushManager->ts_key;
+		ts_keyExplode = mainMenu->rushManager->ts_keyExplode;
+		ts_goal = mainMenu->rushManager->ts_goal;
+		ts_goalCrack = mainMenu->rushManager->ts_goalCrack;
+		ts_goalExplode = mainMenu->rushManager->ts_goalExplode;
 		return;
 	}
 

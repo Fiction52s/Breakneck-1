@@ -568,6 +568,11 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete workshopBrowser;
 			workshopBrowser = NULL;
 		}
+		else if (fromMode == TEST_RUSH)
+		{
+			delete rushManager;
+			rushManager = NULL;
+		}
 
 		assert(titleScreen == NULL);
 		titleScreen = new TitleScreen(this);
@@ -2453,6 +2458,14 @@ void MainMenu::SetModeWorldTransferLoadingMap(int variation)
 	adventureManager->worldTransferScreen->SetWorld(variation);
 }
 
+void MainMenu::SetModeWorldTransferLoadingMapRush(int variation)
+{
+	gameRunType = GRT_RUSH;;
+	SetMode(WORLDTRANSFERLOADINGMAPRUSH);
+	rushManager->worldTransferScreen->Reset();
+	rushManager->worldTransferScreen->SetWorld(variation);
+}
+
 void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 {
 	string levelPath = loadParams.adventureMap->GetMapPath();//lev->GetFullName();// name;
@@ -2590,6 +2603,24 @@ void MainMenu::GoToNextLevel(AdventureMap *am,
 	adventureManager->currLevel = currLevel;
 
 	GameSession::sLoad(currLevel);
+}
+
+void MainMenu::sGoToNextLevelRush(MainMenu *m, RushMap *rm, Level *lev)
+{
+	//GameSession *old = m->currLevel;
+	//delete old;
+
+	m->GoToNextLevelRush(rm, lev);
+}
+
+void MainMenu::GoToNextLevelRush(RushMap *rm, Level *lev)
+{
+	//string levelPath = rm->GetMapPath();
+
+	//a little clumsy but clean up soon
+	rushManager->SetWorld(rushManager->currWorld);
+
+	//GameSession::sLoad(currLevel);
 }
 
 void MainMenu::UpdateMenuMode()
@@ -3004,6 +3035,49 @@ void MainMenu::HandleMenuMode()
 		adventureManager->worldTransferScreen->Update();
 		break;
 	}
+	case WORLDTRANSFERLOADINGMAPRUSH:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		if (deadThread != NULL)
+		{
+			if (deadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				delete deadThread;
+				deadThread = NULL;
+			}
+		}
+
+		if (rushManager->worldTransferScreen->IsEnded())//swiper->IsPostWipe())
+		{
+			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
+			SetMode(TEST_RUSH);
+		}
+		else if (rushManager->worldTransferScreen->frame > 60 
+			&& rushManager->worldTransferScreen->level == NULL && loadThread == NULL && deadThread == NULL && rushManager->worldTransferScreen->IsBoosting())
+		{
+			//level is always null currently for this
+			rushManager->worldTransferScreen->End();
+		}
+		else
+		{
+			if (rushManager->worldTransferScreen->frame == 60 && rushManager->worldTransferScreen->IsBoosting())
+			{
+				//window->setVerticalSyncEnabled(false);
+				//window->setFramerateLimit(60);
+				//string levelPath = worldTransferScreen->level->GetFullName();//worldTransferScreen->levName;
+				Level *lev = rushManager->worldTransferScreen->level;
+				deadThread = new boost::thread(MainMenu::sGoToNextLevelRush, this, (RushMap*)NULL, (Level*)NULL);//&adventureManager->adventureFile.GetMap(lev->index), lev);
+				rushManager->worldTransferScreen->level = NULL;
+			}
+
+		}
+		rushManager->worldTransferScreen->Update();
+		break;
+	}
 	case TEST_RUSH:
 	{
 		while (window->pollEvent(ev))
@@ -3060,7 +3134,26 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
 		{
-			LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
+			if (!rushManager->TryToGoToNextWorld())
+			{
+				LoadMode(TITLEMENU);
+			}
+			//if (!rushManager->TryToGoToNextLevel(rushManager->firstMap) )
+			//{
+				
+				/*if (adventureManager->IsLastLevel())
+				{
+					LoadMode(THANKS_FOR_PLAYING);
+				}
+				else
+				{
+					ReturnToWorldAfterLevel();
+				}*/
+
+				//ReturnToWorldAfterLevel();
+			//}
+
+			//LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
 			//if (!rushManager->TryToGoToNextLevel())
 			//{
 			//	if (rushManager->IsLastLevel())
@@ -5142,6 +5235,12 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		adventureManager->worldTransferScreen->Draw(preScreenTexture);
+		break;
+	}
+	case WORLDTRANSFERLOADINGMAPRUSH:
+	{
+		preScreenTexture->setView(v);
+		rushManager->worldTransferScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_MAIN_TO_SAVE:

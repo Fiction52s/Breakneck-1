@@ -14,9 +14,8 @@
 #include "globals.h"
 #include "MapHeader.h"
 #include "ShardMenu.h"
-#include "AdventureScoreDisplay.h"
 #include "KinExperienceBar.h"
-
+#include "RushScoreDisplay.h"
 
 #include "RushFile.h"
 
@@ -24,10 +23,13 @@ using namespace std;
 using namespace sf;
 
 RushManager::RushManager()
+	:kinOptionField(Session::PLAYER_OPTION_BIT_COUNT)
 {
 	pauseMenu = new PauseMenu(this);
 
 	firstMap = NULL;
+
+	kinUpgradesInOrder.reserve(128);
 
 	worldMap = NULL;
 	background = NULL;
@@ -50,7 +52,9 @@ RushManager::RushManager()
 	ts_goalExplode = NULL;
 
 	currRushMapIndex = 0;
+	currWorld = 0;
 	
+	rushScoreDisplay = new RushScoreDisplay(this, mm->arial);
 
 	worldTransferScreen = new WorldTransferScreen;
 
@@ -69,6 +73,11 @@ RushManager::~RushManager()
 	if (adventureHUD != NULL)
 	{
 		delete adventureHUD;
+	}
+
+	if (rushScoreDisplay != NULL)
+	{
+		delete rushScoreDisplay;
 	}
 
 	if (pauseMenu != NULL)
@@ -103,14 +112,36 @@ void RushManager::Load()
 	LoadRush("test");
 }
 
-void RushManager::LoadRush(const std::string &rushName)
+void RushManager::SetWorld(int w)
 {
-	rushFile.Load("Resources/Rush", rushName);
+	UpdateWorldDependentTileset(w);
 
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_RUSH;
 
+	for (int i = 0; i < bonusVec.size(); ++i )
+	{
+		delete bonusVec[i];
+	}
+	bonusVec.clear();
+
+	if (firstMap != NULL)
+	{
+		delete firstMap;
+		firstMap = NULL;
+	}
+
+	currWorld = w;
+
+	currRushMapIndex = 0;
+
+	if (currWorld == 0)
+	{
+		kinOptionField.Reset();
+		kinUpgradesInOrder.clear();
+	}
+
 	MatchParams mp;
-	mp.mapPath = rushFile.maps[0].GetMapPath();
+	mp.mapPath = rushFile.worlds[w].maps[0].GetMapPath();
 	mp.randSeed = time(0);
 	mp.numPlayers = 1;
 	mp.gameModeType = MatchParams::GAME_MODE_BASIC;
@@ -122,19 +153,21 @@ void RushManager::LoadRush(const std::string &rushName)
 	firstMap = new GameSession(&mp);
 	firstMap->Load();
 
+	rushScoreDisplay->SetSession(firstMap);
 
 	//GameSession *lastMap = firstMap;
-	bonusVec.resize(rushFile.numMaps - 1);
-	for (int i = 0; i < rushFile.numMaps - 1; ++i)
+	bonusVec.resize(rushFile.numMapsPerWorld - 1);
+	for (int i = 0; i < rushFile.numMapsPerWorld - 1; ++i)
 	{
-		bonusVec[i] = firstMap->CreateBonus(rushFile.maps[i + 1].GetFilePath());
+		bonusVec[i] = firstMap->CreateBonus(rushFile.worlds[w].maps[i + 1].GetFilePath());
 		//lastMap = bonusVec[i];
 	}
+}
 
-
-	//firstMap->SetBonus(rushFile.maps[1].GetFilePath());
-	//firstMap->CreateBonus(rushFile.maps[1].GetFilePath());
-	//rushFile.LoadMapHeaders();
+void RushManager::LoadRush(const std::string &rushName)
+{
+	rushFile.Load("Resources/Rush", rushName);
+	SetWorld(0);
 }
 
 void RushManager::UpdateWorldDependentTileset(int worldIndex)
@@ -206,12 +239,25 @@ void RushManager::UpdateWorldDependentTileset(int worldIndex)
 
 bool RushManager::TryToGoToNextLevel(GameSession *game)
 {
-	if (currRushMapIndex < rushFile.numMaps - 1)
+	if (currRushMapIndex < rushFile.numMapsPerWorld - 1)
 	{
-		int r = rand() % (rushFile.numMaps - 1);
-		game->SetBonus(bonusVec[r], V2d(0, 0));
-		//game->SetBonus(bonusVec[currRushMapIndex], V2d(0,0));
-		//currRushMapIndex++;
+		//int r = rand() % (rushFile.numMaps - 1);
+		//game->SetBonus(bonusVec[r], V2d(0, 0));
+		game->SetBonus(bonusVec[currRushMapIndex], V2d(0,0));
+		currRushMapIndex++;
+		return true;
+	}
+
+	return false;
+}
+
+bool RushManager::TryToGoToNextWorld()
+{
+	if (currWorld < rushFile.numWorlds)
+	{
+		MainMenu::GetInstance()->SetModeWorldTransferLoadingMapRush(currWorld + 1);
+		currRushMapIndex = 0;
+		currWorld++;
 		return true;
 	}
 	else
@@ -274,4 +320,10 @@ void RushManager::FadeInSaveMenu()
 	saveMenu->transparency = 1.f;*/
 
 	//saveMenu->SetSelectedIndex(mainMenu->RushManager->currSaveFileIndex);
+}
+
+void RushManager::UnlockUpgrade(int index)
+{
+	kinOptionField.SetBit(index, true);
+	kinUpgradesInOrder.push_back(index);
 }

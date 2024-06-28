@@ -182,8 +182,11 @@ void RushFile::SetVer(int v)
 
 void RushFile::Clear()
 {
-	numMaps = 0;
-	maps.clear();
+	//numMaps = 0;
+	numWorlds = 0;
+	numMapsPerWorld = 0;
+	ver = 0;
+	worlds.clear();
 }
 
 bool RushFile::Load(const std::string &p_path,
@@ -202,15 +205,26 @@ bool RushFile::Load(const std::string &p_path,
 	{
 		is >> ver;
 
-		is >> numMaps;
+		is >> numWorlds;
+
+		is >> numMapsPerWorld;
 
 		is.get();
 
-		maps.resize(numMaps);
+		worlds.resize(numWorlds);
+		for (int w = 0; w < numWorlds; ++w)
+		{
+			worlds[w].maps.resize(numMapsPerWorld);
+			for (int i = 0; i < numMapsPerWorld; ++i)
+			{
+				worlds[w].maps[i].Load(is);
+			}
+		}
+		/*maps.resize(numMaps);
 		for (int i = 0; i < numMaps; ++i)
 		{
 			maps[i].Load(is);
-		}
+		}*/
 
 		is.close();
 	}
@@ -235,30 +249,42 @@ void RushFile::Save(const std::string &p_path,
 
 	assert(of.is_open());
 
-	of << ver << endl;
+	of << ver << "\n";
 
-	for (int i = 0; i < numMaps; ++i)
+	of << numWorlds << "\n";
+
+	of << numMapsPerWorld << "\n";
+
+	for (int w = 0; w < numWorlds; ++w)
 	{
-		maps[i].Save( of );
+		for (int i = 0; i < numMapsPerWorld; ++i)
+		{
+			worlds[w].maps[i].Save(of);
+		}
 	}
+
+	//for (int i = 0; i < numMaps; ++i)
+	//{
+	//	maps[i].Save( of );
+	//}
 
 	of.close();
 }
 
 RushMap &RushFile::GetMap(int index)
 {
-	return maps[index];
+	return worlds[0].maps[index]; //not real
 }
 
 bool RushFile::LoadMapHeaders()
 {
-	for (int i = 0; i < numMaps; ++i)
+	/*for (int i = 0; i < numMaps; ++i)
 	{
 		if (maps[i].Exists())
 		{
 			maps[i].LoadHeaderInfo();
 		}
-	}
+	}*/
 
 	return true;
 }
