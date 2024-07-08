@@ -98,6 +98,7 @@ struct Skeleton : Boss, RayCastHandler
 	void UpdateSprite();
 	void ResetEnemy();
 	int GetNumSimulationFramesRequired();
+	void AddToGame();
 
 	void SetPatternLength(int len);
 	//Boss functions

@@ -96,6 +96,7 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	void AddToGame();
 	//void Setup();
 
 	//Boss functions

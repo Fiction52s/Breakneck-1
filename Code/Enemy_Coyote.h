@@ -81,6 +81,7 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	void UpdateSprite();
 	void ResetEnemy();
 	int SetLaunchersStartIndex(int ind);
+	void AddToGame();
 
 	//boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

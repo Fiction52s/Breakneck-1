@@ -29,6 +29,15 @@ SummonGroup::SummonGroup( Summoner *p_summoner,
 	numActiveEnemies = 0;
 }
 
+void SummonGroup::SetEnemyIDAndAddToAllEnemiesVec()
+{
+	for (int i = 0; i < numTotalEnemies; ++i)
+	{
+		enemies[i]->SetEnemyIDAndAddToAllEnemiesVec();
+	}
+}
+
+
 SummonGroup::~SummonGroup()
 {
 	for (int i = 0; i < numTotalEnemies; ++i)

@@ -141,6 +141,14 @@ Coyote::~Coyote()
 	delete pulsePool;
 }
 
+void Coyote::AddToGame()
+{
+	Enemy::AddToGame();
+
+	fireflySummonGroup.SetEnemyIDAndAddToAllEnemiesVec();
+	babyScorpionGroup.SetEnemyIDAndAddToAllEnemiesVec();
+}
+
 void Coyote::LoadParams()
 {
 	/*ifstream is;

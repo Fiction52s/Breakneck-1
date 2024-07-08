@@ -95,6 +95,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	void DrawMinimap(sf::RenderTarget * target);
 	int GetNumSimulationFramesRequired();
 	int ChooseActionAfterStageChange();
+	void AddToGame();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

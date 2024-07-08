@@ -113,6 +113,7 @@ struct Gator : Boss, Summoner, BonusHandler,
 	void ResetEnemy();
 	void FrameIncrement();
 	int GetNumSimulationFramesRequired();
+	void AddToGame();
 	//void HandleRemove();
 
 	//Boss functions

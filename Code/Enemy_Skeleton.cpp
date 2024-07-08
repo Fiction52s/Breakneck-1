@@ -129,6 +129,13 @@ Skeleton::~Skeleton()
 		delete postFightScene;
 }
 
+void Skeleton::AddToGame()
+{
+	Enemy::AddToGame();
+
+	laserPool.SetEnemyIDsAndAddToGame();
+}
+
 void Skeleton::LoadParams()
 {
 	/*ifstream is;

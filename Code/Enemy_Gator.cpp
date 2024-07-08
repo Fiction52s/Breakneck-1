@@ -167,6 +167,12 @@ Gator::~Gator()
 		delete myBonus;
 }
 
+void Gator::AddToGame()
+{
+	Enemy::AddToGame();
+
+	swarmSummonGroup.SetEnemyIDAndAddToAllEnemiesVec();
+}
 
 void Gator::LoadParams()
 {

@@ -30,6 +30,7 @@ struct SummonGroup
 	void DrawMinimap(sf::RenderTarget *target);
 	int SetLaunchersStartIndex(int ind);
 	void HandleSummonedEnemyRemoval(Enemy *e);
+	void SetEnemyIDAndAddToAllEnemiesVec();
 	ActorParams *enemyParams;
 	int numTotalEnemies;
 	Summoner *summoner;

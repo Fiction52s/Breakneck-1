@@ -136,6 +136,14 @@ void CrawlerQueen::LoadParams()
 	//HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);
 }
 
+void CrawlerQueen::AddToGame()
+{
+	Enemy::AddToGame();
+
+	crawlerSummonGroup.SetEnemyIDAndAddToAllEnemiesVec();
+	bombSummonGroup.SetEnemyIDAndAddToAllEnemiesVec();
+}
+
 void CrawlerQueen::ResetEnemy()
 {
 	//currPosInfo = startPosInfo;

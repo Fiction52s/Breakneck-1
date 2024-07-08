@@ -118,6 +118,14 @@ Tiger::~Tiger()
 	}
 }
 
+void Tiger::AddToGame()
+{
+	Enemy::AddToGame();
+
+	palmSummonGroup.SetEnemyIDAndAddToAllEnemiesVec();
+	targetGroup.SetEnemyIDAndAddToAllEnemiesVec();
+}
+
 void Tiger::LoadParams()
 {
 	/*ifstream is;

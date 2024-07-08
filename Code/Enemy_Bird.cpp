@@ -195,6 +195,13 @@ Bird::~Bird()
 		delete myBonus;
 }
 
+void Bird::AddToGame()
+{
+	Enemy::AddToGame();
+
+	batSummonGroup.SetEnemyIDAndAddToAllEnemiesVec();
+}
+
 void Bird::LoadParams()
 {
 	ifstream is;
