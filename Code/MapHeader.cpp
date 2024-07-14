@@ -59,6 +59,7 @@ MapHeader::MapHeader()
 
 void MapHeader::Clear()
 {
+	specialMapType = MAPTYPE_NORMAL;
 	ver1 = 0;
 	ver2 = 0;
 	description = "no description";
@@ -308,6 +309,16 @@ bool MapHeader::Load(std::ifstream &is)
 
 	description = descriptionSS.str();
 
+	if (ver1 >= 10)
+	{
+		is >> specialMapType;
+	}
+	else
+	{
+		specialMapType = MAPTYPE_NORMAL;
+	}
+
+
 	if (ver1 <= 8)
 	{
 		std::vector<ShardInfo> shardInfoVec;
@@ -526,6 +537,8 @@ void MapHeader::Save(std::ofstream &of)
 	of << description << "\n";
 	//of << description << "<>\n";
 
+	of << specialMapType << "\n";
+
 	of << specialItemInfoVec.size() << "\n";
 	for (auto it = specialItemInfoVec.begin(); it != specialItemInfoVec.end(); ++it)
 	{
@@ -538,10 +551,7 @@ void MapHeader::Save(std::ofstream &of)
 		of << (*it) << "\n" << songLevels[(*it)] << "\n";
 	}
 
-	if (ver1 >= 6)
-	{
-		of << creatorName << "\n";
-	}
+	of << creatorName << "\n";
 
 	of << creatorID << "\n";
 

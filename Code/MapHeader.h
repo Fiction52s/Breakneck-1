@@ -40,6 +40,50 @@ struct MapHeader
 		MI_HAS_BASES,
 	};
 
+	enum MapType
+	{
+		MAPTYPE_NORMAL,
+		MAPTYPE_SHIP,
+	};
+
+	int ver1;
+	int ver2;
+
+	int specialMapType;
+	std::string fullName;
+	std::string description;
+
+	int drainSeconds;
+	int goldSeconds;
+	int silverSeconds;
+	int bronzeSeconds;
+
+	std::string envName;
+	int envWorldType;
+	int leftBounds;
+	int topBounds;
+	int boundsWidth;
+	int boundsHeight;
+	int numVertices;
+
+	int bossFightType;
+
+	std::vector<SpecialItemInfo> specialItemInfoVec;
+
+	std::string preLevelSceneName;
+	std::string postLevelSceneName;
+	uint64 creatorID;
+	std::string creatorName;
+
+	std::map < std::string, int > songLevels;
+	std::vector<std::string> songOrder;
+
+	int numPlayerSpawns;
+	int possibleGameModeTypeFlags;
+	int numGameObjects;
+	int functionalWidth;
+	int functionalHeight;
+
 	MapHeader();
 	void Clear();
 	bool CanRunAsMode(int gm);
@@ -58,41 +102,6 @@ struct MapHeader
 	void AddSong(const std::string &songName,
 		int songLevel);
 	int GetNumSongs();
-	int ver1;
-	int ver2;
-	std::string fullName;
-	std::string description;
-	
-	int drainSeconds;
-	int goldSeconds;
-	int silverSeconds;
-	int bronzeSeconds;
-
-	std::string envName;
-	int envWorldType;
-	int leftBounds;
-	int topBounds;
-	int boundsWidth;
-	int boundsHeight;
-	int numVertices;
-	
-	int bossFightType;
-
-	std::vector<SpecialItemInfo> specialItemInfoVec;
-	
-	std::string preLevelSceneName;
-	std::string postLevelSceneName;
-	uint64 creatorID;
-	std::string creatorName;
-
-	std::map < std::string, int > songLevels;
-	std::vector<std::string> songOrder;
-
-	int numPlayerSpawns;
-	int possibleGameModeTypeFlags;
-	int numGameObjects;
-	int functionalWidth;
-	int functionalHeight;
 };
 
 #endif

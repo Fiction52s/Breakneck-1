@@ -38,6 +38,7 @@ documentation and/or software.
 #include <fstream>
 #include <assert.h>
 #include <string>
+using namespace std;
 
 
 // Constants for MD5Transform routine.
@@ -369,7 +370,12 @@ std::string md5file(const std::string &str)
 	std::ifstream is;
 	is.open(str);
 
-	assert(is.is_open());
+	if (!is.is_open())
+	{
+		cout << "file md5 won't open: " << str << endl;
+		assert(is.is_open());
+	}
+	
 	std::string content((std::istreambuf_iterator<char>(is)),
 		(std::istreambuf_iterator<char>()));
 	is.close();

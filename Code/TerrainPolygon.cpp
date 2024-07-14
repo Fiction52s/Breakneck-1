@@ -4106,6 +4106,11 @@ bool TerrainPolygon::IsSometimesActiveType()
 	return terrainWorldType == 5 && terrainVariation == 7;
 }
 
+bool TerrainPolygon::IsInvisibleType()
+{
+	return terrainWorldType == 0 && terrainVariation == 7;
+}
+
 int TerrainPolygon::GetWaterIndex(int w, int variation)
 {
 	int wType = -1;
@@ -5595,7 +5600,22 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		return;
 	}
 	
-	if( renderMode == RENDERMODE_MOVING_POINTS )
+	if (IsInvisibleType())
+	{
+		//invisible
+
+		if (sess->IsSessTypeEdit())
+		{
+			rt->draw(lines, numP * 2, sf::Lines);
+		}
+		else
+		{
+			//draw nothing
+		}
+		
+		return;
+	}
+	else if( renderMode == RENDERMODE_MOVING_POINTS )
 	{
 		DrawPoints(rt, zoomMultiple, dontShow);
 

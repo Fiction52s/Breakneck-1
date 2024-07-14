@@ -76,6 +76,7 @@
 #include "AdventureScoreDisplay.h"
 #include "RushManager.h"
 #include "RushScoreDisplay.h"
+#include "ShipTravelSequence.h"
 
 //#include "ggpo\backends\backend.h"
 
@@ -280,6 +281,9 @@ void Session::RegisterGeneralEnemies()
 		ts_ship);
 	AddExtraEnemy("Tutorial Object", "tutorialobject", objectRow, CreateEnemy<TutorialObject>, SetParamsType<TutorialObjectParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+
+	AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<ShipTravelParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
+		ts_ship);
 
 
 	AddExtraEnemy("Airdash", "airdashpoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
@@ -1602,6 +1606,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	shipEnterScene = NULL;
 	shipExitScene = NULL;
+	shipTravelSequence = NULL;
 
 	originalMusic = NULL;
 	hud = NULL;
@@ -1899,6 +1904,7 @@ Session::~Session()
 
 	CleanupShipEntrance();
 	CleanupShipExit();
+	CleanupShipTravel();
 
 	CleanupZones();
 	CleanupGates();
@@ -5544,6 +5550,13 @@ void Session::ActiveSequenceUpdate()
 						gameState = RUN;
 						return;
 					}
+					else if (shipTravelSequence != NULL)
+					{
+						shipTravelSequence->Reset();
+						SetActiveSequence(shipTravelSequence);
+						gameState = RUN;
+						return;
+					}
 				}
 
 
@@ -6031,6 +6044,15 @@ void Session::CleanupShipEntrance()
 	{
 		delete shipEnterScene;
 		shipEnterScene = NULL;
+	}
+}
+
+void Session::CleanupShipTravel()
+{
+	if (shipTravelSequence != NULL)
+	{
+		delete shipTravelSequence;
+		shipTravelSequence = NULL;
 	}
 }
 

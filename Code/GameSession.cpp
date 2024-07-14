@@ -87,6 +87,8 @@
 #include "Leaderboard.h"
 #include "ReplayHUD.h"
 #include "RushManager.h"
+
+#include "ShipTravelSequence.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -982,6 +984,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	CleanupShipEntrance();
 
+	CleanupShipTravel();
+
 	allSequencesVec.clear();
 
 	allEmittersVec.clear();
@@ -1637,6 +1641,21 @@ void GameSession::ProcessActor(ActorPtr a)
 			//shipEntrancePos = a->GetPosition();
 			//hasShipEntrance = true;
 		
+			//ResetShipSequence();
+		}
+		else if (typeName == "shiptravel")
+		{
+			if (shipTravelSequence == NULL)
+			{
+				shipTravelSequence = new ShipTravelSequence;
+				shipTravelSequence->Init();
+				shipTravelSequence->SetIDAndAddToAllSequencesVec();
+				shipTravelSequence->shipTravelPos = a->GetPosition();
+				//shipEnterScene->Reset();
+			}
+			//shipEntrancePos = a->GetPosition();
+			//hasShipEntrance = true;
+
 			//ResetShipSequence();
 		}
 		else if (typeName == "zoneproperties")
@@ -4763,6 +4782,11 @@ void GameSession::RestartLevel()
 		{
 			shipEnterScene->Reset();
 			SetActiveSequence(shipEnterScene);
+		}
+		else if (shipTravelSequence != NULL)
+		{
+			shipTravelSequence->Reset();
+			SetActiveSequence(shipTravelSequence);
 		}
 	}
 

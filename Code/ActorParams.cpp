@@ -13,6 +13,7 @@
 #include "ShardMenu.h"
 #include "LogMenu.h"
 #include "PlayerSkinShader.h"
+#include "CompositeImage.h"
 
 using namespace std;
 using namespace sf;
@@ -540,6 +541,78 @@ void TutorialObjectParams::WriteParamFile(ofstream &of)
 ActorParams *TutorialObjectParams::Copy()
 {
 	TutorialObjectParams *copy = new TutorialObjectParams(*this);
+	return copy;
+}
+
+ShipTravelParams::ShipTravelParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	PlaceAerial(Vector2i(0, 0));
+
+	shipComp = new CompositeImage(Session::GetSession(), "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
+	//PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+}
+
+
+ShipTravelParams::ShipTravelParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	shipComp = new CompositeImage(Session::GetSession(), "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
+}
+
+ShipTravelParams::~ShipTravelParams()
+{
+	delete shipComp;
+}
+
+void ShipTravelParams::SetPanelInfo()
+{
+}
+
+void ShipTravelParams::SetParams()
+{
+}
+
+void ShipTravelParams::WriteParamFile(ofstream &of)
+{
+}
+
+
+void ShipTravelParams::Draw(RenderTarget *target)
+{
+	/*EditSession *edit = EditSession::GetSession();
+	if (edit != NULL)
+	{
+		if (!edit->editModeUI->IsLayerShowing(LAYER_SEQUENCE))
+		{
+			return;
+		}
+	}
+
+	Vector2f fPos = GetFloatPos();
+	camRect.setPosition(fPos);
+	target->draw(camRect);
+
+	ActorParams::Draw(target);
+
+	nameText.setPosition(fPos.x, fPos.y - 100);
+
+	target->draw(nameText);
+
+	zoomText.setOrigin(zoomText.getLocalBounds().left + zoomText.getLocalBounds().width / 2,
+		zoomText.getLocalBounds().top + zoomText.getLocalBounds().height / 2);
+	zoomText.setPosition(fPos.x, fPos.y - 200);
+
+	target->draw(zoomText);*/
+	shipComp->SetCenter(GetFloatPos());
+	shipComp->Draw(target);
+}
+
+ActorParams *ShipTravelParams::Copy()
+{
+	ShipTravelParams *copy = new ShipTravelParams(*this);
 	return copy;
 }
 

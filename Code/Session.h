@@ -103,6 +103,7 @@ struct BasicBossScene;
 struct Sequence;
 struct ShipEnterScene;
 struct ShipExitScene;
+struct ShipTravelSequence;
 struct CameraShotParams;
 struct ShapeEmitter;
 struct TopClouds;
@@ -273,6 +274,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool switchGameState;
 	ShipEnterScene *shipEnterScene;
 	ShipExitScene *shipExitScene;
+	ShipTravelSequence *shipTravelSequence;
 	GameState gameState;
 	HUD *hud;
 	
@@ -850,6 +852,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateTopClouds();
 	void CleanupShipEntrance();
 	void CleanupShipExit();
+	void CleanupShipTravel();
 	void UpdateEnemiesPreFrameCalculations();
 	void InitPreFrameCalculations();
 	void UpdatePreFrameCalculations();

@@ -10,7 +10,7 @@
 #include "ShardInfo.h"
 #include "LogInfo.h"
 
-
+struct CompositeImage;
 struct TerrainPolygon;
 
 struct BasicGroundEnemyParams : public ActorParams
@@ -156,6 +156,21 @@ struct CameraShotParams : public ActorParams
 	sf::Text zoomText;
 
 	std::string name; //for gamesession
+};
+
+struct ShipTravelParams : public ActorParams
+{
+	CompositeImage *shipComp;
+
+	ShipTravelParams(ActorType *at, int level);
+	ShipTravelParams(ActorType *at,
+		std::ifstream &is);
+	~ShipTravelParams();
+	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile(std::ofstream &of);
+	void Draw(sf::RenderTarget *target);
 };
 
 struct NexusParams : public ActorParams

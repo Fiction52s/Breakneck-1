@@ -70,6 +70,7 @@
 #include "PlayerBox.h"
 #include "DeathSequence.h"
 #include "Enemy_PowerItem.h"
+#include "ShipTravelSequence.h"
 //#define GGPO_ON
 
 using namespace std;
@@ -935,6 +936,12 @@ void EditSession::TestPlayerMode()
 			shipEnterScene->Reset();
 			SetActiveSequence(shipEnterScene);
 		}
+		else if (shipTravelSequence != NULL)
+		{
+			shipTravelSequence->Reset();
+			SetActiveSequence(shipTravelSequence);
+		}
+
 
 		if (musicSelectorUI->ShouldPlayOriginal())
 		{
@@ -1211,6 +1218,7 @@ void EditSession::TestPlayerMode()
 
 	bool foundShipEnter = false;
 	bool foundShipExit = false;
+	bool foundShipTravel = false;
 
 	CleanupCameraShots();
 	CleanupPoi();
@@ -1285,6 +1293,21 @@ void EditSession::TestPlayerMode()
 					shipExitScene->SetIDAndAddToAllSequencesVec();
 				}
 				foundShipExit = true;
+			}
+			else if ((((*enit)->type == types["shiptravel"])))
+			{
+				if (shipTravelSequence == NULL)
+				{
+					shipTravelSequence = new ShipTravelSequence;
+					shipTravelSequence->Init();
+					shipTravelSequence->SetIDAndAddToAllSequencesVec();
+				}
+				else
+				{
+					shipTravelSequence->SetIDAndAddToAllSequencesVec();
+				}
+				foundShipTravel = true;
+				shipTravelSequence->shipTravelPos = (*enit)->GetPosition();
 			}
 			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
@@ -1363,6 +1386,11 @@ void EditSession::TestPlayerMode()
 		CleanupShipEntrance();
 	}
 
+	if (!foundShipTravel && shipTravelSequence != NULL)
+	{
+		CleanupShipTravel();
+	}
+
 	if (!foundShipExit && shipExitScene != NULL)
 	{
 		CleanupShipExit();
@@ -1404,6 +1432,11 @@ void EditSession::TestPlayerMode()
 	{
 		shipEnterScene->Reset();
 		SetActiveSequence(shipEnterScene);
+	}
+	else if (shipTravelSequence != NULL)
+	{
+		shipTravelSequence->Reset();
+		SetActiveSequence(shipTravelSequence);
 	}
 
 	gameMode->StartGame();
@@ -2561,8 +2594,9 @@ void EditSession::WriteMapHeader(ofstream &of)
 
 	//version 8 includes the powerVec and powers in the header
 	//version 9 is post-medals
+	//version 10 is including special map types (for Kin's ship)
 
-	mapHeader->ver1 = 9;
+	mapHeader->ver1 = 10;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -3664,6 +3698,10 @@ void EditSession::SetupTerrainSelectPanel()
 			else if (worldI == 5 && i == 7)
 			{
 				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Fade");
+			}
+			else if (worldI == 0 && i == 7)
+			{
+				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Invisible");
 			}
 
 			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();
@@ -8665,6 +8703,7 @@ void EditSession::TestPlayerModeForPreview()
 
 	bool foundShipEnter = false;
 	bool foundShipExit = false;
+	bool foundShipTravel = false;
 
 	CleanupCameraShots();
 	CleanupPoi();
@@ -8708,6 +8747,16 @@ void EditSession::TestPlayerModeForPreview()
 				}
 				foundShipExit = true;
 			}
+			else if (((*enit)->type == types["shiptravel"]))
+			{
+				if (shipTravelSequence == NULL)
+				{
+					shipTravelSequence = new ShipTravelSequence;
+					shipTravelSequence->Init();
+				}
+				foundShipTravel = true;
+			}
+			
 			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
 				Goal *g = (Goal*)((*enit)->myEnemy);

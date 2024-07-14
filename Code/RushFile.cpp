@@ -220,9 +220,8 @@ bool RushFile::Load(const std::string &p_path,
 			for (int i = 0; i < numMapsPerWorld; ++i)
 			{
 				worlds[w].maps[i].Load(is);
-
-				std::getline(is, emptyStr);
 			}
+			std::getline(is, emptyStr);
 		}
 		/*maps.resize(numMaps);
 		for (int i = 0; i < numMaps; ++i)

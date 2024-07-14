@@ -311,6 +311,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool IsPhaseType();
 	bool IsInversePhaseType();
 	bool IsSometimesActiveType();
+	bool IsInvisibleType();
 	void FadeOut();
 	bool IsActive();
 	void RemoveExtraPointsOnSameSlope();
