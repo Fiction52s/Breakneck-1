@@ -22,6 +22,10 @@ struct ShipTravelSequence : Sequence
 
 	ShipTravelData shipEnterData;
 	CompositeImage *shipComp;
+
+	Tileset *ts_shipTest;
+
+	sf::Sprite shipTestSprite;
 	//ship sequence. should be in its own structure
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
@@ -43,9 +47,6 @@ struct ShipTravelSequence : Sequence
 	sf::Vector2f cloudVel;
 	//int shipSeqFrame;
 	sf::Vector2f shipStartPos;
-
-	sf::Vertex *shipQuads;
-	Tileset **ts_shipTest;
 
 	ShipTravelSequence();
 	~ShipTravelSequence();

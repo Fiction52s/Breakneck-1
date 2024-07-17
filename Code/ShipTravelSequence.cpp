@@ -15,19 +15,30 @@ ShipTravelSequence::ShipTravelSequence()
 	ts_w1ShipClouds1 = sess->GetSizedTileset("Ship/cloud_w1_b1_960x320.png");
 	ts_ship = sess->GetSizedTileset("Ship/ship_open_864x410.png");
 
-	shipComp = new CompositeImage(sess, "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
+	shipComp = NULL;//new CompositeImage(sess, "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
 
+
+	ts_shipTest = sess->GetSizedTileset("Ship/ShipTest/travel1_1725x921.png");
+
+	shipTestSprite.setTexture(*ts_shipTest->texture);
+	shipTestSprite.setOrigin(shipTestSprite.getLocalBounds().width / 2, shipTestSprite.getLocalBounds().height / 2);
+	shipTestSprite.setScale(.75, .75);
+	//shipTestSprite.setScale(.5, .5);
 
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
 	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2 + 34,
 		shipSprite.getLocalBounds().height / 2 - 53);
+	
 
 }
 
 ShipTravelSequence::~ShipTravelSequence()
 {
-	delete shipComp;
+	if (shipComp != NULL)
+	{
+		delete shipComp;
+	}
 }
 
 void ShipTravelSequence::AddFlashes()
@@ -53,7 +64,14 @@ void ShipTravelSequence::Reset()
 	//player->position = shipTravelPos;
 	sess->playerOrigPos[0] = Vector2i(player->position);
 
-	shipComp->SetCenter(Vector2f(shipTravelPos));
+	if (shipComp != NULL)
+	{
+		shipComp->SetCenter(Vector2f(shipTravelPos));
+	}
+	else
+	{
+		shipTestSprite.setPosition(Vector2f(shipTravelPos));
+	}
 
 	Vector2f shipPos(sess->playerOrigPos[0].x - 13, sess->playerOrigPos[0].y - 124);
 	shipPos += Vector2f(8, -50);
@@ -119,6 +137,8 @@ void ShipTravelSequence::Reset()
 	}
 
 	middleClouds.setPosition(sess->playerOrigPos[0].x - 480, sess->playerOrigPos[0].y + 270);
+
+	sess->cam.SetCamType(Camera::SHIP);
 }
 
 void ShipTravelSequence::ReturnToGame()
@@ -135,6 +155,7 @@ void ShipTravelSequence::UpdateState()
 	if (seqData.frame == 0)
 	{
 		sess->HideHUD();
+		sess->cam.SetCamType(Camera::SHIP);
 		//sess->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 		//SetFlashGroup("staregroup");
 	}
@@ -200,7 +221,15 @@ void ShipTravelSequence::Draw(sf::RenderTarget *target, EffectLayer layer)
 		target->draw(cloudBot1, 4 * 3, sf::Quads, ts_w1ShipClouds1->texture);
 		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_w1ShipClouds0->texture);
 		target->draw(shipSprite);*/
-		shipComp->Draw(target);
+
+		if (shipComp != NULL)
+		{
+			shipComp->Draw(target);
+		}
+		else
+		{
+			target->draw(shipTestSprite);
+		}
 	}
 
 	Sequence::Draw(target, layer);

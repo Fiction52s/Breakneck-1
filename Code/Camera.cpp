@@ -1534,6 +1534,30 @@ void Camera::UpdateFightingMode()
 	UpdateVS();//sess->GetPlayer(0), sess->GetPlayer(1));
 }
 
+void Camera::UpdateShipMode()
+{
+	Actor *player = sess->GetPlayer(playerIndex);
+
+	slowMultiple = player->slowMultiple;
+
+	if (manual)
+	{
+		ManualUpdate(player);
+		return;
+	}
+
+	V2d playerPos = player->position;
+	pos.x = playerPos.x;
+	pos.y = playerPos.y;
+	offset = Vector2f(0, 0);
+
+	zoomFactor = 1.0;
+
+	UpdateEaseOut();
+
+	UpdateRumble();
+}
+
 void Camera::Update()
 {
 	switch (camType)
@@ -1546,6 +1570,11 @@ void Camera::Update()
 	case FIGHTING:
 	{
 		UpdateFightingMode();
+		break;
+	}
+	case SHIP:
+	{
+		UpdateShipMode();
 		break;
 	}
 

@@ -161,6 +161,8 @@ struct CameraShotParams : public ActorParams
 struct ShipTravelParams : public ActorParams
 {
 	CompositeImage *shipComp;
+	Tileset *ts;
+	sf::Sprite spr;
 
 	ShipTravelParams(ActorType *at, int level);
 	ShipTravelParams(ActorType *at,

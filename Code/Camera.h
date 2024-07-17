@@ -27,6 +27,7 @@ struct Camera
 	{
 		BASIC,
 		FIGHTING,
+		SHIP,
 	};
 
 	sf::Vector2f velocity;
@@ -132,6 +133,7 @@ struct Camera
 	void Update();
 	void UpdateBasicMode();
 	void UpdateFightingMode();
+	void UpdateShipMode();
 	void UpdateBossFight(int bossFightType);
 	void ManualUpdate( Actor *a );
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);

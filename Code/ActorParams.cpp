@@ -549,8 +549,13 @@ ShipTravelParams::ShipTravelParams(ActorType *at, int level)
 {
 	PlaceAerial(Vector2i(0, 0));
 
-	shipComp = new CompositeImage(Session::GetSession(), "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
+	shipComp = NULL;// new CompositeImage(Session::GetSession(), "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
 	//PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	ts = Session::GetSession()->GetSizedTileset("Ship/ShipTest/travel2_1725x921.png");
+	spr.setTexture(*ts->texture);
+	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+	spr.setScale(.75, .75);
 }
 
 
@@ -559,12 +564,22 @@ ShipTravelParams::ShipTravelParams(ActorType *at, ifstream &is)
 {
 	LoadAerial(is);
 
-	shipComp = new CompositeImage(Session::GetSession(), "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
+	shipComp = NULL;//new CompositeImage(Session::GetSession(), "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
+
+	ts = Session::GetSession()->GetSizedTileset("Ship/ShipTest/travel2_1725x921.png");
+	spr.setTexture(*ts->texture);
+	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+	//spr.setScale(.5, .5);
+	spr.setScale(.75, .75);
 }
 
 ShipTravelParams::~ShipTravelParams()
 {
-	delete shipComp;
+	if (shipComp != NULL)
+	{
+		delete shipComp;
+	}
+	
 }
 
 void ShipTravelParams::SetPanelInfo()
@@ -606,8 +621,20 @@ void ShipTravelParams::Draw(RenderTarget *target)
 	zoomText.setPosition(fPos.x, fPos.y - 200);
 
 	target->draw(zoomText);*/
-	shipComp->SetCenter(GetFloatPos());
-	shipComp->Draw(target);
+
+	ActorParams::Draw(target);
+
+	if (shipComp != NULL)
+	{
+		shipComp->SetCenter(GetFloatPos());
+		shipComp->Draw(target);
+	}
+	else
+	{
+		spr.setPosition(GetFloatPos());
+		target->draw(spr);
+	}
+	
 }
 
 ActorParams *ShipTravelParams::Copy()

@@ -282,8 +282,9 @@ void Session::RegisterGeneralEnemies()
 	AddExtraEnemy("Tutorial Object", "tutorialobject", objectRow, CreateEnemy<TutorialObject>, SetParamsType<TutorialObjectParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
-	AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<ShipTravelParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
-		ts_ship);
+	AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<ShipTravelParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1);
+	//AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
+	//	GetSizedTileset( "Ship/ShipTest/travel1_1725x921.png" ));
 
 
 	AddExtraEnemy("Airdash", "airdashpoweritem", powerRow, CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
