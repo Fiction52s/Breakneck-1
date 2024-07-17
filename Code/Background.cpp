@@ -67,11 +67,6 @@ void ScrollingBackground::Update(const Vector2f &camPos, int updateFrames )
 		off = off - 1920;
 	}
 
-	//cout << "off: " << off << endl;
-
-	//if( p > 0 )
-	//	off = -off;
-
 	if (p > 0)
 		pxx = -pxx;
 

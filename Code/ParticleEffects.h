@@ -79,6 +79,7 @@ struct ShapeEmitter
 		PARTICLE_BOOSTER_HOMING,
 		PARTICLE_BOOSTER_ANTITIMESLOW,
 		PARTICLE_BOOSTER_FREEFLIGHT,
+		PARTICLE_FOREGROUND_TEST,
 		PARTICLE_BOOSTER_Count,
 	};
 
@@ -125,7 +126,8 @@ struct ShapeEmitter
 
 	void Reset();
 	void Update();
-	void Draw(sf::RenderTarget *target);
+	virtual void SpecialUpdate() {};
+	void virtual Draw(sf::RenderTarget *target);
 
 	void SetPos(sf::Vector2f &pos);
 	void SetTileset(Tileset *ts);
@@ -136,7 +138,7 @@ struct ShapeEmitter
 
 	sf::Vector2f GetBoxSpawnPos(int width, int height);
 
-	static float GetRandomAngle(float baseAngle,
+	float GetRandomAngle(float baseAngle,
 		float angleRange);
 
 	virtual void ActivateParticle(int index);
@@ -167,6 +169,28 @@ struct LeafEmitter : ShapeEmitter
 {
 	LeafEmitter();
 	void ActivateParticle(int index);
+};
+
+struct ForegroundTestEmitter : ShapeEmitter
+{
+	sf::Vector2f extraOffset;
+	float extraZoom;
+	float depth;
+	float scrollSpeedX;
+	float scrollOffset;
+	int depthLevel;
+	sf::View oldView;
+	sf::View newView;
+	float xPos;
+	sf::Vector2f extra;
+	sf::Vector2f relPos;
+
+	ForegroundTestEmitter(int p_particleType);
+	void Set(sf::Vector2f &pos, float zoom = 1.f);
+	void SpecialUpdate();
+	void SetExtra(sf::Vector2f &extra);
+	void ActivateParticle(int index);
+	void Draw(sf::RenderTarget *target);
 };
 
 struct Actor;

@@ -22,6 +22,7 @@ ShipTravelSequence::ShipTravelSequence()
 
 	shipTestSprite.setTexture(*ts_shipTest->texture);
 	shipTestSprite.setOrigin(shipTestSprite.getLocalBounds().width / 2, shipTestSprite.getLocalBounds().height / 2);
+	//shipTestSprite.setScale(.62, .62);
 	shipTestSprite.setScale(.75, .75);
 	//shipTestSprite.setScale(.5, .5);
 
@@ -155,7 +156,7 @@ void ShipTravelSequence::UpdateState()
 	if (seqData.frame == 0)
 	{
 		sess->HideHUD();
-		sess->cam.SetCamType(Camera::SHIP);
+		
 		//sess->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 		//SetFlashGroup("staregroup");
 	}

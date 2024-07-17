@@ -3,6 +3,7 @@
 #include "MovingGeo.h"
 #include "GameSession.h"
 #include "Actor.h"
+#include "MapHeader.h"
 
 
 using namespace std;
@@ -276,8 +277,9 @@ void ShapeParticle::SetFromBytes(unsigned char *bytes)
 float ShapeEmitter::GetRandomAngle(float baseAngle,
 	float angleRange)
 {
+	//could be a desync issue if this is ever online
 	float a = baseAngle;
-	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
+	float f = (float)sess->GetRand() / RAND_MAX * 2.0 - 1.0;
 	a += angleRange * f;
 
 	return a;
@@ -444,6 +446,9 @@ void ShapeEmitter::SetIDAndAddToAllEmittersVec()
 
 void ShapeEmitter::Update()
 {
+	SpecialUpdate();
+
+
 	int numActivateThisFrame = 0;
 
 	float rf = 1.f / data.ratePerSecond;
@@ -501,6 +506,8 @@ void ShapeEmitter::Draw(sf::RenderTarget *target)
 	}
 }
 
+
+
 sf::Vector2f ShapeEmitter::GetBoxSpawnPos(int width, int height)
 {
 	int rw, rh;
@@ -513,9 +520,10 @@ sf::Vector2f ShapeEmitter::GetBoxSpawnPos(int width, int height)
 	{
 		
 		//use rand() if you don't want this included in rollback
+		//GetRand is bugged with decently large numbers, like 2000. find a fix for that soon.
 
-		//rw = (rand() % width) - width / 2;
-		rw = (sess->GetRand() % width) - width / 2;
+		rw = (rand() % width) - width / 2;
+		//rw = (sess->GetRand() % width) - width / 2;
 	}
 
 	if (height == 0)
@@ -524,8 +532,8 @@ sf::Vector2f ShapeEmitter::GetBoxSpawnPos(int width, int height)
 	}
 	else
 	{
-		//rh = (rand() % height) - height / 2;
-		rh = (sess->GetRand() % height) - height / 2;
+		rh = (rand() % height) - height / 2;
+		//rh = (sess->GetRand() % height) - height / 2;
 	}
 
 	return data.pos + Vector2f(rw, rh);
@@ -592,8 +600,8 @@ LeafEmitter::LeafEmitter()
 
 void LeafEmitter::ActivateParticle(int index)
 {
-	/*ShapeParticle *sp = particles[index];
-	Vector2f sPos = GetSpawnPos();
+	ShapeParticle *sp = particles[index];
+	/*Vector2f sPos = GetSpawnPos();
 	sp->Activate(GetSpawnRadius(), sPos, GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
 	LinearVelPPosUpdater * velUpdater = (LinearVelPPosUpdater*)sp->posUpdater;
 
@@ -705,4 +713,159 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 
 	sp->SetColorShift(sColor, sColorTransParent, 20, 20);
 
+}
+
+
+ForegroundTestEmitter::ForegroundTestEmitter(int p_particleType)
+	:ShapeEmitter(p_particleType, 2000)
+{
+	SetRatePerSecond(120);
+
+	extraZoom = 1.0;
+	
+}
+
+void ForegroundTestEmitter::ActivateParticle(int index)
+{
+	ShapeParticle *sp = particles[index];
+
+	Vector2f center(sess->mapHeader->leftBounds + sess->mapHeader->boundsWidth / 2.f, sess->mapHeader->topBounds + sess->mapHeader->boundsHeight / 2.f);
+	data.pos = center;
+
+	/*return (((p.x >= mapHeader->leftBounds)
+		&& (p.y >= mapHeader->topBounds)
+		&& (p.x <= mapHeader->leftBounds + mapHeader->boundsWidth)
+		&& (p.y <= mapHeader->topBounds + mapHeader->boundsHeight)));*/
+
+	//Vector2f sPos = GetBoxSpawnPos(20, 20);
+	Vector2f sPos = GetBoxSpawnPos(sess->mapHeader->boundsWidth, sess->mapHeader->boundsHeight);
+
+	int minRad = 10;
+	int maxRad = 32;
+
+
+
+	int angI = 0;//sess->GetRand() % 360;
+				 //int angI = rand() % 360;
+	float ang = angI;
+
+
+	Color aColor = Color::White;
+	Color bColor = Color::White;//Color( 40, 0, 0 );
+
+
+	Color sColor = GetBlendColor(aColor, bColor, data.boostPortion);
+
+
+	int ttlVariation = 40;
+	//int ttlValue = (rand() % ttlVariation) - ttlVariation / 2;
+	int ttlValue = (sess->GetRand() % ttlVariation) - ttlVariation / 2;
+	int finalTimeToLive = 90 + ttlValue;
+
+	int tile = 0;
+
+	switch (particleType)
+	{
+	case PARTICLE_BOOSTER_GRAVITY_INCREASER:
+	{
+		maxRad = 64;
+		minRad = 20;
+		tile = 0;
+		ang = 0;
+
+		int tileR = sess->GetRand() % 3;
+		if (tileR == 0)
+		{
+			tile += 1;
+			maxRad = 32;
+			minRad = 20;
+		}
+
+		break;
+	}
+	case PARTICLE_BOOSTER_GRAVITY_DECREASER:
+	{
+		maxRad = 64;
+		minRad = 20;
+		tile = 5;
+		ang = 0;
+
+		int tileR = sess->GetRand() % 3;
+		if (tileR == 0)
+		{
+			tile += 1;
+			maxRad = 32;
+			minRad = 20;
+		}
+		//int tileR = sess->GetRand() % 2;
+
+		break;
+	}
+	default:
+		tile = 0;
+		ang = 0;
+		break;
+	}
+
+	//int r = rand() % ((maxRad - minRad) + 1) + minRad;
+	int r = sess->GetRand() % ((maxRad - minRad) + 1) + minRad;
+	float rad = r;
+
+	sp->Activate(rad, sPos, ang, finalTimeToLive, Color::White, tile);
+	sp->data.vel = normalize(sPos - data.pos) * .1f;//10.f;
+													//360
+
+	Color sColorTransParent = sColor;
+	sColorTransParent.a = 70;
+
+	sp->SetColorShift(sColor, sColorTransParent, 20, 20);
+
+}
+
+void ForegroundTestEmitter::Set(sf::Vector2f &pos, float zoom )
+{
+	extraOffset = pos;
+	extraZoom = zoom;
+}
+
+void ForegroundTestEmitter::SetExtra(sf::Vector2f &p_extra)
+{
+	extra = p_extra;
+}
+
+void ForegroundTestEmitter::SpecialUpdate()
+{
+}
+
+void ForegroundTestEmitter::Draw(sf::RenderTarget *target)
+{
+	oldView = target->getView();
+
+	newView.setCenter(Vector2f(oldView.getCenter().x, oldView.getCenter().y) - extraOffset);
+	newView.setSize(Vector2f(1920, 1080) / extraZoom * .5f);
+
+	target->setView(newView);
+
+	if (pointsPerShape == 4)
+	{
+		if (ts != NULL)
+		{
+			target->draw(points, numPoints, sf::Quads, ts->texture);
+		}
+		else
+		{
+			target->draw(points, numPoints, sf::Quads);
+		}
+
+	}
+	else
+	{
+		target->draw(points, numPoints, sf::Triangles);
+	}
+
+	target->setView(oldView);
+
+
+
+	
 }

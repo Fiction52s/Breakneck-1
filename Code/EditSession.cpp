@@ -71,6 +71,7 @@
 #include "DeathSequence.h"
 #include "Enemy_PowerItem.h"
 #include "ShipTravelSequence.h"
+#include "ParticleEffects.h"
 //#define GGPO_ON
 
 using namespace std;
@@ -358,7 +359,8 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 
 void EditSession::UpdateCamera()
 {
-	switch (gameModeType)
+	
+	/*switch (gameModeType)
 	{
 	case MatchParams::GAME_MODE_BASIC:
 	{
@@ -394,29 +396,9 @@ void EditSession::UpdateCamera()
 		}
 		break;
 	}
-	}
-	/*if ( != NULL)
-	{
-	cam.UpdateVS(GetPlayer(0), GetPlayer(1));
-	}
-	else*/
-	//{
-	//	if (ggpo == NULL)
-	//	{
-	//		cam.SetCamType(Camera::CamType::BASIC);
-	//		cam.playerIndex = 0;
-	//		cam.Update();
-	//	}
-	//	else
-	//	{
-	//		cam.SetCamType(Camera::CamType::FIGHTING);
-	//		int handle = ngs->local_player_handle - 1;
-	//		if (handle < 0)
-	//			handle = 0; //sync test
-	//		cam.playerIndex = handle;
-	//		cam.Update();
-	//	}
-	//}
+	}*/
+	
+	cam.Update();
 
 	Vector2f camPos = cam.GetPos();
 	double camWidth = 960 * cam.GetZoom();
@@ -736,6 +718,13 @@ void EditSession::TestPlayerMode()
 	
 	currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 
+
+	ForegroundTestEmitter *fte = new ForegroundTestEmitter(ShapeEmitter::ParticleType::PARTICLE_BOOSTER_FREEFLIGHT);
+	fte->CreateParticles();
+	fte->Reset();
+	
+	AddEmitter(fte, EffectLayer::IN_FRONT);
+	
 	/*for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (GetPlayer(i) != NULL)
@@ -822,6 +811,38 @@ void EditSession::TestPlayerMode()
 	{
 		playerRecordingManager = new PlayerRecordingManager(1);
 		playerRecordingManager->RestartRecording();
+	}
+
+	switch (gameModeType)
+	{
+	case MatchParams::GAME_MODE_BASIC:
+	{
+		cam.SetCamType(Camera::CamType::BASIC);
+		break;
+	}
+	case MatchParams::GAME_MODE_FIGHT:
+	{
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		break;
+	}
+	case MatchParams::GAME_MODE_RACE:
+	{
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		break;
+	}
+	case MatchParams::GAME_MODE_EXPLORE:
+	{
+		if (matchParams.numPlayers == 1)
+		{
+			cam.SetCamType(Camera::CamType::BASIC);
+			cam.playerIndex = 0;
+		}
+		else
+		{
+			cam.SetCamType(Camera::CamType::FIGHTING);
+		}
+		break;
+	}
 	}
 
 	if (mode == TEST_PLAYER)

@@ -555,7 +555,8 @@ ShipTravelParams::ShipTravelParams(ActorType *at, int level)
 	ts = Session::GetSession()->GetSizedTileset("Ship/ShipTest/travel2_1725x921.png");
 	spr.setTexture(*ts->texture);
 	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
-	spr.setScale(.75, .75);
+	//spr.setScale(.75, .75);
+	//spr.setScale(.62, .62);
 }
 
 
@@ -569,8 +570,8 @@ ShipTravelParams::ShipTravelParams(ActorType *at, ifstream &is)
 	ts = Session::GetSession()->GetSizedTileset("Ship/ShipTest/travel2_1725x921.png");
 	spr.setTexture(*ts->texture);
 	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
-	//spr.setScale(.5, .5);
 	spr.setScale(.75, .75);
+	//spr.setScale(.62, .62);
 }
 
 ShipTravelParams::~ShipTravelParams()
