@@ -719,7 +719,7 @@ void EditSession::TestPlayerMode()
 	currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 
 
-	ForegroundTestEmitter *fte = new ForegroundTestEmitter(ShapeEmitter::ParticleType::PARTICLE_BOOSTER_FREEFLIGHT);
+	ForegroundTestEmitter *fte = new ForegroundTestEmitter(ShapeEmitter::ParticleType::PARTICLE_FOREGROUND_TEST);
 	fte->CreateParticles();
 	fte->Reset();
 	
@@ -4616,13 +4616,18 @@ int EditSession::EditRun()
 
 			UpdateFullBounds();
 
-			if (mode != TEST_PLAYER || (mode == TEST_PLAYER && oneFrameMode))
+			for (int i = 0; i < spriteUpdateFrames; ++i)
+			{
+				UpdateEnvShaders();
+			}
+
+			/*if (mode != TEST_PLAYER || (mode == TEST_PLAYER && oneFrameMode))
 			{
 				for (int i = 0; i < spriteUpdateFrames; ++i)
 				{
 					UpdateEnvShaders();
 				}
-			}
+			}*/
 
 			if (mode != TEST_PLAYER)
 			{

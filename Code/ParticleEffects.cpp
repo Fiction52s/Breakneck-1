@@ -719,9 +719,11 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 ForegroundTestEmitter::ForegroundTestEmitter(int p_particleType)
 	:ShapeEmitter(p_particleType, 2000)
 {
-	SetRatePerSecond(120);
+	SetRatePerSecond(20);
 
 	extraZoom = 1.0;
+
+	depth = 1.3;//2.0;
 	
 }
 
@@ -740,8 +742,8 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 	//Vector2f sPos = GetBoxSpawnPos(20, 20);
 	Vector2f sPos = GetBoxSpawnPos(sess->mapHeader->boundsWidth, sess->mapHeader->boundsHeight);
 
-	int minRad = 10;
-	int maxRad = 32;
+	int minRad = 5;
+	int maxRad = 16;
 
 
 
@@ -756,11 +758,10 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 
 	Color sColor = GetBlendColor(aColor, bColor, data.boostPortion);
 
-
 	int ttlVariation = 40;
 	//int ttlValue = (rand() % ttlVariation) - ttlVariation / 2;
-	int ttlValue = (sess->GetRand() % ttlVariation) - ttlVariation / 2;
-	int finalTimeToLive = 90 + ttlValue;
+	int ttlValue = 60;//(sess->GetRand() % ttlVariation) - ttlVariation / 2;
+	int finalTimeToLive = 300 + ttlValue;
 
 	int tile = 0;
 
@@ -818,7 +819,7 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 	Color sColorTransParent = sColor;
 	sColorTransParent.a = 70;
 
-	sp->SetColorShift(sColor, sColorTransParent, 20, 20);
+	sp->SetColorShift(sColor, sColorTransParent, 0, 60);
 
 }
 
@@ -835,14 +836,30 @@ void ForegroundTestEmitter::SetExtra(sf::Vector2f &p_extra)
 
 void ForegroundTestEmitter::SpecialUpdate()
 {
+	scrollOffset = 0;
+	Vector2f cPos = sess->cam.GetPos();
+	//float testScrollOffset = extra.x + scrollOffset;
+	//cPos.x -= testScrollOffset;
+
+	//cPos = cPos * depth;
+	
+	//Vector2f realPos(cPos.x + off.x, camPos.y);
+	//realPos = camPos;
+	//realPos.x -= 960;
+	//SetLeftPos(cPos);//camPos.x );//realPos.x );
 }
 
 void ForegroundTestEmitter::Draw(sf::RenderTarget *target)
 {
 	oldView = target->getView();
 
-	newView.setCenter(Vector2f(oldView.getCenter().x, oldView.getCenter().y) - extraOffset);
-	newView.setSize(Vector2f(1920, 1080) / extraZoom * .5f);
+	Vector2f cTest = oldView.getCenter() * depth;//sess->cam.GetPos() * depth;
+	//Set(cTest, sess->cam.GetZoom() * depth);
+
+	newView.setCenter(cTest);//Vector2f(oldView.getCenter().x, oldView.getCenter().y) - extraOffset);
+	//newView.setSize(Vector2f(1920, 1080) / extraZoom * .5f);
+	//newView.setSize(Vector2f(960, 540) * sess->cam.GetZoom() / depth);// / extraZoom);
+	newView.setSize(oldView.getSize() / depth);
 
 	target->setView(newView);
 
