@@ -4,7 +4,7 @@
 #include <list>
 #include "Mover.h"
 #include "Movement.h"
-#include "EffectLayer.h"
+#include "DrawLayer.h"
 #include <SFML/Audio.hpp>
 #include "ObjectProperties.h"
 #include "ActorParams.h"

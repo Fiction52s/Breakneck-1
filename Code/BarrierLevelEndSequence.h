@@ -19,8 +19,7 @@ struct BarrierLevelEndSequence : Sequence
 	void UpdateState();
 	void SetupStates();
 	void ReturnToGame();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 	void Reset();
 
 	Session *sess;

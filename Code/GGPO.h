@@ -342,7 +342,7 @@ struct SaveGameState
 	int activeEnemyListID;
 	int activeEnemyListTailID;
 	int inactiveEnemyListID;
-	int emitterListIDs[EffectLayer::EFFECTLAYER_Count];
+	int emitterListIDs[DrawLayer::DrawLayer_Count];
 	int currentZoneID;
 	int pauseFrames;
 	int currSuperPlayerIndex;

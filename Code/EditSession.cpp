@@ -719,11 +719,11 @@ void EditSession::TestPlayerMode()
 	currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 
 
-	ForegroundTestEmitter *fte = new ForegroundTestEmitter(ShapeEmitter::ParticleType::PARTICLE_FOREGROUND_TEST);
+	/*ForegroundTestEmitter *fte = new ForegroundTestEmitter(ShapeEmitter::ParticleType::PARTICLE_BOOSTER_FREEFLIGHT, DrawLayer::FG_2);
 	fte->CreateParticles();
 	fte->Reset();
 	
-	AddEmitter(fte, EffectLayer::IN_FRONT);
+	AddEmitter(fte);*/
 	
 	/*for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -1140,6 +1140,8 @@ void EditSession::TestPlayerMode()
 	}
 
 	
+
+	
 	//auto &testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
@@ -1245,6 +1247,12 @@ void EditSession::TestPlayerMode()
 	CleanupPoi();
 	CleanupBossNodes();
 	CleanupBarriers();
+
+
+	ClearEmitters();
+	CleanupEnvParticleSystem();
+
+	SetupEnvParticleSystem();
 
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -1439,6 +1447,8 @@ void EditSession::TestPlayerMode()
 		SetupGoalFlow();
 	}
 
+	//SetupEnvParticleSystem();
+	
 
 
 	if( hud != NULL )
@@ -1925,7 +1935,7 @@ void EditSession::CleanupForReload()
 
 	ClearEffects();
 
-	/*for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	/*for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		ShapeEmitter *curr = emitterLists[i];
 		emitterLists[i] = NULL;
@@ -2169,7 +2179,7 @@ void EditSession::Draw()
 
 	preScreenTex->draw(border, 8, sf::Lines);
 
-	DrawDecor(EffectLayer::BEHIND_TERRAIN, preScreenTex );
+	DrawDecor(DrawLayer::BEHIND_TERRAIN, preScreenTex );
 
 	DrawGateInfos();
 
@@ -2181,9 +2191,9 @@ void EditSession::Draw()
 
 	DrawRails(preScreenTex);
 
-	DrawDecor(EffectLayer::BEHIND_ENEMIES, preScreenTex);
+	DrawDecor(DrawLayer::BEHIND_ENEMIES, preScreenTex);
 
-	DrawDecor(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, preScreenTex);
+	DrawDecor(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, preScreenTex);
 
 	if (!IsDrawMode(Emode::TEST_PLAYER))
 	{
@@ -2200,7 +2210,7 @@ void EditSession::Draw()
 
 	TempMoveSelectedBrush();
 
-	DrawDecor(EffectLayer::IN_FRONT, preScreenTex);
+	DrawDecor(DrawLayer::IN_FRONT, preScreenTex);
 
 	if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
 	{
@@ -2334,7 +2344,7 @@ void EditSession::ProcessDecorSpr(const std::string &name, int dTile, int dLayer
 	}
 	else if (dLayer == 0)
 	{
-		dec->myList = &decorImages[EffectLayer::BETWEEN_PLAYER_AND_ENEMIES];//&decorImagesBetween;
+		dec->myList = &decorImages[DrawLayer::BETWEEN_PLAYER_AND_ENEMIES];//&decorImagesBetween;
 		//decorImagesBetween.push_back(dec);
 	}
 
@@ -2804,14 +2814,14 @@ void EditSession::WriteDecor(ofstream &of)
 {
 	int totalDecor = 0;
 
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		totalDecor += decorImages[i].size();
 	}
 
 	of << totalDecor << endl;
 
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		auto &dList = decorImages[i];
 		for (auto it = dList.begin(); it != dList.end(); ++it)
@@ -5934,7 +5944,7 @@ bool EditSession::PointSelectDecor(V2d &pos)
 		return false;
 	}
 
-	for (int i = EffectLayer::EFFECTLAYER_Count - 1; i >= 0; --i)
+	for (int i = DrawLayer::DrawLayer_Count - 1; i >= 0; --i)
 	{
 		auto &dList = decorImages[i];
 
@@ -8309,7 +8319,7 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 
 	bool oldSelected;
 
-	DrawDecor(EffectLayer::BEHIND_TERRAIN, target);
+	DrawDecor(DrawLayer::BEHIND_TERRAIN, target);
 
 	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
 	{
@@ -8454,8 +8464,8 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 	//sf::Vertex borderRect[4];
 	//SetRectColor(borderRect, Color::Cyan);
 
-	DrawDecor(EffectLayer::BEHIND_ENEMIES, target);
-	DrawDecor(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+	DrawDecor(DrawLayer::BEHIND_ENEMIES, target);
+	DrawDecor(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
 	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -8488,7 +8498,7 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 
 	CleanupTestPlayerMode();
 
-	DrawDecor(EffectLayer::IN_FRONT, target);
+	DrawDecor(DrawLayer::IN_FRONT, target);
 
 	cs.setPosition(playerMarkers[0]->GetFloatPos());
 	cs.setFillColor(Color::Green);
@@ -11816,7 +11826,7 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 
 	bool found = false;
 
-	for (int i = EffectLayer::EFFECTLAYER_Count - 1; i >= 0; --i)
+	for (int i = DrawLayer::DrawLayer_Count - 1; i >= 0; --i)
 	{
 		auto &dList = decorImages[i];
 
@@ -12187,6 +12197,9 @@ void EditSession::CleanupTestPlayerMode()
 
 	CleanupGoalFlow();
 	CleanupGoalPulse();
+
+	ClearEmitters();
+	CleanupEnvParticleSystem();
 
 	playerTracker->HideAll();
 
@@ -13524,14 +13537,14 @@ void EditSession::DrawGateInfos()
 	}
 }
 
-void EditSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
+void EditSession::DrawDecor(int p_drawLayer, sf::RenderTarget *target)
 {
 	if (mode != TEST_PLAYER && !editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
 		return;
 	}
 
-	auto &dList = decorImages[ef];
+	auto &dList = decorImages[p_drawLayer];
 
 	for (auto it = dList.begin(); it != dList.end(); ++it)
 	{
@@ -16030,7 +16043,7 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType)
 				|| icRect->rectIdentity == ChooseRect::I_DECORHOTBAR ))
 			{
 				SetTrackingDecor(icRect->CreateDecor());
-				//SetTrackingDecor( new EditorDecorInfo( icRect->spr, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+				//SetTrackingDecor( new EditorDecorInfo( icRect->spr, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				//	icRect->))
 				//settrackingImage
 			}

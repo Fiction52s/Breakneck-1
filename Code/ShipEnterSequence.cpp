@@ -122,7 +122,7 @@ void ShipEnterScene::UpdateState()
 	if (seqData.frame == 0)
 	{
 		sess->HideHUD();
-		//sess->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+		//sess->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 		//SetFlashGroup("staregroup");
 	}
 
@@ -220,9 +220,9 @@ void ShipEnterScene::SetupStates()
 	stateLength[KIN_JUMP] = -1;
 }
 
-void ShipEnterScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+void ShipEnterScene::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (p_drawLayer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		target->draw(cloud1, 4 * 3, sf::Quads, ts_w1ShipClouds1->texture);
 		target->draw(cloud0, 4 * 3, sf::Quads, ts_w1ShipClouds0->texture);
@@ -232,7 +232,7 @@ void ShipEnterScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 		target->draw(shipSprite);
 	}
 
-	Sequence::Draw(target, layer);
+	Sequence::LayeredDraw(p_drawLayer, target);
 }
 
 int ShipEnterScene::GetNumStoredBytes()

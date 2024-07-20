@@ -1330,7 +1330,7 @@ void Enemy::DirectKill()
 	if (!dead)
 	{
 
-		//sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
+		//sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
 
 		dead = true;
 
@@ -1830,7 +1830,7 @@ void Enemy::ConfirmKill()
 	//{
 	//	if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
 	//	{
-	//		sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+	//		sess->ActivateEffect(DrawLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
 	//	}
 
 	//}
@@ -2540,7 +2540,7 @@ void Enemy::Die()
 	{
 		if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
 		{
-			sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+			sess->ActivateEffect(DrawLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
 		}
 	}
 

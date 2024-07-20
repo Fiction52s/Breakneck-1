@@ -11,7 +11,7 @@ Fader::Fader()
 {
 	Reset();
 	fadeRect.setSize(Vector2f(1920, 1080));
-	currLayer = EffectLayer::IN_FRONT_OF_UI;
+	currLayer = DrawLayer::IN_FRONT_OF_UI;
 }
 
 void Fader::Fade(bool in, int frames, sf::Color c, bool skipKin, int layer)
@@ -45,7 +45,7 @@ void Fader::CrossFade(int fadeOutFrames, int pauseFrames, int fadeInFrames, sf::
 	crossSkipKin = skipKin;
 	crossColor = c;
 	crossFading = true;
-	Fade(false, fadeOutFrames, c, skipKin, EffectLayer::IN_FRONT_OF_UI);
+	Fade(false, fadeOutFrames, c, skipKin, DrawLayer::IN_FRONT_OF_UI);
 }
 
 bool Fader::IsFullyFadedOut()

@@ -26,7 +26,7 @@ struct DeathSequence : Sequence
 	void SetupStates();
 	void ReturnToGame();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 	void Reset();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

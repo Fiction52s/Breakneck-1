@@ -15,7 +15,7 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	:ts(p_ts), va(sf::Quads, 2 * 4), depthLevel(p_depthLevel),
 	tsIndex(index), scrollSpeedX(p_scrollSpeedX)
 {
-	depth = GetEffectLayerDepthFactor(depthLevel);
+	depth = GetDrawLayerDepthFactor(depthLevel) * .5;
 	assert(p_ts != NULL);
 	tsSource = ts->sourceName;
 	//ts->texture->setSmooth(false);
@@ -127,6 +127,14 @@ void ScrollingBackground::Set(sf::Vector2f &pos, float zoom)
 {
 	extraOffset = pos;
 	extraZoom = zoom;
+}
+
+void ScrollingBackground::LayeredDraw(int p_depthLevel, sf::RenderTarget *target)
+{
+	if (p_depthLevel == depthLevel)
+	{
+		Draw(target);
+	}
 }
 
 void ScrollingBackground::Draw(RenderTarget *target)
@@ -585,6 +593,33 @@ void Background::Draw(sf::RenderTarget *target)
 
 	//target->setView(oldView);
 	
+}
+
+void Background::DrawBackLayer(sf::RenderTarget *target)
+{
+	if (ts_bg != NULL)
+	{
+		sf::View oldView = target->getView();
+
+		sf::View newView = bgView;
+		//newView.setRotation(oldView.getRotation());
+
+		target->setView(newView);
+
+		target->draw(background);
+
+		target->setView(oldView);
+	}
+}
+
+void Background::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
+{
+	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+		it != scrollingBackgrounds.end(); ++it)
+	{
+		//might not need to mess w/ views here anymore
+		(*it)->LayeredDraw( p_drawLayer, target);
+	}
 }
 
 void Background::Show()

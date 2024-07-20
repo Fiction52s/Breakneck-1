@@ -910,7 +910,7 @@ void BasicBullet::Kill( V2d facingDir )
 	int frames = 6;
 
 	double angle = GetVectorAngleCW(facingDir);//atan2(facingDir.y, -facingDir.x);
-	launcher->sess->ActivateEffect(EffectLayer::IN_FRONT, launcher->sess->ts_basicBulletExplode, position, true, angle, frames, 2, true, launcher->bulletTilesetIndex * frames);
+	launcher->sess->ActivateEffect(DrawLayer::IN_FRONT, launcher->sess->ts_basicBulletExplode, position, true, angle, frames, 2, true, launcher->bulletTilesetIndex * frames);
 	launcher->DeactivateBullet(this);
 }
 

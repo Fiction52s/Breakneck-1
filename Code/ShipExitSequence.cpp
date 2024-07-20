@@ -163,9 +163,9 @@ void ShipExitScene::UpdateState()
 	}
 }
 
-void ShipExitScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+void ShipExitScene::Draw(sf::RenderTarget *target, DrawLayer layer)
 {
-	if (layer != EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (layer != DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		return;
 	}

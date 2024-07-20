@@ -191,7 +191,7 @@ void SwarmMember::ConfirmKill()
 
 	pauseFramesFromAttacking = false;
 
-	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_swarm, GetPosition(), true, 0, 8, 3, true, 20);
+	sess->ActivateEffect(DrawLayer::BEHIND_ENEMIES, parent->ts_swarm, GetPosition(), true, 0, 8, 3, true, 20);
 
 	if (!receivedHit.comboer)
 	{
@@ -655,7 +655,7 @@ void Swarm::DirectKill()
 	if (!dead)
 	{
 
-		//sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
+		//sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
 
 		dead = true;
 

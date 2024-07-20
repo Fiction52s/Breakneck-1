@@ -354,7 +354,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 			//sp->text = sText;
 			//sp->music = sm;
-			//sp->effectLayer = efL;
+			//sp->DrawLayer = efL;
 		}
 		
 		is.close();
@@ -412,7 +412,7 @@ void StorySequence::Draw(sf::RenderTarget *target)
 	}
 }
 
-void StorySequence::DrawLayer(sf::RenderTarget *target, EffectLayer eLayer )
+void StorySequence::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
 	int startIndex = 0;
 	int endIndex = NUM_LAYERS;
@@ -422,7 +422,7 @@ void StorySequence::DrawLayer(sf::RenderTarget *target, EffectLayer eLayer )
 		if (pUpdate[i])
 		{
 			auto &cpi = (*currPartIt[i]);
-			if (cpi->effectLayer == eLayer)
+			if (cpi->drawLayer == p_drawLayer)
 			{
 				cpi->Draw(target);
 			}
@@ -530,7 +530,7 @@ StoryPart::StoryPart( StorySequence *p_seq)
 	sub = NULL;
 	text = NULL;
 	bottomText = true;
-	effectLayer = EffectLayer::IN_FRONT;
+	drawLayer = DrawLayer::IN_FRONT;
 	blank = true;
 	outType = OutroType::O_NONE;
 	musicStarted = false;

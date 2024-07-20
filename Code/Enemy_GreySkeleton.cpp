@@ -499,5 +499,5 @@ void GreySkeleton::InitBonus()
 			bonusSess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
 		}
 	}
-	bonusSess->Fade(true, 20, Color::White, true, EffectLayer::IN_FRONT_OF_UI);
+	bonusSess->Fade(true, 20, Color::White, true, DrawLayer::IN_FRONT_OF_UI);
 }

@@ -104,7 +104,7 @@ void WarpTransitionSequence::UpdateState()
 			sess->cam.SetManual(true);
 			player->Wait();
 			sess->HideHUD(60);
-			sess->Fade(false, 60, Color::Black, false, EffectLayer::IN_FRONT);
+			sess->Fade(false, 60, Color::Black, false, DrawLayer::IN_FRONT);
 			barrier->Trigger();
 
 
@@ -164,10 +164,10 @@ void WarpTransitionSequence::UpdateState()
 	//emitter->Update();
 }
 
-void WarpTransitionSequence::Draw(RenderTarget *target, EffectLayer layer)
+void WarpTransitionSequence::Draw(RenderTarget *target, DrawLayer layer)
 {
 	//sess->DrawEmitters(layer, target);
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		//geoGroup->Draw(target);
 		/*if (state != END)
@@ -175,7 +175,7 @@ void WarpTransitionSequence::Draw(RenderTarget *target, EffectLayer layer)
 
 		}*/
 	}
-	else if (layer == EffectLayer::UI_FRONT)
+	else if (layer == DrawLayer::UI_FRONT)
 	{
 		if (/*state != END && */sess->GetGameSessionState() == Session::FROZEN)
 		{

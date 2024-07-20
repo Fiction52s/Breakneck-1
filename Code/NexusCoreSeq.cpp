@@ -52,7 +52,7 @@ void NexusCoreSeq::SpecialInit()
 
 	int world = nexus->world;
 
-	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
+	emitter = new ShapeEmitter(6, DrawLayer::IN_FRONT);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
 
@@ -169,20 +169,20 @@ void NexusCoreSeq::UpdateState()
 		break;
 	}
 }
-void NexusCoreSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
+void NexusCoreSeq::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
 	sf::View oldView = target->getView();
 	sf::View myView;
 	myView.setCenter(960, 540);
 	myView.setSize(1920, 1080);
 	target->setView(myView);
-	if (seqData.state >= ENTERCORE && layer == EffectLayer::BEHIND_ENEMIES)
+	if (seqData.state >= ENTERCORE && p_drawLayer == DrawLayer::BEHIND_ENEMIES)
 	{
 		target->draw(darkQuad, 4, sf::Quads);
 	}
 
-	sess->DrawEmitters(layer, target);
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	sess->DrawEmitters(p_drawLayer, target);
+	if (p_drawLayer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		geoGroup.Draw(target);
 	}
@@ -204,5 +204,5 @@ void NexusCoreSeq::Reset()
 
 	//emitter->SetPos(Vector2f(pPos));
 	//emitter->Reset();
-	//sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	//sess->AddEmitter(emitter, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES);
 }

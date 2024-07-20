@@ -117,9 +117,9 @@ void MedalSequence::UpdateState()
 	}
 }
 
-void MedalSequence::Draw(sf::RenderTarget *target, EffectLayer layer)
+void MedalSequence::Draw(sf::RenderTarget *target, DrawLayer layer)
 {
-	if (layer != EffectLayer::UI_FRONT)
+	if (layer != DrawLayer::UI_FRONT)
 	{
 		return;
 	}

@@ -107,7 +107,7 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	
 
-	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
+	testEmitter = new ShapeEmitter(6, DrawLayer::IN_FRONT);// PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->CreateParticles();
 	testEmitter->SetPos(GetPositionF());
 	testEmitter->SetRatePerSecond(30);
@@ -226,7 +226,7 @@ void PowerItem::DissipateOnTouch()
 	action = DISSIPATE;
 	frame = 0;
 
-	sess->ActivateEffect(EffectLayer::IN_FRONT,
+	sess->ActivateEffect(DrawLayer::IN_FRONT,
 		ts_explodeCreate, GetPosition(), true, 0, 12, 3, true);
 
 	HitboxesOff();

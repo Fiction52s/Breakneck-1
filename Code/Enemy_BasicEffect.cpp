@@ -35,7 +35,7 @@ BasicEffect::BasicEffect(BasicEffect &be)
 	activated = be.activated;
 	animationFactor = be.animationFactor;
 	facingRight = be.facingRight;
-	layer = be.layer;
+	drawLayer = be.drawLayer;
 	stored_frame = be.stored_frame;
 	startFrame = be.startFrame;
 	//effectType = EFFECT_TYPE_BASIC;

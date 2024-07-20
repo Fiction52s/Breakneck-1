@@ -50,9 +50,9 @@ void BarrierLevelEndSequence::UpdateState()
 	//emitter->Update();
 }
 
-void BarrierLevelEndSequence::Draw(RenderTarget *target, EffectLayer layer)
+void BarrierLevelEndSequence::LayeredDraw(int p_drawLayer, RenderTarget *target)
 {
-	if (layer == EffectLayer::UI_FRONT)
+	if (p_drawLayer == DrawLayer::UI_FRONT)
 	{
 	}
 }

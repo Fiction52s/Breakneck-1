@@ -161,7 +161,7 @@ void SpecialTarget::Collect()
 		{
 			if (type != EN_COMBOERTARGET && type != EN_REGENTARGET) //exception list to having blood
 			{
-				sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+				sess->ActivateEffect(DrawLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
 			}
 		}
 

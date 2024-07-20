@@ -30,6 +30,7 @@ struct ScrollingBackground
 	void Update(const sf::Vector2f &camPos, 
 		int updateFrames = 1 );
 	void SetTileIndex(int index);
+	void LayeredDraw(int p_depthLevel, sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
 	void SetLeftPos(sf::Vector2f &pos);
 	sf::Vector2f extraOffset;
@@ -54,7 +55,8 @@ struct Background : TilesetManager
 		int frames = 1 );
 	void Reset();
 	void Draw(sf::RenderTarget *target);
-	void LayeredDraw( int p_effectLayer, )
+	void DrawBackLayer(sf::RenderTarget *target);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 	void UpdateSky();
 	void UpdateShape();
 	sf::Sprite background;

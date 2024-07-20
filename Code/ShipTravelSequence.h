@@ -51,8 +51,7 @@ struct ShipTravelSequence : Sequence
 	ShipTravelSequence();
 	~ShipTravelSequence();
 	void Reset();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 	void UpdateState();
 	void SetupStates();
 	void ReturnToGame();

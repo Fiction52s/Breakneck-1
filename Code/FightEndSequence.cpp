@@ -74,9 +74,9 @@ void FightEndSequence::UpdateState()
 	//emitter->Update();
 }
 
-void FightEndSequence::Draw(RenderTarget *target, EffectLayer layer)
+void FightEndSequence::Draw(RenderTarget *target, DrawLayer layer)
 {
-	if (layer == EffectLayer::UI_FRONT)
+	if (layer == DrawLayer::UI_FRONT)
 	{
 		if (sess->GetGameSessionState() == GameSession::FROZEN)
 		{

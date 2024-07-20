@@ -10,7 +10,7 @@ DeathSequence::DeathSequence()
 {
 	sess = Session::GetSession();
 
-	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
+	emitter = new ShapeEmitter(6, DrawLayer::IN_FRONT);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
 
@@ -121,10 +121,10 @@ void DeathSequence::UpdateState()
 	//emitter->Update();
 }
 
-void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
+void DeathSequence::Draw(RenderTarget *target, DrawLayer layer)
 {
 	//sess->DrawEmitters(layer, target); //recently turned this off because I think the session draws them itself?
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		geoGroup->Draw(target);
 		/*if (state != END)
@@ -132,7 +132,7 @@ void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 			
 		}*/
 	}
-	else if (layer == EffectLayer::UI_FRONT)
+	else if (layer == DrawLayer::UI_FRONT)
 	{
 		if (/*state != END && */sess->GetGameSessionState() == Session::FROZEN)
 		{
@@ -154,7 +154,7 @@ void DeathSequence::Reset()
 	emitter->SetPos(Vector2f(pPos));
 	emitter->Reset();
 	//emitter->SetOn(false);
-	//owner->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	//owner->AddEmitter(emitter, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 }
 

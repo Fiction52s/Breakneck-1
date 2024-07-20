@@ -137,7 +137,7 @@ void KeyFly::ProcessState()
 
 void KeyFly::HandleNoHealth()
 {
-	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_container, GetPosition(), false, 0, 10, 3, true);
+	sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_container, GetPosition(), false, 0, 10, 3, true);
 }
 
 void KeyFly::PlayDeathSound()

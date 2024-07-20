@@ -1,10 +1,10 @@
-#include "EffectLayer.h"
+#include "DrawLayer.h"
 #include <algorithm>
 #include <assert.h>
 
 using namespace std;
 
-int GetEffectLayerDepthFactor(int layer)
+float GetDrawLayerDepthFactor(int layer)
 {
 	switch (layer)
 	{
@@ -67,7 +67,7 @@ int GetEffectLayerDepthFactor(int layer)
 }
 
 
-EffectLayer StringToEffectLayer(const std::string &str)
+DrawLayer StringToDrawLayer(const std::string &str)
 {
 	string testStr = str;
 	std::transform(testStr.begin(), testStr.end(), testStr.begin(), ::tolower);

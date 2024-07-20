@@ -228,14 +228,14 @@ bool GetAirdashPowerSeq::Update()
 
 	return true;
 }
-void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
+void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, DrawLayer layer)
 {
 
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{		
 	}
 
-	if (layer != EffectLayer::IN_FRONT)
+	if (layer != DrawLayer::IN_FRONT)
 	{
 		return;
 	}

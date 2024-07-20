@@ -32,7 +32,7 @@ struct BasicEffect : Enemy
 	bool pauseImmune;
 	bool activated;
 	int animationFactor;
-	EffectLayer layer;
+	int drawLayer;
 	int stored_frame;
 	int startFrame;
 };

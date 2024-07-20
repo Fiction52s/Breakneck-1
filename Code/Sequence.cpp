@@ -686,9 +686,9 @@ void Sequence::DrawFlashes(sf::RenderTarget *target)
 	}
 }
 
-void Sequence::Draw(sf::RenderTarget *target, EffectLayer layer)
+void Sequence::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
-	if (layer != EffectLayer::IN_FRONT)
+	if (p_drawLayer != DrawLayer::IN_FRONT)
 	{
 		return;
 	}
@@ -840,7 +840,8 @@ void StoryScene::UpdateState()
 	}
 }
 
-void StoryScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+//needs to get adjusted at some point but I don't wanna recompile rn and we don't even really use this LOL
+void StoryScene::Draw(sf::RenderTarget *target, DrawLayer layer)
 {
-	story->DrawLayer(target, layer);
+	story->LayeredDraw(layer, target);
 }

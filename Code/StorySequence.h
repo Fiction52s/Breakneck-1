@@ -4,7 +4,7 @@
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
 #include "Input.h"
-#include "EffectLayer.h"
+#include "DrawLayer.h"
 
 struct MusicInfo;
 struct StoryMusic
@@ -78,7 +78,7 @@ struct StoryPart
 	StoryPart *sub;
 	bool musicStarted;
 
-	EffectLayer effectLayer;
+	int drawLayer;
 
 	StoryMusic *music;
 	bool blank;
@@ -93,7 +93,7 @@ struct StorySequence
 	bool Update( ControllerState &prev, ControllerState &curr);
 	bool UpdateLayer( int layer, ControllerState &prev, ControllerState &curr);
 	void Draw( sf::RenderTarget *target );
-	void DrawLayer(sf::RenderTarget *target, EffectLayer eLayer);
+	void LayeredDraw( int drawLayer, sf::RenderTarget *target);
 	void EndSequence();
 
 	const static int NUM_LAYERS = 16;

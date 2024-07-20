@@ -331,7 +331,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		{
 		case DARK:
 		{
-			parent->sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			parent->sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				parent->sess->ts_keyExplode, V2d(data.pos), true, 0, 6, 3, true);
 			break;
 		}
@@ -400,7 +400,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		}
 		case DARK:
 		{
-			parent->sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			parent->sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 6, 3, true);
 			//parent->sess->CollectKey();
 			break;

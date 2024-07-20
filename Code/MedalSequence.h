@@ -32,7 +32,7 @@ struct MedalSequence : Sequence
 	void AddEnemies();
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 };
 
 #endif

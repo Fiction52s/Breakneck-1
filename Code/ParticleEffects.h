@@ -112,14 +112,13 @@ struct ShapeEmitter
 	int numPoints;
 	int pointsPerShape;
 	Session *sess;
+	int drawLayer;
 
 
 
 	
 	
-	ShapeEmitter(int p_particleType);
-	ShapeEmitter(int p_particleType, int p_maxParticles );//int pointsPerShape,
-		//int numShapes);
+	ShapeEmitter(int p_particleType, int p_drawLayer );
 	
 	void CreateParticles();
 	~ShapeEmitter();
@@ -173,24 +172,8 @@ struct LeafEmitter : ShapeEmitter
 
 struct ForegroundTestEmitter : ShapeEmitter
 {
-	sf::Vector2f extraOffset;
-	float extraZoom;
-	float depth;
-	float scrollSpeedX;
-	float scrollOffset;
-	int depthLevel;
-	sf::View oldView;
-	sf::View newView;
-	float xPos;
-	sf::Vector2f extra;
-	sf::Vector2f relPos;
-
-	ForegroundTestEmitter(int p_particleType);
-	void Set(sf::Vector2f &pos, float zoom = 1.f);
-	void SpecialUpdate();
-	void SetExtra(sf::Vector2f &extra);
+	ForegroundTestEmitter(int p_particleType, int p_drawLayer );
 	void ActivateParticle(int index);
-	void Draw(sf::RenderTarget *target);
 };
 
 struct Actor;

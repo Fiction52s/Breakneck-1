@@ -103,7 +103,7 @@ void WorldTransferScreen::End()
 
 	auto *mainMenu = MainMenu::GetInstance();
 	//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
-	//mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
+	//mainMenu->fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);// true);
 	mainMenu->musicPlayer->FadeOutCurrentMusic(30);
 	//frame = 0;
 }
@@ -170,7 +170,7 @@ void WorldTransferScreen::Update()
 	case A_STARTING:
 		action = A_BOOSTING;
 		frame = 0;
-		mainMenu->fader->Fade(true, 120, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+		mainMenu->fader->Fade(true, 120, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 		break;
 	case A_BOOSTING:
 		break;
@@ -223,7 +223,7 @@ void WorldTransferScreen::Update()
 		{
 			auto *mainMenu = MainMenu::GetInstance();
 			//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
-			mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
+			mainMenu->fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);// true);
 			action = A_ENDING;
 			frame = 0;
 			//ended

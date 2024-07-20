@@ -66,12 +66,12 @@ void GreyWarpSequence::UpdateState()
 	}
 }
 
-void GreyWarpSequence::Draw(RenderTarget *target, EffectLayer layer)
+void GreyWarpSequence::Draw(RenderTarget *target, DrawLayer layer)
 {
-	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 	}
-	else if (layer == EffectLayer::UI_FRONT)
+	else if (layer == DrawLayer::UI_FRONT)
 	{
 		//if (/*state != END && */sess->GetGameSessionState() == Session::FROZEN)
 		//{

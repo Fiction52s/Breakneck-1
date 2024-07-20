@@ -367,7 +367,7 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2i gatePoint0;
 	sf::Vector2i gatePoint1;
 	GateInfoPtr modifyGate;
-	std::list<DecorPtr> decorImages[EffectLayer::EFFECTLAYER_Count];
+	std::list<DecorPtr> decorImages[DrawLayer::DrawLayer_Count];
 	Panel *decorPanel;
 	Panel *editDecorPanel;
 	std::string currDecorName;
@@ -695,7 +695,7 @@ struct EditSession : GUIHandler, Session
 	void DrawRailInProgress();
 	void DrawActors();
 	void DrawGateInfos();
-	void DrawDecor( EffectLayer ef, sf::RenderTarget *target);
+	void DrawDecor(int p_drawLayer, sf::RenderTarget *target);
 	void Draw();
 	void DrawPreview(sf::RenderTarget *target, sf::View &v, int width, int left, int right, int top, int bot, bool hideSecret);
 	void TestPlayerModeForPreview();

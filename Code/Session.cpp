@@ -917,7 +917,7 @@ int Session::GetPauseFrames()
 	return pauseFrames;
 }
 
-BasicEffect * Session::ActivateEffect(EffectLayer layer, Tileset *ts, V2d pos, bool pauseImmune,
+BasicEffect * Session::ActivateEffect(int p_drawLayer, Tileset *ts, V2d pos, bool pauseImmune,
 	double angle, int frameCount, int animationFactor, bool right, int startFrame, float depth)
 {
 	if (inactiveEffects == NULL)
@@ -944,10 +944,10 @@ BasicEffect * Session::ActivateEffect(EffectLayer layer, Tileset *ts, V2d pos, b
 		b->prev = NULL;
 		b->next = NULL;
 		b->pauseImmune = pauseImmune;
-		b->layer = layer;
+		b->drawLayer = p_drawLayer;
 
 
-		Enemy *& fxList = effectListVec[layer];
+		Enemy *& fxList = effectListVec[p_drawLayer];
 		if (fxList != NULL)
 		{
 			fxList->prev = b;
@@ -964,7 +964,7 @@ BasicEffect * Session::ActivateEffect(EffectLayer layer, Tileset *ts, V2d pos, b
 
 void Session::DeactivateEffect(BasicEffect *b)
 {
-	Enemy *& fxList = effectListVec[b->layer];
+	Enemy *& fxList = effectListVec[b->drawLayer];
 	assert(fxList != NULL);
 	Enemy *prev = b->prev;
 	Enemy *next = b->next;
@@ -1012,14 +1012,14 @@ void Session::DeactivateEffect(BasicEffect *b)
 	}
 }
 
-void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
+void Session::DrawEffects(int p_drawLayer, sf::RenderTarget *target)
 {
 	sf::View oldView = target->getView();
-	if (layer == UI_FRONT)
+	if (p_drawLayer == UI_FRONT)
 	{
 		target->setView(uiView);
 	}
-	Enemy *currentEffect = effectListVec[layer];
+	Enemy *currentEffect = effectListVec[p_drawLayer];
 	while (currentEffect != NULL)
 	{
 		currentEffect->Draw( Enemy::ENEMYDRAWLAYER_DEFAULT, target);
@@ -1028,7 +1028,7 @@ void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
 
 	//envParticleSystem->Draw()
 
-	if (layer == UI_FRONT)
+	if (p_drawLayer == UI_FRONT)
 	{
 		target->setView(oldView);
 	}
@@ -1040,7 +1040,7 @@ void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
 
 		if (p != NULL)
 		{
-			p->DrawEffects(layer, target);
+			p->LayeredDrawEffects(p_drawLayer, target);
 		}
 	}
 }
@@ -1114,7 +1114,7 @@ SoundNode *Session::ActivatePauseSound(SoundInfo *si, bool loop)
 
 void Session::AllocateEffects()
 {
-	effectListVec.resize(EffectLayer::EFFECTLAYER_Count);
+	effectListVec.resize(DrawLayer::DrawLayer_Count);
 
 	allEffectVec.resize(MAX_EFFECTS);
 	BasicEffect *b;
@@ -1136,7 +1136,7 @@ void Session::AllocateEffects()
 
 void Session::ClearEffects()
 {
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		Enemy *curr = effectListVec[i];
 		while (curr != NULL)
@@ -1157,7 +1157,7 @@ void Session::UpdateEffects( bool pauseImmuneOnly )
 	Enemy *next;
 
 	BasicEffect *currEffect;
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		curr = NULL;
 		if (!effectListVec.empty())
@@ -1504,7 +1504,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	turnTimerOnCounter = -1;
 	timerOn = false;
 
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		emitterLists[i] = NULL;
 	}
@@ -1605,6 +1605,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	preLevelScene = NULL;
 	postLevelScene = NULL;
 	activeSequence = NULL;
+
+	envParticleSystem = NULL;
 
 	pokeTriangleScreenGroup = NULL;
 
@@ -1836,6 +1838,12 @@ Session::~Session()
 		delete mapHeader;
 		mapHeader = NULL;
 	}
+
+	if (envParticleSystem != NULL)
+	{
+		delete envParticleSystem;
+		envParticleSystem = NULL;
+	}
 		
 
 	/*if (polyShaders != NULL)
@@ -1924,6 +1932,9 @@ Session::~Session()
 	CleanupGoalFlow();
 	CleanupGoalPulse();
 
+	ClearEmitters();
+	CleanupEnvParticleSystem();
+
 	CleanupRain();
 
 	CleanupGateMarkers();
@@ -1933,6 +1944,12 @@ Session::~Session()
 	CleanupGameMode();
 
 	CleanupSuperSequence();
+
+	if (envParticleSystem != NULL)
+	{
+		delete envParticleSystem;
+		envParticleSystem = NULL;
+	}
 
 	delete[] ggpoCompressedInputs;
 	ggpoCompressedInputs = NULL;
@@ -5007,13 +5024,13 @@ void Session::UnlockLog(int logType, int playerIndex )
 }
 
 
-void Session::Fade(bool in, int frames, sf::Color c, bool skipKin, EffectLayer layer )
+void Session::Fade(bool in, int frames, sf::Color c, bool skipKin, int p_drawLayer)
 {
 	if (IsParallelSession())
 	{
 		return;
 	}
-	fader->Fade(in, frames, c, skipKin, layer );
+	fader->Fade(in, frames, c, skipKin, p_drawLayer);
 }
 
 void Session::CrossFade(int fadeOutFrames,
@@ -5594,19 +5611,19 @@ void Session::ActiveSequenceUpdate()
 	}
 }
 
-void Session::DrawActiveSequence(EffectLayer layer, sf::RenderTarget *target)
+void Session::DrawActiveSequence(int p_drawLayer, sf::RenderTarget *target)
 {
 	if (activeSequence != NULL)
 	{
 		sf::View oldView = target->getView();
-		if (layer == UI_FRONT)
+		if (p_drawLayer == UI_FRONT)
 		{
 			target->setView(uiView);
 		}
 
-		activeSequence->Draw(target, layer);
+		activeSequence->LayeredDraw(p_drawLayer, target);
 
-		if (layer == UI_FRONT)
+		if (p_drawLayer == UI_FRONT)
 		{
 			target->setView(oldView);
 		}
@@ -5623,8 +5640,7 @@ bool Session::HasLog(int logIndex)
 	return currLogField.GetBit(logIndex);
 }
 
-void Session::AddEmitter(ShapeEmitter *emit,
-	EffectLayer layer)
+void Session::AddEmitter(ShapeEmitter *emit )
 {
 	if (emit->data.active)
 	{
@@ -5639,7 +5655,7 @@ void Session::AddEmitter(ShapeEmitter *emit,
 
 	emit->data.active = true;
 
-	ShapeEmitter *&currList = emitterLists[layer];
+	ShapeEmitter *&currList = emitterLists[emit->drawLayer];
 
 	ShapeEmitter *c = currList;
 
@@ -5667,14 +5683,14 @@ void Session::AddEmitter(ShapeEmitter *emit,
 	}
 }
 
-void Session::RemoveEmitter(ShapeEmitter *emit, EffectLayer layer)
+void Session::RemoveEmitter(ShapeEmitter *emit )
 {
 	if (!emit->data.active)
 		return;
 
 	assert(emit->data.active);
 
-	ShapeEmitter *&currList = emitterLists[layer];
+	ShapeEmitter *&currList = emitterLists[emit->drawLayer];
 
 	if (currList == NULL)
 	{
@@ -5715,9 +5731,9 @@ void Session::RemoveEmitter(ShapeEmitter *emit, EffectLayer layer)
 	}
 }
 
-void Session::DrawEmitters(EffectLayer layer, sf::RenderTarget *target)
+void Session::DrawEmitters(int p_drawLayer, sf::RenderTarget *target)
 {
-	ShapeEmitter *curr = emitterLists[layer];
+	ShapeEmitter *curr = emitterLists[p_drawLayer];
 	while (curr != NULL)
 	{
 		curr->Draw(target);
@@ -5729,7 +5745,7 @@ void Session::UpdateEmitters()
 {
 	ShapeEmitter *curr = NULL;
 	ShapeEmitter *next = NULL;
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		curr = emitterLists[i];
 		while (curr != NULL)
@@ -5737,7 +5753,7 @@ void Session::UpdateEmitters()
 			next = curr->next;
 			if (curr->IsDone())
 			{
-				RemoveEmitter(curr, (EffectLayer)i );
+				RemoveEmitter(curr);
 				/*if (curr == emitterLists[i])
 				{
 					emitterLists[i] = curr->next;
@@ -5759,7 +5775,7 @@ void Session::UpdateEmitters()
 
 void Session::ClearEmitters()
 {
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		ShapeEmitter *curr = emitterLists[i];
 
@@ -5805,7 +5821,7 @@ void Session::DrawKinOverFader(sf::RenderTarget *target)
 	Actor *p = NULL;
 	if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()))//IsFading()) //adjust later?
 	{
-		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
+		DrawEffects(DrawLayer::IN_FRONT, preScreenTex);
 		for (int i = 0; i < 4; ++i)
 		{
 			p = GetPlayer(i);
@@ -6298,13 +6314,13 @@ int Session::GetNumTotalEnergyParticles(int absorbType)
 	return total;
 }
 
-void Session::DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target)
+void Session::DrawStoryLayer(int p_drawLayer, sf::RenderTarget *target)
 {
 	if (currStorySequence != NULL)
 	{
 		sf::View oldV = target->getView();
 		target->setView(uiView);
-		currStorySequence->DrawLayer(target, ef);
+		currStorySequence->LayeredDraw( p_drawLayer, target );
 		target->setView(oldV);
 	}
 }
@@ -6315,19 +6331,25 @@ void Session::DrawGateMarkers(sf::RenderTarget *target)
 		gateMarkers->Draw(target);
 }
 
-void Session::LayeredDraw(EffectLayer ef, sf::RenderTarget *target)
+void Session::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 {
 	View oldView = target->getView();
 	target->setView(uiView);
-	fader->Draw(ef, target);
+	fader->Draw(p_drawLayer, target);
 	target->setView(oldView);
 	
+	if (background != NULL)
+	{
+		background->LayeredDraw(p_drawLayer, target);
+	}
 
-	DrawDecor(ef, target);
-	DrawStoryLayer(ef, target);
-	DrawActiveSequence(ef, target);
-	DrawEffects(ef, target);
-	DrawEmitters(ef, target);
+	
+
+	DrawDecor(p_drawLayer, target);
+	DrawStoryLayer(p_drawLayer, target);
+	DrawActiveSequence(p_drawLayer, target);
+	DrawEffects(p_drawLayer, target);
+	DrawEmitters(p_drawLayer, target);
 	//swiper->Draw(target);
 }
 
@@ -6571,6 +6593,29 @@ void Session::UpdateGoalFlow()
 	}
 }
 
+void Session::SetupEnvParticleSystem()
+{
+	assert(envParticleSystem == NULL);
+	envParticleSystem = new EnvParticleSystem;
+}
+
+void Session::CleanupEnvParticleSystem()
+{
+	if (envParticleSystem != NULL)
+	{
+		delete envParticleSystem;
+		envParticleSystem = NULL;
+	}
+}
+
+void Session::UpdateEnvParticleSystem()
+{
+	if (envParticleSystem != NULL)
+	{
+		envParticleSystem->Update();
+	}
+}
+
 void Session::CleanupGoalPulse()
 {
 	if (parentGame == NULL || (parentGame != NULL && parentGame->goalPulse == NULL ) )
@@ -6789,7 +6834,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	if (!firstUpdateHasHappened)
 	{
 		//cout << "first update draw" << endl;
-		LayeredDraw(EffectLayer::IN_FRONT, target);
+		LayeredDraw(DrawLayer::IN_FRONT, target);
 
 		//target->setView(view);
 		DrawKinOverFader(target);
@@ -6798,7 +6843,16 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	}
 
 	if (background != NULL)
-		background->Draw(target);
+	{
+		background->DrawBackLayer(target);
+	}
+
+
+	for (int i = BG_1; i <= BG_10; ++i)
+	{
+		LayeredDraw(i, target);
+	}
+		//background->Draw(target);
 
 	//UpdateEnvShaders(); //move this into the update loop
 
@@ -6806,7 +6860,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawBlackBorderQuads(target);
 
-	LayeredDraw(EffectLayer::BEHIND_TERRAIN, target);
+	LayeredDraw(DrawLayer::BEHIND_TERRAIN, target);
 
 	DrawZones(target);
 
@@ -6829,13 +6883,13 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	DrawGates(target);
 	DrawRails(target);
 
-	LayeredDraw(EffectLayer::BEHIND_ENEMIES, target);
+	LayeredDraw(DrawLayer::BEHIND_ENEMIES, target);
 
 	DrawReplayGhosts(target);
 
 	DrawEnemies(target);
 
-	LayeredDraw(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+	LayeredDraw(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
 	DrawGoalPulse(target);
 	DrawPlayerWires(target);
@@ -6851,7 +6905,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawPlayerShields(target);
 
-	LayeredDraw(EffectLayer::IN_FRONT, target);
+	LayeredDraw(DrawLayer::IN_FRONT, target);
 
 	DrawBullets(target);
 
@@ -6914,16 +6968,18 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	UpdateNameTagsPixelPos(target);
 
+	for (int i = FG_1; i <= FG_10; ++i)
+	{
+		LayeredDraw(i, target);
+	}
+
 	//UpdateTimeSlowShader();
-
-	DrawForegroundEffects(target);
-
 
 	target->setView(uiView);
 
-	LayeredDraw(EffectLayer::UI_FRONT, target);
+	LayeredDraw(DrawLayer::UI_FRONT, target);
 
-	LayeredDraw(EffectLayer::IN_FRONT_OF_UI, target);
+	LayeredDraw(DrawLayer::IN_FRONT_OF_UI, target);
 
 	DrawNameTags(target);
 
@@ -7311,6 +7367,8 @@ bool Session::RunGameModeUpdate()
 
 		UpdateGoalFlow();
 
+		UpdateEnvParticleSystem();
+
 		//careful because minimap also needs to query
 		//to draw things.
 		//if something is behind the minimap,
@@ -7494,14 +7552,14 @@ void Session::DrawGameSequence(sf::RenderTarget *target)
 	if (activeSequence != NULL)
 	{
 		//preScreenTex->setView(uiView);
-		for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+		for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 		{
 			View oldView = target->getView();
 			target->setView(uiView);
 			fader->Draw(i, target);
 			target->setView(oldView);
 			//swiper->Draw(i, preScreenTex);
-			activeSequence->Draw(target, (EffectLayer)i);
+			activeSequence->LayeredDraw(i, target);
 		}
 	}
 
@@ -8163,6 +8221,8 @@ bool Session::OnlineRunGameModeUpdate()
 
 	UpdateGoalFlow();
 
+	UpdateEnvParticleSystem();
+
 	QueryToSpawnEnemies();
 
 	UpdateEnvPlants();
@@ -8511,7 +8571,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->activeEnemyListTailID = GetEnemyID(activeEnemyListTail);
 	currSaveState->inactiveEnemyListID = GetEnemyID(inactiveEnemyList);
 	
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		currSaveState->emitterListIDs[i] = GetEmitterID(emitterLists[i]);
 	}
@@ -8669,7 +8729,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 	inactiveEnemyList = GetEnemyFromID( currSaveState->inactiveEnemyListID );
 	activeEnemyListTail = GetEnemyFromID(currSaveState->activeEnemyListTailID );
 
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		emitterLists[i] = GetEmitterFromID(currSaveState->emitterListIDs[i]);
 	}

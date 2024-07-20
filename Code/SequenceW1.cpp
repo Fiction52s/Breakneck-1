@@ -195,9 +195,9 @@ void CrawlerAttackScene::UpdateCrawlerSwoop()
 	queenGrabSprite.setPosition(Vector2f(gPoint - gNorm * 30.0));
 }
 
-void CrawlerAttackScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+void CrawlerAttackScene::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
-	if (layer != EffectLayer::IN_FRONT)
+	if (p_drawLayer != DrawLayer::IN_FRONT)
 	{
 		return;
 	}
@@ -207,7 +207,7 @@ void CrawlerAttackScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 		target->draw(queenGrabSprite);
 	}
 
-	BasicBossScene::Draw(target, layer);
+	BasicBossScene::LayeredDraw(p_drawLayer, target);
 }
 
 TextTestSeq::TextTestSeq()
@@ -380,9 +380,9 @@ bool TextTestSeq::Update()
 
 	return true;
 }
-void TextTestSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
+void TextTestSeq::Draw(sf::RenderTarget *target, DrawLayer layer)
 {
-	if (layer != EffectLayer::IN_FRONT)
+	if (layer != DrawLayer::IN_FRONT)
 	{
 		return;
 	}
@@ -565,9 +565,9 @@ void CrawlerPreFightScene::UpdateState()
 	}
 }
 
-void CrawlerPreFightScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+void CrawlerPreFightScene::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 {
-	BasicBossScene::Draw(target, layer);
+	BasicBossScene::LayeredDraw(p_drawLayer, target);
 }
 
 CrawlerPostFightScene::CrawlerPostFightScene()
@@ -968,9 +968,9 @@ void GetAirdashPowerScene::UpdateState()
 	}
 }
 
-void GetAirdashPowerScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+void GetAirdashPowerScene::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 {
-	if (layer != EffectLayer::IN_FRONT)
+	if (p_drawLayer != DrawLayer::IN_FRONT)
 	{
 		return;
 	}
@@ -985,7 +985,7 @@ void GetAirdashPowerScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 			target->draw(darkRect);
 		}
 
-		BasicBossScene::Draw(target, layer);
+		BasicBossScene::LayeredDraw(p_drawLayer, target);
 
 
 		target->setView(sess->view);

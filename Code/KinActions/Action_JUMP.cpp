@@ -258,7 +258,7 @@ void Actor::JUMP_Update()
 
 				ActivateEffect(PLAYERFX_JUMP_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(ang), 5, 4, facingRight,1);
 
-				//ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
+				//ActivateEffect( DrawLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
 
 				ground = NULL;
 				holdJump = true;

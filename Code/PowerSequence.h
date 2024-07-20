@@ -26,7 +26,7 @@ struct GetPowerSequence : Sequence
 	void ReturnToGame();
 	void SetupStates();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 	void Reset();
 	void SetIDs();
 

@@ -4,15 +4,18 @@
 #include "SFML\Graphics.hpp"
 #include <vector>
 
+struct Session;
+struct ShapeEmitter;
+
 struct EnvParticleSystem
 {
-	//std::vector<
-
+	std::vector<ShapeEmitter*> emitters;
+	Session *sess;
 
 	EnvParticleSystem();
 	~EnvParticleSystem();
 	void Update();
-	void Draw( int effectLayer, sf::RenderTarget *target);
+	//void LayeredDraw( int p_drawLayer, sf::RenderTarget *target);
 };
 
 #endif

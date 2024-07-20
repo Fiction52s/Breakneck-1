@@ -2370,8 +2370,8 @@ void DispLoadTest( MainMenu *mm )
 
 		mm->loadingBackpack->Draw(pTex);
 
-		mm->fader->Draw( EffectLayer::IN_FRONT_OF_UI, pTex);
-		//mm->swiper->Draw( EffectLayer::IN_FRONT_OF_UI, pTex);
+		mm->fader->Draw( DrawLayer::IN_FRONT_OF_UI, pTex);
+		//mm->swiper->Draw( DrawLayer::IN_FRONT_OF_UI, pTex);
 		pTex->display();
 		sf::Sprite spr;
 		spr.setTexture(pTex->getTexture());
@@ -2861,7 +2861,7 @@ void MainMenu::HandleMenuMode()
 			//SetMode(QUICKPLAY_PLAY);
 
 			//turned this off recently
-			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			//fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 		}
 		break;
 	}
@@ -2893,7 +2893,7 @@ void MainMenu::HandleMenuMode()
 				delete loadThread;
 				loadThread = NULL;
 				SetMode(LOADINGMENUEND);
-				fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+				fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 			}
 			else
 			{
@@ -2910,7 +2910,7 @@ void MainMenu::HandleMenuMode()
 
 		if (fader->IsFullyFadedOut())
 		{
-			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			fader->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 			SetMode(modeToLoad);
 		}
 		break;
@@ -2938,7 +2938,7 @@ void MainMenu::HandleMenuMode()
 
 		if (adventureManager->kinBoostScreen->IsEnded())//swiper->IsPostWipe())
 		{
-			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
+			fader->Fade(true, 30, Color::Black, true, DrawLayer::IN_FRONT_OF_UI);
 			SetMode(RUN_ADVENTURE_MAP);
 		}
 		else if (adventureManager->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && adventureManager->kinBoostScreen->IsBoosting())
@@ -2998,7 +2998,7 @@ void MainMenu::HandleMenuMode()
 
 		if (adventureManager->worldTransferScreen->IsEnded())//swiper->IsPostWipe())
 		{
-			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
+			fader->Fade(true, 30, Color::Black, true, DrawLayer::IN_FRONT_OF_UI);
 			SetMode(RUN_ADVENTURE_MAP);
 		}
 		else if (adventureManager->worldTransferScreen->level == NULL && loadThread == NULL && deadThread == NULL && adventureManager->worldTransferScreen->IsBoosting())
@@ -3053,7 +3053,7 @@ void MainMenu::HandleMenuMode()
 
 		if (rushManager->worldTransferScreen->IsEnded())//swiper->IsPostWipe())
 		{
-			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
+			fader->Fade(true, 30, Color::Black, true, DrawLayer::IN_FRONT_OF_UI);
 			SetMode(TEST_RUSH);
 		}
 		else if (rushManager->worldTransferScreen->frame > 60 
@@ -4026,7 +4026,7 @@ void MainMenu::HandleMenuMode()
 
 		if (fader->IsFullyFadedOut())
 		{
-			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			fader->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 
 			SetMode(DOWNLOAD_WORKSHOP_MAP_LOOP);
 			
@@ -4249,7 +4249,7 @@ void MainMenu::HandleMenuMode()
 			//SetMode(QUICKPLAY_PLAY);
 
 			//turned this off recently
-			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			//fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 		}
 		break;
 	}
@@ -4378,7 +4378,7 @@ void MainMenu::HandleMenuMode()
 				cout << "client starting map rematch!!" << endl;
 				netplayManager->game->InitGGPO();
 				SetMode(QUICKPLAY_PLAY);
-				fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+				fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 				break;
 			}
 			case NetplayManager::POST_MATCH_A_CHOOSE_MAP:
@@ -4452,7 +4452,7 @@ void MainMenu::HandleMenuMode()
 				LoadMode(TITLEMENU);
 			}
 			
-			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			//fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 			break;
 		}
 		case CustomMatchManager::A_POST_MATCH_CLIENT_LEAVE:
@@ -4488,7 +4488,7 @@ void MainMenu::HandleMenuMode()
 			netplayManager->game->InitGGPO();
 			netplayManager->HostInitiateRematch();
 			
-			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 
 			delete matchResultsScreen;
 			matchResultsScreen = NULL;
@@ -4589,7 +4589,7 @@ void MainMenu::HandleMenuMode()
 					//netplayManager->game->InitGGPO();
 					//netplayManager->HostInitiateRematch();
 
-					//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+					//fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 
 					//SetMode(QUICKPLAY_PLAY);
 				}
@@ -4665,7 +4665,7 @@ void MainMenu::HandleMenuMode()
 					netplayManager->game->InitGGPO();
 					netplayManager->HostInitiateRematch();
 
-					fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+					fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 
 					delete matchResultsScreen;
 					matchResultsScreen = NULL;
@@ -4690,7 +4690,7 @@ void MainMenu::HandleMenuMode()
 					LoadMode(TITLEMENU);
 				}
 			}
-			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			//fader->Fade(false, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 			break;
 		}
 		case CustomMatchManager::A_POST_MATCH_PRACTICE_LEAVE:
@@ -4765,7 +4765,7 @@ void MainMenu::LoadMode(Mode m)
 		MOUSE.Show();
 	}
 
-	fader->Fade(false, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+	fader->Fade(false, 60, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 	modeLoadingFrom = menuMode;
 
 	SetMode(LOADINGMENUSTART);
@@ -4775,7 +4775,7 @@ void MainMenu::LoadMode(Mode m)
 
 void MainMenu::StartLoadModeScreen()
 {
-	fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+	fader->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 	SetMode(LOADINGMENULOOP);
 	loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 }
@@ -5472,7 +5472,7 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 
-	fader->Draw( EffectLayer::IN_FRONT_OF_UI, preScreenTexture);
+	fader->Draw( DrawLayer::IN_FRONT_OF_UI, preScreenTexture);
 	//swiper->Draw(preScreenTexture);
 	DrawEffects(preScreenTexture);
 
@@ -5506,7 +5506,7 @@ void MainMenu::DownloadAndRunWorkshopMap()
 	modeToLoad = MainMenu::DOWNLOAD_WORKSHOP_MAP_LOOP;
 	SetMode(MainMenu::DOWNLOAD_WORKSHOP_MAP_START);
 
-	fader->Fade(false, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+	fader->Fade(false, 60, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 	//modeLoadingFrom = menuMode;
 
 	//SetMode(LOADINGMENUSTART);

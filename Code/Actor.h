@@ -14,7 +14,7 @@
 #include "Movement.h"
 #include "Gate.h"
 #include "SpecialTerrainTypes.h"
-#include "EffectLayer.h"
+#include "DrawLayer.h"
 #include "BitField.h"
 #include "VectorMath.h"
 #include <unordered_map>
@@ -493,7 +493,7 @@ struct Actor : QuadTreeCollider,
 
 	struct FXInfo
 	{
-		EffectLayer layer;
+		int layer;
 		EffectPool *pool;
 		bool pauseImmune;
 		bool usesPlayerSkinShader;
@@ -505,7 +505,7 @@ struct Actor : QuadTreeCollider,
 
 		FXInfo();
 		~FXInfo();
-		void Set(Tileset *ts, int fxType, int maxEffects, EffectLayer effectLayer = EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+		void Set(Tileset *ts, int fxType, int maxEffects, int p_drawLayer = DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 			bool p_pauseImmune = false, bool p_usesPlayerSkinShader = true );
 
 		/*void Set(Tileset *p_ts, int p_startFrame, int p_duration, int p_animFactor, int p_maxReps)
@@ -1442,7 +1442,7 @@ struct Actor : QuadTreeCollider,
 	SoundNode * ActivateSound(int st, bool loop = false);
 	SoundNode *ActivateRepeatingSound(int st, bool loop = false);
 	BasicEffect * ActivateEffect(
-		EffectLayer layer,
+		DrawLayer layer,
 		Tileset *ts,
 		sf::Vector2<double> pos,
 		bool pauseImmune,
@@ -1636,7 +1636,7 @@ struct Actor : QuadTreeCollider,
 	bool BasicAirAttackAction();
 	sf::Vector2<double> UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
-	void DrawEffects(int effectLayer, sf::RenderTarget *target);
+	void LayeredDrawEffects(int p_drawLayer, sf::RenderTarget *target);
 	void DrawPlayerSprite(sf::RenderTarget *target);
 	void MiniDraw(sf::RenderTarget *target);
 	void MapDraw(sf::RenderTarget *target, bool drawPlayer, bool drawName, float scale );

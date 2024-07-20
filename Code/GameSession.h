@@ -17,7 +17,7 @@
 #include "BarrierReactions.h"
 #include "Buf.h"
 #include "EnvEffects.h"
-#include "EffectLayer.h"
+#include "DrawLayer.h"
 #include <boost/filesystem.hpp>"
 #include "DecorTypes.h"
 #include <boost/thread/mutex.hpp>
@@ -302,7 +302,7 @@ struct GameSession : RayCastHandler, Session
 	
 	
 	ShapeEmitter *testEmit;
-	std::list<DecorDraw*> decor[EffectLayer::EFFECTLAYER_Count];
+	std::list<DecorDraw*> decor[DrawLayer::DrawLayer_Count];
 	
 	int numKeysCollected;
 
@@ -517,7 +517,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdateEnvPlants();
 	bool UpdateRunModeBackAndStartButtons();
 	void CleanupDecor();
-	void DrawDecor(EffectLayer ef, sf::RenderTarget *target);
+	void DrawDecor(int p_drawLayer, sf::RenderTarget *target);
 
 	bool RunPreUpdate();
 	void UpdateSoundNodeLists();

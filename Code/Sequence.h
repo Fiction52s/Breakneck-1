@@ -7,7 +7,7 @@
 #include "Movement.h"
 #include <boost/thread.hpp>
 #include <sfeMovie\Movie.hpp>
-#include "EffectLayer.h"
+#include "DrawLayer.h"
 #include "MovingGeo.h"
 #include "VectorMath.h"
 #include <SFML/Audio.hpp>
@@ -212,8 +212,7 @@ struct Sequence
 	void Init();
 	virtual void UpdateState() {}
 	virtual void SetupStates() {}
-	virtual void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	virtual void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 	FlashGroup * AddFlashGroup(const std::string &n);
 	void SetFlashGroup(const std::string & n);
 	void UpdateFlashGroup();
@@ -302,8 +301,7 @@ struct BasicBossScene : Sequence
 	BasicBossScene(EntranceType et );
 	virtual ~BasicBossScene();
 	virtual void StartRunning();
-	virtual void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	virtual void LayeredDraw( int p_drawLayer, sf::RenderTarget *target );
 	virtual void EntranceUpdate();
 	virtual bool IsAutoRunState();
 	virtual void ReturnToGame();
@@ -370,8 +368,7 @@ struct ShipEnterScene : Sequence
 
 	ShipEnterScene();
 	void Reset();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 	void UpdateState();
 	void SetupStates();
 	void ReturnToGame();
@@ -409,7 +406,7 @@ struct ShipExitScene : Sequence
 	void AddEnemies();
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 };
 
 struct MomentaScene : Sequence
@@ -426,7 +423,7 @@ struct MomentaScene : Sequence
 	void AddFlashes();
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 };
 
 struct StorySequence;
@@ -447,7 +444,7 @@ struct StoryScene : Sequence
 	void ReturnToGame();
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 };
 
 struct SuperSequence : Sequence
@@ -497,7 +494,7 @@ struct SuperSequence : Sequence
 	void UpdateState();
 	void SetSuperType(int sType);
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 };
 
 #endif 

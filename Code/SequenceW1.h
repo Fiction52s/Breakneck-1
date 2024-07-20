@@ -43,8 +43,7 @@ struct CrawlerAttackScene : BasicBossScene
 	void AddGroups();
 	void SpecialInit();
 	void UpdateState();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 
 	void UpdateCrawlerSwoop();
 
@@ -79,8 +78,7 @@ struct CrawlerPreFightScene : BasicBossScene
 	void AddGroups();
 	void SpecialInit();
 	void UpdateState();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 };
 
 struct CrawlerPostFightScene : BasicBossScene
@@ -135,8 +133,7 @@ struct NexusCoreSeq : Sequence
 	void ReturnToGame();
 	void SetupStates();
 	void UpdateState();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 	void Reset();
 
 	sf::Vertex darkQuad[4];
@@ -167,8 +164,7 @@ struct GetAirdashPowerScene : BasicBossScene
 	int stateLength[Count];
 	GetAirdashPowerScene();
 	//bool Update();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 
 
 	void StartRunning();
@@ -215,7 +211,7 @@ struct GetAirdashPowerSeq : Sequence
 	GetAirdashPowerSeq();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 	void Reset();
 
 
@@ -246,7 +242,7 @@ struct TextTestSeq : Sequence
 
 	bool Update();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 	void Reset();
 	void AddGroup(const std::string &name);
 

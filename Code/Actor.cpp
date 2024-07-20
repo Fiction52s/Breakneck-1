@@ -188,7 +188,7 @@ void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
 	params.SetParams(ei->pos, tr, 6, 3, 0);
 
 	actor->ActivateEffect(Actor::PLAYERFX_KEY_EXPLODE, &params);
-	//actor->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	//actor->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 	//	actor->ts_keyExplode, V2d(ei->pos), true, 0, 6, 3, true);
 }
 
@@ -995,7 +995,7 @@ void Actor::DeactivateSound(SoundNode *sn)
 }
 
 BasicEffect * Actor::ActivateEffect(
-	EffectLayer layer,
+	DrawLayer layer,
 	Tileset *ts,
 	sf::Vector2<double> pos,
 	bool pauseImmune,
@@ -1100,17 +1100,17 @@ void Actor::SetupFX()
 
 	effectPools.resize(PLAYERFX_Count);
 
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_FAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_1), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DAIR_SWORD_LIGHTNING_2), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 
 	effectPools[PLAYERFX_BOUNCE_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_BOUNCE_BOOST), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false);
 	effectPools[PLAYERFX_HURT_SPACK].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_HURT_SPACK), EffectType::FX_REGULAR, 20);
@@ -1159,14 +1159,14 @@ void Actor::SetupFX()
 	effectPools[PLAYERFX_SMALL_LIGHTNING].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SMALL_LIGHTNING), EffectType::FX_RELATIVE, 20);
 
 	effectPools[PLAYERFX_GATE_BLACK].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_GATE_BLACK), EffectType::FX_RELATIVE, 2,
-		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
+		DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
 	effectPools[PLAYERFX_KEY].Set(sess->ts_key, EffectType::FX_REGULAR, 32,
-		EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
+		DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 	keyExplodeUpdater = new KeyExplodeUpdater(this);
 	effectPools[PLAYERFX_KEY].pool->SetUpdater(keyExplodeUpdater);
 
-	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		true, false);
 
 	effectPools[PLAYERFX_DASH_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DASH_BOOST), EffectType::FX_REGULAR, 8);
@@ -1178,7 +1178,7 @@ void Actor::SetupFX()
 	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAUNCH_PARTICLE_1), EffectType::FX_REGULAR, 100,
 		BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
-	effectPools[PLAYERFX_ENTER].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_ENTER), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_ENTER].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_ENTER), EffectType::FX_REGULAR, 1, DrawLayer::IN_FRONT);
 
 	//hopefully no problem making only 1 of these
 	effectPools[PLAYERFX_EXITENERGY_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_EXITENERGY_0), EffectType::FX_IND, 1);
@@ -1186,17 +1186,17 @@ void Actor::SetupFX()
 	effectPools[PLAYERFX_EXITENERGY_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_EXITENERGY_2), EffectType::FX_IND, 1);
 
 
-	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	//effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 
-	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	//effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 
-	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
-	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
+	//effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(tm->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 
 	//effectPools[PLAYERFX_BOUNCE_BOOST].Set(tm->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false );
 	//effectPools[PLAYERFX_HURT_SPACK].Set(tm->GetSizedTileset(folder, "fx_hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
@@ -1245,14 +1245,14 @@ void Actor::SetupFX()
 	//effectPools[PLAYERFX_SMALL_LIGHTNING].Set(tm->GetSizedTileset(folder, "fx_elec_128x96.png"), EffectType::FX_RELATIVE, 20);
 
 	//effectPools[PLAYERFX_GATE_BLACK].Set(tm->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2,
-	//	EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
+	//	DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
 	//effectPools[PLAYERFX_KEY].Set(sess->ts_key, EffectType::FX_REGULAR, 32,
-	//	EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false );
+	//	DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false );
 	//keyExplodeUpdater = new KeyExplodeUpdater(this);
 	//effectPools[PLAYERFX_KEY].pool->SetUpdater(keyExplodeUpdater);
 
-	//effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32,EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	//effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->ts_keyExplode, EffectType::FX_REGULAR, 32,DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 	//	true, false);
 
 	//effectPools[PLAYERFX_DASH_BOOST].Set(tm->GetSizedTileset(folder, "fx_dash_boost_128x256.png"), EffectType::FX_REGULAR, 4);
@@ -1264,7 +1264,7 @@ void Actor::SetupFX()
 	//effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(tm->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100,
 	//	BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
-	//effectPools[PLAYERFX_ENTER].Set(tm->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
+	//effectPools[PLAYERFX_ENTER].Set(tm->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, DrawLayer::IN_FRONT);
 
 	////hopefully no problem making only 1 of these
 	//effectPools[PLAYERFX_EXITENERGY_0].Set(tm->GetSizedTileset(folder, "exitenergy_0_512x512.png"), EffectType::FX_IND, 1);
@@ -5137,7 +5137,7 @@ void Actor::Respawn( bool setStartPos )
 	gravityIncreaserOffRingGroup->Reset();
 	numKeysHeld = 0;
 	//glideEmitter->Reset();
-	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	//owner->AddEmitter(glideEmitter, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES);
 	autoRunStopEdge = NULL;
 	extraDoubleJump = false;
 
@@ -5289,7 +5289,7 @@ void Actor::Respawn( bool setStartPos )
 		//SetAction(INTROBOOST);
 		SetAction(SPAWNWAIT);
 		frame = 0;
-		//ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/FX/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
+		//ActivateEffect(DrawLayer::IN_FRONT, GetTileset("Kin/FX/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
 	}
 	else if (owner == NULL && editOwner != NULL)
 	{
@@ -6335,7 +6335,7 @@ void Actor::ProcessGravModifier()
 		{
 			gravityDecreaserTrailEmitter->SetOn(false);
 			gravityIncreaserTrailEmitter->SetOn(true);
-			sess->AddEmitter(gravityIncreaserTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+			sess->AddEmitter(gravityIncreaserTrailEmitter);
 			CreateGravityIncreaserOnRing();
 		}
 		else if (boosterExtraGravityModifier < 1.0)
@@ -6343,7 +6343,7 @@ void Actor::ProcessGravModifier()
 			gravityIncreaserTrailEmitter->SetOn(false);
 			gravityDecreaserTrailEmitter->SetOn(true);
 			
-			sess->AddEmitter(gravityDecreaserTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+			sess->AddEmitter(gravityDecreaserTrailEmitter);
 			CreateGravityDecreaserOnRing();
 		}
 		else
@@ -6435,7 +6435,7 @@ void Actor::ProcessTimeBooster()
 		startGlobalTimeSlowFrames = globalTimeSlowFrames;
 
 		//timeSlowBoosterTrailEmitter->SetOn(true);
-		//sess->AddEmitter(timeSlowBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		//sess->AddEmitter(timeSlowBoosterTrailEmitter, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 		currTimeBooster = NULL;
 
@@ -6454,7 +6454,7 @@ void Actor::ProcessMomentumBooster()
 
 
 		momentumBoosterTrailEmitter->SetOn(true);
-		sess->AddEmitter(momentumBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		sess->AddEmitter(momentumBoosterTrailEmitter);
 
 		currMomentumBooster = NULL;
 
@@ -6488,7 +6488,7 @@ void Actor::ProcessAntiTimeSlowBooster()
 		startAntiTimeSlowFrames = antiTimeSlowFrames;
 
 		antiTimeSlowBoosterTrailEmitter->SetOn(true);
-		sess->AddEmitter(antiTimeSlowBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		sess->AddEmitter(antiTimeSlowBoosterTrailEmitter);
 
 		currAntiTimeSlowBooster = NULL;
 
@@ -6533,7 +6533,7 @@ void Actor::ProcessHomingBooster()
 		startHomingFrames = homingFrames;
 
 		homingBoosterTrailEmitter->SetOn(true);
-		sess->AddEmitter(homingBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		sess->AddEmitter(homingBoosterTrailEmitter );
 		RestoreAirOptions();
 		//ground = NULL;
 		//wallNormal = V2d(0, 0);
@@ -6556,7 +6556,7 @@ void Actor::ProcessFreeFlightBooster()
 		startFreeFlightFrames = freeFlightFrames;
 
 		freeFlightBoosterTrailEmitter->SetOn(true);
-		sess->AddEmitter(freeFlightBoosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		sess->AddEmitter(freeFlightBoosterTrailEmitter );
 		extraGravityModifier = 0;
 		gravModifyFrames = freeFlightFrames;
 		RestoreAirOptions();
@@ -7457,7 +7457,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if (!boosterTrailEmitter->active)
 		{
-			sess->AddEmitter(boosterTrailEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+			sess->AddEmitter(boosterTrailEmitter, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		}
 	}*/
 
@@ -7657,15 +7657,15 @@ void Actor::UpdatePrePhysics()
 		{
 			if (frame == 0)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(DrawLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 2)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(DrawLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 4)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(DrawLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}	
 		}
 		else if (action == SEQ_KINFALL)
@@ -18656,7 +18656,7 @@ void Actor::UpdatePostPhysics()
 		//	//cout << "randAngle: " << randAngle << endl;
 
 		//	//cout << "randang: " << randAng << endl;
-		//	ActivateEffect( EffectLayer::IN_FRONT, ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
+		//	ActivateEffect( DrawLayer::IN_FRONT, ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
 		//}
 
 		if( kinMask != NULL)
@@ -25795,7 +25795,7 @@ void Actor::UpdateInHitlag()
  Actor::FXInfo::FXInfo()
  {
 	 pool = NULL;
-	 layer = EffectLayer::BETWEEN_PLAYER_AND_ENEMIES;
+	 layer = DrawLayer::BETWEEN_PLAYER_AND_ENEMIES;
 	 pauseImmune = false;
 	 
 	 //startFrame = 0;
@@ -25811,7 +25811,7 @@ void Actor::UpdateInHitlag()
 	 }
  }
 
- void Actor::FXInfo::Set(Tileset *p_ts, int p_fxType, int p_maxEffects, EffectLayer p_effectLayer, bool p_pauseImmune, bool p_usesPlayerSkinShader)
+ void Actor::FXInfo::Set(Tileset *p_ts, int p_fxType, int p_maxEffects, int p_drawLayer, bool p_pauseImmune, bool p_usesPlayerSkinShader)
  {
 	 if (p_ts == NULL)
 	 {
@@ -25824,16 +25824,16 @@ void Actor::UpdateInHitlag()
 	 pool = new EffectPool((EffectType)p_fxType, p_maxEffects);
 	 pool->ts = p_ts;
 
-	 layer = p_effectLayer;
+	 layer = p_drawLayer;
 
 	 pauseImmune = p_pauseImmune;
  }
 
- void Actor::DrawEffects(int effectLayer, sf::RenderTarget *target)
+ void Actor::LayeredDrawEffects(int p_drawLayer, sf::RenderTarget *target)
  {
 	 for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
 	 {
-		 if( (*it).pool != NULL && (*it).layer == effectLayer)
+		 if( (*it).pool != NULL && (*it).layer == p_drawLayer)
 		 {
 			if ((*it).usesPlayerSkinShader)
 			{

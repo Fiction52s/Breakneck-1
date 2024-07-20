@@ -185,7 +185,7 @@ void QueenFloatingBomb::Explode()
 	action = EXPLODING;
 	frame = 0;
 	surfaceMover->SetVelocity(V2d(0, 0));
-	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+	sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		ts_explosion, GetPosition(), false, 0, 10, 3, true);
 	explosion.SetBasicPos(GetPosition());
 	SetHitboxes(&explosion, 0);

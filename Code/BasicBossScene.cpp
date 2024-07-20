@@ -387,9 +387,9 @@ bool BasicBossScene::Update()
 	return true;
 }
 
-void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+void BasicBossScene::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
-	Sequence::Draw(target, layer);
+	Sequence::LayeredDraw(p_drawLayer, target);
 }
 
 void BasicBossScene::StartBasicKillFade()
@@ -407,11 +407,11 @@ void BasicBossScene::StartBasicNewMapKillFade()
 	sess->HideHUD();
 	sess->cam.SetManual(true);
 	MainMenu *mm = sess->mainMenu;
-	sess->Fade(false, explosionFadeFrames, Color::White, false, EffectLayer::IN_FRONT);
+	sess->Fade(false, explosionFadeFrames, Color::White, false, DrawLayer::IN_FRONT);
 }
 
 void BasicBossScene::EndBasicNewMapKillFade()
 {
-	sess->Fade(true, 30, Color::White, false, EffectLayer::IN_FRONT);
+	sess->Fade(true, 30, Color::White, false, DrawLayer::IN_FRONT);
 	sess->SetGameSessionState(GameSession::RUN);
 }

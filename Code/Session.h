@@ -9,7 +9,7 @@
 #include <fstream>
 #include "ISelectable.h"
 #include "DecorTypes.h"
-#include "EffectLayer.h"
+#include "DrawLayer.h"
 #include "Camera.h"
 
 //#include "ActorParamsBase.h"
@@ -446,7 +446,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	GoalFlow *goalFlow;
 	GoalPulse *goalPulse;
 
-	ShapeEmitter *emitterLists[EffectLayer::EFFECTLAYER_Count];
+	ShapeEmitter *emitterLists[DrawLayer::DrawLayer_Count];
 
 	bool usedWarp;
 	Goal *goal;
@@ -669,7 +669,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	SoundNode *ActivatePauseSound(SoundInfo *si, bool loop = false);
 	int GetPauseFrames();
 	BasicEffect * ActivateEffect(
-		EffectLayer layer,
+		int p_drawLayer,
 		Tileset *ts,
 		V2d pos,
 		bool pauseImmune,
@@ -680,7 +680,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		int startFrame = 0,
 		float depth = 1.f);
 	void DeactivateEffect(BasicEffect *be);
-	void DrawEffects(EffectLayer layer, sf::RenderTarget *target);
+	void DrawEffects(int p_drawLayer, sf::RenderTarget *target);
 	void ClearEffects();
 	void UpdateEffects(bool pauseImmuneOnly = false);
 	void AllocateEffects();
@@ -803,7 +803,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AddBarrier(XBarrierParams *xbp, bool warp);
 	void SetGameSessionState(int s);
 	virtual int GetGameSessionState();
-	void Fade(bool in, int frames, sf::Color c, bool skipKin = false, EffectLayer layer = EffectLayer::IN_FRONT_OF_UI);
+	void Fade(bool in, int frames, sf::Color c, bool skipKin = false, int p_drawLayer = DrawLayer::IN_FRONT_OF_UI);
 	void CrossFade(int fadeOutFrames,
 		int pauseFrames, int fadeInFrames,
 		sf::Color c, bool skipKin = false);
@@ -826,15 +826,13 @@ struct Session : TilesetManager, QuadTreeCollider
 	void TryCreatePowerItemResources();
 	void SetActiveSequence(Sequence *activeSeq);
 	void ActiveSequenceUpdate();
-	void AddEmitter(ShapeEmitter *emit,
-		EffectLayer layer);
-	void RemoveEmitter(ShapeEmitter *emit,
-		EffectLayer layer);
+	void AddEmitter(ShapeEmitter *emit);
+	void RemoveEmitter(ShapeEmitter *emit);
 	void UpdateEmitters();
 	void ClearEmitters();
-	void DrawActiveSequence(EffectLayer layer,
+	void DrawActiveSequence(int p_drawLayer,
 		sf::RenderTarget *target);
-	void DrawEmitters(EffectLayer layer, sf::RenderTarget *target);
+	void DrawEmitters(int p_drawLayer, sf::RenderTarget *target);
 	void SetupDeathSequence();
 	void DrawDyingPlayers(sf::RenderTarget *target);
 	void DrawKinOverFader(sf::RenderTarget *target);
@@ -870,13 +868,16 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void DrawSpecialTerrain(sf::RenderTarget *target) = 0;
 	virtual void DrawTerrain(sf::RenderTarget *target) = 0;
 	virtual void DrawItemTerrain(sf::RenderTarget *target) = 0;
-	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
+	void DrawStoryLayer(int p_drawLayer, sf::RenderTarget *target);
 	void DrawGateMarkers(sf::RenderTarget *target);
-	virtual void DrawDecor(EffectLayer ef, sf::RenderTarget *target) = 0;
-	void LayeredDraw(EffectLayer ef, sf::RenderTarget *target);
+	virtual void DrawDecor(int p_drawLayer, sf::RenderTarget *target) = 0;
+	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
 	void SetupGoalFlow();
 	void CleanupGoalFlow();
 	void CleanupGoalPulse();
+	void CleanupEnvParticleSystem();
+	void UpdateEnvParticleSystem();
+	void SetupEnvParticleSystem();
 	void DrawGoalFlow(sf::RenderTarget *target);
 	void UpdateGoalFlow();
 	void UpdateGoalPulse();

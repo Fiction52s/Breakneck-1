@@ -1068,6 +1068,9 @@ void GameSession::Cleanup()
 
 	CleanupGoalFlow();
 
+	ClearEmitters();
+	CleanupEnvParticleSystem();
+
 	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
 	{
 		delete (*it).second;
@@ -2171,6 +2174,8 @@ bool GameSession::Load()
 		//CleanupGoalPulse();
 		CleanupGoalFlow();
 	}
+
+	SetupEnvParticleSystem();
 	
 	cam.Init(GetPlayerPos(0));
 
@@ -3050,7 +3055,7 @@ bool GameSession::RunMainLoopOnce()
 		}
 
 		SetView(uiView);
-		fader->Draw(EffectLayer::IN_FRONT_OF_UI, preScreenTex);
+		fader->Draw(DrawLayer::IN_FRONT_OF_UI, preScreenTex);
 		//swiper->Draw(preScreenTex);
 
 		mainMenu->DrawEffects(preScreenTex);
@@ -3739,11 +3744,11 @@ int GameSession::Run()
 
 	if (ggpoNetplay) //testing!
 	{
-		fader->Fade(true, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+		fader->Fade(true, 60, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 	}
 	else
 	{
-		fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+		fader->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT_OF_UI);
 	}
 
 	if (parentGame != NULL && parentGame->bonusHandler != NULL)
@@ -4176,17 +4181,15 @@ void GameSession::DrawRails(sf::RenderTarget *target)
 	DrawQueriedRails(target);
 }
 
-void GameSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
+void GameSession::DrawDecor(int p_drawLayer, sf::RenderTarget *target)
 {
-	auto &dList = decor[ef];
+	auto &dList = decor[p_drawLayer];
 
 	for (auto it = dList.begin(); it != dList.end(); ++it)
 	{
 		(*it)->Draw(target);
 	}
 }
-
-
 
 void GameSession::UpdateDebugModifiers()
 {
@@ -4571,7 +4574,7 @@ void GameSession::RestartLevel()
 
 	//cout << "restarting the level on frame: " << totalGameFramesIncludingRespawns << "\n";
 
-	//AddEmitter(testEmit, EffectLayer::IN_FRONT);
+	//AddEmitter(testEmit, DrawLayer::IN_FRONT);
 	//testEmit->Reset();
 
 	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
@@ -5411,7 +5414,7 @@ void GameSession::ResetInactiveEnemies()
 
 void GameSession::CleanupDecor()
 {
-	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
+	for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
 	{
 		auto &dList = decor[i];
 		for (auto it = dList.begin(); it != dList.end(); ++it)

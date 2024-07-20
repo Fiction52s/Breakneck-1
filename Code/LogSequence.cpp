@@ -14,7 +14,7 @@ GetLogSequence::GetLogSequence()
 
 	freezeFrame = 100;
 
-	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
+	emitter = new ShapeEmitter(6, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
 
@@ -183,12 +183,12 @@ void GetLogSequence::UpdateState()
 
 }
 
-void GetLogSequence::Draw(RenderTarget *target, EffectLayer layer)
+void GetLogSequence::Draw(RenderTarget *target, DrawLayer layer)
 {
 	if (target == sess->preScreenTex)
 	{
 		sess->DrawEmitters(layer, target);
-		if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+		if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 		{
 			geoGroup.Draw(target);
 		}
@@ -197,7 +197,7 @@ void GetLogSequence::Draw(RenderTarget *target, EffectLayer layer)
 	{
 		if (seqData.frame >= freezeFrame && sess->GetGameSessionState() == GameSession::FROZEN)
 		{
-			if (layer == EffectLayer::UI_FRONT)
+			if (layer == DrawLayer::UI_FRONT)
 			{
 				if (target == sess->pauseTex)
 				{
@@ -241,7 +241,7 @@ void GetLogSequence::Reset()
 
 		emitter->SetPos(Vector2f(pPos));
 		emitter->Reset();
-		sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		sess->AddEmitter(emitter);
 	}
 
 }

@@ -1,5 +1,5 @@
-#ifndef __EFFECTLAYER_H__
-#define __EFFECTLAYER_H__
+#ifndef __DrawLayer_H__
+#define __DrawLayer_H__
 
 #include <string>
 
@@ -31,11 +31,11 @@ enum DrawLayer
 	FG_10,
 	IN_FRONT_OF_UI,
 	UI_FRONT,
-	EFFECTLAYER_Count
+	DrawLayer_Count
 };
 
-DrawLayer StringToEffectLayer(const std::string &str);
+DrawLayer StringToDrawLayer(const std::string &str);
 
-int GetDrawLayerDepthFactor(int layer);
+float GetDrawLayerDepthFactor(int layer);
 
 #endif 

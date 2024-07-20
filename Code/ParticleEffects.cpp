@@ -285,9 +285,11 @@ float ShapeEmitter::GetRandomAngle(float baseAngle,
 	return a;
 }
 
-ShapeEmitter::ShapeEmitter(int p_particleType)
+ShapeEmitter::ShapeEmitter(int p_particleType, int p_drawLayer)
 {
 	particleType = p_particleType;
+
+	drawLayer = p_drawLayer;
 
 	numShapesTotal = -1;
 
@@ -306,16 +308,6 @@ ShapeEmitter::ShapeEmitter(int p_particleType)
 		numShapesTotal = 500;
 		break;
 	}
-
-	Init();
-}
-
-ShapeEmitter::ShapeEmitter(int p_particleType, int p_maxParticles )
-{
-	particleType = p_particleType;
-
-	numShapesTotal = p_maxParticles;
-	
 
 	Init();
 }
@@ -488,18 +480,35 @@ void ShapeEmitter::SetOn(bool on)
 
 void ShapeEmitter::Draw(sf::RenderTarget *target)
 {
+	float depth = GetDrawLayerDepthFactor(drawLayer);
 	sf::View oldView = target->getView();
-	sf::View newView;
 
-	Vector2f cTest = oldView.getCenter() * depth;//sess->cam.GetPos() * depth;
-												 //Set(cTest, sess->cam.GetZoom() * depth);
+	if (depth != 1.f)
+	{
+		if (depth > 1.f)
+		{
+			sf::View newView;
+			Vector2f cTest = oldView.getCenter() * depth;
 
-	newView.setCenter(cTest);//Vector2f(oldView.getCenter().x, oldView.getCenter().y) - extraOffset);
-							 //newView.setSize(Vector2f(1920, 1080) / extraZoom * .5f);
-							 //newView.setSize(Vector2f(960, 540) * sess->cam.GetZoom() / depth);// / extraZoom);
-	newView.setSize(oldView.getSize() / depth);
+			newView.setCenter(cTest);
+			newView.setSize(oldView.getSize() / depth);
 
-	target->setView(newView);
+			target->setView(newView);
+		}
+		else
+		{
+			sf::View newView;
+			Vector2f cTest = Vector2f(oldView.getCenter().x * depth, data.pos.y );
+			//data.pos
+
+			newView.setCenter(cTest);
+			newView.setSize(Vector2f(1920, 1080) / depth);//oldView.getSize() / depth);
+
+			target->setView(newView);
+		}
+		
+
+	}
 
 	if (pointsPerShape == 4)
 	{
@@ -518,21 +527,13 @@ void ShapeEmitter::Draw(sf::RenderTarget *target)
 		target->draw(points, numPoints, sf::Triangles);
 	}
 
-	target->setView(oldView);
+	if (depth != 1.f)
+	{
+		target->setView(oldView);
+	}
+	
 
-
-
-
-
-
-
-
-
-
-
-
-
-	if (pointsPerShape == 4)
+	/*if (pointsPerShape == 4)
 	{
 		if (ts != NULL)
 		{
@@ -547,7 +548,7 @@ void ShapeEmitter::Draw(sf::RenderTarget *target)
 	else
 	{
 		target->draw(points, numPoints, sf::Triangles);
-	}
+	}*/
 }
 
 
@@ -636,7 +637,7 @@ void ShapeEmitter::SetFromBytes(unsigned char *bytes)
 }
 
 LeafEmitter::LeafEmitter()
-	:ShapeEmitter( 4, 500)
+	:ShapeEmitter( 4, DrawLayer::IN_FRONT)
 {
 	//posSpawner = new BoxPosSpawner(400, 400);
 	SetRatePerSecond(120);
@@ -666,7 +667,7 @@ void LeafEmitter::ActivateParticle(int index)
 //}
 
 PlayerBoosterEffectEmitter::PlayerBoosterEffectEmitter( Actor *p_player, int p_particleType )
-	:ShapeEmitter(p_particleType)
+	:ShapeEmitter(p_particleType, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 {
 	player = p_player;
 	SetRatePerSecond(120);
@@ -760,14 +761,14 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 }
 
 
-ForegroundTestEmitter::ForegroundTestEmitter(int p_particleType)
-	:ShapeEmitter(p_particleType, 2000)
+ForegroundTestEmitter::ForegroundTestEmitter(int p_particleType, int p_drawLayer )
+	:ShapeEmitter(p_particleType, p_drawLayer)
 {
-	SetRatePerSecond(20);
+	SetRatePerSecond(50);
 
-	extraZoom = 1.0;
+	//extraZoom = 1.0;
 
-	depth = 1.3;//2.0;
+	//depth = 1.3;//2.0;
 	
 }
 
@@ -857,76 +858,12 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 	float rad = r;
 
 	sp->Activate(rad, sPos, ang, finalTimeToLive, Color::White, tile);
-	sp->data.vel = normalize(sPos - data.pos) * .1f;//10.f;
+	sp->data.vel = Vector2f(0, 2);//normalize(sPos - data.pos) * .1f;//10.f;
 													//360
 
 	Color sColorTransParent = sColor;
 	sColorTransParent.a = 70;
 
-	sp->SetColorShift(sColor, sColorTransParent, 0, 60);
+	//sp->SetColorShift(sColor, sColorTransParent, 0, 60);
 
-}
-
-void ForegroundTestEmitter::Set(sf::Vector2f &pos, float zoom )
-{
-	extraOffset = pos;
-	extraZoom = zoom;
-}
-
-void ForegroundTestEmitter::SetExtra(sf::Vector2f &p_extra)
-{
-	extra = p_extra;
-}
-
-void ForegroundTestEmitter::SpecialUpdate()
-{
-	scrollOffset = 0;
-	Vector2f cPos = sess->cam.GetPos();
-	//float testScrollOffset = extra.x + scrollOffset;
-	//cPos.x -= testScrollOffset;
-
-	//cPos = cPos * depth;
-	
-	//Vector2f realPos(cPos.x + off.x, camPos.y);
-	//realPos = camPos;
-	//realPos.x -= 960;
-	//SetLeftPos(cPos);//camPos.x );//realPos.x );
-}
-
-void ForegroundTestEmitter::Draw(sf::RenderTarget *target)
-{
-	oldView = target->getView();
-
-	Vector2f cTest = oldView.getCenter() * depth;//sess->cam.GetPos() * depth;
-	//Set(cTest, sess->cam.GetZoom() * depth);
-
-	newView.setCenter(cTest);//Vector2f(oldView.getCenter().x, oldView.getCenter().y) - extraOffset);
-	//newView.setSize(Vector2f(1920, 1080) / extraZoom * .5f);
-	//newView.setSize(Vector2f(960, 540) * sess->cam.GetZoom() / depth);// / extraZoom);
-	newView.setSize(oldView.getSize() / depth);
-
-	target->setView(newView);
-
-	if (pointsPerShape == 4)
-	{
-		if (ts != NULL)
-		{
-			target->draw(points, numPoints, sf::Quads, ts->texture);
-		}
-		else
-		{
-			target->draw(points, numPoints, sf::Quads);
-		}
-
-	}
-	else
-	{
-		target->draw(points, numPoints, sf::Triangles);
-	}
-
-	target->setView(oldView);
-
-
-
-	
 }

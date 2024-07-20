@@ -465,13 +465,13 @@ void BasicTouchGrass::Destroy(Actor *a)
 		{
 		/*case TYPE_NORMAL_W1:
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
+			a->ActivateEffect(DrawLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
 				6, true, 4);
 			break;
 		}
 		case TYPE_LARGE_W1:
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+			a->ActivateEffect(DrawLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
 				6, true, 4);
 			break;
 		}*/
@@ -482,7 +482,7 @@ void BasicTouchGrass::Destroy(Actor *a)
 		case TYPE_NORMAL_W5:
 		case TYPE_NORMAL_W6:
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 14,
+			a->ActivateEffect(DrawLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 14,
 				6, true, 4);
 			break;
 		}
@@ -493,7 +493,7 @@ void BasicTouchGrass::Destroy(Actor *a)
 		case TYPE_LARGE_W5:
 		case TYPE_LARGE_W6:
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 14,
+			a->ActivateEffect(DrawLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 14,
 				6, true, 4);
 			break;
 		}
@@ -605,12 +605,12 @@ void TestTouchGrass::Destroy(Actor *a)
 	{
 		if (coll->gType == TouchGrass::TYPE_LARGE_W1)
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+			a->ActivateEffect(DrawLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
 				6, true, 4);
 		}
 		else if( coll->gType == TouchGrass::TYPE_LARGE_W5 )
 		{
-			a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 17,
+			a->ActivateEffect(DrawLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 17,
 				6, true, 4);
 		}
 
@@ -750,7 +750,7 @@ void TouchTree::Destroy(Actor *a)
 {
 	if (visible)
 	{
-		//a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+		//a->ActivateEffect(DrawLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
 		//	6, true, 4);
 
 		ClearRect(myQuad);

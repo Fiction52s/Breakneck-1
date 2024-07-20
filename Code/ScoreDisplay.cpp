@@ -155,7 +155,7 @@ void DefaultScoreDisplay::Draw(RenderTarget *target)
 
 		if (action == A_GIVE_GOLD || action == A_GIVE_SILVER || action == A_GIVE_BRONZE )
 		{
-			medalSeq->Draw(target, EffectLayer::UI_FRONT );
+			medalSeq->LayeredDraw(DrawLayer::UI_FRONT, target );
 		}
 	}
 }

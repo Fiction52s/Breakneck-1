@@ -22,7 +22,7 @@ struct FightEndSequence : Sequence
 	void SetupStates();
 	void ReturnToGame();
 	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
+		DrawLayer layer = DrawLayer::IN_FRONT);
 	void Reset();
 
 	Session *sess;

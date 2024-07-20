@@ -126,9 +126,9 @@ void SuperSequence::UpdateState()
 	
 }
 
-void SuperSequence::Draw(sf::RenderTarget *target, EffectLayer layer)
+void SuperSequence::Draw(sf::RenderTarget *target, DrawLayer layer)
 {
-	if (layer == EffectLayer::BEHIND_ENEMIES)
+	if (layer == DrawLayer::BEHIND_ENEMIES)
 	{
 		Vector2i playerPixel = target->mapCoordsToPixel(Vector2f(sess->GetPlayerPos(0)));
 		//V2d playerUIPos = 
