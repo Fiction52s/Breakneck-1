@@ -77,6 +77,7 @@
 #include "RushManager.h"
 #include "RushScoreDisplay.h"
 #include "ShipTravelSequence.h"
+#include "EnvParticleSystem.h"
 
 //#include "ggpo\backends\backend.h"
 
@@ -1024,6 +1025,8 @@ void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
 		currentEffect->Draw( Enemy::ENEMYDRAWLAYER_DEFAULT, target);
 		currentEffect = currentEffect->next;
 	}
+
+	//envParticleSystem->Draw()
 
 	if (layer == UI_FRONT)
 	{
@@ -6912,6 +6915,9 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	UpdateNameTagsPixelPos(target);
 
 	//UpdateTimeSlowShader();
+
+	DrawForegroundEffects(target);
+
 
 	target->setView(uiView);
 

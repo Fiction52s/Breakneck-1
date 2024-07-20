@@ -8,11 +8,14 @@
 using namespace std;
 using namespace sf;
 
+//depth(p_depthLevel * .01f)
+
 ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	int p_depthLevel, float p_scrollSpeedX)
 	:ts(p_ts), va(sf::Quads, 2 * 4), depthLevel(p_depthLevel),
-	depth(p_depthLevel * .01f), tsIndex(index), scrollSpeedX(p_scrollSpeedX)
+	tsIndex(index), scrollSpeedX(p_scrollSpeedX)
 {
+	depth = GetEffectLayerDepthFactor(depthLevel);
 	assert(p_ts != NULL);
 	tsSource = ts->sourceName;
 	//ts->texture->setSmooth(false);

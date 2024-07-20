@@ -21,9 +21,9 @@ struct ScrollingBackground
 	sf::Vector2f relPos;
 	sf::VertexArray va;
 	float xPos;
-	int depthLevel;
 	sf::View oldView;
 	sf::View newView;
+	int depthLevel;
 	float depth;
 	float scrollSpeedX;
 	float scrollOffset;
@@ -54,6 +54,7 @@ struct Background : TilesetManager
 		int frames = 1 );
 	void Reset();
 	void Draw(sf::RenderTarget *target);
+	void LayeredDraw( int p_effectLayer, )
 	void UpdateSky();
 	void UpdateShape();
 	sf::Sprite background;

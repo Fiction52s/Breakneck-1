@@ -16,29 +16,6 @@ using namespace std;
 using namespace sf;
 
 
-EffectLayer StringToEffectLayer(const std::string &str)
-{
-	string testStr = str;
-	std::transform(testStr.begin(), testStr.end(), testStr.begin(), ::tolower);
-
-	if (str == "behind_terrain")
-	{
-		return BEHIND_TERRAIN;
-	}
-	else if (str == "behind_enemies")
-	{
-		return BEHIND_ENEMIES;
-	}
-	else if (str == "between_player_and_enemies")
-	{
-		return BETWEEN_PLAYER_AND_ENEMIES;
-	}
-	else if (str == "in_front_of_ui")
-	{
-		return IN_FRONT_OF_UI;
-	}
-}
-
 StoryText::StoryText( sf::Font &font, const std::string &p_str, Vector2f &pos )
 {
 	textStr = p_str;

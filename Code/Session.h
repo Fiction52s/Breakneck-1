@@ -119,6 +119,8 @@ struct InputVisualizer;
 struct PState;
 struct GameMode;
 
+struct EnvParticleSystem;
+
 struct AlertBox;
 
 struct BasicTextMenu;
@@ -360,6 +362,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	
 	
 	bool ownsBG;
+	EnvParticleSystem *envParticleSystem;
 	Background *background;
 	QuadTree * terrainTree;
 	QuadTree *specialTerrainTree;

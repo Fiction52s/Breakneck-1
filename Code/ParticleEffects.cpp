@@ -488,6 +488,50 @@ void ShapeEmitter::SetOn(bool on)
 
 void ShapeEmitter::Draw(sf::RenderTarget *target)
 {
+	sf::View oldView = target->getView();
+	sf::View newView;
+
+	Vector2f cTest = oldView.getCenter() * depth;//sess->cam.GetPos() * depth;
+												 //Set(cTest, sess->cam.GetZoom() * depth);
+
+	newView.setCenter(cTest);//Vector2f(oldView.getCenter().x, oldView.getCenter().y) - extraOffset);
+							 //newView.setSize(Vector2f(1920, 1080) / extraZoom * .5f);
+							 //newView.setSize(Vector2f(960, 540) * sess->cam.GetZoom() / depth);// / extraZoom);
+	newView.setSize(oldView.getSize() / depth);
+
+	target->setView(newView);
+
+	if (pointsPerShape == 4)
+	{
+		if (ts != NULL)
+		{
+			target->draw(points, numPoints, sf::Quads, ts->texture);
+		}
+		else
+		{
+			target->draw(points, numPoints, sf::Quads);
+		}
+
+	}
+	else
+	{
+		target->draw(points, numPoints, sf::Triangles);
+	}
+
+	target->setView(oldView);
+
+
+
+
+
+
+
+
+
+
+
+
+
 	if (pointsPerShape == 4)
 	{
 		if (ts != NULL)
