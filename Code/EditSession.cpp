@@ -550,7 +550,7 @@ bool EditSession::TestPlayerModeUpdate()
 
 void EditSession::UpdateEnvShaders()
 {
-	UpdatePolyShaders();
+	UpdatePolyShaders(true);
 }
 
 
@@ -4626,18 +4626,26 @@ int EditSession::EditRun()
 
 			UpdateFullBounds();
 
-			for (int i = 0; i < spriteUpdateFrames; ++i)
+			/*for (int i = 0; i < spriteUpdateFrames; ++i)
 			{
 				UpdateEnvShaders();
-			}
+			}*/
 
-			/*if (mode != TEST_PLAYER || (mode == TEST_PLAYER && oneFrameMode))
+			if (mode != TEST_PLAYER || (mode == TEST_PLAYER && oneFrameMode))
 			{
 				for (int i = 0; i < spriteUpdateFrames; ++i)
 				{
 					UpdateEnvShaders();
 				}
-			}*/
+			}
+			else
+			{
+				for (int i = 0; i < spriteUpdateFrames; ++i)
+				{
+					//UpdateEnvShaders();
+					UpdatePolyShaders(false);
+				}
+			}
 
 			if (mode != TEST_PLAYER)
 			{
@@ -13183,7 +13191,7 @@ void EditSession::UpdatePanning()
 	}
 }
 
-void EditSession::UpdatePolyShaders()
+void EditSession::UpdatePolyShaders( bool timePassing )
 {
 	Vector2f vSize = view.getSize();
 	float zoom = vSize.x / 960;
@@ -13243,13 +13251,17 @@ void EditSession::UpdatePolyShaders()
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
-		mainMenu->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+		if (timePassing)
+		{
+			mainMenu->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+		}
 		mainMenu->waterShaders[i].setUniform("u_cameraAngle", camAngle);
 	}
-	waterShaderCounter += .01f;
-	
-	
-	
+
+	if (timePassing)
+	{
+		waterShaderCounter += .01f;
+	}
 }
 
 void EditSession::TempMoveSelectedBrush()

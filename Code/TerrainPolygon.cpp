@@ -1214,6 +1214,8 @@ TerrainPolygon::TerrainPolygon()
 
 	//SetupTilePattern();
 
+	depthLayer = 
+
 	polyIndex = -1;
 	waterType = -1;
 

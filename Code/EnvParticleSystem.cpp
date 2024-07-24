@@ -50,6 +50,8 @@ EnvParticleSystem::~EnvParticleSystem()
 
 void EnvParticleSystem::Update()
 {
+	return; //testing
+
 	if (sess->totalGameFrames == 0)
 	{
 		for (int i = 0; i < emitters.size(); ++i)

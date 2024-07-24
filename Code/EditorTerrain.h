@@ -278,6 +278,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int frame;
 	State state;
 
+	int depthLayer;
+
 	int polyIndex;
 	int waterType;
 

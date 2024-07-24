@@ -16,6 +16,7 @@ enum DrawLayer
 	BG_9,
 	BG_10,
 	BEHIND_TERRAIN,
+	TERRAIN, //not used for fx, the default layer to draw terrain to.
 	BEHIND_ENEMIES,
 	BETWEEN_PLAYER_AND_ENEMIES,
 	IN_FRONT,

@@ -680,7 +680,7 @@ struct EditSession : GUIHandler, Session
 	void SetZoom(double z);
 	void TryAddToPatrolPath();
 	void UpdatePanning();
-	void UpdatePolyShaders();
+	void UpdatePolyShaders( bool timePassing );
 	void AddDoneAction(Action *a);
 	void ClearUndoneActions();
 	void TempMoveSelectedBrush();

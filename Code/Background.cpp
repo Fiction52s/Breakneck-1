@@ -597,6 +597,9 @@ void Background::Draw(sf::RenderTarget *target)
 
 void Background::DrawBackLayer(sf::RenderTarget *target)
 {
+	if (!show)
+		return;
+
 	if (ts_bg != NULL)
 	{
 		sf::View oldView = target->getView();
@@ -614,6 +617,11 @@ void Background::DrawBackLayer(sf::RenderTarget *target)
 
 void Background::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 {
+	if (!show)
+	{
+		return;
+	}
+
 	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
 		it != scrollingBackgrounds.end(); ++it)
 	{

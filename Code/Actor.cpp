@@ -8822,7 +8822,7 @@ void Actor::HandleWaitingScoreDisplay()
 		bool bPressed = sess->controllerStates[actorIndex]->ButtonPressed_B();
 		bool startPressed = sess->controllerStates[actorIndex]->ButtonPressed_Start();
 
-		if (owner->IsRushSession() )
+		if (owner != NULL && owner->IsRushSession() )
 		{
 			if (aPressed)
 			{
