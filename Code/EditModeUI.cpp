@@ -308,7 +308,7 @@ void EditModeUI::ExpandTerrainLibrary( int layer )
 	}
 	else
 	{
-		edit->SetMatTypePanelLayer(layer);
+		edit->SetMatTypePanelCategory(layer);
 		matTypePanel->SetPosition(matPanelPos);
 		matTypePanel->handler = this;
 
@@ -378,8 +378,8 @@ void EditModeUI::CreateLayerPanel()
 	layerMap[LAYER_POI] = "poi";*/
 
 
-	terrainEditLayerMap[TERRAINLAYER_NORMAL] = LAYER_TERRAIN;
-	terrainEditLayerMap[TERRAINLAYER_WATER] = LAYER_WATER;
+	terrainEditLayerMap[TerrainPolygon::CATEGORY_NORMAL] = LAYER_TERRAIN;
+	terrainEditLayerMap[TerrainPolygon::CATEGORY_WATER] = LAYER_WATER;
 
 	for (auto it = terrainEditLayerMap.begin(); it != terrainEditLayerMap.end(); ++it)
 	{
@@ -446,11 +446,11 @@ void EditModeUI::ChooseMatType(ImageChooseRect *icRect)
 	int world = icRect->pos.x / terrainGridSize;
 	int variation = icRect->pos.y / terrainGridSize;
 
-	if (edit->matTypeRectsCurrLayer == TERRAINLAYER_WATER)
+	if (edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_WATER)
 	{
 		world += 8;
 	}
-	else if (edit->matTypeRectsCurrLayer == TERRAINLAYER_ITEM)
+	else if (edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_ITEM)
 	{
 		world += 9;
 	}

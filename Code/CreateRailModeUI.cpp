@@ -371,26 +371,6 @@ void CreateRailModeUI::DropdownCallback(Dropdown *dropdown, const std::string & 
 			currPhysicalTypeRect->SetShown(false);
 		}
 	}
-	/*if (dropdown == terrainLayerDropdown)
-	{
-		int selectedIndex = dropdown->selectedIndex;
-		for (int i = 0; i < TERRAINLAYER_Count; ++i)
-		{
-			currMatRects[i]->SetShown(false);
-		}
-
-		currMatRects[selectedIndex]->SetShown(true);
-	}
-	else if (dropdown == terrainActionDropdown)
-	{
-		int selectedIndex = dropdown->selectedIndex;
-		realTerrainTool = selectedIndex;
-	}
-	else if (dropdown == drawModeDropdown)
-	{
-		int selectedIndex = dropdown->selectedIndex;
-		SetDrawTool(selectedIndex);
-	}*/
 }
 
 void CreateRailModeUI::PanelCallback(Panel *p, const std::string & e)

@@ -51,22 +51,21 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	minEdgeLenTextbox->SetToolTip("Minimum edge length while drawing polygons.\nIf zoomed out, it uses screen pixels,"
 		"\nand if zoomed in, it uses world pixels");
 	
-	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
-	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(0, 0), Vector2i(200, 28), layerOptions, 0);
-	terrainLayerDropdown->SetToolTip("Choose polygon layer\n(E to choose material)");
+	std::vector<string> categoryOptions = { "Terrain", "Water", "Pickup", "Visual" };
+	terrainCategoryDropdown = mainPanel->AddDropdown("categorydrop", Vector2i(0, 0), Vector2i(200, 28), categoryOptions, 0);
+	terrainCategoryDropdown->SetToolTip("Choose polygon category\n(E to choose material)");
 
-	Vector2f currMatRectPos = Vector2f(0, 0);//Vector2f(20, 0);//Vector2f(terrainLayerDropdown->pos)
-											 //+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
+	Vector2f currMatRectPos = Vector2f(0, 0);
 
 	mainPanel->PauseAutoSpacing();
 
-	int numTerrainLayers = TERRAINLAYER_Count;
-	currMatRects.resize(numTerrainLayers);
-	mainPanel->ReserveImageRects(numTerrainLayers);
+	int numTerrainCategories = TerrainPolygon::CATEGORY_Count;
+	currMatRects.resize(numTerrainCategories);
+	mainPanel->ReserveImageRects(numTerrainCategories);
 
-	for (int i = 0; i < numTerrainLayers; ++i)
+	for (int i = 0; i < numTerrainCategories; ++i)
 	{
-		if (i == numTerrainLayers - 1)
+		if (i == numTerrainCategories - 1)
 			mainPanel->UnpauseAutoSpacing();
 
 		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
@@ -89,10 +88,10 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	mainPanel->StopAutoSpacing();
 
 	std::vector<string> waterOptions = { "Add", "Subtract"};
-	waterActionDropdown = mainPanel->AddDropdown("waterdrop", terrainActionDropdown->pos, Vector2i(200, 28), waterOptions, 0);
-	waterActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract");
-	waterActionDropdown->Deactivate();
-	waterActionDropdown->HideMember();
+	limitedTerrainActionDropdown = mainPanel->AddDropdown("waterdrop", terrainActionDropdown->pos, Vector2i(200, 28), waterOptions, 0);
+	limitedTerrainActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract");
+	limitedTerrainActionDropdown->Deactivate();
+	limitedTerrainActionDropdown->HideMember();
 
 	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 70), Vector2i(20, 0));
 
@@ -147,14 +146,14 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	auto &mtr1 = edit->matTypeRects[1];
 	auto &mtr2 = edit->matTypeRects[2];
 
-	terrainLayerDropdown->SetSelectedIndex(0);
+	terrainCategoryDropdown->SetSelectedIndex(0);
 	ChooseMatType(mtr0.at(0));
-	terrainLayerDropdown->SetSelectedIndex(1);
+	terrainCategoryDropdown->SetSelectedIndex(1);
 	ChooseMatType(mtr1.at(0));
-	terrainLayerDropdown->SetSelectedIndex(2);
+	terrainCategoryDropdown->SetSelectedIndex(2);
 	ChooseMatType(mtr2.at(0));
 
-	terrainLayerDropdown->SetSelectedIndex(0);
+	terrainCategoryDropdown->SetSelectedIndex(0);
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()
@@ -173,21 +172,21 @@ void CreateTerrainModeUI::ExpandTerrainLibrary()
 	{
 		matTypePanel->SetPosition(matPanelPos);
 		matTypePanel->handler = this;
-		edit->SetMatTypePanelLayer(GetTerrainLayer());
+		edit->SetMatTypePanelLayer(GetTerrainCategory());
 		edit->AddActivePanel(matTypePanel);
 	}
 }
 
 void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
 {
-	int layerIndex = GetTerrainLayer();
-	currMatRects[layerIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
+	int categoryIndex = GetTerrainCategory();
+	currMatRects[categoryIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
-	int world = icRect->pos.x / terrainGridSize + layerIndex * 8;
+	int world = icRect->pos.x / terrainGridSize + categoryIndex * 8;
 	int variation = icRect->pos.y / terrainGridSize;
 
-	edit->currTerrainWorld[layerIndex] = world;
-	edit->currTerrainVar[layerIndex] = variation;
+	edit->currTerrainWorld[categoryIndex] = world;
+	edit->currTerrainVar[categoryIndex] = variation;
 
 	edit->RemoveActivePanel(matTypePanel);
 	edit->justCompletedPolyWithClick = true;
@@ -216,30 +215,30 @@ void CreateTerrainModeUI::UpdateBrushHotbar()
 
 int CreateTerrainModeUI::GetCurrTerrainTool()
 {
-	int layerIndex = GetTerrainLayer();
-	if (layerIndex == TerrainLayers::TERRAINLAYER_NORMAL)
+	int categoryIndex = GetTerrainCategory();
+	if (categoryIndex == TerrainPolygon::CATEGORY_NORMAL )
 	{
 		return terrainActionDropdown->selectedIndex;
 	}
-	else if( layerIndex == TerrainLayers::TERRAINLAYER_WATER )
+	else if(categoryIndex == TerrainPolygon::CATEGORY_WATER )
 	{
-		return waterActionDropdown->selectedIndex;
+		return limitedTerrainActionDropdown->selectedIndex;
 	}
 	else
 	{
 		//for pickups. they only need add/subtract rn so its the same as water
-		return waterActionDropdown->selectedIndex;
+		return limitedTerrainActionDropdown->selectedIndex;
 	}
 	
 }
 
 void CreateTerrainModeUI::SetTerrainTool(int t)
 {
-	int layerIndex = GetTerrainLayer();
+	int categoryIndex = GetTerrainCategory();
 
 	if (t == EditSession::TERRAINTOOL_SETINVERSE)
 	{
-		if (layerIndex != TerrainLayers::TERRAINLAYER_NORMAL)
+		if (categoryIndex != TerrainPolygon::CATEGORY_NORMAL)
 		{
 			//do nothing!
 			return;
@@ -247,17 +246,17 @@ void CreateTerrainModeUI::SetTerrainTool(int t)
 	}
 
 	
-	if (layerIndex == TerrainLayers::TERRAINLAYER_NORMAL)
+	if (categoryIndex == TerrainPolygon::CATEGORY_NORMAL)
 	{
 		terrainActionDropdown->SetSelectedIndex(t);
 	}
-	else if (layerIndex == TerrainLayers::TERRAINLAYER_WATER)
+	else if (categoryIndex == TerrainPolygon::CATEGORY_WATER)
 	{
-		waterActionDropdown->SetSelectedIndex(t);
+		limitedTerrainActionDropdown->SetSelectedIndex(t);
 	}
 	else
 	{
-		waterActionDropdown->SetSelectedIndex(t);
+		limitedTerrainActionDropdown->SetSelectedIndex(t);
 	}
 
 	
@@ -299,9 +298,9 @@ void CreateTerrainModeUI::FlipSnapPoints()
 	snapPointsCheckbox->checked = !snapPointsCheckbox->checked;
 }
 
-int CreateTerrainModeUI::GetTerrainLayer()
+int CreateTerrainModeUI::GetTerrainCategory()
 {
-	return terrainLayerDropdown->selectedIndex;
+	return terrainCategoryDropdown->selectedIndex;
 }
 
 int CreateTerrainModeUI::GetCurrDrawTool()
@@ -353,15 +352,16 @@ void CreateTerrainModeUI::SetShown(bool s)
 	}
 }
 
-void CreateTerrainModeUI::SetLayerTerrain()
+void CreateTerrainModeUI::SetCategoryTerrain()
 {
-	waterActionDropdown->Deactivate();
-	waterActionDropdown->HideMember();
+	limitedTerrainActionDropdown->Deactivate();
+	limitedTerrainActionDropdown->HideMember();
 
 	terrainActionDropdown->ShowMember();
 
 	terrainActionDropdown->SetSelectedIndex(GetCurrTerrainTool());
-	SetLayer(0);
+	terrainCategoryDropdown->SetSelectedIndex(0);
+	SetCategory(TerrainPolygon::CATEGORY_NORMAL);
 
 	if (matTypePanel == edit->focusedPanel)
 	{
@@ -370,21 +370,22 @@ void CreateTerrainModeUI::SetLayerTerrain()
 	}
 }
 
-void CreateTerrainModeUI::SetLayerWater()
+void CreateTerrainModeUI::SetCategoryWater()
 {
 	if (GetCurrTerrainTool() == EditSession::TERRAINTOOL_SETINVERSE)
 	{
 		SetTerrainTool(EditSession::TERRAINTOOL_ADD);
 	}
 
-	waterActionDropdown->SetSelectedIndex(GetCurrTerrainTool());
+	limitedTerrainActionDropdown->SetSelectedIndex(GetCurrTerrainTool());
 
 	terrainActionDropdown->Deactivate();
 	terrainActionDropdown->HideMember();
 
-	waterActionDropdown->ShowMember();
+	limitedTerrainActionDropdown->ShowMember();
 
-	SetLayer(1);
+	terrainCategoryDropdown->SetSelectedIndex(1);
+	SetCategory(TerrainPolygon::CATEGORY_WATER);
 
 	if (matTypePanel == edit->focusedPanel)
 	{
@@ -393,7 +394,7 @@ void CreateTerrainModeUI::SetLayerWater()
 	}
 }
 
-void CreateTerrainModeUI::SetLayerPickup()
+void CreateTerrainModeUI::SetCategoryPickup()
 {
 	if (GetCurrTerrainTool() == EditSession::TERRAINTOOL_SETINVERSE)
 	{
@@ -403,22 +404,38 @@ void CreateTerrainModeUI::SetLayerPickup()
 	terrainActionDropdown->Deactivate();
 	terrainActionDropdown->HideMember();
 
-	waterActionDropdown->ShowMember();
+	limitedTerrainActionDropdown->ShowMember();
 
-	terrainLayerDropdown->SetSelectedIndex(2);
-	SetLayer(2);
+	terrainCategoryDropdown->SetSelectedIndex(2);
+	SetCategory(TerrainPolygon::CATEGORY_ITEM);
 }
 
-void CreateTerrainModeUI::SetLayer(int selectedIndex)
+void CreateTerrainModeUI::SetCategoryVisual()
 {
-	for (int i = 0; i < TERRAINLAYER_Count; ++i)
+	if (GetCurrTerrainTool() == EditSession::TERRAINTOOL_SETINVERSE)
+	{
+		SetTerrainTool(EditSession::TERRAINTOOL_ADD);
+	}
+
+	terrainActionDropdown->Deactivate();
+	terrainActionDropdown->HideMember();
+
+	limitedTerrainActionDropdown->ShowMember();
+
+	terrainCategoryDropdown->SetSelectedIndex(2);
+	SetCategory(TerrainPolygon::CATEGORY_ITEM);
+}
+
+void CreateTerrainModeUI::SetCategory(int selectedIndex)
+{
+	for (int i = 0; i < TerrainPolygon::CATEGORY_Count; ++i)
 	{
 		currMatRects[i]->SetShown(false);
 	}
 
 	currMatRects[selectedIndex]->SetShown(true);
 
-	terrainLayerDropdown->SetSelectedIndex(selectedIndex);
+	terrainCategoryDropdown->SetSelectedIndex(selectedIndex);
 }
 
 void CreateTerrainModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -517,16 +534,16 @@ void CreateTerrainModeUI::SliderCallback(Slider *slider)
 
 void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)
 {
-	if (dropdown == terrainLayerDropdown)
+	if (dropdown == terrainCategoryDropdown)
 	{
-		SetLayer(dropdown->selectedIndex);
+		SetCategory(dropdown->selectedIndex);
 	}
 	else if (dropdown == terrainActionDropdown)
 	{
 		int selectedIndex = dropdown->selectedIndex;
 		realTerrainTool = selectedIndex;
 	}
-	else if (dropdown == waterActionDropdown)
+	else if (dropdown == limitedTerrainActionDropdown)
 	{
 		int selectedIndex = dropdown->selectedIndex;
 		realTerrainTool = selectedIndex;

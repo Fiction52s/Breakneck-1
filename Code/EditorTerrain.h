@@ -213,6 +213,15 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_MAP,
 	};
 
+	enum TerrainCategory
+	{
+		CATEGORY_NORMAL,
+		CATEGORY_WATER,
+		CATEGORY_ITEM,
+		CATEGORY_VISUAL,
+		CATEGORY_Count,
+	};
+
 	enum WaterType
 	{
 		WATER_NORMAL,
@@ -278,7 +287,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int frame;
 	State state;
 
-	int depthLayer;
+	int drawLayer;
 
 	int polyIndex;
 	int waterType;
@@ -614,7 +623,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void UpdateBounds();
 
-	void SetLayer(int p_layer);
+	void SetTerrainCategory(int p_terrainCategory);
 	bool IsInternallyValid();
 
 	bool PointIsInsideAABB(V2d point);
@@ -748,7 +757,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int writeIndex;
 	bool finalized;
 
-	int layer; //0 is game layer. 1 is bg
+	int terrainCategory; //normal, water, item, visual, etc.
 
 	bool inverse;
 };

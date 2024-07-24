@@ -45,7 +45,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 		"catdrop", Vector2i(0, 0), Vector2i(200, 28), gateCatOptions, 0);
 	gateCategoryDropdown->SetToolTip("Choose the gate category\n(E to expand types)");
 
-	int numGateCategories = gateCatOptions.size();//EditSession::TERRAINLAYER_Count;
+	int numGateCategories = gateCatOptions.size();
 	currGateTypeRects.resize(numGateCategories);
 	mainPanel->ReserveImageRects(numGateCategories);
 

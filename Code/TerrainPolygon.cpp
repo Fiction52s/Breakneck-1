@@ -1214,7 +1214,7 @@ TerrainPolygon::TerrainPolygon()
 
 	//SetupTilePattern();
 
-	depthLayer = 
+	drawLayer = DrawLayer::TERRAIN;
 
 	polyIndex = -1;
 	waterType = -1;
@@ -1270,6 +1270,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 {
 	waterType = -1;
 	polyIndex = -1;
+	drawLayer = poly.drawLayer;
 	grassBufferForAABBOn = false;
 	copiedInverse = false;
 	isGrassBackedUp = false;
@@ -3647,13 +3648,13 @@ void TerrainPolygon::Move(Vector2i move )
 	return;
 }
 
-void TerrainPolygon::SetLayer( int newLayer )
+void TerrainPolygon::SetTerrainCategory( int newCategory )
 {
 	//Color testColor( 0x75, 0x70, 0x90 );
-	if( newLayer != layer )
+	if(newCategory != terrainCategory )
 	{
-		layer = newLayer;
-		if( newLayer == 0 )
+		terrainCategory = newCategory;
+		if(newCategory == 0 )
 		{
 			VertexArray &v = *va;
 			for( int i = 0; i < vaSize; ++i )
@@ -3661,7 +3662,7 @@ void TerrainPolygon::SetLayer( int newLayer )
 				v[i].color = fillCol;
 			}
 		}
-		else if( newLayer == 1 )
+		else if(newCategory == 1 )
 		{
 			VertexArray &v = *va;
 			for( int i = 0; i < vaSize; ++i )

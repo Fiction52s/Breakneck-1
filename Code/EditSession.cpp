@@ -1921,6 +1921,7 @@ void EditSession::CleanupForReload()
 	polygons.clear();
 	waterPolygons.clear();
 	flyPolygons.clear();
+	visualPolygons.clear();
 
 	
 
@@ -2848,7 +2849,7 @@ void EditSession::WriteInversePoly(std::ofstream &of)
 
 void EditSession::WriteSpecialPolygons(std::ofstream &of)
 {
-	int numSpecialPolys = waterPolygons.size() + flyPolygons.size();
+	int numSpecialPolys = waterPolygons.size() + flyPolygons.size() + visualPolygons.size();
 	of << numSpecialPolys << endl;
 
 	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
@@ -2857,6 +2858,11 @@ void EditSession::WriteSpecialPolygons(std::ofstream &of)
 	}
 
 	for (auto it = flyPolygons.begin(); it != flyPolygons.end(); ++it)
+	{
+		(*it)->WriteFile(of);
+	}
+
+	for (auto it = visualPolygons.begin(); it != visualPolygons.end(); ++it)
 	{
 		(*it)->WriteFile(of);
 	}
@@ -3623,17 +3629,17 @@ void EditSession::LoadAndResave()
 	runToResave = false;
 }
 
-void EditSession::SetMatTypePanelLayer(int layer)
+void EditSession::SetMatTypePanelCategory(int cat)
 {
-	if (layer == matTypeRectsCurrLayer)
+	if (cat == matTypeRectsCurrCategory)
 	{
 		return;
 	}
 
-	matTypeRectsCurrLayer = layer;
-	for (int i = 0; i < TERRAINLAYER_Count; ++i)
+	matTypeRectsCurrCategory = cat;
+	for (int i = 0; i < TerrainPolygon::CATEGORY_Count; ++i)
 	{
-		if (i == layer)
+		if (i == cat)
 		{
 			auto &mtr = matTypeRects[i];
 			for (auto it = mtr.begin(); it != mtr.end(); ++it)
@@ -3683,7 +3689,7 @@ void EditSession::SetBackground(const std::string &bgName)
 
 void EditSession::SetupTerrainSelectPanel()
 {
-	matTypeRectsCurrLayer = -1;
+	matTypeRectsCurrCategory = -1;
 	terrainGridSize = 100;//64;
 	matTypePanel = new Panel("mattype", 600, 600, this, true);
 	Color c(100, 100, 100);
@@ -3701,7 +3707,7 @@ void EditSession::SetupTerrainSelectPanel()
 
 	matTypePanel->ReserveImageRects(totalRects);
 
-	matTypeRects[TERRAINLAYER_NORMAL].resize(numTypeRects);
+	matTypeRects[TerrainPolygon::CATEGORY_NORMAL].resize(numTypeRects);
 
 	for (int worldI = 0; worldI < 8; ++worldI)
 	{
@@ -3710,7 +3716,7 @@ void EditSession::SetupTerrainSelectPanel()
 		{
 			ind = worldI * maxTerrainVarPerWorld + i;
 
-			matTypeRects[TERRAINLAYER_NORMAL][ind] = matTypePanel->AddImageRect(
+			matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
 				mainMenu->ts_terrain, mainMenu->ts_terrain->GetSubRect( (worldI * maxTerrainVarPerWorld + i) * 4 ),
@@ -3720,42 +3726,41 @@ void EditSession::SetupTerrainSelectPanel()
 
 			if (worldI == 3 && i == 5)
 			{
-				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Phase");
+				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Phase");
 			}
 			else if (worldI == 3 && i == 6)
 			{
-				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Inverse\nPhase");
+				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Inverse\nPhase");
 			}
 			else if (worldI == 5 && i == 7)
 			{
-				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Fade");
+				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Fade");
 			}
 			else if (worldI == 0 && i == 7)
 			{
-				matTypeRects[TERRAINLAYER_NORMAL][ind]->SetName("Invisible");
+				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Invisible");
 			}
 
-			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();
-			if (matTypeRects[TERRAINLAYER_NORMAL][ind]->ts != NULL)
+			matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->Init();
+			if (matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->ts != NULL)
 			{
 				//matTypeRects[TERRAINLAYER_NORMAL][ind]->SetShown(false);
 			}
 		}
 	}
 
-	matTypeRects[TERRAINLAYER_WATER].resize(numWaterTypeRects);
+	matTypeRects[TerrainPolygon::CATEGORY_WATER].resize(numWaterTypeRects);
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
-		matTypeRects[TERRAINLAYER_WATER][i] = matTypePanel->AddImageRect(
+		matTypeRects[TerrainPolygon::CATEGORY_WATER][i] = matTypePanel->AddImageRect(
 			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 			Vector2f(TerrainPolygon::GetWaterWorld(i) * terrainGridSize, 
 				TerrainPolygon::GetWaterIndexInWorld(i) * terrainGridSize),
 			mainMenu->ts_water, mainMenu->ts_water->GetSubRect(i * 2),
 			terrainGridSize);
-		matTypeRects[TERRAINLAYER_WATER][i]->Init();
-		matTypeRects[TERRAINLAYER_WATER][i]->SetName(TerrainPolygon::GetWaterNameFromType(i));
-		//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
+		matTypeRects[TerrainPolygon::CATEGORY_WATER][i]->Init();
+		matTypeRects[TerrainPolygon::CATEGORY_WATER][i]->SetName(TerrainPolygon::GetWaterNameFromType(i));
 	}
 
 	//int startWorldWater = 8;
@@ -3781,17 +3786,17 @@ void EditSession::SetupTerrainSelectPanel()
 	//	}
 	//}
 
-	matTypeRects[TERRAINLAYER_ITEM].resize(numPickupTypeRects);
+	matTypeRects[TerrainPolygon::CATEGORY_ITEM].resize(numPickupTypeRects);
 
 	Tileset *ts_item = GetSizedTileset("Enemies/General/healthfly_64x64.png"); //just for testing for now
 	for (int i = 0; i < numPickupTypeRects; ++i)
 	{
-		matTypeRects[TERRAINLAYER_ITEM][i] = matTypePanel->AddImageRect(
+		matTypeRects[TerrainPolygon::CATEGORY_ITEM][i] = matTypePanel->AddImageRect(
 			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 			Vector2f(i * terrainGridSize, 0 * terrainGridSize),
 			ts_item, 0,terrainGridSize);
-		matTypeRects[TERRAINLAYER_ITEM][i]->Init();
-		if (matTypeRects[TERRAINLAYER_ITEM][i]->ts != NULL)
+		matTypeRects[TerrainPolygon::CATEGORY_ITEM][i]->Init();
+		if (matTypeRects[TerrainPolygon::CATEGORY_ITEM][i]->ts != NULL)
 		{
 			//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
 		}
@@ -4035,14 +4040,14 @@ void EditSession::Init()
 	previewMusic = NULL;
 	graph = NULL;
 
-	currTerrainWorld[TERRAINLAYER_NORMAL] = 0;
-	currTerrainVar[TERRAINLAYER_NORMAL] = 0;
+	currTerrainWorld[TerrainPolygon::CATEGORY_NORMAL] = 0;
+	currTerrainVar[TerrainPolygon::CATEGORY_NORMAL] = 0;
 
-	currTerrainWorld[TERRAINLAYER_WATER] = 8;
-	currTerrainVar[TERRAINLAYER_WATER] = 0;
+	currTerrainWorld[TerrainPolygon::CATEGORY_WATER] = 8;
+	currTerrainVar[TerrainPolygon::CATEGORY_WATER] = 0;
 
-	currTerrainWorld[TERRAINLAYER_ITEM] = 9;
-	currTerrainVar[TERRAINLAYER_ITEM] = 0;
+	currTerrainWorld[TerrainPolygon::CATEGORY_ITEM] = 9;
+	currTerrainVar[TerrainPolygon::CATEGORY_ITEM] = 0;
 
 	shardMenu = new ShardMenu(this);
 	shardMenu->SetSession(this);
@@ -5292,7 +5297,7 @@ int EditSession::GetSpecialTerrainMode()
 {
 	if (mode == CREATE_TERRAIN)
 	{
-		return createTerrainModeUI->GetTerrainLayer();
+		return createTerrainModeUI->GetTerrainCategory();
 	}
 	else
 	{
@@ -8345,6 +8350,14 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		(*it)->SetSelected(oldSelected);
 	}
 
+	for (auto it = visualPolygons.begin(); it != visualPolygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+		(*it)->Draw(false, 1, target, false, NULL);
+		(*it)->SetSelected(oldSelected);
+	}
+
 	TestPlayerModeForPreview();
 
 	//TestPlayerMode();
@@ -9288,6 +9301,8 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList(int ind)
 		return waterPolygons;
 	case 2:
 		return flyPolygons;
+	case 3:
+		return visualPolygons;
 	default:
 		assert(0);
 		return polygons;
@@ -10067,7 +10082,7 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 	}
 
 	std::vector<list<PolyPtr>> brushPolyLists;
-	brushPolyLists.resize(TERRAINLAYER_Count);
+	brushPolyLists.resize(TerrainPolygon::CATEGORY_Count);
 	PolyPtr poly;
 
 	bool terrainEmpty = true;
@@ -10097,7 +10112,7 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 	
 	bool success = true;
 
-	for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
+	for (int i = TerrainPolygon::CATEGORY_Count - 1; i >= 0; --i)
 	{
 		list<PolyPtr> &currList = brushPolyLists[i];
 		if (!currList.empty())
@@ -11976,7 +11991,7 @@ void EditSession::TryBoxSelect()
 			//ClearSelectedPoints();
 		}
 
-		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
+		for (int i = TerrainPolygon::CATEGORY_Count - 1; i >= 0; --i)
 		{
 			if (editModeUI->IsLayerActionable(editModeUI->terrainEditLayerMap[i])
 				&& BoxSelectPoints(r, 8 * zoomMultiple,
@@ -11988,7 +12003,7 @@ void EditSession::TryBoxSelect()
 	}
 	else if (!editModeUI->IsEditPointsOn())//polygon selection. don't use it for a little bit
 	{
-		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
+		for (int i = TerrainPolygon::CATEGORY_Count - 1; i >= 0; --i)
 		{
 			if (editModeUI->IsLayerActionable(editModeUI->terrainEditLayerMap[i])
 				&& BoxSelectPolys(r,i))
@@ -13143,8 +13158,8 @@ void EditSession::SetZoom(double z)
 
 void EditSession::UpdateCurrTerrainType()
 {
-	int ind = currTerrainWorld[TERRAINLAYER_NORMAL] 
-		* MAX_TERRAIN_VARIATION_PER_WORLD + currTerrainVar[TERRAINLAYER_NORMAL];
+	int ind = currTerrainWorld[TerrainPolygon::CATEGORY_NORMAL]
+		* MAX_TERRAIN_VARIATION_PER_WORLD + currTerrainVar[TerrainPolygon::CATEGORY_NORMAL];
 	currTerrainTypeSpr.setTexture(*mainMenu->ts_terrain->texture);//*ts_polyShaders[ind]->texture);
 	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
 }
@@ -15812,7 +15827,7 @@ void EditSession::EditModeUpdate()
 				emptysp = false;
 			}
 
-			for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
+			for (int i = TerrainPolygon::CATEGORY_Count - 1; i >= 0; --i)
 			{
 				if (editModeUI->IsLayerActionable(editModeUI->terrainEditLayerMap[i])
 					&& emptysp && PointSelectTerrain(worldPos, i))

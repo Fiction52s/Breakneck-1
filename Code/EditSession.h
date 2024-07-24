@@ -77,13 +77,6 @@ struct GrassDiff
 	int newType;
 };
 
-enum TerrainLayers : int
-{
-	TERRAINLAYER_NORMAL,
-	TERRAINLAYER_WATER,
-	TERRAINLAYER_ITEM,
-	TERRAINLAYER_Count,
-};
 
 enum EditLayer : int
 {
@@ -92,6 +85,7 @@ enum EditLayer : int
 	LAYER_IMAGE,
 	LAYER_TERRAIN,
 	LAYER_WATER,
+	LAYER_
 };
 
 struct EditSession : GUIHandler, Session
@@ -242,14 +236,14 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2f testPoint;
 	double minimumEdgeLength;
 	std::list<RailPtr> rails;
-	int currTerrainWorld[TERRAINLAYER_Count];
-	int currTerrainVar[TERRAINLAYER_Count];
+	int currTerrainWorld[TerrainPolygon::CATEGORY_Count];
+	int currTerrainVar[TerrainPolygon::CATEGORY_Count];
 	sf::Sprite currTerrainTypeSpr;
 	Panel *newMapPanel;
 	int terrainGridSize;
 	Panel *matTypePanel;
-	std::vector<ImageChooseRect*> matTypeRects[TERRAINLAYER_Count];
-	int matTypeRectsCurrLayer;
+	std::vector<ImageChooseRect*> matTypeRects[TerrainPolygon::CATEGORY_Count];
+	int matTypeRectsCurrCategory;
 	Panel *shardTypePanel;
 	int shardGridSize;
 	int shardNumX;
@@ -267,6 +261,7 @@ struct EditSession : GUIHandler, Session
 	std::list<PolyPtr> polygons;
 	std::list<PolyPtr> waterPolygons;
 	std::list<PolyPtr> flyPolygons;
+	std::list<PolyPtr> visualPolygons;
 	BrushManager *brushManager;
 	MapBrowserHandler *mapBrowserHandler;
 	AdventureCreator *adventureCreator;
@@ -631,7 +626,7 @@ struct EditSession : GUIHandler, Session
 	void SetupNewMapPanel();
 	
 	void ActivateNewMapPanel();
-	void SetMatTypePanelLayer(int layer);
+	void SetMatTypePanelCategory(int layer);
 	void ModifySelectedTerrainMat(
 		int world, int var);
 	void SetupTerrainSelectPanel();

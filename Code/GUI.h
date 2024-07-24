@@ -1408,10 +1408,11 @@ struct CreateTerrainModeUI : GUIHandler
 {
 	CreateTerrainModeUI();
 	~CreateTerrainModeUI();
-	void SetLayerTerrain();
-	void SetLayerWater();
-	void SetLayerPickup();
-	void SetLayer(int i);
+	void SetCategoryTerrain();
+	void SetCategoryWater();
+	void SetCategoryPickup();
+	void SetCategoryVisual();
+	void SetCategory(int i);
 	void SetShown(bool s);
 	bool IsGridOn();
 	void FlipGrid();
@@ -1428,7 +1429,7 @@ struct CreateTerrainModeUI : GUIHandler
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	int GetTerrainLayer();
+	int GetTerrainCategory();
 	int GetCurrDrawTool();
 	void SetDrawTool(int t);
 	int GetCurrTerrainTool();
@@ -1459,8 +1460,8 @@ struct CreateTerrainModeUI : GUIHandler
 	Button *removePointButton;
 	Button *removeAllPointsButton;
 	Dropdown *terrainActionDropdown;
-	Dropdown *waterActionDropdown;
-	Dropdown *terrainLayerDropdown;
+	Dropdown *limitedTerrainActionDropdown;
+	Dropdown *terrainCategoryDropdown;
 	Dropdown *drawModeDropdown;
 
 	sf::Vector2i matPanelPos;
