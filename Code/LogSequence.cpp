@@ -183,7 +183,7 @@ void GetLogSequence::UpdateState()
 
 }
 
-void GetLogSequence::Draw(RenderTarget *target, DrawLayer layer)
+void GetLogSequence::Draw(RenderTarget *target, int layer)
 {
 	if (target == sess->preScreenTex)
 	{

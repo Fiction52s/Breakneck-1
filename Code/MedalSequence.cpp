@@ -117,7 +117,7 @@ void MedalSequence::UpdateState()
 	}
 }
 
-void MedalSequence::Draw(sf::RenderTarget *target, DrawLayer layer)
+void MedalSequence::Draw(sf::RenderTarget *target, int layer)
 {
 	if (layer != DrawLayer::UI_FRONT)
 	{

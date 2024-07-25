@@ -75,9 +75,9 @@ void TutorialSequence::UpdateState()
 	//emitter->Update();
 }
 
-void TutorialSequence::Draw(RenderTarget *target, DrawLayer layer)
+void TutorialSequence::Draw(RenderTarget *target, int layer)
 {
-	if (layer == UI_FRONT)
+	if (layer == DrawLayer::UI_FRONT)
 	{
 		tutBox->Draw(target);
 	}

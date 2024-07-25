@@ -35,7 +35,7 @@ void MomentaScene::UpdateState()
 	
 }
 
-void MomentaScene::Draw(sf::RenderTarget *target, DrawLayer layer)
+void MomentaScene::Draw(sf::RenderTarget *target, int layer)
 {
 
 }

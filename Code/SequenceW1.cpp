@@ -380,7 +380,7 @@ bool TextTestSeq::Update()
 
 	return true;
 }
-void TextTestSeq::Draw(sf::RenderTarget *target, DrawLayer layer)
+void TextTestSeq::Draw(sf::RenderTarget *target, int layer)
 {
 	if (layer != DrawLayer::IN_FRONT)
 	{

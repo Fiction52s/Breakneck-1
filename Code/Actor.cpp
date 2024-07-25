@@ -995,7 +995,7 @@ void Actor::DeactivateSound(SoundNode *sn)
 }
 
 BasicEffect * Actor::ActivateEffect(
-	DrawLayer layer,
+	int layer,
 	Tileset *ts,
 	sf::Vector2<double> pos,
 	bool pauseImmune,
@@ -1112,7 +1112,7 @@ void Actor::SetupFX()
 	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_UAIR_SWORD_LIGHTNING_0), EffectType::FX_RELATIVE, 20, DrawLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_BOUNCE_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_BOUNCE_BOOST), EffectType::FX_REGULAR, 20, BETWEEN_PLAYER_AND_ENEMIES, false, false);
+	effectPools[PLAYERFX_BOUNCE_BOOST].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_BOUNCE_BOOST), EffectType::FX_REGULAR, 20, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 	effectPools[PLAYERFX_HURT_SPACK].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_HURT_SPACK), EffectType::FX_REGULAR, 20);
 
 	effectPools[PLAYERFX_DASH_START].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_DASH_START), EffectType::FX_REGULAR, 20);
@@ -1174,9 +1174,9 @@ void Actor::SetupFX()
 	effectPools[PLAYERFX_SPRINT_STAR].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_SPRINT_STAR), EffectType::FX_RELATIVE, 100);
 
 	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAUNCH_PARTICLE_0), EffectType::FX_REGULAR, 100,
-		BETWEEN_PLAYER_AND_ENEMIES, false, false);
+		DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_LAUNCH_PARTICLE_1), EffectType::FX_REGULAR, 100,
-		BETWEEN_PLAYER_AND_ENEMIES, false, false);
+		DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, false, false);
 
 	effectPools[PLAYERFX_ENTER].Set(mm->GetPlayerTileset(MainMenu::PTS_FX_ENTER), EffectType::FX_REGULAR, 1, DrawLayer::IN_FRONT);
 

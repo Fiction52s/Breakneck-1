@@ -1442,7 +1442,7 @@ struct Actor : QuadTreeCollider,
 	SoundNode * ActivateSound(int st, bool loop = false);
 	SoundNode *ActivateRepeatingSound(int st, bool loop = false);
 	BasicEffect * ActivateEffect(
-		DrawLayer layer,
+		int layer,
 		Tileset *ts,
 		sf::Vector2<double> pos,
 		bool pauseImmune,

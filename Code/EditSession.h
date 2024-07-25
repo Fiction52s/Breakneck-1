@@ -424,7 +424,7 @@ struct EditSession : GUIHandler, Session
 
 	void PublishMap();
 
-	void UpdateEnvShaders();
+	void UpdateEnvShaders(bool timeMovesForward);
 	void Load();
 	void Init();
 	void DefaultInit();
@@ -683,7 +683,7 @@ struct EditSession : GUIHandler, Session
 	bool IsGridOn();
 	bool IsSnapPointsOn();
 	void DrawSpecialTerrain(sf::RenderTarget *target);
-	void DrawTerrain(sf::RenderTarget *target);
+	void DrawTerrain( int p_drawLayer, sf::RenderTarget *target);
 	void DrawItemTerrain(sf::RenderTarget *target);
 	void DrawRails(sf::RenderTarget *target);
 	void DrawPolygonInProgress();

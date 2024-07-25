@@ -121,7 +121,7 @@ void DeathSequence::UpdateState()
 	//emitter->Update();
 }
 
-void DeathSequence::Draw(RenderTarget *target, DrawLayer layer)
+void DeathSequence::Draw(RenderTarget *target, int layer)
 {
 	//sess->DrawEmitters(layer, target); //recently turned this off because I think the session draws them itself?
 	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)

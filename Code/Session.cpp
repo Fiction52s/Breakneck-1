@@ -1015,7 +1015,7 @@ void Session::DeactivateEffect(BasicEffect *b)
 void Session::DrawEffects(int p_drawLayer, sf::RenderTarget *target)
 {
 	sf::View oldView = target->getView();
-	if (p_drawLayer == UI_FRONT)
+	if (p_drawLayer == DrawLayer::UI_FRONT)
 	{
 		target->setView(uiView);
 	}
@@ -1028,7 +1028,7 @@ void Session::DrawEffects(int p_drawLayer, sf::RenderTarget *target)
 
 	//envParticleSystem->Draw()
 
-	if (p_drawLayer == UI_FRONT)
+	if (p_drawLayer == DrawLayer::UI_FRONT)
 	{
 		target->setView(oldView);
 	}
@@ -2354,7 +2354,7 @@ bool Session::ReadBGTerrain(std::ifstream &is)
 		PolyPtr poly(new TerrainPolygon());
 		poly->Load(is);
 		poly->Finalize();
-		poly->SetLayer(1);
+		poly->SetTerrainCategory(1);
 
 		ProcessBGTerrain(poly);
 		//no grass for now
@@ -5616,14 +5616,14 @@ void Session::DrawActiveSequence(int p_drawLayer, sf::RenderTarget *target)
 	if (activeSequence != NULL)
 	{
 		sf::View oldView = target->getView();
-		if (p_drawLayer == UI_FRONT)
+		if (p_drawLayer == DrawLayer::UI_FRONT)
 		{
 			target->setView(uiView);
 		}
 
 		activeSequence->LayeredDraw(p_drawLayer, target);
 
-		if (p_drawLayer == UI_FRONT)
+		if (p_drawLayer == DrawLayer::UI_FRONT)
 		{
 			target->setView(oldView);
 		}
@@ -5739,6 +5739,11 @@ void Session::DrawEmitters(int p_drawLayer, sf::RenderTarget *target)
 		curr->Draw(target);
 		curr = curr->next;
 	}
+}
+
+void Session::DrawLayeredTerrain(int p_drawLayer, sf::RenderTarget *target)
+{
+
 }
 
 void Session::UpdateEmitters()
@@ -6848,7 +6853,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	}
 
 
-	for (int i = BG_1; i <= BG_10; ++i)
+	for (int i = DrawLayer::BG_1; i <= DrawLayer::BG_10; ++i)
 	{
 		LayeredDraw(i, target);
 	}
@@ -6868,7 +6873,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawItemTerrain(target);
 
-	DrawTerrain(target);
+	DrawTerrain( DrawLayer::TERRAIN, target);
 
 	DrawGoalFlow(target);
 
@@ -6968,7 +6973,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	UpdateNameTagsPixelPos(target);
 
-	for (int i = FG_1; i <= FG_10; ++i)
+	for (int i = DrawLayer::FG_1; i <= DrawLayer::FG_10; ++i)
 	{
 		LayeredDraw(i, target);
 	}

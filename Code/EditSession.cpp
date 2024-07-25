@@ -548,9 +548,9 @@ bool EditSession::TestPlayerModeUpdate()
 	return true;
 }
 
-void EditSession::UpdateEnvShaders()
+void EditSession::UpdateEnvShaders( bool timeMovesForward )
 {
-	UpdatePolyShaders(true);
+	UpdatePolyShaders(timeMovesForward);
 }
 
 
@@ -2188,7 +2188,7 @@ void EditSession::Draw()
 
 	DrawItemTerrain(preScreenTex);
 
-	DrawTerrain(preScreenTex);
+	DrawTerrain( DrawLayer::TERRAIN, preScreenTex);
 
 	DrawRails(preScreenTex);
 
@@ -2334,13 +2334,13 @@ void EditSession::ProcessDecorSpr(const std::string &name, int dTile, int dLayer
 		rotation, scale );
 	if (dLayer > 0)
 	{
-		dec->myList = &decorImages[BEHIND_TERRAIN];//&decorImagesBehindTerrain;
+		dec->myList = &decorImages[DrawLayer::BEHIND_TERRAIN];//&decorImagesBehindTerrain;
 		//decorImagesBehindTerrain.sort(CompareDecorInfo);
 		//decorImagesBehindTerrain.push_back(dec);
 	}
 	else if (dLayer < 0)
 	{
-		dec->myList = &decorImages[BEHIND_ENEMIES];//&decorImagesFrontTerrain;
+		dec->myList = &decorImages[DrawLayer::BEHIND_ENEMIES];//&decorImagesFrontTerrain;
 		//decorImagesFrontTerrain.push_back(dec);
 	}
 	else if (dLayer == 0)
@@ -2407,7 +2407,7 @@ bool EditSession::ReadBGTerrain(std::ifstream &is)
 		}
 
 		poly->Finalize();
-		poly->SetLayer(1);
+		poly->SetTerrainCategory(1);
 		//no grass for now
 	}
 	return true;
@@ -2627,14 +2627,15 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//version 8 includes the powerVec and powers in the header
 	//version 9 is post-medals
 	//version 10 is including special map types (for Kin's ship)
+	//version 11 is for including draw layers in polygons
 
-	mapHeader->ver1 = 10;
+	mapHeader->ver1 = 11;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
 	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		if ((*it)->layer == 0)
+		if ((*it)->terrainCategory == 0)
 		{
 			pointCount += (*it)->GetNumPoints();
 		}
@@ -2878,7 +2879,7 @@ void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
 		if ((*it)->inverse) continue;
 
 		//cout << "layerrr: " << (*it)->layer << ", pathsize: " << (*it)->path.size() << endl;
-		if ((*it)->layer == 0 && (*it)->path.size() < 2)
+		if ((*it)->terrainCategory == 0 && (*it)->path.size() < 2)
 		{
 			cout << "writing polygon of write index: " << writeIndex << endl;
 			(*it)->writeIndex = writeIndex;
@@ -2934,7 +2935,7 @@ void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
 	{
 		if ((*it)->inverse) continue;
 
-		if ((*it)->layer == 1)// && (*it)->path.size() < 2 )
+		if ((*it)->terrainCategory == 1)// && (*it)->path.size() < 2 )
 		{
 			//writeindex doesnt matter much for these for now
 			(*it)->writeIndex = writeIndex;
@@ -3131,7 +3132,7 @@ bool EditSession::WriteFile()
 	int bgPlatCount0 = 0;
 	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		if ((*it)->layer == 1)
+		if ((*it)->terrainCategory == 1)
 		{
 			bgPlatCount0++;
 		}
@@ -3703,7 +3704,9 @@ void EditSession::SetupTerrainSelectPanel()
 	int numWaterTypeRects = TerrainPolygon::WATER_Count;
 	int numPickupTypeRects = 1;//1 * maxTerrainVarPerWorld;
 
-	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects;
+	int numVisualTypeRects = numTypeRects;
+
+	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects + numVisualTypeRects;
 
 	matTypePanel->ReserveImageRects(totalRects);
 
@@ -3801,6 +3804,53 @@ void EditSession::SetupTerrainSelectPanel()
 			//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
 		}
 	}
+
+
+
+
+
+	matTypeRects[TerrainPolygon::CATEGORY_VISUAL].resize(numTypeRects);
+
+	for (int worldI = 0; worldI < 8; ++worldI)
+	{
+		int ind;
+		for (int i = 0; i < maxTerrainVarPerWorld; ++i)
+		{
+			ind = worldI * maxTerrainVarPerWorld + i;
+
+			matTypeRects[TerrainPolygon::CATEGORY_VISUAL][ind] = matTypePanel->AddImageRect(
+				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
+				mainMenu->ts_terrain, mainMenu->ts_terrain->GetSubRect((worldI * maxTerrainVarPerWorld + i) * 4),
+				terrainGridSize);
+
+			//TerrainPolygon::IsInversePhaseType()
+
+			if (worldI == 3 && i == 5)
+			{
+				matTypeRects[TerrainPolygon::CATEGORY_VISUAL][ind]->SetName("Phase");
+			}
+			else if (worldI == 3 && i == 6)
+			{
+				matTypeRects[TerrainPolygon::CATEGORY_VISUAL][ind]->SetName("Inverse\nPhase");
+			}
+			else if (worldI == 5 && i == 7)
+			{
+				matTypeRects[TerrainPolygon::CATEGORY_VISUAL][ind]->SetName("Fade");
+			}
+			else if (worldI == 0 && i == 7)
+			{
+				matTypeRects[TerrainPolygon::CATEGORY_VISUAL][ind]->SetName("Invisible");
+			}
+
+			matTypeRects[TerrainPolygon::CATEGORY_VISUAL][ind]->Init();
+			if (matTypeRects[TerrainPolygon::CATEGORY_VISUAL][ind]->ts != NULL)
+			{
+				//matTypeRects[TERRAINLAYER_NORMAL][ind]->SetShown(false);
+			}
+		}
+	}
+
 
 	//int startWorldPickup = 16;
 	//for (int worldI = startWorldPickup; worldI < startWorldPickup + 1; ++worldI)
@@ -4048,6 +4098,9 @@ void EditSession::Init()
 
 	currTerrainWorld[TerrainPolygon::CATEGORY_ITEM] = 9;
 	currTerrainVar[TerrainPolygon::CATEGORY_ITEM] = 0;
+
+	currTerrainWorld[TerrainPolygon::CATEGORY_VISUAL] = 0;
+	currTerrainVar[TerrainPolygon::CATEGORY_VISUAL] = 0;
 
 	shardMenu = new ShardMenu(this);
 	shardMenu->SetSession(this);
@@ -4640,15 +4693,14 @@ int EditSession::EditRun()
 			{
 				for (int i = 0; i < spriteUpdateFrames; ++i)
 				{
-					UpdateEnvShaders();
+					UpdateEnvShaders( true );
 				}
 			}
 			else
 			{
 				for (int i = 0; i < spriteUpdateFrames; ++i)
 				{
-					//UpdateEnvShaders();
-					UpdatePolyShaders(false);
+					UpdateEnvShaders(false);
 				}
 			}
 
@@ -6139,15 +6191,15 @@ void EditSession::TryCompleteSelectedMove()
 		assert(grabbedImage != NULL);
 		if (grabbedImage->layer > 0)
 		{
-			grabbedImage->myList = &decorImages[BEHIND_TERRAIN];//&decorImagesBehindTerrain;
+			grabbedImage->myList = &decorImages[DrawLayer::BEHIND_TERRAIN];//&decorImagesBehindTerrain;
 		}
 		else if (grabbedImage->layer < 0)
 		{
-			grabbedImage->myList = &decorImages[BEHIND_ENEMIES];//&decorImagesFrontTerrain;
+			grabbedImage->myList = &decorImages[DrawLayer::BEHIND_ENEMIES];//&decorImagesFrontTerrain;
 		}
 		else if (grabbedImage->layer == 0)
 		{
-			grabbedImage->myList = &decorImages[BETWEEN_PLAYER_AND_ENEMIES];//&decorImagesBetween;
+			grabbedImage->myList = &decorImages[DrawLayer::BETWEEN_PLAYER_AND_ENEMIES];//&decorImagesBetween;
 		}
 
 		Action *apply = new ApplyBrushAction(selectedBrush);
@@ -10575,6 +10627,7 @@ bool EditSession::ExecuteTerrainInverseMultiAdd(
 		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 		{
 			PolyPtr newPoly(new TerrainPolygon);
+
 			//FusePathClusters((*sit), clipperIntersections, fusedPoints);
 			//sliverResult = FixPathSlivers((*sit), fusedPoints);
 
@@ -13038,7 +13091,7 @@ void EditSession::SetSelectedTerrainLayer(int layer)
 		{
 			poly = (*it)->GetAsTerrain();
 			if (poly != NULL)
-				poly->SetLayer(layer);
+				poly->SetTerrainCategory(layer);
 		}
 	}
 }
@@ -13208,16 +13261,20 @@ void EditSession::UpdatePanning()
 
 void EditSession::UpdatePolyShaders( bool timePassing )
 {
-	Vector2f vSize = view.getSize();
+	float bigTest = GetDrawLayerDepthFactor(DrawLayer::FG_4);
+
+
+	Vector2f vSize = view.getSize() / bigTest;
 	float zoom = vSize.x / 960;
-	Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
+	Vector2f center = view.getCenter() * bigTest;
+	Vector2f botLeft(center.x - vSize.x / 2, center.y + vSize.y / 2);
 
 	float camAngle = (float)(view.getRotation() * PI / 180.0);
 
 	Vector2f botLeftTest(-vSize.x / 2, vSize.y / 2);
 	RotateCW(botLeftTest, camAngle);
 
-	botLeftTest += view.getCenter();
+	botLeftTest += center;
 
 	botLeft = botLeftTest;
 	
@@ -13232,6 +13289,10 @@ void EditSession::UpdatePolyShaders( bool timePassing )
 			mainMenu->terrainShaders[i].setUniform("u_cameraAngle", camAngle);
 		}
 	}
+
+	
+
+	
 	
 	//terrainShader.setUniform("u_seed", (float)totalGameFrames );
 	if (first || oldShaderZoom != zoom ) //first run
@@ -13368,28 +13429,32 @@ void EditSession::DrawSpecialTerrain(sf::RenderTarget *target)
 	}
 }
 
-void EditSession::DrawTerrain(sf::RenderTarget *target)
+void EditSession::DrawTerrain( int p_drawLayer, sf::RenderTarget *target)
 {
 	if (!editModeUI->IsLayerShowing(LAYER_TERRAIN))
 	{
 		return;
 	}
 
-	bool showPoints = IsShowingPoints();
-
-	if (inversePolygon != NULL)
+	if (p_drawLayer == DrawLayer::TERRAIN)
 	{
-		inversePolygon->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
-	}
+		bool showPoints = IsShowingPoints();
 
-	auto & currPolyList = GetCorrectPolygonList(0);
-	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
-	{
-		if ((*it)->inverse)
-			continue;
+		if (inversePolygon != NULL)
+		{
+			inversePolygon->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+		}
 
-		(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+		auto & currPolyList = GetCorrectPolygonList(0);
+		for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
+		{
+			if ((*it)->inverse)
+				continue;
+
+			(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+		}
 	}
+	//else if( p_drawLayer == DrawLayer::)
 }
 
 void EditSession::DrawItemTerrain(sf::RenderTarget *target)
@@ -14566,11 +14631,15 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if( ev.key.code == Keyboard::W )
 		{
-			createTerrainModeUI->SetLayerWater();
+			createTerrainModeUI->SetCategoryWater();
 		}
 		else if (ev.key.code == Keyboard::Q)
 		{
-			createTerrainModeUI->SetLayerTerrain();
+			createTerrainModeUI->SetCategoryTerrain();
+		}
+		else if (ev.key.code == Keyboard::Num7)
+		{
+			createTerrainModeUI->SetCategoryVisual();
 		}
 		break;
 	}
@@ -14790,7 +14859,60 @@ void EditSession::EditModeHandleEvent()
 	{
 	case Event::KeyPressed:
 	{
-		if (ev.key.code == Keyboard::C && ev.key.control)
+		//both the 7 and 6 are just for testing
+		if (ev.key.code == Keyboard::Num7)
+		{
+			if (selectedBrush->GetNumTerrain() > 0)
+			{
+				int layer = selectedBrush->GetTerrainLayer();
+
+				ClearMostRecentError();
+				if (layer < 0)
+				{
+					CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
+					ShowMostRecentError();
+				}
+				else
+				{
+					//editModeUI->ExpandTerrainLibrary(layer);
+					for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+					{
+						TerrainPolygon *p = (*it)->GetAsTerrain();
+						if (p != NULL)
+						{
+							p->drawLayer = DrawLayer::FG_4;
+						}
+					}
+				}
+			}
+		}
+		else if (ev.key.code == Keyboard::Num6)
+		{
+			if (selectedBrush->GetNumTerrain() > 0)
+			{
+				int layer = selectedBrush->GetTerrainLayer();
+
+				ClearMostRecentError();
+				if (layer < 0)
+				{
+					CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
+					ShowMostRecentError();
+				}
+				else
+				{
+					//editModeUI->ExpandTerrainLibrary(layer);
+					for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+					{
+						TerrainPolygon *p = (*it)->GetAsTerrain();
+						if (p != NULL)
+						{
+							p->drawLayer = DrawLayer::TERRAIN;
+						}
+					}
+				}
+			}
+		}
+		else if (ev.key.code == Keyboard::C && ev.key.control)
 		{
 			EditModeCopy();
 		}

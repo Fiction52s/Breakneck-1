@@ -269,6 +269,7 @@ struct GameSession : RayCastHandler, Session
 	std::vector<int> waterTypeIndexesUsedVec;
 	//for loading only
 	std::list<PolyPtr> allPolygonsList;
+	std::list<PolyPtr> allVisualOnlyPolygonList;
 	bool continueLoading;
 	boost::mutex continueLoadingLock;
 	std::set<std::pair<int, int>> matSet;
@@ -442,7 +443,7 @@ struct GameSession : RayCastHandler, Session
 		V2d &pos, float startAngle = 0);
 	
 	void UpdatePolyShaders(sf::Vector2f &botLeft,
-		sf::Vector2f &playertest, float zoom );
+		sf::Vector2f &playertest, float zoom, bool timeMovesForward );
 	
 	void RestartGame();
 	void RestartLevel();
@@ -483,7 +484,7 @@ struct GameSession : RayCastHandler, Session
 	void SuppressEnemyKeys(Gate *g);
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
-	void UpdateEnvShaders();
+	void UpdateEnvShaders(bool timeMovesForward);
 	void SetPlayerOption(int optionIndex, bool on, int playerIndex = 0);
 	bool TrySaveCurrentSaveFile();
 	void UnlockLog(int lType, int playerIndex = 0);
@@ -510,7 +511,7 @@ struct GameSession : RayCastHandler, Session
 	
 	void DrawSpecialTerrain(sf::RenderTarget *target);
 	void DrawItemTerrain(sf::RenderTarget *target);
-	void DrawTerrain(sf::RenderTarget *target);
+	void DrawTerrain( int p_drawLayer, sf::RenderTarget *target);
 	void DrawSceneToPostProcess(sf::RenderTexture *tex);
 	void DrawShockwaves(sf::RenderTarget *target);
 	void UpdateCamera();

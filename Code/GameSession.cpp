@@ -440,27 +440,30 @@ void GameSession::DrawShockwaves(sf::RenderTarget *target)
 }
 
 
-void GameSession::DrawTerrain(sf::RenderTarget *target)
+void GameSession::DrawTerrain( int p_drawLayer, sf::RenderTarget *target)
 {
 	//kind of messy. its when you have the camera not seeing the edges
 	//of the map, 
-	bool inverseInList = false;
-	PolyPtr poly = polyQueryList;
-	while (poly != NULL)
+	if (p_drawLayer == DrawLayer::TERRAIN)
 	{
-		if (poly->inverse)
+		bool inverseInList = false;
+		PolyPtr poly = polyQueryList;
+		while (poly != NULL)
 		{
-			inverseInList = true;
+			if (poly->inverse)
+			{
+				inverseInList = true;
+			}
+			poly = poly->queryNext;
 		}
-		poly = poly->queryNext;
-	}
 
 
-	DrawQueriedTerrain(target);
+		DrawQueriedTerrain(target);
 
-	if ( inversePolygon != NULL && !inverseInList)
-	{
-		inversePolygon->Draw(target);
+		if (inversePolygon != NULL && !inverseInList)
+		{
+			inversePolygon->Draw(target);
+		}
 	}
 }
 
@@ -1489,7 +1492,7 @@ void GameSession::ProcessAllDecorSpr()
 				vi++;
 			}
 
-			decor[BETWEEN_PLAYER_AND_ENEMIES].push_back(new DecorDraw(betweenVerts,
+			decor[DrawLayer::BETWEEN_PLAYER_AND_ENEMIES].push_back(new DecorDraw(betweenVerts,
 				numBetweenLayer * 4, betweenList.front().ts));
 		}
 	}
@@ -1499,8 +1502,15 @@ void GameSession::ProcessAllDecorSpr()
 
 void GameSession::ProcessTerrain(PolyPtr poly)
 {
-	matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));	
-	allPolygonsList.push_back(poly);
+	matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
+	if (poly->drawLayer == DrawLayer::TERRAIN)
+	{
+		allPolygonsList.push_back(poly);
+	}
+	else
+	{
+		allVisualOnlyPolygonList.push_back(poly);
+	}
 }
 
 void GameSession::ProcessAllTerrain()
@@ -1561,6 +1571,35 @@ void GameSession::ProcessAllTerrain()
 		polyIndex++;
 	}
 	allPolygonsList.clear();
+
+
+
+	PolyPtr poly;
+	allVisualOnlyPolysVec.reserve(allVisualOnlyPolygonList.size());
+	int polyIndex = 0;
+	for (auto it = allVisualOnlyPolygonList.begin(); it != allVisualOnlyPolygonList.end(); ++it)
+	{
+		poly = (*it);
+		poly->polyIndex = polyIndex;
+		poly->Finalize();
+		poly->grassBufferForAABBOn = true; //so that the quadtree can get a bigger AABB for this
+		poly->AddEdgesToQuadTree(terrainTree);
+		//poly->AddGrassToQuadTree(grassTree);
+
+		if (poly->inverse)
+		{
+			poly->AddEdgesToQuadTree(inverseEdgeTree);
+			inversePolygon = poly;
+		}
+		borderTree->Insert(poly);
+
+		allPolysVec.push_back((*it));
+
+		polyIndex++;
+	}
+	allPolygonsList.clear();
+
+
 }
 
 void GameSession::ProcessActor(ActorPtr a)
@@ -4141,7 +4180,7 @@ void GameSession::OpenGates(int gCat)
 }
 
 
-void GameSession::UpdateEnvShaders()
+void GameSession::UpdateEnvShaders( bool timeMovesForward )
 {
 	if (IsParallelSession())
 	{
@@ -4167,7 +4206,7 @@ void GameSession::UpdateEnvShaders()
 	botLeft = botLeftTest;
 
 
-	UpdatePolyShaders(botLeft, playertest, cam.GetZoom() );
+	UpdatePolyShaders(botLeft, playertest, cam.GetZoom(), timeMovesForward );
 
 	/*for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
@@ -4251,7 +4290,7 @@ void GameSession::UpdateDecorSprites()
 	}
 }
 
-void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest, float zoom )
+void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest, float zoom, bool timeMovesForward )
 {
 	//oldShaderZoom is only used in editor. Need to optimize this in GameSession as well
 	bool first = oldShaderZoom < 0;
@@ -4349,13 +4388,16 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest, fl
 		}
 	}
 
-	for (int i = 0; i < numWaterMats; ++i)
+	if (timeMovesForward)
 	{
-		currWaterShader = &mainMenu->waterShaders[waterTypeIndexesUsedVec[i]];
-		currWaterShader->setUniform("u_slide", waterShaderCounter);
-	}
+		for (int i = 0; i < numWaterMats; ++i)
+		{
+			currWaterShader = &mainMenu->waterShaders[waterTypeIndexesUsedVec[i]];
+			currWaterShader->setUniform("u_slide", waterShaderCounter);
+		}
 
-	waterShaderCounter += .01f;
+		waterShaderCounter += .01f;
+	}
 }
 
 void GameSession::SetOriginalMusic()

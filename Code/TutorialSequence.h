@@ -25,7 +25,7 @@ struct TutorialSequence : Sequence
 	void SetText(const std::string &str);
 	void SetBoxPos(sf::Vector2f &pos);
 	void Draw(sf::RenderTarget *target,
-		DrawLayer layer = DrawLayer::IN_FRONT);
+		int layer = DrawLayer::IN_FRONT);
 	void Reset();
 
 	Session *sess;

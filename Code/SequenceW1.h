@@ -211,7 +211,7 @@ struct GetAirdashPowerSeq : Sequence
 	GetAirdashPowerSeq();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
-		DrawLayer layer = DrawLayer::IN_FRONT);
+		int layer = DrawLayer::IN_FRONT);
 	void Reset();
 
 
@@ -242,7 +242,7 @@ struct TextTestSeq : Sequence
 
 	bool Update();
 	void Draw(sf::RenderTarget *target,
-		DrawLayer layer = DrawLayer::IN_FRONT);
+		int layer = DrawLayer::IN_FRONT);
 	void Reset();
 	void AddGroup(const std::string &name);
 

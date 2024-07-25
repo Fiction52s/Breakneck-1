@@ -300,6 +300,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;
 	std::vector<PolyPtr> allSpecialPolysVec;
+	std::vector<PolyPtr> allVisualOnlyPolysVec;
 	std::vector<RailPtr> allRailsVec;
 	std::vector<Enemy*> allEnemiesVec;
 	std::vector<Enemy*> allSpawnableEnemiesVec;
@@ -488,6 +489,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<ControlProfile*> controlProfiles;
 
 	std::string GetMapPreviewPath();
+
+	std::vector<std::vector<int>> layeredTerrainVec; //for drawing terrain in the bg and foreground
 
 	static Session *GetSession();
 
@@ -866,7 +869,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawQueriedRailsToMinimap(sf::RenderTarget *target);
 	virtual bool UpdateRunModeBackAndStartButtons() = 0;
 	virtual void DrawSpecialTerrain(sf::RenderTarget *target) = 0;
-	virtual void DrawTerrain(sf::RenderTarget *target) = 0;
+	virtual void DrawTerrain( int p_drawLayer, sf::RenderTarget *target) = 0;
 	virtual void DrawItemTerrain(sf::RenderTarget *target) = 0;
 	void DrawStoryLayer(int p_drawLayer, sf::RenderTarget *target);
 	void DrawGateMarkers(sf::RenderTarget *target);
@@ -903,7 +906,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawPracticeGame(sf::RenderTarget *target);
 	void UpdateRunningTimerText();
 	virtual void UpdateEnvPlants() {}
-	virtual void UpdateEnvShaders() {}
+	virtual void UpdateEnvShaders(bool timeMovesForward) {}
 	virtual void UpdateCamera() = 0;
 	virtual void UpdateSoundNodeLists();
 	void UpdateScoreDisplay();

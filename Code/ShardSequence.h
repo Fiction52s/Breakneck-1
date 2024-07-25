@@ -29,7 +29,7 @@ struct GetShardSequence : Sequence
 	void SetupStates();
 	void SetIDs();
 	void Draw(sf::RenderTarget *target,
-		DrawLayer layer = DrawLayer::IN_FRONT);
+		int layer = DrawLayer::IN_FRONT);
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

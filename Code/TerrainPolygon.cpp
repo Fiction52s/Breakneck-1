@@ -1238,7 +1238,7 @@ TerrainPolygon::TerrainPolygon()
 	borderQuads = NULL;
 	mostRecentCopy = NULL;
 	inverse = false;
-	layer = 0;
+	terrainCategory = 0;
 	va = NULL;
 	lines = NULL;
 	selected = false;
@@ -1285,7 +1285,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	tdInfo = NULL;
 	mostRecentCopy = NULL;
 	sess = poly.sess;
-	layer = 0;
+	terrainCategory = 0;
 	inverse = poly.inverse;
 	terrainWorldType = poly.terrainWorldType;
 	terrainVariation = poly.terrainVariation;
@@ -2724,6 +2724,8 @@ void TerrainPolygon::BrushSave(std::ofstream &of)
 void TerrainPolygon::WriteFile(std::ofstream & of)
 {
 	of << terrainWorldType << " " << terrainVariation << endl;
+
+	of << drawLayer << "\n"; //version 11 and after
 
 	int numP = GetNumPoints();
 
@@ -5593,13 +5595,52 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 	}
 }
 
-void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
+void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *target, bool showPoints, TerrainPoint *dontShow )
 {
+	float depth = GetDrawLayerDepthFactor(drawLayer);
+	sf::View oldView = target->getView();
+
+	if (depth != 1.f)
+	{
+		if (depth > 1.f)
+		{
+			sf::View newView;
+			Vector2f cTest = oldView.getCenter() * depth;
+
+			newView.setCenter(cTest);
+			newView.setSize(oldView.getSize() / depth);
+
+			target->setView(newView);
+		}
+		else
+		{
+			sf::View newView;
+			Vector2f cTest = Vector2f(oldView.getCenter().x * depth, oldView.getCenter().y * depth);//data.pos.y);
+			//data.pos
+
+			newView.setCenter(cTest);
+			newView.setSize(Vector2f(1920, 1080) / depth);//oldView.getSize() / depth);
+
+			target->setView(newView);
+		}
+
+
+	}
+
+
+
+
+
 	int numP = GetNumPoints();
 
 	if (!IsActive())
 	{
-		rt->draw(lines, numP * 2, sf::Lines);
+		target->draw(lines, numP * 2, sf::Lines);
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 		return;
 	}
 	
@@ -5609,18 +5650,23 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		if (sess->IsSessTypeEdit())
 		{
-			rt->draw(lines, numP * 2, sf::Lines);
+			target->draw(lines, numP * 2, sf::Lines);
 		}
 		else
 		{
 			//draw nothing
 		}
 		
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 		return;
 	}
 	else if( renderMode == RENDERMODE_MOVING_POINTS )
 	{
-		DrawPoints(rt, zoomMultiple, dontShow);
+		DrawPoints(target, zoomMultiple, dontShow);
 
 		TerrainPoint *curr, *start, *next;
 		int lineIndex = 0;
@@ -5636,7 +5682,12 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 			++lineIndex;
 		}*/
-		rt->draw( lines, numP * 2, sf::Lines );
+		target->draw( lines, numP * 2, sf::Lines );
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 		return;
 	}
 	else if (renderMode == RENDERMODE_TRANSFORM)
@@ -5646,12 +5697,17 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 			//just like the items
 			if (showPoints)
 			{
-				DrawPoints(rt, zoomMultiple, dontShow);
+				DrawPoints(target, zoomMultiple, dontShow);
 			}
 
-			rt->draw(lines, numP * 2, sf::Lines);
+			target->draw(lines, numP * 2, sf::Lines);
 
-			DrawItems(rt);
+			DrawItems(target);
+
+			if (depth != 1.f)
+			{
+				target->setView(oldView);
+			}
 			return;
 		}
 
@@ -5659,28 +5715,38 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		{
 			if (pShader != NULL)
 			{
-				rt->draw(*va, pShader);
+				target->draw(*va, pShader);
 			}
 			else
 			{
-				rt->draw(*va);
+				target->draw(*va);
 			}
 		}
 			
 
-		rt->draw(lines, numP * 2, sf::Lines);
+		target->draw(lines, numP * 2, sf::Lines);
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 		return;
 	}
 	else if (renderMode == RENDERMODE_ITEMS)
 	{
 		if (showPoints)
 		{
-			DrawPoints(rt, zoomMultiple, dontShow);
+			DrawPoints(target, zoomMultiple, dontShow);
 		}
 
-		rt->draw(lines, numP * 2, sf::Lines);
+		target->draw(lines, numP * 2, sf::Lines);
 
-		DrawItems(rt);
+		DrawItems(target);
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 
 		return;
 	}
@@ -5688,15 +5754,20 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	{
 		UpdatePreviewLineColors();
 
-		DrawInnerArea(rt);
+		DrawInnerArea(target);
 
-		DrawDecor(rt);
+		DrawDecor(target);
 
-		DrawPreviewGrass(rt, true);
+		DrawPreviewGrass(target, true);
 
-		rt->draw(lines, numP * 2, sf::Lines);
+		target->draw(lines, numP * 2, sf::Lines);
 
 		UpdateLineColors();
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 
 		return;
 	}
@@ -5704,9 +5775,9 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	{
 		UpdatePreviewLineColors();
 
-		DrawGrass(rt);
+		DrawGrass(target);
 
-		DrawInnerArea(rt);
+		DrawInnerArea(target);
 
 		Edge *e = NULL;
 		for (int i = 0; i < numP; ++i )
@@ -5723,7 +5794,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 			
 		}
 
-		DrawBorderQuads(rt);
+		DrawBorderQuads(target);
 
 		for (int i = 0; i < numP; ++i)
 		{
@@ -5739,13 +5810,18 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		}
 
-		DrawDecor(rt);
+		DrawDecor(target);
 
-		DrawTouchGrass(rt);
+		DrawTouchGrass(target);
 
-		rt->draw(lines, numP * 2, sf::Lines);
+		target->draw(lines, numP * 2, sf::Lines);
 
 		UpdateLineColors();
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 
 		return;
 	}
@@ -5753,33 +5829,38 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	{
 		//UpdatePreviewLineColors();
 
-		DrawInnerArea(rt);
+		DrawInnerArea(target);
 
-		DrawDecor(rt);
+		DrawDecor(target);
 
-		DrawPreviewGrass(rt, false);
+		DrawPreviewGrass(target, false);
 
-		rt->draw(lines, numP * 2, sf::Lines);
+		target->draw(lines, numP * 2, sf::Lines);
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 
 		return;
 		//UpdateLineColors();
 	}
 
-	DrawGrass(rt);
+	DrawGrass(target);
 
-	DrawInnerArea(rt);
+	DrawInnerArea(target);
 
-	DrawBorderQuads(rt);
+	DrawBorderQuads(target);
 
-	DrawDecor(rt);
+	DrawDecor(target);
 
-	DrawTouchGrass(rt);
+	DrawTouchGrass(target);
 
-	rt->draw( lines, numP * 2, sf::Lines );
+	target->draw( lines, numP * 2, sf::Lines );
 
 	if( showPoints )
 	{
-		DrawPoints(rt, zoomMultiple, dontShow );
+		DrawPoints(target, zoomMultiple, dontShow );
 	}
 
 	Vector2i center( (right + left) / 2, (bottom + top) / 2 );
@@ -5794,7 +5875,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 			cs.setFillColor( Color::Magenta );
 			cs.setPosition( center.x + (*it).x, center.y + (*it).y );
-			rt->draw( cs );
+			target->draw( cs );
 	
 		}
 
@@ -5811,13 +5892,18 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 					sf::Vertex(sf::Vector2<float>(center.x + (*prev).x, center.y + (*prev).y), Color::White ),
 					sf::Vertex(sf::Vector2<float>(center.x + (*curr).x, center.y + (*curr).y), Color::White )
 				};
-				rt->draw( activePreview, 2, sf::Lines );
+				target->draw( activePreview, 2, sf::Lines );
 
 				prev = curr;
 				++curr;
 			}
 		
 		}
+	}
+
+	if (depth != 1.f)
+	{
+		target->setView(oldView);
 	}
 }
 
@@ -6869,7 +6955,7 @@ PolyPtr TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
 	PolyPtr newPoly = new TerrainPolygon();
 	newPoly->Reserve(newPolyPoints);
 
-	newPoly->layer = 0;
+	newPoly->terrainCategory = 0;
 	newPoly->inverse = inverse;
 	newPoly->terrainWorldType = terrainWorldType;
 	newPoly->terrainVariation = terrainVariation;
@@ -7485,6 +7571,17 @@ bool TerrainPolygon::Load(std::ifstream &is)
 	int matVariation;
 	is >> matWorld;
 	is >> matVariation;
+
+	if(sess->mapHeader->ver1 >= 11)
+	{
+		int dLayer;
+		is >> dLayer;
+		drawLayer = dLayer;
+	}
+	else
+	{
+		drawLayer = DrawLayer::TERRAIN;
+	}
 
 	SetMaterialType(matWorld, matVariation);
 

@@ -145,6 +145,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	auto &mtr0 = edit->matTypeRects[0];
 	auto &mtr1 = edit->matTypeRects[1];
 	auto &mtr2 = edit->matTypeRects[2];
+	auto &mtr3 = edit->matTypeRects[3];
 
 	terrainCategoryDropdown->SetSelectedIndex(0);
 	ChooseMatType(mtr0.at(0));
@@ -152,6 +153,8 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	ChooseMatType(mtr1.at(0));
 	terrainCategoryDropdown->SetSelectedIndex(2);
 	ChooseMatType(mtr2.at(0));
+	terrainCategoryDropdown->SetSelectedIndex(3);
+	ChooseMatType(mtr3.at(0));
 
 	terrainCategoryDropdown->SetSelectedIndex(0);
 }
@@ -172,7 +175,7 @@ void CreateTerrainModeUI::ExpandTerrainLibrary()
 	{
 		matTypePanel->SetPosition(matPanelPos);
 		matTypePanel->handler = this;
-		edit->SetMatTypePanelLayer(GetTerrainCategory());
+		edit->SetMatTypePanelCategory(GetTerrainCategory());
 		edit->AddActivePanel(matTypePanel);
 	}
 }
@@ -183,6 +186,12 @@ void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
 	currMatRects[categoryIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
 	int world = icRect->pos.x / terrainGridSize + categoryIndex * 8;
+
+	if (categoryIndex == TerrainPolygon::CATEGORY_VISUAL)
+	{
+		world = icRect->pos.x / terrainGridSize;
+	}
+
 	int variation = icRect->pos.y / terrainGridSize;
 
 	edit->currTerrainWorld[categoryIndex] = world;
@@ -423,7 +432,7 @@ void CreateTerrainModeUI::SetCategoryVisual()
 	limitedTerrainActionDropdown->ShowMember();
 
 	terrainCategoryDropdown->SetSelectedIndex(2);
-	SetCategory(TerrainPolygon::CATEGORY_ITEM);
+	SetCategory(TerrainPolygon::CATEGORY_VISUAL);
 }
 
 void CreateTerrainModeUI::SetCategory(int selectedIndex)
