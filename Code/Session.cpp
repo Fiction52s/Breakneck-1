@@ -1501,6 +1501,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	ts_goalCrack = NULL;
 	ts_goalExplode = NULL;
 
+	currShaderDrawLayer = DrawLayer::INVALID; //just needs to be invalid completely so I know to update initially
+
 	turnTimerOnCounter = -1;
 	timerOn = false;
 
@@ -2345,20 +2347,20 @@ bool Session::ReadSpecialTerrain(std::ifstream &is)
 	return true;
 }
 
-bool Session::ReadBGTerrain(std::ifstream &is)
+bool Session::ReadLayeredTerrain(std::ifstream &is)
 {
-	int bgPlatformNum0;
-	is >> bgPlatformNum0;
-	for (int i = 0; i < bgPlatformNum0; ++i)
+	int layeredPolyNum;
+	is >> layeredPolyNum;
+	for (int i = 0; i < layeredPolyNum; ++i)
 	{
 		PolyPtr poly(new TerrainPolygon());
 		poly->Load(is);
 		poly->Finalize();
-		poly->SetTerrainCategory(1);
 
-		ProcessBGTerrain(poly);
-		//no grass for now
+		ProcessLayeredTerrain(poly);
 	}
+
+	ProcessAllLayeredTerrain();
 	return true;
 }
 
@@ -2526,7 +2528,7 @@ bool Session::ReadFile()
 
 		ReadSpecialTerrain(is);
 
-		ReadBGTerrain(is);
+		ReadLayeredTerrain(is);
 
 		ReadRails(is);
 
@@ -3712,17 +3714,6 @@ void Session::CreateZones()
 
 		TerrainPolygon *tp = new TerrainPolygon;
 		Edge *startEdge;
-		
-		//this is p ugly. just testing.
-		/*if (IsSessTypeGame())
-		{
-			startEdge = allPolysVec[0]->GetEdge(0);
-		}
-		else
-		{
-			EditSession *edit = (EditSession*)this;
-			startEdge = edit->polygons.front()->GetEdge(0);
-		}*/
 
 		startEdge = globalBorderEdges.front();
 
@@ -5228,7 +5219,7 @@ void Session::AdjustBoundsFromTerrain()
 	{
 		EditSession *edit = EditSession::GetSession();
 
-		auto &polyList = edit->polygons;
+		auto &polyList = edit->polygons[TerrainPolygon::CATEGORY_NORMAL];
 
 		if (!polyList.empty())
 		{
@@ -5307,7 +5298,7 @@ void Session::AdjustBoundsHeightFromTerrain()
 	{
 		EditSession *edit = EditSession::GetSession();
 
-		auto &polyList = edit->polygons;
+		auto &polyList = edit->polygons[TerrainPolygon::CATEGORY_NORMAL];
 
 		if (!polyList.empty())
 		{
@@ -5739,11 +5730,6 @@ void Session::DrawEmitters(int p_drawLayer, sf::RenderTarget *target)
 		curr->Draw(target);
 		curr = curr->next;
 	}
-}
-
-void Session::DrawLayeredTerrain(int p_drawLayer, sf::RenderTarget *target)
-{
-
 }
 
 void Session::UpdateEmitters()
@@ -6348,7 +6334,7 @@ void Session::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 		background->LayeredDraw(p_drawLayer, target);
 	}
 
-	
+	DrawTerrain(p_drawLayer, target);
 
 	DrawDecor(p_drawLayer, target);
 	DrawStoryLayer(p_drawLayer, target);
@@ -7105,6 +7091,8 @@ bool Session::RunGameModeUpdate()
 
 	while (accumulator >= TIMESTEP)
 	{
+		currShaderDrawLayer = DrawLayer::INVALID;
+
 		if (!firstUpdateHasHappened)
 		{
 			firstUpdateHasHappened = true;
@@ -7401,7 +7389,7 @@ bool Session::RunGameModeUpdate()
 
 		UpdateZones();
 
-		UpdateEnvShaders(); //havent tested at this position. should work fine.
+		UpdateEnvShaders( DrawLayer::TERRAIN, true); //havent tested at this position. should work fine.
 
 		totalGameFrames++;
 		totalGameFramesIncludingRespawns++;
@@ -7496,6 +7484,8 @@ bool Session::FrozenGameModeUpdate()
 {
 	while (accumulator >= TIMESTEP)
 	{
+		currShaderDrawLayer = DrawLayer::INVALID;
+
 		if (!OneFrameModeUpdate())
 		{
 			UpdateControllers();
@@ -7528,7 +7518,7 @@ bool Session::FrozenGameModeUpdate()
 		{
 			UpdateCamera();
 
-			UpdateEnvShaders();
+			UpdateEnvShaders( DrawLayer::TERRAIN, true);
 		}
 
 		if (background != NULL)
@@ -7580,6 +7570,8 @@ bool Session::SequenceGameModeUpdate()
 {
 	while (accumulator >= TIMESTEP)
 	{
+		currShaderDrawLayer = DrawLayer::INVALID;
+
 		if (!OneFrameModeUpdate())
 		{
 			UpdateControllers();
@@ -8051,6 +8043,8 @@ bool Session::OnlineRunGameModeUpdate()
 {
 	switchGameState = false;
 
+	currShaderDrawLayer = DrawLayer::INVALID;
+
 	if (!firstUpdateHasHappened)
 	{
 		firstUpdateHasHappened = true;
@@ -8249,7 +8243,7 @@ bool Session::OnlineRunGameModeUpdate()
 
 	UpdateZones();
 
-	UpdateEnvShaders(); //havent tested at this position. should work fine.
+	UpdateEnvShaders( DrawLayer::TERRAIN, true); //havent tested at this position. should work fine.
 
 	//cout << "incrementing total frames from " << totalGameFramesIncludingRespawns << " to " << totalGameFramesIncludingRespawns + 1 << "\n";
 	totalGameFrames++;

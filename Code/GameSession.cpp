@@ -1503,14 +1503,17 @@ void GameSession::ProcessAllDecorSpr()
 void GameSession::ProcessTerrain(PolyPtr poly)
 {
 	matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
-	if (poly->drawLayer == DrawLayer::TERRAIN)
+	allPolygonsList.push_back(poly);
+	/*if (poly->drawLayer == DrawLayer::TERRAIN)
 	{
-		allPolygonsList.push_back(poly);
+		
 	}
 	else
 	{
 		allVisualOnlyPolygonList.push_back(poly);
-	}
+	}*/
+
+	//it all gets counted as special terrain anyway!
 }
 
 void GameSession::ProcessAllTerrain()
@@ -1571,35 +1574,6 @@ void GameSession::ProcessAllTerrain()
 		polyIndex++;
 	}
 	allPolygonsList.clear();
-
-
-
-	PolyPtr poly;
-	allVisualOnlyPolysVec.reserve(allVisualOnlyPolygonList.size());
-	int polyIndex = 0;
-	for (auto it = allVisualOnlyPolygonList.begin(); it != allVisualOnlyPolygonList.end(); ++it)
-	{
-		poly = (*it);
-		poly->polyIndex = polyIndex;
-		poly->Finalize();
-		poly->grassBufferForAABBOn = true; //so that the quadtree can get a bigger AABB for this
-		poly->AddEdgesToQuadTree(terrainTree);
-		//poly->AddGrassToQuadTree(grassTree);
-
-		if (poly->inverse)
-		{
-			poly->AddEdgesToQuadTree(inverseEdgeTree);
-			inversePolygon = poly;
-		}
-		borderTree->Insert(poly);
-
-		allPolysVec.push_back((*it));
-
-		polyIndex++;
-	}
-	allPolygonsList.clear();
-
-
 }
 
 void GameSession::ProcessActor(ActorPtr a)
@@ -4180,7 +4154,7 @@ void GameSession::OpenGates(int gCat)
 }
 
 
-void GameSession::UpdateEnvShaders( bool timeMovesForward )
+void GameSession::UpdateEnvShaders( int p_drawLayer, bool timeMovesForward )
 {
 	if (IsParallelSession())
 	{

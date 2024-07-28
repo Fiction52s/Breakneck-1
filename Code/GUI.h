@@ -1440,6 +1440,8 @@ struct CreateTerrainModeUI : GUIHandler
 	int realTerrainTool;
 	int terrainGridSize;
 
+	int currVisualDrawLayer;
+
 	bool show;
 	EditSession *edit;
 

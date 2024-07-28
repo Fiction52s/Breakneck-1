@@ -35,12 +35,17 @@ namespace DrawLayer
 		FG_10,
 		IN_FRONT_OF_UI,
 		UI_FRONT,
-		DrawLayer_Count
+		DrawLayer_Count,
+		INVALID, //to know it hasn't been set
 	};
+
+	int StringToDrawLayer(const std::string &str);
+
+	std::string DrawLayerToString(int dLayer);
+
+	float GetDrawLayerDepthFactor(int layer);
 }
 
-int StringToDrawLayer(const std::string &str);
 
-float GetDrawLayerDepthFactor(int layer);
 
 #endif 

@@ -484,7 +484,7 @@ struct GameSession : RayCastHandler, Session
 	void SuppressEnemyKeys(Gate *g);
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
-	void UpdateEnvShaders(bool timeMovesForward);
+	void UpdateEnvShaders( int p_drawLayer, bool timeMovesForward);
 	void SetPlayerOption(int optionIndex, bool on, int playerIndex = 0);
 	bool TrySaveCurrentSaveFile();
 	void UnlockLog(int lType, int playerIndex = 0);

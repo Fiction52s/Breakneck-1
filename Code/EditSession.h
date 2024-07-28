@@ -85,7 +85,28 @@ enum EditLayer : int
 	LAYER_IMAGE,
 	LAYER_TERRAIN,
 	LAYER_WATER,
-	LAYER_
+	LAYER_VISUAL_BG_1,
+	LAYER_VISUAL_BG_2,
+	LAYER_VISUAL_BG_3,
+	LAYER_VISUAL_BG_4,
+	LAYER_VISUAL_BG_5,
+	LAYER_VISUAL_BG_6,
+	LAYER_VISUAL_BG_7,
+	LAYER_VISUAL_BG_8,
+	LAYER_VISUAL_BG_9,
+	LAYER_VISUAL_BG_10,
+	LAYER_VISUAL_BEHIND_TERRAIN,
+	LAYER_VISUAL_BACK_TERRAIN,
+	LAYER_VISUAL_FG_1,
+	LAYER_VISUAL_FG_2,
+	LAYER_VISUAL_FG_3,
+	LAYER_VISUAL_FG_4,
+	LAYER_VISUAL_FG_5,
+	LAYER_VISUAL_FG_6,
+	LAYER_VISUAL_FG_7,
+	LAYER_VISUAL_FG_8,
+	LAYER_VISUAL_FG_9,
+	LAYER_VISUAL_FG_10,
 };
 
 struct EditSession : GUIHandler, Session
@@ -258,10 +279,13 @@ struct EditSession : GUIHandler, Session
 	//allpolygons should hold all the lists but
 	//is currently unusued
 	std::vector<std::list<PolyPtr>> allPolygons;
-	std::list<PolyPtr> polygons;
-	std::list<PolyPtr> waterPolygons;
-	std::list<PolyPtr> flyPolygons;
-	std::list<PolyPtr> visualPolygons;
+
+	std::list<PolyPtr> polygons[TerrainPolygon::CATEGORY_Count];
+	//std::list<PolyPtr> polygons;
+	//std::list<PolyPtr> waterPolygons;
+	//std::list<PolyPtr> flyPolygons;
+	//std::list<PolyPtr> visualPolygons;
+	//std::list<PolyPtr> visualWaterPolygons;
 	BrushManager *brushManager;
 	MapBrowserHandler *mapBrowserHandler;
 	AdventureCreator *adventureCreator;
@@ -424,7 +448,7 @@ struct EditSession : GUIHandler, Session
 
 	void PublishMap();
 
-	void UpdateEnvShaders(bool timeMovesForward);
+	void UpdateEnvShaders( int p_drawLayer, bool timeMovesForward);
 	void Load();
 	void Init();
 	void DefaultInit();
@@ -443,7 +467,7 @@ struct EditSession : GUIHandler, Session
 		float rotation, sf::Vector2f &scale);
 	void ProcessTerrain( PolyPtr poly );
 	void ProcessSpecialTerrain(PolyPtr poly);
-	void ProcessBGTerrain(PolyPtr poly);
+	void ProcessLayeredTerrain(PolyPtr poly);
 	void ProcessRail(RailPtr rail);
 	void ProcessActor(ActorPtr a);
 	void ProcessGate(int gCat, int gVar,
@@ -453,15 +477,13 @@ struct EditSession : GUIHandler, Session
 		int shardIndex, int seconds);
 	bool ReadPlayer(std::ifstream &is);
 	bool ReadDecor(std::ifstream &is);
-	bool ReadBGTerrain(std::ifstream &is);
-	bool ReadSpecialTerrain(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
 	bool WriteFile();
 	bool WriteTargetExistsAlready();
-	void WritePolygons(std::ofstream &of,
-		int bgPlatCount0 );
+	void WritePolygons(std::ofstream &of );
 	void WriteSpecialPolygons(std::ofstream &of);
+	void WriteLayeredPolygons(std::ofstream &of);
 	void WriteRails(std::ofstream &of);
 	void WriteActors(std::ofstream &of);
 	void WriteGates(std::ofstream &of);
@@ -675,7 +697,7 @@ struct EditSession : GUIHandler, Session
 	void SetZoom(double z);
 	void TryAddToPatrolPath();
 	void UpdatePanning();
-	void UpdatePolyShaders( bool timePassing );
+	void UpdatePolyShaders( int p_drawLayer, bool timePassing );
 	void AddDoneAction(Action *a);
 	void ClearUndoneActions();
 	void TempMoveSelectedBrush();

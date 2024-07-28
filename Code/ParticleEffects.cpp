@@ -480,7 +480,7 @@ void ShapeEmitter::SetOn(bool on)
 
 void ShapeEmitter::Draw(sf::RenderTarget *target)
 {
-	float depth = GetDrawLayerDepthFactor(drawLayer);
+	float depth = DrawLayer::GetDrawLayerDepthFactor(drawLayer);
 	sf::View oldView = target->getView();
 
 	if (depth != 1.f)

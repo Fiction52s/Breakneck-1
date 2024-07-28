@@ -374,6 +374,42 @@ void EditModeUI::CreateLayerPanel()
 	layerMap[LAYER_IMAGE] = "images";
 	layerMap[LAYER_TERRAIN] = "terrain";
 	layerMap[LAYER_WATER] = "water";
+
+	layerMap[LAYER_VISUAL_BG_1] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_2] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_3] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_4] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_5] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_6] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_7] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_8] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_9] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_10] = "BG_1";
+
+	layerMap[LAYER_VISUAL_BEHIND_TERRAIN] = "water";
+	layerMap[LAYER_VISUAL_BACK_TERRAIN] = "water";
+
+	//NOTE: this isn't decided on yet. need a way to choose which layer im working in and ignore all others really easily.
+	//You can create things in other layers, such as terrain and decor, and then move them around in the layer mode.
+	//I'll just make it a separate mode. MUCH BETTER AS A DROP DOWN
+	//Any terrain and any decor can be moved forward or back. 
+
+	//when dealing wth layers, you can only select stuff from the current layer you're in.
+
+	//actually we need to keep these, so that I can turn on/off the visuals for each layer in edit mode. But to actually deal with stuff,
+	//I'l need some kind of special dropdown.
+
+	layerMap[LAYER_VISUAL_FG_1] = "water";
+	layerMap[LAYER_VISUAL_FG_2] = "water";
+	layerMap[LAYER_VISUAL_FG_3] = "water";
+	layerMap[LAYER_VISUAL_FG_4] = "water";
+	layerMap[LAYER_VISUAL_FG_5] = "water";
+	layerMap[LAYER_VISUAL_FG_6] = "water";
+	layerMap[LAYER_VISUAL_FG_7] = "water";
+	layerMap[LAYER_VISUAL_FG_8] = "water";
+	layerMap[LAYER_VISUAL_FG_9] = "water";
+	layerMap[LAYER_VISUAL_FG_10] = "water";
+
 	/*layerMap[LAYER_CAMERA] = "camera";
 	layerMap[LAYER_POI] = "poi";*/
 

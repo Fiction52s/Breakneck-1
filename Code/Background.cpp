@@ -15,7 +15,7 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	:ts(p_ts), va(sf::Quads, 2 * 4), depthLevel(p_depthLevel),
 	tsIndex(index), scrollSpeedX(p_scrollSpeedX)
 {
-	depth = GetDrawLayerDepthFactor(depthLevel) * .5;
+	depth = DrawLayer::GetDrawLayerDepthFactor(depthLevel) * .5;
 	assert(p_ts != NULL);
 	tsSource = ts->sourceName;
 	//ts->texture->setSmooth(false);

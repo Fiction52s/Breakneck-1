@@ -299,8 +299,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	int numGates;
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;
-	std::vector<PolyPtr> allSpecialPolysVec;
 	std::vector<PolyPtr> allVisualOnlyPolysVec;
+	std::vector<PolyPtr> allSpecialPolysVec;
+	std::vector<PolyPtr> allVisualOnlySpecialPolysVec;
 	std::vector<RailPtr> allRailsVec;
 	std::vector<Enemy*> allEnemiesVec;
 	std::vector<Enemy*> allSpawnableEnemiesVec;
@@ -481,6 +482,8 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	Actor *currSuperPlayer;
 
+	int currShaderDrawLayer;
+
 	bool frameConfirmed;
 
 	std::vector<Sequence*> allSequencesVec;
@@ -514,7 +517,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void ProcessTerrain(PolyPtr poly) {}
 	virtual void ProcessAllTerrain() {}
 	virtual void ProcessAllSpecialTerrain() {}
-	virtual void ProcessBGTerrain(PolyPtr poly) {}
+	virtual void ProcessLayeredTerrain(PolyPtr poly) {}
+	virtual void ProcessAllLayeredTerrain() {}
 	virtual void ProcessRail(RailPtr rail) {}
 	virtual bool ReadActors(std::ifstream &is);
 	virtual void ProcessActor(ActorPtr a) {}
@@ -737,7 +741,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool ReadPlayerOptions(std::ifstream &is);
 	bool ReadTerrain(std::ifstream &is);
 	bool ReadSpecialTerrain(std::ifstream &is);
-	bool ReadBGTerrain(std::ifstream &is);
+	bool ReadLayeredTerrain(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
 	
@@ -906,7 +910,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawPracticeGame(sf::RenderTarget *target);
 	void UpdateRunningTimerText();
 	virtual void UpdateEnvPlants() {}
-	virtual void UpdateEnvShaders(bool timeMovesForward) {}
+	virtual void UpdateEnvShaders( int p_drawLayer, bool timeMovesForward) {}
 	virtual void UpdateCamera() = 0;
 	virtual void UpdateSoundNodeLists();
 	void UpdateScoreDisplay();

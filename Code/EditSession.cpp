@@ -191,7 +191,8 @@ void EditSession::SetTrackingDecor(DecorPtr dec)
 
 void EditSession::UpdateDecorSprites()
 {
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		(*it)->UpdateDecorSprites();
 		(*it)->UpdateTouchGrass();
@@ -548,9 +549,9 @@ bool EditSession::TestPlayerModeUpdate()
 	return true;
 }
 
-void EditSession::UpdateEnvShaders( bool timeMovesForward )
+void EditSession::UpdateEnvShaders( int p_drawLayer, bool timeMovesForward )
 {
-	UpdatePolyShaders(timeMovesForward);
+	UpdatePolyShaders( p_drawLayer, timeMovesForward);
 }
 
 
@@ -1807,11 +1808,13 @@ PolyPtr EditSession::GetPolygon(int index )
 	{
 		int testIndex = 0;
 
-		auto it = polygons.begin();
+		auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+
+		auto it = testPolygons.begin();
 		if (inversePolygon != NULL)
 			++it;
 
-		for (; it != polygons.end(); ++it)
+		for (; it != testPolygons.end(); ++it)
 		{
 			if (testIndex == index)
 			{
@@ -1837,7 +1840,9 @@ RailPtr EditSession::GetRail(int index)
 {
 	TerrainRail* rail = NULL;
 
-	int pSize = polygons.size();
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+
+	int pSize = testPolygons.size();
 	if (inversePolygon != NULL)
 	{
 		pSize--;
@@ -1918,10 +1923,11 @@ void EditSession::CleanupForReload()
 	rails.clear();
 
 	inversePolygon = NULL;
-	polygons.clear();
-	waterPolygons.clear();
-	flyPolygons.clear();
-	visualPolygons.clear();
+
+	for (int i = 0; i < TerrainPolygon::CATEGORY_Count; ++i)
+	{
+		polygons[i].clear();
+	}
 
 	
 
@@ -2175,8 +2181,19 @@ void EditSession::Draw()
 
 	preScreenTex->setView(view);
 
-	if( background != NULL )
-		background->Draw(preScreenTex);
+	if (background != NULL)
+	{
+		background->DrawBackLayer(preScreenTex);
+	}
+
+
+	for (int i = DrawLayer::BG_1; i <= DrawLayer::BG_10; ++i)
+	{
+		LayeredDraw(i, preScreenTex);
+	}
+
+	/*if( background != NULL )
+		background->Draw(preScreenTex);*/
 
 	preScreenTex->draw(border, 8, sf::Lines);
 
@@ -2188,6 +2205,7 @@ void EditSession::Draw()
 
 	DrawItemTerrain(preScreenTex);
 
+	DrawTerrain(DrawLayer::BACK_TERRAIN, preScreenTex);
 	DrawTerrain( DrawLayer::TERRAIN, preScreenTex);
 
 	DrawRails(preScreenTex);
@@ -2212,6 +2230,11 @@ void EditSession::Draw()
 	TempMoveSelectedBrush();
 
 	DrawDecor(DrawLayer::IN_FRONT, preScreenTex);
+
+	for (int i = DrawLayer::FG_1; i <= DrawLayer::FG_10; ++i)
+	{
+		DrawTerrain(i, preScreenTex );
+	}
 
 	if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
 	{
@@ -2376,50 +2399,6 @@ void EditSession::ProcessTerrain(PolyPtr poly)
 	
 }
 
-bool EditSession::ReadBGTerrain(std::ifstream &is)
-{
-	int bgPlatformNum0;
-	is >> bgPlatformNum0;
-	for (int i = 0; i < bgPlatformNum0; ++i)
-	{
-		PolyPtr poly(new TerrainPolygon());
-		polygons.push_back(poly);
-
-		mapStartBrush->AddObject(poly);
-
-		int matWorld;
-		int matVariation;
-		is >> matWorld;
-		is >> matVariation;
-
-		poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
-		poly->terrainVariation = matVariation;
-
-		int polyPoints;
-		is >> polyPoints;
-
-		for (int j = 0; j < polyPoints; ++j)
-		{
-			int x, y, special;
-			is >> x;
-			is >> y;
-			poly->AddPoint(Vector2i(x, y), false);
-		}
-
-		poly->Finalize();
-		poly->SetTerrainCategory(1);
-		//no grass for now
-	}
-	return true;
-}
-
-void EditSession::ProcessBGTerrain(PolyPtr poly)
-{
-	polygons.push_back(poly);
-	mapStartBrush->AddObject(poly);
-	
-}
-
 bool EditSession::ReadRails(std::ifstream &is)
 {
 	int numRails;
@@ -2442,40 +2421,10 @@ void EditSession::ProcessRail(RailPtr rail)
 	mapStartBrush->AddObject(rail);
 }
 
-bool EditSession::ReadSpecialTerrain(std::ifstream &is)
+void EditSession::ProcessLayeredTerrain(PolyPtr poly)
 {
-	int specialPolyNum;
-	is >> specialPolyNum;
-
-	for (int i = 0; i < specialPolyNum; ++i)
-	{
-		PolyPtr poly(new TerrainPolygon());
-
-		mapStartBrush->AddObject(poly);
-
-		int matWorld;
-		int matVariation;
-		is >> matWorld;
-		is >> matVariation;
-
-		poly->SetMaterialType(matWorld, matVariation);
-		int polyPoints;
-		is >> polyPoints;
-
-		GetCorrectPolygonList(poly).push_back(poly);
-
-		for (int j = 0; j < polyPoints; ++j)
-		{
-			int x, y, special;
-			is >> x;
-			is >> y;
-			poly->AddPoint(Vector2i(x, y), false);
-		}
-
-		poly->Finalize();
-	}
-
-	return true;
+	GetCorrectPolygonList(poly).push_back(poly);
+	mapStartBrush->AddObject(poly);
 }
 
 void EditSession::ProcessSpecialTerrain(PolyPtr poly)
@@ -2537,7 +2486,9 @@ void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 		terrain1 = inversePolygon;
 	}
 
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for (list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		if ((*it)->inverse) continue;
 
@@ -2633,7 +2584,8 @@ void EditSession::WriteMapHeader(ofstream &of)
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for (list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		if ((*it)->terrainCategory == 0)
 		{
@@ -2720,9 +2672,11 @@ void EditSession::WriteMapHeader(ofstream &of)
 		int pTop = 0;
 		int pRight = 0;
 		int pBot = 0;
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+
+		auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
-			if (polygons.front() == (*it))
+			if (testPolygons.front() == (*it))
 			{
 				pLeft = (*it)->left;
 				pTop = (*it)->top;
@@ -2850,31 +2804,47 @@ void EditSession::WriteInversePoly(std::ofstream &of)
 
 void EditSession::WriteSpecialPolygons(std::ofstream &of)
 {
-	int numSpecialPolys = waterPolygons.size() + flyPolygons.size() + visualPolygons.size();
+	int numSpecialPolys = polygons[TerrainPolygon::CATEGORY_WATER].size() + polygons[TerrainPolygon::CATEGORY_ITEM].size();
 	of << numSpecialPolys << endl;
 
+	auto &waterPolygons = polygons[TerrainPolygon::CATEGORY_WATER];
 	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
 	{
 		(*it)->WriteFile(of);
 	}
 
-	for (auto it = flyPolygons.begin(); it != flyPolygons.end(); ++it)
-	{
-		(*it)->WriteFile(of);
-	}
-
-	for (auto it = visualPolygons.begin(); it != visualPolygons.end(); ++it)
+	auto &itemPolygons = polygons[TerrainPolygon::CATEGORY_ITEM];
+	for (auto it = itemPolygons.begin(); it != itemPolygons.end(); ++it)
 	{
 		(*it)->WriteFile(of);
 	}
 }
 
-void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
+void EditSession::WriteLayeredPolygons(std::ofstream &of)
+{
+	int numLayeredPolys = polygons[TerrainPolygon::CATEGORY_VISUAL].size() + polygons[TerrainPolygon::CATEGORY_VISUAL_WATER].size();
+	of << numLayeredPolys << endl;
+
+	auto &visualPolygons = polygons[TerrainPolygon::CATEGORY_VISUAL];
+	for (auto it = visualPolygons.begin(); it != visualPolygons.end(); ++it)
+	{
+		(*it)->WriteFile(of);
+	}
+
+	auto &visualWaterPolygons = polygons[TerrainPolygon::CATEGORY_VISUAL_WATER];
+	for (auto it = visualWaterPolygons.begin(); it != visualWaterPolygons.end(); ++it)
+	{
+		(*it)->WriteFile(of);
+	}
+}
+
+void EditSession::WritePolygons(std::ofstream &of )
 {
 	int writeIndex = 0;
 
-	cout << "writing to file with : " << polygons.size() << " polygons" << endl;
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	cout << "writing to file with : " << testPolygons.size() << " polygons" << endl;
+	for (list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		if ((*it)->inverse) continue;
 
@@ -2893,69 +2863,8 @@ void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
 
 
 	WriteSpecialPolygons(of);
-	//of << "0" << endl; //writing the number of moving platforms. remove this when possible
 
-
-	//write moving platorms
-	/*writeIndex = 0;
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-	{
-		if ((*it)->layer == 0 && (*it)->path.size() >= 2)
-		{
-			(*it)->writeIndex = writeIndex;
-			++writeIndex;
-
-			of << (*it)->terrainWorldType << " "
-				<< (*it)->terrainVariation << endl;
-
-			of << (*it)->numPoints << endl;
-
-			for (TerrainPoint *pcurr = (*it)->pointStart; pcurr != NULL; pcurr = pcurr->next)
-			{
-				of << pcurr->pos.x << " " << pcurr->pos.y << endl;
-			}
-
-
-			of << (*it)->path.size() - 1 << endl;
-
-			list<Vector2i>::iterator pathit = (*it)->path.begin();
-			++pathit;
-
-			for (; pathit != (*it)->path.end(); ++pathit)
-			{
-				of << (*pathit).x << " " << (*pathit).y << endl;
-			}
-		}
-	}*/
-
-	of << bgPlatCount0 << endl;
-
-	writeIndex = 0;
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-	{
-		if ((*it)->inverse) continue;
-
-		if ((*it)->terrainCategory == 1)// && (*it)->path.size() < 2 )
-		{
-			//writeindex doesnt matter much for these for now
-			(*it)->writeIndex = writeIndex;
-			++writeIndex;
-
-			of << (*it)->terrainWorldType << " "
-				<< (*it)->terrainVariation << endl;
-
-			int numP = (*it)->GetNumPoints();
-
-			of << numP << endl;
-
-			TerrainPoint *curr;
-			for (int i = 0; i < numP; ++i)
-			{
-				curr = (*it)->GetPoint(i);
-				of << curr->pos.x << " " << curr->pos.y << endl;
-			}
-		}
-	}
+	WriteLayeredPolygons(of);
 }
 
 void EditSession::WriteActors(ofstream &of)
@@ -3086,10 +2995,6 @@ bool EditSession::WriteFile()
 	of.open(tempMap);
 
 
-	
-	
-
-
 	int tempTop = mapHeader->topBounds;
 	int tempLeft = mapHeader->leftBounds;
 	int tempWidth = mapHeader->boundsWidth;
@@ -3128,16 +3033,7 @@ bool EditSession::WriteFile()
 
 	WriteInversePoly(of);
 
-
-	int bgPlatCount0 = 0;
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-	{
-		if ((*it)->terrainCategory == 1)
-		{
-			bgPlatCount0++;
-		}
-	}
-	WritePolygons(of, bgPlatCount0);
+	WritePolygons(of);
 
 	WriteRails(of);
 	//going to use this for number of rails
@@ -3200,7 +3096,9 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 	bool found = false;
 
 	ClearMostRecentError();
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end() && !found; ++it)
+
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for (list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end() && !found; ++it)
 	{
 		//extended aabb 
 		TerrainPoint *closePoint = (*it)->GetClosePoint(8 * zoomMultiple, pos);
@@ -3705,8 +3603,9 @@ void EditSession::SetupTerrainSelectPanel()
 	int numPickupTypeRects = 1;//1 * maxTerrainVarPerWorld;
 
 	int numVisualTypeRects = numTypeRects;
+	int numVisualWaterTypeRects = numWaterTypeRects;
 
-	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects + numVisualTypeRects;
+	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects + numVisualTypeRects + numVisualWaterTypeRects;
 
 	matTypePanel->ReserveImageRects(totalRects);
 
@@ -3806,11 +3705,7 @@ void EditSession::SetupTerrainSelectPanel()
 	}
 
 
-
-
-
-	matTypeRects[TerrainPolygon::CATEGORY_VISUAL].resize(numTypeRects);
-
+	matTypeRects[TerrainPolygon::CATEGORY_VISUAL].resize(numVisualTypeRects);
 	for (int worldI = 0; worldI < 8; ++worldI)
 	{
 		int ind;
@@ -3849,6 +3744,20 @@ void EditSession::SetupTerrainSelectPanel()
 				//matTypeRects[TERRAINLAYER_NORMAL][ind]->SetShown(false);
 			}
 		}
+	}
+
+
+	matTypeRects[TerrainPolygon::CATEGORY_VISUAL_WATER].resize(numVisualWaterTypeRects);
+	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+	{
+		matTypeRects[TerrainPolygon::CATEGORY_VISUAL_WATER][i] = matTypePanel->AddImageRect(
+			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+			Vector2f(TerrainPolygon::GetWaterWorld(i) * terrainGridSize,
+				TerrainPolygon::GetWaterIndexInWorld(i) * terrainGridSize),
+			mainMenu->ts_water, mainMenu->ts_water->GetSubRect(i * 2),
+			terrainGridSize);
+		matTypeRects[TerrainPolygon::CATEGORY_VISUAL_WATER][i]->Init();
+		matTypeRects[TerrainPolygon::CATEGORY_VISUAL_WATER][i]->SetName(TerrainPolygon::GetWaterNameFromType(i));
 	}
 
 
@@ -4693,14 +4602,14 @@ int EditSession::EditRun()
 			{
 				for (int i = 0; i < spriteUpdateFrames; ++i)
 				{
-					UpdateEnvShaders( true );
+					UpdateEnvShaders( DrawLayer::TERRAIN, true );
 				}
 			}
 			else
 			{
 				for (int i = 0; i < spriteUpdateFrames; ++i)
 				{
-					UpdateEnvShaders(false);
+					UpdateEnvShaders( DrawLayer::TERRAIN, false);
 				}
 			}
 
@@ -8293,7 +8202,9 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 
 	TerrainPoint *curr, *prev;
 	int numP;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for( list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end(); ++it )
 	{
 		//aabb collide
 		if (left <= (*it)->right && right >= (*it)->left && top <= (*it)->bottom && bot >= (*it)->top)
@@ -8386,7 +8297,18 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 
 	DrawDecor(DrawLayer::BEHIND_TERRAIN, target);
 
-	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
+	for (int i = TerrainPolygon::CATEGORY_WATER; i <= TerrainPolygon::CATEGORY_ITEM; ++i)//i < TerrainPolygon::CATEGORY_Count; ++i)
+	{
+		for (auto it = polygons[i].begin(); it != polygons[i].end(); ++it)
+		{
+			oldSelected = (*it)->selected;
+			(*it)->SetSelected(false);
+			(*it)->Draw(false, 1, target, false, NULL);
+			(*it)->SetSelected(oldSelected);
+		}
+	}
+
+	/*for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
 	{
 		oldSelected = (*it)->selected;
 		(*it)->SetSelected(false);
@@ -8409,6 +8331,14 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 		(*it)->Draw(false, 1, target, false, NULL);
 		(*it)->SetSelected(oldSelected);
 	}
+
+	for (auto it = visualWaterPolygons.begin(); it != visualWaterPolygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+		(*it)->Draw(false, 1, target, false, NULL);
+		(*it)->SetSelected(oldSelected);
+	}*/
 
 	TestPlayerModeForPreview();
 
@@ -8446,7 +8376,9 @@ void EditSession::DrawPreview(sf::RenderTarget *target, sf::View &pView, int wid
 	//		(*it)->SetSelected(oldSelected);
 	//	}
 	//}
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		oldSelected = (*it)->selected;
 		(*it)->SetSelected(false);
@@ -8943,9 +8875,10 @@ void EditSession::CreatePreview(bool thumbnail, bool hideSecret )
 		int pTop = 0;
 		int pRight = 0;
 		int pBot = 0;
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
-			if (polygons.front() == (*it))
+			if (testPolygons.front() == (*it))
 			{
 				pLeft = (*it)->left;
 				pTop = (*it)->top;
@@ -9146,7 +9079,8 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 	double minQuant = 0;//actorSize.x / 2;
 	//double extra = actorSize.x;
 
-	for( auto it = polygons.begin(); it != polygons.end(); ++it )
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for( auto it = testPolygons.begin(); it != testPolygons.end(); ++it )
 	{
 		bool pointInPoly = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
 		//contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));;//(*it)->Intersects(actorAABB);//true;//
@@ -9345,7 +9279,10 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList(PolyPtr t)
 
 list<PolyPtr> & EditSession::GetCorrectPolygonList(int ind)
 {
-	switch (ind)
+	assert(ind >= 0 && ind < TerrainPolygon::CATEGORY_Count);
+
+	return polygons[ind];
+	/*switch (ind)
 	{
 	case 0:
 		return polygons;
@@ -9355,10 +9292,12 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList(int ind)
 		return flyPolygons;
 	case 3:
 		return visualPolygons;
+	case 4:
+		return visualWaterPolygons;
 	default:
 		assert(0);
 		return polygons;
-	}
+	}*/
 }
 
 list<PolyPtr> & EditSession::GetCorrectPolygonList()
@@ -9568,6 +9507,18 @@ bool EditSession::ExecuteTerrainCompletion()
 			if (success && changesMade )
 			{
 				ClearUndoneActions(); //critical to have this before the deactivation
+
+				if (mode == CREATE_TERRAIN && createTerrainModeUI->GetTerrainCategory() == TerrainPolygon::CATEGORY_VISUAL)
+				{
+					for (auto it = result.objects.begin(); it != result.objects.end(); ++it)
+					{
+						if ((*it)->GetAsTerrain() != NULL)
+						{
+							(*it)->GetAsTerrain()->drawLayer = createTerrainModeUI->currVisualDrawLayer;
+						}
+					}
+				}
+				
 
 				Action *replaceAction = new ReplaceBrushAction(&orig, &result, mapStartBrush);
 				replaceAction->Perform();
@@ -11935,14 +11886,14 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 	return found;
 }
 
-bool EditSession::BoxSelectPolys(sf::IntRect &rect, int terrainLayer )
+bool EditSession::BoxSelectPolys(sf::IntRect &rect, int terrainCategory )
 {
 	bool found = false;
 
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
-	auto & currPolyList = GetCorrectPolygonList(terrainLayer);
+	auto & currPolyList = GetCorrectPolygonList(terrainCategory);
 
 	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
@@ -12125,7 +12076,8 @@ void EditSession::ModifyGrass()
 	if (editModeUI->IsShowGrassOn() && MOUSE.IsMouseDownLeft()
 		&& !justCompletedPolyWithClick )
 	{
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			(*it)->SwitchGrass(worldPos, !HoldingShift(), true, currGrassType );
 		}
@@ -13118,7 +13070,8 @@ void EditSession::MoveRightBorder(int amount)
 
 void EditSession::BackupGrass()
 {
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		(*it)->BackupGrass();
 	}
@@ -13127,7 +13080,9 @@ void EditSession::BackupGrass()
 void EditSession::ChangeGrassAction()
 {
 	int changedCounter = 0;
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		changedCounter += (*it)->GetNumGrassChanges();
 	}
@@ -13138,7 +13093,7 @@ void EditSession::ChangeGrassAction()
 		grassChanges = new GrassDiff[changedCounter];
 
 		int startIndex = 0;
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			(*it)->isGrassBackedUp = false;
 			startIndex += (*it)->AddGrassChanges(grassChanges + startIndex);
@@ -13157,16 +13112,17 @@ void EditSession::ChangeGrassAction()
 
 void EditSession::ShowGrass(bool s)
 {
+	auto &testPolygons = polygons[TerrainPolygon::CATEGORY_NORMAL];
 	if (s)
 	{
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			(*it)->ShowGrass(true);
 		}
 	}
 	else
 	{
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			(*it)->ShowGrass(false);
 		}
@@ -13259,14 +13215,37 @@ void EditSession::UpdatePanning()
 	}
 }
 
-void EditSession::UpdatePolyShaders( bool timePassing )
+void EditSession::UpdatePolyShaders( int p_drawLayer, bool timePassing )
 {
-	float bigTest = GetDrawLayerDepthFactor(DrawLayer::FG_4);
+	float depthFactor = DrawLayer::GetDrawLayerDepthFactor(p_drawLayer);
+	float currTest = DrawLayer::GetDrawLayerDepthFactor(currShaderDrawLayer);
+	
+	bool lockToBG = true;
+
+	if (depthFactor == currTest)
+	{
+		return;
+	}
+
+	currShaderDrawLayer = p_drawLayer;
+
+	//float bigTest = GetDrawLayerDepthFactor(DrawLayer::FG_4);
+	
 
 
-	Vector2f vSize = view.getSize() / bigTest;
+	Vector2f vSize = view.getSize() / depthFactor;
 	float zoom = vSize.x / 960;
-	Vector2f center = view.getCenter() * bigTest;
+	Vector2f center = view.getCenter() * depthFactor;
+
+	
+
+	if ( lockToBG && p_drawLayer >= DrawLayer::BG_1 && p_drawLayer <= DrawLayer::BG_10)
+	{
+		center.y = 0;
+		vSize = Vector2f(1920, 1080) / depthFactor; //locked zoom just like the terrain. just match up how the draw calls work. ezpz
+		zoom = vSize.x / 960;
+	}
+
 	Vector2f botLeft(center.x - vSize.x / 2, center.y + vSize.y / 2);
 
 	float camAngle = (float)(view.getRotation() * PI / 180.0);
@@ -13436,9 +13415,13 @@ void EditSession::DrawTerrain( int p_drawLayer, sf::RenderTarget *target)
 		return;
 	}
 
+	
+
 	if (p_drawLayer == DrawLayer::TERRAIN)
 	{
 		bool showPoints = IsShowingPoints();
+
+		UpdateEnvShaders(p_drawLayer, false);
 
 		if (inversePolygon != NULL)
 		{
@@ -13453,6 +13436,48 @@ void EditSession::DrawTerrain( int p_drawLayer, sf::RenderTarget *target)
 
 			(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
 		}
+	}
+	else
+	{
+
+		int numInLayer = 0;
+		bool showPoints = false;
+
+		auto & currPolyList = GetCorrectPolygonList(TerrainPolygon::CATEGORY_VISUAL);
+		for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
+		{
+			if ((*it)->inverse)
+				continue;
+
+			if ((*it)->drawLayer != p_drawLayer)
+			{
+				continue;
+			}
+
+
+			++numInLayer;
+		}
+
+
+		if (numInLayer > 0)
+		{
+			UpdateEnvShaders(p_drawLayer, false);
+			for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
+			{
+				if ((*it)->inverse)
+					continue;
+
+				if ((*it)->drawLayer != p_drawLayer)
+				{
+					continue;
+				}
+
+				(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+			}
+		}
+
+
+		//UpdatePolyShaders
 	}
 	//else if( p_drawLayer == DrawLayer::)
 }

@@ -247,7 +247,7 @@ void PauseMap::DrawToTex()
 	botLeft = botLeftTest;
 	Vector2f blank;
 	float realZ = vSize.x / (mapTex->getSize().x / 2.f);//960.f;
-	game->UpdatePolyShaders(botLeft, blank, realZ);
+	game->UpdatePolyShaders(botLeft, blank, realZ, false);
 
 
 	DrawSpecialTerrain(minimapRect, mapTex);

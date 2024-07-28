@@ -219,6 +219,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		CATEGORY_WATER,
 		CATEGORY_ITEM,
 		CATEGORY_VISUAL,
+		CATEGORY_VISUAL_WATER,
 		CATEGORY_Count,
 	};
 
@@ -286,6 +287,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	};
 	int frame;
 	State state;
+
+	sf::Text layerText;
 
 	int drawLayer;
 
@@ -686,6 +689,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 	bool IsCloseToFirstPoint(double radius, V2d &p);
 	int GetNumSelectedPoints();
+	void SetDrawLayer(int p_drawLayer);
 	PolyPtr CreateCopyWithSelectedPointsRemoved();
 	sf::Color selectCol;
 	sf::Color fillCol;

@@ -51,7 +51,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	minEdgeLenTextbox->SetToolTip("Minimum edge length while drawing polygons.\nIf zoomed out, it uses screen pixels,"
 		"\nand if zoomed in, it uses world pixels");
 	
-	std::vector<string> categoryOptions = { "Terrain", "Water", "Pickup", "Visual" };
+	std::vector<string> categoryOptions = { "Terrain", "Water", "Pickup", "Visual", "Visual Water" };
 	terrainCategoryDropdown = mainPanel->AddDropdown("categorydrop", Vector2i(0, 0), Vector2i(200, 28), categoryOptions, 0);
 	terrainCategoryDropdown->SetToolTip("Choose polygon category\n(E to choose material)");
 
@@ -146,6 +146,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	auto &mtr1 = edit->matTypeRects[1];
 	auto &mtr2 = edit->matTypeRects[2];
 	auto &mtr3 = edit->matTypeRects[3];
+	auto &mtr4 = edit->matTypeRects[4];
 
 	terrainCategoryDropdown->SetSelectedIndex(0);
 	ChooseMatType(mtr0.at(0));
@@ -155,8 +156,12 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	ChooseMatType(mtr2.at(0));
 	terrainCategoryDropdown->SetSelectedIndex(3);
 	ChooseMatType(mtr3.at(0));
+	terrainCategoryDropdown->SetSelectedIndex(4);
+	ChooseMatType(mtr4.at(0));
 
 	terrainCategoryDropdown->SetSelectedIndex(0);
+
+	currVisualDrawLayer = DrawLayer::BG_5; //TERRAIN_BACK;
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()

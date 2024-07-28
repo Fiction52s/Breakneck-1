@@ -1257,6 +1257,14 @@ TerrainPolygon::TerrainPolygon()
 	if (sess != NULL)
 	{
 		ts_grass = sess->mainMenu->GetSizedTileset("Env/grass_128x128.png");
+
+		layerText.setFont(sess->mainMenu->arial);
+		layerText.setCharacterSize(50);
+		layerText.setOutlineColor(Color::Black);
+		layerText.setOutlineThickness(-3);
+		layerText.setFillColor(Color::White);
+
+
 	}
 	
 	grassSize = 128;
@@ -3737,12 +3745,21 @@ void TerrainPolygon::UpdateBounds()
 
 int TerrainPolygon::GetSpecialPolyIndex()
 {
+	int index = -1;
+
 	if (terrainWorldType >= TerrainPolygon::W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
-		return 1;
+		index = 1;
 	else if (terrainWorldType == ITEM)
-		return 2;
+		index = 2;
 	else
-		return 0;
+		index = 0;
+
+
+	if (drawLayer != DrawLayer::TERRAIN)
+	{
+		index += 3;
+	}
+	return index;
 }
 
 void TerrainPolygon::UpdateMaterialType()
@@ -5597,34 +5614,28 @@ void TerrainPolygon::DrawInnerArea(RenderTarget *target)
 
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *target, bool showPoints, TerrainPoint *dontShow )
 {
-	float depth = GetDrawLayerDepthFactor(drawLayer);
+	float depth = DrawLayer::GetDrawLayerDepthFactor(drawLayer);
 	sf::View oldView = target->getView();
 
 	if (depth != 1.f)
 	{
-		if (depth > 1.f)
+		sf::View newView;
+		bool lockToBG = true;
+
+		Vector2f center = oldView.getCenter() * depth;
+		Vector2f vSize;
+
+		vSize = oldView.getSize() / depth;
+
+		if (lockToBG && drawLayer >= DrawLayer::BG_1 && drawLayer <= DrawLayer::BG_10)
 		{
-			sf::View newView;
-			Vector2f cTest = oldView.getCenter() * depth;
-
-			newView.setCenter(cTest);
-			newView.setSize(oldView.getSize() / depth);
-
-			target->setView(newView);
-		}
-		else
-		{
-			sf::View newView;
-			Vector2f cTest = Vector2f(oldView.getCenter().x * depth, oldView.getCenter().y * depth);//data.pos.y);
-			//data.pos
-
-			newView.setCenter(cTest);
-			newView.setSize(Vector2f(1920, 1080) / depth);//oldView.getSize() / depth);
-
-			target->setView(newView);
+			center.y = 0;
+			vSize = Vector2f(1920, 1080) / depth;
 		}
 
-
+		newView.setCenter(center);
+		newView.setSize(vSize);
+		target->setView(newView);
 	}
 
 
@@ -5900,6 +5911,26 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 		
 		}
 	}
+
+
+	if (sess->IsSessTypeEdit() && drawLayer != DrawLayer::TERRAIN )
+	{
+		EditSession *edit = EditSession::GetSession();
+		if (edit->mode != EditSession::TEST_PLAYER)
+		{
+			
+
+			IntRect tAABB = GetAABB();
+			Vector2f center(tAABB.left + tAABB.width / 2.f, tAABB.top + tAABB.height / 2.f);
+			
+			
+			layerText.setPosition(center);
+
+			target->draw(layerText);
+
+		}
+	}
+	
 
 	if (depth != 1.f)
 	{
@@ -6939,6 +6970,19 @@ int TerrainPolygon::GetNumSelectedPoints()
 	}
 
 	return numSelected;
+}
+
+void TerrainPolygon::SetDrawLayer(int p_drawLayer)
+{
+	drawLayer = p_drawLayer;
+	if (sess->IsSessTypeEdit() && drawLayer != DrawLayer::TERRAIN)
+	{
+		float s = 1.f / DrawLayer::GetDrawLayerDepthFactor(drawLayer);
+		layerText.setScale(s, s);
+		layerText.setString(DrawLayer::DrawLayerToString(drawLayer));
+		auto lb = layerText.getLocalBounds();
+		layerText.setOrigin(lb.left + lb.width / 2.f, lb.top + lb.height / 2.f);
+	}
 }
 
 PolyPtr TerrainPolygon::CreateCopyWithSelectedPointsRemoved()

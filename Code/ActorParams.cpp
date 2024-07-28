@@ -103,7 +103,10 @@ bool PlayerParams::CanApply()
 	Vector2i intPos = GetIntPos();
 	sf::IntRect me(intPos.x - image.getLocalBounds().width / 2, intPos.y - image.getLocalBounds().height / 2,
 		image.getLocalBounds().width, image.getLocalBounds().height);
-	for (list<PolyPtr>::iterator it = edit->polygons.begin(); it != edit->polygons.end(); ++it)
+
+	auto &testPolygons = edit->polygons[TerrainPolygon::CATEGORY_NORMAL];
+
+	for (list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		if ((*it)->Intersects(me))
 		{
