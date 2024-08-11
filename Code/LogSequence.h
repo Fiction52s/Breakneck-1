@@ -32,8 +32,7 @@ struct GetLogSequence : Sequence
 	void UpdateState();
 	void ReturnToGame();
 	void SetupStates();
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 	void Reset();
 	void SetIDs();
 	int GetNumStoredBytes();

@@ -164,7 +164,7 @@ void WarpTransitionSequence::UpdateState()
 	//emitter->Update();
 }
 
-void WarpTransitionSequence::Draw(RenderTarget *target, int layer)
+void WarpTransitionSequence::LayeredDraw(int layer, RenderTarget *target)
 {
 	//sess->DrawEmitters(layer, target);
 	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)

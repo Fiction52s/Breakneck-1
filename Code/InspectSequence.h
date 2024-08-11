@@ -1,5 +1,5 @@
-#ifndef __TUTORIALSEQUENCE_H__
-#define __TUTORIALSEQUENCE_H__
+#ifndef __INSPECTSEQUENCE_H__
+#define __INSPECTSEQUENCE_H__
 
 #include "Sequence.h"
 
@@ -8,16 +8,29 @@ struct Session;
 struct MovingGeoGroup;
 struct TutorialBox;
 
-struct TutorialSequence : Sequence
+struct InspectSequence : Sequence
 {
 	enum State
 	{
-		TELL,
+		SHOW,
 		Count
 	};
 
-	TutorialSequence();
-	~TutorialSequence();
+	struct MyData
+	{
+		int confirmFrame;
+	};
+
+	MyData myData;
+	Session *sess;
+
+	Tileset *ts_inspect;
+	sf::Vertex inspectQuad[4];
+
+	sf::Vertex overlayRect[4];
+
+	InspectSequence();
+	~InspectSequence();
 	void UpdateState();
 	void SetupStates();
 	void ReturnToGame();
@@ -27,11 +40,7 @@ struct TutorialSequence : Sequence
 	void LayeredDraw(int layer, sf::RenderTarget *target );
 	void Reset();
 
-	Session *sess;
 
-	TutorialBox *tutBox;
-
-	sf::Vertex overlayRect[4];
 };
 
 #endif

@@ -31,6 +31,16 @@ ShipTravelSequence::ShipTravelSequence()
 	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2 + 34,
 		shipSprite.getLocalBounds().height / 2 - 53);
 	
+	shipTravelPos = V2d(0, 0);
+
+	if (shipComp != NULL)
+	{
+		shipComp->SetCenter(Vector2f(shipTravelPos));
+	}
+	else
+	{
+		shipTestSprite.setPosition(Vector2f(shipTravelPos));
+	}
 
 }
 
@@ -62,8 +72,10 @@ void ShipTravelSequence::Reset()
 	sess->SetDrainOn(false);
 	player->action = Actor::JUMP;
 	player->frame = 1;
+
+	shipTravelPos = V2d(0, 0);
 	//player->position = shipTravelPos;
-	sess->playerOrigPos[0] = Vector2i(player->position);
+	//sess->playerOrigPos[0] = Vector2i(player->position);
 
 	if (shipComp != NULL)
 	{
@@ -211,6 +223,18 @@ void ShipTravelSequence::SetupStates()
 	stateLength[KIN_JUMP] = -1;
 }
 
+void ShipTravelSequence::DrawShip(sf::RenderTarget *target)
+{
+	if (shipComp != NULL)
+	{
+		shipComp->Draw(target);
+	}
+	else
+	{
+		target->draw(shipTestSprite);
+	}
+}
+
 void ShipTravelSequence::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 {
 	//if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
@@ -223,14 +247,7 @@ void ShipTravelSequence::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_w1ShipClouds0->texture);
 		target->draw(shipSprite);*/
 
-		if (shipComp != NULL)
-		{
-			shipComp->Draw(target);
-		}
-		else
-		{
-			target->draw(shipTestSprite);
-		}
+		DrawShip(target);
 	}
 
 	Sequence::LayeredDraw(p_drawLayer, target );

@@ -66,7 +66,7 @@ void GreyWarpSequence::UpdateState()
 	}
 }
 
-void GreyWarpSequence::Draw(RenderTarget *target, int layer)
+void GreyWarpSequence::LayeredDraw(int layer, sf::RenderTarget *target)
 {
 	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{

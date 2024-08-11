@@ -164,6 +164,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	const static int TERRAIN_WORLDS = 8; //does this work?
 	const static int MAX_TERRAIN_VARIATION_PER_WORLD = 8;
 
+	const static int MAX_SIMULTANEOUS_SEQUENCES = 8;
+
 	struct FlowHandler : RayCastHandler
 	{
 		Session *sess;
@@ -439,7 +441,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	LogPopup *logPop;
 	DeathSequence *deathSeq;
 
-	Sequence *activeSequence;
+	Sequence *activeSequences[MAX_SIMULTANEOUS_SEQUENCES];
+	//Sequence *activeSequence;
 	Sequence *preLevelScene;
 	Sequence *postLevelScene;
 	TopClouds *topClouds;
@@ -832,12 +835,14 @@ struct Session : TilesetManager, QuadTreeCollider
 	void TryCreateLogResources();
 	void TryCreatePowerItemResources();
 	void SetActiveSequence(Sequence *activeSeq);
+	void SetActiveEnvSequence(Sequence *activeEnvSeq);
 	void ActiveSequenceUpdate();
+	void ActiveEnvSequenceUpdate();
 	void AddEmitter(ShapeEmitter *emit);
 	void RemoveEmitter(ShapeEmitter *emit);
 	void UpdateEmitters();
 	void ClearEmitters();
-	void DrawActiveSequence(int p_drawLayer,
+	void DrawActiveSequences(int p_drawLayer,
 		sf::RenderTarget *target);
 	void DrawEmitters(int p_drawLayer, sf::RenderTarget *target);
 	void SetupDeathSequence();
@@ -1056,6 +1061,7 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	bool HasLevelFinisher();
 	V2d GetLevelFinisherPos();
+	void ClearActiveSequences();
 };
 
 #endif

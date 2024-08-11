@@ -893,6 +893,9 @@ struct EditSession : GUIHandler, Session
 
 	void RestartGame();
 	bool HasLog(int logIndex);
+
+	void LoadSpecialOptions(const std::string &name, std::vector<std::string> &vec);
+	void SetSpecialMapType(int specialMapType);
 };
 
 

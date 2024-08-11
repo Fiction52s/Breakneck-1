@@ -1659,21 +1659,21 @@ void GameSession::ProcessActor(ActorPtr a)
 		
 			//ResetShipSequence();
 		}
-		else if (typeName == "shiptravel")
-		{
-			if (shipTravelSequence == NULL)
-			{
-				shipTravelSequence = new ShipTravelSequence;
-				shipTravelSequence->Init();
-				shipTravelSequence->SetIDAndAddToAllSequencesVec();
-				shipTravelSequence->shipTravelPos = a->GetPosition();
-				//shipEnterScene->Reset();
-			}
-			//shipEntrancePos = a->GetPosition();
-			//hasShipEntrance = true;
+		//else if (typeName == "shiptravel")
+		//{
+		//	if (shipTravelSequence == NULL)
+		//	{
+		//		shipTravelSequence = new ShipTravelSequence;
+		//		shipTravelSequence->Init();
+		//		shipTravelSequence->SetIDAndAddToAllSequencesVec();
+		//		shipTravelSequence->shipTravelPos = a->GetPosition();
+		//		//shipEnterScene->Reset();
+		//	}
+		//	//shipEntrancePos = a->GetPosition();
+		//	//hasShipEntrance = true;
 
-			//ResetShipSequence();
-		}
+		//	//ResetShipSequence();
+		//}
 		else if (typeName == "zoneproperties")
 		{
 			ZonePropertiesParams *zp = (ZonePropertiesParams*)a;

@@ -85,6 +85,9 @@ struct MapHeader
 	int functionalHeight;
 
 	MapHeader();
+
+	static int GetSpecialMapTypeFromString(const std::string &s);
+	static std::string GetSpecialMapStringFromType(int t);
 	void Clear();
 	bool CanRunAsMode(int gm);
 	bool CanRunAsMode(int numP, int gm);

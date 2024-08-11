@@ -28,33 +28,12 @@ MapOptionsUI::MapOptionsUI()
 	bgButton = mapOptionsPanel->AddButton("bgbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Environment");
 	musicButton = mapOptionsPanel->AddButton("musicbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Music");
 
-	string fileName = "Resources/Editor/SpecialOptions/extrascene_options.txt";
 
-	ifstream is;
-	is.open(fileName);
-	string s;
+	std::vector<std::string> extraSceneOptions;
+	edit->LoadSpecialOptions("extrascene_options", extraSceneOptions);
 
-	std::vector<std::string> specialTypeOptions;
-
-	if (is.is_open())
-	{
-		specialTypeOptions.reserve(10); //can bump this up later
-
-		while (true)
-		{
-			is >> s;
-			specialTypeOptions.push_back(s);
-			if (is.eof())
-			{
-				break;
-			}
-		}
-	}
-	else
-	{
-		cout << "failed to open options file: " << fileName << endl;
-		assert(0);
-	}
+	std::vector<std::string> specialMapTypeOptions;
+	edit->LoadSpecialOptions("maptype_options", specialMapTypeOptions);
 
 	mapOptionsPanel->PauseAutoSpacing();
 	mapOptionsPanel->AddLabel("prelabel", Vector2i(0, 20), 28, "Pre Level scene");
@@ -62,11 +41,13 @@ MapOptionsUI::MapOptionsUI()
 	mapOptionsPanel->AddLabel("postlabel", Vector2i(300, 20), 28, "Post Level scene");
 	mapOptionsPanel->PauseAutoSpacing();
 
-	preDropdown = mapOptionsPanel->AddDropdown("pre", Vector2i(0, 0), Vector2i(250, 28), specialTypeOptions, 0);
+	preDropdown = mapOptionsPanel->AddDropdown("pre", Vector2i(0, 0), Vector2i(250, 28), extraSceneOptions, 0);
 	mapOptionsPanel->UnpauseAutoSpacing();
-	postDropdown = mapOptionsPanel->AddDropdown("post", Vector2i(300, 0), Vector2i(250, 28), specialTypeOptions, 0);
+	postDropdown = mapOptionsPanel->AddDropdown("post", Vector2i(300, 0), Vector2i(250, 28), extraSceneOptions, 0);
 
 	numPlayersSlider = mapOptionsPanel->AddLabeledSlider("numplayersslider", Vector2i(0, 40), "Num player spawns: ", 100, 1, 4, 1, 24);
+
+	specialTypeDropdown = mapOptionsPanel->AddDropdown("special", Vector2i(0, 0), Vector2i(250, 28), specialMapTypeOptions, 0);
 
 
 	okButton = mapOptionsPanel->AddButton("ok", Vector2i(0, 30), Vector2f(150, 100), "OK");
@@ -147,6 +128,7 @@ void MapOptionsUI::OpenMapOptionsPopup()
 	assert(res);
 	res = postDropdown->SetSelectedText(edit->mapHeader->postLevelSceneName);
 	assert(res);
+	specialTypeDropdown->SetSelectedIndex(edit->mapHeader->specialMapType);
 
 	numPlayersSlider->SetCurrValue(edit->mapHeader->numPlayerSpawns);
 
@@ -205,6 +187,7 @@ void MapOptionsUI::CloseMapOptionsPopup()
 
 	edit->mapHeader->preLevelSceneName = preDropdown->GetSelectedText();
 	edit->mapHeader->postLevelSceneName = postDropdown->GetSelectedText();
+	edit->mapHeader->specialMapType = specialTypeDropdown->selectedIndex;
 	edit->SetNumPlayers( false, numPlayersSlider->GetCurrValue());
 
 	edit->mapHeader->fullName = mapNameBox->GetString();

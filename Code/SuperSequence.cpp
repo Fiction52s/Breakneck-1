@@ -126,7 +126,7 @@ void SuperSequence::UpdateState()
 	
 }
 
-void SuperSequence::Draw(sf::RenderTarget *target, int layer)
+void SuperSequence::LayeredDraw(int layer, RenderTarget *target)
 {
 	if (layer == DrawLayer::BEHIND_ENEMIES)
 	{

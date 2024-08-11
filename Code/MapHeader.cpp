@@ -86,6 +86,34 @@ void MapHeader::Clear()
 	specialItemInfoVec.clear();
 }
 
+int MapHeader::GetSpecialMapTypeFromString(const std::string &s)
+{
+	if (s == "normal")
+	{
+		return MAPTYPE_NORMAL;
+	}
+	else if (s == "ship")
+	{
+		return MAPTYPE_SHIP;
+	}
+
+	return -1;
+}
+
+std::string MapHeader::GetSpecialMapStringFromType(int t)
+{
+	if (t == MAPTYPE_NORMAL)
+	{
+		return "normal";
+	}
+	else if (t == MAPTYPE_SHIP)
+	{
+		return "ship";
+	}
+
+	return "maptype_error";
+}
+
 bool MapHeader::CanRunAsMode(int gm )
 {
 	bool hasGoal = possibleGameModeTypeFlags & (1 << MapHeader::GameModeFlags::MI_HAS_GOAL);
@@ -309,9 +337,17 @@ bool MapHeader::Load(std::ifstream &is)
 
 	description = descriptionSS.str();
 
-	if (ver1 >= 10)
+	if (ver1 > 11)
 	{
-		is >> specialMapType;
+		string specialMapStr;
+		is >> specialMapStr;
+		specialMapType = GetSpecialMapTypeFromString(specialMapStr);
+	}
+	else if (ver1 == 11)
+	{
+		int blank;
+		is >> blank;
+		specialMapType = MAPTYPE_NORMAL;
 	}
 	else
 	{
@@ -537,7 +573,9 @@ void MapHeader::Save(std::ofstream &of)
 	of << description << "\n";
 	//of << description << "<>\n";
 
-	of << specialMapType << "\n";
+	string specialStr = GetSpecialMapStringFromType(specialMapType);
+
+	of << specialStr << "\n";
 
 	of << specialItemInfoVec.size() << "\n";
 	for (auto it = specialItemInfoVec.begin(); it != specialItemInfoVec.end(); ++it)

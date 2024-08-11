@@ -318,6 +318,7 @@ struct PState
 	int activeComboObjListID;
 
 	int currTutorialObjectID;
+	int currInspectObjectID;
 	int currGravModifierID;
 
 	int currTouchedGateID;
@@ -348,6 +349,7 @@ struct SaveGameState
 	int currSuperPlayerIndex;
 	int gameState; //game mode such as RUN or FROZEN
 	int activeSequenceID;
+	int activeEnvSequenceID;
 	int turnTimerOnCounter; //for adventure timer
 	uint32 randomState;
 	Camera cam;

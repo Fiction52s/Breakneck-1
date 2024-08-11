@@ -12,15 +12,28 @@ using namespace sf;
 
 ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	int p_depthLevel, float p_scrollSpeedX)
-	:ts(p_ts), va(sf::Quads, 2 * 4), depthLevel(p_depthLevel),
+	:ts(p_ts), depthLevel(p_depthLevel),
 	tsIndex(index), scrollSpeedX(p_scrollSpeedX)
 {
+	
+
+	tsSource = ts->sourceName;
+
+	//testMeColor = Color(rand() % 255, rand() % 255, rand() % 255);
+
+	//MainMenu::GetInstance()->LoadShader(parallaxShader, "parallax");
+	//parallaxShader.setUniform("u_texture", *ts->texture);
+	//parallaxShader.setUniform("Resolution", Vector2f(1920, 1080));
+	//parallaxShader.setUniform("testColor", ColorGL(testMeColor));
+
 	depth = DrawLayer::GetDrawLayerDepthFactor(depthLevel) * .5;
 	assert(p_ts != NULL);
-	tsSource = ts->sourceName;
+
+	
+	
 	//ts->texture->setSmooth(false);
 	SetTileIndex(tsIndex);
-	SetLeftPos(Vector2f(0, 0));
+	SetLeftPos(Vector2f(-960, 0));
 	scrollOffset = 0;
 	extraZoom = 1.f;
 	extraOffset = Vector2f(0, 0);
@@ -99,28 +112,45 @@ void ScrollingBackground::SetLeftPos(Vector2f &pos)
 	float top = -540;//pos.y - 540;
 	float width = 1920;
 	float height = 1080;
+
 	for (int i = 0; i < 2; ++i)
 	{
-		va[i * 4 + 0].position = Vector2f(currX, top);
-		va[i * 4 + 1].position = Vector2f(currX + width, top);
-		va[i * 4 + 2].position = Vector2f(currX + width, top + height);
-		va[i * 4 + 3].position = Vector2f(currX, top + height);
-
+		SetRectTopLeft(quad + i * 4, width, height, Vector2f(currX, top));
 		currX += width;
 	}
+
+	//currX += width;
+
+	/*SetRectTopLeft(quad + 4, width, height, Vector2f(currX, top));
+
+	quad[0].position = Vector2f(currX, top);
+	quad[1].position = Vector2f(currX + width, top);
+	quad[2].position = Vector2f(currX + width, top + height);
+	quad[3].position = Vector2f(currX, top + height);
+
+	quad[4 + 0].position = Vector2f(currX, top + height);
+	quad[4 + 1].position = Vector2f(currX + width, top + height);
+	quad[4 + 2].position = Vector2f(currX + width, top + height + height);
+	quad[4 + 3].position = Vector2f(currX, top + height + height);
+
+	currX += width;*/
 }
 
 void ScrollingBackground::SetTileIndex(int index)
 {
 	tsIndex = index;
+
+	//SetRectSubRect(quad, FloatRect(0, 0, 1, 1));
+
 	IntRect subRect = ts->GetSubRect(tsIndex);
+
 	for (int i = 0; i < 2; ++i)
 	{
-		va[i * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
-		va[i * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
-		va[i * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
-		va[i * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
+		SetRectSubRect(quad + i * 4, subRect);
 	}
+
+	/*SetRectSubRectGL(quad, subRect, Vector2f(ts->texture->getSize()));
+	SetRectSubRectGL(quad + 4, subRect, Vector2f(ts->texture->getSize()));*/
 }
 
 void ScrollingBackground::Set(sf::Vector2f &pos, float zoom)
@@ -142,14 +172,25 @@ void ScrollingBackground::Draw(RenderTarget *target)
 	oldView = target->getView();
 	//oldView.setCenter(target->getView().getCenter());
 	//oldView.setSize(target->getView().getSize());
+	float depth = DrawLayer::GetDrawLayerDepthFactor(depthLevel);
 
-	newView.setCenter(Vector2f( oldView.getCenter().x, 0) - extraOffset);
-	newView.setSize(Vector2f(1920, 1080) / extraZoom );
+	//newView.setCenter(Vector2f( oldView.getCenter().x, 0) - extraOffset);
+	//Vector2f newCenter = oldView.getCenter() *depth;
+	Vector2f newCenter = Vector2f(oldView.getCenter().x, 0) - extraOffset;
+	/*if (oldView.getCenter().y > 0 )
+	{
+		newCenter.y = 0;
+	}*/
+	newView.setCenter(newCenter);//Vector2f(oldView.getCenter().x, oldView.getCenter().y) - extraOffset);
+	//newView.setSize(oldView.getSize() / depth);//1920, 1080) / (zoom * extraZoom ));
+	newView.setSize(1920, 1080);//1920, 1080) / (zoom * extraZoom ));
 	//newView.setRotation(oldView.getRotation());
 	
 	target->setView(newView);
 
-	target->draw(va, ts->texture);
+	//target->draw(va, ts->texture);
+	//target->draw(quad, 8, sf::Quads, &parallaxShader);
+	target->draw(quad, 8, sf::Quads, ts->texture);
 
 	target->setView(oldView);
 }

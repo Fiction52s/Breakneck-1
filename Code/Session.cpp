@@ -282,8 +282,8 @@ void Session::RegisterGeneralEnemies()
 		ts_ship);
 	AddExtraEnemy("Tutorial Object", "tutorialobject", objectRow, CreateEnemy<TutorialObject>, SetParamsType<TutorialObjectParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
-
-	AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<ShipTravelParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1);
+	AddExtraEnemy("Family Picture (Inspect)", "inspectfamilypicture", objectRow, CreateEnemy<InspectObject>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	//AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
 	//	GetSizedTileset( "Ship/ShipTest/travel1_1725x921.png" ));
 
@@ -5511,6 +5511,12 @@ void Session::SetActiveSequence(Sequence *activeSeq)
 {
 	if (activeSeq == NULL)
 	{
+		if (activeSequence == NULL)
+		{
+			//already NULL
+			return;
+		}
+
 		activeSequence->ReturnToGame();
 		activeSequence = NULL;
 		return;
@@ -5534,6 +5540,72 @@ void Session::SetActiveSequence(Sequence *activeSeq)
 	}
 
 	activeSequence->StartRunning();
+}
+
+void Session::ActiveEnvSequenceUpdate()
+{
+	if (activeEnvSequence != NULL)// && activeSequence == startSeq )
+	{
+		GameState oldState = gameState;
+		if (!activeSequence->Update())
+		{
+			if (activeSequence->nextSeq != NULL)
+			{
+				activeSequence->nextSeq->Reset();
+				SetActiveSequence(activeSequence->nextSeq);
+			}
+			else
+			{
+				if (activeSequence == preLevelScene)
+				{
+					//FreezePlayerAndEnemies(false);
+					FreezePlayer(false);
+					SetPlayerInputOn(true);
+					if (shipEnterScene != NULL)
+					{
+						shipEnterScene->Reset();
+						SetActiveSequence(shipEnterScene);
+						gameState = RUN;
+						return;
+					}
+					else if (shipTravelSequence != NULL)
+					{
+						shipTravelSequence->Reset();
+						SetActiveSequence(shipTravelSequence);
+						gameState = RUN;
+						return;
+					}
+				}
+
+
+				if (activeSequence == postLevelScene)
+				{
+					goalDestroyed = true;
+				}
+
+				//if (gameState == SEQUENCE) //if this sets it to run when its frozen, sometimes you can get a weird bug in multiplayer endings.
+				//{
+				//	
+				//}
+
+				if (gameState != RUN)
+				{
+					gameState = RUN;
+					switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
+				}
+				activeSequence = NULL;
+			}
+		}
+		else
+		{
+			if (gameState != oldState)
+			{
+				switchGameState = true;
+				return;
+				//goto starttest;
+			}
+		}
+	}
 }
 
 void Session::ActiveSequenceUpdate()
@@ -5602,23 +5674,27 @@ void Session::ActiveSequenceUpdate()
 	}
 }
 
-void Session::DrawActiveSequence(int p_drawLayer, sf::RenderTarget *target)
+void Session::DrawActiveSequences(int p_drawLayer, sf::RenderTarget *target)
 {
-	if (activeSequence != NULL)
+	for (int i = 0; i < MAX_SIMULTANEOUS_SEQUENCES; ++i)
 	{
-		sf::View oldView = target->getView();
-		if (p_drawLayer == DrawLayer::UI_FRONT)
+		if (activeSequences[i] != NULL)
 		{
-			target->setView(uiView);
-		}
+			sf::View oldView = target->getView();
+			if (p_drawLayer == DrawLayer::UI_FRONT)
+			{
+				target->setView(uiView);
+			}
 
-		activeSequence->LayeredDraw(p_drawLayer, target);
+			activeSequence->LayeredDraw(p_drawLayer, target);
 
-		if (p_drawLayer == DrawLayer::UI_FRONT)
-		{
-			target->setView(oldView);
+			if (p_drawLayer == DrawLayer::UI_FRONT)
+			{
+				target->setView(oldView);
+			}
 		}
 	}
+	
 }
 
 bool Session::HasLog(int logIndex)
@@ -10375,4 +10451,12 @@ V2d Session::GetLevelFinisherPos()
 	assert(0);
 
 	return V2d(0, 0);
+}
+
+void Session::ClearActiveSequences()
+{
+	for (int i = 0; i < MAX_SIMULTANEOUS_SEQUENCES; ++i)
+	{
+		activeSequences[i] = NULL;
+	}
 }

@@ -19,7 +19,8 @@ struct ScrollingBackground
 	int tsIndex;
 	sf::Vector2f extra;
 	sf::Vector2f relPos;
-	sf::VertexArray va;
+	sf::Vertex quad[3 * 4];
+	//sf::VertexArray va;
 	float xPos;
 	sf::View oldView;
 	sf::View newView;
@@ -35,6 +36,9 @@ struct ScrollingBackground
 	void SetLeftPos(sf::Vector2f &pos);
 	sf::Vector2f extraOffset;
 	float extraZoom;
+	//sf::Shader parallaxShader;
+
+	//sf::Color testMeColor;
 
 	std::string tsSource;
 };

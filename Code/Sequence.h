@@ -405,8 +405,7 @@ struct ShipExitScene : Sequence
 	void AddFlashes();
 	void AddEnemies();
 	void UpdateState();
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 };
 
 struct MomentaScene : Sequence
@@ -422,8 +421,7 @@ struct MomentaScene : Sequence
 	void ReturnToGame();
 	void AddFlashes();
 	void UpdateState();
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 };
 
 struct StorySequence;
@@ -443,8 +441,7 @@ struct StoryScene : Sequence
 	void SetupStates();
 	void ReturnToGame();
 	void UpdateState();
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 };
 
 struct SuperSequence : Sequence
@@ -493,8 +490,7 @@ struct SuperSequence : Sequence
 	void AddEnemies();
 	void UpdateState();
 	void SetSuperType(int sType);
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 };
 
 #endif 

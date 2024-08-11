@@ -35,6 +35,7 @@
 #include "Enemy_PowerItem.h"
 #include "Enemy_LogItem.h"
 #include "Enemy_TutorialObject.h"
+#include "Enemy_InspectObject.h"
 
 #include "Enemy_SequenceCrawler.h"
 #include "Enemy_SpecialTarget.h"

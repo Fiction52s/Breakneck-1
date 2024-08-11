@@ -21,8 +21,7 @@ struct FightEndSequence : Sequence
 	void UpdateState();
 	void SetupStates();
 	void ReturnToGame();
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 	void Reset();
 
 	Session *sess;

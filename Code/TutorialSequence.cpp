@@ -75,7 +75,7 @@ void TutorialSequence::UpdateState()
 	//emitter->Update();
 }
 
-void TutorialSequence::Draw(RenderTarget *target, int layer)
+void TutorialSequence::LayeredDraw(int layer, RenderTarget *target )
 {
 	if (layer == DrawLayer::UI_FRONT)
 	{

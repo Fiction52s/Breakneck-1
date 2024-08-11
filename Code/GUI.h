@@ -1069,6 +1069,7 @@ struct MapOptionsUI : GUIHandler
 	TextBox *goldTextBox;
 	Dropdown *preDropdown;
 	Dropdown *postDropdown;
+	Dropdown *specialTypeDropdown;
 	Slider *numPlayersSlider;
 	int oldMode;
 

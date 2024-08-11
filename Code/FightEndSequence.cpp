@@ -74,7 +74,7 @@ void FightEndSequence::UpdateState()
 	//emitter->Update();
 }
 
-void FightEndSequence::Draw(RenderTarget *target, int layer)
+void FightEndSequence::LayeredDraw(int layer, RenderTarget *target)
 {
 	if (layer == DrawLayer::UI_FRONT)
 	{

@@ -1255,6 +1255,13 @@ void EditSession::TestPlayerMode()
 
 	SetupEnvParticleSystem();
 
+
+	if (mapHeader->specialMapType == MapHeader::MAPTYPE_SHIP)
+	{
+		shipTravelSequence->SetIDAndAddToAllSequencesVec();
+	}
+	
+
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -1324,7 +1331,7 @@ void EditSession::TestPlayerMode()
 				}
 				foundShipExit = true;
 			}
-			else if ((((*enit)->type == types["shiptravel"])))
+			/*else if ((((*enit)->type == types["shiptravel"])))
 			{
 				if (shipTravelSequence == NULL)
 				{
@@ -1338,7 +1345,7 @@ void EditSession::TestPlayerMode()
 				}
 				foundShipTravel = true;
 				shipTravelSequence->shipTravelPos = (*enit)->GetPosition();
-			}
+			}*/
 			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
 				Goal *g = (Goal*)((*enit)->myEnemy);
@@ -1416,10 +1423,10 @@ void EditSession::TestPlayerMode()
 		CleanupShipEntrance();
 	}
 
-	if (!foundShipTravel && shipTravelSequence != NULL)
+	/*if (!foundShipTravel && shipTravelSequence != NULL)
 	{
 		CleanupShipTravel();
-	}
+	}*/
 
 	if (!foundShipExit && shipExitScene != NULL)
 	{
@@ -2208,6 +2215,11 @@ void EditSession::Draw()
 	DrawTerrain(DrawLayer::BACK_TERRAIN, preScreenTex);
 	DrawTerrain( DrawLayer::TERRAIN, preScreenTex);
 
+	if (shipTravelSequence != NULL)
+	{
+		shipTravelSequence->DrawShip(preScreenTex);
+	}
+
 	DrawRails(preScreenTex);
 
 	DrawDecor(DrawLayer::BEHIND_ENEMIES, preScreenTex);
@@ -2579,8 +2591,9 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//version 9 is post-medals
 	//version 10 is including special map types (for Kin's ship)
 	//version 11 is for including draw layers in polygons
+	//version 12 is for special map types but with strings for names instead of ints
 
-	mapHeader->ver1 = 11;
+	mapHeader->ver1 = 12;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -4160,6 +4173,7 @@ void EditSession::DefaultInit()
 
 	mapHeader->envWorldType = 0;//newMapInfo.envWorldType;
 
+	
 	//SetNumPlayers(1);
 	
 	mapHeader->leftBounds = -1500;
@@ -4181,6 +4195,8 @@ void EditSession::DefaultInit()
 	}	
 
 	UpdateFullBounds();
+
+	SetSpecialMapType(mapHeader->specialMapType);
 }
 
 void EditSession::SetNumPlayers( bool loading, int num )
@@ -4321,6 +4337,7 @@ int EditSession::EditRun()
 	else if( filePathStr != "" )
 	{
 		ReadFile();
+		SetSpecialMapType(mapHeader->specialMapType);
 	}
 	
 	musicSelectorUI->listHandler->SetHeader(mapHeader);
@@ -4482,6 +4499,9 @@ int EditSession::EditRun()
 		editAccumulator += frameTime;
 		double mult;
 		spriteUpdateFrames = 0;
+
+		currShaderDrawLayer = DrawLayer::INVALID;
+
 		while (editAccumulator >= TIMESTEP)
 		{
 			mult = floor(editAccumulator / TIMESTEP);
@@ -8788,7 +8808,7 @@ void EditSession::TestPlayerModeForPreview()
 				}
 				foundShipExit = true;
 			}
-			else if (((*enit)->type == types["shiptravel"]))
+			/*else if (((*enit)->type == types["shiptravel"]))
 			{
 				if (shipTravelSequence == NULL)
 				{
@@ -8796,7 +8816,7 @@ void EditSession::TestPlayerModeForPreview()
 					shipTravelSequence->Init();
 				}
 				foundShipTravel = true;
-			}
+			}*/
 			
 			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
@@ -14093,12 +14113,15 @@ void EditSession::DrawUI()
 
 	if (mode == CREATE_TERRAIN || mode == EDIT || mode == SELECT_MODE)
 	{
-		preScreenTex->draw(currTerrainTypeSpr);
+		//preScreenTex->draw(currTerrainTypeSpr);
 	}
 	
 
 	//preScreenTex->draw(scaleSpriteBGRect);
 	//preScreenTex->draw(scaleSprite);
+	
+	//return;
+	
 	preScreenTex->draw(cursorLocationText);
 	preScreenTex->draw(scaleText);
 
@@ -16723,4 +16746,75 @@ bool EditSession::HasLog(int logIndex)
 	}
 
 	return currLogField.GetBit(logIndex);
+}
+
+void EditSession::LoadSpecialOptions(const std::string &name, std::vector<std::string> &vec)
+{
+	vec.clear();
+
+	string fileName = "Resources/Editor/SpecialOptions/" + name + ".txt";
+
+	ifstream is;
+	is.open(fileName);
+	string s;
+
+	if (is.is_open())
+	{
+		vec.reserve(10); //can bump this up later
+
+		while (true)
+		{
+			is >> s;
+			vec.push_back(s);
+			if (is.eof())
+			{
+				break;
+			}
+		}
+	}
+	else
+	{
+		cout << "failed to open options file: " << fileName << endl;
+		assert(0);
+	}
+
+}
+
+void EditSession::SetSpecialMapType(int specialMapType)
+{
+	if (specialMapType == MapHeader::MAPTYPE_NORMAL)
+	{
+		if (shipTravelSequence != NULL)
+		{
+			delete shipTravelSequence;
+			shipTravelSequence = NULL;
+		}
+
+	}
+	else if (specialMapType == MapHeader::MAPTYPE_SHIP)
+	{
+		if (shipTravelSequence == NULL)
+		{
+			shipTravelSequence = new ShipTravelSequence;
+			shipTravelSequence->Init();
+		}
+	}
+	
+		//shipTravelSequence->SetIDAndAddToAllSequencesVec();
+
+	//else if ((((*enit)->type == types["shiptravel"])))
+	//{
+	//if (shipTravelSequence == NULL)
+	//{
+	//shipTravelSequence = new ShipTravelSequence;
+	//shipTravelSequence->Init();
+	//shipTravelSequence->SetIDAndAddToAllSequencesVec();
+	//}
+	//else
+	//{
+	//shipTravelSequence->SetIDAndAddToAllSequencesVec();
+	//}
+	//foundShipTravel = true;
+	//shipTravelSequence->shipTravelPos = (*enit)->GetPosition();
+	//}
 }

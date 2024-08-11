@@ -158,23 +158,6 @@ struct CameraShotParams : public ActorParams
 	std::string name; //for gamesession
 };
 
-struct ShipTravelParams : public ActorParams
-{
-	CompositeImage *shipComp;
-	Tileset *ts;
-	sf::Sprite spr;
-
-	ShipTravelParams(ActorType *at, int level);
-	ShipTravelParams(ActorType *at,
-		std::ifstream &is);
-	~ShipTravelParams();
-	ActorParams *Copy();
-	void SetParams();
-	void SetPanelInfo();
-	void WriteParamFile(std::ofstream &of);
-	void Draw(sf::RenderTarget *target);
-};
-
 struct NexusParams : public ActorParams
 {
 	NexusParams(ActorType *at, int level);

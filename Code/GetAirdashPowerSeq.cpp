@@ -228,9 +228,8 @@ bool GetAirdashPowerSeq::Update()
 
 	return true;
 }
-void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, int layer)
+void GetAirdashPowerSeq::LayeredDraw(int layer, RenderTarget *target)
 {
-
 	if (layer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{		
 	}

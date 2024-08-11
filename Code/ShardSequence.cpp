@@ -163,7 +163,7 @@ void GetShardSequence::UpdateState()
 
 }
 
-void GetShardSequence::Draw(RenderTarget *target, int layer)
+void GetShardSequence::LayeredDraw(int layer, RenderTarget *target)
 {
 	if (target == sess->preScreenTex)
 	{

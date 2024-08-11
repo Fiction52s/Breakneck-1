@@ -884,6 +884,9 @@ MainMenu::MainMenu( bool p_steamOn)
 	RegisterShader("enemyhurt");
 	RegisterShader("enemykey");
 
+	//bg shader
+	//RegisterShader("parallax");
+
 	
 
 

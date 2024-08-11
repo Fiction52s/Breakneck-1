@@ -161,7 +161,7 @@ void GetPowerSequence::UpdateState()
 	}
 }
 
-void GetPowerSequence::Draw(RenderTarget *target, int layer)
+void GetPowerSequence::LayeredDraw(int layer, sf::RenderTarget *target)
 {
 	if (target == sess->preScreenTex)
 	{

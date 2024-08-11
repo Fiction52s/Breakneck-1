@@ -55,6 +55,7 @@
 #include "Enemy_SwordProjectileBooster.h"
 #include "Enemy_SwordProjectile.h"
 #include "Enemy_MomentumBooster.h"
+#include "Enemy_InspectObject.h"
 #include "GameMode.h"
 #include "Enemy_RewindBooster.h"
 #include "Enemy_TutorialObject.h"
@@ -479,6 +480,7 @@ void Actor::PopulateState(PState *ps)
 	ps->activeComboObjListID = sess->GetComboObjectID(activeComboObjList);
 
 	ps->currTutorialObjectID = sess->GetEnemyID(currTutorialObject);
+	ps->currInspectObjectID = sess->GetEnemyID(currInspectObject);
 	ps->currGravModifierID = sess->GetEnemyID(currGravModifier);
 
 	ps->springVel = springVel;
@@ -765,6 +767,7 @@ void Actor::PopulateFromState(PState *ps)
 	activeComboObjList = sess->GetComboObjectFromID(ps->activeComboObjListID);
 
 	currTutorialObject = (TutorialObject*)sess->GetEnemyFromID(ps->currTutorialObjectID);
+	currInspectObject = (InspectObject*)sess->GetEnemyFromID(ps->currInspectObjectID);
 	currGravModifier = (GravityModifier*)sess->GetEnemyFromID(ps->currGravModifierID);
 
 	springVel = ps->springVel;
@@ -5215,6 +5218,7 @@ void Actor::Respawn( bool setStartPos )
 
 	currBBoostCounter = 0;
 	currTutorialObject = NULL;
+	currInspectObject = NULL;
 	repeatingSound = NULL;
 	currBooster = NULL;
 	currFreeFlightBooster = NULL;
@@ -7768,6 +7772,14 @@ void Actor::UpdatePrePhysics()
 			if (currTutorialObject->TryDeactivate())
 			{
 				currTutorialObject = NULL;
+			}
+		}
+
+		if (currInspectObject != NULL)
+		{
+			if (currInspectObject->TryDeactivate())
+			{
+				currInspectObject = NULL;
 			}
 		}
 
@@ -11556,6 +11568,14 @@ bool Actor::BasicGroundAction()
 		return true;
 	}
 
+	if (currInspectObject != NULL)
+	{
+		if (JumpButtonPressed())
+		{
+			currInspectObject->TryActivate();
+			return true;
+		}
+	}
 	//button-based inputs
 
 	if (TryGroundBlock()) return true;
@@ -21089,6 +21109,21 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					if (tut->TryActivate())
 					{
 						currTutorialObject = tut;
+					}
+				}
+			}
+		}
+		else if (en->type == EnemyType::EN_INSPECTOBJECT)
+		{
+			InspectObject *iobj = (InspectObject*)qte;
+
+			if (iobj->spawned)
+			{
+				if (currInspectObject == NULL)
+				{
+					if (iobj->IsReadyToShow())
+					{
+						currInspectObject = iobj;
 					}
 				}
 			}

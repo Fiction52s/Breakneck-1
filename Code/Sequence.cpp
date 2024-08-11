@@ -841,7 +841,7 @@ void StoryScene::UpdateState()
 }
 
 //needs to get adjusted at some point but I don't wanna recompile rn and we don't even really use this LOL
-void StoryScene::Draw(sf::RenderTarget *target, int layer)
+void StoryScene::LayeredDraw(int layer, sf::RenderTarget *target)
 {
 	story->LayeredDraw(layer, target);
 }

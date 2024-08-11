@@ -28,8 +28,7 @@ struct GetShardSequence : Sequence
 	void ReturnToGame();
 	void SetupStates();
 	void SetIDs();
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

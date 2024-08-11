@@ -61,6 +61,7 @@ struct TerrainRail;
 struct Nexus;
 
 struct TutorialObject;
+struct InspectObject;
 struct MotionGhostEffect;
 
 
@@ -726,6 +727,7 @@ struct Actor : QuadTreeCollider,
 	BounceBooster *oldBounceBooster;
 	int directionalInputFreezeFrames;
 	TutorialObject *currTutorialObject;
+	InspectObject *currInspectObject;
 	ScorpionLauncher *currScorpionLauncher;
 	ScorpionLauncher *oldScorpionLauncher;
 

@@ -31,8 +31,7 @@ struct MedalSequence : Sequence
 	void AddFlashes();
 	void AddEnemies();
 	void UpdateState();
-	void Draw(sf::RenderTarget *target,
-		int layer = DrawLayer::IN_FRONT);
+	void LayeredDraw(int layer, sf::RenderTarget *target);
 };
 
 #endif
