@@ -1927,7 +1927,7 @@ bool GameSession::Load()
 
 	debugScreenRecorder = NULL; //debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
 
-	activeSequence = NULL;
+	ClearActiveSequences();
 
 	//view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 
@@ -2982,8 +2982,10 @@ bool GameSession::RunMainLoopOnce()
 		preTexSprite.setScale(.5, .5);
 		window->draw(preTexSprite);
 
-		pauseTex->clear(Color::Transparent);
 
+		//removed this because it was causing weird issues when we have more than 1 sequence. what was it used for?
+
+		/*pauseTex->clear(Color::Transparent);
 		DrawGameSequence(pauseTex);
 
 		pauseTex->display();
@@ -2991,7 +2993,7 @@ bool GameSession::RunMainLoopOnce()
 		pauseMenuSprite.setTexture(pauseTex->getTexture());
 		pauseMenuSprite.setPosition(-960 / 2, -540 / 2);
 		pauseMenuSprite.setScale(.5, .5);
-		window->draw(pauseMenuSprite);
+		window->draw(pauseMenuSprite);*/
 	}
 	else if (gameState == STORY)
 	{
@@ -4783,7 +4785,7 @@ void GameSession::RestartLevel()
 
 	//cam.SetManual( false );
 
-	activeSequence = NULL;
+	ClearActiveSequences();
 
 	
 
@@ -4796,7 +4798,7 @@ void GameSession::RestartLevel()
 	}
 	else
 	{
-		activeSequence = NULL;
+		ClearActiveSequences();
 		if (shipEnterScene != NULL)
 		{
 			shipEnterScene->Reset();

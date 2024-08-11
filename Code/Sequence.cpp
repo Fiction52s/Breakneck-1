@@ -597,6 +597,7 @@ bool Sequence::PlayerPressedConfirm()
 	}
 	else
 	{
+		cout << "test: " << sess->GetCurrInput(0).A << ", " << sess->GetPrevInput(0).A << endl;
 		if (sess->IsReplayOn()
 			|| (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A))
 		{

@@ -24,7 +24,11 @@ InspectObject::InspectObject(ActorParams *ap)
 	:Enemy(EnemyType::EN_INSPECTOBJECT, ap)
 {
 	SetNumActions(Count);
-	SetEditorActions(NEUTRAL, NEUTRAL, 0);
+	SetEditorActions(A_NEUTRAL, A_NEUTRAL, 0);
+
+
+	currControllerType = -1;
+	ClearRect(buttonQuad);
 
 	SetLevel(ap->GetLevel());
 
@@ -35,6 +39,8 @@ InspectObject::InspectObject(ActorParams *ap)
 
 	const string &typeName = ap->GetTypeName();
 
+	ts_inspect = GetSizedTileset("Story/kin_family_1109x1060.png");
+
 	if (typeName == "familypicture")
 	{
 	}
@@ -42,9 +48,15 @@ InspectObject::InspectObject(ActorParams *ap)
 	ts = GetSizedTileset("Enemies/General/tutorial_flower_256x256.png");
 
 	inspectSeq = new InspectSequence;
+
+	inspectSeq->ts_inspect = ts_inspect;
+	inspectSeq->myInspectObject = this;
+
 	inspectSeq->Init();
 
-	sprite.setScale(scale, scale);
+	sprite.setTexture(*ts_inspect->texture);
+
+	sprite.setScale(.1, .1);
 	//sprite.setColor(Color::Red);
 
 	entranceRadius = 200;
@@ -52,15 +64,15 @@ InspectObject::InspectObject(ActorParams *ap)
 	//double radius = 500;
 	//BasicCircleHitBodySetup(radius);
 
-	actionLength[NEUTRAL] = 6;
-	actionLength[SHOW] = 8;
-	actionLength[READY_TO_SHOW] = 8;
-	actionLength[RECOVERY] = 30;
+	actionLength[A_NEUTRAL] = 6;
+	actionLength[A_SHOW_ICON] = 8;
+	actionLength[A_SHOW_INSPECTABLE] = 8;
+	actionLength[A_RECOVERY] = 30;
 
-	animFactor[NEUTRAL] = 3;
-	animFactor[SHOW] = 3;
-	animFactor[READY_TO_SHOW] = 1;
-	animFactor[RECOVERY] = 1;
+	animFactor[A_NEUTRAL] = 3;
+	animFactor[A_SHOW_ICON] = 3;
+	animFactor[A_SHOW_INSPECTABLE] = 1;
+	animFactor[A_RECOVERY] = 1;
 
 	UpdateParamsSettings();
 
@@ -84,13 +96,19 @@ sf::FloatRect InspectObject::GetAABB()
 
 void InspectObject::ResetEnemy()
 {
-	action = NEUTRAL;
+	action = A_NEUTRAL;
 	frame = 0;
+
+	float buttonSize = 64;
+
+	ClearRect(buttonQuad);
+	SetRectCenter(buttonQuad, buttonSize, buttonSize,
+		GetPositionF());
 
 	//SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
 
-	sprite.setTexture(*ts->texture);
+	//sprite.setTexture(*ts->texture);
 	UpdateSprite();
 }
 
@@ -124,38 +142,51 @@ void InspectObject::SetExtraIDsAndAddToVectors()
 	inspectSeq->SetIDs();
 }
 
-bool InspectObject::ShowTutorial()
+void InspectObject::ShowInspectable()
 {
-	if (action == NEUTRAL)
-	{
-		action = SHOW;
-		frame = 0;
-		//sess->cam.Ease(GetPositionF() + Vector2f( 0, -350 ), 2.0, 60);
-		inspectSeq->Reset();
-		sess->SetActiveSequence(inspectSeq);
-		return true;
-	}
-	return false;
+	assert(action == A_SHOW_ICON);
+
+	action = A_SHOW_INSPECTABLE;
+	frame = 0;
+	//sess->cam.Ease(GetPositionF() + Vector2f( 0, -350 ), 2.0, 60);
+	inspectSeq->Reset();
+	sess->SetActiveSequence(inspectSeq);
 }
 
-bool InspectObject::IsReadyToShow()
+void InspectObject::HideInspectable()
 {
-	return action == READY_TO_SHOW;
-}
-
-bool InspectObject::IsShowing()
-{
-	return action == SHOW;
-}
-
-void InspectObject::HideTutorial()
-{
+	assert(action == A_SHOW_INSPECTABLE);
 	//sess->cam.EaseOutOfManual(60);
-	action = NEUTRAL;
+	action = A_RECOVERY;
 	frame = 0;
 	//sess->SetActiveSequence(NULL);
 }
 
+void InspectObject::ShowIcon()
+{
+	assert(action == A_NEUTRAL);
+	action = A_SHOW_ICON;
+	frame = 0;
+}
+
+void InspectObject::HideIcon()
+{
+	//if( action == A_RECOVERY )
+	assert(action == A_SHOW_ICON);
+	action = A_NEUTRAL;
+	frame = 0;
+}
+
+
+bool InspectObject::IsShowingIcon()
+{
+	return action == A_SHOW_ICON;
+}
+
+bool InspectObject::IsShowingInspectable()
+{
+	return action == A_SHOW_INSPECTABLE;
+}
 
 void InspectObject::ProcessState()
 {
@@ -163,32 +194,32 @@ void InspectObject::ProcessState()
 	{
 		switch (action)
 		{
-		case NEUTRAL:
+		case A_NEUTRAL:
 		{
 			frame = 0;
 			break;
 		}
-		case READY_TO_SHOW:
+		case A_SHOW_ICON:
 		{
 			frame = 0;
 			break;
 		}
-		case SHOW:
+		case A_SHOW_INSPECTABLE:
 		{
 			frame = 0;
 			break;
 		}
-		case RECOVERY:
+		case A_RECOVERY:
 		{
-			action = NEUTRAL;
+			action = A_NEUTRAL;
 			frame = 0;
 			break;
 		}
-		
 		}
 	}
 
-	double dist = PlayerDist();
+	UpdateButtonIconsWhenControllerIsChanged();
+	/*double dist = PlayerDist();
 	switch (action)
 	{
 	case NEUTRAL:
@@ -209,15 +240,15 @@ void InspectObject::ProcessState()
 		break;
 	case RECOVERY:
 		break;
-	}
+	}*/
 	
 }
 
 bool InspectObject::TryActivate()
 {
-	if (action == READY_TO_SHOW )//&& PlayerDist() < entranceRadius)
+	if (action == A_NEUTRAL && PlayerDist() < entranceRadius)
 	{
-		ShowTutorial();
+		ShowIcon();
 		return true;
 	}
 
@@ -226,32 +257,63 @@ bool InspectObject::TryActivate()
 
 bool InspectObject::TryDeactivate()
 {
-	/*if (action == SHOW && PlayerDist() > exitRadius)
+	if (action == A_SHOW_ICON && PlayerDist() > exitRadius)
 	{
-		HideTutorial();
+		HideIcon();
 		return true;
-	}*/
+	}
 
 	return false;
+}
+
+bool InspectObject::IsUsed()
+{
+	return action == A_RECOVERY || action == A_NEUTRAL;
+}
+
+void InspectObject::UpdateButtonIconsWhenControllerIsChanged()
+{
+	if (sess == NULL)
+		return;
+
+	int sessControllerType = sess->controllerStates[0]->GetControllerType();
+
+	currControllerType = sessControllerType;
+
+	ControllerSettings::ButtonType bType = ControllerSettings::ButtonType::BUTTONTYPE_JUMP;
+	SetRectSubRect(buttonQuad, sess->GetButtonIconTile(0, bType));
 }
 
 void InspectObject::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
-	switch (action)
-	{
-	case NEUTRAL:
-		tile = 0;//frame / animFactor[NEUTRAL];
-		ir = ts->GetSubRect(tile);
-		break;
-	case SHOW:
-		tile = 1;
-		ir = ts->GetSubRect(tile);
-		break;
-	}
 
-	sprite.setTextureRect(ir);
+	//sprite.setColor(Color::White);
+
+	
+	//switch (action)
+	//{
+	//case A_NEUTRAL:
+	//	tile = 0;//frame / animFactor[NEUTRAL];
+	//	ir = ts->GetSubRect(tile);
+	//	
+	//	break;
+	//case A_SHOW_ICON:
+	//	tile = 1;
+	//	ir = ts->GetSubRect(tile);
+	//	sprite.setColor(Color::Green);
+	//	break;
+	//case A_SHOW_INSPECTABLE:
+
+	//	tile = 1;
+	//	ir = ts->GetSubRect(tile);
+	//	sprite.setColor(Color::Blue);
+	//	break;
+	//}
+
+	//sprite.setTextureRect(ir);
+	sprite.setTextureRect(ts_inspect->GetSubRect(0));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
@@ -259,12 +321,11 @@ void InspectObject::UpdateSprite()
 
 void InspectObject::EnemyDraw(sf::RenderTarget *target)
 {
-
 	target->draw(sprite);
 
-	if (action == SHOW)
+	if (action == A_SHOW_ICON)
 	{
-		//	target->draw(tutorialSpr);
+		target->draw(buttonQuad, 4, sf::Quads, sess->GetButtonIconTileset(0)->texture);
 	}
 }
 

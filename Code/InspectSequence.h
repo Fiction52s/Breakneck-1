@@ -6,7 +6,7 @@
 struct ShapeEmitter;
 struct Session;
 struct MovingGeoGroup;
-struct TutorialBox;
+struct InspectObject;
 
 struct InspectSequence : Sequence
 {
@@ -28,6 +28,8 @@ struct InspectSequence : Sequence
 	sf::Vertex inspectQuad[4];
 
 	sf::Vertex overlayRect[4];
+
+	InspectObject *myInspectObject;
 
 	InspectSequence();
 	~InspectSequence();

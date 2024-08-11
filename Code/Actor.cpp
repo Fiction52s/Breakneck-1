@@ -6099,7 +6099,7 @@ void Actor::UpdateDrain()
 		//!IsIntroAction(action)
 		if (sess->drain
 			&& !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action)
-			&& sess->activeSequence == NULL)
+			&& sess->activeSequences[0] == NULL)
 		{
 			if (numFramesToLive > 0)
 			{
@@ -7638,7 +7638,7 @@ void Actor::UpdatePrePhysics()
 				{
 					editOwner->TestPlayerMode();
 				}
-				else if ((sess->scoreDisplay == NULL || !sess->scoreDisplay->IsActive()) && sess->activeSequence == NULL)
+				else if ((sess->scoreDisplay == NULL || !sess->scoreDisplay->IsActive()) && sess->activeSequences[0] == NULL)
 				{
 					sess->SetActiveSequence(sess->shipExitScene);
 					sess->shipExitScene->Reset();
@@ -11568,14 +11568,20 @@ bool Actor::BasicGroundAction()
 		return true;
 	}
 
-	if (currInspectObject != NULL)
+	
+	if (currInspectObject != NULL && currInspectObject->IsUsed())
+	{
+		currInspectObject = NULL;
+	}
+	else if (currInspectObject != NULL && currInspectObject->IsShowingIcon())
 	{
 		if (JumpButtonPressed())
 		{
-			currInspectObject->TryActivate();
+			currInspectObject->ShowInspectable();
 			return true;
 		}
 	}
+	
 	//button-based inputs
 
 	if (TryGroundBlock()) return true;
@@ -18891,7 +18897,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//SetAction(GETPOWER_AIRDASH_MEDITATE);
 		//frame = 0;
 		physicsOver = true;
-		sess->activeSequence = trigger->gameSequence;
+		sess->activeSequences[0] = trigger->gameSequence;
 		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		break;
@@ -18911,7 +18917,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 
 		//owner->Fade(false, 30, Color::Black);
 
-		sess->activeSequence = trigger->gameSequence;
+		sess->activeSequences[0] = trigger->gameSequence;
 
 		SetAction(SEQ_ENTERCORE1);
 		frame = 0;
@@ -18936,7 +18942,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		frame = 0;
 		physicsOver = true;
 
-		sess->activeSequence = trigger->gameSequence;
+		sess->activeSequences[0] = trigger->gameSequence;
 		break;
 	}
 	case TRIGGER_TEXTTEST:
@@ -18953,7 +18959,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		WaitInPlace();
 		physicsOver = true;
 
-		sess->activeSequence = trigger->gameSequence;
+		sess->activeSequences[0] = trigger->gameSequence;
 		//owner->SetStorySeq(trigger->storySeq);
 		break;
 	}
@@ -21121,7 +21127,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			{
 				if (currInspectObject == NULL)
 				{
-					if (iobj->IsReadyToShow())
+					if (iobj->TryActivate())
 					{
 						currInspectObject = iobj;
 					}

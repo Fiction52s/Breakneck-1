@@ -217,7 +217,7 @@ void FightMode::EndGame()
 	cout << "game over" << endl;
 	endSeq->Reset();
 	sess->SetActiveSequence(endSeq);
-	sess->ActiveSequenceUpdate();
+	sess->ActiveSequencesUpdate();
 	done = true;
 	//sess->RestartGame();
 }

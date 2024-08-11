@@ -348,8 +348,7 @@ struct SaveGameState
 	int pauseFrames;
 	int currSuperPlayerIndex;
 	int gameState; //game mode such as RUN or FROZEN
-	int activeSequenceID;
-	int activeEnvSequenceID;
+	int activeSequenceID[8]; //8 is the max number of activeSequences
 	int turnTimerOnCounter; //for adventure timer
 	uint32 randomState;
 	Camera cam;

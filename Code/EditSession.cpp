@@ -643,13 +643,13 @@ void EditSession::TestPlayerMode()
 
 	nextFrameRestartGame = false; //for respawning after triggering a score display
 
-	if (controlProfiles[0] != NULL)
+	/*if (controlProfiles[0] != NULL)
 	{
 		if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
 		{
 			CONTROLLERS.SetKeyboardActiveAsController(true);
 		}
-	}
+	}*/
 	
 
 	//----------------------------------------
@@ -751,7 +751,7 @@ void EditSession::TestPlayerMode()
 
 	accumulator = TIMESTEP + .1;
 
-	activeSequence = NULL;
+	ClearActiveSequences();
 
 	totalGameFrames = 0;
 	totalFramesBeforeGoal = -1;
@@ -848,6 +848,14 @@ void EditSession::TestPlayerMode()
 
 	if (mode == TEST_PLAYER)
 	{	
+		if (controlProfiles[0] != NULL)
+		{
+			if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
+			{
+				CONTROLLERS.SetKeyboardActiveAsController(true);
+			}
+		}
+
 		for (auto it = barriers.begin(); it != barriers.end(); ++it)
 		{
 			(*it)->Reset();
@@ -961,7 +969,7 @@ void EditSession::TestPlayerMode()
 		else if (shipTravelSequence != NULL)
 		{
 			shipTravelSequence->Reset();
-			SetActiveSequence(shipTravelSequence);
+			SetActiveSequence(shipTravelSequence, 1);
 		}
 
 
@@ -980,6 +988,17 @@ void EditSession::TestPlayerMode()
 
 	SetMode(TEST_PLAYER);
 	MOUSE.SetControllersOn(false);
+
+	//need this after you set the mode because exiting the controller setting mode turns this off. 
+	//why did it not work the first time w/ the controller???
+	if (controlProfiles[0] != NULL)
+	{
+		if (controlProfiles[0]->GetControllerType() == CTYPE_KEYBOARD)
+		{
+			CONTROLLERS.SetKeyboardActiveAsController(true);
+		}
+	}
+
 	ClearSelectedPoints();
 	ClearSelectedBrush();
 	
@@ -1475,7 +1494,7 @@ void EditSession::TestPlayerMode()
 	else if (shipTravelSequence != NULL)
 	{
 		shipTravelSequence->Reset();
-		SetActiveSequence(shipTravelSequence);
+		SetActiveSequence(shipTravelSequence, 1);
 	}
 
 	gameMode->StartGame();
@@ -2168,8 +2187,8 @@ void EditSession::Draw()
 			preScreenTex->clear();
 			DrawGame(preScreenTex);
 
-			pauseTex->clear(Color::Transparent);
-			DrawGameSequence(pauseTex);
+			//pauseTex->clear(Color::Transparent);
+			//DrawGameSequence(pauseTex);
 			//redraws the previous frame
 		}
 		
@@ -14157,8 +14176,10 @@ void EditSession::Display()
 	window->clear();
 	window->draw(preTexSprite);
 
+	//removed because we should just draw on top of stuff to make layers consistent etc
+
 	//this covers drawing the log and shard overlays for now
-	if (IsDrawMode(Emode::TEST_PLAYER))
+	/*if (IsDrawMode(Emode::TEST_PLAYER))
 	{
 		if (gameState == FROZEN)
 		{
@@ -14169,7 +14190,7 @@ void EditSession::Display()
 			pauseMenuSprite.setScale(.5, .5);
 			window->draw(pauseMenuSprite);
 		}
-	}
+	}*/
 
 	window->display();
 }

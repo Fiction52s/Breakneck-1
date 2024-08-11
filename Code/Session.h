@@ -834,10 +834,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void TryCreateShardResources();
 	void TryCreateLogResources();
 	void TryCreatePowerItemResources();
-	void SetActiveSequence(Sequence *activeSeq);
-	void SetActiveEnvSequence(Sequence *activeEnvSeq);
-	void ActiveSequenceUpdate();
-	void ActiveEnvSequenceUpdate();
+	void SetActiveSequence(Sequence *activeSeq, int activeSequenceSlot = 0 );
+	void ActiveSequencesUpdate();
 	void AddEmitter(ShapeEmitter *emit);
 	void RemoveEmitter(ShapeEmitter *emit);
 	void UpdateEmitters();

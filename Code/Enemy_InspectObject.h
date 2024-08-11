@@ -10,10 +10,10 @@ struct InspectObject : Enemy
 {
 	enum Action
 	{
-		NEUTRAL,
-		READY_TO_SHOW,
-		SHOW,
-		RECOVERY,
+		A_NEUTRAL,
+		A_SHOW_ICON,
+		A_SHOW_INSPECTABLE,
+		A_RECOVERY,
 		Count
 	};
 
@@ -21,7 +21,15 @@ struct InspectObject : Enemy
 	{
 	};
 
+
+
 	MyData data;
+
+	Tileset *ts_inspect;
+
+	int currControllerType;
+	sf::Vertex buttonQuad[4];
+
 	InspectObject(ActorParams *ap);//sf::Vector2i &pos, int level);
 	~InspectObject();
 	bool CountsForEnemyGate() { return false; }
@@ -31,15 +39,19 @@ struct InspectObject : Enemy
 	void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
-	bool ShowTutorial();
-	bool IsReadyToShow();
-	bool IsShowing();
-	void HideTutorial();
+	
+	void ShowInspectable();
+	void HideInspectable();
+	void ShowIcon();
+	void HideIcon();
+	bool IsShowingInspectable();
+	bool IsShowingIcon();
 	void AddToWorldTrees();
 	bool TryActivate();
-	void CheckReady();
 	bool TryDeactivate();
+	bool IsUsed();
 	sf::FloatRect GetAABB();
+	void UpdateButtonIconsWhenControllerIsChanged();
 	void SetExtraIDsAndAddToVectors();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

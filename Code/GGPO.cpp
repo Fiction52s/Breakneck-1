@@ -25,7 +25,12 @@ void SaveGameState::Clear()
 	currSuperPlayerIndex = -1;
 	gameState = 0; //game mode such as RUN or FROZEN
 	nextFrameRestartGame = false;
-	activeSequenceID = -1;
+
+	for (int i = 0; i < Session::MAX_SIMULTANEOUS_SEQUENCES; ++i)
+	{
+		activeSequenceID[i] = -1;
+	}
+	
 	randomState = 0;
 	phaseOn = false;
 	usedWarp = false;

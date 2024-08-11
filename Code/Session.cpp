@@ -1606,7 +1606,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	currStorySequence = NULL;
 	preLevelScene = NULL;
 	postLevelScene = NULL;
-	activeSequence = NULL;
+	ClearActiveSequences();
 
 	envParticleSystem = NULL;
 
@@ -4805,9 +4805,9 @@ void Session::HitlagUpdate()
 
 	//UpdatePlayersInHitlag();
 
-	if ( activeSequence != NULL && activeSequence == superSequence)
+	if ( activeSequences[0] != NULL && activeSequences[0] == superSequence)
 	{
-		ActiveSequenceUpdate();
+		ActiveSequencesUpdate();
 		currSuperPlayer->CheckBirdCommands();
 	}
 
@@ -5507,168 +5507,108 @@ void Session::TryCreatePowerItemResources()
 	}
 }
 
-void Session::SetActiveSequence(Sequence *activeSeq)
+void Session::SetActiveSequence(Sequence *newSeq, int activeSeqSlot )
 {
-	if (activeSeq == NULL)
+	Sequence *&activeSeq = activeSequences[activeSeqSlot];
+	if (newSeq == NULL)
 	{
-		if (activeSequence == NULL)
+		if (activeSeq == NULL)
 		{
 			//already NULL
 			return;
 		}
 
-		activeSequence->ReturnToGame();
-		activeSequence = NULL;
+		activeSeq->ReturnToGame();
+		activeSeq = NULL;
 		return;
 	}
 
-	if (activeSeq->sequenceID == -1)
+	if (newSeq->sequenceID == -1)
 	{
 		assert(0);
 		return;
 	}
 
-	activeSequence = activeSeq;
+	activeSeq = newSeq;
 
 	
 
-	if (activeSequence == preLevelScene)
+	if (activeSeq == preLevelScene)
 	{
 		FreezePlayer(true);
 		//FreezePlayerAndEnemies(true);
 		SetPlayerInputOn(false);
 	}
 
-	activeSequence->StartRunning();
+	activeSeq->StartRunning();
 }
 
-void Session::ActiveEnvSequenceUpdate()
+void Session::ActiveSequencesUpdate()
 {
-	if (activeEnvSequence != NULL)// && activeSequence == startSeq )
+	Sequence *activeSeq = NULL;
+	for (int i = 0; i < MAX_SIMULTANEOUS_SEQUENCES; ++i)
 	{
-		GameState oldState = gameState;
-		if (!activeSequence->Update())
+		activeSeq = activeSequences[i];
+		if (activeSeq != NULL)// && activeSequence == startSeq )
 		{
-			if (activeSequence->nextSeq != NULL)
+			GameState oldState = gameState;
+			if (!activeSeq->Update())
 			{
-				activeSequence->nextSeq->Reset();
-				SetActiveSequence(activeSequence->nextSeq);
+				if (activeSeq->nextSeq != NULL)
+				{
+					activeSeq->nextSeq->Reset();
+					SetActiveSequence(activeSeq->nextSeq, i );
+				}
+				else
+				{
+					if (activeSeq == preLevelScene)
+					{
+						//FreezePlayerAndEnemies(false);
+						FreezePlayer(false);
+						SetPlayerInputOn(true);
+						if (shipEnterScene != NULL)
+						{
+							shipEnterScene->Reset();
+							SetActiveSequence(shipEnterScene);
+							gameState = RUN;
+							return;
+						}
+						else if (shipTravelSequence != NULL)
+						{
+							shipTravelSequence->Reset();
+							SetActiveSequence(shipTravelSequence, 1);
+							gameState = RUN;
+							return;
+						}
+					}
+
+
+					if (activeSeq == postLevelScene)
+					{
+						goalDestroyed = true;
+					}
+
+					//if (gameState == SEQUENCE) //if this sets it to run when its frozen, sometimes you can get a weird bug in multiplayer endings.
+					//{
+					//	
+					//}
+
+					if (gameState != RUN)
+					{
+						gameState = RUN;
+						switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
+					}
+					activeSequences[i] = NULL;
+				}
 			}
 			else
 			{
-				if (activeSequence == preLevelScene)
+				if (gameState != oldState)
 				{
-					//FreezePlayerAndEnemies(false);
-					FreezePlayer(false);
-					SetPlayerInputOn(true);
-					if (shipEnterScene != NULL)
-					{
-						shipEnterScene->Reset();
-						SetActiveSequence(shipEnterScene);
-						gameState = RUN;
-						return;
-					}
-					else if (shipTravelSequence != NULL)
-					{
-						shipTravelSequence->Reset();
-						SetActiveSequence(shipTravelSequence);
-						gameState = RUN;
-						return;
-					}
+					switchGameState = true;
+					return;
+					//goto starttest;
 				}
-
-
-				if (activeSequence == postLevelScene)
-				{
-					goalDestroyed = true;
-				}
-
-				//if (gameState == SEQUENCE) //if this sets it to run when its frozen, sometimes you can get a weird bug in multiplayer endings.
-				//{
-				//	
-				//}
-
-				if (gameState != RUN)
-				{
-					gameState = RUN;
-					switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
-				}
-				activeSequence = NULL;
-			}
-		}
-		else
-		{
-			if (gameState != oldState)
-			{
-				switchGameState = true;
-				return;
-				//goto starttest;
-			}
-		}
-	}
-}
-
-void Session::ActiveSequenceUpdate()
-{
-	if (activeSequence != NULL)// && activeSequence == startSeq )
-	{
-		GameState oldState = gameState;
-		if (!activeSequence->Update())
-		{
-			if (activeSequence->nextSeq != NULL)
-			{
-				activeSequence->nextSeq->Reset();
-				SetActiveSequence(activeSequence->nextSeq);
-			}
-			else
-			{
-				if (activeSequence == preLevelScene)
-				{
-					//FreezePlayerAndEnemies(false);
-					FreezePlayer(false);
-					SetPlayerInputOn(true);
-					if (shipEnterScene != NULL)
-					{
-						shipEnterScene->Reset();
-						SetActiveSequence(shipEnterScene);
-						gameState = RUN;
-						return;
-					}
-					else if (shipTravelSequence != NULL)
-					{
-						shipTravelSequence->Reset();
-						SetActiveSequence(shipTravelSequence);
-						gameState = RUN;
-						return;
-					}
-				}
-
-
-				if (activeSequence == postLevelScene)
-				{
-					goalDestroyed = true;
-				}
-
-				//if (gameState == SEQUENCE) //if this sets it to run when its frozen, sometimes you can get a weird bug in multiplayer endings.
-				//{
-				//	
-				//}
-
-				if (gameState != RUN)
-				{
-					gameState = RUN;
-					switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
-				}
-				activeSequence = NULL;
-			}
-		}
-		else
-		{
-			if (gameState != oldState)
-			{
-				switchGameState = true;
-				return;
-				//goto starttest;
 			}
 		}
 	}
@@ -5686,7 +5626,7 @@ void Session::DrawActiveSequences(int p_drawLayer, sf::RenderTarget *target)
 				target->setView(uiView);
 			}
 
-			activeSequence->LayeredDraw(p_drawLayer, target);
+			activeSequences[i]->LayeredDraw(p_drawLayer, target);
 
 			if (p_drawLayer == DrawLayer::UI_FRONT)
 			{
@@ -6414,7 +6354,7 @@ void Session::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 
 	DrawDecor(p_drawLayer, target);
 	DrawStoryLayer(p_drawLayer, target);
-	DrawActiveSequence(p_drawLayer, target);
+	DrawActiveSequences(p_drawLayer, target);
 	DrawEffects(p_drawLayer, target);
 	DrawEmitters(p_drawLayer, target);
 	//swiper->Draw(target);
@@ -7268,7 +7208,7 @@ bool Session::RunGameModeUpdate()
 			SendPracticeStartMessageToAllNewPeers();
 		}
 
-		ActiveSequenceUpdate();
+		ActiveSequencesUpdate();
 		if (switchGameState)
 		{
 			if (IsReplayOn())
@@ -7523,7 +7463,7 @@ bool Session::OnlineFrozenGameModeUpdate()
 		UpdateControllers();
 	}
 
-	ActiveSequenceUpdate();
+	ActiveSequencesUpdate();
 	if (switchGameState)
 	{
 		return false;
@@ -7572,7 +7512,7 @@ bool Session::FrozenGameModeUpdate()
 
 		RunFrameForParallelPractice();
 
-		ActiveSequenceUpdate();
+		ActiveSequencesUpdate();
 
 		SteamAPI_RunCallbacks();
 
@@ -7620,19 +7560,27 @@ bool Session::FrozenGameModeUpdate()
 
 void Session::DrawGameSequence(sf::RenderTarget *target)
 {
-	if (activeSequence != NULL)
+	Sequence *activeSeq = NULL;
+	for (int i = 0; i < MAX_SIMULTANEOUS_SEQUENCES; ++i)
 	{
-		//preScreenTex->setView(uiView);
-		for (int i = 0; i < DrawLayer::DrawLayer_Count; ++i)
+		activeSeq = activeSequences[i];
+
+		if (activeSeq != NULL)
 		{
-			View oldView = target->getView();
-			target->setView(uiView);
-			fader->Draw(i, target);
-			target->setView(oldView);
-			//swiper->Draw(i, preScreenTex);
-			activeSequence->LayeredDraw(i, target);
+			//preScreenTex->setView(uiView);
+			for (int j = 0; j < DrawLayer::DrawLayer_Count; ++j)
+			{
+				View oldView = target->getView();
+				target->setView(uiView);
+				fader->Draw(j, target);
+				target->setView(oldView);
+				//swiper->Draw(i, preScreenTex);
+				activeSeq->LayeredDraw(j, target);
+			}
 		}
 	}
+
+	
 
 	target->setView(uiView);
 	//fader draw was here before
@@ -7658,7 +7606,7 @@ bool Session::SequenceGameModeUpdate()
 
 		//UpdateAllPlayersInput(); //added this recently. hopefully doesn't break netplay.
 
-		ActiveSequenceUpdate();
+		ActiveSequencesUpdate();
 
 		mainMenu->musicPlayer->Update();
 
@@ -8183,7 +8131,7 @@ bool Session::OnlineRunGameModeUpdate()
 
 	}*/
 
-	ActiveSequenceUpdate();
+	ActiveSequencesUpdate();
 	if (switchGameState)
 	{
 		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
@@ -8665,7 +8613,11 @@ void Session::StoreBytes(unsigned char *bytes)
 	currSaveState->currSuperPlayerIndex = GetPlayerIndex(currSuperPlayer);
 	currSaveState->gameState = gameState;
 	currSaveState->nextFrameRestartGame = nextFrameRestartGame;
-	currSaveState->activeSequenceID = GetSequenceID(activeSequence);
+	for (int i = 0; i < MAX_SIMULTANEOUS_SEQUENCES; ++i)
+	{
+		currSaveState->activeSequenceID[i] = GetSequenceID(activeSequences[i]);
+	}
+	
 	currSaveState->randomState = randomState;
 	currSaveState->cam = cam;
 
@@ -8834,7 +8786,11 @@ void Session::SetFromBytes(unsigned char *bytes)
 
 	gameState = (GameState)currSaveState->gameState;
 	nextFrameRestartGame = currSaveState->nextFrameRestartGame;
-	activeSequence = GetSequenceFromID(currSaveState->activeSequenceID);
+	for (int i = 0; i < MAX_SIMULTANEOUS_SEQUENCES; ++i)
+	{
+		activeSequences[i] = GetSequenceFromID(currSaveState->activeSequenceID[i]);
+	}
+	
 }
 
 bool Session::SaveState(unsigned char **buffer,
