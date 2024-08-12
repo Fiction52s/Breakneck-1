@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "InspectSequence.h"
+#include "MainMenu.h"
 
 
 using namespace std;
@@ -59,8 +60,8 @@ InspectObject::InspectObject(ActorParams *ap)
 	sprite.setScale(.1, .1);
 	//sprite.setColor(Color::Red);
 
-	entranceRadius = 200;
-	exitRadius = 200;
+	entranceRadius = 100;
+	exitRadius = 100;
 	//double radius = 500;
 	//BasicCircleHitBodySetup(radius);
 
@@ -99,11 +100,11 @@ void InspectObject::ResetEnemy()
 	action = A_NEUTRAL;
 	frame = 0;
 
-	float buttonSize = 64;
+	float buttonSize = 48;
 
 	ClearRect(buttonQuad);
 	SetRectCenter(buttonQuad, buttonSize, buttonSize,
-		GetPositionF());
+		GetPositionF() + Vector2f( 0, -100 ));
 
 	//SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
@@ -280,8 +281,13 @@ void InspectObject::UpdateButtonIconsWhenControllerIsChanged()
 
 	currControllerType = sessControllerType;
 
-	ControllerSettings::ButtonType bType = ControllerSettings::ButtonType::BUTTONTYPE_JUMP;
-	SetRectSubRect(buttonQuad, sess->GetButtonIconTile(0, bType));
+
+	auto button = XBOX_A;
+	IntRect ir = sess->mainMenu->GetButtonIconTileForMenu(currControllerType, button);
+	SetRectSubRect(buttonQuad, ir);
+
+	//ControllerSettings::ButtonType bType = ControllerSettings::ButtonType::BUTTONTYPE_JUMP;
+	//SetRectSubRect(buttonQuad, sess->GetButtonIconTile(0, bType));
 }
 
 void InspectObject::UpdateSprite()

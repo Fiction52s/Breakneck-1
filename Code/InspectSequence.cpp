@@ -84,30 +84,35 @@ void InspectSequence::UpdateState()
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 
+				player->SetAction(Actor::INSPECT_END);
+				player->frame = 0;
+				sess->cam.StopRumble();
+
 				myData.confirmFrame = seqData.frame;
 
 				myInspectObject->HideInspectable();
+
+				seqData.frame = stateLength[seqData.state] - 1;
 			}
 
-			if (seqData.frame == myData.confirmFrame + 2)
-			{
-				Actor *player = sess->GetPlayer(0);
-				sess->cam.EaseOutOfManual(60);
-				//player->SetAirPos(player->position, player->facingRight);
-				player->SetAction(Actor::JUMP);
-				player->RestoreAirOptions();
-				player->frame = 1;
-				sess->cam.StopRumble();
-				
-			}
+			//if (seqData.frame == myData.confirmFrame + 2)
+			//{
+			//	Actor *player = sess->GetPlayer(0);
+			//	//sess->cam.EaseOutOfManual(60);
+			//	//player->SetAirPos(player->position, player->facingRight);
+			//	player->SetAction(Actor::INSPECT_END);
+			//	player->frame = 0;
+			//	sess->cam.StopRumble();
+			//	
+			//}
 
-			if (sess->GetGameSessionState() == GameSession::RUN)
-			{
-				//if (!geoGroup.Update())
-				//{
-					seqData.frame = stateLength[seqData.state] - 1;
-				//}
-			}
+			//if (sess->GetGameSessionState() == GameSession::RUN)
+			//{
+			//	//if (!geoGroup.Update())
+			//	//{
+			//		seqData.frame = stateLength[seqData.state] - 1;
+			//	//}
+			//}
 
 			
 		}

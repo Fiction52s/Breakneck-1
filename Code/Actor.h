@@ -422,6 +422,8 @@ struct Actor : QuadTreeCollider,
 		HIDDEN,
 		WARP_CHARGE,
 		WARP,
+		INSPECT_START,
+		INSPECT_END,
 		Count
 	};
 
@@ -2565,6 +2567,28 @@ struct Actor : QuadTreeCollider,
 	void HOMINGATTACK_TimeDepFrameInc();
 	int HOMINGATTACK_GetActionLength();
 	const char * HOMINGATTACK_GetTilesetName();
+
+	void INSPECT_END_Start();
+	void INSPECT_END_End();
+	void INSPECT_END_Change();
+	void INSPECT_END_Update();
+	void INSPECT_END_UpdateSprite();
+	void INSPECT_END_TransitionToAction(int a);
+	void INSPECT_END_TimeIndFrameInc();
+	void INSPECT_END_TimeDepFrameInc();
+	int INSPECT_END_GetActionLength();
+	const char * INSPECT_END_GetTilesetName();
+
+	void INSPECT_START_Start();
+	void INSPECT_START_End();
+	void INSPECT_START_Change();
+	void INSPECT_START_Update();
+	void INSPECT_START_UpdateSprite();
+	void INSPECT_START_TransitionToAction(int a);
+	void INSPECT_START_TimeIndFrameInc();
+	void INSPECT_START_TimeDepFrameInc();
+	int INSPECT_START_GetActionLength();
+	const char * INSPECT_START_GetTilesetName();
 
 	void INTRO_Start();
 	void INTRO_End();

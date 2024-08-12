@@ -2352,6 +2352,30 @@ void Actor::SetupActionFunctions()
 		&Actor::HOMINGATTACK_GetActionLength,
 		&Actor::HOMINGATTACK_GetTilesetName);
 
+	SetupFuncsForAction(INSPECT_END,
+		&Actor::INSPECT_END_Start,
+		&Actor::INSPECT_END_End,
+		&Actor::INSPECT_END_Change,
+		&Actor::INSPECT_END_Update,
+		&Actor::INSPECT_END_UpdateSprite,
+		&Actor::INSPECT_END_TransitionToAction,
+		&Actor::INSPECT_END_TimeIndFrameInc,
+		&Actor::INSPECT_END_TimeDepFrameInc,
+		&Actor::INSPECT_END_GetActionLength,
+		&Actor::INSPECT_END_GetTilesetName);
+
+	SetupFuncsForAction(INSPECT_START,
+		&Actor::INSPECT_START_Start,
+		&Actor::INSPECT_START_End,
+		&Actor::INSPECT_START_Change,
+		&Actor::INSPECT_START_Update,
+		&Actor::INSPECT_START_UpdateSprite,
+		&Actor::INSPECT_START_TransitionToAction,
+		&Actor::INSPECT_START_TimeIndFrameInc,
+		&Actor::INSPECT_START_TimeDepFrameInc,
+		&Actor::INSPECT_START_GetActionLength,
+		&Actor::INSPECT_START_GetTilesetName);
+
 	SetupFuncsForAction(INTRO,
 		&Actor::INTRO_Start,
 		&Actor::INTRO_End,
@@ -7500,7 +7524,10 @@ void Actor::UpdatePrePhysics()
 	//cout << "groundspeed: " << groundSpeed << endl;
 
 	
-
+	if (currInspectObject != NULL && currInspectObject->IsUsed())
+	{
+		currInspectObject = NULL;
+	}
 
 	hitOutOfHitstunLastFrame = false;
 	if (actorIndex == 1)
@@ -11569,15 +11596,12 @@ bool Actor::BasicGroundAction()
 	}
 
 	
-	if (currInspectObject != NULL && currInspectObject->IsUsed())
-	{
-		currInspectObject = NULL;
-	}
-	else if (currInspectObject != NULL && currInspectObject->IsShowingIcon())
+	if (currInspectObject != NULL && currInspectObject->IsShowingIcon())
 	{
 		if (JumpButtonPressed())
 		{
-			currInspectObject->ShowInspectable();
+			SetAction(INSPECT_START);
+			frame = 0;
 			return true;
 		}
 	}

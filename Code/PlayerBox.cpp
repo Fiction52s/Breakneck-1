@@ -657,6 +657,10 @@ bool PlayerBoxGroup::IsReadyAndStartPressed()
 			states = (*it)->controllerStates;
 			if (states != NULL)
 			{
+				if (states->ButtonHeld_A())
+				{
+					cout << "holding A" << endl;
+				}
 				if (states->ButtonPressed_Start())
 				{
 					return true;
@@ -719,7 +723,7 @@ bool PlayerBoxGroup::TryControllerJoin(ControllerDualStateQueue *conStates)
 			if (playerBoxes[i]->controllerStates == NULL)
 			{
 				SetControllerStates(i, conStates, GetFirstAvailableSkinIndex());
-				cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;
+				//cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;
 				mm->soundNodeList->ActivateSound(mm->soundInfos[MainMenu::S_PLAYER_JOIN]);
 				return true;
 			}
