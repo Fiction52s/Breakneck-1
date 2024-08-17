@@ -1275,12 +1275,6 @@ void EditSession::TestPlayerMode()
 	SetupEnvParticleSystem();
 
 
-	if (mapHeader->specialMapType == MapHeader::MAPTYPE_SHIP)
-	{
-		shipTravelSequence->SetIDAndAddToAllSequencesVec();
-	}
-	
-
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -1350,27 +1344,17 @@ void EditSession::TestPlayerMode()
 				}
 				foundShipExit = true;
 			}
-			/*else if ((((*enit)->type == types["shiptravel"])))
-			{
-				if (shipTravelSequence == NULL)
-				{
-					shipTravelSequence = new ShipTravelSequence;
-					shipTravelSequence->Init();
-					shipTravelSequence->SetIDAndAddToAllSequencesVec();
-				}
-				else
-				{
-					shipTravelSequence->SetIDAndAddToAllSequencesVec();
-				}
-				foundShipTravel = true;
-				shipTravelSequence->shipTravelPos = (*enit)->GetPosition();
-			}*/
 			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
 				Goal *g = (Goal*)((*enit)->myEnemy);
 				goal = g;
 			}
 		}
+	}
+
+	if (mapHeader->specialMapType == MapHeader::MAPTYPE_SHIP)
+	{
+		shipTravelSequence->SetIDAndAddToAllSequencesVec();
 	}
 
 	for (auto it = allEnemiesVec.begin(); it != allEnemiesVec.end(); ++it)
@@ -1441,11 +1425,6 @@ void EditSession::TestPlayerMode()
 	{
 		CleanupShipEntrance();
 	}
-
-	/*if (!foundShipTravel && shipTravelSequence != NULL)
-	{
-		CleanupShipTravel();
-	}*/
 
 	if (!foundShipExit && shipExitScene != NULL)
 	{
@@ -8827,15 +8806,6 @@ void EditSession::TestPlayerModeForPreview()
 				}
 				foundShipExit = true;
 			}
-			/*else if (((*enit)->type == types["shiptravel"]))
-			{
-				if (shipTravelSequence == NULL)
-				{
-					shipTravelSequence = new ShipTravelSequence;
-					shipTravelSequence->Init();
-				}
-				foundShipTravel = true;
-			}*/
 			
 			else if ((*enit)->type == types["goal"] && goal == NULL )
 			{
@@ -16820,22 +16790,4 @@ void EditSession::SetSpecialMapType(int specialMapType)
 			shipTravelSequence->Init();
 		}
 	}
-	
-		//shipTravelSequence->SetIDAndAddToAllSequencesVec();
-
-	//else if ((((*enit)->type == types["shiptravel"])))
-	//{
-	//if (shipTravelSequence == NULL)
-	//{
-	//shipTravelSequence = new ShipTravelSequence;
-	//shipTravelSequence->Init();
-	//shipTravelSequence->SetIDAndAddToAllSequencesVec();
-	//}
-	//else
-	//{
-	//shipTravelSequence->SetIDAndAddToAllSequencesVec();
-	//}
-	//foundShipTravel = true;
-	//shipTravelSequence->shipTravelPos = (*enit)->GetPosition();
-	//}
 }

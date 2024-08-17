@@ -56,7 +56,6 @@ struct RushFile
 {
 	int ver;
 	int numWorlds;
-	int numMapsPerWorld;
 	std::vector<RushWorld> worlds;
 	//int numActiveWorlds;
 

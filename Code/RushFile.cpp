@@ -184,7 +184,6 @@ void RushFile::Clear()
 {
 	//numMaps = 0;
 	numWorlds = 0;
-	numMapsPerWorld = 0;
 	ver = 0;
 	worlds.clear();
 }
@@ -195,6 +194,8 @@ bool RushFile::Load(const std::string &p_path,
 	string filePath = p_path + "/" + rushName + RUSH_EXT;
 
 	string emptyStr;
+
+	int numMapsInWorld = 0;
 
 	ifstream is;
 	is.open(filePath);
@@ -207,17 +208,21 @@ bool RushFile::Load(const std::string &p_path,
 	{
 		is >> ver;
 
-		is >> numWorlds;
-
-		is >> numMapsPerWorld;
-
 		is.get();
 
+		is >> numWorlds;
+
 		worlds.resize(numWorlds);
+
+		std::getline(is, emptyStr);
+
+		//worlds.resize(numWorlds);
 		for (int w = 0; w < numWorlds; ++w)
 		{
-			worlds[w].maps.resize(numMapsPerWorld);
-			for (int i = 0; i < numMapsPerWorld; ++i)
+			is >> numMapsInWorld;
+			is.get();
+			worlds[w].maps.resize(numMapsInWorld);
+			for (int i = 0; i < numMapsInWorld; ++i)
 			{
 				worlds[w].maps[i].Load(is);
 			}
@@ -256,14 +261,15 @@ void RushFile::Save(const std::string &p_path,
 
 	of << numWorlds << "\n";
 
-	of << numMapsPerWorld << "\n";
+	of << "\n";
 
 	for (int w = 0; w < numWorlds; ++w)
 	{
-		for (int i = 0; i < numMapsPerWorld; ++i)
+		for (int i = 0; i < worlds[w].maps.size(); ++i)
 		{
 			worlds[w].maps[i].Save(of);
 		}
+		of << "\n";
 	}
 
 	//for (int i = 0; i < numMaps; ++i)

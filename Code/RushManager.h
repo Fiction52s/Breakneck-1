@@ -28,6 +28,8 @@ struct RushManager : TilesetManager
 	RushFile rushFile;
 	GameSession *firstMap;
 
+	GameSession *shipGame;
+
 	int currWorld;
 	int currRushMapIndex;
 	std::vector<GameSession*> bonusVec;
@@ -67,6 +69,7 @@ struct RushManager : TilesetManager
 	RushManager();
 	~RushManager();
 	void Load();
+	void LoadShip();
 	void SetWorld(int w);
 	void UpdateWorldDependentTileset(int worldIndex);
 	void LoadRush(const std::string &rushName);
@@ -75,6 +78,7 @@ struct RushManager : TilesetManager
 	void DestroySaveMenu();
 	bool TryToGoToNextLevel(GameSession *game);
 	bool TryToGoToNextWorld();
+	bool TryToGoToNextWorldShip();
 	bool IsLastLevel();
 	void StartDefaultSaveFile(int index);
 	void SaveCurrFile();

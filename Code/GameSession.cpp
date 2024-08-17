@@ -355,61 +355,78 @@ void GameSession::UpdateCamera()
 
 	oldView = view;
 
-	switch (gameModeType)
+	if (mapHeader->specialMapType != MapHeader::MAPTYPE_NORMAL)
 	{
-	case MatchParams::GAME_MODE_PARALLEL_PRACTICE:
-	case MatchParams::GAME_MODE_BASIC:
-	{
-		cam.SetCamType(Camera::CamType::BASIC);
-		cam.playerIndex = 0;
-		cam.Update();
-		break;
+		switch (mapHeader->specialMapType)
+		{
+		case MapHeader::MAPTYPE_SHIP:
+		{
+			cam.SetCamType(Camera::CamType::SHIP);
+			cam.playerIndex = 0;
+			cam.Update();
+			break;
+		}
+		}
 	}
-	case MatchParams::GAME_MODE_FIGHT:
+	else
 	{
-		cam.SetCamType(Camera::CamType::FIGHTING);
-		cam.Update();
-		//cam.playerIndex = 0;
-		break;
-	}
-	case MatchParams::GAME_MODE_RACE:
-	{
-		cam.SetCamType(Camera::CamType::FIGHTING);
-		cam.Update();
-		break;
-	}
-	case MatchParams::GAME_MODE_PARALLEL_RACE:
-	{
-		cam.SetCamType(Camera::CamType::BASIC);
-		cam.playerIndex = 0;
-		cam.Update();
-		/*cam.SetCamType(Camera::CamType::FIGHTING);
-		cam.Update();*/
-		break;
-	}
-	case MatchParams::GAME_MODE_COOP:
-	{
-		//eventually need another cam type which is fighting + enemies for coop
-		cam.SetCamType(Camera::CamType::FIGHTING);
-		cam.Update();
-		break;
-	}
-	case MatchParams::GAME_MODE_EXPLORE:
-	{
-		if (matchParams.numPlayers == 1)
+		switch (gameModeType)
+		{
+		case MatchParams::GAME_MODE_PARALLEL_PRACTICE:
+		case MatchParams::GAME_MODE_BASIC:
 		{
 			cam.SetCamType(Camera::CamType::BASIC);
 			cam.playerIndex = 0;
 			cam.Update();
+			break;
 		}
-		else
+		case MatchParams::GAME_MODE_FIGHT:
 		{
 			cam.SetCamType(Camera::CamType::FIGHTING);
 			cam.Update();
+			//cam.playerIndex = 0;
+			break;
 		}
-		break;
+		case MatchParams::GAME_MODE_RACE:
+		{
+			cam.SetCamType(Camera::CamType::FIGHTING);
+			cam.Update();
+			break;
+		}
+		case MatchParams::GAME_MODE_PARALLEL_RACE:
+		{
+			cam.SetCamType(Camera::CamType::BASIC);
+			cam.playerIndex = 0;
+			cam.Update();
+			/*cam.SetCamType(Camera::CamType::FIGHTING);
+			cam.Update();*/
+			break;
+		}
+		case MatchParams::GAME_MODE_COOP:
+		{
+			//eventually need another cam type which is fighting + enemies for coop
+			cam.SetCamType(Camera::CamType::FIGHTING);
+			cam.Update();
+			break;
+		}
+		case MatchParams::GAME_MODE_EXPLORE:
+		{
+			if (matchParams.numPlayers == 1)
+			{
+				cam.SetCamType(Camera::CamType::BASIC);
+				cam.playerIndex = 0;
+				cam.Update();
+			}
+			else
+			{
+				cam.SetCamType(Camera::CamType::FIGHTING);
+				cam.Update();
+			}
+			break;
+		}
+		}
 	}
-	}
+	
 	
 
 	Vector2f camPos = cam.GetPos();
@@ -1929,6 +1946,8 @@ bool GameSession::Load()
 
 	ClearActiveSequences();
 
+	
+
 	//view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 
 	//repGhost = new ReplayGhost( player );
@@ -2027,6 +2046,14 @@ bool GameSession::Load()
 
 	ReadFile();
 
+	if (mapHeader->specialMapType == MapHeader::MAPTYPE_SHIP)
+	{
+		assert(shipTravelSequence == NULL);
+		shipTravelSequence = new ShipTravelSequence;
+		shipTravelSequence->Init();
+		shipTravelSequence->SetIDAndAddToAllSequencesVec();
+	}
+
 	//myHash = md5file(filePathStr);
 
 	mapNameText.setString(mapHeader->fullName);
@@ -2094,32 +2121,35 @@ bool GameSession::Load()
 
 	SetupHUD();
 
-	bool blackBorder[2];
-	bool topBorderOn = false;
-	SetupGlobalBorderQuads(blackBorder, topBorderOn);
 	if (hud != NULL && hud->mini != NULL && !IsParallelSession())
 	{
-		hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 		kinMapSpawnIcon.setTexture(*hud->mini->ts_miniIcons->texture);
 		kinMapSpawnIcon.setTextureRect(hud->mini->ts_miniIcons->GetSubRect(1));
 		kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
 			kinMapSpawnIcon.getLocalBounds().height / 2);
 	}
-	if (pauseMenu != NULL)
+
+
+	if (mapHeader->specialMapType == MapHeader::MAPTYPE_NORMAL)
 	{
-		pauseMenu->SetupMapBorderQuads(blackBorder, topBorderOn, mapHeader);
+		bool blackBorder[2];
+		bool topBorderOn = false;
+		SetupGlobalBorderQuads(blackBorder, topBorderOn);
+		if (hud != NULL && hud->mini != NULL && !IsParallelSession())
+		{
+			hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
+		}
+		if (pauseMenu != NULL)
+		{
+			pauseMenu->SetupMapBorderQuads(blackBorder, topBorderOn, mapHeader);
+		}
+
+		if (topBorderOn)
+		{
+			topClouds = new TopClouds;
+			topClouds->SetToHeader();
+		}
 	}
-
-
-	
-
-
-	if (topBorderOn)
-	{
-		topClouds = new TopClouds;
-		topClouds->SetToHeader();
-	}
-
 	
 
 	CreateZones();
@@ -4807,7 +4837,7 @@ void GameSession::RestartLevel()
 		else if (shipTravelSequence != NULL)
 		{
 			shipTravelSequence->Reset();
-			SetActiveSequence(shipTravelSequence);
+			SetActiveSequence(shipTravelSequence, 1);
 		}
 	}
 

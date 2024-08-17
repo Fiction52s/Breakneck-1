@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "InspectSequence.h"
+#include "CockpitSequence.h"
 #include "MainMenu.h"
 
 
@@ -40,24 +41,41 @@ InspectObject::InspectObject(ActorParams *ap)
 
 	const string &typeName = ap->GetTypeName();
 
-	ts_inspect = GetSizedTileset("Story/kin_family_1109x1060.png");
+	showObject = false;
 
-	if (typeName == "familypicture")
+	ts_inspect = NULL;
+
+	if (typeName == "inspectfamilypicture")
 	{
+		sprite.setScale(.1, .1);
+		ts_inspect = GetSizedTileset("Story/kin_family_1109x1060.png");
+		showObject = true;
+
+		InspectSequence *inSeq = new InspectSequence;
+
+		inSeq->ts_inspect = ts_inspect;
+		inSeq->myInspectObject = this;
+
+		inspectSeq = inSeq;
+	}
+	else if (typeName == "inspectcockpit")
+	{
+		sprite.setScale(.1, .1);
+		ts_inspect = GetSizedTileset("Story/kin_family_1109x1060.png");
+
+		CockpitSequence *cSeq = new CockpitSequence;
+
+		inspectSeq = cSeq;
+
 	}
 
-	ts = GetSizedTileset("Enemies/General/tutorial_flower_256x256.png");
-
-	inspectSeq = new InspectSequence;
-
-	inspectSeq->ts_inspect = ts_inspect;
-	inspectSeq->myInspectObject = this;
+	ts = ts_inspect;
 
 	inspectSeq->Init();
 
-	sprite.setTexture(*ts_inspect->texture);
+	sprite.setTexture(*ts->texture);
 
-	sprite.setScale(.1, .1);
+	
 	//sprite.setColor(Color::Red);
 
 	entranceRadius = 100;
@@ -292,6 +310,9 @@ void InspectObject::UpdateButtonIconsWhenControllerIsChanged()
 
 void InspectObject::UpdateSprite()
 {
+	if (!showObject)
+		return;
+
 	int tile = 0;
 	IntRect ir;
 
@@ -327,7 +348,11 @@ void InspectObject::UpdateSprite()
 
 void InspectObject::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	if (showObject)
+	{
+		target->draw(sprite);
+	}
+	
 
 	if (action == A_SHOW_ICON)
 	{

@@ -6,6 +6,7 @@ using namespace std;
 
 void Actor::INSPECT_START_Start()
 {
+	groundSpeed = 0;
 }
 
 void Actor::INSPECT_START_End()
@@ -19,6 +20,8 @@ void Actor::INSPECT_START_Change()
 
 void Actor::INSPECT_START_Update()
 {
+	groundSpeed = 0;
+
 	if (frame == 20)
 	{
 		currInspectObject->ShowInspectable();

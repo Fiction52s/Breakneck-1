@@ -164,7 +164,6 @@ struct MainMenu : TilesetManager
 		LOADINGMENUEND,
 		KINBOOSTLOADINGMAP,
 		WORLDTRANSFERLOADINGMAP,
-		WORLDTRANSFERLOADINGMAPRUSH,
 		RUN_ADVENTURE_MAP,
 		RUN_EDITOR_MAP,
 		SAVEMENU,
@@ -207,6 +206,9 @@ struct MainMenu : TilesetManager
 		QUICKPLAY_PRE_MATCH,
 		EXITING,
 		TEST_RUSH,
+		LOAD_RUSH_SHIP,
+		LOAD_RUSH_WORLD,
+		RUN_RUSH_SHIP,
 	};
 
 	enum SoundType
@@ -315,6 +317,8 @@ struct MainMenu : TilesetManager
 	void StartLoadModeScreen();
 	static void sLevelLoad(MainMenu *mm, GameSession *gs);
 	void LevelLoad(GameSession *gs);
+	static void sRushShipLoad(MainMenu *mm);
+	static void sRushWorldLoad(MainMenu *mm);
 	static void sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode);
 	void TransitionMode(Mode fromMode, Mode toMode);
 	void TitleMenuModeUpdate();
@@ -410,7 +414,8 @@ struct MainMenu : TilesetManager
 	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 	void SetModeWorldTransferLoadingMap(int variation);
-	void SetModeWorldTransferLoadingMapRush(int variation);
+	void SetModeRushShip(int variation);
+	void SetModeRushLoadingWorld(int variation);
 	void CreatePlayerTilesets();
 
 	sf::IntRect GetKeyboardKeyIconTile(sf::Keyboard::Key key);

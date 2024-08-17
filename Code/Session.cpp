@@ -284,6 +284,8 @@ void Session::RegisterGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddExtraEnemy("Family Picture (Inspect)", "inspectfamilypicture", objectRow, CreateEnemy<InspectObject>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddExtraEnemy("Cockpit (Inspect)", "inspectcockpit", objectRow, CreateEnemy<InspectObject>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	//AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
 	//	GetSizedTileset( "Ship/ShipTest/travel1_1725x921.png" ));
 
@@ -5472,7 +5474,10 @@ void Session::DrawBlackBorderQuads(sf::RenderTarget *target)
 {
 	bool narrowMap = mapHeader->boundsWidth < 1920 * 2;
 
-	target->draw(blackBorderQuads, 16, sf::Quads);
+	if (mapHeader->specialMapType == MapHeader::MAPTYPE_NORMAL)
+	{
+		target->draw(blackBorderQuads, 16, sf::Quads);
+	}
 	/*if (cam.manual || narrowMap)
 	{
 		target->draw(blackBorderQuads, 16, sf::Quads);

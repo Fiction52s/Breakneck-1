@@ -3,7 +3,8 @@
 
 #include "Enemy.h"
 
-struct InspectSequence;
+//struct InspectSequence;
+struct Sequence;
 
 //you get close to it, press a button, and something pops up
 struct InspectObject : Enemy
@@ -29,6 +30,7 @@ struct InspectObject : Enemy
 
 	int currControllerType;
 	sf::Vertex buttonQuad[4];
+	bool showObject;
 
 	InspectObject(ActorParams *ap);//sf::Vector2i &pos, int level);
 	~InspectObject();
@@ -61,7 +63,7 @@ struct InspectObject : Enemy
 	double entranceRadius;
 	double exitRadius;
 	Tileset *ts;
-	InspectSequence *inspectSeq;
+	Sequence *inspectSeq;
 };
 
 #endif

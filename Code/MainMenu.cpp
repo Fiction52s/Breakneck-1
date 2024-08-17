@@ -266,6 +266,16 @@ void MainMenu::sLevelLoad(MainMenu *mm, GameSession *gs)
 	mm->LevelLoad(gs);
 }
 
+void MainMenu::sRushShipLoad(MainMenu *mm)
+{
+	mm->rushManager->LoadShip();
+}
+
+void MainMenu::sRushWorldLoad(MainMenu *mm)
+{
+	mm->rushManager->SetWorld(mm->rushManager->currWorld);
+}
+
 
 void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
@@ -2461,12 +2471,30 @@ void MainMenu::SetModeWorldTransferLoadingMap(int variation)
 	adventureManager->worldTransferScreen->SetWorld(variation);
 }
 
-void MainMenu::SetModeWorldTransferLoadingMapRush(int variation)
+void MainMenu::SetModeRushShip(int variation)
 {
-	gameRunType = GRT_RUSH;;
-	SetMode(WORLDTRANSFERLOADINGMAPRUSH);
-	rushManager->worldTransferScreen->Reset();
-	rushManager->worldTransferScreen->SetWorld(variation);
+	gameRunType = GRT_RUSH;
+	SetMode(LOAD_RUSH_SHIP);
+	loadThread = new boost::thread(MainMenu::sRushShipLoad, this);
+
+	loadingBackpack->SetScale(1.f);
+	loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
+	//loadingBGSpr.setTexture(*ts_loadBG->texture);
+	//rushManager->worldTransferScreen->Reset();
+	//rushManager->worldTransferScreen->SetWorld(variation);
+}
+
+void MainMenu::SetModeRushLoadingWorld(int variation)
+{
+	gameRunType = GRT_RUSH;
+	SetMode(LOAD_RUSH_WORLD);
+
+	loadThread = new boost::thread(MainMenu::sRushWorldLoad, this);
+
+	loadingBackpack->SetScale(1.f);
+	loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
+	//rushManager->worldTransferScreen->Reset();
+	//rushManager->worldTransferScreen->SetWorld(variation);
 }
 
 void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
@@ -3038,47 +3066,125 @@ void MainMenu::HandleMenuMode()
 		adventureManager->worldTransferScreen->Update();
 		break;
 	}
-	case WORLDTRANSFERLOADINGMAPRUSH:
+	case LOAD_RUSH_SHIP:
+	{
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
+		loadingBackpack->Update();
+
+		if (loadThread != NULL)
+		{
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				//window->setVerticalSyncEnabled(true);
+				delete loadThread;
+				loadThread = NULL;
+
+				SetMode(RUN_RUSH_SHIP);
+			}
+		}
+		break;
+	}
+	case LOAD_RUSH_WORLD:
+	{
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
+		loadingBackpack->Update();
+
+		if (loadThread != NULL)
+		{
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				//window->setVerticalSyncEnabled(true);
+				delete loadThread;
+				loadThread = NULL;
+
+				SetMode(TEST_RUSH);
+			}
+		}
+		break;
+	}
+	case RUN_RUSH_SHIP:
 	{
 		while (window->pollEvent(ev))
 		{
 
 		}
+		View oldView = window->getView();
+		//cout << "running currLevel: " << currLevel << endl;
+		GameSession::GameResultType result =
+			(GameSession::GameResultType)rushManager->shipGame->Run();
 
-		if (deadThread != NULL)
+		switch (result)
 		{
-			if (deadThread->try_join_for(boost::chrono::milliseconds(0)))
+		case GameSession::GR_EXITLEVEL:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITTITLE:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITGAME:
+			//currFile->Save();
+			break;
+		}
+
+		rushManager->transferPlayerPowerMode = -1;
+
+		window->setView(oldView);
+
+		if (result == GameSession::GR_WIN)
+		{
+
+
+			//currFile->Save();
+
+			//delete currLevel;
+			//currLevel = NULL;
+			//fader->Clear();
+
+			//if (adventureManager->IsLastLevel())
+			//{
+			//	LoadMode(THANKS_FOR_PLAYING);
+			//}
+			//else
+			//{
+			//	LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
+			//}
+		}
+		else if (result == GameSession::GR_WINCONTINUE)
+		{
+			if (!rushManager->TryToGoToNextWorld())
 			{
-				delete deadThread;
-				deadThread = NULL;
+				LoadMode(TITLEMENU);
 			}
-		}
 
-		if (rushManager->worldTransferScreen->IsEnded())//swiper->IsPostWipe())
-		{
-			fader->Fade(true, 30, Color::Black, true, DrawLayer::IN_FRONT_OF_UI);
-			SetMode(TEST_RUSH);
+			/*if (!rushManager->TryToGoToNextWorld())
+			{
+				LoadMode(TITLEMENU);
+			}*/
 		}
-		else if (rushManager->worldTransferScreen->frame > 60 
-			&& rushManager->worldTransferScreen->level == NULL && loadThread == NULL && deadThread == NULL && rushManager->worldTransferScreen->IsBoosting())
+		else if (result == GameSession::GR_EXITTITLE)
 		{
-			//level is always null currently for this
-			rushManager->worldTransferScreen->End();
+			LoadMode(TITLEMENU);
+		}
+		else if (result == GameSession::GR_EXITGAME)
+		{
+			/*delete currLevel;
+			currLevel = NULL;
+
+			SetMode(EXITING);
+			quit = true;*/
 		}
 		else
 		{
-			if (rushManager->worldTransferScreen->frame == 60 && rushManager->worldTransferScreen->IsBoosting())
-			{
-				//window->setVerticalSyncEnabled(false);
-				//window->setFramerateLimit(60);
-				//string levelPath = worldTransferScreen->level->GetFullName();//worldTransferScreen->levName;
-				Level *lev = rushManager->worldTransferScreen->level;
-				deadThread = new boost::thread(MainMenu::sGoToNextLevelRush, this, (RushMap*)NULL, (Level*)NULL);//&adventureManager->adventureFile.GetMap(lev->index), lev);
-				rushManager->worldTransferScreen->level = NULL;
-			}
-
+			LoadMode(TITLEMENU);
 		}
-		rushManager->worldTransferScreen->Update();
 		break;
 	}
 	case TEST_RUSH:
@@ -3120,55 +3226,34 @@ void MainMenu::HandleMenuMode()
 
 		if (result == GameSession::GR_WIN)
 		{
+			//doesnt happen atm
+
 			//currFile->Save();
 
 			//delete currLevel;
 			//currLevel = NULL;
-			fader->Clear();
+			//fader->Clear();
 
-			if (adventureManager->IsLastLevel())
-			{
-				LoadMode(THANKS_FOR_PLAYING);
-			}
-			else
-			{
-				LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
-			}
+			//if (adventureManager->IsLastLevel())
+			//{
+			//	LoadMode(THANKS_FOR_PLAYING);
+			//}
+			//else
+			//{
+			//	LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
+			//}
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
 		{
-			if (!rushManager->TryToGoToNextWorld())
+			if (!rushManager->TryToGoToNextWorldShip())
 			{
 				LoadMode(TITLEMENU);
 			}
-			//if (!rushManager->TryToGoToNextLevel(rushManager->firstMap) )
-			//{
-				
-				/*if (adventureManager->IsLastLevel())
-				{
-					LoadMode(THANKS_FOR_PLAYING);
-				}
-				else
-				{
-					ReturnToWorldAfterLevel();
-				}*/
-
-				//ReturnToWorldAfterLevel();
-			//}
-
-			//LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
-			//if (!rushManager->TryToGoToNextLevel())
-			//{
-			//	if (rushManager->IsLastLevel())
-			//	{
-			//		LoadMode(THANKS_FOR_PLAYING);
-			//	}
-			//	else
-			//	{
-			//		//ReturnToWorldAfterLevel();
-			//		LoadMode(TITLEMENU);
-			//	}
-			//}
+			//SetModeRushShip()
+			/*if (!rushManager->TryToGoToNextWorld())
+			{
+				LoadMode(TITLEMENU);
+			}*/
 		}
 		else if (result == GameSession::GR_EXITTITLE)
 		{
@@ -5212,6 +5297,15 @@ void MainMenu::DrawMode( Mode m )
 
 		break;
 	}
+	case LOAD_RUSH_SHIP:
+	case LOAD_RUSH_WORLD:
+	{
+		preScreenTexture->setView(v);
+//		preScreenTexture->draw(loadingBGSpr);
+
+		loadingBackpack->Draw(preScreenTexture);
+		break;
+	}
 	case LOADINGMENUSTART:
 	{
 		DrawMode(modeLoadingFrom);
@@ -5238,12 +5332,6 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		adventureManager->worldTransferScreen->Draw(preScreenTexture);
-		break;
-	}
-	case WORLDTRANSFERLOADINGMAPRUSH:
-	{
-		preScreenTexture->setView(v);
-		rushManager->worldTransferScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_MAIN_TO_SAVE:

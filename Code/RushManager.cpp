@@ -28,6 +28,7 @@ RushManager::RushManager()
 	pauseMenu = new PauseMenu(this);
 
 	firstMap = NULL;
+	shipGame = NULL;
 
 	kinUpgradesInOrder.reserve(128);
 
@@ -68,6 +69,11 @@ RushManager::~RushManager()
 	if (firstMap != NULL)
 	{
 		delete firstMap;
+	}
+
+	if (shipGame != NULL)
+	{
+		delete shipGame;
 	}
 
 	if (adventureHUD != NULL)
@@ -156,8 +162,9 @@ void RushManager::SetWorld(int w)
 	rushScoreDisplay->SetSession(firstMap);
 
 	//GameSession *lastMap = firstMap;
-	bonusVec.resize(rushFile.numMapsPerWorld - 1);
-	for (int i = 0; i < rushFile.numMapsPerWorld - 1; ++i)
+	int numMapsInWorld = rushFile.worlds[w].maps.size();
+	bonusVec.resize(numMapsInWorld - 1);
+	for (int i = 0; i < numMapsInWorld - 1; ++i)
 	{
 		bonusVec[i] = firstMap->CreateBonus(rushFile.worlds[w].maps[i + 1].GetFilePath());
 		//lastMap = bonusVec[i];
@@ -168,6 +175,29 @@ void RushManager::LoadRush(const std::string &rushName)
 {
 	rushFile.Load("Resources/Rush", rushName);
 	SetWorld(0);
+}
+
+void RushManager::LoadShip()
+{
+	if (shipGame != NULL)
+	{
+		delete shipGame;
+		shipGame = NULL;
+	}
+
+	MatchParams mp;
+	mp.mapPath = string("Resources/Maps/test/ashiptest") + MAP_EXT;
+	mp.randSeed = time(0);
+	mp.numPlayers = 1;
+	mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+
+	mp.controllerStateVec[0] = controllerInput;
+	mp.controlProfiles[0] = currProfile;
+	mp.playerSkins[0] = 0;//adventureManager->currSaveFile->visualInfo.skinIndex;
+
+	shipGame = new GameSession(&mp);
+	shipGame->Load();
+	//shipGame = new GameSession()
 }
 
 void RushManager::UpdateWorldDependentTileset(int worldIndex)
@@ -235,11 +265,9 @@ void RushManager::UpdateWorldDependentTileset(int worldIndex)
 	}
 }
 
-
-
 bool RushManager::TryToGoToNextLevel(GameSession *game)
 {
-	if (currRushMapIndex < rushFile.numMapsPerWorld - 1)
+	if (currRushMapIndex < rushFile.worlds[currWorld].maps.size() - 1)
 	{
 		//int r = rand() % (rushFile.numMaps - 1);
 		//game->SetBonus(bonusVec[r], V2d(0, 0));
@@ -255,9 +283,24 @@ bool RushManager::TryToGoToNextWorld()
 {
 	if (currWorld < rushFile.numWorlds)
 	{
-		MainMenu::GetInstance()->SetModeWorldTransferLoadingMapRush(currWorld + 1);
+		MainMenu::GetInstance()->SetModeRushLoadingWorld(currWorld + 1);
 		currRushMapIndex = 0;
 		currWorld++;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool RushManager::TryToGoToNextWorldShip()
+{
+	if (currWorld < rushFile.numWorlds)
+	{
+		MainMenu::GetInstance()->SetModeRushShip(currWorld + 1);
+		//currRushMapIndex = 0;
+		//currWorld++;
 		return true;
 	}
 	else
