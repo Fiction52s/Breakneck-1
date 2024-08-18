@@ -97,6 +97,7 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	void UpdateSprite();
 	void ResetEnemy();
 	void AddToGame();
+	void SetExtraIDsAndAddToVectors();
 	//void Setup();
 
 	//Boss functions
@@ -110,6 +111,7 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	int ChooseActionAfterStageChange();
 	void ActivatePostFightScene();
 	int GetNumSimulationFramesRequired();
+	
 
 	//My functions
 	double GetCurrThrowSpeed();

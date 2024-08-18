@@ -57,15 +57,20 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	myBonus = NULL;
 
 	//stageMgr.AddActiveOptionToStages(0, DIG_IN, 2);
-	//stageMgr.AddActiveOption(0, TEST_POST, 2);
+	stageMgr.AddActiveOption(0, TEST_POST, 2);
 	
-	stageMgr.AddActiveOptionToStages(0, CHASE, 2);
+	/*stageMgr.AddActiveOptionToStages(0, CHASE, 2);
 
 	stageMgr.AddActiveOptionToStages(1, BOOSTCHARGE, 2);
 
 	stageMgr.AddActiveOptionToStages(2, DIG_IN, 2);
 
-	stageMgr.AddActiveOptionToStages(3, SUMMON, 2);
+	stageMgr.AddActiveOptionToStages(3, SUMMON, 2);*/
+
+
+
+
+
 
 	//digDecidePicker.AddActiveOption(DIG_OUT, 2);
 	//digDecidePicker.AddActiveOption(LUNGESTART, 2);
@@ -730,6 +735,17 @@ void CrawlerQueen::ActivatePostFightScene()
 	}
 }
 
+void CrawlerQueen::SetExtraIDsAndAddToVectors()
+{
+	if (postFightScene != NULL)
+	{
+		postFightScene->SetIDs();
+	}
+	else if (postFightScene2 != NULL)
+	{
+		postFightScene2->SetIDs();
+	}
+}
 
 void CrawlerQueen::UpdateSprite()
 {

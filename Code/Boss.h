@@ -64,6 +64,7 @@ struct Boss : Enemy
 	bool WantsToCombo();
 	void TryCombo();
 	void TryExecuteDecision();
+	virtual void SetExtraIDsAndAddToVectors() {}
 	virtual void RespondToTakingFullHit() {}
 	virtual void StartAction() {}
 	void StageSetup(int numStages,
