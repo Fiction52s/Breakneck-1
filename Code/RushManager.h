@@ -77,6 +77,7 @@ struct RushManager : TilesetManager
 	void CreateSaveMenu();
 	void DestroySaveMenu();
 	bool TryToGoToNextLevel(GameSession *game);
+	bool CanGoToNextLevel();
 	bool TryToGoToNextWorld();
 	bool TryToGoToNextWorldShip();
 	bool IsLastLevel();

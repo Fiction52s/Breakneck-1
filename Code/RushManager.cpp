@@ -267,7 +267,7 @@ void RushManager::UpdateWorldDependentTileset(int worldIndex)
 
 bool RushManager::TryToGoToNextLevel(GameSession *game)
 {
-	if (currRushMapIndex < rushFile.worlds[currWorld].maps.size() - 1)
+	if (CanGoToNextLevel())
 	{
 		//int r = rand() % (rushFile.numMaps - 1);
 		//game->SetBonus(bonusVec[r], V2d(0, 0));
@@ -275,6 +275,14 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 		currRushMapIndex++;
 		return true;
 	}
+
+	return false;
+}
+
+bool RushManager::CanGoToNextLevel()
+{
+	if (currRushMapIndex < rushFile.worlds[currWorld].maps.size() - 1)
+		return true;
 
 	return false;
 }

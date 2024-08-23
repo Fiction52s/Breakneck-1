@@ -424,6 +424,7 @@ struct Actor : QuadTreeCollider,
 		WARP,
 		INSPECT_START,
 		INSPECT_END,
+		EXIT_RUSH,
 		Count
 	};
 
@@ -2224,6 +2225,18 @@ struct Actor : QuadTreeCollider,
 	void EXITBOOST_TimeDepFrameInc();
 	int EXITBOOST_GetActionLength();
 	const char * EXITBOOST_GetTilesetName();
+
+
+	void EXIT_RUSH_Start();
+	void EXIT_RUSH_End();
+	void EXIT_RUSH_Change();
+	void EXIT_RUSH_Update();
+	void EXIT_RUSH_UpdateSprite();
+	void EXIT_RUSH_TransitionToAction(int a);
+	void EXIT_RUSH_TimeIndFrameInc();
+	void EXIT_RUSH_TimeDepFrameInc();
+	int EXIT_RUSH_GetActionLength();
+	const char * EXIT_RUSH_GetTilesetName();
 
 	void EXITWAIT_Start();
 	void EXITWAIT_End();

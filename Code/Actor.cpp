@@ -7651,10 +7651,8 @@ void Actor::UpdatePrePhysics()
 
 	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) || action == EXITBOOST )
+		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) || action == EXITBOOST || action == EXIT_RUSH )
 	{
-
-
 		if( action == WAITFORSHIP )
 		{ 
 			if (!isParallelPracticeAndParallel)
@@ -7683,6 +7681,10 @@ void Actor::UpdatePrePhysics()
 		else if( action == EXIT && frame == 30 )
 		{
 			ActivateSound(PlayerSounds::S_EXIT );
+		}
+		else if (action == EXIT_RUSH && frame == 30)
+		{
+			ActivateSound(PlayerSounds::S_EXIT);
 		}
 		else if (action == EXITWAIT)
 		{
@@ -7719,12 +7721,18 @@ void Actor::UpdatePrePhysics()
 			{
 				if (sess->IsRushSession())
 				{
-					if (owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+					//if (owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+					if( owner->mainMenu->rushManager->CanGoToNextLevel())
 					{
-						V2d pos = position;
+						SetAction(EXIT);
+						sess->Fade(false, 30, Color::Black, true);				
+						frame = 0;
+
+
+						/*V2d pos = position;
 						SetAirPos(pos, true);
 						velocity = V2d(0, 0);
-						hitGoal = false;
+						hitGoal = false;*/
 					}
 					else
 					{
@@ -13595,7 +13603,7 @@ void Actor::UpdatePhysics()
 
 	if (IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST
+		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST || action == EXIT_RUSH
 		|| action == DEATH || action == HIDDEN || hitEnemyDuringPhysics)
 		return;
 
@@ -18547,7 +18555,18 @@ void Actor::UpdateBounceFlameCounters()
 
 void Actor::TryEndLevel()
 {
-	if (action == EXITWAIT && frame == GetActionLength(EXITWAIT))
+	if (sess->IsRushSession() && action == EXITWAIT && frame == GetActionLength(EXITWAIT))
+	{
+		if (owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+		{
+
+		}
+		else
+		{
+			
+		}
+	}
+	else if (action == EXITWAIT && frame == GetActionLength(EXITWAIT))
 	{
 		sess->EndLevel();
 		//owner->goalDestroyed = true;	

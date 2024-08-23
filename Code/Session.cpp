@@ -1723,7 +1723,7 @@ Session::~Session()
 		absorbParticles = NULL;
 	}
 
-	if (parentGame == NULL && absorbDarkParticles != NULL)
+	if (absorbDarkParticles != NULL)
 	{
 		delete absorbDarkParticles;
 		absorbDarkParticles = NULL;
@@ -4741,6 +4741,12 @@ void Session::SetupHUD()
 				hud->SetSession(this);
 				GetPlayer(0)->kinMask = mainMenu->adventureManager->adventureHUD->kinMask;
 			}
+			else if (IsRushSession())
+			{
+				hud = mainMenu->rushManager->adventureHUD;
+				hud->SetSession(this);
+				GetPlayer(0)->kinMask = mainMenu->rushManager->adventureHUD->kinMask;
+			}
 			else if (hud == NULL)//&& !IsParallelSession() )
 			{
 				cout << "creating HUD because none is available" << endl;
@@ -6630,11 +6636,38 @@ void Session::UpdateEnvParticleSystem()
 
 void Session::CleanupGoalPulse()
 {
-	if (parentGame == NULL || (parentGame != NULL && parentGame->goalPulse == NULL ) )
+	//cleaned up in case you have a map with no goal having a bonus with a goal etc
+	if (goalPulse == NULL)
+	{
+		return;
+	}
+
+	if (parentGame == NULL)
 	{
 		delete goalPulse;
 		goalPulse = NULL;
 	}
+
+	/*bool isGoalPulseOwner = true;
+	GameSession *tempParent = parentGame;
+	while (tempParent != NULL)
+	{
+		if (tempParent->goalPulse != NULL)
+		{
+			isGoalPulseOwner = false;
+			break;
+		}
+		else
+		{
+			tempParent = tempParent->parentGame;
+		}
+	}
+
+	if (isGoalPulseOwner)
+	{
+		delete goalPulse;
+		goalPulse = NULL;
+	}*/
 }
 
 void Session::UpdateGoalPulse()
@@ -6647,14 +6680,37 @@ void Session::UpdateGoalPulse()
 
 void Session::SetupGoalPulse()
 {
-	if (parentGame != NULL && parentGame->goalPulse != NULL )
+	assert(goalPulse == NULL);
+
+	if (parentGame != NULL)
 	{
 		goalPulse = parentGame->goalPulse;
 	}
-	else if (goalPulse == NULL)
+	else
 	{
-		goalPulse = new GoalPulse;// , Vector2f(goalPos.x, goalPos.y));
+		goalPulse = new GoalPulse;
 	}
+
+	//GameSession *tempParent = parentGame;
+	//while (tempParent != NULL)
+	//{
+	//	if (tempParent->goalPulse != NULL)
+	//	{
+	//		goalPulse = tempParent->goalPulse;
+	//		break;
+	//	}
+	//	else
+	//	{
+	//		tempParent = tempParent->parentGame;
+	//	}
+	//}
+
+	//if (goalPulse == NULL)
+	//{
+	//	goalPulse = new GoalPulse;// , Vector2f(goalPos.x, goalPos.y));
+	//}
+
+	
 
 	//goalPulse->SetPosition(Vector2f(goalPos));
 }
