@@ -10206,7 +10206,7 @@ void Session::UpdateWorldDependentTileset( int worldIndex)
 	}
 	else if (IsRushSession())
 	{
-		mainMenu->rushManager->UpdateWorldDependentTileset(worldIndex);
+		//mainMenu->rushManager->UpdateWorldDependentTileset(worldIndex);
 		ts_key = mainMenu->rushManager->ts_key;
 		ts_keyExplode = mainMenu->rushManager->ts_keyExplode;
 		ts_goal = mainMenu->rushManager->ts_goal;

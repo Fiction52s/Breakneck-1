@@ -64,16 +64,22 @@ Coyote::Coyote(ActorParams *ap)
 
 	patternType.reserve(6);
 	patternType.resize(numPatternMoves);
+
+
+
+	//stageMgr.AddActiveOptionToStages(0, PLAN_PATTERN, 2);
+	stageMgr.AddActiveOption(0, TEST_POST, 1);
+
+
+
+
 	//stageMgr.AddActiveOption(0, MOVE, 2);
 	//stageMgr.AddActiveOption(0, RUSH, 2);
 
 	//stageMgr.AddActiveOption(0, DANCE_PREP, 2);
 
 
-
-
-
-	stageMgr.AddActiveOptionToStages(0, PLAN_PATTERN, 2);
+	//stageMgr.AddActiveOptionToStages(0, PLAN_PATTERN, 2);
 
 	//stageMgr.AddActiveOptionToStages(5, SUMMON, 2);
 	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);

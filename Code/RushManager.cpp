@@ -66,6 +66,13 @@ RushManager::RushManager()
 
 RushManager::~RushManager()
 {
+	for (int i = 0; i < bonusVec.size(); ++i)
+	{
+		delete bonusVec[i];
+	}
+	bonusVec.clear();
+
+
 	if (firstMap != NULL)
 	{
 		delete firstMap;
@@ -120,7 +127,7 @@ void RushManager::Load()
 
 void RushManager::SetWorld(int w)
 {
-	UpdateWorldDependentTileset(w);
+	UpdateWorldDependentTileset(0);
 
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_RUSH;
 
@@ -184,6 +191,8 @@ void RushManager::LoadShip()
 		delete shipGame;
 		shipGame = NULL;
 	}
+
+	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_RUSH;
 
 	MatchParams mp;
 	mp.mapPath = string("Resources/Maps/test/ashiptest") + MAP_EXT;

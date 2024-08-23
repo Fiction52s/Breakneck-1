@@ -384,7 +384,8 @@ void CoyotePostFightScene::AddShots()
 void CoyotePostFightScene::AddPoints()
 {
 	//AddStandPoint();
-	AddPoint("kinstop0");
+	//AddPoint("kinstop0");
+	AddPoint("kinstand0");
 }
 
 void CoyotePostFightScene::AddFlashes()
@@ -417,8 +418,8 @@ void CoyotePostFightScene::UpdateState()
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->FreezePlayer(false);
-			//SetPlayerStandPoint("kinstand0", true);
-			SetPlayerStandPoint("kinstop0", true);
+			SetPlayerStandPoint("kinstand0", true);
+			//SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
 
 			

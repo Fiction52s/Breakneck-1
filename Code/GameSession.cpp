@@ -1297,6 +1297,12 @@ void GameSession::SetPlayerOption(int optionType, bool isOn, int playerIndex)
 
 	currPlayerOptionsField.SetBit(optionType, isOn);
 	GetPlayer(playerIndex)->SetStartOption(optionType, isOn);
+
+	if ( !IsReplayOn() && IsRushSession() && isOn)
+	{
+		mainMenu->rushManager->UnlockUpgrade(optionType);
+		//mainMenu->rushManager->kinOptionField.SetBit(optionType, true);
+	}
 }
 
 bool GameSession::TrySaveCurrentSaveFile()

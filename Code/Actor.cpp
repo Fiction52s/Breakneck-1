@@ -8963,6 +8963,42 @@ void Actor::HandleWaitingScoreDisplay()
 
 void Actor::EndLevelWithoutGoal()
 {
+	
+
+	//placeholder
+	if (sess->IsRushSession())
+	{
+		/*SetTableEntry(UPGRADE_W1_DASH_BOOST, "Unlock Dash Boost",
+		"Let go of dash near the end to get a boost of speed!");
+
+		SetTableEntry(UPGRADE_W1_STEEP_CLIMB_1, "Upgrade Steep Climb 1/3",
+		"Climb steep slopes faster!");
+
+		SetTableEntry(UPGRADE_W1_STEEP_SLIDE_1, "Upgrade Steep Slide 1/3",
+		"Slide down steep slopes faster!");
+
+		SetTableEntry(UPGRADE_W1_PASSIVE_GROUND_1, "Upgrade Ground Acceleration 1/3",
+		"Increased passive acceleration during grounded movement!");
+
+		SetTableEntry(UPGRADE_W1_SPRINT_1, "Upgrade Sprint 1/3",
+		"Increased acceleration from sprinting on slopes!");
+
+		SetTableEntry(UPGRADE_W1_BASE_DASH_1, "Upgrade Base Dash Speed 1/3",
+		"Dash speed increased!");*/
+
+		int optionIndex = (rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
+
+		sess->SetPlayerOption(optionIndex, true);
+		sess->mainMenu->rushManager->UnlockUpgrade(optionIndex);
+
+		if (optionIndex == 5)
+		{
+			//left wire also
+			sess->SetPlayerOption(optionIndex + 1, true);
+			sess->mainMenu->rushManager->kinOptionField.SetBit(optionIndex + 1, true);
+		}
+	}
+
 	sess->ActivateScoreDisplay(60);
 	SetAction(Actor::GOALKILLWAIT);
 	frame = 0;
@@ -22505,6 +22541,23 @@ void Actor::ShipPickupPoint( V2d pos, bool fr )
 		SetAction(WAITFORSHIP);
 
 		CompleteCurrentMap();
+
+		//placeholder
+
+		if (sess->IsRushSession())
+		{
+			int optionIndex = (rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
+
+			sess->SetPlayerOption(optionIndex, true);
+			sess->mainMenu->rushManager->UnlockUpgrade(optionIndex);
+
+			if (optionIndex == 5)
+			{
+				//left wire also
+				sess->SetPlayerOption(optionIndex + 1, true);
+				sess->mainMenu->rushManager->kinOptionField.SetBit(optionIndex + 1, true);
+			}
+		}
 
 		if (sess->scoreDisplay != NULL)
 		{
