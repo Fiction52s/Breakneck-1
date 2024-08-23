@@ -82,11 +82,14 @@ Bird::Bird(ActorParams *ap)
 	shotgunStartStage = 5;
 	summonStartStage = 6;
 	
+
+	stageMgr.AddActiveOption(0, TEST_POST, 2);
+	//stageMgr.AddActiveOptionToStages(0, MOVE_CHASE, 2);
 	
 	//stageMgr.AddActiveOptionToStages(0, SHURIKEN_SHOTGUN_1, 2);
 	//stageMgr.AddActiveOptionToStages(0, GATHER_ENERGY_START, 2);
 
-	stageMgr.AddActiveOptionToStages(0, MOVE_CHASE, 2);
+	//stageMgr.AddActiveOptionToStages(0, MOVE_CHASE, 2);
 
 
 	/*stageMgr.AddActiveOptionToStages(0, MOVE_NODE_LINEAR, 2);
@@ -163,11 +166,15 @@ Bird::Bird(ActorParams *ap)
 	SetupHitboxes(PUNCH, "punch1");
 	SetupHitboxes(PUNCH2, "punch2");
 
+
+
 	attackPicker.AddActiveOption(PUNCH);
 	attackPicker.AddActiveOption(PUNCH2);
 	//attackPicker.AddActiveOption(PUNCH);
 
 	myBonus = NULL;
+
+	
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;

@@ -3175,11 +3175,12 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (result == GameSession::GR_EXITGAME)
 		{
-			/*delete currLevel;
-			currLevel = NULL;
+			delete rushManager;
+			rushManager = NULL;
+			
 
 			SetMode(EXITING);
-			quit = true;*/
+			quit = true;
 		}
 		else
 		{
@@ -3261,8 +3262,8 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (result == GameSession::GR_EXITGAME)
 		{
-			delete currLevel;
-			currLevel = NULL;
+			delete rushManager;
+			rushManager = NULL;
 
 			SetMode(EXITING);
 			quit = true;

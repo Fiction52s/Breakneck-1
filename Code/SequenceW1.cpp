@@ -19,10 +19,11 @@ using namespace sf;
 CrawlerAttackScene::CrawlerAttackScene()
 	:BasicBossScene(BasicBossScene::RUN)
 {
+	myBonus = NULL;
 	GameSession *game = GameSession::GetSession();
 	if (game != NULL)
 	{
-		assert(myBonus == NULL);
+		//assert(myBonus == NULL);
 		myBonus = game->CreateBonus("FinishedScenes/W1/crawlerfight1");
 	}
 	else
