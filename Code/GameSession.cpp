@@ -1456,6 +1456,18 @@ void GameSession::ProcessRail(RailPtr rail)
 
 void GameSession::ProcessHeader()
 {
+	if (mapHeader->specialMapType == MapHeader::MAPTYPE_SHIP)
+	{
+		assert(shipTravelSequence == NULL);
+		shipTravelSequence = new ShipTravelSequence;
+		shipTravelSequence->Init();
+		shipTravelSequence->SetIDAndAddToAllSequencesVec();
+	}
+
+	SetupBackground();
+
+	SetupHUD();
+
 	/*if (mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
 	{
 		assert(raceFight == NULL);
@@ -2052,13 +2064,18 @@ bool GameSession::Load()
 
 	ReadFile();
 
-	if (mapHeader->specialMapType == MapHeader::MAPTYPE_SHIP)
+	//used to be here
+	/*if (mapHeader->specialMapType == MapHeader::MAPTYPE_SHIP)
 	{
 		assert(shipTravelSequence == NULL);
 		shipTravelSequence = new ShipTravelSequence;
 		shipTravelSequence->Init();
 		shipTravelSequence->SetIDAndAddToAllSequencesVec();
 	}
+
+	SetupBackground();*/
+
+
 
 	//myHash = md5file(filePathStr);
 
@@ -2075,7 +2092,7 @@ bool GameSession::Load()
 		logMenu = pauseMenu->logMenu;
 	}*/
 
-	SetupBackground(); //new location above SetupGameMode for parallel backgrounds
+	 //new location above SetupGameMode for parallel backgrounds
 
 	SetupAbsorbParticles();
 
@@ -2125,7 +2142,7 @@ bool GameSession::Load()
 
 	
 
-	SetupHUD();
+	//SetupHUD(); //old location, needs to be earlier for bonuses
 
 	if (hud != NULL && hud->mini != NULL && !IsParallelSession())
 	{

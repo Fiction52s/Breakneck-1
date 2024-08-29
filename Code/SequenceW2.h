@@ -8,6 +8,7 @@ struct Bird;
 struct GroundedWarper;
 struct SequenceCrawler;
 struct SequenceBird;
+struct GameSession;
 
 struct BirdPreFightScene : BasicBossScene
 {
@@ -51,6 +52,28 @@ struct BirdPostFightScene : BasicBossScene
 	SequenceBird *seqBird;
 
 	BirdPostFightScene();
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+};
+
+struct BirdCrawlerAllianceTransitionScene : BasicBossScene
+{
+	enum State
+	{
+		TRANSITION,
+		Count
+	};
+
+	GameSession *myBonus;
+
+	BirdCrawlerAllianceTransitionScene();
+	~BirdCrawlerAllianceTransitionScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

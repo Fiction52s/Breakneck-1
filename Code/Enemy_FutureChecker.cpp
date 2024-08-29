@@ -38,7 +38,7 @@ FutureChecker::FutureChecker(ActorParams *ap)
 	accel = 2.0;
 	maxSpeed = 10.0;
 
-	ts = GetSizedTileset("Enemies/W4/turtle_320x256.png");
+	ts = GetSizedTileset("Enemies/W4/turtle_160x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

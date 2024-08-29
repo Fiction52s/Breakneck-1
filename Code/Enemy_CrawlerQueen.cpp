@@ -594,19 +594,21 @@ void CrawlerQueen::StartAction()
 
 void CrawlerQueen::SetupPostFightScenes()
 {
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		assert(myBonus == NULL);
-		myBonus = game->CreateBonus("FinishedScenes/W1/postcrawlerfight1");
-	}
-	else
-	{
-		myBonus = NULL;
-	}
+	
 
 	if (level == 1)
 	{
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *game = GameSession::GetSession();
+			assert(myBonus == NULL);
+			myBonus = game->CreateBonus("FinishedScenes/W1/postcrawlerfight1");
+		}
+		else
+		{
+			myBonus = NULL;
+		}
+
 		if (postFightScene2 != NULL)
 		{
 			delete postFightScene2;
@@ -622,6 +624,18 @@ void CrawlerQueen::SetupPostFightScenes()
 	}
 	else if (level == 2)
 	{
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *game = GameSession::GetSession();
+			assert(myBonus == NULL);
+			myBonus = game->CreateBonus("FinishedScenes/W4/postcrawlerfight2");
+		}
+		else
+		{
+			myBonus = NULL;
+		}
+
+
 
 		if (postFightScene != NULL)
 		{

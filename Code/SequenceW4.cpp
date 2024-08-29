@@ -141,17 +141,23 @@ void CrawlerPostFight2Scene::SetupStates()
 
 void CrawlerPostFight2Scene::ReturnToGame()
 {
-	if (warper != NULL)
+	/*if (warper != NULL)
 	{
 		if (!warper->spawned)
 		{
 			sess->AddEnemy(warper);
 		}
 		warper->Activate();
-	}
+	}*/
 	
+	SetPlayerStandDefaultPoint(true);
 	sess->cam.EaseOutOfManual(60);
+	sess->RemoveEnemy(seqCrawler);
+	//sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
+
+	//sess->cam.EaseOutOfManual(60);
+	//BasicBossScene::ReturnToGame();
 }
 
 void CrawlerPostFight2Scene::AddShots()
@@ -161,7 +167,8 @@ void CrawlerPostFight2Scene::AddShots()
 
 void CrawlerPostFight2Scene::AddPoints()
 {
-	AddStopPoint();
+	//AddStopPoint();
+	AddStandPoint();
 }
 
 void CrawlerPostFight2Scene::AddFlashes()
@@ -200,14 +207,14 @@ void CrawlerPostFight2Scene::UpdateState()
 
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->FreezePlayer(false);
-			SetPlayerStandPoint("kinstop0", true);
+			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("crawlercam");
 		}
 		break;
 	case WAIT:
 		if (seqData.frame == 0)
 		{
-			sess->TotalDissolveGates(Gate::BOSS);
+			//sess->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;

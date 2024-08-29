@@ -17,8 +17,8 @@ Falcon::Falcon(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
-	actionLength[NEUTRAL] = 7;
-	actionLength[FLY] = 7;
+	actionLength[NEUTRAL] = 8;
+	actionLength[FLY] = 8;
 	actionLength[RUSH] = 2;
 
 	recoverDuration = 60;
@@ -41,7 +41,7 @@ Falcon::Falcon(ActorParams *ap)
 	sprite.setScale(scale, scale);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(9);
+	cutObject->SetSubRectFront(11);
 	cutObject->SetSubRectBack(10);
 	cutObject->SetScale(scale);
 
@@ -304,7 +304,7 @@ void Falcon::UpdateSprite()
 		sprite.setRotation(0);
 		break;
 	case RUSH:
-		tile = frame / animFactor[RUSH] + 7;
+		tile = frame / animFactor[RUSH] + 8;
 		
 		double ang = GetVectorAngleCW(data.velocity);
 		if (facingRight)

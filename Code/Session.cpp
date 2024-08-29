@@ -5563,6 +5563,7 @@ void Session::ActiveSequencesUpdate()
 		if (activeSeq != NULL)// && activeSequence == startSeq )
 		{
 			GameState oldState = gameState;
+			Sequence *oldSeq = activeSeq;
 			if (!activeSeq->Update())
 			{
 				if (activeSeq->nextSeq != NULL)
@@ -5609,7 +5610,13 @@ void Session::ActiveSequencesUpdate()
 						gameState = RUN;
 						switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
 					}
-					activeSequences[i] = NULL;
+
+					//testing for sequence after ship
+					if (activeSequences[i] == oldSeq)
+					{
+						activeSequences[i] = NULL;
+					}
+					
 				}
 			}
 			else

@@ -38,7 +38,7 @@ Turtle::Turtle( ActorParams *ap )
 	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
 
-	ts = GetSizedTileset("Enemies/W4/turtle_320x256.png");
+	ts = GetSizedTileset("Enemies/W4/turtle_160x128.png");
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
 
@@ -63,8 +63,8 @@ Turtle::Turtle( ActorParams *ap )
 
 
 
-	BasicCircleHitBodySetup(60, 0, V2d( 15, 0 ), V2d());
-	BasicCircleHurtBodySetup(50, 0, V2d( 15, 0 ), V2d());
+	BasicCircleHitBodySetup(30, 0, V2d( 8, 0 ), V2d());
+	BasicCircleHurtBodySetup(25, 0, V2d( 8, 0 ), V2d());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -84,14 +84,14 @@ void Turtle::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 2.0;
 		break;
 	case 2:
-		scale = 2.0;
+		scale = 3.0;
 		maxHealth += 2;
 		break;
 	case 3:
-		scale = 3.0;
+		scale = 4.0;
 		maxHealth += 5;
 		break;
 	}

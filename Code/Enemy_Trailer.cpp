@@ -33,7 +33,7 @@ Trailer::Trailer(ActorParams *ap)
 
 	maxSpeed = 5;
 
-	ts = GetSizedTileset("Enemies/W4/turtle_320x256.png");
+	ts = GetSizedTileset("Enemies/W4/turtle_160x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

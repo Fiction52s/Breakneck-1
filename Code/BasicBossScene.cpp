@@ -63,6 +63,10 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	{
 		bScene = new BirdCrawlerAllianceScene;
 	}
+	else if (name == "birdcrawleralliancetransition")
+	{
+		bScene = new BirdCrawlerAllianceTransitionScene;
+	}
 	else if (name == "birdtigerapproach")
 	{
 		bScene = new BirdTigerApproachScene;

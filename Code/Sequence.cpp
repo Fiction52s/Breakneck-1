@@ -92,6 +92,10 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	{
 		bScene = new BirdCrawlerAllianceScene;
 	}
+	else if (name == "birdcrawleralliancetransition")
+	{
+		bScene = new BirdCrawlerAllianceTransitionScene;
+	}
 	else if (name == "birdtigeralliancescene")
 	{
 		bScene = new BirdTigerAllianceScene;
