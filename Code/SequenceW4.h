@@ -83,14 +83,17 @@ struct CrawlerVSTigerScene : BasicBossScene
 		TIGER_KILL_CRAWLER,
 		CONV3,
 		CRAWLER_DEATH,
+		TRANSITION,
 		Count
 	};
 
 	//Tiger *tiger;
 	SequenceTiger *seqTiger;
 	SequenceCrawler *seqCrawler;
+	GameSession *myBonus;
 
 	CrawlerVSTigerScene();
+	~CrawlerVSTigerScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

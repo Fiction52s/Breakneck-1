@@ -18593,14 +18593,24 @@ void Actor::TryEndLevel()
 {
 	if (sess->IsRushSession() && action == EXITWAIT && frame == GetActionLength(EXITWAIT))
 	{
-		if (owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+		if (sess->postLevelScene != NULL)
 		{
-
+			sess->postLevelScene->Reset();
+			sess->SetActiveSequence(sess->postLevelScene);
 		}
 		else
 		{
-			
+			sess->EndLevelNoScene();
 		}
+		//if (owner->mainMenu->rushManager->TryToGoToNextLevel(owner))
+		//{
+		//	//currently jumps immediately to the bonus, so scenes only work for the last one in a world
+		//	//sess->EndLevel();
+		//}
+		//else
+		//{
+		//	
+		//}
 	}
 	else if (action == EXITWAIT && frame == GetActionLength(EXITWAIT))
 	{

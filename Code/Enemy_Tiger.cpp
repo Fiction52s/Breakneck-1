@@ -7,6 +7,7 @@
 #include "SequenceW4.h"
 #include "SequenceW6.h"
 #include "Enemy_TigerTarget.h"
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -39,6 +40,8 @@ Tiger::Tiger(ActorParams *ap)
 	StageSetup(8, 2);
 
 	level = ap->GetLevel();
+
+	myBonus = NULL;
 
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
@@ -78,10 +81,15 @@ Tiger::Tiger(ActorParams *ap)
 		target->tiger = this;
 	}
 
-
-	stageMgr.AddActiveOptionToStages(0, START_GRIND, 2);
+	stageMgr.AddActiveOption(0, TEST_POST, 2);
+	/*stageMgr.AddActiveOptionToStages(0, START_GRIND, 2);
 	stageMgr.AddActiveOptionToStages(0, JUMP_SQUAT, 2);
-	stageMgr.AddActiveOptionToStages(0, GATHER_ENERGY_START, 2);
+	stageMgr.AddActiveOptionToStages(0, GATHER_ENERGY_START, 2);*/
+
+
+
+
+
 	//stageMgr.AddActiveOptionToStages(0, SUMMON, 2);
 
 	SetNumLaunchers(1);
@@ -116,6 +124,9 @@ Tiger::~Tiger()
 	{
 		delete postFightScene2;
 	}
+
+	if (myBonus != NULL)
+		delete myBonus;
 }
 
 void Tiger::AddToGame()
@@ -380,6 +391,17 @@ void Tiger::StartAction()
 {
 	switch (action)
 	{
+	case TEST_POST:
+	{
+		GameSession *game = GameSession::GetSession();
+
+		if (game != NULL)
+		{
+			sess->RemoveBoss(this);
+			game->SetBonus(myBonus, GetPosition());
+		}
+		break;
+	}
 	case MOVE_GRIND:
 	{
 
@@ -557,6 +579,18 @@ void Tiger::SetupPostFightScenes()
 {
 	if (level == 1)
 	{
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *game = GameSession::GetSession();
+			assert(myBonus == NULL);
+			myBonus = game->CreateBonus("FinishedScenes/W4/posttigerfight");
+		}
+		else
+		{
+			myBonus = NULL;
+		}
+
+
 		if (postFightScene2 != NULL)
 		{
 			delete postFightScene2;

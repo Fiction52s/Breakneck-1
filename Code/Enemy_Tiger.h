@@ -35,8 +35,11 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 		SUMMON_FLAME_TARGETS,
 		LAUNCH_FLAME_TARGETS,
 		FLAME_STUN,
+		TEST_POST,
 		A_Count
 	};
+
+	GameSession *myBonus;
 
 	SummonGroup palmSummonGroup;
 

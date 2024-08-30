@@ -328,6 +328,28 @@ struct BasicBossScene : Sequence
 
 };
 
+struct TransitionSequence : BasicBossScene
+{
+	enum State
+	{
+		TRANSITION,
+		Count
+	};
+
+	GameSession *myBonus;
+
+	TransitionSequence( const std::string &mapPath );
+	~TransitionSequence();
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+};
+
 struct ShipEnterScene : Sequence
 {
 	enum State

@@ -248,20 +248,20 @@ void Bird::ResetEnemy()
 
 void Bird::SetupPostFightScenes()
 {
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		assert(myBonus == NULL);
-		myBonus = game->CreateBonus("FinishedScenes/W2/birdpost");
-	}
-	else
-	{
-		myBonus = NULL;
-	}
-
-
 	if (level == 1)
 	{
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *game = GameSession::GetSession();
+			assert(myBonus == NULL);
+			myBonus = game->CreateBonus("FinishedScenes/W2/birdpost");
+		}
+		else
+		{
+			myBonus = NULL;
+		}
+
+
 		if (postFightScene2 != NULL)
 		{
 			delete postFightScene2;

@@ -259,6 +259,22 @@ CrawlerVSTigerScene::CrawlerVSTigerScene()
 	seqCrawler = NULL;
 
 	SetEntranceIndex(0);
+
+	myBonus = NULL;
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		assert(myBonus == NULL);
+		myBonus = game->CreateBonus("FinishedScenes/W4/tigerfight");
+	}
+}
+
+CrawlerVSTigerScene::~CrawlerVSTigerScene()
+{
+	if (myBonus != NULL)
+	{
+		delete myBonus;
+	}
 }
 
 void CrawlerVSTigerScene::SetupStates()
@@ -422,6 +438,19 @@ void CrawlerVSTigerScene::UpdateState()
 			seqCrawler->DieByTiger();
 		}
 		break;
+	}
+	case TRANSITION:
+	{
+		if (seqData.frame == 0)
+		{
+			GameSession *game = GameSession::GetSession();
+
+			if (game != NULL)
+			{
+				myBonus->RestartLevel();
+				game->SetBonus(myBonus, player->position);
+			}
+		}
 	}
 	}
 }
@@ -730,7 +759,6 @@ void TigerPostFightScene::UpdateState()
 }
 
 
-
 BirdTigerAllianceScene::BirdTigerAllianceScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
@@ -945,6 +973,8 @@ void BirdVSTigerScene::UpdateState()
 	{
 		if (seqData.frame == 0)
 		{
+			//sess->CrossFade( 6)
+			//sess->Fade(false, 60, Color::Black);
 			sess->CrossFade( 60, 0, 60, Color::Black);
 		}
 

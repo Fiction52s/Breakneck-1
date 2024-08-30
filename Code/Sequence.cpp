@@ -94,7 +94,11 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	}
 	else if (name == "birdcrawleralliancetransition")
 	{
-		bScene = new BirdCrawlerAllianceTransitionScene;
+		bScene = new TransitionSequence("FinishedScenes/W2/alliance");
+	}
+	else if (name == "birdtigeralliancetransition")
+	{
+		bScene = new TransitionSequence("FinishedScenes/W4/birdtigeralliance");
 	}
 	else if (name == "birdtigeralliancescene")
 	{
@@ -139,6 +143,10 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	else if (name == "birdtigervsscene")
 	{
 		bScene = new BirdVSTigerScene;
+	}
+	else if (name == "birdtigervsscenetransition")
+	{
+		bScene = new TransitionSequence("FinishedScenes/W4/birdtigerargue");
 	}
 	else if (name == "gatorscene0")
 	{
@@ -802,6 +810,91 @@ void Sequence::SetFromBytes(unsigned char *bytes)
 	memcpy(&seqData, bytes, sizeof(seqData));
 	//nextSeq = sess->GetEnemyFromID(seqData.); //needs implementing if I want 2 sequences in a row to not mess up in rollback
 }
+
+
+TransitionSequence::TransitionSequence( const std::string &mapName )
+	:BasicBossScene(BasicBossScene::APPEAR)
+{
+	myBonus = NULL;
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		assert(myBonus == NULL);
+		myBonus = game->CreateBonus(mapName);
+	}
+}
+
+TransitionSequence::~TransitionSequence()
+{
+	if (myBonus != NULL)
+	{
+		delete myBonus;
+	}
+}
+
+void TransitionSequence::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[TRANSITION] = 60;
+}
+
+void TransitionSequence::ReturnToGame()
+{
+	sess->EndLevelNoScene();
+}
+
+void TransitionSequence::AddShots()
+{
+}
+
+void TransitionSequence::AddPoints()
+{
+
+}
+
+void TransitionSequence::AddFlashes()
+{
+
+}
+
+void TransitionSequence::AddEnemies()
+{
+
+}
+
+void TransitionSequence::AddGroups()
+{
+}
+
+void TransitionSequence::UpdateState()
+{
+	Actor *player = sess->GetPlayer(0);
+	switch (seqData.state)
+	{
+	case TRANSITION:
+	{
+		if (seqData.frame == 0)
+		{
+			GameSession *game = GameSession::GetSession();
+
+			if (game != NULL)
+			{
+				myBonus->RestartLevel();
+				game->SetBonus(myBonus, player->position);
+			}
+		}
+		break;
+	}
+	}
+}
+
+
+
+
+
+
+
 
 
 #include "StorySequence.h"

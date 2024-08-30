@@ -9005,6 +9005,15 @@ void Session::EndLevelNoScene()
 	if (IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
+
+		if ( IsRushSession() && mainMenu->rushManager->TryToGoToNextLevel(game))
+		{
+			//currently jumps immediately to the bonus, so scenes only work for the last one in a world
+			//sess->EndLevel();
+			return;
+		}
+
+	
 		game->QuitGame();
 		/*quit = true;
 		returnVal = resType;*/

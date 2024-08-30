@@ -62,27 +62,6 @@ struct BirdPostFightScene : BasicBossScene
 	void UpdateState();
 };
 
-struct BirdCrawlerAllianceTransitionScene : BasicBossScene
-{
-	enum State
-	{
-		TRANSITION,
-		Count
-	};
-
-	GameSession *myBonus;
-
-	BirdCrawlerAllianceTransitionScene();
-	~BirdCrawlerAllianceTransitionScene();
-	void SetupStates();
-	void ReturnToGame();
-	void AddShots();
-	void AddPoints();
-	void AddFlashes();
-	void AddEnemies();
-	void AddGroups();
-	void UpdateState();
-};
 
 struct BirdCrawlerAllianceScene : BasicBossScene
 {
