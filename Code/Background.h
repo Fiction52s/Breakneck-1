@@ -6,7 +6,8 @@
 
 struct GameSession;
 struct MainMenu;
-
+struct BackgroundObject;
+struct BackgroundObject;
 
 struct ScrollingBackground
 {
@@ -97,6 +98,7 @@ struct Background : TilesetManager
 
 
 	std::list<ScrollingBackground*> scrollingBackgrounds;
+	std::list<BackgroundObject*> scrollingObjects;
 };
 
 

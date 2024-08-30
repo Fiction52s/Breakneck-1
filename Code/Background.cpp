@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <random>
 #include "MainMenu.h"
+#include "BackgroundObject.h"
 
 using namespace std;
 using namespace sf;
@@ -320,19 +321,37 @@ Background *Background::SetupFullBG(const std::string &fName)
 		int tsIndex;
 		int depthLevel;
 		float scrollSpeed;
+
+		string objectTypeStr;
+		sf::Vector2i objectPos;
 		for (int i = 0; i < numPar; ++i)
 		{
 			is >> pStr;
 
-			is >> tsIndex;
+			if (pStr == "object")
+			{
+				is >> objectTypeStr;
 
-			is >> depthLevel;
+				if( objectTypeStr == "waterfall")
+				{
+					BackgroundWaterfall *bw = new BackgroundWaterfall(newBG);
+					bw->Load(is);
 
-			is >> scrollSpeed;
+					newBG->scrollingObjects.push_back(bw);
+				}
+			}
+			else
+			{
+				is >> tsIndex;
 
-			newBG->scrollingBackgrounds.push_back(
-				new ScrollingBackground(
-					newBG->GetTileset(parDirStr + pStr + eStr), tsIndex, depthLevel, scrollSpeed));
+				is >> depthLevel;
+
+				is >> scrollSpeed;
+
+				newBG->scrollingBackgrounds.push_back(
+					new ScrollingBackground(
+						newBG->GetTileset(parDirStr + pStr + eStr), tsIndex, depthLevel, scrollSpeed));
+			}
 		}
 
 		is.close();
@@ -464,6 +483,13 @@ Background::~Background()
 		delete (*it);
 	}
 	scrollingBackgrounds.clear();
+
+	for (auto it = scrollingObjects.begin(); it != scrollingObjects.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	scrollingObjects.clear();
 }
 
 void Background::Set(Vector2f &pos, float zoom )
@@ -574,6 +600,12 @@ void Background::Update( const Vector2f &camPos, int updateFrames )
 	{
 		(*it)->Update(camPos, updateFrames );
 	}
+
+	for (auto it = scrollingObjects.begin();
+		it != scrollingObjects.end(); ++it)
+	{
+		(*it)->Update(updateFrames);
+	}
 }
 
 void Background::Reset()
@@ -668,6 +700,13 @@ void Background::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 	{
 		//might not need to mess w/ views here anymore
 		(*it)->LayeredDraw( p_drawLayer, target);
+	}
+
+	for (auto it = scrollingObjects.begin();
+		it != scrollingObjects.end(); ++it)
+	{
+		//might not need to mess w/ views here anymore
+		(*it)->LayeredDraw(p_drawLayer, target);
 	}
 }
 
