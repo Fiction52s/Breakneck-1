@@ -102,15 +102,14 @@ void ScrollingBackground::Update(const Vector2f &camPos, int updateFrames )
 	Vector2f realPos(camPos.x + off, camPos.y);
 	//realPos = camPos;
 	realPos.x -= 960;
-	SetLeftPos(realPos);//camPos.x );//realPos.x );
-						//	cout << "set real pos: " << realPos.x << endl;
+	SetLeftPos(realPos);
 }
 
 void ScrollingBackground::SetLeftPos(Vector2f &pos)
 {
 	xPos = pos.x;
 	float currX = pos.x;
-	float top = -540;//pos.y - 540;
+	float top = -540;//pos.y - 540;l
 	float width = 1920;
 	float height = 1080;
 
@@ -604,7 +603,7 @@ void Background::Update( const Vector2f &camPos, int updateFrames )
 	for (auto it = scrollingObjects.begin();
 		it != scrollingObjects.end(); ++it)
 	{
-		(*it)->Update(updateFrames);
+		(*it)->Update( camPos, updateFrames);
 	}
 }
 

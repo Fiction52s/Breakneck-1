@@ -22,13 +22,15 @@ struct BackgroundObject
 	float scrollSpeedX;
 	sf::View oldView;
 	sf::View newView;
+	int repetitionFactor; //how often it repeats
+	int scrollOffset;
 
 	BackgroundObject(TilesetManager *p_tm);
 	~BackgroundObject();
 	virtual void Reset();
 	virtual void Load(std::ifstream & is);
-	virtual void Update();
-	void Update(int numFrames);
+	virtual void Update(const sf::Vector2f &camPos);
+	void Update(const sf::Vector2f &camPos, const int numFrames);
 	virtual void Draw(sf::RenderTarget *target);
 	virtual void LayeredDraw(int p_depthLevel, sf::RenderTarget *target);
 };
@@ -44,11 +46,13 @@ struct BackgroundWaterfall : BackgroundObject
 	Tileset *ts;
 	int actionLength[A_Count];
 	int animFactor[A_Count];
-	sf::Vertex quad[4];
+	sf::Vertex *quads;
+	sf::Vector2f myPos;
 
 	BackgroundWaterfall(TilesetManager *p_tm);
+	~BackgroundWaterfall();
 	void Reset();
-	void Update();
+	void Update(const sf::Vector2f &camPos);
 	void Load(std::ifstream &is);
 	void Draw(sf::RenderTarget *target);
 	void LayeredDraw(int p_depthLevel, sf::RenderTarget *target);
