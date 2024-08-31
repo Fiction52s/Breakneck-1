@@ -98,7 +98,7 @@ void BackgroundWaterfall::Load(std::ifstream &is)
 
 	myPos = Vector2f(pos);
 
-	if (repetitionFactor == 1)
+	if (repetitionFactor > 0)
 	{
 		quads = new Vertex[4 * 2];
 		SetRectTopLeft(quads, ts->tileWidth, ts->tileHeight, Vector2f(pos));
@@ -134,17 +134,14 @@ void BackgroundWaterfall::Update(const sf::Vector2f &camPos)
 		{
 			testScrollOffset = 0;
 		}
-		int repeatWidth = 1920 * 2;
-		int p = floor(cPos.x * depth + .5f);
 
-		int px = abs(p);
-		int pxx = (px % repeatWidth) - repeatWidth / 2;
+		float maxWidth = 1920 * repetitionFactor;
 
 		float camXAbs = abs(cPos.x * depth);
 		int m = 0;
-		while (camXAbs > 1920)
+		while (camXAbs > maxWidth)
 		{
-			camXAbs -= 1920;
+			camXAbs -= maxWidth;
 			++m;
 		}
 
@@ -154,15 +151,12 @@ void BackgroundWaterfall::Update(const sf::Vector2f &camPos)
 			off = -off;
 		else if (cPos.x < 0)
 		{
-			off = off - 1920;
+			off = off - maxWidth;
 		}
 
-		if (p > 0)
-			pxx = -pxx;
-
-		if (scrollOffset * depth > 1920)
+		if (scrollOffset * depth > maxWidth)
 			scrollOffset = 0;
-		if (scrollOffset * depth < -1920)
+		if (scrollOffset * depth < -maxWidth)
 		{
 			scrollOffset = 0;
 		}
@@ -177,13 +171,13 @@ void BackgroundWaterfall::Update(const sf::Vector2f &camPos)
 
 		for (int i = 0; i < 2; ++i)
 		{
-			SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(realPos.x + 1920 * i * repetitionFactor, myPos.y));
+			SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(realPos.x + 1920 * i, myPos.y));
 		}
 	}
 
 
 	SetRectSubRect(quads, ts->GetSubRect(frame / animFactor[action]));
-	if (repetitionFactor == 1)
+	if (repetitionFactor > 0 )//== 1)
 	{
 		SetRectSubRect(quads + 4, ts->GetSubRect(frame / animFactor[action]));
 	}
@@ -215,14 +209,14 @@ void BackgroundWaterfall::Draw(sf::RenderTarget *target)
 		newView.setSize(1920, 1080);
 		target->setView(newView);
 
-		if (repetitionFactor == 1)
+		//if (repetitionFactor == 1)
 		{
 			target->draw(quads, 8, sf::Quads, ts->texture);
 		}
-		else
+		/*else
 		{
 			target->draw(quads, 4, sf::Quads, ts->texture);
-		}
+		}*/
 	}
 	
 	target->setView(oldView);
