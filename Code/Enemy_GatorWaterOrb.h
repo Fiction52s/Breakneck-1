@@ -17,6 +17,7 @@ struct GatorWaterOrbPool
 	GatorWaterOrbPool();
 	~GatorWaterOrbPool();
 	void Reset();
+	void SetEnemyIDAndAddToAllEnemiesVec();
 	GatorWaterOrb * Throw(V2d &pos, V2d &dest,
 		int orbType );
 	void Draw(sf::RenderTarget *target);

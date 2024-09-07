@@ -17,6 +17,7 @@ struct GatorSuperOrbPool
 	bool CanThrow();
 	void ReturnToGator( V2d &pos );
 	bool IsIdle();
+	void SetEnemyIDAndAddToAllEnemiesVec();
 	std::vector<GatorSuperOrb*> bulletVec;
 	sf::Vertex *verts;
 	Tileset *ts;

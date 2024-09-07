@@ -73,7 +73,7 @@ struct GatorPreFightScene : BasicBossScene
 	};
 
 	GatorPreFightScene();
-
+	~GatorPreFightScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -83,7 +83,10 @@ struct GatorPreFightScene : BasicBossScene
 	void AddGroups();
 	void UpdateState();
 
-	Gator *gator;
+	SequenceGator *seqGator;
+	SequenceTiger *seqTiger;
+	SequenceBird *seqBird;
+	GameSession *myBonus;
 };
 
 struct GatorPostFightScene : BasicBossScene

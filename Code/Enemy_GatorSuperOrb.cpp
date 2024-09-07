@@ -80,6 +80,16 @@ void GatorSuperOrbPool::ReturnToGator( V2d &pos)
 	}
 }
 
+void GatorSuperOrbPool::SetEnemyIDAndAddToAllEnemiesVec()
+{
+	GatorSuperOrb *bs = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		bs->SetEnemyIDAndAddToAllEnemiesVec();
+	}
+}
+
 bool GatorSuperOrbPool::IsIdle()
 {
 	GatorSuperOrb *bs = NULL;

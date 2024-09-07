@@ -61,6 +61,13 @@ void SequenceGator::ResetEnemy()
 	UpdateSprite();
 }
 
+void SequenceGator::AddToGame()
+{
+	Enemy::AddToGame();
+
+	superOrbPool.SetEnemyIDAndAddToAllEnemiesVec();
+}
+
 void SequenceGator::DebugDraw(sf::RenderTarget *target)
 {
 	enemyMover.DebugDraw(target);

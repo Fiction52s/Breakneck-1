@@ -114,6 +114,16 @@ bool GatorWaterOrbPool::IsChangingSize()
 	return circleExpandSpeed == 0 && circleExpandAccel == 0;
 }
 
+void GatorWaterOrbPool::SetEnemyIDAndAddToAllEnemiesVec()
+{
+	GatorWaterOrb *orb = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		orb = bulletVec[i];
+		orb->SetEnemyIDAndAddToAllEnemiesVec();
+	}
+}
+
 void GatorWaterOrbPool::ChangeAllCircleOrbsRadiusOverTime(double p_orbGrowSpeed, double goalRadius)
 {
 	GatorWaterOrb *orb = NULL;

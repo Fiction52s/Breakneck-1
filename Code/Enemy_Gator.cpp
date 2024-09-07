@@ -62,19 +62,32 @@ Gator::Gator(ActorParams *ap)
 	orbTypePicker.AddActiveOption(1, 2);
 
 
-	stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB_AND_MOVE, 2);
+	stageMgr.AddActiveOptionToStages(0, TEST_POST, 2);
+
+
+	/*stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB_AND_MOVE, 2);
 	stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK_2, 2);
+	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_1, 2);
+	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_2, 2);
+	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_3, 2);
+	stageMgr.AddActiveOption(1, MOVE_WANTS_TO_BITE, 2);
+	stageMgr.AddActiveOptionToStages(2, THROW_TIME_ORB_AND_MOVE, 2);
+	stageMgr.AddActiveOption(2, TIME_ORB_ATTACK, 2);
+	stageMgr.AddActiveOption(3, THROW_TIME_ORB, 2);
+	stageMgr.AddActiveOption(3, TIME_ORB_ATTACK, 2);*/
+
+
+
+
+
+
+
+
 	//stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB_AND_MOVE, 2);
 	/*stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK_2, 2);
 	stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK_3, 2);
 	stageMgr.AddActiveOption(0, MOVE_WANTS_TO_BITE, 2);*/
 
-	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_1, 2);
-	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_2, 2);
-	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_3, 2);
-	stageMgr.AddActiveOption(1, MOVE_WANTS_TO_BITE, 2);
-
-	stageMgr.AddActiveOptionToStages(2, THROW_TIME_ORB_AND_MOVE, 2);
 	
 
 
@@ -82,10 +95,7 @@ Gator::Gator(ActorParams *ap)
 
 	
 
-	stageMgr.AddActiveOption(2, TIME_ORB_ATTACK, 2);
-
-	stageMgr.AddActiveOption(3, THROW_TIME_ORB, 2);
-	stageMgr.AddActiveOption(3, TIME_ORB_ATTACK, 2);
+	
 	/*stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB, 2);
 	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_1, 2);
 	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_2, 2);
@@ -172,6 +182,12 @@ void Gator::AddToGame()
 	Enemy::AddToGame();
 
 	swarmSummonGroup.SetEnemyIDAndAddToAllEnemiesVec();
+
+	timeOrbPool.SetEnemyIDAndAddToAllEnemiesVec();
+	for (int i = 0; i < NUM_ORB_POOLS; ++i)
+	{
+		orbPool[i].SetEnemyIDAndAddToAllEnemiesVec();
+	}
 }
 
 void Gator::LoadParams()

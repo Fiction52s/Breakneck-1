@@ -321,7 +321,25 @@ void BirdTigerApproachScene::UpdateState()
 GatorPreFightScene::GatorPreFightScene()
 	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-	gator = NULL;
+	seqGator = NULL;
+	seqTiger = NULL;
+	seqBird = NULL;
+
+	myBonus = NULL;
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		assert(myBonus == NULL);
+		myBonus = game->CreateBonus("FinishedScenes/W5/gatorfighttest4");
+	}
+}
+
+GatorPreFightScene::~GatorPreFightScene()
+{
+	if (myBonus != NULL)
+	{
+		delete myBonus;
+	}
 }
 
 void GatorPreFightScene::SetupStates()
@@ -332,13 +350,14 @@ void GatorPreFightScene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[GATORCONV] = -1;
 
-	gator = (Gator*)sess->GetEnemy(EnemyType::EN_GATORBOSS);
+	seqGator = (SequenceGator*)sess->GetEnemy(EnemyType::EN_SEQUENCEGATOR);
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void GatorPreFightScene::AddShots()
 {
 	AddShot("scenecam");
-	AddShot("fightcam");
 }
 
 void GatorPreFightScene::AddPoints()
@@ -366,7 +385,7 @@ void GatorPreFightScene::ReturnToGame()
 
 	BasicBossScene::ReturnToGame();
 
-	EaseShot("fightcam", 60);
+	//EaseShot("fightcam", 60);
 }
 
 void GatorPreFightScene::UpdateState()
@@ -377,8 +396,15 @@ void GatorPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (seqData.frame == 0)
 		{
-			sess->AddEnemy(gator);
-			gator->SeqWait();
+			seqGator->Reset();
+			sess->AddEnemy(seqGator);
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			//gator->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -386,8 +412,15 @@ void GatorPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			gator->StartFight();
-			sess->ReverseDissolveGates(Gate::BOSS);
+			GameSession *game = GameSession::GetSession();
+
+			if (game != NULL)
+			{
+				myBonus->RestartLevel();
+				game->SetBonus(myBonus, player->position);
+			}
+			//gator->StartFight();
+			//sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
