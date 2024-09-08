@@ -8,16 +8,16 @@ namespace DrawLayer
 	enum DrawLayer
 	{
 		TERRAIN = -1, //just for drawing normal terrain, default value
-		BG_1,
-		BG_2,
-		BG_3,
-		BG_4,
-		BG_5,
-		BG_6,
-		BG_7,
-		BG_8,
-		BG_9,
 		BG_10,
+		BG_9,
+		BG_8,
+		BG_7,
+		BG_6,
+		BG_5,
+		BG_4,
+		BG_3,
+		BG_2,
+		BG_1,
 		BEHIND_TERRAIN,
 		BACK_TERRAIN, //used for the terrain right behind normal terrain.
 		BEHIND_ENEMIES,

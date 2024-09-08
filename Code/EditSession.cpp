@@ -2192,7 +2192,7 @@ void EditSession::Draw()
 	}
 
 
-	for (int i = DrawLayer::BG_1; i <= DrawLayer::BG_10; ++i)
+	for (int i = DrawLayer::BG_10; i <= DrawLayer::BG_1; ++i)
 	{
 		LayeredDraw(i, preScreenTex);
 	}
@@ -13248,7 +13248,7 @@ void EditSession::UpdatePolyShaders( int p_drawLayer, bool timePassing )
 
 	
 
-	if ( lockToBG && p_drawLayer >= DrawLayer::BG_1 && p_drawLayer <= DrawLayer::BG_10)
+	if ( lockToBG && p_drawLayer >= DrawLayer::BG_10 && p_drawLayer <= DrawLayer::BG_1)
 	{
 		center.y = 0;
 		vSize = Vector2f(1920, 1080) / depthFactor; //locked zoom just like the terrain. just match up how the draw calls work. ezpz

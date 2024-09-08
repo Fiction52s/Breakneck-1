@@ -36,7 +36,7 @@ void BackgroundObject::Reset()
 
 void BackgroundObject::Load(std::ifstream &is )
 {
-	is >> depthLayer;
+	//is >> depthLayer;
 	is >> scrollSpeedX;
 	is >> repetitionFactor;
 }
@@ -318,7 +318,7 @@ void BackgroundWideSpread::Load(std::ifstream & is)
 	/*is >> depthLayer;
 	is >> scrollSpeedX;
 	is >> repetitionFactor;*/
-	BackgroundObject::Load(is);
+	//BackgroundObject::Load(is);
 
 
 	string tsPath = folder + pngName + ".png";

@@ -13,25 +13,25 @@ float DrawLayer::GetDrawLayerDepthFactor(int layer)
 	case DrawLayer::TERRAIN:
 		return 1.0;
 	case DrawLayer::BG_1:
-		return .1;
-	case DrawLayer::BG_2:
-		return .2;
-	case DrawLayer::BG_3:
-		return .3;
-	case DrawLayer::BG_4:
-		return .4;
-	case DrawLayer::BG_5:
-		return .5;
-	case DrawLayer::BG_6:
-		return .6;
-	case DrawLayer::BG_7:
-		return .7;
-	case DrawLayer::BG_8:
-		return .8;
-	case DrawLayer::BG_9:
-		return .9;
-	case DrawLayer::BG_10:
 		return .95;
+	case DrawLayer::BG_2:
+		return .9;
+	case DrawLayer::BG_3:
+		return .8;
+	case DrawLayer::BG_4:
+		return .7;
+	case DrawLayer::BG_5:
+		return .6;
+	case DrawLayer::BG_6:
+		return .5;
+	case DrawLayer::BG_7:
+		return .4;
+	case DrawLayer::BG_8:
+		return .3;
+	case DrawLayer::BG_9:
+		return .2;
+	case DrawLayer::BG_10:
+		return .1;
 	case DrawLayer::BEHIND_TERRAIN:
 		return 1;
 	case DrawLayer::BEHIND_ENEMIES:
@@ -104,26 +104,26 @@ std::string DrawLayer::DrawLayerToString(int p_drawLayer)
 	{
 	case DrawLayer::TERRAIN:
 		return "Terrain";
-	case DrawLayer::BG_1:
-		return "BG_1";
-	case DrawLayer::BG_2:
-		return "BG_2";
-	case DrawLayer::BG_3:
-		return "BG_3";
-	case DrawLayer::BG_4:
-		return "BG_4";
-	case DrawLayer::BG_5:
-		return "BG_5";
-	case DrawLayer::BG_6:
-		return "BG_6";
-	case DrawLayer::BG_7:
-		return "BG_7";
-	case DrawLayer::BG_8:
-		return "BG_8";
-	case DrawLayer::BG_9:
-		return "BG_9";
 	case DrawLayer::BG_10:
 		return "BG_10";
+	case DrawLayer::BG_9:
+		return "BG_9";
+	case DrawLayer::BG_8:
+		return "BG_8";
+	case DrawLayer::BG_7:
+		return "BG_7";
+	case DrawLayer::BG_6:
+		return "BG_6";
+	case DrawLayer::BG_5:
+		return "BG_5";
+	case DrawLayer::BG_4:
+		return "BG_4";
+	case DrawLayer::BG_3:
+		return "BG_3";
+	case DrawLayer::BG_2:
+		return "BG_2";
+	case DrawLayer::BG_1:
+		return "BG_1";
 	case DrawLayer::BEHIND_TERRAIN:
 		return "Behind Terrain";
 	case DrawLayer::BEHIND_ENEMIES:

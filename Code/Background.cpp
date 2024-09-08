@@ -9,6 +9,8 @@
 using namespace std;
 using namespace sf;
 
+using json = nlohmann::json;
+
 //depth(p_depthLevel * .01f)
 
 ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
@@ -268,8 +270,6 @@ Background *Background::SetupFullBG(const std::string &fName)
 		string objectTypeStr;
 		sf::Vector2i objectPos;
 
-		int currLayer = 0;
-
 
 		Vector2i tileSize;
 		Vector2i tilePos;
@@ -282,12 +282,32 @@ Background *Background::SetupFullBG(const std::string &fName)
 
 		newBG->bgWidth = bgWidth;
 
+		Tileset *currTS = NULL;
+		int currLayer = 0;
 
 		while (!is.eof())
 		{
 			is >> typeTest;
 
-			if (typeTest == "-w")
+			if (!is.good())
+				break;
+
+			if (typeTest == "-texture")
+			{
+				is >> pngName;
+				currTS = newBG->GetTileset(parDirStr + pngName + eStr);
+				if (currTS == NULL)
+				{
+					cout << "failed to load for bg: " << parDirStr + pngName + eStr << "\n";
+					assert(currTS != NULL);
+				}
+			}
+			else if (typeTest == "-layer")
+			{
+				is >> currLayer;
+			}
+			
+			else if (typeTest == "-extrawide")
 			{
 				BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, newBG->bgWidth);
 				bws->Load(is);

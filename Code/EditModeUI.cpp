@@ -376,15 +376,15 @@ void EditModeUI::CreateLayerPanel()
 	layerMap[LAYER_WATER] = "water";
 
 	layerMap[LAYER_VISUAL_BG_1] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_2] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_3] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_4] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_5] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_6] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_7] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_8] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_9] = "BG_1";
-	layerMap[LAYER_VISUAL_BG_10] = "BG_1";
+	layerMap[LAYER_VISUAL_BG_2] = "BG_2";
+	layerMap[LAYER_VISUAL_BG_3] = "BG_3";
+	layerMap[LAYER_VISUAL_BG_4] = "BG_4";
+	layerMap[LAYER_VISUAL_BG_5] = "BG_5";
+	layerMap[LAYER_VISUAL_BG_6] = "BG_6";
+	layerMap[LAYER_VISUAL_BG_7] = "BG_7";
+	layerMap[LAYER_VISUAL_BG_8] = "BG_8";
+	layerMap[LAYER_VISUAL_BG_9] = "BG_9";
+	layerMap[LAYER_VISUAL_BG_10] = "BG_10";
 
 	layerMap[LAYER_VISUAL_BEHIND_TERRAIN] = "water";
 	layerMap[LAYER_VISUAL_BACK_TERRAIN] = "water";

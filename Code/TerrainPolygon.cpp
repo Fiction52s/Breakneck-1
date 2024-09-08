@@ -5627,7 +5627,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 
 		vSize = oldView.getSize() / depth;
 
-		if (lockToBG && drawLayer >= DrawLayer::BG_1 && drawLayer <= DrawLayer::BG_10)
+		if (lockToBG && drawLayer >= DrawLayer::BG_10 && drawLayer <= DrawLayer::BG_1)
 		{
 			center.y = 0;
 			vSize = Vector2f(1920, 1080) / depth;
