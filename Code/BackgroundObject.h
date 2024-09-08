@@ -15,6 +15,12 @@ struct BackgroundObject
 		BGO_WATERFALL,
 	};
 
+	Tileset *ts;
+	sf::Vector2f myPos;
+	sf::Vertex *quads;
+
+	int loopWidth;
+	int numQuads;
 	int action;
 	int frame;
 	TilesetManager *tm;
@@ -25,14 +31,42 @@ struct BackgroundObject
 	int repetitionFactor; //how often it repeats
 	int scrollOffset;
 
-	BackgroundObject(TilesetManager *p_tm);
+	BackgroundObject(TilesetManager *p_tm, int loopWidth );
 	~BackgroundObject();
 	virtual void Reset();
 	virtual void Load(std::ifstream & is);
-	virtual void Update(const sf::Vector2f &camPos);
+	virtual void DrawObject(sf::RenderTarget *target);
+	virtual sf::IntRect GetSubRect();
+	virtual void ProcessAction();
+
+	virtual void UpdateQuads( float realX );
+	void Update(const sf::Vector2f &camPos);
 	void Update(const sf::Vector2f &camPos, const int numFrames);
-	virtual void Draw(sf::RenderTarget *target);
-	virtual void LayeredDraw(int p_depthLevel, sf::RenderTarget *target);
+	void Draw(sf::RenderTarget *target);
+	void LayeredDraw(int p_depthLevel, sf::RenderTarget *target);
+};
+
+struct BackgroundTile : BackgroundObject
+{
+	sf::IntRect subRect;
+	std::string folder;
+	
+
+	BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth );
+	void Load(std::ifstream & is);
+	sf::IntRect GetSubRect();
+};
+
+struct BackgroundWideSpread : BackgroundObject
+{
+	sf::IntRect subRect;
+	std::string folder;
+	int extraWidth;
+
+	BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth );
+	void Load(std::ifstream & is);
+	void UpdateQuads(float realX);
+	sf::IntRect GetSubRect();
 };
 
 struct BackgroundWaterfall : BackgroundObject
@@ -43,19 +77,17 @@ struct BackgroundWaterfall : BackgroundObject
 		A_Count,
 	};
 
-	Tileset *ts;
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 	sf::Vertex *quads;
-	sf::Vector2f myPos;
 
-	BackgroundWaterfall(TilesetManager *p_tm);
+	BackgroundWaterfall(TilesetManager *p_tm, int p_loopWidth );
 	~BackgroundWaterfall();
 	void Reset();
-	void Update(const sf::Vector2f &camPos);
 	void Load(std::ifstream &is);
-	void Draw(sf::RenderTarget *target);
-	void LayeredDraw(int p_depthLevel, sf::RenderTarget *target);
+
+	void ProcessAction();
+	sf::IntRect GetSubRect();
 
 };
 

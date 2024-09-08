@@ -4405,7 +4405,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest, fl
 		for (int i = 0; i < numTerrainMats; ++i)
 		{
 			currTerrainShader = &mainMenu->terrainShaders[terrainTypeIndexesUsedVec[i]];
-			currTerrainShader->setUniform("skyColor", ColorGL(background->GetSkyColor()));
+			//currTerrainShader->setUniform("skyColor", ColorGL(background->GetSkyColor()));
 		}
 	}
 	else
@@ -4413,7 +4413,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest, fl
 		for (int i = 0; i < numTerrainMats; ++i)
 		{
 			currTerrainShader = &mainMenu->terrainShaders[terrainTypeIndexesUsedVec[i]];
-			currTerrainShader->setUniform("skyColor", ColorGL(Color::White));
+			//currTerrainShader->setUniform("skyColor", ColorGL(Color::White));
 		}
 	}
 

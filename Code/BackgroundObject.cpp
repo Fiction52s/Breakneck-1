@@ -6,18 +6,25 @@
 using namespace sf;
 using namespace std;
 
-BackgroundObject::BackgroundObject(TilesetManager *p_tm)
+BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth )
 {
 	tm = p_tm;
 	depthLayer = -1;
 	scrollSpeedX = 0;
 	repetitionFactor = 1; //zero means never repeats, 1 is repeat every screen.
+	numQuads = 0;
+	ts = NULL;
+	quads = NULL;
+	loopWidth = p_loopWidth;
 	Reset();
 }
 
 BackgroundObject::~BackgroundObject()
 {
-
+	if (quads != NULL)
+	{
+		delete[] quads;
+	}
 }
 
 void BackgroundObject::Reset()
@@ -34,108 +41,56 @@ void BackgroundObject::Load(std::ifstream &is )
 	is >> repetitionFactor;
 }
 
-void BackgroundObject::Update(const sf::Vector2f &camPos)
+void BackgroundObject::ProcessAction()
 {
+	//empty
 }
 
-void BackgroundObject::Update(const sf::Vector2f &camPos, int numFrames)
+void BackgroundObject::UpdateQuads( float realX )
 {
-	for (int i = 0; i < numFrames; ++i)
-	{
-		Update(camPos);
-	}
-}
-
-void BackgroundObject::Draw(sf::RenderTarget *target)
-{
-	//target->draw(quad, 4, sf::Quads);
-}
-
-void BackgroundObject::LayeredDraw(int p_depthLevel, sf::RenderTarget *target)
-{
-
-}
-
-
-
-BackgroundWaterfall::BackgroundWaterfall( TilesetManager *p_tm)
-	:BackgroundObject( p_tm )
-{
-	ts = p_tm->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
-
-	actionLength[A_IDLE] = 12;
-
-	animFactor[A_IDLE] = 3;
-
-	quads = NULL;
-
-	//ClearRect(quad);
-}
-
-BackgroundWaterfall::~BackgroundWaterfall()
-{
-	if (quads != NULL)
-	{
-		delete[] quads;
-	}
-}
-
-void BackgroundWaterfall::Reset()
-{
-	BackgroundObject::Reset();
-}
-
-void BackgroundWaterfall::Load(std::ifstream &is)
-{
-	BackgroundObject::Load(is);
-
-	Vector2i pos;
-	is >> pos.x;
-	is >> pos.y;
-
-	pos.x -= 960;
-	pos.y -= 540;
-
-	myPos = Vector2f(pos);
-
+	IntRect sub = GetSubRect();
 	if (repetitionFactor > 0)
 	{
-		quads = new Vertex[4 * 2];
-		SetRectTopLeft(quads, ts->tileWidth, ts->tileHeight, Vector2f(pos));
-		SetRectTopLeft(quads + 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
+		for (int i = 0; i < numQuads; ++i)
+		{
+			SetRectTopLeft(quads + i * 4, sub.width, sub.height, Vector2f(realX + loopWidth * i, myPos.y));
+		}
 	}
 	else
 	{
-		quads = new Vertex[4];
-
-		SetRectTopLeft(quads, ts->tileWidth, ts->tileHeight, Vector2f(pos));
+		for (int i = 0; i < numQuads; ++i)
+		{
+			SetRectTopLeft(quads + i * 4, sub.width, sub.height, Vector2f(myPos));
+		}
 	}
-	//SetRectColor(quad, Color::Red);
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		SetRectSubRect(quads + i * 4, sub);
+	}
 }
 
-void BackgroundWaterfall::Update(const sf::Vector2f &camPos)
+void BackgroundObject::Update(const sf::Vector2f &camPos)
 {
-	if (frame == animFactor[action] * actionLength[action])
-	{
-		frame = 0;
-	}
+	ProcessAction();
 
 	if (repetitionFactor > 0)
 	{
 		float depth = DrawLayer::GetDrawLayerDepthFactor(depthLayer) * .5f;
-		Vector2f extra(-1920 + myPos.x, 0);
+		//Vector2f extra(-loopWidth + myPos.x, 0);
+		Vector2f extra(myPos.x, 0);
 
 		Vector2f cPos = camPos;
 		float testScrollOffset = extra.x + scrollOffset;
 		cPos.x -= testScrollOffset;
-		if (testScrollOffset * depth > 1920)
+		if (testScrollOffset * depth > loopWidth)
 			testScrollOffset = 0;
-		if (testScrollOffset * depth < -1920)
+		if (testScrollOffset * depth < -loopWidth)
 		{
 			testScrollOffset = 0;
 		}
 
-		float maxWidth = 1920 * repetitionFactor;
+		float maxWidth = loopWidth * repetitionFactor;
 
 		float camXAbs = abs(cPos.x * depth);
 		int m = 0;
@@ -162,34 +117,37 @@ void BackgroundWaterfall::Update(const sf::Vector2f &camPos)
 		}
 		scrollOffset += scrollSpeedX;// *updateFrames;
 
+		float realX = (camPos.x + off) -1920 / 2;
 
-		Vector2f realPos(camPos.x + off, camPos.y);
-		//realPos = camPos;
-		realPos.x -= 960;
-
-		//realPos.x += myPos.x;
-
-		for (int i = 0; i < 2; ++i)
-		{
-			SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(realPos.x + 1920 * i, myPos.y));
-		}
+		UpdateQuads(realX);
+		
 	}
-
-
-	SetRectSubRect(quads, ts->GetSubRect(frame / animFactor[action]));
-	if (repetitionFactor > 0 )//== 1)
+	else
 	{
-		SetRectSubRect(quads + 4, ts->GetSubRect(frame / animFactor[action]));
+		UpdateQuads(0);
 	}
 
 	++frame;
 }
 
-void BackgroundWaterfall::Draw(sf::RenderTarget *target)
+void BackgroundObject::Update(const sf::Vector2f &camPos, int numFrames)
+{
+	for (int i = 0; i < numFrames; ++i)
+	{
+		Update(camPos);
+	}
+}
+
+void BackgroundObject::DrawObject(sf::RenderTarget *target)
+{
+	target->draw(quads, 4 * numQuads, sf::Quads, ts->texture);
+}
+
+void BackgroundObject::Draw(sf::RenderTarget *target)
 {
 	oldView = target->getView();
 
-	if (repetitionFactor == 0 )
+	if (repetitionFactor == 0)
 	{
 		float depth = DrawLayer::GetDrawLayerDepthFactor(depthLayer);
 		//the .5 is because the scrolling bgs do it, fix it soon
@@ -200,7 +158,7 @@ void BackgroundWaterfall::Draw(sf::RenderTarget *target)
 
 		target->setView(newView);
 
-		target->draw(quads, 4, sf::Quads, ts->texture);
+		DrawObject(target);
 	}
 	else
 	{
@@ -211,23 +169,292 @@ void BackgroundWaterfall::Draw(sf::RenderTarget *target)
 
 		//if (repetitionFactor == 1)
 		{
-			target->draw(quads, 8, sf::Quads, ts->texture);
+			DrawObject(target);
 		}
 		/*else
 		{
-			target->draw(quads, 4, sf::Quads, ts->texture);
+		target->draw(quads, 4, sf::Quads, ts->texture);
 		}*/
 	}
-	
-	target->setView(oldView);
 
-	//target->draw(quad, 4, sf::Quads, ts->texture);
+	target->setView(oldView);
 }
 
-void BackgroundWaterfall::LayeredDraw(int p_depthLevel, sf::RenderTarget *target)
+void BackgroundObject::LayeredDraw(int p_depthLevel, sf::RenderTarget *target)
 {
 	if (p_depthLevel == depthLayer)
 	{
 		Draw(target);
 	}
+}
+
+sf::IntRect BackgroundObject::GetSubRect()
+{
+	return IntRect(0, 0, 0, 0);
+}
+
+BackgroundTile::BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth)
+	:BackgroundObject( p_tm, p_loopWidth )
+{
+	folder = p_folder;
+}
+
+sf::IntRect BackgroundTile::GetSubRect()
+{
+	return subRect;
+}
+
+void BackgroundTile::Load(std::ifstream & is)
+{
+	string pngName;
+	Vector2i tileSize;
+	Vector2i tilePos;
+	Vector2i gamePos;
+
+	//is >> currLayer;
+
+	BackgroundObject::Load(is);
+
+	is >> pngName;
+
+	is >> tileSize.x;
+	is >> tileSize.y;
+
+	is >> tilePos.x;
+	is >> tilePos.y;
+
+	is >> gamePos.x;
+	is >> gamePos.y;
+
+	
+
+
+
+
+	/*is >> depthLayer;
+	is >> scrollSpeedX;
+	is >> repetitionFactor;*/
+	BackgroundObject::Load(is);
+
+
+	string tsPath = folder + pngName + ".png";
+
+	ts = tm->GetTileset(tsPath);
+	/*Vector2i pos;
+	is >> pos.x;
+	is >> pos.y;*/
+
+	subRect.left = tilePos.x;
+	subRect.top = tilePos.y;
+	subRect.width = tileSize.x;
+	subRect.height = tileSize.y;
+
+	//gamePos.x -= 960;
+	gamePos.y -= 540;
+
+	myPos = Vector2f(gamePos);
+
+	if (repetitionFactor > 0)
+	{
+		numQuads = 2;
+	}
+	else
+	{
+		numQuads = 1;
+	}
+
+	quads = new Vertex[4 * numQuads];
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		ClearRect(quads + i * 4);
+		//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
+	}
+}
+
+
+
+BackgroundWideSpread::BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth )
+	:BackgroundObject(p_tm, p_loopWidth)
+{
+	folder = p_folder;
+	extraWidth = 0;
+}
+
+sf::IntRect BackgroundWideSpread::GetSubRect()
+{
+	return subRect;
+}
+
+void BackgroundWideSpread::Load(std::ifstream & is)
+{
+	string pngName;
+	Vector2i tileSize;
+	Vector2i tilePos;
+	Vector2i gamePos;
+
+	//is >> currLayer;
+
+	is >> extraWidth;
+
+	BackgroundObject::Load(is);
+
+	is >> pngName;
+
+	is >> tileSize.x;
+	is >> tileSize.y;
+
+	is >> tilePos.x;
+	is >> tilePos.y;
+
+	is >> gamePos.x;
+	is >> gamePos.y;
+
+
+
+
+
+
+	/*is >> depthLayer;
+	is >> scrollSpeedX;
+	is >> repetitionFactor;*/
+	BackgroundObject::Load(is);
+
+
+	string tsPath = folder + pngName + ".png";
+
+	ts = tm->GetTileset(tsPath);
+	/*Vector2i pos;
+	is >> pos.x;
+	is >> pos.y;*/
+
+	subRect.left = tilePos.x;
+	subRect.top = tilePos.y;
+	subRect.width = tileSize.x;
+	subRect.height = tileSize.y;
+
+	//gamePos.x -= 960;
+	gamePos.y -= 540;
+
+	myPos = Vector2f(gamePos);
+
+	if (repetitionFactor > 0)
+	{
+		numQuads = 2;
+	}
+	else
+	{
+		numQuads = 1;
+	}
+
+	numQuads *= 2;
+
+	quads = new Vertex[4 * numQuads];
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		ClearRect(quads + i * 4);
+		//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
+	}
+}
+
+void BackgroundWideSpread::UpdateQuads(float realX)
+{
+	IntRect sub = GetSubRect();
+	IntRect sub2 = sub;
+	sub2.top += sub.height;
+	sub2.width = extraWidth;
+
+	if (repetitionFactor > 0)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			SetRectTopLeft(quads + i * 4, sub.width, sub.height, Vector2f(realX + loopWidth * i, myPos.y));
+			SetRectSubRect(quads + i * 4, sub);
+		}
+
+		for (int i = 2; i < 4; ++i)
+		{
+			SetRectTopLeft(quads + i * 4, sub2.width, sub2.height, Vector2f(realX + loopWidth * (i - 2) + sub.width, myPos.y));
+			SetRectSubRect(quads + i * 4, sub2);
+		}
+	}
+	else
+	{
+		SetRectTopLeft(quads, sub.width, sub.height, Vector2f(myPos));
+		SetRectSubRect(quads, sub);
+
+		SetRectTopLeft(quads + 4, sub2.width, sub2.height, Vector2f(myPos.x + sub.width, myPos.y));
+		SetRectSubRect(quads + 4, sub2);
+	}
+}
+
+
+BackgroundWaterfall::BackgroundWaterfall( TilesetManager *p_tm, int p_loopWidth )
+	:BackgroundObject( p_tm, p_loopWidth )
+{
+	ts = p_tm->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
+
+	actionLength[A_IDLE] = 12;
+
+	animFactor[A_IDLE] = 3;
+
+	quads = NULL;
+
+	//ClearRect(quad);
+}
+
+BackgroundWaterfall::~BackgroundWaterfall()
+{
+}
+
+void BackgroundWaterfall::Reset()
+{
+	BackgroundObject::Reset();
+}
+
+void BackgroundWaterfall::Load(std::ifstream &is)
+{
+	BackgroundObject::Load(is);
+
+	Vector2i pos;
+	is >> pos.x;
+	is >> pos.y;
+
+	pos.x -= 960;
+	pos.y -= 540;
+
+	myPos = Vector2f(pos);
+
+	if (repetitionFactor > 0)
+	{
+		numQuads = 2;
+	}
+	else
+	{
+		numQuads = 1;
+	}
+
+	quads = new Vertex[4 * numQuads];
+
+
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		ClearRect(quads + i * 4);
+		//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
+	}
+}
+
+void BackgroundWaterfall::ProcessAction()
+{
+	if (frame == animFactor[action] * actionLength[action])
+	{
+		frame = 0;
+	}
+}
+
+sf::IntRect BackgroundWaterfall::GetSubRect()
+{
+	return ts->GetSubRect(frame / animFactor[action]);
 }

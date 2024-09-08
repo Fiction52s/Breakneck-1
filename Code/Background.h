@@ -47,7 +47,6 @@ struct ScrollingBackground
 
 struct Background : TilesetManager
 {
-	Background( int envLevel, int envType);
 	Background(const std::string &bgName );
 	Background();
 	void Set(sf::Vector2f &pos, float zoom = 1.f);
@@ -62,41 +61,24 @@ struct Background : TilesetManager
 	void Draw(sf::RenderTarget *target);
 	void DrawBackLayer(sf::RenderTarget *target);
 	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
-	void UpdateSky();
-	void UpdateShape();
-	sf::Sprite background;
-	sf::Sprite shape;
-	sf::Color GetSkyColor();
-	sf::Color GetShapeColor();
-	sf::Vertex backgroundSky[4];
+	//void UpdateSky();
+	//void UpdateShape();
 	
 	sf::View bgView;
+
 	int transFrames;
 	int frame;
 
+	int bgWidth;
+
 	int envWorld;
-	//int envVar;
 
 	bool show;
 	void Show();
 	void Hide();
 	void FlipShown();
 
-	bool paletteLoaded;
-
-	sf::Image palette;
-	Tileset *ts_bg;
-	Tileset *ts_shape;
-	Tileset *ts_sky;
-//	TilesetManager *tm;
-	//bool deleteTilesets;
-
 	std::string name;
-
-	std::string bgSourceName;
-	std::string shapeSourceName;
-
-
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 	std::list<BackgroundObject*> scrollingObjects;
 };

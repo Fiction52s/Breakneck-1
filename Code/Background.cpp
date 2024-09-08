@@ -195,68 +195,6 @@ void ScrollingBackground::Draw(RenderTarget *target)
 	target->setView(oldView);
 }
 
-Background::Background( int envLevel, int envType)
-{
-	/*stringstream ss;
-	int eType = envLevel + 1;
-	ss << folder << "w" << envType + 1 << "_BG";
-
-	ss << eType;*/
-
-	envWorld = envLevel;
-
-	string worldStr = to_string(envType + 1);
-	string varStr = to_string(envLevel + 1);
-
-	string worldFolder = "W" + worldStr + "/w" + worldStr + "_0" + varStr;
-
-	string folder = "Backgrounds/" + worldStr +worldFolder + "/";
-
-	string bgStr = folder + "w" + worldStr + "_BG" + varStr;
-
-	string bgFile = bgStr + ".png";
-	string paletteFile = string("Resources/") + bgStr + "_palette.png";
-	string shapeFile = bgStr + "_shape.png";
-	string skyFile = bgStr + "_sky.png";
-
-	ts_bg = GetTileset(bgFile, 960, 540);
-	ts_shape = GetTileset(shapeFile, 960, 540);
-	ts_sky = GetTileset(skyFile, 960, 540);
-	//Image im(rtt->getTexture().copyToImage());
-	paletteLoaded = palette.loadFromFile(paletteFile);
-	//assert(loadPalette);
-
-	background.setTexture(*ts_bg->texture);
-	background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
-	background.setPosition(0, 0);
-	background.setScale(2, 2);
-
-	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
-
-	if (ts_sky != NULL)
-	{
-		ts_sky->SetQuadSubRect(backgroundSky, 0);
-	}
-	
-	if (ts_shape != NULL)
-	{
-		shape.setTexture(*ts_shape->texture);
-		shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
-		shape.setPosition(0, 0);
-		shape.setScale(2, 2);
-	}
-	
-
-	transFrames = 60 * 20;
-
-	bgView.setCenter(0, 0);
-	bgView.setSize(1920, 1080);
-
-	show = true;
-
-	Reset();
-}
-
 string Background::GetBGNameFromBGInfo(const std::string &fileName)
 {
 	ifstream is;
@@ -303,27 +241,90 @@ Background *Background::SetupFullBG(const std::string &fName)
 		//assert(0);
 	}
 
+
+
+
+
+
+
+
 	Background *newBG = NULL;
+	string emptyBGName = fName;//"";
 	if (is.is_open())
 	{
-		string bgStr;
-		is >> bgStr;
+		//bgStr = fName + "/" + bgStr;
 
-		bgStr = fName + "/" + bgStr;
-
-		newBG = new Background(bgStr);
-
-		int numPar;
-		is >> numPar;
+		newBG = new Background(emptyBGName);
 
 		string pStr;
+
+		string pngName;
+
+
 		int tsIndex;
 		int depthLevel;
 		float scrollSpeed;
 
 		string objectTypeStr;
 		sf::Vector2i objectPos;
-		for (int i = 0; i < numPar; ++i)
+
+		int currLayer = 0;
+
+
+		Vector2i tileSize;
+		Vector2i tilePos;
+		Vector2i gamePos;
+
+		string typeTest;
+
+		int bgWidth;
+		is >> bgWidth;
+
+		newBG->bgWidth = bgWidth;
+
+
+		while (!is.eof())
+		{
+			is >> typeTest;
+
+			if (typeTest == "-w")
+			{
+				BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, newBG->bgWidth);
+				bws->Load(is);
+				newBG->scrollingObjects.push_back(bws);
+			}
+			else if (typeTest == "-t")
+			{
+				BackgroundTile *bt = new BackgroundTile(newBG, parDirStr, newBG->bgWidth);
+				bt->Load(is);
+				newBG->scrollingObjects.push_back(bt);
+			}
+			else
+			{
+				break;
+			}
+
+			/*is >> currLayer;
+
+			is >> pngName;
+
+			is >> tileSize.x;
+			is >> tileSize.y;
+
+			is >> tilePos.x;
+			is >> tilePos.y;
+
+			is >> gamePos.x;
+			is >> gamePos.y;*/
+
+			//newBG->scrollingBackgrounds.push_back(
+			//	new ScrollingBackground(
+		//			newBG->GetTileset(parDirStr + pngName + eStr), tsIndex, depthLevel, scrollSpeed));
+
+			
+		}
+
+		/*for (int i = 0; i < numPar; ++i)
 		{
 			is >> pStr;
 
@@ -339,6 +340,10 @@ Background *Background::SetupFullBG(const std::string &fName)
 					newBG->scrollingObjects.push_back(bw);
 				}
 			}
+			else if (pStr == "image")
+			{
+
+			}
 			else
 			{
 				is >> tsIndex;
@@ -351,7 +356,7 @@ Background *Background::SetupFullBG(const std::string &fName)
 					new ScrollingBackground(
 						newBG->GetTileset(parDirStr + pStr + eStr), tsIndex, depthLevel, scrollSpeed));
 			}
-		}
+		}*/
 
 		is.close();
 	}
@@ -361,62 +366,16 @@ Background *Background::SetupFullBG(const std::string &fName)
 
 Background::Background(const string &bgName)
 {
-	name = bgName;
+	name = bgName;	
 
-	char worldChar = bgName[1] ;
+	char worldChar = bgName[1];
 
 	envWorld = (worldChar - 1) - '0';
-	
-	string worldNum( 1, worldChar);
-
-	string folder = "Backgrounds/W" + worldNum + "/";
-
-	//ss << eType;
-
-	string bgStr = folder + bgName;
-
-	bgSourceName = bgStr + ".png";
-	string paletteFile = string("Resources/") + bgStr + "_palette.png";
-	shapeSourceName = bgStr + "_shape.png";
-	string skyFile = bgStr + "_sky.png";
-
-	ts_bg = GetTileset(bgSourceName, 960, 540);
-	ts_shape = GetTileset(shapeSourceName, 960, 540);
-
-	ts_sky = GetTileset(skyFile, 960, 540);
-
-	//Image im(rtt->getTexture().copyToImage());
-	paletteLoaded = palette.loadFromFile(paletteFile);
-	//assert(loadPalette);
-
-	if (ts_bg != NULL)
-	{
-		background.setTexture(*ts_bg->texture);
-		background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
-		background.setPosition(0, 0);
-		background.setScale(2, 2);
-	}
-
-	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
-
-	if (ts_sky != NULL)
-	{
-		ts_sky->SetQuadSubRect(backgroundSky, 0);
-	}
-
-	if (ts_shape != NULL)
-	{
-		shape.setTexture(*ts_shape->texture);
-		shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
-		shape.setPosition(0, 0);
-		shape.setScale(2, 2);
-	}
-	
-
-	transFrames = 60 * 20;
 
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);
+
+	bgWidth = 0;
 
 	show = true;
 
@@ -425,51 +384,52 @@ Background::Background(const string &bgName)
 
 Background::Background()
 {
-	stringstream ss;
+	//stringstream ss;
 
-	string folder = "Menu/Title/";
+	//string folder = "Menu/Title/";
 
-	//int eType = envLevel + 1; //adjust for alex naming -_-
-	//ss << folder << "w" << envType + 1 << "_BG";
+	////int eType = envLevel + 1; //adjust for alex naming -_-
+	////ss << folder << "w" << envType + 1 << "_BG";
 
-	show = true;
-	//ss << eType;
+	//show = true;
+	////ss << eType;
 
-	string bgStr = "Resources/Backgrounds/W1/w1_01/w1_BG1";// = ss.str();
+	//string bgStr = "Resources/Backgrounds/W1/w1_01/w1_BG1";// = ss.str();
 
 
-	ts_sky = NULL;
+	//ts_sky = NULL;
 
-	bgSourceName = folder + "title_base_1920x1080.png";
-	string paletteFile = bgStr + "_palette.png";
-	shapeSourceName = folder + "titleshade_1920x1080.png";//bgStr + "_shape.png";
+	//bgSourceName = folder + "title_base_1920x1080.png";
+	//string paletteFile = bgStr + "_palette.png";
+	//shapeSourceName = folder + "titleshade_1920x1080.png";//bgStr + "_shape.png";
 
-	ts_bg = NULL;
-	ts_shape = GetTileset(shapeSourceName, 1920, 1080);
-	paletteLoaded = palette.loadFromFile(paletteFile);
-	//assert(loadPalette);
+	//ts_bg = NULL;
+	//ts_shape = GetTileset(shapeSourceName, 1920, 1080);
+	//paletteLoaded = palette.loadFromFile(paletteFile);
+	////assert(loadPalette);
 
-	//background.setTexture(*ts_bg->texture);
-	//background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
-	//background.setPosition(0, 0);
+	////background.setTexture(*ts_bg->texture);
+	////background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
+	////background.setPosition(0, 0);
 
-	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
+	//SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
 
-	if (ts_shape != NULL)
-	{
-		shape.setTexture(*ts_shape->texture);
-		shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
-		shape.setPosition(0, 0);
-		shape.setScale(2, 2);
-	}
-	
+	//if (ts_shape != NULL)
+	//{
+	//	shape.setTexture(*ts_shape->texture);
+	//	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
+	//	shape.setPosition(0, 0);
+	//	shape.setScale(2, 2);
+	//}
+	//
 
-	transFrames = 60 * 3;
+	//transFrames = 60 * 3;
 
-	bgView.setCenter(0, 0);
-	bgView.setSize(1920, 1080);
+	//bgView.setCenter(0, 0);
+	//bgView.setSize(1920, 1080);
 
-	show = true;
+	//show = true;
+	show = false;
 
 	Reset();
 }
@@ -510,82 +470,10 @@ void Background::SetExtra(sf::Vector2f &p_extra)
 	}
 }
 
-void Background::UpdateSky()
-{
-	if (ts_sky == NULL)
-	{
-		SetRectColor(backgroundSky, GetSkyColor());
-	}
-}
-
-sf::Color Background::GetSkyColor()
-{
-	if (!paletteLoaded)
-	{
-		return Color::White;
-	}
-
-	int ind = frame / transFrames;
-	Color startColor = palette.getPixel(ind, 0);
-	Color endColor;
-	if (ind < 3)
-	{
-		endColor = palette.getPixel(ind + 1, 0);
-	}
-	else
-	{
-		endColor = palette.getPixel(0, 0);
-	}
-
-	float factor = (frame%transFrames) / (float)transFrames;
-	float recip = 1.f - factor;
-	Color blendColor;
-	blendColor.r = startColor.r * recip + endColor.r * factor;
-	blendColor.g = startColor.g * recip + endColor.g * factor;
-	blendColor.b = startColor.b * recip + endColor.b * factor;
-	return blendColor;
-}
-
-sf::Color Background::GetShapeColor()
-{
-	if (!paletteLoaded)
-	{
-		return Color::White;
-	}
-
-	int ind = frame / transFrames;
-	Color startColor = palette.getPixel(ind, 1);
-	Color endColor;
-	if (ind < 3)
-	{
-		endColor = palette.getPixel(ind + 1, 1);
-	}
-	else
-	{
-		endColor = palette.getPixel(0, 1);
-	}
-
-	float factor = (frame%transFrames) / (float)transFrames;
-	float recip = 1.f - factor;
-	Color blendColor;
-	blendColor.r = startColor.r * recip + endColor.r * factor;
-	blendColor.g = startColor.g * recip + endColor.g * factor;
-	blendColor.b = startColor.b * recip + endColor.b * factor;
-	return blendColor;
-}
-
-void Background::UpdateShape()
-{
-	if (ts_shape != NULL)
-	{
-		shape.setColor(GetShapeColor());
-	}
-}
-
 void Background::Update( const Vector2f &camPos, int updateFrames )
 {
-	UpdateSky();
-	UpdateShape();
+	//UpdateSky();
+	//UpdateShape();
 
 	frame += updateFrames;
 
@@ -627,7 +515,7 @@ void Background::Draw(sf::RenderTarget *target)
 
 	target->setView(newView);
 
-	if (ts_sky != NULL)
+	/*if (ts_sky != NULL)
 	{
 		target->draw(backgroundSky, 4, sf::Quads, ts_sky->texture);
 	}
@@ -644,7 +532,7 @@ void Background::Draw(sf::RenderTarget *target)
 	if (ts_bg != NULL)
 	{
 		target->draw(background);
-	}
+	}*/
 	
 
 	target->setView(oldView);
@@ -672,7 +560,7 @@ void Background::DrawBackLayer(sf::RenderTarget *target)
 	if (!show)
 		return;
 
-	if (ts_bg != NULL)
+	//if (ts_bg != NULL)
 	{
 		sf::View oldView = target->getView();
 
@@ -681,7 +569,7 @@ void Background::DrawBackLayer(sf::RenderTarget *target)
 
 		target->setView(newView);
 
-		target->draw(background);
+		//target->draw(background);
 
 		target->setView(oldView);
 	}
