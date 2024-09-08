@@ -4,6 +4,7 @@
 
 #include <SFML\Graphics.hpp>
 #include <fstream>
+#include "nlohmann\json.hpp"
 
 struct Tileset;
 struct TilesetManager;
@@ -31,7 +32,7 @@ struct BackgroundObject
 	int repetitionFactor; //how often it repeats
 	int scrollOffset;
 
-	BackgroundObject(TilesetManager *p_tm, int loopWidth );
+	BackgroundObject(TilesetManager *p_tm, int loopWidth, int p_layer );
 	~BackgroundObject();
 	virtual void Reset();
 	virtual void Load(std::ifstream & is);
@@ -63,8 +64,9 @@ struct BackgroundWideSpread : BackgroundObject
 	std::string folder;
 	int extraWidth;
 
-	BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth );
+	BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer );
 	void Load(std::ifstream & is);
+	void Load(nlohmann::basic_json<> &jobj);
 	void UpdateQuads(float realX);
 	sf::IntRect GetSubRect();
 };

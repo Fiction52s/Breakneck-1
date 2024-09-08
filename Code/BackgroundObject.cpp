@@ -6,10 +6,10 @@
 using namespace sf;
 using namespace std;
 
-BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth )
+BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth, int p_layer )
 {
 	tm = p_tm;
-	depthLayer = -1;
+	depthLayer = p_layer;
 	scrollSpeedX = 0;
 	repetitionFactor = 1; //zero means never repeats, 1 is repeat every screen.
 	numQuads = 0;
@@ -194,7 +194,7 @@ sf::IntRect BackgroundObject::GetSubRect()
 }
 
 BackgroundTile::BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth)
-	:BackgroundObject( p_tm, p_loopWidth )
+	:BackgroundObject( p_tm, p_loopWidth, 0 )
 {
 	folder = p_folder;
 }
@@ -263,19 +263,19 @@ void BackgroundTile::Load(std::ifstream & is)
 		numQuads = 1;
 	}
 
-	quads = new Vertex[4 * numQuads];
+quads = new Vertex[4 * numQuads];
 
-	for (int i = 0; i < numQuads; ++i)
-	{
-		ClearRect(quads + i * 4);
-		//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
-	}
+for (int i = 0; i < numQuads; ++i)
+{
+	ClearRect(quads + i * 4);
+	//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
+}
 }
 
 
 
-BackgroundWideSpread::BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth )
-	:BackgroundObject(p_tm, p_loopWidth)
+BackgroundWideSpread::BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer)
+	:BackgroundObject(p_tm, p_loopWidth, p_layer)
 {
 	folder = p_folder;
 	extraWidth = 0;
@@ -358,6 +358,68 @@ void BackgroundWideSpread::Load(std::ifstream & is)
 	}
 }
 
+void BackgroundWideSpread::Load(nlohmann::basic_json<> &jobj)
+{
+	extraWidth = jobj["extraWidth"];
+
+	if (jobj.contains("scrollRate"))
+	{
+		scrollSpeedX = jobj["scrollRate"];
+	}
+	else
+	{
+		scrollSpeedX = 0;
+	}
+
+	repetitionFactor = jobj["repFactor"];
+
+	string pngName = jobj["texture"];
+	
+	Vector2i tileSize;
+	Vector2i sheetPos;
+	Vector2i bgPos;
+
+	tileSize.x = jobj["size"][0];
+	tileSize.y = jobj["size"][1];
+
+	sheetPos.x = jobj["sheetPos"][0];
+	sheetPos.y = jobj["sheetPos"][1];
+
+	bgPos.x = jobj["bgPos"][0];
+	bgPos.y = jobj["bgPos"][1];
+
+	string tsPath = folder + pngName + ".png";
+
+	ts = tm->GetTileset(tsPath);
+
+	subRect.left = sheetPos.x;
+	subRect.top = sheetPos.y;
+	subRect.width = tileSize.x;
+	subRect.height = tileSize.y;
+
+	bgPos.y -= 540;
+
+	myPos = Vector2f(bgPos);
+
+	if (repetitionFactor > 0)
+	{
+		numQuads = 2;
+	}
+	else
+	{
+		numQuads = 1;
+	}
+
+	numQuads *= 2;
+
+	quads = new Vertex[4 * numQuads];
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		ClearRect(quads + i * 4);
+	}
+}
+
 void BackgroundWideSpread::UpdateQuads(float realX)
 {
 	IntRect sub = GetSubRect();
@@ -391,7 +453,7 @@ void BackgroundWideSpread::UpdateQuads(float realX)
 
 
 BackgroundWaterfall::BackgroundWaterfall( TilesetManager *p_tm, int p_loopWidth )
-	:BackgroundObject( p_tm, p_loopWidth )
+	:BackgroundObject( p_tm, p_loopWidth, 0 )
 {
 	ts = p_tm->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
 

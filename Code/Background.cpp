@@ -5,6 +5,7 @@
 #include <random>
 #include "MainMenu.h"
 #include "BackgroundObject.h"
+#include "nlohmann\json.hpp"
 
 using namespace std;
 using namespace sf;
@@ -254,129 +255,41 @@ Background *Background::SetupFullBG(const std::string &fName)
 	string emptyBGName = fName;//"";
 	if (is.is_open())
 	{
-		//bgStr = fName + "/" + bgStr;
-
 		newBG = new Background(emptyBGName);
 
-		string pStr;
+		json j;
+		is >> j;
 
-		string pngName;
-
-
-		int tsIndex;
-		int depthLevel;
-		float scrollSpeed;
-
-		string objectTypeStr;
-		sf::Vector2i objectPos;
-
-
-		Vector2i tileSize;
-		Vector2i tilePos;
-		Vector2i gamePos;
-
-		string typeTest;
-
-		int bgWidth;
-		is >> bgWidth;
-
-		newBG->bgWidth = bgWidth;
-
-		Tileset *currTS = NULL;
 		int currLayer = 0;
+		string base = "BG_";
+		string testStr;
+		string typeStr;
 
-		while (!is.eof())
+		newBG->bgWidth = j["Info"]["envWidth"];
+
+		for (int i = 10; i >= 1; --i)
 		{
-			is >> typeTest;
-
-			if (!is.good())
-				break;
-
-			if (typeTest == "-texture")
+			currLayer = 10 - i;
+			testStr = base + to_string(i);
+			if (j.contains(testStr))
 			{
-				is >> pngName;
-				currTS = newBG->GetTileset(parDirStr + pngName + eStr);
-				if (currTS == NULL)
+				auto objs = j[testStr];
+
+				for (auto it = objs.begin(); it != objs.end(); ++it)
 				{
-					cout << "failed to load for bg: " << parDirStr + pngName + eStr << "\n";
-					assert(currTS != NULL);
+					assert((*it).contains("type"));
+
+					typeStr = (*it)["type"];
+
+					if (typeStr == "extrawide")
+					{
+						BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, newBG->bgWidth, currLayer);
+						bws->Load((*it));
+						newBG->scrollingObjects.push_back(bws);
+					}
 				}
 			}
-			else if (typeTest == "-layer")
-			{
-				is >> currLayer;
-			}
-			
-			else if (typeTest == "-extrawide")
-			{
-				BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, newBG->bgWidth);
-				bws->Load(is);
-				newBG->scrollingObjects.push_back(bws);
-			}
-			else if (typeTest == "-t")
-			{
-				BackgroundTile *bt = new BackgroundTile(newBG, parDirStr, newBG->bgWidth);
-				bt->Load(is);
-				newBG->scrollingObjects.push_back(bt);
-			}
-			else
-			{
-				break;
-			}
-
-			/*is >> currLayer;
-
-			is >> pngName;
-
-			is >> tileSize.x;
-			is >> tileSize.y;
-
-			is >> tilePos.x;
-			is >> tilePos.y;
-
-			is >> gamePos.x;
-			is >> gamePos.y;*/
-
-			//newBG->scrollingBackgrounds.push_back(
-			//	new ScrollingBackground(
-		//			newBG->GetTileset(parDirStr + pngName + eStr), tsIndex, depthLevel, scrollSpeed));
-
-			
 		}
-
-		/*for (int i = 0; i < numPar; ++i)
-		{
-			is >> pStr;
-
-			if (pStr == "object")
-			{
-				is >> objectTypeStr;
-
-				if( objectTypeStr == "waterfall")
-				{
-					BackgroundWaterfall *bw = new BackgroundWaterfall(newBG);
-					bw->Load(is);
-
-					newBG->scrollingObjects.push_back(bw);
-				}
-			}
-			else if (pStr == "image")
-			{
-
-			}
-			else
-			{
-				is >> tsIndex;
-
-				is >> depthLevel;
-
-				is >> scrollSpeed;
-
-				newBG->scrollingBackgrounds.push_back(
-					new ScrollingBackground(
-						newBG->GetTileset(parDirStr + pStr + eStr), tsIndex, depthLevel, scrollSpeed));
-			}
-		}*/
 
 		is.close();
 	}
