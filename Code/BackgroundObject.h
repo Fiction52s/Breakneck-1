@@ -53,8 +53,8 @@ struct BackgroundTile : BackgroundObject
 	std::string folder;
 	
 
-	BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth );
-	void Load(std::ifstream & is);
+	BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer );
+	void Load(nlohmann::basic_json<> &jobj);
 	sf::IntRect GetSubRect();
 };
 
@@ -65,7 +65,6 @@ struct BackgroundWideSpread : BackgroundObject
 	int extraWidth;
 
 	BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer );
-	void Load(std::ifstream & is);
 	void Load(nlohmann::basic_json<> &jobj);
 	void UpdateQuads(float realX);
 	sf::IntRect GetSubRect();
@@ -81,12 +80,10 @@ struct BackgroundWaterfall : BackgroundObject
 
 	int actionLength[A_Count];
 	int animFactor[A_Count];
-	sf::Vertex *quads;
 
-	BackgroundWaterfall(TilesetManager *p_tm, int p_loopWidth );
+	BackgroundWaterfall(TilesetManager *p_tm, int p_loopWidth, int p_layer );
 	~BackgroundWaterfall();
-	void Reset();
-	void Load(std::ifstream &is);
+	void Load(nlohmann::basic_json<> &jobj);
 
 	void ProcessAction();
 	sf::IntRect GetSubRect();

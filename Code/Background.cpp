@@ -281,11 +281,23 @@ Background *Background::SetupFullBG(const std::string &fName)
 
 					typeStr = (*it)["type"];
 
-					if (typeStr == "extrawide")
+					if (typeStr == "default")
+					{
+						BackgroundTile *bt = new BackgroundTile(newBG, parDirStr, newBG->bgWidth, currLayer);
+						bt->Load((*it));
+						newBG->scrollingObjects.push_back(bt);
+					}
+					else if (typeStr == "extrawide")
 					{
 						BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, newBG->bgWidth, currLayer);
 						bws->Load((*it));
 						newBG->scrollingObjects.push_back(bws);
+					}
+					else if (typeStr == "waterfall")
+					{
+						BackgroundWaterfall *bwf = new BackgroundWaterfall(newBG, newBG->bgWidth, currLayer);
+						bwf->Load((*it));
+						newBG->scrollingObjects.push_back(bwf);
 					}
 				}
 			}

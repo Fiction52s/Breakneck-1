@@ -193,8 +193,8 @@ sf::IntRect BackgroundObject::GetSubRect()
 	return IntRect(0, 0, 0, 0);
 }
 
-BackgroundTile::BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth)
-	:BackgroundObject( p_tm, p_loopWidth, 0 )
+BackgroundTile::BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer)
+	:BackgroundObject( p_tm, p_loopWidth, p_layer )
 {
 	folder = p_folder;
 }
@@ -204,55 +204,51 @@ sf::IntRect BackgroundTile::GetSubRect()
 	return subRect;
 }
 
-void BackgroundTile::Load(std::ifstream & is)
+void BackgroundTile::Load(nlohmann::basic_json<> &jobj)
 {
-	string pngName;
+	if (jobj.contains("scrollRate"))
+	{
+		scrollSpeedX = jobj["scrollRate"];
+	}
+	else
+	{
+		scrollSpeedX = 0;
+	}
+
+	repetitionFactor = jobj["repFactor"];
+
+	string pngName = jobj["texture"];
+
 	Vector2i tileSize;
-	Vector2i tilePos;
-	Vector2i gamePos;
+	Vector2i sheetPos;
+	Vector2i bgPos;
 
-	//is >> currLayer;
+	tileSize.x = jobj["size"][0];
+	tileSize.y = jobj["size"][1];
 
-	BackgroundObject::Load(is);
+	sheetPos.x = jobj["sheetPos"][0];
+	sheetPos.y = jobj["sheetPos"][1];
 
-	is >> pngName;
-
-	is >> tileSize.x;
-	is >> tileSize.y;
-
-	is >> tilePos.x;
-	is >> tilePos.y;
-
-	is >> gamePos.x;
-	is >> gamePos.y;
-
-	
-
-
-
-
-	/*is >> depthLayer;
-	is >> scrollSpeedX;
-	is >> repetitionFactor;*/
-	BackgroundObject::Load(is);
-
+	bgPos.x = jobj["bgPos"][0];
+	bgPos.y = jobj["bgPos"][1];
 
 	string tsPath = folder + pngName + ".png";
 
 	ts = tm->GetTileset(tsPath);
-	/*Vector2i pos;
-	is >> pos.x;
-	is >> pos.y;*/
 
-	subRect.left = tilePos.x;
-	subRect.top = tilePos.y;
+	subRect.left = sheetPos.x;
+	subRect.top = sheetPos.y;
 	subRect.width = tileSize.x;
 	subRect.height = tileSize.y;
 
-	//gamePos.x -= 960;
-	gamePos.y -= 540;
+	if (repetitionFactor == 0)
+	{
+		bgPos.x -= 960;
+	}
 
-	myPos = Vector2f(gamePos);
+	bgPos.y -= 540;
+
+	myPos = Vector2f(bgPos);
 
 	if (repetitionFactor > 0)
 	{
@@ -263,15 +259,13 @@ void BackgroundTile::Load(std::ifstream & is)
 		numQuads = 1;
 	}
 
-quads = new Vertex[4 * numQuads];
+	quads = new Vertex[4 * numQuads];
 
-for (int i = 0; i < numQuads; ++i)
-{
-	ClearRect(quads + i * 4);
-	//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
+	for (int i = 0; i < numQuads; ++i)
+	{
+		ClearRect(quads + i * 4);
+	}
 }
-}
-
 
 
 BackgroundWideSpread::BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer)
@@ -284,78 +278,6 @@ BackgroundWideSpread::BackgroundWideSpread(TilesetManager *p_tm, const std::stri
 sf::IntRect BackgroundWideSpread::GetSubRect()
 {
 	return subRect;
-}
-
-void BackgroundWideSpread::Load(std::ifstream & is)
-{
-	string pngName;
-	Vector2i tileSize;
-	Vector2i tilePos;
-	Vector2i gamePos;
-
-	//is >> currLayer;
-
-	is >> extraWidth;
-
-	BackgroundObject::Load(is);
-
-	is >> pngName;
-
-	is >> tileSize.x;
-	is >> tileSize.y;
-
-	is >> tilePos.x;
-	is >> tilePos.y;
-
-	is >> gamePos.x;
-	is >> gamePos.y;
-
-
-
-
-
-
-	/*is >> depthLayer;
-	is >> scrollSpeedX;
-	is >> repetitionFactor;*/
-	//BackgroundObject::Load(is);
-
-
-	string tsPath = folder + pngName + ".png";
-
-	ts = tm->GetTileset(tsPath);
-	/*Vector2i pos;
-	is >> pos.x;
-	is >> pos.y;*/
-
-	subRect.left = tilePos.x;
-	subRect.top = tilePos.y;
-	subRect.width = tileSize.x;
-	subRect.height = tileSize.y;
-
-	//gamePos.x -= 960;
-	gamePos.y -= 540;
-
-	myPos = Vector2f(gamePos);
-
-	if (repetitionFactor > 0)
-	{
-		numQuads = 2;
-	}
-	else
-	{
-		numQuads = 1;
-	}
-
-	numQuads *= 2;
-
-	quads = new Vertex[4 * numQuads];
-
-	for (int i = 0; i < numQuads; ++i)
-	{
-		ClearRect(quads + i * 4);
-		//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
-	}
 }
 
 void BackgroundWideSpread::Load(nlohmann::basic_json<> &jobj)
@@ -396,6 +318,11 @@ void BackgroundWideSpread::Load(nlohmann::basic_json<> &jobj)
 	subRect.top = sheetPos.y;
 	subRect.width = tileSize.x;
 	subRect.height = tileSize.y;
+
+	if (repetitionFactor == 0)
+	{
+		bgPos.x -= 960;
+	}
 
 	bgPos.y -= 540;
 
@@ -452,8 +379,8 @@ void BackgroundWideSpread::UpdateQuads(float realX)
 }
 
 
-BackgroundWaterfall::BackgroundWaterfall( TilesetManager *p_tm, int p_loopWidth )
-	:BackgroundObject( p_tm, p_loopWidth, 0 )
+BackgroundWaterfall::BackgroundWaterfall( TilesetManager *p_tm, int p_loopWidth, int p_layer )
+	:BackgroundObject( p_tm, p_loopWidth, p_layer )
 {
 	ts = p_tm->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
 
@@ -470,23 +397,32 @@ BackgroundWaterfall::~BackgroundWaterfall()
 {
 }
 
-void BackgroundWaterfall::Reset()
+void BackgroundWaterfall::Load(nlohmann::basic_json<> &jobj)
 {
-	BackgroundObject::Reset();
-}
+	if (jobj.contains("scrollRate"))
+	{
+		scrollSpeedX = jobj["scrollRate"];
+	}
+	else
+	{
+		scrollSpeedX = 0;
+	}
 
-void BackgroundWaterfall::Load(std::ifstream &is)
-{
-	BackgroundObject::Load(is);
+	repetitionFactor = jobj["repFactor"];
 
-	Vector2i pos;
-	is >> pos.x;
-	is >> pos.y;
+	Vector2i bgPos;
 
-	pos.x -= 960;
-	pos.y -= 540;
+	bgPos.x = jobj["bgPos"][0];
+	bgPos.y = jobj["bgPos"][1];
 
-	myPos = Vector2f(pos);
+	if (repetitionFactor == 0)
+	{
+		bgPos.x -= 960;
+	}
+	
+	bgPos.y -= 540;
+
+	myPos = Vector2f(bgPos);
 
 	if (repetitionFactor > 0)
 	{
@@ -499,12 +435,9 @@ void BackgroundWaterfall::Load(std::ifstream &is)
 
 	quads = new Vertex[4 * numQuads];
 
-
-
 	for (int i = 0; i < numQuads; ++i)
 	{
 		ClearRect(quads + i * 4);
-		//SetRectTopLeft(quads + i * 4, ts->tileWidth, ts->tileHeight, Vector2f(pos));
 	}
 }
 
