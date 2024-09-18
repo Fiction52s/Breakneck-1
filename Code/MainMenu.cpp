@@ -134,7 +134,7 @@ void MainMenu::SetupTerrainShaders()
 	}
 
 	//global tileset
-	ts_terrain = GetSizedTileset("Env/terrain_128x128.png");
+	ts_terrain = GetSizedTileset("Env/terrain_256x256.png");//GetSizedTileset("Env/terrain_128x128.png");
 
 	terrainShaders = new Shader[TerrainPolygon::TOTAL_TERRAIN_TYPES];
 
@@ -154,6 +154,7 @@ void MainMenu::SetupTerrainShader(sf::Shader &sh, int terrainIndex)
 
 	sh.setUniform("u_texture", *ts_terrain->texture);
 	sh.setUniform("Resolution", Vector2f(1920, 1080));
+	sh.setUniform("tileSize", 256.f);
 	//sh.setUniform("AmbientColor", ColorGL(Color::White)); //just not used currently
 	sh.setUniform("skyColor", ColorGL(Color::White));
 

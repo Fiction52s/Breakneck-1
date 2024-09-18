@@ -305,7 +305,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	const static int TILE_PATTERN_GRID_SIZE = 16;
 	const static int TILE_PATTERN_TOTAL_INDEXES = TILE_PATTERN_GRID_SIZE * TILE_PATTERN_GRID_SIZE;
 	const static int TOTAL_TILES_IN_USE = 4;
-	const static int TOTAL_TERRAIN_TYPES = 64;
+	const static int TOTAL_TERRAIN_TYPES = 2 * 8;//64;
 	const static int inverseExtraBoxDist;
 
 	//float *tilePattern;

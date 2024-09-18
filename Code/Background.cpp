@@ -30,7 +30,7 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	//parallaxShader.setUniform("Resolution", Vector2f(1920, 1080));
 	//parallaxShader.setUniform("testColor", ColorGL(testMeColor));
 
-	depth = DrawLayer::GetDrawLayerDepthFactor(depthLevel) * .5;
+	depth = DrawLayer::GetDrawLayerDepthFactor(depthLevel);
 	assert(p_ts != NULL);
 
 	
@@ -273,6 +273,8 @@ Background *Background::SetupFullBG(const std::string &fName)
 			testStr = base + to_string(i);
 			if (j.contains(testStr))
 			{
+				BackgroundLayer *newLayer = new BackgroundLayer(currLayer);
+
 				auto objs = j[testStr];
 
 				for (auto it = objs.begin(); it != objs.end(); ++it)
@@ -285,21 +287,34 @@ Background *Background::SetupFullBG(const std::string &fName)
 					{
 						BackgroundTile *bt = new BackgroundTile(newBG, parDirStr, newBG->bgWidth, currLayer);
 						bt->Load((*it));
-						newBG->scrollingObjects.push_back(bt);
+						//newBG->scrollingObjects.push_back(bt);
+						newLayer->objectVec.push_back(bt);
 					}
 					else if (typeStr == "extrawide")
 					{
 						BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, newBG->bgWidth, currLayer);
 						bws->Load((*it));
-						newBG->scrollingObjects.push_back(bws);
+						//newBG->scrollingObjects.push_back(bws);
+						newLayer->objectVec.push_back(bws);
+					}
+					else if (typeStr == "glow")
+					{
+						BackgroundTileTranscendGlow *bttg = new BackgroundTileTranscendGlow(newBG, parDirStr, newBG->bgWidth, currLayer);
+						bttg->Load((*it));
+						newLayer->objectVec.push_back(bttg);
 					}
 					else if (typeStr == "waterfall")
 					{
 						BackgroundWaterfall *bwf = new BackgroundWaterfall(newBG, newBG->bgWidth, currLayer);
 						bwf->Load((*it));
-						newBG->scrollingObjects.push_back(bwf);
+						newLayer->objectVec.push_back(bwf);
+						//newBG->scrollingObjects.push_back(bwf);
 					}
 				}
+
+				newLayer->SetupQuads();
+
+				newBG->bgLayerList.push_back(newLayer);
 			}
 		}
 
@@ -322,6 +337,8 @@ Background::Background(const string &bgName)
 
 	bgWidth = 0;
 
+	transFrames = 0;
+
 	show = true;
 
 	Reset();
@@ -329,6 +346,7 @@ Background::Background(const string &bgName)
 
 Background::Background()
 {
+	transFrames = 0;
 	//stringstream ss;
 
 	//string folder = "Menu/Title/";
@@ -374,6 +392,7 @@ Background::Background()
 	//bgView.setSize(1920, 1080);
 
 	//show = true;
+	transFrames = 60 * 3;
 	show = false;
 
 	Reset();
@@ -392,8 +411,20 @@ Background::~Background()
 	{
 		delete (*it);
 	}
-
 	scrollingObjects.clear();
+
+	for (auto it = bgLayerList.begin(); it != bgLayerList.end(); ++it)
+	{
+		delete (*it);
+	}
+	bgLayerList.clear();
+
+
+	for (auto it = shaderMap.begin(); it != shaderMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	shaderMap.clear();
 }
 
 void Background::Set(Vector2f &pos, float zoom )
@@ -422,9 +453,12 @@ void Background::Update( const Vector2f &camPos, int updateFrames )
 
 	frame += updateFrames;
 
-	if (frame >= transFrames * 4)
+	if (transFrames > 0)
 	{
-		frame = frame % (transFrames * 4);
+		if (frame >= transFrames * 4)
+		{
+			frame = frame % (transFrames * 4);
+		}
 	}
 
 	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
@@ -438,13 +472,31 @@ void Background::Update( const Vector2f &camPos, int updateFrames )
 	{
 		(*it)->Update( camPos, updateFrames);
 	}
+
+	for (auto it = bgLayerList.begin();
+		it != bgLayerList.end(); ++it)
+	{
+		for (auto it2 = (*it)->objectVec.begin(); it2 != (*it)->objectVec.end(); ++it2)
+		{
+			(*it2)->Update(camPos, updateFrames);
+		}
+		
+	}
 }
 
 void Background::Reset()
 {
-	int r = rand() % 4;
-	int r2 = rand() % transFrames;
-	frame = r * transFrames + r2;
+	if (transFrames > 0)
+	{
+		int r = rand() % 4;
+		int r2 = rand() % transFrames;
+		frame = r * transFrames + r2;
+	}
+	else
+	{
+		frame = 0;
+	}
+
 	SetExtra(Vector2f( 0, 0 ));
 }
 
@@ -539,6 +591,14 @@ void Background::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 	{
 		//might not need to mess w/ views here anymore
 		(*it)->LayeredDraw(p_drawLayer, target);
+	}
+
+	for (auto it = bgLayerList.begin(); it != bgLayerList.end(); ++it)
+	{
+		if ((*it)->drawLayer == p_drawLayer)
+		{
+			(*it)->Draw(target);
+		}
 	}
 }
 

@@ -84,9 +84,28 @@ int Tileset::GetNumTiles()
 	return sx * sy;
 }
 
+int Tileset::GetMemoryTextureSize()
+{
+	Vector2u size = texture->getSize();
+	int larger = max(size.x, size.y);
+	int realSize = 0;
+
+	for (int i = 1; i <= 11; ++i)
+	{
+		if (pow(2, i) >= larger)
+		{
+			realSize = pow(2, i);
+			break;
+		}
+	}
+
+	return realSize;
+}
+
 int Tileset::GetMemoryUsage()
 {
-	return texture->getSize().x * texture->getSize().y * 4;
+	int realSize = GetMemoryTextureSize();
+	return realSize * realSize * 4;
 }
 
 TilesetManager::TilesetManager()
@@ -190,10 +209,12 @@ Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int t
 		return NULL;
 	}
 
-	cout << "created texture for: " << s2 << "\n";
+	
 
 	Tileset *t = new Tileset();
 	t->texture = tex;
+
+	cout << "created texture for: " << s2 << ", mem: " << t->GetMemoryTextureSize() << "\n";
 
 	if (tileWidth == 0)
 	{

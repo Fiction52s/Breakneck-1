@@ -162,7 +162,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	const static int MAX_TOTAL_BUBBLES = MAX_PLAYERS * MAX_BUBBLES;
 
 	const static int TERRAIN_WORLDS = 8; //does this work?
-	const static int MAX_TERRAIN_VARIATION_PER_WORLD = 8;
+	const static int MAX_TERRAIN_VARIATION_PER_WORLD = 2;
 
 	const static int MAX_SIMULTANEOUS_SEQUENCES = 8;
 

@@ -5,9 +5,42 @@
 #include <SFML\Graphics.hpp>
 #include <fstream>
 #include "nlohmann\json.hpp"
+#include <map>
 
 struct Tileset;
 struct TilesetManager;
+struct BackgroundObject;
+
+struct BackgroundLayer
+{
+	struct QuadInfo
+	{
+		QuadInfo(sf::Vertex *p_verts, int p_numQuads, Tileset *p_ts, sf::Shader *p_sh)
+			:verts(p_verts), numQuads(p_numQuads), ts( p_ts ), sh(p_sh)
+		{
+
+		}
+		~QuadInfo()
+		{
+			delete[] verts;
+		}
+		sf::Vertex *verts;
+		int numQuads;
+		Tileset *ts;
+		sf::Shader *sh;
+	};
+
+	int drawLayer;
+	std::vector<BackgroundObject*> objectVec;
+	std::vector<QuadInfo*> quadPtrVec;
+	sf::View oldView;
+	sf::View newView;
+
+	BackgroundLayer(int p_drawLayer);
+	~BackgroundLayer();
+	void SetupQuads();
+	void Draw(sf::RenderTarget *target);
+};
 
 struct BackgroundObject
 {
@@ -17,6 +50,7 @@ struct BackgroundObject
 	};
 
 	Tileset *ts;
+	sf::Shader *sh;
 	sf::Vector2f myPos;
 	sf::Vertex *quads;
 
@@ -89,6 +123,25 @@ struct BackgroundWaterfall : BackgroundObject
 	sf::IntRect GetSubRect();
 
 };
+
+struct BackgroundTileTranscendGlow : BackgroundTile
+{
+	enum Action
+	{
+		A_IDLE,
+		A_Count,
+	};
+
+	int actionLength[A_Count];
+	int animFactor[A_Count];
+
+	BackgroundTileTranscendGlow(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer);
+	~BackgroundTileTranscendGlow();
+	void UpdateQuads(float realX);
+	sf::IntRect GetSubRect();
+	void ProcessAction();
+};
+
 
 
 #endif

@@ -3780,7 +3780,7 @@ void TerrainPolygon::UpdateMaterialType()
 			texInd = game->matIndices[texInd];
 		}*/
 
-		int terrainIndex = terrainWorldType * 8 + terrainVariation;
+		int terrainIndex = terrainWorldType * EditSession::MAX_TERRAIN_VARIATION_PER_WORLD + terrainVariation;
 
 		pShader = &sess->mainMenu->terrainShaders[terrainIndex];//&sess->polyShaders[texInd];
 		//pShader = &sess->mainMenu->terrainShader;//&sess->polyShaders[texInd];

@@ -15,6 +15,7 @@ struct Tileset
 		bool flipX = false, bool flipY = false);
 	int GetNumTiles();
 	int GetMemoryUsage();
+	int GetMemoryTextureSize();
 	sf::Texture * texture;
 	int tileWidth;
 	int tileHeight;

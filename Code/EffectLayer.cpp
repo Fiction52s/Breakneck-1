@@ -12,26 +12,26 @@ float DrawLayer::GetDrawLayerDepthFactor(int layer)
 	{
 	case DrawLayer::TERRAIN:
 		return 1.0;
-	case DrawLayer::BG_1:
-		return .95;
-	case DrawLayer::BG_2:
-		return .9;
-	case DrawLayer::BG_3:
-		return .8;
-	case DrawLayer::BG_4:
-		return .7;
-	case DrawLayer::BG_5:
-		return .6;
-	case DrawLayer::BG_6:
-		return .5;
-	case DrawLayer::BG_7:
-		return .4;
-	case DrawLayer::BG_8:
-		return .3;
-	case DrawLayer::BG_9:
-		return .2;
 	case DrawLayer::BG_10:
+		return .05;
+	case DrawLayer::BG_9:
 		return .1;
+	case DrawLayer::BG_8:
+		return .2;
+	case DrawLayer::BG_7:
+		return .3;
+	case DrawLayer::BG_6:
+		return .4;
+	case DrawLayer::BG_5:
+		return .5;
+	case DrawLayer::BG_4:
+		return .6;
+	case DrawLayer::BG_3:
+		return .7;
+	case DrawLayer::BG_2:
+		return .8;
+	case DrawLayer::BG_1:
+		return .9;
 	case DrawLayer::BEHIND_TERRAIN:
 		return 1;
 	case DrawLayer::BEHIND_ENEMIES:

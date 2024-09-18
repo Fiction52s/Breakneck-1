@@ -9,7 +9,7 @@ struct GameSession;
 struct MainMenu;
 struct BackgroundObject;
 struct BackgroundObject;
-
+struct BackgroundLayer;
 
 
 struct ScrollingBackground
@@ -84,6 +84,8 @@ struct Background : TilesetManager
 	std::string name;
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 	std::list<BackgroundObject*> scrollingObjects;
+	std::list<BackgroundLayer*> bgLayerList;
+	std::map<std::string, sf::Shader*> shaderMap;
 };
 
 

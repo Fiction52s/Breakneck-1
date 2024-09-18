@@ -2,9 +2,120 @@
 #include "VectorMath.h"
 #include "Tileset.h"
 #include "DrawLayer.h"
+#include <iostream>
 
 using namespace sf;
 using namespace std;
+
+BackgroundLayer::BackgroundLayer(int p_drawLayer)
+	:drawLayer( p_drawLayer )
+{
+
+}
+
+BackgroundLayer::~BackgroundLayer()
+{
+	for (auto it = objectVec.begin(); it != objectVec.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = quadPtrVec.begin(); it != quadPtrVec.end(); ++it)
+	{
+		delete (*it);
+	}
+}
+
+void BackgroundLayer::SetupQuads()
+{
+	//get rid of the map here. need to use something ordered, just loop through a list or something.
+	//std::map<Tileset*, int> numQuadsPerTileset;
+	std::vector<std::pair<std::pair<Tileset*, sf::Shader *>, int>> tilesetOrderPairVec;
+	Tileset *ts_test = NULL;
+	sf::Shader *shaderTest = NULL;
+	bool alreadyHas = false;
+	for (auto it = objectVec.begin(); it != objectVec.end(); ++it)
+	{
+		ts_test = (*it)->ts;
+		shaderTest = (*it)->sh;
+		alreadyHas = false;
+		for (auto it2 = tilesetOrderPairVec.begin(); it2 != tilesetOrderPairVec.end(); ++it2)
+		{
+			if ((*it2).first.first == ts_test && (*it2).first.second == shaderTest )
+			{
+				alreadyHas = true;
+				break;
+			}
+		}
+
+		if (!alreadyHas)
+		{
+			tilesetOrderPairVec.push_back(make_pair(make_pair(ts_test, shaderTest), 0));
+		}
+	}
+
+	for (auto it = objectVec.begin(); it != objectVec.end(); ++it)
+	{
+		for (auto it2 = tilesetOrderPairVec.begin(); it2 != tilesetOrderPairVec.end(); ++it2)
+		{
+			if ((*it)->ts == (*it2).first.first && (*it)->sh == (*it2).first.second )
+			{
+				(*it2).second += (*it)->numQuads;
+				break;
+			}
+		}
+	}
+
+	Vertex *currQuad = NULL;
+	Vertex *currObjQuads = NULL;
+	int currNumQuads = 0;
+	for (auto it = tilesetOrderPairVec.begin(); it != tilesetOrderPairVec.end(); ++it)
+	{
+		currNumQuads = (*it).second;
+		currQuad = new Vertex[currNumQuads * 4];
+		for (int i = 0; i < (*it).second; ++i)
+		{
+			ClearRect(currQuad + i * 4);
+		}
+		currObjQuads = currQuad;
+		for (auto it2 = objectVec.begin(); it2 != objectVec.end(); ++it2)
+		{
+			if ((*it2)->ts == (*it).first.first && (*it2)->sh == (*it).first.second)
+			{
+				(*it2)->quads = currObjQuads;
+				currObjQuads += (*it2)->numQuads * 4;
+			}
+		}
+
+		quadPtrVec.push_back(new QuadInfo(currQuad, currNumQuads, (*it).first.first, (*it).first.second));
+	}
+}
+
+void BackgroundLayer::Draw(sf::RenderTarget *target)
+{
+	oldView = target->getView();
+	Vector2f newCenter = Vector2f(oldView.getCenter().x, 0);// -extraOffset;
+	newView.setCenter(newCenter);
+	newView.setSize(1920, 1080);
+	target->setView(newView);
+
+	for (auto it = quadPtrVec.begin(); it != quadPtrVec.end(); ++it)
+	{
+		if ((*it)->sh != NULL)
+		{
+			(*it)->sh->setUniform("u_texture", *(*it)->ts->texture);
+			target->draw((*it)->verts, (*it)->numQuads * 4, sf::Quads, (*it)->sh);
+		}
+		else
+		{
+			target->draw((*it)->verts, (*it)->numQuads * 4, sf::Quads, (*it)->ts->texture);
+		}
+	}
+
+	target->setView(oldView);
+}
+
+
 
 BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth, int p_layer )
 {
@@ -14,6 +125,7 @@ BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth, int p_
 	repetitionFactor = 1; //zero means never repeats, 1 is repeat every screen.
 	numQuads = 0;
 	ts = NULL;
+	sh = NULL;
 	quads = NULL;
 	loopWidth = p_loopWidth;
 	Reset();
@@ -21,10 +133,10 @@ BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth, int p_
 
 BackgroundObject::~BackgroundObject()
 {
-	if (quads != NULL)
+	/*if (quads != NULL)
 	{
 		delete[] quads;
-	}
+	}*/
 }
 
 void BackgroundObject::Reset()
@@ -76,9 +188,9 @@ void BackgroundObject::Update(const sf::Vector2f &camPos)
 
 	if (repetitionFactor > 0)
 	{
-		float depth = DrawLayer::GetDrawLayerDepthFactor(depthLayer) * .5f;
+		float depth = DrawLayer::GetDrawLayerDepthFactor(depthLayer);
 		//Vector2f extra(-loopWidth + myPos.x, 0);
-		Vector2f extra(myPos.x, 0);
+		Vector2f extra(myPos.x / depth, 0);
 
 		Vector2f cPos = camPos;
 		float testScrollOffset = extra.x + scrollOffset;
@@ -118,6 +230,8 @@ void BackgroundObject::Update(const sf::Vector2f &camPos)
 		scrollOffset += scrollSpeedX;// *updateFrames;
 
 		float realX = (camPos.x + off) -1920 / 2;
+
+		//realX = round(realX);
 
 		UpdateQuads(realX);
 		
@@ -236,6 +350,12 @@ void BackgroundTile::Load(nlohmann::basic_json<> &jobj)
 
 	ts = tm->GetTileset(tsPath);
 
+	if (ts == NULL)
+	{
+		cout << "background tile tileset is null: " << tsPath << endl;
+		assert(0);
+	}
+
 	subRect.left = sheetPos.x;
 	subRect.top = sheetPos.y;
 	subRect.width = tileSize.x;
@@ -259,12 +379,12 @@ void BackgroundTile::Load(nlohmann::basic_json<> &jobj)
 		numQuads = 1;
 	}
 
-	quads = new Vertex[4 * numQuads];
+	/*quads = new Vertex[4 * numQuads];
 
 	for (int i = 0; i < numQuads; ++i)
 	{
 		ClearRect(quads + i * 4);
-	}
+	}*/
 }
 
 
@@ -314,6 +434,12 @@ void BackgroundWideSpread::Load(nlohmann::basic_json<> &jobj)
 
 	ts = tm->GetTileset(tsPath);
 
+	if (ts == NULL)
+	{
+		cout << " background wide spread tileset is null: " << tsPath << endl;
+		assert(0);
+	}
+
 	subRect.left = sheetPos.x;
 	subRect.top = sheetPos.y;
 	subRect.width = tileSize.x;
@@ -339,12 +465,12 @@ void BackgroundWideSpread::Load(nlohmann::basic_json<> &jobj)
 
 	numQuads *= 2;
 
-	quads = new Vertex[4 * numQuads];
+	/*quads = new Vertex[4 * numQuads];
 
 	for (int i = 0; i < numQuads; ++i)
 	{
 		ClearRect(quads + i * 4);
-	}
+	}*/
 }
 
 void BackgroundWideSpread::UpdateQuads(float realX)
