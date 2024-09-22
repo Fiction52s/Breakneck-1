@@ -285,27 +285,27 @@ Background *Background::SetupFullBG(const std::string &fName)
 
 					if (typeStr == "default")
 					{
-						BackgroundTile *bt = new BackgroundTile(newBG, parDirStr, newBG->bgWidth, currLayer);
+						BackgroundTile *bt = new BackgroundTile(newBG, parDirStr, currLayer);
 						bt->Load((*it));
 						//newBG->scrollingObjects.push_back(bt);
 						newLayer->objectVec.push_back(bt);
 					}
 					else if (typeStr == "extrawide")
 					{
-						BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, newBG->bgWidth, currLayer);
+						BackgroundWideSpread *bws = new BackgroundWideSpread(newBG, parDirStr, currLayer);
 						bws->Load((*it));
 						//newBG->scrollingObjects.push_back(bws);
 						newLayer->objectVec.push_back(bws);
 					}
 					else if (typeStr == "glow")
 					{
-						BackgroundTileTranscendGlow *bttg = new BackgroundTileTranscendGlow(newBG, parDirStr, newBG->bgWidth, currLayer);
+						BackgroundTileTranscendGlow *bttg = new BackgroundTileTranscendGlow(newBG, parDirStr, currLayer);
 						bttg->Load((*it));
 						newLayer->objectVec.push_back(bttg);
 					}
 					else if (typeStr == "waterfall")
 					{
-						BackgroundWaterfall *bwf = new BackgroundWaterfall(newBG, newBG->bgWidth, currLayer);
+						BackgroundWaterfall *bwf = new BackgroundWaterfall(newBG, currLayer);
 						bwf->Load((*it));
 						newLayer->objectVec.push_back(bwf);
 						//newBG->scrollingObjects.push_back(bwf);
@@ -461,6 +461,17 @@ void Background::Update( const Vector2f &camPos, int updateFrames )
 		}
 	}
 
+	for (auto it = shaderMap.begin(); it != shaderMap.end(); ++it)
+	{
+		if ((*it).first == "transcend_bg_energy")
+		{
+			int amt = 120;
+			float famt = amt;
+			float q = (frame % amt) / famt;
+			(*it).second->setUniform("quant", q);
+		}
+	}
+
 	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
 		it != scrollingBackgrounds.end(); ++it)
 	{
@@ -599,6 +610,33 @@ void Background::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 		{
 			(*it)->Draw(target);
 		}
+	}
+}
+
+sf::Shader * Background::GetShader(const std::string &shaderName)
+{
+	if (shaderMap.count(shaderName) != 0)
+	{
+		return shaderMap[shaderName];
+	}
+	else
+	{
+		sf::Shader *newShader = new sf::Shader;
+		string shaderPath = "Resources/Shader/";
+		shaderPath += shaderName + ".frag";
+		newShader->loadFromFile(shaderPath, sf::Shader::Fragment);
+		shaderMap[shaderName] = newShader;
+
+		if (shaderName == "transcend_bg_energy")
+		{
+			Tileset *scrollTS = GetSizedTileset("Backgrounds/W1/w1_01/vein_energy_1920x1080.png");
+			shaderTilesetMap[shaderName].push_back(scrollTS);
+			newShader->setUniform("u_scrollTexture", *scrollTS->texture);
+
+			newShader->setUniform("quant", 0.f);
+		}
+
+		return newShader;
 	}
 }
 

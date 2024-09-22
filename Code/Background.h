@@ -2,7 +2,9 @@
 #define __BACKGROUND_H__
 
 #include <SFML/Graphics.hpp>
-#include "Tileset.h""
+#include "Tileset.h"
+#include <map>
+#include <vector>
 
 
 struct GameSession;
@@ -64,6 +66,7 @@ struct Background : TilesetManager
 	void Draw(sf::RenderTarget *target);
 	void DrawBackLayer(sf::RenderTarget *target);
 	void LayeredDraw(int p_drawLayer, sf::RenderTarget *target);
+	sf::Shader * GetShader(const std::string &shaderStr);
 	//void UpdateSky();
 	//void UpdateShape();
 	
@@ -86,6 +89,7 @@ struct Background : TilesetManager
 	std::list<BackgroundObject*> scrollingObjects;
 	std::list<BackgroundLayer*> bgLayerList;
 	std::map<std::string, sf::Shader*> shaderMap;
+	std::map<std::string, std::vector<Tileset*>> shaderTilesetMap;
 };
 
 

@@ -3,6 +3,7 @@
 #include "Tileset.h"
 #include "DrawLayer.h"
 #include <iostream>
+#include "Background.h" 
 
 using namespace sf;
 using namespace std;
@@ -117,9 +118,9 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 
 
 
-BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth, int p_layer )
+BackgroundObject::BackgroundObject(Background *p_bg, int p_layer )
 {
-	tm = p_tm;
+	bg = p_bg;
 	depthLayer = p_layer;
 	scrollSpeedX = 0;
 	repetitionFactor = 1; //zero means never repeats, 1 is repeat every screen.
@@ -127,7 +128,7 @@ BackgroundObject::BackgroundObject(TilesetManager *p_tm, int p_loopWidth, int p_
 	ts = NULL;
 	sh = NULL;
 	quads = NULL;
-	loopWidth = p_loopWidth;
+	loopWidth = bg->bgWidth;
 	Reset();
 }
 
@@ -178,7 +179,14 @@ void BackgroundObject::UpdateQuads( float realX )
 
 	for (int i = 0; i < numQuads; ++i)
 	{
-		SetRectSubRect(quads + i * 4, sub);
+		if (sh != NULL)
+		{
+			SetRectSubRectGL(quads + i * 4, sub, Vector2f(ts->texture->getSize()));
+		}
+		else
+		{
+			SetRectSubRect(quads + i * 4, sub);
+		}
 	}
 }
 
@@ -307,8 +315,8 @@ sf::IntRect BackgroundObject::GetSubRect()
 	return IntRect(0, 0, 0, 0);
 }
 
-BackgroundTile::BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer)
-	:BackgroundObject( p_tm, p_loopWidth, p_layer )
+BackgroundTile::BackgroundTile(Background *p_bg, const std::string &p_folder, int p_layer)
+	:BackgroundObject( p_bg, p_layer )
 {
 	folder = p_folder;
 }
@@ -346,9 +354,16 @@ void BackgroundTile::Load(nlohmann::basic_json<> &jobj)
 	bgPos.x = jobj["bgPos"][0];
 	bgPos.y = jobj["bgPos"][1];
 
+	if (jobj.contains("shader"))
+	{
+		string shaderName = jobj["shader"];
+		sh = bg->GetShader(shaderName);
+	}
+
+
 	string tsPath = folder + pngName + ".png";
 
-	ts = tm->GetTileset(tsPath);
+	ts = bg->GetTileset(tsPath);
 
 	if (ts == NULL)
 	{
@@ -388,8 +403,8 @@ void BackgroundTile::Load(nlohmann::basic_json<> &jobj)
 }
 
 
-BackgroundWideSpread::BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer)
-	:BackgroundObject(p_tm, p_loopWidth, p_layer)
+BackgroundWideSpread::BackgroundWideSpread(Background *p_bg, const std::string &p_folder, int p_layer)
+	:BackgroundObject(p_bg, p_layer)
 {
 	folder = p_folder;
 	extraWidth = 0;
@@ -432,7 +447,7 @@ void BackgroundWideSpread::Load(nlohmann::basic_json<> &jobj)
 
 	string tsPath = folder + pngName + ".png";
 
-	ts = tm->GetTileset(tsPath);
+	ts = bg->GetTileset(tsPath);
 
 	if (ts == NULL)
 	{
@@ -485,30 +500,53 @@ void BackgroundWideSpread::UpdateQuads(float realX)
 		for (int i = 0; i < 2; ++i)
 		{
 			SetRectTopLeft(quads + i * 4, sub.width, sub.height, Vector2f(realX + loopWidth * i, myPos.y));
-			SetRectSubRect(quads + i * 4, sub);
+			if (sh != NULL)
+			{
+				SetRectSubRectGL(quads + i * 4, sub, Vector2f(ts->texture->getSize()));
+			}
+			else
+			{
+				SetRectSubRect(quads + i * 4, sub);
+			}
 		}
 
 		for (int i = 2; i < 4; ++i)
 		{
 			SetRectTopLeft(quads + i * 4, sub2.width, sub2.height, Vector2f(realX + loopWidth * (i - 2) + sub.width, myPos.y));
-			SetRectSubRect(quads + i * 4, sub2);
+
+			if (sh != NULL)
+			{
+				SetRectSubRectGL(quads + i * 4, sub2, Vector2f(ts->texture->getSize()));
+			}
+			else
+			{
+				SetRectSubRect(quads + i * 4, sub2);
+			}
 		}
 	}
 	else
 	{
 		SetRectTopLeft(quads, sub.width, sub.height, Vector2f(myPos));
-		SetRectSubRect(quads, sub);
-
 		SetRectTopLeft(quads + 4, sub2.width, sub2.height, Vector2f(myPos.x + sub.width, myPos.y));
-		SetRectSubRect(quads + 4, sub2);
+
+		if (sh != NULL)
+		{
+			SetRectSubRectGL(quads, sub, Vector2f(ts->texture->getSize()));
+			SetRectSubRectGL(quads + 4, sub2, Vector2f(ts->texture->getSize()));
+		}
+		else
+		{
+			SetRectSubRect(quads, sub);
+			SetRectSubRect(quads + 4, sub2);
+		}
 	}
 }
 
 
-BackgroundWaterfall::BackgroundWaterfall( TilesetManager *p_tm, int p_loopWidth, int p_layer )
-	:BackgroundObject( p_tm, p_loopWidth, p_layer )
+BackgroundWaterfall::BackgroundWaterfall(Background *p_bg, int p_layer )
+	:BackgroundObject( p_bg, p_layer )
 {
-	ts = p_tm->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
+	ts = bg->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
 
 	actionLength[A_IDLE] = 12;
 

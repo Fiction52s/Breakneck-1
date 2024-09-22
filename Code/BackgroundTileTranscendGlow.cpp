@@ -7,8 +7,8 @@
 using namespace sf;
 using namespace std;
 
-BackgroundTileTranscendGlow::BackgroundTileTranscendGlow(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer)
-	:BackgroundTile( p_tm, p_folder, p_loopWidth, p_layer )
+BackgroundTileTranscendGlow::BackgroundTileTranscendGlow(Background *p_bg, const std::string &p_folder, int p_layer)
+	:BackgroundTile( p_bg, p_folder, p_layer )
 {
 	folder = p_folder;
 }

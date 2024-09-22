@@ -8,6 +8,7 @@ struct Tileset
 {
 	~Tileset();
 	sf::IntRect GetSubRect( int localID );
+	sf::IntRect GetCustomSubRect(sf::Vector2i tileSize, sf::Vector2i origin, sf::Vector2i tileCount, int tileIndex);
 	void SetSpriteTexture(sf::Sprite &spr);
 	void SetSubRect(sf::Sprite &spr, int index,
 		bool flipX = false, bool flipY = false );

@@ -91,6 +91,11 @@ void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
 	case TouchGrass::TYPE_TREE:
 		tg = new TouchTree(this, index, edge, quant);
 		break;
+	case TouchGrass::TYPE_PALM:
+	{
+		tg = new TouchPalm(this, index, edge, quant);
+		break;
+	}
 	}
 
 	assert(tg != NULL);
@@ -180,6 +185,9 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 	case TouchGrass::TYPE_TREE:
 		t = tm->GetTileset("Env/TouchGrass/trees_128x128.png", 128, 128);
 		break;
+	case TouchGrass::TYPE_PALM:
+		t = tm->GetTileset("Env/TouchGrass/Trees_1161x427.png");
+		break;
 	default:
 		assert(0);
 	}
@@ -209,6 +217,9 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 		break;
 	case TYPE_TREE:
 		width = 128;
+		break;
+	case TYPE_PALM:
+		width = 282;
 		break;
 	}
 
@@ -316,6 +327,12 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
 		break;
 	}
 	case TYPE_TREE:
+	{
+		int r = rand() % 100;
+		return (r < 15);
+		break;
+	}
+	case TYPE_PALM:
 	{
 		int r = rand() % 100;
 		return (r < 15);

@@ -2808,6 +2808,11 @@ sf::Rect<double> CollisionBody::GetAABB( int frame )
 	bool first = true;
 	double left, right, top, bot;
 
+	if (collisionBoxVectors.empty())
+	{
+		return sf::Rect<double>();
+	}
+
 	std::vector<CollisionBox> &cbVec = collisionBoxVectors[frame];
 
 	if (cbVec.empty())

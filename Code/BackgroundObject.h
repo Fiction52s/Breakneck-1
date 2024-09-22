@@ -8,8 +8,8 @@
 #include <map>
 
 struct Tileset;
-struct TilesetManager;
 struct BackgroundObject;
+struct Background;
 
 struct BackgroundLayer
 {
@@ -58,7 +58,7 @@ struct BackgroundObject
 	int numQuads;
 	int action;
 	int frame;
-	TilesetManager *tm;
+	Background *bg;
 	int depthLayer;
 	float scrollSpeedX;
 	sf::View oldView;
@@ -66,7 +66,7 @@ struct BackgroundObject
 	int repetitionFactor; //how often it repeats
 	int scrollOffset;
 
-	BackgroundObject(TilesetManager *p_tm, int loopWidth, int p_layer );
+	BackgroundObject(Background *p_bg, int p_layer );
 	~BackgroundObject();
 	virtual void Reset();
 	virtual void Load(std::ifstream & is);
@@ -87,7 +87,7 @@ struct BackgroundTile : BackgroundObject
 	std::string folder;
 	
 
-	BackgroundTile(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer );
+	BackgroundTile(Background *p_bg, const std::string &p_folder, int p_layer );
 	void Load(nlohmann::basic_json<> &jobj);
 	sf::IntRect GetSubRect();
 };
@@ -98,7 +98,7 @@ struct BackgroundWideSpread : BackgroundObject
 	std::string folder;
 	int extraWidth;
 
-	BackgroundWideSpread(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer );
+	BackgroundWideSpread(Background *p_bg, const std::string &p_folder, int p_layer );
 	void Load(nlohmann::basic_json<> &jobj);
 	void UpdateQuads(float realX);
 	sf::IntRect GetSubRect();
@@ -115,7 +115,7 @@ struct BackgroundWaterfall : BackgroundObject
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
-	BackgroundWaterfall(TilesetManager *p_tm, int p_loopWidth, int p_layer );
+	BackgroundWaterfall(Background *p_bg, int p_layer );
 	~BackgroundWaterfall();
 	void Load(nlohmann::basic_json<> &jobj);
 
@@ -135,7 +135,7 @@ struct BackgroundTileTranscendGlow : BackgroundTile
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
-	BackgroundTileTranscendGlow(TilesetManager *p_tm, const std::string &p_folder, int p_loopWidth, int p_layer);
+	BackgroundTileTranscendGlow(Background *p_bg, const std::string &p_folder, int p_layer);
 	~BackgroundTileTranscendGlow();
 	void UpdateQuads(float realX);
 	sf::IntRect GetSubRect();

@@ -76,6 +76,25 @@ IntRect Tileset::GetSubRect( int localID )
 	return IntRect( xi * tileWidth, yi * tileHeight, tileWidth, tileHeight );
 }
 
+//sf::IntRect GetSubRect(sf::Vector2i tileSize, sf::Vector2i origin, sf::Vector2i tileCount, int tileIndex);
+sf::IntRect Tileset::GetCustomSubRect(sf::Vector2i tileSize, sf::Vector2i origin, sf::Vector2i tileCount, int tileIndex)
+{
+	int xi, yi;
+	//Vector2i size(texture->getSize());
+
+	xi = tileIndex % tileCount.x;
+	yi = tileIndex / tileCount.y;
+
+	if (tileIndex < 0 || tileIndex >= tileCount.x * tileCount.y)
+	{
+		cout << "issue in special GetSubRect" << endl;
+		cout << "texture error: " << this->sourceName << endl;
+		cout << "tileIndex: " << tileIndex << ", sx: " << tileCount.x << ", sy: " << tileCount.y << endl;
+		assert(0);
+	}
+	return IntRect( origin.x + xi * tileSize.x, origin.y + yi * tileSize.y, tileSize.x, tileSize.y);
+}
+
 int Tileset::GetNumTiles()
 {
 	int sx = (texture->getSize().x / tileWidth );
