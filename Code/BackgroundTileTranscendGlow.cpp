@@ -52,6 +52,13 @@ void BackgroundTileTranscendGlow::UpdateQuads(float realX)
 		SetRectSubRect(quads + i * 4, sub);
 		SetRectColor(quads + i * 4, Color(255, 255, 255, 255.f * breathe));
 	}
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		ClearRect(quads + i * 4);
+		//SetRectSubRect(quads + i * 4, sub);
+		//SetRectColor(quads + i * 4, Color(255, 255, 255, 255.f * breathe));
+	}
 }
 
 void BackgroundTileTranscendGlow::ProcessAction()

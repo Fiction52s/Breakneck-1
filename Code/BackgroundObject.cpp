@@ -4,12 +4,13 @@
 #include "DrawLayer.h"
 #include <iostream>
 #include "Background.h" 
+#include "Session.h"
 
 using namespace sf;
 using namespace std;
 
-BackgroundLayer::BackgroundLayer(int p_drawLayer)
-	:drawLayer( p_drawLayer )
+BackgroundLayer::BackgroundLayer( Background *p_bg, int p_drawLayer)
+	:drawLayer( p_drawLayer ), bg( p_bg )
 {
 
 }
@@ -25,6 +26,8 @@ BackgroundLayer::~BackgroundLayer()
 	{
 		delete (*it);
 	}
+
+	
 }
 
 void BackgroundLayer::SetupQuads()
@@ -70,6 +73,8 @@ void BackgroundLayer::SetupQuads()
 	Vertex *currQuad = NULL;
 	Vertex *currObjQuads = NULL;
 	int currNumQuads = 0;
+	std::string currShaderName;
+
 	for (auto it = tilesetOrderPairVec.begin(); it != tilesetOrderPairVec.end(); ++it)
 	{
 		currNumQuads = (*it).second;
@@ -85,10 +90,31 @@ void BackgroundLayer::SetupQuads()
 			{
 				(*it2)->quads = currObjQuads;
 				currObjQuads += (*it2)->numQuads * 4;
+
+				if (currShaderName == "")
+				{
+					currShaderName = (*it2)->shaderName;
+				}
 			}
 		}
 
-		quadPtrVec.push_back(new QuadInfo(currQuad, currNumQuads, (*it).first.first, (*it).first.second));
+		quadPtrVec.push_back(new QuadInfo(currQuad, currNumQuads, (*it).first.first, (*it).first.second, currShaderName ));
+	}
+}
+
+void BackgroundLayer::Update(const sf::Vector2f &camPos)
+{
+	for (auto it = objectVec.begin(); it != objectVec.end(); ++it )
+	{
+		(*it)->Update(camPos);
+	}
+}
+
+void BackgroundLayer::Update(const sf::Vector2f &camPos, const int numFrames)
+{
+	for (int i = 0; i < numFrames; ++i)
+	{
+		Update(camPos);
 	}
 }
 
@@ -102,10 +128,40 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 
 	for (auto it = quadPtrVec.begin(); it != quadPtrVec.end(); ++it)
 	{
-		if ((*it)->sh != NULL)
+		if ((*it)->sh != NULL )
 		{
+			if ((*it)->shaderName == "transcend_bg_energy")
+			{
+				Session *sess = Session::GetSession();
+				float camAngle = (float)(sess->view.getRotation() * PI / 180.0);
+
+				float depth = DrawLayer::GetDrawLayerDepthFactor(drawLayer);
+
+				int amt = 120;
+				float famt = round(amt / depth);
+				amt = famt;
+				float q = (bg->frame % amt) / famt;
+				(*it)->sh->setUniform("quant", q);
+
+				//Vector2f vSize(1920, 1080);// sess->view.getSize();
+				//Vector2f vSize( sess->view.getSize() );
+				Vector2f center = newView.getCenter();//sess->view.getCenter();//newView.getCenter();// *depth;// *depth;
+				//center.x *= 3.f;
+				Vector2f vSize = newView.getSize();//sess->view.getSize();//newView.getSize();// / 2.f;
+				//vSize = Vector2f(1920, 1080) / depth;
+
+				Vector2f botLeftTest(-vSize.x / 2, vSize.y / 2);
+				RotateCW(botLeftTest, camAngle);
+
+				botLeftTest += center;
+
+				(*it)->sh->setUniform("u_depth", depth);
+				(*it)->sh->setUniform("topLeft", botLeftTest);
+			}
+
 			(*it)->sh->setUniform("u_texture", *(*it)->ts->texture);
 			target->draw((*it)->verts, (*it)->numQuads * 4, sf::Quads, (*it)->sh);
+			
 		}
 		else
 		{
@@ -273,7 +329,8 @@ void BackgroundObject::Draw(sf::RenderTarget *target)
 	{
 		float depth = DrawLayer::GetDrawLayerDepthFactor(depthLayer);
 		//the .5 is because the scrolling bgs do it, fix it soon
-		Vector2f newCenter = Vector2f(oldView.getCenter().x * depth * .5f, 0);// -extraOffset;
+		//Vector2f newCenter = Vector2f(oldView.getCenter().x * depth * .5f, 0);// -extraOffset;
+		Vector2f newCenter = Vector2f(oldView.getCenter().x * depth, 0);// -extraOffset;
 
 		newView.setCenter(newCenter);
 		newView.setSize(1920, 1080);
@@ -356,8 +413,10 @@ void BackgroundTile::Load(nlohmann::basic_json<> &jobj)
 
 	if (jobj.contains("shader"))
 	{
-		string shaderName = jobj["shader"];
-		sh = bg->GetShader(shaderName);
+		string myShaderName = jobj["shader"];
+		sh = bg->GetShader(myShaderName);
+		assert(sh != NULL);
+		shaderName = myShaderName;
 	}
 
 

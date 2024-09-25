@@ -273,7 +273,7 @@ Background *Background::SetupFullBG(const std::string &fName)
 			testStr = base + to_string(i);
 			if (j.contains(testStr))
 			{
-				BackgroundLayer *newLayer = new BackgroundLayer(currLayer);
+				BackgroundLayer *newLayer = new BackgroundLayer( newBG, currLayer);
 
 				auto objs = j[testStr];
 
@@ -419,7 +419,6 @@ Background::~Background()
 	}
 	bgLayerList.clear();
 
-
 	for (auto it = shaderMap.begin(); it != shaderMap.end(); ++it)
 	{
 		delete (*it).second;
@@ -465,10 +464,13 @@ void Background::Update( const Vector2f &camPos, int updateFrames )
 	{
 		if ((*it).first == "transcend_bg_energy")
 		{
-			int amt = 120;
-			float famt = amt;
-			float q = (frame % amt) / famt;
-			(*it).second->setUniform("quant", q);
+			//cout << "frame: " << frame << ", adjusted frame: " << (frame %amt) << ", q: " << q << endl;
+
+			Session *sess = Session::GetSession();
+			float camAngle = (float)(sess->view.getRotation() * PI / 180.0);
+			(*it).second->setUniform("u_cameraAngle", camAngle);
+
+			(*it).second->setUniform("zoom", sess->cam.GetZoom());
 		}
 	}
 
@@ -624,12 +626,17 @@ sf::Shader * Background::GetShader(const std::string &shaderName)
 		sf::Shader *newShader = new sf::Shader;
 		string shaderPath = "Resources/Shader/";
 		shaderPath += shaderName + ".frag";
-		newShader->loadFromFile(shaderPath, sf::Shader::Fragment);
+		bool res = newShader->loadFromFile(shaderPath, sf::Shader::Fragment);
+		if (!res)
+		{
+			cout << "shader failed to load in bg: " << shaderPath << endl;
+			return NULL;
+		}
 		shaderMap[shaderName] = newShader;
 
 		if (shaderName == "transcend_bg_energy")
 		{
-			Tileset *scrollTS = GetSizedTileset("Backgrounds/W1/w1_01/vein_energy_1920x1080.png");
+			Tileset *scrollTS = GetSizedTileset("Backgrounds/W1/w1_01/vein_energy_2_500x500.png");
 			shaderTilesetMap[shaderName].push_back(scrollTS);
 			newShader->setUniform("u_scrollTexture", *scrollTS->texture);
 

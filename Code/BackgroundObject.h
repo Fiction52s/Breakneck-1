@@ -15,8 +15,8 @@ struct BackgroundLayer
 {
 	struct QuadInfo
 	{
-		QuadInfo(sf::Vertex *p_verts, int p_numQuads, Tileset *p_ts, sf::Shader *p_sh)
-			:verts(p_verts), numQuads(p_numQuads), ts( p_ts ), sh(p_sh)
+		QuadInfo(sf::Vertex *p_verts, int p_numQuads, Tileset *p_ts, sf::Shader *p_sh, const std::string &p_shaderName )
+			:verts(p_verts), numQuads(p_numQuads), ts( p_ts ), sh(p_sh), shaderName( p_shaderName )
 		{
 
 		}
@@ -28,6 +28,7 @@ struct BackgroundLayer
 		int numQuads;
 		Tileset *ts;
 		sf::Shader *sh;
+		std::string shaderName;
 	};
 
 	int drawLayer;
@@ -35,9 +36,12 @@ struct BackgroundLayer
 	std::vector<QuadInfo*> quadPtrVec;
 	sf::View oldView;
 	sf::View newView;
+	Background *bg;
 
-	BackgroundLayer(int p_drawLayer);
+	BackgroundLayer(Background *p_bg, int p_drawLayer);
 	~BackgroundLayer();
+	void Update(const sf::Vector2f &camPos);
+	void Update(const sf::Vector2f &camPos, const int numFrames);
 	void SetupQuads();
 	void Draw(sf::RenderTarget *target);
 };
@@ -51,6 +55,7 @@ struct BackgroundObject
 
 	Tileset *ts;
 	sf::Shader *sh;
+	std::string shaderName;
 	sf::Vector2f myPos;
 	sf::Vertex *quads;
 

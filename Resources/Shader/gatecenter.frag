@@ -1,3 +1,5 @@
+#version 130
+
 uniform sampler2D u_texture;
 uniform float quant;
 
