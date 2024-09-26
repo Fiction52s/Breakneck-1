@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Background.h" 
 #include "Session.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -146,6 +147,7 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 				//Vector2f vSize(1920, 1080);// sess->view.getSize();
 				//Vector2f vSize( sess->view.getSize() );
 				Vector2f center = newView.getCenter();//sess->view.getCenter();//newView.getCenter();// *depth;// *depth;
+				center.x *= depth;
 				//center.x *= 3.f;
 				Vector2f vSize = newView.getSize();//sess->view.getSize();//newView.getSize();// / 2.f;
 				//vSize = Vector2f(1920, 1080) / depth;
@@ -155,8 +157,16 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 
 				botLeftTest += center;
 
-				(*it)->sh->setUniform("u_depth", depth);
+				//(*it)->sh->setUniform("u_depth", depth);
 				(*it)->sh->setUniform("topLeft", botLeftTest);
+
+				Color filterColor = Color::Transparent;
+				float test = .2;
+				if (drawLayer == DrawLayer::BG_7)
+				{
+					filterColor = Color(0x23 * test, 0x79 * test, 0xbe * test);
+				}
+				(*it)->sh->setUniform("u_filterColor", ColorGL(filterColor));
 			}
 
 			(*it)->sh->setUniform("u_texture", *(*it)->ts->texture);
