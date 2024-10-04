@@ -45,6 +45,17 @@ void TouchGrassCollection::Move(V2d &move)
 	}
 }
 
+bool TouchGrassCollection::IsDrawnBehind()
+{
+	switch (gType)
+	{
+	case TouchGrass::TYPE_PALM:
+		return true;
+	default:
+		return false;
+	}
+}
+
 void TouchGrassCollection::Draw(sf::RenderTarget *target)
 {
 	/*for (auto it = myGrass.begin(); it != myGrass.end(); ++it)
@@ -68,7 +79,7 @@ void TouchGrassCollection::UpdateGrass()
 	}
 }
 
-void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
+void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant, int variation)
 {
 	TouchGrass *tg = NULL;
 	
@@ -93,7 +104,7 @@ void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
 		break;
 	case TouchGrass::TYPE_PALM:
 	{
-		tg = new TouchPalm(this, index, edge, quant);
+		tg = new TouchPalm(this, index, edge, quant, variation);
 		break;
 	}
 	}
@@ -194,6 +205,18 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 	return t;
 }
 
+int TouchGrass::GetRandomVariation(TouchGrassType gt)
+{
+	switch (gt)
+	{
+	case TYPE_PALM:
+		return rand() % 4;
+		break;
+	default:
+		return 0;
+	}
+}
+
 int TouchGrass::GetQuadWidth(TouchGrassType gt)
 {
 	int width = 0;
@@ -219,7 +242,7 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 		width = 128;
 		break;
 	case TYPE_PALM:
-		width = 282;
+		width = 50;
 		break;
 	}
 
@@ -298,10 +321,53 @@ bool TouchGrass::IsTouchingBox(const sf::Rect<double> &r)
 	return touching;
 }
 
-bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
+bool TouchGrass::IsEdgeOkay(TouchGrassType grassType, Edge *e)
+{
+	V2d normal = e->Normal();
+	EdgeAngleType eat = GetEdgeAngleType(normal);
+
+	switch (grassType)
+	{
+	case TYPE_PALM:
+	{
+		if (eat == EDGE_FLAT || eat == EDGE_SLOPED)
+		{
+			if (normal.y < -.7)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	}
+	default:
+	{
+		if (eat == EDGE_FLAT || eat == EDGE_SLOPED)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	}
+		
+	}
+
+}
+
+bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int variation,
 	Edge *edge, int quadIndex)
 {
-	EdgeAngleType eat = (EdgeAngleType)p_eat;
+	//EdgeAngleType eat = GetEdgeAngleType(edge->Normal());
 	switch (grassType)
 	{
 	case TYPE_NORMAL_W1:
@@ -335,7 +401,7 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
 	case TYPE_PALM:
 	{
 		int r = rand() % 100;
-		return (r < 15);
+		return (r < 2);
 		break;
 	}
 	default:

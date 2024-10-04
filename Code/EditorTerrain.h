@@ -372,7 +372,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r);
 	void UpdateTouchGrass();
-	void DrawTouchGrass(sf::RenderTarget *target);
+	void DrawTouchGrassFront(sf::RenderTarget *target);
+	void DrawTouchGrassBehind(sf::RenderTarget *target);
 	void AddTouchGrass(int gt);
 	void SetupTouchGrass();
 	void DestroyTouchGrass();

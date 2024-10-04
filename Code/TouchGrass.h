@@ -36,10 +36,11 @@ struct TouchGrass : QuadTreeEntrant
 	};
 
 	static bool IsPlacementOkay(
-		TouchGrassType grassType, 
-		int eat,
+		TouchGrassType grassType, int variation,
 		Edge *edge, int quadIndex);
+	static bool IsEdgeOkay(TouchGrassType grassType, Edge *e);
 	static int GetQuadWidth(TouchGrassType gt);
+	static int GetRandomVariation(TouchGrassType gt);
 	TouchGrass( TouchGrassCollection *coll, int index,
 		Edge *e, double quant);
 	~TouchGrass();
@@ -86,11 +87,12 @@ struct TouchGrassCollection
 	sf::Vertex *touchGrassVA;
 
 	void Move(V2d &move);
+	bool IsDrawnBehind();
 	int numTouchGrasses;
 	void Draw(sf::RenderTarget *target);
 	void Query(QuadTreeCollider *qtc, sf::Rect<double> &r);
 	void UpdateGrass();
-	void CreateGrass(int index, Edge *edge, double quant);
+	void CreateGrass(int index, Edge *edge, double quant, int variation);
 	//static Tileset *GetTileset(GameSession *owner, TouchGrass::TouchGrassType gt);
 	static Tileset *GetTileset(TilesetManager *tm, TouchGrass::TouchGrassType gt);
 	std::list<TouchGrass*> myGrass;
@@ -185,8 +187,10 @@ struct TouchPalm : TouchGrass
 	Action action;
 	int currTile;
 
+	sf::Vector2i spriteOrigin;
+
 	TouchPalm(TouchGrassCollection *coll, int index,
-		Edge *e, double quant);
+		Edge *e, double quant, int variation);
 	void Reset();
 	void Update();
 	void Touch(Actor *a);
@@ -196,13 +200,14 @@ struct TouchPalm : TouchGrass
 
 struct PlantInfo
 {
-	PlantInfo(Edge*e, double q, double w)
-		:edge(e), quant(q), quadWidth(w)
+	PlantInfo(Edge*e, double q, double w, int p_variation)
+		:edge(e), quant(q), quadWidth(w), variation(p_variation)
 	{
 	}
 	Edge *edge;
 	double quant;
 	double quadWidth;
+	int variation;
 };
 
 #endif

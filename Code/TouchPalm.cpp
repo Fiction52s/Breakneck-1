@@ -7,19 +7,75 @@ using namespace sf;
 using namespace std;
 
 TouchPalm::TouchPalm(TouchGrassCollection *coll, int index,
-	Edge *e, double quant)
+	Edge *e, double quant, int p_variation)
 	:TouchGrass(coll, index, e, quant)
 {
-	size.x = 288;
-	size.y = 386;
+	currTile = p_variation;//rand() % 4;
+
+	int baseOffset;
+	// base offsets 136, 276, 48, 157
+
+	switch (currTile)
+	{
+	case 0:
+		spriteOrigin = Vector2i(0, 0);
+		size = Vector2i(285, 383);
+		baseOffset = 136;
+		break;
+	case 1:
+		spriteOrigin = Vector2i(286, 0);
+		size = Vector2i(343, 422);
+		baseOffset = 276;
+		break;
+	case 2:
+		spriteOrigin = Vector2i(632, 0);
+		size = Vector2i(295, 403);
+		baseOffset = 48;
+		break;
+	case 3:
+		spriteOrigin = Vector2i(930, 0);
+		size = Vector2i(231, 426);
+		baseOffset = 157;
+		break;
+	}
+
+	int groundWidth = TouchGrass::GetQuadWidth(TouchGrass::TYPE_PALM);
+
+	baseOffset = (size.x / 2 - baseOffset) - groundWidth / 2;
+
 	yOffset = 0;
 	V2d normal = edge->Normal();
 
 	V2d p = edge->GetPosition(quant);
+
+	V2d testPoint = p;//
+
+	if (normal.x != 0)
+	{
+		if (normal.x > 0)
+		{
+			testPoint.x += groundWidth / 2;
+		}
+		else if (normal.x < 0)
+		{
+			testPoint.x -= groundWidth / 2;
+		}
+
+		LineIntersection li;
+		lineIntersection(li, testPoint, testPoint + V2d(0, 1), edge->v0, edge->v1);
+		double verticalDiff = li.position.y - p.y;
+
+		p.y += verticalDiff;
+	}
+	
+	//+V2d(groundWidth / 2, 0);
+
 	center = p;
 	center += normal * yOffset;
 
 	center.y -= size.y / 2.f;// -20; //arbitrary 20 rn
+
+	center.x += baseOffset;
 
 	V2d hitboxCenter = center;//p + normal * hitboxYOff;
 
@@ -37,7 +93,13 @@ TouchPalm::TouchPalm(TouchGrassCollection *coll, int index,
 		points[i] = V2d(myQuad[i].position) - polyCenter;
 	}
 
+	
+
+	SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect(size, spriteOrigin, Vector2i(1, 1), 0));
+
 	Reset();
+
+	
 }
 
 void TouchPalm::Reset()
@@ -48,7 +110,7 @@ void TouchPalm::Reset()
 	visible = true;
 	action = STILL;
 	frame = 0;
-	currTile = -1;
+	//currTile = -1;
 	UpdateSprite();
 }
 
@@ -56,7 +118,7 @@ void TouchPalm::UpdateSprite()
 {
 	int tileIndex = 0;
 
-	switch (action)
+	/*switch (action)
 	{
 	case TOUCHEDLEFT:
 		tileIndex = 3;
@@ -67,13 +129,31 @@ void TouchPalm::UpdateSprite()
 	case TOUCHEDLAND:
 		tileIndex = 1;
 		break;
+	}*/
+
+	//if (tileIndex != currTile)
+	{
+		//currTile = tileIndex;
+		
 	}
 
-	if (tileIndex != currTile)
-	{
-		currTile = tileIndex;
-		SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect( size, Vector2i( 0, 0 ), Vector2i( 1, 1 ), 0));
-	}
+	/*
+	Tree1
+	Size: 300x404
+	Coord: 0,0
+
+	Tree2
+	Size: 362x446
+	Coord: 347,0
+
+	Tree3
+	Size: 311x426
+	Coord: 755x0
+
+	Tree4
+	Size: 243x450
+	Coord: 1113x0
+	*/
 
 }
 

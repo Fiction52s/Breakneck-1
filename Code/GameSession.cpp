@@ -5048,7 +5048,7 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 					int r = GetRand() % 2;
 					if( r == 0 )
 					{
-						info.push_back( PlantInfo( te, quadWidth * i, quadWidth ) );
+						//info.push_back( PlantInfo( te, quadWidth * i, quadWidth ) );
 					}
 				}
 			}

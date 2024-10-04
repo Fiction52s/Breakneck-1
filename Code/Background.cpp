@@ -310,6 +310,12 @@ Background *Background::SetupFullBG(const std::string &fName)
 						newLayer->objectVec.push_back(bwf);
 						//newBG->scrollingObjects.push_back(bwf);
 					}
+					else if (typeStr == "waves")
+					{
+						BackgroundWaves *bw = new BackgroundWaves(newBG, currLayer);
+						bw->Load((*it));
+						newLayer->objectVec.push_back(bw);
+					}
 				}
 
 				newLayer->SetupQuads();
@@ -636,10 +642,12 @@ sf::Shader * Background::GetShader(const std::string &shaderName)
 
 		if (shaderName == "transcend_bg_energy")
 		{
-			Tileset *scrollTS = GetSizedTileset("Backgrounds/W1/w1_01/vein_energy_2_500x500.png");
+			Tileset *scrollTS = GetSizedTileset("Backgrounds/W1/w1_01/vein_energy_512x512.png");
 			shaderTilesetMap[shaderName].push_back(scrollTS);
 			newShader->setUniform("u_scrollTexture", *scrollTS->texture);
 
+			Color energyColor(0xff, 0x21, 0x23);
+			newShader->setUniform("u_energyColor", ColorGL(energyColor));
 			newShader->setUniform("quant", 0.f);
 		}
 

@@ -129,6 +129,28 @@ struct BackgroundWaterfall : BackgroundObject
 
 };
 
+struct BackgroundWaves : BackgroundObject
+{
+	enum Action
+	{
+		A_IDLE,
+		A_Count,
+	};
+
+	Tileset *ts_0;
+	Tileset *ts_1;
+
+	int actionLength[A_Count];
+	int animFactor[A_Count];
+
+	BackgroundWaves(Background *p_bg, int p_layer);
+	~BackgroundWaves();
+	void Load(nlohmann::basic_json<> &jobj);
+
+	void ProcessAction();
+	sf::IntRect GetSubRect();
+};
+
 struct BackgroundTileTranscendGlow : BackgroundTile
 {
 	enum Action

@@ -369,17 +369,9 @@ void TerrainPolygon::AddTouchGrass(int gt)
 		}
 		
 
-		bool valid = true;
+		bool valid = TouchGrass::IsEdgeOkay(tgType, currEdge);//true;
 
-		EdgeAngleType eat = GetEdgeAngleType(currEdge);
-		if (eat == EDGE_FLAT || eat == EDGE_SLOPED)
-		{
-			valid = true;
-		}
-		else
-		{
-			valid = false;
-		}
+		
 		//valid = true;
 
 		if (valid)
@@ -388,25 +380,34 @@ void TerrainPolygon::AddTouchGrass(int gt)
 			int numQuads = len / tw;
 			bool tooThin = false;
 			double quadWidth = tw;//len / numQuads;
+			int variation = -1;
+
 			if (numQuads == 0)
 			{
-				tooThin = true;
-				numQuads = 1;
+				/*if (tgType == TouchGrass::TYPE_PALM)
+				{
+					
+				}
+				else*/
+				{
+					tooThin = true;
+					numQuads = 1;
+				}
 			}
 			if (numQuads > 0)
 			{
 				for (int i = 0; i < numQuads; ++i)
 				{
-					if (TouchGrass::IsPlacementOkay(tgType, eat,
-						currEdge, i))
+					variation = TouchGrass::GetRandomVariation(tgType);
+					if (TouchGrass::IsPlacementOkay(tgType, variation, currEdge, i))
 					{
 						if (tooThin)
 						{
-							info.push_back(PlantInfo(currEdge, len / 2.0, quadWidth));
+							info.push_back(PlantInfo(currEdge, len / 2.0, quadWidth, variation));
 						}
 						else
 						{
-							info.push_back(PlantInfo(currEdge, quadWidth * i + quadWidth / 2, quadWidth));
+							info.push_back(PlantInfo(currEdge, quadWidth * i + quadWidth / 2, quadWidth, variation ));
 						}
 
 					}
@@ -436,7 +437,7 @@ void TerrainPolygon::AddTouchGrass(int gt)
 	int vaIndex = 0;
 	for (list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it)
 	{
-		coll->CreateGrass(vaIndex, (*it).edge, (*it).quant);
+		coll->CreateGrass(vaIndex, (*it).edge, (*it).quant, (*it).variation);
 		vaIndex++;
 	}
 }
@@ -461,11 +462,25 @@ void TerrainPolygon::UpdateTouchGrass()
 	}
 }
 
-void TerrainPolygon::DrawTouchGrass(sf::RenderTarget *target)
+void TerrainPolygon::DrawTouchGrassFront(sf::RenderTarget *target)
 {
 	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
 	{
-		(*it)->Draw(target);
+		if (!(*it)->IsDrawnBehind())
+		{
+			(*it)->Draw(target);
+		}		
+	}
+}
+
+void TerrainPolygon::DrawTouchGrassBehind(sf::RenderTarget *target)
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		if ((*it)->IsDrawnBehind())
+		{
+			(*it)->Draw(target);
+		}
 	}
 }
 
@@ -4569,6 +4584,8 @@ void TerrainPolygon::SetupTouchGrass()
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL_W4);
 		AddTouchGrass(TouchGrass::TYPE_LARGE_W4);
+
+		AddTouchGrass(TouchGrass::TYPE_PALM);
 		break;
 	}
 	case TerrainWorldType::JUNGLE:
@@ -5787,6 +5804,8 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 	{
 		UpdatePreviewLineColors();
 
+		DrawTouchGrassBehind(target);
+
 		DrawGrass(target);
 
 		DrawInnerArea(target);
@@ -5824,7 +5843,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 
 		DrawDecor(target);
 
-		DrawTouchGrass(target);
+		DrawTouchGrassFront(target);
 
 		target->draw(lines, numP * 2, sf::Lines);
 
@@ -5858,6 +5877,8 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 		//UpdateLineColors();
 	}
 
+	DrawTouchGrassBehind(target);
+
 	DrawGrass(target);
 
 	DrawInnerArea(target);
@@ -5866,7 +5887,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 
 	DrawDecor(target);
 
-	DrawTouchGrass(target);
+	DrawTouchGrassFront(target);
 
 	target->draw( lines, numP * 2, sf::Lines );
 
@@ -5941,12 +5962,17 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 
 void TerrainPolygon::DrawAsSecretCover(sf::RenderTarget *target, bool preview)
 {
+	if (!preview)
+	{
+		DrawTouchGrassBehind(target);
+	}
+
 	DrawInnerArea(target);
 
 	if (!preview)
 	{
 		DrawBorderQuads(target);
-		DrawTouchGrass(target);
+		DrawTouchGrassFront(target);
 	}
 }
 
