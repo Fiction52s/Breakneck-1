@@ -20,7 +20,7 @@ BackgroundWaves::BackgroundWaves(Background *p_bg, int p_layer)
 
 	actionLength[A_IDLE] = 19;
 
-	animFactor[A_IDLE] = 14;
+	animFactor[A_IDLE] = 12;
 
 	quads = NULL;
 

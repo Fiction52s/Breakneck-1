@@ -109,7 +109,7 @@ int Tileset::GetMemoryTextureSize()
 	int larger = max(size.x, size.y);
 	int realSize = 0;
 
-	for (int i = 1; i <= 11; ++i)
+	for (int i = 1; i <= 20; ++i)
 	{
 		if (pow(2, i) >= larger)
 		{
