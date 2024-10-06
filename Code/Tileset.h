@@ -4,8 +4,19 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 
+struct CompressedTilesetInfo
+{
+	void Set(const std::string &p_name, sf::Vector2i p_origin, sf::Vector2i p_originalTexSize, const std::string &p_realTexName);
+	sf::Vector2i originalTexSize; //how many tiles etc
+	sf::Vector2i origin;
+	std::string originalTexName;
+	std::string realTexName;
+	//int GetCompressedIndex(int localID);
+};
+
 struct Tileset
 {
+	Tileset();
 	~Tileset();
 	sf::IntRect GetSubRect( int localID );
 	sf::IntRect GetCustomSubRect(sf::Vector2i tileSize, sf::Vector2i origin, sf::Vector2i tileCount, int tileIndex);
@@ -21,6 +32,11 @@ struct Tileset
 	int tileWidth;
 	int tileHeight;
 	std::string sourceName;
+	sf::Vector2i origin;
+	sf::Vector2i gridSize;
+
+	bool isChild;
+	std::map<std::string, Tileset*> childTSMap;
 };
 
 struct TilesetManager
@@ -43,6 +59,9 @@ struct TilesetManager
 		C_ZONE,
 		C_Count
 	};
+
+	static std::map<std::string, CompressedTilesetInfo> compressedTilesetInfoMap;
+	static void LoadCompressedTilesetJSON();
 
 	TilesetManager();
 	virtual ~TilesetManager();
@@ -69,18 +88,20 @@ struct TilesetManager
 		sf::Color *endColorBuf );*/
 	
 	void SetParentTilesetManager(TilesetManager *man);
-
-	bool lastQueriedTilesetWasDuplicate;
 private:
 	bool gameResourcesMode;
 	TilesetManager *parentManager;
 	TilesetCategory GetCategory(const std::string &s);
-	Tileset *Create( TilesetCategory cat, const std::string &s, int tw, int th);
+	Tileset *Create( TilesetCategory cat, const std::string &s, CompressedTilesetInfo *, int tw, int th);
 	void Add( TilesetCategory cat, const std::string &s, Tileset *ts);
 	Tileset *Find( TilesetCategory cat, const std::string &s);
+
+	Tileset * FindOrCreate(const std::string &s, int tw, int th);
 	//std::list<Tileset*> tilesetList;
 	std::map<std::string,
 		std::pair<Tileset*, int>> tilesetMaps[C_Count];
+
+	//static std::map<std::string, 
 };
 
 #endif

@@ -3,10 +3,68 @@
 #include <assert.h>
 #include <boost/filesystem.hpp>
 #include "globals.h"
+#include <fstream>
+#include "nlohmann\json.hpp"
 
 using namespace std;
 using namespace sf;
+using namespace nlohmann;
 
+
+std::map<std::string, CompressedTilesetInfo> TilesetManager::compressedTilesetInfoMap;
+
+void CompressedTilesetInfo::Set(const std::string &p_name, sf::Vector2i p_origin, sf::Vector2i p_originalTexSize, const std::string &p_realTexName)
+{
+	originalTexName = p_name;
+	origin = p_origin;
+	originalTexSize = p_originalTexSize;
+	realTexName = p_realTexName;
+}
+
+void TilesetManager::LoadCompressedTilesetJSON()
+{
+	compressedTilesetInfoMap.clear();
+
+	ifstream is;
+	is.open("Resources/compressedtextureinfo.json");
+	if (is.is_open() )
+	{
+		json j;
+		is >> j;
+
+		string originalTexName;
+		Vector2i origin;
+		Vector2i originalTexSize;
+		string realTexName;
+		for (auto it = j.begin(); it != j.end(); ++it)
+		{
+			originalTexName = it.key();
+			origin.x = (*it)["origin"][0];
+			origin.y = (*it)["origin"][1];
+			originalTexSize.x = (*it)["originalTexSize"][0];
+			originalTexSize.y = (*it)["originalTexSize"][1];
+			realTexName = (*it)["texName"];
+
+			assert(compressedTilesetInfoMap.count(originalTexName) == 0);
+			CompressedTilesetInfo &cti = compressedTilesetInfoMap[originalTexName];
+			cti.Set(originalTexName, origin, originalTexSize, realTexName);
+		}
+	}
+	else
+	{
+		cout << "unable to open compressedtextureinfo.json" << endl;
+		assert(0);
+	}
+}
+
+
+Tileset::Tileset()
+{
+	isChild = false;
+	tileWidth = 0;
+	tileHeight = 0;
+	texture = NULL;
+}
 
 void Tileset::SetSpriteTexture(sf::Sprite &spr)
 {
@@ -27,6 +85,8 @@ void Tileset::SetSubRect(sf::Sprite &spr, int index, bool flipX, bool flipY )
 		sub.height = -sub.height;
 	}
 
+	sub.left += origin.x;
+	sub.top += origin.y;
 		
 	spr.setTextureRect(sub);
 }
@@ -44,63 +104,60 @@ void Tileset::SetQuadSubRect(sf::Vertex *v, int index, bool flipX, bool flipY)
 		sub.top += sub.height;
 		sub.height = -sub.height;
 	}
+	Vector2f originF(origin);
 
-	v[0].texCoords = Vector2f(sub.left, sub.top);
-	v[1].texCoords = Vector2f(sub.left + sub.width, sub.top);
-	v[2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
-	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+	v[0].texCoords = originF + Vector2f(sub.left, sub.top);
+	v[1].texCoords = originF + Vector2f(sub.left + sub.width, sub.top);
+	v[2].texCoords = originF + Vector2f(sub.left + sub.width, sub.top + sub.height);
+	v[3].texCoords = originF + Vector2f(sub.left, sub.top + sub.height);
 }
 
 Tileset::~Tileset()
 {
-	//ideally make this not a pointer soon as possible to avoid allocation
-	delete texture;
+	for (auto it = childTSMap.begin(); it != childTSMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	if (!isChild)
+	{
+		delete texture;
+	}
 }
 
 IntRect Tileset::GetSubRect( int localID )
 {
-	int xi,yi;
-	Vector2i size(texture->getSize());
-	int sx = size.x / tileWidth;
-	int sy = size.y / tileHeight;
-
-	xi = localID % sx;
-	yi = localID / sx;
+	int xi = localID % gridSize.x;
+	int yi = localID / gridSize.x;
 		
-	if( localID < 0 || localID >= sx * sy )
+	if( localID < 0 || localID >= gridSize.x * gridSize.y )
 	{
 		cout << "texture error: " << this->sourceName << endl;
-		cout << "localID: " << localID << ", sx: " << sx << ", sy: " << sy << endl;
+		cout << "localID: " << localID << ", sx: " << gridSize.x << ", sy: " << gridSize.y << endl;
 		assert( 0 );
 	}
-	return IntRect( xi * tileWidth, yi * tileHeight, tileWidth, tileHeight );
+	return IntRect( origin.x + xi * tileWidth, origin.y + yi * tileHeight, tileWidth, tileHeight );
 }
 
-//sf::IntRect GetSubRect(sf::Vector2i tileSize, sf::Vector2i origin, sf::Vector2i tileCount, int tileIndex);
-sf::IntRect Tileset::GetCustomSubRect(sf::Vector2i tileSize, sf::Vector2i origin, sf::Vector2i tileCount, int tileIndex)
+
+sf::IntRect Tileset::GetCustomSubRect(sf::Vector2i p_tileSize, sf::Vector2i p_origin, sf::Vector2i p_gridSize, int p_tileIndex)
 {
-	int xi, yi;
-	//Vector2i size(texture->getSize());
+	int xi = p_tileIndex % p_gridSize.x;
+	int yi = p_tileIndex / p_gridSize.y;
 
-	xi = tileIndex % tileCount.x;
-	yi = tileIndex / tileCount.y;
-
-	if (tileIndex < 0 || tileIndex >= tileCount.x * tileCount.y)
+	if (p_tileIndex < 0 || p_tileIndex >= p_gridSize.x * p_gridSize.y)
 	{
 		cout << "issue in special GetSubRect" << endl;
 		cout << "texture error: " << this->sourceName << endl;
-		cout << "tileIndex: " << tileIndex << ", sx: " << tileCount.x << ", sy: " << tileCount.y << endl;
+		cout << "tileIndex: " << p_tileIndex << ", sx: " << p_gridSize.x << ", sy: " << p_gridSize.y << endl;
 		assert(0);
 	}
-	return IntRect( origin.x + xi * tileSize.x, origin.y + yi * tileSize.y, tileSize.x, tileSize.y);
+	return IntRect(p_origin.x + xi * p_tileSize.x, p_origin.y + yi * p_tileSize.y, p_tileSize.x, p_tileSize.y);
 }
 
 int Tileset::GetNumTiles()
 {
-	int sx = (texture->getSize().x / tileWidth );
-	int sy = (texture->getSize().y / tileHeight );
-
-	return sx * sy;
+	return gridSize.x * gridSize.y;
 }
 
 int Tileset::GetMemoryTextureSize()
@@ -130,7 +187,6 @@ int Tileset::GetMemoryUsage()
 TilesetManager::TilesetManager()
 {
 	gameResourcesMode = true;
-	lastQueriedTilesetWasDuplicate = false;
 	parentManager = NULL;
 }
 
@@ -198,7 +254,7 @@ int TilesetManager::GetMemoryUsage()
 	return counted;
 }
 
-Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int tileWidth, int tileHeight)
+Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, CompressedTilesetInfo *cti, int tileWidth, int tileHeight)
 {
 	string s2;
 	if (gameResourcesMode)
@@ -235,6 +291,7 @@ Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int t
 
 	cout << "created texture for: " << s2 << ", mem: " << t->GetMemoryTextureSize() << "\n";
 
+
 	if (tileWidth == 0)
 	{
 		tileWidth = tex->getSize().x;
@@ -244,6 +301,9 @@ Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int t
 		tileHeight = tex->getSize().y;
 	}
 
+	t->gridSize.x = tex->getSize().x / tileWidth;
+	t->gridSize.y = tex->getSize().y / tileHeight;
+	t->origin = Vector2i(0, 0);
 	t->tileWidth = tileWidth;
 	t->tileHeight = tileHeight;
 	t->sourceName = s;
@@ -352,25 +412,93 @@ TilesetManager::TilesetCategory TilesetManager::GetCategory(const std::string &s
 	}
 }
 
-Tileset * TilesetManager::GetSizedTileset(const std::string & s)
+Tileset * TilesetManager::FindOrCreate(const std::string &s, int tw, int th)
 {
-	TilesetCategory cat = GetCategory(s);
+	string textureStr = s;
+	CompressedTilesetInfo *myCompressedInfo = NULL;
+	if (compressedTilesetInfoMap.count(s) > 0)
+	{
+		myCompressedInfo = &compressedTilesetInfoMap[s];
+		textureStr = myCompressedInfo->realTexName;
+	}
 
-	Tileset *alreadyExistsTS = Find(cat, s);
+	TilesetCategory cat = GetCategory(textureStr);
+
+	Tileset *alreadyExistsTS = Find(cat, textureStr);
 	if (alreadyExistsTS != NULL)
 	{
-		lastQueriedTilesetWasDuplicate = true;
+		if (myCompressedInfo != NULL)
+		{
+			if (alreadyExistsTS->childTSMap.count(s) > 0)
+			{
+				return alreadyExistsTS->childTSMap[s];
+			}
+			else
+			{
+				Tileset *newChild = new Tileset;
+
+				newChild->isChild = true;
+				newChild->texture = alreadyExistsTS->texture;
+				newChild->tileWidth = tw;//myCompressedInfo->tileSize.x;
+				newChild->tileHeight = th;//myCompressedInfo->tileSize.y;
+				newChild->origin = myCompressedInfo->origin;
+
+				Vector2i gridSize(myCompressedInfo->originalTexSize.x / tw, myCompressedInfo->originalTexSize.y / th);
+
+				newChild->gridSize = gridSize;
+				newChild->sourceName = s;
+
+				alreadyExistsTS->childTSMap[s] = newChild;
+
+				return newChild;
+			}
+		}
+
+
 		return alreadyExistsTS;
 	}
 
-	lastQueriedTilesetWasDuplicate = false;
+	Tileset *createdTS = Create(cat, textureStr, myCompressedInfo, tw, th);
+
+	if (myCompressedInfo != NULL)
+	{
+		if (createdTS->childTSMap.count(s) > 0)
+		{
+			return createdTS->childTSMap[s];
+		}
+		else
+		{
+			Tileset *newChild = new Tileset;
+
+			newChild->isChild = true;
+			newChild->texture = createdTS->texture;
+			newChild->tileWidth = tw;//myCompressedInfo->tileSize.x;
+			newChild->tileHeight = th;//myCompressedInfo->tileSize.y;
+			newChild->origin = myCompressedInfo->origin;
+
+			Vector2i gridSize(myCompressedInfo->originalTexSize.x / tw, myCompressedInfo->originalTexSize.y / th);
+
+			newChild->gridSize = gridSize;
+			newChild->sourceName = s;
+
+			createdTS->childTSMap[s] = newChild;
+
+			return newChild;
+		}
+	}
+
+	return createdTS;
+}
+
+Tileset * TilesetManager::GetSizedTileset(const std::string & s)
+{
 	std::size_t finalUnderScore = s.find_last_of("_");
 	std::size_t finalX = s.find_last_of("x");
 	std::size_t finalDot = s.find('.');
 	int tileWidth = std::stoi(s.substr(finalUnderScore + 1, finalX - finalUnderScore - 1));
 	int tileHeight = std::stoi(s.substr(finalX + 1, finalDot - finalX - 1));
 
-	return Create(cat, s, tileWidth, tileHeight);
+	return FindOrCreate(s, tileWidth, tileHeight);
 }
 
 Tileset * TilesetManager::GetSizedTileset(const std::string &folder, const std::string & s)
@@ -381,33 +509,21 @@ Tileset * TilesetManager::GetSizedTileset(const std::string &folder, const std::
 
 Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight )
 {
-	TilesetCategory cat = GetCategory(s);
-
-	Tileset *alreadyExistsTS = Find(cat, s);
-	if (alreadyExistsTS != NULL)
-	{
-		lastQueriedTilesetWasDuplicate = true;
-		return alreadyExistsTS;
-	}
-
-	lastQueriedTilesetWasDuplicate = false;
-
-	return Create(cat, s, tileWidth, tileHeight);
+	return FindOrCreate(s, tileWidth, tileHeight);
 }
 
 //when the texture has already been created and you want to give ownership to this tilesetmanager and produce a tileset
 Tileset *TilesetManager::GetTileset(const std::string & s, sf::Texture *tex)
 {
+	//hasnt been updated to the new stuff yet, hopefully doesn't cause any weird issues, but I doubt it
+
 	TilesetCategory cat = C_DEFAULT;
 
 	Tileset *alreadyExistsTS = Find(cat, s);
 	if (alreadyExistsTS != NULL)
 	{
-		lastQueriedTilesetWasDuplicate = true;
 		return alreadyExistsTS;
 	}
-		
-	lastQueriedTilesetWasDuplicate = false;
 
 	Tileset *t = new Tileset();
 	t->texture = tex;
@@ -425,6 +541,8 @@ Tileset *TilesetManager::GetTileset(const std::string & s, sf::Texture *tex)
 Tileset *TilesetManager::GetUpdatedTileset(
 	const std::string & s, int tileWidth, int tileHeight)
 {
+	//hasn't been updated to the new system, could cause issues but I doubt it
+
 	TilesetCategory cat = GetCategory(s);
 
 	Tileset *alreadyExistsTS = Find(cat, s);
@@ -433,7 +551,7 @@ Tileset *TilesetManager::GetUpdatedTileset(
 		DestroyTileset(alreadyExistsTS);
 	}
 
-	return Create(cat, s, tileWidth, tileHeight);
+	return Create(cat, s, NULL, tileWidth, tileHeight);
 }
 
 void TilesetManager::ClearTilesets()
@@ -453,6 +571,7 @@ void TilesetManager::ClearTilesets()
 }
 
 //only deletes it if it exists
+//unused in the code
 void TilesetManager::DestroyTilesetIfExists(const std::string &sourceName,
 	int altIndex)
 {
@@ -472,6 +591,10 @@ void TilesetManager::DestroyTilesetIfExists(const std::string &sourceName,
 
 void TilesetManager::DestroyTileset(Tileset * t)
 {
+	//shouldn't need to be updated to the new system if I check for this to be sure
+	assert(!t->isChild);
+
+
 	TilesetCategory cat = GetCategory(t->sourceName);
 
 	auto &currMap = tilesetMaps[cat];

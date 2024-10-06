@@ -35,7 +35,7 @@ PredictTurret::PredictTurret(ActorParams *ap)
 	animationFactor = 3;
 	assert(framesWait > 13 * animationFactor);
 
-	ts = GetSizedTileset("Enemies/W2/curveturret_144x96.png");
+	ts = GetSizedTileset("Enemies/W2/curve_288x192.png");
 
 	futureFrames = 30;
 

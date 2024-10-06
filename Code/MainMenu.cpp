@@ -1419,6 +1419,8 @@ void MainMenu::Init()
 
 	Swiper::LoadSwipeType( this, Swiper::W1);
 
+	TilesetManager::LoadCompressedTilesetJSON();
+
 	//FeedbackManager::SubmitFeedback("memory test", "body test");
 	
 	indEffectPool = new EffectPool(EffectType::FX_IND, 4);

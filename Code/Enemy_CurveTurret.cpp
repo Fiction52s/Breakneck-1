@@ -41,7 +41,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	double height = 96;
 
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = GetSizedTileset( "Enemies/W2/curveturret_144x96.png");
+	ts = NULL;//GetSizedTileset( "Enemies/W2/curveturret_144x96.png");
 
 	width *= scale;
 	height *= scale;

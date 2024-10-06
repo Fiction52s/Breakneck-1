@@ -227,7 +227,6 @@ void Goal::UpdateSprite()
 	else if (action == A_DESTROYED)
 	{
 		trueFrame = explosionLength - 1;
-		//int numTiles = ts_explosion->GetNumTiles();
 		sprite.setTexture(*ts_explosion->texture);
 		sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 

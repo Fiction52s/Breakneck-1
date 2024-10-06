@@ -60,7 +60,7 @@ Bat::Bat( ActorParams *ap )
 	testSeq.InitMovementDebug();
 	testSeq.Reset();
 	
-	
+	 
 
 	frame = 0;
 

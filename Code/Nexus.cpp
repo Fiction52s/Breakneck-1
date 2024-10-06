@@ -246,7 +246,7 @@ void Nexus::UpdateSprite()
 	else if (action == A_EXPLODING)
 	{
 		trueFrame = frame / explosionAnimFactor;
-		int numTiles = 16;//ts_explosion->GetNumTiles();
+		int numTiles = 16;
 		if (trueFrame >= numTiles)
 		{
 			trueFrame -= numTiles;
