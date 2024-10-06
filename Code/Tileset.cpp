@@ -37,10 +37,10 @@ void TilesetManager::LoadCompressedTilesetJSON()
 		Vector2i originalTexSize;
 		string realTexName;
 		for (auto it = j.begin(); it != j.end(); ++it)
-		{
-			originalTexName = it.key();
+		{	
 			origin.x = (*it)["origin"][0];
 			origin.y = (*it)["origin"][1];
+			originalTexName = (*it)["originalTexName"];
 			originalTexSize.x = (*it)["originalTexSize"][0];
 			originalTexSize.y = (*it)["originalTexSize"][1];
 			realTexName = (*it)["texName"];
@@ -84,9 +84,6 @@ void Tileset::SetSubRect(sf::Sprite &spr, int index, bool flipX, bool flipY )
 		sub.top += sub.height;
 		sub.height = -sub.height;
 	}
-
-	sub.left += origin.x;
-	sub.top += origin.y;
 		
 	spr.setTextureRect(sub);
 }
@@ -104,12 +101,11 @@ void Tileset::SetQuadSubRect(sf::Vertex *v, int index, bool flipX, bool flipY)
 		sub.top += sub.height;
 		sub.height = -sub.height;
 	}
-	Vector2f originF(origin);
 
-	v[0].texCoords = originF + Vector2f(sub.left, sub.top);
-	v[1].texCoords = originF + Vector2f(sub.left + sub.width, sub.top);
-	v[2].texCoords = originF + Vector2f(sub.left + sub.width, sub.top + sub.height);
-	v[3].texCoords = originF + Vector2f(sub.left, sub.top + sub.height);
+	v[0].texCoords = Vector2f(sub.left, sub.top);
+	v[1].texCoords = Vector2f(sub.left + sub.width, sub.top);
+	v[2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
+	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
 }
 
 Tileset::~Tileset()
