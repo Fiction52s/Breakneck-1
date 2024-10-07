@@ -39,8 +39,7 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	focused = false;
 	info = NULL;
 
-	EditSession *edit = EditSession::GetSession();
-	nameText.setFont(edit->mainMenu->arial);
+	nameText.setFont(MainMenu::GetInstance()->arial);
 	nameText.setCharacterSize(18);
 	nameText.setFillColor(Color::White);
 	nameText.setOutlineColor(Color::Black);

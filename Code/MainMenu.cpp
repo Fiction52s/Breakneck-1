@@ -99,8 +99,6 @@ sf::RenderTexture *MainMenu::auraCheckTexture = NULL;
 
 MainMenu * MainMenu::currInstance = NULL;
 
-sf::Font MainMenu::arial;
-sf::Font MainMenu::consolas;
 int MainMenu::masterVolume = 100;
 
 std::string GetTimeStr(int numFrames)
@@ -156,7 +154,7 @@ void MainMenu::SetupTerrainShader(sf::Shader &sh, int terrainIndex)
 	sh.setUniform("Resolution", Vector2f(1920, 1080));
 	sh.setUniform("tileSize", 256.f);
 	//sh.setUniform("AmbientColor", ColorGL(Color::White)); //just not used currently
-	sh.setUniform("skyColor", ColorGL(Color::White));
+	//sh.setUniform("skyColor", ColorGL(Color::White));
 
 	float tilePattern[TerrainPolygon::TILE_PATTERN_TOTAL_INDEXES];
 	Glsl::Vec4 tileQuads[TerrainPolygon::TOTAL_TILES_IN_USE];
@@ -834,6 +832,8 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	isCursorModeOn = false;
 
+	TilesetManager::LoadCompressedTilesetJSON();
+
 	//steamOn = false;
 
 	adventureManager = NULL;
@@ -1419,7 +1419,7 @@ void MainMenu::Init()
 
 	Swiper::LoadSwipeType( this, Swiper::W1);
 
-	TilesetManager::LoadCompressedTilesetJSON();
+	
 
 	//FeedbackManager::SubmitFeedback("memory test", "body test");
 	

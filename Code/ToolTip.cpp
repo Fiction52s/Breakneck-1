@@ -10,10 +10,8 @@ using namespace std;
 
 ToolTip::ToolTip(const std::string &str)
 {
-	EditSession *edit = EditSession::GetSession();
-
 	toolTipText.setCharacterSize(14);
-	toolTipText.setFont(edit->mainMenu->arial);
+	toolTipText.setFont(MainMenu::GetInstance()->arial);
 	toolTipText.setFillColor(Color::Black);
 	toolTipText.setString(str);
 

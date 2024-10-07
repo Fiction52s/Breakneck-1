@@ -52,8 +52,7 @@ PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos, int p_playerIndex)
 	AddAutoSpaceX(bounds.width + labelPos.x);
 	AddAutoSpaceY(bounds.height + labelPos.y);*/
 
-	EditSession *edit = EditSession::GetSession();
-	numberText.setFont(edit->arial);
+	numberText.setFont(MainMenu::GetInstance()->arial);
 	numberText.setCharacterSize(40);
 
 	Color c = Color::White;
@@ -663,7 +662,7 @@ void ShardParams::SetShard(int w, int realX, int realY)
 
 	if (edit != NULL)
 	{
-		nameText.setFont(edit->arial);
+		nameText.setFont(MainMenu::GetInstance()->arial);
 		nameText.setCharacterSize(30);
 		nameText.setString(edit->shardMenu->GetShardName(shInfo.world,
 			shInfo.localIndex));
@@ -769,7 +768,7 @@ void LogParams::SetLog(int w, int li)
 
 	if (edit != NULL)
 	{
-		nameText.setFont(edit->arial);
+		nameText.setFont(MainMenu::GetInstance()->arial);
 		nameText.setCharacterSize(30);
 		nameText.setString(edit->logMenu->GetLogName(lInfo.world, lInfo.localIndex));
 		nameText.setOrigin(nameText.getLocalBounds().left +
@@ -798,7 +797,7 @@ void LogParams::SetLog(int w, int realX, int realY)
 
 	if (edit != NULL)
 	{
-		nameText.setFont(edit->arial);
+		nameText.setFont(MainMenu::GetInstance()->arial);
 		nameText.setCharacterSize(30);
 		nameText.setString(edit->logMenu->GetLogName(lInfo.world, lInfo.localIndex));
 		nameText.setOrigin(nameText.getLocalBounds().left +
@@ -1730,8 +1729,7 @@ XBarrierParams::XBarrierParams(ActorType *at,
 
 void XBarrierParams::Init()
 {
-	EditSession *session = EditSession::GetSession();
-	nameText.setFont(session->arial);
+	nameText.setFont(MainMenu::GetInstance()->arial);
 	nameText.setCharacterSize(40);
 	nameText.setFillColor(Color::White);
 
@@ -1848,8 +1846,7 @@ GroundedWarperParams::GroundedWarperParams(ActorType *at,
 
 void GroundedWarperParams::Init()
 {
-	EditSession *session = EditSession::GetSession();
-	nameText.setFont(session->arial);
+	nameText.setFont(MainMenu::GetInstance()->arial);
 	nameText.setCharacterSize(40);
 	nameText.setFillColor(Color::White);
 }
@@ -1909,12 +1906,10 @@ CameraShotParams::CameraShotParams(ActorType *at, int level)
 	SetZoom(1);
 
 	nameIndex = type->GetSelectedSpecialDropIndex();
-	cout << "test here" << endl;
 	if (nameIndex >= 0)
 	{
 		SetText(type->GetSelectedSpecialDropStr());
 	}
-	cout << "test over" << endl;
 }
 
 CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
@@ -1970,12 +1965,11 @@ void CameraShotParams::Init()
 	camRect.setOutlineColor(Color(255, 255, 255));
 	camRect.setOutlineThickness(5);
 
-	EditSession *session = EditSession::GetSession();
-	nameText.setFont(session->arial);
+	nameText.setFont(MainMenu::GetInstance()->arial);
 	nameText.setCharacterSize(40);
 	nameText.setFillColor(Color::White);
 
-	zoomText.setFont(session->arial);
+	zoomText.setFont(MainMenu::GetInstance()->arial);
 	zoomText.setCharacterSize(40);
 	zoomText.setFillColor(Color::White);
 }
@@ -2119,8 +2113,7 @@ void ExtraSceneParams::SetText(const std::string &n)
 
 void ExtraSceneParams::Init()
 {
-	EditSession *session = EditSession::GetSession();
-	nameText.setFont(session->arial);
+	nameText.setFont(MainMenu::GetInstance()->arial);
 	nameText.setCharacterSize(40);
 	nameText.setFillColor(Color::White);
 }

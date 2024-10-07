@@ -12,7 +12,6 @@ using namespace sf;
 GravityModifier::GravityModifier(ActorParams *ap )
 	:Enemy(EnemyType::EN_GRAVITYMODIFIER, ap), gravFactor(1.0), duration( 300 )
 {
-	cout << "start construct" << endl;
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, 0, 0);
 
@@ -56,8 +55,6 @@ GravityModifier::GravityModifier(ActorParams *ap )
 	BasicCircleHitBodySetup(90);
 
 	ResetEnemy();
-
-	cout << "end construct" << endl;
 }
 
 bool GravityModifier::Modify()

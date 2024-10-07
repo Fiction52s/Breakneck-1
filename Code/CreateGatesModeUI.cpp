@@ -90,6 +90,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 	
 
 	//CreateShardTypePanel();
+	//if( shardGateTypeRects->size() > 0 )
 	ChooseShardType(shardGateTypeRects->at(0));
 
 	CreateBossGateTypePanel();

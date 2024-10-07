@@ -369,7 +369,6 @@ struct EditSession : GUIHandler, Session
 	double menuCircleDist;
 	std::string menuSelection;
 	sf::Sprite guiMenuSprite;
-	sf::Font arial;
 	V2d menuDownPos;
 	Emode menuDownStored;
 	Emode stored;

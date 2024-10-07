@@ -506,8 +506,8 @@ struct MainMenu : TilesetManager
 	static MainMenu *GetInstance();
 	static MainMenu *currInstance;
 	
-	static sf::Font arial;
-	static sf::Font consolas;
+	sf::Font arial;
+	sf::Font consolas;
 	sf::Clock gameClock;
 
 	LevelSelector *levelSelector; 

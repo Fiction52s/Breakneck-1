@@ -676,8 +676,8 @@ void Session::RegisterW6Enemies()
 	//story
 	AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, ts_skeleNode);
-	AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-	AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	//AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	//AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, storyRow, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	AddWorldEnemy("Scorpion Launcher", "scorpionlauncher", 6, storyRow, CreateEnemy<ScorpionLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1);
@@ -747,12 +747,12 @@ void Session::RegisterAllEnemies()
 	RegisterGeneralEnemies();
 	RegisterW1Enemies();
 	RegisterW2Enemies();
-	/*RegisterW3Enemies();
-	RegisterW4Enemies();
-	RegisterW5Enemies();
-	RegisterW6Enemies();
-	RegisterW7Enemies();
-	RegisterW8Enemies();*/
+	RegisterW3Enemies();
+	//RegisterW4Enemies();
+	//RegisterW5Enemies();
+	//RegisterW6Enemies();
+	//RegisterW7Enemies();
+	//RegisterW8Enemies();
 }
 
 void Session::AddUnlistedEnemy(const std::string &name, EnemyCreator *p_enemyCreator)

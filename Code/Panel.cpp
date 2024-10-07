@@ -39,7 +39,7 @@ Panel::Panel(const string &n, int width, int height, GUIHandler *h, bool pop)
 	}
 
 	defaultQuadShader.setUniform("u_slideTexture", *ts_slide->texture);//sf::Shader::CurrentTexture);
-	defaultQuadShader.setUniform("blendColor", ColorGL(Color::White));
+	//defaultQuadShader.setUniform("blendColor", ColorGL(Color::White));
 
 	//Color defaultColor(83, 102, 188);
 
@@ -1147,7 +1147,7 @@ bool Panel::ContainsPoint(sf::Vector2i &point)
 
 void Panel::DrawQuad(RenderTarget *target)
 {
-	defaultQuadShader.setUniform("slideBlendColor", ColorGL(slideShifter->GetCurrColor()));
+	//defaultQuadShader.setUniform("slideBlendColor", ColorGL(slideShifter->GetCurrColor()));
 
 	if (quad[0].color != Color::Transparent)
 	{

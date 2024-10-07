@@ -1570,10 +1570,12 @@ void EditSession::UpdateModeFunc(int m)
 	}
 }
 
+
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
-	:Session( Session::SESS_EDIT, p_filePath ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
+	:Session( Session::SESS_EDIT, p_filePath ), mainMenu( p_mainMenu ),
 	errorBar(p_mainMenu->arial)
 {	
+	//arial 
 	currSession = this;
 
 	oldMenuMode = EDIT;
@@ -13986,6 +13988,8 @@ void EditSession::DrawModeUI()
 
 		int outlineThickness = 3;
 		int fontSize = 18;
+
+		sf::Font &arial = mainMenu->arial;
 
 		sf::Text textblue;
 		textblue.setCharacterSize(fontSize);

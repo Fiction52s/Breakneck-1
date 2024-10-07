@@ -33,7 +33,7 @@ OptionSelector::OptionSelector( Vector2f &p_pos, int p_optionCount,
 		:optionCount( p_optionCount ), options( NULL ), pos( p_pos ), accelBez( 0, 0, 1, 1 )
 {
 	selected = false;
-	currentText.setFont( MainMenu::arial );
+	currentText.setFont( MainMenu::GetInstance()->arial );
 	currentText.setCharacterSize( 80 );
 	currentText.setFillColor( Color::White );
 	options = new string[optionCount];
