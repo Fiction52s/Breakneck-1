@@ -748,9 +748,9 @@ void Session::RegisterAllEnemies()
 	RegisterW1Enemies();
 	RegisterW2Enemies();
 	RegisterW3Enemies();
-	//RegisterW4Enemies();
-	//RegisterW5Enemies();
-	//RegisterW6Enemies();
+	/*RegisterW4Enemies();
+	RegisterW5Enemies();
+	RegisterW6Enemies();*/
 	//RegisterW7Enemies();
 	//RegisterW8Enemies();
 }
@@ -1028,7 +1028,7 @@ void Session::DrawEffects(int p_drawLayer, sf::RenderTarget *target)
 		currentEffect = currentEffect->next;
 	}
 
-	//envParticleSystem->Draw()
+	//envParticleSystem->Update
 
 	if (p_drawLayer == DrawLayer::UI_FRONT)
 	{

@@ -6,6 +6,7 @@
 #include "VectorMath.h"
 
 struct Session;
+struct Tileset;
 
 struct GoalFlow
 {
@@ -18,6 +19,9 @@ struct GoalFlow
 	void Draw(sf::RenderTarget *target);
 	void SetWorld(int worldIndex);
 	
+	int numFlowQuads;
+	Tileset *ts_veinEnd;
+	sf::Vertex *veinEndQuads;
 	sf::Shader flowShader;
 	float flowRadius;
 	int flowFrameCount;

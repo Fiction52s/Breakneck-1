@@ -304,6 +304,9 @@ ShapeEmitter::ShapeEmitter(int p_particleType, int p_drawLayer)
 	case PARTICLE_BOOSTER_FREEFLIGHT:
 		numShapesTotal = 200;
 		break;
+	case PARTICLE_FOREGROUND_TEST:
+		numShapesTotal = 5000;
+		break;
 	default:
 		numShapesTotal = 500;
 		break;
@@ -330,6 +333,9 @@ void ShapeEmitter::Init()
 	case PARTICLE_BOOSTER_ANTITIMESLOW:
 	case PARTICLE_BOOSTER_FREEFLIGHT:
 		pointsPerShape = 4;
+		break;
+	case PARTICLE_FOREGROUND_TEST:
+		pointsPerShape = 3;
 		break;
 	default:
 		pointsPerShape = 4;
@@ -764,7 +770,7 @@ void PlayerBoosterEffectEmitter::ActivateParticle(int index)
 ForegroundTestEmitter::ForegroundTestEmitter(int p_particleType, int p_drawLayer )
 	:ShapeEmitter(p_particleType, p_drawLayer)
 {
-	SetRatePerSecond(50);
+	SetRatePerSecond(200);//150);//50);
 
 	//extraZoom = 1.0;
 
@@ -779,13 +785,24 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 	Vector2f center(sess->mapHeader->leftBounds + sess->mapHeader->boundsWidth / 2.f, sess->mapHeader->topBounds + sess->mapHeader->boundsHeight / 2.f);
 	data.pos = center;
 
+	V2d ppos = sess->GetPlayerPos(0);
+
+	float depth = DrawLayer::GetDrawLayerDepthFactor(drawLayer);
+
+	data.pos = Vector2f(ppos) * depth;
+
+	float width = sess->mapHeader->boundsWidth;
+	float height = sess->mapHeader->boundsHeight;
+
+	width = 500;
+	height = 500;
 	/*return (((p.x >= mapHeader->leftBounds)
 		&& (p.y >= mapHeader->topBounds)
 		&& (p.x <= mapHeader->leftBounds + mapHeader->boundsWidth)
 		&& (p.y <= mapHeader->topBounds + mapHeader->boundsHeight)));*/
 
 	//Vector2f sPos = GetBoxSpawnPos(20, 20);
-	Vector2f sPos = GetBoxSpawnPos(sess->mapHeader->boundsWidth, sess->mapHeader->boundsHeight);
+	Vector2f sPos = GetBoxSpawnPos( width, height );
 
 	int minRad = 5;
 	int maxRad = 16;
@@ -797,8 +814,14 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 	float ang = angI;
 
 
-	Color aColor = Color::White;
-	Color bColor = Color::White;//Color( 40, 0, 0 );
+	Color aColor = Color::Blue;
+	Color bColor = Color::Blue;//Color( 40, 0, 0 );
+
+
+
+
+	aColor.a = 150;
+	bColor.a = 0;
 
 
 	Color sColor = GetBlendColor(aColor, bColor, data.boostPortion);
@@ -857,13 +880,13 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 	int r = sess->GetRand() % ((maxRad - minRad) + 1) + minRad;
 	float rad = r;
 
-	sp->Activate(rad, sPos, ang, finalTimeToLive, Color::White, tile);
-	sp->data.vel = Vector2f(0, 2);//normalize(sPos - data.pos) * .1f;//10.f;
+	sp->Activate(rad, sPos, ang, finalTimeToLive, aColor, tile);
+	sp->data.vel = Vector2f(0, -.1);//normalize(sPos - data.pos) * .1f;//10.f;
 													//360
 
 	Color sColorTransParent = sColor;
 	sColorTransParent.a = 70;
 
-	//sp->SetColorShift(sColor, sColorTransParent, 0, 60);
+	sp->SetColorShift(bColor, aColor, 0, 60);
 
 }

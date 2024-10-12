@@ -19,6 +19,8 @@ GoalFlow::GoalFlow(Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 
 	sess = Session::GetSession();
 
+	ts_veinEnd = sess->GetSizedTileset("Env/vein_end_16x4.png");
+
 	if (!flowShader.loadFromFile("Resources/Shader/flow.frag", sf::Shader::Fragment))
 	{
 		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
@@ -41,6 +43,8 @@ GoalFlow::GoalFlow(Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 GoalFlow::~GoalFlow()
 {
 	delete goalEnergyFlowVA;
+
+	delete [] veinEndQuads;
 }
 
 void GoalFlow::Setup( sf::Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
@@ -54,11 +58,20 @@ void GoalFlow::Setup( sf::Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 		totalPoints += pointList.size();
 	}
 
+	numFlowQuads = totalPoints / 2;
 	//cout << "number of quads: " << totalPoints / 2 << endl;
-	goalEnergyFlowVA = new VertexArray(sf::Quads, (totalPoints / 2) * 4);
+
+	veinEndQuads = new Vertex[numFlowQuads * 4 * 2];
+
+	goalEnergyFlowVA = new VertexArray(sf::Quads, numFlowQuads * 4);
 	VertexArray &va = *goalEnergyFlowVA;
 	int extra = 0;
 	double width = 16;
+
+	int wI = width;
+	double currW = 0;
+	int minWidth = 8;
+	double awayFromEdgeAmount = 32;
 
 	for (auto it2 = infoList.begin(); it2 != infoList.end(); ++it2)
 	{
@@ -72,10 +85,12 @@ void GoalFlow::Setup( sf::Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 			V2d along = normalize(endPoint - startPoint);
 			V2d other(along.y, -along.x);
 
-			V2d startLeft = startPoint - other * width / 2.0 + along * 16.0;
-			V2d startRight = startPoint + other * width / 2.0 + along * 16.0;
-			V2d endLeft = endPoint - other * width / 2.0 - along * 16.0;
-			V2d endRight = endPoint + other * width / 2.0 - along * 16.0;
+			currW = rand() % (wI - minWidth) + minWidth;
+
+			V2d startLeft = startPoint - other * currW / 2.0 + along * awayFromEdgeAmount;
+			V2d startRight = startPoint + other * currW / 2.0 + along * awayFromEdgeAmount;
+			V2d endLeft = endPoint - other * currW / 2.0 - along * awayFromEdgeAmount;
+			V2d endRight = endPoint + other * currW / 2.0 - along * awayFromEdgeAmount;
 
 			va[extra + 0].color = Color::Red;
 			va[extra + 1].color = Color::Red;
@@ -86,6 +101,16 @@ void GoalFlow::Setup( sf::Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 			va[extra + 1].position = Vector2f(startRight.x, startRight.y);
 			va[extra + 2].position = Vector2f(endRight.x, endRight.y);
 			va[extra + 3].position = Vector2f(endLeft.x, endLeft.y);
+
+			ts_veinEnd->SetQuadSubRect(veinEndQuads + extra * 2, 0);
+			ts_veinEnd->SetQuadSubRect(veinEndQuads + extra * 2 + 4, 0);
+
+			double ang = GetVectorAngleCW(other);
+			SetRectRotation(veinEndQuads + extra * 2, ang, currW + 2, 4, Vector2f( startPoint + along * awayFromEdgeAmount ));
+			SetRectRotation(veinEndQuads + extra * 2 + 4, ang + PI, currW + 2, 4, Vector2f(endPoint - along * awayFromEdgeAmount));
+
+				
+				//veinEndQuads[extra *4]
 
 			extra += 4;
 		}
@@ -170,4 +195,5 @@ void GoalFlow::Update( float camZoom, sf::Vector2f &topLeft, float camAngleRad  
 void GoalFlow::Draw(sf::RenderTarget *target)
 {
 	target->draw(*goalEnergyFlowVA, &flowShader);
+	target->draw(veinEndQuads, numFlowQuads * 2 * 4, sf::Quads, ts_veinEnd->texture);
 }

@@ -14,16 +14,16 @@ EnvParticleSystem::EnvParticleSystem()
 
 
 
-	ShapeEmitter *testEmitter = new ForegroundTestEmitter(6, DrawLayer::BG_5);// PI / 2.0, 2 * PI, 1.0, 2.5);
-	testEmitter->CreateParticles();
-	testEmitter->SetIDAndAddToAllEmittersVec();
-	emitters.push_back(testEmitter);
+	//ShapeEmitter *testEmitter = new ForegroundTestEmitter(6, DrawLayer::BG_5);// PI / 2.0, 2 * PI, 1.0, 2.5);
+	//testEmitter->CreateParticles();
+	//testEmitter->SetIDAndAddToAllEmittersVec();
+	//emitters.push_back(testEmitter);
 
 
-	ShapeEmitter *testEmitter2 = new ForegroundTestEmitter(6, DrawLayer::FG_5);// PI / 2.0, 2 * PI, 1.0, 2.5);
+	ShapeEmitter *testEmitter2 = new ForegroundTestEmitter(ShapeEmitter::PARTICLE_FOREGROUND_TEST, DrawLayer::FG_5);// PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter2->CreateParticles();
 	testEmitter2->SetIDAndAddToAllEmittersVec();
-	emitters.push_back(testEmitter2);
+	//emitters.push_back(testEmitter2);
 
 	/*testEmitter2->CreateParticles();
 	testEmitter2->SetIDAndAddToAllEmittersVec();
@@ -50,7 +50,7 @@ EnvParticleSystem::~EnvParticleSystem()
 
 void EnvParticleSystem::Update()
 {
-	return; //testing
+	//return; //testing
 
 	if (sess->totalGameFrames == 0)
 	{
