@@ -445,6 +445,7 @@ void Background::Set(Vector2f &pos, float zoom )
 
 void Background::SetExtra(sf::Vector2f &p_extra)
 {
+	extraOffset = p_extra;
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
 		(*it)->SetExtra(p_extra);
@@ -642,7 +643,7 @@ sf::Shader * Background::GetShader(const std::string &shaderName)
 
 		if (shaderName == "transcend_bg_energy")
 		{
-			Tileset *scrollTS = GetSizedTileset("Backgrounds/W1/w1_01/vein_energy_512x512.png");
+			Tileset *scrollTS = GetSizedTileset("Backgrounds/vein_energy_512x512.png");
 			shaderTilesetMap[shaderName].push_back(scrollTS);
 			newShader->setUniform("u_scrollTexture", *scrollTS->texture);
 

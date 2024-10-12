@@ -69,6 +69,7 @@ struct Background : TilesetManager
 	sf::Shader * GetShader(const std::string &shaderStr);
 	//void UpdateSky();
 	//void UpdateShape();
+	sf::Vector2f extraOffset;
 	
 	sf::View bgView;
 

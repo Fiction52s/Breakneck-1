@@ -8,6 +8,16 @@ namespace DrawLayer
 	enum DrawLayer
 	{
 		TERRAIN = -1, //just for drawing normal terrain, default value
+		BG_20,
+		BG_19,
+		BG_18,
+		BG_17,
+		BG_16,
+		BG_15,
+		BG_14,
+		BG_13,
+		BG_12,
+		BG_11,
 		BG_10,
 		BG_9,
 		BG_8,

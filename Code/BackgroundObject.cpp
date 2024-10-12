@@ -265,6 +265,7 @@ void BackgroundObject::Update(const sf::Vector2f &camPos)
 		float depth = DrawLayer::GetDrawLayerDepthFactor(depthLayer);
 		//Vector2f extra(-loopWidth + myPos.x, 0);
 		Vector2f extra(myPos.x / depth, 0);
+		extra += bg->extraOffset;
 
 		Vector2f cPos = camPos;
 		float testScrollOffset = extra.x + scrollOffset;
@@ -615,7 +616,7 @@ void BackgroundWideSpread::UpdateQuads(float realX)
 BackgroundWaterfall::BackgroundWaterfall(Background *p_bg, int p_layer )
 	:BackgroundObject( p_bg, p_layer )
 {
-	ts = bg->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
+	ts = bg->GetSizedTileset("Backgrounds/W4/w4_01/waterfall_w4_128x320.png");
 
 	actionLength[A_IDLE] = 12;
 

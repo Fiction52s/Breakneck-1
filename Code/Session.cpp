@@ -6923,7 +6923,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	}
 
 
-	for (int i = DrawLayer::BG_10; i <= DrawLayer::BG_1; ++i)
+	for (int i = DrawLayer::BG_20; i <= DrawLayer::BG_1; ++i)
 	{
 		LayeredDraw(i, target);
 	}
