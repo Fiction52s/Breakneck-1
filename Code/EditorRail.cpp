@@ -651,18 +651,27 @@ void TerrainRail::Move(Vector2i move)
 			lines[i * 2].position += moveF;
 			lines[i * 2 + 1].position += moveF;
 
-			coloredQuads[i * 4].position += moveF;
-			coloredQuads[i * 4 + 1].position += moveF;
-			coloredQuads[i * 4 + 2].position += moveF;
-			coloredQuads[i * 4 + 3].position += moveF;
-
-			edges[i].v0 += moveD;
-			edges[i].v1 += moveD;
-			edges[i + (numP - 1)].v0 += moveD;
-			edges[i + (numP - 1)].v1 += moveD;
+			if (coloredQuads != NULL)
+			{
+				coloredQuads[i * 4].position += moveF;
+				coloredQuads[i * 4 + 1].position += moveF;
+				coloredQuads[i * 4 + 2].position += moveF;
+				coloredQuads[i * 4 + 3].position += moveF;
+			}
+			
+			if (edges.size() > 0)
+			{
+				edges[i].v0 += moveD;
+				edges[i].v1 += moveD;
+				edges[i + (numP - 1)].v0 += moveD;
+				edges[i + (numP - 1)].v1 += moveD;
+			}
 		}
 
-		coloredNodeCircles->SetPosition(i, coloredNodeCircles->GetPosition(i) + moveF);
+		if (coloredNodeCircles != NULL)
+		{
+			coloredNodeCircles->SetPosition(i, coloredNodeCircles->GetPosition(i) + moveF);
+		}
 	}
 
 	for (int i = 0; i < numTexturedQuads; ++i)
