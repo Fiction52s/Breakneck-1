@@ -143,6 +143,8 @@ CurrencyItem::CurrencyItem(CurrencyItemChain *fc, int p_index, V2d &pos, int p_l
 	//BasicCircleHitBodySetup(radius);
 	BasicCircleHurtBodySetup(radius);
 
+	hasPhysics = false;
+
 	ts = p_ts;
 
 	actionLength[NEUTRAL] = 5;
@@ -235,8 +237,11 @@ void CurrencyItem::ResetEnemy()
 	frame = 0;
 	receivedHit.SetEmpty();
 
-	SetHitboxes(&hitBody);
-	SetHurtboxes(&hurtBody);
+	HurtboxesOff();
+	HitboxesOff();
+
+	//SetHitboxes(&hitBody);
+	//SetHurtboxes(&hurtBody);
 
 	UpdateHitboxes();
 

@@ -147,6 +147,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	const static int DEFAULT_DETECT_RADIUS;//default values
 	const static int DEFAULT_IGNORE_RADIUS;//default values
 
+	bool usesCustomPhysics;
+	bool hasPhysics;
 	bool ignorePauseFrames;
 	int enemyDrawLayer; //0 is default, higher numbers are in back, lower numbers are in front
 	bool facingRight;
@@ -340,7 +342,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void SetZoneSpritePosition();
 	void CheckedZoneUpdate(sf::FloatRect &rect);
 	virtual void ShieldDestroyed( Shield *shield ) {};
-	virtual void UpdatePhysics( int substep );
+	void UpdatePhysics( int substep );
+	virtual void UpdateCustomPhysics(int substep) {}
+	bool NeedsCustomPhysics();
 	virtual bool LaunchersAreDone();
 	virtual bool IsSlowed( int index );
 	virtual int GetSlowFactor(int playerIndex);

@@ -16,11 +16,13 @@ BackgroundWaves::BackgroundWaves(Background *p_bg, int p_layer)
 	ts_0 = bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_1_1920x128.png"); //16 frames
 	ts_1 = bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_2_1920x128.png"); //3 frames
 
-	ts = ts_0;//bg->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
+	ts = NULL; //makes it self-drawing
+
+	//ts = ts_0;//bg->GetSizedTileset("Backgrounds/W1/w1_01/waterfall_w4_128x320.png");
 
 	actionLength[A_IDLE] = 19;
 
-	animFactor[A_IDLE] = 12;
+	animFactor[A_IDLE] = 12;//12;
 
 	quads = NULL;
 

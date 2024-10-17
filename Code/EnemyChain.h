@@ -60,7 +60,7 @@ struct EnemyChain : Enemy
 	void SetZone(Zone *p_zone);
 	int GetNumCamPoints();
 	V2d GetCamPoint(int index);
-	void UpdatePhysics(int substep);
+	void UpdateCustomPhysics(int substep);
 	void UpdatePrePhysics();
 	void DebugDraw(sf::RenderTarget *target);
 	void ProcessState();

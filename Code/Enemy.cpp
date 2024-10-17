@@ -556,7 +556,8 @@ void Enemy::OnCreate(ActorParams *ap,
 		name = ap->GetTypeName();
 	}
 
-
+	usesCustomPhysics = false;
+	hasPhysics = true;
 	ignorePauseFrames = false;
 	enemyDrawLayer = ENEMYDRAWLAYER_DEFAULT;
 
@@ -2190,7 +2191,10 @@ void Enemy::UpdateEnemyPhysics()
 void Enemy::CheckPlayerInteractions(int substep, int i)
 {
 	//SlowCheck(i);
-
+	if (currHitboxes == NULL && currHurtboxes == NULL)
+	{
+		return;
+	}
 	//this is for the player using a
 	//sword vs enemies. enough movement must happen
 	//from both the player and enemy end to feel natural.
@@ -2216,6 +2220,17 @@ void Enemy::CheckPlayerInteractions(int substep, int i)
 
 void Enemy::UpdatePhysics( int substep )
 {
+	if (usesCustomPhysics)
+	{
+		UpdateCustomPhysics(substep);
+		return;
+	}
+
+	if (!hasPhysics)
+	{
+		return;
+	}
+
 	if (IsSummoning())
 	{
 		return;

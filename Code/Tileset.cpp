@@ -139,7 +139,7 @@ IntRect Tileset::GetSubRect( int localID )
 sf::IntRect Tileset::GetCustomSubRect(sf::Vector2i p_tileSize, sf::Vector2i p_origin, sf::Vector2i p_gridSize, int p_tileIndex)
 {
 	int xi = p_tileIndex % p_gridSize.x;
-	int yi = p_tileIndex / p_gridSize.y;
+	int yi = p_tileIndex / p_gridSize.x;
 
 	if (p_tileIndex < 0 || p_tileIndex >= p_gridSize.x * p_gridSize.y)
 	{

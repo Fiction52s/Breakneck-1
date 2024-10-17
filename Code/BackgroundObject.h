@@ -34,6 +34,7 @@ struct BackgroundLayer
 	int drawLayer;
 	std::vector<BackgroundObject*> objectVec;
 	std::vector<QuadInfo*> quadPtrVec;
+	std::vector<BackgroundObject*> selfDrawingObjects;
 	sf::View oldView;
 	sf::View newView;
 	Background *bg;
@@ -52,6 +53,7 @@ struct BackgroundObject
 	{
 		BGO_WATERFALL,
 	};
+
 
 	Tileset *ts;
 	sf::Shader *sh;
@@ -117,15 +119,18 @@ struct BackgroundWaterfall : BackgroundObject
 		A_Count,
 	};
 
+	bool shortWaterfall;
+
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
 	BackgroundWaterfall(Background *p_bg, int p_layer );
 	~BackgroundWaterfall();
 	void Load(nlohmann::basic_json<> &jobj);
+	void DrawObject(sf::RenderTarget *target);
+	void UpdateQuads(float realX);
 
 	void ProcessAction();
-	sf::IntRect GetSubRect();
 
 };
 

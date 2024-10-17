@@ -746,8 +746,8 @@ void Session::RegisterAllEnemies()
 {
 	RegisterGeneralEnemies();
 	RegisterW1Enemies();
-	RegisterW2Enemies();
-	RegisterW3Enemies();
+	//RegisterW2Enemies();
+	//RegisterW3Enemies();
 	/*RegisterW4Enemies();
 	RegisterW5Enemies();
 	RegisterW6Enemies();*/
@@ -6229,7 +6229,10 @@ void Session::UpdatePhysics()
 		Enemy *current = activeEnemyList;
 		while (current != NULL)
 		{
-			current->UpdatePhysics(substep);
+			if (current->hasPhysics)
+			{
+				current->UpdatePhysics(substep);
+			}
 			current = current->next;
 		}
 

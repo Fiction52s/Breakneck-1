@@ -451,6 +451,7 @@ EnemyChain::EnemyChain(ActorParams *ap, EnemyType et)
 	SetEditorActions(0, EXIST, 0);
 	numEnemies = -1;
 
+	usesCustomPhysics = true;
 	
 
 	//for minimap
@@ -505,7 +506,7 @@ void EnemyChain::ResetCheckCollisions()
 	}
 }
 
-void EnemyChain::UpdatePhysics(int substep)
+void EnemyChain::UpdateCustomPhysics(int substep)
 {
 	//int updateCount = 0;
 	for (int i = 0; i < numEnemies; ++i)
