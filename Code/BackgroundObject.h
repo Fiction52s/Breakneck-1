@@ -44,6 +44,7 @@ struct BackgroundLayer
 	void Update(const sf::Vector2f &camPos);
 	void Update(const sf::Vector2f &camPos, const int numFrames);
 	void SetupQuads();
+	void SortObjects();
 	void Draw(sf::RenderTarget *target);
 };
 
@@ -60,6 +61,8 @@ struct BackgroundObject
 	std::string shaderName;
 	sf::Vector2f myPos;
 	sf::Vertex *quads;
+
+	int priorityLevel; //0 is the top priority and is shown first, higher numbers are shown after
 
 	int loopWidth;
 	int numQuads;
@@ -111,6 +114,29 @@ struct BackgroundWideSpread : BackgroundObject
 	sf::IntRect GetSubRect();
 };
 
+struct BackgroundFoam : BackgroundObject
+{
+	enum Action
+	{
+		A_IDLE,
+		A_Count,
+	};
+
+	int foamTypeIndex;
+
+	int actionLength[A_Count];
+	int animFactor[A_Count];
+	sf::Vector2i spriteOffset;
+	sf::Vector2i foamSize;
+
+	BackgroundFoam(Background *p_bg, int p_layer);
+	~BackgroundFoam();
+	void Load(nlohmann::basic_json<> &jobj);
+	void UpdateQuads(float realX);
+	void ProcessAction();
+
+};
+
 struct BackgroundWaterfall : BackgroundObject
 {
 	enum Action
@@ -127,9 +153,7 @@ struct BackgroundWaterfall : BackgroundObject
 	BackgroundWaterfall(Background *p_bg, int p_layer );
 	~BackgroundWaterfall();
 	void Load(nlohmann::basic_json<> &jobj);
-	void DrawObject(sf::RenderTarget *target);
 	void UpdateQuads(float realX);
-
 	void ProcessAction();
 
 };

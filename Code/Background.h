@@ -77,6 +77,7 @@ struct Background : TilesetManager
 	int frame;
 
 	int bgWidth;
+	sf::Color transcendEnergyColor;
 
 	int envWorld;
 

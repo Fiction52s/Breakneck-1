@@ -719,7 +719,10 @@ void EditSession::TestPlayerMode()
 	
 	currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 
-
+	if (background != NULL )//&& background->envWorld == 0)
+	{
+		SetupRain();
+	}
 	/*ForegroundTestEmitter *fte = new ForegroundTestEmitter(ShapeEmitter::ParticleType::PARTICLE_BOOSTER_FREEFLIGHT, DrawLayer::FG_2);
 	fte->CreateParticles();
 	fte->Reset();
@@ -12210,6 +12213,8 @@ void EditSession::CleanupTestPlayerMode()
 	currPlayerOptionsField.Reset();
 	fader->Reset();
 	swiper->Reset();
+
+	CleanupRain();
 
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)

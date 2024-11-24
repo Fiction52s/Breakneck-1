@@ -31,6 +31,62 @@ BackgroundLayer::~BackgroundLayer()
 	
 }
 
+void BackgroundLayer::SortObjects()
+{
+	int numObjects = objectVec.size();
+	
+	int min_idx = 0;
+	int j;
+
+	for (int i = 0; i < numObjects - 1; ++i)
+	{
+		min_idx = i;
+
+		for (j = i + 1; j < numObjects; ++j) {
+			if (objectVec[j]->priorityLevel < objectVec[min_idx]->priorityLevel ) {
+
+				// Update min_idx if a smaller
+				// element is found
+				min_idx = j;
+			}
+		}
+
+		// Move minimum element to its
+		// correct position
+		BackgroundObject *temp = objectVec[i];
+		objectVec[i] = objectVec[min_idx];
+		objectVec[min_idx] = temp;
+	}
+}
+
+
+void selectionSort(vector<int> &arr) {
+	int n = arr.size();
+
+	for (int i = 0; i < n - 1; ++i) {
+
+		// Assume the current position holds
+		// the minimum element
+		int min_idx = i;
+
+		// Iterate through the unsorted portion
+		// to find the actual minimum
+		for (int j = i + 1; j < n; ++j) {
+			if (arr[j] < arr[min_idx]) {
+
+				// Update min_idx if a smaller
+				// element is found
+				min_idx = j;
+			}
+		}
+
+		// Move minimum element to its
+		// correct position
+		swap(arr[i], arr[min_idx]);
+	}
+}
+
+
 void BackgroundLayer::SetupQuads()
 {
 	//get rid of the map here. need to use something ordered, just loop through a list or something.
@@ -146,7 +202,7 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 
 				float depth = DrawLayer::GetDrawLayerDepthFactor(drawLayer);
 
-				int amt = 120;
+				int amt = 180;
 				float famt = round(amt / depth);
 				amt = famt;
 				float q = (bg->frame % amt) / famt;
@@ -199,6 +255,7 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 
 BackgroundObject::BackgroundObject(Background *p_bg, int p_layer )
 {
+	priorityLevel = 0;
 	bg = p_bg;
 	depthLayer = p_layer;
 	scrollSpeedX = 0;
@@ -528,6 +585,14 @@ void BackgroundWideSpread::Load(nlohmann::basic_json<> &jobj)
 	bgPos.x = jobj["bgPos"][0];
 	bgPos.y = jobj["bgPos"][1];
 
+	if (jobj.contains("shader"))
+	{
+		string myShaderName = jobj["shader"];
+		sh = bg->GetShader(myShaderName);
+		assert(sh != NULL);
+		shaderName = myShaderName;
+	}
+
 	string tsPath = folder + pngName + ".png";
 
 	ts = bg->GetTileset(tsPath);
@@ -626,12 +691,157 @@ void BackgroundWideSpread::UpdateQuads(float realX)
 }
 
 
+
+BackgroundFoam::BackgroundFoam(Background *p_bg, int p_layer)
+	:BackgroundObject(p_bg, p_layer)
+{
+	ts = bg->GetTileset("Backgrounds/W4/w4_01/SpriteSheet3.png");
+
+	priorityLevel = 1;
+
+	actionLength[A_IDLE] = 8;
+
+	animFactor[A_IDLE] = 12;
+
+	foamTypeIndex = -1;
+
+	quads = NULL;
+
+	//ClearRect(quad);
+}
+
+BackgroundFoam::~BackgroundFoam()
+{
+}
+
+void BackgroundFoam::Load(nlohmann::basic_json<> &jobj)
+{
+	if (jobj.contains("scrollRate"))
+	{
+		scrollSpeedX = jobj["scrollRate"];
+	}
+	else
+	{
+		scrollSpeedX = 0;
+	}
+
+	repetitionFactor = jobj["repFactor"];
+
+	Vector2i bgPos;
+
+	bgPos.x = jobj["bgPos"][0];
+	bgPos.y = jobj["bgPos"][1];
+
+	foamTypeIndex = jobj["foamIndex"] - 1; //foamindex starts at 1, but we need it to start at 0
+
+	switch (foamTypeIndex)
+	{
+	case 0:
+		spriteOffset = Vector2i(0, 0);
+		foamSize = Vector2i(340, 48);
+		break;
+	case 1:
+		spriteOffset = Vector2i(0, 384);
+		foamSize = Vector2i(210, 48);
+		break;
+	case 2:
+		spriteOffset = Vector2i(340, 0);
+		foamSize = Vector2i(135, 48);
+		break;
+	case 3:
+		spriteOffset = Vector2i(210, 384);
+		foamSize = Vector2i(80, 48);
+		break;
+	case 4:
+		spriteOffset = Vector2i(475, 0);
+		foamSize = Vector2i(380, 48);
+		break;
+	case 5:
+		spriteOffset = Vector2i(855, 0);
+		foamSize = Vector2i(100, 48);
+		break;
+	}
+
+	if (repetitionFactor == 0)
+	{
+		bgPos.x -= 960;
+	}
+
+	bgPos.y -= 540;
+
+	myPos = Vector2f(bgPos);
+
+	if (repetitionFactor > 0)
+	{
+		numQuads = 2;
+	}
+	else
+	{
+		numQuads = 1;
+	}
+
+	quads = new Vertex[4 * numQuads];
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		ClearRect(quads + i * 4);
+	}
+}
+
+void BackgroundFoam::ProcessAction()
+{
+	if (frame == animFactor[action] * actionLength[action])
+	{
+		frame = 0;
+	}
+}
+
+void BackgroundFoam::UpdateQuads(float realX)
+{
+	int f = frame / animFactor[action];
+
+	Vector2i foamBase(874, 1026);
+
+	IntRect sub = ts->GetCustomSubRect(foamSize, foamBase + spriteOffset, Vector2i(1, 8), f);
+
+	if (repetitionFactor > 0)
+	{
+		float depth = DrawLayer::GetDrawLayerDepthFactor(depthLayer);
+		float foamRealX = realX;
+		for (int i = 0; i < numQuads; ++i)
+		{
+			SetRectTopLeft(quads + i * 4, sub.width, sub.height, Vector2f(realX + loopWidth * i, myPos.y));
+		}
+	}
+	else
+	{
+		for (int i = 0; i < numQuads; ++i)
+		{
+			SetRectTopLeft(quads + i * 4, sub.width, sub.height, Vector2f(myPos));
+		}
+	}
+
+	for (int i = 0; i < numQuads; ++i)
+	{
+		if (sh != NULL)
+		{
+			SetRectSubRectGL(quads + i * 4, sub, Vector2f(ts->texture->getSize()));
+		}
+		else
+		{
+			SetRectSubRect(quads + i * 4, sub);
+		}
+	}
+}
+
 BackgroundWaterfall::BackgroundWaterfall(Background *p_bg, int p_layer )
 	:BackgroundObject( p_bg, p_layer )
 {
 	ts = bg->GetTileset("Backgrounds/W4/w4_01/SpriteSheet3.png");
 
 	shortWaterfall = false;
+
+	priorityLevel = 2;
 
 	actionLength[A_IDLE] = 18;
 
@@ -712,9 +922,16 @@ void BackgroundWaterfall::ProcessAction()
 void BackgroundWaterfall::UpdateQuads(float realX)
 {
 	int f = frame / animFactor[action];
+	int waterfallFrame = f / 2;
+	int foamFrame = f;
+
+	Vector2i waterfallBase(874, 1026);
+	Vector2i shortWaterfallOffset(340, 672);
+	Vector2i tallWaterfallOffset(0, 768);
+	Vector2i waterfallFoamOffset(340, 384);
 
 	IntRect sub;
-	IntRect foamSub = ts->GetCustomSubRect(Vector2i(192, 48), Vector2i(872, 1024), Vector2i(3, 6), f);
+	IntRect foamSub = ts->GetCustomSubRect(Vector2i(192, 48), waterfallBase + waterfallFoamOffset, Vector2i(3, 6), foamFrame);
 	sf::Vector2f foamOffset(0, 0);
 
 	float waterfallHeight = 0;
@@ -722,13 +939,13 @@ void BackgroundWaterfall::UpdateQuads(float realX)
 	if (shortWaterfall)
 	{
 		waterfallHeight = 96;
-		sub = ts->GetCustomSubRect(Vector2i(32, waterfallHeight), Vector2i(1160, 1312), Vector2i(9, 2), f);
+		sub = ts->GetCustomSubRect(Vector2i(32, waterfallHeight), waterfallBase + shortWaterfallOffset, Vector2i(9, 1), waterfallFrame);
 		foamOffset = Vector2f(-80, 60);
 	}
 	else
 	{
 		waterfallHeight = 160;
-		sub = ts->GetCustomSubRect(Vector2i(32, waterfallHeight), Vector2i(872, 1312), Vector2i(9, 2), f);
+		sub = ts->GetCustomSubRect(Vector2i(32, waterfallHeight), waterfallBase + tallWaterfallOffset, Vector2i(9, 1), waterfallFrame);
 		foamOffset = Vector2f(-80, 124);
 	}
 	
@@ -764,9 +981,4 @@ void BackgroundWaterfall::UpdateQuads(float realX)
 			SetRectSubRect(quads + (i + numQuads/2) * 4, foamSub);
 		}
 	}
-}
-
-void BackgroundWaterfall::DrawObject(sf::RenderTarget *target)
-{
-	target->draw(quads, 4 * numQuads, sf::Quads, ts->texture);
 }

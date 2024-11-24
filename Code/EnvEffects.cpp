@@ -5,12 +5,12 @@
 using namespace std;
 using namespace sf;
 
-const int Rain::TILE_WIDTH = 64;
-const int Rain::TILE_HEIGHT = 64;
+const int Rain::TILE_WIDTH = 160;
+const int Rain::TILE_HEIGHT = 160;
 const int Rain::NUM_COLS = (int)(ceil( 1920.0 * 2.25 / TILE_WIDTH ));
 const int Rain::NUM_ROWS = (int)(ceil( 1080.0 * 2.25 / TILE_HEIGHT ));
 const int Rain::TOTAL_QUADS = NUM_ROWS * NUM_COLS;
-const int Rain::ANIM_FACTOR = 5;
+const int Rain::ANIM_FACTOR = 10;
 	
 
 
@@ -18,9 +18,9 @@ Rain::Rain()
 	:va( sf::Quads, TOTAL_QUADS * 4 ) 
 {
 	sess = Session::GetSession();
-	ts_rain = sess->GetTileset( "Env/rain_64x64.png", 64, 64 );
+	ts_rain = sess->GetSizedTileset("Env/rain_160x160.png");
 	frame = 0;
-	loopLength = 7;
+	loopLength = 3;
 }
 
 void Rain::Reset()

@@ -6371,6 +6371,8 @@ void Session::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 		background->LayeredDraw(p_drawLayer, target);
 	}
 
+	
+
 	DrawTerrain(p_drawLayer, target);
 
 	DrawDecor(p_drawLayer, target);
@@ -6378,6 +6380,11 @@ void Session::LayeredDraw(int p_drawLayer, sf::RenderTarget *target)
 	DrawActiveSequences(p_drawLayer, target);
 	DrawEffects(p_drawLayer, target);
 	DrawEmitters(p_drawLayer, target);
+
+	if (p_drawLayer == DrawLayer::IN_FRONT)
+	{
+		DrawRain(target);
+	}
 	//swiper->Draw(target);
 }
 
@@ -6987,7 +6994,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawBullets(target);
 
-	DrawRain(target);
+	
 
 	//DrawActiveEnvPlants();
 

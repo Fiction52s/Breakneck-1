@@ -267,9 +267,17 @@ Background *Background::SetupFullBG(const std::string &fName)
 
 		newBG->bgWidth = j["Info"]["envWidth"];
 
-		for (int i = 10; i >= 1; --i)
+		if (j["Info"].count("transcendEnergyColor") > 0)
 		{
-			currLayer = 10 - i;
+			newBG->transcendEnergyColor.r = j["Info"]["transcendEnergyColor"][0];
+			newBG->transcendEnergyColor.g = j["Info"]["transcendEnergyColor"][1];
+			newBG->transcendEnergyColor.b = j["Info"]["transcendEnergyColor"][2];
+		}
+
+		int maxLayer = 20;
+		for (int i = maxLayer; i >= 1; --i)
+		{
+			currLayer = maxLayer - i;
 			testStr = base + to_string(i);
 			if (j.contains(testStr))
 			{
@@ -316,7 +324,15 @@ Background *Background::SetupFullBG(const std::string &fName)
 						bw->Load((*it));
 						newLayer->objectVec.push_back(bw);
 					}
+					else if (typeStr == "foam")
+					{
+						BackgroundFoam *bf = new BackgroundFoam(newBG, currLayer);
+						bf->Load((*it));
+						newLayer->objectVec.push_back(bf);
+					}
 				}
+
+				newLayer->SortObjects();
 
 				newLayer->SetupQuads();
 
@@ -647,10 +663,11 @@ sf::Shader * Background::GetShader(const std::string &shaderName)
 			shaderTilesetMap[shaderName].push_back(scrollTS);
 			newShader->setUniform("u_scrollTexture", *scrollTS->texture);
 
-			Color energyColor(0xff, 0x21, 0x23);
-			newShader->setUniform("u_energyColor", ColorGL(energyColor));
+			//Color energyColor(0xff, 0x21, 0x23);
+			newShader->setUniform("u_energyColor", ColorGL(transcendEnergyColor));
 			newShader->setUniform("quant", 0.f);
 		}
+
 
 		return newShader;
 	}

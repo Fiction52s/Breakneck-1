@@ -19,6 +19,7 @@
 #include "EditorRail.h"
 #include "TouchGrass.h"
 #include "Enemy_CurrencyItem.h"
+#include "Enemy_CurrencyGrid.h"
 #include "RandomPicker.h"
 
 using namespace std;
@@ -208,9 +209,9 @@ void TerrainPolygon::GenerateMyItems()
 	IntRect r;
 	int rSize = 3;
 	V2d currPos;
-	for (int x = 0; x < width; ++x)
+	for (int y = 0; y < height; ++y)
 	{
-		for (int y = 0; y < height; ++y)
+		for (int x = 0; x < width; ++x)
 		{
 			currPos = V2d(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
 				rotatedBox.top + y * yGridDist)));
@@ -220,7 +221,7 @@ void TerrainPolygon::GenerateMyItems()
 			r.height = rSize * 2;
 			if (Intersects( r ) )
 			{
-				index = x * height + y;
+				index = x + width * y;//x * height + y;
 				hasItem[index] = true;
 				++numItems;
 			}
@@ -236,12 +237,25 @@ void TerrainPolygon::GenerateMyItems()
 		itemQuads = NULL;
 	}
 
-	myItems.reserve(numItems);
+	if (myCurrencyGrid != NULL)
+	{
+		delete myCurrencyGrid;
+		myCurrencyGrid = NULL;
+	}
+
+	//myItems.reserve(numItems);
 	
-	itemQuads = new Vertex[numItems * 4];
+	//itemQuads = new Vertex[numItems * 4];
 	
+	//CurrencyGrid *cg = new CurrencyGrid(,)
 	
-	for (int x = 0; x < width; ++x)
+	CurrencyGrid *cg = new CurrencyGrid(NULL, EnemyType::EN_CURRENCYGRID, V2d(rotatedBox.left, rotatedBox.top ), Vector2i(width, height), Vector2i(xGridDist, yGridDist), hasItem);
+	
+
+	myCurrencyGrid = cg;
+
+	//myItems.push_back(cg);
+	/*for (int x = 0; x < width; ++x)
 	{
 		for (int y = 0; y < height; ++y)
 		{
@@ -256,7 +270,7 @@ void TerrainPolygon::GenerateMyItems()
 				++itemCounter;
 			}
 		}
-	}
+	}*/
 }
 
 void TerrainPolygon::BackupEnemyPositions()
@@ -1240,6 +1254,7 @@ TerrainPolygon::TerrainPolygon()
 	itemTransScale = Vector2f(1.f, 1.f);
 	itemTransRotate = 0;
 	itemQuads = NULL;
+	myCurrencyGrid = NULL;
 	pShader = NULL;
 	miniShader = NULL;
 	decorTree = new QuadTree(1000000, 1000000);
@@ -1300,6 +1315,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	itemTransScale = Vector2f(1.f, 1.f);
 	itemTransRotate = 0;
 	itemQuads = NULL;
+	myCurrencyGrid = NULL;
 	pShader = NULL;
 	miniShader = NULL;
 	numGrassTotal = 0;
@@ -1385,6 +1401,12 @@ TerrainPolygon::~TerrainPolygon()
 		itemQuads = NULL;
 	}
 
+	if (myCurrencyGrid != NULL)
+	{
+		delete myCurrencyGrid;
+		myCurrencyGrid = NULL;
+	}
+
 	ClearPoints();
 }
 
@@ -1394,13 +1416,23 @@ void TerrainPolygon::AddItemsToWorldTrees()
 	{
 		(*it)->AddToWorldTrees();
 	}
+
+	if (myCurrencyGrid != NULL)
+	{
+		myCurrencyGrid->AddToWorldTrees();
+	}
 }
 
 void TerrainPolygon::AddItemsToQuadTree(QuadTree *tree)
 {
-	for (auto it = myItems.begin(); it != myItems.end(); ++it)
+	/*for (auto it = myItems.begin(); it != myItems.end(); ++it)
 	{
 		tree->Insert((*it));
+	}*/
+
+	if (myCurrencyGrid != NULL)
+	{
+		tree->Insert(myCurrencyGrid);
 	}
 }
 
@@ -3669,6 +3701,11 @@ void TerrainPolygon::Move(Vector2i move )
 		(*it)->preTransformPos = (*it)->GetPosition();
 	}
 
+	if (myCurrencyGrid != NULL)
+	{
+		myCurrencyGrid->SetOriginPosition( myCurrencyGrid->GetPosition() + dMove );
+	}
+
 	//UpdateBounds();
 	return;
 }
@@ -4565,7 +4602,7 @@ void TerrainPolygon::SetupTouchGrass()
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL_W1);
 		AddTouchGrass(TouchGrass::TYPE_LARGE_W1);
-		AddTouchGrass(TouchGrass::TYPE_PALM);
+		//AddTouchGrass(TouchGrass::TYPE_PALM);
 		break;
 	}
 	case TerrainWorldType::GLADE:
@@ -5574,6 +5611,11 @@ void TerrainPolygon::DrawItems(RenderTarget *target)
 	if (!myItems.empty())
 	{
 		target->draw(itemQuads, myItems.size() * 4, sf::Quads, ts_item->texture);
+	}
+
+	if (myCurrencyGrid != NULL)
+	{
+		myCurrencyGrid->EnemyDraw(target);
 	}
 }
 

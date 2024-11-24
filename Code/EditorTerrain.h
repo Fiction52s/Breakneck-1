@@ -25,6 +25,7 @@ struct TerrainPolygon;
 struct ActorParams;
 struct TerrainRail;
 struct Brush;
+struct CurrencyGrid;
 
 struct QuadTree;
 struct GrassDiff;
@@ -342,6 +343,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	sf::Vector2f itemTransScale;
 	float itemTransRotate;
 	void GenerateMyItems();
+	CurrencyGrid *myCurrencyGrid;
 	std::vector<CurrencyItem*> myItems;
 	void AddItemsToQuadTree(QuadTree *tree);
 	void AddItemsToWorldTrees();

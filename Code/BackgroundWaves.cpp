@@ -14,7 +14,9 @@ BackgroundWaves::BackgroundWaves(Background *p_bg, int p_layer)
 	:BackgroundObject(p_bg, p_layer)
 {
 	ts_0 = bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_1_1920x128.png"); //16 frames
-	ts_1 = bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_2_1920x128.png"); //3 frames
+	ts_1 = //bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_2_1920x128.png"); //3 frames
+		bg->GetTileset("Backgrounds/W4/w4_01/SpriteSheet1.png"); //3 frames
+	//compressed the spritesheet
 
 	ts = NULL; //makes it self-drawing
 
@@ -94,7 +96,10 @@ sf::IntRect BackgroundWaves::GetSubRect()
 	if (f >= 16)
 	{
 		f -= 16;
+		return ts->GetCustomSubRect(Vector2i(1920, 128), Vector2i(0, 592), Vector2i(1, 3), f);
 	}
-
-	return ts->GetSubRect(f);
+	else
+	{
+		return ts->GetSubRect(f);
+	}
 }

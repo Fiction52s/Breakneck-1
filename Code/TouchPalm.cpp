@@ -15,6 +15,8 @@ TouchPalm::TouchPalm(TouchGrassCollection *coll, int index,
 	int baseOffset;
 	// base offsets 136, 276, 48, 157
 
+	sf::Vector2i palmBase(0, 978);
+
 	switch (currTile)
 	{
 	case 0:
@@ -95,7 +97,7 @@ TouchPalm::TouchPalm(TouchGrassCollection *coll, int index,
 
 	
 
-	SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect(size, spriteOrigin, Vector2i(1, 1), 0));
+	SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect(size, spriteOrigin + palmBase, Vector2i(1, 1), 0));
 
 	Reset();
 

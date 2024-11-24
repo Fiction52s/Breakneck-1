@@ -197,7 +197,8 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 		t = tm->GetTileset("Env/TouchGrass/trees_128x128.png", 128, 128);
 		break;
 	case TouchGrass::TYPE_PALM:
-		t = tm->GetTileset("Env/TouchGrass/Trees_1161x427.png");
+		//t = tm->GetTileset("Env/TouchGrass/Trees_1161x427.png");
+		t = tm->GetTileset("Backgrounds/W4/w4_01/SpriteSheet1.png");
 		break;
 	default:
 		assert(0);

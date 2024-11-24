@@ -13,7 +13,7 @@ float DrawLayer::GetDrawLayerDepthFactor(int layer)
 	case DrawLayer::TERRAIN:
 		return 1.0;
 	case DrawLayer::BG_20:
-		return .025;
+		return .001;
 	case DrawLayer::BG_19:
 		return .05;
 	case DrawLayer::BG_18:
