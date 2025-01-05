@@ -33,6 +33,7 @@ struct TouchGrass : QuadTreeEntrant
 		//TYPE_LARGE_W7,
 		TYPE_TREE,
 		TYPE_PALM,
+		TYPE_W1_TREE,
 	};
 
 	static bool IsPlacementOkay(
@@ -190,6 +191,31 @@ struct TouchPalm : TouchGrass
 	sf::Vector2i spriteOrigin;
 
 	TouchPalm(TouchGrassCollection *coll, int index,
+		Edge *e, double quant, int variation);
+	void Reset();
+	void Update();
+	void Touch(Actor *a);
+	void Destroy(Actor *a);
+	void UpdateSprite();
+};
+
+struct TouchW1Tree : TouchGrass
+{
+	enum Action
+	{
+		STILL,
+		TOUCHEDLEFT,
+		TOUCHEDRIGHT,
+		TOUCHEDLAND,
+	};
+
+	sf::Vector2i size;
+	Action action;
+	int currTile;
+
+	sf::Vector2i spriteOrigin;
+
+	TouchW1Tree(TouchGrassCollection *coll, int index,
 		Edge *e, double quant, int variation);
 	void Reset();
 	void Update();

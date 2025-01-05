@@ -8,15 +8,18 @@ struct Session;
 struct Rain
 {
 	Rain();
+	~Rain();
 	void Draw( sf::RenderTarget *target );
 	void Reset();
-	sf::VertexArray va;
+	
+	sf::Vertex *va;
 
 	Session *sess;
 
 	Tileset *ts_rain;
 
 	void Update();
+	float angle;
 	int frame;
 	int loopLength;
 	int animFactor;

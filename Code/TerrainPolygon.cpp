@@ -398,11 +398,11 @@ void TerrainPolygon::AddTouchGrass(int gt)
 
 			if (numQuads == 0)
 			{
-				/*if (tgType == TouchGrass::TYPE_PALM)
+				if (tgType == TouchGrass::TYPE_W1_TREE)
 				{
 					
 				}
-				else*/
+				else
 				{
 					tooThin = true;
 					numQuads = 1;
@@ -4602,6 +4602,8 @@ void TerrainPolygon::SetupTouchGrass()
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL_W1);
 		AddTouchGrass(TouchGrass::TYPE_LARGE_W1);
+
+		AddTouchGrass(TouchGrass::TYPE_W1_TREE);
 		//AddTouchGrass(TouchGrass::TYPE_PALM);
 		break;
 	}

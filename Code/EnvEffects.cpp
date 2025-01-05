@@ -14,19 +14,28 @@ const int Rain::ANIM_FACTOR = 10;
 	
 
 
-Rain::Rain()
-	:va( sf::Quads, TOTAL_QUADS * 4 ) 
+Rain::Rain() 
 {
+	va = new Vertex[TOTAL_QUADS * 4];
 	sess = Session::GetSession();
 	ts_rain = sess->GetSizedTileset("Env/rain_160x160.png");
 	frame = 0;
 	loopLength = 3;
+	angle = PI * .1;
+}
+
+Rain::~Rain()
+{
+	delete[] va;
 }
 
 void Rain::Reset()
 {
 	frame = 0;
-
+	for (int i = 0; i < TOTAL_QUADS; ++i)
+	{
+		ClearRect(va + i * 4);
+	}
 }
 
 void Rain::Update()
@@ -53,23 +62,22 @@ void Rain::Update()
 	{
 		for( int y = 0; y < NUM_ROWS; ++y )
 		{
-			va[index+0].position = Vector2f( pos.x + x * TILE_WIDTH, pos.y + y * TILE_HEIGHT );
-			va[index+1].position = Vector2f( pos.x + x * TILE_WIDTH + TILE_WIDTH, pos.y + y * TILE_HEIGHT );
-			va[index+2].position = Vector2f( pos.x + x * TILE_WIDTH + TILE_WIDTH, pos.y + y * TILE_HEIGHT + TILE_HEIGHT );
-			va[index+3].position = Vector2f( pos.x + x * TILE_WIDTH, pos.y + y * TILE_HEIGHT + TILE_HEIGHT );
+			SetRectRotation( va + index * 4, angle, TILE_WIDTH, TILE_HEIGHT, Vector2f(pos.x + x * TILE_WIDTH + TILE_WIDTH / 2, pos.y + y * TILE_HEIGHT + TILE_HEIGHT / 2) );
+			IntRect subRect = ts_rain->GetSubRect(frame / ANIM_FACTOR);
+			SetRectSubRect(va + index * 4, subRect);
 
-			/*va[index+0].color = Color::Red;
-			va[index+1].color = Color::Red;
-			va[index+2].color = Color::Red;
-			va[index+3].color = Color::Red;*/
+			//va[index+0].position = Vector2f( pos.x + x * TILE_WIDTH, pos.y + y * TILE_HEIGHT );
+			//va[index+1].position = Vector2f( pos.x + x * TILE_WIDTH + TILE_WIDTH, pos.y + y * TILE_HEIGHT );
+			//va[index+2].position = Vector2f( pos.x + x * TILE_WIDTH + TILE_WIDTH, pos.y + y * TILE_HEIGHT + TILE_HEIGHT );
+			//va[index+3].position = Vector2f( pos.x + x * TILE_WIDTH, pos.y + y * TILE_HEIGHT + TILE_HEIGHT );
 
-			IntRect subRect = ts_rain->GetSubRect( frame / ANIM_FACTOR );
-			va[index+0].texCoords = Vector2f( subRect.left, subRect.top );
-			va[index+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-			va[index+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-			va[index+3].texCoords =Vector2f( subRect.left, subRect.top + subRect.height );
+			
+			//va[index+0].texCoords = Vector2f( subRect.left, subRect.top );
+			//va[index+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+			//va[index+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+			//va[index+3].texCoords =Vector2f( subRect.left, subRect.top + subRect.height );
 
-			index += 4;
+			index++;
 		}
 	}
 
@@ -79,10 +87,10 @@ void Rain::Update()
 void Rain::Draw( RenderTarget *target )
 {
 	sf::View oldView = target->getView();
-	rainView.setCenter((int)oldView.getCenter().x % 64, (int)oldView.getCenter().y % 64);
+	rainView.setCenter((int)oldView.getCenter().x % TILE_WIDTH, (int)oldView.getCenter().y % TILE_HEIGHT); //was 64 before?
 	rainView.setSize(oldView.getSize());
 	target->setView(rainView);
-	target->draw( va, ts_rain->texture );
+	target->draw( va, TOTAL_QUADS * 4, sf::Quads, ts_rain->texture );
 	target->setView(oldView);
 }
 
