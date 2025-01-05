@@ -54,15 +54,28 @@ void Rain::Update()
 	Vector2f pos = Vector2f( 0, 0 );//owner->cam.pos;// - Vector2f( 1920 / 2, 1080 / 2 );
 	pos.x -= NUM_COLS / 2 * TILE_WIDTH;
 	pos.y -= NUM_ROWS / 2 * TILE_HEIGHT;
+
+
 	//pos.x += xPos;
 	//pos.y += yPos;
+
+	Vector2f tempPos;
+
+	Transform t;
+
+	float angD = angle / PI * 180.f;
+
+	t.rotate(angD);
 
 	int index = 0;
 	for( int x = 0; x < NUM_COLS; ++x )
 	{
 		for( int y = 0; y < NUM_ROWS; ++y )
 		{
-			SetRectRotation( va + index * 4, angle, TILE_WIDTH, TILE_HEIGHT, Vector2f(pos.x + x * TILE_WIDTH + TILE_WIDTH / 2, pos.y + y * TILE_HEIGHT + TILE_HEIGHT / 2) );
+			tempPos = Vector2f(pos.x + x * TILE_WIDTH + TILE_WIDTH / 2, pos.y + y * TILE_HEIGHT + TILE_HEIGHT / 2);
+			tempPos = t.transformPoint(tempPos);
+
+			SetRectRotation( va + index * 4, angle, TILE_WIDTH, TILE_HEIGHT, tempPos );
 			IntRect subRect = ts_rain->GetSubRect(frame / ANIM_FACTOR);
 			SetRectSubRect(va + index * 4, subRect);
 
