@@ -1632,7 +1632,7 @@ void Enemy::UpdatePostPhysics()
 
 void Enemy::UpdateKeySprite()
 {
-	if (hasMonitor && !suppressMonitor)
+	if (hasMonitor && !suppressMonitor && ts_fx_key != NULL ) //added third condition while working on touch keys
 	{
 		int fac = 5;
 		int kFrame = sess->totalGameFrames % (16 * fac);

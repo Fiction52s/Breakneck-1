@@ -1,14 +1,14 @@
-#ifndef __ENEMY_CURRENCY_H__
-#define __ENEMY_CURRENCY_H__
+#ifndef __ENEMY_TOUCHKEY_H__
+#define __ENEMY_TOUCHKEY_H__
 
 #include "Enemy.h"
 #include "EnemyChain.h"
 
-struct HealthFly;
+struct TouchKey;
 
-struct CurrencyItemChain : EnemyChain
+struct TouchKeyChain : EnemyChain
 {
-	CurrencyItemChain(ActorParams *ap);
+	TouchKeyChain(ActorParams *ap);
 	//void InitReadParams(ActorParams *params);
 	void ReadParams(ActorParams *params);
 	Tileset *GetTileset(int variation);
@@ -16,7 +16,7 @@ struct CurrencyItemChain : EnemyChain
 	void UpdateStartPosition(int ind, V2d &pos);
 };
 
-struct CurrencyItem : Enemy, ChainableObject
+struct TouchKey : Enemy, ChainableObject
 {
 	enum Action
 	{
@@ -31,7 +31,7 @@ struct CurrencyItem : Enemy, ChainableObject
 	};
 	MyData data;
 
-	CurrencyItemChain *chain;
+	TouchKeyChain *chain;
 
 	int index;
 	V2d preTransformPos;
@@ -40,9 +40,9 @@ struct CurrencyItem : Enemy, ChainableObject
 	sf::Vertex *quad;
 
 	bool CountsForEnemyGate() { return false; }
-	CurrencyItem(CurrencyItemChain *fc, int index,
+	TouchKey(TouchKeyChain *fc, int index,
 		V2d &pos, int level, sf::Vertex *p_quad, Tileset *p_ts);
-	CurrencyItem(CurrencyItem &hf);
+	TouchKey(TouchKey &hf);
 	//void HandleQuery(QuadTreeCollider * qtc);
 	void SetLevel(int lev);
 	void AddToWorldTrees();

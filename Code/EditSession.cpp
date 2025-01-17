@@ -282,6 +282,8 @@ void EditSession::DeselectActorType(const std::string &typeName)
 
 bool EditSession::UpdateRunModeBackAndStartButtons()
 {
+	//if (GetCurrInput(0). && !GetPrevInput(0).start)
+
 	return false;
 
 	Actor *pTemp;
@@ -719,7 +721,7 @@ void EditSession::TestPlayerMode()
 	
 	currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
 
-	if (background != NULL )//&& background->envWorld == 0)
+	if (background != NULL && background->envWorld == 1)
 	{
 		SetupRain();
 	}
@@ -7112,9 +7114,6 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 			rail->MovePoint(i, pointGrabDelta);
 
 
-
-
-
 			if (prevEdge != NULL)
 				prevEdgeLen = prevEdge->GetLength();
 
@@ -9603,7 +9602,7 @@ void EditSession::ExecuteRailCompletion()
 
 					if(trackingEnemyParams == NULL && railInProgress->enemyParams == NULL )
 					{
-						railInProgress->Finalize();	
+						railInProgress->Finalize();
 					}
 					else
 					{

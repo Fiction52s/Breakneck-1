@@ -56,6 +56,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		MAGENTABLOCKER,
 		BLACKBLOCKER,*/
 		CURRENCY,
+		TOUCHKEY,
 		/*NORMAL,
 		LOCKED,
 		TIMESLOW,

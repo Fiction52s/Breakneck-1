@@ -132,12 +132,20 @@ COMPRESSED_INPUT_TYPE ControllerState::GetCompressedState()
 	s |= RightTriggerPressed() << bit++;
 	//first 16 bits above^
 
+	s |= PUp() << bit++;
+	s |= PDown() << bit++;
+	s |= PLeft() << bit++;
+	s |= PRight() << bit++;
+	
+	//first 20 bits now
+
 	unsigned int leftStickDir = leftStickDirection;
 	COMPRESSED_INPUT_TYPE shiftedDir = (leftStickDir << bit);
 	s |= shiftedDir;
 
+	//plus 8 more bits
 	bit += sizeof(leftStickDirection) * 8;//sizeof(leftStickDirection);
-
+	
 
 	s |= respawnTest << bit++;
 
@@ -183,50 +191,29 @@ void ControllerState::SetFromCompressedState(COMPRESSED_INPUT_TYPE s)
 	Y = s & (1 << bit++);
 	leftShoulder = s & (1 << bit++);
 	rightShoulder = s & (1 << bit++);
-	if (s & (1 << bit++))
-	{
-		leftTrigger = 255;
-	}
-	if (s & (1 << bit++))
-	{
-		rightTrigger = 255;
-	}
 
-	if (lright)
-	{
-		leftStickPad += 1 << 3;
-	}
-	else if (lleft)
-	{
-		leftStickPad += 1 << 2;
-	}
+	bool pup = s & (1 << bit++);
+	bool pdown = s & (1 << bit++);
+	bool pleft = s & (1 << bit++);
+	bool pright = s & (1 << bit++);
 
-	if (lup)
-	{
-		leftStickPad += 1;
-	}
-	else if (ldown)
-	{
-		leftStickPad += 1 << 1;
-	}
+	if (s & (1 << bit++)) leftTrigger = 255;
+	if (s & (1 << bit++)) rightTrigger = 255;
 
-	if (rright)
-	{
-		rightStickPad += 1 << 3;
-	}
-	else if (rleft)
-	{
-		rightStickPad += 1 << 2;
-	}
+	if (lright) leftStickPad += 1 << 3;
+	else if (lleft) leftStickPad += 1 << 2;
+	if (lup) leftStickPad += 1;
+	else if (ldown) leftStickPad += 1 << 1;
 
-	if (rup)
-	{
-		rightStickPad += 1;
-	}
-	else if (rdown)
-	{
-		rightStickPad += 1 << 1;
-	}
+	if (rright) rightStickPad += 1 << 3;
+	else if (rleft) rightStickPad += 1 << 2;
+	if (rup) rightStickPad += 1;
+	else if (rdown) rightStickPad += 1 << 1;
+
+	if (pright) pad += 1 << 3;
+	else if (pleft) pad += 1 << 2;
+	if (pup) pad += 1;
+	else if (pdown) pad += 1 << 1;
 
 	/*int leftDir = (s >> bit) | ((int)pow( 2, sizeof( leftStickDirection) ) - 1);
 	bit += sizeof(leftStickDirection);

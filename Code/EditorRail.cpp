@@ -468,6 +468,10 @@ void TerrainRail::Load(std::ifstream &is)
 	{
 		enemyParams = new CurrencyItemParams(sess->types["currencyitem"], is);
 	}
+	else if (rType == RailType::TOUCHKEY)
+	{
+		enemyParams = new TouchKeyParams(sess->types["touchkey"], is);
+	}
 
 	int numRailPoints;
 	is >> numRailPoints;
@@ -481,14 +485,7 @@ void TerrainRail::Load(std::ifstream &is)
 		AddPoint(Vector2i(x, y), false);
 	}
 
-	if (enemyParams != NULL)
-	{
-		FinalizeEnemyRail();
-	}
-	else
-	{
-		Finalize();
-	}
+	Finalize();
 }
 
 bool TerrainRail::RequiresPowerToGrind()
@@ -1118,6 +1115,12 @@ void TerrainRail::UpdateArrowQuads()
 
 void TerrainRail::Finalize()
 {
+	if (enemyParams != NULL)
+	{
+		FinalizeEnemyRail();
+		return;
+	}
+
 	finalized = true;
 	int numP = GetNumPoints();
 	numLineVerts = (numP - 1) * 2;
@@ -1300,6 +1303,8 @@ void TerrainRail::FinalizeEnemyRail()
 	numLineVerts = (numP - 1) * 2;
 	numColoredQuads = (numP - 1);
 	lines = new sf::Vertex[numLineVerts];
+
+	SetupEdges();
 
 	numTexturedQuads = 0;
 
@@ -2072,6 +2077,10 @@ void TerrainRail::SetRailToActorType(ActorParams *ap)
 		t = RailType::CURRENCY;
 		enemyTypeName = ap->myEnemy->editParams->GetTypeName();
 		break;
+	case EnemyType::EN_TOUCHKEYCHAIN:
+		t = RailType::TOUCHKEY;
+		enemyTypeName = ap->myEnemy->editParams->GetTypeName();
+		break;
 	}
 
 	assert(t != -1);
@@ -2399,6 +2408,7 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 		}
 		case CURRENCY:
 		case BLOCKER:
+		case TOUCHKEY:
 		{
 			enemyParams->Draw(target);
 			//blockerParams->Draw(target);

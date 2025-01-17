@@ -265,6 +265,8 @@ void Session::RegisterGeneralEnemies()
 		false, false, false, false, false, true, false);
 	AddExtraEnemy("Key", "key", normalRow, CreateEnemy<KeyFly>, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false);
+	AddExtraEnemy("Touch Key", "touchkey", normalRow, CreateEnemy<TouchKeyChain>, SetParamsType<TouchKeyParams>, Vector2i(0, 0), Vector2i(64, 64),
+		false, false, false, false, true, false, false);
 	AddExtraEnemy("Booster", "booster", normalRow, CreateEnemy<Booster>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 	AddExtraEnemy("Currency Item", "currencyitem", normalRow, CreateEnemy<CurrencyItemChain>, SetParamsType<CurrencyItemParams>,

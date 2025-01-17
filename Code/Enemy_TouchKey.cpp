@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Enemy_CurrencyItem.h"
+#include "Enemy_TouchKey.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
@@ -21,85 +21,87 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CurrencyItemChain::CurrencyItemChain(ActorParams *ap)
-	:EnemyChain(ap, EN_CURRENCYCHAIN)
+TouchKeyChain::TouchKeyChain(ActorParams *ap)
+	:EnemyChain(ap, EN_TOUCHKEYCHAIN)
 {
-	CurrencyItemParams *cParams = (CurrencyItemParams*)ap;
+	TouchKeyParams *cParams = (TouchKeyParams*)ap;
 
 	SetLevel(ap->GetLevel());
+
+	SetKey();
 
 	SetSpawnRect();
 
 	UpdateParams(ap);
 }
 
-void CurrencyItemChain::UpdateStartPosition(int ind, V2d &pos)
+void TouchKeyChain::UpdateStartPosition(int ind, V2d &pos)
 {
-	((CurrencyItem*)enemies[ind])->SetStartPosition(pos);
+	((TouchKey*)enemies[ind])->SetStartPosition(pos);
 }
 
-Tileset *CurrencyItemChain::GetTileset(int variation)
+Tileset *TouchKeyChain::GetTileset(int variation)
 {
-	return GetSizedTileset("Enemies/General/healthfly_64x64.png");
-	//return GetSizedTileset("Enemies/General/currency_test_160x160.png"); 
+	//return GetSizedTileset("Enemies/General/healthfly_64x64.png");
+	return GetSizedTileset("Enemies/General/currency_test_160x160.png");
 }
 
-Enemy *CurrencyItemChain::CreateEnemy(V2d &pos, int ind)
+Enemy *TouchKeyChain::CreateEnemy(V2d &pos, int ind)
 {
-	return new CurrencyItem(this, ind, pos, level, va + ind * 4, ts);
+	return new TouchKey(this, ind, pos, level, va + ind * 4, ts);
 }
 
 
-void CurrencyItemChain::ReadParams(ActorParams *params)
+void TouchKeyChain::ReadParams(ActorParams *params)
 {
-	CurrencyItemParams *cParams = (CurrencyItemParams*)params;
+	TouchKeyParams *tkParams = (TouchKeyParams*)params;
 	fill = true;
-	paramsVariation = cParams->currencyItemType;
-	paramsSpacing = cParams->spacing;
-	fill = cParams->fill;
+	paramsVariation = tkParams->touchKeyType;
+	paramsSpacing = 128;
+	fill = true;
 }
 
-int CurrencyItem::GetCounterAmount()
+int TouchKey::GetCounterAmount()
 {
 	/*switch (level)
 	{
 	case 1:
-		return 1;
-		break;
+	return 1;
+	break;
 	case 2:
-		return 10;
-		break;
+	return 10;
+	break;
 	case 3:
-		return 20;
-		break;
+	return 20;
+	break;
 	}*/
 
 	return 1;
 }
 
-int CurrencyItem::GetHealAmount()
+int TouchKey::GetHealAmount()
 {
 	return 20;
 	/*switch (level)
 	{
 	case 1:
-		return 20;
-		break;
+	return 20;
+	break;
 	case 2:
-		return 40;
-		break;
+	return 40;
+	break;
 	case 3:
-		return 80;
-		break;
+	return 80;
+	break;
 	}*/
 }
 
-void CurrencyItem::AddToWorldTrees()
+void TouchKey::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
 }
 
-void CurrencyItem::SetLevel(int lev)
+void TouchKey::SetLevel(int lev)
 {
 	level = lev;
 
@@ -119,19 +121,23 @@ void CurrencyItem::SetLevel(int lev)
 	}
 }
 
-CurrencyItem::CurrencyItem(CurrencyItem &hf)
-	:CurrencyItem(hf.chain, hf.index, hf.GetPosition(), hf.level, hf.quad, hf.ts)
+TouchKey::TouchKey(TouchKey &hf)
+	:TouchKey(hf.chain, hf.index, hf.GetPosition(), hf.level, hf.quad, hf.ts)
 {
-
+	hasMonitor = true;
+	SetKey();
 }
 
-CurrencyItem::CurrencyItem(CurrencyItemChain *fc, int p_index, V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts)
-	: Enemy(EnemyType::EN_CURRENCYITEM, NULL), chain(fc), index(p_index)
+TouchKey::TouchKey(TouchKeyChain *fc, int p_index, V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts)
+	: Enemy(EnemyType::EN_TOUCHKEY, NULL), chain(fc), index(p_index)
 {
+	
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	SetLevel(p_level);
+
+	SetKey();
 
 	quad = p_quad;
 
@@ -142,7 +148,7 @@ CurrencyItem::CurrencyItem(CurrencyItemChain *fc, int p_index, V2d &pos, int p_l
 
 	double radius = 80;
 	//BasicCircleHitBodySetup(radius);
-	BasicCircleHurtBodySetup(radius);
+	BasicCircleHitBodySetup(radius);
 
 	hasPhysics = false;
 
@@ -159,39 +165,39 @@ CurrencyItem::CurrencyItem(CurrencyItemChain *fc, int p_index, V2d &pos, int p_l
 	SetSpawnRect();
 }
 
-void CurrencyItem::SetStartPosition(V2d &pos)
+void TouchKey::SetStartPosition(V2d &pos)
 {
 	startPosInfo.position = pos;
 	SetCurrPosInfo(startPosInfo);
 	UpdateSprite();
 }
 
-//bool CurrencyItem::IsTouchingBox(const sf::Rect<double> &r)
+//bool TouchKey::IsTouchingBox(const sf::Rect<double> &r)
 //{
 //	return r.intersects(spawnRect);
 //}
 
-sf::FloatRect CurrencyItem::GetAABB()
+sf::FloatRect TouchKey::GetAABB()
 {
 	return GetQuadAABB(quad);
 }
 
-bool CurrencyItem::IsCollectable()
+bool TouchKey::IsCollectable()
 {
 	return action == NEUTRAL;
 }
 
-void CurrencyItem::ProcessHit()
+void TouchKey::ProcessHit()
 {
 	if (IsCollectible() && HasReceivedHit())
 	{
 		//Collect();
-		sess->GetPlayer(receivedHitPlayerIndex)->CollectCurrency(this);
+		//sess->GetPlayer(receivedHitPlayerIndex)->CollectCurrency(this);
 	}
 }
 
 //making it not heal when its dead!
-void CurrencyItem::HandleQuery(QuadTreeCollider * qtc)
+void TouchKey::HandleQuery(QuadTreeCollider * qtc)
 {
 	if (action == NEUTRAL)
 	{
@@ -202,22 +208,23 @@ void CurrencyItem::HandleQuery(QuadTreeCollider * qtc)
 	}
 }
 
-void CurrencyItem::IHitPlayer(int index)
+void TouchKey::IHitPlayer(int index)
 {
 	if (IsCollectible())
 	{
 		Actor *p = sess->GetPlayer(index);
 		Collect();
-		p->CollectCurrency(this);
+		//p->CollectCurrency(this);
 	}
 }
 
-bool CurrencyItem::Collect()
+bool TouchKey::Collect()
 {
 	if (action == NEUTRAL)
 	{
 		action = DEATH;
 		frame = 0;
+		sess->CollectKey();
 		//SetHitboxes(NULL);
 		//SetHurtboxes(NULL);
 		return true;
@@ -225,12 +232,12 @@ bool CurrencyItem::Collect()
 	return false;
 }
 
-bool CurrencyItem::IsCollectible()
+bool TouchKey::IsCollectible()
 {
 	return action == NEUTRAL;
 }
 
-void CurrencyItem::ResetEnemy()
+void TouchKey::ResetEnemy()
 {
 	action = NEUTRAL;
 	dead = false;
@@ -241,6 +248,9 @@ void CurrencyItem::ResetEnemy()
 	HurtboxesOff();
 	HitboxesOff();
 
+	hasMonitor = true;
+	suppressMonitor = false;
+
 	//SetHitboxes(&hitBody);
 	//SetHurtboxes(&hurtBody);
 
@@ -249,7 +259,7 @@ void CurrencyItem::ResetEnemy()
 	UpdateSprite();
 }
 
-void CurrencyItem::ProcessState()
+void TouchKey::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -271,23 +281,23 @@ void CurrencyItem::ProcessState()
 	}
 }
 
-void CurrencyItem::ClearSprite()
+void TouchKey::ClearSprite()
 {
 	ClearRect(quad);
 }
 
-void CurrencyItem::UpdateSprite()
+void TouchKey::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
 	switch (action)
 	{
 	case NEUTRAL:
-		tile = frame / animFactor[NEUTRAL];
-		//tile = 0;
+		//tile = frame / animFactor[NEUTRAL];
+		tile = 0;
 		break;
 	case DEATH:
-		tile = 1;//frame / animFactor[DEATH] + 1;
+		tile = frame / animFactor[DEATH] + 1;
 		break;
 	}
 
@@ -297,11 +307,11 @@ void CurrencyItem::UpdateSprite()
 	SetRectCenter(quad, ts->tileWidth * scale, ts->tileHeight* scale, GetPositionF());
 }
 
-void CurrencyItem::EnemyDraw(sf::RenderTarget *target)
+void TouchKey::EnemyDraw(sf::RenderTarget *target)
 {
 }
 
-void CurrencyItem::DrawMinimap(sf::RenderTarget *target)
+void TouchKey::DrawMinimap(sf::RenderTarget *target)
 {
 	/*if (!dead)
 	{
@@ -314,19 +324,19 @@ void CurrencyItem::DrawMinimap(sf::RenderTarget *target)
 	}*/
 }
 
-int CurrencyItem::GetNumStoredBytes()
+int TouchKey::GetNumStoredBytes()
 {
 	return sizeof(MyData);
 }
 
-void CurrencyItem::StoreBytes(unsigned char *bytes)
+void TouchKey::StoreBytes(unsigned char *bytes)
 {
 	StoreBasicEnemyData(data);
 	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 }
 
-void CurrencyItem::SetFromBytes(unsigned char *bytes)
+void TouchKey::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
 	SetBasicEnemyData(data);

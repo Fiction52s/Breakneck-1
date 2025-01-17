@@ -81,6 +81,7 @@
 
 #include "RushManager.h"
 #include "KinUpgrades.h"
+#include "Enemy_TouchKey.h"
 
 using namespace sf;
 using namespace std;
@@ -7490,9 +7491,10 @@ void Actor::UpdatePrePhysics()
 	}*/
 
 	//if (currInput.B && !prevInput.B && sess->totalGameFrames > 10 )//(currInput.respawnTest)
-	if( currInput.respawnTest )
+	if( currInput.respawnTest || (currInput.PRight() && !prevInput.PRight() && sess->totalGameFrames > 30))
 	{
-		owner->RestartGame();
+		//respawnTest is from online parallel play mode I think
+		sess->RestartGame();
 	}
 
 	//cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
@@ -21537,6 +21539,17 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			if (ci->hurtBody.Intersects(ci->currHurtboxFrame, &hurtBody) && ci->IsCollectable())
 			{
 				CollectCurrency(ci);
+			}
+		}
+		else if (en->type == EnemyType::EN_TOUCHKEY)
+		{
+			TouchKey *tk = (TouchKey*)qte;
+
+			Booster *boost = (Booster*)qte;
+
+			if (tk->hitBody.Intersects(tk->currHitboxFrame, &hurtBody) && tk->IsCollectable())
+			{
+				tk->Collect();
 			}
 		}
 	}

@@ -1000,6 +1000,101 @@ ActorParams *BlockerParams::Copy()
 	return bp;
 }
 
+TouchKeyParams::TouchKeyParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	lines = NULL;
+	LoadAerial(is);
+
+	//LoadGlobalPath(is);
+
+	int tkType;
+	is >> tkType;
+	touchKeyType = tkType;
+
+	LoadEnemyLevel(is);
+}
+
+TouchKeyParams::TouchKeyParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	lines = NULL;
+	PlaceAerial(Vector2i(0, 0));
+
+	touchKeyType = 0;
+}
+
+void TouchKeyParams::SetParams()
+{
+	Panel *p = type->panel;
+	touchKeyType = p->dropdowns["tktype"]->selectedIndex;
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
+}
+
+void TouchKeyParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->dropdowns["tktype"]->SetSelectedIndex(touchKeyType);
+
+	EditSession *edit = EditSession::GetSession();
+	MakeGlobalPath(edit->patrolPath);
+}
+
+void TouchKeyParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+		Vector2f fPos = GetFloatPos();
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += fPos;
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= fPos;
+		}
+	}
+
+	ActorParams::Draw(target);
+}
+
+void TouchKeyParams::WriteParamFile(ofstream &of)
+{
+	//WritePath(of);
+
+	of << touchKeyType << "\n";
+
+	WriteLevel(of);
+}
+
+ActorParams *TouchKeyParams::Copy()
+{
+	TouchKeyParams *fp = new TouchKeyParams(*this);
+	fp->lines = NULL;
+	fp->myEnemy = NULL;
+	fp->SetSelected(false);
+	return fp;
+}
+
+
+void TouchKeyParams::OnCreate()
+{
+	EditSession *edit = EditSession::GetSession();
+	edit->CreateChainButton(this);
+}
+
 CurrencyItemParams::CurrencyItemParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
@@ -1025,7 +1120,8 @@ CurrencyItemParams::CurrencyItemParams(ActorType *at, int level)
 
 	currencyItemType = 0;
 
-	spacing = 60;
+	spacing = 128;
+	fill = true;
 }
 
 void CurrencyItemParams::SetParams()

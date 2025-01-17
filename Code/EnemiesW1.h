@@ -12,6 +12,7 @@
 #include "Enemy_CrawlerQueen.h"
 #include "Enemy_CurrencyItem.h"
 #include "Enemy_CurrencyGrid.h"
+#include "Enemy_TouchKey.h"
 //#include "Enemy_FootTrap.h"
 #include "Enemy_Goal.h"
 #include "Enemy_Patroller.h"

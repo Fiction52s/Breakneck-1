@@ -383,6 +383,22 @@ struct CurrencyItemParams : public ActorParams
 	//will have multiple types
 };
 
+struct TouchKeyParams : public ActorParams
+{
+	TouchKeyParams(ActorType *at, int level);
+	TouchKeyParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void Draw(sf::RenderTarget *target);
+	void OnCreate();
+	ActorParams *Copy();
+
+	void SetParams();
+	void SetPanelInfo();
+	int touchKeyType; //currently unused
+	//will have multiple types
+};
+
 
 //w1
 
