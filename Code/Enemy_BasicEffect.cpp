@@ -96,6 +96,7 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 	sprite.setRotation( angle / PI * 180 );
+	
 
 	//ResetSlow();
 
@@ -111,6 +112,8 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 
 void BasicEffect::EnemyDraw(sf::RenderTarget *target )
 {
+	sprite.setScale(scale, scale);
+
 	sf::View oldView = target->getView();
 	sf::View newView = oldView;
 	newView.setCenter(oldView.getCenter() / depth);

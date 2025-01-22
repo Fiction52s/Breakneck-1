@@ -51,6 +51,7 @@ bool TouchGrassCollection::IsDrawnBehind()
 	{
 	case TouchGrass::TYPE_PALM:
 	case TouchGrass::TYPE_W1_TREE:
+	case TouchGrass::TYPE_W2_PLANT:
 		return true;
 	default:
 		return false;
@@ -111,6 +112,11 @@ void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant, int 
 	case TouchGrass::TYPE_W1_TREE:
 	{
 		tg = new TouchW1Tree(this, index, edge, quant, variation);
+		break;
+	}
+	case TouchGrass::TYPE_W2_PLANT:
+	{
+		tg = new TouchW2Plant(this, index, edge, quant, variation);
 		break;
 	}
 	}
@@ -210,6 +216,9 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 		//t = tm->GetTileset("Env/TouchGrass/Trees_1161x427.png");
 		t = tm->GetTileset("Backgrounds/W1/w1_01/SpriteSheet1.png");
 		break;
+	case TouchGrass::TYPE_W2_PLANT:
+		t = tm->GetTileset("Backgrounds/W2/w2_01/SpriteSheet1.png");
+		break;
 	default:
 		assert(0);
 	}
@@ -225,6 +234,9 @@ int TouchGrass::GetRandomVariation(TouchGrassType gt)
 		break;
 	case TYPE_W1_TREE:
 		return rand() % 5;
+		break;
+	case TYPE_W2_PLANT:
+		return rand() % 6;
 		break;
 	default:
 		return 0;
@@ -260,6 +272,9 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 		break;
 	case TYPE_W1_TREE:
 		width = 200;
+		break;
+	case TYPE_W2_PLANT:
+		width = 200; ////226, 198, 66, 36, 14, 10
 		break;
 	}
 
@@ -422,6 +437,12 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int variation,
 		break;
 	}
 	case TYPE_W1_TREE:
+	{
+		int r = rand() % 100;
+		return (r < 20);
+		break;
+	}
+	case TYPE_W2_PLANT:
 	{
 		int r = rand() % 100;
 		return (r < 20);

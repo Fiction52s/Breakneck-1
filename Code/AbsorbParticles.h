@@ -23,6 +23,7 @@ struct AbsorbParticles
 		{
 			sf::Vector2f pos;
 			sf::Vector2f velocity;
+			float scale;
 			int frame;
 			int lockFrame;
 			float lockDist;

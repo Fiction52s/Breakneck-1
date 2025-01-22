@@ -70,6 +70,8 @@ struct EnemyChain : Enemy
 	void ResetCheckCollisions();
 	void UpdateFromPath(ActorParams *ap);
 	void AddToGame();
+	virtual void CreateCustomResources() {}
+	virtual void DeleteCustomResources() {}
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

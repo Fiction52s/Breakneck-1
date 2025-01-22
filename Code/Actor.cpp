@@ -21536,7 +21536,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			CurrencyItem *ci = (CurrencyItem*)qte;
 
-			if (ci->hurtBody.Intersects(ci->currHurtboxFrame, &hurtBody) && ci->IsCollectable())
+			if (ci->hitBody.Intersects(ci->currHitboxFrame, &hurtBody) && ci->IsCollectable())
 			{
 				CollectCurrency(ci);
 			}
@@ -21549,7 +21549,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			if (tk->hitBody.Intersects(tk->currHitboxFrame, &hurtBody) && tk->IsCollectable())
 			{
-				tk->Collect();
+				tk->Collect(this);
 			}
 		}
 	}
@@ -25623,7 +25623,7 @@ void Actor::UpdateInHitlag()
  void Actor::CollectCurrency(CurrencyItem *ci)
  {
 	 HealTimer(ci->GetHealAmount());
-	 ci->Collect();
+	 ci->Collect(this);
 	 AddToCurrencyCounter(ci->GetCounterAmount());
  }
 

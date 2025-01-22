@@ -209,6 +209,8 @@ void EnemyChain::CreateEnemies()
 
 			delete[] va;
 			va = NULL;
+
+			DeleteCustomResources();
 		}
 
 		//numBlockers = pathParam.size();
@@ -216,6 +218,7 @@ void EnemyChain::CreateEnemies()
 		enemies = new Enemy*[numEnemies];
 		//checkColArr = new bool[numEnemies];
 		va = new Vertex[numEnemies * 4];
+		CreateCustomResources();
 
 		enemyOffsets.resize(numEnemies);
 
@@ -465,6 +468,7 @@ EnemyChain::~EnemyChain()
 	{
 		delete enemies[i];
 	}
+	DeleteCustomResources();
 	//delete[] checkColArr;
 	delete[] enemies;
 	delete[] va;

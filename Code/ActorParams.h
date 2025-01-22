@@ -395,6 +395,10 @@ struct TouchKeyParams : public ActorParams
 
 	void SetParams();
 	void SetPanelInfo();
+
+	bool fill;
+	int spacing;
+
 	int touchKeyType; //currently unused
 	//will have multiple types
 };

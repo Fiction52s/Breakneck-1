@@ -14,6 +14,13 @@ struct TouchKeyChain : EnemyChain
 	Tileset *GetTileset(int variation);
 	Enemy *CreateEnemy(V2d &pos, int ind);
 	void UpdateStartPosition(int ind, V2d &pos);
+	void EnemyDraw(sf::RenderTarget *target);
+	void CreateCustomResources();
+	void DeleteCustomResources();
+
+	Tileset *ts_key;
+	sf::Vertex *keyQuads;
+	sf::Vertex *keyFXQuads;
 };
 
 struct TouchKey : Enemy, ChainableObject
@@ -22,6 +29,7 @@ struct TouchKey : Enemy, ChainableObject
 	{
 		NEUTRAL,
 		DEATH,
+		KEY_NEUTRAL,
 		Count
 	};
 
@@ -39,9 +47,14 @@ struct TouchKey : Enemy, ChainableObject
 	Tileset *ts;
 	sf::Vertex *quad;
 
+	sf::Vertex *keyQuad;
+	int keyFrame;
+
+	sf::Vertex *keyFXQuad;
+
 	bool CountsForEnemyGate() { return false; }
 	TouchKey(TouchKeyChain *fc, int index,
-		V2d &pos, int level, sf::Vertex *p_quad, Tileset *p_ts);
+		V2d &pos, int level, sf::Vertex *p_quad, Tileset *p_ts, sf::Vertex *p_keyQuad, sf::Vertex *p_keyFXQuad);
 	TouchKey(TouchKey &hf);
 	//void HandleQuery(QuadTreeCollider * qtc);
 	void SetLevel(int lev);
@@ -59,7 +72,10 @@ struct TouchKey : Enemy, ChainableObject
 	void ClearSprite();
 	void ResetEnemy();
 	bool IsCollectible(); //depending on type of fly
-	bool Collect();
+	bool Collect( Actor *p );
+	void FrameIncrement();
+
+	void UpdateKeySprite();
 
 	int GetHealAmount();
 	int GetCounterAmount();

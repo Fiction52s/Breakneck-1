@@ -4611,6 +4611,8 @@ void TerrainPolygon::SetupTouchGrass()
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL_W2);
 		AddTouchGrass(TouchGrass::TYPE_LARGE_W2);
+
+		AddTouchGrass(TouchGrass::TYPE_W2_PLANT);
 		break;
 	}
 	case TerrainWorldType::DESERT:

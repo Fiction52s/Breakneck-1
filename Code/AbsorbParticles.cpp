@@ -302,7 +302,7 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	}
 
 	//cout << "pos: " << pos.x << ", " << pos.y << "   targetPos" << targetPos.x << ", " << targetPos.y << endl;
-	SetRectCenter(va + particleIndex * 4, sub.width, sub.height, data.pos);
+	SetRectCenter(va + particleIndex * 4, sub.width * data.scale, sub.height * data.scale, data.pos);
 }
 
 void AbsorbParticles::SingleEnergyParticle::Activate( Actor *p_playerTarget, Vector2f &p_pos, Vector2f &vel )
@@ -310,6 +310,7 @@ void AbsorbParticles::SingleEnergyParticle::Activate( Actor *p_playerTarget, Vec
 	data.frame = 0;
 	data.velocity = vel;
 	data.pos = p_pos;
+	data.scale = 1;
 	
 	next = NULL;
 	prev = NULL;
@@ -379,6 +380,11 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	if (data.frame > 30)
 	{
 		data.velocity = (length(data.velocity) * normalize(targetPos - data.pos));
+		data.scale -= .02;
+		if (data.scale < .1)
+		{
+			data.scale = .1;
+		}
 	}
 
 
@@ -400,8 +406,9 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		}
 		case DARK:
 		{
-			parent->sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			BasicEffect *be = parent->sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 6, 3, true);
+			be->scale = data.scale;
 			//parent->sess->CollectKey();
 			break;
 		}

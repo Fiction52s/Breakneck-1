@@ -26,9 +26,15 @@ TouchKeyChain::TouchKeyChain(ActorParams *ap)
 {
 	TouchKeyParams *cParams = (TouchKeyParams*)ap;
 
-	SetLevel(ap->GetLevel());
+	ts_key = sess->ts_key;
 
+	keyQuads = NULL;
+	keyFXQuads = NULL;
+
+	hasMonitor = true;
 	SetKey();
+
+	SetLevel(ap->GetLevel());
 
 	SetSpawnRect();
 
@@ -43,22 +49,53 @@ void TouchKeyChain::UpdateStartPosition(int ind, V2d &pos)
 Tileset *TouchKeyChain::GetTileset(int variation)
 {
 	//return GetSizedTileset("Enemies/General/healthfly_64x64.png");
-	return GetSizedTileset("Enemies/General/currency_test_160x160.png");
+	//return GetSizedTileset("Enemies/General/currency_test_160x160.png");
+	return GetSizedTileset("Enemies/General/touchkey_200x200.png");
+	//return GetSizedTileset("Enemies/General/touchkey_160x160.png");
 }
 
 Enemy *TouchKeyChain::CreateEnemy(V2d &pos, int ind)
 {
-	return new TouchKey(this, ind, pos, level, va + ind * 4, ts);
+	return new TouchKey(this, ind, pos, level, va + ind * 4, ts, keyQuads + ind * 4, keyFXQuads + ind * 4 );
 }
 
+void TouchKeyChain::CreateCustomResources()
+{
+	keyQuads = new Vertex[numEnemies * 4];
+	keyFXQuads = new Vertex[numEnemies * 4];
+}
+
+void TouchKeyChain::DeleteCustomResources()
+{
+	delete[] keyQuads;
+	delete[] keyFXQuads;
+}
 
 void TouchKeyChain::ReadParams(ActorParams *params)
 {
 	TouchKeyParams *tkParams = (TouchKeyParams*)params;
 	fill = true;
 	paramsVariation = tkParams->touchKeyType;
-	paramsSpacing = 128;
+	paramsSpacing = 180;
 	fill = true;
+}
+
+void TouchKeyChain::EnemyDraw(sf::RenderTarget *target)
+{
+	target->draw(va, numEnemies * 4, sf::Quads, ts->texture);
+
+	ts_key = sess->ts_key;
+
+	//myShader.setUniform("u_texture", *ts->texture);
+	//enemies[0]->keyShader.setUniform("u_texture", *ts_key->texture);
+
+	RenderStates rs;
+	rs.texture = ts_key->texture;
+	rs.shader = &(keyShader);
+
+	target->draw(keyQuads, numEnemies * 4, sf::Quads, rs);//ts_key->texture);
+
+	target->draw(keyFXQuads, numEnemies * 4, sf::Quads, ts_fx_key->texture);
 }
 
 int TouchKey::GetCounterAmount()
@@ -122,13 +159,13 @@ void TouchKey::SetLevel(int lev)
 }
 
 TouchKey::TouchKey(TouchKey &hf)
-	:TouchKey(hf.chain, hf.index, hf.GetPosition(), hf.level, hf.quad, hf.ts)
+	:TouchKey(hf.chain, hf.index, hf.GetPosition(), hf.level, hf.quad, hf.ts, hf.keyQuad, hf.keyFXQuad)
 {
 	hasMonitor = true;
 	SetKey();
 }
 
-TouchKey::TouchKey(TouchKeyChain *fc, int p_index, V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts)
+TouchKey::TouchKey(TouchKeyChain *fc, int p_index, V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts, sf::Vertex *p_keyQuad, sf::Vertex *p_keyFXQuad)
 	: Enemy(EnemyType::EN_TOUCHKEY, NULL), chain(fc), index(p_index)
 {
 	
@@ -137,16 +174,19 @@ TouchKey::TouchKey(TouchKeyChain *fc, int p_index, V2d &pos, int p_level, sf::Ve
 
 	SetLevel(p_level);
 
-	SetKey();
-
 	quad = p_quad;
+	keyQuad = p_keyQuad;
+	keyFXQuad = p_keyFXQuad;
+
+	hasMonitor = true;
+	SetKey();
 
 	startPosInfo.position = pos;
 	preTransformPos = startPosInfo.position;
 
 	SetCurrPosInfo(startPosInfo);
 
-	double radius = 80;
+	double radius = 100;
 	//BasicCircleHitBodySetup(radius);
 	BasicCircleHitBodySetup(radius);
 
@@ -155,10 +195,13 @@ TouchKey::TouchKey(TouchKeyChain *fc, int p_index, V2d &pos, int p_level, sf::Ve
 	ts = p_ts;
 
 	actionLength[NEUTRAL] = 5;
-	actionLength[DEATH] = 6;
+	actionLength[DEATH] = 4;
 
 	animFactor[NEUTRAL] = 5;
 	animFactor[DEATH] = 3;
+
+	actionLength[KEY_NEUTRAL] = 16;
+	animFactor[KEY_NEUTRAL] = 3;
 
 	ResetEnemy();
 
@@ -213,18 +256,18 @@ void TouchKey::IHitPlayer(int index)
 	if (IsCollectible())
 	{
 		Actor *p = sess->GetPlayer(index);
-		Collect();
+		Collect(p);
 		//p->CollectCurrency(this);
 	}
 }
 
-bool TouchKey::Collect()
+bool TouchKey::Collect( Actor * p)
 {
 	if (action == NEUTRAL)
 	{
 		action = DEATH;
 		frame = 0;
-		sess->CollectKey();
+		sess->ActivateDarkAbsorbParticles(p, GetNumDarkAbsorbParticles(), GetPosition());		
 		//SetHitboxes(NULL);
 		//SetHurtboxes(NULL);
 		return true;
@@ -242,6 +285,7 @@ void TouchKey::ResetEnemy()
 	action = NEUTRAL;
 	dead = false;
 
+	keyFrame = 0;
 	frame = 0;
 	receivedHit.SetEmpty();
 
@@ -279,6 +323,11 @@ void TouchKey::ProcessState()
 		}
 		}
 	}
+
+	if (keyFrame == actionLength[KEY_NEUTRAL] * animFactor[KEY_NEUTRAL])
+	{
+		keyFrame = 0;
+	}
 }
 
 void TouchKey::ClearSprite()
@@ -298,6 +347,7 @@ void TouchKey::UpdateSprite()
 		break;
 	case DEATH:
 		tile = frame / animFactor[DEATH] + 1;
+		//tile = 0;
 		break;
 	}
 
@@ -305,6 +355,42 @@ void TouchKey::UpdateSprite()
 
 	ts->SetQuadSubRect(quad, tile);
 	SetRectCenter(quad, ts->tileWidth * scale, ts->tileHeight* scale, GetPositionF());
+
+	if (action == NEUTRAL)
+	{
+		chain->ts_key = sess->ts_key;
+
+		SetRectSubRect(keyQuad, chain->ts_key->GetSubRect(keyFrame / animFactor[KEY_NEUTRAL]));
+		SetRectCenter(keyQuad, chain->ts_key->tileWidth, chain->ts_key->tileHeight, GetPositionF());
+	}
+	else
+	{
+		ClearRect(keyQuad);
+		ClearRect(keyFXQuad);
+	}
+	
+}
+
+void TouchKey::FrameIncrement()
+{
+	++keyFrame;
+}
+
+void TouchKey::UpdateKeySprite()
+{
+	if (hasMonitor && !suppressMonitor && ts_fx_key != NULL) //added third condition while working on touch keys
+	{
+		int fac = 5;
+		int kFrame = sess->totalGameFrames % (16 * fac);
+
+		SetRectSubRect(keyFXQuad, ts_fx_key->GetSubRect(kFrame / fac));
+		SetRectCenter(keyFXQuad, ts_fx_key->tileWidth, ts_fx_key->tileHeight, GetPositionF());
+		SetRectColor( keyFXQuad, Color(255, 255, 255, 255));
+	}
+	else
+	{
+		ClearRect(keyFXQuad);
+	}
 }
 
 void TouchKey::EnemyDraw(sf::RenderTarget *target)

@@ -1012,6 +1012,10 @@ TouchKeyParams::TouchKeyParams(ActorType *at, ifstream &is)
 	is >> tkType;
 	touchKeyType = tkType;
 
+	LoadBool(is, fill);
+
+	is >> spacing;
+
 	LoadEnemyLevel(is);
 }
 
@@ -1022,12 +1026,20 @@ TouchKeyParams::TouchKeyParams(ActorType *at, int level)
 	PlaceAerial(Vector2i(0, 0));
 
 	touchKeyType = 0;
+
+	spacing = 128;
+	fill = true;
 }
 
 void TouchKeyParams::SetParams()
 {
 	Panel *p = type->panel;
+
+	fill = p->checkBoxes["fill"]->checked;
+
 	touchKeyType = p->dropdowns["tktype"]->selectedIndex;
+
+	spacing = p->sliders["spacing"]->GetCurrValue();
 
 	if (myEnemy != NULL)
 	{
@@ -1039,6 +1051,8 @@ void TouchKeyParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	p->dropdowns["tktype"]->SetSelectedIndex(touchKeyType);
+	p->checkBoxes["fill"]->checked = fill;
+	p->sliders["spacing"]->SetCurrValue(spacing);
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);
@@ -1076,6 +1090,10 @@ void TouchKeyParams::WriteParamFile(ofstream &of)
 
 	of << touchKeyType << "\n";
 
+	WriteBool(of, fill);
+
+	of << spacing << endl;
+
 	WriteLevel(of);
 }
 
@@ -1107,6 +1125,8 @@ CurrencyItemParams::CurrencyItemParams(ActorType *at, ifstream &is)
 	is >> icType;
 	currencyItemType = icType;
 
+	LoadBool(is, fill);
+
 	is >> spacing;
 
 	LoadEnemyLevel(is);
@@ -1120,7 +1140,7 @@ CurrencyItemParams::CurrencyItemParams(ActorType *at, int level)
 
 	currencyItemType = 0;
 
-	spacing = 128;
+	spacing = 64;
 	fill = true;
 }
 
@@ -1181,6 +1201,8 @@ void CurrencyItemParams::WriteParamFile(ofstream &of)
 	//WritePath(of);
 
 	of << currencyItemType << "\n";
+
+	WriteBool(of, fill);
 
 	of << spacing << endl;
 

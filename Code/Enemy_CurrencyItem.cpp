@@ -40,7 +40,7 @@ void CurrencyItemChain::UpdateStartPosition(int ind, V2d &pos)
 
 Tileset *CurrencyItemChain::GetTileset(int variation)
 {
-	return GetSizedTileset("Enemies/General/healthfly_64x64.png");
+	return GetSizedTileset("Enemies/General/currency_64x64.png");
 	//return GetSizedTileset("Enemies/General/currency_test_160x160.png"); 
 }
 
@@ -140,19 +140,21 @@ CurrencyItem::CurrencyItem(CurrencyItemChain *fc, int p_index, V2d &pos, int p_l
 
 	SetCurrPosInfo(startPosInfo);
 
-	double radius = 80;
+	radius = 128;
 	//BasicCircleHitBodySetup(radius);
-	BasicCircleHurtBodySetup(radius);
+	BasicCircleHitBodySetup(radius);
 
 	hasPhysics = false;
 
 	ts = p_ts;
 
 	actionLength[NEUTRAL] = 5;
-	actionLength[DEATH] = 6;
+	actionLength[DEATH] = 1;
+	actionLength[PLAYER_COLLECT] = 20;
 
 	animFactor[NEUTRAL] = 5;
-	animFactor[DEATH] = 3;
+	animFactor[DEATH] = 1;
+	animFactor[PLAYER_COLLECT] = 1;
 
 	ResetEnemy();
 
@@ -173,7 +175,7 @@ void CurrencyItem::SetStartPosition(V2d &pos)
 
 sf::FloatRect CurrencyItem::GetAABB()
 {
-	return GetQuadAABB(quad);
+	return FloatRect(currPosInfo.GetPositionF() + Vector2f(-radius, -radius), Vector2f(radius * 2, radius * 2));//GetQuadAABB(quad);
 }
 
 bool CurrencyItem::IsCollectable()
@@ -204,20 +206,21 @@ void CurrencyItem::HandleQuery(QuadTreeCollider * qtc)
 
 void CurrencyItem::IHitPlayer(int index)
 {
-	if (IsCollectible())
+	/*if (IsCollectible())
 	{
 		Actor *p = sess->GetPlayer(index);
 		Collect();
 		p->CollectCurrency(this);
-	}
+	}*/
 }
 
-bool CurrencyItem::Collect()
+bool CurrencyItem::Collect( Actor *p )
 {
 	if (action == NEUTRAL)
 	{
-		action = DEATH;
+		action = PLAYER_COLLECT;//DEATH;
 		frame = 0;
+		collectedPlayer = p;
 		//SetHitboxes(NULL);
 		//SetHurtboxes(NULL);
 		return true;
@@ -235,8 +238,12 @@ void CurrencyItem::ResetEnemy()
 	action = NEUTRAL;
 	dead = false;
 
+	collectedPlayer = NULL;
+
 	frame = 0;
 	receivedHit.SetEmpty();
+
+	SetCurrPosInfo(startPosInfo);
 
 	HurtboxesOff();
 	HitboxesOff();
@@ -260,14 +267,30 @@ void CurrencyItem::ProcessState()
 			frame = 0;
 			break;
 		}
-		case DEATH:
+		case PLAYER_COLLECT:
 		{
 			numHealth = 0;
 			ClearSprite();
 			dead = true;
+
+			//action = DEATH;
+			//frame = 0;
+			break;
+		}
+		case DEATH:
+		{
+			
 			break;
 		}
 		}
+	}
+
+	if (action == PLAYER_COLLECT)
+	{
+		double df = frame + 1;
+		double f = df / actionLength[PLAYER_COLLECT];
+		V2d currPos = startPosInfo.GetPosition() * (1.0 - f) + collectedPlayer->position * f;
+		currPosInfo.position = currPos;
 	}
 }
 
@@ -291,10 +314,20 @@ void CurrencyItem::UpdateSprite()
 		break;
 	}
 
+	tile = 0;
+
+	float tempScale = 1.f;
+	if (action == PLAYER_COLLECT)
+	{
+		float ff = frame + 1;
+		float f = ff / actionLength[PLAYER_COLLECT];
+		tempScale = 1.f - f;
+	}
+
 	ir = ts->GetSubRect(tile);
 
 	ts->SetQuadSubRect(quad, tile);
-	SetRectCenter(quad, ts->tileWidth * scale, ts->tileHeight* scale, GetPositionF());
+	SetRectCenter(quad, ts->tileWidth * scale * tempScale, ts->tileHeight* scale * tempScale, GetPositionF());
 }
 
 void CurrencyItem::EnemyDraw(sf::RenderTarget *target)

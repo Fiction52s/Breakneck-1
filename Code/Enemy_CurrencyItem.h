@@ -22,6 +22,7 @@ struct CurrencyItem : Enemy, ChainableObject
 	{
 		NEUTRAL,
 		DEATH,
+		PLAYER_COLLECT,
 		Count
 	};
 
@@ -34,10 +35,12 @@ struct CurrencyItem : Enemy, ChainableObject
 	CurrencyItemChain *chain;
 
 	int index;
+	double radius;
 	V2d preTransformPos;
 
 	Tileset *ts;
 	sf::Vertex *quad;
+	Actor *collectedPlayer;
 
 	bool CountsForEnemyGate() { return false; }
 	CurrencyItem(CurrencyItemChain *fc, int index,
@@ -59,7 +62,7 @@ struct CurrencyItem : Enemy, ChainableObject
 	void ClearSprite();
 	void ResetEnemy();
 	bool IsCollectible(); //depending on type of fly
-	bool Collect();
+	bool Collect(Actor *p);
 
 	int GetHealAmount();
 	int GetCounterAmount();

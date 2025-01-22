@@ -2441,7 +2441,7 @@ int Enemy::GetNumEnergyAbsorbParticles()
 
 int Enemy::GetNumDarkAbsorbParticles()
 {
-	if (hasMonitor) 
+	if (hasMonitor)
 		return 1;
 	else 
 		return 0;

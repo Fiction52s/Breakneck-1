@@ -244,7 +244,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual ~Enemy();
 	virtual void UpdatePreFrameCalculations() {}
 	void CheckPlayerInteractions( int substep, int i );
-	void UpdateKeySprite();
+	virtual void UpdateKeySprite();
 	void SetKey();
 	virtual int GetNumSimulationFramesRequired() { return 0; }
 	double PlayerDist(int index = 0);
