@@ -138,6 +138,7 @@ TouchGrass::TouchGrass(TouchGrassCollection *p_coll, int index,
 	:coll( p_coll ), edge( e ), gIndex( index ), quant( q ), hurtBody( CollisionBox::Hurt )
 {
 	myQuad = coll->touchGrassVA + gIndex * 4;
+	scale = 1.0;
 	//SetRectColor(myQuad, Color::Red);
 }
 

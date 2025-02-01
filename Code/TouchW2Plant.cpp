@@ -33,32 +33,32 @@ TouchW2Plant::TouchW2Plant(TouchGrassCollection *coll, int index,
 	{
 	case 0:
 		spriteOrigin = Vector2i(924, 1067);
-		size = Vector2i(254, 389);
+		spriteSize = Vector2i(254, 389);
 		baseOffset = 0;
 		break;
 	case 1:
 		spriteOrigin = Vector2i(1239, 1231);
-		size = Vector2i(198, 225);
+		spriteSize = Vector2i(198, 225);
 		baseOffset = 0;
 		break;
 	case 2:
 		spriteOrigin = Vector2i(1576, 1216);
-		size = Vector2i(154, 223);
+		spriteSize = Vector2i(154, 223);
 		baseOffset = 60;
 		break;
 	case 3:
 		spriteOrigin = Vector2i(1812, 1279);
-		size = Vector2i(108, 160);
+		spriteSize = Vector2i(108, 160);
 		baseOffset = 37;
 		break;
 	case 4:
 		spriteOrigin = Vector2i(928, 1596);
-		size = Vector2i(409, 338);
+		spriteSize = Vector2i(409, 338);
 		baseOffset = 208;
 		break;
 	case 5:
 		spriteOrigin = Vector2i(1427, 1818);
-		size = Vector2i(260, 116);
+		spriteSize = Vector2i(260, 116);
 		baseOffset = 136;
 		break;
 
@@ -66,8 +66,16 @@ TouchW2Plant::TouchW2Plant(TouchGrassCollection *coll, int index,
 
 	int groundWidth = TouchGrass::GetQuadWidth(TouchGrass::TYPE_W2_PLANT);
 
+	double minScale = .4;
+	double maxScale = .6;
+	double f = (double)rand() / RAND_MAX;
+	double testScale = minScale * (1.0 - f) + maxScale * f;
 
-	baseOffset = (size.x / 2 - baseOffset) - groundWidth / 2;
+	size.x = spriteSize.x * testScale;
+	size.y = spriteSize.y * testScale;
+
+	//baseOffset = ((spriteSize.x / 2 - baseOffset) - groundWidth / 2) * testScale;
+	baseOffset = (spriteSize.x / 2 - baseOffset) * testScale;
 
 	yOffset = 0;
 
@@ -126,7 +134,7 @@ TouchW2Plant::TouchW2Plant(TouchGrassCollection *coll, int index,
 		points[i] = V2d(myQuad[i].position) - polyCenter;
 	}
 
-	SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect(size, spriteOrigin + base, Vector2i(1, 1), 0));
+	SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect(spriteSize, spriteOrigin + base, Vector2i(1, 1), 0));
 
 	Reset();
 }

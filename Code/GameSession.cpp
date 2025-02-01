@@ -1564,7 +1564,7 @@ void GameSession::ProcessAllTerrain()
 	terrainTypeIndexesUsedVec.reserve(numMats);
 	for (auto it = matSet.begin(); it != matSet.end(); ++it)
 	{
-		terrainTypeIndexesUsedVec.push_back((*it).first * 8 + (*it).second);
+		terrainTypeIndexesUsedVec.push_back((*it).first * MAX_TERRAIN_VARIATION_PER_WORLD + (*it).second);
 	}
 
 	int index = 0;

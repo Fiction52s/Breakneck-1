@@ -5016,8 +5016,8 @@ void MainMenu::TitleMenuModeUpdate()
 
 			musicPlayer->FadeOutCurrentMusic(30);
 			customCursor->Hide();
-			//LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_RUSH);
-			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
+			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_RUSH);
+			//LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
 			break;
 		}
 		case M_FREE_PLAY:

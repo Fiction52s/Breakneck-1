@@ -358,6 +358,8 @@ void TerrainPolygon::AddTouchGrass(int gt)
 
 	Gate *g = NULL;
 
+	double extraQuant = 0;
+
 	for (int i = 0; i < numP; ++i)
 	{
 		currEdge = GetEdge(i);
@@ -399,12 +401,16 @@ void TerrainPolygon::AddTouchGrass(int gt)
 			{
 				if (tgType == TouchGrass::TYPE_W1_TREE)
 				{
-					
 				}
 				else
 				{
-					tooThin = true;
-					numQuads = 1;
+					extraQuant += len;
+					if (extraQuant >= tw)
+					{
+						tooThin = true;
+						numQuads = 1;
+						extraQuant -= tw;
+					}
 				}
 			}
 			if (numQuads > 0)
@@ -426,6 +432,10 @@ void TerrainPolygon::AddTouchGrass(int gt)
 					}
 				}
 			}
+		}
+		else
+		{
+			extraQuant = 0;
 		}
 	}
 

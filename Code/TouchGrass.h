@@ -61,6 +61,7 @@ struct TouchGrass : QuadTreeEntrant
 	virtual void UpdateSprite() = 0;
 
 	bool visible;
+	double scale;
 
 	CollisionBody hurtBody;
 	//CollisionBody *hitBody;
@@ -236,7 +237,8 @@ struct TouchW2Plant : TouchGrass
 		TOUCHEDLAND,
 	};
 
-	sf::Vector2i size;
+	V2d size;
+	sf::Vector2i spriteSize;
 	Action action;
 	int currTile;
 
@@ -261,7 +263,8 @@ struct TouchW3Plant : TouchGrass
 		TOUCHEDLAND,
 	};
 
-	sf::Vector2i size;
+	V2d size;
+	sf::Vector2i spriteSize;
 	Action action;
 	int currTile;
 
