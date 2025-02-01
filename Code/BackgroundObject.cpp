@@ -198,7 +198,11 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 			if ((*it)->shaderName == "transcend_bg_energy")
 			{
 				Session *sess = Session::GetSession();
-				float camAngle = (float)(sess->view.getRotation() * PI / 180.0);
+				float camAngle = 0;
+				if (sess != NULL)
+				{
+					camAngle = (float)(sess->view.getRotation() * PI / 180.0);
+				}
 
 				float depth = DrawLayer::GetDrawLayerDepthFactor(drawLayer);
 

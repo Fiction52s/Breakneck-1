@@ -361,7 +361,6 @@ void TerrainPolygon::AddTouchGrass(int gt)
 	for (int i = 0; i < numP; ++i)
 	{
 		currEdge = GetEdge(i);
-
 		if (isSecretCovering)
 		{
 			foundGate = false;
@@ -4619,6 +4618,8 @@ void TerrainPolygon::SetupTouchGrass()
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL_W3);
 		AddTouchGrass(TouchGrass::TYPE_LARGE_W3);
+
+		AddTouchGrass(TouchGrass::TYPE_W3_PLANT);
 		break;
 	}
 	case TerrainWorldType::COVE:

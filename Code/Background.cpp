@@ -490,10 +490,21 @@ void Background::Update( const Vector2f &camPos, int updateFrames )
 			//cout << "frame: " << frame << ", adjusted frame: " << (frame %amt) << ", q: " << q << endl;
 
 			Session *sess = Session::GetSession();
-			float camAngle = (float)(sess->view.getRotation() * PI / 180.0);
-			(*it).second->setUniform("u_cameraAngle", camAngle);
 
-			(*it).second->setUniform("zoom", sess->cam.GetZoom());
+			if (sess != NULL)
+			{
+				float camAngle = (float)(sess->view.getRotation() * PI / 180.0);
+				(*it).second->setUniform("u_cameraAngle", camAngle);
+
+				(*it).second->setUniform("zoom", sess->cam.GetZoom());
+			}
+			else
+			{
+				//for level select bg
+				(*it).second->setUniform("u_cameraAngle", 0);
+				(*it).second->setUniform("zoom", 1.f);
+			}
+			
 		}
 	}
 
@@ -546,8 +557,14 @@ void Background::Draw(sf::RenderTarget *target)
 	sf::View newView = bgView;
 	//newView.setRotation(oldView.getRotation());
 
-	target->setView(newView);
+	//target->setView(newView);
 
+	DrawBackLayer(target);
+
+	for (int i = DrawLayer::BG_20; i <= DrawLayer::BG_1; ++i)
+	{
+		LayeredDraw(i, target);
+	}
 	/*if (ts_sky != NULL)
 	{
 		target->draw(backgroundSky, 4, sf::Quads, ts_sky->texture);
@@ -568,14 +585,14 @@ void Background::Draw(sf::RenderTarget *target)
 	}*/
 	
 
-	target->setView(oldView);
+	//target->setView(oldView);
 
-	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
-		it != scrollingBackgrounds.end(); ++it)
-	{
-		//might not need to mess w/ views here anymore
-		(*it)->Draw(target);
-	}
+	//for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+	//	it != scrollingBackgrounds.end(); ++it)
+	//{
+	//	//might not need to mess w/ views here anymore
+	//	(*it)->Draw(target);
+	//}
 
 	//target->setView(newView);
 
