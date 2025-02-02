@@ -9,6 +9,26 @@ EnvParticleSystem::EnvParticleSystem()
 {
 	sess = Session::GetSession();
 
+
+	
+
+	//ShapeEmitter *testEmitter2 = new ForegroundTestEmitter(ShapeEmitter::PARTICLE_FOREGROUND_TEST, DrawLayer::FG_5);// PI / 2.0, 2 * PI, 1.0, 2.5);
+	//testEmitter2->CreateParticles();
+	//testEmitter2->SetIDAndAddToAllEmittersVec();
+	//emitters.push_back(testEmitter2);
+
+	//real test^
+
+
+
+
+
+
+
+
+
+
+
 	//ShapeEmitter *testEmitter2 = new ShapeEmitter(6, DrawLayer::IN_FRONT);// PI / 2.0, 2 * PI, 1.0, 2.5);
 
 
@@ -20,10 +40,7 @@ EnvParticleSystem::EnvParticleSystem()
 	//emitters.push_back(testEmitter);
 
 
-	ShapeEmitter *testEmitter2 = new ForegroundTestEmitter(ShapeEmitter::PARTICLE_FOREGROUND_TEST, DrawLayer::FG_5);// PI / 2.0, 2 * PI, 1.0, 2.5);
-	testEmitter2->CreateParticles();
-	testEmitter2->SetIDAndAddToAllEmittersVec();
-	//emitters.push_back(testEmitter2);
+	
 
 	/*testEmitter2->CreateParticles();
 	testEmitter2->SetIDAndAddToAllEmittersVec();

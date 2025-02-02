@@ -577,7 +577,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete workshopBrowser;
 			workshopBrowser = NULL;
 		}
-		else if (fromMode == TEST_RUSH)
+		else if (fromMode == TEST_RUSH || fromMode == RUN_RUSH_SHIP )
 		{
 			delete rushManager;
 			rushManager = NULL;
@@ -5561,6 +5561,11 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		closedBetaScreen->Draw(preScreenTexture);
+		break;
+	}
+	case RUN_RUSH_SHIP:
+	{
+		//blank so we can exit to the title screen from the ship rn
 		break;
 	}
 	default:

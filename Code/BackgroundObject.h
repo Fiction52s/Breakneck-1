@@ -77,7 +77,7 @@ struct BackgroundObject
 	int scrollOffset;
 
 	BackgroundObject(Background *p_bg, int p_layer );
-	~BackgroundObject();
+	virtual ~BackgroundObject();
 	virtual void Reset();
 	virtual void Load(std::ifstream & is);
 	virtual void DrawObject(sf::RenderTarget *target);
@@ -98,6 +98,7 @@ struct BackgroundTile : BackgroundObject
 	
 
 	BackgroundTile(Background *p_bg, const std::string &p_folder, int p_layer );
+	virtual ~BackgroundTile() {}
 	void Load(nlohmann::basic_json<> &jobj);
 	sf::IntRect GetSubRect();
 };

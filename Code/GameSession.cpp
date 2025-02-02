@@ -1008,6 +1008,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	allSequencesVec.clear();
 
+	assert(allEmittersVec.empty());
 	allEmittersVec.clear();
 	
 

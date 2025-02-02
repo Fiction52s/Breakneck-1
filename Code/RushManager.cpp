@@ -298,7 +298,7 @@ bool RushManager::CanGoToNextLevel()
 
 bool RushManager::TryToGoToNextWorld()
 {
-	if (currWorld < rushFile.numWorlds)
+	if (currWorld < rushFile.numWorlds - 1)
 	{
 		MainMenu::GetInstance()->SetModeRushLoadingWorld(currWorld + 1);
 		currRushMapIndex = 0;
@@ -313,7 +313,7 @@ bool RushManager::TryToGoToNextWorld()
 
 bool RushManager::TryToGoToNextWorldShip()
 {
-	if (currWorld < rushFile.numWorlds)
+	if (currWorld < rushFile.numWorlds - 1)
 	{
 		MainMenu::GetInstance()->SetModeRushShip(currWorld + 1);
 		//currRushMapIndex = 0;
