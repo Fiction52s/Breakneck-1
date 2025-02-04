@@ -11,7 +11,6 @@
 #include "TerrainDecor.h"
 #include "PositionInfo.h"
 #include "Grass.h"
-#include "SpecialTerrainTypes.h"
 
 struct CurrencyItem;
 struct TouchGrassCollection;
@@ -245,6 +244,17 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		WATER_Count,
 	};
 
+	enum SpecialType
+	{
+		SPECIAL_TYPE_NONE,
+		SPECIAL_TYPE_FADE,
+		SPECIAL_TYPE_PHASE,
+		SPECIAL_TYPE_INVERSE_PHASE,
+		SPECIAL_TYPE_INVISIBLE,
+		SPECIAL_Count
+	};
+	
+
 	enum TerrainWorldType : int
 	{
 		MOUNTAIN,
@@ -263,11 +273,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		W6_WATER,
 		W7_WATER,
 		W8_WATER,
+		SPECIAL,
 		ITEM, //currency
-		SPECIAL_TYPE_FADE,
-		SPECIAL_TYPE_PHASE,
-		SPECIAL_TYPE_INVERSE_PHASE,
-		SPECIAL_TYPE_INVISIBLE,
 		Count
 	};
 

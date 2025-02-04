@@ -13,7 +13,6 @@
 #include "AirParticles.h"
 #include "Movement.h"
 #include "Gate.h"
-#include "SpecialTerrainTypes.h"
 #include "DrawLayer.h"
 #include "BitField.h"
 #include "VectorMath.h"
