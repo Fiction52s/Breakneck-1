@@ -386,7 +386,7 @@ void Session::RegisterW1Enemies()
 	AddBasicAerialWorldEnemy("Movement Tester", "movementtester", 1, storyRow, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
 	AddBasicGroundWorldEnemy("Crawler Queen Boss", "crawlerqueen", 1, storyRow, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
 	AddBasicGroundWorldEnemy("Sequence Crawler Queen", "sequencecrawler", 1, storyRow, CreateEnemy<SequenceCrawler>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 1);
-	AddBasicGroundWorldEnemy("Blue Nexus", "nexus1", 1, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	//AddBasicGroundWorldEnemy("Blue Nexus", "nexus1", 1, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 }
 
 void Session::RegisterW2Enemies()
@@ -679,7 +679,7 @@ void Session::RegisterW6Enemies()
 	AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, ts_skeleNode);
 	//AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-	//AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, storyRow, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	AddWorldEnemy("Scorpion Launcher", "scorpionlauncher", 6, storyRow, CreateEnemy<ScorpionLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1);
@@ -751,8 +751,8 @@ void Session::RegisterAllEnemies()
 	RegisterW2Enemies();
 	RegisterW3Enemies();
 	RegisterW4Enemies();
-	//RegisterW5Enemies();
-	//RegisterW6Enemies();
+	RegisterW5Enemies();
+	RegisterW6Enemies();
 	//RegisterW7Enemies();
 	//RegisterW8Enemies();
 }

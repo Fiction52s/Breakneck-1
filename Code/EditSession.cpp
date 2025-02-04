@@ -3578,8 +3578,7 @@ void EditSession::SetMatTypePanelCategory(int cat)
 				}
 			}
 		}
-	}
-	
+	}	
 }
 
 void EditSession::ModifySelectedTerrainMat(
@@ -3682,6 +3681,9 @@ void EditSession::SetupTerrainSelectPanel()
 		matTypeRects[TerrainPolygon::CATEGORY_WATER][i]->Init();
 		matTypeRects[TerrainPolygon::CATEGORY_WATER][i]->SetName(TerrainPolygon::GetWaterNameFromType(i));
 	}
+
+	
+	
 
 	//int startWorldWater = 8;
 	//for (int worldI = startWorldWater; worldI < startWorldWater + 8; ++worldI)

@@ -14,16 +14,19 @@ ShipTravelSequence::ShipTravelSequence()
 	ts_w1ShipClouds0 = sess->GetSizedTileset("Ship/cloud_w1_a1_960x128.png");
 	ts_w1ShipClouds1 = sess->GetSizedTileset("Ship/cloud_w1_b1_960x320.png");
 	ts_ship = sess->GetSizedTileset("Ship/ship_open_864x410.png");
+	
 
 	shipComp = NULL;//new CompositeImage(sess, "Ship/ShipTest/traveltest_1024x1024", 16, Vector2f(1024, 1024), Vector2f(4, 4));
 
 
-	ts_shipTest = sess->GetSizedTileset("Ship/ShipTest/travel1_1725x921.png");
+	//ts_shipTest = sess->GetSizedTileset("Ship/ShipTest/travel1_1725x921.png");
+	ts_shipTest = sess->GetSizedTileset("Ship/ship_1300x690.png");
 
 	shipTestSprite.setTexture(*ts_shipTest->texture);
 	shipTestSprite.setOrigin(shipTestSprite.getLocalBounds().width / 2, shipTestSprite.getLocalBounds().height / 2);
 	//shipTestSprite.setScale(.62, .62);
-	shipTestSprite.setScale(.75, .75);
+	//shipTestSprite.setScale(.75, .75);
+	shipTestSprite.setScale(1.0, 1.0);
 	//shipTestSprite.setScale(.5, .5);
 
 	shipSprite.setTexture(*ts_ship->texture);

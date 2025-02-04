@@ -255,15 +255,19 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		FORTRESS,
 		CORE,
 		SECRETCORE,
-		W1_SPECIAL,
-		W2_SPECIAL,
-		W3_SPECIAL,
-		W4_SPECIAL,
-		W5_SPECIAL,
-		W6_SPECIAL,
-		W7_SPECIAL,
-		W8_SPECIAL,
+		W1_WATER,
+		W2_WATER,
+		W3_WATER,
+		W4_WATER,
+		W5_WATER,
+		W6_WATER,
+		W7_WATER,
+		W8_WATER,
 		ITEM, //currency
+		SPECIAL_TYPE_FADE,
+		SPECIAL_TYPE_PHASE,
+		SPECIAL_TYPE_INVERSE_PHASE,
+		SPECIAL_TYPE_INVISIBLE,
 		Count
 	};
 
@@ -320,7 +324,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	static int GetWaterIndexFromString(const std::string &s);
 	static std::string GetWaterNameFromType(int waterT);
 	static sf::Color GetWaterColor(int waterT);
-	bool IsSpecialTerrainType(int w, int var);
 	static int GetWaterIndex(int w, int var);
 	void UpdateWaterType();
 	bool IsPhaseType();
@@ -569,6 +572,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation);
+	void SetSpecialType(int sType);
 	void SetAsWaterType(int water);
 	void SetGrassType(int gType);
 	void UpdateMaterialType();

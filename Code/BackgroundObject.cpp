@@ -214,7 +214,7 @@ void BackgroundLayer::Draw(sf::RenderTarget *target)
 
 				//Vector2f vSize(1920, 1080);// sess->view.getSize();
 				//Vector2f vSize( sess->view.getSize() );
-				Vector2f center = newView.getCenter();//sess->view.getCenter();//newView.getCenter();// *depth;// *depth;
+				Vector2f center = newView.getCenter() - bg->extraOffset;//sess->view.getCenter();//newView.getCenter();// *depth;// *depth;
 				center.x *= depth;
 				//center.x *= 3.f;
 				Vector2f vSize = newView.getSize();//sess->view.getSize();//newView.getSize();// / 2.f;

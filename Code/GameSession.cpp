@@ -1019,6 +1019,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	ClearEffects();
 
+	CleanupRain();
+
 	GetPlayer(0)->Respawn();
 	GetPlayer(0)->Init();
 	//need setup key marker
@@ -1852,7 +1854,7 @@ bool GameSession::Load()
 		//saveFile->adventureFile->GetOriginalProgressionLogField(level->index, originalProgressionLogField);
 	}
 
-
+	
 	
 	mapNameText.setFont(mainMenu->arial);
 	mapNameText.setCharacterSize(24);
@@ -1917,6 +1919,11 @@ bool GameSession::Load()
 	}
 
 	SetupQuadTrees();
+
+	if (currWorldDependentTilesetWorldIndex == 1)
+	{
+		SetupRain();
+	}
 
 	//cout << "weird timing 1" << endl;
 

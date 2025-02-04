@@ -127,7 +127,7 @@ void RushManager::Load()
 
 void RushManager::SetWorld(int w)
 {
-	UpdateWorldDependentTileset(0);
+	UpdateWorldDependentTileset(w);
 
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_RUSH;
 

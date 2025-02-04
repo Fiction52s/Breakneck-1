@@ -99,18 +99,6 @@ void TerrainPolygon::MakeGlobalPath(V2d &startPos, std::vector<sf::Vector2i> &pa
 	}
 }
 
-//w starts at 0
-bool TerrainPolygon::IsSpecialTerrainType(int w, int var)
-{
-	int realW = w + W1_SPECIAL;
-	if (terrainWorldType == realW && terrainVariation == var)
-	{
-		return true;
-	}
-
-	return false;
-}
-
 sf::FloatRect TerrainPolygon::GetAngledAABB(float rotation)
 {
 	//rotation is in degrees
@@ -1595,7 +1583,7 @@ V2d TerrainPolygon::GetBisector(Edge *e)
 
 void TerrainPolygon::SetBorderTileset()
 {
-	if (terrainWorldType >= W1_SPECIAL)
+	if (terrainWorldType >= W1_WATER && terrainWorldType <= W8_WATER )
 	{
 		ts_border = sess->mainMenu->GetSizedTileset( "Env/water_surface_64x2.png" );
 		return;
@@ -3808,7 +3796,7 @@ int TerrainPolygon::GetSpecialPolyIndex()
 {
 	int index = -1;
 
-	if (terrainWorldType >= TerrainPolygon::W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
+	if (terrainWorldType >= TerrainPolygon::W1_WATER && terrainWorldType <= TerrainPolygon::W8_WATER)
 		index = 1;
 	else if (terrainWorldType == ITEM)
 		index = 2;
@@ -4176,38 +4164,41 @@ std::string TerrainPolygon::GetWaterNameFromType(int waterT)
 bool TerrainPolygon::IsPhaseType()
 {
 	return terrainWorldType == 3 && terrainVariation == 5;
+	//return specialType == SPECIAL_TYPE_PHASE;
 }
 
 bool TerrainPolygon::IsInversePhaseType()
 {
 	return terrainWorldType == 3 && terrainVariation == 6;
+	//return specialType == SPECIAL_TYPE_INVERSE_PHASE;
 }
 
 bool TerrainPolygon::IsSometimesActiveType()
 {
-	//return terrainWorldType == 3 && terrainVariation == 7;
 	return terrainWorldType == 5 && terrainVariation == 7;
+	//return specialType == SPECIAL_TYPE_FADE;
 }
 
 bool TerrainPolygon::IsInvisibleType()
 {
 	return terrainWorldType == 0 && terrainVariation == 7;
+	//return specialType == SPECIAL_TYPE_INVISIBLE;
 }
 
 int TerrainPolygon::GetWaterIndex(int w, int variation)
 {
 	int wType = -1;
-	if (w >= W1_SPECIAL && w <= W8_SPECIAL)
+	if (w >= W1_WATER && w <= W8_WATER)
 	{
 		switch (w)
 		{
-		case W1_SPECIAL:
+		case W1_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_NORMAL;
 			}
 			break;
-		case W2_SPECIAL:
+		case W2_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_GLIDE;
@@ -4225,7 +4216,7 @@ int TerrainPolygon::GetWaterIndex(int w, int variation)
 				wType = WATER_BUOYANCY;
 			}
 			break;
-		case W3_SPECIAL:
+		case W3_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_ACCEL;
@@ -4235,7 +4226,7 @@ int TerrainPolygon::GetWaterIndex(int w, int variation)
 				wType = WATER_ZEROGRAV;
 			}
 			break;
-		case W4_SPECIAL:
+		case W4_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_LAUNCHER;
@@ -4245,7 +4236,7 @@ int TerrainPolygon::GetWaterIndex(int w, int variation)
 				wType = WATER_MOMENTUM;
 			}
 			break;
-		case W5_SPECIAL:
+		case W5_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_TIMESLOW;
@@ -4255,7 +4246,7 @@ int TerrainPolygon::GetWaterIndex(int w, int variation)
 				wType = WATER_POISON;
 			}
 			break;
-		case W6_SPECIAL:
+		case W6_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_FREEFLIGHT;
@@ -4265,7 +4256,7 @@ int TerrainPolygon::GetWaterIndex(int w, int variation)
 				wType = WATER_INVERTEDINPUTS;
 			}
 			break;
-		case W7_SPECIAL:
+		case W7_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_REWIND;
@@ -4275,7 +4266,7 @@ int TerrainPolygon::GetWaterIndex(int w, int variation)
 				wType = WATER_SWORDPROJECTILE;
 			}
 			break;
-		case W8_SPECIAL:
+		case W8_WATER:
 			if (variation == 0)
 			{
 				wType = WATER_SUPER;
@@ -4298,7 +4289,7 @@ void TerrainPolygon::UpdateWaterType()
 
 void TerrainPolygon::SetAsWaterType(int water)
 {
-	SetMaterialType(GetWaterWorld(water) + W1_SPECIAL, GetWaterIndexInWorld(water));
+	SetMaterialType(GetWaterWorld(water) + W1_WATER, GetWaterIndexInWorld(water));
 }
 
 void TerrainPolygon::SetMaterialType(int world, int variation)
@@ -4335,6 +4326,11 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 
 		GenerateMyItems();
 	}
+}
+
+void TerrainPolygon::SetSpecialType(int sType)
+{
+
 }
 
 void TerrainPolygon::SetGrassType(int gType)
@@ -7207,6 +7203,7 @@ PolyPtr TerrainPolygon::InverseCopy()
 	{
 		newPoly->AddPoint(GetPoint(i)->pos, false);
 	}
+
 	newPoly->SetMaterialType(terrainWorldType, terrainVariation);
 
 	newPoly->Finalize();
@@ -7700,6 +7697,11 @@ bool TerrainPolygon::Load(std::ifstream &is)
 	is >> matWorld;
 	is >> matVariation;
 
+	if (matVariation > Session::MAX_TERRAIN_VARIATION_PER_WORLD - 1)
+	{
+		matVariation = 0;
+	}
+
 	if(sess->mapHeader->ver1 >= 11)
 	{
 		int dLayer;
@@ -7907,7 +7909,7 @@ void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
 	if (va != NULL)
 	{
 		//currently, draw the water w/ texture on minimap
-		if (terrainWorldType >= TerrainWorldType::W1_SPECIAL)
+		if (terrainWorldType >= TerrainWorldType::W1_WATER && terrainWorldType <= TerrainWorldType::W8_WATER)
 		{
 			if (miniShader != NULL)
 			{
