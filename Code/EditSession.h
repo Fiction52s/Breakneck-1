@@ -666,6 +666,7 @@ struct EditSession : GUIHandler, Session
 	std::list<PolyPtr> &GetCorrectPolygonList();
 	int GetSpecialTerrainMode();
 	void SetTrackingEnemy(ActorType *type, int level);
+	void SetTrackingEnemy(ActorParams *ap);
 	void SetTrackingDecor(DecorPtr dec);
 	void ChooseRectEvent(ChooseRect *cr, int eventType );
 	Panel * CreatePopupPanel( const std::string &p );

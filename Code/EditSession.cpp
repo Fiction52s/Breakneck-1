@@ -154,6 +154,46 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 	}
 }
 
+void EditSession::SetTrackingEnemy(ActorParams *ap)
+{
+	if (trackingEnemyParams == NULL)
+	{
+		//cout << "copy of level : " << level << endl;
+		trackingEnemyParams = ap;
+		trackingEnemyParams->group = groups["--"];
+		//GetPolygon((0);
+
+		//trackingEnemyParams->AnchorToGround();
+		trackingEnemyParams->CreateMyEnemy();
+		grabbedActor = trackingEnemyParams;
+		SelectObject(grabbedActor);
+
+		trackingEnemyParams->MoveTo(Vector2i(worldPos));
+		//extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
+		if (grabbedActor->myEnemy != NULL)
+		{
+			grabbedActor->myEnemy->UpdateFromEditParams(0);
+		}
+
+
+		editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
+		pointGrabPos = Vector2i(worldPos.x, worldPos.y);
+		editMouseOrigPos = editMouseGrabPos;
+
+
+		editMouseDownMove = true;
+		editStartMove = false;
+		editMouseDownBox = false;
+
+		createEnemyModeUI->SetShown(false);
+	}
+	else
+	{
+		int x = 5;
+		assert(0);
+	}
+}
+
 void EditSession::SetTrackingDecor(DecorPtr dec)
 {
 	if (trackingDecor == NULL)
@@ -6090,6 +6130,8 @@ bool EditSession::AnchorSelectedEnemies()
 	{
 		apply = new ApplyBrushAction(selectedBrush);
 		apply->performed = true;
+
+
 
 		grabbedActor->group->actors.push_back(grabbedActor);
 		
@@ -12354,6 +12396,13 @@ void EditSession::SetMode(Emode m)
 			FinishEnemyCreation();
 		}
 		break;
+	case CREATE_ENEMY:
+	{
+		editMouseDownBox = false;
+		editMouseDownMove = false;
+		editStartMove = false;
+		break;
+	}
 	case EDIT:
 	{
 		if (editModeUI->IsShowGrassOn())
@@ -15271,6 +15320,13 @@ void EditSession::CreateEnemyModeHandleEvent()
 				delete trackingEnemyParams;
 				trackingEnemyParams = NULL;
 				grabbedActor = NULL;
+
+				editMouseDownBox = false;
+				editMouseDownMove = false;
+				editStartMove = false;
+
+				createEnemyModeUI->SetShown(true);
+
 			}
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
@@ -16460,8 +16516,20 @@ void EditSession::CreateEnemyModeUpdate()
 {
 	if (MOUSE.IsMouseLeftReleased())
 	{
+		//dont think this even does anything
+		editMouseDownBox = false;
+		/*
+		editMouseDownMove = false;
+		editStartMove = false;*/
+	}
+
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		//grabbedActor and trackingEnemyParams are the same atm
 		if (grabbedActor != NULL)
 		{
+			ActorParams *copyGrabbed = grabbedActor->Copy();
+
 			bool done = false;
 			if (AnchorSelectedEnemies())
 			{
@@ -16469,14 +16537,36 @@ void EditSession::CreateEnemyModeUpdate()
 			}
 
 			TryCompleteEnemyCreation();
+
+			if (mode == CREATE_RAILS)
+			{
+				//ClearSelectedBrush();
+				delete copyGrabbed;
+				//trackingEnemyParams = NULL;
+				grabbedActor = NULL;
+
+				editMouseDownBox = false;
+				editMouseDownMove = false;
+				editStartMove = false;
+
+				//createEnemyModeUI->SetShown(true);
+			}
+			else
+			{
+				SetTrackingEnemy(copyGrabbed);
+			}
 		}
+		else
+		{
+			grabbedActor = NULL;
+			grabbedImage = NULL;
+		}
+	}
 
-		editMouseDownBox = false;
-		editMouseDownMove = false;
-		editStartMove = false;
-		grabbedActor = NULL;
-		grabbedImage = NULL;
-
+	if (MOUSE.IsMouseLeftClicked() && grabbedActor != NULL)
+	{
+		//ActorParams *newActor = grabbedActor->Copy();
+		
 	}
 
 
