@@ -593,6 +593,7 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
+	sf::Rect<double> currQueryRect; //used within the frame for the most recent query rect on quadtrees
 	
 	PlayerBoosterEffectEmitter *gravityIncreaserTrailEmitter;
 	PlayerBoosterEffectEmitter *gravityDecreaserTrailEmitter;
@@ -1396,7 +1397,8 @@ struct Actor : QuadTreeCollider,
 	void CreateGravityDecreaserOffRing();
 	void CreateGravityIncreaserOnRing();
 	void CreateGravityIncreaserOffRing();
-	void CollectCurrency(CurrencyItem *ci);
+	void CollectCurrencyItem(CurrencyItem *ci);
+	void CollectCurrency(int currencyAmount, int healAmount );
 	bool CheckSetToAerialFromNormalWater();
 	void SetupActionFunctions();
 	void StartAction();
@@ -1884,6 +1886,8 @@ struct Actor : QuadTreeCollider,
 
 	void ProcessGroundedCollision();
 	bool TryLandFromBounceGround();
+
+	void QueryTree(QuadTree *qt, const sf::Rect<double> &r);
 
 	
 	int GetNumStoredBytes();

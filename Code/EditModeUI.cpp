@@ -479,16 +479,30 @@ void EditModeUI::AddLayerToPanel(const std::string &name, int currLayerIndex, in
 
 void EditModeUI::ChooseMatType(ImageChooseRect *icRect)
 {
-	int world = icRect->pos.x / terrainGridSize;
-	int variation = icRect->pos.y / terrainGridSize;
+	int world = 0;
+	int variation = 0;
 
-	if (edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_WATER)
+	if (icRect->pos.y / terrainGridSize == 4)
 	{
-		world += 8;
+		world = TerrainPolygon::SPECIAL;
+		variation = icRect->pos.x / terrainGridSize;
 	}
-	else if (edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_ITEM)
+	else
 	{
-		world += 9;
+		if (edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_NORMAL || edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_VISUAL)
+		{
+			world = icRect->pos.x / terrainGridSize;
+		}
+		else if (edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_WATER || edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_VISUAL_WATER)
+		{
+			world = icRect->pos.x / terrainGridSize + TerrainPolygon::W1_WATER;
+		}
+		else if (edit->matTypeRectsCurrCategory == TerrainPolygon::CATEGORY_ITEM)
+		{
+			world = TerrainPolygon::ITEM;
+		}
+
+		variation = icRect->pos.y / terrainGridSize;
 	}
 
 	edit->ModifySelectedTerrainMat(world, variation);

@@ -167,11 +167,11 @@ void TerrainPolygon::GenerateMyItems()
 	if (terrainWorldType != ITEM)
 		return;
 
-	ts_item = sess->GetTileset("Enemies/General/healthfly_64x64.png", 64, 64);
+	ts_item = NULL;//sess->GetTileset("Enemies/General/healthfly_64x64.png", 64, 64);
 
 	SetRenderMode(RENDERMODE_ITEMS);
 
-	int gridDist = 64;
+	int gridDist = CurrencyItem::GetSpacing(terrainVariation);//64;
 
 	int itemLevel = 1;
 	int numItems = 0;
@@ -180,10 +180,15 @@ void TerrainPolygon::GenerateMyItems()
 	FloatRect rotatedBox = GetAngledAABB(itemTransRotate);
 	
 
-	int xGridDist = gridDist * itemTransScale.x;
-	int yGridDist = gridDist * itemTransScale.y;
-	int width = (rotatedBox.width) / xGridDist + 1;
-	int height = (rotatedBox.height) / yGridDist + 1;
+	int xGridDist = gridDist;//gridDist * itemTransScale.x;
+	int yGridDist = gridDist;//gridDist * itemTransScale.y;
+	int width = (rotatedBox.width) / xGridDist;
+	int height = (rotatedBox.height) / yGridDist;
+	if (width < 1)
+		width = 1;
+	if (height < 1)
+		height = 1;
+
 	vector<bool> hasItem;
 	hasItem.resize(width * height);
 
@@ -201,13 +206,14 @@ void TerrainPolygon::GenerateMyItems()
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			currPos = V2d(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
-				rotatedBox.top + y * yGridDist)));
+			currPos = V2d(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist + xGridDist / 2.0,
+				rotatedBox.top + y * yGridDist + yGridDist / 2.0)));
 			r.left = round(currPos.x) - rSize;
 			r.top = round(currPos.y) - rSize;
 			r.width = rSize * 2;
 			r.height = rSize * 2;
-			if (Intersects( r ) )
+			//if (Intersects( r ) )
+			if( ContainsPoint( Vector2f(currPos) ) )
 			{
 				index = x + width * y;//x * height + y;
 				hasItem[index] = true;
@@ -237,7 +243,7 @@ void TerrainPolygon::GenerateMyItems()
 	
 	//CurrencyGrid *cg = new CurrencyGrid(,)
 	
-	CurrencyGrid *cg = new CurrencyGrid(NULL, EnemyType::EN_CURRENCYGRID, V2d(rotatedBox.left, rotatedBox.top ), Vector2i(width, height), Vector2i(xGridDist, yGridDist), hasItem);
+	CurrencyGrid *cg = new CurrencyGrid(NULL, EnemyType::EN_CURRENCYGRID, V2d(rotatedBox.left, rotatedBox.top ), Vector2i(width, height), hasItem, terrainVariation);
 	
 
 	myCurrencyGrid = cg;
@@ -1416,7 +1422,13 @@ void TerrainPolygon::AddItemsToWorldTrees()
 
 	if (myCurrencyGrid != NULL)
 	{
-		myCurrencyGrid->AddToWorldTrees();
+
+		myCurrencyGrid->AddToGame();
+		/*if ((*it)->myCurrencyGrid != NULL)
+		{
+			
+		}
+		myCurrencyGrid->AddToWorldTrees();*/
 	}
 }
 
@@ -1426,6 +1438,7 @@ void TerrainPolygon::AddItemsToQuadTree(QuadTree *tree)
 	{
 		tree->Insert((*it));
 	}*/
+
 
 	if (myCurrencyGrid != NULL)
 	{
@@ -1586,6 +1599,11 @@ void TerrainPolygon::SetBorderTileset()
 	if (terrainWorldType >= W1_WATER && terrainWorldType <= W8_WATER )
 	{
 		ts_border = sess->mainMenu->GetSizedTileset( "Env/water_surface_64x2.png" );
+		return;
+	}
+	else if (terrainWorldType == SPECIAL)
+	{
+		ts_border = NULL;
 		return;
 	}
 	//basically theres a way to make this invisible, but haven't set it up yet.
@@ -3819,6 +3837,13 @@ void TerrainPolygon::UpdateMaterialType()
 		miniShader = &sess->mainMenu->minimapWaterShaders[waterType];
 		tdInfo = NULL;
 	}
+	else if (terrainWorldType == SPECIAL)
+	{
+		int terrainIndex = 0;//0 * EditSession::MAX_TERRAIN_VARIATION_PER_WORLD + 0;
+		pShader = &sess->mainMenu->terrainShaders[terrainIndex];
+		miniShader = NULL;
+		tdInfo = sess->terrainDecorInfoMap[make_pair(0, 0)];
+	}
 	else
 	{
 		//int texInd = terrainWorldType * Session::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
@@ -4163,25 +4188,25 @@ std::string TerrainPolygon::GetWaterNameFromType(int waterT)
 
 bool TerrainPolygon::IsPhaseType()
 {
-	return terrainWorldType == 3 && terrainVariation == 5;
+	return terrainWorldType == SPECIAL && terrainVariation == SPECIAL_TYPE_PHASE;
 	//return specialType == SPECIAL_TYPE_PHASE;
 }
 
 bool TerrainPolygon::IsInversePhaseType()
 {
-	return terrainWorldType == 3 && terrainVariation == 6;
+	return terrainWorldType == SPECIAL && terrainVariation == SPECIAL_TYPE_INVERSE_PHASE;
 	//return specialType == SPECIAL_TYPE_INVERSE_PHASE;
 }
 
 bool TerrainPolygon::IsSometimesActiveType()
 {
-	return terrainWorldType == 5 && terrainVariation == 7;
+	return terrainWorldType == SPECIAL && terrainVariation == SPECIAL_TYPE_FADE;
 	//return specialType == SPECIAL_TYPE_FADE;
 }
 
 bool TerrainPolygon::IsInvisibleType()
 {
-	return terrainWorldType == 0 && terrainVariation == 7;
+	return terrainWorldType == SPECIAL && terrainVariation == SPECIAL_TYPE_INVISIBLE;
 	//return specialType == SPECIAL_TYPE_INVISIBLE;
 }
 
@@ -5732,6 +5757,11 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 
 		if (sess->IsSessTypeEdit())
 		{
+			if (renderMode == RENDERMODE_MOVING_POINTS)
+			{
+				DrawPoints(target, zoomMultiple, dontShow);
+			}
+
 			target->draw(lines, numP * 2, sf::Lines);
 		}
 		else
@@ -7697,7 +7727,7 @@ bool TerrainPolygon::Load(std::ifstream &is)
 	is >> matWorld;
 	is >> matVariation;
 
-	if (matVariation > Session::MAX_TERRAIN_VARIATION_PER_WORLD - 1)
+	if (matWorld < SECRETCORE && matVariation > Session::MAX_TERRAIN_VARIATION_PER_WORLD - 1)
 	{
 		matVariation = 0;
 	}

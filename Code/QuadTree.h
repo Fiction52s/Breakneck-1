@@ -16,7 +16,7 @@ struct QuadTreeCollider
 
 struct QuadTreeEntrant
 {
-	virtual void HandleQuery( QuadTreeCollider * qtc ) = 0;
+	virtual void HandleQuery(QuadTreeCollider * qtc) = 0;
 	virtual bool IsTouchingBox( const sf::Rect<double> &r ) = 0;
 };
 

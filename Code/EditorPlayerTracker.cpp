@@ -9,7 +9,7 @@ PlayerTracker::PlayerTracker()
 	trackerOn = false;
 	trackPoints = 0;
 	mostRecentTrackPoint = 0;
-	testPlayerTracker = new CircleGroup(1000, 12, Color::Green, 6);
+	testPlayerTracker = new CircleGroup(1000, 30, Color::Green, 12);
 	startTrackColor = Color::Red;
 	endTrackColor = Color::Green;
 }
@@ -56,6 +56,18 @@ void PlayerTracker::SetOldTrackPos(
 {
 	playerOldGroundTrackPos = groundPos;
 	playerOldTrackPos = airPos;
+}
+
+void PlayerTracker::CopyFrom(PlayerTracker *pt)
+{
+	testPlayerTracker->CopyFrom(pt->testPlayerTracker);
+	trackPoints = pt->trackPoints;
+	mostRecentTrackPoint = pt->mostRecentTrackPoint;
+	startTrackColor = pt->startTrackColor;
+	endTrackColor = pt->endTrackColor;
+	playerOldTrackPos = pt->playerOldTrackPos;
+	playerOldGroundTrackPos = pt->playerOldGroundTrackPos;
+	trackerOn = pt->trackerOn;
 }
 
 void PlayerTracker::CalcShownCircles()

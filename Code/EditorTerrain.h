@@ -246,12 +246,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	enum SpecialType
 	{
-		SPECIAL_TYPE_NONE,
-		SPECIAL_TYPE_FADE,
 		SPECIAL_TYPE_PHASE,
 		SPECIAL_TYPE_INVERSE_PHASE,
+		SPECIAL_TYPE_FADE,
 		SPECIAL_TYPE_INVISIBLE,
-		SPECIAL_Count
+		SPECIAL_TYPE_Count
 	};
 	
 

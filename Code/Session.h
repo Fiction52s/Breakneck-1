@@ -377,7 +377,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	QuadTree *railDrawTree;
 	QuadTree *grassTree;
 	QuadTree *activeItemTree;
-	QuadTree *staticItemTree;
 	QuadTree * gateTree;
 	QuadTree * enemyTree;
 	QuadTree *specterTree;

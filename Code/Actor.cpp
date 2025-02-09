@@ -32,6 +32,7 @@
 #include "Enemy_GravityModifier.h"
 #include "ParticleEffects.h"
 #include "Enemy_CurrencyItem.h"
+#include "Enemy_CurrencyGrid.h"
 #include "StorySequence.h"
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Teleporter.h"
@@ -5452,7 +5453,7 @@ void Actor::CheckForAirTrigger()
 	currAirTrigger = NULL;
 	queryType = Q_AIRTRIGGER;
 	Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
-	owner->airTriggerTree->Query(this, r);
+	QueryTree(owner->airTriggerTree, r);
 	if (currAirTrigger != NULL)
 	{
 		switch (currAirTrigger->triggerType)
@@ -9191,13 +9192,9 @@ bool Actor::CheckWall( bool right )
 	//sf::Rect<double> r( 
 	Rect<double> r( position.x + tempVel.x + b.offset.x - b.rw, position.y + tempVel.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 
-
-	GetTerrainTree()->Query( this, r );
-	
-	
-	sess->barrierTree->Query(this, r);
-
-	GetRailEdgeTree()->Query(this, r);
+	QueryTree(GetTerrainTree(), r);
+	QueryTree(sess->barrierTree, r);
+	QueryTree(GetRailEdgeTree(), r);
 	
 
 
@@ -9341,8 +9338,8 @@ bool Actor::TryStandupOnForcedGrindExit()
 	queryType = Q_CHECK_GRIND_TRANSFER;
 	grindTransferCheckEdge = NULL;
 
-	GetTerrainTree()->Query(this, r);
-	sess->railEdgeTree->Query(this, r);
+	QueryTree(GetTerrainTree(), r);
+	QueryTree(sess->railEdgeTree, r);
 
 	reversed = oldReversed;
 
@@ -9396,10 +9393,10 @@ bool Actor::CheckStandUp()
 
 	queryType = Q_CHECK;
 	checkValid = true;
-	GetTerrainTree()->Query(this, r);
-	sess->railEdgeTree->Query(this, r);
 
-	sess->barrierTree->Query(this, r);
+	QueryTree(GetTerrainTree(), r);
+	QueryTree(sess->railEdgeTree, r);
+	QueryTree(sess->barrierTree, r);
 
 	possibleEdgeCount = 0;
 
@@ -9435,10 +9432,10 @@ bool Actor::CheckStandUpToDash()
 
 	queryType = Q_CHECK;
 	checkValid = true;
-	GetTerrainTree()->Query(this, r);
-	sess->railEdgeTree->Query(this, r);
 
-	sess->barrierTree->Query(this, r);
+	QueryTree(GetTerrainTree(), r);
+	QueryTree(sess->railEdgeTree, r);
+	QueryTree(sess->barrierTree, r);
 
 	possibleEdgeCount = 0;
 
@@ -9514,13 +9511,11 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if (action != LOCKEDRAILSLIDE)//change this to be a more general bool later
 	{
-		GetTerrainTree()->Query(this, r);
+		QueryTree(GetTerrainTree(), r);
 	}
 	
-	sess->railEdgeTree->Query(this, r);
-
-	
-	sess->barrierTree->Query(this, r);
+	QueryTree(sess->railEdgeTree, r);
+	QueryTree(sess->barrierTree, r);
 
 	if( col )
 	{
@@ -9554,18 +9549,10 @@ bool Actor::ResolvePhysics( V2d vel )
 	TryCheckGrass();
 
 	
-	
-
-	//queryMode = "item";
-	//owner->itemTree->Query( this, r );
-	
 	if (owner != NULL)
 	{
 		queryType = Q_ENVPLANT;
-		owner->envPlantTree->Query(this, r);
-
-		Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
-		owner->staticItemTree->Query(NULL, staticItemRect);
+		QueryTree(owner->envPlantTree, r);
 	}
 
 	canRailGrind = CanRailGrind();
@@ -9578,7 +9565,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	//if( canRailGrind || canRailSlide )
 	{
 		queryType = Q_RAIL;
-		sess->railEdgeTree->Query(this, r);
+		QueryTree(sess->railEdgeTree, r);
 	}
 
 	
@@ -9599,7 +9586,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	if (!simulationMode)
 	{
 		queryType = Q_ACTIVEITEM;
-		sess->activeItemTree->Query(this, r);//activeR);
+		QueryTree(sess->activeItemTree, r);
 	}
 	
 	
@@ -10811,7 +10798,7 @@ void Actor::CheckGates()
 	queryType = Q_CHECK_GATE;
 	Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
 
-	GetTerrainTree()->Query(this, r);
+	QueryTree(GetTerrainTree(), r);
 }
 
 bool Actor::ExitGrind(bool jump)
@@ -12098,7 +12085,8 @@ void Actor::TryCheckGrass()
 		//grassR is the same as the rect used in HandleEntrant for "grass"
 		//might need to make a function at some point
 		queryType = Q_GRASS;
-		sess->grassTree->Query(this, grassR);
+
+		QueryTree(sess->grassTree, grassR);
 	}
 }
 
@@ -12862,13 +12850,13 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 		Rect<double> r(minLeft - ex, minTop - ex, (maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2);
 
 		queryType = Q_ACTIVEITEM;
-		sess->activeItemTree->Query(this, r);//activeR);
+		QueryTree(sess->activeItemTree, r);
 
 		queryType = Q_RAIL;
-		sess->railEdgeTree->Query(this, r);
+		QueryTree(sess->railEdgeTree, r);
 
 		queryType = Q_GRASS;
-		sess->grassTree->Query(this, r);
+		QueryTree(sess->grassTree, r);
 
 		double extraMovement = .9;//.001;
 
@@ -12878,7 +12866,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 			if (grindEdge->rail != NULL)
 			{
 				queryType = Q_RAIL_GRIND_TERRAIN_CHECK;
-				sess->terrainTree->Query(this, r);
+				QueryTree(sess->terrainTree, r);
 
 				if (grindEdge->rail == NULL)
 				{
@@ -12897,7 +12885,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 			else
 			{
 				queryType = Q_TERRAIN_GRIND_RAIL_CHECK;
-				sess->railEdgeTree->Query(this, r);
+				QueryTree(sess->railEdgeTree, r);
 
 				if (grindEdge->rail != NULL)
 				{
@@ -18051,7 +18039,8 @@ void Actor::ProcessSpecialTerrain()
 	queryType = Q_SPECIALTERRAIN;
 	V2d trueCenter = GetTrueCenter();
 	Rect<double> r(trueCenter.x - b.rw, trueCenter.y - b.rh, 2 * b.rw, 2 * b.rh);
-	GetSpecialTerrainTree()->Query(this, r);
+
+	QueryTree(GetSpecialTerrainTree(), r);
 	HandleSpecialTerrain();
 }
 
@@ -19685,7 +19674,7 @@ void Actor::QueryTouchGrass()
 
 	polyQueryList = NULL;
 	queryType = Q_TOUCHGRASSPOLY;
-	GetBorderTree()->Query(this, queryRExtended);
+	QueryTree(GetBorderTree(), queryRExtended);
 
 	queryType = Q_TOUCHGRASS;
 	PolyPtr tempT = polyQueryList;
@@ -21538,8 +21527,15 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			if (ci->hitBody.Intersects(ci->currHitboxFrame, &hurtBody) && ci->IsCollectable())
 			{
-				CollectCurrency(ci);
+				CollectCurrencyItem(ci);
 			}
+		}
+		else if (en->type == EnemyType::EN_CURRENCYGRID)
+		{
+			CurrencyGrid *cg = (CurrencyGrid*)qte;
+
+			cg->CheckCollection(this);
+			//cg->CheckCollection( this );
 		}
 		else if (en->type == EnemyType::EN_TOUCHKEY)
 		{
@@ -25620,11 +25616,16 @@ void Actor::UpdateInHitlag()
 	return pair<bool, bool>(false,false);
 }
 
- void Actor::CollectCurrency(CurrencyItem *ci)
+ void Actor::CollectCurrencyItem(CurrencyItem *ci)
  {
-	 HealTimer(ci->GetHealAmount());
 	 ci->Collect(this);
-	 AddToCurrencyCounter(ci->GetCounterAmount());
+	 CollectCurrency(ci->GetCounterAmount(), ci->GetHealAmount());
+ }
+
+ void Actor::CollectCurrency(int currencyAmount, int healAmount )
+ {
+	 HealTimer(currencyAmount);
+	 AddToCurrencyCounter(currencyAmount);
  }
 
  void Actor::SetAirBlockAction()
@@ -26159,6 +26160,12 @@ void Actor::UpdateInHitlag()
 	 homingBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
 	 antiTimeSlowBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
 	 freeFlightBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+ }
+
+ void Actor::QueryTree(QuadTree *qt, const sf::Rect<double> &r)
+ {
+	 currQueryRect = r;
+	 qt->Query(this, r);
  }
 
  int Actor::GetNumStoredBytes()

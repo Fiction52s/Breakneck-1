@@ -4,11 +4,37 @@
 #include "Enemy.h"
 
 struct CircleGroup;
-struct CurrencyGrid : Enemy
+
+
+
+struct CurrencyGrid : Enemy, QuadTreeCollider
 {
+
+	struct GridCurrencyInfo : QuadTreeEntrant
+	{
+		bool exists;
+		int state;
+		int frame;
+		sf::Rect<double> myRect;
+		CurrencyGrid *myGrid;
+		V2d center;
+		int index;
+		int playerChasingIndex;
+
+		GridCurrencyInfo();
+		void Reset();
+		void ProcessState();
+		void HandleQuery(QuadTreeCollider * qtc);
+		bool IsTouchingBox(const sf::Rect<double> &r);
+		void UpdateSprite();
+		void Collect( int pIndex );
+	};
+
 	enum Action
 	{
-		EXIST,
+		NEUTRAL,
+		PLAYER_COLLECT,
+		INACTIVE,
 		Count
 	};
 
@@ -18,13 +44,19 @@ struct CurrencyGrid : Enemy
 	};
 	MyData data;
 
+	QuadTree *currencyTree;
 	int numCurrencyTotal;
+	Actor *currCheckingCollectionActor; //used during a frame not between frames, doesn't need to be stored I think
+	int currencyType;
 
 	sf::Vector2i gridSize;
-	sf::Vector2i gridDist;
+	
+	int gridDistance;
 
-	int *currStates;
-	int *currFrames;
+	int givenHealAmount;
+	int givenCurrencyAmount;
+
+	float currencyRad;
 
 
 	Tileset *ts;
@@ -32,11 +64,17 @@ struct CurrencyGrid : Enemy
 
 	sf::Vertex *va;
 
-	std::vector<bool> hasCurrencyVec;
+	CollisionBody testBody;
 
-	CurrencyGrid(ActorParams *ap, EnemyType at, V2d pos, sf::Vector2i p_gridSize, sf::Vector2i p_gridDist, std::vector<bool> & p_hasCurrencyVec );
+	std::vector<GridCurrencyInfo> currencyInfoVec;
+
+	CurrencyGrid(ActorParams *ap, EnemyType at, V2d pos, sf::Vector2i p_gridSize, std::vector<bool> & p_hasCurrencyVec, int p_currencyType );
 	~CurrencyGrid();
+	
+	
+	void CheckCollection(Actor *a);
 	void ResetEnemy();
+	void HandleEntrant(QuadTreeEntrant *qte);
 	//virtual void InitReadParams(ActorParams *params) = 0;
 	void SetOriginPosition(V2d p);
 	virtual void SetKnockbackDirs() {}
@@ -47,6 +85,7 @@ struct CurrencyGrid : Enemy
 	void UpdateParams(ActorParams *ap);
 	void UpdateSprite();
 	void AddToWorldTrees();
+	V2d GetCurrencyStartPosition(int index);
 	sf::FloatRect GetAABB();
 	void CreateEnemies();
 	void UpdateFromParams(ActorParams *ap, int numFrames);

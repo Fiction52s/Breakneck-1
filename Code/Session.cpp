@@ -748,11 +748,11 @@ void Session::RegisterAllEnemies()
 {
 	RegisterGeneralEnemies();
 	RegisterW1Enemies();
-	RegisterW2Enemies();
+	/*RegisterW2Enemies();
 	RegisterW3Enemies();
-	RegisterW4Enemies();
-	RegisterW5Enemies();
-	RegisterW6Enemies();
+	RegisterW4Enemies();*/
+	//RegisterW5Enemies();
+	//RegisterW6Enemies();
 	//RegisterW7Enemies();
 	//RegisterW8Enemies();
 }
@@ -1671,8 +1671,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	gateTree = NULL;
 	enemyTree = NULL;
 
-	staticItemTree = NULL;
-
 	//polyShaders = NULL;
 	
 	background = NULL;
@@ -1810,12 +1808,6 @@ Session::~Session()
 	{
 		delete barrierTree;
 		barrierTree = NULL;
-	}
-
-	if (staticItemTree != NULL)
-	{
-		delete staticItemTree;
-		staticItemTree = NULL;
 	}
 
 	if (gateTree != NULL)

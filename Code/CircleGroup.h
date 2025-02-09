@@ -16,6 +16,7 @@ struct CircleGroup
 	CircleGroup(int num, int rad, sf::Color col, int pointsPerCircle);
 	~CircleGroup();
 	
+	void CopyFrom(CircleGroup *cg);
 	void SetColor(int index, sf::Color c);
 	void ResetColor();
 	void SetVisible(int index, bool vis);

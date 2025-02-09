@@ -168,6 +168,21 @@ void CurrencyItem::SetStartPosition(V2d &pos)
 	UpdateSprite();
 }
 
+int CurrencyItem::GetSpacing(int cType)
+{
+	switch (cType)
+	{
+	case CURRENCY_NORMAL:
+		return 64;
+	case CURRENCY_BIG:
+		return 80;
+	default:
+		assert(0);
+	}
+
+	return -1;
+}
+
 //bool CurrencyItem::IsTouchingBox(const sf::Rect<double> &r)
 //{
 //	return r.intersects(spawnRect);
@@ -188,7 +203,7 @@ void CurrencyItem::ProcessHit()
 	if (IsCollectible() && HasReceivedHit())
 	{
 		//Collect();
-		sess->GetPlayer(receivedHitPlayerIndex)->CollectCurrency(this);
+		sess->GetPlayer(receivedHitPlayerIndex)->CollectCurrencyItem(this);
 	}
 }
 

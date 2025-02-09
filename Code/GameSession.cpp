@@ -1567,7 +1567,14 @@ void GameSession::ProcessAllTerrain()
 	terrainTypeIndexesUsedVec.reserve(numMats);
 	for (auto it = matSet.begin(); it != matSet.end(); ++it)
 	{
-		terrainTypeIndexesUsedVec.push_back((*it).first * MAX_TERRAIN_VARIATION_PER_WORLD + (*it).second);
+		if ((*it).first == TerrainPolygon::SPECIAL)
+		{
+			terrainTypeIndexesUsedVec.push_back(0);
+		}
+		else
+		{
+			terrainTypeIndexesUsedVec.push_back((*it).first * MAX_TERRAIN_VARIATION_PER_WORLD + (*it).second);
+		}
 	}
 
 	int index = 0;
@@ -2513,7 +2520,6 @@ void GameSession::SetupQuadTrees()
 		specialTerrainTree->Clear();
 		itemTerrainTree->Clear();
 		inverseEdgeTree->Clear();
-		staticItemTree->Clear();
 		railDrawTree->Clear();
 		railEdgeTree->Clear();
 		enemyTree->Clear();
@@ -2540,8 +2546,6 @@ void GameSession::SetupQuadTrees()
 	itemTerrainTree = new QuadTree(1000000, 1000000);
 
 	inverseEdgeTree = new QuadTree(1000000, 1000000);
-
-	staticItemTree = new QuadTree(1000000, 1000000);
 	railDrawTree = new QuadTree(1000000, 1000000);
 	railEdgeTree = new QuadTree(1000000, 1000000);
 
@@ -3996,7 +4000,6 @@ void GameSession::Init()
 	itemTree = NULL;
 	gateTree = NULL;
 	enemyTree = NULL;
-	staticItemTree = NULL;
 	terrainBGTree = NULL;
 	activeEnemyItemTree = NULL;
 	airTriggerTree = NULL;

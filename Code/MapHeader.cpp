@@ -606,11 +606,11 @@ void MapHeader::Save(std::ofstream &of)
 
 	of << drainSeconds << endl;
 
-	of << goldSeconds << " " << "\n";
+	of << goldSeconds << "\n";
 
-	of << silverSeconds << " " << "\n";
+	of << silverSeconds << "\n";
 
-	of << bronzeSeconds << " " << "\n";
+	of << bronzeSeconds << "\n";
 
 	of << bossFightType << endl;
 

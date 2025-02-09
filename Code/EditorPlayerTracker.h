@@ -21,6 +21,7 @@ struct PlayerTracker
 	void SetOn(bool on);
 	void SetOldTrackPos(
 		V2d &groundPos, V2d &airPos);
+	void CopyFrom(PlayerTracker *pt);
 	void CalcShownCircles();
 	void TryAddTrackPoint( V2d &playerPos );
 	bool IsTrackStarted();

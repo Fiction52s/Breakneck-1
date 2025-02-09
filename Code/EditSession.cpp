@@ -27,7 +27,7 @@
 
 #include "TransformTools.h"
 #include "ScoreDisplay.h"
-
+#include "Enemy_CurrencyGrid.h"
 #include "CircleGroup.h"
 
 #include "ItemSelector.h"
@@ -284,17 +284,17 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 {
 	//if (GetCurrInput(0). && !GetPrevInput(0).start)
 
-	return false;
+	//return false;
 
 	Actor *pTemp;
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{
-		if (debugReplayManager != NULL)
+		
+		/*if (debugReplayManager != NULL)
 		{
 			delete debugReplayManager;
 			debugReplayManager = NULL;
 		}
-
 
 
 		debugReplayManager = new PlayerReplayManager;
@@ -310,50 +310,51 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 		}
 
 		debugReplayPlayerOn = true;
-		TryTestPlayerMode();
-		//SetMode(EDIT);
-		//pTemp = GetPlayer(0);
+		TryTestPlayerMode();*/
+		
+		pTemp = GetPlayer(0);
 
-		//if (pTemp->ground != NULL) //doesn't work with bounce or grind
-		//{
-		//	playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity),
-		//		pTemp->position);
-		//}
+		if (pTemp->ground != NULL) //doesn't work with bounce or grind
+		{
+			prevRunPlayerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity),
+				pTemp->position);
+		}
 		////bounce and grind also later
-
-		//playerTracker->SetOn(true);
-		//playerTracker->CalcShownCircles();
+		SetMode(EDIT);
+		prevRunPlayerTracker->SetOn(true);
+		prevRunPlayerTracker->CalcShownCircles();
 		return true;
 	}
 	else if (GetCurrInput(0).back && !GetPrevInput(0).back)
 	{
-		if (playerRecordingManager != NULL)
-		{
-			playerRecordingManager->StopRecording();
-			//ss << saveFile->replayFolderName << saveFile->adventureFile->GetMap(level->index).name << "_" << myHash << "_best" << REPLAY_EXT;
-			string s = "Resources\\Recordings\\Debug\\editordebugreplay" + string(REPLAY_EXT);
-			playerRecordingManager->WriteToFile( s );
+		//this code is fine and just paired with the commented code above, I'll find a spot for it. Need debug replays playable at some point!
 
-			if (debugReplayManager != NULL)
-			{
-				delete debugReplayManager;
-				debugReplayManager = NULL;
+		//if (playerRecordingManager != NULL)
+		//{
+		//	playerRecordingManager->StopRecording();
+		//	//ss << saveFile->replayFolderName << saveFile->adventureFile->GetMap(level->index).name << "_" << myHash << "_best" << REPLAY_EXT;
+		//	string s = "Resources\\Recordings\\Debug\\editordebugreplay" + string(REPLAY_EXT);
+		//	playerRecordingManager->WriteToFile( s );
 
-				debugReplayManager = new PlayerReplayManager;
+		//	if (debugReplayManager != NULL)
+		//	{
+		//		delete debugReplayManager;
+		//		debugReplayManager = NULL;
 
-				bool canOpen = debugReplayManager->LoadFromFile(s);
-				debugReplayManager->ghostsActive = true;
-				debugReplayManager->replaysActive = true;
-				if (!canOpen)
-				{
-					delete debugReplayManager;
-					debugReplayManager = NULL;
-				}
-			}
-		}
+		//		debugReplayManager = new PlayerReplayManager;
 
-		debugReplayPlayerOn = true;
-		TryTestPlayerMode();
+		//		bool canOpen = debugReplayManager->LoadFromFile(s);
+		//		debugReplayManager->ghostsActive = true;
+		//		debugReplayManager->replaysActive = true;
+		//		if (!canOpen)
+		//		{
+		//			delete debugReplayManager;
+		//			debugReplayManager = NULL;
+		//		}
+		//	}
+		//}
+
+		//debugReplayPlayerOn = true;
 		//TryTestPlayerMode();
 	}
 
@@ -436,7 +437,7 @@ bool EditSession::RunPostUpdate()
 	{
 		if (totalGameFrames % 3 == 0)
 		{
-			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
+			prevRunPlayerTracker->TryAddTrackPoint(GetPlayerPos(0));
 		}
 	}
 
@@ -763,7 +764,7 @@ void EditSession::TestPlayerMode()
 
 	Actor *p;
 
-	bool continueTracking = (GetCurrInput(0).start && playerTracker->IsTrackStarted() && mode != TEST_PLAYER);
+	bool continueTracking = (GetCurrInput(0).start && prevRunPlayerTracker->IsTrackStarted() && mode != TEST_PLAYER);
 
 	if (continueTracking)
 	{
@@ -774,9 +775,9 @@ void EditSession::TestPlayerMode()
 		p = GetPlayer(0);
 		if (p->ground != NULL)
 		{
-			if (!TryAttachPlayerToPolys(playerTracker->playerOldGroundTrackPos, p->offsetX))
+			if (!TryAttachPlayerToPolys(prevRunPlayerTracker->playerOldGroundTrackPos, p->offsetX))
 			{
-				p->SetAirPos(playerTracker->playerOldTrackPos, p->facingRight);
+				p->SetAirPos(prevRunPlayerTracker->playerOldTrackPos, p->facingRight);
 			}
 		}
 	}
@@ -941,6 +942,12 @@ void EditSession::TestPlayerMode()
 			}
 		}
 
+		auto &testPolys2 = GetCorrectPolygonList(2);
+		for (auto it = testPolys2.begin(); it != testPolys2.end(); ++it)
+		{
+			(*it)->myCurrencyGrid->Reset();
+		}
+
 		for (auto it = rails.begin(); it != rails.end(); ++it)
 		{
 			if ((*it)->enemyChain != NULL)
@@ -1060,8 +1067,6 @@ void EditSession::TestPlayerMode()
 
 		railEdgeTree = new QuadTree(1000000, 1000000);
 		barrierTree = new QuadTree(1000000, 1000000);
-
-		staticItemTree = new QuadTree(1000000, 1000000);
 
 		activeItemTree = new QuadTree(1000000, 1000000);
 
@@ -1191,7 +1196,9 @@ void EditSession::TestPlayerMode()
 	for (auto it = testPolys2.begin(); it != testPolys2.end(); ++it)
 	{
 		(*it)->AddItemsToWorldTrees();
-		(*it)->AddItemsToQuadTree(enemyTree);
+		
+		
+		//(*it)->AddItemsToQuadTree(enemyTree);
 		itemTerrainTree->Insert((*it));
 	}
 
@@ -1485,7 +1492,7 @@ void EditSession::TestPlayerMode()
 
 	if (!continueTracking)
 	{
-		playerTracker->Reset();
+		prevRunPlayerTracker->Reset();
 		totalGameFrames = 0;
 		totalFramesBeforeGoal = -1;
 		currentTime = 0;
@@ -1650,7 +1657,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	removeProgressPointWaiter = new FrameWaiter(2, waitFrames, 1, waitModeThresh );
 	
 	variationSelector = new EnemyVariationSelector( false );
-	playerTracker = new PlayerTracker();
+	prevRunPlayerTracker = new PlayerTracker();
+	setPlayerTracker = new PlayerTracker();
 	runToResave = false;
 
 	gameCam = false;
@@ -1941,7 +1949,7 @@ void EditSession::CleanupForReload()
 		polygons[i].clear();
 	}
 
-	
+	ClearActiveSequences();
 
 	CleanupBackground();
 
@@ -2011,7 +2019,8 @@ EditSession::~EditSession()
 
 	delete variationSelector;
 
-	delete playerTracker;
+	delete prevRunPlayerTracker;
+	delete setPlayerTracker;
 
 	delete playerInputBoxGroup;
 
@@ -3553,6 +3562,17 @@ void EditSession::SetMatTypePanelCategory(int cat)
 		return;
 	}
 
+	/*if (cat == TerrainPolygon::CATEGORY_ITEM)
+	{
+		matTypePanel->sliders["spacing"]->ShowMember();
+		matTypePanel->labels["spacing"]->ShowMember();
+	}
+	else
+	{
+		matTypePanel->sliders["spacing"]->HideMember();
+		matTypePanel->labels["spacing"]->HideMember();
+	}*/
+
 	matTypeRectsCurrCategory = cat;
 	for (int i = 0; i < TerrainPolygon::CATEGORY_Count; ++i)
 	{
@@ -3612,21 +3632,24 @@ void EditSession::SetupTerrainSelectPanel()
 	c.a = 0;//180;
 	matTypePanel->SetColor(c);
 
+
+	int numSpecialTypeRects = TerrainPolygon::SPECIAL_TYPE_Count;
+
 	//terrainSelectPanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10));
 	int maxTerrainVarPerWorld = EditSession::MAX_TERRAIN_VARIATION_PER_WORLD;
-	int numTypeRects = 8 * maxTerrainVarPerWorld;
+	int numNormalRects = 8 * maxTerrainVarPerWorld + numSpecialTypeRects;
 
 	int numWaterTypeRects = TerrainPolygon::WATER_Count;
-	int numPickupTypeRects = 1;//1 * maxTerrainVarPerWorld;
+	int numPickupTypeRects = 2;//1 * maxTerrainVarPerWorld;
 
-	int numVisualTypeRects = numTypeRects;
+	int numVisualTypeRects = 8 * maxTerrainVarPerWorld;
 	int numVisualWaterTypeRects = numWaterTypeRects;
 
-	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects + numVisualTypeRects + numVisualWaterTypeRects;
+	int totalRects = numNormalRects + numWaterTypeRects + numPickupTypeRects + numVisualTypeRects + numVisualWaterTypeRects;
 
 	matTypePanel->ReserveImageRects(totalRects);
 
-	matTypeRects[TerrainPolygon::CATEGORY_NORMAL].resize(numTypeRects);
+	matTypeRects[TerrainPolygon::CATEGORY_NORMAL].resize(numNormalRects);
 
 	for (int worldI = 0; worldI < 8; ++worldI)
 	{
@@ -3643,22 +3666,7 @@ void EditSession::SetupTerrainSelectPanel()
 
 			//TerrainPolygon::IsInversePhaseType()
 
-			if (worldI == 3 && i == 5)
-			{
-				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Phase");
-			}
-			else if (worldI == 3 && i == 6)
-			{
-				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Inverse\nPhase");
-			}
-			else if (worldI == 5 && i == 7)
-			{
-				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Fade");
-			}
-			else if (worldI == 0 && i == 7)
-			{
-				matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Invisible");
-			}
+			
 
 			matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->Init();
 			if (matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->ts != NULL)
@@ -3667,6 +3675,48 @@ void EditSession::SetupTerrainSelectPanel()
 			}
 		}
 	}
+
+	int specialWorld = 8;
+	for (int i = 0; i < TerrainPolygon::SPECIAL_TYPE_Count; ++i)
+	{
+		int ind = specialWorld * maxTerrainVarPerWorld + i;
+		matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind] = matTypePanel->AddImageRect(
+			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+			Vector2f(i * terrainGridSize, 4 * terrainGridSize),
+			mainMenu->ts_terrain, mainMenu->ts_terrain->GetSubRect(0),
+			terrainGridSize);
+
+		if (i == TerrainPolygon::SPECIAL_TYPE_PHASE)
+		{
+			matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Phase");
+		}
+		else if (i == TerrainPolygon::SPECIAL_TYPE_INVERSE_PHASE)
+		{
+			matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Inverse\nPhase");
+		}
+		else if ( i == TerrainPolygon::SPECIAL_TYPE_FADE)
+		{
+			matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Fade");
+		}
+		else if ( i == TerrainPolygon::SPECIAL_TYPE_INVISIBLE)
+		{
+			matTypeRects[TerrainPolygon::CATEGORY_NORMAL][ind]->SetName("Invisible");
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	matTypeRects[TerrainPolygon::CATEGORY_WATER].resize(numWaterTypeRects);
 
@@ -3723,6 +3773,11 @@ void EditSession::SetupTerrainSelectPanel()
 			//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
 		}
 	}
+
+	/*matTypePanel->SetAutoSpacing(true, false, Vector2i(10, terrainGridSize * 2), Vector2i(10, 0));
+	matTypePanel->AddLabel("spacing", Vector2i(0, 0), 30, "Spacing:");
+	matTypePanel->AddSlider("spacing", Vector2i( 0, 0 ), 300, 64, 300, 64);
+	matTypePanel->PauseAutoSpacing();*/
 
 
 	matTypeRects[TerrainPolygon::CATEGORY_VISUAL].resize(numVisualTypeRects);
@@ -8623,8 +8678,6 @@ void EditSession::TestPlayerModeForPreview()
 		railEdgeTree = new QuadTree(1000000, 1000000);
 		barrierTree = new QuadTree(1000000, 1000000);
 
-		staticItemTree = new QuadTree(1000000, 1000000);
-
 		activeItemTree = new QuadTree(1000000, 1000000);
 
 		gateTree = new QuadTree(1000000, 1000000);
@@ -8655,8 +8708,6 @@ void EditSession::TestPlayerModeForPreview()
 
 	//railEdgeTree = new QuadTree(1000000, 1000000);
 	//barrierTree = new QuadTree(1000000, 1000000);
-
-	//staticItemTree = new QuadTree(1000000, 1000000);
 
 	//activeItemTree = new QuadTree(1000000, 1000000);
 
@@ -12246,7 +12297,8 @@ void EditSession::CleanupTestPlayerMode()
 	ClearEmitters();
 	CleanupEnvParticleSystem();
 
-	playerTracker->HideAll();
+	prevRunPlayerTracker->HideAll();
+	setPlayerTracker->HideAll();
 
 	mapHeader->leftBounds = realLeftBounds;
 	mapHeader->topBounds = realTopBounds;
@@ -13501,6 +13553,11 @@ void EditSession::DrawTerrain( int p_drawLayer, sf::RenderTarget *target)
 
 void EditSession::DrawItemTerrain(sf::RenderTarget *target)
 {
+	if (mode == TEST_PLAYER )
+	{
+		return;
+	}
+
 	bool showPoints = IsShowingPoints();
 
 	auto & currPolyList = GetCorrectPolygonList(2);
@@ -13859,7 +13916,7 @@ void EditSession::DrawMode()
 		if (grabbedImage != NULL)
 			grabbedImage->Draw(preScreenTex);
 
-		DrawPlayerTracker(preScreenTex);
+		DrawPlayerTrackers(preScreenTex);
 		break;
 	}
 	case PASTE:
@@ -13870,7 +13927,7 @@ void EditSession::DrawMode()
 			freeActorCopiedBrush->Draw(preScreenTex);
 
 
-		DrawPlayerTracker(preScreenTex);
+		DrawPlayerTrackers(preScreenTex);
 		break;
 	}
 	case TEST_PLAYER:
@@ -13892,20 +13949,22 @@ void EditSession::DrawMode()
 			preScreenTex->draw(boxToolQuad, 4, sf::Quads);
 		}
 
-		DrawPlayerTracker(preScreenTex);
+		DrawPlayerTrackers(preScreenTex);
 		break;
 	}
 	case CREATE_RAILS:
 	{
 		DrawRailInProgress();
 
-		DrawPlayerTracker(preScreenTex);
+		DrawPlayerTrackers(preScreenTex);
 		break;
 	}
 	case EDIT:
 	{
 		DrawBoxSelection();
-		DrawPlayerTracker(preScreenTex);
+		DrawPlayerTrackers(preScreenTex);
+
+		DrawPlayerTrackers(preScreenTex);
 		
 		break;
 	}
@@ -13916,6 +13975,7 @@ void EditSession::DrawMode()
 		if (grabbedActor != NULL)
 			grabbedActor->Draw(preScreenTex);
 
+		DrawPlayerTrackers(preScreenTex);
 		break;
 	}
 	case CREATE_RECT:
@@ -13938,12 +13998,15 @@ void EditSession::DrawMode()
 	{
 		DrawTrackingEnemy();
 		DrawPatrolPathInProgress();
+
 		break;
 	}
 	case CREATE_GATES:
 	{
 		DrawGateInProgress();
 		createGatesModeUI->Draw(preScreenTex);
+
+		DrawPlayerTrackers(preScreenTex);
 		break;
 	}
 	case CREATE_IMAGES:
@@ -13963,12 +14026,17 @@ void EditSession::DrawMode()
 	}
 }
 
-void EditSession::DrawPlayerTracker(sf::RenderTarget *target)
+void EditSession::DrawPlayerTrackers(sf::RenderTarget *target)
 {
-	if (playerTracker->IsOn())
+	if (prevRunPlayerTracker->IsOn())
 	{
-		playerTracker->Draw(preScreenTex);
-		GetPlayer(0)->Draw(preScreenTex);
+		prevRunPlayerTracker->Draw(preScreenTex);
+		if (setPlayerTracker->IsOn())
+		{
+			setPlayerTracker->Draw(preScreenTex);
+		}
+		
+		//GetPlayer(0)->Draw(preScreenTex);
 	}
 }
 
@@ -14676,7 +14744,13 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::H)
 		{
-			playerTracker->SwitchOnOff();
+			prevRunPlayerTracker->SwitchOnOff();
+			setPlayerTracker->SwitchOnOff();
+		}
+		else if (ev.key.code == Keyboard::K)
+		{
+			setPlayerTracker->CopyFrom(setPlayerTracker);
+			setPlayerTracker->SetOn(true);
 		}
 		else if( ev.key.code == Keyboard::W )
 		{
@@ -15108,7 +15182,8 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::H)
 		{
-			playerTracker->SwitchOnOff();
+			prevRunPlayerTracker->SwitchOnOff();
+			setPlayerTracker->SwitchOnOff();
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{

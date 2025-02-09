@@ -190,14 +190,35 @@ void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
 	int categoryIndex = GetTerrainCategory();
 	currMatRects[categoryIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
-	int world = icRect->pos.x / terrainGridSize + categoryIndex * 8;
-
-	if (categoryIndex == TerrainPolygon::CATEGORY_VISUAL)
+	int world = 0;
+	int variation = 0;
+	if (icRect->pos.y / terrainGridSize == 4)
 	{
-		world = icRect->pos.x / terrainGridSize;
+		world = TerrainPolygon::SPECIAL;
+		variation = icRect->pos.x / terrainGridSize;
 	}
-
-	int variation = icRect->pos.y / terrainGridSize;
+	else
+	{
+		if (categoryIndex == TerrainPolygon::CATEGORY_NORMAL || categoryIndex == TerrainPolygon::CATEGORY_VISUAL)
+		{
+			world = icRect->pos.x / terrainGridSize;
+			variation = icRect->pos.y / terrainGridSize;
+		}
+		else if (categoryIndex == TerrainPolygon::CATEGORY_WATER || categoryIndex == TerrainPolygon::CATEGORY_VISUAL_WATER)
+		{
+			world = icRect->pos.x / terrainGridSize + TerrainPolygon::W1_WATER;
+			variation = icRect->pos.y / terrainGridSize;
+		}
+		else if (categoryIndex == TerrainPolygon::CATEGORY_ITEM)
+		{
+			world = TerrainPolygon::ITEM;
+			variation = icRect->pos.x / terrainGridSize;
+		}
+		else
+		{
+			assert(0);
+		}
+	}
 
 	edit->currTerrainWorld[categoryIndex] = world;
 	edit->currTerrainVar[categoryIndex] = variation;
@@ -361,8 +382,6 @@ void CreateTerrainModeUI::SetShown(bool s)
 	else
 	{
 		edit->RemoveActivePanel(mainPanel);
-
-
 	}
 }
 
@@ -449,7 +468,7 @@ void CreateTerrainModeUI::SetCategory(int selectedIndex)
 
 	currMatRects[selectedIndex]->SetShown(true);
 
-	terrainCategoryDropdown->SetSelectedIndex(selectedIndex);
+	terrainCategoryDropdown->SetSelectedIndex(selectedIndex);	
 }
 
 void CreateTerrainModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -543,7 +562,7 @@ void CreateTerrainModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 
 void CreateTerrainModeUI::SliderCallback(Slider *slider)
 {
-
+	//matTypePanel
 }
 
 void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)

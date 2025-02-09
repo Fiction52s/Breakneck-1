@@ -187,7 +187,8 @@ struct EditSession : GUIHandler, Session
 	std::map<int, void(EditSession::*)()> handleEventFunctions;
 	std::map<int, void(EditSession::*)()> updateModeFunctions;
 	std::map<int, void(EditSession::*)()> loseFocusFunctions;
-	PlayerTracker *playerTracker;
+	PlayerTracker *prevRunPlayerTracker;
+	PlayerTracker *setPlayerTracker;
 	const static int MAX_RECENT_ENEMIES = 12;
 	std::list<std::pair<ActorType*, int>> recentEnemies;
 	Emode mode;
@@ -425,7 +426,7 @@ struct EditSession : GUIHandler, Session
 	void LoseFocusFunc(int m);
 	void GeneralEventHandler();
 	void GeneralMouseUpdate();
-	void DrawPlayerTracker(sf::RenderTarget *target);
+	void DrawPlayerTrackers(sf::RenderTarget *target);
 	void AddRecentEnemy(ActorPtr a);
 	bool IsDrawMode(Emode em);
 	void UpdateInputNonGame();

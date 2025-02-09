@@ -195,7 +195,7 @@ void RushManager::LoadShip()
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_RUSH;
 
 	MatchParams mp;
-	mp.mapPath = string("Resources/Maps/test/ashiptest") + MAP_EXT;
+	mp.mapPath = string("Resources/Maps/test/bshiptest") + MAP_EXT;
 	mp.randSeed = time(0);
 	mp.numPlayers = 1;
 	mp.gameModeType = MatchParams::GAME_MODE_BASIC;

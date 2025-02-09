@@ -33,6 +33,39 @@ CircleGroup::~CircleGroup()
 	delete[] circleCenters;
 }
 
+void CircleGroup::CopyFrom(CircleGroup *cg)
+{
+	numCircles = cg->numCircles;
+	radius = cg->radius;
+	color = cg->color;
+	pointsPerCircle = cg->pointsPerCircle;
+	numVerts = cg->numVerts;
+
+	if (va != NULL)
+	{
+		delete [] va;
+		delete[] circleCenters;
+	}
+
+
+	va = new Vertex[numVerts];
+	circleCenters = new Vector2f[numCircles];
+
+	for (int i = 0; i < numVerts; ++i)
+	{
+		va[i].color = cg->va[i].color;
+		va[i].position = cg->va[i].position;
+	}
+	for (int i = 0; i < numCircles; ++i)
+	{
+		circleCenters[i] = cg->circleCenters[i];
+	}
+	
+	HideAll();
+	//sf::Vertex *va;
+	//sf::Vector2f *circleCenters;
+}
+
 void CircleGroup::SetColor(int index, sf::Color c)
 {
 	sf::Vertex *circleStart = (va + index * pointsPerCircle * 3);

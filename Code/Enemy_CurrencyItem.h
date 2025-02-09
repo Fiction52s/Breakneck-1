@@ -18,6 +18,14 @@ struct CurrencyItemChain : EnemyChain
 
 struct CurrencyItem : Enemy, ChainableObject
 {
+	enum CurrencyItemType
+	{
+		CURRENCY_NORMAL,
+		CURRENCY_BIG,
+		CURRENCY_Count
+	};
+
+
 	enum Action
 	{
 		NEUTRAL,
@@ -40,8 +48,9 @@ struct CurrencyItem : Enemy, ChainableObject
 
 	Tileset *ts;
 	sf::Vertex *quad;
-	Actor *collectedPlayer;
+	Actor *collectedPlayer; //might ruin rollback over network atm? might not
 
+	static int GetSpacing(int cType);
 	bool CountsForEnemyGate() { return false; }
 	CurrencyItem(CurrencyItemChain *fc, int index,
 		V2d &pos, int level, sf::Vertex *p_quad, Tileset *p_ts);
