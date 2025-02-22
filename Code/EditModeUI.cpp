@@ -173,8 +173,7 @@ void EditModeUI::CreateKinOptionsPanel()
 	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", POWER_BOUNCE);
 	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", POWER_GRIND);
 	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", POWER_TIME);
-	AddKinOption(5, "Left Wire:", "Toggle Left Wire Power", POWER_LWIRE);
-	AddKinOption(5, "Right Wire:", "Toggle Right Wire Power",POWER_RWIRE);
+	AddKinOption(5, "Double Wires:", "Toggle Double Wire Power", POWER_DOUBLE_WIRES);
 
 	//currVerticalSpacing += vertSpacing;//10;
 

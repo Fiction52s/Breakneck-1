@@ -2672,6 +2672,66 @@ bool ControllerStateQueue::DirPressed_Down()
 	return states[0].LDown() && !states[1].LDown();
 }
 
+bool ControllerStateQueue::DirHold_Left()
+{
+	return states[0].LLeft();
+}
+
+bool ControllerStateQueue::DirHold_Right()
+{
+	return states[0].LRight();
+}
+
+bool ControllerStateQueue::DirHold_Up()
+{
+	return states[0].LUp();
+}
+
+bool ControllerStateQueue::DirHold_Down()
+{
+	return states[0].LDown();
+}
+
+bool ControllerStateQueue::PadDirPressed_Left()
+{
+	return states[0].LLeft() && !states[1].LLeft();
+}
+
+bool ControllerStateQueue::PadDirPressed_Right()
+{
+	return states[0].LRight() && !states[1].LRight();
+}
+
+bool ControllerStateQueue::PadDirPressed_Up()
+{
+	return states[0].LUp() && !states[1].LUp();
+}
+
+bool ControllerStateQueue::PadDirPressed_Down()
+{
+	return states[0].LDown() && !states[1].LDown();
+}
+
+bool ControllerStateQueue::PadDirHold_Left()
+{
+	return states[0].LLeft();
+}
+
+bool ControllerStateQueue::PadDirHold_Right()
+{
+	return states[0].LRight();
+}
+
+bool ControllerStateQueue::PadDirHold_Up()
+{
+	return states[0].LUp();
+}
+
+bool ControllerStateQueue::PadDirHold_Down()
+{
+	return states[0].LDown();
+}
+
 bool ControllerStateQueue::MenuDirPressed_Left()
 {
 	return DirPressed_Left() || ButtonPressed_PadLeft();

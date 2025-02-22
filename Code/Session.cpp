@@ -748,9 +748,9 @@ void Session::RegisterAllEnemies()
 {
 	RegisterGeneralEnemies();
 	RegisterW1Enemies();
-	/*RegisterW2Enemies();
-	RegisterW3Enemies();
-	RegisterW4Enemies();*/
+	//RegisterW2Enemies();
+	//RegisterW3Enemies();
+	//RegisterW4Enemies();
 	//RegisterW5Enemies();
 	//RegisterW6Enemies();
 	//RegisterW7Enemies();

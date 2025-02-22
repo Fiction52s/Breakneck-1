@@ -7,6 +7,7 @@
 #include "KinUpgrades.h"
 #include "RushUpgradePopup.h"
 #include "TutorialBox.h"
+#include "KinStore.h"
 
 using namespace sf;
 
@@ -18,6 +19,8 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 	CreateDescriptionTable();
 
 	upgradePop = new RushUpgradePopup(rushManager);
+
+	kinStore = new KinStore;
 
 	Reset();
 
@@ -32,6 +35,8 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 RushScoreDisplay::~RushScoreDisplay()
 {
 	delete upgradePop;
+
+	delete kinStore;
 }
 
 void RushScoreDisplay::Reset()
@@ -48,9 +53,11 @@ void RushScoreDisplay::Reset()
 void RushScoreDisplay::Activate()
 {
 	//action = A_SHOW;
-	action = A_WAIT; //SHOW is for effects and transitions and stuff
+	kinStore->sess = Session::GetSession();
+	kinStore->Open();
+	action = A_STORE;//A_WAIT; //SHOW is for effects and transitions and stuff
 	frame = 0;
-	upgradePop->SetToMostRecentUpgrade();
+	//upgradePop->SetToMostRecentUpgrade();
 }
 
 void RushScoreDisplay::Confirm()
@@ -73,6 +80,22 @@ void RushScoreDisplay::Update()
 	if (!IsActive())
 		return;
 
+	if (kinStore->IsReadyToClose())
+	{
+		action = A_WAIT;
+		frame = 0;
+		return;
+	}
+
+	kinStore->Update();
+
+	
+	/*bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
+	bool xPressed = sess->controllerStates[actorIndex]->ButtonPressed_X();
+	bool yPressed = sess->controllerStates[actorIndex]->ButtonPressed_Y();
+	bool r1Pressed = sess->controllerStates[actorIndex]->ButtonPressed_RightShoulder();
+	bool bPressed = sess->controllerStates[actorIndex]->ButtonPressed_B();
+	bool startPressed = sess->controllerStates[actorIndex]->ButtonPressed_Start();*/
 	/*if (action == A_SHOW && frame == 100)
 	{
 		action = A_WAIT;
@@ -136,7 +159,7 @@ void RushScoreDisplay::CreateDescriptionTable()
 		"-Enemies and bullets are slowed down while in a bubble.\n"
 		"-Hold SHIELD while in a bubble to slow yourself down too!");
 
-	SetTableEntry(POWER_RWIRE, "Double Wires",
+	/*SetTableEntry(POWER_RWIRE, "Double Wires",
 		"-Use the double wires to swing and move around with total freedom!\n"
 		"-Use LEFTWIRE to use the blue wire, and RIGHTWIRE to use the red wire!\n"
 		"-Press a direction when launching the wire to aim it!\n"
@@ -146,7 +169,7 @@ void RushScoreDisplay::CreateDescriptionTable()
 		"-Use the double wires to swing and move around with total freedom!\n"
 		"-Use LEFTWIRE to use the blue wire, and RIGHTWIRE to use the red wire!\n"
 		"-Press a direction when launching the wire to aim it!\n"
-		"-Keep holding the wire button after it is attached to swing from it!");
+		"-Keep holding the wire button after it is attached to swing from it!");*/
 
 	SetTableEntry(UPGRADE_W1_DASH_BOOST, "Unlock Dash Boost",
 		"Let go of dash near the end to get a boost of speed!");
@@ -179,10 +202,11 @@ void RushScoreDisplay::Draw(sf::RenderTarget *target)
 {
 	if (IsActive())
 	{
-		if (action == A_SHOW || action == A_WAIT)
+		if (action == A_SHOW || action == A_WAIT || action == A_STORE)
 		{
-			target->draw(testSpr);
-			upgradePop->Draw(target);
+			//target->draw(testSpr);
+			//upgradePop->Draw(target);
+			kinStore->Draw(target);
 		}
 	}
 }

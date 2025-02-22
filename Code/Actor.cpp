@@ -5332,12 +5332,9 @@ void Actor::Respawn( bool setStartPos )
 	
 
 
-	if(IsOptionOn( POWER_LWIRE ) )
+	if(IsOptionOn( POWER_DOUBLE_WIRES ) )
 	{
 		leftWire->Reset();
-	}
-	if(IsOptionOn(POWER_RWIRE))
-	{
 		rightWire->Reset();
 	}
 	
@@ -5531,7 +5528,7 @@ void Actor::KinModeUpdate()
 			cIndex++;
 		}
 
-		if(IsOptionOn(POWER_LWIRE) || IsOptionOn(POWER_RWIRE) || allColorsOn)
+		if(IsOptionOn(POWER_DOUBLE_WIRES) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x33, 0xaa );
 			cIndex++;
@@ -6337,14 +6334,14 @@ void Actor::UpdateBounceFlameOn()
 
 void Actor::UpdateWireStates()
 {
-	if (IsOptionOn(POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
+	if (IsOptionOn(POWER_DOUBLE_WIRES) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
 	{
 		leftWire->ClearDebug();
 		leftWire->SetStoredPlayerPos(leftWire->GetPlayerPos());
 		leftWire->UpdateState(touchEdgeWithLeftWire);
 	}
 
-	if (IsOptionOn(POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
+	if (IsOptionOn(POWER_DOUBLE_WIRES) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
 	{
 		rightWire->ClearDebug();
 		rightWire->SetStoredPlayerPos(rightWire->GetPlayerPos());
@@ -23743,13 +23740,13 @@ void Actor::AirMovement()
 
 void Actor::DrawWires(sf::RenderTarget *target)
 {
-	if (IsOptionOn(POWER_LWIRE) &&
+	if (IsOptionOn(POWER_DOUBLE_WIRES) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| leftWire->IsRetracting()))
 	{
 		leftWire->Draw(target);
 	}
-	if (IsOptionOn(POWER_RWIRE) &&
+	if (IsOptionOn(POWER_DOUBLE_WIRES) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| rightWire->IsRetracting()))
 	{
@@ -23759,11 +23756,11 @@ void Actor::DrawWires(sf::RenderTarget *target)
 
 void Actor::UpdateWireQuads()
 {
-	if (IsOptionOn(POWER_LWIRE))
+	if (IsOptionOn(POWER_DOUBLE_WIRES))
+	{
 		leftWire->UpdateQuads();
-
-	if (IsOptionOn(POWER_RWIRE))
 		rightWire->UpdateQuads();
+	}
 }
 
 Vector2i Actor::GetWireOffset()

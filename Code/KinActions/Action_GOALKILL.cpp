@@ -59,17 +59,17 @@ void Actor::GOALKILL_End()
 		SetTableEntry(UPGRADE_W1_BASE_DASH_1, "Upgrade Base Dash Speed 1/3",
 			"Dash speed increased!");*/
 
-		int optionIndex = (rand() % ( UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST ) + UPGRADE_W1_DASH_BOOST);
+		//int optionIndex = (rand() % ( UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST ) + UPGRADE_W1_DASH_BOOST);
 
-		sess->SetPlayerOption(optionIndex, true);
-		sess->mainMenu->rushManager->UnlockUpgrade(optionIndex);
+		//sess->SetPlayerOption(optionIndex, true);
+		//sess->mainMenu->rushManager->UnlockUpgrade(optionIndex);
 
-		if (optionIndex == 5)
-		{
-			//left wire also
-			sess->SetPlayerOption(optionIndex + 1, true);
-			sess->mainMenu->rushManager->kinOptionField.SetBit(optionIndex + 1, true);
-		}
+		//if (optionIndex == 5)
+		//{
+		//	//left wire also
+		//	sess->SetPlayerOption(optionIndex + 1, true);
+		//	sess->mainMenu->rushManager->kinOptionField.SetBit(optionIndex + 1, true);
+		//}
 	}
 
 

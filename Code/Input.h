@@ -283,6 +283,21 @@ struct ControllerStateQueue
 	bool DirPressed_Up();
 	bool DirPressed_Down();
 
+	bool DirHold_Left();
+	bool DirHold_Right();
+	bool DirHold_Up();
+	bool DirHold_Down();
+
+	bool PadDirPressed_Left();
+	bool PadDirPressed_Right();
+	bool PadDirPressed_Up();
+	bool PadDirPressed_Down();
+
+	bool PadDirHold_Left();
+	bool PadDirHold_Right();
+	bool PadDirHold_Up();
+	bool PadDirHold_Down();
+
 	bool MenuDirPressed_Left();
 	bool MenuDirPressed_Right();
 	bool MenuDirPressed_Up();

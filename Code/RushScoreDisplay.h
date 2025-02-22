@@ -9,6 +9,7 @@
 struct RushManager;
 struct RushUpgradePopup;
 struct Session;
+struct KinStore;
 
 struct RushScoreDisplay : ScoreDisplay
 {
@@ -16,6 +17,7 @@ struct RushScoreDisplay : ScoreDisplay
 	{
 		A_IDLE,
 		A_SHOW,
+		A_STORE,
 		A_WAIT,
 	};
 
@@ -23,6 +25,7 @@ struct RushScoreDisplay : ScoreDisplay
 	sf::Sprite testSpr;
 	RushManager *rushManager;
 	RushUpgradePopup *upgradePop;
+	KinStore *kinStore;
 
 	void CreateDescriptionTable();
 	void SetTableEntry( int index, const std::string & s1, const std::string &s2);
