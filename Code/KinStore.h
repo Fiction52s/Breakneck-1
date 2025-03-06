@@ -15,9 +15,13 @@ struct StoreItem
 	int numLevels;
 	std::vector<std::string> descriptions;
 	std::vector<int> costs;
+	int currentLevel;
+	int quadIndex;
 
 	StoreItem( nlohmann::basic_json<> &j );
 	void Print();
+	const std::string &GetCurrentDescription();
+	int GetCurrentCost();
 };
 
 struct KinStore
@@ -27,6 +31,15 @@ struct KinStore
 		A_OPEN,
 		A_READY_TO_CLOSE,
 		A_Count
+	};
+
+	enum StoreSection
+	{
+		SS_BASICS,
+		SS_POWERS,
+		SS_ARMORS,
+		SS_ITEMS,
+		SS_Count
 	};
 
 	int action;
@@ -43,18 +56,16 @@ struct KinStore
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
 
-	int selectedIndex;
-
 	sf::Vertex selectedBGQuad[4];
 	sf::Vertex containerBGQuad[4];
 	sf::Vertex *itemSelectQuads;
 
-	std::vector<std::pair<std::string, std::string>> upgradeDescriptionStringTable;
-
 	sf::Text upgradeNameText;
 	sf::Text upgradeDescText;
 
-	std::vector<StoreItem*> items;
+	int numTotalStoreItems;
+
+	std::vector<std::vector<StoreItem*>> storeItems;
 
 	//sf::Vertex shardBGQuad[4];
 	//sf::Vertex descriptionBGQuad[4];
@@ -63,12 +74,11 @@ struct KinStore
 	KinStore();
 	~KinStore();
 	bool IsReadyToClose();
-	void SetSelectedIndex(int ind);
+	void SetSelected( int section, int itemIndex );
 	void SetTopLeft(sf::Vector2f pos);
 	void Update();
 	void Open();
-	void CreateDescriptionTable();
-	void SetTableEntry(int index, const std::string & s1, const std::string &s2);
+	void LoadStore();
 	void Draw(sf::RenderTarget *target);
 };
 

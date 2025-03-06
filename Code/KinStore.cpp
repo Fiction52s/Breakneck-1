@@ -12,10 +12,36 @@ using json = nlohmann::json;
 
 StoreItem::StoreItem( nlohmann::basic_json<> &upgrade)
 {
+	currentLevel = 0;
+
 	string upgradeString = upgrade["Upgrade"].get<std::string>();
 
 	upgradeIndex = 0; //should be set from the string
 
+	if (upgradeString == "POWER_AIRDASH")
+	{
+		upgradeIndex = POWER_AIRDASH;
+	}
+	else if (upgradeString == "POWER_GRAV")
+	{
+		upgradeIndex = POWER_GRAV;
+	}
+	else if (upgradeString == "POWER_BOUNCE")
+	{
+		upgradeIndex = POWER_BOUNCE;
+	}
+	else if (upgradeString == "POWER_GRIND")
+	{
+		upgradeIndex = POWER_GRIND;
+	}
+	else if (upgradeString == "POWER_TIME")
+	{
+		upgradeIndex = POWER_TIME;
+	}
+	else if (upgradeString == "POWER_DOUBLE_WIRES")
+	{
+		upgradeIndex = POWER_DOUBLE_WIRES;
+	}
 
 	name = upgrade["Name"].get<std::string>();
 
@@ -60,12 +86,22 @@ void StoreItem::Print()
 	}
 }
 
+const std::string &StoreItem::GetCurrentDescription()
+{
+	return descriptions[currentLevel];
+}
+
+int StoreItem::GetCurrentCost()
+{
+	return costs[currentLevel];
+}
+
 KinStore::KinStore()
 {
 	MainMenu *mm = MainMenu::GetInstance();
 	sess = NULL;
 
-	CreateDescriptionTable();
+	LoadStore();
 
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 	
@@ -83,15 +119,25 @@ KinStore::KinStore()
 
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
-	int xSize = 3;
-	int ySize = 3;
+	int maxXSize = 6;
+	int ySize = 4;
 
-	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
+	//basics, powers, armor items, use items
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, maxXSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
 
-	itemSelectQuads = new sf::Vertex[xSize * ySize * 4];
+	numTotalStoreItems = 0;
+	for (auto it = storeItems.begin(); it != storeItems.end(); ++it)
+	{
+		for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+		{
+			++numTotalStoreItems;
+		}
+	}
 
-	currentStoreItems = new int[xSize * ySize];
+	itemSelectQuads = new sf::Vertex[numTotalStoreItems * 4];
+
+	//currentStoreItems = new int[maxXSize * ySize];
 
 	SetTopLeft(Vector2f(50, 50));
 }
@@ -103,11 +149,14 @@ KinStore::~KinStore()
 
 	delete[] itemSelectQuads;
 
-	delete[] currentStoreItems;
+	//delete[] currentStoreItems;
 
-	for (int i = 0; i < items.size(); ++i)
+	for (int i = 0; i < storeItems.size(); ++i)
 	{
-		delete items[i];
+		for (int j = 0; j < storeItems[i].size(); ++j)
+		{
+			delete storeItems[i][j];
+		}
 	}
 }
 
@@ -127,19 +176,22 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 
 	gridStart += pos;
 
-	for (int i = 0; i < ySelector->totalItems; ++i)
+	int currIndex = 0;
+	for (int y = 0; y < SS_Count; ++y)
 	{
-		for (int j = 0; j < xSelector->totalItems; ++j)
+		for (int j = 0; j < storeItems[y].size(); ++j)
 		{
-			index = (i * xSelector->totalItems + j);
+			//index = (i * xSelector->totalItems + j);
 
-			if (index >= 20)
+			/*if (index >= 20)
 			{
 				assert(0);
-			}
+			}*/
 
-			SetRectCenter(itemSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
-			SetRectColor(itemSelectQuads + index * 4, Color::Green);
+			SetRectCenter(itemSelectQuads + currIndex * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, y * rectSize + ySpacing * y) + gridStart);
+			SetRectColor(itemSelectQuads + currIndex * 4, Color::Green);
+
+			++currIndex;
 		}
 	}
 
@@ -156,11 +208,12 @@ void KinStore::Open()
 
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
-	for (int i = 0; i < xSelector->totalItems * ySelector->totalItems; ++i)
-	{
-		int optionIndex = 0;//(rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
-		currentStoreItems[i] = optionIndex;
-	}
+	SetSelected(0, 0);
+	//for (int i = 0; i < xSelector->totalItems * ySelector->totalItems; ++i)
+	//{
+	//	int optionIndex = 0;//(rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
+	//	//currentStoreItems[i] = optionIndex;
+	//}
 	
 	//sess->SetPlayerOption(optionIndex, true);
 	//sess->mainMenu->rushManager->UnlockUpgrade(optionIndex);
@@ -171,19 +224,15 @@ bool KinStore::IsReadyToClose()
 	return action == A_READY_TO_CLOSE;
 }
 
-void KinStore::SetSelectedIndex(int ind)
+void KinStore::SetSelected(int section, int itemIndex)
 {
-	selectedIndex = ind;
-
-	int selectedUpgradeIndex = currentStoreItems[selectedIndex];
-
 	//eventually need to be able to display buttons in here, steal functionality from the tutbox
-	auto &entry = upgradeDescriptionStringTable[selectedUpgradeIndex];
-	upgradeNameText.setString( entry.first );
-	upgradeDescText.setString(entry.second);
+	StoreItem *si = storeItems[section][itemIndex];
+	upgradeNameText.setString( si->name );
+	upgradeDescText.setString(si->GetCurrentDescription());
 
 	SetRectCenter(selectedBGQuad, 192 / 2, 192 / 2,
-		Vector2f((itemSelectQuads + selectedIndex * 4)->position + Vector2f(192 / 4, 192 / 4)));
+		Vector2f((itemSelectQuads + si->quadIndex * 4)->position + Vector2f(192 / 4, 192 / 4)));
 	SetRectColor(selectedBGQuad, Color::White);
 }
 
@@ -219,26 +268,35 @@ void KinStore::Update()
 		int xchanged = xSelector->UpdateIndex(inputStates->DirHold_Left() || inputStates->PadDirHold_Left(), inputStates->DirHold_Right() || inputStates->PadDirHold_Right());
 		int ychanged = ySelector->UpdateIndex(inputStates->DirHold_Up() || inputStates->PadDirHold_Up(), inputStates->DirHold_Down() || inputStates->PadDirHold_Down());
 
-		int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
+		if (ychanged != 0)
+		{
+			xSelector->SetIndex(0);
+			xSelector->SetTotalSize(storeItems[ySelector->currIndex].size());
+		}
 
-		SetSelectedIndex(index);
+		if (xchanged != 0 || ychanged != 0)
+		{
+			SetSelected(ySelector->currIndex, xSelector->currIndex );
+		}
 	}
 }
 
 
-void KinStore::CreateDescriptionTable()
+void KinStore::LoadStore()
 {
-	upgradeDescriptionStringTable.resize(200); //just placeholder big number
-
-	vector<string> upgradeTypes = { "powers" };// , "power_upgrades", "speed_upgrades"
+	vector<string> upgradeTypes = { "basic_upgrades", "powers", "armor", "items" };
 
 	string base = "Resources/Kin/Info/";
 	stringstream ss;
 
-	for (auto it = upgradeTypes.begin(); it != upgradeTypes.end(); ++it)
+	storeItems.resize(SS_Count);
+
+	int totalStoreItemCounter = 0;
+	for (int sectionIndex = 0; sectionIndex < upgradeTypes.size(); ++sectionIndex)
 	{
 		ss.clear();
-		ss << base << (*it) << ".json";
+		ss.str("");
+		ss << base << upgradeTypes[sectionIndex] << ".json";
 
 		ifstream is;
 		is.open(ss.str());
@@ -249,37 +307,21 @@ void KinStore::CreateDescriptionTable()
 		auto &upgrades = j["Upgrades"];
 		int numLevels = 0;
 		int discSize = 0;
-		for (int i = 0; i < upgrades.size(); ++i)
+		StoreItem *si = NULL;
+		for (int j = 0; j < upgrades.size(); ++j)
 		{
-			items.push_back(new StoreItem(upgrades[i]));
-			/*cout << upgrades[i]["Upgrade"].get<std::string>() << endl;
-			cout << upgrades[i]["Name"].get<std::string>() << endl;
-
-			auto &levels = upgrades[i]["Levels"];
-			numLevels = levels.size();
-			for (int j = 0; j < numLevels; ++j)
-			{
-				cout << "level " << j + 1 << "\n";
-				cout << "Cost: " << levels[j]["Cost"] << "\n";
-				auto &disc = levels[j]["Description"];
-				discSize = disc.size();
-				cout << "Description: ";
-				for (int k = 0; k < discSize; ++k)
-				{
-					cout << disc[k].get<std::string>() << "\n";
-				}
-			}*/
+			si = new StoreItem(upgrades[j]);
+			si->quadIndex = totalStoreItemCounter;
+			storeItems[sectionIndex].push_back(si);
+			++totalStoreItemCounter;
 		}
 
-		for (int i = 0; i < items.size(); ++i)
+		for (int j = 0; j < storeItems[sectionIndex].size(); ++j)
 		{
-			items[i]->Print();
+			storeItems[sectionIndex][j]->Print();
 			cout << "\n";
 		}
 	}
-
-
-	
 
 	/*if (is.is_open())
 	{
@@ -345,16 +387,11 @@ void KinStore::CreateDescriptionTable()
 	//leftwire entry left blank for now, since right wire is double
 }
 
-void KinStore::SetTableEntry(int index, const std::string & s1, const std::string &s2)
-{
-	upgradeDescriptionStringTable[index] = std::make_pair(s1, s2);
-}
-
 void KinStore::Draw(sf::RenderTarget *target)
 {
 	target->draw(containerBGQuad, 4, sf::Quads );
 	
-	target->draw(itemSelectQuads, xSelector->totalItems * ySelector->totalItems * 4, sf::Quads);
+	target->draw(itemSelectQuads, numTotalStoreItems * 4, sf::Quads);
 	target->draw(selectedBGQuad, 4, sf::Quads);
 
 	target->draw(upgradeNameText);
