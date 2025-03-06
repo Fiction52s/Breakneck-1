@@ -79,6 +79,7 @@
 #include "ShipTravelSequence.h"
 #include "EnvParticleSystem.h"
 
+#include "KinUpgrades.h"
 //#include "ggpo\backends\backend.h"
 
 using namespace sf;
@@ -218,9 +219,9 @@ void Session::SetParentGame(GameSession *game)
 	SetParentTilesetManager(game);
 }
 
-void Session::SetPlayerOptionField(int pIndex)
+void Session::SetPlayerUpgradeLevels(int pIndex)
 {
-	GetPlayer(pIndex)->SetAllOptions(defaultStartingPlayerOptionsField);
+	GetPlayer(pIndex)->SetAllUpgrades(defaultStartingPlayerUpgradeLevels);
 }
 
 void Session::SetupEnemyType(ParamsInfo &pi, bool unlisted )
@@ -1492,12 +1493,8 @@ void Session::DrawBullets(sf::RenderTarget *target)
 }
 
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
-	:defaultStartingPlayerOptionsField(PLAYER_OPTION_BIT_COUNT),
-	currPlayerOptionsField(Session::PLAYER_OPTION_BIT_COUNT), currLogField( LogDetailedInfo::MAX_LOGS),
-	originalProgressionPlayerOptionsField( PLAYER_OPTION_BIT_COUNT ),
-	originalProgressionLogField( LogDetailedInfo::MAX_LOGS )
+	:currLogField( LogDetailedInfo::MAX_LOGS)
 {
-	originalProgressionModeOn = false;
 	skipOneReplayFrame = false;
 	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
@@ -1532,6 +1529,9 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	ts_key = NULL;
 
+	defaultStartingPlayerUpgradeLevels = new UpgradeLevels;
+	currPlayerUpgradeLevels = new UpgradeLevels;
+	
 	currSaveState = new SaveGameState;
 
 	alertBox = new AlertBox;
@@ -1954,6 +1954,9 @@ Session::~Session()
 
 	delete alertBox;
 
+	delete defaultStartingPlayerUpgradeLevels;
+	delete currPlayerUpgradeLevels;
+
 	delete currSaveState;
 }
 
@@ -2250,23 +2253,18 @@ bool Session::ReadPlayersStartPos(std::ifstream &is)
 
 bool Session::ReadPlayerOptions(std::ifstream &is)
 {
-	if (mapHeader->ver1 >= 9)
+	if (mapHeader->ver1 >= 13)
 	{
-		defaultStartingPlayerOptionsField.Load(is);
+		defaultStartingPlayerUpgradeLevels->Load(is);
 	}
-	else if ((mapHeader->ver1 == 2 && mapHeader->ver2 >= 1) || mapHeader->ver1 > 2)
+	else if (mapHeader->ver1 >= 9 )
 	{
-		defaultStartingPlayerOptionsField.Reset();
-		BitField oldOptions(256);
-		oldOptions.Load(is);
-		for (int i = 0; i < 256; ++i)
-		{
-			defaultStartingPlayerOptionsField.SetBit(i, oldOptions.GetBit(i));
-		}
+		BitField tempField(PLAYER_OPTION_BIT_COUNT);
+		tempField.Load(is);
 	}
 	else
 	{
-		defaultStartingPlayerOptionsField.Reset();
+		defaultStartingPlayerUpgradeLevels->Clear();
 	}
 
 	return true;
@@ -2894,8 +2892,7 @@ void Session::RunFrameForParallelPractice()
 					//prac.hasSequenceConfirmReady = false;
 
 					pm->parallelGames[i]->currLogField.Set(prac.logField);
-					pm->parallelGames[i]->currPlayerOptionsField.Set(prac.playerOptionField);
-					pm->parallelGames[i]->originalProgressionModeOn = prac.origProgression;
+					pm->parallelGames[i]->currPlayerUpgradeLevels->Set(prac.playerUpgradeLevels);
 
 					if (prac.syncStateBufSize > 0)
 					{
@@ -5005,10 +5002,10 @@ void Session::AddBarrier(XBarrierParams *xbp, bool warp )
 	barriers.push_back(b);
 }
 
-void Session::SetPlayerOption(int optionType, bool isOn, int playerIndex)
+void Session::SetPlayerUpgradeLevel(int up, int lvl, int playerIndex)
 {
-	currPlayerOptionsField.SetBit(optionType, true);
-	GetPlayer(playerIndex)->SetStartOption(optionType, true);
+	currPlayerUpgradeLevels->SetUpgradeLevel(up, lvl);
+	GetPlayer(playerIndex)->SetStartUpgradeLevel(up, lvl);
 }
 
 void Session::UnlockLog(int logType, int playerIndex )
@@ -9968,20 +9965,6 @@ void Session::SetView(const sf::View &p_view)
 	extraScreenTex->setView(p_view);
 }
 
-const BitField & Session::GetPracticePlayerOptionField()
-{
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && IsParallelSession())
-	{
-		assert(netplayManager != NULL);
-		return netplayManager->practicePlayers[parallelSessionIndex].playerOptionField;
-	}
-	else
-	{
-		assert(0);
-		return defaultStartingPlayerOptionsField;
-	}
-}
-
 Edge *Session::GetEdge(EdgeInfo * ei)
 {
 	switch (ei->eiType)
@@ -10416,11 +10399,10 @@ void Session::SendPracticeStartMessageToAllNewPeers()
 	//sends the start to message to any new peers that join
 	PracticeStartMsg psm;
 	psm.skinIndex = GetPlayerNormalSkin(0);
-	psm.SetPlayerOptionField(currPlayerOptionsField);//GetPlayer(0)->bStartHasUpgradeField);	
+	psm.SetPlayerUpgradeLevels(currPlayerUpgradeLevels);//GetPlayer(0)->bStartHasUpgradeField);	
 	psm.SetLogField(currLogField);
 	psm.startFrame = totalGameFrames;
 	psm.wantsToPlay = netplayManager->wantsToPracticeRace;
-	psm.origProgression = originalProgressionModeOn;
 	netplayManager->SendPracticeStartMessageToAllNewPeers(psm);
 }
 

@@ -55,7 +55,7 @@ void AirTrigger::Reset()
 	switch (triggerType)
 	{
 	case AUTORUNRIGHTAIRDASH:
-		if (owner->GetPlayer(0)->IsOptionOn(POWER_AIRDASH))
+		if (owner->GetPlayer(0)->HasUpgradeLevel(POWER_AIRDASH, 1))
 		{
 			triggered = true;
 		}

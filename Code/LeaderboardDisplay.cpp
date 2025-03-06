@@ -706,14 +706,14 @@ void LeaderboardDisplay::OnManagerScoreWasNotGoodEnoughToUpload()
 	}
 }
 
-void LeaderboardDisplay::UploadScore(int score, const std::string &replayPath, bool origCompatible)
+void LeaderboardDisplay::UploadScore(int score, const std::string &replayPath )
 {
 	successfulScoreChange = false;
-	if (origCompatible)
+	/*if (origCompatible)
 	{
 		uploadType = UPLOAD_TYPE_BOTH_BOARDS;
 	}
-	else
+	else*/
 	{
 		uploadType = UPLOAD_TYPE_ANY_POWERS;
 	}

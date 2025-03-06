@@ -10,6 +10,56 @@ using namespace std;
 
 using json = nlohmann::json;
 
+StoreItem::StoreItem( nlohmann::basic_json<> &upgrade)
+{
+	string upgradeString = upgrade["Upgrade"].get<std::string>();
+
+	upgradeIndex = 0; //should be set from the string
+
+
+	name = upgrade["Name"].get<std::string>();
+
+	auto &levels = upgrade["Levels"];
+	numLevels = levels.size();
+	descriptions.resize(numLevels);
+	costs.resize(numLevels);
+
+	stringstream ss;
+
+	int descSize = 0;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		ss.clear();
+		ss.str("");
+
+		auto &desc = levels[i]["Description"];
+		descSize = desc.size();
+		for (int j = 0; j < descSize; ++j)
+		{
+			ss << desc[j].get<std::string>();
+			if (j < descSize - 1)
+			{
+				ss << "\n";
+			}
+			descriptions[i] = ss.str();
+		}
+
+		costs[i] = levels[i]["Cost"];
+	}
+}
+
+void StoreItem::Print()
+{
+	cout << "name: " << name << "\n";
+	cout << "upgradeIndex: " << upgradeIndex << "\n";
+	cout << "numLevels: " << numLevels << "\n";
+	for (int i = 0; i < numLevels; ++i)
+	{
+		cout << "Description: " << descriptions[i] << "\n";
+		cout << "Cost: " << costs[i] << "\n";
+	}
+}
+
 KinStore::KinStore()
 {
 	MainMenu *mm = MainMenu::GetInstance();
@@ -54,6 +104,11 @@ KinStore::~KinStore()
 	delete[] itemSelectQuads;
 
 	delete[] currentStoreItems;
+
+	for (int i = 0; i < items.size(); ++i)
+	{
+		delete items[i];
+	}
 }
 
 void KinStore::SetTopLeft(sf::Vector2f pos)
@@ -103,7 +158,7 @@ void KinStore::Open()
 
 	for (int i = 0; i < xSelector->totalItems * ySelector->totalItems; ++i)
 	{
-		int optionIndex = (rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
+		int optionIndex = 0;//(rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
 		currentStoreItems[i] = optionIndex;
 	}
 	
@@ -175,7 +230,7 @@ void KinStore::CreateDescriptionTable()
 {
 	upgradeDescriptionStringTable.resize(200); //just placeholder big number
 
-	vector<string> upgradeTypes = { "powers", "power_upgrades", "speed_upgrades" };
+	vector<string> upgradeTypes = { "powers" };// , "power_upgrades", "speed_upgrades"
 
 	string base = "Resources/Kin/Info/";
 	stringstream ss;
@@ -192,17 +247,41 @@ void KinStore::CreateDescriptionTable()
 		is >> j;
 
 		auto &upgrades = j["Upgrades"];
+		int numLevels = 0;
+		int discSize = 0;
 		for (int i = 0; i < upgrades.size(); ++i)
 		{
-			cout << upgrades[i]["Upgrade"] << endl;
-			cout << upgrades[i]["Name"] << endl;
+			items.push_back(new StoreItem(upgrades[i]));
+			/*cout << upgrades[i]["Upgrade"].get<std::string>() << endl;
+			cout << upgrades[i]["Name"].get<std::string>() << endl;
+
+			auto &levels = upgrades[i]["Levels"];
+			numLevels = levels.size();
+			for (int j = 0; j < numLevels; ++j)
+			{
+				cout << "level " << j + 1 << "\n";
+				cout << "Cost: " << levels[j]["Cost"] << "\n";
+				auto &disc = levels[j]["Description"];
+				discSize = disc.size();
+				cout << "Description: ";
+				for (int k = 0; k < discSize; ++k)
+				{
+					cout << disc[k].get<std::string>() << "\n";
+				}
+			}*/
+		}
+
+		for (int i = 0; i < items.size(); ++i)
+		{
+			items[i]->Print();
+			cout << "\n";
 		}
 	}
 
 
 	
 
-	if (is.is_open())
+	/*if (is.is_open())
 	{
 		
 		
@@ -212,10 +291,10 @@ void KinStore::CreateDescriptionTable()
 		cout << "could not open upgrades json file" << endl;
 		assert(0);
 		return;
-	}
+	}*/
 
 
-	SetTableEntry(POWER_AIRDASH, "Airdash",
+	/*SetTableEntry(POWER_AIRDASH, "Airdash",
 		"-Hold DASH in the air to hover!\n"
 		"-Hold DASH and a direction to airdash in any of the 8 directions!\n"
 		"-Press ATTACK while Airdashing diagonally for a special attack!");
@@ -260,7 +339,7 @@ void KinStore::CreateDescriptionTable()
 		"Increased acceleration from sprinting on slopes!");
 
 	SetTableEntry(UPGRADE_W1_BASE_DASH_1, "Upgrade Base Dash Speed 1/3",
-		"Dash speed increased!");
+		"Dash speed increased!");*/
 
 
 	//leftwire entry left blank for now, since right wire is double

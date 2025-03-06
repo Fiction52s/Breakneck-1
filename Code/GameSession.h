@@ -259,9 +259,6 @@ struct GameSession : RayCastHandler, Session
 	bool boostEntrance;
 	bool bestTimeGhostOn;
 	bool bestReplayOn;
-
-
-	bool originalProgressionCompatible;
 	
 	//from mainmenu
 
@@ -485,7 +482,7 @@ struct GameSession : RayCastHandler, Session
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
 	void UpdateEnvShaders( int p_drawLayer, bool timeMovesForward);
-	void SetPlayerOption(int optionIndex, bool on, int playerIndex = 0);
+	void SetPlayerUpgrade(int up, int lvl, int playerIndex = 0);
 	bool TrySaveCurrentSaveFile();
 	void UnlockLog(int lType, int playerIndex = 0);
 	void UpdateExplodingGravityGrass();

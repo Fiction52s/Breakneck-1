@@ -14,6 +14,8 @@
 #include <vector>
 #include "VectorMath.h"
 
+
+struct UpgradeLevels;
 struct ReplayHUD;
 
 struct Actor;
@@ -41,7 +43,8 @@ struct PlayerRecordHeader
 	int numberOfPlayers;
 	int ver;
 
-	BitField playerOptionField;
+
+	UpgradeLevels *playerUpgradeLevels;
 	//BitField bLogField;
 
 	PlayerRecordHeader();

@@ -24,6 +24,7 @@
 #include "PlayerSkinShader.h"
 #include "PlayerSkinSwordShader.h"
 
+struct UpgradeLevels;
 struct AdventureManager;
 
 struct SoundInfo;
@@ -968,12 +969,10 @@ struct Actor : QuadTreeCollider,
 	sf::Shader playerDespShader;
 	sf::Shader playerSuperShader;
 	bool showExitAura;
-	BitField startOptionField;
-	BitField optionField;
 
-	BitField originalProgressionOptionField;
-	//BitField originalProgressionUpgradeField;
-	//BitField originalProgressionLogField;
+	UpgradeLevels *startUpgradeLevels;
+	UpgradeLevels *upgradeLevels;
+
 	bool canStandUp;
 	Tileset *ts_kinFace;
 	sf::Sprite exitAuraSprite;
@@ -1793,10 +1792,11 @@ struct Actor : QuadTreeCollider,
 	int GetBubbleTimeFactor();
 	int GetBeingSlowedFactor();
 	bool IsBeingSlowed();
-	void SetAllOptions(const BitField &b);
-	bool IsOptionOn(int index);
-	void SetOption(int option, bool on);
-	void SetStartOption(int optionIndex, bool on);
+	void SetAllUpgrades(UpgradeLevels *ul);
+	int GetUpgradeLevel(int up);
+	bool HasUpgradeLevel(int up, int lvl);
+	void SetUpgradeLevel(int up, int lvl);
+	void SetStartUpgradeLevel(int up, int lvl);
 	bool SpringLaunch();
 	bool ScorpionLaunch();
 	bool TeleporterLaunch();

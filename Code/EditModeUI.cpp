@@ -123,7 +123,7 @@ EditModeUI::~EditModeUI()
 void EditModeUI::AddKinOption( int world, const std::string &text, const std::string &toolTipText, int upgradeIndex)
 {
 	kinCheckboxes[world][upgradeIndex] = kinOptionsPanel->AddLabeledCheckBox(
-		text, Vector2i(0, 0), text, edit->defaultStartingPlayerOptionsField.GetBit(upgradeIndex));
+		text, Vector2i(0, 0), text, edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel(upgradeIndex, 1));
 	kinCheckboxes[world][upgradeIndex]->SetToolTip(toolTipText);
 }
 
@@ -209,7 +209,7 @@ void EditModeUI::CreateKinOptionsPanel()
 
 	
 		currName = edit->shardMenu->GetShardName(w, li);
-		upgradeIndex = i + (POWER_LWIRE + 1);
+		upgradeIndex = i + POWER_DOUBLE_WIRES;
 
 		if (currName == "")
 		{
@@ -704,7 +704,7 @@ void EditModeUI::SaveKinOptions()
 		{
 			if (kinCheckboxes[w].count( i ) > 0)
 			{
-				edit->defaultStartingPlayerOptionsField.SetBit(i, kinCheckboxes[w][i]->checked);
+				edit->defaultStartingPlayerUpgradeLevels->SetUpgradeLevel(i, kinCheckboxes[w][i]->checked);
 			}
 			else if (kinSliders[w].count( i ) > 0 )
 			{
@@ -715,11 +715,11 @@ void EditModeUI::SaveKinOptions()
 				{
 					if (sliderVal > j)
 					{
-						edit->defaultStartingPlayerOptionsField.SetBit(i + j, true);
+						edit->defaultStartingPlayerUpgradeLevels->SetUpgradeLevel(i + j, 1);
 					}
 					else
 					{
-						edit->defaultStartingPlayerOptionsField.SetBit(i + j, false);
+						edit->defaultStartingPlayerUpgradeLevels->SetUpgradeLevel(i + j, 0);
 					}
 				}
 
@@ -737,7 +737,7 @@ void EditModeUI::LoadKinOptions()
 		{
 			if ((*it).second != NULL)
 			{
-				(*it).second->checked = edit->defaultStartingPlayerOptionsField.GetBit((*it).first);
+				(*it).second->checked = edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel((*it).first, 1);
 			}
 		}
 	}
@@ -756,7 +756,7 @@ void EditModeUI::LoadKinOptions()
 				currMax = (*it).second->maxValue;
 				for (int i = 0; i < currMax; ++i)
 				{
-					if (edit->defaultStartingPlayerOptionsField.GetBit((*it).first + i))
+					if (edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel((*it).first + i, 1) )
 					{
 						currNumOn++;
 					}
@@ -1135,7 +1135,7 @@ void EditModeUI::UpdateAllAbilitiesCheckbox()
 	bool allChecked = true;
 	for (int i = 0; i < UPGRADE_Count; ++i)
 	{
-		if (!edit->defaultStartingPlayerOptionsField.GetBit(i))
+		if (!edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel( i, 1 ) )
 		{
 			allChecked = false;
 			break;
@@ -1162,7 +1162,7 @@ void EditModeUI::UpdateAllAbilitiesPerWorldCheckboxes( int w)
 	{
 		if ((*it).second != NULL)
 		{
-			if (!edit->defaultStartingPlayerOptionsField.GetBit((*it).first))
+			if (!edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel((*it).first, 1))
 			{
 				allChecked = false;
 				break;
@@ -1176,7 +1176,7 @@ void EditModeUI::UpdateAllAbilitiesPerWorldCheckboxes( int w)
 			int maxVal = (*it).second->maxValue;
 			for (int i = 0; i < maxVal; ++i)
 			{
-				if (!edit->defaultStartingPlayerOptionsField.GetBit((*it).first + i))
+				if (!edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel((*it).first + i, 1))
 				{
 					allChecked = false;
 					break;

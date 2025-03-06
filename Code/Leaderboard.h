@@ -277,7 +277,7 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	void SetTopLeft(const sf::Vector2f &p_pos);
 	void HandleEvent(sf::Event ev);
 	void Update( ControllerState prevInput, ControllerState currInput );
-	void UploadScore(int score, const std::string &replayPath, bool origCompatible);
+	void UploadScore(int score, const std::string &replayPath );
 	void Show();
 	void Hide();
 	bool IsHidden();

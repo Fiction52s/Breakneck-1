@@ -7,6 +7,8 @@
 #include "Tileset.h"
 #include "RushFile.h"
 #include <vector>
+
+struct UpgradeLevels;
 struct WorldMap;
 struct SaveMenuScreen;
 struct KinBoostScreen;
@@ -36,7 +38,8 @@ struct RushManager : TilesetManager
 
 	int currWorldDependentTilesetWorldIndex;
 
-	BitField kinOptionField; //store powers, store other variables. upgrades are not stored here. They are availabled based on your level/exp
+	UpgradeLevels *kinUpgradeLevels;
+
 	std::vector<int> kinUpgradesInOrder;
 
 	Tileset *ts_key;
@@ -85,7 +88,7 @@ struct RushManager : TilesetManager
 	void SaveCurrFile();
 	void SetCurrSaveFile(int index);
 	void FadeInSaveMenu();
-	void UnlockUpgrade(int index);
+	void UnlockUpgrade(int up, int lvl);
 
 };
 

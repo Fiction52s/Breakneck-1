@@ -171,7 +171,7 @@ void PowerItem::ResetEnemy()
 {
 	//implement for power
 	int optionIndex = POWER_AIRDASH + powerIndex;
-	data.alreadyCollected = sess->GetPlayer(0)->IsOptionOn(optionIndex);
+	data.alreadyCollected = sess->GetPlayer(0)->HasUpgradeLevel(optionIndex, 1);
 	
 	SetCurrPosInfo(startPosInfo);
 
@@ -246,13 +246,7 @@ void PowerItem::Capture()
 {
 	int optionIndex = powerIndex;
 
-	sess->SetPlayerOption(optionIndex, true);
-
-	if (powerIndex == 5)
-	{
-		//left wire also
-		sess->SetPlayerOption(optionIndex + 1, true);
-	}
+	sess->SetPlayerUpgradeLevel(optionIndex, 1);
 
 	sess->TrySaveCurrentSaveFile();
 }

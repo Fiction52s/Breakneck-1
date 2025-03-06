@@ -622,6 +622,9 @@ void CrawlerPostFightScene::AddFlashes()
 	AddFlashedImage("crawlercut", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_01b.png"),
 		0, 30, 60, 30, Vector2f(960, 540));
 
+	AddFlashedImage("k3", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_02d.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
 	/*AddFlashedImage("k1", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_02b2.png"),
 		0, 30, 60, 30, Vector2f(960, 540));
 

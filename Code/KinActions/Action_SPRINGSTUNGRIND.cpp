@@ -128,7 +128,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 			}
 			else
 			{
-				if (!IsOptionOn(POWER_GRAV)
+				if (!HasUpgradeLevel(POWER_GRAV, 1)
 					|| (abs(grindNorm.x) >= wallThresh) 
 					|| j || grindEdge->IsInvisibleWall())
 				{

@@ -2,6 +2,8 @@
 #define _KIN_UPGRADES_H__
 
 
+#include "BitField.h"
+
 const static int MAX_KIN_POWERS = 32; //won't get up to this number, but its nice for 4 byte spacing
 enum KinUpgrades
 {
@@ -12,10 +14,11 @@ enum KinUpgrades
 	POWER_TIME,
 	POWER_DOUBLE_WIRES,
 
+	ABILITY_DASH,
 	//Skills + Upgrades
-	SKILL_DASH_BOOST,
-	SKILL_AIRDASH_BOOST,
-	SKILL_GRIND_LUNGE,
+	//SKILL_DASH_BOOST_1,
+	//SKILL_AIRDASH_BOOST_1,
+	//SKILL_GRIND_LUNGE_1,
 	//UPGRADE_W3_CEILING_DROP_AERIAL,
 	//UPGRADE_W4_SCORPION_ATTACK,
 	//UPGRADE_W4_SCORPION_JUMP,
@@ -31,16 +34,6 @@ enum KinUpgrades
 	UPGRADE_STEEP_SLIDE,
 	UPGRADE_PASSIVE_GROUND,
 	UPGRADE_SPRINT,
-	UPGRADE_BASE_DASH,
-
-	//NEEDS AIRDASH
-	UPGRADE_W2_BASE_AIRDASH,
-
-	//NEEDS GRAVITY REVERSE
-	UPGRADE_CEILING_STEEP_CLIMB,
-	UPGRADE_CEILING_STEEP_SLIDE,
-	UPGRADE_CEILING_PASSIVE_GROUND,
-	UPGRADE_CEILING_SPRINT,
 
 	//COMBAT
 	UPGRADE_DECREASE_ENEMY_DAMAGE,
@@ -48,16 +41,26 @@ enum KinUpgrades
 	UPGRADE_INCREASE_ENEMY_MOMENTUM,
 	UPGRADE_INCREASE_STARTING_MOMENTUM,
 
-	//POWER_UPGRADES
-	
-
-
-	
-
-	
-
-	
 	UPGRADE_Count,
+};
+
+struct UpgradeLevels
+{
+	//0 means you dont have it, higher levels is higher level upgrades
+
+	unsigned char upgradeLevel[UPGRADE_Count];
+
+	UpgradeLevels();
+	void Clear();
+	int GetUpgradeLevel(int up); //return the level of the upgrade
+	bool HasUpgradeLevel(int up, int lvl); //returns true if you have that upgrade level or higher
+	void SetUpgradeLevel(int up, int lvl);
+	void Set(UpgradeLevels *ul);
+
+	bool Load(std::istream &is);
+	void Save(std::ofstream &of);
+	bool LoadBinary(std::istream &is);
+	void SaveBinary(std::ofstream &of);
 };
 
 

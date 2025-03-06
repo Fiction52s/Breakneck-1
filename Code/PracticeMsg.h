@@ -5,6 +5,8 @@
 #include "VectorMath.h"
 #include "BitField.h"
 #include <SFML\Graphics.hpp>
+#include "KinUpgrades.h"
+
 
 struct PracticeMsgHeader
 {
@@ -32,12 +34,13 @@ struct PracticeMsgHeader
 
 struct PracticeStartMsg
 {
-	const static int NUM_PLAYER_OPTION_FIELDS = (512 + 32) / 32;
+	//const static int NUM_PLAYER_OPTION_FIELDS = (512 + 32) / 32;
 	const static int NUM_LOG_FIELDS = 8;
 
 	PracticeMsgHeader header;
 	sf::Uint32 skinIndex;
-	sf::Uint32 playerOptionField[NUM_PLAYER_OPTION_FIELDS];
+	
+	UpgradeLevels playerUpgradeLevels;
 	sf::Uint32 logField[NUM_LOG_FIELDS]; //needs to get replaced to have all kinds of pickups not just logs
 	int numSyncBytes;
 	int startFrame;
@@ -46,7 +49,7 @@ struct PracticeStartMsg
 
 	PracticeStartMsg();
 	void Clear();
-	void SetPlayerOptionField(BitField &bf);
+	void SetPlayerUpgradeLevels(UpgradeLevels *ul);
 	void SetLogField(BitField &bf);
 };
 

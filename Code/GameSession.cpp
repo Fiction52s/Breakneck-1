@@ -46,7 +46,7 @@
 #include "Background.h"
 #include "ShaderTester.h"
 #include "TouchGrass.h"
-
+#include "KinUpgrades.h"
 #include "Barrier.h"
 #include "SequenceW4.h"
 #include "ParticleEffects.h"
@@ -1041,8 +1041,6 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 GameSession::GameSession(MatchParams *mp )
 	:Session( Session::SESS_GAME, mp->mapPath)
 {
-	originalProgressionCompatible = false;
-
 	isDefaultKeyboardInputOn = false;
 
 	SetMatchParams(*mp);
@@ -1287,7 +1285,7 @@ void GameSession::CheckSinglePlayerInputDefaultKeyboard()
 	}
 }
 
-void GameSession::SetPlayerOption(int optionType, bool isOn, int playerIndex)
+void GameSession::SetPlayerUpgrade(int up, int lvl, int playerIndex)
 {
 	if (IsReplayOn())
 	{
@@ -1298,12 +1296,12 @@ void GameSession::SetPlayerOption(int optionType, bool isOn, int playerIndex)
 		//saveFile->kinFlagField.SetBit(flagType, isOn);
 	}
 
-	currPlayerOptionsField.SetBit(optionType, isOn);
-	GetPlayer(playerIndex)->SetStartOption(optionType, isOn);
+	currPlayerUpgradeLevels->SetUpgradeLevel(up, lvl);
+	GetPlayer(playerIndex)->SetStartUpgradeLevel(up, lvl);
 
-	if ( !IsReplayOn() && IsRushSession() && isOn)
+	if ( !IsReplayOn() && IsRushSession() && lvl > 0 )
 	{
-		mainMenu->rushManager->UnlockUpgrade(optionType);
+		mainMenu->rushManager->UnlockUpgrade(up, lvl);
 		//mainMenu->rushManager->kinOptionField.SetBit(optionType, true);
 	}
 }
@@ -1848,20 +1846,6 @@ bool GameSession::Load()
 	{
 		UpdateWorldDependentTileset(0);
 	}
-
-	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
-	{
-		originalProgressionModeOn = mainMenu->adventureManager->originalProgressionMode;//false; //testing
-	}
-	
-
-	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE )
-	{
-		saveFile->adventureFile->GetOriginalProgressionOptionField(level->index, originalProgressionPlayerOptionsField);
-		//saveFile->adventureFile->GetOriginalProgressionLogField(level->index, originalProgressionLogField);
-	}
-
-	
 	
 	mapNameText.setFont(mainMenu->arial);
 	mapNameText.setCharacterSize(24);
@@ -2318,7 +2302,7 @@ bool GameSession::Load()
 		{
 			if (GetPlayer(i) != NULL)
 			{
-				SetPlayerOptionField(i);
+				SetPlayerUpgradeLevels(i);
 			}
 		}
 	}
@@ -3794,17 +3778,18 @@ int GameSession::Run()
 		SetupGameMode();
 	}
 
-	currPlayerOptionsField.Reset();
+	currPlayerUpgradeLevels->Clear();
 	currLogField.Reset();
-	if( saveFile != NULL && !originalProgressionModeOn )
+
+	if( saveFile != NULL )
 	{
 		//currLogField.Set(saveFile->logField); //temp turned off. will have to account for other item types soon
-		currPlayerOptionsField.Set(saveFile->kinOptionField); //remember that the save file wont have the upgrades, only powers
+		//currPlayerOptionsField.Set(saveFile->kinOptionField); //remember that the save file wont have the upgrades, only powers
 		//give level powers here? 
 	}
 	else if (IsRushSession())
 	{
-		currPlayerOptionsField.Set(mainMenu->rushManager->kinOptionField);
+		currPlayerUpgradeLevels->Set(mainMenu->rushManager->kinUpgradeLevels);
 	}
 
 
@@ -4564,22 +4549,13 @@ void GameSession::RestartLevel()
 	if ( !IsRushSession() && saveFile == NULL && !IsParallelSession())
 	{
 		//currUpgradeField.Reset();
-		currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
+		currPlayerUpgradeLevels->Set(defaultStartingPlayerUpgradeLevels);
 		currLogField.Reset();
-	}
-	else if ( saveFile != NULL && originalProgressionModeOn)
-	{
-		//if orig progression on, set the log field to the orig progression, otherwise, let it stack up.
-
-		//currLogField.Set(saveFile->logField);
-		//currLogField.And(originalProgressionLogField);
-
-		currPlayerOptionsField.Set(saveFile->kinOptionField);
-		currPlayerOptionsField.And(originalProgressionPlayerOptionsField);
 	}
 	else if (IsRushSession())
 	{
-		currPlayerOptionsField.Set(mainMenu->rushManager->kinOptionField);
+		currPlayerUpgradeLevels->Set(mainMenu->rushManager->kinUpgradeLevels);
+		//currPlayerOptionsField.Set(mainMenu->rushManager->kinOptionField);
 	}
 
 
@@ -4612,52 +4588,6 @@ void GameSession::RestartLevel()
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 
 	ClearEmitters();
-
-	originalProgressionCompatible = false;
-	if (saveFile != NULL && mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-	{
-		originalProgressionCompatible = true;
-
-
-		if (!originalProgressionModeOn)
-		{
-			//if original progression is not being forced, check to see if we are compatible with it.
-			for (int i = 0; i < saveFile->kinOptionField.numOptions; ++i)
-			{
-				if (saveFile->kinOptionField.GetBit(i) && !originalProgressionPlayerOptionsField.GetBit(i))
-				{
-					originalProgressionCompatible = false;
-					break;
-				}
-			}
-
-			if (originalProgressionCompatible)
-			{
-				/*for (int i = 0; i < saveFile->logField.numOptions; ++i)
-				{
-					if (saveFile->logField.GetBit(i) && !originalProgressionLogField.GetBit(i))
-					{
-						originalProgressionCompatible = false;
-						break;
-					}
-				}*/
-			}
-		}
-	}
-
-	if (originalProgressionCompatible)
-	{
-		cout << "compatible" << "\n";
-	}
-	else
-	{
-		cout << "not compatible \n";
-	}
-
-	//cout << "restarting the level on frame: " << totalGameFramesIncludingRespawns << "\n";
-
-	//AddEmitter(testEmit, DrawLayer::IN_FRONT);
-	//testEmit->Reset();
 
 	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	{
@@ -5543,15 +5473,6 @@ bool GameSession::HasLog(int logIndex)
 	}
 
 	return currLogField.GetBit(logIndex);
-	/*if (originalProgressionModeOn)
-	{
-		return originalProgressionLogField.GetBit(logIndex);
-	}
-
-	if (saveFile != NULL)
-	{
-		return saveFile->HasLog(logIndex);
-	}*/
 	return false;
 }
 
@@ -5711,14 +5632,15 @@ void GameSession::StartLeaderboard()
 	if (adventureManager != NULL)
 	{
 		gameState = LEADERBOARD;
-		if (originalProgressionCompatible)
+		adventureManager->leaderboard->SetAnyPowersMode(true);
+		/*if (originalProgressionCompatible)
 		{
 			adventureManager->leaderboard->SetAnyPowersMode(false);
 		}
 		else
 		{
 			adventureManager->leaderboard->SetAnyPowersMode(true);
-		}
+		}*/
 
 		adventureManager->leaderboard->Start();//adventureManager->GetLeaderboardNameOriginalPowers(this), 
 			//adventureManager->GetLeaderboardNameAnyPowers(this));

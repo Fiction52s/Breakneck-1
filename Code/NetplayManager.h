@@ -11,6 +11,8 @@
 #include "PracticeMsg.h"
 #include "BitField.h"
 
+
+struct UpgradeLevels;
 struct MatchParams;
 struct GameSession;
 struct UdpMsg;
@@ -66,7 +68,8 @@ struct PracticePlayer
 	int indexInLobby;
 
 	int skinIndex;
-	BitField playerOptionField;
+
+	UpgradeLevels *playerUpgradeLevels;
 	BitField logField;
 
 	int waitingForFrame;
@@ -93,6 +96,7 @@ struct PracticePlayer
 	std::map<int, int> stateChangeMap;
 
 	PracticePlayer();
+	~PracticePlayer();
 	void Clear();
 	void ClearSyncStateBuf();
 	void ClearMessages();

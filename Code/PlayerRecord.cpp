@@ -14,6 +14,7 @@
 #include "ReplayHUD.h"
 #include "NameTag.h"
 #include "RushManager.h"
+#include "KinUpgrades.h"
 
 using namespace sf;
 using namespace std;
@@ -193,7 +194,7 @@ void ReplayPlayer::Read(istream &is)
 void ReplayPlayer::Reset()
 {
 	SetToStart();
-	pReplayer->player->SetAllOptions(pReplayer->replayManager->header.playerOptionField);//pReplayer->//pReplayer->bUpgradeField);
+	pReplayer->player->SetAllUpgrades(pReplayer->replayManager->header.playerUpgradeLevels);//pReplayer->//pReplayer->bUpgradeField);
 	pReplayer->player->currPowerMode = pReplayer->startPowerMode;
 	pReplayer->player->nameTag->SetActive(true);
 	pReplayer->player->nameTag->SetName(pReplayer->displayName);
@@ -355,15 +356,15 @@ void PlayerRecorder::StopRecordingAndWriteToFile(const std::string &fileName)
 	//-Added a V2d playerPos to the replayghost sprite info to track desyncs and also for the nametag
 
 PlayerRecordHeader::PlayerRecordHeader()
-	:numberOfPlayers(0),
-	playerOptionField(Session::PLAYER_OPTION_BIT_COUNT)
-	//bLogField(LogDetailedInfo::MAX_LOGS)
+	:numberOfPlayers(0)
 {
 	SetVer(2);
+	playerUpgradeLevels = new UpgradeLevels;
 }
 
 PlayerRecordHeader::~PlayerRecordHeader()
 {
+	delete playerUpgradeLevels;
 }
 
 void PlayerRecordHeader::SetVer(int v)
@@ -376,12 +377,8 @@ void PlayerRecordHeader::SetFields()
 	GameSession *game = GameSession::GetSession();
 	if (game != NULL && game->saveFile != NULL)
 	{
-		playerOptionField.Set(game->saveFile->kinOptionField);//sess->GetPlayer(0)->bStartHasUpgradeField);
-
-		if (game->originalProgressionModeOn)
-		{
-			playerOptionField.And(game->originalProgressionPlayerOptionsField);
-		}
+		//playerUpgradeLevels->Set( game->saveFile->kin)
+		//playerOptionField.Set(game->saveFile->kinOptionField);//sess->GetPlayer(0)->bStartHasUpgradeField);
 
 		/*bLogField.Set(game->saveFile->logField);
 		if (game->originalProgressionModeOn)
@@ -391,13 +388,12 @@ void PlayerRecordHeader::SetFields()
 	}
 	else if (game != NULL && game->IsRushSession())
 	{
-		playerOptionField.Set(game->mainMenu->rushManager->kinOptionField );
+		playerUpgradeLevels->Set(game->mainMenu->rushManager->kinUpgradeLevels);
 	}
 	else
 	{
 		Session *sess = Session::GetSession();
-		playerOptionField.Set(sess->currPlayerOptionsField);//sess->GetPlayer(0)->bStartHasUpgradeField);
-
+		playerUpgradeLevels->Set(sess->currPlayerUpgradeLevels);
 		//bLogField.Set(sess->currLogField);
 	}
 	/*else
@@ -418,7 +414,7 @@ void PlayerRecordHeader::Read(std::istream &is)
 	is.read((char*)&ver, sizeof(ver)); //read in the basic vars
 	is.read((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 
-	playerOptionField.LoadBinary(is);
+	playerUpgradeLevels->LoadBinary(is);
 	//bLogField.LoadBinary(is);
 
 	assert(numberOfPlayers > 0 && numberOfPlayers <= 4);
@@ -429,9 +425,7 @@ void PlayerRecordHeader::Write(std::ofstream &of)
 	of.write((char*)&ver, sizeof(ver));
 	of.write((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 
-	playerOptionField.SaveBinary(of);
-	//bUpgradesTurnedOnField.SaveBinary(of);
-	//bLogField.SaveBinary(of);
+	playerUpgradeLevels->SaveBinary(of);
 }
 
 PlayerReplayer::PlayerReplayer(PlayerReplayManager *p_replayManager)

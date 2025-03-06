@@ -171,7 +171,7 @@ void RushScoreDisplay::CreateDescriptionTable()
 		"-Press a direction when launching the wire to aim it!\n"
 		"-Keep holding the wire button after it is attached to swing from it!");*/
 
-	SetTableEntry(UPGRADE_W1_DASH_BOOST, "Unlock Dash Boost",
+	/*SetTableEntry(UPGRADE_W1_DASH_BOOST, "Unlock Dash Boost",
 		"Let go of dash near the end to get a boost of speed!");
 
 	SetTableEntry(UPGRADE_W1_STEEP_CLIMB_1, "Upgrade Steep Climb 1/3",
@@ -187,7 +187,7 @@ void RushScoreDisplay::CreateDescriptionTable()
 		"Increased acceleration from sprinting on slopes!");
 
 	SetTableEntry(UPGRADE_W1_BASE_DASH_1, "Upgrade Base Dash Speed 1/3",
-		"Dash speed increased!");
+		"Dash speed increased!");*/
 		
 
 	//leftwire entry left blank for now, since right wire is double

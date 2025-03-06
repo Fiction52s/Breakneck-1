@@ -17,15 +17,22 @@
 #include "Input.h"
 #include "SaveFile.h"
 #include "Sequence.h"
+#include "KinUpgrades.h"
 
 using namespace std;
 using namespace sf;
 
 PracticePlayer::PracticePlayer()
-	:playerOptionField(Session::PLAYER_OPTION_BIT_COUNT), logField( LogInfo::MAX_LOGS_PER_WORLD * 8 )
+	:logField( LogInfo::MAX_LOGS_PER_WORLD * 8 )
 {
+	playerUpgradeLevels = new UpgradeLevels;
 	syncStateBuf = NULL;
 	Clear();
+}
+
+PracticePlayer::~PracticePlayer()
+{
+	delete playerUpgradeLevels;
 }
 
 void PracticePlayer::Clear()
@@ -50,7 +57,8 @@ void PracticePlayer::Clear()
 
 	ClearSyncStateBuf();
 
-	playerOptionField.Reset();
+	playerUpgradeLevels->Clear();
+
 	logField.Reset();
 	skinIndex = 0;
 
@@ -288,9 +296,10 @@ void PracticePlayer::ReceiveSteamMessage(SteamNetworkingMessage_t *message)
 
 		action = A_RUNNING;
 
+		playerUpgradeLevels->Set(&(msg->playerUpgradeLevels));
+
 		for (int i = 0; i < 8; ++i)
 		{
-			playerOptionField.optionField[i] = msg->playerOptionField[i];
 			logField.optionField[i] = msg->logField[i];
 		}
 

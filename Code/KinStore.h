@@ -3,6 +3,7 @@
 
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
+#include "nlohmann\json.hpp"
 
 struct SingleAxisSelector;
 struct Session;
@@ -10,8 +11,13 @@ struct Session;
 struct StoreItem
 {
 	int upgradeIndex;
-	std::string description;
 	std::string name;
+	int numLevels;
+	std::vector<std::string> descriptions;
+	std::vector<int> costs;
+
+	StoreItem( nlohmann::basic_json<> &j );
+	void Print();
 };
 
 struct KinStore
@@ -47,6 +53,8 @@ struct KinStore
 
 	sf::Text upgradeNameText;
 	sf::Text upgradeDescText;
+
+	std::vector<StoreItem*> items;
 
 	//sf::Vertex shardBGQuad[4];
 	//sf::Vertex descriptionBGQuad[4];

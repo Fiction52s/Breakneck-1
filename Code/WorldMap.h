@@ -83,9 +83,6 @@ struct MapSector
 	sf::Vertex levelSelectOptionQuads[4 * 4];
 	sf::Vertex levelSelectOptionButtonQuads[5 * 4];
 
-	sf::Vertex origPowersOptionQuad[4];
-	sf::Vertex origPowersOptionButtonQuad[4];
-
 	sf::Vertex levelNumberQuads[8 * 4];
 
 	sf::Sprite *nodes;
@@ -114,7 +111,6 @@ struct MapSector
 	Tileset *ts_buttons;
 	Tileset *ts_levelSelectNumbers;
 	Tileset *ts_mapSelectOptions;
-	Tileset *ts_origPowersOptions;
 
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;

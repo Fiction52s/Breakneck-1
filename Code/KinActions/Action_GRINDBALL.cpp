@@ -36,7 +36,7 @@ void Actor::GRINDBALL_Change()
 
 	if (!exitedGrind)
 	{
-		if (DashButtonPressed() && IsOptionOn(UPGRADE_W5_GRIND_LUNGE))
+		if (DashButtonPressed() && HasUpgradeLevel(POWER_GRIND, 2))
 		{
 			V2d op = position;
 

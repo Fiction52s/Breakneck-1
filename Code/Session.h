@@ -22,7 +22,7 @@
 #include "steam/steam_api.h"
 #include "MatchParams.h"
 
-
+struct UpgradeLevels;
 struct Launcher;
 struct EdgeInfo;
 struct DeathSequence;
@@ -241,8 +241,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	Tileset *ts_goalCrack;
 	Tileset *ts_goalExplode;
 
-	bool originalProgressionModeOn;
-
 	bool phaseOn; //for phase switches
 
 	int totalGameFramesIncludingRespawns;
@@ -320,11 +318,11 @@ struct Session : TilesetManager, QuadTreeCollider
 	int turnTimerOnCounter;
 	std::vector<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
-	BitField defaultStartingPlayerOptionsField;
-	BitField currPlayerOptionsField;
+	
+	UpgradeLevels *defaultStartingPlayerUpgradeLevels;
+	UpgradeLevels *currPlayerUpgradeLevels;
+
 	BitField currLogField;
-	BitField originalProgressionPlayerOptionsField;
-	BitField originalProgressionLogField;
 	//timeslow stuff
 	float fBubbleRadiusSize[MAX_TOTAL_BUBBLES];
 	sf::Vector2f fBubblePos[MAX_TOTAL_BUBBLES];
@@ -556,7 +554,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AdjustBoundsHeightFromTerrain();
 	void ActivateZone(Zone * z, bool instant = false);
 	void WarpToZone(Zone *z);
-	void SetPlayerOptionField(int pIndex);
+	void SetPlayerUpgradeLevels(int pIndex);
 	void SetupSoundLists();
 	void SetupTimeBubbles();
 	bool IsSessTypeGame();
@@ -803,7 +801,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetNumGates(int nGates);
 	void LockGate(Gate *g);
 	void UnlockGate(Gate *g);
-	virtual void SetPlayerOption(int optionType, bool isOn, int playerIndex = 0 );
+	virtual void SetPlayerUpgradeLevel(int up, int lvl, int playerIndex = 0);
 	virtual void UnlockLog(int logType, int playerIndex = 0);
 	virtual bool TrySaveCurrentSaveFile() { return false; };
 	void DrawGates(sf::RenderTarget *target);
@@ -1014,7 +1012,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsParallelGameModeType();
 	void RunPracticeModeUpdate();
 	void SetView(const sf::View &p_view);
-	const BitField & GetPracticePlayerOptionField();
 	Edge *GetEdge(EdgeInfo * ei);
 	PolyPtr GetPolyFromID(int id);
 	RailPtr GetRailFromID(int id);

@@ -64,8 +64,6 @@ AdventureManager::AdventureManager()
 		parallelPracticeMode = false;
 	}
 
-	originalProgressionMode = false;
-
 	//LoadAdventure("tadventure");
 	LoadAdventure("newadventure");
 
@@ -445,7 +443,7 @@ void AdventureManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bo
 
 			if (MainMenu::GetInstance()->steamOn)
 			{
-				leaderboard->UploadScore(totalFrames, tempReplayPath, game->originalProgressionCompatible);
+				leaderboard->UploadScore(totalFrames, tempReplayPath );
 			}
 			//leaderboardMan->UploadScore(totalFrames);
 			//leaderboard stuff here!

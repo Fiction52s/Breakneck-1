@@ -24,7 +24,7 @@
 #include "EditorDecorInfo.h"
 #include "EditorPlayerTracker.h"
 #include "clipper.hpp"
-
+#include "KinUpgrades.h"
 #include "TransformTools.h"
 #include "ScoreDisplay.h"
 #include "Enemy_CurrencyGrid.h"
@@ -723,7 +723,7 @@ void EditSession::TestPlayerMode()
 		(*it)->CancelTransformation();
 	}
 
-	currPlayerOptionsField.Reset();
+	currPlayerUpgradeLevels->Clear();
 
 	scoreDisplay->Reset();
 
@@ -760,7 +760,7 @@ void EditSession::TestPlayerMode()
 
 	pokeTriangleScreenGroup->Reset();
 	
-	currPlayerOptionsField.Set(defaultStartingPlayerOptionsField);
+	currPlayerUpgradeLevels->Set(defaultStartingPlayerUpgradeLevels);
 
 	if (background != NULL && background->envWorld == 1)
 	{
@@ -2646,8 +2646,10 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//version 10 is including special map types (for Kin's ship)
 	//version 11 is for including draw layers in polygons
 	//version 12 is for special map types but with strings for names instead of ints
+	//version 13 is w/ upgrade levels instead of upgrade 
 
-	mapHeader->ver1 = 12;
+
+	mapHeader->ver1 = 13;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -3024,7 +3026,7 @@ void EditSession::WriteRails(ofstream &of)
 
 void EditSession::WritePlayerOptions(std::ofstream &of)
 {
-	defaultStartingPlayerOptionsField.Save(of);
+	defaultStartingPlayerUpgradeLevels->Save(of);
 }
 
 bool EditSession::WriteTargetExistsAlready()
@@ -12304,7 +12306,8 @@ void EditSession::CleanupTestPlayerMode()
 		originalMusic->music->stop();
 	}*/
 
-	currPlayerOptionsField.Reset();
+	currPlayerUpgradeLevels->Clear();
+
 	fader->Reset();
 	swiper->Reset();
 
@@ -12317,7 +12320,7 @@ void EditSession::CleanupTestPlayerMode()
 		if (p != NULL)
 		{
 			p->StopRepeatingSound();
-			SetPlayerOptionField(i);
+			SetPlayerUpgradeLevels(i);
 		}
 	}
 

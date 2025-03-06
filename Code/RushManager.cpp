@@ -16,6 +16,7 @@
 #include "ShardMenu.h"
 #include "KinExperienceBar.h"
 #include "RushScoreDisplay.h"
+#include "KinUpgrades.h"
 
 #include "RushFile.h"
 
@@ -23,7 +24,6 @@ using namespace std;
 using namespace sf;
 
 RushManager::RushManager()
-	:kinOptionField(Session::PLAYER_OPTION_BIT_COUNT)
 {
 	pauseMenu = new PauseMenu(this);
 
@@ -43,6 +43,8 @@ RushManager::RushManager()
 	transferPlayerPowerMode = -1;
 
 	MainMenu * mm = MainMenu::GetInstance();
+
+	kinUpgradeLevels = new UpgradeLevels;
 
 	adventureHUD = new AdventureHUD(this);
 
@@ -72,6 +74,7 @@ RushManager::~RushManager()
 	}
 	bonusVec.clear();
 
+	delete kinUpgradeLevels;
 
 	if (firstMap != NULL)
 	{
@@ -149,7 +152,7 @@ void RushManager::SetWorld(int w)
 
 	if (currWorld == 0)
 	{
-		kinOptionField.Reset();
+		kinUpgradeLevels->Clear();
 		kinUpgradesInOrder.clear();
 	}
 
@@ -382,8 +385,8 @@ void RushManager::FadeInSaveMenu()
 	//saveMenu->SetSelectedIndex(mainMenu->RushManager->currSaveFileIndex);
 }
 
-void RushManager::UnlockUpgrade(int index)
+void RushManager::UnlockUpgrade(int up, int lvl)
 {
-	kinOptionField.SetBit(index, true);
-	kinUpgradesInOrder.push_back(index);
+	kinUpgradeLevels->SetUpgradeLevel(up, lvl);	
+	//kinUpgradesInOrder.push_back(index);
 }

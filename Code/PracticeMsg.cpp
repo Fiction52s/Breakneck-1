@@ -30,10 +30,7 @@ void PracticeStartMsg::Clear()
 
 	numSyncBytes = 0;
 
-	for (int i = 0; i < NUM_PLAYER_OPTION_FIELDS; ++i)
-	{
-		playerOptionField[i] = 0;
-	}
+	playerUpgradeLevels.Clear();
 
 	for (int i = 0; i < NUM_LOG_FIELDS; ++i)
 	{
@@ -45,13 +42,9 @@ void PracticeStartMsg::Clear()
 	origProgression = false;
 }
 
-void PracticeStartMsg::SetPlayerOptionField(BitField &bf)
+void PracticeStartMsg::SetPlayerUpgradeLevels(UpgradeLevels *ul)
 {
-	assert(bf.numFields == NUM_PLAYER_OPTION_FIELDS);
-	for (int i = 0; i < NUM_PLAYER_OPTION_FIELDS; ++i)
-	{
-		playerOptionField[i] = bf.optionField[i];
-	}
+	playerUpgradeLevels.Set(ul);
 }
 
 void PracticeStartMsg::SetLogField(BitField &bf)

@@ -66,7 +66,6 @@ struct AdventureManager : TilesetManager
 	KinExperienceBar *expBar;
 
 	bool parallelPracticeMode;
-	bool originalProgressionMode;
 
 	AdventureManager();
 	~AdventureManager();
