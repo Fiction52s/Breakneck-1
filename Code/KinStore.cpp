@@ -256,6 +256,12 @@ void KinStore::Update()
 			//	sess->SetPlayerOption(optionIndex + 1, true);
 			//	sess->mainMenu->rushManager->kinOptionField.SetBit(optionIndex + 1, true);
 			//}
+			StoreItem *si = storeItems[ySelector->currIndex][xSelector->currIndex];
+			int optionIndex = si->upgradeIndex;
+
+			//move upgrade index to the rush file very soon
+			sess->SetPlayerUpgradeLevel(optionIndex, si->upgradeIndex + 1 );
+			sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, si->upgradeIndex + 1);
 
 			action = A_READY_TO_CLOSE;
 			frame = 0;
