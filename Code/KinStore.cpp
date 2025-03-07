@@ -42,6 +42,22 @@ StoreItem::StoreItem( nlohmann::basic_json<> &upgrade)
 	{
 		upgradeIndex = POWER_DOUBLE_WIRES;
 	}
+	else if (upgradeString == "UPGRADE_SPEED")
+	{
+		upgradeIndex = UPGRADE_SPEED;
+	}
+	else if (upgradeString == "UPGRADE_ENERGY")
+	{
+		upgradeIndex = UPGRADE_ENERGY;
+	}
+	else if (upgradeString == "UPGRADE_SHIELD")
+	{
+		upgradeIndex = UPGRADE_SHIELD;
+	}
+	else if (upgradeString == "UPGRADE_DASH")
+	{
+		upgradeIndex = UPGRADE_DASH;
+	}
 
 	name = upgrade["Name"].get<std::string>();
 
@@ -112,6 +128,12 @@ KinStore::KinStore()
 	upgradeNameText.setCharacterSize(20);
 	upgradeNameText.setFont(mm->arial);
 	upgradeNameText.setFillColor(Color::White);
+
+	upgradeLevelText.setCharacterSize(20);
+	upgradeLevelText.setFont(mm->arial);
+	upgradeLevelText.setFillColor(Color::White);
+
+	
 
 	upgradeDescText.setCharacterSize(20);
 	upgradeDescText.setFont(mm->arial);
@@ -197,6 +219,7 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 
 	upgradeNameText.setPosition(500 + pos.x, pos.y + 50);
 	upgradeDescText.setPosition(500 + pos.x, pos.y + 200 );
+	upgradeLevelText.setPosition(500 + pos.x, pos.y + 400);
 }
 
 #include "RushManager.h"
@@ -230,6 +253,10 @@ void KinStore::SetSelected(int section, int itemIndex)
 	StoreItem *si = storeItems[section][itemIndex];
 	upgradeNameText.setString( si->name );
 	upgradeDescText.setString(si->GetCurrentDescription());
+
+	int upgradeLevel = sess->mainMenu->rushManager->kinUpgradeLevels->GetUpgradeLevel(si->upgradeIndex);
+
+	upgradeLevelText.setString( "Level: " + to_string(upgradeLevel));
 
 	SetRectCenter(selectedBGQuad, 192 / 2, 192 / 2,
 		Vector2f((itemSelectQuads + si->quadIndex * 4)->position + Vector2f(192 / 4, 192 / 4)));

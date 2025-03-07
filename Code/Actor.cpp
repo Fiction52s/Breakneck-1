@@ -4096,6 +4096,14 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	//SetStartUpgrade(POWER_AIRDASH, false);
 
+	maxSteepClimbUpgradeAmount = 2.0 * 3.0;
+	maxSteepSlideUpgradeAmount = (steepSlideFastGravFactor * .2) * 3.0;
+	maxSprintUpgradeAmount = .03 * 3.0;
+	maxPassiveGroundUpgradeAmount = .03 * 3.0;
+
+	//starts at 60, goes up to 100
+	maxMaxSpeedUpgradeAmount = 5.0 * 8.0;
+
 	SetupTimeBubbles();
 
 	Respawn(false);
@@ -4346,12 +4354,7 @@ void Actor::InitSounds()
 
 double Actor::GetMaxSpeed()
 {
-	//starts at 60, goes up to 100
-	double upgradeAmount = 5;
-
-	int maxSpeedUpgrades = 0;//NumUpgradeRange(UPGRADE_W6_MAX_SPEED_1, 8);
-
-	return maxSpeed + upgradeAmount * maxSpeedUpgrades;
+	return maxSpeed + GetMaxSpeedUpgradeAmount();
 }
 
 
@@ -7954,16 +7957,12 @@ bool Actor::TryClimbBoost()
 
 		if (reversed)
 		{
-			int numCeilingClimbUpgrades = 0;//IsOptionOn(UPGRADE_W3_CEILING_STEEP_CLIMB_1) + IsOptionOn(UPGRADE_W4_CEILING_STEEP_CLIMB_2) + IsOptionOn(UPGRADE_W5_CEILING_STEEP_CLIMB_3);
-
-			extra += numCeilingClimbUpgrades * upgradeAmount;
+			extra += GetCeilingSteepClimbUpgradeAmount();
 		}
 		else
 		{
-			int numClimbUpgrades = 0;//IsOptionOn(UPGRADE_W1_STEEP_CLIMB_1) + IsOptionOn(UPGRADE_W2_STEEP_CLIMB_2) + IsOptionOn(UPGRADE_W6_STEEP_CLIMB_3);
-			extra += numClimbUpgrades * upgradeAmount;
+			extra += GetSteepClimbUpgradeAmount();
 		}
-
 
 		if (HoldingRelativeUp())
 		{
@@ -12262,18 +12261,15 @@ double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
 		extraSprintAccel = min( .3, extraSprintAccel );
 	}
 	extraSprintAccel *= .09;
-	
-	double upgradeSprintAmount = .03;
+
 
 	if (reversed)
 	{
-		int numCeilingSprintUpgrades = 0;//IsOptionOn(UPGRADE_W3_CEILING_SPRINT_1) + IsOptionOn(UPGRADE_W4_CEILING_SPRINT_2) + IsOptionOn(UPGRADE_W5_CEILING_SPRINT_3);
-		extraSprintAccel += extraSprintAccel * numCeilingSprintUpgrades;
+		extraSprintAccel += GetCeilingSprintUpgradeAmount();
 	}
 	else
 	{
-		int numSprintUpgrades = 0;//IsOptionOn(UPGRADE_W1_SPRINT_1) + IsOptionOn(UPGRADE_W2_SPRINT_2) + IsOptionOn(UPGRADE_W6_SPRINT_3);
-		extraSprintAccel += upgradeSprintAmount * numSprintUpgrades;
+		extraSprintAccel += GetSprintUpgradeAmount();
 	}
 
 	return sprintAccel + extraSprintAccel;
@@ -12322,19 +12318,14 @@ void Actor::SprintAccel()
 void Actor::GroundExtraAccel()
 {
 	double extraAccel = 0;
-	double upgradeFactor = .03;
 
 	if (reversed)
 	{
-		int numPassiveCeilingAccelUpgrades = 0;/*IsOptionOn(UPGRADE_W3_CEILING_PASSIVE_GROUND_1)
-			+ IsOptionOn(UPGRADE_W4_CEILING_PASSIVE_GROUND_2)
-			+ IsOptionOn(UPGRADE_W5_CEILING_PASSIVE_GROUND_3);*/
-		extraAccel = numPassiveCeilingAccelUpgrades * upgradeFactor;
+		extraAccel = GetCeilingPassiveGroundUpgradeAmount();
 	}
 	else
 	{
-		int numPassiveAccelUpgrades = 0;//IsOptionOn(UPGRADE_W1_PASSIVE_GROUND_1) + IsOptionOn(UPGRADE_W2_PASSIVE_GROUND_2) + IsOptionOn(UPGRADE_W6_PASSIVE_GROUND_3);
-		extraAccel = numPassiveAccelUpgrades * upgradeFactor;
+		extraAccel = GetPassiveGroundUpgradeAmount();
 	}
 
 	if (groundSpeed > 0)
@@ -25378,18 +25369,13 @@ void Actor::SteepSlideMovement()
 	if (HoldingRelativeDown())
 	{
 		double currFactor = 0;
-		double upgradeAmount = steepSlideFastGravFactor * .2;
-
-
 		if (reversed)
 		{
-			int numCeilingSlideUpgrades = 0;//IsOptionOn(UPGRADE_W3_CEILING_STEEP_SLIDE_1) + IsOptionOn(UPGRADE_W4_CEILING_STEEP_SLIDE_2) + IsOptionOn(UPGRADE_W5_CEILING_STEEP_SLIDE_3);
-			currFactor = steepSlideFastGravFactor + upgradeAmount * numCeilingSlideUpgrades;
+			currFactor = steepSlideFastGravFactor + GetCeilingSteepSlideUpgradeAmount();
 		}
 		else
 		{
-			int numSlideUpgrades = 0;//IsOptionOn(UPGRADE_W1_STEEP_SLIDE_1) + IsOptionOn(UPGRADE_W2_STEEP_SLIDE_2) + IsOptionOn(UPGRADE_W6_STEEP_SLIDE_3);
-			currFactor = steepSlideFastGravFactor + upgradeAmount * numSlideUpgrades;
+			currFactor = steepSlideFastGravFactor + GetSteepSlideUpgradeAmount();
 		}
 
 		fac = GetGravity() * currFactor;
@@ -25596,597 +25582,767 @@ void Actor::UpdateInHitlag()
 	return pair<bool, bool>(false,false);
 }
 
- void Actor::CollectCurrencyItem(CurrencyItem *ci)
- {
-	 ci->Collect(this);
-	 CollectCurrency(ci->GetCounterAmount(), ci->GetHealAmount());
- }
+void Actor::CollectCurrencyItem(CurrencyItem *ci)
+{
+	ci->Collect(this);
+	CollectCurrency(ci->GetCounterAmount(), ci->GetHealAmount());
+}
 
- void Actor::CollectCurrency(int currencyAmount, int healAmount )
- {
-	 HealTimer(currencyAmount);
-	 AddToCurrencyCounter(currencyAmount);
- }
+void Actor::CollectCurrency(int currencyAmount, int healAmount )
+{
+	HealTimer(currencyAmount);
+	AddToCurrencyCounter(currencyAmount);
+}
 
- void Actor::SetAirBlockAction()
- {
-	 bool forwardHeld = currInput.LLeft() || currInput.LRight();
+void Actor::SetAirBlockAction()
+{
+	bool forwardHeld = currInput.LLeft() || currInput.LRight();
 
-	 if (currInput.LUp())
-	 {
-		 if (forwardHeld)
-		 {
-			 if (action != AIRBLOCKUPFORWARD)
-				SetAction(AIRBLOCKUPFORWARD);
-		 }
-		 else
-		 {
-			 if (action != AIRBLOCKUP)
-			 SetAction(AIRBLOCKUP);
-		 }
-	 }
-	 else if (currInput.LDown())
-	 {
-		 if (forwardHeld)
-		 {
-			 if (action != AIRBLOCKDOWNFORWARD)
-				SetAction(AIRBLOCKDOWNFORWARD);
-		 }
-		 else
-		 {
-			 if (action != AIRBLOCKDOWN)
-				SetAction(AIRBLOCKDOWN);
-		 }
-	 }
-	 else
-	 {
-		 if (action != AIRBLOCKFORWARD)
-			 SetAction(AIRBLOCKFORWARD);
-	 }
- }
-
- void Actor::SetGroundBlockAction()
- {
-	 bool forwardHeld = currInput.LLeft() || currInput.LRight();
-
-	 bool up = HoldingRelativeUp();
-	 bool down = HoldingRelativeDown();
-
-	/* if (reversed)
-	 {
-		 up = !up;
-		 down = !down;
-	 }*/
-
-	 if (up)
-	 {
-		 if (forwardHeld)
-		 {
-			 if (action != GROUNDBLOCKUPFORWARD)
-				 SetAction(GROUNDBLOCKUPFORWARD);
-		 }
-		 else
-		 {
-			 if (action != GROUNDBLOCKUP)
-				 SetAction(GROUNDBLOCKUP);
-		 }
-	 }
-	 else if (down)
-	 {
-		 if (forwardHeld)
-		 {
-			 if (action != GROUNDBLOCKDOWNFORWARD)
-				 SetAction(GROUNDBLOCKDOWNFORWARD);
-		 }
-		 else
-		 {
-			 if (action != GROUNDBLOCKDOWN)
-				 SetAction(GROUNDBLOCKDOWN);
-		 }
-	 }
-	 else
-	 {
-		 if (action != GROUNDBLOCKFORWARD)
-			 SetAction(GROUNDBLOCKFORWARD);
-	 }
- }
-
- void Actor::TryResetBlockCounter()
- {
-	 //framesSinceBlockPress might break parrying slightly?
-	 //its to prevent buffered parries. we'll have to test it out
-	 if (!IsBlockAction(oldAction) && framesSinceBlockPress >= 0 && framesSinceBlockPress < 10 )
-	 {
-		 framesBlocking = 0;
-	 }
- }
-
- void Actor::AirBlockChange()
- {
-	 if (currInput.LLeft())
-	 {
-		 facingRight = false;
-	 }
-	 else if (currInput.LRight())
-	 {
-		 facingRight = true;
-	 }
-
-	 if (!PowerButtonHeld() && blockstunFrames == 0)
-	 {
-		 SetAction(JUMP);
-		 frame = 1;
-	 }
-	 else
-	 {
-		 if (TryDoubleJump()) return;
-
-		 if (AirAttack()) return;
-
-		 SetAirBlockAction();
-	 }
- }
-
- void Actor::GroundBlockChange()
- {
-	 if (currInput.LLeft())
-	 {
-		 facingRight = false;
-	 }
-	 else if (currInput.LRight())
-	 {
-		 facingRight = true;
-	 }
-
-	 if (blockstunFrames == 0)
-	 {
-		 if (!PowerButtonHeld())
-		 {
-			 SetAction(STAND);
-			 frame = 0;
-			 return;
-		 }
-		 else
-		 {
-			 if (TryJumpSquat()) return;
-
-			 if (TryGroundAttack()) return;
-		 }
-	 }
-
-	 SetGroundBlockAction();
- }
-
- void Actor::UpdateGroundedSwordSprite( Tileset *ts, int startFrame, int endFrame, int animMult,
-	 Vector2f &offset )
- {
-	 showSword = true;
-
-	 if ( frame < startFrame * animMult || ( endFrame >= 0 && frame >= endFrame * animMult) )
-		 showSword = false;
-
-	 if (showSword)
-	 {
-		 swordSprite.setTexture(*ts->texture);
-	 }
-
-	 bool r = (facingRight && !reversed) || (!facingRight && reversed);
-
-	 if (showSword)
-	 {
-		 int tile = frame / 2 - startFrame;
-		 if (r)
-		 {
-			 
-			 swordSprite.setTextureRect(ts->GetSubRect(tile));
-
-			 //swordShader.SetQuad(ts, tile);
-			 //swordShader.SetAuraColor(Color::White);
-			 
-		 }
-		 else
-		 {
-			 sf::IntRect irSword = ts->GetSubRect(tile);
-			 sf::IntRect ir(irSword.left + irSword.width, irSword.top, -irSword.width, irSword.height);
-			 //swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
-			//	 irSword.top, -irSword.width, irSword.height));
-			 swordSprite.setTextureRect(ir);
-
-			 //swordShader.SetQuad(ts, tile);
-			 //swordShader.SetAuraColor(Color::White);
-
-			 offset.x = -offset.x;
-		 }
-	 }
-
-	 V2d trueNormal;
-	 double angle = GroundedAngleAttack(trueNormal);
-
-	 if (showSword)
-	 {
-		 swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2,
-			 swordSprite.getLocalBounds().height / 2);
-		 swordSprite.setRotation(angle / PI * 180);
-	 }
-
-	 V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
-	 V2d truDir(-trueNormal.y, trueNormal.x);
-
-	 pos += truDir * (double)offset.x;
-	 pos += -trueNormal * (double)(offset.y - 32);//sprite->getLocalBounds().height / 2);
-
-	 swordSprite.setPosition(pos.x, pos.y);
- }
-
- void Actor::UpdateGroundedAttackSprite(
-	 int a, Tileset *ts_sword, int startSword, int endSword, int animMult, Vector2f &swordOffset)
- {
-	 int f = frame / animMult;
-
-	 SetSpriteTexture(a);
-	 bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	 SetSpriteTile(f, r);
-	 SetGroundedSpriteTransform();
-	 UpdateGroundedSwordSprite(ts_sword, startSword, endSword, animMult, swordOffset );
-
-	 //use placeholder tile for now, eventually include parameters to use custom scorp stuff per attack
-	 if (scorpOn)
-	 {
-		 scorpSprite.setTexture(*ts_scorpRun->texture);
-
-		 bool r = (facingRight && !reversed) || (!facingRight && reversed);
-
-		 SetSpriteTile(&scorpSprite, ts_scorpDash, 0, r, !reversed);
-
-		 scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
-			 scorpSprite.getLocalBounds().height / 2 + 20);
-		 scorpSprite.setPosition(position.x, position.y);
-		 scorpSprite.setRotation(sprite->getRotation());
-		 scorpSet = true;
-	 }
- }
-
- bool Actor::CheckIfEnemyIsTrackable(Enemy *e)
- {
-	 return e->IsHomingTarget() && EnemyTracker::CheckIfEnemyIsTrackable(e);
- }
-
- void Actor::SetSkin(int skinIndex)
- {
-	 if (skinIndex == SKIN_NORMAL)
-	 {
-		 currSkinIndex = sess->GetPlayerNormalSkin(actorIndex);
-	 }
-	 else
-	 {
-		 currSkinIndex = skinIndex;
-	 }
-
-	 if (skinIndex == SKIN_NORMAL)
-	 {
-		if( antiTimeSlowFrames > 0)
+	if (currInput.LUp())
+	{
+		if (forwardHeld)
 		{
-			currSkinIndex = SKIN_PINK;
+			if (action != AIRBLOCKUPFORWARD)
+			SetAction(AIRBLOCKUPFORWARD);
 		}
-	 }
+		else
+		{
+			if (action != AIRBLOCKUP)
+			SetAction(AIRBLOCKUP);
+		}
+	}
+	else if (currInput.LDown())
+	{
+		if (forwardHeld)
+		{
+			if (action != AIRBLOCKDOWNFORWARD)
+			SetAction(AIRBLOCKDOWNFORWARD);
+		}
+		else
+		{
+			if (action != AIRBLOCKDOWN)
+			SetAction(AIRBLOCKDOWN);
+		}
+	}
+	else
+	{
+		if (action != AIRBLOCKFORWARD)
+			SetAction(AIRBLOCKFORWARD);
+	}
+}
 
-	 skinShader.SetSkin(currSkinIndex);
-	 fxPaletteShader->SetPaletteIndex(currSkinIndex);
-	 mapIconShader.SetSkin(currSkinIndex);
- }
+void Actor::SetGroundBlockAction()
+{
+	bool forwardHeld = currInput.LLeft() || currInput.LRight();
+
+	bool up = HoldingRelativeUp();
+	bool down = HoldingRelativeDown();
+
+/* if (reversed)
+	{
+		up = !up;
+		down = !down;
+	}*/
+
+	if (up)
+	{
+		if (forwardHeld)
+		{
+			if (action != GROUNDBLOCKUPFORWARD)
+				SetAction(GROUNDBLOCKUPFORWARD);
+		}
+		else
+		{
+			if (action != GROUNDBLOCKUP)
+				SetAction(GROUNDBLOCKUP);
+		}
+	}
+	else if (down)
+	{
+		if (forwardHeld)
+		{
+			if (action != GROUNDBLOCKDOWNFORWARD)
+				SetAction(GROUNDBLOCKDOWNFORWARD);
+		}
+		else
+		{
+			if (action != GROUNDBLOCKDOWN)
+				SetAction(GROUNDBLOCKDOWN);
+		}
+	}
+	else
+	{
+		if (action != GROUNDBLOCKFORWARD)
+			SetAction(GROUNDBLOCKFORWARD);
+	}
+}
+
+void Actor::TryResetBlockCounter()
+{
+	//framesSinceBlockPress might break parrying slightly?
+	//its to prevent buffered parries. we'll have to test it out
+	if (!IsBlockAction(oldAction) && framesSinceBlockPress >= 0 && framesSinceBlockPress < 10 )
+	{
+		framesBlocking = 0;
+	}
+}
+
+void Actor::AirBlockChange()
+{
+	if (currInput.LLeft())
+	{
+		facingRight = false;
+	}
+	else if (currInput.LRight())
+	{
+		facingRight = true;
+	}
+
+	if (!PowerButtonHeld() && blockstunFrames == 0)
+	{
+		SetAction(JUMP);
+		frame = 1;
+	}
+	else
+	{
+		if (TryDoubleJump()) return;
+
+		if (AirAttack()) return;
+
+		SetAirBlockAction();
+	}
+}
+
+void Actor::GroundBlockChange()
+{
+	if (currInput.LLeft())
+	{
+		facingRight = false;
+	}
+	else if (currInput.LRight())
+	{
+		facingRight = true;
+	}
+
+	if (blockstunFrames == 0)
+	{
+		if (!PowerButtonHeld())
+		{
+			SetAction(STAND);
+			frame = 0;
+			return;
+		}
+		else
+		{
+			if (TryJumpSquat()) return;
+
+			if (TryGroundAttack()) return;
+		}
+	}
+
+	SetGroundBlockAction();
+}
+
+void Actor::UpdateGroundedSwordSprite( Tileset *ts, int startFrame, int endFrame, int animMult,
+	Vector2f &offset )
+{
+	showSword = true;
+
+	if ( frame < startFrame * animMult || ( endFrame >= 0 && frame >= endFrame * animMult) )
+		showSword = false;
+
+	if (showSword)
+	{
+		swordSprite.setTexture(*ts->texture);
+	}
+
+	bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+	if (showSword)
+	{
+		int tile = frame / 2 - startFrame;
+		if (r)
+		{
+			 
+			swordSprite.setTextureRect(ts->GetSubRect(tile));
+
+			//swordShader.SetQuad(ts, tile);
+			//swordShader.SetAuraColor(Color::White);
+			 
+		}
+		else
+		{
+			sf::IntRect irSword = ts->GetSubRect(tile);
+			sf::IntRect ir(irSword.left + irSword.width, irSword.top, -irSword.width, irSword.height);
+			//swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+		//	 irSword.top, -irSword.width, irSword.height));
+			swordSprite.setTextureRect(ir);
+
+			//swordShader.SetQuad(ts, tile);
+			//swordShader.SetAuraColor(Color::White);
+
+			offset.x = -offset.x;
+		}
+	}
+
+	V2d trueNormal;
+	double angle = GroundedAngleAttack(trueNormal);
+
+	if (showSword)
+	{
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2,
+			swordSprite.getLocalBounds().height / 2);
+		swordSprite.setRotation(angle / PI * 180);
+	}
+
+	V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
+	V2d truDir(-trueNormal.y, trueNormal.x);
+
+	pos += truDir * (double)offset.x;
+	pos += -trueNormal * (double)(offset.y - 32);//sprite->getLocalBounds().height / 2);
+
+	swordSprite.setPosition(pos.x, pos.y);
+}
+
+void Actor::UpdateGroundedAttackSprite(
+	int a, Tileset *ts_sword, int startSword, int endSword, int animMult, Vector2f &swordOffset)
+{
+	int f = frame / animMult;
+
+	SetSpriteTexture(a);
+	bool r = (facingRight && !reversed) || (!facingRight && reversed);
+	SetSpriteTile(f, r);
+	SetGroundedSpriteTransform();
+	UpdateGroundedSwordSprite(ts_sword, startSword, endSword, animMult, swordOffset );
+
+	//use placeholder tile for now, eventually include parameters to use custom scorp stuff per attack
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpRun->texture);
+
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+		SetSpriteTile(&scorpSprite, ts_scorpDash, 0, r, !reversed);
+
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			scorpSprite.getLocalBounds().height / 2 + 20);
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
+}
+
+bool Actor::CheckIfEnemyIsTrackable(Enemy *e)
+{
+	return e->IsHomingTarget() && EnemyTracker::CheckIfEnemyIsTrackable(e);
+}
+
+void Actor::SetSkin(int skinIndex)
+{
+	if (skinIndex == SKIN_NORMAL)
+	{
+		currSkinIndex = sess->GetPlayerNormalSkin(actorIndex);
+	}
+	else
+	{
+		currSkinIndex = skinIndex;
+	}
+
+	if (skinIndex == SKIN_NORMAL)
+	{
+	if( antiTimeSlowFrames > 0)
+	{
+		currSkinIndex = SKIN_PINK;
+	}
+	}
+
+	skinShader.SetSkin(currSkinIndex);
+	fxPaletteShader->SetPaletteIndex(currSkinIndex);
+	mapIconShader.SetSkin(currSkinIndex);
+}
 
  
 
- void Actor::BlendSkins(int first, int second, float progress)
- {
+void Actor::BlendSkins(int first, int second, float progress)
+{
 	skinShader.BlendSkins( first, second, progress );
- }
+}
 
- bool Actor::IsNormalSkin()
- {
-	 return (currSkinIndex == sess->GetPlayerNormalSkin(actorIndex));
- }
+bool Actor::IsNormalSkin()
+{
+	return (currSkinIndex == sess->GetPlayerNormalSkin(actorIndex));
+}
 
- int Actor::GetSkinIndexFromString(const std::string &s)
- {
+int Actor::GetSkinIndexFromString(const std::string &s)
+{
 	if (s == "SKIN_NORMAL"){return SKIN_NORMAL; }
-	 else if (s == "SKIN_RED"){return SKIN_RED;}
-	 else if (s == "SKIN_BLUE"){return SKIN_BLUE; }
-	 else if (s == "SKIN_ORANGE"){return SKIN_ORANGE; }
-	 else if (s == "SKIN_PINK"){return SKIN_PINK; }
-	 else if (s == "SKIN_LIGHT"){return SKIN_LIGHT; }
-	 else if (s == "SKIN_GHOST"){return SKIN_GHOST; }
-	 else if (s == "SKIN_DARK"){return SKIN_DARK; }
-	 else if (s == "SKIN_VILLAIN"){return SKIN_VILLAIN; }
-	 else if (s == "SKIN_TOXIC"){return SKIN_TOXIC; }
-	 else if (s == "SKIN_AMERICA"){return SKIN_AMERICA; }
-	 else if (s == "SKIN_METAL"){return SKIN_METAL; }
-	 else if (s == "SKIN_GOLD"){return SKIN_GOLD; }
-	 else if (s == "SKIN_PURPLE"){return SKIN_PURPLE; }
-	 else if (s == "SKIN_MAGI"){return SKIN_MAGI; }
-	 else if (s == "SKIN_GLIDE"){return SKIN_GLIDE; }
-	 else if (s == "SKIN_BONFIRE"){return SKIN_BONFIRE; }
-	 else if (s == "SKIN_GDUBS"){return SKIN_GDUBS; }
-	 else if (s == "SKIN_SHADOW"){return SKIN_SHADOW; }
-	 else if (s == "SKIN_DUSK"){return SKIN_DUSK; }
-	 else if (s == "SKIN_DAWN"){return SKIN_DAWN; }
-	 else if (s == "SKIN_TRIX"){return SKIN_TRIX; }
-	 else
-	 {
-		 cout << "wrong string for skin: " << s << endl;
-		 assert(0);
-		 return SKIN_NORMAL;
-	 }
- }
+	else if (s == "SKIN_RED"){return SKIN_RED;}
+	else if (s == "SKIN_BLUE"){return SKIN_BLUE; }
+	else if (s == "SKIN_ORANGE"){return SKIN_ORANGE; }
+	else if (s == "SKIN_PINK"){return SKIN_PINK; }
+	else if (s == "SKIN_LIGHT"){return SKIN_LIGHT; }
+	else if (s == "SKIN_GHOST"){return SKIN_GHOST; }
+	else if (s == "SKIN_DARK"){return SKIN_DARK; }
+	else if (s == "SKIN_VILLAIN"){return SKIN_VILLAIN; }
+	else if (s == "SKIN_TOXIC"){return SKIN_TOXIC; }
+	else if (s == "SKIN_AMERICA"){return SKIN_AMERICA; }
+	else if (s == "SKIN_METAL"){return SKIN_METAL; }
+	else if (s == "SKIN_GOLD"){return SKIN_GOLD; }
+	else if (s == "SKIN_PURPLE"){return SKIN_PURPLE; }
+	else if (s == "SKIN_MAGI"){return SKIN_MAGI; }
+	else if (s == "SKIN_GLIDE"){return SKIN_GLIDE; }
+	else if (s == "SKIN_BONFIRE"){return SKIN_BONFIRE; }
+	else if (s == "SKIN_GDUBS"){return SKIN_GDUBS; }
+	else if (s == "SKIN_SHADOW"){return SKIN_SHADOW; }
+	else if (s == "SKIN_DUSK"){return SKIN_DUSK; }
+	else if (s == "SKIN_DAWN"){return SKIN_DAWN; }
+	else if (s == "SKIN_TRIX"){return SKIN_TRIX; }
+	else
+	{
+		cout << "wrong string for skin: " << s << endl;
+		assert(0);
+		return SKIN_NORMAL;
+	}
+}
 
- void Actor::StopRepeatingSound()
- {
-	 if (simulationMode)
-	 {
-		 return;
-	 }
+void Actor::StopRepeatingSound()
+{
+	if (simulationMode)
+	{
+		return;
+	}
 
-	 if (repeatingSound != NULL)
-	 {
-		 DeactivateSound(repeatingSound);
-		 repeatingSound = NULL;
-	 }
- }
+	if (repeatingSound != NULL)
+	{
+		DeactivateSound(repeatingSound);
+		repeatingSound = NULL;
+	}
+}
 
- Actor::FXInfo::FXInfo()
- {
-	 pool = NULL;
-	 layer = DrawLayer::BETWEEN_PLAYER_AND_ENEMIES;
-	 pauseImmune = false;
+Actor::FXInfo::FXInfo()
+{
+	pool = NULL;
+	layer = DrawLayer::BETWEEN_PLAYER_AND_ENEMIES;
+	pauseImmune = false;
 	 
-	 //startFrame = 0;
-	 //duration = 0;
-	 //animFactor = 0;
- }
+	//startFrame = 0;
+	//duration = 0;
+	//animFactor = 0;
+}
 
- Actor::FXInfo::~FXInfo()
- {
-	 if (pool != NULL)
-	 {
-		 delete pool;
-	 }
- }
+Actor::FXInfo::~FXInfo()
+{
+	if (pool != NULL)
+	{
+		delete pool;
+	}
+}
 
- void Actor::FXInfo::Set(Tileset *p_ts, int p_fxType, int p_maxEffects, int p_drawLayer, bool p_pauseImmune, bool p_usesPlayerSkinShader)
- {
-	 if (p_ts == NULL)
-	 {
-		 cout << "missing tileset" << endl;
-		 assert(0);
-	 }
+void Actor::FXInfo::Set(Tileset *p_ts, int p_fxType, int p_maxEffects, int p_drawLayer, bool p_pauseImmune, bool p_usesPlayerSkinShader)
+{
+	if (p_ts == NULL)
+	{
+		cout << "missing tileset" << endl;
+		assert(0);
+	}
 
-	 usesPlayerSkinShader = p_usesPlayerSkinShader;
+	usesPlayerSkinShader = p_usesPlayerSkinShader;
 
-	 pool = new EffectPool((EffectType)p_fxType, p_maxEffects);
-	 pool->ts = p_ts;
+	pool = new EffectPool((EffectType)p_fxType, p_maxEffects);
+	pool->ts = p_ts;
 
-	 layer = p_drawLayer;
+	layer = p_drawLayer;
 
-	 pauseImmune = p_pauseImmune;
- }
+	pauseImmune = p_pauseImmune;
+}
 
- void Actor::LayeredDrawEffects(int p_drawLayer, sf::RenderTarget *target)
- {
-	 for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
-	 {
-		 if( (*it).pool != NULL && (*it).layer == p_drawLayer)
-		 {
-			if ((*it).usesPlayerSkinShader)
-			{
-				fxPaletteShader->SetTileset((*it).pool->ts);
-			}
-			(*it).pool->Draw(target);
+void Actor::LayeredDrawEffects(int p_drawLayer, sf::RenderTarget *target)
+{
+	for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
+	{
+		if( (*it).pool != NULL && (*it).layer == p_drawLayer)
+		{
+		if ((*it).usesPlayerSkinShader)
+		{
+			fxPaletteShader->SetTileset((*it).pool->ts);
+		}
+		(*it).pool->Draw(target);
 			 
-		 }
-	 }
- }
+		}
+	}
+}
 
- void Actor::ClearAllEffects()
- {
-	 for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
-	 {
-		 if ((*it).pool != NULL)
-		 {
-			 (*it).pool->Reset();
-		 }
-	 }
- }
+void Actor::ClearAllEffects()
+{
+	for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
+	{
+		if ((*it).pool != NULL)
+		{
+			(*it).pool->Reset();
+		}
+	}
+}
 
- void Actor::RevertAfterSimulating()
- {
-	 assert(preSimulationState != NULL);
-	 PopulateFromState(preSimulationState);
- }
+void Actor::RevertAfterSimulating()
+{
+	assert(preSimulationState != NULL);
+	PopulateFromState(preSimulationState);
+}
 
- void Actor::ForwardSimulate(int frames, bool storePositions)
- {
-	 assert(preSimulationState != NULL);
+void Actor::ForwardSimulate(int frames, bool storePositions)
+{
+	assert(preSimulationState != NULL);
 
-	 assert(frames <= Session::MAX_SIMULATED_FUTURE_PLAYER_FRAMES);
+	assert(frames <= Session::MAX_SIMULATED_FUTURE_PLAYER_FRAMES);
 
-	 PopulateState(preSimulationState);
-	 simulationMode = true;
+	PopulateState(preSimulationState);
+	simulationMode = true;
 
-	 numCalculatedFuturePositions = frames;
+	numCalculatedFuturePositions = frames;
 
-	 int numSteps;
-	 for (int i = 0; i < frames; ++i)
-	 {
-		 UpdatePrePhysics();
-		 physicsOver = false;
-		 highAccuracyHitboxes = false; //maybe get this a few more substeps in the future. not sure why its not as accurate.
-		 int numSteps = GetNumSteps();
-		 for (int substep = 0; substep < numSteps; ++substep)
-		 {
-			 UpdatePhysics();
-		 }
-		 UpdatePostPhysics();
-		 sess->UpdatePlayerInput(actorIndex);
+	int numSteps;
+	for (int i = 0; i < frames; ++i)
+	{
+		UpdatePrePhysics();
+		physicsOver = false;
+		highAccuracyHitboxes = false; //maybe get this a few more substeps in the future. not sure why its not as accurate.
+		int numSteps = GetNumSteps();
+		for (int substep = 0; substep < numSteps; ++substep)
+		{
+			UpdatePhysics();
+		}
+		UpdatePostPhysics();
+		sess->UpdatePlayerInput(actorIndex);
 
-		 if (storePositions)
-		 {
-			 futurePositions[i] = position;
-		 }
-	 }
-	 simulationMode = false;
- }
+		if (storePositions)
+		{
+			futurePositions[i] = position;
+		}
+	}
+	simulationMode = false;
+}
 
- void Actor::InitPreFrameCalculations()
- {
-	 numCalculatedFuturePositions = 0;
-	 currFrameSimulationFrames = 0;
- }
+void Actor::InitPreFrameCalculations()
+{
+	numCalculatedFuturePositions = 0;
+	currFrameSimulationFrames = 0;
+}
 
- void Actor::UpdatePreFrameCalculations()
- {
-	 if (currFrameSimulationFrames > 0)
-	 {
-		 ForwardSimulate(currFrameSimulationFrames, true);
-		 RevertAfterSimulating();
-	 }
- }
+void Actor::UpdatePreFrameCalculations()
+{
+	if (currFrameSimulationFrames > 0)
+	{
+		ForwardSimulate(currFrameSimulationFrames, true);
+		RevertAfterSimulating();
+	}
+}
 
- void Actor::UpdateNumFuturePositions()
- {
-	 int numFrames = sess->numSimulatedFramesRequired;
-	 if (numFrames == 0)
-	 {
-		 if (preSimulationState != NULL)
-		 {
-			 delete preSimulationState;
-			 preSimulationState = NULL;
-		 }
-	 }
-	 else
-	 {
-		 if (preSimulationState == NULL)
-		 {
-			 preSimulationState = new PState;
-			 memset(preSimulationState, 0, sizeof(PState));
-		 }
-	 }
+void Actor::UpdateNumFuturePositions()
+{
+	int numFrames = sess->numSimulatedFramesRequired;
+	if (numFrames == 0)
+	{
+		if (preSimulationState != NULL)
+		{
+			delete preSimulationState;
+			preSimulationState = NULL;
+		}
+	}
+	else
+	{
+		if (preSimulationState == NULL)
+		{
+			preSimulationState = new PState;
+			memset(preSimulationState, 0, sizeof(PState));
+		}
+	}
 
-	 if (futurePositions != NULL)
-	 {
-		 delete [] futurePositions;
-		 futurePositions = NULL;
-	 }
+	if (futurePositions != NULL)
+	{
+		delete [] futurePositions;
+		futurePositions = NULL;
+	}
 
-	 futurePositions = new V2d[numFrames];
- }
+	futurePositions = new V2d[numFrames];
+}
 
- void Actor::ProcessGroundedCollision()
- {
-	 CheckCollisionForTerrainFade();
+void Actor::ProcessGroundedCollision()
+{
+	CheckCollisionForTerrainFade();
 
-	 if (minContact.edge->rail != NULL
-		 && minContact.edge->rail->GetRailType() == TerrainRail::BOUNCE)
-	 {
-		 if (bounceEdge == NULL)
-		 {
-			 bounceEdge = minContact.edge;
-			 storedBounceGroundSpeed = groundSpeed;
-		 }
-		 //HandleBounceRail();
-	 }
- }
+	if (minContact.edge->rail != NULL
+		&& minContact.edge->rail->GetRailType() == TerrainRail::BOUNCE)
+	{
+		if (bounceEdge == NULL)
+		{
+			bounceEdge = minContact.edge;
+			storedBounceGroundSpeed = groundSpeed;
+		}
+		//HandleBounceRail();
+	}
+}
 
- void Actor::CheckCollisionForTerrainFade()
- {
-	 if (!simulationMode)
-	 {
-		 assert(minContact.edge != NULL);
-		 if (minContact.edge->poly != NULL
-			 && minContact.edge->poly->IsSometimesActiveType())
-		 {
-			 minContact.edge->poly->FadeOut();
-		 }
-		 else if (minContact.edge->rail != NULL
-			 && minContact.edge->rail->rType == TerrainRail::FADE)
-		 {
-			 minContact.edge->rail->FadeOut();
-		 }
-	 }
- }
+void Actor::CheckCollisionForTerrainFade()
+{
+	if (!simulationMode)
+	{
+		assert(minContact.edge != NULL);
+		if (minContact.edge->poly != NULL
+			&& minContact.edge->poly->IsSometimesActiveType())
+		{
+			minContact.edge->poly->FadeOut();
+		}
+		else if (minContact.edge->rail != NULL
+			&& minContact.edge->rail->rType == TerrainRail::FADE)
+		{
+			minContact.edge->rail->FadeOut();
+		}
+	}
+}
 
- void Actor::CheckGrindEdgeForTerrainFade()
- {
-	 if (!simulationMode)
-	 {
-		 assert(grindEdge != NULL);
-		 if (grindEdge->poly != NULL
-			 && grindEdge->poly->IsSometimesActiveType())
-		 {
-			 grindEdge->poly->FadeOut();
-		 }
-		 else if (grindEdge->rail != NULL
-			 && grindEdge->rail->rType == TerrainRail::FADE)
-		 {
-			 grindEdge->rail->FadeOut();
-		 }
-	 }
- }
+void Actor::CheckGrindEdgeForTerrainFade()
+{
+	if (!simulationMode)
+	{
+		assert(grindEdge != NULL);
+		if (grindEdge->poly != NULL
+			&& grindEdge->poly->IsSometimesActiveType())
+		{
+			grindEdge->poly->FadeOut();
+		}
+		else if (grindEdge->rail != NULL
+			&& grindEdge->rail->rType == TerrainRail::FADE)
+		{
+			grindEdge->rail->FadeOut();
+		}
+	}
+}
 
- void Actor::InitEmitters()
- {
-	 gravityIncreaserTrailEmitter->SetIDAndAddToAllEmittersVec();
-	 gravityDecreaserTrailEmitter->SetIDAndAddToAllEmittersVec();
-	 momentumBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
-	 homingBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
-	 antiTimeSlowBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
-	 freeFlightBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
- }
+void Actor::InitEmitters()
+{
+	gravityIncreaserTrailEmitter->SetIDAndAddToAllEmittersVec();
+	gravityDecreaserTrailEmitter->SetIDAndAddToAllEmittersVec();
+	momentumBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+	homingBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+	antiTimeSlowBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+	freeFlightBoosterTrailEmitter->SetIDAndAddToAllEmittersVec();
+}
 
- void Actor::QueryTree(QuadTree *qt, const sf::Rect<double> &r)
- {
-	 currQueryRect = r;
-	 qt->Query(this, r);
- }
+double Actor::GetSteepSlideUpgradeAmount()
+{
+	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	switch (speedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxSteepSlideUpgradeAmount * .33;
+	case 2:
+		return maxSteepSlideUpgradeAmount * .66;
+	case 3:
+		return maxSteepSlideUpgradeAmount * 1.0;
+	}
 
- int Actor::GetNumStoredBytes()
- {
-	 int totalSize = 0;
+	assert(0);
+	return maxSteepSlideUpgradeAmount * 1.0;
+}
 
-	 totalSize += sizeof(PState);
+double Actor::GetSteepClimbUpgradeAmount()
+{
+	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	switch (speedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxSteepClimbUpgradeAmount * .33;
+	case 2:
+		return maxSteepClimbUpgradeAmount * .66;
+	case 3:
+		return maxSteepClimbUpgradeAmount * 1.0;
+	}
 
-	 totalSize += sess->numSimulatedFramesRequired * sizeof(V2d);
+	assert(0);
+	return maxSteepClimbUpgradeAmount * 1.0;
+}
 
-	 return totalSize;
- }
+double Actor::GetPassiveGroundUpgradeAmount()
+{
+	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	switch (speedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxPassiveGroundUpgradeAmount * .33;
+	case 2:
+		return maxPassiveGroundUpgradeAmount * .66;
+	case 3:
+		return maxPassiveGroundUpgradeAmount * 1.0;
+	}
 
- void Actor::StoreBytes(unsigned char *bytes)
- {
-	 PopulateState(pState);
-	 memcpy(bytes, pState, sizeof(PState));
+	assert(0);
+	return maxPassiveGroundUpgradeAmount * 1.0;
+}
+double Actor::GetSprintUpgradeAmount()
+{
+	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	switch (speedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxSprintUpgradeAmount * .33;
+	case 2:
+		return maxSprintUpgradeAmount * .66;
+	case 3:
+		return maxSprintUpgradeAmount * 1.0;
+	}
 
-	 bytes += sizeof(PState);
+	assert(0);
+	return maxSprintUpgradeAmount * 1.0;
+}
 
-	 int numFrames = sess->numSimulatedFramesRequired;
+double Actor::GetCeilingSteepSlideUpgradeAmount()
+{
+	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
+	switch (ceilingSpeedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxSteepSlideUpgradeAmount * .33;
+	case 2:
+		return maxSteepSlideUpgradeAmount * .66;
+	case 3:
+		return maxSteepSlideUpgradeAmount * 1.0;
+	}
 
-	 int positionsSize = numFrames * sizeof(V2d);
+	assert(0);
+	return maxSteepSlideUpgradeAmount * 1.0;
+}
 
-	 memcpy(bytes, futurePositions, positionsSize);
+double Actor::GetCeilingSteepClimbUpgradeAmount()
+{
+	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
+	switch (ceilingSpeedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxSteepClimbUpgradeAmount * .33;
+	case 2:
+		return maxSteepClimbUpgradeAmount * .66;
+	case 3:
+		return maxSteepClimbUpgradeAmount * 1.0;
+	}
 
-	 bytes += positionsSize;
- }
+	assert(0);
+	return maxSteepClimbUpgradeAmount * 1.0;
+}
 
- void Actor::SetFromBytes(unsigned char *bytes)
- {
-	 memcpy(pState, bytes, sizeof(PState));
-	 PopulateFromState(pState);
+double Actor::GetCeilingPassiveGroundUpgradeAmount()
+{
+	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
+	switch (ceilingSpeedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxPassiveGroundUpgradeAmount * .33;
+	case 2:
+		return maxPassiveGroundUpgradeAmount * .66;
+	case 3:
+		return maxPassiveGroundUpgradeAmount * 1.0;
+	}
 
-	 bytes += sizeof(PState);
+	assert(0);
+	return maxPassiveGroundUpgradeAmount * 1.0;
+}
 
-	 int numFrames = sess->numSimulatedFramesRequired;
+double Actor::GetCeilingSprintUpgradeAmount()
+{
+	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
+	switch (ceilingSpeedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxSprintUpgradeAmount * .33;
+	case 2:
+		return maxSprintUpgradeAmount * .66;
+	case 3:
+		return maxSprintUpgradeAmount * 1.0;
+	}
 
-	 int positionsSize = numFrames * sizeof(V2d);
+	assert(0);
+	return maxSprintUpgradeAmount * 1.0;
+}
 
-	 memcpy(futurePositions, bytes, positionsSize);
+double Actor::GetMaxSpeedUpgradeAmount()
+{
+	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	switch (speedUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return maxMaxSpeedUpgradeAmount * .33;
+	case 2:
+		return maxMaxSpeedUpgradeAmount * .66;
+	case 3:
+		return maxMaxSpeedUpgradeAmount * 1.0;
+	}
 
-	 bytes += positionsSize;
- }
+	assert(0);
+	return maxMaxSpeedUpgradeAmount * 1.0;
+}
+
+void Actor::QueryTree(QuadTree *qt, const sf::Rect<double> &r)
+{
+	currQueryRect = r;
+	qt->Query(this, r);
+}
+
+int Actor::GetNumStoredBytes()
+{
+	int totalSize = 0;
+
+	totalSize += sizeof(PState);
+
+	totalSize += sess->numSimulatedFramesRequired * sizeof(V2d);
+
+	return totalSize;
+}
+
+void Actor::StoreBytes(unsigned char *bytes)
+{
+	PopulateState(pState);
+	memcpy(bytes, pState, sizeof(PState));
+
+	bytes += sizeof(PState);
+
+	int numFrames = sess->numSimulatedFramesRequired;
+
+	int positionsSize = numFrames * sizeof(V2d);
+
+	memcpy(bytes, futurePositions, positionsSize);
+
+	bytes += positionsSize;
+}
+
+void Actor::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(pState, bytes, sizeof(PState));
+	PopulateFromState(pState);
+
+	bytes += sizeof(PState);
+
+	int numFrames = sess->numSimulatedFramesRequired;
+
+	int positionsSize = numFrames * sizeof(V2d);
+
+	memcpy(futurePositions, bytes, positionsSize);
+
+	bytes += positionsSize;
+}

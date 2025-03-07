@@ -62,6 +62,7 @@ struct KinStore
 
 	sf::Text upgradeNameText;
 	sf::Text upgradeDescText;
+	sf::Text upgradeLevelText;
 
 	int numTotalStoreItems;
 

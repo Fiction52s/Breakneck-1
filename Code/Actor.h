@@ -1301,6 +1301,12 @@ struct Actor : QuadTreeCollider,
 
 	int grindLimitBeforeSlow;
 
+	double maxSteepClimbUpgradeAmount;
+	double maxSteepSlideUpgradeAmount;
+	double maxSprintUpgradeAmount;
+	double maxPassiveGroundUpgradeAmount;
+	double maxMaxSpeedUpgradeAmount;
+
 	
 
 	Actor(); //for blank creation so I can initialize the tilesets
@@ -1334,6 +1340,18 @@ struct Actor : QuadTreeCollider,
 	double GetBounceBoostSpeed();
 	int GetSurvivalFrame();
 	void TryStartWaterGlide();
+
+	double GetSteepSlideUpgradeAmount();
+	double GetSteepClimbUpgradeAmount();
+	double GetPassiveGroundUpgradeAmount();
+	double GetSprintUpgradeAmount();
+
+	double GetCeilingSteepSlideUpgradeAmount();
+	double GetCeilingSteepClimbUpgradeAmount();
+	double GetCeilingPassiveGroundUpgradeAmount();
+	double GetCeilingSprintUpgradeAmount();
+
+	double GetMaxSpeedUpgradeAmount();
 
 	void InitSounds();
 
