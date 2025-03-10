@@ -7790,8 +7790,9 @@ void Actor::UpdatePrePhysics()
 	{
 		if (currTutorialObject != NULL)
 		{
-			if (currTutorialObject->TryDeactivate())
+			if (currTutorialObject->CanDeactivate())
 			{
+				currTutorialObject->Deactivate();
 				currTutorialObject = NULL;
 			}
 		}
@@ -21160,10 +21161,17 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			if (tut->spawned)
 			{
-				if (currTutorialObject == NULL)
+				//if (currTutorialObject == NULL)
 				{
-					if (tut->TryActivate())
+					if (tut->CanActivate())
 					{
+						if (currTutorialObject != NULL)
+						{
+							currTutorialObject->Deactivate();
+						}
+
+						tut->Activate();
+
 						currTutorialObject = tut;
 					}
 				}
@@ -26306,6 +26314,8 @@ double Actor::GetDashSpeedUpgradeAmount()
 	switch (dashUpgradeLevel)
 	{
 	case 0:
+		return 0;
+	case 1:
 		return 0;
 	case 2:
 		return maxDashSpeedUpgradeAmount * .33;

@@ -2257,9 +2257,9 @@ bool Session::ReadPlayerOptions(std::ifstream &is)
 	{
 		defaultStartingPlayerUpgradeLevels->Load(is);
 	}
-	else if (mapHeader->ver1 >= 9 )
+	else if (mapHeader->ver1 >= 8 )
 	{
-		BitField tempField(PLAYER_OPTION_BIT_COUNT);
+		BitField tempField(8*32); //this fixes the tutorial, not sure whats up. used PLAYER_OPTION_BIT_COUNT before, which is depreciated now
 		tempField.Load(is);
 	}
 	else

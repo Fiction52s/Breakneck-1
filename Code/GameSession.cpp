@@ -1467,7 +1467,7 @@ void GameSession::ProcessHeader()
 
 	SetupBackground();
 
-	SetupHUD();
+	//SetupHUD();
 
 	/*if (mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
 	{
@@ -2097,6 +2097,8 @@ bool GameSession::Load()
 
 	SetupGameMode();
 	gameMode->Setup();
+
+	SetupHUD();
 
 	/*if (gameModeType == MatchParams::GAME_MODE_FIGHT
 		|| gameModeType == MatchParams::GAME_MODE_RACE)

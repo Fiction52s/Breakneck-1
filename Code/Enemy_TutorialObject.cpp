@@ -48,7 +48,7 @@ TutorialObject::TutorialObject(ActorParams *ap)
 	//sprite.setColor(Color::Red);
 
 	entranceRadius = 300;
-	exitRadius = 600;
+	exitRadius = 3000;
 	//double radius = 500;
 	//BasicCircleHitBodySetup(radius);
 
@@ -173,26 +173,34 @@ void TutorialObject::ProcessState()
 	}
 }
 
-bool TutorialObject::TryActivate()
+bool TutorialObject::CanActivate()
 {
 	if (action == NEUTRAL && PlayerDist() < entranceRadius)
 	{
-		ShowTutorial();
 		return true;
 	}
 
 	return false;
 }
 
-bool TutorialObject::TryDeactivate()
+bool TutorialObject::CanDeactivate()
 {
 	if (action == SHOW && PlayerDist() > exitRadius)
 	{
-		HideTutorial();
 		return true;
 	}
 
 	return false;
+}
+
+void TutorialObject::Activate()
+{
+	ShowTutorial();
+}
+
+void TutorialObject::Deactivate()
+{
+	HideTutorial();
 }
 
 void TutorialObject::UpdateSprite()

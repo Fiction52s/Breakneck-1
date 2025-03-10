@@ -239,6 +239,9 @@ void KinStore::Open()
 	action = A_OPEN;
 	frame = 0;
 
+	xSelector->SetIndex(0);
+	xSelector->SetTotalSize(storeItems[ySelector->currIndex].size());
+
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
 	SetSelected(0, 0);

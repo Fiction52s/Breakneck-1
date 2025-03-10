@@ -33,8 +33,10 @@ struct TutorialObject : Enemy
 	bool IsShowing();
 	void HideTutorial();
 	void AddToWorldTrees();
-	bool TryActivate();
-	bool TryDeactivate();
+	bool CanActivate();
+	void Activate();
+	void Deactivate();
+	bool CanDeactivate();
 	void UpdateParamsSettings();
 	sf::FloatRect GetAABB();
 	void SetExtraIDsAndAddToVectors();
