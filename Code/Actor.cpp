@@ -4104,6 +4104,12 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	//starts at 60, goes up to 100
 	maxMaxSpeedUpgradeAmount = 5.0 * 8.0;
 
+	maxDashSpeedUpgradeAmount = 3.0 * 3.0;
+
+	maxAirDashSpeedUpgradeAmount = 3.0 * 3.0;
+
+	maxDashBoostUpgradeAmount = 0;
+
 	SetupTimeBubbles();
 
 	Respawn(false);
@@ -11370,9 +11376,7 @@ double Actor::GetDashSpeed()
 {
 	double dSpeed = GetOriginalDashSpeed();
 
-	int numBaseDashUpgrades = 0;//IsOptionOn(UPGRADE_W1_BASE_DASH_1) + IsOptionOn(UPGRADE_W3_BASE_DASH_2) + IsOptionOn(UPGRADE_W6_BASE_DASH_3);
-	double upgradeAmount = 3;
-	dSpeed += upgradeAmount * numBaseDashUpgrades;
+	dSpeed += GetDashSpeedUpgradeAmount();
 
 	return dSpeed;
 }
@@ -11395,9 +11399,7 @@ double Actor::GetAirDashSpeed()
 
 	double dSpeed = GetOriginalDashSpeed();
 
-	int numBaseAirdashUpgrades = 0;//IsOptionOn(UPGRADE_W2_BASE_AIRDASH_1) + IsOptionOn(UPGRADE_W5_BASE_AIRDASH_2) + IsOptionOn(UPGRADE_W6_BASE_AIRDASH_3);
-	double upgradeAmount = 3;
-	dSpeed += upgradeAmount * numBaseAirdashUpgrades;
+	dSpeed += GetAirDashSpeedUpgradeAmount();
 
 	return dSpeed;
 
@@ -11810,7 +11812,7 @@ bool Actor::TryWallJump()
 
 void Actor::TryDashBoost()
 {
-	if (!HasUpgradeLevel(POWER_AIRDASH,2))
+	if (!HasUpgradeLevel(UPGRADE_DASH,1))
 	{
 		return;
 	}
@@ -11940,7 +11942,7 @@ void Actor::TryAirdashBoost()
 
 void Actor::TryExtraAirdashBoost()
 {
-	//if (!IsOptionOn(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	if (!HasUpgradeLevel(POWER_AIRDASH, 4))
 	{
 		return;
 	}
@@ -26296,6 +26298,51 @@ double Actor::GetMaxSpeedUpgradeAmount()
 
 	assert(0);
 	return maxMaxSpeedUpgradeAmount * 1.0;
+}
+
+double Actor::GetDashSpeedUpgradeAmount()
+{
+	int dashUpgradeLevel = GetUpgradeLevel(UPGRADE_DASH);
+	switch (dashUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 2:
+		return maxDashSpeedUpgradeAmount * .33;
+	case 3:
+		return maxDashSpeedUpgradeAmount * .66;
+	case 4:
+		return maxDashSpeedUpgradeAmount * 1.0;
+	}
+
+	assert(0);
+	return maxDashSpeedUpgradeAmount * 1.0;
+}
+
+double Actor::GetAirDashSpeedUpgradeAmount()
+{
+	int airDashUpgradeLevel = GetUpgradeLevel(POWER_AIRDASH);
+	switch (airDashUpgradeLevel)
+	{
+	case 0:
+		return 0;
+	case 1:
+		return 0;
+	case 2:
+		return maxAirDashSpeedUpgradeAmount * .33;
+	case 3:
+		return maxAirDashSpeedUpgradeAmount * .66;
+	case 4:
+		return maxAirDashSpeedUpgradeAmount * 1.0;
+	}
+
+	assert(0);
+	return maxAirDashSpeedUpgradeAmount * 1.0;
+}
+
+double Actor::GetDashBoostUpgradeAmount()
+{
+	return 0;
 }
 
 void Actor::QueryTree(QuadTree *qt, const sf::Rect<double> &r)

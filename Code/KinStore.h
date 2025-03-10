@@ -7,15 +7,16 @@
 
 struct SingleAxisSelector;
 struct Session;
+struct RushManager;
 
 struct StoreItem
 {
+	int currentLevel;
 	int upgradeIndex;
 	std::string name;
 	int numLevels;
 	std::vector<std::string> descriptions;
 	std::vector<int> costs;
-	int currentLevel;
 	int quadIndex;
 
 	StoreItem( nlohmann::basic_json<> &j );
@@ -42,6 +43,7 @@ struct KinStore
 		SS_Count
 	};
 
+	RushManager *rush;
 	int action;
 	int frame;
 	sf::Text itemText;

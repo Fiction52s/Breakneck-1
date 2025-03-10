@@ -1306,8 +1306,9 @@ struct Actor : QuadTreeCollider,
 	double maxSprintUpgradeAmount;
 	double maxPassiveGroundUpgradeAmount;
 	double maxMaxSpeedUpgradeAmount;
-
-	
+	double maxDashSpeedUpgradeAmount;
+	double maxAirDashSpeedUpgradeAmount;
+	double maxDashBoostUpgradeAmount;
 
 	Actor(); //for blank creation so I can initialize the tilesets
 	Actor( GameSession *owner, 
@@ -1352,6 +1353,10 @@ struct Actor : QuadTreeCollider,
 	double GetCeilingSprintUpgradeAmount();
 
 	double GetMaxSpeedUpgradeAmount();
+
+	double GetDashSpeedUpgradeAmount();
+	double GetAirDashSpeedUpgradeAmount();
+	double GetDashBoostUpgradeAmount();
 
 	void InitSounds();
 

@@ -226,6 +226,16 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 //assuming I'm in rush manager
 void KinStore::Open()
 {
+	rush = sess->mainMenu->rushManager;
+
+	for (auto it = storeItems.begin(); it != storeItems.end(); ++it)
+	{
+		for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+		{
+			(*it2)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it2)->upgradeIndex);
+		}
+	}
+
 	action = A_OPEN;
 	frame = 0;
 
@@ -286,14 +296,17 @@ void KinStore::Update()
 			StoreItem *si = storeItems[ySelector->currIndex][xSelector->currIndex];
 			int optionIndex = si->upgradeIndex;
 
-			//move upgrade index to the rush file very soon
-			sess->SetPlayerUpgradeLevel(optionIndex, si->upgradeIndex + 1 );
-			sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, si->upgradeIndex + 1);
+			if (si->currentLevel < si->numLevels - 1)
+			{
+				sess->SetPlayerUpgradeLevel(optionIndex, si->currentLevel + 1);
+				sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, si->currentLevel + 1);
+				si->currentLevel++;
 
-			action = A_READY_TO_CLOSE;
-			frame = 0;
+				action = A_READY_TO_CLOSE;
+				frame = 0;
 
-			SetRectColor(containerBGQuad, Color(255, 0, 0, 128));
+				SetRectColor(containerBGQuad, Color(255, 0, 0, 128));
+			}
 
 			return;
 		}
@@ -429,4 +442,5 @@ void KinStore::Draw(sf::RenderTarget *target)
 
 	target->draw(upgradeNameText);
 	target->draw(upgradeDescText);
+	target->draw(upgradeLevelText);
 }
