@@ -22953,6 +22953,8 @@ void Actor::ConfirmHit( Enemy *e )
 		velocity.y = 4;
 	}*/
 
+
+
 	bool hasMomentumUpgrade = false;
 	bool hasRegenUpgrade = false;
 

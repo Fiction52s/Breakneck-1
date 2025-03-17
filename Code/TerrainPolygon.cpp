@@ -412,17 +412,20 @@ void TerrainPolygon::AddTouchGrass(int gt)
 				for (int i = 0; i < numQuads; ++i)
 				{
 					variation = TouchGrass::GetRandomVariation(tgType);
-					if (TouchGrass::IsPlacementOkay(tgType, variation, currEdge, i))
-					{
-						if (tooThin)
-						{
-							info.push_back(PlantInfo(currEdge, len / 2.0, quadWidth, variation));
-						}
-						else
-						{
-							info.push_back(PlantInfo(currEdge, quadWidth * i + quadWidth / 2, quadWidth, variation ));
-						}
 
+					double quant = 0;
+					if (tooThin)
+					{
+						quant = len / 2.0;
+					}
+					else
+					{
+						quant = quadWidth * i + quadWidth / 2;
+					}
+
+					if (TouchGrass::IsPlacementOkay(tgType, variation, currEdge, quant, i))
+					{
+						info.push_back(PlantInfo(currEdge, quant, quadWidth, variation));
 					}
 				}
 			}
@@ -3020,7 +3023,7 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 				continue;
 			}
 
-			LineIntersection li = EditSession::SegmentIntersect(myPrevPos, myPos, gp0, gp1);
+			LineIntersection li = Session::SegmentIntersect(myPrevPos, myPos, gp0, gp1);
 			if (!li.parallel)
 			{
 				return true;
@@ -3081,7 +3084,7 @@ bool TerrainPolygon::LinesIntersectMyself()
 			}
 
 			//LineIntersection li = EditSession::LimitSegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
-			LineIntersection li = EditSession::SegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
+			LineIntersection li = Session::SegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
 
 			if (!li.parallel)
 			{
@@ -3165,7 +3168,7 @@ bool TerrainPolygon::IntersectsMyOwnGates()
 		}
 
 		//LineIntersection li = EditSession::LimitSegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
-		LineIntersection li = EditSession::SegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
+		LineIntersection li = Session::SegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
 
 		if (!li.parallel)
 		{
@@ -4569,7 +4572,7 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 			polyCurr = GetPoint(j);
 			polyPrev = GetPrevPoint(j);
 
-			LineIntersection li = EditSession::SegmentIntersect(prev->pos, curr->pos, polyPrev->pos, polyCurr->pos);
+			LineIntersection li = Session::SegmentIntersect(prev->pos, curr->pos, polyPrev->pos, polyCurr->pos);
 			if (!li.parallel)
 			{
 				{
@@ -4695,7 +4698,7 @@ void TerrainPolygon::FinalizeJustEdges()
 	UpdateBounds();
 }
 
-void TerrainPolygon::Finalize()
+void TerrainPolygon::FinalizeWithoutSettingMaterialType()
 {
 	if (inverse)
 	{
@@ -4704,33 +4707,33 @@ void TerrainPolygon::Finalize()
 	}
 
 	finalized = true;
-	
+
 	isGrassBackedUp = false;
 
 	FixWinding();
-	
+
 	int numP = GetNumPoints();
 	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
 	vaSize = indices.size();
 
 	lines = new sf::Vertex[numP * 2 + 1];
-	va = new VertexArray( sf::Triangles , vaSize );
-	
+	va = new VertexArray(sf::Triangles, vaSize);
+
 	SetupEdges();
 
 	VertexArray & v = *va;
-	Color testColor(0x75, 0x70, 0x90 );
-	Color selectCol( 0x77, 0xBB, 0xDD );
+	Color testColor(0x75, 0x70, 0x90);
+	Color selectCol(0x77, 0xBB, 0xDD);
 
-	if( selected )
+	if (selected)
 	{
 		testColor = selectCol;
 	}
 
 	int numTris = vaSize / 3;
-	for( int i = 0; i < numTris; ++i )
-	{	
-		v[i * 3] = Vertex(Vector2f(GetPoint(indices[i*3])->pos), testColor);
+	for (int i = 0; i < numTris; ++i)
+	{
+		v[i * 3] = Vertex(Vector2f(GetPoint(indices[i * 3])->pos), testColor);
 		v[i * 3 + 1] = Vertex(Vector2f(GetPoint(indices[i * 3 + 1])->pos), testColor);
 		v[i * 3 + 2] = Vertex(Vector2f(GetPoint(indices[i * 3 + 2])->pos), testColor);
 	}
@@ -4745,14 +4748,23 @@ void TerrainPolygon::Finalize()
 
 	/*if (grassType == -1)
 	{
-		grassType = GetDefaultGrassType();
+	grassType = GetDefaultGrassType();
 	}*/
 
 	SetupGrass();
+}
 
+void TerrainPolygon::FinishSettingMaterialTypeAfterPartialFinalization()
+{
 	SetMaterialType(terrainWorldType, terrainVariation);
+}
 
-	
+void TerrainPolygon::Finalize()
+{
+	FinalizeWithoutSettingMaterialType();
+	FinishSettingMaterialTypeAfterPartialFinalization();
+
+	//for touch grass collision with polygons in the gameSession
 
 	
 
@@ -7429,7 +7441,7 @@ int TerrainPolygon::LinesIntersect( PolyPtr poly )
 			polyCurr = poly->GetPoint(j);
 			polyPrev = poly->GetPrevPoint(j);
 
-			LineIntersection li = EditSession::SegmentIntersect(prev->pos, curr->pos, polyPrev->pos, polyCurr->pos);
+			LineIntersection li = Session::SegmentIntersect(prev->pos, curr->pos, polyPrev->pos, polyCurr->pos);
 			if (!li.parallel)
 			{
 				xi, yi;
@@ -7543,7 +7555,7 @@ bool TerrainPolygon::LinesIntersectInProgress(Vector2i p)
 		}
 
 		//LineIntersection li = EditSession::LimitSegmentIntersect(curr->pos, next->pos, end->pos, p);
-		LineIntersection li = EditSession::SegmentIntersect(curr->pos, next->pos, end->pos, p);
+		LineIntersection li = Session::SegmentIntersect(curr->pos, next->pos, end->pos, p);
 		if (!li.parallel)
 		{
 			return true;

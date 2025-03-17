@@ -1056,6 +1056,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool HasLevelFinisher();
 	V2d GetLevelFinisherPos();
 	void ClearActiveSequences();
+	static LineIntersection SegmentIntersect(sf::Vector2i a, sf::Vector2i b, sf::Vector2i c, sf::Vector2i d);
 };
 
 #endif

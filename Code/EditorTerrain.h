@@ -339,6 +339,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void FadeOut();
 	bool IsActive();
 	void RemoveExtraPointsOnSameSlope();
+	
 
 	void MakeGlobalPath(
 		V2d &startPos,
@@ -597,6 +598,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//std::string material;
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
+	void FinalizeWithoutSettingMaterialType();
+	void FinishSettingMaterialTypeAfterPartialFinalization();
 	void FinalizeSecret();
 	void FinalizeJustEdges();//for use by zones
 	//void MovePointsFinalize();

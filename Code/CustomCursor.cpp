@@ -49,7 +49,7 @@ void CustomCursor::Init(sf::RenderWindow *rw)
 {
 	window = rw;
 	Show();
-	Grab();
+	//Grab();
 	clicked = true;
 	SetNormal();
 }

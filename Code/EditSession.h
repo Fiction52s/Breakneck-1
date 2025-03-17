@@ -635,9 +635,6 @@ struct EditSession : GUIHandler, Session
 	bool IsSingleActorSelected();
 	void RemoveSelectedObjects();
 	void TryRemoveSelectedObjects();
-	static LineIntersection SegmentIntersect( sf::Vector2i a, 
-		sf::Vector2i b, sf::Vector2i c, 
-		sf::Vector2i d );
 	static LineIntersection LimitSegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d, bool firstLimitOnly = false );

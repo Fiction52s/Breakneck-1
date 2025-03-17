@@ -137,7 +137,15 @@ TouchGrass::TouchGrass(TouchGrassCollection *p_coll, int index,
 	Edge *e, double q )
 	:coll( p_coll ), edge( e ), gIndex( index ), quant( q ), hurtBody( CollisionBox::Hurt )
 {
-	myQuad = coll->touchGrassVA + gIndex * 4;
+	if (coll != NULL)
+	{
+		myQuad = coll->touchGrassVA + gIndex * 4;
+	}
+	else
+	{
+		myQuad = NULL;
+	}
+	
 	scale = 1.0;
 	//SetRectColor(myQuad, Color::Red);
 }
@@ -412,8 +420,36 @@ bool TouchGrass::IsEdgeOkay(TouchGrassType grassType, Edge *e)
 
 }
 
+////RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
+//struct TestCollider : RayCastHandler
+//{
+//	bool touchedEdge;
+//	Edge *queryEdge;
+//	void HandleEntrant(QuadTreeEntrant *qte)
+//	{
+//		Edge *e = (Edge*)qte;
+//
+//		LineIntersection li = Session::SegmentIntersect(Vector2i(queryEdge->v0), Vector2i(queryEdge->v1), Vector2i(e->v0), Vector2i(e->v1));
+//		if (!li.parallel)
+//		{
+//			touchedEdge = true;
+//		}
+//	}
+//
+//	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
+//	{
+//
+//	}
+//	void Query(Edge *e)
+//	{
+//		queryEdge = e;
+//		touchedEdge = false;
+//		Session::GetSession()->Queryterrain
+//	}
+//};
+
 bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int variation,
-	Edge *edge, int quadIndex)
+	Edge *edge, double quant, int quadIndex)
 {
 	//EdgeAngleType eat = GetEdgeAngleType(edge->Normal());
 	switch (grassType)
@@ -454,6 +490,49 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int variation,
 	}
 	case TYPE_W1_TREE:
 	{
+		TouchW1Tree temp(NULL, 0, edge, quant, variation);
+		
+		Vertex quad[4];
+
+		//assume temp is larger than a pixel for the -1.0
+		SetRectRotation(quad, temp.angle, temp.size.x - 1.0, temp.size.y - 1.0, Vector2f(temp.center));
+
+		Edge testEdge;
+		testEdge.v0 = temp.center - edge->Normal() * (temp.size.y / 2.0 - 1.0 );
+		testEdge.v1 = temp.center + edge->Normal() * (temp.size.y / 2.0);
+		testEdge.CalcAABB();
+
+		Session *sess = Session::GetSession();
+
+		if (sess->terrainTree != NULL)
+		{
+			RayCastHandler rch;
+			rch.rayCastInfo.tree = sess->terrainTree;
+			rch.ExecuteRayCast(testEdge.v0, testEdge.v1);
+
+			if (rch.rayCastInfo.rcEdge != NULL)
+			{
+				return false;
+			}
+		}
+		
+
+		/*TerrainPolygon tp;
+		tp.AddPoint(Vector2i(quad[0].position), false);
+		tp.AddPoint(Vector2i(quad[1].position), false);
+		tp.AddPoint(Vector2i(quad[2].position), false);
+		tp.AddPoint(Vector2i(quad[3].position), false);*/
+
+		
+		/*for (auto it = sess->allPolysVec.begin(); it != sess->allPolysVec.end(); ++it)
+		{
+			if( (*it)->edge)
+			{
+				return false;
+			}
+		}*/
+
+
 		int r = rand() % 100;
 		return (r < 20);
 		break;

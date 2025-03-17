@@ -1174,6 +1174,8 @@ void GameSession::Cleanup()
 	}
 
 	CleanupPopup();
+
+	CONTROLLERS.CancelAllRumble();
 }
 
 GameSession::~GameSession()
@@ -1600,7 +1602,8 @@ void GameSession::ProcessAllTerrain()
 	{
 		poly = (*it);
 		poly->polyIndex = polyIndex;
-		poly->Finalize();
+		//poly->Finalize();
+		poly->FinalizeWithoutSettingMaterialType();
 		poly->grassBufferForAABBOn = true; //so that the quadtree can get a bigger AABB for this
 		poly->AddEdgesToQuadTree(terrainTree);
 		//poly->AddGrassToQuadTree(grassTree);
@@ -1615,6 +1618,11 @@ void GameSession::ProcessAllTerrain()
 		allPolysVec.push_back((*it));
 
 		polyIndex++;
+	}
+
+	for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
+	{
+		(*it)->FinishSettingMaterialTypeAfterPartialFinalization();
 	}
 	allPolygonsList.clear();
 }
@@ -2746,6 +2754,9 @@ bool GameSession::RunMainLoopOnce()
 	//	ParallelPracticeMode *ppm = (ParallelPracticeMode*)gameMode;
 	//	ppm->ClearUpdateFlags();
 	//}
+
+	CONTROLLERS.SetRumble(0, 0);
+
 
 	CheckSinglePlayerInputDefaultKeyboard();
 

@@ -29,6 +29,9 @@ void ControllerState::Clear()
 {
 	respawnTest = false;
 
+	leftMotorSpeed = 0;
+	rightMotorSpeed = 0;
+
 	leftStickMagnitude = 0;
 	leftStickRadians = 0;
 	rightStickMagnitude = 0;
@@ -1545,6 +1548,37 @@ void AllControllers::Update()
 	else
 	{
 		keyboardStates->AddInput(ControllerState());//keyboardController->GetState());
+	}
+}
+
+void AllControllers::SetRumble(int controllerIndex, double leftMotor, double rightMotor)
+{
+	XINPUT_VIBRATION vib;
+	ZeroMemory(&vib, sizeof(XINPUT_VIBRATION));
+
+	double maxShortValD = 65535;
+	unsigned short left = max( 0, min(maxShortValD, round(maxShortValD * leftMotor) ));
+	unsigned short right = max(0, min(maxShortValD, round(maxShortValD * rightMotor)));
+	vib.wLeftMotorSpeed = left;
+	vib.wRightMotorSpeed = right;
+
+	DWORD result = XInputSetState(0, &vib);
+	if (result != ERROR_SUCCESS)
+	{
+		cout << "failed to set rumble state: " << result << "\n";
+	}
+}
+
+void AllControllers::SetRumble(int controllerIndex, double bothMotors )
+{
+	SetRumble(controllerIndex, bothMotors, bothMotors);
+}
+
+void AllControllers::CancelAllRumble()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		SetRumble(i, 0);
 	}
 }
 

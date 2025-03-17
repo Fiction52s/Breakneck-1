@@ -1397,6 +1397,8 @@ MainMenu::~MainMenu()
 	delete indEffectPool;
 
 	delete globalFile;
+
+	CONTROLLERS.CancelAllRumble();
 }
 
 //singleton

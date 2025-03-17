@@ -749,9 +749,9 @@ void Session::RegisterAllEnemies()
 {
 	RegisterGeneralEnemies();
 	RegisterW1Enemies();
-	//RegisterW2Enemies();
-	//RegisterW3Enemies();
-	//RegisterW4Enemies();
+	RegisterW2Enemies();
+	RegisterW3Enemies();
+	RegisterW4Enemies();
 	//RegisterW5Enemies();
 	//RegisterW6Enemies();
 	//RegisterW7Enemies();
@@ -2256,6 +2256,11 @@ bool Session::ReadPlayerOptions(std::ifstream &is)
 	if (mapHeader->ver1 >= 13)
 	{
 		defaultStartingPlayerUpgradeLevels->Load(is);
+	}
+	else if (mapHeader->ver1 >= 9)
+	{
+		BitField tempField(17 * 32); //this fixes the tutorial, not sure whats up. used PLAYER_OPTION_BIT_COUNT before, which is depreciated now
+		tempField.Load(is);
 	}
 	else if (mapHeader->ver1 >= 8 )
 	{
@@ -4370,6 +4375,66 @@ void Session::HandleEntrant(QuadTreeEntrant *qte)
 		TryAddRailToQueryList(qte);
 		break;
 	}
+}
+
+LineIntersection Session::SegmentIntersect(Vector2i a, Vector2i b, Vector2i c, Vector2i d)
+{
+	LineIntersection li;
+	lineIntersection(li, V2d(a.x, a.y), V2d(b.x, b.y),
+		V2d(c.x, c.y), V2d(d.x, d.y));
+	if (!li.parallel)
+	{
+		double e1Left = min(a.x, b.x);
+		double e1Right = max(a.x, b.x);
+		double e1Top = min(a.y, b.y);
+		double e1Bottom = max(a.y, b.y);
+
+		double e2Left = min(c.x, d.x);
+		double e2Right = max(c.x, d.x);
+		double e2Top = min(c.y, d.y);
+		double e2Bottom = max(c.y, d.y);
+		//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
+		//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
+		if (e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top)
+		{
+			//cout << "---!!!!!!" << endl;
+			if (li.position.x <= e1Right && li.position.x >= e1Left && li.position.y >= e1Top && li.position.y <= e1Bottom)
+			{
+				if (li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
+				{
+					//cout << "seg intersect!!!!!!" << endl;
+					//assert( 0 );
+					return li;
+				}
+			}
+		}
+	}
+	else
+	{
+		/*V2d dir0 = normalize(V2d(b) - V2d(a));
+		V2d dir1 = normalize(V2d(d) - V2d(c));
+		if ( abs( dot( dir1, dir0 ) ) == 1 )
+		{
+		double dc = dot(V2d(c) - V2d(a), dir0);
+		double dd = dot(V2d(d) - V2d(a), dir0);
+		double da = 0;
+		double db = length(V2d(b) - V2d(a));
+
+		if (dc >= da && dc <= db )
+		{
+		li.parallel = false;
+		li.position = V2d(c);
+		}
+		if (dd >= da && dd <= db)
+		{
+		li.parallel = false;
+		li.position = V2d(d);
+		}
+		}*/
+	}
+	//cout << "return false" << endl;
+	li.parallel = true;
+	return li;
 }
 
 void Session::TrySpawnEnemy(QuadTreeEntrant *qte)

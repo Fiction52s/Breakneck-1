@@ -94,6 +94,9 @@ struct ControllerState
 	unsigned char leftStickPad;
 	unsigned char rightStickPad;
 
+	unsigned short leftMotorSpeed;
+	unsigned short rightMotorSpeed;
+
 	bool respawnTest;
 
 	ControllerState();
@@ -392,6 +395,10 @@ struct AllControllers
 	void UpdateFilteredKeyboardStick(ControlProfile *cp, bool rightStick, ControllerState &state, const ControllerState &prevState);
 	void UpdateUnfilteredKeyboardState(ControllerState &state);
 	int GetMenuKeyFromControllerButton(XBoxButton button);
+
+	void SetRumble(int controllerIndex, double leftMotor, double rightMotor);
+	void SetRumble(int controllerIndex, double bothMotors);
+	void CancelAllRumble();
 private:
 	void UpdateKeyboardStick( bool rightStick, ControllerState &state, const ControllerState &prevState, 
 		bool left, bool right, bool up, bool down, 
@@ -422,6 +429,8 @@ private:
 
 	AllControllers();
 	~AllControllers();
+
+	
 
 	void GCCUpdate();
 };

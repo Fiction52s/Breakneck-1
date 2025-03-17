@@ -62,41 +62,6 @@ TouchW1Tree::TouchW1Tree(TouchGrassCollection *coll, int index,
 
 	yOffset = 0;
 
-
-
-
-
-
-	//yOffset = yOff;
-
-	//V2d normal = edge->Normal();
-
-	//V2d p = edge->GetPosition(quant);
-	//center = p;
-	//center += normal * yOffset;
-
-	//V2d hitboxCenter = p + normal * hitboxYOff;
-
-	//angle = p_angle;
-
-	////probably make this a rectangle later.
-	//hurtBody.BasicCircleSetup(hitboxXSize, hitboxCenter);
-
-	//SetRectRotation(myQuad, angle, coll->ts_grass->tileWidth,
-	//	coll->ts_grass->tileHeight, Vector2f(center));
-
-
-	//V2d polyCenter = coll->myTerrain->GetDCenter();
-	//for (int i = 0; i < 4; ++i)
-	//{
-	//	points[i] = V2d(myQuad[i].position) - polyCenter;
-	//}
-
-	//Reset();
-
-
-
-
 	V2d normal = edge->Normal();
 
 	V2d p = edge->GetPosition(quant);
@@ -109,24 +74,28 @@ TouchW1Tree::TouchW1Tree(TouchGrassCollection *coll, int index,
 
 	angle = GetVectorAngleCW(along);
 
-	SetRectRotation(myQuad, angle, size.x, size.y, Vector2f(center));
-
-	V2d polyCenter = coll->myTerrain->GetDCenter();
-	for (int i = 0; i < 4; ++i)
+	
+	if (coll != NULL)
 	{
-		points[i] = V2d(myQuad[i].position) - polyCenter;
+		SetRectRotation(myQuad, angle, size.x, size.y, Vector2f(center));
+
+		V2d polyCenter = coll->myTerrain->GetDCenter();
+		for (int i = 0; i < 4; ++i)
+		{
+			points[i] = V2d(myQuad[i].position) - polyCenter;
+		}
+
+		SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect(size, spriteOrigin + base, Vector2i(1, 1), 0));
+
+		Reset();
 	}
-
-	SetRectSubRect(myQuad, coll->ts_grass->GetCustomSubRect(size, spriteOrigin + base, Vector2i(1, 1), 0));
-
-	Reset();
 }
 
 void TouchW1Tree::Reset()
 {
-	//float treeHeight = 500;//coll->ts_grass->tileHeight
 	SetRectRotation(myQuad, angle, size.x,//coll->ts_grass->tileWidth,
 		size.y, Vector2f(center));
+
 	visible = true;
 	action = STILL;
 	frame = 0;

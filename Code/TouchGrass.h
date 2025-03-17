@@ -40,7 +40,7 @@ struct TouchGrass : QuadTreeEntrant
 
 	static bool IsPlacementOkay(
 		TouchGrassType grassType, int variation,
-		Edge *edge, int quadIndex);
+		Edge *edge, double quant, int quadIndex);
 	static bool IsEdgeOkay(TouchGrassType grassType, Edge *e);
 	static int GetQuadWidth(TouchGrassType gt);
 	static int GetRandomVariation(TouchGrassType gt);

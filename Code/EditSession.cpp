@@ -2165,6 +2165,8 @@ EditSession::~EditSession()
 
 	currSession = NULL;
 
+	CONTROLLERS.CancelAllRumble();
+
 }
 
 void EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
@@ -3474,65 +3476,7 @@ bool IsWithinOne(sf::Vector2i &a, sf::Vector2i &b)
 	return (abs(a.x - b.x) <= 1 && abs(a.y - b.y) <= 1);
 }
 
-LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
-{
-	LineIntersection li;
-	lineIntersection( li, V2d(a.x, a.y), V2d(b.x, b.y),
-				V2d( c.x, c.y ), V2d( d.x, d.y ) );
-	if( !li.parallel )
-	{
-		double e1Left = min( a.x, b.x );
-		double e1Right = max( a.x, b.x );
-		double e1Top = min( a.y, b.y );
-		double e1Bottom = max( a.y, b.y );
 
-		double e2Left = min( c.x, d.x );
-		double e2Right = max( c.x, d.x );
-		double e2Top = min( c.y, d.y );
-		double e2Bottom = max( c.y, d.y );
-		//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
-		//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
-		if( e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top )
-		{
-			//cout << "---!!!!!!" << endl;
-			if( li.position.x <= e1Right && li.position.x >= e1Left && li.position.y >= e1Top && li.position.y <= e1Bottom)
-			{
-				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
-				{
-					//cout << "seg intersect!!!!!!" << endl;
-					//assert( 0 );
-					return li;
-				}
-			}
-		}
-	}
-	else
-	{
-		/*V2d dir0 = normalize(V2d(b) - V2d(a));
-		V2d dir1 = normalize(V2d(d) - V2d(c));
-		if ( abs( dot( dir1, dir0 ) ) == 1 )
-		{
-			double dc = dot(V2d(c) - V2d(a), dir0);
-			double dd = dot(V2d(d) - V2d(a), dir0);
-			double da = 0;
-			double db = length(V2d(b) - V2d(a));
-
-			if (dc >= da && dc <= db )
-			{
-				li.parallel = false;
-				li.position = V2d(c);
-			}
-			if (dd >= da && dd <= db)
-			{
-				li.parallel = false;
-				li.position = V2d(d);
-			}
-		}*/
-	}
-	//cout << "return false" << endl;
-	li.parallel = true;
-	return li;
-}
 
 LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d, bool firstLimitOnly )
 {
@@ -7534,7 +7478,7 @@ bool EditSession::GateIntersectsGates(GateInfo *gi)
 		otherPoint0 = (*it)->point0->pos;
 		otherPoint1 = (*it)->point1->pos;
 
-		LineIntersection li = EditSession::SegmentIntersect(myPoint0, myPoint1, otherPoint0, otherPoint1);
+		LineIntersection li = Session::SegmentIntersect(myPoint0, myPoint1, otherPoint0, otherPoint1);
 		if (!li.parallel)
 		{
 			return true;
