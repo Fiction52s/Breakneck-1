@@ -62,12 +62,15 @@ struct RushManager : TilesetManager
 
 	Background *background;
 
+	XINPUT_VIBRATION vibration;
 	ControllerDualStateQueue *controllerInput;
 	ControlProfile *currProfile;
 
 	bool isDefaultKeyboardInputOn;
 
 	GameSession *currLevel;
+
+	int trueLevelIndex; //for randomized build
 
 	RushManager();
 	~RushManager();

@@ -142,7 +142,15 @@ void EnemyChain::UpdateParams(ActorParams *params)
 				delete circleGroup;
 				circleGroup = NULL;
 			}
-			circleGroup = new CircleGroup(numEnemies, 40, Color::Red, 20);
+			
+			if (type == EnemyType::EN_CURRENCYCHAIN)
+			{
+				circleGroup = new CircleGroup(numEnemies, 40, Color::Cyan, 20);
+			}
+			else
+			{
+				circleGroup = new CircleGroup(numEnemies, 40, Color::Red, 20);
+			}
 		}
 
 		for (int i = 0; i < numEnemies; ++i)

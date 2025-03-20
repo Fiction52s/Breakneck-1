@@ -4338,6 +4338,7 @@ void Actor::InitSounds()
 	soundInfos[PlayerSounds::S_WATER_INVERTEDINPUTS_ENTER] = GetSound("Water/water_invertedinputs_enter");
 	soundInfos[PlayerSounds::S_WATER_INVERTEDINPUTS_EXIT] = GetSound("Water/water_invertedinputs_exit");
 
+	soundInfos[PlayerSounds::S_CURRENCY_COLLECT] = GetSound("Kin/Kinetic_Coin_01");
 
 	//soundInfos[PlayerSounds::S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
@@ -8857,7 +8858,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 		if (owner != NULL && owner->IsRushSession() )
 		{
-			if (aPressed)
+			//if (aPressed)
 			{
 				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 				sess->scoreDisplay->Deactivate();
@@ -14612,17 +14613,44 @@ void Actor::UpdatePhysics()
 										}
 										else
 										{
-											//position -= minContact.resolution; //doubt I need this
-											//don't need to move the position back because it gets instantly corrected
-											//within PhysicsResponse anyway
-											q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
 
 
-											edgeQuantity = q;
+											V2d testVel = normalize(ground->v1 - ground->v0) * groundSpeed;
+											if (testVel.y < -offSlopeByWallThresh && !bounceFlameOn && minContact.edge->IsSteepGround())
+											{
+												velocity = testVel;
+												if (ground->IsSteepGround())
+												{
+													velocity.y += -8.0; //added additional jump for game feel
+												}
+												else
+												{
+													velocity.y += -5.0;
+												}
+												
+												position += minContact.resolution;
+												movementVec = normalize(ground->v1 - ground->v0) * steal;
+												leftGround = true;
+												ground = NULL;
+												SetAction(JUMP);
+												holdJump = false;
+												frame = 1;
+												ProcessGroundedCollision();
+											}
+											else
+											{
+												//position -= minContact.resolution; //doubt I need this
+												//don't need to move the position back because it gets instantly corrected
+												//within PhysicsResponse anyway
+												q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
 
-											ProcessGroundedCollision();
 
-											groundSpeed = 0;
+												edgeQuantity = q;
+
+												ProcessGroundedCollision();
+
+												groundSpeed = 0;
+											}
 
 											break;
 										}
@@ -25604,6 +25632,7 @@ void Actor::CollectCurrency(int currencyAmount, int healAmount )
 {
 	HealTimer(currencyAmount);
 	AddToCurrencyCounter(currencyAmount);
+	ActivateSound(PlayerSounds::S_CURRENCY_COLLECT);
 }
 
 void Actor::SetAirBlockAction()
@@ -26143,7 +26172,10 @@ void Actor::InitEmitters()
 double Actor::GetSteepSlideUpgradeAmount()
 {
 	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
-	switch (speedUpgradeLevel)
+
+	return maxSteepSlideUpgradeAmount * (speedUpgradeLevel * .1);
+
+	/*switch (speedUpgradeLevel)
 	{
 	case 0:
 		return 0;
@@ -26156,13 +26188,16 @@ double Actor::GetSteepSlideUpgradeAmount()
 	}
 
 	assert(0);
-	return maxSteepSlideUpgradeAmount * 1.0;
+	return maxSteepSlideUpgradeAmount * 1.0;*/
 }
 
 double Actor::GetSteepClimbUpgradeAmount()
 {
 	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
-	switch (speedUpgradeLevel)
+
+	return maxSteepClimbUpgradeAmount * (speedUpgradeLevel * .1);
+
+	/*switch (speedUpgradeLevel)
 	{
 	case 0:
 		return 0;
@@ -26175,13 +26210,16 @@ double Actor::GetSteepClimbUpgradeAmount()
 	}
 
 	assert(0);
-	return maxSteepClimbUpgradeAmount * 1.0;
+	return maxSteepClimbUpgradeAmount * 1.0;*/
 }
 
 double Actor::GetPassiveGroundUpgradeAmount()
 {
 	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
-	switch (speedUpgradeLevel)
+
+	return maxPassiveGroundUpgradeAmount * (speedUpgradeLevel * .1);
+
+	/*switch (speedUpgradeLevel)
 	{
 	case 0:
 		return 0;
@@ -26194,12 +26232,15 @@ double Actor::GetPassiveGroundUpgradeAmount()
 	}
 
 	assert(0);
-	return maxPassiveGroundUpgradeAmount * 1.0;
+	return maxPassiveGroundUpgradeAmount * 1.0;*/
 }
 double Actor::GetSprintUpgradeAmount()
 {
 	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
-	switch (speedUpgradeLevel)
+
+	return maxSprintUpgradeAmount * (speedUpgradeLevel * .1);
+
+	/*switch (speedUpgradeLevel)
 	{
 	case 0:
 		return 0;
@@ -26212,7 +26253,7 @@ double Actor::GetSprintUpgradeAmount()
 	}
 
 	assert(0);
-	return maxSprintUpgradeAmount * 1.0;
+	return maxSprintUpgradeAmount * 1.0;*/
 }
 
 double Actor::GetCeilingSteepSlideUpgradeAmount()
@@ -26294,7 +26335,10 @@ double Actor::GetCeilingSprintUpgradeAmount()
 double Actor::GetMaxSpeedUpgradeAmount()
 {
 	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
-	switch (speedUpgradeLevel)
+
+	return maxMaxSpeedUpgradeAmount * (speedUpgradeLevel * .1 );
+
+	/*switch (speedUpgradeLevel)
 	{
 	case 0:
 		return 0;
@@ -26304,10 +26348,10 @@ double Actor::GetMaxSpeedUpgradeAmount()
 		return maxMaxSpeedUpgradeAmount * .66;
 	case 3:
 		return maxMaxSpeedUpgradeAmount * 1.0;
-	}
+	}*/
 
-	assert(0);
-	return maxMaxSpeedUpgradeAmount * 1.0;
+	//assert(0);
+	//return maxMaxSpeedUpgradeAmount * 1.0;
 }
 
 double Actor::GetDashSpeedUpgradeAmount()

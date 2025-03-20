@@ -535,6 +535,19 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			rushManager->currProfile = storedControlProfile;
 			rushManager->Load();
 		}
+		else if (fromMode == TITLEMENU)
+		{
+			ControllerDualStateQueue *states = NULL;
+			states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, 0);
+
+			auto &managedProfiles = cpm->profiles[states->GetControllerType()];
+
+			assert(rushManager == NULL);
+			rushManager = new RushManager;
+			rushManager->controllerInput = states;
+			rushManager->currProfile = managedProfiles.front();
+			rushManager->Load();
+		}
 		break;
 	}
 	case TITLEMENU:
@@ -882,6 +895,7 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	arial.loadFromFile("Resources/Fonts/Kinetic_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
+	wellbutrin.loadFromFile("Resources/Fonts/Wellbutrin.ttf");
 
 	//player shaders
 	RegisterShader("colorswap");
@@ -5018,8 +5032,20 @@ void MainMenu::TitleMenuModeUpdate()
 
 			musicPlayer->FadeOutCurrentMusic(30);
 			customCursor->Hide();
-			LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_RUSH);
-			//LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE);
+
+
+			LoadMode(TEST_RUSH);
+
+			/*ISteamUtils *utils = SteamUtils();
+			if ( utils != NULL && utils->IsSteamRunningOnSteamDeck())
+			{
+				LoadMode(TEST_RUSH);
+			}
+			else
+			{
+				LoadMode(SINGLE_PLAYER_CONTROLLER_JOIN_RUSH);
+			}*/
+
 			break;
 		}
 		case M_FREE_PLAY:

@@ -35,7 +35,7 @@ KinMenu::KinMenu( TilesetManager *p_tm )
 
 	int tutWidth = 1220;
 	int tutHeight = 320;
-	ts_tutorial[0] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_jump_1220x320.png");
+	/*ts_tutorial[0] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_jump_1220x320.png");
 	ts_tutorial[1] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_attack_1220x320.png");
 	ts_tutorial[2] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_sprint_1220x320.png");
 	ts_tutorial[3] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_dash_1220x320.png");
@@ -44,7 +44,7 @@ KinMenu::KinMenu( TilesetManager *p_tm )
 	ts_tutorial[6] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_health_1220x320.png");
 	ts_tutorial[7] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_survival_1220x320.png");
 	ts_tutorial[8] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_key_1220x320.png");
-	ts_tutorial[9] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_airdash_1220x320.png");
+	ts_tutorial[9] = tm->GetSizedTileset("Menu/Pause/Tutorial/tut_airdash_1220x320.png");*/
 	
 
 	SetRectColor(descriptionBox, Color(0, 0, 0, 255));
@@ -278,7 +278,7 @@ void KinMenu::UpdateSelector()
 
 void KinMenu::UpdateTutorial()
 {
-	tutorialSpr.setTexture(*ts_tutorial[GetCurrIndex()]->texture);
+	//tutorialSpr.setTexture(*ts_tutorial[GetCurrIndex()]->texture);
 }
 
 void KinMenu::UpdatePowers(Actor *player)
@@ -480,7 +480,7 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(powerQuads, 10 * 4, sf::Quads, ts_powers->texture);
 
 
-	target->draw(tutorialSpr);
+	//target->draw(tutorialSpr);
 	//target->draw(descriptionBox, 4, sf::Quads);
 
 	int index = GetCurrIndex();

@@ -18,6 +18,7 @@ ConfigData::ConfigData()
 
 void ConfigData::SetToDefault()
 {
+	showTerrainLines = false;
 	resolutionX = 1920;
 	resolutionY = 1080;
 	windowStyle = sf::Style::Fullscreen;
@@ -142,6 +143,12 @@ bool Config::Load()
 				is >> lobby;
 				data.parallelPracticeShowLobby = lobby;
 			}
+			else if (settingName == "terrainlines")
+			{
+				int lines;
+				is >> lines;
+				data.showTerrainLines = lines;
+			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -207,6 +214,7 @@ void Config::Save()
 		of << "ParallelPracticeShowKinsOnMinimap " << (int)data.parallelPracticeShowKinsOnMinimap << "\n";
 		of << "ParallelPracticeShowKinsOnPauseMap " << (int)data.parallelPracticeShowKinsOnPauseMap << "\n";
 		of << "ParallelPracticeShowLobby " << (int)data.parallelPracticeShowLobby << "\n";
+		of << "TerrainLines" << (int)data.showTerrainLines << "\n";
 		of.close();
 	}
 	else

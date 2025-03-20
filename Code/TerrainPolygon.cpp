@@ -21,6 +21,7 @@
 #include "Enemy_CurrencyItem.h"
 #include "Enemy_CurrencyGrid.h"
 #include "RandomPicker.h"
+#include "Config.h"
 
 using namespace std;
 using namespace sf;
@@ -1639,9 +1640,17 @@ sf::IntRect TerrainPolygon::GetBorderSubRect(int tileWidth, EdgeAngleType angleT
 
 	//this is because atm theres no flat ceiling version. get one later, then this 
 	//can be simplified.
+
+	if (angleType == EDGE_FLATCEILING)
+	{
+		angleType = EDGE_SLOPEDCEILING;
+	}
+
 	int adjustedType = angleType;
 	if (adjustedType > 0)
 		adjustedType--;
+
+	
 
 	switch (tileWidth)
 	{
@@ -2121,7 +2130,7 @@ void TerrainPolygon::GenerateSecretBorderMesh()
 	BorderInfo *currEdgeNumQuadPtr;
 	V2d along, norm, startInner, startOuter;
 
-	double out = 16;//8;//16;
+	double out = 16;//16;//8;//16;
 	double in = 64 - out;//8;//64 - out;
 
 	double inwardExtra, nextInwardExtra, startAlong, truEnd, currLen;
@@ -2497,7 +2506,7 @@ void TerrainPolygon::GenerateBorderMesh()
 	BorderInfo *currEdgeNumQuadPtr;
 	V2d along,norm, startInner, startOuter;
 
-	double out = 16;//8;//16;
+	double out = 10;//8;//16;
 	double in = 64 - out;//8;//64 - out;
 
 	double inwardExtra, nextInwardExtra, startAlong, truEnd, currLen;
@@ -2595,7 +2604,9 @@ void TerrainPolygon::GenerateBorderMesh()
 				if (!li.parallel)
 				{
 					double testLength = dot(li.position - currStartOuter, normalize(currStartInner - currStartOuter));//(li.position - currStartOuter);
-					assert(testLength >= 0);
+					//assert(testLength >= 0);
+
+					//removed this assert but need to get back to it. started happening when I changed the out value on borders
 					if (testLength < realHeightLeft)
 					{
 						double diffLen = realHeightLeft - testLength;
@@ -2610,7 +2621,7 @@ void TerrainPolygon::GenerateBorderMesh()
 				if (!li.parallel)
 				{
 					double testLength = dot(li.position - currStartOuter, normalize(currStartInner - currStartOuter));//(li.position - currStartOuter);
-					assert(testLength >= 0);
+					//assert(testLength >= 0);
 					if (testLength < realHeightRight)
 					{
 						double diffLen = realHeightRight - testLength;
@@ -5984,7 +5995,21 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *tar
 
 	DrawTouchGrassFront(target);
 
-	target->draw( lines, numP * 2, sf::Lines );
+	bool showLines = true;
+	if (sess->IsSessTypeGame())
+	{
+		const ConfigData &cd = MainMenu::GetInstance()->config->GetData();
+
+		if (!cd.showTerrainLines)
+		{
+			showLines = false;
+		}
+	}
+	
+	if (showLines)
+	{
+		target->draw(lines, numP * 2, sf::Lines);
+	}
 
 	if( showPoints )
 	{

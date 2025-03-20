@@ -388,7 +388,7 @@ PlayerBoxGroup::PlayerBoxGroup( TilesetManager *tm, int numBoxes, int p_playerBo
 	tilesetManager = tm;
 	ts_controllerIcons = tilesetManager->GetSizedTileset("Menu/controllers_64x64.png");
 	ts_portIcons = tilesetManager->GetSizedTileset("Menu/slots_64x32.png");
-	ts_kin = tilesetManager->GetSizedTileset("Kin/stand_64x64.png");
+	ts_kin = MainMenu::GetInstance()->GetSizedTileset("Kin/stand_64x64.png");
 
 	playerBoxWidth = p_playerBoxWidth;
 	playerBoxHeight = p_playerBoxHeight;

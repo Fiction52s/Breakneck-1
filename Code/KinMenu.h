@@ -49,7 +49,7 @@ struct KinMenu
 	sf::Color Get2BColor();
 	sf::Sprite tutorialSpr;
 	sf::Vertex descriptionBox[4];
-	Tileset *ts_tutorial[10];
+	//Tileset *ts_tutorial[10];
 	sf::Sprite kinSpr;
 	sf::Sprite veinSpr;
 	sf::Sprite aura1ASpr;

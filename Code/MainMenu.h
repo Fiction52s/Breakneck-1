@@ -508,6 +508,7 @@ struct MainMenu : TilesetManager
 	
 	sf::Font arial;
 	sf::Font consolas;
+	sf::Font wellbutrin;
 	sf::Clock gameClock;
 
 	LevelSelector *levelSelector; 

@@ -410,6 +410,11 @@ TilesetManager::TilesetCategory TilesetManager::GetCategory(const std::string &s
 
 Tileset * TilesetManager::FindOrCreate(const std::string &s, int tw, int th)
 {
+	if (parentManager != NULL)
+	{
+		return parentManager->FindOrCreate(s, tw, th);
+	}
+
 	string textureStr = s;
 	CompressedTilesetInfo *myCompressedInfo = NULL;
 	if (compressedTilesetInfoMap.count(s) > 0)

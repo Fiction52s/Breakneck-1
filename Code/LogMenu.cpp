@@ -943,15 +943,15 @@ void LogPreview::SetInfo(LogDetailedInfo &li)
 		ActorType *at;
 		at = sess->types[logInfo.enemyTypeName];
 
-		sess->specialTempTilesetManager = &tMan;
-		sess->specialTempSoundManager = &sMan;
+		//sess->specialTempTilesetManager = &tMan;
+		//sess->specialTempSoundManager = &sMan;
 		previewParams = at->info.pMaker(at, 1);
 
 		previewParams->SetPosition(center);
 		previewParams->CreateMyEnemy();
 
-		sess->specialTempTilesetManager = NULL;
-		sess->specialTempSoundManager = NULL;
+		//sess->specialTempTilesetManager = NULL;
+		//sess->specialTempSoundManager = NULL;
 
 		previewParams->myEnemy->UpdateFromEditParams(0);
 		break;

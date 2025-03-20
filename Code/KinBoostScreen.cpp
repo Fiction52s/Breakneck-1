@@ -24,7 +24,7 @@ KinBoostScreen::KinBoostScreen()
 	ts_stars[2] = GetTileset("Menu/KinBoost/kinboost_stars_01c.png", 1920, 1080);
 	ts_stars[3] = GetTileset("Menu/KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
-	ts_kinBoost = GetSizedTileset("Kin/exitboost_96x128.png");
+	ts_kinBoost = MainMenu::GetInstance()->GetSizedTileset("Kin/exitboost_96x128.png");
 	ts_kinAura = GetSizedTileset("Kin/FX/exitaura_256x256.png");
 	ts_enterFX = GetSizedTileset("Kin/FX/enter_fx_320x320.png");
 

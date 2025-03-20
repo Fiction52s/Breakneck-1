@@ -1059,6 +1059,10 @@ void GameSession::Cleanup()
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && mainMenu->adventureManager != NULL)
 	{
 	}
+	else if (mainMenu->rushManager != NULL)
+	{
+
+	}
 	else
 	{
 		assert(pauseMenu != NULL);
@@ -2030,7 +2034,15 @@ bool GameSession::Load()
 		}
 		else
 		{
-			if (!IsParallelSession())
+			if (IsRushSession())
+			{
+				pauseMenu = mainMenu->rushManager->pauseMenu;
+				//pauseMenu->SetGame(this);
+
+				shardMenu = pauseMenu->shardMenu;
+				logMenu = pauseMenu->logMenu;
+			}
+			else if (!IsParallelSession())
 			{
 				pauseMenu = new PauseMenu(this);
 				pauseMenu->SetGame(this);
@@ -3729,6 +3741,13 @@ int GameSession::Run()
 			}
 		}
 	}*/
+
+	//for rush mode hopefully this works
+	if (pauseMenu != NULL)
+	{
+		pauseMenu->SetGame(this);
+	}
+	
 
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{

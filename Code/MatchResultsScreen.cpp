@@ -327,7 +327,7 @@ PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
 
 	skinShader->SetSkin(ps->skinIndex);
 
-	Tileset *ts_kin = resultsScreen->GetSizedTileset("Kin/stand_64x64.png");
+	Tileset *ts_kin = MainMenu::GetInstance()->GetSizedTileset("Kin/stand_64x64.png");
 
 	ts_kin->SetSpriteTexture(kinSprite);
 	ts_kin->SetSubRect(kinSprite, 0);

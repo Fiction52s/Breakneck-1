@@ -26,6 +26,13 @@ CurrencyItemChain::CurrencyItemChain(ActorParams *ap)
 {
 	CurrencyItemParams *cParams = (CurrencyItemParams*)ap;
 
+	/*for (int i = 0; i < circleGroup->numCircles; ++i)
+	{
+		circleGroup->SetColor(i, Color::Cyan);
+	}*/
+	
+	
+
 	SetLevel(ap->GetLevel());
 
 	SetSpawnRect();

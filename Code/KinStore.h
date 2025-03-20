@@ -58,6 +58,12 @@ struct KinStore
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
 
+	Tileset *ts_bg;
+	Tileset *ts_yellowSquare;
+
+	sf::Sprite bgSpr;
+	sf::Sprite yellowSpr;
+
 	sf::Vertex selectedBGQuad[4];
 	sf::Vertex containerBGQuad[4];
 	sf::Vertex *itemSelectQuads;

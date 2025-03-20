@@ -24,8 +24,8 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 
 	Reset();
 
-	ts_test = rushManager->GetSizedTileset("Menu/AdventureScoreDisplay/adventurescoretest_1920x1080.png");
-	ts_test->SetSpriteTexture(testSpr);
+	//ts_test = rushManager->GetSizedTileset("Menu/AdventureScoreDisplay/adventurescoretest_1920x1080.png");
+	//ts_test->SetSpriteTexture(testSpr);
 
 	testSpr.setPosition(0, 0);
 

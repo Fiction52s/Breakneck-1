@@ -6,6 +6,7 @@
 #include "Background.h" 
 #include "Session.h"
 #include "MainMenu.h"
+#include <cstring>
 
 using namespace sf;
 using namespace std;
@@ -482,6 +483,7 @@ void BackgroundTile::Load(nlohmann::basic_json<> &jobj)
 	repetitionFactor = jobj["repFactor"];
 
 	string pngName = jobj["texture"];
+	std::transform(pngName.begin(), pngName.end(), pngName.begin(), ::tolower);
 
 	Vector2i tileSize;
 	Vector2i sheetPos;

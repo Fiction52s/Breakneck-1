@@ -31,14 +31,14 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	feedbackURL = "https://docs.google.com/forms/d/e/1FAIpQLSewgTgR6kh-0vX3_un4T_WqQkyGZLkH1jGaz1ysI8rPcZSBBQ/viewform?usp=sf_link";
 
-	ts_kineticTitle = GetSizedTileset("Menu/Title/Kinetic_Title_1024x440.png");
+	ts_kineticTitle = GetSizedTileset("Menu/Title/Kinetic Logo Title_835x530.png");//GetSizedTileset("Menu/Title/Kinetic_Title_1024x440.png");
 	ts_titleBG = GetTileset("Menu/Title/title_base_1920x1080.png", 1920, 1080);
 
 	titleBGSprite.setTexture(*ts_titleBG->texture);
 	kineticTitleSprite.setTexture(*ts_kineticTitle->texture);
 
-	kineticTitleSprite.setOrigin(kineticTitleSprite.getLocalBounds().width / 2, 0);
-	kineticTitleSprite.setPosition(960, 0);
+	//kineticTitleSprite.setOrigin(kineticTitleSprite.getLocalBounds().width / 2, 0);
+	kineticTitleSprite.setPosition(543, 20);
 
 	background = new Background;
 
@@ -74,10 +74,10 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	creditsMenuScreen = new CreditsMenuScreen;
 
-	Label *lab = panel->AddLabel("ealabel", Vector2i(960, 1080 - 30), 40, "Early Access ver. 1.0");
+	/*Label *lab = panel->AddLabel("ealabel", Vector2i(960, 1080 - 30), 40, "Early Access ver. 1.0");
 	auto lb = lab->text.getLocalBounds();
 	lab->text.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
-	lab->text.setFillColor(Color::White);
+	lab->text.setFillColor(Color::White);*/
 
 	titleMusic = mainMenu->musicManager->songMap["w0_Title"];
 	if (titleMusic != NULL)

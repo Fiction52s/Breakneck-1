@@ -22,6 +22,7 @@ struct ConfigData
 	bool parallelPracticeShowKinsOnMinimap;
 	bool parallelPracticeShowKinsOnPauseMap;
 	bool parallelPracticeShowLobby;
+	bool showTerrainLines;
 };
 
 struct Config

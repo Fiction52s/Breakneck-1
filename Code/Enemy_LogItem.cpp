@@ -135,7 +135,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = (GameSession*)sess;
-		logPreview = new LogPreview(game->pauseMenu->tm);
+		logPreview = new LogPreview(game);//->pauseMenu->tm);
 		logPreview->SetSession(sess);
 		logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, localIndex));
 	}

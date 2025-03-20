@@ -4,6 +4,7 @@
 #include "Session.h"
 #include "KinUpgrades.h"
 #include "nlohmann\json.hpp"
+#include "RushManager.h"
 
 using namespace sf;
 using namespace std;
@@ -117,15 +118,24 @@ KinStore::KinStore()
 	MainMenu *mm = MainMenu::GetInstance();
 	sess = NULL;
 
-	LoadStore();
+	
 
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
+
+	RushManager *rm = mm->rushManager;
+	assert(rm != NULL);
+	ts_bg = rm->GetSizedTileset( "Menu/Store/Store_1920x1080.png");
+	ts_yellowSquare = rm->GetSizedTileset( "Menu/Store/Yellow_Square_145x145.png");
 	
+	bgSpr.setTexture(*ts_bg->texture);
+	yellowSpr.setTexture(*ts_yellowSquare->texture);
+	sf::Sprite yellowSpr;
+
 	action = -1;
 	frame = -1;
 
 
-	upgradeNameText.setCharacterSize(20);
+	upgradeNameText.setCharacterSize(60);
 	upgradeNameText.setFont(mm->arial);
 	upgradeNameText.setFillColor(Color::White);
 
@@ -135,18 +145,20 @@ KinStore::KinStore()
 
 	
 
-	upgradeDescText.setCharacterSize(20);
+	upgradeDescText.setCharacterSize(27);
 	upgradeDescText.setFont(mm->arial);
 	upgradeDescText.setFillColor(Color::White);
 
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
-	int maxXSize = 6;
+	int maxXSize = 2;
 	int ySize = 4;
 
 	//basics, powers, armor items, use items
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, maxXSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
+
+	LoadStore();
 
 	numTotalStoreItems = 0;
 	for (auto it = storeItems.begin(); it != storeItems.end(); ++it)
@@ -217,9 +229,9 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 		}
 	}
 
-	upgradeNameText.setPosition(500 + pos.x, pos.y + 50);
-	upgradeDescText.setPosition(500 + pos.x, pos.y + 200 );
-	upgradeLevelText.setPosition(500 + pos.x, pos.y + 400);
+	//upgradeNameText.setPosition(500 + pos.x, pos.y + 50);
+	//upgradeDescText.setPosition(500 + pos.x, pos.y + 200 );
+	//upgradeLevelText.setPosition(500 + pos.x, pos.y + 400);
 }
 
 #include "RushManager.h"
@@ -239,6 +251,7 @@ void KinStore::Open()
 	action = A_OPEN;
 	frame = 0;
 
+	ySelector->SetIndex(0);
 	xSelector->SetIndex(0);
 	xSelector->SetTotalSize(storeItems[ySelector->currIndex].size());
 
@@ -264,16 +277,75 @@ void KinStore::SetSelected(int section, int itemIndex)
 {
 	//eventually need to be able to display buttons in here, steal functionality from the tutbox
 	StoreItem *si = storeItems[section][itemIndex];
-	upgradeNameText.setString( si->name );
-	upgradeDescText.setString(si->GetCurrentDescription());
 
 	int upgradeLevel = sess->mainMenu->rushManager->kinUpgradeLevels->GetUpgradeLevel(si->upgradeIndex);
+
+	upgradeNameText.setString( si->name + " Level " + to_string(upgradeLevel + 1 ) );
+	upgradeNameText.setOrigin(upgradeNameText.getLocalBounds().left
+			+ upgradeNameText.getLocalBounds().width / 2,
+			upgradeNameText.getLocalBounds().top);
+
+	//upgradeNameText.setPosition(1088,303);
+	upgradeNameText.setPosition(1200,303);
+
+	upgradeDescText.setString(si->GetCurrentDescription());
+	upgradeDescText.setPosition(745, 412);
+	
 
 	upgradeLevelText.setString( "Level: " + to_string(upgradeLevel));
 
 	SetRectCenter(selectedBGQuad, 192 / 2, 192 / 2,
 		Vector2f((itemSelectQuads + si->quadIndex * 4)->position + Vector2f(192 / 4, 192 / 4)));
 	SetRectColor(selectedBGQuad, Color::White);
+
+	Vector2f selectTopLeft;
+	switch (section)
+	{
+	case 0:
+		if (itemIndex == 0)
+		{
+			selectTopLeft = Vector2f(224, 229);
+		}
+		else if (itemIndex == 1)
+		{
+			selectTopLeft = Vector2f(423, 228);
+		}
+		break;
+	case 1:
+		if (itemIndex == 0)
+		{
+			selectTopLeft = Vector2f(221, 482);
+		}
+		else if (itemIndex == 1)
+		{
+			selectTopLeft = Vector2f(421, 482);
+		}
+		break;
+	case 2:
+		if (itemIndex == 0)
+		{
+			selectTopLeft = Vector2f(221, 640);
+		}
+		else if (itemIndex == 1)
+		{
+			selectTopLeft = Vector2f(421, 640);
+		}
+		break;
+	case 3:
+		if (itemIndex == 0)
+		{
+			selectTopLeft = Vector2f(221, 795);
+		}
+		else if (itemIndex == 1)
+		{
+			selectTopLeft = Vector2f(421, 795);
+		}
+		break;
+	}
+
+	selectTopLeft += Vector2f(-10, -10);
+
+	yellowSpr.setPosition(selectTopLeft);
 }
 
 void KinStore::Update()
@@ -319,7 +391,7 @@ void KinStore::Update()
 
 		if (ychanged != 0)
 		{
-			xSelector->SetIndex(0);
+			//xSelector->SetIndex(0);
 			xSelector->SetTotalSize(storeItems[ySelector->currIndex].size());
 		}
 
@@ -333,7 +405,10 @@ void KinStore::Update()
 
 void KinStore::LoadStore()
 {
-	vector<string> upgradeTypes = { "basic_upgrades", "powers", "armor", "items" };
+	//vector<string> upgradeTypes = { "basic_upgrades", "powers", "armor", "items" };
+	vector<string> upgradeTypes = { "basic_upgrades", "powers", "powers1", "powers2" };
+
+	ySelector->SetTotalSize(upgradeTypes.size());
 
 	string base = "Resources/Kin/Info/";
 	stringstream ss;
@@ -438,12 +513,14 @@ void KinStore::LoadStore()
 
 void KinStore::Draw(sf::RenderTarget *target)
 {
-	target->draw(containerBGQuad, 4, sf::Quads );
+	//target->draw(containerBGQuad, 4, sf::Quads );
+	target->draw(bgSpr);
 	
-	target->draw(itemSelectQuads, numTotalStoreItems * 4, sf::Quads);
-	target->draw(selectedBGQuad, 4, sf::Quads);
+	//target->draw(itemSelectQuads, numTotalStoreItems * 4, sf::Quads);
+	//target->draw(selectedBGQuad, 4, sf::Quads);
+	target->draw(yellowSpr);
 
 	target->draw(upgradeNameText);
 	target->draw(upgradeDescText);
-	target->draw(upgradeLevelText);
+	//target->draw(upgradeLevelText);
 }

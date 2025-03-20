@@ -29,6 +29,7 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 
 	showFPSCheckBox = panel->AddLabeledCheckBox("showfpscheckbox", Vector2i( 0, 0 ), "Show FPS:");
 	showRunningTimerCheckBox = panel->AddLabeledCheckBox("showrunningtimercheckbox", Vector2i(0, 0), "Show Running Timer:");
+	showTerrainLinesCheckBox = panel->AddLabeledCheckBox("showterrainlinescheckbox", Vector2i(0, 0), "Show Terrain Lines:");
 
 	panel->SetAutoSpacing(false, true, Vector2i(800, 350), Vector2i(0, 60));
 
@@ -111,6 +112,7 @@ void GameSettingsScreen::UpdateFromConfig()
 
 	showFPSCheckBox->checked = cd.showFPS;
 	showRunningTimerCheckBox->checked = cd.showRunningTimer;
+	showTerrainLinesCheckBox->checked = cd.showTerrainLines;
 }
 
 void GameSettingsScreen::Start()
@@ -169,6 +171,7 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 
 	d.showFPS = showFPSCheckBox->checked;
 	d.showRunningTimer = showRunningTimerCheckBox->checked;
+	d.showTerrainLines = showTerrainLinesCheckBox->checked;
 
 	bool windowNeedsReset = false;
 

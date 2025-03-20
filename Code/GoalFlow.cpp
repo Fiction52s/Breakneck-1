@@ -19,6 +19,7 @@ GoalFlow::GoalFlow(Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 
 	sess = Session::GetSession();
 
+	//ts_veinEnd = sess->GetSizedTileset("Env/vein_end_64x64.png");
 	ts_veinEnd = sess->GetSizedTileset("Env/vein_end_16x4.png");
 
 	if (!flowShader.loadFromFile("Resources/Shader/flow.frag", sf::Shader::Fragment))
@@ -71,7 +72,7 @@ void GoalFlow::Setup( sf::Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 	int wI = width;
 	double currW = 0;
 	int minWidth = 8;
-	double awayFromEdgeAmount = 32;
+	double awayFromEdgeAmount = 32;//128;//64;//32;
 
 	for (auto it2 = infoList.begin(); it2 != infoList.end(); ++it2)
 	{
@@ -92,10 +93,10 @@ void GoalFlow::Setup( sf::Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 			V2d endLeft = endPoint - other * currW / 2.0 - along * awayFromEdgeAmount;
 			V2d endRight = endPoint + other * currW / 2.0 - along * awayFromEdgeAmount;
 
-			va[extra + 0].color = Color::Red;
-			va[extra + 1].color = Color::Red;
-			va[extra + 2].color = Color::Red;
-			va[extra + 3].color = Color::Red;
+			//va[extra + 0].color = Color::Red;
+			//va[extra + 1].color = Color::Red;
+			//va[extra + 2].color = Color::Red;
+			//va[extra + 3].color = Color::Red;
 
 			va[extra + 0].position = Vector2f(startLeft.x, startLeft.y);
 			va[extra + 1].position = Vector2f(startRight.x, startRight.y);
@@ -109,8 +110,8 @@ void GoalFlow::Setup( sf::Vector2f &gPos, list<list<pair<V2d, bool>>> &infoList)
 			SetRectRotation(veinEndQuads + extra * 2, ang, currW + 2, 4, Vector2f( startPoint + along * awayFromEdgeAmount ));
 			SetRectRotation(veinEndQuads + extra * 2 + 4, ang + PI, currW + 2, 4, Vector2f(endPoint - along * awayFromEdgeAmount));
 
-				
-				//veinEndQuads[extra *4]
+			//SetRectRotation(veinEndQuads + extra * 2, ang, 64, 64, Vector2f( startPoint + along * awayFromEdgeAmount ));
+			//SetRectRotation(veinEndQuads + extra * 2 + 4, ang + PI, 64,64, Vector2f(endPoint - along * awayFromEdgeAmount));
 
 			extra += 4;
 		}

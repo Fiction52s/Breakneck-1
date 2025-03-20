@@ -30,6 +30,8 @@ RushManager::RushManager()
 	firstMap = NULL;
 	shipGame = NULL;
 
+	trueLevelIndex = 0;
+
 	kinUpgradesInOrder.reserve(128);
 
 	worldMap = NULL;
@@ -43,6 +45,8 @@ RushManager::RushManager()
 	transferPlayerPowerMode = -1;
 
 	MainMenu * mm = MainMenu::GetInstance();
+
+	mm->rushManager = this;
 
 	kinUpgradeLevels = new UpgradeLevels;
 
@@ -59,9 +63,9 @@ RushManager::RushManager()
 	
 	rushScoreDisplay = new RushScoreDisplay(this, mm->arial);
 
-	worldTransferScreen = new WorldTransferScreen;
+	worldTransferScreen = NULL;//new WorldTransferScreen;
 
-	kinBoostScreen = new KinBoostScreen;
+	kinBoostScreen = NULL;//new KinBoostScreen;
 
 	SetCurrSaveFile(0);
 }
@@ -149,6 +153,7 @@ void RushManager::SetWorld(int w)
 	currWorld = w;
 
 	currRushMapIndex = 0;
+	trueLevelIndex = 0;
 
 	if (currWorld == 0)
 	{
@@ -184,7 +189,7 @@ void RushManager::SetWorld(int w)
 void RushManager::LoadRush(const std::string &rushName)
 {
 	rushFile.Load("Resources/Rush", rushName);
-	SetWorld(0);
+	SetWorld(1);
 }
 
 void RushManager::LoadShip()
@@ -279,8 +284,55 @@ void RushManager::UpdateWorldDependentTileset(int worldIndex)
 
 bool RushManager::TryToGoToNextLevel(GameSession *game)
 {
+	if (currWorld == 0)
+	{
+		if (trueLevelIndex >= 7)//rushFile.worlds[currWorld].maps.size() - 1)
+			return false;
+
+		if (trueLevelIndex == 0)
+		{
+			currRushMapIndex = 1;
+		}
+		else if (trueLevelIndex == 1)
+		{
+			currRushMapIndex = 2;
+		}
+		else if (trueLevelIndex == 2)
+		{
+			currRushMapIndex = (rand() % 3) + 3;
+		}
+		else if (trueLevelIndex == 3)
+		{
+			currRushMapIndex = (rand() % 3) + 6;
+		}
+		else if (trueLevelIndex == 4)
+		{
+			currRushMapIndex = (rand() % 3) + 9;
+		}
+		else if (trueLevelIndex == 5)
+		{
+			currRushMapIndex = (rand() % 3) + 12;
+		}
+		else if (trueLevelIndex == 6)
+		{
+			currRushMapIndex = (rand() % 3) + 15;
+		}
+
+		trueLevelIndex++;
+
+		game->SetBonus(bonusVec[currRushMapIndex], V2d(0, 0));
+
+		return true;
+	}
+
+
+
 	if (CanGoToNextLevel())
 	{
+		//just for the convention build
+
+		
+
 		//int r = rand() % (rushFile.numMaps - 1);
 		//game->SetBonus(bonusVec[r], V2d(0, 0));
 		game->SetBonus(bonusVec[currRushMapIndex], V2d(0,0));
