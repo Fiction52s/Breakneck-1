@@ -20,9 +20,7 @@ struct ScoreDisplay
 	int action;
 	int frame;
 	bool madeRecord;
-	bool gotGold;
-	bool gotSilver;
-	bool gotBronze;
+	int medalRank;
 	sf::Font &font;
 	Session *sess;
 	GameSession *game;

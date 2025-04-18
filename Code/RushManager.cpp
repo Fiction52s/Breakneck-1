@@ -19,12 +19,16 @@
 #include "KinUpgrades.h"
 
 #include "RushFile.h"
+#include "MedalTimeForm.h"
 
 using namespace std;
 using namespace sf;
 
 RushManager::RushManager()
 {
+	srand(time(0));
+
+	storePoints = 0;
 	pauseMenu = new PauseMenu(this);
 
 	firstMap = NULL;
@@ -43,6 +47,9 @@ RushManager::RushManager()
 	currProfile = NULL;
 
 	transferPlayerPowerMode = -1;
+	transferPlayerHotkeyedPowerMode = -1;
+
+	startWorld = 0;
 
 	MainMenu * mm = MainMenu::GetInstance();
 
@@ -51,6 +58,8 @@ RushManager::RushManager()
 	kinUpgradeLevels = new UpgradeLevels;
 
 	adventureHUD = new AdventureHUD(this);
+
+	medalTimeForm = new MedalTimeForm;
 
 	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
@@ -125,6 +134,8 @@ RushManager::~RushManager()
 	{
 		delete saveMenu;
 	}
+
+	delete medalTimeForm;
 }
 
 void RushManager::Load()
@@ -155,11 +166,18 @@ void RushManager::SetWorld(int w)
 	currRushMapIndex = 0;
 	trueLevelIndex = 0;
 
-	if (currWorld == 0)
+	storePoints = 0;
+
+	kinUpgradeLevels->Clear();
+
+	int powerWorlds = min(currWorld, 6);
+	for (int i = 0; i < powerWorlds; ++i)
 	{
-		kinUpgradeLevels->Clear();
-		kinUpgradesInOrder.clear();
+		kinUpgradeLevels->SetUpgradeLevel(POWER_AIRDASH + i, 1);
 	}
+
+	transferPlayerPowerMode = -1;
+	transferPlayerHotkeyedPowerMode = -1;
 
 	MatchParams mp;
 	mp.mapPath = rushFile.worlds[w].maps[0].GetMapPath();
@@ -189,7 +207,7 @@ void RushManager::SetWorld(int w)
 void RushManager::LoadRush(const std::string &rushName)
 {
 	rushFile.Load("Resources/Rush", rushName);
-	SetWorld(1);
+	SetWorld(startWorld);
 }
 
 void RushManager::LoadShip()
@@ -198,6 +216,28 @@ void RushManager::LoadShip()
 	{
 		delete shipGame;
 		shipGame = NULL;
+	}
+
+	kinUpgradeLevels->Clear();
+
+	int powerWorlds = min(currWorld, 6);
+	for (int i = 0; i < powerWorlds; ++i)
+	{
+		kinUpgradeLevels->SetUpgradeLevel(POWER_AIRDASH + i, 1);
+	}
+
+	if ( (transferPlayerPowerMode == Actor::PMODE_BOUNCE && powerWorlds < 2 )
+		|| (transferPlayerPowerMode == Actor::PMODE_GRIND && powerWorlds < 3)
+		|| (transferPlayerPowerMode == Actor::PMODE_GRIND && powerWorlds < 5))
+	{
+		transferPlayerPowerMode = -1;
+	}
+
+	if ((transferPlayerHotkeyedPowerMode == Actor::PMODE_BOUNCE && powerWorlds < 2)
+		|| (transferPlayerHotkeyedPowerMode == Actor::PMODE_GRIND && powerWorlds < 3)
+		|| (transferPlayerHotkeyedPowerMode == Actor::PMODE_GRIND && powerWorlds < 5))
+	{
+		transferPlayerHotkeyedPowerMode = -1;
 	}
 
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_RUSH;
@@ -284,6 +324,11 @@ void RushManager::UpdateWorldDependentTileset(int worldIndex)
 
 bool RushManager::TryToGoToNextLevel(GameSession *game)
 {
+	if (game == shipGame)
+	{
+		return false;
+	}
+	if( false )
 	if (currWorld == 0)
 	{
 		if (trueLevelIndex >= 7)//rushFile.worlds[currWorld].maps.size() - 1)
@@ -291,31 +336,31 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 
 		if (trueLevelIndex == 0)
 		{
-			currRushMapIndex = 1;
+			currRushMapIndex = 0;
 		}
 		else if (trueLevelIndex == 1)
 		{
-			currRushMapIndex = 2;
+			currRushMapIndex = 1;
 		}
 		else if (trueLevelIndex == 2)
 		{
-			currRushMapIndex = (rand() % 3) + 3;
+			currRushMapIndex = (rand() % 3) + 2;
 		}
 		else if (trueLevelIndex == 3)
 		{
-			currRushMapIndex = (rand() % 3) + 6;
+			currRushMapIndex = (rand() % 3) + 5;
 		}
 		else if (trueLevelIndex == 4)
 		{
-			currRushMapIndex = (rand() % 3) + 9;
+			currRushMapIndex = (rand() % 3) + 8;
 		}
 		else if (trueLevelIndex == 5)
 		{
-			currRushMapIndex = (rand() % 3) + 12;
+			currRushMapIndex = (rand() % 3) + 11;
 		}
 		else if (trueLevelIndex == 6)
 		{
-			currRushMapIndex = (rand() % 3) + 15;
+			currRushMapIndex = (rand() % 3) + 14;
 		}
 
 		trueLevelIndex++;
@@ -325,7 +370,10 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 		return true;
 	}
 
-
+	if (currRushMapIndex > 3)
+	{
+		return false; //just for testing
+	}
 
 	if (CanGoToNextLevel())
 	{
@@ -353,11 +401,11 @@ bool RushManager::CanGoToNextLevel()
 
 bool RushManager::TryToGoToNextWorld()
 {
-	if (currWorld < rushFile.numWorlds - 1)
+	if (currWorld < rushFile.numWorlds)
 	{
-		MainMenu::GetInstance()->SetModeRushLoadingWorld(currWorld + 1);
+		MainMenu::GetInstance()->SetModeRushLoadingWorld(currWorld);
 		currRushMapIndex = 0;
-		currWorld++;
+		//currWorld++;
 		return true;
 	}
 	else
@@ -370,7 +418,9 @@ bool RushManager::TryToGoToNextWorldShip()
 {
 	if (currWorld < rushFile.numWorlds - 1)
 	{
-		MainMenu::GetInstance()->SetModeRushShip(currWorld + 1);
+		//incrementing this here so we get the right powers when loading the ship
+		currWorld++;
+		MainMenu::GetInstance()->SetModeRushShip(currWorld);
 		//currRushMapIndex = 0;
 		//currWorld++;
 		return true;
@@ -386,9 +436,9 @@ bool RushManager::IsLastLevel()
 	return false;
 }
 
-void RushManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze)
-{
-}
+//void RushManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze)
+//{
+//}
 
 
 void RushManager::CreateSaveMenu()

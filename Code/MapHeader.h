@@ -53,10 +53,8 @@ struct MapHeader
 	std::string fullName;
 	std::string description;
 
-	int drainSeconds;
 	int goldSeconds;
 	int silverSeconds;
-	int bronzeSeconds;
 
 	std::string envName;
 	int envWorldType;

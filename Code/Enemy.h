@@ -136,6 +136,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual bool CountsForEnemyGate() { return true; }
 	virtual bool CountsForPowerGate() { return false; }
 
+	virtual bool IsValidTrackEnemyIndex(int ind) { return true; } //only gets checked if the whole enemy is trackable anyway
 	virtual bool IsValidTrackEnemy() { return !dead; }
 	virtual bool IsHomingTarget() { return true; }
 

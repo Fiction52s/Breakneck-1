@@ -1,4 +1,5 @@
 #include "KinUpgrades.h"
+#include <string>
 
 UpgradeLevels::UpgradeLevels()
 {
@@ -39,9 +40,11 @@ void UpgradeLevels::Set(UpgradeLevels *ul)
 
 bool UpgradeLevels::Load(std::istream &is)
 {
+	int lev;
 	for (int i = 0; i < UPGRADE_Count; ++i)
 	{
-		is >> upgradeLevel[i];
+		is >> lev;
+		upgradeLevel[i] = lev;
 	}
 	return true;
 }
@@ -50,7 +53,7 @@ void UpgradeLevels::Save(std::ofstream &of)
 {
 	for (int i = 0; i < UPGRADE_Count; ++i)
 	{
-		of << upgradeLevel[i] << "\n";
+		of << int(upgradeLevel[i]) << "\n";
 	}
 }
 

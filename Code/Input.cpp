@@ -356,6 +356,11 @@ bool ControllerState::AttackButtonDown() const
 	return rightShoulder;
 }
 
+bool ControllerState::HotkeyButtonDown() const
+{
+	return Y;
+}
+
 bool ControllerState::PUp() const
 {
 	return pad & 1;
@@ -1231,6 +1236,7 @@ void ControllerSettings::InitStrings()
 	buttonTypeStrings[BUTTONTYPE_DASH] = "DASH";
 	buttonTypeStrings[BUTTONTYPE_ATTACK] = "ATTACK";
 	buttonTypeStrings[BUTTONTYPE_SHIELD] = "SHIELD";
+	buttonTypeStrings[BUTTONTYPE_HOTKEY] = "HOTKEY";
 	buttonTypeStrings[BUTTONTYPE_SPECIAL] = "SPECIAL";
 	buttonTypeStrings[BUTTONTYPE_LEFTWIRE] = "LEFTWIRE";
 	buttonTypeStrings[BUTTONTYPE_RIGHTWIRE] = "RIGHTWIRE";

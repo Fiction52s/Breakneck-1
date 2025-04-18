@@ -22,9 +22,6 @@ MapOptionsUI::MapOptionsUI()
 
 	descriptionBox = mapOptionsPanel->AddLabeledTextBox("description", Vector2i(0, 30), false, 600, 5, 20, 1000, "", "Description:");
 
-	drainTextBox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 20), true, 300, 1, 20, 10, "", "Time to Drain (seconds): ");
-	drainTextBox->SetNumbersOnly(true);
-
 	bgButton = mapOptionsPanel->AddButton("bgbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Environment");
 	musicButton = mapOptionsPanel->AddButton("musicbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Music");
 
@@ -60,9 +57,6 @@ MapOptionsUI::MapOptionsUI()
 
 	silverTextBox = mapOptionsPanel->AddLabeledTextBox("silver", Vector2i(-50, 140), true, 300, 1, 20, 10, "", "Silver Medal (seconds): ");
 	silverTextBox->SetNumbersOnly(true);
-
-	bronzeTextBox = mapOptionsPanel->AddLabeledTextBox("bronze", Vector2i(-50, 140), true, 300, 1, 20, 10, "", "Bronze Medal (seconds): ");
-	bronzeTextBox->SetNumbersOnly(true);
 
 	mapOptionsPanel->StopAutoSpacing();
 
@@ -118,10 +112,8 @@ MapOptionsUI::~MapOptionsUI()
 
 void MapOptionsUI::OpenMapOptionsPopup()
 {
-	drainTextBox->SetString(to_string(edit->mapHeader->drainSeconds));
 	goldTextBox->SetString(to_string(edit->mapHeader->goldSeconds));
 	silverTextBox->SetString(to_string(edit->mapHeader->silverSeconds));
-	bronzeTextBox->SetString(to_string(edit->mapHeader->bronzeSeconds));
 
 	edit->AddActivePanel(mapOptionsPanel);
 	bool res = preDropdown->SetSelectedText(edit->mapHeader->preLevelSceneName);
@@ -139,18 +131,8 @@ void MapOptionsUI::OpenMapOptionsPopup()
 void MapOptionsUI::CloseMapOptionsPopup()
 {
 	stringstream ss;
-	ss << drainTextBox->GetString();
-	int dSeconds;
-	ss >> dSeconds;
-	if (!ss.fail())
-	{
-		if (dSeconds > 0)
-		{
-			edit->mapHeader->drainSeconds = dSeconds;
-		}
-	}
 
-	int gold, silver, bronze;
+	int gold, silver;
 
 	ss.clear();
 	ss << goldTextBox->GetString();
@@ -171,17 +153,6 @@ void MapOptionsUI::CloseMapOptionsPopup()
 		if (silver > 0)
 		{
 			edit->mapHeader->silverSeconds = silver;
-		}
-	}
-
-	ss.clear();
-	ss << bronzeTextBox->GetString();
-	ss >> bronze;
-	if (!ss.fail())
-	{
-		if (bronze > 0)
-		{
-			edit->mapHeader->bronzeSeconds = bronze;
 		}
 	}
 

@@ -9,7 +9,7 @@ struct SingleAxisSelector;
 struct Session;
 struct RushManager;
 
-struct StoreItem
+struct StoreEntry
 {
 	int currentLevel;
 	int upgradeIndex;
@@ -19,7 +19,7 @@ struct StoreItem
 	std::vector<int> costs;
 	int quadIndex;
 
-	StoreItem( nlohmann::basic_json<> &j );
+	StoreEntry( nlohmann::basic_json<> &j );
 	void Print();
 	const std::string &GetCurrentDescription();
 	int GetCurrentCost();
@@ -36,17 +36,18 @@ struct KinStore
 
 	enum StoreSection
 	{
-		SS_BASICS,
-		SS_POWERS,
-		SS_ARMORS,
-		SS_ITEMS,
-		SS_Count
+		SECTION_BASICS,
+	//	SECTION_ITEMS,
+		SECTION_POWERS,
+		SECTION_Count
 	};
 
 	RushManager *rush;
 	int action;
 	int frame;
 	sf::Text itemText;
+
+	sf::Text storePointsText;
 	TilesetManager *tm;
 	Session *sess; //doesn't always need a session
 
@@ -72,9 +73,13 @@ struct KinStore
 	sf::Text upgradeDescText;
 	sf::Text upgradeLevelText;
 
-	int numTotalStoreItems;
+	int numTotalStoreEntries;
 
-	std::vector<std::vector<StoreItem*>> storeItems;
+	std::vector<StoreEntry*> basicEntries;
+	std::vector<std::vector<StoreEntry*>> allItemEntries;
+	std::vector<StoreEntry*> powerEntries;
+
+	std::vector<std::vector<StoreEntry*>*> currStoreEntries;
 
 	//sf::Vertex shardBGQuad[4];
 	//sf::Vertex descriptionBGQuad[4];
@@ -82,12 +87,14 @@ struct KinStore
 
 	KinStore();
 	~KinStore();
+	void SetWorld(int w); //0 - 7
 	bool IsReadyToClose();
 	void SetSelected( int section, int itemIndex );
 	void SetTopLeft(sf::Vector2f pos);
 	void Update();
 	void Open();
 	void LoadStore();
+	void LoadEntryFile(std::vector<StoreEntry*> &vec, const std::string &fileName, int startingQuadIndex );
 	void Draw(sf::RenderTarget *target);
 };
 

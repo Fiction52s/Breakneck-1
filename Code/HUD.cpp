@@ -37,6 +37,12 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 
 	timer = new TimerHUD( tm, false);
 	modifierTimer = new TimerHUD( tm, true);
+	medalTimer = new TimerHUD(tm, false);
+	medalTimer->countingUp = true;
+
+	medalGoalTimer = new TimerHUD(tm, false);
+	medalGoalTimer->countingUp = true;
+	medalGoalTimer->baseScale = .5;
 
 	keyMarkers.push_back(new KeyMarker( tm ));
 	keyMarkers.push_back(new KeyMarker( tm ));
@@ -46,6 +52,8 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	timerShowPos = Vector2f(1920 / 2, 50);
 
 	timerHidePos = timerShowPos + Vector2f(0, -200);
+
+	medalGoalOffset = Vector2f(0, 60);
 
 	powerSelectorShowPos = Vector2f(288, 140);
 	powerSelectorHidePos = Vector2f(288-500, 140);
@@ -105,6 +113,10 @@ AdventureHUD::~AdventureHUD()
 
 	delete timer;
 	delete modifierTimer;
+
+	delete medalTimer;
+
+	delete medalGoalTimer;
 }
 
 void AdventureHUD::SetSession(Session *p_sess)
@@ -124,6 +136,8 @@ void AdventureHUD::SetSession(Session *p_sess)
 
 	timer->SetSession(sess);
 	modifierTimer->SetSession(sess);
+	medalTimer->SetSession(sess);
+	medalGoalTimer->SetSession(sess);
 
 	Reset();
 }
@@ -259,6 +273,8 @@ void AdventureHUD::Hide(int frames)
 		powerSelector->SetPosition(powerSelectorHidePos);
 		currencyCountText.setPosition(currencyCountTextHidePos);
 		timer->SetCenter(timerHidePos);
+		medalTimer->SetCenter(timerHidePos);
+		medalGoalTimer->SetCenter(timerHidePos + medalGoalOffset);
 		if (bossHealthBar != NULL)
 		{
 			bossHealthBar->SetTopLeft(bossHealthHidePos);
@@ -293,6 +309,8 @@ void AdventureHUD::Show(int frames)
 		}
 		currencyCountText.setPosition(currencyCountTextShowPos);
 		timer->SetCenter(timerShowPos);
+		medalTimer->SetCenter(timerShowPos);
+		medalGoalTimer->SetCenter(timerShowPos + medalGoalOffset);
 		powerSelector->SetPosition(powerSelectorShowPos);
 		goSpr.setPosition(keyMarkerShowPos);
 		if (bossHealthBar != NULL)
@@ -345,6 +363,8 @@ void AdventureHUD::Update()
 			currencyCountText.setPosition(currencyCountTextShowPos);
 			powerSelector->SetPosition(powerSelectorShowPos);
 			timer->SetCenter(timerShowPos);
+			medalTimer->SetCenter(timerShowPos);
+			medalGoalTimer->SetCenter(timerShowPos + medalGoalOffset);
 			if (bossHealthBar != NULL)
 			{
 				bossHealthBar->SetTopLeft(bossHealthShowPos);
@@ -393,6 +413,9 @@ void AdventureHUD::Update()
 			Vector2f timerPos = timerHidePos * (1.f - a) + a * timerShowPos;
 
 			timer->SetCenter(timerPos);
+			medalTimer->SetCenter(timerPos);
+
+			medalGoalTimer->SetCenter(timerPos + medalGoalOffset);
 		}
 		break;
 	case EXITING:
@@ -427,6 +450,8 @@ void AdventureHUD::Update()
 				bossHealthBar->SetTopLeft(bossHealthHidePos);
 			}
 			timer->SetCenter(timerHidePos);
+			medalTimer->SetCenter(timerHidePos);
+			medalGoalTimer->SetCenter(timerHidePos + medalGoalOffset);
 		}
 		else
 		{
@@ -470,6 +495,8 @@ void AdventureHUD::Update()
 			Vector2f timerPos = timerShowPos * (1.f - a) + a * timerHidePos;
 
 			timer->SetCenter(timerPos);
+			medalTimer->SetCenter(timerPos);
+			medalGoalTimer->SetCenter(timerPos + medalGoalOffset);
 		}
 		break;
 	case HIDDEN:
@@ -497,11 +524,47 @@ void AdventureHUD::Update()
 	//healthBar->Update();
 
 	
-	timer->SetNumFrames(sess->GetPlayer(0)->numFramesToLive);
+	//timer->SetNumFrames(sess->GetPlayer(0)->numFramesToLive);
 	timer->Update();
 
 	modifierTimer->SetCenter(timer->GetRightCenter() + Vector2f(100, 0 ));
 	modifierTimer->Update();
+
+	int totalFrames = sess->totalGameFrames + 1;
+
+	if (sess->totalFramesBeforeGoal > 0)
+	{
+		medalTimer->SetNumFrames(sess->totalFramesBeforeGoal);
+	}
+	else
+	{
+		medalTimer->SetNumFrames(totalFrames);
+	}
+	
+
+	if (totalFrames <= sess->mapHeader->goldSeconds * 60)
+	{
+		medalTimer->SetColor(Color::Yellow);
+		medalGoalTimer->SetColor(Color::Yellow);
+
+		medalGoalTimer->SetNumFrames(sess->mapHeader->goldSeconds * 60);
+	}
+	else if (totalFrames <= sess->mapHeader->silverSeconds * 60)
+	{
+		Color grey(200, 200, 200);
+		medalTimer->SetColor(grey);
+		medalGoalTimer->SetColor(grey);
+
+		medalGoalTimer->SetNumFrames(sess->mapHeader->silverSeconds * 60);
+	}
+	else
+	{
+		medalTimer->SetColor(Color::Red);
+		medalGoalTimer->SetColor(Color::Red);
+	}
+
+	medalTimer->Update();
+	medalGoalTimer->Update();
 
 	++frame;
 }
@@ -522,6 +585,8 @@ void AdventureHUD::Reset()
 
 	timer->Reset();
 	modifierTimer->Reset();
+	medalTimer->Reset();
+	medalGoalTimer->Reset();
 
 	currencyCountText.setString("x0");
 
@@ -554,9 +619,15 @@ void AdventureHUD::Draw(RenderTarget *target)
 		//Actor *p0 = owner->GetPlayer(0);
 		kinMask->Draw(target);
 		
-		timer->Draw(target);
+		//timer->Draw(target);
+		//modifierTimer->Draw(target);
 
-		modifierTimer->Draw(target);
+		medalTimer->Draw(target);
+
+		if (sess->totalGameFrames + 1 <= sess->mapHeader->silverSeconds * 60)
+		{
+			medalGoalTimer->Draw(target);
+		}
 
 		mini->Draw(target);
 		//target->draw(owner->minimapSprite, &owner->minimapShader);

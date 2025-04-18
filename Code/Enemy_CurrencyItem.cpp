@@ -40,6 +40,11 @@ CurrencyItemChain::CurrencyItemChain(ActorParams *ap)
 	UpdateParams(ap);
 }
 
+bool CurrencyItemChain::IsValidTrackEnemyIndex(int ind)
+{
+	return ((CurrencyItem*)enemies[ind])->IsCollectible();
+}
+
 void CurrencyItemChain::UpdateStartPosition(int ind, V2d &pos)
 {
 	((CurrencyItem*)enemies[ind])->SetStartPosition(pos);

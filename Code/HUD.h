@@ -112,6 +112,8 @@ struct AdventureHUD : HUD
 
 	TimerHUD *timer;
 	TimerHUD *modifierTimer;
+	TimerHUD *medalTimer;
+	TimerHUD *medalGoalTimer;
 
 	Tileset *ts_go;
 	sf::Sprite goSpr;
@@ -120,6 +122,8 @@ struct AdventureHUD : HUD
 
 	sf::Vector2f timerShowPos;
 	sf::Vector2f timerHidePos;
+
+	sf::Vector2f medalGoalOffset;
 
 	sf::Vector2f miniShowPos;
 	sf::Vector2f miniHidePos;

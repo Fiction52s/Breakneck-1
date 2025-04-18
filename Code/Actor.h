@@ -666,6 +666,9 @@ struct Actor : QuadTreeCollider,
 	bool hitCeilingSoundPlayedThisFrame;
 
 	int numFramesToLive;
+	int health;
+	int numFramesHoldingRightStick;
+	int currHotkeyedPowerMode;
 
 	TerrainRail * prevRail;
 	
@@ -756,6 +759,9 @@ struct Actor : QuadTreeCollider,
 	//stuff ive put in rollback already
 	//definitely do change per frame
 	
+	bool hasAirHoming;
+	int airHomingFrame;
+
 	double offsetX;
 	int framesSinceClimbBoost;
 	bool holdDouble;

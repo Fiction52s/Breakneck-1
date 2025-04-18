@@ -230,6 +230,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		LEADERBOARD,
 		PRACTICE_INVITE,
 		FEEDBACK_FORM,
+		MEDALTIME_FORM,
 	};
 
 	bool skipOneReplayFrame;

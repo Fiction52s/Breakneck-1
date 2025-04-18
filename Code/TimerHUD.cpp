@@ -15,6 +15,8 @@ TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier )
 	ts_text = tm->GetSizedTileset("HUD/timer_numbers_48x64.png");
 	timer = new TimerText(ts_text);
 
+	countingUp = false;
+
 	//center = Vector2f(1920 / 2, 50);
 
 	textShader = new PaletteShader("timer", "Resources/HUD/timer_numbers_palette_2x1.png");
@@ -94,16 +96,20 @@ void TimerHUD::SetNumFrames(int frames)
 	currNumFrames = frames;
 	int currSeconds = frames / 60;
 
+	int remain = frames % 60;
+	int centiSecond = floor((double)remain * (1.0 / 60.0 * 100.0) + .5);
+
+
 	timer->SetNumber(currSeconds);
 
-	int frameTest = frames % 60;
+	/*int frameTest = frames % 60;
 	float frameProp = frameTest / 60.f;
 	frameProp *= 100.f;
-	int centiNumber = frameProp;
+	int centiNumber = frameProp;*/
 
-	centiSecondTimer->SetNumber(centiNumber);
+	centiSecondTimer->SetNumber(centiSecond);
 
-	if (!modifier)
+	if (!modifier && !countingUp)
 	{
 		float growThresh = 60 * 10;
 		if (action == NORMAL && frames <= growThresh)

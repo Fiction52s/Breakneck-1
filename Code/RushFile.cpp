@@ -29,7 +29,6 @@ void RushMapHeaderInfo::Clear()
 
 	goldSeconds = 0;
 	silverSeconds = 0;
-	bronzeSeconds = 0;
 }
 
 void RushMapHeaderInfo::Set(RushMapHeaderInfo &info)
@@ -40,7 +39,6 @@ void RushMapHeaderInfo::Set(RushMapHeaderInfo &info)
 
 	goldSeconds = info.goldSeconds;
 	silverSeconds = info.silverSeconds;
-	bronzeSeconds = info.bronzeSeconds;
 }
 
 RushMap::RushMap()
@@ -122,7 +120,6 @@ bool RushMap::LoadHeaderInfo()
 
 		headerInfo.goldSeconds = mh.goldSeconds;
 		headerInfo.silverSeconds = mh.silverSeconds;
-		headerInfo.bronzeSeconds = mh.bronzeSeconds;
 
 		is.close();
 	}

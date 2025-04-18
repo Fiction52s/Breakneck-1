@@ -39,10 +39,8 @@ void ScoreDisplay::Reset()
 {
 	action = -1;
 	frame = -1;
+	medalRank = 0;
 	madeRecord = false;
-	gotGold = false;
-	gotSilver = false;
-	gotBronze = false;
 	sess = Session::GetSession();
 	game = GameSession::GetSession();
 }
@@ -244,7 +242,7 @@ void DefaultScoreDisplay::Update()
 
 		if (allDisplay)
 		{
-			if (gotGold)
+			if (medalRank == 2)
 			{
 				action = A_GIVE_GOLD;
 				frame = 0;
@@ -252,14 +250,14 @@ void DefaultScoreDisplay::Update()
 
 				medalSeq->StartGold();
 			}
-			else if (gotSilver)
+			else if (medalRank == 1)
 			{
 				action = A_GIVE_SILVER;
 				frame = 0;
 				medalSeq->Reset();
 				medalSeq->StartSilver();
 			}
-			else if (gotBronze)
+			else if (medalRank == 0)
 			{
 				action = A_GIVE_BRONZE;
 				frame = 0;

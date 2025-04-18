@@ -542,10 +542,29 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 			auto &managedProfiles = cpm->profiles[states->GetControllerType()];
 
+			int startWorld = 0;
+
+			if (states->ButtonHeld_LeftShoulder())
+			{
+				startWorld += 1;
+			}
+			
+			if (states->ButtonHeld_RightShoulder())
+			{
+				startWorld += 2;
+			}
+			/*else if (states->ButtonHeld_LeftTrigger())
+			{
+				startWorld += 4;
+			}*/
+
+			//if( startWorld > )
+
 			assert(rushManager == NULL);
 			rushManager = new RushManager;
 			rushManager->controllerInput = states;
 			rushManager->currProfile = managedProfiles.front();
+			rushManager->startWorld = startWorld;
 			rushManager->Load();
 		}
 		break;
@@ -5017,7 +5036,6 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 
 	}
-
 
 	if (currOptionPressed)//|| CONTROLLERS.ButtonPressed_A() )
 	{

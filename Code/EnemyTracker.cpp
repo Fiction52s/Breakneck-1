@@ -26,6 +26,11 @@ bool EnemyTracker::GetClosestEnemyPos(V2d &pos,
 			numPoints = curr->GetNumCamPoints();
 			for (i = 0; i < numPoints; ++i)
 			{
+				if (!curr->IsValidTrackEnemyIndex(i))
+				{
+					continue;
+				}
+
 				camPoint = curr->GetCamPoint(i);
 				lenSqr = lengthSqr(pos - camPoint);
 				if (lenSqr <= radSqr && (!foundPoint || (foundPoint && lenSqr <= closestLenSqr)))

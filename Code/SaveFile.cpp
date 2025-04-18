@@ -754,7 +754,7 @@ bool SaveFile::TryUnlockBronzeMedal(int totalFrames, Level *lev)
 
 	if (!HasBronzeForLevel(index))
 	{
-		int bronzeFrames = adventureFile->GetMap(index).headerInfo.bronzeSeconds * 60;
+		int bronzeFrames = 0;//adventureFile->GetMap(index).headerInfo.bronzeSeconds * 60;
 		if (totalFrames <= bronzeFrames)
 		{
 			levelData[index].medalLevel = 1;

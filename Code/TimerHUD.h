@@ -26,6 +26,7 @@ struct TimerHUD
 
 	int actionLength[Count];
 
+	bool countingUp;
 	TimerText *timer;
 	ImageText *centiSecondTimer;
 	

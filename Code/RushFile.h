@@ -21,7 +21,7 @@ struct RushMapHeaderInfo
 
 	int goldSeconds;
 	int silverSeconds;
-	int bronzeSeconds;
+//	int bronzeSeconds;
 
 	RushMapHeaderInfo();
 	void Set(RushMapHeaderInfo &inf);

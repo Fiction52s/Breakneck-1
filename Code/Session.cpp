@@ -387,6 +387,10 @@ void Session::RegisterW1Enemies()
 	AddBasicAerialWorldEnemy("Movement Tester", "movementtester", 1, storyRow, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
 	AddBasicGroundWorldEnemy("Crawler Queen Boss", "crawlerqueen", 1, storyRow, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
 	AddBasicGroundWorldEnemy("Sequence Crawler Queen", "sequencecrawler", 1, storyRow, CreateEnemy<SequenceCrawler>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 1);
+	
+	
+	
+	
 	//AddBasicGroundWorldEnemy("Blue Nexus", "nexus1", 1, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 }
 
@@ -437,11 +441,16 @@ void Session::RegisterW2Enemies()
 		ts_birdNode = GetSizedTileset("Editor/birdnode_32x32.png");
 	}
 
-	AddBasicAerialWorldEnemy("Bird Boss", "bird", 2, storyRow, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
-	AddBasicGroundWorldEnemy("Sequence Bird", "sequencebird", 2, storyRow, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
+	//AddBasicAerialWorldEnemy("Bird Boss", "bird", 2, storyRow, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
+	//AddBasicGroundWorldEnemy("Sequence Bird", "sequencebird", 2, storyRow, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
 	AddWorldEnemy("Bird Boss Node", "birdnode", 2, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, ts_birdNode);
-	AddBasicGroundWorldEnemy("Green Nexus", "nexus2", 2, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	
+	
+	
+	//AddBasicGroundWorldEnemy("Green Nexus", "nexus2", 2, storyRow, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+
+
 
 	//AddBasicGroundWorldEnemy("reversepoisonfrog", 2, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicGroundWorldEnemy("reversestagbeetle", 2, CreateEnemy<StagBeetle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -496,8 +505,8 @@ void Session::RegisterW3Enemies()
 	}
 
 	//story
-	AddBasicGroundWorldEnemy("Coyote Boss", "coyote", 3, storyRow, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
-	AddBasicGroundWorldEnemy("Sequence Coyote", "sequencecoyote", 3, storyRow, CreateEnemy<SequenceCoyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+	//AddBasicGroundWorldEnemy("Coyote Boss", "coyote", 3, storyRow, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+	//AddBasicGroundWorldEnemy("Sequence Coyote", "sequencecoyote", 3, storyRow, CreateEnemy<SequenceCoyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	AddWorldEnemy("Coyote Boss Node", "coyotenode", 3, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, ts_coyNode);
 }
@@ -558,8 +567,8 @@ void Session::RegisterW4Enemies()
 	}
 
 	//story
-	AddBasicGroundWorldEnemy("Boss Tiger", "tiger", 4, storyRow, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
-	AddBasicGroundWorldEnemy("Sequence Tiger", "sequencetiger", 4, storyRow, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
+	//AddBasicGroundWorldEnemy("Boss Tiger", "tiger", 4, storyRow, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
+	//AddBasicGroundWorldEnemy("Sequence Tiger", "sequencetiger", 4, storyRow, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
 	AddWorldEnemy("Boss Tiger Node", "tigernode", 4, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, ts_tigerNode);
 }

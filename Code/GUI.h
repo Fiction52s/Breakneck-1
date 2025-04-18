@@ -1063,8 +1063,6 @@ struct MapOptionsUI : GUIHandler
 	TextBox *mapNameBox;
 	TextBox *descriptionBox;
 	Button *okButton;
-	TextBox* drainTextBox;
-	TextBox *bronzeTextBox;
 	TextBox *silverTextBox;
 	TextBox *goldTextBox;
 	Dropdown *preDropdown;

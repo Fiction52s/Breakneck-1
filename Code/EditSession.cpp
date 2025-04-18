@@ -480,7 +480,6 @@ bool EditSession::RunPostUpdate()
 			prevRunPlayerTracker->TryAddTrackPoint(GetPlayerPos(0));
 		}
 	}
-
 	return true;
 }
 
@@ -2649,9 +2648,9 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//version 11 is for including draw layers in polygons
 	//version 12 is for special map types but with strings for names instead of ints
 	//version 13 is w/ upgrade levels instead of upgrade 
+	//version 14 removes the drainSeconds and makes the timer count based on medal times only
 
-
-	mapHeader->ver1 = 13;
+	mapHeader->ver1 = 14;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -4007,9 +4006,6 @@ void EditSession::SetupNewMapPanel()
 	newMapPanel->AddLabel("pathlabel", Vector2i(100, 60), 28, "Resources\\Maps\\CustomMaps");
 	newMapPanel->AddButton("pathbutton", Vector2i(10, 60), sf::Vector2f(30, 30), "");
 
-	newMapPanel->AddLabel("timetolivelabel", Vector2i(10, 120), 28, "Time to Live\n(seconds):");
-	TextBox *ttlBox = newMapPanel->AddBasicTextBox("timetolive", Vector2i(200, 140), 200, 30, "60");
-
 	Button *OK = newMapPanel->AddButton("ok", Vector2i(10, 300),
 		Vector2f(50, 30), "OK");
 	newMapPanel->SetConfirmButton(OK);
@@ -4022,7 +4018,6 @@ void EditSession::ActivateNewMapPanel()
 {
 	AddActivePanel(newMapPanel);
 	newMapPanel->textBoxes["mapname"]->Clear();
-	newMapPanel->textBoxes["timetolive"]->SetString("60");
 }
 
 void EditSession::SetupBrushPanels()
@@ -4229,7 +4224,7 @@ void EditSession::DefaultInit()
 	mapHeader->boundsWidth = 3000;
 	mapHeader->boundsHeight = 3000;
 
-	mapHeader->drainSeconds = 60;//newMapInfo.drainSeconds;//60;
+	//mapHeader->drainSeconds = 60;
 
 	background = Background::SetupFullBG(mapHeader->envName);
 	mapHeader->envWorldType = background->envWorld;
@@ -4764,12 +4759,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				mapHeader->envWorldType = background->envWorld;
 				UpdateWorldDependentTileset(mapHeader->envWorldType);
 
-				stringstream ss;
-				ss << newMapPanel->textBoxes["timetolive"]->GetString();
-				int d;
-				ss >> d;
-				mapHeader->drainSeconds = d;
-
 				string pathStr = newMapPanel->labels["pathlabel"]->text.getString().toAnsiString()
 					+ "\\" + mapName + MAP_EXT;
 				filePathStr = pathStr;
@@ -4847,7 +4836,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			stringstream ss;
 			//string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
 			string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
-			string drainStr = p->textBoxes["draintime"]->text.getString().toAnsiString();
+			//string drainStr = p->textBoxes["draintime"]->text.getString().toAnsiString();
 			string bossTypeStr = p->textBoxes["bosstype"]->text.getString().toAnsiString();
 			ss << s;
 
@@ -4877,17 +4866,17 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//stringstream ss2;
 			ss.clear();
 
-			ss << drainStr;
+			//ss << drainStr;
 
-			int dSecs;
+			/*int dSecs;
 			ss >> dSecs;
 
 			if (!ss.fail())
 			{
 				mapHeader->drainSeconds = dSecs;
-			}
+			}*/
 
-			ss.clear();
+			//ss.clear();
 
 			ss << bossTypeStr;
 

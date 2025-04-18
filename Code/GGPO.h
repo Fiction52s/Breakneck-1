@@ -124,6 +124,8 @@ struct PState
 	int framesInAir;
 	bool hasAirDash;
 	int numRemainingExtraAirdashBoosts;
+	bool hasAirHoming;
+	int airHomingFrame;
 	double storedGroundSpeed;
 	int currBBoostCounter;
 	int currAirdashBoostCounter;
@@ -309,6 +311,9 @@ struct PState
 	bool bouncedFromKill;
 
 	int numFramesToLive;
+	int health;
+	int numFramesHoldingRightStick;
+	int currHotkeyedPowerMode;
 
 	int shieldPushbackFrames;
 	bool shieldPushbackRight;

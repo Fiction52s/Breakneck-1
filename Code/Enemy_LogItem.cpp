@@ -132,17 +132,21 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	animFactor[DISSIPATE] = 1;
 	animFactor[LAUNCH] = 1;
 
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = (GameSession*)sess;
-		logPreview = new LogPreview(game);//->pauseMenu->tm);
-		logPreview->SetSession(sess);
-		logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, localIndex));
-	}
-	else
-	{
-		logPreview = NULL;
-	}
+
+	logPreview = NULL;
+
+
+	//if (sess->IsSessTypeGame())
+	//{
+	//	GameSession *game = (GameSession*)sess;
+	//	logPreview = new LogPreview(game);//->pauseMenu->tm);
+	//	logPreview->SetSession(sess);
+	//	logPreview->SetInfo(sess->logMenu->GetLogInfo(logWorld, localIndex));
+	//}
+	//else
+	//{
+	//	logPreview = NULL;
+	//}
 
 	ResetEnemy();
 
@@ -151,6 +155,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 LogItem::~LogItem()
 {
+	return;
 	if (testEmitter != NULL)
 	{
 		delete testEmitter;

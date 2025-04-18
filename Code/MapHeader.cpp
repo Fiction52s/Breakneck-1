@@ -69,10 +69,8 @@ void MapHeader::Clear()
 	boundsWidth = 0;
 	boundsHeight = 0;
 	numVertices = -1;
-	drainSeconds = 60;
 	goldSeconds = 0;
 	silverSeconds = 0;
-	bronzeSeconds = 0;
 	bossFightType = 0;
 	envName = "w1_01";
 	envWorldType = -1;
@@ -530,19 +528,30 @@ bool MapHeader::Load(std::ifstream &is)
 	is >> topBounds;
 	is >> boundsWidth;
 	is >> boundsHeight;
-	is >> drainSeconds;
 
-	if (ver1 >= 9)
+	if (ver1 < 14)
+	{
+		int drainSeconds;
+		is >> drainSeconds;
+	}
+
+	if (ver1 >= 14)
 	{
 		is >> goldSeconds;
 		is >> silverSeconds;
+	}
+	else if (ver1 >= 9)
+	{
+		is >> goldSeconds;
+		is >> silverSeconds;
+
+		int bronzeSeconds;
 		is >> bronzeSeconds;
 	}
 	else
 	{
 		goldSeconds = 0;
 		silverSeconds = 0;
-		bronzeSeconds = 0;
 	}
 
 	is >> bossFightType;
@@ -604,13 +613,13 @@ void MapHeader::Save(std::ofstream &of)
 
 	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
 
-	of << drainSeconds << endl;
+	//of << drainSeconds << endl;
 
 	of << goldSeconds << "\n";
 
 	of << silverSeconds << "\n";
 
-	of << bronzeSeconds << "\n";
+	//of << bronzeSeconds << "\n";
 
 	of << bossFightType << endl;
 
@@ -623,8 +632,8 @@ void MapHeader::Save(std::ofstream &of)
 
 bool MapHeader::Replace(boost::filesystem::path &p )
 {
-	assert(0);
-	return false;
+	//assert(0);
+	//return false;
 	//depreciated
 
 	ifstream is;

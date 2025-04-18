@@ -199,7 +199,7 @@ bool AdventureMap::LoadHeaderInfo()
 
 		headerInfo.goldSeconds = mh.goldSeconds;
 		headerInfo.silverSeconds = mh.silverSeconds;
-		headerInfo.bronzeSeconds = mh.bronzeSeconds;
+		//headerInfo.bronzeSeconds = mh.bronzeSeconds;
 
 		is.close();
 	}

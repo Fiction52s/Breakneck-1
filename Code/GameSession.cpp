@@ -84,6 +84,7 @@
 #include "UIController.h"
 #include "PracticeInviteDisplay.h"
 #include "FeedbackForm.h"
+#include "MedalTimeForm.h"
 #include "Leaderboard.h"
 #include "ReplayHUD.h"
 #include "RushManager.h"
@@ -206,6 +207,23 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 	}
 
 	//eventually add better logic for when its okay to pause in multiplayer etc
+	if (IsRushSession())
+	{
+		if (IsRushSession() && CONTROLLERS.KeyboardButtonPressed(Keyboard::F1))
+		{
+			gameState = MEDALTIME_FORM;
+			mainMenu->rushManager->medalTimeForm->Activate(this);
+			if (soundNodeList != NULL)
+			{
+				soundNodeList->Pause(true);
+			}
+			MOUSE.SetControllersOn(false);
+			MOUSE.Show();
+			return true;
+		}
+
+	}
+	
 	if ( (matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE ) && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
 	{
 		ControllerState currInput;
@@ -252,6 +270,8 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			
 			return true;
 		}
+
+		
 	}
 	else if ((matchParams.numPlayers == 1 || gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE)
 		&& mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && scoreDisplay->IsWaiting())
@@ -269,6 +289,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 			return true;
 		}
 	}
+
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_PRACTICE && !p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action) && !IsReplayOn())
 	{
@@ -3603,6 +3624,90 @@ bool GameSession::RunMainLoopOnce()
 
 		preScreenTex->setView(uiView);
 		feedbackForm->Draw(preScreenTex);
+
+		preScreenTex->display();
+
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+	}
+	else if (gameState == MEDALTIME_FORM)
+	{
+		window->clear();
+
+		assert(mainMenu->rushManager != NULL);
+
+		MedalTimeForm *medalTimeForm = mainMenu->rushManager->medalTimeForm;
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+			medalTimeForm->HandleEvent(ev);
+		}
+
+		while (accumulator >= TIMESTEP)
+		{
+			MOUSE.Update(MOUSE.GetRealPixelPos());
+
+			UpdateControllers();
+
+			RunFrameForParallelPractice();
+
+			ControllerState &curr = GetCurrInputFiltered(0);
+			ControllerState &prev = GetPrevInputFiltered(0);
+
+			medalTimeForm->Update();
+
+			if (medalTimeForm->action == FeedbackForm::A_CANCEL || medalTimeForm->action == FeedbackForm::A_CONFIRM)
+			{
+				bool confirmed = medalTimeForm->action == FeedbackForm::A_CONFIRM;
+
+				MOUSE.Hide();
+
+				gameState = GameSession::RUN;
+
+				if (soundNodeList != NULL)
+				{
+					soundNodeList->Pause(false);
+				}
+			}
+
+			//RunFrameForParallelPractice();
+
+			SteamAPI_RunCallbacks();
+
+			if (netplayManager != NULL && netplayManager->IsPracticeMode() && !IsParallelSession())
+			{
+				netplayManager->SendPracticeInitMessageToAllNewPeers();
+
+				SendPracticeStartMessageToAllNewPeers();
+
+				netplayManager->Update();
+			}
+
+			if (gameState != MEDALTIME_FORM)
+			{
+				break;
+			}
+
+			accumulator -= TIMESTEP;
+		}
+
+
+		if (gameState != MEDALTIME_FORM)
+		{
+			return false;
+		}
+
+		preScreenTex->clear(Color::Red);
+		extraScreenTex->clear(Color::Transparent);
+		postProcessTex2->clear(Color::Red);
+		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
+
+		preScreenTex->setView(uiView);
+		medalTimeForm->Draw(preScreenTex);
 
 		preScreenTex->display();
 

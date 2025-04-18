@@ -403,16 +403,28 @@ void Actor::AIRDASH_UpdateSprite()
 
 	if ((frame + framesExtendingAirdash) % 4 == 0 && slowCounter == 1)
 	{
-		if (stopped)
+		if (f == 0) //hover
 		{
-			//cout << "frame: " << frame << endl;
-			//if( frame % 4 == 1 )
 			ActivateEffect(PLAYERFX_AIRDASH_HOVER, Vector2f(position.x, position.y + 70), 0, 12, 1, facingRight);
 		}
-		else if (horizontal)
+		else if (f == 1) //vertical
 		{
-			//cout << "STUFF???" << endl;
-			if (velocity.x > 0)
+			ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x, position.y + 64), 0, 15, 3, facingRight);
+		}
+		else if (f == 2) //diagonal up
+		{
+			if (facingRight)
+			{
+				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x + 54, position.y + 60), 0, 15, 3, false);
+			}
+			else
+			{
+				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x - 54, position.y + 60), 0, 15, 3, true);
+			}
+		}
+		else if (f == 3) //horizontal
+		{
+			if (facingRight)
 			{
 				ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x - 64, position.y - 18), RadiansToDegrees(PI / 2.0), 15, 3, true);
 			}
@@ -421,34 +433,23 @@ void Actor::AIRDASH_UpdateSprite()
 				ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x + 64, position.y - 18), RadiansToDegrees(-PI / 2.0), 15, 3, true);
 			}
 		}
-		else if (velocity.x == 0 && velocity.y < 0)
+		else if (f == 4) //down diagonal
 		{
-			ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x, position.y + 64), 0, 15, 3, facingRight);
+			if (facingRight)
+			{
+				V2d pos = V2d(position.x - 40, position.y - 60);
+				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(pos), RadiansToDegrees(PI), 15, 3, true);
+			}
+			else
+			{
+				V2d pos = V2d(position.x + 40, position.y - 60);
+				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(pos), RadiansToDegrees(PI), 15, 3, false);
+			}
 		}
-		else if (velocity.x == 0 && velocity.y > 0)
+		else if (f == 5) //straight down
 		{
-			ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x, position.y), RadiansToDegrees( PI ), 15, 3, facingRight);
+			ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x, position.y), RadiansToDegrees(PI), 15, 3, facingRight);
 		}
-		else if (velocity.x > 0 && velocity.y > 0)
-		{
-			V2d pos = V2d(position.x - 40, position.y - 60);
-			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(pos), RadiansToDegrees(PI), 15, 3, true);
-		}
-		else if (velocity.x < 0 && velocity.y > 0)
-		{
-			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x + 40, position.y - 60 ), RadiansToDegrees(PI), 15, 3, false);
-		}
-		else if (velocity.x < 0 && velocity.y < 0)
-		{
-			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x + 54, position.y + 60), 0, 15, 3, true);
-		}
-		else if (velocity.x > 0 && velocity.y < 0)
-		{
-			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x - 54, position.y + 60), 0, 15, 3, false);
-		}
-
-		//cout << "airdash fx" << endl;
-
 	}
 
 	if (scorpOn)

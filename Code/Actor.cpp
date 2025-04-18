@@ -250,6 +250,8 @@ void Actor::PopulateState(PState *ps)
 	ps->bpos = b.globalPosition;
 	ps->hasAirDash = hasAirDash;//true;//
 	ps->numRemainingExtraAirdashBoosts = numRemainingExtraAirdashBoosts;
+	ps->hasAirHoming = hasAirHoming;
+	ps->airHomingFrame = airHomingFrame;
 	ps->storedGroundSpeed = storedGroundSpeed;
 	ps->currBBoostCounter = currBBoostCounter;
 	ps->currAirdashBoostCounter = currAirdashBoostCounter;
@@ -470,6 +472,9 @@ void Actor::PopulateState(PState *ps)
 	ps->directionalInputFreezeFrames = directionalInputFreezeFrames;
 
 	ps->numFramesToLive = numFramesToLive;
+	ps->health = health;
+	ps->numFramesHoldingRightStick = numFramesHoldingRightStick;
+	ps->currHotkeyedPowerMode = currHotkeyedPowerMode;
 
 	ps->shieldPushbackFrames = shieldPushbackFrames;
 	ps->shieldPushbackRight = shieldPushbackRight;
@@ -527,6 +532,8 @@ void Actor::PopulateFromState(PState *ps)
 	b.globalPosition = ps->bpos;
 	hasAirDash = ps->hasAirDash;
 	numRemainingExtraAirdashBoosts = ps->numRemainingExtraAirdashBoosts;
+	hasAirHoming = ps->hasAirHoming;
+	airHomingFrame = ps->airHomingFrame;
 	storedGroundSpeed = ps->storedGroundSpeed;
 	currBBoostCounter = ps->currBBoostCounter;
 	currAirdashBoostCounter = ps->currAirdashBoostCounter;
@@ -756,6 +763,11 @@ void Actor::PopulateFromState(PState *ps)
 	directionalInputFreezeFrames = ps->directionalInputFreezeFrames;
 
 	numFramesToLive = ps->numFramesToLive;
+
+	health = ps->health;
+
+	numFramesHoldingRightStick = ps->numFramesHoldingRightStick;
+	currHotkeyedPowerMode = ps->currHotkeyedPowerMode;
 
 	//these aren't even used for anything!
 	shieldPushbackFrames = ps->shieldPushbackFrames;
@@ -3498,6 +3510,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	preSimulationState = NULL;
 	futurePositions = NULL;
 	
+	currHotkeyedPowerMode = -1;
 
 	normalWaterMaxFallSpeed = 4.0;
 
@@ -3546,6 +3559,21 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	{
 		//transferred from another map, keep the playermode
 		currPowerMode = adventureManager->transferPlayerPowerMode;
+	}
+	else if (owner != NULL && owner->IsRushSession())
+	{
+		int rushPowerMode = owner->mainMenu->rushManager->transferPlayerPowerMode;
+		int rushHotkeyedPowerMode = owner->mainMenu->rushManager->transferPlayerHotkeyedPowerMode;
+		if (rushPowerMode != -1)
+		{
+			currPowerMode = rushPowerMode;
+		}
+		else
+		{
+			currPowerMode = PMODE_SHIELD;
+		}
+
+		currHotkeyedPowerMode = rushHotkeyedPowerMode;
 	}
 	else
 	{
@@ -4961,6 +4989,8 @@ void Actor::Respawn( bool setStartPos )
 {
 	swordShader.SetSkin(0);
 
+	airHomingFrame = -1;
+
 
 	gravityIncreaserTrailEmitter->Reset();
 	gravityDecreaserTrailEmitter->Reset();
@@ -4974,7 +5004,12 @@ void Actor::Respawn( bool setStartPos )
 	effectPools[PLAYERFX_KEY].pool->ts = sess->ts_key;
 	effectPools[PLAYERFX_KEY_EXPLODE].pool->ts = sess->ts_keyExplode;
 
-	if (sess->mapHeader != NULL)
+	numFramesToLive = -1;
+	health = 100;
+	numFramesHoldingRightStick = -1;
+	//currHotkeyedPowerMode = -1;
+
+	/*if (sess->mapHeader != NULL)
 	{
 		numFramesToLive = min( sess->mapHeader->drainSeconds * 60, 
 			MAX_FRAMES_TO_LIVE);
@@ -4982,7 +5017,7 @@ void Actor::Respawn( bool setStartPos )
 	else
 	{
 		numFramesToLive = -1;
-	}
+	}*/
 
 	hitCeilingSoundPlayedThisFrame = false;
 	waterEntranceGround = NULL;
@@ -6142,6 +6177,7 @@ void Actor::DrainTimer(int drainFrames)
 	if (drainFrames == 0)
 		return;
 
+	return; //no draining for now
 
 	if (numFramesToLive - drainFrames < maxDespFrames )//if its not the normal timer
 	{
@@ -6168,6 +6204,9 @@ void Actor::HealTimer(int healFrames)
 	{
 		return;
 	}
+
+	return;
+
 	assert(healFrames > 0);
 	numFramesToLive += healFrames;
 
@@ -7036,6 +7075,86 @@ int Actor::GetNumActiveBubbles()
 
 void Actor::UpdateBubbles()
 {
+	bool powerSlow1 = HasUpgradeLevel(POWER_TIME, 1)
+		&& PowerButtonHeld()
+		&& currPowerMode == PMODE_TIMESLOW;
+
+	if (powerSlow1)
+	{
+		//velocity = springVel + springExtra;
+		if (ground == NULL)
+		{
+			Enemy *foundEnemy = NULL;
+			int foundIndex;
+
+			if (GetClosestEnemyPos(position, 1000, foundEnemy, foundIndex))
+			{
+				if (airHomingFrame == -1)
+				{
+					airHomingFrame = 0;
+				}
+
+				V2d foundPos = foundEnemy->GetCamPoint(foundIndex);
+				V2d eDir = normalize( foundPos - position);
+
+				if (foundEnemy->type == EN_CURRENCYCHAIN && length( foundPos - position ) < 200 ) //just needs to be bigger than currency pickup radius
+				{
+					if (dot(normalize(velocity), eDir) > .3)
+					{
+						velocity = eDir * length(velocity);
+					}
+					
+					/*V2d alongChainDir;
+					V2d backwardsChainDir;
+					
+					if (foundEnemy->GetNumCamPoints() > foundIndex + 1)
+					{
+						alongChainDir = normalize(foundEnemy->GetCamPoint(foundIndex + 1) - foundPos);
+						double amt = dot(alongChainDir, eDir);
+						if (amt > .5)
+						{
+							velocity = length(velocity) * alongChainDir;
+						}
+					}
+					if (foundIndex > 0)
+					{
+						backwardsChainDir = normalize(foundEnemy->GetCamPoint(0) - foundPos);
+						double amt = dot(backwardsChainDir, eDir);
+						if (amt > .5)
+						{
+							velocity = length(velocity) * backwardsChainDir;
+						}
+					}*/
+				}
+				double accel = 1.0;
+				double limit = 28;
+				if (dot(velocity, eDir) < limit)
+				{
+					velocity += eDir * accel;
+				}
+				/*double limit = 28;
+				if (length(velocity) > limit)
+				{
+					velocity = normalize(velocity) * limit;
+				}*/
+			}
+			else
+			{
+				airHomingFrame = -1;
+			}
+		}
+		else
+		{
+			airHomingFrame = -1;
+		}
+	}
+	else
+	{
+		airHomingFrame = -1;
+	}
+
+	return; //for now
+
 	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
 		if (bubbleFramesToLive[i] > 0)
@@ -7464,6 +7583,11 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
+	//if (currInput.HotkeyButtonDown())
+	//{
+	//	cout << "down" << endl;
+	//}
+
 	//cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
 	//cout << "groundspeed: " << groundSpeed << "\n";
 	//cout << "parallel index: " << sess->parallelSessionIndex << ", my index: " << actorIndex << ", my action: " << action << "\n";
@@ -7572,14 +7696,15 @@ void Actor::UpdatePrePhysics()
 		framesSinceBlockPress = 0;
 	}
 
-	if (currInput.Y && !prevInput.Y)
+	//increment super level
+	/*if (currInput.Y && !prevInput.Y)
 	{
 		if (superLevelCounter < 2 )
 		{
 			superLevelCounter++;
 			framesSinceSuperPress = 0;
 		}
-	}
+	}*/
 
 	if ( superLevelCounter > 0 && framesSinceSuperPress >= superActiveLimit)
 	{
@@ -8796,20 +8921,36 @@ void Actor::ReverseSteepSlideJump()
 void Actor::CompleteCurrentMap()
 {
 	bool setRecord = false;
-	bool gotGold = false;
-	bool gotSilver = false;
-	bool gotBronze = false;
+	int medalRank = 0;
 	if (owner != NULL)
 	{
 		if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 		{
 			if (!owner->IsReplayOn() && !owner->IsParallelSession())
 			{
-				adventureManager->CompleteCurrentMap(owner, setRecord, gotGold, gotSilver, gotBronze);
+				//adventureManager->CompleteCurrentMap(owner, setRecord, gotGold, gotSilver, gotBronze);
 			}
-		}
 
-		owner->scoreDisplay->madeRecord = setRecord;
+			owner->scoreDisplay->madeRecord = setRecord;
+		}
+		else if (owner->IsRushSession())
+		{
+			int totalFrames = owner->totalFramesBeforeGoal;
+			int goldFrames = owner->mapHeader->goldSeconds * 60;
+			int silverFrames = owner->mapHeader->silverSeconds * 60;
+
+			if (totalFrames <= goldFrames)
+			{
+				medalRank = 2;
+			}
+			else if (totalFrames <= silverFrames)
+			{
+				medalRank = 1;
+			}
+
+			sess->scoreDisplay->medalRank = medalRank;
+			owner->mainMenu->rushManager->storePoints += medalRank + 1;
+		}
 	}
 	else if (editOwner != NULL)
 	{
@@ -8819,17 +8960,20 @@ void Actor::CompleteCurrentMap()
 
 			int goldFrames = editOwner->mapHeader->goldSeconds * 60;
 			int silverFrames = editOwner->mapHeader->silverSeconds * 60;
-			int bronzeFrames = editOwner->mapHeader->bronzeSeconds * 60;
 
-			gotGold = totalFrames <= goldFrames;
-			gotSilver = totalFrames <= silverFrames;
-			gotBronze = totalFrames <= bronzeFrames;
+			if (totalFrames <= goldFrames)
+			{
+				medalRank = 2;
+			}
+			else if (totalFrames <= silverFrames)
+			{
+				medalRank = 1;
+			}
 		}
+		sess->scoreDisplay->medalRank = medalRank;
 	}
 
-	sess->scoreDisplay->gotGold = gotGold;
-	sess->scoreDisplay->gotSilver = gotSilver;
-	sess->scoreDisplay->gotBronze = gotBronze;
+	
 }
 
 void Actor::HandleWaitingScoreDisplay()
@@ -11517,20 +11661,81 @@ void Actor::TryChangePowerMode()
 	if (hasBounce && currInput.RLeft())
 	{
 		currPowerMode = PMODE_BOUNCE;
+
+		if (!prevInput.RLeft() || oldPowerMode != PMODE_BOUNCE )
+		{
+			numFramesHoldingRightStick = 0;
+		}
+		else
+		{
+			numFramesHoldingRightStick++;
+		}
+
+		if (numFramesHoldingRightStick >= 120)
+		{
+			currHotkeyedPowerMode = PMODE_BOUNCE;
+		}
 	}
 	else if (hasGrind && currInput.RRight())
 	{
 		currPowerMode = PMODE_GRIND;
+
+		if (!prevInput.RRight() || oldPowerMode != PMODE_GRIND)
+		{
+			numFramesHoldingRightStick = 0;
+		}
+		else
+		{
+			numFramesHoldingRightStick++;
+		}
+
+		if (numFramesHoldingRightStick >= 120)
+		{
+			currHotkeyedPowerMode = PMODE_GRIND;
+		}
 	}
 	else if ( hasTimeSlow && currInput.RDown() )
 	{
 		currPowerMode = PMODE_TIMESLOW;
+
+		if (!prevInput.RDown() || oldPowerMode != PMODE_TIMESLOW)
+		{
+			numFramesHoldingRightStick = 0;
+		}
+		else
+		{
+			numFramesHoldingRightStick++;
+		}
+
+		if (numFramesHoldingRightStick >= 120)
+		{
+			currHotkeyedPowerMode = PMODE_TIMESLOW;
+		}
 	}
 	else if (currInput.RUp())
 	{
 		currPowerMode = PMODE_SHIELD;
+
+		if (!prevInput.RUp() || oldPowerMode != PMODE_SHIELD)
+		{
+			numFramesHoldingRightStick = 0;
+		}
+		else
+		{
+			numFramesHoldingRightStick++;
+		}
+
+		if (numFramesHoldingRightStick >= 120)
+		{
+			currHotkeyedPowerMode = PMODE_SHIELD;
+		}
 	}
-	
+
+	if (owner != NULL && owner->IsRushSession())
+	{
+		owner->mainMenu->rushManager->transferPlayerPowerMode = currPowerMode;
+		owner->mainMenu->rushManager->transferPlayerHotkeyedPowerMode = currHotkeyedPowerMode;
+	}
 	
 
 
@@ -13559,6 +13764,8 @@ void Actor::RestoreAirOptions()
 {
 	hasDoubleJump = true;
 	hasAirDash = true;
+	hasAirHoming = true;
+	//airHomingFrame = -1;
 
 	//if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP))
 	{
@@ -19128,6 +19335,11 @@ sf::Vector2<double> Actor::AddAerialGravity( sf::Vector2<double> vel )
 		normalGravity = gravity * hitstunGravMultiplier / slowMultiple;
 	}
 
+	if (airHomingFrame >= 0)
+	{
+		normalGravity *= .5;
+	}
+
 	normalGravity *= extraGravityModifier;
 
 	normalGravity *= boosterExtraGravityModifier;
@@ -23670,12 +23882,20 @@ bool Actor::TryHomingMovement()
 
 void Actor::AirMovement()
 {
+	bool powerSlow1 = HasUpgradeLevel(POWER_TIME, 1)
+		&& PowerButtonHeld()
+		&& currPowerMode == PMODE_TIMESLOW;
+
 	if( leftWire->IsPulling() || rightWire->IsPulling())
 	{
 	}
 	else if (freeFlightFrames > 0)
 	{
 		FreeFlightMovement();
+	}
+	else if (powerSlow1)
+	{
+
 	}
 	else
 	{
@@ -24042,13 +24262,14 @@ bool Actor::CanBufferGrind()
 {
 	return !touchedGrass[Grass::ANTIGRIND]
 		&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
-		&& currPowerMode == PMODE_GRIND 
-		&& HasUpgradeLevel(POWER_GRIND,1) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
+		&& HasUpgradeLevel(POWER_GRIND, 1)
+		&& (currPowerMode == PMODE_GRIND && currInput.PowerButtonDown()) || ( currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();//currInput.Y;
 }
 
 bool Actor::CanPressGrind()
 {
-	return CanBufferGrind() && !prevInput.PowerButtonDown();//!prevInput.RDown();//!prevInput.PowerButtonDown();
+	//return CanBufferGrind() && !prevInput.PowerButtonDown();//!prevInput.RDown();//!prevInput.PowerButtonDown();
+	return CanBufferGrind() && (!prevInput.PowerButtonDown() && (currHotkeyedPowerMode != PMODE_GRIND || !prevInput.HotkeyButtonDown()) );//!prevInput.RDown();//!prevInput.PowerButtonDown();
 }
 
 bool Actor::TryBufferGrind()
@@ -24075,22 +24296,22 @@ bool Actor::TryPressGrind()
 
 bool Actor::GrindButtonPressed()
 {
-	return currPowerMode == PMODE_GRIND && PowerButtonPressed();//(GrindButtonHeld() && !prevInput.RDown());
+	return (currPowerMode == PMODE_GRIND && PowerButtonPressed()) || (currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown() && !prevInput.HotkeyButtonDown());
 }
 
 bool Actor::GrindButtonHeld()
 {
-	return currPowerMode == PMODE_GRIND && PowerButtonHeld();//currInput.RDown();
+	return (currPowerMode == PMODE_GRIND && PowerButtonHeld()) || (currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();
 }
 
 bool Actor::BounceButtonPressed()
 {
-	return currPowerMode == PMODE_BOUNCE && PowerButtonPressed();//BounceButtonHeld() && !prevInput.RLeft();
+	return (currPowerMode == PMODE_BOUNCE && PowerButtonPressed()) || (currHotkeyedPowerMode == PMODE_BOUNCE && currInput.HotkeyButtonDown() && !prevInput.HotkeyButtonDown());//BounceButtonHeld() && !prevInput.RLeft();
 }
 
 bool Actor::BounceButtonHeld()
 {
-	return currPowerMode == PMODE_BOUNCE && PowerButtonHeld();//currInput.RLeft();
+	return (currPowerMode == PMODE_BOUNCE && PowerButtonHeld()) || (currHotkeyedPowerMode == PMODE_BOUNCE && currInput.HotkeyButtonDown());//currInput.RLeft();
 }
 
 bool Actor::JumpButtonPressed()

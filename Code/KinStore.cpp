@@ -11,7 +11,7 @@ using namespace std;
 
 using json = nlohmann::json;
 
-StoreItem::StoreItem( nlohmann::basic_json<> &upgrade)
+StoreEntry::StoreEntry( nlohmann::basic_json<> &upgrade)
 {
 	currentLevel = 0;
 
@@ -51,9 +51,9 @@ StoreItem::StoreItem( nlohmann::basic_json<> &upgrade)
 	{
 		upgradeIndex = UPGRADE_ENERGY;
 	}
-	else if (upgradeString == "UPGRADE_SHIELD")
+	else if (upgradeString == "UPGRADE_COMBAT")
 	{
-		upgradeIndex = UPGRADE_SHIELD;
+		upgradeIndex = UPGRADE_COMBAT;
 	}
 	else if (upgradeString == "UPGRADE_DASH")
 	{
@@ -91,7 +91,7 @@ StoreItem::StoreItem( nlohmann::basic_json<> &upgrade)
 	}
 }
 
-void StoreItem::Print()
+void StoreEntry::Print()
 {
 	cout << "name: " << name << "\n";
 	cout << "upgradeIndex: " << upgradeIndex << "\n";
@@ -103,12 +103,12 @@ void StoreItem::Print()
 	}
 }
 
-const std::string &StoreItem::GetCurrentDescription()
+const std::string &StoreEntry::GetCurrentDescription()
 {
 	return descriptions[currentLevel];
 }
 
-int StoreItem::GetCurrentCost()
+int StoreEntry::GetCurrentCost()
 {
 	return costs[currentLevel];
 }
@@ -124,7 +124,7 @@ KinStore::KinStore()
 
 	RushManager *rm = mm->rushManager;
 	assert(rm != NULL);
-	ts_bg = rm->GetSizedTileset( "Menu/Store/Store_1920x1080.png");
+	ts_bg = rm->GetSizedTileset("Menu/Store/store_bg_placeholder_1920x1080.png");//rm->GetSizedTileset( "Menu/Store/Store_1920x1080.png");
 	ts_yellowSquare = rm->GetSizedTileset( "Menu/Store/Yellow_Square_145x145.png");
 	
 	bgSpr.setTexture(*ts_bg->texture);
@@ -143,6 +143,11 @@ KinStore::KinStore()
 	upgradeLevelText.setFont(mm->arial);
 	upgradeLevelText.setFillColor(Color::White);
 
+	storePointsText.setCharacterSize(40);
+	storePointsText.setFont(mm->arial);
+	storePointsText.setFillColor(Color::Red);
+
+	
 	
 
 	upgradeDescText.setCharacterSize(27);
@@ -160,24 +165,22 @@ KinStore::KinStore()
 
 	LoadStore();
 
-	numTotalStoreItems = 0;
-	for (auto it = storeItems.begin(); it != storeItems.end(); ++it)
-	{
-		for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
-		{
-			++numTotalStoreItems;
-		}
-	}
+	int numBasics = 4;
+	int numItems = 4;
+	int numPowers = 6;
 
-	itemSelectQuads = new sf::Vertex[numTotalStoreItems * 4];
+	numTotalStoreEntries = numBasics + numItems + numPowers;
+
+	itemSelectQuads = new sf::Vertex[numTotalStoreEntries * 4];
 
 	//currentStoreItems = new int[maxXSize * ySize];
 
-	SetTopLeft(Vector2f(50, 50));
+	
 }
 
 KinStore::~KinStore()
 {
+
 	delete xSelector;
 	delete ySelector;
 
@@ -185,12 +188,22 @@ KinStore::~KinStore()
 
 	//delete[] currentStoreItems;
 
-	for (int i = 0; i < storeItems.size(); ++i)
+	for (auto it = basicEntries.begin(); it != basicEntries.end(); ++it)
 	{
-		for (int j = 0; j < storeItems[i].size(); ++j)
+		delete (*it);
+	}
+
+	for (auto it = allItemEntries.begin(); it != allItemEntries.end(); ++it)
+	{
+		for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
 		{
-			delete storeItems[i][j];
+			delete (*it2);
 		}
+	}
+
+	for (auto it = powerEntries.begin(); it != powerEntries.end(); ++it)
+	{
+		delete (*it);
 	}
 }
 
@@ -211,9 +224,9 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 	gridStart += pos;
 
 	int currIndex = 0;
-	for (int y = 0; y < SS_Count; ++y)
+	for (int y = 0; y < SECTION_Count; ++y)
 	{
-		for (int j = 0; j < storeItems[y].size(); ++j)
+		for (int j = 0; j < currStoreEntries[y]->size(); ++j)
 		{
 			//index = (i * xSelector->totalItems + j);
 
@@ -229,6 +242,7 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 		}
 	}
 
+	storePointsText.setPosition(20, 20);
 	//upgradeNameText.setPosition(500 + pos.x, pos.y + 50);
 	//upgradeDescText.setPosition(500 + pos.x, pos.y + 200 );
 	//upgradeLevelText.setPosition(500 + pos.x, pos.y + 400);
@@ -240,24 +254,37 @@ void KinStore::Open()
 {
 	rush = sess->mainMenu->rushManager;
 
-	for (auto it = storeItems.begin(); it != storeItems.end(); ++it)
+	
+
+	SetWorld(rush->currWorld); //0 - 7
+
+	for (auto it = basicEntries.begin(); it != basicEntries.end(); ++it)
 	{
-		for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
-		{
-			(*it2)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it2)->upgradeIndex);
-		}
+		(*it)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
 	}
+
+	for (auto it = powerEntries.begin(); it != powerEntries.end(); ++it)
+	{
+		(*it)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
+	}
+
+	SetTopLeft(Vector2f(0, 0));
+
+	//all items remain at level 0 for now
 
 	action = A_OPEN;
 	frame = 0;
 
 	ySelector->SetIndex(0);
 	xSelector->SetIndex(0);
-	xSelector->SetTotalSize(storeItems[ySelector->currIndex].size());
+	xSelector->SetTotalSize(4); //4 basics
+	//currStoreEntries[ySelector->currIndex].size());
 
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
 	SetSelected(0, 0);
+
+	storePointsText.setString(to_string(rush->storePoints));
 	//for (int i = 0; i < xSelector->totalItems * ySelector->totalItems; ++i)
 	//{
 	//	int optionIndex = 0;//(rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
@@ -268,6 +295,11 @@ void KinStore::Open()
 	//sess->mainMenu->rushManager->UnlockUpgrade(optionIndex);
 }
 
+void KinStore::SetWorld(int w) //0-7
+{
+	//currStoreEntries[SECTION_ITEMS] = &allItemEntries[w];
+}
+
 bool KinStore::IsReadyToClose()
 {
 	return action == A_READY_TO_CLOSE;
@@ -276,11 +308,23 @@ bool KinStore::IsReadyToClose()
 void KinStore::SetSelected(int section, int itemIndex)
 {
 	//eventually need to be able to display buttons in here, steal functionality from the tutbox
-	StoreItem *si = storeItems[section][itemIndex];
+	StoreEntry *si = currStoreEntries[section]->at(itemIndex);
 
 	int upgradeLevel = sess->mainMenu->rushManager->kinUpgradeLevels->GetUpgradeLevel(si->upgradeIndex);
 
-	upgradeNameText.setString( si->name + " Level " + to_string(upgradeLevel + 1 ) );
+
+	if (upgradeLevel == si->numLevels)
+	{
+		upgradeNameText.setString("Max Leveled Already");
+		upgradeDescText.setString("N/A");
+	}
+	else
+	{
+		upgradeNameText.setString(si->name + " Level " + to_string(upgradeLevel + 1));
+		//upgradeLevelText.setString("Level: " + to_string(upgradeLevel));
+		upgradeDescText.setString( "Cost: " + to_string(si->GetCurrentCost()) + " desc: " + si->GetCurrentDescription());
+	}
+
 	upgradeNameText.setOrigin(upgradeNameText.getLocalBounds().left
 			+ upgradeNameText.getLocalBounds().width / 2,
 			upgradeNameText.getLocalBounds().top);
@@ -288,11 +332,9 @@ void KinStore::SetSelected(int section, int itemIndex)
 	//upgradeNameText.setPosition(1088,303);
 	upgradeNameText.setPosition(1200,303);
 
-	upgradeDescText.setString(si->GetCurrentDescription());
+	
 	upgradeDescText.setPosition(745, 412);
 	
-
-	upgradeLevelText.setString( "Level: " + to_string(upgradeLevel));
 
 	SetRectCenter(selectedBGQuad, 192 / 2, 192 / 2,
 		Vector2f((itemSelectQuads + si->quadIndex * 4)->position + Vector2f(192 / 4, 192 / 4)));
@@ -345,6 +387,17 @@ void KinStore::SetSelected(int section, int itemIndex)
 
 	selectTopLeft += Vector2f(-10, -10);
 
+	if (si->GetCurrentCost() > rush->storePoints)
+	{
+		storePointsText.setFillColor(Color::Red);
+		return;
+	}
+	else
+	{
+		storePointsText.setFillColor(Color::Blue);
+		return;
+	}
+
 	yellowSpr.setPosition(selectTopLeft);
 }
 
@@ -354,6 +407,14 @@ void KinStore::Update()
 	{
 		auto *inputStates = sess->controllerStates[0];
 		bool aPressed = inputStates->ButtonPressed_A();
+		bool startPressed = inputStates->ButtonPressed_Start();
+
+		if (startPressed || rush->storePoints == 0 )
+		{
+			action = A_READY_TO_CLOSE;
+			frame = 0;
+			return;
+		}
 
 		if (aPressed)
 		{
@@ -368,19 +429,30 @@ void KinStore::Update()
 			//	sess->SetPlayerOption(optionIndex + 1, true);
 			//	sess->mainMenu->rushManager->kinOptionField.SetBit(optionIndex + 1, true);
 			//}
-			StoreItem *si = storeItems[ySelector->currIndex][xSelector->currIndex];
-			int optionIndex = si->upgradeIndex;
+			StoreEntry *se = currStoreEntries[ySelector->currIndex]->at(xSelector->currIndex);
+			int optionIndex = se->upgradeIndex;
 
-			if (si->currentLevel < si->numLevels - 1)
+			int cost = se->GetCurrentCost();
+			if ( cost > rush->storePoints)
 			{
-				sess->SetPlayerUpgradeLevel(optionIndex, si->currentLevel + 1);
-				sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, si->currentLevel + 1);
-				si->currentLevel++;
+				return;
+			}
 
-				action = A_READY_TO_CLOSE;
-				frame = 0;
+			if (se->currentLevel < se->numLevels)
+			{
+				rush->storePoints -= se->GetCurrentCost();
+				storePointsText.setString(to_string(rush->storePoints));
+
+				sess->SetPlayerUpgradeLevel(optionIndex, se->currentLevel + 1);
+				sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, se->currentLevel + 1);
+				se->currentLevel++;
+
+				//action = A_READY_TO_CLOSE;
+				//frame = 0;
 
 				SetRectColor(containerBGQuad, Color(255, 0, 0, 128));
+
+				
 			}
 
 			return;
@@ -392,7 +464,7 @@ void KinStore::Update()
 		if (ychanged != 0)
 		{
 			//xSelector->SetIndex(0);
-			xSelector->SetTotalSize(storeItems[ySelector->currIndex].size());
+			xSelector->SetTotalSize(currStoreEntries[ySelector->currIndex]->size());
 		}
 
 		if (xchanged != 0 || ychanged != 0)
@@ -402,113 +474,68 @@ void KinStore::Update()
 	}
 }
 
+void KinStore::LoadEntryFile(std::vector<StoreEntry*> &vec, const std::string &fileName, int startingQuadIndex )
+{
+	string base = "Resources/Menu/Store/Info/";
+	stringstream ss;
+	ss << base << fileName << ".json";
+
+	ifstream is;
+	is.open(ss.str());
+
+	json j;
+	is >> j;
+
+	auto &upgrades = j["Upgrades"];
+	int numLevels = 0;
+	int discSize = 0;
+	StoreEntry *si = NULL;
+
+	assert(vec.empty());
+	//vec.clear();
+	vec.reserve(upgrades.size());
+
+	int quadIndex = startingQuadIndex;
+
+	for (int j = 0; j < upgrades.size(); ++j)
+	{
+		si = new StoreEntry(upgrades[j]);
+		si->quadIndex = quadIndex;
+		vec.push_back(si);
+		++quadIndex;
+	}
+}
 
 void KinStore::LoadStore()
 {
-	//vector<string> upgradeTypes = { "basic_upgrades", "powers", "armor", "items" };
-	vector<string> upgradeTypes = { "basic_upgrades", "powers", "powers1", "powers2" };
+	currStoreEntries.resize(SECTION_Count);
+	ySelector->SetTotalSize(SECTION_Count);
+	allItemEntries.resize(8);
+	
+	int currQuadIndex = 0;
 
-	ySelector->SetTotalSize(upgradeTypes.size());
+	//load basics
+	LoadEntryFile(basicEntries, "basic_upgrades", currQuadIndex);
 
-	string base = "Resources/Kin/Info/";
-	stringstream ss;
+	currQuadIndex += basicEntries.size();	
 
-	storeItems.resize(SS_Count);
-
-	int totalStoreItemCounter = 0;
-	for (int sectionIndex = 0; sectionIndex < upgradeTypes.size(); ++sectionIndex)
+	//load items
+	/*for (int i = 0; i < 8; ++i)
 	{
-		ss.clear();
-		ss.str("");
-		ss << base << upgradeTypes[sectionIndex] << ".json";
-
-		ifstream is;
-		is.open(ss.str());
-
-		json j;
-		is >> j;
-
-		auto &upgrades = j["Upgrades"];
-		int numLevels = 0;
-		int discSize = 0;
-		StoreItem *si = NULL;
-		for (int j = 0; j < upgrades.size(); ++j)
-		{
-			si = new StoreItem(upgrades[j]);
-			si->quadIndex = totalStoreItemCounter;
-			storeItems[sectionIndex].push_back(si);
-			++totalStoreItemCounter;
-		}
-
-		for (int j = 0; j < storeItems[sectionIndex].size(); ++j)
-		{
-			storeItems[sectionIndex][j]->Print();
-			cout << "\n";
-		}
-	}
-
-	/*if (is.is_open())
-	{
-		
-		
-	}
-	else
-	{
-		cout << "could not open upgrades json file" << endl;
-		assert(0);
-		return;
+		LoadEntryFile(allItemEntries[i], "items_w" + to_string( i + 1 ), currQuadIndex);
 	}*/
 
+	//currQuadIndex += 4; //4 is the max number of items per world, its set even if the entries are empty
+	
+	//load powers
+	LoadEntryFile(powerEntries, "powers", currQuadIndex);
 
-	/*SetTableEntry(POWER_AIRDASH, "Airdash",
-		"-Hold DASH in the air to hover!\n"
-		"-Hold DASH and a direction to airdash in any of the 8 directions!\n"
-		"-Press ATTACK while Airdashing diagonally for a special attack!");
+	//currQuadIndex += powerEntries.size();
 
-	SetTableEntry(POWER_GRAV, "Gravity Reverse",
-		"-Hold DASH and up while touching a ceiling to reverse your gravity!\n"
-		"-Gravity will remain reversed until you leave the ceiling you are on.");
+	currStoreEntries[SECTION_BASICS] = &basicEntries;
+	//currStoreEntries[SECTION_ITEMS] = NULL;
+	currStoreEntries[SECTION_POWERS] = &powerEntries;
 
-	SetTableEntry(POWER_BOUNCE, "Bounce Scorpion",
-		"-Use RLEFT to enter scorpion mode, and hold SHIELD to activate.\n"
-		"-While on, you will bounce off of any surface you collide with!");
-
-	SetTableEntry(POWER_GRIND, "Grind Wheel",
-		"-Use RRIGHT to enter grind mode, and hold SHIELD to activate!\n"
-		"-While on, you will move along your current surface regardless of slope.\n"
-		"-Press ATTACK while grinding for a grind attack!");
-
-	SetTableEntry(POWER_TIME, "Time Slow Bubble",
-		"-Use RDOWN to enter time slow mode, and press SHIELD to create a bubble!\n"
-		"-Enemies and bullets are slowed down while in a bubble.\n"
-		"-Hold SHIELD while in a bubble to slow yourself down too!");
-
-	SetTableEntry(POWER_DOUBLE_WIRES, "Double Wires",
-		"-Use the double wires to swing and move around with total freedom!\n"
-		"-Use LEFTWIRE to use the blue wire, and RIGHTWIRE to use the red wire!\n"
-		"-Press a direction when launching the wire to aim it!\n"
-		"-Keep holding the wire button after it is attached to swing from it!");
-
-	SetTableEntry(UPGRADE_W1_DASH_BOOST, "Unlock Dash Boost",
-		"Let go of dash near the end to get a boost of speed!");
-
-	SetTableEntry(UPGRADE_W1_STEEP_CLIMB_1, "Upgrade Steep Climb 1/3",
-		"Climb steep slopes faster!");
-
-	SetTableEntry(UPGRADE_W1_STEEP_SLIDE_1, "Upgrade Steep Slide 1/3",
-		"Slide down steep slopes faster!");
-
-	SetTableEntry(UPGRADE_W1_PASSIVE_GROUND_1, "Upgrade Ground Acceleration 1/3",
-		"Increased passive acceleration during grounded movement!");
-
-	SetTableEntry(UPGRADE_W1_SPRINT_1, "Upgrade Sprint 1/3",
-		"Increased acceleration from sprinting on slopes!");
-
-	SetTableEntry(UPGRADE_W1_BASE_DASH_1, "Upgrade Base Dash Speed 1/3",
-		"Dash speed increased!");*/
-
-
-	//leftwire entry left blank for now, since right wire is double
 }
 
 void KinStore::Draw(sf::RenderTarget *target)
@@ -516,9 +543,11 @@ void KinStore::Draw(sf::RenderTarget *target)
 	//target->draw(containerBGQuad, 4, sf::Quads );
 	target->draw(bgSpr);
 	
-	//target->draw(itemSelectQuads, numTotalStoreItems * 4, sf::Quads);
-	//target->draw(selectedBGQuad, 4, sf::Quads);
-	target->draw(yellowSpr);
+	target->draw(itemSelectQuads, numTotalStoreEntries * 4, sf::Quads);
+	target->draw(selectedBGQuad, 4, sf::Quads);
+
+	target->draw(storePointsText);
+	//target->draw(yellowSpr);
 
 	target->draw(upgradeNameText);
 	target->draw(upgradeDescText);

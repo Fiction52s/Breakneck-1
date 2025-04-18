@@ -21,6 +21,7 @@ struct PauseMenu;
 struct AdventureHUD;
 struct Background;
 struct WorldTransferScreen;
+struct MedalTimeForm;
 
 struct RushScoreDisplay;
 struct RushFile;
@@ -31,6 +32,8 @@ struct RushManager : TilesetManager
 	GameSession *firstMap;
 
 	GameSession *shipGame;
+
+	int storePoints;
 
 	int currWorld;
 	int currRushMapIndex;
@@ -49,6 +52,7 @@ struct RushManager : TilesetManager
 	Tileset *ts_goalExplode;
 
 	int transferPlayerPowerMode;
+	int transferPlayerHotkeyedPowerMode;
 	PauseMenu *pauseMenu;
 	WorldMap *worldMap;
 	KinBoostScreen *kinBoostScreen;
@@ -66,9 +70,13 @@ struct RushManager : TilesetManager
 	ControllerDualStateQueue *controllerInput;
 	ControlProfile *currProfile;
 
+	int startWorld;
+
 	bool isDefaultKeyboardInputOn;
 
 	GameSession *currLevel;
+
+	MedalTimeForm *medalTimeForm;
 
 	int trueLevelIndex; //for randomized build
 
@@ -79,7 +87,7 @@ struct RushManager : TilesetManager
 	void SetWorld(int w);
 	void UpdateWorldDependentTileset(int worldIndex);
 	void LoadRush(const std::string &rushName);
-	void CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze);
+	//void CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze);
 	void CreateSaveMenu();
 	void DestroySaveMenu();
 	bool TryToGoToNextLevel(GameSession *game);

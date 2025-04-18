@@ -140,6 +140,7 @@ struct ControllerState
 	bool JumpButtonDown() const;
 	bool DashButtonDown() const;
 	bool AttackButtonDown() const;
+	bool HotkeyButtonDown() const;
 
 	bool ConfirmButtonDown() const;
 	bool BackButtonDown() const;
@@ -158,6 +159,7 @@ struct ControllerSettings
 		BUTTONTYPE_DASH,
 		BUTTONTYPE_ATTACK,
 		BUTTONTYPE_SHIELD,
+		BUTTONTYPE_HOTKEY,
 		BUTTONTYPE_SPECIAL,
 		BUTTONTYPE_LEFTWIRE,
 		BUTTONTYPE_RIGHTWIRE,
