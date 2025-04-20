@@ -8,9 +8,7 @@ struct GameSession;
 struct MomentumBar
 {
 	MomentumBar(TilesetManager *tm);
-	sf::Sprite teal;
-	sf::Sprite blue;
-	sf::Sprite purp;
+	sf::Vertex colorQuad[4];
 	sf::Sprite container;
 	sf::Sprite levelNumSpr;
 	sf::Vector2f GetTopLeft();

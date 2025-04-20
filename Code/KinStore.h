@@ -38,7 +38,8 @@ struct KinStore
 	{
 		SECTION_BASICS,
 	//	SECTION_ITEMS,
-		SECTION_POWERS,
+		SECTION_POWERS1,
+		SECTION_POWERS2,
 		SECTION_Count
 	};
 
@@ -77,7 +78,8 @@ struct KinStore
 
 	std::vector<StoreEntry*> basicEntries;
 	std::vector<std::vector<StoreEntry*>> allItemEntries;
-	std::vector<StoreEntry*> powerEntries;
+	std::vector<StoreEntry*> power1Entries;
+	std::vector<StoreEntry*> power2Entries;
 
 	std::vector<std::vector<StoreEntry*>*> currStoreEntries;
 

@@ -275,6 +275,9 @@ void Actor::PopulateState(PState *ps)
 	ps->framesSinceGrindAttempt = framesSinceGrindAttempt;
 	ps->maxFramesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
+	ps->grindCooldownFrame = grindCooldownFrame;
+	ps->grindCooldownLength = grindCooldownLength;
+
 
 	ps->grindEdgeInfo.SetFromEdge( grindEdge );
 
@@ -557,6 +560,9 @@ void Actor::PopulateFromState(PState *ps)
 	framesNotGrinding = ps->framesNotGrinding;
 	framesSinceGrindAttempt = ps->framesSinceGrindAttempt;
 	maxFramesSinceGrindAttempt = ps->maxFramesSinceGrindAttempt;
+
+	grindCooldownFrame = ps->grindCooldownFrame;
+	grindCooldownLength = ps->grindCooldownLength;
 
 	grindEdge = sess->GetEdge(&ps->grindEdgeInfo);
 
@@ -4987,9 +4993,18 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
+	grindCooldownLength = 60;
+	grindCooldownFrame = grindCooldownLength;
+	
+
 	swordShader.SetSkin(0);
 
 	airHomingFrame = -1;
+
+	int energyUpgradeLevel = GetUpgradeLevel(UPGRADE_ENERGY);
+
+	health = 100;
+	health += 100 * energyUpgradeLevel;
 
 
 	gravityIncreaserTrailEmitter->Reset();
@@ -5005,7 +5020,7 @@ void Actor::Respawn( bool setStartPos )
 	effectPools[PLAYERFX_KEY_EXPLODE].pool->ts = sess->ts_keyExplode;
 
 	numFramesToLive = -1;
-	health = 100;
+	//health = 100;
 	numFramesHoldingRightStick = -1;
 	//currHotkeyedPowerMode = -1;
 
@@ -5255,11 +5270,17 @@ void Actor::Respawn( bool setStartPos )
 	}
 
 	//float startMomentumUpgradeFactor = 15.0;
-	float startMomentumUpgradeFactor = 40;//15.0;
-	if (hasStartMomentumUpgrade)
+
+	//int energyUpgradeLevel = GetUpgradeLevel(UPGRADE_ENERGY);
+
+	float startMomentumUpgradeFactor = 12.0 * energyUpgradeLevel;//40;//15.0;
+
+	currentSpeedBar = startMomentumUpgradeFactor;
+
+	/*if (hasStartMomentumUpgrade)
 	{
-		currentSpeedBar = startMomentumUpgradeFactor;
-	}
+		
+	}*/
 	//currentSpeedBar = startMomentumUpgradeFactor * numStartMomentumUpgrades;
 
 	currBBoostCounter = 0;
@@ -5505,6 +5526,31 @@ void Actor::HandleAirTrigger()
 
 void Actor::KinModeUpdate()
 {
+	if (health == 0 && !simulationMode && action != DEATH)//numFramesToLive == 0)
+	{
+		SetKinMode(K_NORMAL);
+		SetAction(DEATH);
+		rightWire->Reset();
+		leftWire->Reset();
+		slowCounter = 1;
+		frame = 0;
+		sess->cam.SetRumble(15, 15, GetActionLength(DEATH), 3);
+		//springStunFrames = 0;
+
+
+		sess->deathSeq->Reset();
+		sess->SetActiveSequence(sess->deathSeq);
+
+		for (int i = 0; i < 3; ++i)
+		{
+			effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+			effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+			effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+		}
+		return;
+	}
+
+
 	if( kinMode == K_DESPERATION && !simulationMode )
 	{
 		
@@ -5967,10 +6013,15 @@ void Actor::ReactToBeingHit()
 		}
 		damage = dmg;
 
-		if (damage > 0)
+
+		health -= 20;
+		if (health < 0)
+			health = 0;
+
+		/*if (damage > 0)
 		{
 			DrainTimer(damage);
-		}
+		}*/
 	}
 		
 
@@ -10985,6 +11036,7 @@ bool Actor::ExitGrind(bool jump)
 					}
 
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					RestoreAirOptions();
 
 					ground = grindEdge;
@@ -11036,6 +11088,7 @@ bool Actor::ExitGrind(bool jump)
 			}
 
 			framesNotGrinding = 0;
+			grindCooldownFrame = 0;
 			RestoreAirOptions();
 
 			if (!jump)
@@ -11110,6 +11163,7 @@ bool Actor::ExitGrind(bool jump)
 				reversed = oldReversed;
 
 				framesNotGrinding = 0;
+				grindCooldownFrame = 0;
 
 				if (!HasUpgradeLevel(POWER_GRAV, 1) || jump)
 				{
@@ -11150,6 +11204,7 @@ bool Actor::ExitGrind(bool jump)
 
 					SetAction(JUMPSQUAT);
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					frame = 0;
 				}
 				else if (abs(grindNorm.x) >= wallThresh || grindEdge->IsInvisibleWall())
@@ -11197,6 +11252,7 @@ bool Actor::ExitGrind(bool jump)
 
 					SetAction(DASH);
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					frame = 0;
 
 
@@ -11225,6 +11281,7 @@ bool Actor::ExitGrind(bool jump)
 
 
 				framesNotGrinding = 0;
+				grindCooldownFrame = 0;
 
 				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 
@@ -11267,6 +11324,7 @@ bool Actor::ExitGrind(bool jump)
 
 				SetAction(LAND2);
 				framesNotGrinding = 0;
+				grindCooldownFrame = 0;
 				frame = 0;
 
 
@@ -11830,7 +11888,8 @@ bool Actor::BasicGroundAction()
 
 	if (TryFloorRailDropThrough()) return true;
 
-	if (TryPressGrind()) return true;
+	//if (TryPressGrind()) return true;
+	if (TryBufferGrind()) return true;
 
 	if (TryJumpSquat()) return true;
 
@@ -12610,6 +12669,7 @@ void Actor::StopGrind()
 			}
 
 			framesNotGrinding = 0;
+			grindCooldownFrame = 0;
 			RestoreAirOptions();
 			SetAction(JUMP);
 			frame = 1;
@@ -12652,6 +12712,7 @@ void Actor::StopGrind()
 
 
 				framesNotGrinding = 0;
+				grindCooldownFrame = 0;
 				if (reversed)
 				{
 					velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
@@ -12700,6 +12761,7 @@ void Actor::StopGrind()
 
 				SetAction(LAND2);
 				framesNotGrinding = 0;
+				grindCooldownFrame = 0;
 				frame = 0;
 
 
@@ -13455,6 +13517,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 					grindEdge = NULL;
 					regrindOffCount = 0;
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
 					PhysicsResponse();
@@ -13486,6 +13549,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 					grindEdge = NULL;
 					regrindOffCount = 0;
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 				}
 				movement = 0;
@@ -13515,6 +13579,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 					regrindOffCount = 0;
 					framesSinceGrindAttempt = 0;
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
 					PhysicsResponse();
@@ -13544,6 +13609,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 					SetAction(JUMP);
 					frame = 1;
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 					grindEdge = NULL;
 					regrindOffCount = 0;
@@ -16017,6 +16083,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 
 	frame = 0;
 	framesNotGrinding = 0;
+	grindCooldownFrame = 0;
 
 	double angle = GroundedAngle();
 
@@ -16027,6 +16094,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 void Actor::HitOutOfCeilingGrindIntoAir()
 {
 	framesNotGrinding = 0;
+	grindCooldownFrame = 0;
 	if (reversed)
 	{
 		velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
@@ -16148,6 +16216,7 @@ void Actor::HitOutOfGrind()
 	V2d grindNorm = grindEdge->Normal();
 
 	framesNotGrinding = 0;
+	grindCooldownFrame = 0;
 	RestoreAirOptions();
 	ground = grindEdge;
 	groundSpeed = grindSpeed;
@@ -16487,6 +16556,7 @@ void Actor::PhysicsResponse()
 		SetAction(JUMP);
 		frame = 1;
 		framesNotGrinding = 0;
+		grindCooldownFrame = 0;
 		
 		regrindOffCount = 0;
 		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
@@ -18618,6 +18688,15 @@ void Actor::SlowDependentFrameIncrement()
 		{
 			framesGrinding = 0;
 			framesNotGrinding++;
+		}
+
+		if (action == GRINDBALL || action == GRINDATTACK)
+		{
+			grindCooldownFrame = 0;
+		}
+		else
+		{
+			++grindCooldownFrame;
 		}
 
 		framesSinceBounce++;
@@ -24263,6 +24342,7 @@ bool Actor::CanBufferGrind()
 	return !touchedGrass[Grass::ANTIGRIND]
 		&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
 		&& HasUpgradeLevel(POWER_GRIND, 1)
+		&& grindCooldownFrame >= grindCooldownLength
 		&& (currPowerMode == PMODE_GRIND && currInput.PowerButtonDown()) || ( currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();//currInput.Y;
 }
 
@@ -25851,6 +25931,10 @@ void Actor::CollectCurrencyItem(CurrencyItem *ci)
 
 void Actor::CollectCurrency(int currencyAmount, int healAmount )
 {
+	int energyUpgradeLevel = GetUpgradeLevel(UPGRADE_ENERGY);
+
+	double mult = energyUpgradeLevel + 1;
+	health += currencyAmount * mult;
 	HealTimer(currencyAmount);
 	AddToCurrencyCounter(currencyAmount);
 	ActivateSound(PlayerSounds::S_CURRENCY_COLLECT);

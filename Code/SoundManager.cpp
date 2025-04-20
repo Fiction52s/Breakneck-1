@@ -151,7 +151,16 @@ SoundNode * SoundNodeList::ActivateSound(SoundInfo *info, bool loop)
 
 void SoundNodeList::DeactivateSound( SoundNode *sn )
 {
-	assert( activeList != NULL );
+	if (activeList == NULL)
+	{
+		cout << "deactivating sound but activeList is empty" << endl;
+		sn->Stop();
+		sn->next = NULL;
+		sn->prev = NULL;
+		//probably should crash here
+		//assert(activeList != NULL);
+		return;
+	}
 
 	if( sn->next == NULL && sn->prev == NULL )
 	{

@@ -145,6 +145,10 @@ struct PState
 	int framesNotGrinding;
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
+
+	int grindCooldownFrame;
+	int grindCooldownLength;
+
 	EdgeInfo grindEdgeInfo;
 	double grindSpeed;
 

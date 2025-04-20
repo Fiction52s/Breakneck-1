@@ -14,14 +14,14 @@ MomentumBar::MomentumBar(TilesetManager *tm)
 	levelNumSpr.setTexture(*ts_num->texture);
 	levelNumSpr.setTextureRect(ts_bar->GetSubRect(0));
 
-	teal.setTexture(*ts_bar->texture);
+	/*teal.setTexture(*ts_bar->texture);
 	teal.setTextureRect(ts_bar->GetSubRect(0));
 
 	blue.setTexture(*ts_bar->texture);
 	blue.setTextureRect(ts_bar->GetSubRect(1));
 
 	purp.setTexture(*ts_bar->texture);
-	purp.setTextureRect(ts_bar->GetSubRect(2));
+	purp.setTextureRect(ts_bar->GetSubRect(2));*/
 
 	container.setTexture(*ts_container->texture);
 	container.setTextureRect(ts_container->GetSubRect(0));
@@ -35,15 +35,17 @@ MomentumBar::MomentumBar(TilesetManager *tm)
 		assert(0);
 	}
 
-	partShader.setUniform("barTex", sf::Shader::CurrentTexture);
+	partShader.setUniform("barTex", *ts_bar->texture);//sf::Shader::CurrentTexture);
+	//partShader.setUniform("barTex", sf::Shader::CurrentTexture);
 }
 
 void MomentumBar::SetTopLeft(sf::Vector2f &pos)
 {
 	Vector2f extra(5, 5);
-	teal.setPosition(pos + extra);
-	blue.setPosition(pos + extra);
-	purp.setPosition(pos + extra);
+	SetRectTopLeft(colorQuad, ts_bar->tileWidth, ts_bar->tileHeight, pos + extra);
+	//teal.setPosition(pos + extra);
+	//blue.setPosition(pos + extra);
+	//purp.setPosition(pos + extra);
 	container.setPosition(pos);
 	levelNumSpr.setPosition(pos + Vector2f(76, -50));
 }
@@ -80,17 +82,24 @@ void MomentumBar::Draw(sf::RenderTarget *target)
 
 	if (level == 0)
 	{
-		target->draw(teal, &partShader);
+		SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(0), Vector2f(ts_bar->texture->getSize()));
+
+		target->draw(colorQuad, 4, sf::Quads, &partShader);
+		//target->draw(teal, &partShader);
 	}
 	else if (level == 1)
 	{
+		SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(1), Vector2f(ts_bar->texture->getSize()));
 		//target->draw(teal);
-		target->draw(blue, &partShader);
+		//target->draw(blue, &partShader);
+		target->draw(colorQuad, 4, sf::Quads, &partShader);
 	}
 	else if (level == 2)
 	{
+		SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(2), Vector2f(ts_bar->texture->getSize()));
 		//target->draw(blue);
-		target->draw(purp, &partShader);
+		//target->draw(purp, &partShader);
+		target->draw(colorQuad, 4, sf::Quads, &partShader);
 	}
 
 	target->draw(levelNumSpr);

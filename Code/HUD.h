@@ -42,6 +42,7 @@ struct KinMask
 	Session *sess;
 	MomentumBar *momentumBar;
 	PlayerSkinShader playerSkinShader;
+	sf::Text healthText;
 
 	KinMask( TilesetManager *tm );
 	~KinMask();

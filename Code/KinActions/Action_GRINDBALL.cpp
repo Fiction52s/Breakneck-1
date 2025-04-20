@@ -10,11 +10,16 @@ using namespace std;
 void Actor::GRINDBALL_Start()
 {
 	distanceGrinded = 0;
+	storedGroundSpeed = grindSpeed; //just for testing
 }
 
 void Actor::GRINDBALL_End()
 {
-	frame = 0;
+	//frame = 0;
+	if (!ExitGrind(false))
+	{
+		frame = GRINDBALL_GetActionLength() - 10; //extend if you cant stand up
+	}
 }
 
 void Actor::GRINDBALL_Change()
@@ -25,6 +30,12 @@ void Actor::GRINDBALL_Change()
 
 	bool exitedGrind = false;
 
+
+
+	/*if ((framesGrinding > 0 && !GrindButtonHeld()) || j || touchedGrass[Grass::ANTIGRIND] || InWater(TerrainPolygon::WATER_FREEFLIGHT)
+		|| InWater(TerrainPolygon::WATER_INVERTEDINPUTS) || InWater(TerrainPolygon::WATER_GLIDE))*/
+		/*if ((framesGrinding > 0 && (frame > 60 || j )) || touchedGrass[Grass::ANTIGRIND] || InWater(TerrainPolygon::WATER_FREEFLIGHT)
+			|| InWater(TerrainPolygon::WATER_INVERTEDINPUTS) || InWater(TerrainPolygon::WATER_GLIDE))*/
 	if ((framesGrinding > 0 && !GrindButtonHeld()) || j || touchedGrass[Grass::ANTIGRIND] || InWater(TerrainPolygon::WATER_FREEFLIGHT)
 		|| InWater(TerrainPolygon::WATER_INVERTEDINPUTS) || InWater(TerrainPolygon::WATER_GLIDE))
 	{
@@ -174,8 +185,8 @@ void Actor::GRINDBALL_Change()
 		}
 		else if (currInput.rightShoulder && !prevInput.rightShoulder)
 		{
-			SetAction(GRINDATTACK);
-			frame = 0;
+			/*SetAction(GRINDATTACK);
+			frame = 0;*/
 		}
 	}
 
@@ -186,20 +197,45 @@ void Actor::GRINDBALL_Change()
 		hurtBody.rw = 7;
 		hurtBody.rh = normalHeight;
 
-		framesNotGrinding = 0;
+		framesGrinding = 0;
 	}
 }
 
 void Actor::GRINDBALL_Update()
 {
-	double decel = .2;
-	double slowDecel = 0;
+	//double accel = 0;//1.0;
+	//double decel = 0;//1.0;
+	//if (frame < 15)
+	//{
+	//	if (grindSpeed > 0)
+	//	{
+	//		grindSpeed += accel;//storedGroundSpeed + frame * .05;
+	//	}
+	//	else
+	//	{
+	//		grindSpeed += -accel;//storedGroundSpeed - frame * .05;
+	//	}
+	//}
+	//else if( frame > 45)
+	//{
+	//	if (grindSpeed > 0)
+	//	{
+	//		grindSpeed += -decel;//storedGroundSpeed + frame * .05;
+	//	}
+	//	else
+	//	{
+	//		grindSpeed += decel;//storedGroundSpeed - frame * .05;
+	//	}
+	//}
+
+	double decel = .1;//.2
+	double slowDecel = .05;
 	
 	double dSpeed = GetDashSpeed();
-	double grindDecelLimit = GetMaxSpeed() / 2.0;//30; //might need to adjust more later
+	double grindDecelLimit = 6;//5.0;//GetMaxSpeed() / 2.0;//30; //might need to adjust more later
 
 	double currDecel = slowDecel;
-	if (framesGrinding >= grindLimitBeforeSlow)
+	if (framesGrinding >= 30)//grindLimitBeforeSlow)
 	{
 		currDecel = decel;
 	}
@@ -350,7 +386,7 @@ void Actor::GRINDBALL_TimeDepFrameInc()
 
 int Actor::GRINDBALL_GetActionLength()
 {
-	return 1;
+	return 60;
 }
 
 const char * Actor::GRINDBALL_GetTilesetName()

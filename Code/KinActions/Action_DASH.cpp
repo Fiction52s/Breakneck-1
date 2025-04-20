@@ -29,8 +29,8 @@ void Actor::DASH_Change()
 
 	
 
-	if (TryPressGrind()) return;
-
+	//if (TryPressGrind()) return;
+	if (TryBufferGrind()) return;
 	
 
 	if (JumpButtonPressed())

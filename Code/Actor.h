@@ -802,6 +802,11 @@ struct Actor : QuadTreeCollider,
 	int framesNotGrinding;
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
+
+	int grindCooldownFrame;
+	int grindCooldownLength;
+	//int framesGrinding;
+
 	Edge *grindEdge;
 	double grindSpeed;
 

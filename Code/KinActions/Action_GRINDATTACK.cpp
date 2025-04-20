@@ -63,6 +63,7 @@ void Actor::GRINDATTACK_Change()
 				}
 
 				framesNotGrinding = 0;
+				grindCooldownFrame = 0;
 				RestoreAirOptions();
 				ground = grindEdge;
 				SetAction(LAND);
@@ -132,6 +133,7 @@ void Actor::GRINDATTACK_Change()
 
 
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					if (reversed)
 					{
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
@@ -206,6 +208,7 @@ void Actor::GRINDATTACK_Change()
 					SetAction(LAND2);
 					frame = 0;
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 
 					double angle = GroundedAngle();
 

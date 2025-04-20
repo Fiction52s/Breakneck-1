@@ -14,7 +14,9 @@ void Actor::STEEPCLING_End()
 
 void Actor::STEEPCLING_Change()
 {
-	if (TryPressGrind()) return;
+	//if (TryPressGrind()) return;
+
+	if (TryBufferGrind()) return;
 
 	if (TryGroundBlock()) return;
 

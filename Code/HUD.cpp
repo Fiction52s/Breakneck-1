@@ -669,6 +669,12 @@ KinMask::KinMask( TilesetManager *tm )
 	actor = NULL;
 	sess = NULL;
 
+	healthText.setFont(MainMenu::GetInstance()->arial);
+	healthText.setCharacterSize(30);
+	healthText.setFillColor(Color::White);
+	healthText.setOutlineColor(Color::Black);
+	healthText.setOutlineThickness(-1);
+
 	ts_face = tm->GetSizedTileset("HUD/kin_face_320x288.png");
 	ts_portraitBG = tm->GetSizedTileset("HUD/kin_portrait_320x288.png");
 	face.setTexture(*ts_face->texture);
@@ -734,6 +740,8 @@ void KinMask::Draw(RenderTarget *target)
 
 	momentumBar->SetMomentumInfo(actor->speedLevel, actor->GetSpeedBarPart());
 	momentumBar->Draw(target);
+
+	target->draw(healthText);
 }
 
 void KinMask::SetExpr(KinMask::Expr ex)
@@ -745,6 +753,11 @@ void KinMask::SetExpr(KinMask::Expr ex)
 
 void KinMask::Update( int speedLevel, bool desp )
 {
+	if (actor != NULL)
+	{
+		healthText.setString(to_string(actor->health));
+	}
+
 	if (expr == Expr_DEATH )
 	{
 		int faceDeathAnimLength = 11;
@@ -829,6 +842,7 @@ void KinMask::SetTopLeft(sf::Vector2f &pos)
 	face.setPosition(pos);
 	faceBG.setPosition(pos);
 	momentumBar->SetTopLeft(pos + Vector2f(202, 117));
+	healthText.setPosition(pos + Vector2f(20, 200));
 }
 
 sf::Vector2f KinMask::GetTopLeft()

@@ -64,6 +64,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 				}
 
 				framesNotGrinding = 0;
+				grindCooldownFrame = 0;
 				RestoreAirOptions();
 
 				if (!j)
@@ -143,6 +144,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 
 
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					if (reversed)
 					{
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
@@ -196,6 +198,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 
 					SetAction(LAND2);
 					framesNotGrinding = 0;
+					grindCooldownFrame = 0;
 					frame = 0;
 
 

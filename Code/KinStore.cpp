@@ -124,12 +124,11 @@ KinStore::KinStore()
 
 	RushManager *rm = mm->rushManager;
 	assert(rm != NULL);
-	ts_bg = rm->GetSizedTileset("Menu/Store/store_bg_placeholder_1920x1080.png");//rm->GetSizedTileset( "Menu/Store/Store_1920x1080.png");
+	ts_bg = rm->GetSizedTileset("Menu/Store/new_store_1920x1080.png");//rm->GetSizedTileset( "Menu/Store/Store_1920x1080.png");
 	ts_yellowSquare = rm->GetSizedTileset( "Menu/Store/Yellow_Square_145x145.png");
 	
 	bgSpr.setTexture(*ts_bg->texture);
 	yellowSpr.setTexture(*ts_yellowSquare->texture);
-	sf::Sprite yellowSpr;
 
 	action = -1;
 	frame = -1;
@@ -143,7 +142,7 @@ KinStore::KinStore()
 	upgradeLevelText.setFont(mm->arial);
 	upgradeLevelText.setFillColor(Color::White);
 
-	storePointsText.setCharacterSize(40);
+	storePointsText.setCharacterSize(60);
 	storePointsText.setFont(mm->arial);
 	storePointsText.setFillColor(Color::Red);
 
@@ -166,10 +165,9 @@ KinStore::KinStore()
 	LoadStore();
 
 	int numBasics = 4;
-	int numItems = 4;
 	int numPowers = 6;
 
-	numTotalStoreEntries = numBasics + numItems + numPowers;
+	numTotalStoreEntries = numBasics + numPowers;
 
 	itemSelectQuads = new sf::Vertex[numTotalStoreEntries * 4];
 
@@ -201,7 +199,12 @@ KinStore::~KinStore()
 		}
 	}
 
-	for (auto it = powerEntries.begin(); it != powerEntries.end(); ++it)
+	for (auto it = power1Entries.begin(); it != power1Entries.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = power2Entries.begin(); it != power2Entries.end(); ++it)
 	{
 		delete (*it);
 	}
@@ -242,7 +245,7 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 		}
 	}
 
-	storePointsText.setPosition(20, 20);
+	storePointsText.setPosition(1152, 742);
 	//upgradeNameText.setPosition(500 + pos.x, pos.y + 50);
 	//upgradeDescText.setPosition(500 + pos.x, pos.y + 200 );
 	//upgradeLevelText.setPosition(500 + pos.x, pos.y + 400);
@@ -263,7 +266,12 @@ void KinStore::Open()
 		(*it)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
 	}
 
-	for (auto it = powerEntries.begin(); it != powerEntries.end(); ++it)
+	for (auto it = power1Entries.begin(); it != power1Entries.end(); ++it)
+	{
+		(*it)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
+	}
+
+	for (auto it = power2Entries.begin(); it != power2Entries.end(); ++it)
 	{
 		(*it)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
 	}
@@ -284,7 +292,7 @@ void KinStore::Open()
 
 	SetSelected(0, 0);
 
-	storePointsText.setString(to_string(rush->storePoints));
+	storePointsText.setString( to_string(rush->storePoints) + " Upgrade points");
 	//for (int i = 0; i < xSelector->totalItems * ySelector->totalItems; ++i)
 	//{
 	//	int optionIndex = 0;//(rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
@@ -327,13 +335,13 @@ void KinStore::SetSelected(int section, int itemIndex)
 
 	upgradeNameText.setOrigin(upgradeNameText.getLocalBounds().left
 			+ upgradeNameText.getLocalBounds().width / 2,
-			upgradeNameText.getLocalBounds().top);
+			upgradeNameText.getLocalBounds().top + upgradeNameText.getLocalBounds().height / 2);
 
 	//upgradeNameText.setPosition(1088,303);
-	upgradeNameText.setPosition(1200,303);
+	upgradeNameText.setPosition(1369,240);
 
 	
-	upgradeDescText.setPosition(745, 412);
+	upgradeDescText.setPosition(1051, 374);
 	
 
 	SetRectCenter(selectedBGQuad, 192 / 2, 192 / 2,
@@ -346,41 +354,47 @@ void KinStore::SetSelected(int section, int itemIndex)
 	case 0:
 		if (itemIndex == 0)
 		{
-			selectTopLeft = Vector2f(224, 229);
+			selectTopLeft = Vector2f(256, 262);
 		}
 		else if (itemIndex == 1)
 		{
-			selectTopLeft = Vector2f(423, 228);
+			selectTopLeft = Vector2f(423, 262);
+		}
+		else if (itemIndex == 2)
+		{
+			selectTopLeft = Vector2f(591, 263);
+		}
+		else if (itemIndex == 3)
+		{
+			selectTopLeft = Vector2f(758, 263);
 		}
 		break;
 	case 1:
 		if (itemIndex == 0)
 		{
-			selectTopLeft = Vector2f(221, 482);
+			selectTopLeft = Vector2f(254, 488);
 		}
 		else if (itemIndex == 1)
 		{
-			selectTopLeft = Vector2f(421, 482);
+			selectTopLeft = Vector2f(490, 488);
+		}
+		else if (itemIndex == 2)
+		{
+			selectTopLeft = Vector2f(723, 488);
 		}
 		break;
 	case 2:
 		if (itemIndex == 0)
 		{
-			selectTopLeft = Vector2f(221, 640);
+			selectTopLeft = Vector2f(253, 697);
 		}
 		else if (itemIndex == 1)
 		{
-			selectTopLeft = Vector2f(421, 640);
+			selectTopLeft = Vector2f(488, 697);
 		}
-		break;
-	case 3:
-		if (itemIndex == 0)
+		else if (itemIndex == 2)
 		{
-			selectTopLeft = Vector2f(221, 795);
-		}
-		else if (itemIndex == 1)
-		{
-			selectTopLeft = Vector2f(421, 795);
+			selectTopLeft = Vector2f(723, 697);
 		}
 		break;
 	}
@@ -390,12 +404,10 @@ void KinStore::SetSelected(int section, int itemIndex)
 	if (si->GetCurrentCost() > rush->storePoints)
 	{
 		storePointsText.setFillColor(Color::Red);
-		return;
 	}
 	else
 	{
 		storePointsText.setFillColor(Color::Blue);
-		return;
 	}
 
 	yellowSpr.setPosition(selectTopLeft);
@@ -441,7 +453,7 @@ void KinStore::Update()
 			if (se->currentLevel < se->numLevels)
 			{
 				rush->storePoints -= se->GetCurrentCost();
-				storePointsText.setString(to_string(rush->storePoints));
+				storePointsText.setString(to_string(rush->storePoints) + " Upgrade points");
 
 				sess->SetPlayerUpgradeLevel(optionIndex, se->currentLevel + 1);
 				sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, se->currentLevel + 1);
@@ -517,7 +529,7 @@ void KinStore::LoadStore()
 	//load basics
 	LoadEntryFile(basicEntries, "basic_upgrades", currQuadIndex);
 
-	currQuadIndex += basicEntries.size();	
+	currQuadIndex += 4;//basicEntries.size();	
 
 	//load items
 	/*for (int i = 0; i < 8; ++i)
@@ -528,13 +540,18 @@ void KinStore::LoadStore()
 	//currQuadIndex += 4; //4 is the max number of items per world, its set even if the entries are empty
 	
 	//load powers
-	LoadEntryFile(powerEntries, "powers", currQuadIndex);
+	LoadEntryFile(power1Entries, "powers1", currQuadIndex);
+
+	currQuadIndex += 3;//power1Entries.size();
+
+	LoadEntryFile(power2Entries, "powers2", currQuadIndex);
 
 	//currQuadIndex += powerEntries.size();
 
 	currStoreEntries[SECTION_BASICS] = &basicEntries;
 	//currStoreEntries[SECTION_ITEMS] = NULL;
-	currStoreEntries[SECTION_POWERS] = &powerEntries;
+	currStoreEntries[SECTION_POWERS1] = &power1Entries;
+	currStoreEntries[SECTION_POWERS2] = &power2Entries;
 
 }
 
@@ -543,11 +560,11 @@ void KinStore::Draw(sf::RenderTarget *target)
 	//target->draw(containerBGQuad, 4, sf::Quads );
 	target->draw(bgSpr);
 	
-	target->draw(itemSelectQuads, numTotalStoreEntries * 4, sf::Quads);
-	target->draw(selectedBGQuad, 4, sf::Quads);
+	//target->draw(itemSelectQuads, numTotalStoreEntries * 4, sf::Quads);
+	//target->draw(selectedBGQuad, 4, sf::Quads);
 
 	target->draw(storePointsText);
-	//target->draw(yellowSpr);
+	target->draw(yellowSpr);
 
 	target->draw(upgradeNameText);
 	target->draw(upgradeDescText);
