@@ -810,6 +810,15 @@ void Actor::SetSession(Session *p_sess,
 	sess = p_sess;
 	owner = game;
 	editOwner = edit;
+
+	if (swordProjectiles[0] != NULL)
+	{
+		for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+		{
+			swordProjectiles[i]->sess = sess;
+			swordProjectiles[i]->SetEnemyIDAndAddToAllEnemiesVec();
+		}
+	}
 }
 
 SoundInfo * Actor::GetSound(const std::string &name)
@@ -3502,6 +3511,12 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	shallowInit = false;
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
+
+	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+	{
+		swordProjectiles[0] = NULL;
+	}
+	
 
 	SetSession(Session::GetSession(), gs, es);
 
@@ -18483,7 +18498,7 @@ bool Actor::TryThrowEnemySwordProjectileBasic()
 
 bool Actor::TryThrowSwordProjectileBasic()
 {
-	if (projectileSwordFrames > 0)
+	if ( HasUpgradeEffect( UE_SWORD_BEAMS ) || projectileSwordFrames > 0)
 	{
 		UpdateKnockbackDirectionAndHitboxType();
 		return TryThrowSwordProjectile(V2d(0, 0), currHitboxInfo->hDir);
@@ -26770,6 +26785,25 @@ double Actor::GetAirDashSpeedUpgradeAmount()
 double Actor::GetDashBoostUpgradeAmount()
 {
 	return 0;
+}
+
+void Actor::SetEnemyIDsForProjectiles()
+{
+	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+	{
+		swordProjectiles[i]->SetEnemyIDAndAddToAllEnemiesVec();
+	}
+}
+
+void Actor::RemoveAllProjectiles()
+{
+	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+	{
+		if (swordProjectiles[i]->IsActive())
+		{
+			swordProjectiles[i]->DirectKill();
+		}
+	}
 }
 
 void Actor::QueryTree(QuadTree *qt, const sf::Rect<double> &r)

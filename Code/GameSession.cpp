@@ -532,6 +532,17 @@ int GameSession::TryToActivateBonus()
 		{
 			activateBonus = false;
 			currSession = bonusGame;
+
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->RemoveAllProjectiles();
+				}
+			}
+
+
 			for (int i = 0; i < MAX_PLAYERS; ++i)
 			{
 				p = GetPlayer(i);
@@ -1772,6 +1783,17 @@ void GameSession::ProcessAllActors()
 {
 	//how does this know the right number of bullets?
 	//CreateBulletQuads();
+
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = players[i];
+
+		if (p != NULL)
+		{
+			p->SetEnemyIDsForProjectiles();
+		}
+	}
 
 
 	if (mapHeader->preLevelSceneName != "NONE")

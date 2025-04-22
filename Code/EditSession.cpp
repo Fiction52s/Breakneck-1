@@ -1242,6 +1242,7 @@ void EditSession::TestPlayerMode()
 		itemTerrainTree->Insert((*it));
 	}
 
+
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
 		if ((*it)->enemyChain != NULL)
@@ -1270,6 +1271,15 @@ void EditSession::TestPlayerMode()
 				assert(currEnemy->sess == this);
 				currEnemy->AddToGame();
 			}
+		}
+	}
+
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->SetEnemyIDsForProjectiles();
 		}
 	}
 
@@ -1430,6 +1440,7 @@ void EditSession::TestPlayerMode()
 			}
 		}
 	}*/
+
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{

@@ -151,6 +151,30 @@ bool SwordProjectile::IsActive()
 	return spawned && !dead;//comboObj->active || !dead;
 }
 
+void SwordProjectile::DirectKill()
+{
+	if (!dead)
+	{
+		//sess->ActivateEffect(DrawLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
+
+		dead = true;
+		spawned = false;
+
+		numHealth = 0;
+		HandleNoHealth();
+		receivedHit.SetEmpty();
+
+		if (cutObject != NULL)
+		{
+			SyncCutObject();
+			cutObject->SetCutRootPos(GetPositionF());
+		}
+	}
+
+	if (comboObj != NULL)
+		sess->PlayerRemoveActiveComboer(comboObj);
+}
+
 void SwordProjectile::Throw( int playerIndex, V2d &pos, V2d &dir)
 {
 	sess->AddEnemy(this);

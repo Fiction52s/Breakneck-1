@@ -463,32 +463,42 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 			SetRectCenter(itemSelectQuads + currIndex * 4, rectSize, rectSize, rectPos);
 			SetRectColor(itemSelectQuads + currIndex * 4, Color::Green);
 
-			storeRects[currIndex]->SetSize( Vector2f(rectSize, rectSize));
-			//storeRects[currIndex]->SetPosition(rectPos);
+			if (storePanel != NULL)
+			{
+				storeRects[currIndex]->SetSize(Vector2f(rectSize, rectSize));
+				storeRects[currIndex]->SetInfo((void*)currIndex);
+				//storeRects[currIndex]->SetPosition(rectPos);
+			}
 			
-			storeRects[currIndex]->SetInfo((void*)currIndex);
+			
+			
+			
 			++currIndex;
 		}
 	}
 
-	storeRects[0]->SetPosition(Vector2f(256, 262));
-	storeRects[1]->SetPosition(Vector2f(423, 262));
-	storeRects[2]->SetPosition(Vector2f(591, 263));
-	storeRects[3]->SetPosition(Vector2f(758, 263));
-
-	storeRects[4]->SetPosition(Vector2f(254, 488));
-	storeRects[5]->SetPosition(Vector2f(490, 488));
-	storeRects[6]->SetPosition(Vector2f(723, 488));
-
-	storeRects[7]->SetPosition(Vector2f(253, 697));
-	storeRects[8]->SetPosition(Vector2f(488, 697));
-	storeRects[9]->SetPosition(Vector2f(723, 697));
-
-	for (int i = 0; i < numTotalStoreEntries; ++i)
+	if (storePanel != NULL)
 	{
-		storeRects[i]->Init();
-		storeRects[i]->SetShown(true);
+		storeRects[0]->SetPosition(Vector2f(256, 262));
+		storeRects[1]->SetPosition(Vector2f(423, 262));
+		storeRects[2]->SetPosition(Vector2f(591, 263));
+		storeRects[3]->SetPosition(Vector2f(758, 263));
+
+		storeRects[4]->SetPosition(Vector2f(254, 488));
+		storeRects[5]->SetPosition(Vector2f(490, 488));
+		storeRects[6]->SetPosition(Vector2f(723, 488));
+
+		storeRects[7]->SetPosition(Vector2f(253, 697));
+		storeRects[8]->SetPosition(Vector2f(488, 697));
+		storeRects[9]->SetPosition(Vector2f(723, 697));
+
+		for (int i = 0; i < numTotalStoreEntries; ++i)
+		{
+			storeRects[i]->Init();
+			storeRects[i]->SetShown(true);
+		}
 	}
+	
 
 	storePointsText.setPosition(1152, 742);
 	//upgradeNameText.setPosition(500 + pos.x, pos.y + 50);

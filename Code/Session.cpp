@@ -7797,7 +7797,6 @@ void Session::ResetEnemies()
 	{
 		rResetEnemies(enemyTree->startNode);
 	}
-	
 
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;

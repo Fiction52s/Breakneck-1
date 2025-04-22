@@ -1855,6 +1855,9 @@ struct Actor : QuadTreeCollider,
 	bool IsActionGroundBlock(int a);
 	bool IsActionAirBlock(int a);
 
+	void SetEnemyIDsForProjectiles();
+	void RemoveAllProjectiles();
+
 	void ResetBoosterEffects();
 
 	void SetSkin(int skinIndex);
