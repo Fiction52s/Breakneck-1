@@ -415,11 +415,11 @@ void Actor::AIRDASH_UpdateSprite()
 		{
 			if (facingRight)
 			{
-				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x + 54, position.y + 60), 0, 15, 3, false);
+				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x - 54, position.y + 60), 0, 15, 3, false);
 			}
 			else
 			{
-				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x - 54, position.y + 60), 0, 15, 3, true);
+				ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x + 54, position.y + 60), 0, 15, 3, true);
 			}
 		}
 		else if (f == 3) //horizontal

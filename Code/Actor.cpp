@@ -17134,7 +17134,8 @@ void Actor::PhysicsResponse()
 			{
 				if( length( wallNormal ) > 0 
 					&& (currWall == NULL || !currWall->IsInvisibleWall())
-					&& oldVelocity.y >= 0 && !( currWall != NULL && currWall->rail != NULL && currWall->rail->GetRailType() == TerrainRail::BOUNCE ) )
+					&& oldVelocity.y >= 0 && !( currWall != NULL && currWall->rail != NULL && currWall->rail->GetRailType() == TerrainRail::BOUNCE ) 
+					&& airHomingFrame == -1)
 				{
 					if( wallNormal.x > 0)
 					{
@@ -17161,7 +17162,15 @@ void Actor::PhysicsResponse()
 			
 			else if( oldAction == WALLCLING || oldAction == WALLATTACK )
 			{
+
+
 				bool stopWallClinging = false;
+
+				if (airHomingFrame >= 0)
+				{
+					stopWallClinging = true;
+				}
+
 				if( collision && length( wallNormal ) > 0 )
 				{
 					if( wallNormal.x > 0 )
