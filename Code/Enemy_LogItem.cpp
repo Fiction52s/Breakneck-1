@@ -155,7 +155,6 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 LogItem::~LogItem()
 {
-	return;
 	if (testEmitter != NULL)
 	{
 		delete testEmitter;
