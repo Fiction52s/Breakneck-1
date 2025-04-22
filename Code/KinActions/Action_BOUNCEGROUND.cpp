@@ -4,6 +4,7 @@
 #include "SoundTypes.h"
 #include "EditorTerrain.h"
 #include "EditorRail.h"
+#include "KinUpgrades.h"
 
 using namespace std;
 using namespace sf;
@@ -205,11 +206,11 @@ void Actor::BOUNCEGROUND_Change()
 			{
 				hasAirDash = true;
 
-				/*if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+				if (HasUpgradeEffect(UE_AIR_DASH_BOOST_2))
 				{
 					numRemainingExtraAirdashBoosts = 1;
 				}
-				else*/
+				else
 				{
 					numRemainingExtraAirdashBoosts = 0;
 				}

@@ -47,7 +47,7 @@ void Actor::GRINDBALL_Change()
 
 	if (!exitedGrind)
 	{
-		if (DashButtonPressed() && HasUpgradeLevel(POWER_GRIND, 2))
+		if (DashButtonPressed() && HasUpgradeEffect(UE_GRIND_LUNGE))
 		{
 			V2d op = position;
 
@@ -153,6 +153,9 @@ void Actor::GRINDBALL_Change()
 					SetAction(GRINDLUNGE);
 					frame = 0;
 
+					framesNotGrinding = 0;
+					grindCooldownFrame = grindCooldownLength / 2; //reduced cooldown for lunge
+
 					V2d grindNorm = grindEdge->Normal();
 					V2d gDir = normalize(grindEdge->v1 - grindEdge->v0);
 
@@ -203,28 +206,35 @@ void Actor::GRINDBALL_Change()
 
 void Actor::GRINDBALL_Update()
 {
-	//double accel = 0;//1.0;
-	//double decel = 0;//1.0;
-	//if (frame < 15)
+
+	if (HasUpgradeEffect(UE_GRIND_SPEED_BOOST))
+	{
+		int accelFrames = 30;
+		double speedToGain = 12.0;
+		double ac = speedToGain / accelFrames;
+		double dec = .6;//1.0;
+		if (frame < accelFrames)//GRINDBALL_GetActionLength() / 2)
+		{
+			if (grindSpeed > 0)
+			{
+				grindSpeed += ac;//storedGroundSpeed + frame * .05;
+			}
+			else
+			{
+				grindSpeed += -ac;//storedGroundSpeed - frame * .05;
+			}
+		}
+	}
+	
+	//else if( frame > GRINDBALL_GetActionLength() - 15)
 	//{
 	//	if (grindSpeed > 0)
 	//	{
-	//		grindSpeed += accel;//storedGroundSpeed + frame * .05;
+	//		grindSpeed += -dec;//storedGroundSpeed + frame * .05;
 	//	}
 	//	else
 	//	{
-	//		grindSpeed += -accel;//storedGroundSpeed - frame * .05;
-	//	}
-	//}
-	//else if( frame > 45)
-	//{
-	//	if (grindSpeed > 0)
-	//	{
-	//		grindSpeed += -decel;//storedGroundSpeed + frame * .05;
-	//	}
-	//	else
-	//	{
-	//		grindSpeed += decel;//storedGroundSpeed - frame * .05;
+	//		grindSpeed += dec;//storedGroundSpeed - frame * .05;
 	//	}
 	//}
 
@@ -249,12 +259,12 @@ void Actor::GRINDBALL_Update()
 
 		if (grindSpeed > grindDecelLimit)
 		{
-			grindSpeed -= currDecel;
+			/*grindSpeed -= currDecel;
 
 			if (grindSpeed < grindDecelLimit)
 			{
 				grindSpeed = grindDecelLimit;
-			}
+			}*/
 		}
 	}
 	else
@@ -265,18 +275,23 @@ void Actor::GRINDBALL_Update()
 
 		if (grindSpeed < -grindDecelLimit)
 		{
-			grindSpeed += currDecel;
+			/*grindSpeed += currDecel;
 
 			if (grindSpeed > -grindDecelLimit)
 			{
 				grindSpeed = -grindDecelLimit;
-			}
+			}*/
 		}
 	}
 
 	velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 
 	distanceGrinded += grindSpeed / slowMultiple;
+
+	if (HasUpgradeEffect(UE_GRIND_ATTACK))
+	{
+		SetCurrHitboxes(grindHitboxes[0], 0);
+	}
 }
 
 void Actor::GRINDBALL_UpdateSprite()
@@ -367,6 +382,24 @@ void Actor::GRINDBALL_UpdateSprite()
 
 		ActivateEffect(PLAYERFX_SPRINT_STAR, &params);
 	}
+
+	if (HasUpgradeEffect(UE_GRIND_ATTACK))
+	{
+		V2d grindNorm = grindEdge->Normal();
+		bool r = grindSpeed > 0;
+
+		if (IsOnRailAction(action) && grindNorm.y > 0)
+		{
+			grindNorm = -grindNorm;
+			r = !r;
+		}
+
+		ts_grindAttackFX->SetSubRect(grindAttackSprite, frame % 20, r);
+		grindAttackSprite.setPosition(position.x, position.y);
+		grindAttackSprite.setOrigin(grindAttackSprite.getLocalBounds().width / 2,
+			grindAttackSprite.getLocalBounds().height / 2);
+	}
+	
 }
 
 void Actor::GRINDBALL_TransitionToAction(int a)
@@ -386,7 +419,15 @@ void Actor::GRINDBALL_TimeDepFrameInc()
 
 int Actor::GRINDBALL_GetActionLength()
 {
-	return 60;
+	if (HasUpgradeEffect(UE_GRIND_EXTEND_LENGTH))
+	{
+		return 120;
+	}
+	else
+	{
+		return 90;
+	}
+	
 }
 
 const char * Actor::GRINDBALL_GetTilesetName()

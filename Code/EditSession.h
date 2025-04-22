@@ -66,6 +66,7 @@ struct ReplayPlayer;
 struct WorkshopUploader;
 
 struct PlayerBoxGroup;
+struct KinStore;
 
 struct GrassDiff
 {
@@ -133,6 +134,7 @@ struct EditSession : GUIHandler, Session
 		NETPLAY_TEST_GATHER_USERS,
 		NETPLAY_TEST_GET_CONNECTIONS,
 		SETUP_CONTROLS,
+		STORE,
 		EMODE_Count
 	};
 
@@ -167,6 +169,8 @@ struct EditSession : GUIHandler, Session
 		GATEADJUST_POINT_MIDDLE
 	};
 
+
+	KinStore *kinStore;
 
 	std::string fileToOpen;
 	static EditSession *GetSession();
@@ -745,6 +749,7 @@ struct EditSession : GUIHandler, Session
 	void NetplayTestGatherUsersModeHandleEvent();
 	void NetplayTestGetConnectionsModeHandleEvent();
 	void SetupControlsModeHandleEvent();
+	void StoreModeHandleEvent();
 
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();
@@ -763,7 +768,7 @@ struct EditSession : GUIHandler, Session
 	void NetplayTestGatherUsersModeUpdate();
 	void NetplayTestGetConnectionsModeUpdate();
 	void SetupControlsModeUpdate();
-	
+	void StoreModeUpdate();
 
 
 	void UndoMostRecentAction();

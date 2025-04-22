@@ -120,7 +120,7 @@ void Actor::GRINDATTACK_Change()
 			{
 				//abs( e0n.x ) < wallThresh )
 
-				if (!HasUpgradeLevel(POWER_GRAV, 1) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+				if (!HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 				{
 					if (grindSpeed < 0)
 					{
@@ -219,7 +219,7 @@ void Actor::GRINDATTACK_Change()
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (DashButtonPressed() && HasUpgradeLevel(POWER_GRIND, 2))
+	else if (DashButtonPressed() && HasUpgradeEffect(UE_GRIND_LUNGE))
 	{
 		V2d op = position;
 

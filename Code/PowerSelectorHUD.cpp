@@ -74,7 +74,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 	sprite.setPosition(pos);
 
 	Actor *player = sess->GetPlayer(0);
-	if (player->HasUpgradeLevel(POWER_BOUNCE, 1))
+	if (player->HasUpgradeEffect(UE_BOUNCE_SCORPION_UNLOCK))
 	{
 		ClearRect(deactivatedQuads);
 	}
@@ -84,7 +84,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 			Vector2f(sprite.getPosition()));
 	}
 
-	if (player->HasUpgradeLevel(POWER_GRIND, 1) )
+	if (player->HasUpgradeEffect(UE_GRIND_BALL_UNLOCK))
 	{
 		ClearRect(deactivatedQuads + 4);
 	}
@@ -94,7 +94,7 @@ void PowerSelector::SetPosition(Vector2f &pos)
 			Vector2f(sprite.getPosition()));
 	}
 
-	if (player->HasUpgradeLevel(POWER_TIME, 1))
+	if (player->HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK))
 	{
 		ClearRect(deactivatedQuads + 8);
 	}

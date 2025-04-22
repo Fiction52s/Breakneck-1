@@ -168,11 +168,11 @@ void EditModeUI::CreateKinOptionsPanel()
 	currVerticalSpacing += vertSpacing;
 
 	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	AddKinOption(0, "Airdash:", "Toggle Airdash Power", POWER_AIRDASH);
-	AddKinOption(1, "Gravity Reverse: ", "Toggle Gravity Reverse Power", POWER_GRAV);
-	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", POWER_BOUNCE);
-	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", POWER_GRIND);
-	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", POWER_TIME);
+	AddKinOption(0, "Airdash:", "Toggle Airdash Power", POWER_AIR_DASH);
+	AddKinOption(1, "Gravity Reverse: ", "Toggle Gravity Reverse Power", POWER_GRAVITY_CLING);
+	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", POWER_BOUNCE_SCORPION);
+	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", POWER_GRIND_BALL);
+	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", POWER_HOMING_RUSH);
 	AddKinOption(5, "Double Wires:", "Toggle Double Wire Power", POWER_DOUBLE_WIRES);
 
 	//currVerticalSpacing += vertSpacing;//10;

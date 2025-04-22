@@ -129,7 +129,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 			}
 			else
 			{
-				if (!HasUpgradeLevel(POWER_GRAV, 1)
+				if (!HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK)
 					|| (abs(grindNorm.x) >= wallThresh) 
 					|| j || grindEdge->IsInvisibleWall())
 				{

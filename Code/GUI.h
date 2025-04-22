@@ -196,6 +196,7 @@ struct ChooseRect : PanelMember
 		I_EDITORMENU_OPEN,
 		I_DISCORD_LINK,
 		I_FEEDBACK_RATING,
+		I_STORE_UPGRADE,
 	};
 
 	sf::Text nameText;

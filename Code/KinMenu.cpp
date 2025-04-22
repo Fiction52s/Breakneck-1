@@ -283,7 +283,7 @@ void KinMenu::UpdateTutorial()
 
 void KinMenu::UpdatePowers(Actor *player)
 {
-	if (player->HasUpgradeLevel( POWER_AIRDASH, 1 ) )
+	if (player->HasUpgradeEffect(UE_AIR_DASH_UNLOCK))
 	{
 		secondRowMax = 1;
 	}

@@ -20,6 +20,7 @@
 
 #include "RushFile.h"
 #include "MedalTimeForm.h"
+#include "KinStore.h"
 
 using namespace std;
 using namespace sf;
@@ -33,6 +34,8 @@ RushManager::RushManager()
 
 	firstMap = NULL;
 	shipGame = NULL;
+
+	
 
 	trueLevelIndex = 0;
 
@@ -54,6 +57,8 @@ RushManager::RushManager()
 	MainMenu * mm = MainMenu::GetInstance();
 
 	mm->rushManager = this;
+
+	kinStore = new KinStore;
 
 	kinUpgradeLevels = new UpgradeLevels;
 
@@ -136,6 +141,8 @@ RushManager::~RushManager()
 	}
 
 	delete medalTimeForm;
+
+	delete kinStore;
 }
 
 void RushManager::Load()
@@ -173,7 +180,7 @@ void RushManager::SetWorld(int w)
 	int powerWorlds = min(currWorld, 6);
 	for (int i = 0; i < powerWorlds; ++i)
 	{
-		kinUpgradeLevels->SetUpgradeLevel(POWER_AIRDASH + i, 1);
+		kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
 	}
 
 	transferPlayerPowerMode = -1;
@@ -223,7 +230,7 @@ void RushManager::LoadShip()
 	int powerWorlds = min(currWorld, 6);
 	for (int i = 0; i < powerWorlds; ++i)
 	{
-		kinUpgradeLevels->SetUpgradeLevel(POWER_AIRDASH + i, 1);
+		kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
 	}
 
 	if ( (transferPlayerPowerMode == Actor::PMODE_BOUNCE && powerWorlds < 2 )
@@ -328,7 +335,7 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 	{
 		return false;
 	}
-	if( false )
+
 	if (currWorld == 0)
 	{
 		if (trueLevelIndex >= 7)//rushFile.worlds[currWorld].maps.size() - 1)
@@ -370,10 +377,10 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 		return true;
 	}
 
-	if (currRushMapIndex > 3)
-	{
-		return false; //just for testing
-	}
+	//if (currRushMapIndex > 3)
+	//{
+	//	return false; //just for testing
+	//}
 
 	if (CanGoToNextLevel())
 	{

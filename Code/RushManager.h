@@ -22,7 +22,7 @@ struct AdventureHUD;
 struct Background;
 struct WorldTransferScreen;
 struct MedalTimeForm;
-
+struct KinStore;
 struct RushScoreDisplay;
 struct RushFile;
 
@@ -78,7 +78,11 @@ struct RushManager : TilesetManager
 
 	MedalTimeForm *medalTimeForm;
 
+	KinStore *kinStore;
+
 	int trueLevelIndex; //for randomized build
+
+	
 
 	RushManager();
 	~RushManager();

@@ -4,7 +4,10 @@
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
 #include "nlohmann\json.hpp"
+#include <map>
+#include "GUI.h"
 
+struct EditSession;
 struct SingleAxisSelector;
 struct Session;
 struct RushManager;
@@ -17,15 +20,24 @@ struct StoreEntry
 	int numLevels;
 	std::vector<std::string> descriptions;
 	std::vector<int> costs;
+	std::vector<std::vector<int>> upgradeEffects;
 	int quadIndex;
 
 	StoreEntry( nlohmann::basic_json<> &j );
 	void Print();
+	int GetUpgradeEffect(const std::string &str);
 	const std::string &GetCurrentDescription();
 	int GetCurrentCost();
 };
 
-struct KinStore
+//struct UpgradeInfo
+//{
+//	int upgradeIndex;
+//	int level;
+//	int numUpgrades;
+//};
+
+struct KinStore : GUIHandler
 {
 	enum Action
 	{
@@ -43,6 +55,10 @@ struct KinStore
 		SECTION_Count
 	};
 
+	Panel *storePanel;
+	std::vector<ImageChooseRect*> storeRects;
+
+	EditSession *edit;
 	RushManager *rush;
 	int action;
 	int frame;
@@ -82,7 +98,7 @@ struct KinStore
 	std::vector<StoreEntry*> power2Entries;
 
 	std::vector<std::vector<StoreEntry*>*> currStoreEntries;
-
+	std::map<int, std::vector<std::pair<int, int>>> upgradeEffectMap;
 	//sf::Vertex shardBGQuad[4];
 	//sf::Vertex descriptionBGQuad[4];
 	//sf::Vertex shardTitleBGQuad[4];
@@ -94,10 +110,12 @@ struct KinStore
 	void SetSelected( int section, int itemIndex );
 	void SetTopLeft(sf::Vector2f pos);
 	void Update();
+	void TryUnlockCurrentUpgrade();
 	void Open();
 	void LoadStore();
 	void LoadEntryFile(std::vector<StoreEntry*> &vec, const std::string &fileName, int startingQuadIndex );
 	void Draw(sf::RenderTarget *target);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
 };
 
 #endif

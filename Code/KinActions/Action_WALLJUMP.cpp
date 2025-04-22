@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "KinUpgrades.h"
 
 using namespace sf;
 using namespace std;
@@ -9,11 +10,11 @@ void Actor::WALLJUMP_Start()
 	{
 		hasAirDash = true;
 
-		/*if (IsOptionOn(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+		if (HasUpgradeEffect(UE_AIR_DASH_BOOST_2))
 		{
 			numRemainingExtraAirdashBoosts = 1;
 		}
-		else*/
+		else
 		{
 			numRemainingExtraAirdashBoosts = 0;
 		}

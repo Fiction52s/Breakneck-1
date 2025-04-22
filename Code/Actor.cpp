@@ -83,6 +83,7 @@
 #include "RushManager.h"
 #include "KinUpgrades.h"
 #include "Enemy_TouchKey.h"
+#include "KinStore.h"
 
 using namespace sf;
 using namespace std;
@@ -3497,6 +3498,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	:dead(false), actorIndex(p_actorIndex),
 	exitAuraShader(PlayerSkinShader::ST_BOOST)
 {
+
 	shallowInit = false;
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
@@ -4140,7 +4142,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	maxDashSpeedUpgradeAmount = 3.0 * 3.0;
 
-	maxAirDashSpeedUpgradeAmount = 3.0 * 3.0;
+	//maxAirDashSpeedUpgradeAmount = 3.0 * 3.0;
+	maxAirDashSpeedUpgradeAmount = 9.0;//6.0;//3.0 * 3.0;
 
 	maxDashBoostUpgradeAmount = 0;
 
@@ -4462,8 +4465,12 @@ double Actor::GetBounceBoostSpeed()
 	double currBounceBoostSpeed = bounceBoostSpeed;
 
 	double upgradeAmount = 5.0;//2.0;
-	int numUpgrades = HasUpgradeLevel(POWER_BOUNCE, 1);
-	currBounceBoostSpeed += upgradeAmount * numUpgrades;
+	//int numUpgrades = GetUpgradeLevel(POWER_BOUNCE, 1);
+
+	if (HasUpgradeEffect(UE_BOUNCE_BOOST_INCREASE))
+	{
+		currBounceBoostSpeed += upgradeAmount * 1.0;
+	}
 
 	return currBounceBoostSpeed;
 }
@@ -5001,10 +5008,10 @@ void Actor::Respawn( bool setStartPos )
 
 	airHomingFrame = -1;
 
-	int energyUpgradeLevel = GetUpgradeLevel(UPGRADE_ENERGY);
+	int increasedHealthLevel = GetUpgradeEffectCount(UE_INCREASE_STARTING_HEALTH);
 
 	health = 100;
-	health += 100 * energyUpgradeLevel;
+	health += 100 * increasedHealthLevel;
 
 
 	gravityIncreaserTrailEmitter->Reset();
@@ -5273,7 +5280,7 @@ void Actor::Respawn( bool setStartPos )
 
 	//int energyUpgradeLevel = GetUpgradeLevel(UPGRADE_ENERGY);
 
-	float startMomentumUpgradeFactor = 12.0 * energyUpgradeLevel;//40;//15.0;
+	float startMomentumUpgradeFactor = 12.0 * GetUpgradeEffectCount(UE_INCREASE_STARTING_MOMENTUM);;//40;//15.0;
 
 	currentSpeedBar = startMomentumUpgradeFactor;
 
@@ -5373,7 +5380,7 @@ void Actor::Respawn( bool setStartPos )
 	
 
 
-	if(HasUpgradeLevel(POWER_DOUBLE_WIRES, 1))
+	if(HasUpgradeEffect(UE_DOUBLE_WIRES_UNLOCK))
 	{
 		leftWire->Reset();
 		rightWire->Reset();
@@ -5566,35 +5573,35 @@ void Actor::KinModeUpdate()
 
 		bool allColorsOn = true;
 
-		if(HasUpgradeLevel( POWER_AIRDASH, 1 ) || allColorsOn)
+		if(HasUpgradeEffect(UE_AIR_DASH_UNLOCK) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0x55, 0xff );
 			cIndex++;
 		}
-		if(HasUpgradeLevel(POWER_GRAV, 1) || allColorsOn)
+		if(HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0xff, 0x88 );
 			cIndex++;
 		}
-		if(HasUpgradeLevel(POWER_BOUNCE, 1) || allColorsOn)
+		if(HasUpgradeEffect(UE_BOUNCE_SCORPION_UNLOCK) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0xff, 0x33 );
 			cIndex++;
 		}
 
-		if(HasUpgradeLevel(POWER_GRIND, 1) || allColorsOn)
+		if(HasUpgradeEffect(UE_GRIND_BALL_UNLOCK) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x88, 0x00 );
 			cIndex++;
 		}
 
-		if(HasUpgradeLevel(POWER_TIME, 1 ) || allColorsOn)
+		if(HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x00, 0x00 );
 			cIndex++;
 		}
 
-		if(HasUpgradeLevel(POWER_DOUBLE_WIRES, 1) || allColorsOn)
+		if(HasUpgradeEffect(UE_DOUBLE_WIRES_UNLOCK) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x33, 0xaa );
 			cIndex++;
@@ -6114,7 +6121,7 @@ void Actor::ReactToBeingHit()
 				{
 					//abs( e0n.x ) < wallThresh )
 
-					if (!HasUpgradeLevel(POWER_GRAV, 1) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+					if (!HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 					{
 						HitOutOfCeilingGrindIntoAir();
 					}
@@ -6290,7 +6297,7 @@ void Actor::ProcessGravityGrass()
 	if (ground != NULL && reversed
 		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
 		&& action != GROUNDTECHINPLACE
-		&& ((!HasUpgradeLevel(POWER_GRAV, 1)
+		&& ((!HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK)
 		&& !touchedGrass[Grass::GRAVREVERSE]) 
 		|| touchedGrass[Grass::ANTIGRAVREVERSE]))
 	{
@@ -6348,7 +6355,7 @@ void Actor::UpdateBounceFlameOn()
 		//if (action != BOUNCEAIR && action != BOUNCEGROUND && action != BOUNCEGROUNDEDWALL )
 		if( bounceEdge == NULL )
 		{
-			if (!HasUpgradeLevel(POWER_BOUNCE, 1) || !BounceButtonHeld())//BounceButtonPressed())
+			if (!HasUpgradeEffect(UE_BOUNCE_SCORPION_UNLOCK) || !BounceButtonHeld())//BounceButtonPressed())
 			{
 				BounceFlameOff();
 			}
@@ -6356,7 +6363,7 @@ void Actor::UpdateBounceFlameOn()
 	}
 	else
 	{
-		if (HasUpgradeLevel(POWER_BOUNCE, 1) && BounceButtonHeld() )//BounceButtonPressed())
+		if (HasUpgradeEffect(UE_BOUNCE_SCORPION_UNLOCK) && BounceButtonHeld() )//BounceButtonPressed())
 		{
 			BounceFlameOn();
 		}
@@ -6411,14 +6418,14 @@ void Actor::UpdateBounceFlameOn()
 
 void Actor::UpdateWireStates()
 {
-	if (HasUpgradeLevel(POWER_DOUBLE_WIRES, 1) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
+	if (HasUpgradeEffect(UE_DOUBLE_WIRES_UNLOCK) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->IsRetracting()))
 	{
 		leftWire->ClearDebug();
 		leftWire->SetStoredPlayerPos(leftWire->GetPlayerPos());
 		leftWire->UpdateState(touchEdgeWithLeftWire);
 	}
 
-	if (HasUpgradeLevel(POWER_DOUBLE_WIRES, 1) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
+	if (HasUpgradeEffect(UE_DOUBLE_WIRES_UNLOCK) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->IsRetracting()))
 	{
 		rightWire->ClearDebug();
 		rightWire->SetStoredPlayerPos(rightWire->GetPlayerPos());
@@ -7126,14 +7133,13 @@ int Actor::GetNumActiveBubbles()
 
 void Actor::UpdateBubbles()
 {
-	bool powerSlow1 = HasUpgradeLevel(POWER_TIME, 1)
+	bool powerSlow1 = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK)
 		&& PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW;
 
 	if (powerSlow1)
 	{
-		//velocity = springVel + springExtra;
-		if (ground == NULL)
+		//if (ground == NULL)
 		{
 			Enemy *foundEnemy = NULL;
 			int foundIndex;
@@ -7179,10 +7185,25 @@ void Actor::UpdateBubbles()
 				}
 				double accel = 1.0;
 				double limit = 28;
+
+				
 				if (dot(velocity, eDir) < limit)
 				{
 					velocity += eDir * accel;
 				}
+
+				if (ground != NULL || bounceEdge != NULL || grindEdge != NULL)
+				{
+					ground = NULL;
+					bounceEdge = NULL;
+					grindEdge = NULL;
+					reversed = false;
+					SetAction(JUMP);
+					frame = 1;
+					framesInAir = 0;
+					framesNotGrinding = 0;
+				}
+				
 				/*double limit = 28;
 				if (length(velocity) > limit)
 				{
@@ -7194,10 +7215,10 @@ void Actor::UpdateBubbles()
 				airHomingFrame = -1;
 			}
 		}
-		else
+		/*else
 		{
 			airHomingFrame = -1;
-		}
+		}*/
 	}
 	else
 	{
@@ -7221,7 +7242,7 @@ void Actor::UpdateBubbles()
 	oldInBubble = inBubble;
 	inBubble = false;
 
-	if (HasUpgradeLevel(POWER_TIME, 1))
+	if (HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK))
 	{
 		//calculate this all the time so I can give myself infinite airdash
 		for (int i = 0; i < MAX_BUBBLES; ++i)
@@ -7285,7 +7306,7 @@ void Actor::UpdateBubbles()
 	}
 
 	bool powerSlow = CanCreateTimeBubble()
-		&& HasUpgradeLevel(POWER_TIME, 1)
+		&& HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK)
 		&& PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW;
 
@@ -8878,7 +8899,7 @@ bool Actor::CanRailSlide()
 
 bool Actor::CanRailGrind()
 {
-	if (HasUpgradeLevel(POWER_GRIND, 1))
+	if (HasUpgradeEffect(UE_GRIND_BALL_UNLOCK))
 	{
 		if (!PowerButtonHeld() && prevInput.PowerButtonDown())
 		{
@@ -8931,6 +8952,65 @@ int Actor::GetUpgradeLevel(int up)
 bool Actor::HasUpgradeLevel(int up, int lvl)
 {
 	return upgradeLevels->HasUpgradeLevel(up, lvl );
+}
+
+int Actor::HasUpgradeEffect(int ue)
+{
+	if (GetUpgradeEffectCount(ue) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+int Actor::GetUpgradeEffectTotalCount(int ue)
+{
+	KinStore *kStore = NULL;
+	if (editOwner != NULL)
+	{
+		kStore = editOwner->kinStore;
+	}
+	else
+	{
+		kStore = sess->mainMenu->rushManager->kinStore;
+	}
+	 
+	return kStore->upgradeEffectMap[ue].size();
+}
+
+int Actor::GetUpgradeEffectCount(int ue)
+{
+	KinStore *kStore = NULL;
+
+	int hasUpgradeCount = 0;
+
+	if (editOwner != NULL)
+	{
+		kStore = editOwner->kinStore;
+	}
+	else
+	{
+		kStore = sess->mainMenu->rushManager->kinStore;
+	}
+
+	int numAppearances = GetUpgradeEffectTotalCount(ue);
+
+	int upIndex, upLevel;
+	for (int i = 0; i < numAppearances; ++i)
+	{
+		upIndex = kStore->upgradeEffectMap[ue][i].first;
+		upLevel = kStore->upgradeEffectMap[ue][i].second;
+
+		if (upgradeLevels->HasUpgradeLevel(upIndex, upLevel))
+		{
+			hasUpgradeCount++;
+		}
+	}
+
+	return hasUpgradeCount;
+	
+	return 0;
 }
 
 void Actor::SetUpgradeLevel(int up, int lvl)
@@ -11165,7 +11245,7 @@ bool Actor::ExitGrind(bool jump)
 				framesNotGrinding = 0;
 				grindCooldownFrame = 0;
 
-				if (!HasUpgradeLevel(POWER_GRAV, 1) || jump)
+				if (!HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || jump)
 				{
 					if (grindNorm.x > 0)
 					{
@@ -11268,7 +11348,7 @@ bool Actor::ExitGrind(bool jump)
 		else
 		{
 			reversed = oldReversed;
-			if (!HasUpgradeLevel( POWER_GRAV, 1 ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
+			if (!HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
 				{
@@ -11703,9 +11783,9 @@ void Actor::TryChangePowerMode()
 	bool noHoriz = !currInput.RLeft() && !currInput.RRight();
 	bool noVert = !currInput.RUp() && !currInput.RDown();
 
-	bool hasTimeSlow = HasUpgradeLevel(POWER_TIME,1);
-	bool hasGrind = HasUpgradeLevel(POWER_GRIND,1);
-	bool hasBounce = HasUpgradeLevel(POWER_BOUNCE,1);
+	bool hasTimeSlow = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK);
+	bool hasGrind = HasUpgradeEffect(UE_GRIND_BALL_UNLOCK);
+	bool hasBounce = HasUpgradeEffect(UE_BOUNCE_SCORPION_UNLOCK);
 
 	int oldPowerMode = currPowerMode;
 
@@ -12078,7 +12158,7 @@ bool Actor::TryWallJump()
 
 void Actor::TryDashBoost()
 {
-	if (!HasUpgradeLevel(UPGRADE_DASH,1))
+	if (!HasUpgradeEffect(UE_DASH_BOOST))
 	{
 		return;
 	}
@@ -12193,7 +12273,7 @@ void Actor::TryDashBoost()
 
 void Actor::TryAirdashBoost()
 {
-	if (!HasUpgradeLevel(POWER_AIRDASH,2))
+	if (!HasUpgradeEffect(UE_AIR_DASH_BOOST))
 	{
 		return;
 	}
@@ -12208,7 +12288,7 @@ void Actor::TryAirdashBoost()
 
 void Actor::TryExtraAirdashBoost()
 {
-	if (!HasUpgradeLevel(POWER_AIRDASH, 4))
+	if (!HasUpgradeEffect(UE_AIR_DASH_BOOST_2))
 	{
 		return;
 	}
@@ -12699,7 +12779,7 @@ void Actor::StopGrind()
 		}
 		else
 		{
-			if (!HasUpgradeLevel(POWER_GRAV,1) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+			if (!HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
 				{
@@ -12900,7 +12980,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 					grindEdge = e1;
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						if (HasUpgradeLevel(POWER_GRAV,1) || grindEdge->Normal().y < 0)
+						if (HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || grindEdge->Normal().y < 0)
 						{
 							RestoreAirOptions();
 						}
@@ -12986,7 +13066,7 @@ void Actor::UpdateGrindPhysics(double movement, bool checkRailAndTerrainTransfer
 
 					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						if (HasUpgradeLevel(POWER_GRAV,1) || grindEdge->Normal().y < 0)
+						if (HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || grindEdge->Normal().y < 0)
 						{
 							RestoreAirOptions();
 						}
@@ -13843,11 +13923,11 @@ void Actor::RestoreAirOptions()
 		hasWallJumpRechargeAirDash = true;
 	}
 
-	/*if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	if (HasUpgradeEffect(UE_AIR_DASH_BOOST_2))
 	{
 		numRemainingExtraAirdashBoosts = 1;
-	}*/
-	//else
+	}
+	else
 	{
 		numRemainingExtraAirdashBoosts = 0;
 	}
@@ -15259,6 +15339,10 @@ void Actor::UpdatePhysics()
 			{
 				velocity = newVel;
 			}
+			else if (tempCollision && airHomingFrame >= 0)
+			{
+				velocity = newVel;
+			}
 			else if (tempCollision && ( action == WATERGLIDE || action == WATERGLIDE_HITSTUN || action == WATERGLIDECHARGE ))
 			{
 				velocity = newVel;
@@ -15462,7 +15546,7 @@ void Actor::UpdatePhysics()
 			else if(!touchedGrass[Grass::ANTIGRIND] 
 				&& tempCollision //&& currPowerMode == PMODE_GRIND 
 				&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
-				&& HasUpgradeLevel(POWER_GRIND,1)
+				&& HasUpgradeEffect(UE_GRIND_BALL_UNLOCK)
 				&& CanBufferGrind()//PowerButtonHeld()
 				&& velocity.y != 0 //remove this soon
 				&& abs( minContact.normal.x ) >= wallThresh 
@@ -22240,11 +22324,11 @@ bool Actor::DefaultGravReverseCheck()
 {
 	bool steepTransferCheck = ground != NULL && ground->IsSteepGround() && minContact.edge->IsSteepGround();
 
-	return ((HasUpgradeLevel(POWER_GRAV,1) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
+	return ((HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgradeLevel(POWER_GRIND,1) && GrindButtonHeld()))
+		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgradeEffect(UE_GRIND_BALL_UNLOCK) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -22494,7 +22578,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		//target->draw(railTest);
 	}
 
-	if (action == GRINDATTACK)
+	if (action == GRINDATTACK || (action == GRINDBALL && HasUpgradeEffect(UE_GRIND_ATTACK)) )
 	{
 		target->draw(grindAttackSprite);
 	}
@@ -22707,12 +22791,29 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 	if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
 	{
+		for (int i = 0; i < NUM_GRIND_QUADS; ++i)
+		{
+			SetRectColor(grindQuads + i * 4, Color::White);
+		}
+		
 		target->draw(grindQuads, 4 * NUM_GRIND_QUADS, sf::Quads, ts_grind->texture);
 
 		DrawPlayerSprite(target);
 	}
 	else
 	{
+
+		if (grindCooldownFrame < grindCooldownLength)
+		{
+			for (int i = 0; i < NUM_GRIND_QUADS; ++i)
+			{
+				SetRectColor(grindQuads + i * 4, Color::Black);
+				SetRectRotation(grindQuads + i * 4, 0, ts_grind->tileWidth, ts_grind->tileHeight, Vector2f(position));
+			}
+			target->draw(grindQuads, 4 * NUM_GRIND_QUADS, sf::Quads, ts_grind->texture);
+		}
+		
+
 		/*if (owner != NULL)
 			flashFrames = owner->pauseFrames;
 		else
@@ -23961,7 +24062,7 @@ bool Actor::TryHomingMovement()
 
 void Actor::AirMovement()
 {
-	bool powerSlow1 = HasUpgradeLevel(POWER_TIME, 1)
+	bool powerSlow1 = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK)
 		&& PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW;
 
@@ -24052,13 +24153,13 @@ void Actor::AirMovement()
 
 void Actor::DrawWires(sf::RenderTarget *target)
 {
-	if (HasUpgradeLevel(POWER_DOUBLE_WIRES,1) &&
+	if (HasUpgradeEffect(UE_DOUBLE_WIRES_UNLOCK) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| leftWire->IsRetracting()))
 	{
 		leftWire->Draw(target);
 	}
-	if (HasUpgradeLevel(POWER_DOUBLE_WIRES,1) &&
+	if (HasUpgradeEffect(UE_DOUBLE_WIRES_UNLOCK) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| rightWire->IsRetracting()))
 	{
@@ -24068,7 +24169,7 @@ void Actor::DrawWires(sf::RenderTarget *target)
 
 void Actor::UpdateWireQuads()
 {
-	if (HasUpgradeLevel(POWER_DOUBLE_WIRES,1))
+	if (HasUpgradeEffect(UE_DOUBLE_WIRES_UNLOCK))
 	{
 		leftWire->UpdateQuads();
 		rightWire->UpdateQuads();
@@ -24341,7 +24442,7 @@ bool Actor::CanBufferGrind()
 {
 	return !touchedGrass[Grass::ANTIGRIND]
 		&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
-		&& HasUpgradeLevel(POWER_GRIND, 1)
+		&& HasUpgradeEffect(UE_GRIND_BALL_UNLOCK)
 		&& grindCooldownFrame >= grindCooldownLength
 		&& (currPowerMode == PMODE_GRIND && currInput.PowerButtonDown()) || ( currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();//currInput.Y;
 }
@@ -24656,7 +24757,7 @@ void Actor::ExecuteDoubleJump()
 	}
 
 	double scorpionExtra = 10;
-	if (bounceFlameOn && HasUpgradeLevel( POWER_BOUNCE,2))
+	if (bounceFlameOn && HasUpgradeEffect(UE_BOUNCE_BOOST_INCREASE))
 	{
 		currStrength += scorpionExtra;
 	}
@@ -24865,7 +24966,7 @@ bool Actor::TryDoubleJump()
 
 bool Actor::TryAirDash()
 {
-	if (HasUpgradeLevel(POWER_AIRDASH,1) && !IsSingleWirePulling())
+	if (HasUpgradeEffect(UE_AIR_DASH_UNLOCK) && !IsSingleWirePulling())
 	{
 		//removed infinite airdash within bubbles, going to replace it as a shard
 		if (hasAirDash && (DashButtonPressed() || pauseBufferedDash))
@@ -24882,8 +24983,8 @@ bool Actor::TryAirDash()
 
 bool Actor::TryGlide()
 {
-	bool ad = (HasUpgradeLevel(POWER_AIRDASH,1) && !hasAirDash)
-		|| !HasUpgradeLevel(POWER_AIRDASH,1);
+	bool ad = (HasUpgradeEffect(UE_AIR_DASH_UNLOCK) && !hasAirDash)
+		|| !HasUpgradeEffect(UE_AIR_DASH_UNLOCK);
 	if (DashButtonPressed())
 	{
 		SetAction(GLIDE);
@@ -25931,7 +26032,7 @@ void Actor::CollectCurrencyItem(CurrencyItem *ci)
 
 void Actor::CollectCurrency(int currencyAmount, int healAmount )
 {
-	int energyUpgradeLevel = GetUpgradeLevel(UPGRADE_ENERGY);
+	int energyUpgradeLevel = GetUpgradeEffectCount(UE_INCREASE_HEALTH_REGEN_FROM_CURRENCY);
 
 	double mult = energyUpgradeLevel + 1;
 	health += currencyAmount * mult;
@@ -26476,225 +26577,181 @@ void Actor::InitEmitters()
 
 double Actor::GetSteepSlideUpgradeAmount()
 {
-	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
+	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	return maxSteepSlideUpgradeAmount * (speedUpgradeLevel * .1);
+	double amt = maxSteepSlideUpgradeAmount / totalSpeedUpgrades;
 
-	/*switch (speedUpgradeLevel)
+	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
-	case 0:
-		return 0;
-	case 1:
-		return maxSteepSlideUpgradeAmount * .33;
-	case 2:
-		return maxSteepSlideUpgradeAmount * .66;
-	case 3:
-		return maxSteepSlideUpgradeAmount * 1.0;
+		return maxSteepSlideUpgradeAmount;
 	}
-
-	assert(0);
-	return maxSteepSlideUpgradeAmount * 1.0;*/
+	else
+	{
+		return amt * maxSteepSlideUpgradeAmount;
+	}
 }
 
 double Actor::GetSteepClimbUpgradeAmount()
 {
-	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
+	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	return maxSteepClimbUpgradeAmount * (speedUpgradeLevel * .1);
+	double amt = maxSteepClimbUpgradeAmount / totalSpeedUpgrades;
 
-	/*switch (speedUpgradeLevel)
+	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
-	case 0:
-		return 0;
-	case 1:
-		return maxSteepClimbUpgradeAmount * .33;
-	case 2:
-		return maxSteepClimbUpgradeAmount * .66;
-	case 3:
-		return maxSteepClimbUpgradeAmount * 1.0;
+		return maxSteepClimbUpgradeAmount;
 	}
-
-	assert(0);
-	return maxSteepClimbUpgradeAmount * 1.0;*/
+	else
+	{
+		return amt * maxSteepClimbUpgradeAmount;
+	}
 }
 
 double Actor::GetPassiveGroundUpgradeAmount()
 {
-	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
+	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	return maxPassiveGroundUpgradeAmount * (speedUpgradeLevel * .1);
+	double amt = maxPassiveGroundUpgradeAmount / totalSpeedUpgrades;
 
-	/*switch (speedUpgradeLevel)
+	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
-	case 0:
-		return 0;
-	case 1:
-		return maxPassiveGroundUpgradeAmount * .33;
-	case 2:
-		return maxPassiveGroundUpgradeAmount * .66;
-	case 3:
-		return maxPassiveGroundUpgradeAmount * 1.0;
+		return maxPassiveGroundUpgradeAmount;
 	}
-
-	assert(0);
-	return maxPassiveGroundUpgradeAmount * 1.0;*/
+	else
+	{
+		return amt * maxPassiveGroundUpgradeAmount;
+	}
 }
 double Actor::GetSprintUpgradeAmount()
 {
-	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
+	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	return maxSprintUpgradeAmount * (speedUpgradeLevel * .1);
+	double amt = maxSprintUpgradeAmount / totalSpeedUpgrades;
 
-	/*switch (speedUpgradeLevel)
+	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
-	case 0:
-		return 0;
-	case 1:
-		return maxSprintUpgradeAmount * .33;
-	case 2:
-		return maxSprintUpgradeAmount * .66;
-	case 3:
-		return maxSprintUpgradeAmount * 1.0;
+		return maxSprintUpgradeAmount;
 	}
-
-	assert(0);
-	return maxSprintUpgradeAmount * 1.0;*/
+	else
+	{
+		return amt * maxSprintUpgradeAmount;
+	}
 }
 
 double Actor::GetCeilingSteepSlideUpgradeAmount()
 {
-	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
-	switch (ceilingSpeedUpgradeLevel)
-	{
-	case 0:
-		return 0;
-	case 1:
-		return maxSteepSlideUpgradeAmount * .33;
-	case 2:
-		return maxSteepSlideUpgradeAmount * .66;
-	case 3:
-		return maxSteepSlideUpgradeAmount * 1.0;
-	}
+	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
+	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
+	double amt = maxSteepSlideUpgradeAmount / totalCeilingSpeedUpgrades;
 
-	assert(0);
-	return maxSteepSlideUpgradeAmount * 1.0;
+	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
+	{
+		return maxSteepSlideUpgradeAmount;
+	}
+	else
+	{
+		return amt * ceilingSpeedUpgradeLevel;
+	}
 }
 
 double Actor::GetCeilingSteepClimbUpgradeAmount()
 {
-	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
-	switch (ceilingSpeedUpgradeLevel)
-	{
-	case 0:
-		return 0;
-	case 1:
-		return maxSteepClimbUpgradeAmount * .33;
-	case 2:
-		return maxSteepClimbUpgradeAmount * .66;
-	case 3:
-		return maxSteepClimbUpgradeAmount * 1.0;
-	}
+	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
+	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
+	double amt = maxSteepClimbUpgradeAmount / totalCeilingSpeedUpgrades;
 
-	assert(0);
-	return maxSteepClimbUpgradeAmount * 1.0;
+	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
+	{
+		return maxSteepClimbUpgradeAmount;
+	}
+	else
+	{
+		return amt * ceilingSpeedUpgradeLevel;
+	}
 }
 
 double Actor::GetCeilingPassiveGroundUpgradeAmount()
 {
-	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
-	switch (ceilingSpeedUpgradeLevel)
-	{
-	case 0:
-		return 0;
-	case 1:
-		return maxPassiveGroundUpgradeAmount * .33;
-	case 2:
-		return maxPassiveGroundUpgradeAmount * .66;
-	case 3:
-		return maxPassiveGroundUpgradeAmount * 1.0;
-	}
+	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
+	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
+	double amt = maxPassiveGroundUpgradeAmount / totalCeilingSpeedUpgrades;
 
-	assert(0);
-	return maxPassiveGroundUpgradeAmount * 1.0;
+	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
+	{
+		return maxPassiveGroundUpgradeAmount;
+	}
+	else
+	{
+		return amt * ceilingSpeedUpgradeLevel;
+	}
 }
 
 double Actor::GetCeilingSprintUpgradeAmount()
 {
-	int ceilingSpeedUpgradeLevel = GetUpgradeLevel(POWER_GRAV);
-	switch (ceilingSpeedUpgradeLevel)
-	{
-	case 0:
-		return 0;
-	case 1:
-		return maxSprintUpgradeAmount * .33;
-	case 2:
-		return maxSprintUpgradeAmount * .66;
-	case 3:
-		return maxSprintUpgradeAmount * 1.0;
-	}
+	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
+	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
+	double amt = maxSprintUpgradeAmount / totalCeilingSpeedUpgrades;
 
-	assert(0);
-	return maxSprintUpgradeAmount * 1.0;
+	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
+	{
+		return maxSprintUpgradeAmount;
+	}
+	else
+	{
+		return amt * ceilingSpeedUpgradeLevel;
+	}
 }
 
 double Actor::GetMaxSpeedUpgradeAmount()
 {
-	int speedUpgradeLevel = GetUpgradeLevel(UPGRADE_SPEED);
+	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
+	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	return maxMaxSpeedUpgradeAmount * (speedUpgradeLevel * .1 );
+	double amt = maxMaxSpeedUpgradeAmount / totalSpeedUpgrades;
 
-	/*switch (speedUpgradeLevel)
+	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
-	case 0:
-		return 0;
-	case 1:
-		return maxMaxSpeedUpgradeAmount * .33;
-	case 2:
-		return maxMaxSpeedUpgradeAmount * .66;
-	case 3:
-		return maxMaxSpeedUpgradeAmount * 1.0;
-	}*/
-
-	//assert(0);
-	//return maxMaxSpeedUpgradeAmount * 1.0;
+		return maxMaxSpeedUpgradeAmount;
+	}
+	else
+	{
+		return amt * maxMaxSpeedUpgradeAmount;
+	}
 }
 
 double Actor::GetDashSpeedUpgradeAmount()
 {
-	int dashUpgradeLevel = GetUpgradeLevel(UPGRADE_DASH);
-	switch (dashUpgradeLevel)
-	{
-	case 0:
-		return 0;
-	case 1:
-		return 0;
-	case 2:
-		return maxDashSpeedUpgradeAmount * .33;
-	case 3:
-		return maxDashSpeedUpgradeAmount * .66;
-	case 4:
-		return maxDashSpeedUpgradeAmount * 1.0;
-	}
+	int dashSpeedUpgradeLevel = GetUpgradeEffectCount(UE_DASH_SPEED);
+	int totalDashSpeedUpgrades = GetUpgradeEffectTotalCount(UE_DASH_SPEED);
+	double amt = maxDashSpeedUpgradeAmount / totalDashSpeedUpgrades;
 
-	assert(0);
-	return maxDashSpeedUpgradeAmount * 1.0;
+	if (dashSpeedUpgradeLevel == totalDashSpeedUpgrades)
+	{
+		return maxDashSpeedUpgradeAmount;
+	}
+	else
+	{
+		return amt * dashSpeedUpgradeLevel;
+	}
 }
 
 double Actor::GetAirDashSpeedUpgradeAmount()
 {
-	int airDashUpgradeLevel = GetUpgradeLevel(POWER_AIRDASH);
-	switch (airDashUpgradeLevel)
+	int airDashSpeedUpgradeLevel = GetUpgradeEffectCount(UE_AIR_DASH_SPEED);
+	int totalAirDashSpeedUpgrades = GetUpgradeEffectTotalCount(UE_AIR_DASH_SPEED);
+	double amt = maxAirDashSpeedUpgradeAmount / totalAirDashSpeedUpgrades;
+
+	if (airDashSpeedUpgradeLevel == totalAirDashSpeedUpgrades)
 	{
-	case 0:
-		return 0;
-	case 1:
-		return 0;
-	case 2:
-		return maxAirDashSpeedUpgradeAmount * .33;
-	case 3:
-		return maxAirDashSpeedUpgradeAmount * .66;
-	case 4:
-		return maxAirDashSpeedUpgradeAmount * 1.0;
+		return maxAirDashSpeedUpgradeAmount;
+	}
+	else
+	{
+		return amt * airDashSpeedUpgradeLevel;
 	}
 
 	assert(0);

@@ -170,7 +170,7 @@ PowerItem::~PowerItem()
 void PowerItem::ResetEnemy()
 {
 	//implement for power
-	int optionIndex = POWER_AIRDASH + powerIndex;
+	int optionIndex = POWER_AIR_DASH + powerIndex;
 	data.alreadyCollected = sess->GetPlayer(0)->HasUpgradeLevel(optionIndex, 1);
 	
 	SetCurrPosInfo(startPosInfo);

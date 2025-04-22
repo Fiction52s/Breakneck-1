@@ -20,7 +20,7 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 
 	upgradePop = new RushUpgradePopup(rushManager);
 
-	kinStore = new KinStore;
+	kinStore = rushManager->kinStore;
 
 	Reset();
 
@@ -35,8 +35,6 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 RushScoreDisplay::~RushScoreDisplay()
 {
 	delete upgradePop;
-
-	delete kinStore;
 }
 
 void RushScoreDisplay::Reset()
@@ -136,25 +134,25 @@ void RushScoreDisplay::CreateDescriptionTable()
 {
 	upgradeDescriptionStringTable.resize(200); //just placeholder big number
 
-	SetTableEntry( POWER_AIRDASH, "Airdash",
+	SetTableEntry( POWER_AIR_DASH, "Airdash",
 		"-Hold DASH in the air to hover!\n"
 		"-Hold DASH and a direction to airdash in any of the 8 directions!\n"
 		"-Press ATTACK while Airdashing diagonally for a special attack!");
 
-	SetTableEntry( POWER_GRAV, "Gravity Reverse", 
+	SetTableEntry( POWER_GRAVITY_CLING, "Gravity Reverse", 
 		"-Hold DASH and up while touching a ceiling to reverse your gravity!\n"
 		"-Gravity will remain reversed until you leave the ceiling you are on.");
 
-	SetTableEntry(POWER_BOUNCE, "Bounce Scorpion",
+	SetTableEntry(POWER_BOUNCE_SCORPION, "Bounce Scorpion",
 		"-Use RLEFT to enter scorpion mode, and hold SHIELD to activate.\n"
 		"-While on, you will bounce off of any surface you collide with!");
 
-	SetTableEntry(POWER_GRIND, "Grind Wheel",
+	SetTableEntry(POWER_GRIND_BALL, "Grind Wheel",
 		"-Use RRIGHT to enter grind mode, and hold SHIELD to activate!\n"
 		"-While on, you will move along your current surface regardless of slope.\n"
 		"-Press ATTACK while grinding for a grind attack!");
 
-	SetTableEntry(POWER_TIME, "Time Slow Bubble",
+	SetTableEntry(POWER_HOMING_RUSH, "Time Slow Bubble",
 		"-Use RDOWN to enter time slow mode, and press SHIELD to create a bubble!\n"
 		"-Enemies and bullets are slowed down while in a bubble.\n"
 		"-Hold SHIELD while in a bubble to slow yourself down too!");

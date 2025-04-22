@@ -1830,6 +1830,9 @@ struct Actor : QuadTreeCollider,
 	int GetUpgradeLevel(int up);
 	bool HasUpgradeLevel(int up, int lvl);
 	void SetUpgradeLevel(int up, int lvl);
+	int HasUpgradeEffect(int ue);
+	int GetUpgradeEffectTotalCount(int ue);
+	int GetUpgradeEffectCount(int ue);
 	void SetStartUpgradeLevel(int up, int lvl);
 	bool SpringLaunch();
 	bool ScorpionLaunch();

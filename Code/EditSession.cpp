@@ -72,6 +72,7 @@
 #include "Enemy_PowerItem.h"
 #include "ShipTravelSequence.h"
 #include "ParticleEffects.h"
+#include "KinStore.h"
 //#define GGPO_ON
 
 using namespace std;
@@ -1654,7 +1655,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	handleEventFunctions[NETPLAY_TEST_GET_CONNECTIONS] = &EditSession::NetplayTestGetConnectionsModeHandleEvent;
 	handleEventFunctions[SETUP_CONTROLS] = &EditSession::SetupControlsModeHandleEvent;
 
-
+	handleEventFunctions[STORE] = &EditSession::StoreModeHandleEvent;
 
 	updateModeFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeUpdate;
 	updateModeFunctions[EDIT] = &EditSession::EditModeUpdate;
@@ -1677,6 +1678,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[NETPLAY_TEST_GET_CONNECTIONS] = &EditSession::NetplayTestGetConnectionsModeUpdate;
 	updateModeFunctions[SETUP_CONTROLS] = &EditSession::SetupControlsModeUpdate;
 
+	updateModeFunctions[STORE] = &EditSession::SetupControlsModeUpdate;
+
 	ggpoStatsPanel = NULL;
 	currGrassType = 0;
 
@@ -1690,6 +1693,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 		}
 	}
 
+
+	kinStore = new KinStore;
 
 	int waitFrames[] = { 30, 2 };
 	int waitModeThresh[] = { 1 };
@@ -2036,6 +2041,8 @@ void EditSession::CleanupForReload()
 
 EditSession::~EditSession()
 {
+	delete kinStore;
+
 	delete logMenu;
 	delete shardMenu;
 
@@ -12448,6 +12455,14 @@ void EditSession::SetMode(Emode m)
 		//MOUSE.Hide();
 		break;
 	}
+	case STORE:
+	{
+		kinStore->sess = this;
+		kinStore->Open();
+		
+		AddActivePanel(kinStore->storePanel);
+		break;
+	}
 		
 	}
 }
@@ -14008,6 +14023,11 @@ void EditSession::DrawMode()
 	{
 		break;
 	}
+	case STORE:
+	{
+
+		break;
+	}
 	}
 }
 
@@ -14133,6 +14153,11 @@ void EditSession::DrawModeUI()
 	case SETUP_CONTROLS:
 	{
 		playerInputBoxGroup->Draw(preScreenTex);
+		break;
+	}
+	case STORE:
+	{
+		kinStore->Draw(preScreenTex);
 		break;
 	}
 	}
@@ -14620,9 +14645,19 @@ void EditSession::HandleEvents()
 		}
 
 		bool focuseHandled = false;
+
+		
 		if (focusedPanel != NULL)
 		{
-			focuseHandled = focusedPanel->HandleEvent(ev);
+			if (mode == STORE)
+			{
+				HandleEventFunc(mode);
+				focuseHandled = true;
+			}
+			else
+			{
+				focuseHandled = focusedPanel->HandleEvent(ev);
+			}
 		}
 
 		if( !focuseHandled )
@@ -15110,7 +15145,8 @@ void EditSession::EditModeHandleEvent()
 				ActorPtr a = selectedBrush->GetFirst()->GetAsActor();
 				if (a->type->info.name == "player")
 				{
-					editModeUI->ToggleKinOptionsPanel();
+					//editModeUI->ToggleKinOptionsPanel();
+					SetMode(STORE);
 				}
 				else if (a->type->info.name == "shard")
 				{
@@ -15299,6 +15335,26 @@ void EditSession::SelectModeHandleEvent()
 {
 	switch (ev.type)
 	{
+	}
+}
+
+void EditSession::StoreModeHandleEvent()
+{
+	switch (ev.type)
+	{
+	case Event::KeyPressed:
+	{
+		if (ev.key.code == Keyboard::Enter || ev.key.code == Keyboard::Backspace )
+		{
+			RemoveActivePanel(kinStore->storePanel);
+			SetMode(EDIT);
+		}
+		else if (ev.key.code == Keyboard::R)
+		{
+			defaultStartingPlayerUpgradeLevels->Clear();
+			kinStore->Open();
+		}
+	}
 	}
 }
 
@@ -16824,6 +16880,17 @@ void EditSession::SetupControlsModeUpdate()
 	else
 	{
 		playerInputBoxGroup->CheckControllerJoins();
+	}
+}
+
+void EditSession::StoreModeUpdate()
+{
+	kinStore->Update();
+
+	if (kinStore->IsReadyToClose())
+	{
+		RemoveActivePanel(kinStore->storePanel);
+		SetMode(EDIT);
 	}
 }
 
