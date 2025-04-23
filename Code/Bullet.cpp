@@ -39,6 +39,11 @@ void LauncherEnemy::BulletHitPlayer( int playerIndex, BasicBullet *b, int hitRes
 	b->Kill(b->velocity);
 }
 
+void LauncherEnemy::BulletHitByPlayer(int playerIndex, BasicBullet *b)
+{
+	b->Kill(b->velocity);
+}
+
 Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	int numTotalBullets,
 	int bulletsPerShot,
@@ -1115,6 +1120,12 @@ void BasicBullet::UpdatePhysics()
 				HitPlayer( player->actorIndex, res );
 				break;
 			}
+
+			if (player->CheckIfIHitBullet(this))
+			{
+				HitByPlayer(player->actorIndex);
+				break;
+			}
 		}
 	} while (movementLen > 0);
 
@@ -1134,6 +1145,11 @@ bool BasicBullet::HitTerrain()
 	launcher->handler->BulletHitTerrain(this,
 		minContact.edge, minContact.position);
 	return true;
+}
+
+void BasicBullet::HitByPlayer(int pIndex)
+{
+	launcher->handler->BulletHitByPlayer(pIndex, this);
 }
 
 void BasicBullet::HitPlayer( int pIndex, int hitResult )
@@ -1440,7 +1456,11 @@ void SinBullet::UpdatePhysics()
 		{
 			HitPlayer( player->actorIndex, res );
 		}
-		
+
+		if (player->CheckIfIHitBullet(this))
+		{
+			HitByPlayer(player->actorIndex);
+		}
 	}
 }
 
@@ -1624,6 +1644,11 @@ void GrindBullet::UpdatePhysics()
 			if (res != Actor::HitResult::MISS)
 			{
 				HitPlayer(player->actorIndex, res);
+			}
+
+			if (player->CheckIfIHitBullet(this))
+			{
+				HitByPlayer(player->actorIndex);
 			}
 		}
 	}

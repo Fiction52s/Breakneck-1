@@ -121,6 +121,7 @@ struct PState
 	bool holdJump;
 	int wallJumpFrameCounter;
 	bool hasDoubleJump;
+	int numExtraDoubleJumps;
 	int framesInAir;
 	bool hasAirDash;
 	int numRemainingExtraAirdashBoosts;

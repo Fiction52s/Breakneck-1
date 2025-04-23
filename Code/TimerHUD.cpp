@@ -7,15 +7,29 @@
 using namespace std;
 using namespace sf;
 
-TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier )
+TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier, bool p_showMinutes )
 	:growBez( 0, 0, 1, 1 ), shrinkBez( 0, 0, 1, 1 )
 {
 	modifier = p_modifier;
+	showMinutes = p_showMinutes;
 	sess = NULL;//Session::GetSession();
 	ts_text = tm->GetSizedTileset("HUD/timer_numbers_48x64.png");
-	timer = new TimerText(ts_text);
+
+	timer = NULL;
+	secondOnlyTimer = NULL;
+
+	if (showMinutes)
+	{
+		timer = new TimerText(ts_text);
+	}
+	else
+	{
+		secondOnlyTimer = new ImageText(2, ts_text);
+	}
 
 	countingUp = false;
+
+	tracking = false;
 
 	//center = Vector2f(1920 / 2, 50);
 
@@ -46,26 +60,44 @@ TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier )
 	actionLength[HIDDEN] = 1;
 	actionLength[SHOW_MODIFIER] = 60;
 
-	timer->SetNumber(0);
+	if (timer != NULL)
+	{
+		timer->SetNumber(0);
+		timer->SetShader(&textShader->pShader);
+	}
+	else if (secondOnlyTimer != NULL)
+	{
+		secondOnlyTimer->SetNumber(0);
+		secondOnlyTimer->SetSpacingFactor(1.f);
+		secondOnlyTimer->SetShader(&textShader->pShader);
+		secondOnlyTimer->ShowZeroes(2);
+	}
+	
 
 	centiSecondTimer = new ImageText( 2, ts_text);
 	centiSecondTimer->SetSpacingFactor(1.f);
 	centiSecondTimer->SetNumber(0);
 	centiSecondTimer->ShowZeroes(2);
+	centiSecondTimer->SetShader(&textShader->pShader);
 
 	currNumFrames = 0;
-
 	centiScale = .5;
-
-	timer->SetShader(&textShader->pShader);
-	centiSecondTimer->SetShader(&textShader->pShader);
 
 	Reset();
 }
 
 TimerHUD::~TimerHUD()
 {
-	delete timer;
+	if (timer != NULL)
+	{
+		delete timer;
+	}
+
+	if (secondOnlyTimer != NULL)
+	{
+		delete secondOnlyTimer;
+	}
+	
 	delete centiSecondTimer;
 	delete textShader;
 }
@@ -91,6 +123,22 @@ void TimerHUD::Reset()
 	SetColor(Color::Cyan);
 }
 
+void TimerHUD::UpdatePixelPos(sf::RenderTarget *target)
+{
+	pixelPos = Vector2f(target->mapCoordsToPixel(trackingPos));
+}
+
+void TimerHUD::SetTrackingPos(sf::Vector2f tPos)
+{
+	trackingPos = tPos;
+	tracking = true;
+}
+
+void TimerHUD::SetHoverOffset(sf::Vector2f hOffset)
+{
+	hoverOffset = hOffset;
+}
+
 void TimerHUD::SetNumFrames(int frames)
 {
 	currNumFrames = frames;
@@ -100,7 +148,14 @@ void TimerHUD::SetNumFrames(int frames)
 	int centiSecond = floor((double)remain * (1.0 / 60.0 * 100.0) + .5);
 
 
-	timer->SetNumber(currSeconds);
+	if (showMinutes)
+	{
+		timer->SetNumber(currSeconds);
+	}
+	else
+	{
+		secondOnlyTimer->SetNumber(currSeconds);
+	}
 
 	/*int frameTest = frames % 60;
 	float frameProp = frameTest / 60.f;
@@ -139,6 +194,8 @@ void TimerHUD::SetColor(sf::Color c)
 
 void TimerHUD::SetModifiedPlus(int frames)
 {
+	assert(showMinutes);
+
 	if (action == SHOW_MODIFIER && timer->symbolType == ImageText::SYMBOL_PLUS)
 	{
 		frames += currNumFrames;
@@ -156,6 +213,8 @@ void TimerHUD::SetModifiedPlus(int frames)
 
 void TimerHUD::SetModifiedMinus(int frames)
 {
+	assert(showMinutes);
+
 	if (action == SHOW_MODIFIER && timer->symbolType == ImageText::SYMBOL_MINUS)
 	{
 		frames += currNumFrames;
@@ -194,11 +253,20 @@ void TimerHUD::SetScale(float f)
 	currScale = f;
 
 	Vector2f adjustedCenter = GetAdjustedCenter();
-
-	timer->SetCenter(adjustedCenter);
-	timer->SetScale(f);
-
-	Vector2f centiTopLeft = adjustedCenter + Vector2f(ts_text->tileWidth * f * 2.5, ts_text->tileHeight * f * (.5 - centiScale));
+	Vector2f centiTopLeft;
+	if (showMinutes)
+	{
+		timer->SetCenter(adjustedCenter);
+		timer->SetScale(f);
+		centiTopLeft = adjustedCenter + Vector2f(ts_text->tileWidth * f * 2.5, ts_text->tileHeight * f * (.5 - centiScale));
+	}
+	else
+	{
+		secondOnlyTimer->SetCenter(adjustedCenter);
+		secondOnlyTimer->SetScale(f);
+		centiTopLeft = adjustedCenter + Vector2f(ts_text->tileWidth * f * 1.0, ts_text->tileHeight * f * (.5 - centiScale));
+	}
+	
 
 	if (modifier && timer->symbolType != ImageText::SYMBOL_NONE)
 	{
@@ -221,7 +289,15 @@ sf::Vector2f TimerHUD::GetRightCenter()
 
 void TimerHUD::UpdateSprite()
 {
-	timer->UpdateSprite();
+	if (showMinutes)
+	{
+		timer->UpdateSprite();
+	}
+	else
+	{
+		secondOnlyTimer->UpdateSprite();
+	}
+	
 	centiSecondTimer->UpdateSprite();
 }
 
@@ -335,7 +411,20 @@ void TimerHUD::Draw(RenderTarget * target)
 {
 	if (action != HIDDEN)
 	{
-		timer->Draw(target);
+		if (tracking)
+		{
+			SetCenter(pixelPos + hoverOffset);
+			//UpdateSprite();
+		}
+		
+		if (showMinutes)
+		{
+			timer->Draw(target);
+		}
+		else
+		{
+			secondOnlyTimer->Draw(target);
+		}
 		centiSecondTimer->Draw(target);
 	}
 }

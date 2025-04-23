@@ -811,6 +811,8 @@ void Actor::SetSession(Session *p_sess,
 	owner = game;
 	editOwner = edit;
 
+	survivalTimer->SetSession(sess);
+
 	if (swordProjectiles[0] != NULL)
 	{
 		for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
@@ -3495,6 +3497,8 @@ Actor::Actor()
 	upgradeLevels = NULL;
 	startUpgradeLevels = NULL;
 
+	survivalTimer = NULL;
+
 	SetupActionFunctions();
 	SetupTilesets();
 
@@ -3516,7 +3520,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	{
 		swordProjectiles[0] = NULL;
 	}
-	
+
+	survivalTimer = new TimerHUD(Session::GetSession(), false, false);
 
 	SetSession(Session::GetSession(), gs, es);
 
@@ -4214,7 +4219,10 @@ Actor::~Actor()
 		delete startUpgradeLevels;
 	}
 
-	
+	if (survivalTimer != NULL)
+	{
+		delete survivalTimer;
+	}
 
 	/*for (auto it = birdCommands.begin(); it != birdCommands.end(); ++it)
 	{
@@ -5548,28 +5556,31 @@ void Actor::HandleAirTrigger()
 
 void Actor::KinModeUpdate()
 {
-	if (health == 0 && !simulationMode && action != DEATH)//numFramesToLive == 0)
+	if (health == 0 && !simulationMode && action != DEATH && kinMode == K_NORMAL )//numFramesToLive == 0)
 	{
-		SetKinMode(K_NORMAL);
-		SetAction(DEATH);
-		rightWire->Reset();
-		leftWire->Reset();
-		slowCounter = 1;
-		frame = 0;
-		sess->cam.SetRumble(15, 15, GetActionLength(DEATH), 3);
-		//springStunFrames = 0;
+		numFramesToLive = 5 * 60;
+		SetKinMode(K_DESPERATION);
+
+		//SetKinMode(K_NORMAL);
+		//SetAction(DEATH);
+		//rightWire->Reset();
+		//leftWire->Reset();
+		//slowCounter = 1;
+		//frame = 0;
+		//sess->cam.SetRumble(15, 15, GetActionLength(DEATH), 3);
+		////springStunFrames = 0;
 
 
-		sess->deathSeq->Reset();
-		sess->SetActiveSequence(sess->deathSeq);
+		//sess->deathSeq->Reset();
+		//sess->SetActiveSequence(sess->deathSeq);
 
-		for (int i = 0; i < 3; ++i)
-		{
-			effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
-			effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
-			effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
-		}
-		return;
+		//for (int i = 0; i < 3; ++i)
+		//{
+		//	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+		//	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+		//	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+		//}
+		//return;
 	}
 
 
@@ -6035,8 +6046,25 @@ void Actor::ReactToBeingHit()
 		}
 		damage = dmg;
 
+		//clean this up soon
+		int standardEnemyDamage = 20;
 
-		health -= 20;
+		int currDmg = standardEnemyDamage;
+
+		double dmgUpgradeCount = GetUpgradeEffectCount(UE_REDUCED_DAMAGE);
+		//double reduceAmt = standardEnemyDamage
+		double totalReduce = standardEnemyDamage * .75;
+		int totalReducedDmgUpgrades = GetUpgradeEffectTotalCount(UE_REDUCED_DAMAGE);
+		double newAmt = 0;
+		if (totalReducedDmgUpgrades > 0)
+		{
+			newAmt = totalReduce * (dmgUpgradeCount / totalReducedDmgUpgrades);
+		}
+
+		double cdd = currDmg - newAmt;
+		int cddi = cdd;
+		health -= cddi;
+
 		if (health < 0)
 			health = 0;
 
@@ -19074,6 +19102,8 @@ void Actor::UpdatePostPhysics()
 
 		double maxRumble = 7;
 		sess->cam.SetRumble(max(1.0, maxRumble * despFactor), max(1.0, maxRumble * despFactor), 60 );// 60, 2 * despFactor );
+
+		survivalTimer->SetNumFrames(numFramesToLive);
 	}
 	
 
@@ -19237,6 +19267,8 @@ void Actor::UpdatePostPhysics()
 	//}
 
 	nameTag->SetPos(Vector2f( position ) );
+	survivalTimer->SetHoverOffset(Vector2f(0, -150));
+	survivalTimer->SetTrackingPos(Vector2f(position));
 
 	TryEndLevel();
 }
@@ -22931,6 +22963,14 @@ void Actor::DrawNameTag(sf::RenderTarget *target)
 	}
 }
 
+void Actor::DrawSurvivalTimer(sf::RenderTarget *target)
+{
+	if (kinMode == K_DESPERATION)
+	{
+		survivalTimer->Draw(target);
+	}
+}
+
 void Actor::ResetGrassCounters()
 {
 	memset(oldTouchedGrass, 0, sizeof(bool) * Grass::Count);
@@ -23450,19 +23490,28 @@ void Actor::ConfirmHit( Enemy *e )
 		swordState = SWORDSTATE_KILLING;
 	}
 
-	float speedBarAddition = hitParams.speedBar;
-
+	double speedBarAddition = hitParams.speedBar;
+	//clean up later
 	
-	float momentumUpgradeAmount = .5;//.2;
-	if (hasMomentumUpgrade)
+	double momentumUpgradeAmount = 1.0;//.5;//.2;
+
+	double momentumUpgradeCount = GetUpgradeEffectCount(UE_INCREASE_MOMENTUM_METER_FROM_ENEMIES);
+	int totalMomMeterUpgrades = GetUpgradeEffectTotalCount(UE_INCREASE_MOMENTUM_METER_FROM_ENEMIES);
+
+
+	double momFactor = 0;
+	
+	if (totalMomMeterUpgrades > 0)
+	{
+		momFactor = momentumUpgradeAmount * (momentumUpgradeCount / totalMomMeterUpgrades);
+	}
+	
+	/*if (hasMomentumUpgrade)
 	{
 		speedBarAddition += speedBarAddition * momentumUpgradeAmount;
-	}
+	}*/
 
-	
-	
-
-	currentSpeedBar += hitParams.speedBar;
+	currentSpeedBar += hitParams.speedBar + speedBarAddition * momFactor;
 	hitEnemyDuringPhysics = true;
 	currAttackHit = true;
 	if( bounceFlameOn )
@@ -23498,9 +23547,32 @@ void Actor::ConfirmHit( Enemy *e )
 	int charge = ch;
 
 	HealTimer(charge);
+
+
+	//clean up later
+	int standardEnemyHeal = 2;
+
+	int currHeal = standardEnemyHeal;
+
+	double healUpgradeCount = GetUpgradeEffectCount(UE_INCREASE_HP_GAIN_ON_HIT);
+	//double reduceAmt = standardEnemyDamage
+	double totalAdd = 6;
+	int totalHPGainUpgrades = GetUpgradeEffectTotalCount(UE_INCREASE_HP_GAIN_ON_HIT);
+	double newAmt = 0;
+	if (totalHPGainUpgrades > 0)
+	{
+		newAmt = totalAdd * (healUpgradeCount / totalHPGainUpgrades);
+	}
+
+	double cdd = currHeal + newAmt;
+	int cddi = cdd;
+	health += cddi;
+
 	
 	if (kinMode == K_DESPERATION)
 	{
+		numFramesToLive = -1;
+		SetSkin(SKIN_NORMAL);
 		SetKinMode(K_NORMAL);
 	}
 	
@@ -25504,7 +25576,28 @@ bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingR
 	return false;
 }
 
+bool Actor::CheckIfIHitBullet(BasicBullet *b)
+{
+	if (!b->launcher->interactWithPlayer)
+	{
+		return false;
+	}
 
+	if (HasUpgradeEffect(UE_ATTACK_THROUGH_BULLETS))
+	{
+		return false;
+	}
+
+	if (currHitboxes != NULL)
+	{
+		if (currHitboxes->Intersects(currHitboxFrame, &(b->hitBody)))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
 
 Actor::HitResult Actor::CheckIfImHitByEnemy( Enemy *hitter, CollisionBody *hitBody, int hitFrame,
 	HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight,
@@ -26604,7 +26697,12 @@ double Actor::GetSteepSlideUpgradeAmount()
 	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
 	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	double amt = maxSteepSlideUpgradeAmount / totalSpeedUpgrades;
+	double amt = 0;
+	if (totalSpeedUpgrades > 0)
+	{
+		amt = maxSteepSlideUpgradeAmount / totalSpeedUpgrades;
+	}
+	
 
 	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
@@ -26621,7 +26719,11 @@ double Actor::GetSteepClimbUpgradeAmount()
 	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
 	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	double amt = maxSteepClimbUpgradeAmount / totalSpeedUpgrades;
+	double amt = 0;
+	if (totalSpeedUpgrades > 0)
+	{
+		amt = maxSteepClimbUpgradeAmount / totalSpeedUpgrades;
+	}
 
 	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
@@ -26638,7 +26740,11 @@ double Actor::GetPassiveGroundUpgradeAmount()
 	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
 	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	double amt = maxPassiveGroundUpgradeAmount / totalSpeedUpgrades;
+	double amt = 0;
+	if (totalSpeedUpgrades > 0)
+	{
+		amt = maxPassiveGroundUpgradeAmount / totalSpeedUpgrades;
+	}
 
 	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
@@ -26654,7 +26760,11 @@ double Actor::GetSprintUpgradeAmount()
 	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
 	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	double amt = maxSprintUpgradeAmount / totalSpeedUpgrades;
+	double amt = 0;
+	if (totalSpeedUpgrades > 0)
+	{
+		amt = maxSprintUpgradeAmount / totalSpeedUpgrades;
+	}
 
 	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
@@ -26670,7 +26780,11 @@ double Actor::GetCeilingSteepSlideUpgradeAmount()
 {
 	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
 	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
-	double amt = maxSteepSlideUpgradeAmount / totalCeilingSpeedUpgrades;
+	double amt = 0;
+	if (totalCeilingSpeedUpgrades > 0)
+	{
+		amt = maxSteepSlideUpgradeAmount / totalCeilingSpeedUpgrades;
+	}
 
 	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
 	{
@@ -26686,7 +26800,12 @@ double Actor::GetCeilingSteepClimbUpgradeAmount()
 {
 	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
 	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
-	double amt = maxSteepClimbUpgradeAmount / totalCeilingSpeedUpgrades;
+
+	double amt = 0;
+	if (totalCeilingSpeedUpgrades > 0)
+	{
+		amt = maxSteepClimbUpgradeAmount / totalCeilingSpeedUpgrades;
+	}
 
 	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
 	{
@@ -26702,7 +26821,12 @@ double Actor::GetCeilingPassiveGroundUpgradeAmount()
 {
 	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
 	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
-	double amt = maxPassiveGroundUpgradeAmount / totalCeilingSpeedUpgrades;
+
+	double amt = 0;
+	if (totalCeilingSpeedUpgrades > 0)
+	{
+		amt = maxPassiveGroundUpgradeAmount / totalCeilingSpeedUpgrades;
+	}
 
 	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
 	{
@@ -26718,7 +26842,11 @@ double Actor::GetCeilingSprintUpgradeAmount()
 {
 	int ceilingSpeedUpgradeLevel = GetUpgradeEffectCount(UE_GRAVITY_CEILING_SPEED);
 	int totalCeilingSpeedUpgrades = GetUpgradeEffectTotalCount(UE_GRAVITY_CEILING_SPEED);
-	double amt = maxSprintUpgradeAmount / totalCeilingSpeedUpgrades;
+	double amt = 0;
+	if (totalCeilingSpeedUpgrades > 0)
+	{
+		amt = maxSprintUpgradeAmount / totalCeilingSpeedUpgrades;
+	}
 
 	if (ceilingSpeedUpgradeLevel == totalCeilingSpeedUpgrades)
 	{
@@ -26735,7 +26863,11 @@ double Actor::GetMaxSpeedUpgradeAmount()
 	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
 	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
-	double amt = maxMaxSpeedUpgradeAmount / totalSpeedUpgrades;
+	double amt = 0;
+	if (totalSpeedUpgrades > 0)
+	{
+		amt = maxMaxSpeedUpgradeAmount / totalSpeedUpgrades;
+	}
 
 	if (speedUpgradeLevel == totalSpeedUpgrades)
 	{
@@ -26751,7 +26883,12 @@ double Actor::GetDashSpeedUpgradeAmount()
 {
 	int dashSpeedUpgradeLevel = GetUpgradeEffectCount(UE_DASH_SPEED);
 	int totalDashSpeedUpgrades = GetUpgradeEffectTotalCount(UE_DASH_SPEED);
-	double amt = maxDashSpeedUpgradeAmount / totalDashSpeedUpgrades;
+
+	double amt = 0;
+	if (totalDashSpeedUpgrades > 0)
+	{
+		amt = maxDashSpeedUpgradeAmount / totalDashSpeedUpgrades;
+	}
 
 	if (dashSpeedUpgradeLevel == totalDashSpeedUpgrades)
 	{
@@ -26767,7 +26904,13 @@ double Actor::GetAirDashSpeedUpgradeAmount()
 {
 	int airDashSpeedUpgradeLevel = GetUpgradeEffectCount(UE_AIR_DASH_SPEED);
 	int totalAirDashSpeedUpgrades = GetUpgradeEffectTotalCount(UE_AIR_DASH_SPEED);
-	double amt = maxAirDashSpeedUpgradeAmount / totalAirDashSpeedUpgrades;
+
+	double amt = 0;
+
+	if (totalAirDashSpeedUpgrades > 0)
+	{
+		amt = maxAirDashSpeedUpgradeAmount / totalAirDashSpeedUpgrades;
+	}
 
 	if (airDashSpeedUpgradeLevel == totalAirDashSpeedUpgrades)
 	{

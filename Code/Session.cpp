@@ -80,6 +80,7 @@
 #include "EnvParticleSystem.h"
 
 #include "KinUpgrades.h"
+#include "TimerHUD.h"
 //#include "ggpo\backends\backend.h"
 
 using namespace sf;
@@ -7118,6 +7119,17 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	UpdateNameTagsPixelPos(target);
 
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			//p->survivalTimer->SetPosition( target->mapCoordsToPixel(trackingPos)
+			p->survivalTimer->UpdatePixelPos(target);//SetCenter(Vector2f(target->mapCoordsToPixel(p->survivalTimer->center)));
+		}
+	}
+
 	for (int i = DrawLayer::FG_1; i <= DrawLayer::FG_10; ++i)
 	{
 		LayeredDraw(i, target);
@@ -7130,6 +7142,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	LayeredDraw(DrawLayer::UI_FRONT, target);
 
 	LayeredDraw(DrawLayer::IN_FRONT_OF_UI, target);
+
+	DrawSurvivalTimers(target);
 
 	DrawNameTags(target);
 
@@ -9209,6 +9223,19 @@ void Session::UpdateNameTagsPixelPos(sf::RenderTarget *target)
 	{
 		ParallelMode *pm = (ParallelMode*)gameMode;
 		pm->UpdateParallelNameTagsPixelPos(target);
+	}
+}
+
+void Session::DrawSurvivalTimers(sf::RenderTarget *target)
+{
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawSurvivalTimer(target);
+		}
 	}
 }
 

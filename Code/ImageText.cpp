@@ -148,7 +148,16 @@ void ImageText::UpdateSprite()
 	{
 		if (activeDigits % 2 == 0 )
 		{
-			anchorTopLeft = anchor + Vector2f(tw * halfOfDigits, th * -.5); //-2.5 on x before
+			//dont ask its hacky
+			if (maxDigits == 2)
+			{
+				anchorTopLeft = anchor + Vector2f(-tw * halfOfDigits, th * -.5); //-2.5 on x before
+			}
+			else
+			{
+				anchorTopLeft = anchor + Vector2f(tw * halfOfDigits, th * -.5); //-2.5 on x before
+			}
+			
 		}
 	}
 	else if (posType == TOP_RIGHT)

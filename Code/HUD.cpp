@@ -35,12 +35,12 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 
 	sess = NULL;
 
-	timer = new TimerHUD( tm, false);
-	modifierTimer = new TimerHUD( tm, true);
-	medalTimer = new TimerHUD(tm, false);
+	timer = new TimerHUD( tm, false, true);
+	modifierTimer = new TimerHUD( tm, true, true);
+	medalTimer = new TimerHUD(tm, false, true);
 	medalTimer->countingUp = true;
 
-	medalGoalTimer = new TimerHUD(tm, false);
+	medalGoalTimer = new TimerHUD(tm, false, true);
 	medalGoalTimer->countingUp = true;
 	medalGoalTimer->baseScale = .5;
 
@@ -524,7 +524,6 @@ void AdventureHUD::Update()
 	//healthBar->Update();
 
 	
-	//timer->SetNumFrames(sess->GetPlayer(0)->numFramesToLive);
 	timer->Update();
 
 	modifierTimer->SetCenter(timer->GetRightCenter() + Vector2f(100, 0 ));

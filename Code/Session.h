@@ -970,6 +970,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupSuperSequence();
 	void DrawPlayerShields(sf::RenderTarget *target);
 	void UpdateNameTagsPixelPos(sf::RenderTarget *target);
+	void DrawSurvivalTimers(sf::RenderTarget *target);
 	void DrawNameTags(sf::RenderTarget *target);
 	void SetupGameMode();
 	V2d GetFuturePlayerPos(int futureFrames, int index = 0);

@@ -26,9 +26,16 @@ struct TimerHUD
 
 	int actionLength[Count];
 
+	bool tracking;
+	sf::Vector2f trackingPos;
+	sf::Vector2f pixelPos;
+	sf::Vector2f hoverOffset;
+
 	bool countingUp;
 	TimerText *timer;
 	ImageText *centiSecondTimer;
+
+	ImageText *secondOnlyTimer;
 	
 	bool modifier;
 
@@ -50,7 +57,9 @@ struct TimerHUD
 	float currScale;
 	float centiScale;
 
-	TimerHUD( TilesetManager *tm, bool modifier );
+	bool showMinutes;
+
+	TimerHUD( TilesetManager *tm, bool modifier, bool showMinutes );
 	~TimerHUD();
 
 	void SetSession(Session *p_sess);
@@ -59,6 +68,9 @@ struct TimerHUD
 	void SetModifiedMinus(int frames);
 	void Update();
 	sf::Vector2f GetAdjustedCenter();
+	void UpdatePixelPos(sf::RenderTarget *target);
+	void SetTrackingPos(sf::Vector2f tPos);
+	void SetHoverOffset(sf::Vector2f hOffset);
 	void SetCenter(sf::Vector2f &p_center);
 	void SetColor(sf::Color c);
 	void Reset();

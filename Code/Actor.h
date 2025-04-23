@@ -24,6 +24,7 @@
 #include "PlayerSkinShader.h"
 #include "PlayerSkinSwordShader.h"
 
+struct TimerHUD;
 struct UpgradeLevels;
 struct AdventureManager;
 
@@ -594,6 +595,8 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
+	TimerHUD *survivalTimer;
+
 	sf::Rect<double> currQueryRect; //used within the frame for the most recent query rect on quadtrees
 	
 	PlayerBoosterEffectEmitter *gravityIncreaserTrailEmitter;
@@ -774,6 +777,7 @@ struct Actor : QuadTreeCollider,
 	double groundSpeed;
 	bool facingRight;
 	bool hasDoubleJump;
+	int numExtraDoubleJumps;
 	Edge *ground;
 	double edgeQuantity;
 	int framesInAir;
@@ -1330,6 +1334,7 @@ struct Actor : QuadTreeCollider,
 	std::string GetDisplayName();
 	void DrawShield(sf::RenderTarget *target);
 	void DrawHomingBall(sf::RenderTarget *target);
+	void DrawSurvivalTimer(sf::RenderTarget *target);
 	void DrawNameTag(sf::RenderTarget *target);
 	bool CanParry(HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
@@ -1624,6 +1629,7 @@ struct Actor : QuadTreeCollider,
 	bool SteepSlideAttack();
 	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );
+	bool CheckIfIHitBullet(BasicBullet *b);
 	HitResult CheckIfImHitByEnemy( Enemy *hitter, CollisionBody *hitBody,
 		int hitFrame,
 		HitboxInfo::HitPosType hpt,
