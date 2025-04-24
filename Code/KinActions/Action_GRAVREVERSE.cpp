@@ -21,22 +21,60 @@ void Actor::GRAVREVERSE_Change()
 	if (CheckSetToAerialFromNormalWater()) return;
 
 
-	if (CanBufferGrind())
-	{
-		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
-		//if (!reversed || (HasUpgrade(POWER_GRAV) && reversed))
-		{
-			groundSpeed = -storedReverseSpeed;
-			SetActionGrind();
-			return;
-		}
-	}
+	//if (CanBufferGrind())
+	//{
+	//	//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
+	//	//if (!reversed || (HasUpgrade(POWER_GRAV) && reversed))
+	//	{
+	//		groundSpeed = -storedReverseSpeed;
+	//		SetActionGrind();
+	//		return;
+	//	}
+	//}
 
 	
 
 	//groundSpeed = 0;
 	if (reversed)
 	{
+		if (TryGroundBlock()) return;
+
+		if (CanBufferGrind())
+		{
+			//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
+			//if (!reversed || (HasUpgrade(POWER_GRAV) && reversed))
+			{
+				groundSpeed = -storedReverseSpeed;
+				SetActionGrind();
+				return;
+			}
+		}
+
+		if (TryJumpSquat()) return;
+
+		if (TryGroundAttack()) return;
+
+		//if (TryGroundBlock()) return true;
+
+		//if (TryFloorRailDropThrough()) return true;
+
+		////if (TryPressGrind()) return true;
+		//if (TryBufferGrind()) return true;
+
+		//if (TryJumpSquat()) return true;
+
+		
+
+		//if (TryDash()) return true;
+
+		////control only
+
+		//if (BasicSteepAction()) return true;
+
+		//if (TrySprintOrRun()) return true;
+
+		//if (TrySlideBrakeOrStand()) return true;
+
 		V2d norm = GetGroundedNormal();
 		if (-norm.y > -steepThresh && approxEquals(abs(offsetX), b.rw))
 		{

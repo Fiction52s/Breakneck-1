@@ -32,6 +32,7 @@ struct SoundInfo;
 struct PaletteShader;
 
 struct SwordProjectile;
+struct GravityBlast;
 
 struct PState;
 
@@ -682,6 +683,9 @@ struct Actor : QuadTreeCollider,
 	bool bouncedFromKill;
 	const static int NUM_SWORD_PROJECTILES = 6;
 	SwordProjectile *swordProjectiles[NUM_SWORD_PROJECTILES];
+
+	const static int NUM_GRAVITY_BLASTS = 6;
+	GravityBlast *gravityBlasts[NUM_GRAVITY_BLASTS];
 	int projectileSwordFrames;
 	int enemyProjectileSwordFrames;
 	int gravModifyFrames;
@@ -1378,6 +1382,7 @@ struct Actor : QuadTreeCollider,
 
 	void InitSounds();
 
+	bool TryActivateGravityBlast(V2d dir);
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
 	bool TryThrowSwordProjectileBasic();
 	bool TryThrowEnemySwordProjectileBasic();

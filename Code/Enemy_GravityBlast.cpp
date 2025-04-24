@@ -3,7 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_SwordProjectile.h"
+#include "Enemy_GravityBlast.h"
 #include "Actor.h"
 
 using namespace std;
@@ -13,26 +13,25 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-SwordProjectile::SwordProjectile(Actor *player)
-	:Enemy(EnemyType::EN_SWORDPROJECTILE, NULL)//, false, 1, false)
+GravityBlast::GravityBlast(Actor *player)
+	:Enemy(EnemyType::EN_GRAVITYBLAST, NULL)//, false, 1, false)
 {
 	SetNumActions(S_Count);
-	SetEditorActions(S_SHOT, S_SHOT, 0);
+	SetEditorActions(S_EXPLODE, S_EXPLODE, 0);
 
-	actionLength[S_SHOT] = 3;
-	actionLength[S_EXPLODE] = 1;
+	actionLength[S_EXPLODE] = 30;
 
-	animFactor[S_SHOT] = 6;
 	animFactor[S_EXPLODE] = 1;
 
+	testCircle.setFillColor(Color(0, 255, 0, 60));
+	
 
 	//SetLevel(ap->GetLevel());
 
 	SetCurrPosInfo(startPosInfo);
 
-	speed = 15;
-	shootLimit = 40;
 	hitLimit = 6;
+
 	facingRight = true;
 
 	ts = player->ts_swordProjectile;//GetSizedTileset("Enemies/General/comboers_128x128.png");
@@ -65,19 +64,24 @@ SwordProjectile::SwordProjectile(Actor *player)
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::GREY;
 
-	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
+	int blastRadius = 180;
+
+	comboObj->enemyHitBody.BasicCircleSetup(blastRadius, GetPosition());
+
+	testCircle.setRadius(blastRadius);
+	testCircle.setOrigin(testCircle.getLocalBounds().width / 2, testCircle.getLocalBounds().height / 2);
 
 	ResetEnemy();
 }
 
-SwordProjectile::~SwordProjectile()
+GravityBlast::~GravityBlast()
 {
 }
 
 //sess->PlayerRestoreDoubleJump(0);
 //sess->PlayerRestoreAirDash(0);
 
-void SwordProjectile::SetLevel(int lev)
+void GravityBlast::SetLevel(int lev)
 {
 	level = lev;
 	switch (level)
@@ -96,7 +100,7 @@ void SwordProjectile::SetLevel(int lev)
 	}
 }
 
-void SwordProjectile::ComboKill(Enemy *e)
+void GravityBlast::ComboKill(Enemy *e)
 {
 	//if (detachOnKill)
 	//{
@@ -126,19 +130,14 @@ void SwordProjectile::ComboKill(Enemy *e)
 	//	return;
 	//}
 	//UpdateKilledNumberText(maxKilled - numKilled);
-	sess->PlayerRestoreAirOptions(0);
+	//sess->PlayerRestoreAirOptions(0);
 }
 
-void SwordProjectile::ResetEnemy()
+void GravityBlast::ResetEnemy()
 {
-	data.shootFrames = 0;
 	data.currHits = 0;
 	comboObj->Reset();
-	data.velocity = V2d(0, 0);
-
-	//DefaultHurtboxesOn();
-	//DefaultHitboxesOn();
-	action = S_SHOT;
+	action = S_EXPLODE;
 	frame = 0;
 
 	UpdateHitboxes();
@@ -146,12 +145,12 @@ void SwordProjectile::ResetEnemy()
 	UpdateSprite();
 }
 
-bool SwordProjectile::IsActive()
+bool GravityBlast::IsActive()
 {
 	return spawned && !dead;//comboObj->active || !dead;
 }
 
-void SwordProjectile::DirectKill()
+void GravityBlast::DirectKill()
 {
 	if (!dead)
 	{
@@ -175,7 +174,7 @@ void SwordProjectile::DirectKill()
 		sess->PlayerRemoveActiveComboer(comboObj);
 }
 
-void SwordProjectile::Throw( int playerIndex, V2d &pos, V2d &dir)
+void GravityBlast::Activate(int playerIndex, V2d pos, V2d dir)
 {
 	sess->AddEnemy(this);
 
@@ -183,14 +182,16 @@ void SwordProjectile::Throw( int playerIndex, V2d &pos, V2d &dir)
 	V2d normalizedDir = normalize(dir);
 
 	currPosInfo.position = pos;
-	action = S_SHOT;
+	action = S_EXPLODE;
 	frame = 0;
-	comboObj->enemyHitboxInfo->hDir = normalizedDir;
-	data.velocity = normalizedDir * speed;
-	sess->PlayerAddActiveComboObj(comboObj,playerIndex );
+	comboObj->enemyHitboxInfo->hitPosType = HitboxInfo::HitPosType::OMNI;
+	comboObj->enemyHitboxInfo->hDir = V2d(0, 0);//normalizedDir;
+	sess->PlayerAddActiveComboObj(comboObj, playerIndex);
+
+	UpdateSprite();
 }
 
-void SwordProjectile::ProcessState()
+void GravityBlast::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -211,14 +212,14 @@ void SwordProjectile::ProcessState()
 	//V2d playerPos = owner->GetPlayer(0)->position;
 }
 
-void SwordProjectile::HandleNoHealth()
+void GravityBlast::HandleNoHealth()
 {
 
 }
 
-void SwordProjectile::UpdateEnemyPhysics()
+void GravityBlast::UpdateEnemyPhysics()
 {
-	switch (action)
+	/*switch (action)
 	{
 	case S_SHOT:
 	{
@@ -230,12 +231,12 @@ void SwordProjectile::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);*/
 }
 
-void SwordProjectile::FrameIncrement()
+void GravityBlast::FrameIncrement()
 {
-	if (action == S_SHOT)
+	/*if (action == S_SHOT)
 	{
 		if (data.shootFrames == shootLimit)
 		{
@@ -246,34 +247,42 @@ void SwordProjectile::FrameIncrement()
 		{
 			++data.shootFrames;
 		}
-	}
+	}*/
 }
 
-void SwordProjectile::ComboHit()
+void GravityBlast::ComboHit()
 {
 	pauseFrames = 6;
 	++data.currHits;
-	if (data.currHits >= hitLimit)
+	/*if (data.currHits >= hitLimit)
 	{
 		action = S_EXPLODE;
 		frame = 0;
-	}
+	}*/
 }
 
-void SwordProjectile::UpdateSprite()
+void GravityBlast::UpdateSprite()
 {
 	sprite.setPosition(GetPositionF());
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setRotation(0);
+
+	testCircle.setPosition(GetPositionF());
 }
 
-int SwordProjectile::GetNumStoredBytes()
+void GravityBlast::EnemyDraw(sf::RenderTarget *target)
+{
+	DrawSprite(target, sprite);
+	target->draw(testCircle); 
+}
+
+int GravityBlast::GetNumStoredBytes()
 {
 	return sizeof(MyData) + comboObj->GetNumStoredBytes();
 }
 
-void SwordProjectile::StoreBytes(unsigned char *bytes)
+void GravityBlast::StoreBytes(unsigned char *bytes)
 {
 	StoreBasicEnemyData(data);
 	memcpy(bytes, &data, sizeof(MyData));
@@ -283,7 +292,7 @@ void SwordProjectile::StoreBytes(unsigned char *bytes)
 	bytes += comboObj->GetNumStoredBytes();
 }
 
-void SwordProjectile::SetFromBytes(unsigned char *bytes)
+void GravityBlast::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
 	SetBasicEnemyData(data);

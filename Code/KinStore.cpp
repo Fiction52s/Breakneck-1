@@ -206,9 +206,13 @@ int StoreEntry::GetUpgradeEffect(const std::string &str)
 	{
 		return UE_GRAVITY_CEILING_SPEED;
 	}
-	else if( str == "GRAVITY_CEILING_CHARGE_ATTACK")
+	else if( str == "GRAVITY_CEILING_BLAST")
 	{
-		return UE_GRAVITY_CEILING_CHARGE_ATTACK;
+		return UE_GRAVITY_CEILING_BLAST;
+	}
+	else if (str == "GRAVITY_CEILING_BIGGER_BLAST")
+	{
+		return UE_GRAVITY_CEILING_BIGGER_BLAST;
 	}
 	else if( str == "BOUNCE_SCORPION_UNLOCK")
 	{

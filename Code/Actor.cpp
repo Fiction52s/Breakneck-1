@@ -55,6 +55,7 @@
 #include "Enemy_AntiTimeSlowBooster.h"
 #include "Enemy_SwordProjectileBooster.h"
 #include "Enemy_SwordProjectile.h"
+#include "Enemy_GravityBlast.h"
 #include "Enemy_MomentumBooster.h"
 #include "Enemy_InspectObject.h"
 #include "GameMode.h"
@@ -823,6 +824,16 @@ void Actor::SetSession(Session *p_sess,
 			swordProjectiles[i]->SetEnemyIDAndAddToAllEnemiesVec();
 		}
 	}
+
+	if (gravityBlasts[0] != NULL)
+	{
+		for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+		{
+			gravityBlasts[i]->sess = sess;
+			gravityBlasts[i]->SetEnemyIDAndAddToAllEnemiesVec();
+		}
+	}
+	
 }
 
 SoundInfo * Actor::GetSound(const std::string &name)
@@ -3547,6 +3558,12 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		swordProjectiles[0] = NULL;
 	}
 
+	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+	{
+		gravityBlasts[0] = NULL;
+	}
+	
+
 	survivalTimer = new TimerHUD(Session::GetSession(), false, false);
 
 	SetSession(Session::GetSession(), gs, es);
@@ -3605,7 +3622,10 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		swordProjectiles[i] = new SwordProjectile(this);
 	}
 
-	
+	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+	{
+		gravityBlasts[i] = new GravityBlast(this);
+	}
 
 	LoadHitboxes();
 
@@ -4273,6 +4293,13 @@ Actor::~Actor()
 	{
 		delete swordProjectiles[i];
 	}
+
+	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+	{
+		delete gravityBlasts[i];
+	}
+
+	
 
 	//delete skin;
 	//delete swordSkin;
@@ -5214,6 +5241,13 @@ void Actor::Respawn( bool setStartPos )
 	{
 		swordProjectiles[i]->Reset();
 	}
+
+	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+	{
+		gravityBlasts[i]->Reset();
+	}
+
+	
 
 	ResetGrassCounters();
 	ResetAttackHit();
@@ -18617,6 +18651,20 @@ bool Actor::CareAboutSpeedAction()
 		&& action != GRINDATTACK;
 }
 
+bool Actor::TryActivateGravityBlast(V2d dir)
+{
+	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+	{
+		if (!gravityBlasts[i]->IsActive())
+		{
+			gravityBlasts[i]->Activate(actorIndex, position, dir);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool Actor::TryThrowSwordProjectile(V2d &offset, V2d &dir)
 {
 	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
@@ -22534,6 +22582,8 @@ void Actor::DefaultCeilingLanding(double &movement)
 		}
 	}
 
+	
+
 	RestoreAirOptions();
 	reversed = true;
 
@@ -22586,7 +22636,7 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	movement = 0;
 
-
+	TryActivateGravityBlast(gno);
 	
 	//offsetX = -10;//(position.x + b.offset.x) - minContact.position.x;
 	
@@ -27072,6 +27122,11 @@ void Actor::SetEnemyIDsForProjectiles()
 	{
 		swordProjectiles[i]->SetEnemyIDAndAddToAllEnemiesVec();
 	}
+
+	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+	{
+		gravityBlasts[i]->SetEnemyIDAndAddToAllEnemiesVec();
+	}
 }
 
 void Actor::RemoveAllProjectiles()
@@ -27081,6 +27136,14 @@ void Actor::RemoveAllProjectiles()
 		if (swordProjectiles[i]->IsActive())
 		{
 			swordProjectiles[i]->DirectKill();
+		}
+	}
+
+	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
+	{
+		if (gravityBlasts[i]->IsActive())
+		{
+			gravityBlasts[i]->DirectKill();
 		}
 	}
 }
