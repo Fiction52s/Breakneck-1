@@ -27,7 +27,7 @@ struct TimeBooster : Enemy
 
 	TimeBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 	bool CountsForEnemyGate() { return false; }
-	bool IsHomingTarget() { return false; }
+	
 	void ProcessState();
 	void SetLevel(int lev);
 	bool IsSlowed(int index);
@@ -37,6 +37,7 @@ struct TimeBooster : Enemy
 	bool Boost();
 	bool IsBoostable();
 	void AddToWorldTrees();
+	bool IsHomingTarget(int trackingType);
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

@@ -2,7 +2,7 @@
 #include "Session.h"
 #include "Enemy.h"
 
-bool EnemyTracker::GetClosestEnemyPos(V2d &pos,
+bool EnemyTracker::GetClosestEnemyPos( int trackingType, V2d &pos,
 	double radius, Enemy *&foundEnemy, int &foundIndex )
 {
 	Session *sess = Session::GetSession();
@@ -21,7 +21,7 @@ bool EnemyTracker::GetClosestEnemyPos(V2d &pos,
 	bool enemyCanBeAnchored;
 	while (curr != NULL)
 	{
-		if (CheckIfEnemyIsTrackable(curr))
+		if (CheckIfEnemyIsTrackable(curr, trackingType ) )
 		{
 			numPoints = curr->GetNumCamPoints();
 			for (i = 0; i < numPoints; ++i)
@@ -56,7 +56,7 @@ bool EnemyTracker::GetClosestEnemyPos(V2d &pos,
 	return foundPoint;
 }
 
-bool EnemyTracker::CheckIfEnemyIsTrackable( Enemy *e )
+bool EnemyTracker::CheckIfEnemyIsTrackable( Enemy *e, int trackingType )
 {
 	return e->IsValidTrackEnemy();
 }

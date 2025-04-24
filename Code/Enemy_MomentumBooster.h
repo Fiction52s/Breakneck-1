@@ -36,7 +36,7 @@ struct MomentumBooster : Enemy
 	MomentumBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 
 	bool CountsForEnemyGate() { return false; }
-	bool IsHomingTarget() { return false; }
+	bool IsHomingTarget(int trackingType);
 	void ProcessState();
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);

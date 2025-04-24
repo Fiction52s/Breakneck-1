@@ -1908,7 +1908,7 @@ struct Actor : QuadTreeCollider,
 	void SteepSlideMovement();
 	void SteepClimbMovement();
 
-	bool CheckIfEnemyIsTrackable(Enemy *e);
+	bool CheckIfEnemyIsTrackable(Enemy *e, int trackingType );
 
 	void RevertAfterSimulating();
 	void ForwardSimulate(int frames, bool storePositions);

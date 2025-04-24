@@ -114,7 +114,7 @@ struct PowerItem : Enemy
 	void DissipateOnTouch();
 	void Capture();
 	void FrameIncrement();
-	bool IsHomingTarget() { return false; }
+	bool IsHomingTarget( int trackingType ) { return false; }
 	bool IsValidTrackEnemy() { return false; }
 
 	int GetNumStoredBytes();

@@ -4,6 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "EnemyTracker.h"
 
 
 using namespace std;
@@ -88,6 +89,14 @@ void Booster::SetLevel(int lev)
 void Booster::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
+}
+
+bool Booster::IsHomingTarget(int trackingType)
+{
+	if (trackingType == TRACKING_PLAYER_HOMING_POWER)
+		return true;
+
+	return false;
 }
 
 bool Booster::Boost()

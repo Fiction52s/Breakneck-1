@@ -5,6 +5,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Actor.h"
+#include "EnemyTracker.h"
 
 
 using namespace std;
@@ -248,6 +249,14 @@ void MomentumBooster::DrawMinimap(sf::RenderTarget *target)
 		enemyCircle.setPosition(GetPositionF());
 		target->draw(enemyCircle);
 	}
+}
+
+bool MomentumBooster::IsHomingTarget(int trackingType)
+{
+	if (trackingType == TRACKING_PLAYER_HOMING_POWER)
+		return true;
+
+	return false;
 }
 
 int MomentumBooster::GetNumStoredBytes()

@@ -4,6 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "EnemyTracker.h"
 
 
 using namespace std;
@@ -189,6 +190,15 @@ void AntiTimeSlowBooster::DrawMinimap(sf::RenderTarget *target)
 		target->draw(enemyCircle);
 	}
 }
+
+bool AntiTimeSlowBooster::IsHomingTarget(int trackingType)
+{
+	if (trackingType == TRACKING_PLAYER_HOMING_POWER)
+		return true;
+
+	return false;
+}
+
 
 int AntiTimeSlowBooster::GetNumStoredBytes()
 {

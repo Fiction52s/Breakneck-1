@@ -138,7 +138,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	virtual bool IsValidTrackEnemyIndex(int ind) { return true; } //only gets checked if the whole enemy is trackable anyway
 	virtual bool IsValidTrackEnemy() { return !dead; }
-	virtual bool IsHomingTarget() { return true; }
+	virtual bool IsHomingTarget( int trackingType ) { return true; }
 
 	int summonFrame;
 	const static int summonDuration;

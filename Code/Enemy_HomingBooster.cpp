@@ -4,7 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-
+#include "EnemyTracker.h"
 
 using namespace std;
 using namespace sf;
@@ -183,6 +183,14 @@ void HomingBooster::DrawMinimap(sf::RenderTarget *target)
 		enemyCircle.setPosition(GetPositionF());
 		target->draw(enemyCircle);
 	}
+}
+
+bool HomingBooster::IsHomingTarget(int trackingType)
+{
+	if (trackingType == TRACKING_PLAYER_HOMING_POWER)
+		return true;
+
+	return false;
 }
 
 int HomingBooster::GetNumStoredBytes()

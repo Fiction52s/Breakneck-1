@@ -43,14 +43,13 @@ struct HungryComboer : Enemy, EnemyTracker
 
 	double homingRadius;
 
-	//bool IsHomingTarget() { return false; }
 	bool CountsForEnemyGate() { return false; }
 	HungryComboer(ActorParams *ap);
 	~HungryComboer();
 	
 	void SetLevel(int lev);
 	//void HandleEntrant(QuadTreeEntrant *qte);
-	bool CheckIfEnemyIsTrackable(Enemy *e);
+	bool CheckIfEnemyIsTrackable(Enemy *e, int trackingType );
 	void ProcessState();
 	void ProcessHit();
 	void Eat();

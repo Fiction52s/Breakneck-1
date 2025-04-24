@@ -7222,8 +7222,8 @@ void Actor::UpdateBubbles()
 		{
 			Enemy *foundEnemy = NULL;
 			int foundIndex;
-
-			if (GetClosestEnemyPos(position, 1000, foundEnemy, foundIndex))
+			
+			if (GetClosestEnemyPos(TRACKING_PLAYER_HOMING_POWER, position, 1000, foundEnemy, foundIndex))
 			{
 				if (airHomingFrame == -1)
 				{
@@ -7232,8 +7232,9 @@ void Actor::UpdateBubbles()
 
 				V2d foundPos = foundEnemy->GetCamPoint(foundIndex);
 				V2d eDir = normalize( foundPos - position);
+				double dist = length(foundPos - position);
 
-				if (foundEnemy->type == EN_CURRENCYCHAIN && length( foundPos - position ) < 200 ) //just needs to be bigger than currency pickup radius
+				if (foundEnemy->type == EN_CURRENCYCHAIN && dist < 200 ) //just needs to be bigger than currency pickup radius
 				{
 					if (dot(normalize(velocity), eDir) > .3)
 					{
@@ -7281,6 +7282,17 @@ void Actor::UpdateBubbles()
 					if (dot(velocity, eDir) < limit)
 					{
 						velocity += eDir * accel;
+
+						/*if (dist < 200)
+						{
+							double currSpeed = length(velocity);
+							velocity += eDir * .5;
+							if (length(velocity) > currSpeed)
+							{
+								velocity = normalize(velocity) * currSpeed;
+							}
+						}*/
+						
 					}
 				}
 				
@@ -24238,7 +24250,7 @@ bool Actor::TryHomingMovement()
 	Enemy *foundEnemy = NULL;
 	int foundIndex;
 
-	if (GetClosestEnemyPos(position, 2000, foundEnemy, foundIndex))
+	if (GetClosestEnemyPos( TRACKING_PLAYER_HOMING, position, 2000, foundEnemy, foundIndex))
 	{
 		V2d eDir = normalize(foundEnemy->GetPosition() - position);
 
@@ -26502,9 +26514,17 @@ void Actor::UpdateGroundedAttackSprite(
 	}
 }
 
-bool Actor::CheckIfEnemyIsTrackable(Enemy *e)
+bool Actor::CheckIfEnemyIsTrackable(Enemy *e, int trackingType )
 {
-	return e->IsHomingTarget() && EnemyTracker::CheckIfEnemyIsTrackable(e);
+	if (!EnemyTracker::CheckIfEnemyIsTrackable(e, trackingType))
+		return false;
+
+	if (e->IsHomingTarget(trackingType))
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void Actor::SetSkin(int skinIndex)

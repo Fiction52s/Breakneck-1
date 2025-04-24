@@ -966,7 +966,7 @@ void Wire::UpdateAnchors( V2d vel )
 			//if (((right && false)//player->IsOptionOn( Actor::UPGRADE_W6_WIRE) )
 			//	|| (!right && false))//player->IsOptionOn( Actor::UPGRADE_W6_WIRE_ENEMIES_LEFT )))
 				//&& GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
-			if(GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
+			if(GetClosestEnemyPos(TRACKING_WIRE_TO_ENEMY, wirePos, 128, foundEnemy, foundIndex))
 			{
 				data.storedPlayerPos = playerPos;
 				data.state = HIT;

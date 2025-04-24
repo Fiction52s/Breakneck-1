@@ -192,7 +192,7 @@ bool SpecialTarget::IsValidTrackEnemy()
 	return IsInteractible();
 }
 
-bool SpecialTarget::IsHomingTarget()
+bool SpecialTarget::IsHomingTarget( int trackingType )
 {
 	if (targetType == TARGET_HOMING )
 	{

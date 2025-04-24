@@ -67,7 +67,7 @@ struct AimLauncher : Enemy
 	void SetLevel(int lev);
 	void SetCurrDir(V2d &newDir);
 	bool CountsForEnemyGate() { return false; }
-	bool IsHomingTarget() { return false; }
+	bool IsHomingTarget(int trackingType);
 
 
 	AimLauncher(ActorParams *ap);

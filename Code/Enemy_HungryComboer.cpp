@@ -314,7 +314,7 @@ void HungryComboer::ProcessState()
 		{
 			Enemy *foundEnemy = NULL;
 			int foundIndex = 0;
-			if (GetClosestEnemyPos(GetPosition(), homingRadius, foundEnemy, foundIndex))
+			if (GetClosestEnemyPos( TRACKING_ENEMY, GetPosition(), homingRadius, foundEnemy, foundIndex))
 			{
 				action = S_TRACKENEMY;
 				data.chaseTarget = foundEnemy;
@@ -351,7 +351,7 @@ double HungryComboer::GetFlySpeed()
 }
 
 //checks to see if it can home on
-bool HungryComboer::CheckIfEnemyIsTrackable(Enemy *e)
+bool HungryComboer::CheckIfEnemyIsTrackable(Enemy *e, int trackingType )
 {
 	if (e != this && e->numHealth > 0 )
 	{

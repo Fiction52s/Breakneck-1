@@ -5,6 +5,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "MainMenu.h"
+#include "EnemyTracker.h"
 
 using namespace std;
 using namespace sf;
@@ -340,6 +341,15 @@ void AimLauncher::DrawMinimap(sf::RenderTarget *target)
 		target->draw(enemyCircle);
 	}
 }
+
+bool AimLauncher::IsHomingTarget(int trackingType)
+{
+	if (trackingType == TRACKING_PLAYER_HOMING_POWER)
+		return true;
+
+	return false;
+}
+
 
 int AimLauncher::GetNumStoredBytes()
 {

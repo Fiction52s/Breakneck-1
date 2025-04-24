@@ -35,7 +35,7 @@ struct Booster : Enemy
 	bool Boost();
 	bool IsBoostable();
 	void AddToWorldTrees();
-	bool IsHomingTarget() { return false; }
+	bool IsHomingTarget(int trackingType);
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

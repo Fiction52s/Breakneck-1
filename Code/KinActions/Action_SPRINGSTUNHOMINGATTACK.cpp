@@ -53,7 +53,7 @@ void Actor::SPRINGSTUNHOMINGATTACK_Update()
 		Enemy *foundEnemy = NULL;
 		int foundIndex;
 
-		if (GetClosestEnemyPos(position, 2000, foundEnemy, foundIndex))
+		if (GetClosestEnemyPos( TRACKING_PLAYER_HOMING, position, 2000, foundEnemy, foundIndex))
 		{
 			V2d eDir = normalize(foundEnemy->GetPosition() - position);
 			double len = length(springVel);

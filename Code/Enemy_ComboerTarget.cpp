@@ -168,7 +168,7 @@ bool ComboerTarget::IsValidTrackEnemy()
 	return IsInteractible();
 }
 
-bool ComboerTarget::IsHomingTarget()
+bool ComboerTarget::IsHomingTarget(int trackingType)
 {
 	return false;
 }

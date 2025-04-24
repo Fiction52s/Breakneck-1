@@ -4,6 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "EnemyTracker.h"
 
 using namespace std;
 using namespace sf;
@@ -182,6 +183,14 @@ void TimeBooster::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+}
+
+bool TimeBooster::IsHomingTarget(int trackingType)
+{
+	if (trackingType == TRACKING_PLAYER_HOMING_POWER)
+		return true;
+
+	return false;
 }
 
 void TimeBooster::DrawMinimap(sf::RenderTarget *target)

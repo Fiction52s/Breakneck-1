@@ -97,7 +97,7 @@ struct Shard : Enemy
 	void UpdateParamsSettings();
 	void Setup();
 	bool CountsForEnemyGate() { return false; }
-	bool IsHomingTarget() { return false; }
+	bool IsHomingTarget( int trackingType ) { return false; }
 	bool IsValidTrackEnemy() { return false; }
 	ShapeEmitter *testEmitter;
 	MovingGeoGroup geoGroup;

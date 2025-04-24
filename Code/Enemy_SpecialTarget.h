@@ -43,7 +43,7 @@ struct SpecialTarget : Enemy
 	SpecialTarget(ActorParams *ap);
 	bool IsInteractible();
 	bool IsValidTrackEnemy();
-	bool IsHomingTarget();
+	bool IsHomingTarget(int trackingType);
 	void FrameIncrement();
 	void SetLevel(int lev);
 	void ProcessState();

@@ -63,7 +63,7 @@ struct LogItem : Enemy
 	//void UpdateParamsSettings();
 	void Setup();
 	void UpdateParamsSettings();
-	bool IsHomingTarget() { return false; }
+	bool IsHomingTarget(int trackingType) { return false; }
 	bool IsValidTrackEnemy() { return false; }
 
 	void Launch();

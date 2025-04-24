@@ -47,7 +47,7 @@ struct ComboerTarget : Enemy
 	ComboerTarget(ActorParams *ap);
 	bool IsInteractible();
 	bool IsValidTrackEnemy();
-	bool IsHomingTarget();
+	bool IsHomingTarget(int trackingType);
 	void SetLevel(int lev);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
