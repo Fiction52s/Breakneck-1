@@ -176,7 +176,7 @@ void TimerHUD::SetNumFrames(int frames)
 			Shrink();
 		}
 
-		if (frames <= 5 * 60) //survival
+		if (frames <= sess->GetPlayer(0)->GetNumMaxSurvivalFrames()) //survival
 		{
 			SetColor(sess->GetPlayer(0)->currentDespColor);
 		}

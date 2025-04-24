@@ -8,6 +8,7 @@
 #include "GGPO.h"
 #include "EditorRail.h"
 #include "MainMenu.h"
+#include "KinUpgrades.h"
 
 using namespace sf;
 using namespace std;
@@ -110,13 +111,25 @@ Wire::Wire( Actor *p, bool r)
 	tipHitboxInfo->hitstunFrames = 30;
 	tipHitboxInfo->knockback = 0;
 	tipHitboxInfo->freezeDuringStun = true;
+
+	stunHitboxInfo = new HitboxInfo();
+	stunHitboxInfo->damage = 20;
+	stunHitboxInfo->drainX = .5;
+	stunHitboxInfo->drainY = .5;
+	stunHitboxInfo->hitlagFrames = 6;
+	stunHitboxInfo->hitstunFrames = 30;
+	stunHitboxInfo->knockback = 0;
+	stunHitboxInfo->freezeDuringStun = true;
+
 	if (r)
 	{
 		tipHitboxInfo->hType = HitboxInfo::WIREHITRED;
+		stunHitboxInfo->hType = HitboxInfo::HitboxType::WIRE_STUN_RED;
 	}
 	else
 	{
 		tipHitboxInfo->hType = HitboxInfo::WIREHITBLUE;
+		stunHitboxInfo->hType = HitboxInfo::HitboxType::WIRE_STUN_BLUE;
 	}
 	
 
@@ -153,6 +166,7 @@ Wire::~Wire()
 	delete[] nodeQuads;
 
 	delete tipHitboxInfo;
+	delete stunHitboxInfo;
 }
 
 V2d Wire::GetPlayerPos()
@@ -322,13 +336,24 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 			else
 			{
+				bool enemyDead = false;
+				if (data.anchor.enemyIndex >= 0)
+				{
+					Enemy *enemy = player->sess->GetEnemyFromID(data.anchor.enemyIndex);
+					if (enemy->numHealth == 0)
+					{
+						enemyDead = true;
+					}
+				}
+				
 				
 
-				if( !triggerDown && player->ground == NULL )
+				if( (!triggerDown && player->ground == NULL) || enemyDead )
 				{
 					data.state = RETRACTING;
 					data.retractPlayerPos = playerPos;
 					data.fusePointIndex = data.numPoints;
+					data.anchor.enemyIndex = -1;
 					if(data.numPoints == 0 )
 					{
 						data.fuseQuantity = length(data.anchor.pos - data.retractPlayerPos );
@@ -497,7 +522,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	case PULLING:
 		{
 			//cout << "pulling!" << endl;
-		data.totalLength = GetCurrentTotalLength();
+			data.totalLength = GetCurrentTotalLength();
 
 			V2d wn;
 			data.segmentLength = GetSegmentLength();
@@ -772,6 +797,16 @@ void Wire::UpdateEnemyAnchor()
 		data.anchorVel = data.realAnchor - data.oldPos;
 
 	}
+
+	//just need this for now I'll put it in its own function soon
+	if (data.state == PULLING)
+	{
+		double len = length(data.realAnchor - player->position);
+		V2d dir = normalize(data.realAnchor - player->position);
+
+		data.stunHitbox.SetRectDir(dir, len, 20);
+		data.stunHitbox.globalPosition = (data.realAnchor + player->position) / 2.0;
+	}
 }
 
 CollisionBox * Wire::GetTipHitbox()
@@ -926,27 +961,30 @@ void Wire::UpdateAnchors( V2d vel )
 		int foundIndex;
 
 
-
-		if ( ((right && false )//player->IsOptionOn( Actor::UPGRADE_W6_WIRE) )
-			|| (!right && false ) )//player->IsOptionOn( Actor::UPGRADE_W6_WIRE_ENEMIES_LEFT )))
-			&& GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
+		if (player->HasUpgradeEffect(UE_WIRES_ATTACH_TO_ENEMIES))
 		{
-			data.storedPlayerPos = playerPos;
-			data.state = HIT;
-			data.hitStallCounter = data.framesFiring;
-			SetCanRetractGround();
-			data.numPoints = 0;
-			data.anchor.pos = foundEnemy->GetCamPoint(foundIndex); //minSideEdge->v0;
-			data.anchor.quantity = 0;
+			//if (((right && false)//player->IsOptionOn( Actor::UPGRADE_W6_WIRE) )
+			//	|| (!right && false))//player->IsOptionOn( Actor::UPGRADE_W6_WIRE_ENEMIES_LEFT )))
+				//&& GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
+			if(GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
+			{
+				data.storedPlayerPos = playerPos;
+				data.state = HIT;
+				data.hitStallCounter = data.framesFiring;
+				SetCanRetractGround();
+				data.numPoints = 0;
+				data.anchor.pos = foundEnemy->GetCamPoint(foundIndex); //minSideEdge->v0;
+				data.anchor.quantity = 0;
 
-			data.anchor.Reset();
+				data.anchor.Reset();
 
-			data.anchor.enemyIndex = player->sess->GetEnemyID(foundEnemy);
-			data.anchorVel = V2d(0, 0);
-			data.anchor.enemyPosIndex = foundIndex;
-			UpdateAnchors(V2d(0, 0));
+				data.anchor.enemyIndex = player->sess->GetEnemyID(foundEnemy);
+				data.anchorVel = V2d(0, 0);
+				data.anchor.enemyPosIndex = foundIndex;
+				UpdateAnchors(V2d(0, 0));
 
-			foundEnemy->HandleWireAnchored(this);
+				foundEnemy->HandleWireAnchored(this);
+			}
 		}
 
 		//for grabbing onto points
@@ -1852,6 +1890,10 @@ void Wire::DebugDraw(RenderTarget *target)
 	if (data.state == FIRING)
 	{
 		data.movingHitbox.DebugDraw(CollisionBox::Hit, target);
+	}
+	else if (data.state == PULLING)
+	{
+		data.stunHitbox.DebugDraw(CollisionBox::Hit, target);
 	}
 }
 

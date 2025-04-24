@@ -2355,7 +2355,13 @@ HitboxInfo * Enemy::IsHit(int pIndex )
 			return hi;
 		}
 
+		if (player->IntersectMyWireStunHitboxes(this, currHurtboxes, currHurtboxFrame))
+		{
+			return player->rightWire->stunHitboxInfo;
+		}
 	}
+
+	
 
 	
 	Wire *wire = player->IntersectMyWireHitboxes(this, currHurtboxes, currHurtboxFrame);
@@ -2607,7 +2613,8 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 		if (receivedHit.IsEmpty())
 			return false;
 
-		if (receivedHit.hType < HitboxInfo::HitboxType::WIREHITRED && !receivedHit.comboer)
+		if (receivedHit.hType != HitboxInfo::HitboxType::WIREHITRED && receivedHit.hType != HitboxInfo::HitboxType::WIREHITBLUE
+			&& !receivedHit.comboer)
 		{
 			player->ConfirmHit(e);
 		}

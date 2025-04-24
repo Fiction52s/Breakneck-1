@@ -117,6 +117,8 @@ struct HitboxInfo
 		WIREHITBLUE,
 		SCORPIONSTRIKE,
 		NO_HITBOX,
+		WIRE_STUN_RED,
+		WIRE_STUN_BLUE,
 		Count
 	};
 

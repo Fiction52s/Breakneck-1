@@ -244,6 +244,7 @@ void Actor::PopulateState(PState *ps)
 	ps->holdJump = holdJump;
 	ps->wallJumpFrameCounter = wallJumpFrameCounter;
 	ps->hasDoubleJump = hasDoubleJump;
+	ps->hasTripleJump = hasTripleJump;
 	ps->framesInAir = framesInAir;
 
 	ps->brh = b.rh;
@@ -529,6 +530,7 @@ void Actor::PopulateFromState(PState *ps)
 	holdJump = ps->holdJump;
 	wallJumpFrameCounter = ps->wallJumpFrameCounter;
 	hasDoubleJump = ps->hasDoubleJump;
+	hasTripleJump = ps->hasTripleJump;
 	framesInAir = ps->framesInAir;
 
 	b.rh = ps->brh;
@@ -2384,6 +2386,18 @@ void Actor::SetupActionFunctions()
 		&Actor::HOMINGATTACK_GetActionLength,
 		&Actor::HOMINGATTACK_GetTilesetName);
 
+	SetupFuncsForAction(HOMING_RUSH_ATTACK,
+		&Actor::HOMING_RUSH_ATTACK_Start,
+		&Actor::HOMING_RUSH_ATTACK_End,
+		&Actor::HOMING_RUSH_ATTACK_Change,
+		&Actor::HOMING_RUSH_ATTACK_Update,
+		&Actor::HOMING_RUSH_ATTACK_UpdateSprite,
+		&Actor::HOMING_RUSH_ATTACK_TransitionToAction,
+		&Actor::HOMING_RUSH_ATTACK_TimeIndFrameInc,
+		&Actor::HOMING_RUSH_ATTACK_TimeDepFrameInc,
+		&Actor::HOMING_RUSH_ATTACK_GetActionLength,
+		&Actor::HOMING_RUSH_ATTACK_GetTilesetName);
+
 	SetupFuncsForAction(INSPECT_END,
 		&Actor::INSPECT_END_Start,
 		&Actor::INSPECT_END_End,
@@ -3259,6 +3273,18 @@ void Actor::SetupActionFunctions()
 		&Actor::TESTSUPER_TimeDepFrameInc,
 		&Actor::TESTSUPER_GetActionLength,
 		&Actor::TESTSUPER_GetTilesetName);
+
+	SetupFuncsForAction(TRIPLE_JUMP,
+		&Actor::TRIPLE_JUMP_Start,
+		&Actor::TRIPLE_JUMP_End,
+		&Actor::TRIPLE_JUMP_Change,
+		&Actor::TRIPLE_JUMP_Update,
+		&Actor::TRIPLE_JUMP_UpdateSprite,
+		&Actor::TRIPLE_JUMP_TransitionToAction,
+		&Actor::TRIPLE_JUMP_TimeIndFrameInc,
+		&Actor::TRIPLE_JUMP_TimeDepFrameInc,
+		&Actor::TRIPLE_JUMP_GetActionLength,
+		&Actor::TRIPLE_JUMP_GetTilesetName);
 
 	SetupFuncsForAction(UAIR,
 		&Actor::UAIR_Start,
@@ -4682,6 +4708,13 @@ bool Actor::AirAttack()
 		return true;
 	}
 
+	if ( HasUpgradeEffect( UE_HOMING_BOOST_ATTACK ) && AttackButtonPressed() && airHomingFrame >= 0 )
+	{
+		pauseBufferedAttack = Action::Count;
+		SetAction(HOMING_RUSH_ATTACK);
+		return true;
+	}
+
 	if (pauseBufferedAttack != Action::Count)
 	{
 		SetAction(pauseBufferedAttack);
@@ -5031,10 +5064,7 @@ void Actor::Respawn( bool setStartPos )
 
 	airHomingFrame = -1;
 
-	int increasedHealthLevel = GetUpgradeEffectCount(UE_INCREASE_STARTING_HEALTH);
-
-	health = 100;
-	health += 100 * increasedHealthLevel;
+	
 
 
 	gravityIncreaserTrailEmitter->Reset();
@@ -5129,6 +5159,11 @@ void Actor::Respawn( bool setStartPos )
 	{
 		SetAllUpgrades(sess->currPlayerUpgradeLevels);
 	}
+
+	int increasedHealthLevel = GetUpgradeEffectCount(UE_INCREASE_STARTING_HEALTH);
+
+	health = 100;
+	health += 100 * increasedHealthLevel;
 
 	spriteAction = HIDDEN;
 
@@ -5558,7 +5593,7 @@ void Actor::KinModeUpdate()
 {
 	if (health == 0 && !simulationMode && action != DEATH && kinMode == K_NORMAL )//numFramesToLive == 0)
 	{
-		numFramesToLive = 5 * 60;
+		numFramesToLive = GetNumMaxSurvivalFrames();
 		SetKinMode(K_DESPERATION);
 
 		//SetKinMode(K_NORMAL);
@@ -5717,7 +5752,7 @@ void Actor::KinModeUpdate()
 
 int Actor::GetSurvivalFrame()
 {
-	return maxDespFrames - numFramesToLive;
+	return GetNumMaxSurvivalFrames() - numFramesToLive;
 }
 
 void Actor::ReverseVerticalInputs()
@@ -7006,7 +7041,7 @@ void Actor::LimitMaxSpeeds()
 		//&& action != SPRINGSTUNAIRBOUNCE
 		//&& action != SPRINGSTUNTELEPORT)
 	{
-		if (action != AIRDASH && !(rightWire->IsPulling() && leftWire->IsPulling()) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD && action != WAITFORSHIP)
+		if (action != AIRDASH && !(rightWire->IsPulling() && leftWire->IsPulling()) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD && action != WAITFORSHIP && action != HOMING_RUSH_ATTACK)
 		{
 			if (!frameAfterAttackingHitlagOver) //hitting enemies was making full hop height lower
 			{
@@ -7138,6 +7173,7 @@ void Actor::ActivateLauncherEffect(int tile)
 	float secondThresh = .8f;
 	if (doneFactor < firstThresh)
 	{
+	
 		colorFactor = 0;
 	}
 	else if (doneFactor >= firstThresh && doneFactor < secondThresh)
@@ -7229,11 +7265,26 @@ void Actor::UpdateBubbles()
 				double accel = 1.0;
 				double limit = 28;
 
-				
-				if (dot(velocity, eDir) < limit)
+				if (action == HOMING_RUSH_ATTACK)//action == FAIR || action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK)
 				{
-					velocity += eDir * accel;
+					if (frame == 0)
+					{
+						velocity = eDir * max(30.0, dot(velocity, eDir));
+					}
+					else
+					{
+
+					}
 				}
+				else
+				{
+					if (dot(velocity, eDir) < limit)
+					{
+						velocity += eDir * accel;
+					}
+				}
+				
+				
 
 				if (ground != NULL || bounceEdge != NULL || grindEdge != NULL)
 				{
@@ -12561,6 +12612,35 @@ bool Actor::IntersectMyHurtboxes(CollisionBody *cb, int cbFrame )
 	//return currHurtboxes->Intersects(currHurtboxFrame, cb, cbFrame);
 }
 
+bool Actor::IntersectMyWireStunHitboxes(Enemy *e, CollisionBody *cb, int cbFrame)
+{
+	if (!HasUpgradeEffect(UE_WIRES_STUN))
+	{
+		return false;
+	}
+
+	if (cb == NULL || (!rightWire->IsPulling() && !leftWire->IsPulling()))
+		return false;
+
+	if (rightWire->IsPulling())
+	{
+		if ( e->enemyIndex != rightWire->data.anchor.enemyIndex && cb->Intersects(cbFrame, &(rightWire->data.stunHitbox)))
+		{
+			return true;
+		}
+	}
+
+	if (leftWire->IsPulling())
+	{
+		if (e->enemyIndex != leftWire->data.anchor.enemyIndex && cb->Intersects(cbFrame, &(leftWire->data.stunHitbox)))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool Actor::IntersectMyHitboxes(CollisionBody *cb,
 	int cbFrame)
 {
@@ -17629,6 +17709,22 @@ V2d Actor::GetTrueCenter()
 	return position + b.offset;
 }
 
+int Actor::GetNumMaxSurvivalFrames()
+{
+	double numSurvivalLengthUpgrade = GetUpgradeEffectCount(UE_LONGER_SURVIVAL_MODE);
+	int totalSurvivalLengthUpgrades = GetUpgradeEffectTotalCount(UE_LONGER_SURVIVAL_MODE);
+
+	double maxUpgrade = maxDespFrames;//5 * 60;
+	double amt = 0;
+	if (totalSurvivalLengthUpgrades > 0)
+	{
+		amt = maxUpgrade * (numSurvivalLengthUpgrade / totalSurvivalLengthUpgrades);
+	}
+
+	int totalFrames = 5 * 60 + amt;
+	return totalFrames;
+}
+
 void Actor::TryStartWaterGlide()
 {
 	if (action == WATERGLIDE || action == WATERGLIDE_HITSTUN || action == WATERGLIDECHARGE)
@@ -19096,7 +19192,7 @@ void Actor::UpdatePostPhysics()
 
 	if (kinMode == K_DESPERATION && !simulationMode)
 	{
-		float despFactor = GetSurvivalFrame() / (float)maxDespFrames;
+		float despFactor = GetSurvivalFrame() / (float)GetNumMaxSurvivalFrames();
 		float lengthFactor = min(1.f, despFactor + .3f);//min(1.f, despFactor + .3f);
 		sess->pokeTriangleScreenGroup->SetLengthFactor(lengthFactor);
 
@@ -19524,6 +19620,11 @@ double Actor::GetGravity()
 
 sf::Vector2<double> Actor::AddAerialGravity( sf::Vector2<double> vel )
 {
+	if (action == HOMING_RUSH_ATTACK)
+	{
+		return vel;
+	}
+
 	double normalGravity;
 	if( vel.y >= maxFallSpeedSlow )
 	{
@@ -22949,7 +23050,7 @@ void Actor::DrawShield(sf::RenderTarget *target)
 
 void Actor::DrawHomingBall(sf::RenderTarget *target)
 {
-	if (action == HOMINGATTACK)
+	if (action == HOMINGATTACK || action == HOMING_RUSH_ATTACK )
 	{
 		target->draw(homingAttackBallSprite);
 	}
@@ -24158,10 +24259,6 @@ bool Actor::TryHomingMovement()
 
 void Actor::AirMovement()
 {
-	bool powerSlow1 = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK)
-		&& PowerButtonHeld()
-		&& currPowerMode == PMODE_TIMESLOW;
-
 	if( leftWire->IsPulling() || rightWire->IsPulling())
 	{
 	}
@@ -24169,7 +24266,7 @@ void Actor::AirMovement()
 	{
 		FreeFlightMovement();
 	}
-	else if (powerSlow1)
+	else if (airHomingFrame >= 0)
 	{
 
 	}
@@ -24842,6 +24939,10 @@ void Actor::ExecuteDoubleJump()
 	{
 		currStrength = backDoubleJumpStrength;
 	}
+	else if (action == TRIPLE_JUMP)
+	{
+		currStrength = doubleJumpStrength;// *2;
+	}
 	else
 	{
 		currStrength = doubleJumpStrength;
@@ -25055,6 +25156,11 @@ bool Actor::TryDoubleJump()
 		}
 
 		return true;
+	}
+	else if ( bounceFlameOn && HasUpgradeEffect(UE_BOUNCE_TRIPLE_JUMP) && JumpButtonPressed() && !IsSingleWirePulling())
+	{
+		SetAction(TRIPLE_JUMP);
+		frame = 0;
 	}
 	
 	return false;
@@ -25583,7 +25689,7 @@ bool Actor::CheckIfIHitBullet(BasicBullet *b)
 		return false;
 	}
 
-	if (HasUpgradeEffect(UE_ATTACK_THROUGH_BULLETS))
+	if (!HasUpgradeEffect(UE_ATTACK_THROUGH_BULLETS))
 	{
 		return false;
 	}

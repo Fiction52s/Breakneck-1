@@ -426,6 +426,8 @@ struct Actor : QuadTreeCollider,
 		INSPECT_START,
 		INSPECT_END,
 		EXIT_RUSH,
+		TRIPLE_JUMP,
+		HOMING_RUSH_ATTACK,
 		Count
 	};
 
@@ -777,7 +779,7 @@ struct Actor : QuadTreeCollider,
 	double groundSpeed;
 	bool facingRight;
 	bool hasDoubleJump;
-	int numExtraDoubleJumps;
+	bool hasTripleJump;
 	Edge *ground;
 	double edgeQuantity;
 	int framesInAir;
@@ -1795,6 +1797,7 @@ struct Actor : QuadTreeCollider,
 	bool IntersectMyHurtboxes(CollisionBox &cb);
 	bool IntersectMyHitboxes(CollisionBody *cb,
 		int cbFrame);
+	bool IntersectMyWireStunHitboxes(Enemy * e, CollisionBody *cb, int cbFrame);
 	bool IntersectMySlowboxes(CollisionBody *cb,
 		int cbFrame );
 	ComboObject * IntersectMyComboHitboxes(
@@ -1812,6 +1815,7 @@ struct Actor : QuadTreeCollider,
 	double GetGravity();
 	void HandleSpecialTerrain();
 	V2d GetTrueCenter();
+	int GetNumMaxSurvivalFrames();
 
 	enum SpecialTerrainSituation
 	{
@@ -2630,6 +2634,17 @@ struct Actor : QuadTreeCollider,
 	int HOMINGATTACK_GetActionLength();
 	const char * HOMINGATTACK_GetTilesetName();
 
+	void HOMING_RUSH_ATTACK_Start();
+	void HOMING_RUSH_ATTACK_End();
+	void HOMING_RUSH_ATTACK_Change();
+	void HOMING_RUSH_ATTACK_Update();
+	void HOMING_RUSH_ATTACK_UpdateSprite();
+	void HOMING_RUSH_ATTACK_TransitionToAction(int a);
+	void HOMING_RUSH_ATTACK_TimeIndFrameInc();
+	void HOMING_RUSH_ATTACK_TimeDepFrameInc();
+	int HOMING_RUSH_ATTACK_GetActionLength();
+	const char * HOMING_RUSH_ATTACK_GetTilesetName();
+
 	void INSPECT_END_Start();
 	void INSPECT_END_End();
 	void INSPECT_END_Change();
@@ -3424,6 +3439,17 @@ struct Actor : QuadTreeCollider,
 	void TELEPORTACROSSTERRAIN_TimeDepFrameInc();
 	int TELEPORTACROSSTERRAIN_GetActionLength();
 	const char * TELEPORTACROSSTERRAIN_GetTilesetName();
+
+	void TRIPLE_JUMP_Start();
+	void TRIPLE_JUMP_End();
+	void TRIPLE_JUMP_Change();
+	void TRIPLE_JUMP_Update();
+	void TRIPLE_JUMP_UpdateSprite();
+	void TRIPLE_JUMP_TransitionToAction(int a);
+	void TRIPLE_JUMP_TimeIndFrameInc();
+	void TRIPLE_JUMP_TimeDepFrameInc();
+	int TRIPLE_JUMP_GetActionLength();
+	const char * TRIPLE_JUMP_GetTilesetName();
 
 	void UAIR_Start();
 	void UAIR_End();

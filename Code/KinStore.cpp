@@ -282,7 +282,7 @@ int StoreEntry::GetUpgradeEffect(const std::string &str)
 	{
 		return UE_WIRES_ATTACH_TO_ENEMIES;
 	}
-	else if( str == "WIRE_STUN")
+	else if( str == "WIRES_STUN")
 	{
 		return UE_WIRES_STUN;
 	}

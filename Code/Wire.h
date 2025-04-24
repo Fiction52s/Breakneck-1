@@ -122,6 +122,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 		CollisionBox movingHitbox;
 		bool clockwise;
 		double rcCancelDist;
+		CollisionBox stunHitbox;
 
 		EdgeInfo rcEdge; //used in save states only
 		double rcQuant; //used in save states only
@@ -166,6 +167,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	Tileset *ts_wire;
 	Tileset *ts_wireNode;
 	HitboxInfo *tipHitboxInfo;
+	HitboxInfo *stunHitboxInfo;
 	sf::Vertex *quads;
 	sf::Vertex *minimapQuads;
 	sf::Vertex *nodeQuads;
