@@ -7233,12 +7233,22 @@ void Actor::UpdateBubbles()
 				V2d foundPos = foundEnemy->GetCamPoint(foundIndex);
 				V2d eDir = normalize( foundPos - position);
 				double dist = length(foundPos - position);
+				double currencyAccelLimit = 40.0;
+				double currencyExtraAccel = 1.0;
 
 				if (foundEnemy->type == EN_CURRENCYCHAIN && dist < 200 ) //just needs to be bigger than currency pickup radius
 				{
 					if (dot(normalize(velocity), eDir) > .3)
 					{
 						velocity = eDir * length(velocity);
+
+						if (HasUpgradeEffect(UE_HOMING_CURRENCY_ACCELERATION_BOOST))
+						{
+							if (length(velocity) < currencyAccelLimit)
+							{
+								velocity += normalize(velocity) * currencyExtraAccel;
+							}
+						}
 					}
 					
 					/*V2d alongChainDir;
@@ -22497,7 +22507,7 @@ bool Actor::DefaultGravReverseCheck()
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& ((((DashButtonHeld() || steepTransferCheck ) && currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgradeEffect(UE_GRIND_BALL_UNLOCK) && GrindButtonHeld()))
+		&& (((/*(DashButtonHeld() || steepTransferCheck ) &&*/ currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgradeEffect(UE_GRIND_BALL_UNLOCK) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1

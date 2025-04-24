@@ -117,6 +117,8 @@ void Actor::JUMP_Update()
 				reversed = false;
 				framesInAir = 0;
 
+				//velocity.y = 40;
+
 			}
 			else
 			{
