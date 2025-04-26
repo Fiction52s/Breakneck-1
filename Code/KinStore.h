@@ -111,6 +111,7 @@ struct KinStore : GUIHandler
 	void SetTopLeft(sf::Vector2f pos);
 	void Update();
 	void TryUnlockCurrentUpgrade();
+	void DowngradeCurrentUpgrade();
 	void Open();
 	void LoadStore();
 	void LoadEntryFile(std::vector<StoreEntry*> &vec, const std::string &fileName, int startingQuadIndex );

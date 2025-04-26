@@ -968,8 +968,13 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite shieldSprite;
 	sf::Sprite grindAttackSprite;
 	sf::Sprite homingAttackBallSprite;
+	sf::Sprite homingTargetSprite;
 	Tileset *ts_blockShield;
 	Tileset *ts_homingAttackBall;
+	Tileset *ts_homingTarget;
+
+	V2d homingTargetPos;
+	bool hasHomingTarget;
 
 	Tileset *ts_glideIndicator;
 	sf::Sprite glideIndicatorSprite;
@@ -1514,6 +1519,7 @@ struct Actor : QuadTreeCollider,
 	void ReverseSteepSlideJump();
 	void UpdateWireQuads();
 	void DrawWires(sf::RenderTarget *target);
+	void DrawHomingTargetIndicator(sf::RenderTarget *target);
 	QuadTree *GetTerrainTree();
 	QuadTree *GetSpecialTerrainTree();
 	QuadTree *GetRailEdgeTree();

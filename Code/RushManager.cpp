@@ -336,46 +336,46 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 		return false;
 	}
 
-	if (currWorld == 0)
-	{
-		if (trueLevelIndex >= 7)//rushFile.worlds[currWorld].maps.size() - 1)
-			return false;
+	//if (currWorld == 0)
+	//{
+	//	if (trueLevelIndex >= 7)//rushFile.worlds[currWorld].maps.size() - 1)
+	//		return false;
 
-		if (trueLevelIndex == 0)
-		{
-			currRushMapIndex = 0;
-		}
-		else if (trueLevelIndex == 1)
-		{
-			currRushMapIndex = 1;
-		}
-		else if (trueLevelIndex == 2)
-		{
-			currRushMapIndex = (rand() % 3) + 2;
-		}
-		else if (trueLevelIndex == 3)
-		{
-			currRushMapIndex = (rand() % 3) + 5;
-		}
-		else if (trueLevelIndex == 4)
-		{
-			currRushMapIndex = (rand() % 3) + 8;
-		}
-		else if (trueLevelIndex == 5)
-		{
-			currRushMapIndex = (rand() % 3) + 11;
-		}
-		else if (trueLevelIndex == 6)
-		{
-			currRushMapIndex = (rand() % 3) + 14;
-		}
+	//	if (trueLevelIndex == 0)
+	//	{
+	//		currRushMapIndex = 0;
+	//	}
+	//	else if (trueLevelIndex == 1)
+	//	{
+	//		currRushMapIndex = 1;
+	//	}
+	//	else if (trueLevelIndex == 2)
+	//	{
+	//		currRushMapIndex = (rand() % 3) + 2;
+	//	}
+	//	else if (trueLevelIndex == 3)
+	//	{
+	//		currRushMapIndex = (rand() % 3) + 5;
+	//	}
+	//	else if (trueLevelIndex == 4)
+	//	{
+	//		currRushMapIndex = (rand() % 3) + 8;
+	//	}
+	//	else if (trueLevelIndex == 5)
+	//	{
+	//		currRushMapIndex = (rand() % 3) + 11;
+	//	}
+	//	else if (trueLevelIndex == 6)
+	//	{
+	//		currRushMapIndex = (rand() % 3) + 14;
+	//	}
 
-		trueLevelIndex++;
+	//	trueLevelIndex++;
 
-		game->SetBonus(bonusVec[currRushMapIndex], V2d(0, 0));
+	//	game->SetBonus(bonusVec[currRushMapIndex], V2d(0, 0));
 
-		return true;
-	}
+	//	return true;
+	//}
 
 	//if (currRushMapIndex > 3)
 	//{

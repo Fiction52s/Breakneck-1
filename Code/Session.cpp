@@ -2024,6 +2024,19 @@ void Session::DebugDrawActors(sf::RenderTarget *target)
 	}
 }
 
+void Session::DrawPlayerHomingTargetIndicators(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawHomingTargetIndicator(target);
+		}
+	}
+}
+
 void Session::DrawPlayerWires( RenderTarget *target )
 {
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
@@ -7044,6 +7057,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawGoalPulse(target);
 	DrawPlayerWires(target);
+
+	DrawPlayerHomingTargetIndicators(target);
 
 	DrawHitEnemies(target); //whited out hit enemies
 

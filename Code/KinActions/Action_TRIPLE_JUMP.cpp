@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -41,7 +42,8 @@ void Actor::TRIPLE_JUMP_Update()
 	if (frame == 0)
 	{
 		ExecuteDoubleJump();
-		//hasTripleJump = 
+		ActivateEffect(PLAYERFX_BOUNCE_BOOST, Vector2f(position + V2d( 0, -80 )), 0, 30, 1, facingRight);
+		ActivateSound(PlayerSounds::S_BOUNCEJUMP);
 	}
 	else
 	{

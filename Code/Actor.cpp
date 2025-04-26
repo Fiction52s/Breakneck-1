@@ -1506,6 +1506,9 @@ void Actor::SetupExtraTilesets()
 	ts_homingAttackBall = tm->GetSizedTileset("Kin/FX/homing_att_ball_256x256.png");
 	ts_homingAttackBall->SetSpriteTexture(homingAttackBallSprite);
 
+	ts_homingTarget= tm->GetSizedTileset("Kin/FX/fx_enemy_homing_target_128x128.png");
+	ts_homingTarget->SetSpriteTexture(homingTargetSprite);
+
 	ts_glideIndicator = tm->GetSizedTileset("Kin/FX/glide_ring_160x160.png");
 	ts_glideIndicator->SetSpriteTexture(glideIndicatorSprite);
 
@@ -4209,7 +4212,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	maxDashSpeedUpgradeAmount = 3.0 * 3.0;
 
 	//maxAirDashSpeedUpgradeAmount = 3.0 * 3.0;
-	maxAirDashSpeedUpgradeAmount = 9.0;//6.0;//3.0 * 3.0;
+	maxAirDashSpeedUpgradeAmount = 6.0;//6.0;//3.0 * 3.0; //was 9 before nerf
 
 	maxDashBoostUpgradeAmount = 0;
 
@@ -5083,16 +5086,22 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
-	grindCooldownLength = 60;
+	if (HasUpgradeEffect(UE_GRIND_EXTEND_LENGTH))
+	{
+		grindCooldownLength = 10;
+	}
+	else
+	{
+		grindCooldownLength = 20;//60;
+	}
 	grindCooldownFrame = grindCooldownLength;
 	
-
 	swordShader.SetSkin(0);
 
 	airHomingFrame = -1;
 
-	
-
+	homingTargetPos = V2d(0, 0);
+	hasHomingTarget = false;
 
 	gravityIncreaserTrailEmitter->Reset();
 	gravityDecreaserTrailEmitter->Reset();
@@ -7246,11 +7255,13 @@ int Actor::GetNumActiveBubbles()
 
 void Actor::UpdateBubbles()
 {
-	bool powerSlow1 = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK)
-		&& PowerButtonHeld()
-		&& currPowerMode == PMODE_TIMESLOW;
+	bool homingAvailable = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK) && (currPowerMode == PMODE_TIMESLOW || currHotkeyedPowerMode == PMODE_TIMESLOW ) ;
+	bool tryingToHome = homingAvailable && ((PowerButtonHeld() && currPowerMode == PMODE_TIMESLOW)
+		|| (currHotkeyedPowerMode == PMODE_TIMESLOW && currInput.HotkeyButtonDown()));
 
-	if (powerSlow1)
+	hasHomingTarget = false;
+
+	if (homingAvailable)
 	{
 		//if (ground == NULL)
 		{
@@ -7259,12 +7270,22 @@ void Actor::UpdateBubbles()
 			
 			if (GetClosestEnemyPos(TRACKING_PLAYER_HOMING_POWER, position, 1000, foundEnemy, foundIndex))
 			{
+				V2d foundPos = foundEnemy->GetCamPoint(foundIndex);
+				homingTargetPos = foundPos;
+				hasHomingTarget = true;
+
+				if (!tryingToHome)
+				{
+					airHomingFrame = -1;
+					return;
+				}
+
 				if (airHomingFrame == -1)
 				{
 					airHomingFrame = 0;
 				}
 
-				V2d foundPos = foundEnemy->GetCamPoint(foundIndex);
+
 				V2d eDir = normalize( foundPos - position);
 				double dist = length(foundPos - position);
 				double currencyAccelLimit = 40.0;
@@ -12505,7 +12526,10 @@ void Actor::ActivateAirdashBoost()
 	{
 		if (velDir.y < 0)
 		{
-			velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed * 1.5);
+			double upMovement = velDir.y * bboostSpeed * 1.5;
+			//upMovement = max(upMovement, -50.0); //always negative
+
+			velocity = V2d(velDir.x * bboostSpeed, upMovement);
 		}
 		else if (velDir.y > 0)
 		{
@@ -22636,7 +22660,10 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	movement = 0;
 
-	TryActivateGravityBlast(gno);
+	if (HasUpgradeEffect(UE_GRAVITY_CEILING_BLAST))
+	{
+		TryActivateGravityBlast(gno);
+	}
 	
 	//offsetX = -10;//(position.x + b.offset.x) - minContact.position.x;
 	
@@ -23414,6 +23441,14 @@ void Actor::UpdateSprite()
 
 	UpdateActionSprite();
 
+	if (hasHomingTarget)
+	{
+		homingTargetSprite.setPosition(Vector2f(homingTargetPos));
+		ts_homingTarget->SetSubRect(homingTargetSprite, 0);
+		homingTargetSprite.setOrigin(homingTargetSprite.getLocalBounds().width / 2.f, homingTargetSprite.getLocalBounds().height / 2.f);
+		homingTargetSprite.rotate(1);
+	}
+	
 
 	Vector2f oldOrigin = sprite->getOrigin();
 	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
@@ -24413,6 +24448,14 @@ void Actor::AirMovement()
 				}
 			}
 		}
+	}
+}
+
+void Actor::DrawHomingTargetIndicator(sf::RenderTarget *target)
+{
+	if (hasHomingTarget && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action) )
+	{
+		target->draw(homingTargetSprite);
 	}
 }
 

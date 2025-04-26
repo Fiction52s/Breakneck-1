@@ -210,7 +210,25 @@ void Actor::GRINDBALL_Update()
 	if (HasUpgradeEffect(UE_GRIND_SPEED_BOOST))
 	{
 		int accelFrames = 30;
-		double speedToGain = 12.0;
+		double speedToGain = 22.0;//GetOriginalDashSpeed() + 10.0; //possibly dependent on speed level //12.0;
+		double ac = speedToGain / accelFrames;
+		double dec = .6;//1.0;
+		if (frame < accelFrames)//GRINDBALL_GetActionLength() / 2)
+		{
+			if (grindSpeed > 0)
+			{
+				grindSpeed += ac;//storedGroundSpeed + frame * .05;
+			}
+			else
+			{
+				grindSpeed += -ac;//storedGroundSpeed - frame * .05;
+			}
+		}
+	}
+	else
+	{
+		int accelFrames = 30;
+		double speedToGain = 12.0;//8.0;
 		double ac = speedToGain / accelFrames;
 		double dec = .6;//1.0;
 		if (frame < accelFrames)//GRINDBALL_GetActionLength() / 2)
@@ -421,11 +439,11 @@ int Actor::GRINDBALL_GetActionLength()
 {
 	if (HasUpgradeEffect(UE_GRIND_EXTEND_LENGTH))
 	{
-		return 120;
+		return 90;
 	}
 	else
 	{
-		return 90;
+		return 70;
 	}
 	
 }

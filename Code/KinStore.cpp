@@ -722,6 +722,21 @@ void KinStore::SetSelected(int section, int itemIndex)
 	yellowSpr.setPosition(selectTopLeft);
 }
 
+void KinStore::DowngradeCurrentUpgrade()
+{
+	assert(rush == NULL);
+
+	StoreEntry *se = currStoreEntries[ySelector->currIndex]->at(xSelector->currIndex);
+	int optionIndex = se->upgradeIndex;	
+
+	if (se->currentLevel > 0)
+	{
+		edit->defaultStartingPlayerUpgradeLevels->SetUpgradeLevel(optionIndex, se->currentLevel - 1);
+		se->currentLevel--;
+		SetSelected(ySelector->currIndex, xSelector->currIndex);
+	}
+}
+
 void KinStore::TryUnlockCurrentUpgrade()
 {
 	//int optionIndex = (rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
@@ -914,6 +929,18 @@ void KinStore::ChooseRectEvent(ChooseRect *cr, int eventType)
 			{
 				int ind = (int)cr->info;
 				TryUnlockCurrentUpgrade();
+			}
+		}
+	}
+	else if (eventType == ChooseRect::E_RIGHTCLICKED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_STORE_UPGRADE)
+			{
+				int ind = (int)cr->info;
+				DowngradeCurrentUpgrade();
 			}
 		}
 	}

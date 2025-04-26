@@ -733,6 +733,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawPlayersHomingBall(sf::RenderTarget *target );
 	void DrawPlayers(sf::RenderTarget *target);
 	void DrawPlayerWires(sf::RenderTarget *target);
+	void DrawPlayerHomingTargetIndicators(sf::RenderTarget *target);
 	void UpdatePlayerWireQuads();
 	bool ReadFile();
 	bool ReadDecorInfoFile(int tWorld, int tVar);

@@ -15365,6 +15365,12 @@ void EditSession::StoreModeHandleEvent()
 			defaultStartingPlayerUpgradeLevels->Clear();
 			kinStore->Open();
 		}
+		else if (ev.key.code == Keyboard::T)
+		{
+			RemoveActivePanel(kinStore->storePanel);
+			SetMode(EDIT);
+			TryTestPlayerMode();
+		}
 	}
 	}
 }
