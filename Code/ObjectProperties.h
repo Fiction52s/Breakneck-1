@@ -10,6 +10,7 @@ struct Tileset;
 struct Actor;
 struct HitboxInfo;
 struct Enemy;
+struct Session;
 
 struct Movable : QuadTreeCollider
 {
@@ -57,57 +58,14 @@ struct SlowableObject
 	int slowMultiple;
 	bool isSlowable;
 
-	SlowableObject()
-	{
-		isSlowable = true;
-	}
-	void SetSlowable(bool slowable)
-	{
-		isSlowable = slowable;
-	}
-
-	virtual bool IsSlowed(int playerIndex) { return false; }
-	virtual int GetSlowFactor(int playerIndex) { return 1; }
-	virtual void HandleSlowed() {}
-	void ResetSlow()
-	{
-		slowCounter = 1;
-		slowMultiple = 1;
-	}
-	void SlowCheck(int playerIndex)
-	{
-		if (!isSlowable)
-			return;
-
-		if (IsSlowed(playerIndex))
-		{
-			if (slowMultiple == 1)
-			{
-				slowCounter = 1;
-				
-				//GetBubbleTimeFactor()
-				slowMultiple = GetSlowFactor(playerIndex);//5;
-			}
-		}
-		else
-		{
-			slowCounter = 1;
-			slowMultiple = 1;
-		}
-	}
-	bool UpdateAccountingForSlow()
-	{
-		if (slowCounter == slowMultiple)
-		{
-			slowCounter = 1;
-			return true;
-		}
-		else
-		{
-			slowCounter++;
-			return false;
-		}
-	}
+	SlowableObject();
+	void SetSlowable(bool slowable);
+	virtual bool IsSlowed(int playerIndex);
+	virtual int GetSlowFactor(int playerIndex);
+	virtual void HandleSlowed();
+	void ResetSlow();
+	void SlowCheck(int playerIndex);
+	bool UpdateAccountingForSlow();
 };
 
 struct HittableObject

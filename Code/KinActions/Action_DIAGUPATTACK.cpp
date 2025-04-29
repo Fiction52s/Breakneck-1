@@ -41,7 +41,7 @@ void Actor::DIAGUPATTACK_Change()
 
 void Actor::DIAGUPATTACK_Update()
 {
-	SetCurrHitboxes(diagUpHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(diagUpHitboxes[GetSwordSpeedLevel()], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -62,7 +62,7 @@ void Actor::DIAGUPATTACK_Update()
 
 void Actor::DIAGUPATTACK_UpdateSprite()
 {
-	Tileset *curr_ts = ts_diagUpSword[speedLevel];
+	Tileset *curr_ts = ts_diagUpSword[GetSwordSpeedLevel()];
 	//cout << "fair frame : " << frame / 2 << endl;
 	int startFrame = 0;
 	showSword = frame / 2 < 11;//frame >= startFrame && frame / 2 <= 9;
@@ -87,7 +87,7 @@ void Actor::DIAGUPATTACK_UpdateSprite()
 		//offsets[1] = Vector2i( 16, -40 );
 		//offsets[2] = Vector2i( 32, -48 );
 
-		Vector2f offset = diagUpSwordOffset[speedLevel];
+		Vector2f offset = diagUpSwordOffset[GetSwordSpeedLevel()];
 
 		if (facingRight)
 		{

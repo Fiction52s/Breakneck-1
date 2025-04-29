@@ -281,6 +281,15 @@ void Actor::PopulateState(PState *ps)
 	ps->grindCooldownFrame = grindCooldownFrame;
 	ps->grindCooldownLength = grindCooldownLength;
 
+	
+	
+
+	ps->hasGravityPull = hasGravityPull;
+	ps->gravityPullFrame = gravityPullFrame;
+	ps->gravityPullLength = gravityPullLength;
+
+	ps->doubleDashBoostChanceFrame = doubleDashBoostChanceFrame;
+	ps->doubleDashBoostChanceLength = doubleDashBoostChanceLength;
 
 	ps->grindEdgeInfo.SetFromEdge( grindEdge );
 
@@ -392,6 +401,9 @@ void Actor::PopulateState(PState *ps)
 	ps->hasWallJumpRechargeAirDash = hasWallJumpRechargeAirDash;
 	ps->hasHitRechargeDoubleJump = hasHitRechargeDoubleJump;
 	ps->hasHitRechargeAirDash = hasHitRechargeAirDash;
+
+	ps->hasWallJumpRechargeGravityPull = hasWallJumpRechargeGravityPull;
+	ps->hasHitRechargeGravityPull = hasHitRechargeGravityPull;
 
 	ps->framesBlocking = framesBlocking;
 	ps->receivedHitPosition = receivedHitPosition;
@@ -568,6 +580,13 @@ void Actor::PopulateFromState(PState *ps)
 	grindCooldownFrame = ps->grindCooldownFrame;
 	grindCooldownLength = ps->grindCooldownLength;
 
+	hasGravityPull = ps->hasGravityPull;
+	gravityPullFrame = ps->gravityPullFrame;
+	gravityPullLength = ps->gravityPullLength;
+
+	doubleDashBoostChanceFrame = ps->doubleDashBoostChanceFrame;
+	doubleDashBoostChanceLength = ps->doubleDashBoostChanceLength;
+
 	grindEdge = sess->GetEdge(&ps->grindEdgeInfo);
 
 	grindSpeed = ps->grindSpeed;
@@ -680,6 +699,10 @@ void Actor::PopulateFromState(PState *ps)
 	hasWallJumpRechargeAirDash = ps->hasWallJumpRechargeAirDash;
 	hasHitRechargeDoubleJump = ps->hasHitRechargeDoubleJump;
 	hasHitRechargeAirDash = ps->hasHitRechargeAirDash;
+
+	hasWallJumpRechargeGravityPull = ps->hasWallJumpRechargeGravityPull;
+	hasHitRechargeGravityPull = ps->hasHitRechargeGravityPull;
+
 	framesBlocking = ps->framesBlocking;
 	receivedHitPosition = ps->receivedHitPosition;
 
@@ -3599,6 +3622,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	
 	hasWallJumpRechargeDoubleJump = false;
 	hasWallJumpRechargeAirDash = false;
+	hasWallJumpRechargeGravityPull = false;
 	numRemainingExtraAirdashBoosts = 0;
 
 	grindLimitBeforeSlow = 30;
@@ -3783,6 +3807,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	level1SpeedThresh = 25;	//30;//22;//22;//32;
 	level2SpeedThresh = 45; 
+	level3SpeedThresh = 60;
 	speedChangeUp = .5;//03;//.5;
 	speedChangeDown = .03;//.005;//.07;
 
@@ -3972,7 +3997,6 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		homingHitboxes->BasicSetup();
 		homingHitboxes->AddCollisionBox(0, cb);
 		homingHitboxes->hitboxInfo = currHitboxInfo;
-
 
 		cb.rw = 500;
 		cb.rh = 500;
@@ -4628,7 +4652,7 @@ void Actor::ActionEnded()
 
 void Actor::CheckHoldJump()
 {
-	if (InWater( TerrainPolygon::WATER_BUOYANCY) || InWater(TerrainPolygon::WATER_ZEROGRAV))//|| InWater( TerrainPolygon::WATER_NORMAL ))
+	if (InWater( TerrainPolygon::WATER_BUOYANCY) || InWater(TerrainPolygon::WATER_ZEROGRAV) || gravityPullFrame >= 0 )//|| InWater( TerrainPolygon::WATER_NORMAL ))
 	{
 		if (!JumpButtonHeld())
 		{
@@ -4950,7 +4974,7 @@ void Actor::CreateAttackLightning()
 	{
 		tr.scale(1.125, 1.125);
 	}
-	else if (speedLevel == 2)
+	else if (speedLevel >= 2)
 	{
 		tr.scale(1.5, 1.5);
 	}
@@ -4969,13 +4993,13 @@ void Actor::CreateAttackLightning()
 	{
 	case AIRDASHFORWARDATTACK:
 	case FAIR:
-		currLockedFairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_FAIR_SWORD_LIGHTNING_0 + speedLevel, &params);
+		currLockedFairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_FAIR_SWORD_LIGHTNING_0 + GetSwordSpeedLevel(), &params);
 		break;
 	case DAIR:
-		currLockedDairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_DAIR_SWORD_LIGHTNING_0 + speedLevel, &params);
+		currLockedDairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_DAIR_SWORD_LIGHTNING_0 + GetSwordSpeedLevel(), &params);
 		break;
 	case UAIR:
-		currLockedUairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_UAIR_SWORD_LIGHTNING_0 + speedLevel, &params);
+		currLockedUairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_UAIR_SWORD_LIGHTNING_0 + GetSwordSpeedLevel(), &params);
 		break;
 	}
 }
@@ -5096,12 +5120,18 @@ void Actor::Respawn( bool setStartPos )
 	}
 	grindCooldownFrame = grindCooldownLength;
 	
+	gravityPullLength = 40;
+	gravityPullFrame = -1;
+
+	doubleDashBoostChanceLength = 30;
+	doubleDashBoostChanceFrame = -1;
+
 	swordShader.SetSkin(0);
 
-	airHomingFrame = -1;
+	airHomingFrame = -1; 
 
 	homingTargetPos = V2d(0, 0);
-	hasHomingTarget = false;
+	homingTarget = NULL;
 
 	gravityIncreaserTrailEmitter->Reset();
 	gravityDecreaserTrailEmitter->Reset();
@@ -5581,6 +5611,7 @@ double Actor::GetBounceFlameAccel()
 		//cout << "one: " << bounceFlameAccel << endl;
 		break;
 	case 2:
+	case 3:
 		
 		bounceFlameAccel = bounceFlameAccel2;
 		//cout << "two: " << bounceFlameAccel << endl;
@@ -7259,7 +7290,7 @@ void Actor::UpdateBubbles()
 	bool tryingToHome = homingAvailable && ((PowerButtonHeld() && currPowerMode == PMODE_TIMESLOW)
 		|| (currHotkeyedPowerMode == PMODE_TIMESLOW && currInput.HotkeyButtonDown()));
 
-	hasHomingTarget = false;
+	homingTarget = NULL;
 
 	if (homingAvailable)
 	{
@@ -7272,7 +7303,7 @@ void Actor::UpdateBubbles()
 			{
 				V2d foundPos = foundEnemy->GetCamPoint(foundIndex);
 				homingTargetPos = foundPos;
-				hasHomingTarget = true;
+				homingTarget = foundEnemy;
 
 				if (!tryingToHome)
 				{
@@ -8210,6 +8241,8 @@ void Actor::UpdatePrePhysics()
 
 	UpdateBubbles();
 
+	UpdateGravityPull();
+
 	UpdateRegrindOffCounter();
 
 	UpdateKnockbackDirectionAndHitboxType();
@@ -8939,9 +8972,18 @@ float Actor::GetSpeedBarPart()
 	{
 		quant = (float)((currentSpeedBar - level1SpeedThresh) / (level2SpeedThresh - level1SpeedThresh));
 	}
+	else if( speedLevel == 2 )
+	{
+		//quant = (float)((currentSpeedBar - level2SpeedThresh) / (GetMaxSpeed() - level2SpeedThresh));
+		quant = (float)((currentSpeedBar - level2SpeedThresh) / (maxSpeed - level2SpeedThresh));
+	}
+	else if( speedLevel == 3)
+	{
+		quant = (float)((currentSpeedBar - level3SpeedThresh) / ((maxSpeed + maxMaxSpeedUpgradeAmount ) - level3SpeedThresh));
+	}
 	else
 	{
-		quant = (float)((currentSpeedBar - level2SpeedThresh) / (GetMaxSpeed() - level2SpeedThresh));
+		assert(0);
 	}
 
 	if (quant > 1.f)
@@ -8950,18 +8992,6 @@ float Actor::GetSpeedBarPart()
 	}
 
 	return quant;
-	/*if (currentSpeedBar >= level2SpeedThresh)
-	{
-		speedLevel = 2;
-	}
-	else if (currentSpeedBar >= level1SpeedThresh)
-	{
-		speedLevel = 1;
-	}
-	else
-	{
-		speedLevel = 0;
-	}*/
 }
 
 void Actor::RailGrindMovement()
@@ -11815,13 +11845,17 @@ double Actor::GetOriginalDashSpeed()
 	case 2:
 	{
 		double sbp = GetSpeedBarPart();
-
 		if (sbp > .8)
 			sbp = 1.0;
 		dSpeed = dashSpeed2 + 4.0 * sbp;
 		break;
 	}
-
+	case 3:
+	{
+		//auto max dash
+		double sbp = 1.0;
+		dSpeed = dashSpeed2 + 4.0 * sbp;
+	}
 	}
 
 	return dSpeed;
@@ -11929,6 +11963,7 @@ bool Actor::TryScorpRailDropThrough()
 
 bool Actor::TryGroundBlock()
 {
+	return false;
 	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
 	{
 		SetGroundBlockAction();
@@ -11940,10 +11975,47 @@ bool Actor::TryGroundBlock()
 
 bool Actor::TryAirBlock()
 {
+
+	return false;
 	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
 	{
+		//SetAction(GLIDE);
+		//frame = 0;
 		SetAirBlockAction();
 		return true;
+	}
+
+	return false;
+}
+
+bool Actor::UpdateGravityPull()
+{
+	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD && HasUpgradeEffect(UE_GRAVITY_PULL))
+	{
+		if (gravityPullFrame == gravityPullLength)
+		{
+			gravityPullFrame = -1;
+			return false;
+		}
+
+		if (gravityPullFrame == -1 && hasGravityPull && ground == NULL && grindEdge == NULL && bounceEdge == NULL )
+		{
+			gravityPullFrame = 0;
+			hasGravityPull = false;
+			return true;
+		}
+
+		if (gravityPullFrame >= 0)
+		{
+			++gravityPullFrame;
+		}
+
+		return true;
+	}
+	else
+	{
+		gravityPullFrame = -1;
+		
 	}
 
 	return false;
@@ -12336,109 +12408,103 @@ void Actor::TryDashBoost()
 
 	if (currBBoostCounter >= 20)
 	{
-		bool fr = facingRight;
-		if (reversed)
-		{
-			fr = !facingRight;
-		}
+		ActivateDashBoost();
+		doubleDashBoostChanceFrame = 0;
+	}
+}
 
-		EffectInstance params;
-		Transform t;
-		if (!fr)
-		{
+void Actor::TryExtraDashBoost()
+{
+	if (!HasUpgradeEffect(UE_DASH_BOOST_2))
+	{
+		return;
+	}
+
+	if (doubleDashBoostChanceFrame >= 0 && doubleDashBoostChanceFrame < doubleDashBoostChanceLength)
+	{
+		ActivateDashBoost();
+		doubleDashBoostChanceFrame = -1;
+	}
+}
+
+void Actor::ActivateDashBoost()
+{
+	bool fr = facingRight;
+	if (reversed)
+	{
+		fr = !facingRight;
+	}
+
+	EffectInstance params;
+	Transform t;
+	if (!fr)
+	{
 		//	t.scale(Vector2f(-1, 1));
-		}
+	}
 
-		//must scale after rotating
-		t.rotate(GroundedAngle() / PI * 180.0);
+	//must scale after rotating
+	t.rotate(GroundedAngle() / PI * 180.0);
 
-		if (!fr)
+	if (!fr)
+	{
+		t.scale(-1, 4);
+	}
+	else
+	{
+		t.scale(1, 4);
+	}
+
+	params.SetParams(Vector2f(position), t, 5, 4, 1);
+
+	ActivateEffect(PLAYERFX_DASH_BOOST, &params);
+	//ActivateEts_fx_dashBoostFX
+
+	double dashFactor = 1.85;//1.5;
+	double bboostSpeed = GetDashSpeed() * dashFactor;
+
+	if (bboostSpeed > abs(groundSpeed))
+	{
+		if (groundSpeed > 0)
 		{
-			t.scale(-1, 4);
-		}
-		else
-		{
-			t.scale(1, 4);
-		}
-
-		params.SetParams(Vector2f(position), t, 5, 4, 1);
-
-		ActivateEffect(PLAYERFX_DASH_BOOST, &params);
-		//ActivateEts_fx_dashBoostFX
-
-		double dashFactor = 1.85;//1.5;
-		double bboostSpeed = GetDashSpeed() * dashFactor;
-
-		if (bboostSpeed > abs(groundSpeed))
-		{
-			if (groundSpeed > 0)
-			{
-				groundSpeed = bboostSpeed;
-			}
-			else
-			{
-				groundSpeed = -bboostSpeed;
-			}
+			groundSpeed = bboostSpeed;
 		}
 		else
 		{
-			//passively has 2 high speed boost upgrades on. test to make sure its not crazy
-			//double highSpeedBoost = 3;//5
-
-			//int highSpeedBoostUpgrades = 2;
-			//double upgradeAmount = 4;//2;
-
-			double highSpeedBoost = 5;//5
-
-			//highSpeedBoost += upgradeAmount;//highSpeedBoostUpgrades * upgradeAmount;
-
-			if (groundSpeed > 0)
-			{
-				groundSpeed += highSpeedBoost;
-			}
-			else
-			{
-				groundSpeed -= highSpeedBoost;
-			}
+			groundSpeed = -bboostSpeed;
 		}
+	}
+	else
+	{
+		//passively has 2 high speed boost upgrades on. test to make sure its not crazy
+		//double highSpeedBoost = 3;//5
 
-		V2d along = ground->Along();
+		//int highSpeedBoostUpgrades = 2;
+		//double upgradeAmount = 4;//2;
 
-		V2d trueVel = along * groundSpeed;
+		double highSpeedBoost = 5;//5
 
-		V2d rumbleDir = normalize(trueVel);
-		//sess->cam.SetRumble(round(6 * rumbleDir.x), round(6 * rumbleDir.y), 6);
+								  //highSpeedBoost += upgradeAmount;//highSpeedBoostUpgrades * upgradeAmount;
 
-		if (!simulationMode)
+		if (groundSpeed > 0)
 		{
-			sess->cam.SetRumble(round(4 * rumbleDir.x), round(4 * rumbleDir.y), 6, 0, true);
-		}
-		
-		//sess->cam.SetRumble(6, 6, 6);
-
-		/*double dashFactor = 3.0;
-		double ag = abs(groundSpeed);
-
-		if (ag > 30)
-		{
-		dashFactor = 3.0;
+			groundSpeed += highSpeedBoost;
 		}
 		else
 		{
-		dashFactor = 2.0;
-		}*/
-
-		//double bboost = GetDashSpeed() / dashFactor;
-
-		/*if (groundSpeed > 0)
-		{
-		groundSpeed += bboost;
+			groundSpeed -= highSpeedBoost;
 		}
-		else
-		{
-		groundSpeed -= bboost;
-		}*/
-		//currBBoostCounter = 0;
+	}
+
+	V2d along = ground->Along();
+
+	V2d trueVel = along * groundSpeed;
+
+	V2d rumbleDir = normalize(trueVel);
+	//sess->cam.SetRumble(round(6 * rumbleDir.x), round(6 * rumbleDir.y), 6);
+
+	if (!simulationMode)
+	{
+		sess->cam.SetRumble(round(4 * rumbleDir.x), round(4 * rumbleDir.y), 6, 0, true);
 	}
 }
 
@@ -12828,7 +12894,7 @@ double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
 
 double Actor::GetMinRailGrindSpeed()
 {
-	return minRailGrindSpeed[speedLevel];
+	return minRailGrindSpeed[GetSwordSpeedLevel()];
 }
 
 //eventually need to change resolve physics so that the player can't miss going by enemies. i understand the need now
@@ -14114,6 +14180,7 @@ void Actor::RestoreAirOptions()
 	hasDoubleJump = true;
 	hasAirDash = true;
 	hasAirHoming = true;
+	hasGravityPull = true;
 	//airHomingFrame = -1;
 
 	//if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP))
@@ -14125,6 +14192,8 @@ void Actor::RestoreAirOptions()
 	{
 		hasWallJumpRechargeAirDash = true;
 	}
+
+	hasWallJumpRechargeGravityPull = true;
 
 	if (HasUpgradeEffect(UE_AIR_DASH_BOOST_2))
 	{
@@ -14138,6 +14207,7 @@ void Actor::RestoreAirOptions()
 	
 	hasHitRechargeDoubleJump = true;
 	hasHitRechargeAirDash = true;
+	hasHitRechargeGravityPull = true;
 }
 
 void Actor::UpdatePhysics()
@@ -16802,6 +16872,11 @@ void Actor::TryHitPlayer(int targetIndex)
 					hasAirDash = true;
 					hasHitRechargeAirDash = false;
 				}
+				if (hasHitRechargeGravityPull && !hasGravityPull)
+				{
+					hasGravityPull = true;
+					hasHitRechargeGravityPull = false;
+				}
 
 				currAttackHit = true;
 			}
@@ -18550,7 +18625,7 @@ Edge * Actor::RayCastSpecialTerrainEnter()
 void Actor::UpdateSmallLightning()
 {
 	int smallLightningCounter = -1;
-	switch (speedLevel)
+	switch (GetSwordSpeedLevel())
 	{
 	case 0:
 		smallLightningCounter = 30;
@@ -18767,11 +18842,15 @@ void Actor::UpdateSpeedBar()
 			//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
 		}
 
-		if (currentSpeedBar >= level2SpeedThresh)
+		if (currentSpeedBar > level3SpeedThresh)
+		{
+			speedLevel = 3;
+		}
+		else if (currentSpeedBar > level2SpeedThresh)
 		{
 			speedLevel = 2;
 		}
-		else if (currentSpeedBar >= level1SpeedThresh)
+		else if (currentSpeedBar > level1SpeedThresh)
 		{
 			speedLevel = 1;
 		}
@@ -18885,7 +18964,7 @@ void Actor::UpdateSpeedParticles()
 			}
 
 		}
-		else if (speedLevel == 2)
+		else if (speedLevel == 2 || speedLevel == 3)
 		{
 			int rx = 30;
 			int ry = 30;
@@ -19032,6 +19111,16 @@ void Actor::SlowDependentFrameIncrement()
 		{
 			framesSinceBounce++;
 		}*/
+
+		if (doubleDashBoostChanceFrame >= 0)
+		{
+			++doubleDashBoostChanceFrame;
+
+			if (doubleDashBoostChanceFrame == doubleDashBoostChanceLength)
+			{
+				doubleDashBoostChanceFrame = -1;
+			}
+		}
 
 		++framesSinceRightWireBoost;
 		++framesSinceLeftWireBoost;
@@ -19241,19 +19330,19 @@ void Actor::UpdatePostPhysics()
 		gravityIncreaserTrailEmitter->data.boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
 		gravityDecreaserTrailEmitter->data.boostPortion = 1.f - (boosterGravModifyFrames / (float)startBoosterGravModifyFrames);
 	}
-	
+
 	momentumBoosterTrailEmitter->SetPos(Vector2f(position));
 	if (startMomentumBoostFrames > 0)
 	{
 		momentumBoosterTrailEmitter->data.boostPortion = 1.f - (momentumBoostFrames / (float)startMomentumBoostFrames);
 	}
-	
+
 	//timeSlowBoosterTrailEmitter->SetPos(Vector2f(position));
 	//if (startGlobalTimeSlowFrames > 0)
 	//{
 	//	timeSlowBoosterTrailEmitter->boostPortion = 1.f - (globalTimeSlowFrames / (float)startGlobalTimeSlowFrames);
 	//}
-	
+
 	homingBoosterTrailEmitter->SetPos(Vector2f(position));
 	if (startHomingFrames > 0)
 	{
@@ -19291,11 +19380,11 @@ void Actor::UpdatePostPhysics()
 		sess->pokeTriangleScreenGroup->SetLengthFactor(lengthFactor);
 
 		double maxRumble = 7;
-		sess->cam.SetRumble(max(1.0, maxRumble * despFactor), max(1.0, maxRumble * despFactor), 60 );// 60, 2 * despFactor );
+		sess->cam.SetRumble(max(1.0, maxRumble * despFactor), max(1.0, maxRumble * despFactor), 60);// 60, 2 * despFactor );
 
 		survivalTimer->SetNumFrames(numFramesToLive);
 	}
-	
+
 
 	if (hitlagFrames > 0)
 	{
@@ -19310,7 +19399,7 @@ void Actor::UpdatePostPhysics()
 		}
 		else
 		{
-			if (!attackingHitlag && !IsBlockAction( action ) )
+			if (!attackingHitlag && !IsBlockAction(action))
 			{
 				velocity = GetAdjustedKnockback(velocity);
 			}
@@ -19334,26 +19423,26 @@ void Actor::UpdatePostPhysics()
 	}
 
 	KinModeUpdate();
-	
+
 	QueryTouchGrass();
 
 	ProcessSpecialTerrain();
 
-	if( action == DEATH )
+	if (action == DEATH)
 	{
-		sprite->setTexture( *(tileset[DEATH]->texture));
-		if( facingRight )
+		sprite->setTexture(*(tileset[DEATH]->texture));
+		if (facingRight)
 		{
-			sprite->setTextureRect( tileset[DEATH]->GetSubRect( frame / 2 ) );
+			sprite->setTextureRect(tileset[DEATH]->GetSubRect(frame / 2));
 		}
 		else
 		{
-			sf::IntRect ir = tileset[DEATH]->GetSubRect( frame / 2 );
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			sf::IntRect ir = tileset[DEATH]->GetSubRect(frame / 2);
+			sprite->setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
 		}
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
-		sprite->setRotation( 0 );
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
+		sprite->setRotation(0);
 
 		UpdateAllEffects();
 		//if( frame % 1 == 0 )
@@ -19378,8 +19467,8 @@ void Actor::UpdatePostPhysics()
 		//	ActivateEffect( DrawLayer::IN_FRONT, ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
 		//}
 
-		if( kinMask != NULL)
-			kinMask->Update( speedLevel, kinMode == K_DESPERATION );
+		if (kinMask != NULL)
+			kinMask->Update(speedLevel, kinMode == K_DESPERATION);
 
 
 		++frame;
@@ -19392,12 +19481,12 @@ void Actor::UpdatePostPhysics()
 		V2d dirToAnchor = normalize(position - anchor);
 		oldSwingLauncher->data.currAngle = GetVectorAngleCW(dirToAnchor);
 	}
-	
+
 
 
 	ProcessHitGoal();
 
-	
+
 	UpdateSprite();
 
 	UpdateAttackLightning();
@@ -19405,6 +19494,12 @@ void Actor::UpdatePostPhysics()
 	UpdateAllEffects();
 
 	UpdateSpeedBar();
+
+
+	if (speedLevel == 3 && HasUpgradeEffect(UE_TIME_SLOW_WITH_HIGH_MOMENTUM))
+	{
+		globalTimeSlowFrames = 2;
+	}
 
 	UpdateMotionGhosts();
 
@@ -19758,7 +19853,76 @@ sf::Vector2<double> Actor::AddAerialGravity( sf::Vector2<double> vel )
 
 	normalGravity *= boosterExtraGravityModifier;
 
-	vel += V2d(0, normalGravity );
+	//V2d dir;
+	//just testing this for now
+	//if (IsBlockAction(action) )//gravPullFrame >= 0)
+	//{
+	//	if (action == GROUNDBLOCKDOWN)
+	//	{
+	//		dir = V2d(1, 0);
+	//	}
+	//	else if (action == GROUNDBLOCKDOWNFORWARD)
+	//	{
+	//		dir = normalize(V2d(1, 1));
+	//	}
+	//	else if (action == GROUNDBLOCKFORWARD)
+	//	{
+	//		dir = V2d(1, 0);
+	//	}
+	//	else if (action == GROUNDBLOCKUPFORWARD)
+	//	{
+	//		dir = normalize(V2d(1, -1));
+	//	}
+	//	else if (action == GROUNDBLOCKUP)
+	//	{
+	//		dir = V2d(0, -1);
+	//	}
+	//	else if (action == AIRBLOCKDOWN)
+	//	{
+	//		dir = V2d(0, 1);
+	//	}
+	//	else if (action == AIRBLOCKDOWNFORWARD)
+	//	{
+	//		dir = normalize(V2d(1, 1));
+	//	}
+	//	else if (action == AIRBLOCKFORWARD)
+	//	{
+	//		dir = V2d(1, 0);
+	//	}
+	//	else if (action == AIRBLOCKUPFORWARD)
+	//	{
+	//		dir = normalize(V2d(1, -1));
+	//	}
+	//	else if (action == AIRBLOCKUP)
+	//	{
+	//		dir = V2d(0, -1);
+	//	}
+	//	if (!facingRight)
+	//	{
+	//		dir.x = -dir.x;
+	//	}
+	//	vel += dir * normalGravity;
+
+	if( gravityPullFrame >= 0)
+	{
+		if (vel.y > 0)
+		{
+			vel += V2d(0, -normalGravity * 2.5);
+		}
+		else if (vel.y > 40)
+		{
+			vel += V2d(0, -normalGravity * 4.0);
+		}
+		else if (vel.y > -40)
+		{
+			vel += V2d(0, -normalGravity);
+		}
+	}
+	else
+	{
+		vel += V2d(0, normalGravity);
+	}
+	
 
 	return vel;
 }
@@ -22579,7 +22743,7 @@ bool Actor::DefaultGravReverseCheck()
 		//&& tempCollision
 		&& !IsHitstunAction(action)
 		&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-		&& (((/*(DashButtonHeld() || steepTransferCheck ) &&*/ currInput.LUp()) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgradeEffect(UE_GRIND_BALL_UNLOCK) && GrindButtonHeld()))
+		&& (((/*(DashButtonHeld() || steepTransferCheck ) &&*/ currInput.LUp() || gravityPullFrame >= 0 ) /*|| touchedGrass[Grass::GRAVREVERSE]*/) || (HasUpgradeEffect(UE_GRIND_BALL_UNLOCK) && GrindButtonHeld()))
 		&& minContact.normal.y > 0
 		&& abs(minContact.normal.x) < wallThresh
 		&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -23020,9 +23184,9 @@ void Actor::Draw( sf::RenderTarget *target )
 		}*/
 
 
-		motionGhostsEffects[speedLevel]->SetShader(&motionGhostShader);
-		motionGhostsEffects[speedLevel]->ApplyUpdates();
-		motionGhostsEffects[speedLevel]->Draw(target);
+		motionGhostsEffects[GetSwordSpeedLevel()]->SetShader(&motionGhostShader);
+		motionGhostsEffects[GetSwordSpeedLevel()]->ApplyUpdates();
+		motionGhostsEffects[GetSwordSpeedLevel()]->Draw(target);
 
 		//for (int i = speedLevel; i >= 0; --i)
 		//for (int i = 0; i >= 0; --i)
@@ -23441,7 +23605,7 @@ void Actor::UpdateSprite()
 
 	UpdateActionSprite();
 
-	if (hasHomingTarget)
+	if (homingTarget != NULL )
 	{
 		homingTargetSprite.setPosition(Vector2f(homingTargetPos));
 		ts_homingTarget->SetSubRect(homingTargetSprite, 0);
@@ -24453,7 +24617,7 @@ void Actor::AirMovement()
 
 void Actor::DrawHomingTargetIndicator(sf::RenderTarget *target)
 {
-	if (hasHomingTarget && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action) )
+	if (homingTarget != NULL && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action) )
 	{
 		target->draw(homingTargetSprite);
 	}
@@ -25007,7 +25171,7 @@ void Actor::SetActionGrind()
 	{
 		double grindHitRadius[] = { 90, 100, 110 };
 		CollisionBox &gh = grindHitboxes[0]->GetCollisionBoxes(0).front();
-		gh.rw = gh.rh = grindHitRadius[speedLevel];
+		gh.rw = gh.rh = grindHitRadius[GetSwordSpeedLevel()];
 	}
 	
 	hurtBody.isCircle = true;
@@ -25204,7 +25368,7 @@ void Actor::ExecuteWallJump()
 		fxPos += V2d(0, 0);
 	}
 
-	ActivateEffect(PLAYERFX_WALLJUMP_0 + speedLevel, Vector2f(fxPos), 0, 7, 3, facingRight);
+	ActivateEffect(PLAYERFX_WALLJUMP_0 + GetSwordSpeedLevel(), Vector2f(fxPos), 0, 7, 3, facingRight);
 }
 
 int Actor::GetDoubleJump()
@@ -25831,6 +25995,11 @@ Actor::HitResult Actor::CheckIfImHitByEnemy( Enemy *hitter, CollisionBody *hitBo
 			return HitResult::MISS;
 		}
 
+		/*if( action == HOMING_RUSH_ATTACK && homingTarget == hitter )
+		{ 
+			return HitResult::MISS;
+		}*/
+
 		if( hitBody->hitboxInfo != NULL && !hitBody->hitboxInfo->sensor )
 			AddRecentEnemyHitter(hitter);
 
@@ -26318,6 +26487,8 @@ void Actor::UpdateInHitlag()
 	UpdateDrain();
 
 	UpdateBubbles();
+
+	UpdateGravityPull();
 
 	TryChangePowerMode();
 
@@ -27089,13 +27260,17 @@ double Actor::GetCeilingSprintUpgradeAmount()
 
 double Actor::GetMaxSpeedUpgradeAmount()
 {
-	int speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
-	int totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
+	double speedUpgradeLevel = GetUpgradeEffectCount(UE_SPEED);
+	double totalSpeedUpgrades = GetUpgradeEffectTotalCount(UE_SPEED);
 
 	double amt = 0;
 	if (totalSpeedUpgrades > 0)
 	{
 		amt = maxMaxSpeedUpgradeAmount / totalSpeedUpgrades;
+	}
+	else
+	{
+		return 0;
 	}
 
 	if (speedUpgradeLevel == totalSpeedUpgrades)
@@ -27104,7 +27279,7 @@ double Actor::GetMaxSpeedUpgradeAmount()
 	}
 	else
 	{
-		return amt * maxMaxSpeedUpgradeAmount;
+		return amt * speedUpgradeLevel;
 	}
 }
 
@@ -27189,6 +27364,36 @@ void Actor::RemoveAllProjectiles()
 			gravityBlasts[i]->DirectKill();
 		}
 	}
+}
+
+int Actor::GetSwordSpeedLevel()
+{
+	return min(2, speedLevel);
+}
+
+int Actor::GetGlobalSlowFactor()
+{
+	//2,3,4,5
+	double sbp = GetSpeedBarPart();
+	int slowMult = 1;
+	if (sbp < .25)
+	{
+		slowMult = 2;
+	}
+	else if (sbp < .5)
+	{
+		slowMult = 3;
+	}
+	else if (sbp < .75)
+	{
+		slowMult = 4;
+	}
+	else
+	{
+		slowMult = 5;
+	}
+
+	return slowMult;
 }
 
 void Actor::QueryTree(QuadTree *qt, const sf::Rect<double> &r)

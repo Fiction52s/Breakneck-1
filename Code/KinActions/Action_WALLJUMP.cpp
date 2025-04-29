@@ -26,6 +26,11 @@ void Actor::WALLJUMP_Start()
 		hasDoubleJump = true;
 		hasWallJumpRechargeDoubleJump = false;
 	}
+	if (hasWallJumpRechargeGravityPull && !hasGravityPull)
+	{
+		hasGravityPull = true;
+		hasWallJumpRechargeGravityPull = false;
+	}
 
 	if (currInput.rightShoulder && !prevInput.rightShoulder)
 	{

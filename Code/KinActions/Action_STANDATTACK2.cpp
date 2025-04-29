@@ -68,7 +68,7 @@ void Actor::STANDATTACK2_Change()
 
 void Actor::STANDATTACK2_Update()
 {
-	SetCurrHitboxes(standHitboxes2[speedLevel], frame / 2);
+	SetCurrHitboxes(standHitboxes2[GetSwordSpeedLevel()], frame / 2);
 
 
 	if (frame == 0 && slowCounter == 1)
@@ -83,7 +83,7 @@ void Actor::STANDATTACK2_Update()
 
 void Actor::STANDATTACK2_UpdateSprite()
 {
-	UpdateGroundedAttackSprite(action, ts_standAttackSword2[speedLevel],
+	UpdateGroundedAttackSprite(action, ts_standAttackSword2[GetSwordSpeedLevel()],
 		0, 10, 2, Vector2f(0, 0));
 }
 

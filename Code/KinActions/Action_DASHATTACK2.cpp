@@ -21,7 +21,7 @@ void Actor::DASHATTACK2_Change()
 void Actor::DASHATTACK2_Update()
 {
 	//change this to dash attack 2 hitboxes soon
-	SetCurrHitboxes(dashHitboxes2[speedLevel], frame / 2);
+	SetCurrHitboxes(dashHitboxes2[GetSwordSpeedLevel()], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -35,7 +35,7 @@ void Actor::DASHATTACK2_Update()
 
 void Actor::DASHATTACK2_UpdateSprite()
 {
-	UpdateGroundedAttackSprite(action, ts_dashAttackSword2[speedLevel],
+	UpdateGroundedAttackSprite(action, ts_dashAttackSword2[GetSwordSpeedLevel()],
 		0, 13, 2, Vector2f(0, 0));
 }
 

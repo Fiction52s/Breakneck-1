@@ -54,7 +54,7 @@ void Actor::AIRDASHFORWARDATTACK_Update()
 	CheckHoldJump();
 
 
-	SetCurrHitboxes(fairHitboxes[speedLevel], frame);
+	SetCurrHitboxes(fairHitboxes[GetSwordSpeedLevel()], frame);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -70,7 +70,7 @@ void Actor::AIRDASHFORWARDATTACK_Update()
 
 void Actor::AIRDASHFORWARDATTACK_UpdateSprite()
 {
-	Tileset *curr_ts = ts_fairSword[speedLevel];
+	Tileset *curr_ts = ts_fairSword[GetSwordSpeedLevel()];
 	int startFrame = 0;
 	showSword = true;//frame >= startFrame && frame / 2 <= 9;
 

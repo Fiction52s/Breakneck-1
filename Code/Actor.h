@@ -429,6 +429,11 @@ struct Actor : QuadTreeCollider,
 		EXIT_RUSH,
 		TRIPLE_JUMP,
 		HOMING_RUSH_ATTACK,
+		/*AIRCOUNTERUP,
+		AIRCOUNTERUPFORWARD,
+		AIRCOUNTERFORWARD,
+		AIRCOUNTERDOWNFORWARD,
+		AIRCOUNTERDOWN,*/
 		Count
 	};
 
@@ -768,6 +773,8 @@ struct Actor : QuadTreeCollider,
 	//stuff ive put in rollback already
 	//definitely do change per frame
 	
+	
+
 	bool hasAirHoming;
 	int airHomingFrame;
 
@@ -815,7 +822,14 @@ struct Actor : QuadTreeCollider,
 
 	int grindCooldownFrame;
 	int grindCooldownLength;
-	//int framesGrinding;
+
+	bool hasGravityPull;
+	int gravityPullFrame;
+	int gravityPullLength;
+
+	int doubleDashBoostChanceFrame;
+	int doubleDashBoostChanceLength;
+
 
 	Edge *grindEdge;
 	double grindSpeed;
@@ -922,6 +936,9 @@ struct Actor : QuadTreeCollider,
 	bool hasHitRechargeDoubleJump;
 	bool hasHitRechargeAirDash;
 
+	bool hasWallJumpRechargeGravityPull;
+	bool hasHitRechargeGravityPull;
+
 	int framesBlocking;
 	V2d receivedHitPosition;
 
@@ -974,7 +991,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_homingTarget;
 
 	V2d homingTargetPos;
-	bool hasHomingTarget;
+	Enemy *homingTarget;
 
 	Tileset *ts_glideIndicator;
 	sf::Sprite glideIndicatorSprite;
@@ -1063,6 +1080,7 @@ struct Actor : QuadTreeCollider,
 	Gate *gateTouched;
 	double level1SpeedThresh;
 	double level2SpeedThresh;
+	double level3SpeedThresh;
 	double speedChangeUp;
 	double speedChangeDown;
 	//EffectPool *testPool;
@@ -1592,6 +1610,7 @@ struct Actor : QuadTreeCollider,
 	bool TryFloorRailDropThrough();
 	bool TryScorpRailDropThrough();
 	bool TryAirBlock();
+	bool UpdateGravityPull();
 	void TryChangePowerMode();
 	bool TryDash();
 	bool TryJumpSquat();
@@ -1681,6 +1700,8 @@ struct Actor : QuadTreeCollider,
 	bool CheckStandUp();
 	bool TryStandupOnForcedGrindExit();
 	void TryDashBoost();
+	void TryExtraDashBoost();
+	void ActivateDashBoost();
 	void TryAirdashBoost();
 	void TryExtraAirdashBoost();
 	void ActivateAirdashBoost();
@@ -1950,6 +1971,8 @@ struct Actor : QuadTreeCollider,
 
 	void QueryTree(QuadTree *qt, const sf::Rect<double> &r);
 
+	int GetSwordSpeedLevel();
+	int GetGlobalSlowFactor();
 	
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -2024,6 +2047,61 @@ struct Actor : QuadTreeCollider,
 	void AIRBLOCKDOWN_TimeDepFrameInc();
 	int AIRBLOCKDOWN_GetActionLength();
 	const char * AIRBLOCKDOWN_GetTilesetName();
+
+	//void AIRCOUNTERUP_Start();
+	//void AIRCOUNTERUP_End();
+	//void AIRCOUNTERUP_Change();
+	//void AIRCOUNTERUP_Update();
+	//void AIRCOUNTERUP_UpdateSprite();
+	//void AIRCOUNTERUP_TransitionToAction(int a);
+	//void AIRCOUNTERUP_TimeIndFrameInc();
+	//void AIRCOUNTERUP_TimeDepFrameInc();
+	//int AIRCOUNTERUP_GetActionLength();
+	//const char * AIRCOUNTERUP_GetTilesetName();
+
+	//void AIRCOUNTERUPFORWARD_Start();
+	//void AIRCOUNTERUPFORWARD_End();
+	//void AIRCOUNTERUPFORWARD_Change();
+	//void AIRCOUNTERUPFORWARD_Update();
+	//void AIRCOUNTERUPFORWARD_UpdateSprite();
+	//void AIRCOUNTERUPFORWARD_TransitionToAction(int a);
+	//void AIRCOUNTERUPFORWARD_TimeIndFrameInc();
+	//void AIRCOUNTERUPFORWARD_TimeDepFrameInc();
+	//int AIRCOUNTERUPFORWARD_GetActionLength();
+	//const char * AIRCOUNTERUPFORWARD_GetTilesetName();
+
+	//void AIRCOUNTERFORWARD_Start();
+	//void AIRCOUNTERFORWARD_End();
+	//void AIRCOUNTERFORWARD_Change();
+	//void AIRCOUNTERFORWARD_Update();
+	//void AIRCOUNTERFORWARD_UpdateSprite();
+	//void AIRCOUNTERFORWARD_TransitionToAction(int a);
+	//void AIRCOUNTERFORWARD_TimeIndFrameInc();
+	//void AIRCOUNTERFORWARD_TimeDepFrameInc();
+	//int AIRCOUNTERFORWARD_GetActionLength();
+	//const char * AIRCOUNTERFORWARD_GetTilesetName();
+
+	//void AIRCOUNTERDOWNFORWARD_Start();
+	//void AIRCOUNTERDOWNFORWARD_End();
+	//void AIRCOUNTERDOWNFORWARD_Change();
+	//void AIRCOUNTERDOWNFORWARD_Update();
+	//void AIRCOUNTERDOWNFORWARD_UpdateSprite();
+	//void AIRCOUNTERDOWNFORWARD_TransitionToAction(int a);
+	//void AIRCOUNTERDOWNFORWARD_TimeIndFrameInc();
+	//void AIRCOUNTERDOWNFORWARD_TimeDepFrameInc();
+	//int AIRCOUNTERDOWNFORWARD_GetActionLength();
+	//const char * AIRCOUNTERDOWNFORWARD_GetTilesetName();
+
+	//void AIRCOUNTERDOWN_Start();
+	//void AIRCOUNTERDOWN_End();
+	//void AIRCOUNTERDOWN_Change();
+	//void AIRCOUNTERDOWN_Update();
+	//void AIRCOUNTERDOWN_UpdateSprite();
+	//void AIRCOUNTERDOWN_TransitionToAction(int a);
+	//void AIRCOUNTERDOWN_TimeIndFrameInc();
+	//void AIRCOUNTERDOWN_TimeDepFrameInc();
+	//int AIRCOUNTERDOWN_GetActionLength();
+	//const char * AIRCOUNTERDOWN_GetTilesetName();
 
 	void AIRDASH_Start();
 	void AIRDASH_End();

@@ -962,7 +962,7 @@ void BasicBullet::UpdatePrePhysics()
 	if (PlayerSlowingMe())
 	{
 		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
-		int currSlowMult = player->GetBubbleTimeFactor();
+		int currSlowMult = player->GetGlobalSlowFactor();
 		if (slowMultiple == 1)
 		{
 			slowCounter = 1;
@@ -1023,7 +1023,7 @@ void BasicBullet::UpdatePrePhysics()
 
 void BasicBullet::UpdatePostPhysics()
 {
-	if (slowCounter == slowMultiple)
+	if (slowCounter >= slowMultiple)
 	{
 		frame++;
 		framesToLive--;
@@ -1504,7 +1504,7 @@ void GrindBullet::UpdatePrePhysics()
 	if (PlayerSlowingMe())
 	{
 		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
-		int currSlowMult = player->GetBubbleTimeFactor();
+		int currSlowMult = player->GetGlobalSlowFactor();
 		if (slowMultiple == 1)
 		{
 			slowCounter = 1;

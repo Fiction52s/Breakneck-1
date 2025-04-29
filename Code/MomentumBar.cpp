@@ -72,35 +72,36 @@ void MomentumBar::SetMomentumInfo(int p_level, float p_part)
 		tile = level + 1;
 	}
 
-	container.setTextureRect(ts_container->GetSubRect(level));
-	levelNumSpr.setTextureRect(ts_num->GetSubRect(tile));
+	container.setTextureRect(ts_container->GetSubRect(min(level, 2)));
+	levelNumSpr.setTextureRect(ts_num->GetSubRect(min( 3, tile)));
 }
 
 void MomentumBar::Draw(sf::RenderTarget *target)
 {
 	target->draw(container);
 
-	if (level == 0)
-	{
-		SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(0), Vector2f(ts_bar->texture->getSize()));
+	SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(level), Vector2f(ts_bar->texture->getSize()));
+	target->draw(colorQuad, 4, sf::Quads, &partShader);
 
-		target->draw(colorQuad, 4, sf::Quads, &partShader);
-		//target->draw(teal, &partShader);
-	}
-	else if (level == 1)
-	{
-		SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(1), Vector2f(ts_bar->texture->getSize()));
-		//target->draw(teal);
-		//target->draw(blue, &partShader);
-		target->draw(colorQuad, 4, sf::Quads, &partShader);
-	}
-	else if (level == 2)
-	{
-		SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(2), Vector2f(ts_bar->texture->getSize()));
-		//target->draw(blue);
-		//target->draw(purp, &partShader);
-		target->draw(colorQuad, 4, sf::Quads, &partShader);
-	}
+	//if (level == 0)
+	//{
+	//	
+	//	//target->draw(teal, &partShader);
+	//}
+	//else if (level == 1)
+	//{
+	//	SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(1), Vector2f(ts_bar->texture->getSize()));
+	//	//target->draw(teal);
+	//	//target->draw(blue, &partShader);
+	//	target->draw(colorQuad, 4, sf::Quads, &partShader);
+	//}
+	//else if (level == 2)
+	//{
+	//	SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(2), Vector2f(ts_bar->texture->getSize()));
+	//	//target->draw(blue);
+	//	//target->draw(purp, &partShader);
+	//	target->draw(colorQuad, 4, sf::Quads, &partShader);
+	//}
 
 	target->draw(levelNumSpr);
 }

@@ -150,6 +150,13 @@ struct PState
 	int grindCooldownFrame;
 	int grindCooldownLength;
 
+	bool hasGravityPull;
+	int gravityPullFrame;
+	int gravityPullLength;
+
+	int doubleDashBoostChanceFrame;
+	int doubleDashBoostChanceLength;
+
 	EdgeInfo grindEdgeInfo;
 	double grindSpeed;
 
@@ -234,6 +241,9 @@ struct PState
 	bool hasWallJumpRechargeAirDash;
 	bool hasHitRechargeDoubleJump;
 	bool hasHitRechargeAirDash;
+
+	bool hasWallJumpRechargeGravityPull;
+	bool hasHitRechargeGravityPull;
 
 	int framesBlocking;
 	V2d receivedHitPosition;

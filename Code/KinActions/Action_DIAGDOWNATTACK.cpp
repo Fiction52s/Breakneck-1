@@ -39,7 +39,7 @@ void Actor::DIAGDOWNATTACK_Change()
 
 void Actor::DIAGDOWNATTACK_Update()
 {
-	SetCurrHitboxes(diagDownHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(diagDownHitboxes[GetSwordSpeedLevel()], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -59,7 +59,7 @@ void Actor::DIAGDOWNATTACK_Update()
 
 void Actor::DIAGDOWNATTACK_UpdateSprite()
 {
-	Tileset *curr_ts = ts_diagDownSword[speedLevel];
+	Tileset *curr_ts = ts_diagDownSword[GetSwordSpeedLevel()];
 	//cout << "fair frame : " << frame / 2 << endl;
 	int startFrame = 0;
 	showSword = frame / 2 < 11;//frame >= startFrame && frame / 2 <= 9;
@@ -85,7 +85,7 @@ void Actor::DIAGDOWNATTACK_UpdateSprite()
 		//offsets[1] = Vector2i( 16, 32 );
 		//offsets[2] = Vector2i( 16, 64 );
 
-		Vector2f offset = diagDownSwordOffset[speedLevel];
+		Vector2f offset = diagDownSwordOffset[GetSwordSpeedLevel()];
 
 		if (facingRight)
 		{

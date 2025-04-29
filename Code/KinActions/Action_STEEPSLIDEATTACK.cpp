@@ -86,7 +86,7 @@ void Actor::STEEPSLIDEATTACK_Update()
 	{
 		assert(0);
 	}
-	SetCurrHitboxes(steepSlideHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(steepSlideHitboxes[GetSwordSpeedLevel()], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -103,7 +103,7 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 {
 	int startFrame = 0;
 	showSword = true;//frame / 2 >= startFrame && frame / 2 <= 7;
-	Tileset *curr_ts = ts_steepSlideAttackSword[speedLevel];
+	Tileset *curr_ts = ts_steepSlideAttackSword[GetSwordSpeedLevel()];
 
 	if (showSword)
 	{
@@ -116,7 +116,7 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 	SetSpriteTile(frame / 2, r);
 
 
-	Vector2f offset = slideAttackOffset[speedLevel];
+	Vector2f offset = slideAttackOffset[GetSwordSpeedLevel()];
 
 	V2d trueNormal;
 	double angle = GroundedAngleAttack(trueNormal);

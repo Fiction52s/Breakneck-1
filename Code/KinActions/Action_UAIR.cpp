@@ -39,7 +39,7 @@ void Actor::UAIR_Update()
 {
 	CheckHoldJump();
 
-	SetCurrHitboxes(uairHitboxes[speedLevel], frame);
+	SetCurrHitboxes(uairHitboxes[GetSwordSpeedLevel()], frame);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -54,7 +54,7 @@ void Actor::UAIR_Update()
 
 void Actor::UAIR_UpdateSprite()
 {
-	Tileset *curr_ts = ts_uairSword[speedLevel];
+	Tileset *curr_ts = ts_uairSword[GetSwordSpeedLevel()];
 	int startFrame = 0;
 	showSword = true;
 	//showSword = frame / 3 >= startFrame && frame / 3 <= 5;

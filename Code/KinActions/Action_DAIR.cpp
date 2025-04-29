@@ -34,7 +34,7 @@ void Actor::DAIR_Update()
 {
 	CheckHoldJump();
 
-	SetCurrHitboxes(dairHitboxes[speedLevel], frame);
+	SetCurrHitboxes(dairHitboxes[GetSwordSpeedLevel()], frame);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -49,7 +49,7 @@ void Actor::DAIR_Update()
 
 void Actor::DAIR_UpdateSprite()
 {
-	Tileset *curr_ts = ts_dairSword[speedLevel];
+	Tileset *curr_ts = ts_dairSword[GetSwordSpeedLevel()];
 	int startFrame = 0;
 	//showSword = frame / 2 >= startFrame && frame / 2 <= 9;
 	showSword = true;
@@ -64,7 +64,7 @@ void Actor::DAIR_UpdateSprite()
 	offsetArr[1] = Vector2i(0, 0);//Vector2i( 0, 48 );
 	offsetArr[2] = Vector2i(0, 0);
 
-	Vector2i offset = offsetArr[speedLevel];
+	Vector2i offset = offsetArr[GetSwordSpeedLevel()];
 
 	SetSpriteTexture(action);
 

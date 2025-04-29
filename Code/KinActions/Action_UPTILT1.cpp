@@ -72,7 +72,7 @@ void Actor::UPTILT1_Change()
 
 void Actor::UPTILT1_Update()
 {
-	SetCurrHitboxes(standHitboxes1[speedLevel], frame / 2);
+	SetCurrHitboxes(standHitboxes1[GetSwordSpeedLevel()], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -84,7 +84,7 @@ void Actor::UPTILT1_Update()
 
 void Actor::UPTILT1_UpdateSprite()
 {
-	UpdateGroundedAttackSprite(action, ts_standAttackSword2[speedLevel],
+	UpdateGroundedAttackSprite(action, ts_standAttackSword2[GetSwordSpeedLevel()],
 		0, 10, 2, Vector2f(0, 0));
 }
 

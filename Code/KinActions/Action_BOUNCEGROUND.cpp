@@ -222,6 +222,11 @@ void Actor::BOUNCEGROUND_Change()
 				hasDoubleJump = true;
 				hasWallJumpRechargeDoubleJump = false;
 			}
+			if (hasWallJumpRechargeGravityPull && !hasGravityPull)
+			{
+				hasGravityPull = true;
+				hasWallJumpRechargeGravityPull = false;
+			}
 
 
 			if (currInput.LUp())

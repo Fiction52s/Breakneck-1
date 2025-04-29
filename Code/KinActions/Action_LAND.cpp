@@ -224,7 +224,7 @@ void Actor::LAND_UpdateSprite()
 
 		//cout << "activating" << endl;
 
-		ActivateEffect(PLAYERFX_LAND_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(angle), 8, 2, facingRight);
+		ActivateEffect(PLAYERFX_LAND_0 + GetSwordSpeedLevel(), Vector2f(fxPos), RadiansToDegrees(angle), 8, 2, facingRight);
 	}
 
 	if (scorpOn)

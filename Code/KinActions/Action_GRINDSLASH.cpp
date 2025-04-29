@@ -25,7 +25,7 @@ void Actor::GRINDSLASH_Update()
 
 void Actor::GRINDSLASH_UpdateSprite()
 {
-	Tileset *curr_ts = ts_grindLungeSword[speedLevel];
+	Tileset *curr_ts = ts_grindLungeSword[GetSwordSpeedLevel()];
 	int startFrame = 0;
 	showSword = frame < 15;
 	//showSword = frame / 3 >= startFrame && frame / 3 <= 5;
@@ -40,7 +40,7 @@ void Actor::GRINDSLASH_UpdateSprite()
 	SetSpriteTile(frame, facingRight);
 
 	Vector2i offset(0, 0);
-	switch (speedLevel)
+	switch (GetSwordSpeedLevel())
 	{
 	case 0:
 	case 1:

@@ -66,7 +66,7 @@ void Actor::STEEPCLIMBATTACK_Change()
 
 void Actor::STEEPCLIMBATTACK_Update()
 {
-	SetCurrHitboxes(steepClimbHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(steepClimbHitboxes[GetSwordSpeedLevel()], frame / 2);
 
 	if (frame == 0)
 	{
@@ -87,7 +87,7 @@ void Actor::STEEPCLIMBATTACK_UpdateSprite()
 {
 	int startFrame = 0;
 	showSword = true;//frame / 2 >= startFrame && frame / 2 <= 7;
-	Tileset *curr_ts = ts_steepClimbAttackSword[speedLevel];
+	Tileset *curr_ts = ts_steepClimbAttackSword[GetSwordSpeedLevel()];
 	int animFactor = 2;
 
 	if (showSword)
@@ -101,7 +101,7 @@ void Actor::STEEPCLIMBATTACK_UpdateSprite()
 	int tFrame = frame / animFactor;
 	SetSpriteTile(tFrame, r);
 
-	Vector2f offset = climbAttackOffset[speedLevel];
+	Vector2f offset = climbAttackOffset[GetSwordSpeedLevel()];
 
 	V2d trueNormal;
 	double angle = GroundedAngleAttack(trueNormal);

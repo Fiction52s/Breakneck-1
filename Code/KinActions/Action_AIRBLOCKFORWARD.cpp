@@ -29,6 +29,7 @@ void Actor::AIRBLOCKFORWARD_Update()
 	{
 		blockstunFrames--;
 	}
+
 	//hitstunFrames--;
 }
 

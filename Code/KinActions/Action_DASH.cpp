@@ -8,6 +8,9 @@ void Actor::DASH_Start()
 {
 	frame = 0;
 	currBBoostCounter = 0;
+
+	TryExtraDashBoost();
+	//if( TryDashBoost()
 }
 
 void Actor::DASH_End()

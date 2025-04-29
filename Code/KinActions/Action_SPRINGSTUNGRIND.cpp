@@ -286,7 +286,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 				{
 					lungeSpeed = grindLungeSpeed1;
 				}
-				else if (speedLevel == 2)
+				else if (speedLevel >= 2)
 				{
 					lungeSpeed = grindLungeSpeed2;
 				}
@@ -353,7 +353,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 				{
 					lungeSpeed = grindLungeSpeed1;
 				}
-				else if (speedLevel == 2)
+				else if (speedLevel >= 2)
 				{
 					lungeSpeed = grindLungeSpeed2;
 				}

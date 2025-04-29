@@ -50,7 +50,7 @@ void Actor::FAIR_Update()
 	CheckHoldJump();
 
 
-	SetCurrHitboxes(fairHitboxes[speedLevel], frame);
+	SetCurrHitboxes(fairHitboxes[GetSwordSpeedLevel()], frame);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -66,7 +66,7 @@ void Actor::FAIR_Update()
 
 void Actor::FAIR_UpdateSprite()
 {
-	Tileset *curr_ts = ts_fairSword[speedLevel];
+	Tileset *curr_ts = ts_fairSword[GetSwordSpeedLevel()];
 	//cout << "fair frame : " << frame / 2 << endl;
 	int startFrame = 0;
 	showSword = true;//frame >= startFrame && frame / 2 <= 9;

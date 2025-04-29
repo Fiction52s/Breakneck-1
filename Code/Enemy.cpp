@@ -2325,7 +2325,8 @@ int Enemy::GetSlowFactor(int playerIndex)
 {
 	Actor *player = sess->GetPlayer(playerIndex);
 
-	return player->GetBubbleTimeFactor();
+	return player->GetGlobalSlowFactor();
+	//return 2;//player->GetBubbleTimeFactor();
 }
 
 HitboxInfo * Enemy::IsHit(int pIndex )
@@ -2403,6 +2404,8 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 				if (hitResult == Actor::HitResult::FULLBLOCK)
 				{
 					IHitPlayerShield(index);
+
+					
 				}
 				else
 				{
@@ -2420,6 +2423,8 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 			}
 		}
 	}
+
+	return false;
 }
 
 bool Enemy::CheckHitPlayer(int index)

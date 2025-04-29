@@ -56,7 +56,7 @@ void Actor::WALLATTACK_Update()
 	int f = frame / 2;
 	if (f < 8)
 	{
-		SetCurrHitboxes(wallHitboxes[speedLevel], frame / 2);
+		SetCurrHitboxes(wallHitboxes[GetSwordSpeedLevel()], frame / 2);
 	}
 
 	if (frame == 0 && slowCounter == 1)
@@ -91,7 +91,7 @@ void Actor::WALLATTACK_Update()
 
 void Actor::WALLATTACK_UpdateSprite()
 {
-	Tileset *curr_ts = ts_wallAttackSword[speedLevel];
+	Tileset *curr_ts = ts_wallAttackSword[GetSwordSpeedLevel()];
 	//cout << "fair frame : " << frame / 2 << endl;
 	int startFrame = 0;
 	showSword = true;//frame >= startFrame && frame / 2 <= 9;

@@ -790,6 +790,9 @@ void KinMask::Update( int speedLevel, bool desp )
 			case 2:
 				expr = Expr_SPEED2;
 				break;
+			case 3:
+				expr = Expr_SPEED2;
+				break;
 			}
 
 			/*if (desp)

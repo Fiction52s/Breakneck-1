@@ -154,9 +154,17 @@ int StoreEntry::GetUpgradeEffect(const std::string &str)
 	{
 		return UE_DASH_BOOST;
 	}
+	else if (str == "DASH_BOOST_2")
+	{
+		return UE_DASH_BOOST_2;
+	}
 	else if( str == "ATTACK_THROUGH_BULLETS")
 	{
 		return UE_ATTACK_THROUGH_BULLETS;
+	}
+	else if (str == "TIME_SLOW_WITH_HIGH_MOMENTUM")
+	{
+		return UE_TIME_SLOW_WITH_HIGH_MOMENTUM;
 	}
 	else if( str == "INCREASE_HP_GAIN_ON_HIT")
 	{
@@ -213,6 +221,10 @@ int StoreEntry::GetUpgradeEffect(const std::string &str)
 	else if (str == "GRAVITY_CEILING_BIGGER_BLAST")
 	{
 		return UE_GRAVITY_CEILING_BIGGER_BLAST;
+	}
+	else if (str == "GRAVITY_PULL")
+	{
+		return UE_GRAVITY_PULL;
 	}
 	else if( str == "BOUNCE_SCORPION_UNLOCK")
 	{
