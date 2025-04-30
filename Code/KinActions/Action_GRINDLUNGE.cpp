@@ -11,6 +11,7 @@ void Actor::GRINDLUNGE_End()
 {
 	SetAction(JUMP);
 	frame = 1;
+	//grindCooldownFrame = 0;
 }
 
 void Actor::GRINDLUNGE_Change()
@@ -19,16 +20,19 @@ void Actor::GRINDLUNGE_Change()
 	{
 		SetAction(GRINDSLASH);
 		frame = 0;
+		grindCooldownFrame = 0;
 	}
 	else if (!BasicAirAction() && !DashButtonHeld())
 	{
 		SetAction(JUMP);
 		frame = 1;
+		grindCooldownFrame = 0;
 	}
 }
 
 void Actor::GRINDLUNGE_Update()
 {
+	SetCurrHitboxes(grindHitboxes[0], 0);
 }
 
 void Actor::GRINDLUNGE_UpdateSprite()
@@ -45,6 +49,11 @@ void Actor::GRINDLUNGE_UpdateSprite()
 	sprite->setRotation(angle / PI * 180);
 	sprite->setPosition(position.x, position.y);
 	//float angle = atan2( 
+
+	ts_grindAttackFX->SetSubRect(grindAttackSprite, frame % 20, !facingRight);
+	grindAttackSprite.setPosition(position.x, position.y);
+	grindAttackSprite.setOrigin(grindAttackSprite.getLocalBounds().width / 2,
+		grindAttackSprite.getLocalBounds().height / 2);
 
 	if (scorpOn)
 		SetAerialScorpSprite();
@@ -67,7 +76,7 @@ void Actor::GRINDLUNGE_TimeDepFrameInc()
 
 int Actor::GRINDLUNGE_GetActionLength()
 {
-	return 20;
+	return 40;
 }
 
 const char * Actor::GRINDLUNGE_GetTilesetName()

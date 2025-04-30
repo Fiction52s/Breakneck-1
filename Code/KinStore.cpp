@@ -130,6 +130,10 @@ int StoreEntry::GetUpgradeEffect(const std::string &str)
 	{
 		return UE_REDUCED_DAMAGE;
 	}
+	else if (str == "INFINITE_HEALTH")
+	{
+		return UE_INFINITE_HEALTH;
+	}
 	else if( str == "COUNTERHIT")
 	{
 		return UE_COUNTERHIT;

@@ -3812,9 +3812,9 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	speedChangeDown = .03;//.005;//.07;
 
 
-	grindLungeSpeed0 = 15.0;
-	grindLungeSpeed1 = 17.0;//20.0;
-	grindLungeSpeed2 = 22.0;//28.0;
+	grindLungeSpeed0 = 20.0;//15.0;
+	grindLungeSpeed1 = 24.0;//17.0;//20.0;
+	grindLungeSpeed2 = 27.0;//28.0;
 	//grindLungeExtraMax = 10.0;
 
 	motionGhostSpacing = 1;
@@ -5112,11 +5112,11 @@ void Actor::Respawn( bool setStartPos )
 {
 	if (HasUpgradeEffect(UE_GRIND_EXTEND_LENGTH))
 	{
-		grindCooldownLength = 10;
+		grindCooldownLength = 30;
 	}
 	else
 	{
-		grindCooldownLength = 20;//60;
+		grindCooldownLength = 30;//60;
 	}
 	grindCooldownFrame = grindCooldownLength;
 	
@@ -6170,13 +6170,16 @@ void Actor::ReactToBeingHit()
 			newAmt = totalReduce * (dmgUpgradeCount / totalReducedDmgUpgrades);
 		}
 
-		double cdd = currDmg - newAmt;
-		int cddi = cdd;
-		health -= cddi;
+		if (!HasUpgradeEffect(UE_INFINITE_HEALTH))
+		{
+			double cdd = currDmg - newAmt;
+			int cddi = cdd;
+			health -= cddi;
 
-		if (health < 0)
-			health = 0;
-
+			if (health < 0)
+				health = 0;
+		}
+		
 		/*if (damage > 0)
 		{
 			DrainTimer(damage);
@@ -8423,6 +8426,7 @@ void Actor::WireMovement()
 	{
 		if (rightWire->IsPulling() && leftWire->IsPulling())
 		{
+		
 			bool canDoubleWireBoostParticle = false;
 			if (framesSinceDoubleWireBoost >= doubleWireBoostTiming)
 			{
@@ -8504,85 +8508,89 @@ void Actor::WireMovement()
 
 
 
-			V2d wdirs = (wireDir1 + wireDir2) / 2.0;
+			V2d wdirs = normalize( (wireDir1 + wireDir2) / 2.0 );
 
 
 			if (opposite)
 				wdirs = wireDir1;
 
 
-
+			
 
 			V2d owdirs(wdirs.y, -wdirs.x);
 
+		/*	if (abs(owdirs.x) < .000001)
+			{
+				owdirs.x = 0;
+				owdirs = normalize(owdirs);
+			}*/
+
+			
+
 			doubleWireBoostDir = -owdirs;
 
-			V2d inputDir;
-			if (currInput.LLeft())
-			{
-				inputDir.x = -1;
-			}
-			else if (currInput.LRight())
-			{
-				inputDir.x = 1;
-			}
-			if (currInput.LUp())
-			{
-				inputDir.y = -1;
-			}
-			else if (currInput.LDown())
-			{
-				inputDir.y = 1;
-			}
+			V2d inputDir = currInput.GetLeft8Dir();
+			
+			double doubleWireBoostAmt = .5;//1.0;//.5;
+			//double v = .5;//.73;//.8;//.5;//1.0;
 
-			dotvel = -dot(inputDir, owdirs);
-			double v = .5;//.73;//.8;//.5;//1.0;
-			if (dotvel > 0)
+			if (inputDir.x != 0 || inputDir.y != 0)
 			{
-				//cout << "a" << endl;
-				if (canDoubleWireBoostParticle)
+				dotvel = -dot(inputDir, owdirs);
+
+				if (abs(dotvel) < .000001)
 				{
-					doubleWireBoost = true;
+					dotvel = 0;
 				}
-				double q = dot(velocity, normalize(-owdirs));
-
-				if (q >= 0 && q < 40)
+				if (dotvel > 0)
 				{
-					velocity += -owdirs * v / (double)slowMultiple;
+					//cout << "a" << endl;
+					if (canDoubleWireBoostParticle)
+					{
+						doubleWireBoost = true;
+					}
+					double q = dot(velocity, -owdirs);
+
+					if (q >= 0 && q < 40)
+					{
+						velocity += -owdirs * doubleWireBoostAmt / (double)slowMultiple;
+					}
+					else
+					{
+						velocity += -owdirs * (doubleWireBoostAmt * 2) / (double)slowMultiple;
+					}
+
+					doubleWireBoostDir = -doubleWireBoostDir;
+				}
+				else if (dotvel < 0)
+				{
+					if (canDoubleWireBoostParticle)
+					{
+						doubleWireBoost = true;
+					}
+					//cout << "b" << endl;
+					double q = dot(velocity, owdirs);
+					if (q >= 0 && q < 40)
+					{
+						velocity += owdirs * doubleWireBoostAmt / (double)slowMultiple;
+					}
+					else
+					{
+						velocity += owdirs * (doubleWireBoostAmt * 2) / (double)slowMultiple;
+					}
+
 				}
 				else
 				{
-					velocity += -owdirs * (v * 2) / (double)slowMultiple;
 				}
-
-				doubleWireBoostDir = -doubleWireBoostDir;
 			}
-			else if (dotvel < 0)
-			{
-				if (canDoubleWireBoostParticle)
-				{
-					doubleWireBoost = true;
-				}
-				//cout << "b" << endl;
-				double q = dot(velocity, normalize(owdirs));
-				if (q >= 0 && q < 40)
-				{
-					velocity += owdirs * v / (double)slowMultiple;
-				}
-				else
-				{
-					velocity += owdirs * (v * 2) / (double)slowMultiple;
-				}
-
-			}
-			else
-			{
-			}
+			
 
 			if (!opposite)
 			{
 				V2d totalAcc;
 				totalAcc.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
+
 				if (totalVelDir.y < 0)
 					totalAcc.y = totalVelDir.y * (doubleWirePull) / (double)slowMultiple;
 				//totalAcc.y = totalVelDir.y * ( doubleWirePull + 1 )/ (double)slowMultiple;
@@ -8606,7 +8614,6 @@ void Actor::WireMovement()
 				//totalVel *= dot( totalVelDir, rightWire->
 				velocity += totalAcc;
 			}
-
 			/*if( opposite && !currInput.LLeft() && !currInput.LDown() && !currInput.LUp() && !currInput.LRight() )
 			{
 			double wdirsVel = dot( velocity, wdirs );
@@ -8640,6 +8647,9 @@ void Actor::WireMovement()
 				if (dot(wireDir1, wireDir2) > .99)
 					velocity = (velocity + AddAerialGravity(velocity)) / 2.0;
 			}
+
+
+			//cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
 			//removing the max velocity cap now that it doesnt pull you in a straight direction
 			//double afterAlongAmount = dot( velocity, totalVelDir );
 			//double maxAlong = 100;//45.0;
@@ -8703,7 +8713,9 @@ void Actor::WireMovement()
 			}
 
 			V2d wireDir = normalize(wirePoint - wPos);
-			double otherAccel = .5 / (double)slowMultiple;
+			double singleWireBoostAmt = .5 / (double)slowMultiple;
+
+			//singleWireBoostAmt *= 3.0;
 
 			V2d vec45(1, 1);
 			vec45 = normalize(vec45);
@@ -8718,13 +8730,13 @@ void Actor::WireMovement()
 					if (currInput.LLeft())
 					{
 						rightWireBoost = true;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 						rightWireBoostDir = -rightWireBoostDir;
 					}
 					else if (currInput.LRight())
 					{
 						rightWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 				}
 				else if (wireDir.y > 0)
@@ -8732,12 +8744,12 @@ void Actor::WireMovement()
 					if (currInput.LLeft())
 					{
 						rightWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 					else if (currInput.LRight())
 					{
 						rightWireBoost = true;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 						rightWireBoostDir = -rightWireBoostDir;
 					}
 				}
@@ -8749,13 +8761,13 @@ void Actor::WireMovement()
 					if (currInput.LUp())
 					{
 						rightWireBoost = true;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 						rightWireBoostDir = -rightWireBoostDir;
 					}
 					else if (currInput.LDown())
 					{
 						rightWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 				}
 				else if (wireDir.x < 0)
@@ -8763,12 +8775,12 @@ void Actor::WireMovement()
 					if (currInput.LUp())
 					{
 						rightWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 					else if (currInput.LDown())
 					{
 						rightWireBoost = true;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 						rightWireBoostDir = -rightWireBoostDir;
 					}
 				}
@@ -15809,6 +15821,32 @@ void Actor::UpdatePhysics()
 			{
 				DefaultGroundLanding(movement);
 			}
+			else if ( tempCollision && action == GRINDLUNGE && !touchedGrass[Grass::ANTIGRIND]
+				&& HasUpgradeEffect(UE_GRIND_BALL_UNLOCK) && CanBufferGrind()
+				&& !minContact.edge->IsInvisibleWall())
+			{
+				prevRail = NULL;
+				Edge *e = minContact.edge;
+				V2d mp = minContact.position;
+				double q = e->GetQuantity(mp);
+				ground = e;
+				edgeQuantity = q;
+
+				V2d norm = e->Normal();
+
+				groundSpeed = dot(velocity, e->Along());
+
+				/*if( norm.y )
+				{
+					groundSpeed = velocity.y;
+				}
+				else
+				{
+					groundSpeed = -velocity.y;
+				}*/
+
+				SetActionGrind();
+			}
 			else if( tempCollision && DefaultGravReverseCheck() )
 			{
 				//position += minContact.resolution;
@@ -18746,8 +18784,7 @@ void Actor::ProcessHitGoal()
 
 bool Actor::CareAboutSpeedAction()
 {
-	return action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != RIDESHIP && action != GRINDBALL
-		&& action != GRINDATTACK;
+	return action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != RIDESHIP;
 }
 
 bool Actor::TryActivateGravityBlast(V2d dir)
@@ -19095,13 +19132,16 @@ void Actor::SlowDependentFrameIncrement()
 			framesNotGrinding++;
 		}
 
-		if (action == GRINDBALL || action == GRINDATTACK)
+		if (action == GRINDBALL || action == GRINDATTACK )
 		{
 			grindCooldownFrame = 0;
 		}
 		else
 		{
-			++grindCooldownFrame;
+			if (grindCooldownFrame < grindCooldownLength)
+			{
+				++grindCooldownFrame;
+			}
 		}
 
 		framesSinceBounce++;
@@ -22998,7 +23038,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		//target->draw(railTest);
 	}
 
-	if (action == GRINDATTACK || (action == GRINDBALL && HasUpgradeEffect(UE_GRIND_ATTACK)) )
+	if (action == GRINDATTACK || (action == GRINDBALL && HasUpgradeEffect(UE_GRIND_ATTACK)) || action == GRINDLUNGE )
 	{
 		target->draw(grindAttackSprite);
 	}
@@ -23209,7 +23249,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		
 	}
-	if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
+	if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND )// || action == GRINDLUNGE )
 	{
 		for (int i = 0; i < NUM_GRIND_QUADS; ++i)
 		{

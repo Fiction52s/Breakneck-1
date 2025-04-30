@@ -1407,6 +1407,15 @@ void Camera::UpdateBasicMode()
 
 	Vector2f currOffset;
 
+	if (abs(pVel.x) < .00001)
+	{
+		pVel.x = 0;
+	}
+	else if (abs(pVel.y) < .00001)
+	{
+		pVel.y = 0;
+	}
+
 	if (game != NULL && game->debugScreenRecorder != NULL)
 	{
 		offset.x = 0;

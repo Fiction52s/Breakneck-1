@@ -86,6 +86,8 @@ void Actor::GRINDBALL_Change()
 					SetAction(GRINDLUNGE);
 					frame = 0;
 
+					grindCooldownFrame = grindCooldownLength;
+
 					V2d grindNorm = grindEdge->Normal();
 					V2d gDir = normalize(grindEdge->v1 - grindEdge->v0);
 					lungeNormal = grindNorm;
@@ -106,7 +108,7 @@ void Actor::GRINDBALL_Change()
 					//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
 					//double extra = f * grindLungeExtraMax;
 
-					velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
+					velocity = gDir * grindSpeed + lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
 
 														/*double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
 														double extra = f * grindLungeExtraMax;
@@ -121,8 +123,15 @@ void Actor::GRINDBALL_Change()
 														}*/
 
 														//grindEdge = NULL;
-
-					facingRight = (grindNorm.x > 0);
+					if (velocity.x > 0)
+					{
+						facingRight = true;//(grindNorm.x > 0);
+					}
+					else
+					{
+						facingRight = false;//(grindNorm.x > 0);
+					}
+					
 
 					grindEdge = NULL;
 					ground = NULL;
@@ -154,7 +163,7 @@ void Actor::GRINDBALL_Change()
 					frame = 0;
 
 					framesNotGrinding = 0;
-					grindCooldownFrame = grindCooldownLength / 2; //reduced cooldown for lunge
+					grindCooldownFrame = grindCooldownLength; //reduced cooldown for lunge
 
 					V2d grindNorm = grindEdge->Normal();
 					V2d gDir = normalize(grindEdge->v1 - grindEdge->v0);
@@ -175,10 +184,18 @@ void Actor::GRINDBALL_Change()
 					}
 					//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
 					//double extra = f * grindLungeExtraMax;
+					velocity = gDir * grindSpeed + lungeNormal * lungeSpeed;
+					//velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
 
-					velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
-
-					facingRight = (grindNorm.x > 0);
+					if (velocity.x > 0)
+					{
+						facingRight = true;//(grindNorm.x > 0);
+					}
+					else
+					{
+						facingRight = false;//(grindNorm.x > 0);
+					}
+					//facingRight = (grindNorm.x > 0);
 
 					grindEdge = NULL;
 					ground = NULL;
