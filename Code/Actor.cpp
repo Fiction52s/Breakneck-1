@@ -8416,7 +8416,7 @@ void Actor::WireMovement()
 
 	double accel = .15;//.2;//.15;//.15;
 	double triggerSpeed = 17;
-	double doubleWirePull = 1.0;//2.0
+	
 
 	doubleWireBoost = false; //just for now temp
 	rightWireBoost = false;
@@ -8531,7 +8531,23 @@ void Actor::WireMovement()
 
 			V2d inputDir = currInput.GetLeft8Dir();
 			
-			double doubleWireBoostAmt = .5;//1.0;//.5;
+			double doubleWireBoostAmt = .5 / (double)slowMultiple;;//1.0;//.5;
+			double doubleWirePull = 1.0;//2.0
+
+			double numPullUpgrades = GetUpgradeEffectCount(UE_WIRES_INCREASED_PULL);
+			double totalNumPullUpgrades = GetUpgradeEffectTotalCount(UE_WIRES_INCREASED_PULL);
+
+			double boostFactor = 0;
+			double maxBoostFactor = 1.5;
+			if (totalNumPullUpgrades > 0)
+			{
+				boostFactor = maxBoostFactor * (numPullUpgrades / totalNumPullUpgrades);
+			}
+
+			doubleWireBoostAmt += doubleWireBoostAmt * boostFactor;
+
+			doubleWirePull += doubleWirePull * boostFactor;
+
 			//double v = .5;//.73;//.8;//.5;//1.0;
 
 			if (inputDir.x != 0 || inputDir.y != 0)
@@ -8715,7 +8731,17 @@ void Actor::WireMovement()
 			V2d wireDir = normalize(wirePoint - wPos);
 			double singleWireBoostAmt = .5 / (double)slowMultiple;
 
-			//singleWireBoostAmt *= 3.0;
+			double numPullUpgrades = GetUpgradeEffectCount(UE_WIRES_INCREASED_PULL);
+			double totalNumPullUpgrades = GetUpgradeEffectTotalCount(UE_WIRES_INCREASED_PULL);
+
+			double boostFactor = 0;
+			double maxBoostFactor = 1.5;
+			if (totalNumPullUpgrades > 0)
+			{
+				boostFactor = maxBoostFactor * (numPullUpgrades / totalNumPullUpgrades);
+			}
+
+			singleWireBoostAmt += singleWireBoostAmt * boostFactor;
 
 			V2d vec45(1, 1);
 			vec45 = normalize(vec45);
@@ -8870,7 +8896,23 @@ void Actor::WireMovement()
 			}
 
 			V2d wireDir = normalize(wirePoint - wPos);
-			double otherAccel = .5 / (double)slowMultiple;
+
+			double singleWireBoostAmt = .5 / (double)slowMultiple;
+
+			double numPullUpgrades = GetUpgradeEffectCount(UE_WIRES_INCREASED_PULL);
+			double totalNumPullUpgrades = GetUpgradeEffectTotalCount(UE_WIRES_INCREASED_PULL);
+
+			double boostFactor = 0;
+			double maxBoostFactor = 1.5;
+			if (totalNumPullUpgrades > 0)
+			{
+				boostFactor = maxBoostFactor * (numPullUpgrades / totalNumPullUpgrades);
+			}
+
+			singleWireBoostAmt += singleWireBoostAmt * boostFactor;
+
+
+
 			V2d vec45(1, 1);
 			vec45 = normalize(vec45);
 			double xLimit = vec45.x;
@@ -8883,12 +8925,12 @@ void Actor::WireMovement()
 					{
 						leftWireBoost = true;
 						leftWireBoostDir = -leftWireBoostDir;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 					}
 					else if (currInput.LRight())
 					{
 						leftWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 				}
 				else if (wireDir.y > 0)
@@ -8896,12 +8938,12 @@ void Actor::WireMovement()
 					if (currInput.LLeft())
 					{
 						leftWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 					else if (currInput.LRight())
 					{
 						leftWireBoost = true;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 						leftWireBoostDir = -leftWireBoostDir;
 					}
 				}
@@ -8913,13 +8955,13 @@ void Actor::WireMovement()
 					if (currInput.LUp())
 					{
 						leftWireBoost = true;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 						leftWireBoostDir = -leftWireBoostDir;
 					}
 					else if (currInput.LDown())
 					{
 						leftWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 				}
 				else if (wireDir.x < 0)
@@ -8927,12 +8969,12 @@ void Actor::WireMovement()
 					if (currInput.LUp())
 					{
 						leftWireBoost = true;
-						speed += otherAccel;
+						speed += singleWireBoostAmt;
 					}
 					else if (currInput.LDown())
 					{
 						leftWireBoost = true;
-						speed -= otherAccel;
+						speed -= singleWireBoostAmt;
 						leftWireBoostDir = -leftWireBoostDir;
 					}
 				}
@@ -18584,6 +18626,9 @@ void Actor::HandleWaterSounds(int wType,
 
 void Actor::HandleSpecialTerrain()
 {
+	if (action == WARP || action == WARP_CHARGE)
+		return;
+
 	if (action == DEATH)
 	{
 		return;
@@ -18879,13 +18924,17 @@ void Actor::UpdateSpeedBar()
 			//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
 		}
 
-		if (currentSpeedBar > level3SpeedThresh)
+		if (currentSpeedBar > level3SpeedThresh && HasUpgradeEffect( UE_TIME_SLOW_WITH_HIGH_MOMENTUM ) )
 		{
 			speedLevel = 3;
 		}
 		else if (currentSpeedBar > level2SpeedThresh)
 		{
 			speedLevel = 2;
+			if (currentSpeedBar > level3SpeedThresh)
+			{
+				currentSpeedBar = level3SpeedThresh;
+			}
 		}
 		else if (currentSpeedBar > level1SpeedThresh)
 		{

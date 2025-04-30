@@ -42,7 +42,11 @@ struct GravityBlast : Enemy
 	void ComboKill(Enemy *e);
 	bool IsActive();
 	void DirectKill();
+	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
+	bool CountsForEnemyGate() { return false; }
+	bool IsValidTrackEnemy() { return false; }
+	bool IsHomingTarget(int trackingType) { return false; }
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

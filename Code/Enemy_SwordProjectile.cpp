@@ -268,6 +268,33 @@ void SwordProjectile::UpdateSprite()
 	sprite.setRotation(0);
 }
 
+void SwordProjectile::DrawMinimap(sf::RenderTarget *target)
+{
+	if (IsActive())
+	{
+		if (hasMonitor && !suppressMonitor)
+		{
+			CircleShape cs;
+			//cs.setRadius(50);
+			cs.setRadius(100);
+			cs.setFillColor(Color::White);
+			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+			cs.setPosition(GetPositionF());
+			target->draw(cs);
+		}
+		else
+		{
+			CircleShape cs;
+			//cs.setRadius(40);
+			cs.setRadius(100);
+			cs.setFillColor(Color::Red);
+			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+			cs.setPosition(GetPositionF());
+			target->draw(cs);
+		}
+	}
+}
+
 int SwordProjectile::GetNumStoredBytes()
 {
 	return sizeof(MyData) + comboObj->GetNumStoredBytes();

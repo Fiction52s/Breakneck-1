@@ -306,6 +306,10 @@ int StoreEntry::GetUpgradeEffect(const std::string &str)
 	{
 		return UE_WIRES_STUN;
 	}
+	else if (str == "WIRES_INCREASED_PULL")
+	{
+		return UE_WIRES_INCREASED_PULL;
+	}
 	else
 	{
 		cout << "bad string detected for upgrades: " << str << endl;

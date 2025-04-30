@@ -1981,6 +1981,29 @@ double Wire::GetCurrentTotalLength()
 
 void Wire::Reset()
 {
+	double numPullUpgrades = player->GetUpgradeEffectCount(UE_WIRES_INCREASED_PULL);
+	double numPullUpgradesTotal = player->GetUpgradeEffectTotalCount(UE_WIRES_INCREASED_PULL);
+	double pullUpgradeAmt = 0;
+	if (numPullUpgradesTotal > 0)
+	{
+		pullUpgradeAmt = numPullUpgrades / numPullUpgradesTotal;
+	}
+
+	double maxExtraPull = 10;
+	//pullStrength = 10;
+	maxPullStrength = 10 + maxExtraPull * pullUpgradeAmt;//10;
+	startPullStrength = maxPullStrength;//10;
+	data.pullStrength = startPullStrength;
+	pullAccel = (maxPullStrength - startPullStrength) / 180;
+	//.1 = 10 frames per 1. 100 frames per 10
+
+	double maxExtraDrag = 10;
+	maxDragStrength = 30 + maxExtraDrag * pullUpgradeAmt;
+	startDragStrength = maxDragStrength / 3.0;//10 + maxExtraDrag * pullUpgradeAmt;
+	data.dragStrength = startDragStrength;
+	dragAccel = (maxDragStrength - startDragStrength) / 180.0;
+	
+
 	data.state = IDLE;
 	data.numPoints = 0;
 	data.framesFiring = 0;
@@ -1989,6 +2012,24 @@ void Wire::Reset()
 	data.pullStrength = startPullStrength;
 	data.anchor.Reset();
 	data.shaderOffset = 0;
+
+	maxTotalLength = 7000;//10000;
+	maxFireLength = 4000; //5000
+
+	double numWireLengthUpgrades = player->GetUpgradeEffectCount(UE_WIRES_INCREASED_RANGE);
+	double numWireLengthUpgradesTotal = player->GetUpgradeEffectTotalCount(UE_WIRES_INCREASED_RANGE);
+
+	double upFactor = 0;
+	if (numWireLengthUpgradesTotal > 0)
+	{
+		upFactor = numWireLengthUpgrades / numWireLengthUpgradesTotal;
+	}
+
+	double totalFireUpgradeAmount = 1500; //max 5000
+	double totalMaxLengthUpgradeAmount = 3000;
+
+	maxFireLength = 4000 + totalFireUpgradeAmount * upFactor;
+	maxTotalLength = 7000 + totalMaxLengthUpgradeAmount * upFactor;
 }
 
 V2d Wire::GetOriginPos( bool test )

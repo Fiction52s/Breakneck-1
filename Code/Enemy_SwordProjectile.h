@@ -41,11 +41,15 @@ struct SwordProjectile : Enemy
 	void FrameIncrement();
 	void ComboHit();
 	void UpdateSprite();
+	void DrawMinimap(sf::RenderTarget *target);
 	void ResetEnemy();
 	void HandleNoHealth();
 	void ComboKill(Enemy *e);
 	bool IsActive();
 	void DirectKill();
+	bool CountsForEnemyGate() { return false; }
+	bool IsValidTrackEnemy() { return false; }
+	bool IsHomingTarget(int trackingType) { return false; }
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
