@@ -226,9 +226,17 @@ int StoreEntry::GetUpgradeEffect(const std::string &str)
 	{
 		return UE_GRAVITY_CEILING_BIGGER_BLAST;
 	}
+	else if (str == "GRAVITY_PULL_REGENS_WITH_WALLJUMP")
+	{
+		return UE_GRAVITY_PULL_REGENS_WITH_WALLJUMP;
+	}
 	else if (str == "GRAVITY_PULL")
 	{
 		return UE_GRAVITY_PULL;
+	}
+	else if (str == "GRAVITY_STRONGER_PULL")
+	{
+		return UE_GRAVITY_STRONGER_PULL;
 	}
 	else if( str == "BOUNCE_SCORPION_UNLOCK")
 	{
@@ -646,6 +654,43 @@ void KinStore::SetSelected(int section, int itemIndex)
 		upgradeLevel = rush->kinUpgradeLevels->GetUpgradeLevel(si->upgradeIndex);
 	}
 
+	int op = si->upgradeIndex;
+	int cost = si->GetCurrentCost();
+	/*if (ySelector->currIndex > 0)
+	{
+		if (rush != NULL)
+		{
+			if (!rush->kinUpgradeLevels->HasUpgradeLevel(op, 1))
+			{
+				int numPowersUnlocked = 0;
+				for (int i = 0; i < 6; ++i)
+				{
+					if (rush->kinUpgradeLevels->GetUpgradeLevel(POWER_AIR_DASH + i) > 0)
+					{
+						numPowersUnlocked++;
+					}
+				}
+				cost += numPowersUnlocked * 2;
+			}
+		}
+		else
+		{
+			if (!edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel(op, 1))
+			{
+				int numPowersUnlocked = 0;
+				for (int i = 0; i < 6; ++i)
+				{
+					if (edit->defaultStartingPlayerUpgradeLevels->GetUpgradeLevel(POWER_AIR_DASH + i) > 0)
+					{
+						numPowersUnlocked++;
+					}
+				}
+				cost += numPowersUnlocked * 2;
+			}
+
+		}
+	}
+*/
 	if (upgradeLevel == si->numLevels)
 	{
 		upgradeNameText.setString("Max Leveled Already");
@@ -653,9 +698,12 @@ void KinStore::SetSelected(int section, int itemIndex)
 	}
 	else
 	{
+		
+
 		upgradeNameText.setString(si->name + " Level " + to_string(upgradeLevel + 1));
 		//upgradeLevelText.setString("Level: " + to_string(upgradeLevel));
-		upgradeDescText.setString( "Cost: " + to_string(si->GetCurrentCost()) + " desc: " + si->GetCurrentDescription());
+		//upgradeDescText.setString( "Cost: " + to_string(si->GetCurrentCost()) + " desc: " + si->GetCurrentDescription());
+		upgradeDescText.setString("Cost: " + to_string( cost ) + " desc: " + si->GetCurrentDescription());
 	}
 
 	upgradeNameText.setOrigin(upgradeNameText.getLocalBounds().left
@@ -728,15 +776,16 @@ void KinStore::SetSelected(int section, int itemIndex)
 
 	if (edit != NULL)
 	{
-		storePointsText.setFillColor(Color::Blue);
+		storePointsText.setFillColor(Color::Green);
 	}
-	else if (si->GetCurrentCost() > rush->storePoints)
+	//else if (si->GetCurrentCost() > rush->storePoints)
+	else if (cost > rush->storePoints)
 	{
 		storePointsText.setFillColor(Color::Red);
 	}
 	else
 	{
-		storePointsText.setFillColor(Color::Blue);
+		storePointsText.setFillColor(Color::Green);
 	}
 
 	yellowSpr.setPosition(selectTopLeft);
@@ -774,6 +823,40 @@ void KinStore::TryUnlockCurrentUpgrade()
 	int optionIndex = se->upgradeIndex;
 
 	int cost = se->GetCurrentCost();
+	/*if (ySelector->currIndex > 0 )
+	{
+		if (rush != NULL)
+		{
+			if (!rush->kinUpgradeLevels->HasUpgradeLevel(optionIndex, 1))
+			{
+				int numPowersUnlocked = 0;
+				for (int i = 0; i < 6; ++i)
+				{
+					if (rush->kinUpgradeLevels->GetUpgradeLevel(POWER_AIR_DASH + i) > 0)
+					{
+						numPowersUnlocked++;
+					}
+				}
+				cost += numPowersUnlocked * 2;
+			}
+		}
+		else
+		{
+			if (!edit->defaultStartingPlayerUpgradeLevels->HasUpgradeLevel(optionIndex, 1))
+			{
+				int numPowersUnlocked = 0;
+				for (int i = 0; i < 6; ++i)
+				{
+					if (edit->defaultStartingPlayerUpgradeLevels->GetUpgradeLevel(POWER_AIR_DASH + i) > 0)
+					{
+						numPowersUnlocked++;
+					}
+				}
+				cost += numPowersUnlocked * 2;
+			}
+			
+		}
+	}*/
 	if (rush != NULL && cost > rush->storePoints)
 	{
 		return;
@@ -783,7 +866,7 @@ void KinStore::TryUnlockCurrentUpgrade()
 	{
 		if (rush != NULL)
 		{
-			rush->storePoints -= se->GetCurrentCost();
+			rush->storePoints -= cost;//se->GetCurrentCost();
 			storePointsText.setString(to_string(rush->storePoints) + " Upgrade points");
 			sess->SetPlayerUpgradeLevel(optionIndex, se->currentLevel + 1);
 			sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, se->currentLevel + 1);

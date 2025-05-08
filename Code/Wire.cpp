@@ -1981,13 +1981,7 @@ double Wire::GetCurrentTotalLength()
 
 void Wire::Reset()
 {
-	double numPullUpgrades = player->GetUpgradeEffectCount(UE_WIRES_INCREASED_PULL);
-	double numPullUpgradesTotal = player->GetUpgradeEffectTotalCount(UE_WIRES_INCREASED_PULL);
-	double pullUpgradeAmt = 0;
-	if (numPullUpgradesTotal > 0)
-	{
-		pullUpgradeAmt = numPullUpgrades / numPullUpgradesTotal;
-	}
+	double pullUpgradeAmt = player->GetUpgradeEffectPortion(UE_WIRES_INCREASED_PULL);
 
 	double maxExtraPull = 10;
 	//pullStrength = 10;
@@ -2016,20 +2010,12 @@ void Wire::Reset()
 	maxTotalLength = 7000;//10000;
 	maxFireLength = 4000; //5000
 
-	double numWireLengthUpgrades = player->GetUpgradeEffectCount(UE_WIRES_INCREASED_RANGE);
-	double numWireLengthUpgradesTotal = player->GetUpgradeEffectTotalCount(UE_WIRES_INCREASED_RANGE);
-
-	double upFactor = 0;
-	if (numWireLengthUpgradesTotal > 0)
-	{
-		upFactor = numWireLengthUpgrades / numWireLengthUpgradesTotal;
-	}
-
+	double lengthUpgradeFactor = player->GetUpgradeEffectPortion(UE_WIRES_INCREASED_RANGE);
 	double totalFireUpgradeAmount = 1500; //max 5000
 	double totalMaxLengthUpgradeAmount = 3000;
 
-	maxFireLength = 4000 + totalFireUpgradeAmount * upFactor;
-	maxTotalLength = 7000 + totalMaxLengthUpgradeAmount * upFactor;
+	maxFireLength = 4000 + totalFireUpgradeAmount * lengthUpgradeFactor;
+	maxTotalLength = 7000 + totalMaxLengthUpgradeAmount * lengthUpgradeFactor;
 }
 
 V2d Wire::GetOriginPos( bool test )

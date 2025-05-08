@@ -429,6 +429,7 @@ struct Actor : QuadTreeCollider,
 		EXIT_RUSH,
 		TRIPLE_JUMP,
 		HOMING_RUSH_ATTACK,
+		GRAVITY_PULL,
 		/*AIRCOUNTERUP,
 		AIRCOUNTERUPFORWARD,
 		AIRCOUNTERFORWARD,
@@ -1875,6 +1876,7 @@ struct Actor : QuadTreeCollider,
 	int HasUpgradeEffect(int ue);
 	int GetUpgradeEffectTotalCount(int ue);
 	int GetUpgradeEffectCount(int ue);
+	double GetUpgradeEffectPortion(int ue);
 	void SetStartUpgradeLevel(int up, int lvl);
 	bool SpringLaunch();
 	bool ScorpionLaunch();
@@ -2524,6 +2526,17 @@ struct Actor : QuadTreeCollider,
 	void GRABSHIP_TimeDepFrameInc();
 	int GRABSHIP_GetActionLength();
 	const char * GRABSHIP_GetTilesetName();
+
+	void GRAVITY_PULL_Start();
+	void GRAVITY_PULL_End();
+	void GRAVITY_PULL_Change();
+	void GRAVITY_PULL_Update();
+	void GRAVITY_PULL_UpdateSprite();
+	void GRAVITY_PULL_TransitionToAction(int a);
+	void GRAVITY_PULL_TimeIndFrameInc();
+	void GRAVITY_PULL_TimeDepFrameInc();
+	int GRAVITY_PULL_GetActionLength();
+	const char * GRAVITY_PULL_GetTilesetName();
 
 	void GRAVREVERSE_Start();
 	void GRAVREVERSE_End();

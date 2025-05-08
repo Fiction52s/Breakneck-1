@@ -372,8 +372,9 @@ void Actor::JUMP_Update()
 void Actor::JUMP_UpdateSprite()
 {
 	sf::IntRect ir;
-	int tFrame = GetJumpFrame();
-
+	int tFrame = 0;
+	
+	tFrame = GetJumpFrame();
 	SetSpriteTexture(JUMP);
 
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);

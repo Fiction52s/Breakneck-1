@@ -173,15 +173,32 @@ void RushManager::SetWorld(int w)
 	currRushMapIndex = 0;
 	trueLevelIndex = 0;
 
-	storePoints = 0;
+	storePoints = 0;//200;
 
-	kinUpgradeLevels->Clear();
+
+	if (currWorld == 0)
+	{
+		kinUpgradeLevels->Clear();
+	}
 
 	int powerWorlds = min(currWorld, 6);
 	for (int i = 0; i < powerWorlds; ++i)
 	{
-		kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
+		if (kinUpgradeLevels->GetUpgradeLevel(POWER_AIR_DASH + i) == 0)
+		{
+			kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
+		}
 	}
+
+	/*int powerWorlds = min(currWorld, 6);
+	for (int i = 0; i < powerWorlds; ++i)
+	{
+		if (kinUpgradeLevels->GetUpgradeLevel(POWER_AIR_DASH + i) == 0)
+		{
+			kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
+		}
+	}*/
+	
 
 	transferPlayerPowerMode = -1;
 	transferPlayerHotkeyedPowerMode = -1;
@@ -225,13 +242,22 @@ void RushManager::LoadShip()
 		shipGame = NULL;
 	}
 
-	kinUpgradeLevels->Clear();
+	//kinUpgradeLevels->Clear();
 
 	int powerWorlds = min(currWorld, 6);
 	for (int i = 0; i < powerWorlds; ++i)
 	{
-		kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
+		if (kinUpgradeLevels->GetUpgradeLevel(POWER_AIR_DASH + i) == 0)
+		{
+			kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
+		}
 	}
+
+	/*int powerWorlds = min(currWorld, 6);
+	for (int i = 0; i < powerWorlds; ++i)
+	{
+		kinUpgradeLevels->SetUpgradeLevel(POWER_AIR_DASH + i, 1);
+	}*/
 
 	if ( (transferPlayerPowerMode == Actor::PMODE_BOUNCE && powerWorlds < 2 )
 		|| (transferPlayerPowerMode == Actor::PMODE_GRIND && powerWorlds < 3)

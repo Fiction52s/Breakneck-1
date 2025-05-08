@@ -88,7 +88,7 @@ MapOptionsUI::MapOptionsUI()
 			index = w * 8 + i;
 			numStr = to_string(i + 1);
 			bgName = "w" + to_string(w + 1) + "_0" + numStr;
-			fullName = "Resources/Backgrounds/BGInfo/" + bgName + ".bg";
+			fullName = "Resources/Backgrounds/" + bgName + ".bg";
 
 			if (boost::filesystem::exists(fullName))
 			{

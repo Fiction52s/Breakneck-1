@@ -227,7 +227,7 @@ void Actor::GRINDBALL_Update()
 	if (HasUpgradeEffect(UE_GRIND_SPEED_BOOST))
 	{
 		int accelFrames = 30;
-		double speedToGain = 22.0;//GetOriginalDashSpeed() + 10.0; //possibly dependent on speed level //12.0;
+		double speedToGain = 13.0;//15.0;//22.0;//GetOriginalDashSpeed() + 10.0; //possibly dependent on speed level //12.0;
 		double ac = speedToGain / accelFrames;
 		double dec = .6;//1.0;
 		if (frame < accelFrames)//GRINDBALL_GetActionLength() / 2)
@@ -245,7 +245,7 @@ void Actor::GRINDBALL_Update()
 	else
 	{
 		int accelFrames = 30;
-		double speedToGain = 12.0;//8.0;
+		double speedToGain = 5.0;//8.0;
 		double ac = speedToGain / accelFrames;
 		double dec = .6;//1.0;
 		if (frame < accelFrames)//GRINDBALL_GetActionLength() / 2)
@@ -454,14 +454,18 @@ void Actor::GRINDBALL_TimeDepFrameInc()
 
 int Actor::GRINDBALL_GetActionLength()
 {
+	return 60;
+
 	if (HasUpgradeEffect(UE_GRIND_EXTEND_LENGTH))
 	{
-		return 90;
+		return 60;
 	}
 	else
 	{
-		return 70;
+		return 50;
 	}
+
+	
 	
 }
 

@@ -4067,7 +4067,7 @@ void EditSession::Init()
 	playerZoomIcon.setTexture(*ts_playerZoomIcon->texture);
 	playerZoomIcon.setOrigin(playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2);
 
-	ts_mapBGThumbnails = GetSizedTileset("Backgrounds/BGInfo/bg_thumbnails_240x135.png");
+	ts_mapBGThumbnails = GetSizedTileset("Backgrounds/bg_thumbnails_240x135.png");
 
 	playerType = NULL;
 	previewMusic = NULL;

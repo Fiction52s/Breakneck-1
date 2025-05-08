@@ -16,6 +16,15 @@ void Actor::FAIR_Start()
 		ActivateSound(PlayerSounds::S_FAIR1);
 		ResetAttackHit();
 	}
+
+	if (currInput.LLeft())
+	{
+		facingRight = false;
+	}
+	else if (currInput.LRight())
+	{
+		facingRight = true;
+	}
 }
 
 void Actor::FAIR_End()

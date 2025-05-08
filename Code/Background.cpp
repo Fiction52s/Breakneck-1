@@ -202,7 +202,7 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 {
 	ifstream is;
 	stringstream fss;
-	fss << "Resources/Backgrounds/BGInfo/" << fileName << ".bg";
+	fss << "Resources/Backgrounds/" << fileName << ".bg";
 	string fStr = fss.str();
 
 	is.open(fStr);
@@ -226,7 +226,7 @@ Background *Background::SetupFullBG(const std::string &fName)
 {
 	ifstream is;
 	stringstream fss;
-	fss << "Resources/Backgrounds/BGInfo/" << fName << ".bg";
+	fss << "Resources/Backgrounds/" << fName << ".bg";
 	string fStr = fss.str();
 
 	string worldStr(1, fName[1]);
