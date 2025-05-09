@@ -1424,6 +1424,10 @@ void Actor::SetupSwordTilesets()
 	ts_dairSword[1] = tm->GetSizedTileset(folder, "dair_sword_b_288x288.png");
 	ts_dairSword[2] = tm->GetSizedTileset(folder, "dair_sword_p_384x384.png");
 
+	ts_homingRushSword[0] = tm->GetSizedTileset(folder, "homing_drill_160x128.png");
+	ts_homingRushSword[1] = tm->GetSizedTileset(folder, "homing_drill_160x128.png");
+	ts_homingRushSword[2] = tm->GetSizedTileset(folder, "homing_drill_160x128.png");
+
 	ts_uairSword[0] = tm->GetSizedTileset(folder, "uair_sword_256x256.png");
 	ts_uairSword[1] = tm->GetSizedTileset(folder, "uair_sword_b_288x288.png");
 	ts_uairSword[2] = tm->GetSizedTileset(folder, "uair_sword_p_320x320.png");
@@ -2206,6 +2210,20 @@ void Actor::SetupActionFunctions()
 		&Actor::GRABSHIP_TimeDepFrameInc,
 		&Actor::GRABSHIP_GetActionLength,
 		&Actor::GRABSHIP_GetTilesetName);
+
+	
+	SetupFuncsForAction(GRAVITY_PULL,
+		&Actor::GRAVITY_PULL_Start,
+		&Actor::GRAVITY_PULL_End,
+		&Actor::GRAVITY_PULL_Change,
+		&Actor::GRAVITY_PULL_Update,
+		&Actor::GRAVITY_PULL_UpdateSprite,
+		&Actor::GRAVITY_PULL_TransitionToAction,
+		&Actor::GRAVITY_PULL_TimeIndFrameInc,
+		&Actor::GRAVITY_PULL_TimeDepFrameInc,
+		&Actor::GRAVITY_PULL_GetActionLength,
+		&Actor::GRAVITY_PULL_GetTilesetName);
+
 
 	SetupFuncsForAction(GRAVREVERSE,
 		&Actor::GRAVREVERSE_Start,
@@ -4005,6 +4023,18 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		annihilationHitboxes->AddCollisionBox(0, cb);
 		annihilationHitboxes->hitboxInfo = currHitboxInfo;
 
+		cb.rw = 50;
+		cb.rh = 50;
+		cb.offset.x = -45;
+		cb.offset.y = 0;
+		homingRushHitboxes[0] = new CollisionBody(CollisionBox::Hit);
+		homingRushHitboxes[0]->BasicSetup();
+		homingRushHitboxes[0]->AddCollisionBox(0, cb);
+		homingRushHitboxes[0]->hitboxInfo = currHitboxInfo;
+
+		homingRushHitboxes[1] = homingRushHitboxes[0];
+		homingRushHitboxes[2] = homingRushHitboxes[0];
+
 		
 		//up
 	}
@@ -4077,6 +4107,10 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 		shockwaveHitboxes = NULL;
 		grindHitboxes[0] = NULL;
+
+		homingRushHitboxes[0] = NULL;
+		homingRushHitboxes[1] = NULL;
+		homingRushHitboxes[2] = NULL;
 	}
 
 		
@@ -4271,15 +4305,21 @@ Actor::~Actor()
 		delete steepSlideHitboxes[i];
 		delete diagUpHitboxes[i];
 		delete diagDownHitboxes[i];
+
+		//delete homingRushHitboxes[i];
+
 		//delete grindHitboxes[i];
 	}
 	
 	if (shallowInit)
 		return;
 
+	delete homingRushHitboxes[0];
+
 	delete grindHitboxes[0];
 	delete homingHitboxes;
 	delete annihilationHitboxes;
+
 
 	
 
@@ -17789,6 +17829,15 @@ void Actor::UpdateHitboxes()
 			gd = normalize( ground->v1 - ground->v0 );
 		}
 	}
+	else if (action == HOMING_RUSH_ATTACK)
+	{
+		V2d nv = normalize(velocity);
+		if (facingRight)
+		{
+			nv = -nv;
+		}
+		angle = GetVectorAngleCW(nv);
+	}
 
 
 
@@ -17799,6 +17848,10 @@ void Actor::UpdateHitboxes()
 		for( auto it = cList->begin(); it != cList->end(); ++it )
 		{
 			if( ground != NULL )
+			{
+				(*it).globalAngle = angle;
+			}
+			else if (action == HOMING_RUSH_ATTACK)
 			{
 				(*it).globalAngle = angle;
 			}
@@ -23416,7 +23469,7 @@ void Actor::DrawShield(sf::RenderTarget *target)
 
 void Actor::DrawHomingBall(sf::RenderTarget *target)
 {
-	if (action == HOMINGATTACK || action == HOMING_RUSH_ATTACK )
+	if (action == HOMINGATTACK)// || action == HOMING_RUSH_ATTACK )
 	{
 		target->draw(homingAttackBallSprite);
 	}

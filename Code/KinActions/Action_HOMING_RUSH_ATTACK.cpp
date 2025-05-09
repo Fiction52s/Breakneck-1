@@ -59,9 +59,7 @@ void Actor::HOMING_RUSH_ATTACK_Change()
 
 void Actor::HOMING_RUSH_ATTACK_Update()
 {
-
-
-	SetCurrHitboxes(homingHitboxes, 0);
+	SetCurrHitboxes(homingRushHitboxes[0], 0);
 
 	/*Enemy *foundEnemy = NULL;
 	int foundIndex;
@@ -130,14 +128,29 @@ void Actor::HOMING_RUSH_ATTACK_Update()
 
 void Actor::HOMING_RUSH_ATTACK_UpdateSprite()
 {
+	showSword = true;
+
+	Tileset *curr_ts = ts_homingRushSword[GetSwordSpeedLevel()];
+	swordSprite.setTexture(*curr_ts->texture);
+
+	Vector2f offsetArr[3];
+	offsetArr[0] = Vector2f(45, 0);
+	offsetArr[1] = Vector2f(45, 0);//Vector2i( 0, 48 );
+	offsetArr[2] = Vector2f(45, 0);
+
+	Transform t;
+
+	Vector2f offset = offsetArr[GetSwordSpeedLevel()];
+
 	SetSpriteTexture(action);
 
-	SetSpriteTile(frame / 2, facingRight);
+	//SetSpriteTile(frame / 2, facingRight);
+	SetSpriteTile(0, facingRight);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
 
-	V2d sVel = springVel + springExtra;
+	V2d sVel = velocity;
 	if (facingRight)
 	{
 		double a = GetVectorAngleCW(normalize(sVel)) * 180 / PI;
@@ -148,11 +161,19 @@ void Actor::HOMING_RUSH_ATTACK_UpdateSprite()
 		double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
 		sprite->setRotation(-a + 180);
 	}
+	t.rotate(sprite->getRotation());
 
+	if (!facingRight)
+	{
+		offset.x = -offset.x;
+	}
 
-	ts_homingAttackBall->SetSubRect(homingAttackBallSprite, frame / 2, !facingRight);
-	homingAttackBallSprite.setOrigin(homingAttackBallSprite.getLocalBounds().width / 2, homingAttackBallSprite.getLocalBounds().height / 2);
-	homingAttackBallSprite.setPosition(position.x, position.y);
+	offset = t.transformPoint(offset);
+
+	curr_ts->SetSubRect(swordSprite, 0, !facingRight);
+	swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+	swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
+	swordSprite.setRotation(sprite->getRotation());
 
 	if (scorpOn)
 		SetAerialScorpSprite();
@@ -180,5 +201,5 @@ int Actor::HOMING_RUSH_ATTACK_GetActionLength()
 
 const char * Actor::HOMING_RUSH_ATTACK_GetTilesetName()
 {
-	return "homing_att_64x64.png";
+	return "homing_kick_80x32.png";
 }

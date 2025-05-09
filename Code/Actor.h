@@ -1132,6 +1132,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_uairSword[3];
 	Tileset *ts_fairSword[3];
 
+	Tileset *ts_homingRushSword[3];
 	sf::Sprite fairSword;
 	
 
@@ -1247,6 +1248,7 @@ struct Actor : QuadTreeCollider,
 	CollisionBody *grindHitboxes[3];
 	CollisionBody *homingHitboxes;
 	CollisionBody *annihilationHitboxes;
+	CollisionBody *homingRushHitboxes[3];
 	double steepThresh;
 	int wallJumpMovementLimit;
 	double dashHeight;

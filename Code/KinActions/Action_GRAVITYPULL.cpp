@@ -21,6 +21,13 @@ void Actor::GRAVITY_PULL_Change()
 
 void Actor::GRAVITY_PULL_Update()
 {
+	if (gravityPullFrame == -1)
+	{
+		int f = frame;
+		SetAction(JUMP);
+		frame = f;
+	}
+
 	JUMP_Update();
 }
 
@@ -30,10 +37,6 @@ void Actor::GRAVITY_PULL_UpdateSprite()
 	int tFrame = 0;
 
 	//tFrame = GetJumpFrame();
-
-	sf::IntRect ir;
-	int tFrame = -1;
-
 
 	if (velocity.y < -15)
 	{
