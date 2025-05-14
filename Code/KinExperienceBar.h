@@ -4,16 +4,18 @@
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
 
-struct ExperienceAdder
+struct ExpBarParams
 {
-	int numExp;
-	std::string reasonStr;
-	sf::Text fullText;
-	sf::Vector2f myPos;
+	int maxLevel;
+	int levelUpAmtBase;
+	int maxLevelUpIncreaseLevel;
+	int levelUpIncrease;
+	int gold;
+	int silver;
+	int bronze;
 
-	ExperienceAdder();
-	void SetTopLeft(sf::Vector2f pos);
-	void Draw(sf::RenderTarget *target);
+	ExpBarParams();
+	void Load();
 };
 
 struct KinExperienceBar
@@ -25,7 +27,7 @@ struct KinExperienceBar
 		A_LEVEL_UP,
 	};
 
-
+	ExpBarParams params;
 	Tileset *ts_bar;
 	sf::Vertex barQuad[4];
 	sf::Text expText;
@@ -45,6 +47,20 @@ struct KinExperienceBar
 	void Update();
 	bool IsLeveledUp();
 	void AddExp(int exp);
+	void AddMedal(int medal);
+	void Draw(sf::RenderTarget *target);
+};
+
+//not sure what this is for
+struct ExperienceAdder
+{
+	int numExp;
+	std::string reasonStr;
+	sf::Text fullText;
+	sf::Vector2f myPos;
+
+	ExperienceAdder();
+	void SetTopLeft(sf::Vector2f pos);
 	void Draw(sf::RenderTarget *target);
 };
 

@@ -16,6 +16,7 @@
 #include "Enemy_Shard.h"
 #include "PauseMenu.h"
 #include "TitleScreen.h"
+#include "NewTitleScreen.h"
 #include "IntroMovie.h"
 #include "WorldMap.h"
 #include "LevelSelector.h"
@@ -297,9 +298,9 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		break;
 	case TITLEMENU:
 	{
-		assert(titleScreen != NULL);
-		delete titleScreen;
-		titleScreen = NULL;
+		assert(newTitleScreen != NULL);
+		delete newTitleScreen;
+		newTitleScreen = NULL;
 		break;
 	}
 	case RUN_EDITOR_MAP:
@@ -615,9 +616,14 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			rushManager = NULL;
 		}
 
-		assert(titleScreen == NULL);
-		titleScreen = new TitleScreen(this);
-		titleScreen->Reset();
+		//assert(titleScreen == NULL);
+
+		//titleScreen = new TitleScreen(this);
+		//titleScreen->Reset();
+
+		assert(newTitleScreen == NULL);
+		newTitleScreen = new NewTitleScreen(this);
+		newTitleScreen->Reset();
 		break;
 	}
 
@@ -766,6 +772,7 @@ void MainMenu::sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode )
 
 void MainMenu::UpdateMenuOptionText()
 {
+	return;
 	int breatheFrames = 180;
 	int breatheWaitFrames = 0;
 	int bTotal = breatheFrames + breatheWaitFrames;
@@ -1048,7 +1055,9 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	//this is turned on when starting at the titlescreen
 	titleScreen = NULL;
-	//titleScreen = new TitleScreen(this);
+
+	newTitleScreen = NULL;
+
 	closedBetaScreen = new ClosedBetaScreen;
 
 
@@ -1101,6 +1110,11 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	transWorldMapFrame = 0;
 	
+	if (newTitleScreen != NULL)
+	{
+		newTitleScreen->Draw(preScreenTexture);
+	}
+
 	if (titleScreen != NULL)
 	{
 		titleScreen->Draw(preScreenTexture);
@@ -1395,6 +1409,11 @@ MainMenu::~MainMenu()
 	{
 		delete titleScreen;
 	}
+
+	if (newTitleScreen != NULL)
+	{
+		delete newTitleScreen;
+	}
 	
 	delete saSelector;
 	delete soundNodeList;
@@ -1628,7 +1647,8 @@ void MainMenu::SetMode(Mode m)
 	}
 	else if (menuMode == CREDITS)
 	{
-		titleScreen->creditsMenuScreen->Start();
+		//titleScreen->creditsMenuScreen->Start();
+		newTitleScreen->creditsMenuScreen->Start();
 	}
 	else if (menuMode == RUN_WORKSHOP_MAP)
 	{
@@ -2791,7 +2811,8 @@ void MainMenu::HandleMenuMode()
 
 		}
 
-		titleScreen->Update();
+		//titleScreen->Update();
+		newTitleScreen->Update();
 		messagePopup->Update();
 		if (messagePopup->action == MessagePopup::A_INACTIVE )
 		{
@@ -3659,7 +3680,8 @@ void MainMenu::HandleMenuMode()
 
 		if (transFrame < transLength / 2)
 		{
-			titleScreen->Update();
+			//titleScreen->Update();
+			newTitleScreen->Update();
 		}
 		else
 		{
@@ -3697,7 +3719,8 @@ void MainMenu::HandleMenuMode()
 		}
 		else
 		{
-			titleScreen->Update();
+			//titleScreen->Update();
+			newTitleScreen->Update();
 		}
 		++transFrame;
 		break;
@@ -3775,9 +3798,10 @@ void MainMenu::HandleMenuMode()
 
 		}
 		
-		titleScreen->creditsMenuScreen->Update();
+		//titleScreen->creditsMenuScreen->Update();
+		newTitleScreen->creditsMenuScreen->Update();
 
-		if (titleScreen->creditsMenuScreen->action == CreditsMenuScreen::A_BACK)
+		if (newTitleScreen->creditsMenuScreen->action == CreditsMenuScreen::A_BACK)
 		{
 			SetMode(TITLEMENU);
 		}
@@ -4924,7 +4948,8 @@ bool MainMenu::IsSkinUnlocked(int skinIndex)
 
 void MainMenu::TitleMenuModeUpdate()
 {
-	titleScreen->Update();
+	//titleScreen->Update();
+	newTitleScreen->Update();
 	ts_menuSelector->SetSubRect(selectorSprite, selectorAnimFrame / selectorAnimFactor, true);
 	//selectorSprite.setTextureRect(ts_menuSelector->GetSubRect(selectorAnimFrame / selectorAnimFactor));
 	selectorSprite.setOrigin(selectorSprite.getLocalBounds().width / 2, selectorSprite.getLocalBounds().height / 2);
@@ -5315,12 +5340,14 @@ void MainMenu::DrawMode( Mode m )
 	}
 	case TITLEMENU:
 	{
-		titleScreen->Draw(preScreenTexture);
+		//titleScreen->Draw(preScreenTexture);
+		newTitleScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TITLEMENU_INFOPOP:
 	{
-		titleScreen->Draw(preScreenTexture);
+		//titleScreen->Draw(preScreenTexture);
+		newTitleScreen->Draw(preScreenTexture);
 		messagePopup->Draw(preScreenTexture);
 		break;
 	}
@@ -5397,7 +5424,7 @@ void MainMenu::DrawMode( Mode m )
 		int tFrame = transFrame - 1;
 		if (tFrame < transLength / 2)
 		{
-			titleScreen->Draw(preScreenTexture);
+			newTitleScreen->Draw(preScreenTexture);
 		}
 		else
 		{
@@ -5416,7 +5443,7 @@ void MainMenu::DrawMode( Mode m )
 		}
 		else
 		{
-			titleScreen->Draw(preScreenTexture);
+			newTitleScreen->Draw(preScreenTexture);
 		}
 		break;
 	}
@@ -5448,7 +5475,7 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		
-		titleScreen->creditsMenuScreen->Draw(preScreenTexture);
+		newTitleScreen->creditsMenuScreen->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_WORLDMAP_TO_LOADING:

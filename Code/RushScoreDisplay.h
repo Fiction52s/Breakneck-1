@@ -10,13 +10,14 @@ struct RushManager;
 struct RushUpgradePopup;
 struct Session;
 struct KinStore;
+struct KinExperienceBar;
 
 struct RushScoreDisplay : ScoreDisplay
 {
 	enum Action
 	{
 		A_IDLE,
-		A_SHOW,
+		A_EXP,
 		A_STORE,
 		A_WAIT,
 	};
@@ -26,6 +27,7 @@ struct RushScoreDisplay : ScoreDisplay
 	RushManager *rushManager;
 	RushUpgradePopup *upgradePop;
 	KinStore *kinStore;
+	KinExperienceBar *expBar;
 
 	void CreateDescriptionTable();
 	void SetTableEntry( int index, const std::string & s1, const std::string &s2);
@@ -43,6 +45,7 @@ struct RushScoreDisplay : ScoreDisplay
 	bool IsWaiting();
 	bool IsIncludingExtraOptions();
 	void SetSession(Session *sess);
+	void OpenStore();
 
 	void Draw(sf::RenderTarget *target);
 

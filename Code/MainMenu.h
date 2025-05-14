@@ -63,6 +63,7 @@ struct MusicManager;
 struct FillRing;
 struct Level;
 struct TitleScreen;
+struct NewTitleScreen;
 struct IntroMovie;
 struct MusicPlayer;
 struct Fader;
@@ -462,6 +463,7 @@ struct MainMenu : TilesetManager
 	std::map<std::string, std::stringstream> shaderStringsStreams;
 	
 	//Tileset *ts_kinTitle[7];
+	NewTitleScreen *newTitleScreen;
 	TitleScreen *titleScreen;
 	IntroMovie *introMovie;
 

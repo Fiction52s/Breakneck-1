@@ -25,6 +25,7 @@ struct MedalTimeForm;
 struct KinStore;
 struct RushScoreDisplay;
 struct RushFile;
+struct KinExperienceBar;
 
 struct RushManager : TilesetManager
 {
@@ -82,7 +83,7 @@ struct RushManager : TilesetManager
 
 	int trueLevelIndex; //for randomized build
 
-	
+	KinExperienceBar *expBar;
 
 	RushManager();
 	~RushManager();

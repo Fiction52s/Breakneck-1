@@ -9368,9 +9368,13 @@ void Actor::CompleteCurrentMap()
 			{
 				medalRank = 1;
 			}
+			else
+			{
+				medalRank = 0;
+			}
 
 			sess->scoreDisplay->medalRank = medalRank;
-			owner->mainMenu->rushManager->storePoints += medalRank + 1;
+			//owner->mainMenu->rushManager->storePoints += medalRank + 1;
 		}
 	}
 	else if (editOwner != NULL)

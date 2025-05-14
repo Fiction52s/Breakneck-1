@@ -8,6 +8,7 @@
 #include "RushUpgradePopup.h"
 #include "TutorialBox.h"
 #include "KinStore.h"
+#include "KinExperienceBar.h"
 
 using namespace sf;
 
@@ -15,6 +16,8 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 	:ScoreDisplay(p_rushManager, f)
 {
 	rushManager = p_rushManager;
+
+	expBar = rushManager->expBar;
 
 	CreateDescriptionTable();
 
@@ -48,7 +51,7 @@ void RushScoreDisplay::Reset()
 	upgradePop->Reset();
 }
 
-void RushScoreDisplay::Activate()
+void RushScoreDisplay::OpenStore()
 {
 	//action = A_SHOW;
 	kinStore->sess = Session::GetSession();
@@ -56,6 +59,13 @@ void RushScoreDisplay::Activate()
 	action = A_STORE;//A_WAIT; //SHOW is for effects and transitions and stuff
 	frame = 0;
 	//upgradePop->SetToMostRecentUpgrade();
+}
+
+void RushScoreDisplay::Activate()
+{
+	action = A_EXP;
+	expBar->AddMedal(medalRank);
+	frame = 0;
 }
 
 void RushScoreDisplay::Confirm()
@@ -78,14 +88,40 @@ void RushScoreDisplay::Update()
 	if (!IsActive())
 		return;
 
-	if (kinStore->IsReadyToClose())
-	{
-		action = A_WAIT;
-		frame = 0;
-		return;
-	}
 
-	kinStore->Update();
+	switch (action)
+	{
+	case A_EXP:
+	{
+		if (expBar->action == KinExperienceBar::A_IDLE)
+		{
+			OpenStore();
+			return;
+		}
+		else if (expBar->action == KinExperienceBar::A_LEVEL_UP)
+		{
+			rushManager->storePoints += 1;
+			OpenStore();
+			return;
+		}
+
+		expBar->Update();
+		break;
+	}
+	case A_STORE:
+	{
+		if (kinStore->IsReadyToClose())
+		{
+			action = A_WAIT;
+			frame = 0;
+			return;
+		}
+
+		kinStore->Update();
+		break;
+	}
+	}
+	
 
 	
 	/*bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
@@ -200,10 +236,12 @@ void RushScoreDisplay::Draw(sf::RenderTarget *target)
 {
 	if (IsActive())
 	{
-		if (action == A_SHOW || action == A_WAIT || action == A_STORE)
+		if (action == A_EXP)
 		{
-			//target->draw(testSpr);
-			//upgradePop->Draw(target);
+			rushManager->expBar->Draw(target);
+		}
+		else if (action == A_WAIT || action == A_STORE)
+		{
 			kinStore->Draw(target);
 		}
 	}

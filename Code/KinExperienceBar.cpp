@@ -2,23 +2,44 @@
 #include "VectorMath.h"
 #include "MainMenu.h"
 #include <string>
+#include "nlohmann\json.hpp"
+#include <fstream>
 
 using namespace sf;
 using namespace std;
 
-ExperienceAdder::ExperienceAdder()
-{
+using json = nlohmann::json;
 
+ExpBarParams::ExpBarParams()
+{
+	maxLevel = -1;
+	levelUpAmtBase = -1;
+	maxLevelUpIncreaseLevel = -1;
+	levelUpIncrease = -1;
+	gold = -1;
+	silver = -1;
+	bronze = -1;
 }
 
-void ExperienceAdder::SetTopLeft(sf::Vector2f pos)
+void ExpBarParams::Load()
 {
+	string path = "Resources/Rush/kinexp.json";
 
-}
+	ifstream is;
+	is.open(path);
 
-void ExperienceAdder::Draw(sf::RenderTarget *target)
-{
-	target->draw(fullText);
+	json j;
+	is >> j;
+
+	auto &info = j["Info"];
+
+	maxLevel = info["Max Level"];
+	levelUpAmtBase = info["Level-up Amount Base"];
+	maxLevelUpIncreaseLevel = info["Max Level-up Increase Level"];
+	levelUpIncrease = info["Level-up Increase"];
+	gold = info["Gold"];
+	silver = info["Silver"];
+	bronze = info["Bronze"];
 }
 
 
@@ -35,6 +56,8 @@ KinExperienceBar::KinExperienceBar(TilesetManager *tm)
 	expText.setFont(mm->arial);
 	expText.setCharacterSize(30);
 	expText.setPosition(center + Vector2f( 0, - 200 ));
+
+	params.Load();
 	
 	Reset();
 }
@@ -60,10 +83,27 @@ void KinExperienceBar::Setup(int p_currLevel, int p_currExp)
 	//needs parameters to set current level etc
 }
 
+void KinExperienceBar::AddMedal(int medal)
+{
+	int toAdd = 0;
+	if (medal == 0)
+	{
+		toAdd = params.bronze;
+	}
+	else if (medal == 1)
+	{
+		toAdd = params.silver;
+	}
+	else if (medal == 2)
+	{
+		toAdd = params.gold;
+	}
+	AddExp(toAdd);
+}
 
 int KinExperienceBar::GetExpToLevelUp()
 {
-	return 50;
+	return params.levelUpAmtBase + min( currLevel, params.maxLevelUpIncreaseLevel ) * params.levelUpIncrease;
 }
 
 bool KinExperienceBar::IsLeveledUp()
@@ -79,7 +119,8 @@ void KinExperienceBar::Update()
 	{
 		if (currExp >= GetExpToLevelUp())
 		{
-			currExp -= GetExpToLevelUp();
+			cout << "leveled up" << "\n";
+			currExp = 0;
 			currLevel += 1;
 
 			action = A_LEVEL_UP;
@@ -87,6 +128,7 @@ void KinExperienceBar::Update()
 		}
 		else if (expToAdd == 0)
 		{
+			cout << "finished adding exp" << "\n";
 			action = A_IDLE;
 			frame = 0;
 		}
@@ -98,8 +140,9 @@ void KinExperienceBar::Update()
 	{
 	case A_ADDING:
 	{
-		if (frame % 3 == 0)
+		if (frame % 30 == 0)
 		{
+			cout << "added 1 exp current to add is: " << expToAdd - 1 << "\n";
 			assert(expToAdd > 0);
 			expToAdd -= 1;
 			currExp += 1;
@@ -121,10 +164,28 @@ void KinExperienceBar::AddExp(int exp)
 	frame = 0;
 
 	expToAdd = exp;
+	cout << "About to add " << exp << " exp\n";
+
+	assert(exp > 0);
 }
 
 void KinExperienceBar::Draw( sf::RenderTarget *target )
 {
 	target->draw(barQuad, 4, sf::Quads, ts_bar->texture);
 	target->draw(expText);
+}
+
+ExperienceAdder::ExperienceAdder()
+{
+
+}
+
+void ExperienceAdder::SetTopLeft(sf::Vector2f pos)
+{
+
+}
+
+void ExperienceAdder::Draw(sf::RenderTarget *target)
+{
+	target->draw(fullText);
 }

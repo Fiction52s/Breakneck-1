@@ -35,8 +35,6 @@ RushManager::RushManager()
 	firstMap = NULL;
 	shipGame = NULL;
 
-	
-
 	trueLevelIndex = 0;
 
 	kinUpgradesInOrder.reserve(128);
@@ -66,6 +64,8 @@ RushManager::RushManager()
 
 	medalTimeForm = new MedalTimeForm;
 
+	expBar = new KinExperienceBar(this);
+
 	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
 	ts_goal = NULL;
@@ -91,6 +91,8 @@ RushManager::~RushManager()
 		delete bonusVec[i];
 	}
 	bonusVec.clear();
+
+	delete expBar;
 
 	delete kinUpgradeLevels;
 
@@ -179,6 +181,7 @@ void RushManager::SetWorld(int w)
 	if (currWorld == 0)
 	{
 		kinUpgradeLevels->Clear();
+		expBar->Reset();
 	}
 
 	int powerWorlds = min(currWorld, 6);
