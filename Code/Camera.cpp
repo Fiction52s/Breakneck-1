@@ -1416,13 +1416,13 @@ void Camera::UpdateBasicMode()
 		pVel.y = 0;
 	}
 
-	if (game != NULL && game->debugScreenRecorder != NULL)
+	/*if (game != NULL && game->debugScreenRecorder != NULL)
 	{
 		offset.x = 0;
 		offset.y = 0;
 		zoomFactor = 1;
 	}
-	else
+	else*/
 	{
 		currOffset = GetNewOffset(pVel);
 	}

@@ -158,6 +158,14 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 
 	Actor *p0 = GetPlayer(0);
 
+	if (debugScreenRecorder != NULL && !debugScreenRecorder->recording)
+	{
+		if (CONTROLLERS.KeyboardButtonPressed(Keyboard::Num1))
+		{
+			debugScreenRecorder->StartRecording();
+		}
+	}
+
 	bool ggpoNetplay = netplayManager != NULL && !netplayManager->IsPracticeMode();// && ggpo != NULL;
 
 	if (ggpoNetplay && matchParams.numPlayers > 1 && (gameModeType == MatchParams::GAME_MODE_FIGHT || gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE) )
@@ -2014,7 +2022,8 @@ bool GameSession::Load()
 
 	unlockedGateList = NULL;
 
-	debugScreenRecorder = NULL; //debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
+	debugScreenRecorder = NULL;
+	//debugScreenRecorder = new ScreenRecorder("TEST1");
 
 	ClearActiveSequences();
 
@@ -3051,7 +3060,7 @@ bool GameSession::RunMainLoopOnce()
 		preTexSprite.setScale(.5, .5);
 		preTexSprite.setTexture(preTex0);
 
-		if (debugScreenRecorder != NULL)
+		if (debugScreenRecorder != NULL && totalGameFrames % 4 == 0 )
 			debugScreenRecorder->Update(preTex0);
 
 		window->draw(preTexSprite);//, &timeSlowShader );

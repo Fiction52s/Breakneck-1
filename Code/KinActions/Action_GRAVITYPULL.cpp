@@ -37,22 +37,33 @@ void Actor::GRAVITY_PULL_UpdateSprite()
 	int tFrame = 0;
 
 	//tFrame = GetJumpFrame();
-
-	if (velocity.y < -15)
+	if (velocity.y < -25)
 	{
-		tFrame = 3;
+		tFrame = 7;
+	}
+	else if (velocity.y < -15)
+	{
+		tFrame = 6;
 	}
 	else if (velocity.y < -6)
 	{
-		tFrame = 2;
+		tFrame = 5;
 	}
 	else if (velocity.y < 2)
 	{
-		tFrame = 1;
+		tFrame = 4;
 	}
 	else if (velocity.y < 7)
 	{
-		tFrame = 0;
+		tFrame = 3;
+	}
+	else if (velocity.y < 13)
+	{
+		tFrame = 2;
+	}
+	else if (velocity.y < 20)
+	{
+		tFrame = 1;
 	}
 	else
 	{
@@ -96,5 +107,5 @@ int Actor::GRAVITY_PULL_GetActionLength()
 
 const char * Actor::GRAVITY_PULL_GetTilesetName()
 {
-	return "grav_pull_64x96.png";
+	return "grav_pull_80x96.png";
 }

@@ -145,6 +145,7 @@ void Actor::HOMING_RUSH_ATTACK_UpdateSprite()
 	SetSpriteTexture(action);
 
 	//SetSpriteTile(frame / 2, facingRight);
+	//SetSpriteTile( (frame / 2) % 4, facingRight);
 	SetSpriteTile(0, facingRight);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
@@ -201,5 +202,7 @@ int Actor::HOMING_RUSH_ATTACK_GetActionLength()
 
 const char * Actor::HOMING_RUSH_ATTACK_GetTilesetName()
 {
+	//return "homing_spin_80x64.png";
 	return "homing_kick_80x32.png";
+	
 }

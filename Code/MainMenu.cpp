@@ -143,6 +143,11 @@ void MainMenu::SetupTerrainShaders()
 	}
 }
 
+void MainMenu::ActivateSound(const std::string &name)
+{
+	soundNodeList->ActivateSound(soundManager.GetSound(name));
+}
+
 void MainMenu::SetupTerrainShader(sf::Shader &sh, int terrainIndex)
 {
 	if (!sh.loadFromFile("Resources/Shader/terrain.frag", sf::Shader::Fragment))
@@ -762,41 +767,9 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 }
 
-
-
-
 void MainMenu::sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode )
 {
 	mm->TransitionMode(fromMode, toMode);
-}
-
-void MainMenu::UpdateMenuOptionText()
-{
-	return;
-	int breatheFrames = 180;
-	int breatheWaitFrames = 0;
-	int bTotal = breatheFrames + breatheWaitFrames;
-	float halfBreathe = breatheFrames / 2;
-	int f = titleScreen->frame % (bTotal);
-	float alpha;
-	if (f <= halfBreathe)
-	{
-		alpha = f / halfBreathe;
-	}
-	else if (f <= breatheFrames)
-	{
-		f -= halfBreathe;
-		alpha = 1.f - f / halfBreathe;
-	}
-	else
-	{
-		alpha = 0;
-	}
-
-	float baseAlpha = 180;
-	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, baseAlpha + alpha * (255.f - baseAlpha ) ));
-
-	selectorSprite.setPosition(selectorSpriteXPos, selectorSpriteYPosBase + selectorSpriteYPosInterval * saSelector->currIndex);
 }
 
 MainMenu::MainMenu( bool p_steamOn)
@@ -869,8 +842,6 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	steamOn = p_steamOn;
 
-	isCursorModeOn = false;
-
 	TilesetManager::LoadCompressedTilesetJSON();
 
 	//steamOn = false;
@@ -882,10 +853,6 @@ MainMenu::MainMenu( bool p_steamOn)
 	window = NULL;
 
 	ControllerSettings::InitStrings();
-
-	selectorAnimFrame = 0;
-	selectorAnimDuration = 21;
-	selectorAnimFactor = 3;
 	
 	menuMatchParams = new MatchParams;
 
@@ -919,7 +886,7 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	singlePlayerControllerJoinScreen = NULL;
 
-	arial.loadFromFile("Resources/Fonts/Kinetic_Font_01.ttf");
+	arial.loadFromFile("Resources/Fonts/Welbutrin.ttf");//"Resources/Fonts/Kinetic_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
 	wellbutrin.loadFromFile("Resources/Fonts/Wellbutrin.ttf");
 
@@ -974,40 +941,9 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	deadThread = NULL;
 	loadThread = NULL;
-	
-	ts_mainOption = GetSizedTileset("Menu/Title/mainmenu_text_512x64.png");
-	ts_menuSelector = GetSizedTileset("Menu/menu_selector_64x64.png");
 
 	ts_buttonIcons = GetSizedTileset("Menu/button_icon_128x128.png");
 	ts_keyboardIcons = GetSizedTileset("Menu/keyboard_icons_64x64.png");
-
-	selectorSprite.setTexture(*ts_menuSelector->texture);
-
-	activatedMainMenuOptions[0] = true;		//adventure
-	activatedMainMenuOptions[1] = true;		//freeplay
-	activatedMainMenuOptions[2] = steamOn;//false;	//local multiplayer
-	activatedMainMenuOptions[3] = true;		//level editor
-	activatedMainMenuOptions[4] = true;		//options
-	activatedMainMenuOptions[5] = true;		//tutorial
-	activatedMainMenuOptions[6] = true;	//credits
-	activatedMainMenuOptions[7] = true;		//exit
-
-	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
-	{
-		if (activatedMainMenuOptions[i])
-		{
-			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
-		}
-		else
-		{
-			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + M_Count*2));
-		}
-
-		if (activatedMainMenuOptions[i])
-		{
-			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + M_Count));
-		}
-	}
 
 	introMovie = new IntroMovie(this);
 
@@ -1076,30 +1012,6 @@ MainMenu::MainMenu( bool p_steamOn)
 	t.setFont(arial);
 	t.setCharacterSize(40);
 	t.setFillColor(Color::White);
-	
-
-	int waitFrames[] = { 60, 30, 20 };
-	int waitModeThresh[] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, M_Count, 0);
-
-
-	
-	Vector2f textBase(100, 300);
-	int textOptionSpacing = 6;
-	int charHeight = 40;
-
-	selectorSpriteXPos = textBase.x - 32;//+ 512 + 50;
-	selectorSpriteYPosBase = textBase.y + 32;
-	selectorSpriteYPosInterval = 64 + textOptionSpacing;
-
-	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
-	{
-		SetRectCenter(mainMenuOptionQuads + i * 4, 512, 64, textBase + Vector2f(512/2, 32 + i * (64 + textOptionSpacing) ) );
-		SetRectCenter(mainMenuOptionHighlight + i * 4, 512, 64, textBase + Vector2f(512 / 2, 32 + i * (64 + textOptionSpacing)));
-	}
-
-	SetRectColor(menuOptionsBGQuad, Color(0, 0, 0, 70));
-	SetRectTopLeft(menuOptionsBGQuad, 400, (64 + textOptionSpacing) * M_Count, textBase);
 
 	soundNodeList = new SoundNodeList( 20 );
 	soundNodeList->SetSoundVolume(config->GetData().soundVolume);
@@ -1415,7 +1327,6 @@ MainMenu::~MainMenu()
 		delete newTitleScreen;
 	}
 	
-	delete saSelector;
 	delete soundNodeList;
 
 	delete preScreenTexture;
@@ -1568,12 +1479,11 @@ void MainMenu::SetMode(Mode m)
 
 	if (menuMode == TITLEMENU)
 	{
-		selectorAnimFrame = 0;
-		isCursorModeOn = false;
 		MOUSE.Hide();
 		MOUSE.SetControllersOn(false);
 		//MOUSE.Show();
 		customCursor->SetMode(CustomCursor::M_REGULAR);
+		newTitleScreen->isCursorModeOn = false;
 		//customCursor-
 	}
 
@@ -1668,23 +1578,6 @@ void MainMenu::SetMode(Mode m)
 	}*/
 }
 
-void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
-{
-	target->draw(menuOptionsBGQuad, 4, sf::Quads );
-	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
-	{
-		target->draw(mainMenuOptionQuads, M_Count * 4, sf::Quads, ts_mainOption->texture);
-		//preScreenTexsetture->draw(menuOptions[i]);
-	}
-
-	if (activatedMainMenuOptions[saSelector->currIndex])
-	{
-		target->draw(mainMenuOptionHighlight + saSelector->currIndex * 4, 4, sf::Quads,
-			ts_mainOption->texture);
-	}
-
-	target->draw(selectorSprite);
-}
 
 sf::Vector2i MainMenu::GetPixelPos()
 {
@@ -3697,7 +3590,6 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		UpdateMenuOptionText();
 
 
 		if (transFrame == transLength)
@@ -4950,15 +4842,6 @@ void MainMenu::TitleMenuModeUpdate()
 {
 	//titleScreen->Update();
 	newTitleScreen->Update();
-	ts_menuSelector->SetSubRect(selectorSprite, selectorAnimFrame / selectorAnimFactor, true);
-	//selectorSprite.setTextureRect(ts_menuSelector->GetSubRect(selectorAnimFrame / selectorAnimFactor));
-	selectorSprite.setOrigin(selectorSprite.getLocalBounds().width / 2, selectorSprite.getLocalBounds().height / 2);
-
-	selectorAnimFrame++;
-	if (selectorAnimFrame == selectorAnimDuration * selectorAnimFactor)
-	{
-		selectorAnimFrame = 0;
-	}
 
 	sf::Event ev;
 	while (window->pollEvent(ev))
@@ -5039,35 +4922,14 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 	}
 
-	bool currOptionPressed = false;
-
-
-	//probably refine this later to capture the mouse etc zzz
-
-	if (isCursorModeOn)
-	{
-		if (QuadContainsPoint(menuOptionsBGQuad, MOUSE.GetFloatPos())
-			&& QuadContainsPoint(mainMenuOptionQuads + saSelector->currIndex * 4,
-			MOUSE.GetFloatPos()) && MOUSE.IsMouseLeftClicked())
-		{
-			currOptionPressed = true;
-		}
-	}
-	else if (!isCursorModeOn)
-	{
-		if (CONTROLLERS.ButtonPressed_A())
-		{
-			currOptionPressed = true;
-		}
-
-	}
-
-	if (currOptionPressed)//|| CONTROLLERS.ButtonPressed_A() )
+	
+	int pressedIndex = newTitleScreen->GetPressedIndex();
+	if (pressedIndex >= 0)//|| CONTROLLERS.ButtonPressed_A() )
 	{
 		soundNodeList->ActivateSound(soundManager.GetSound("main_menu_select"));
-		switch (saSelector->currIndex)
+		switch (pressedIndex)
 		{
-		case M_ADVENTURE:
+		case M_ARCADE:
 		{
 			//MOUSE.Hide();
 			//musicPlayer->FadeOutCurrentMusic(30);
@@ -5091,7 +4953,13 @@ void MainMenu::TitleMenuModeUpdate()
 
 			break;
 		}
-		case M_FREE_PLAY:
+		case M_TRIALS:
+		{
+			MOUSE.Hide();
+			LoadMode(FREEPLAY);
+			break;
+		}
+		case M_LOCAL:
 		{
 			MOUSE.Hide();
 			LoadMode(FREEPLAY);
@@ -5111,7 +4979,12 @@ void MainMenu::TitleMenuModeUpdate()
 
 			break;
 		}
-		case M_LEVEL_EDITOR:
+		case M_EXIT:
+		{
+			quit = true;
+			break;
+		}
+		case M_EDITOR:
 		{
 			MOUSE.Show();
 			MOUSE.SetControllersOn(true);
@@ -5135,13 +5008,13 @@ void MainMenu::TitleMenuModeUpdate()
 			config->Load();
 			//Config::CreateLoadThread(config);
 			//config->WaitForLoad();
-
 			gameSettingsScreen->Start();
 			SetMode(GAME_SETTINGS);
 			//SetMode(TRANS_MAIN_TO_GAME_SETTINGS);
 			break;
 		}
-		case M_TUTORIAL:
+
+		/*case M_TUTORIAL:
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
 			customCursor->Hide();
@@ -5151,33 +5024,9 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_CREDITS:
 		{
 			SetMode(CREDITS);
-			//cout << "EXITED ON DISCONNECT" << endl;
-			//infoPopup->Pop("Opponent disconnected", 60);
-			//SetMode(TITLEMENU_INFOPOP);
-
-			/*if (IsKeyPressed(Keyboard::LShift))
-			{
-				customMatchManager->CreateCustomLobby();
-			}
-			else
-			{
-				customMatchManager->BrowseCustomLobbies();
-			}
-
-			SetMode(CUSTOM_MATCH_SETUP);*/
-
-
-			//mapBrowserScreen->Start();
-			//SetMode(BROWSE_WORKSHOP);
-
-			//SetMode(TRANS_MAIN_TO_CREDITS);
 			break;
-		}
-		case M_EXIT:
-		{
-			quit = true;
-			break;
-		}
+		}*/
+		
 		}
 	}
 	else
@@ -5188,81 +5037,7 @@ void MainMenu::TitleMenuModeUpdate()
 			quit = true;
 			return;
 		}
-
-		int oldIndex = saSelector->currIndex;
-
-
-		if (isCursorModeOn)
-		{
-			if (CONTROLLERS.DirPressed_Up() || CONTROLLERS.DirPressed_Down())
-			{
-				isCursorModeOn = false;
-				MOUSE.Hide();
-			}
-		}
-		else
-		{
-			if (oldMousePixelPos.x >= 0 && oldMousePixelPos.y >= 0 && mousePixelPos != oldMousePixelPos)
-			{
-				isCursorModeOn = true;
-				MOUSE.Show();
-			}
-		}
-
-		//if mouse is enabled, lets you mouse over to select
-		if (isCursorModeOn)
-		{
-			for (int i = 0; i < saSelector->totalItems; ++i)
-			{
-				if (activatedMainMenuOptions[i] && saSelector->currIndex != i)
-				{
-					if (QuadContainsPoint(menuOptionsBGQuad, MOUSE.GetFloatPos())
-						&& QuadContainsPoint(mainMenuOptionQuads + i * 4,
-						MOUSE.GetFloatPos()))
-					{
-						saSelector->SetIndex(i);
-						soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
-						break;
-					}
-				}
-			}
-		}
-		else
-		{
-			int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
-
-			if (res != 0)
-			{
-				soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
-			}
-
-			while (!activatedMainMenuOptions[saSelector->currIndex])
-			{
-				if (saSelector->currIndex != oldIndex)
-				{
-					if (saSelector->currIndex > oldIndex || (saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
-					{
-						//down
-						++saSelector->currIndex;
-						if (saSelector->currIndex == saSelector->totalItems)
-						{
-							saSelector->currIndex = 0;
-						}
-					}
-					else
-					{
-						--saSelector->currIndex;
-						if (saSelector->currIndex < 0)
-						{
-							saSelector->currIndex = saSelector->totalItems - 1;
-						}
-					}
-				}
-			}
-		}
 	}
-
-	UpdateMenuOptionText();
 }
 
 void MainMenu::RegisterShader(const std::string &shaderType)

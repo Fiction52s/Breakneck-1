@@ -10,6 +10,11 @@
 
 #include "PostPracticeMatchMenu.h"
 #include "FeedbackForm.h"
+#include "RecordedAnimation.h"
+#include "UIMouse.h"
+#include "Physics.h"
+#include "Movie.h"
+#include "MovingGeo.h"
 
 using namespace std;
 using namespace sf;
@@ -17,6 +22,8 @@ using namespace sf;
 NewTitleScreen::NewTitleScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu)
 {
+	
+
 	frame = 0;
 
 	int waitFrames[] = { 60, 30, 20 };
@@ -24,15 +31,70 @@ NewTitleScreen::NewTitleScreen(MainMenu *p_mainMenu)
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, NUM_BUTTONS, 0);
 
 	creditsMenuScreen = new CreditsMenuScreen;
+	
+	currMovie = NULL;
+	//string path = "Resources/Movie/";
+	//string fileType = ".ogv";
+	//string fullName = path + movieName + fileType;
 
-	panel = new Panel("feedbackpanel", 1920, 1080, this);
+	//assert(movies.count(movieName) == 0);
+
+	movies.resize(NUM_BUTTONS);
+
+	colorFadeTotalFrames = 30;
+
+	movies[0] = new Movie("title_arcade", true);
+	movies[1] = new Movie("title_trials", true);
+	movies[2] = new Movie("title_local", true);
+	movies[3] = new Movie("title_online", true);
+	movies[4] = new Movie("title_exit", true);
+	movies[5] = new Movie("title_editor", true);
+	movies[6] = new Movie("title_options", true);
+
+	for (int i = 0; i < NUM_BUTTONS; ++i)
+	{
+		movies[i]->SetSize(Vector2f(750, 505));
+		movies[i]->SetPosition(Vector2f(75, 46));
+	}
+
+	panel = new Panel("socials", 1920, 1080, this);
 	panel->SetColor(Color::Transparent);
 
-	panel->ReserveImageRects(1);
+	panel->ReserveImageRects(4);
+
+	int socialsSize = 128;
+
+	ts_socials = GetSizedTileset("Menu/Title/socials_128x128.png");
+
+	Vector2f discordPos = Vector2f(100, 100);
+	ImageChooseRect *icrDiscord = panel->AddImageRect(ChooseRect::I_DISCORD_LINK, discordPos, ts_socials, 0, socialsSize);
+	icrDiscord->Init();
+	icrDiscord->SetShown(true);
+
+	Vector2f instagramPos = Vector2f(200, 100);
+	ImageChooseRect *icrInstagram = panel->AddImageRect(ChooseRect::I_INSTAGRAM_LINK, instagramPos, ts_socials, 1, socialsSize);
+	icrInstagram->Init();
+	icrInstagram->SetShown(true);
+
+	Vector2f twitterPos = Vector2f(300, 100);
+	ImageChooseRect *icrTwitter = panel->AddImageRect(ChooseRect::I_TWITTER_LINK, twitterPos, ts_socials, 2, socialsSize);
+	icrTwitter->Init();
+	icrTwitter->SetShown(true);
+
+	Vector2f tiktokPos = Vector2f(400, 100);
+	ImageChooseRect *icrTikTok = panel->AddImageRect(ChooseRect::I_TIKTOK_LINK, tiktokPos, ts_socials, 3, socialsSize);
+	icrTikTok->Init();
+	icrTikTok->SetShown(true);
+
+	ts_backpack = GetSizedTileset("Menu/Title/back_371x774.png");//GetSizedTileset("Menu/Title/backpack_816x775.png");
+		//backpack_816x775.png");//GetSizedTileset("Menu/Title/backpack_816x775.png");
+
+	SetRectSubRect(backpackQuad, ts_backpack->GetSubRect(0));
+	SetRectTopLeft( backpackQuad, ts_backpack->tileWidth, ts_backpack->tileHeight, Vector2f(1549, 191));
 
 	ts_buttons = GetSizedTileset("Menu/Title/buttons_806x217.png");
 
-	ts_bg = GetSizedTileset("Menu/Title/Title_Screen_BG_410x327.png");
+	ts_bg = GetSizedTileset("Menu/Title/title_screen_bg_410x327.png");
 
 	SetRectTopLeft(bgQuad, 1920, 1080, Vector2f(0, 0));
 	
@@ -139,8 +201,32 @@ NewTitleScreen::NewTitleScreen(MainMenu *p_mainMenu)
 
 
 	actionLength[A_IDLE] = 1;
-	actionLength[A_CHANGE_DOWN] = 30;
-	actionLength[A_CHANGE_UP] = 30;
+	actionLength[A_CHANGE_DOWN] = 15;
+	actionLength[A_CHANGE_UP] = 15;
+
+
+	
+	/*Blue: 0x4d89c2
+	Green : 0x4ba233
+	Yellow : 0xb4a53e
+	Orange : 0xc67d3c
+	Red : 0xa01515
+	Pink : 0xaf6db0
+	Purple : 0x8344c4*/
+
+
+	
+	
+	
+
+
+	tintColors[0] = Color(0x4d, 0x89, 0xc2);
+	tintColors[1] = Color(0x4b, 0xa2, 0x33);
+	tintColors[2] = Color(0xb4, 0xa5, 0x3e);
+	tintColors[3] = Color(0xc5, 0x99, 0x5b);
+	tintColors[4] = Color(0xc6, 0x6f, 0x6f);
+	tintColors[5] = Color(0xaf, 0x6d, 0xb0);
+	tintColors[6] = Color(0x83, 0x44, 0xc4);
 
 	Reset();
 }
@@ -150,6 +236,11 @@ NewTitleScreen::~NewTitleScreen()
 	delete creditsMenuScreen;
 	delete panel;
 	delete saSelector;
+	
+	for (int i = 0; i < NUM_BUTTONS; ++i)
+	{
+		delete movies[i];
+	}
 }
 
 void NewTitleScreen::Reset()
@@ -160,13 +251,29 @@ void NewTitleScreen::Reset()
 	quantX = 0;
 	quantY = 0;
 
-	saSelector->currIndex = 0;
+	colorFadeFrame = -1;
+
+	pressedIndex = -1;
+
+	isCursorModeOn = false;
+
+	if( currMovie != NULL )
+		currMovie->Stop();
+
+	saSelector->currIndex = 4;
+
+	
+
+	currMovie = movies[GetSelectedIndex()];
+	currMovie->Play();
 	
 	isMusicStarted = false;
 }
 
 void NewTitleScreen::Update()
 {
+	pressedIndex = -1;
+
 	if (frame == actionLength[action])
 	{
 		frame = 0;
@@ -175,14 +282,20 @@ void NewTitleScreen::Update()
 		case A_IDLE:
 			break;
 		case A_CHANGE_DOWN:
+			ClearRect(highlightQuads);
+			ClearRect(highlightQuads + 4);
 			action = A_IDLE;
 			break;
 		case A_CHANGE_UP:
+			float factor = frame / (float)actionLength[action];
+			ClearRect(highlightQuads);
+			ClearRect(highlightQuads + 4);
 			action = A_IDLE;
 			break;
 		}
 	}
 
+	currMovie->Update();
 
 	if (!isMusicStarted)
 	{
@@ -198,7 +311,22 @@ void NewTitleScreen::Update()
 	scrollShader.setUniform("quantX", quantX);
 	scrollShader.setUniform("quantY", quantY);
 
-	
+	if (isCursorModeOn)
+	{
+		if (CONTROLLERS.DirPressed_Up() || CONTROLLERS.DirPressed_Down())
+		{
+			isCursorModeOn = false;
+			MOUSE.Hide();
+		}
+	}
+	else
+	{
+		if (mainMenu->oldMousePixelPos.x >= 0 && mainMenu->oldMousePixelPos.y >= 0 && mainMenu->mousePixelPos != mainMenu->oldMousePixelPos)
+		{
+			isCursorModeOn = true;
+			MOUSE.Show();
+		}
+	}
 
 	if (action == A_IDLE)
 	{
@@ -212,8 +340,19 @@ void NewTitleScreen::Update()
 		else if (res < 0)
 		{
 			action = A_CHANGE_DOWN;
-			frame = 0;
+			frame = 0;	
 		}
+
+		if (res != 0)
+		{
+			colorFadeFrame = 0;
+			oldColor = currTint;
+			currMovie->Stop();
+			currMovie = movies[GetSelectedIndex()];
+			currMovie->Play();
+			mainMenu->ActivateSound("main_menu_change");
+		}
+		
 	}
 
 	if (action == A_IDLE)
@@ -228,6 +367,14 @@ void NewTitleScreen::Update()
 			}
 
 			SetRectCenter(buttonQuads + realIndex * 4, baseButtonSize.x * buttonScales[i], baseButtonSize.y * buttonScales[i], buttonPositions[i]);
+
+			if (i == NUM_BUTTONS / 2)
+			{
+				SetRectCenter(highlightQuads, baseButtonSize.x * buttonScales[i], baseButtonSize.y * buttonScales[i], buttonPositions[i]);
+				SetRectSubRect(highlightQuads, ts_buttons->GetSubRect(realIndex * 2 + 1));
+				SetRectColor(highlightQuads, Color(255, 255, 255, 255));
+			}
+			
 		}
 	}
 	else if (action == A_CHANGE_UP || action == A_CHANGE_DOWN)
@@ -305,6 +452,19 @@ void NewTitleScreen::Update()
 				scale = buttonScales[i] * factor + buttonScales[prevIndex] * (1.f - factor);
 
 				SetRectCenter(buttonQuads + realIndex * 4, baseButtonSize.x * scale, baseButtonSize.y * scale, pos);
+
+				if (prevIndex == NUM_BUTTONS / 2)
+				{
+					SetRectCenter(highlightQuads, baseButtonSize.x * scale, baseButtonSize.y * scale, pos);
+					SetRectSubRect(highlightQuads, ts_buttons->GetSubRect(realIndex * 2 + 1));
+					SetRectColor(highlightQuads, Color(255, 255, 255, 255 * (1.f - factor)));
+				}
+				else if (i == NUM_BUTTONS / 2)
+				{
+					SetRectCenter(highlightQuads + 4, baseButtonSize.x * scale, baseButtonSize.y * scale, pos);
+					SetRectSubRect(highlightQuads + 4, ts_buttons->GetSubRect(realIndex * 2 + 1));
+					SetRectColor(highlightQuads + 4, Color(255, 255, 255, 255 * factor));
+				}
 			}
 		}
 	}
@@ -314,34 +474,140 @@ void NewTitleScreen::Update()
 	}
 
 
-	/*if (res != 0)
+	//probably refine this later to capture the mouse etc zzz (old comment not sure of meaning)
+	if (isCursorModeOn)
 	{
-		soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
-	}*/
-
-	if (CONTROLLERS.ButtonPressed_A())
-	{
-		//currOptionPressed = true;
+		Vector2f mfPos = MOUSE.GetFloatPos();
+		for (int i = 0; i < saSelector->totalItems; ++i)
+		{
+			if (QuadContainsPoint(buttonQuads + i * 4, mfPos))
+			{
+				//mainMenu->ActivateSound("main_menu_change");
+				break;
+			}
+		}
 	}
 
+	if (isCursorModeOn)
+	{
+		int tempIndex = 0;
+		Vector2f mfPos = MOUSE.GetFloatPos();
+		for (int i = 0; i < saSelector->totalItems; ++i)
+		{
+			if (QuadContainsPoint(buttonQuads + i * 4, mfPos) && MOUSE.IsMouseLeftClicked() )
+			{
+				tempIndex = i;
+				tempIndex += saSelector->currIndex; //arcade mode starts in the middle of the screen (currIndex starts the game at 4)
+				if (tempIndex >= saSelector->totalItems)
+				{
+					tempIndex -= saSelector->totalItems;
+				}
+				pressedIndex = tempIndex;
+				break;
+			}
+		}
+	}
+	else
+	{
+		if (CONTROLLERS.ButtonPressed_A())
+		{
+			pressedIndex = saSelector->currIndex;
+			//currOptionPressed = true;
+		}
+	}
+
+	UpdateBGColor();
+
+	if (colorFadeFrame >= 0)
+	{
+		++colorFadeFrame;
+		if (colorFadeFrame == colorFadeTotalFrames)
+		{
+			colorFadeFrame = -1;
+		}
+	}
 
 	frame++;
 }
 
+void NewTitleScreen::UpdateBGColor()
+{
+	Color col;
+	if (colorFadeFrame == -1)
+	{
+		col = tintColors[GetSelectedIndex()];
+	}
+	else
+	{
+		float factor = colorFadeFrame / (float)colorFadeTotalFrames;
+		col = GetBlendColor(oldColor, tintColors[GetSelectedIndex()], factor);
+	}
+
+	currTint = col;
+
+	scrollShader.setUniform("tintColor", ColorGL( col ) );
+}
+
+int NewTitleScreen::GetSelectedIndex()
+{
+	int ind = saSelector->currIndex;
+	ind -= 4; //arcade mode starts in the middle of the screen (currIndex starts the game at 4)
+	if (ind < 0)
+	{
+		ind += saSelector->totalItems;
+	}
+
+	return ind;
+}
+
+int NewTitleScreen::GetPressedIndex()
+{
+	if (pressedIndex < 0)
+	{
+		return -1;
+	}
+
+	int ind = pressedIndex;
+	ind -= 4; //arcade mode starts in the middle of the screen (currIndex starts the game at 4)
+	if (ind < 0)
+	{
+		ind += saSelector->totalItems;
+	}
+
+	return ind;
+}
+
 void NewTitleScreen::ButtonCallback(Button *b, const std::string & e)
 {
-	if (b == feedbackButton)
-	{
-		//SteamFriends()->ActivateGameOverlayToWebPage(linkURL.c_str());
-	}
+	//if (b == feedbackButton)
+	//{
+	//	//SteamFriends()->ActivateGameOverlayToWebPage(linkURL.c_str());
+	//}
 }
 
 void NewTitleScreen::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
 	{
-		//SteamFriends()->ActivateGameOverlayToWebPage("https://discord.gg/S7ePrzA");
-		//cout << "clicked on discord" << endl;
+		if (mainMenu->steamOn)
+		{
+			if (cr->rectIdentity == ChooseRect::I_DISCORD_LINK)
+			{
+				SteamFriends()->ActivateGameOverlayToWebPage("https://discord.gg/S7ePrzA");
+			}
+			else if (cr->rectIdentity == ChooseRect::I_INSTAGRAM_LINK)
+			{
+				SteamFriends()->ActivateGameOverlayToWebPage("https://discord.gg/S7ePrzA");
+			}
+			else if (cr->rectIdentity == ChooseRect::I_TWITTER_LINK)
+			{
+				SteamFriends()->ActivateGameOverlayToWebPage("https://discord.gg/S7ePrzA");
+			}
+			else if (cr->rectIdentity == ChooseRect::I_TIKTOK_LINK)
+			{
+				SteamFriends()->ActivateGameOverlayToWebPage("https://discord.gg/S7ePrzA");
+			}
+		}
 	}
 }
 
@@ -351,12 +617,20 @@ void NewTitleScreen::Draw(sf::RenderTarget *target)
 	target->draw(bgQuad, 4, sf::Quads, &scrollShader);
 
 
-	target->draw(buttonQuads, 4 * NUM_BUTTONS, sf::Quads, ts_buttons->texture);
-
 	if (action == A_CHANGE_UP || action == A_CHANGE_DOWN)
 	{
 		target->draw(extraButtonQuad, 4, sf::Quads, ts_buttons->texture);
 	}
+
+	target->draw(backpackQuad, 4, sf::Quads, ts_backpack->texture);
+
+	target->draw(buttonQuads, 4 * NUM_BUTTONS, sf::Quads, ts_buttons->texture);
+
+	target->draw(highlightQuads, 2 * 4, sf::Quads, ts_buttons->texture);
+
+	currMovie->Draw(target);
+
+	panel->Draw(target);
 	/*if (action == A_CHANGE_UP)
 	{
 		target->draw(buttonQuads + 4, 4 * 8, sf::Quads);

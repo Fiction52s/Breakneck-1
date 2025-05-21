@@ -246,7 +246,7 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 	target->draw(kinHandEnergySpr);
 	target->draw(kinSpr);
 
-	mainMenu->DrawMenuOptionText(target);
+	//mainMenu->DrawMenuOptionText(target);
 
 	target->draw(kineticTitleSprite);
 

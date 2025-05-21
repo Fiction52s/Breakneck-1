@@ -1,19 +1,27 @@
 #include "ScreenRecorder.h"
 #include <sstream>
 #include <iostream>
+#include "nlohmann\json.hpp"
+#include <fstream>
 
 using namespace sf;
 using namespace std;
+using namespace nlohmann;
 
 #define RECFOLDER "seqrecord"
 
 ScreenRecorder::ScreenRecorder( const std::string &p_animName )
 	:animName( p_animName )
 {
-	recordSize = Vector2f(512, 512);
+	recordSize = Vector2f(1920, 1080);
 	cameraCenter = Vector2f(960, 540);
+	scale = 1.f / 3.f;//1.0 / 8.0;//.25f;
 
-	rt.create(recordSize.x * 4, recordSize.y * 4);
+	numTileX = 2048.f / (recordSize.x * scale);
+	numTileY = 2048.f / (recordSize.y * scale);
+
+
+	rt.create(2048, 2048);//recordSize.x * 4, recordSize.y * 4);
 	recording = false;
 
 	for (int i = 0; i < MAX_THREADS_RECORD; ++i)
@@ -30,6 +38,25 @@ void ScreenRecorder::StopRecording()
 	{
 		(*it).saveToFile((*nit));
 	}
+
+	json j;
+
+	//json &myCurrJSON = j.emplace_back();
+	j["totalFrames"] = numTileX * numTileY * ims.size(); //can be reduced later when you actually stop the recording
+	j["recordSizeX"] = recordSize.x;
+	j["recordSizeY"] = recordSize.y;
+	j["numImages"] = ims.size();
+	j["scale"] = scale;
+
+	stringstream ss;
+
+	ss << RECFOLDER << "/" << animName << ".json";
+
+	ofstream o;
+	o.open(ss.str());
+	o << j.dump(4);
+	o.close();
+
 }
 
 void ScreenRecorder::SaveImage( int index )
@@ -45,19 +72,19 @@ void ScreenRecorder::Update( const sf::Texture &drawnTexture)
 {
 	if (recording)
 	{
-		if (tileIndex == 0 && imageIndex == 0)
-		{
-			stringstream ss;
-			ss << RECFOLDER << "/" << animName << "_preview.png";
-			sf::Image im = drawnTexture.copyToImage();
-			sf::Image im2;
-			im2.create(512, 512);
-			im2.copy(im, 0, 0, IntRect(960 - 256, 540 - 256, 512, 512));
-			bool save = im2.saveToFile(ss.str());
-			assert(save);
-		}
+		//if (tileIndex == 0 && imageIndex == 0)
+		//{
+		//	stringstream ss;
+		//	ss << RECFOLDER << "/" << animName << "_preview.png";
+		//	sf::Image im = drawnTexture.copyToImage();
+		//	sf::Image im2;
+		//	im2.create(recordSize.x, recordSize.y);
+		//	im2.copy(im, 0, 0, IntRect(0, 0, recordSize.x, recordSize.y)); //IntRect(960 - 256, 540 - 256, 512, 512));
+		//	bool save = im2.saveToFile(ss.str());
+		//	assert(save);
+		//}
 
-		if (tileIndex == 16)
+		if (tileIndex == numTileX * numTileY)
 		{
 			//CreateSaveThread(this);
 			Save();
@@ -121,25 +148,22 @@ void ScreenRecorder::StartRecording()
 
 void ScreenRecorder::AddTileToRT( const Texture &drawnTexture )
 {
-	int h = recordSize.x / 2;
-	View v;
-	int xCenter = h + (tileIndex % 4) * recordSize.x;
-	int yCenter = h + (tileIndex / 4) * recordSize.y;
-	Vector2f center(xCenter, yCenter);
-	//cout << "creating tilset index : " << tileIndex << " at " << center.x << ", " << center.y << endl;
-	v.setCenter(center);
-	v.setSize(Vector2f( recordSize.x, recordSize.y ));
-
+	int x = tileIndex % numTileX;
+	int y = tileIndex / numTileX;
 	sf::Sprite spr;
 	spr.setTexture(drawnTexture);
+
+	spr.setScale(scale, scale);
+
+	spr.setPosition(x * recordSize.x * scale, y * recordSize.y * scale);
 	
 	IntRect r;
-	r.left = 960 - h;
-	r.top = 540 - h;
+	r.left = 0;
+	r.top = 0;
 	r.width = recordSize.x;
 	r.height = recordSize.y;
 	spr.setTextureRect(r);
-	spr.setOrigin(spr.getLocalBounds().width / 2.f, spr.getLocalBounds().height / 2.f);
-	spr.setPosition(center);
+	//spr.setOrigin(spr.getLocalBounds().width / 2.f, spr.getLocalBounds().height / 2.f);
+	//spr.setPosition(center);
 	rt.draw(spr);
 }

@@ -624,10 +624,10 @@ void Session::RegisterW5Enemies()
 	}
 
 	//story
-	AddWorldEnemy("Gator Boss Node", "gatornode", 5, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+	/*AddWorldEnemy("Gator Boss Node", "gatornode", 5, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, ts_gatorNode);
 	AddBasicAerialWorldEnemy("Gator Boss", "gator", 5, storyRow, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-	AddBasicAerialWorldEnemy("Sequence Gator", "sequencegator", 5, storyRow, CreateEnemy<SequenceGator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	AddBasicAerialWorldEnemy("Sequence Gator", "sequencegator", 5, storyRow, CreateEnemy<SequenceGator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);*/
 }
 
 void Session::RegisterW6Enemies()
@@ -687,13 +687,13 @@ void Session::RegisterW6Enemies()
 	}
 
 	//story
-	AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, true, false, 1, ts_skeleNode);
-	//AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-	AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
-	AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, storyRow, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
-	AddWorldEnemy("Scorpion Launcher", "scorpionlauncher", 6, storyRow, CreateEnemy<ScorpionLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false, true, false, false, 1);
+	//AddWorldEnemy("Skeleton Boss Node", "skeletonnode", 6, storyRow, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+	//	false, false, false, false, true, true, false, 1, ts_skeleNode);
+	////AddBasicGroundWorldEnemy("Skeleton Boss", "skeleton", 6, storyRow, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	//AddBasicGroundWorldEnemy("Sequence Skeleton", "sequenceskeleton", 6, storyRow, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	//AddBasicGroundWorldEnemy("Coyote Helper", "coyotehelper", 6, storyRow, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+	//AddWorldEnemy("Scorpion Launcher", "scorpionlauncher", 6, storyRow, CreateEnemy<ScorpionLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
+	//	false, false, false, false, true, false, false, 1);
 }
 
 void Session::RegisterW7Enemies()
@@ -761,7 +761,7 @@ void Session::RegisterAllEnemies()
 	RegisterW1Enemies();
 	RegisterW2Enemies();
 	RegisterW3Enemies();
-	RegisterW4Enemies();
+	//RegisterW4Enemies();
 	//RegisterW5Enemies();
 	//RegisterW6Enemies();
 	//RegisterW7Enemies();
@@ -7275,8 +7275,6 @@ bool Session::RunGameModeUpdate()
 	//{
 	//	cout << "accumulator mult: " << testMult << "\n";
 	//}
-	
-
 	while (accumulator >= TIMESTEP)
 	{
 		currShaderDrawLayer = DrawLayer::INVALID;

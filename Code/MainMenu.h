@@ -138,7 +138,15 @@ struct MainMenu : TilesetManager
 
 	enum MainMenuOptions
 	{
-		M_ADVENTURE,
+		M_ARCADE,
+		M_TRIALS,
+		M_LOCAL,
+		M_ONLINE,
+		M_EXIT,
+		M_EDITOR,
+		M_OPTIONS,
+		M_Count
+		/*M_ADVENTURE,
 		M_FREE_PLAY,
 		M_ONLINE,
 		M_LEVEL_EDITOR,
@@ -146,7 +154,7 @@ struct MainMenu : TilesetManager
 		M_TUTORIAL,
 		M_CREDITS,
 		M_EXIT,
-		M_Count
+		M_Count*/
 	};
 
 	enum Mode
@@ -286,7 +294,6 @@ struct MainMenu : TilesetManager
 	QuickplaySearchScreen *quickplaySearchScreen;
 
 	std::string appDataPath;
-	bool isCursorModeOn;
 
 	bool steamOn;
 	RemoteStorageManager *remoteStorageManager;
@@ -363,16 +370,12 @@ struct MainMenu : TilesetManager
 	ControlProfileManager *cpm;
 	SoundInfo *soundInfos[SoundType::S_Count];
 	GameSettingsScreen *gameSettingsScreen;
-	SingleAxisSelector *saSelector;
 	MapBrowserScreen *mapBrowserScreen;
 	WorkshopBrowser *workshopBrowser;
 	WorkshopManager *workshopManager;
 
 	sf::Vector2i oldMousePixelPos;
 	sf::Vector2i mousePixelPos;
-	
-	void UpdateMenuOptionText();
-	void DrawMenuOptionText(sf::RenderTarget *target);
 	
 	MusicManager *musicManager;
 	FillRing *testRing;
@@ -401,6 +404,8 @@ struct MainMenu : TilesetManager
 	void SetupWaterShader(sf::Shader &sh, int waterIndex);
 	void SetupTerrainShaders();
 	void SetupTerrainShader(sf::Shader &sh, int terrainIndex);
+
+	void ActivateSound(const std::string &name);
 
 	void SetMode(Mode m);
 	void ReturnToWorldAfterLevel();
@@ -546,22 +551,7 @@ struct MainMenu : TilesetManager
 		Panel *namePop);
 
 	STEAM_CALLBACK(MainMenu, OnGameLobbyJoinRequestedCallback, GameLobbyJoinRequested_t);
-
-
-	sf::Vertex mainMenuOptionQuads[M_Count * 4];
-	sf::Vertex mainMenuOptionHighlight[M_Count *4];
-	bool activatedMainMenuOptions[M_Count];
 	
-	Tileset *ts_mainOption;
-	Tileset *ts_menuSelector;
-	sf::Vertex menuOptionsBGQuad[4];
-	sf::Sprite selectorSprite;
-	int selectorAnimFrame;
-	int selectorAnimDuration;
-	int selectorAnimFactor;
-	float selectorSpriteXPos;
-	float selectorSpriteYPosBase;
-	float selectorSpriteYPosInterval;
 	bool lastMovementDown;
 	
 	

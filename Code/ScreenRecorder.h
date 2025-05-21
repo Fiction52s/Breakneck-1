@@ -13,6 +13,9 @@ struct ScreenRecorder
 	sf::Vector2f cameraCenter;
 	sf::RenderTexture rt;
 	std::string animName;
+	int numTileX;
+	int numTileY;
+	float scale;
 	void StartRecording();
 	void StopRecording();
 	void AddTileToRT( const sf::Texture &texture );
