@@ -92,7 +92,16 @@ struct SettingsSelector : SettingsModule
 	void Draw(sf::RenderTarget *target);
 };
 
-struct VideoSettingsPanel
+struct SettingsTab
+{
+	SettingsTab() {}
+	virtual ~SettingsTab() {}
+	virtual void Start() = 0;
+	virtual void Update() = 0;
+	virtual void Draw(sf::RenderTarget *target) = 0;
+};
+
+struct VideoSettingsTab : SettingsTab
 {
 	enum SelectorTypes
 	{
@@ -111,15 +120,15 @@ struct VideoSettingsPanel
 
 	std::vector<SettingsModule*> modules;
 
-	VideoSettingsPanel();
-	~VideoSettingsPanel();
+	VideoSettingsTab();
+	~VideoSettingsTab();
 
 	void Start();
 	void Update();
 	void Draw(sf::RenderTarget *target);
 };
 
-struct GameSettingsPanel
+struct GameSettingsTab : SettingsTab
 {
 	Panel *panel;
 	SingleAxisSelector *saSelector;
@@ -129,15 +138,15 @@ struct GameSettingsPanel
 	const static int NUM_SWITCHES = 4;
 	SettingsSwitch *switches[NUM_SWITCHES];
 
-	GameSettingsPanel();
-	~GameSettingsPanel();
+	GameSettingsTab();
+	~GameSettingsTab();
 	void Start();
 	void Update();
 	void UpdateSwitches();
 	void Draw(sf::RenderTarget *target);
 };
 
-struct AudioSettingsPanel
+struct AudioSettingsTab : SettingsTab
 {
 	Panel *panel;
 	SingleAxisSelector *saSelector;
@@ -147,8 +156,8 @@ struct AudioSettingsPanel
 	sf::Text volumeText;
 
 
-	AudioSettingsPanel();
-	~AudioSettingsPanel();
+	AudioSettingsTab();
+	~AudioSettingsTab();
 
 	void Start();
 	void Update();
@@ -164,9 +173,10 @@ struct GameSettingsScreen : TilesetManager, GUIHandler
 		A_CANCEL,
 	};
 
-	GameSettingsPanel *gsPanel;
-	VideoSettingsPanel *vsPanel;
-	AudioSettingsPanel *asPanel;
+	int currTab;
+	const static int NUM_TABS = 3;
+
+	SettingsTab *tabs[NUM_TABS];
 
 	Tileset *ts_frame;
 	sf::Vertex frameQuad[4];

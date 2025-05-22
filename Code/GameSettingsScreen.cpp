@@ -26,7 +26,7 @@ SettingsSlider::SettingsSlider(TilesetManager *tm, const std::string &name, int 
 
 	int waitFrames[] = { 60, 30, 20 };
 	int waitModeThresh[] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, maxValue - minValue, defaultValue - minValue );
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, maxValue - minValue, defaultValue - minValue, false );
 
 	SetRectColor(underQuads, Color::Blue);
 	SetRectColor(underQuads + 4, Color::Green);
@@ -36,7 +36,9 @@ SettingsSlider::SettingsSlider(TilesetManager *tm, const std::string &name, int 
 	valueText.setCharacterSize(45);
 	valueText.setFillColor(Color::White);
 
-	ts_sliderBody = tm->GetSizedTileset("Menu/Options/switch_body_596x113.png");
+	text.setString(name);
+
+	ts_sliderBody = tm->GetSizedTileset("Menu/Options/volume_slider_1270x113.png");
 	ts_marker = tm->GetSizedTileset("Menu/Options/arrow_38x50.png");
 }
 
@@ -54,8 +56,13 @@ void SettingsSlider::Reset()
 void SettingsSlider::SetTopLeft(sf::Vector2f p_pos)
 {
 	pos = p_pos;
-	SetRectTopLeft(underQuads, 500, 50, pos);
-	text.setPosition(pos);
+	SetRectTopLeft(underQuads, 665, 67, pos + Vector2f( 390, 8 ));
+	SetRectTopLeft(underQuads + 4, 665, 67, pos + Vector2f(390, 8));
+	SetRectTopLeft(bodyQuad, ts_sliderBody->tileWidth, ts_sliderBody->tileHeight, pos);
+
+	valueText.setPosition(pos + Vector2f(1179, 41));
+
+	text.setPosition(pos + Vector2f( 40, 17));
 }
 
 void SettingsSlider::SetCenter(sf::Vector2f pos)
@@ -94,19 +101,31 @@ void SettingsSlider::CheckLeftRight()
 void SettingsSlider::Update()
 {
 	float f = ((float)saSelector->currIndex) / maxValue;
-	SetRectTopLeft(underQuads + 4, f * 500, 50, pos);
+
+	SetRectTopLeft(underQuads + 4, f * 665, 67, pos + Vector2f(390, 8));
+	//SetRectTopLeft(underQuads + 4, f * 500, 50, pos);
 
 	valueText.setString(to_string(saSelector->currIndex));
-	valueText.setOrigin(0, 0);
-	//valueText.setOrigin(valueText.getLocalBounds().left + valueText.getLocalBounds().width / 2,
-	//	valueText.getLocalBounds().top + valueText.getLocalBounds().height / 2);
-	valueText.setPosition( pos + Vector2f( 300, 0 ));
+	//valueText.setOrigin(0, 0);
+	valueText.setOrigin(valueText.getLocalBounds().left + valueText.getLocalBounds().width / 2,
+		valueText.getLocalBounds().top + valueText.getLocalBounds().height / 2);
+	valueText.setPosition(pos + Vector2f(1179, 41));
+
+	if (selected)
+	{
+		SetRectSubRect(bodyQuad, ts_sliderBody->GetSubRect(1));
+	}
+	else
+	{
+		SetRectSubRect(bodyQuad, ts_sliderBody->GetSubRect(0));
+	}
 }
 
 void SettingsSlider::Draw(sf::RenderTarget *target)
 {
 	target->draw(underQuads, 8, sf::Quads);
-	//target->draw(bodyQuad, 4, sf::Quads, ts_sliderBody->texture);
+	target->draw(bodyQuad, 4, sf::Quads, ts_sliderBody->texture);
+
 	target->draw(text);
 	target->draw(valueText);
 }
@@ -307,7 +326,7 @@ void SettingsSwitch::Draw(sf::RenderTarget *target)
 	target->draw(onOffQuad, 4, sf::Quads, ts_switchOnOff->texture);
 }
 
-VideoSettingsPanel::VideoSettingsPanel()
+VideoSettingsTab::VideoSettingsTab()
 {
 	//panel = new Panel("screen", 1920, 1080, this, true);
 	//panel->SetCenterPos(Vector2i(960, 540));
@@ -360,7 +379,7 @@ VideoSettingsPanel::VideoSettingsPanel()
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 3, 0);
 }
 
-VideoSettingsPanel::~VideoSettingsPanel()
+VideoSettingsTab::~VideoSettingsTab()
 {
 	delete saSelector;
 
@@ -370,7 +389,7 @@ VideoSettingsPanel::~VideoSettingsPanel()
 	}
 }
 
-void VideoSettingsPanel::Start()
+void VideoSettingsTab::Start()
 {
 	//saSelector->currIndex = 0;
 	saSelector->Reset();
@@ -389,7 +408,7 @@ void VideoSettingsPanel::Start()
 	}
 }
 
-void VideoSettingsPanel::Update()
+void VideoSettingsTab::Update()
 {
 	int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
 
@@ -418,7 +437,7 @@ void VideoSettingsPanel::Update()
 	modules[saSelector->currIndex]->Press();
 }
 
-void VideoSettingsPanel::Draw(sf::RenderTarget *target)
+void VideoSettingsTab::Draw(sf::RenderTarget *target)
 {
 	target->draw(displayText);
 	target->draw(resolutionText);
@@ -430,7 +449,7 @@ void VideoSettingsPanel::Draw(sf::RenderTarget *target)
 	}
 }
 
-AudioSettingsPanel::AudioSettingsPanel()
+AudioSettingsTab::AudioSettingsTab()
 {
 	//panel = new Panel("screen", 1920, 1080, this, true);
 	//panel->SetCenterPos(Vector2i(960, 540));
@@ -446,18 +465,18 @@ AudioSettingsPanel::AudioSettingsPanel()
 	volumeText.setPosition(960, 323);
 
 	modules.push_back(new SettingsSlider(mainMenu, "Master", 0, 100, 50 ));
-	modules[0]->SetTopLeft(Vector2f(200, 420));
+	modules[0]->SetTopLeft(Vector2f(325, 380));
 	modules.push_back(new SettingsSlider(mainMenu, "Music", 0, 100, 50));
-	modules[1]->SetTopLeft(Vector2f(200, 617));
+	modules[1]->SetTopLeft(Vector2f(325, 503));
 	modules.push_back(new SettingsSlider(mainMenu, "Sounds", 0, 100, 50));
-	modules[2]->SetTopLeft(Vector2f(200, 820));
+	modules[2]->SetTopLeft(Vector2f(325, 625));
 
 	int waitFrames[] = { 60, 30, 20 };
 	int waitModeThresh[] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 3, 0);
 }
 
-AudioSettingsPanel::~AudioSettingsPanel()
+AudioSettingsTab::~AudioSettingsTab()
 {
 	delete saSelector;
 
@@ -467,7 +486,7 @@ AudioSettingsPanel::~AudioSettingsPanel()
 	}
 }
 
-void AudioSettingsPanel::Start()
+void AudioSettingsTab::Start()
 {
 	//saSelector->currIndex = 0;
 	saSelector->Reset();
@@ -486,7 +505,7 @@ void AudioSettingsPanel::Start()
 	}
 }
 
-void AudioSettingsPanel::Update()
+void AudioSettingsTab::Update()
 {
 	int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
 
@@ -515,7 +534,7 @@ void AudioSettingsPanel::Update()
 	modules[saSelector->currIndex]->Press();
 }
 
-void AudioSettingsPanel::Draw(sf::RenderTarget *target)
+void AudioSettingsTab::Draw(sf::RenderTarget *target)
 {
 	target->draw(volumeText);
 
@@ -527,7 +546,7 @@ void AudioSettingsPanel::Draw(sf::RenderTarget *target)
 
 
 
-GameSettingsPanel::GameSettingsPanel()
+GameSettingsTab::GameSettingsTab()
 {
 	//panel = new Panel("screen", 1920, 1080, this, true);
 	//panel->SetCenterPos(Vector2i(960, 540));
@@ -557,7 +576,7 @@ GameSettingsPanel::GameSettingsPanel()
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, NUM_SWITCHES, 0);
 }
 
-GameSettingsPanel::~GameSettingsPanel()
+GameSettingsTab::~GameSettingsTab()
 {
 	delete saSelector;
 
@@ -567,7 +586,7 @@ GameSettingsPanel::~GameSettingsPanel()
 	}
 }
 
-void GameSettingsPanel::Start()
+void GameSettingsTab::Start()
 {
 	//saSelector->currIndex = 0;
 	saSelector->Reset();
@@ -580,7 +599,7 @@ void GameSettingsPanel::Start()
 	UpdateSwitches();
 }
 
-void GameSettingsPanel::Update()
+void GameSettingsTab::Update()
 {
 	int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
 
@@ -599,7 +618,7 @@ void GameSettingsPanel::Update()
 	
 }
 
-void GameSettingsPanel::UpdateSwitches()
+void GameSettingsTab::UpdateSwitches()
 {
 	int tileIndex = 0;
 	//switch bodies
@@ -618,7 +637,7 @@ void GameSettingsPanel::UpdateSwitches()
 	}
 }
 
-void GameSettingsPanel::Draw(sf::RenderTarget *target)
+void GameSettingsTab::Draw(sf::RenderTarget *target)
 {
 	for (int i = 0; i < NUM_SWITCHES; ++i)
 	{
@@ -631,9 +650,9 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 {
 	mainMenu = mm;
 
-	gsPanel = new GameSettingsPanel;
-	vsPanel = new VideoSettingsPanel;
-	asPanel = new AudioSettingsPanel;
+	tabs[0] = new GameSettingsTab;
+	tabs[1] = new VideoSettingsTab;
+	tabs[2] = new AudioSettingsTab;
 
 	panel = new Panel("gamesettingsscreen", 1400, 700, this, true);
 	//panel->SetColor(Color::Transparent);
@@ -676,9 +695,11 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 GameSettingsScreen::~GameSettingsScreen()
 {
 	delete panel;
-	delete gsPanel;
-	delete vsPanel;
-	delete asPanel;
+
+	for (int i = 0; i < NUM_TABS; ++i)
+	{
+		delete tabs[i];
+	}
 }
 
 void GameSettingsScreen::CreateResolutionDropdown()
@@ -744,9 +765,13 @@ void GameSettingsScreen::UpdateFromConfig()
 
 void GameSettingsScreen::Start()
 {
+	currTab = 0;
 	//gsPanel->Start();
 	//vsPanel->Start();
-	asPanel->Start();
+	for (int i = 0; i < NUM_TABS; ++i)
+	{
+		tabs[i]->Start();
+	}
 	SetAction(A_ACTIVE);
 	UpdateFromConfig();
 	nts = mainMenu->newTitleScreen;
@@ -781,9 +806,26 @@ void GameSettingsScreen::Update()
 	nts->scrollShader.setUniform("quantX", nts->quantX);
 	nts->scrollShader.setUniform("quantY", nts->quantY);
 
+	if (CONTROLLERS.ButtonPressed_RightShoulder())
+	{
+		currTab++;
+		if (currTab == NUM_TABS)
+		{
+			currTab = 0;
+		}
+	}
+	else if (CONTROLLERS.ButtonPressed_LeftShoulder())
+	{
+		currTab--;
+		if (currTab == -1)
+		{
+			currTab = NUM_TABS - 1;
+		}
+	}
+
 	//gsPanel->Update();
 	//vsPanel->Update();
-	asPanel->Update();
+	tabs[currTab]->Update();
 }
 
 void GameSettingsScreen::Draw(sf::RenderTarget *target)
@@ -794,7 +836,7 @@ void GameSettingsScreen::Draw(sf::RenderTarget *target)
 
 	//gsPanel->Draw(target);
 	//vsPanel->Draw(target);
-	asPanel->Draw(target);
+	tabs[currTab]->Draw(target);
 	//panel->Draw(target);
 }
 
