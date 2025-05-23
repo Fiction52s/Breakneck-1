@@ -758,12 +758,12 @@ void Session::RegisterW8Enemies()
 void Session::RegisterAllEnemies()
 {
 	RegisterGeneralEnemies();
-	RegisterW1Enemies();
-	RegisterW2Enemies();
-	RegisterW3Enemies();
-	//RegisterW4Enemies();
-	//RegisterW5Enemies();
-	//RegisterW6Enemies();
+	//RegisterW1Enemies();
+	//RegisterW2Enemies();
+	//RegisterW3Enemies();
+	RegisterW4Enemies();
+	RegisterW5Enemies();
+	RegisterW6Enemies();
 	//RegisterW7Enemies();
 	//RegisterW8Enemies();
 }
@@ -6646,7 +6646,7 @@ void Session::SetupGoalFlow()
 	}
 
 	goalFlow = new GoalFlow(Vector2f(goalPos), allInfo);
-	goalFlow->SetWorld(mapHeader->envWorldType);
+	goalFlow->SetWorld(mapHeader->envWorldType - 1);
 }
 
 void Session::CleanupGoalFlow()
@@ -10308,8 +10308,9 @@ void Session::CleanupGameMode()
 	}
 }
 
-void Session::UpdateWorldDependentTileset( int worldIndex)
+void Session::UpdateWorldDependentTileset( int envWorld )
 {
+	int worldIndex = envWorld - 1;
 	if(IsAdventureSession())
 	{
 		mainMenu->adventureManager->UpdateWorldDependentTileset(worldIndex);

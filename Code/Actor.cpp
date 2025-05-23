@@ -8100,7 +8100,7 @@ void Actor::UpdatePrePhysics()
 		}
 		if( action == INTRO && frame == 0 )
 		{
-			int enterIndex = PlayerSounds::S_ENTER_W1 + sess->mapHeader->envWorldType;
+			int enterIndex = PlayerSounds::S_ENTER_W1 + (sess->mapHeader->envWorldType - 1);
 			ActivateSound(enterIndex);
 		}
 		else if( action == EXIT && frame == 30 )

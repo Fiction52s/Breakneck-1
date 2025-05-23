@@ -67,7 +67,9 @@ MapOptionsUI::MapOptionsUI()
 	/*GridSelector *bgSel = bgPopup->AddGridSelector(
 	"terraintypes", Vector2i(20, 20), 6, 7, 1920 / 8, 1080 / 8, false, true);*/
 
-	bgNameArr = new string[8 * 8];
+	
+
+	bgNameVec.resize(8 + 1);
 
 	bgOptionsPanel->ReserveImageRects(8 * 8);
 

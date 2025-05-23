@@ -762,7 +762,7 @@ void EditSession::TestPlayerMode()
 	
 	currPlayerUpgradeLevels->Set(defaultStartingPlayerUpgradeLevels);
 
-	if (background != NULL && background->envWorld == 1)
+	if (background != NULL && background->envWorld == 2)
 	{
 		SetupRain();
 	}
@@ -4232,7 +4232,7 @@ void EditSession::DefaultInit()
 
 	mapHeader->envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
 
-	mapHeader->envWorldType = 0;//newMapInfo.envWorldType;
+	mapHeader->envWorldType = 1;//newMapInfo.envWorldType;
 
 	
 	//SetNumPlayers(1);
@@ -4772,7 +4772,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			if ( mapName != "")
 			{
 				mapHeader->envName = "w1_01";
-				mapHeader->envWorldType = 0;
+				mapHeader->envWorldType = 1;
 				background = Background::SetupFullBG(mapHeader->envName);
 				mapHeader->envWorldType = background->envWorld;
 				UpdateWorldDependentTileset(mapHeader->envWorldType);
@@ -14300,7 +14300,7 @@ void EditSession::SaveMapDialog( int mode )
 
 void EditSession::OpenMapDialog()
 {
-	mapBrowserHandler->chooser->StartRelative(MAP_EXT, MapBrowser::EDITOR_OPEN, "Resources\\Maps\\CustomMaps");
+	mapBrowserHandler->chooser->StartRelativeOrSaved(MAP_EXT, MapBrowser::EDITOR_OPEN, "Resources\\Maps\\CustomMaps");
 }
 
 void EditSession::TryReloadNew()

@@ -1,3 +1,0 @@
-$Skeleton 0
-
-Now that things are a bit more under control, lets get going. The core will only be vulnerable for a brief window.

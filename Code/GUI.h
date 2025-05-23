@@ -1060,7 +1060,7 @@ struct MapOptionsUI : GUIHandler
 {
 	Panel *mapOptionsPanel;
 	Panel *bgOptionsPanel;
-	std::string *bgNameArr;
+	std::vector<std::string> bgNameVec;
 	EditSession *edit;
 	Button *bgButton;
 	Button *musicButton;

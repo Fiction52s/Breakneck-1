@@ -229,11 +229,7 @@ Background *Background::SetupFullBG(const std::string &fName)
 	fss << "Resources/Backgrounds/" << fName << ".bg";
 	string fStr = fss.str();
 
-	string worldStr(1, fName[1]);
-
-	string eStr = ".png";
-	string parDirStr = "Backgrounds/W" + worldStr + "/" + fName + "/";
-
+	
 	try {
 		is.open(fStr);
 	}
@@ -244,12 +240,8 @@ Background *Background::SetupFullBG(const std::string &fName)
 		//assert(0);
 	}
 
-
-
-
-
-
-
+	//string parDirStr = "Backgrounds/W" + worldStr + "/" + fName + "/";
+	string parDirStr = "Backgrounds/" + fName + "/";
 
 	Background *newBG = NULL;
 	string emptyBGName = fName;//"";
@@ -266,6 +258,7 @@ Background *Background::SetupFullBG(const std::string &fName)
 		string typeStr;
 
 		newBG->bgWidth = j["Info"]["envWidth"];
+		newBG->envWorld = j["Info"]["world"];
 
 		if (j["Info"].count("transcendEnergyColor") > 0)
 		{
@@ -350,9 +343,8 @@ Background::Background(const string &bgName)
 {
 	name = bgName;	
 
-	char worldChar = bgName[1];
-
-	envWorld = (worldChar - 1) - '0';
+	//before this was worldChar - 1
+	envWorld = 1;
 
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);

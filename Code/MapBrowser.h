@@ -287,6 +287,8 @@ struct MapBrowser : TilesetManager,
 		Mode mode, const std::string &path);
 	void StartRelative(const std::string &ext,
 		Mode mode, const std::string &path);
+	void StartRelativeOrSaved(const std::string &ext,
+		Mode mode, const std::string &path);
 	void StartWorkshop( Mode mode );
 	void Init();
 	void TurnOff();

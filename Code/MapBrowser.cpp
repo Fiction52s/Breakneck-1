@@ -1440,6 +1440,19 @@ void MapBrowser::StartRelative(const std::string &p_ext,
 	SetRelativePath(path);
 }
 
+void MapBrowser::StartRelativeOrSaved(const std::string &p_ext,
+	Mode p_mode, const std::string &p_path)
+{
+	if (currPath == "")
+	{
+		StartRelative(p_ext, p_mode, p_path);
+	}
+	else
+	{
+		Start( p_ext, p_mode, currPath.string());
+	}
+}
+
 void MapBrowser::StartWorkshop( MapBrowser::Mode p_mode )
 {
 	mode = p_mode;
