@@ -67,7 +67,7 @@ void MapHeader::Clear()
 	leftBounds = 0;
 	topBounds = 0;
 	boundsWidth = 0;
-	boundsHeight = 0;
+	boundsHeight = 0; 
 	numVertices = -1;
 	goldSeconds = 0;
 	silverSeconds = 0;

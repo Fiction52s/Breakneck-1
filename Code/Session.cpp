@@ -758,12 +758,12 @@ void Session::RegisterW8Enemies()
 void Session::RegisterAllEnemies()
 {
 	RegisterGeneralEnemies();
-	//RegisterW1Enemies();
-	//RegisterW2Enemies();
-	//RegisterW3Enemies();
-	RegisterW4Enemies();
-	RegisterW5Enemies();
-	RegisterW6Enemies();
+	RegisterW1Enemies();
+	RegisterW2Enemies();
+	RegisterW3Enemies();
+	//RegisterW4Enemies();
+	//RegisterW5Enemies();
+	//RegisterW6Enemies();
 	//RegisterW7Enemies();
 	//RegisterW8Enemies();
 }
@@ -6646,7 +6646,7 @@ void Session::SetupGoalFlow()
 	}
 
 	goalFlow = new GoalFlow(Vector2f(goalPos), allInfo);
-	goalFlow->SetWorld(mapHeader->envWorldType - 1);
+	goalFlow->SetWorld(mapHeader->envWorldType);
 }
 
 void Session::CleanupGoalFlow()
@@ -10310,10 +10310,9 @@ void Session::CleanupGameMode()
 
 void Session::UpdateWorldDependentTileset( int envWorld )
 {
-	int worldIndex = envWorld - 1;
 	if(IsAdventureSession())
 	{
-		mainMenu->adventureManager->UpdateWorldDependentTileset(worldIndex);
+		mainMenu->adventureManager->UpdateWorldDependentTileset(envWorld);
 		ts_key = mainMenu->adventureManager->ts_key;
 		ts_keyExplode = mainMenu->adventureManager->ts_keyExplode;
 		ts_goal = mainMenu->adventureManager->ts_goal;
@@ -10333,7 +10332,7 @@ void Session::UpdateWorldDependentTileset( int envWorld )
 	}
 
 
-	currWorldDependentTilesetWorldIndex = worldIndex;
+	currWorldDependentTilesetWorldIndex = envWorld;
 	if (ts_key != NULL)
 	{
 		DestroyTileset(ts_key);
@@ -10343,9 +10342,9 @@ void Session::UpdateWorldDependentTileset( int envWorld )
 		ts_keyExplode = NULL;
 	}
 
-	int w = worldIndex + 1;
+	int w = envWorld + 1;
 
-	if (worldIndex < 8)
+	if (envWorld < 8)
 	{
 		stringstream ss;
 		ss << "Enemies/General/Keys/key_w" << w << "_128x128.png";

@@ -762,7 +762,7 @@ void EditSession::TestPlayerMode()
 	
 	currPlayerUpgradeLevels->Set(defaultStartingPlayerUpgradeLevels);
 
-	if (background != NULL && background->envWorld == 2)
+	if (background != NULL && background->envWorld == 1)
 	{
 		SetupRain();
 	}
@@ -4230,9 +4230,9 @@ void EditSession::DefaultInit()
 	//mapHeader->gameMode = //MapHeader::T_BASIC;
 	mapHeader->numPlayerSpawns = 1;
 
-	mapHeader->envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
+	mapHeader->envName = "w1_Mountains";//newMapInfo.envName;//"";//"w1_01";
 
-	mapHeader->envWorldType = 1;//newMapInfo.envWorldType;
+	mapHeader->envWorldType = 0;//newMapInfo.envWorldType;
 
 	
 	//SetNumPlayers(1);
@@ -4771,8 +4771,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			string mapName = newMapPanel->textBoxes["mapname"]->GetString();
 			if ( mapName != "")
 			{
-				mapHeader->envName = "w1_01";
-				mapHeader->envWorldType = 1;
+				mapHeader->envName = "w1_Mountains";
+				mapHeader->envWorldType = 0;
 				background = Background::SetupFullBG(mapHeader->envName);
 				mapHeader->envWorldType = background->envWorld;
 				UpdateWorldDependentTileset(mapHeader->envWorldType);

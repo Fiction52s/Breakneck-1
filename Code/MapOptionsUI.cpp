@@ -67,11 +67,15 @@ MapOptionsUI::MapOptionsUI()
 	/*GridSelector *bgSel = bgPopup->AddGridSelector(
 	"terraintypes", Vector2i(20, 20), 6, 7, 1920 / 8, 1080 / 8, false, true);*/
 
-	
+	bgNameVec.push_back("w1_Mountains");
+	bgNameVec.push_back("w2_Forest");
+	bgNameVec.push_back("w3_Desert");
+	bgNameVec.push_back("w4_Coast");
+	bgNameVec.push_back("w5_Jungle");
+	bgNameVec.push_back("w6_Tundra");
+	bgNameVec.push_back("Ship");
 
-	bgNameVec.resize(8 + 1);
-
-	bgOptionsPanel->ReserveImageRects(8 * 8);
+	bgOptionsPanel->ReserveImageRects(bgNameVec.size());
 
 	bgOptionsPanel->SetPosition(Vector2i(960 - bgOptionsPanel->size.x / 2,
 		540 - bgOptionsPanel->size.y / 2));
@@ -82,32 +86,20 @@ MapOptionsUI::MapOptionsUI()
 	string numStr;
 	string fullName;
 	ImageChooseRect *icr;
-	int index = 0;
-	for (int w = 0; w < 8; ++w)
-	{
-		for (int i = 0; i < 8; ++i)
-		{
-			index = w * 8 + i;
-			numStr = to_string(i + 1);
-			bgName = "w" + to_string(w + 1) + "_0" + numStr;
-			fullName = "Resources/Backgrounds/" + bgName + ".bg";
 
-			if (boost::filesystem::exists(fullName))
-			{
-				bgNameArr[index] = bgName;
-				icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_BACKGROUNDLIBRARY,
-					Vector2f(i * 125, w * 125), ts_mapBGThumbnails, index, 125);
-				icr->Init();
-				icr->SetShown(true);
-				icr->SetInfo((void*)index);
-			}
-		}
+	for (int i = 0; i < bgNameVec.size(); ++i )
+	{
+		icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_BACKGROUNDLIBRARY,
+			Vector2f(i * 125, 0), ts_mapBGThumbnails, i, 125);
+		icr->SetName(bgNameVec[i]);
+		icr->Init();
+		icr->SetShown(true);
+		icr->SetInfo((void*)i);
 	}
 }
 
 MapOptionsUI::~MapOptionsUI()
 {
-	delete[] bgNameArr;
 	delete mapOptionsPanel;
 	delete bgOptionsPanel;
 }
@@ -181,7 +173,7 @@ void MapOptionsUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 			if (icRect->rectIdentity == ChooseRect::I_BACKGROUNDLIBRARY)
 			{
 				int ind = (int)icRect->info;
-				string bgName = bgNameArr[ind];
+				string bgName = bgNameVec[ind];
 
 				edit->SetBackground(bgName);
 

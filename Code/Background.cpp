@@ -258,7 +258,7 @@ Background *Background::SetupFullBG(const std::string &fName)
 		string typeStr;
 
 		newBG->bgWidth = j["Info"]["envWidth"];
-		newBG->envWorld = j["Info"]["world"];
+		newBG->envWorld = j["Info"]["world"] - 1; //envworld in the bg file starts at 1
 
 		if (j["Info"].count("transcendEnergyColor") > 0)
 		{
@@ -344,7 +344,7 @@ Background::Background(const string &bgName)
 	name = bgName;	
 
 	//before this was worldChar - 1
-	envWorld = 1;
+	envWorld = 0;
 
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);

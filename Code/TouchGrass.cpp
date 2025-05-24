@@ -225,17 +225,17 @@ Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 		break;
 	case TouchGrass::TYPE_PALM:
 		//t = tm->GetTileset("Env/TouchGrass/Trees_1161x427.png");
-		t = tm->GetTileset("Backgrounds/W4/w4_01/SpriteSheet1.png");
+		t = tm->GetTileset("Backgrounds/w4_Coast/SpriteSheet1.png");
 		break;
 	case TouchGrass::TYPE_W1_TREE:
 		//t = tm->GetTileset("Env/TouchGrass/Trees_1161x427.png");
-		t = tm->GetTileset("Backgrounds/W1/w1_01/SpriteSheet1.png");
+		t = tm->GetTileset("Backgrounds/w1_Mountains/SpriteSheet1.png");
 		break;
 	case TouchGrass::TYPE_W2_PLANT:
-		t = tm->GetTileset("Backgrounds/W2/w2_01/SpriteSheet1.png");
+		t = tm->GetTileset("Backgrounds/w2_Forest/SpriteSheet1.png");
 		break;
 	case TouchGrass::TYPE_W3_PLANT:
-		t = tm->GetTileset("Backgrounds/W3/w3_01/SpriteSheet1.png");
+		t = tm->GetTileset("Backgrounds/w3_Desert/SpriteSheet1.png");
 		break;
 	default:
 		assert(0);
