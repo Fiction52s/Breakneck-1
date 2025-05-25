@@ -75,10 +75,10 @@ void RushUpgradePopup::SetName(const std::string &name)
 
 void RushUpgradePopup::SetToMostRecentUpgrade()
 {
-	assert(rushManager->kinUpgradesInOrder.size() > 0);
+	//assert(rushManager->kinUpgradesInOrder.size() > 0);
 
-	int finalUpgrade = rushManager->kinUpgradesInOrder.back();
-	SetUpgrade(finalUpgrade);
+	//int finalUpgrade = rushManager->kinUpgradesInOrder.back();
+	//SetUpgrade(finalUpgrade);
 }
 
 void RushUpgradePopup::SetUpgrade(int index)

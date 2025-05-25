@@ -16,6 +16,7 @@ struct ConfirmPopup;
 struct AdventurePlanet;
 struct GamePopup;
 struct MusicInfo;
+struct RushSaveFile;
 
 struct SaveFileDisplay
 {
@@ -37,7 +38,8 @@ struct SaveFileDisplay
 	sf::Color fillColor;
 	sf::Color lineColor;
 	sf::Font &font;
-	void SetValues(SaveFile *sf, AdventurePlanet *adventurePlanet );
+	//void SetValues(SaveFile *sf, AdventurePlanet *adventurePlanet );
+	void SetValues(RushSaveFile *rsf);
 	void Draw(sf::RenderTarget *target);
 };
 
@@ -62,6 +64,11 @@ struct SaveMenuScreen : TilesetManager
 		Count
 	};
 
+	const static int NUM_FILES = 3;
+
+	bool defaultFiles[NUM_FILES];
+	SaveFileDisplay *fileDisplay[NUM_FILES];
+
 	int copiedIndex;
 	GamePopup *decisionPopup;
 	MusicInfo *myMusic;
@@ -70,34 +77,11 @@ struct SaveMenuScreen : TilesetManager
 
 	bool startWithTutorial;
 	int currSkin;
-	bool defaultFiles[6];
+	
 	Action action;
 	int actionLength[Count];
 	int frame;
 	SkinMenu * skinMenu;
-	SaveMenuScreen();
-	~SaveMenuScreen();
-	Tileset *ts_background;//ts_saveMenuBG;
-	Tileset *ts_selectSlot;//ts_saveMenuSelect;
-	Tileset *ts_kinFace;//ts_saveMenuKinFace;
-	Tileset *ts_skinButton;
-	sf::Vector2f GetTopLeftSaveSlot(int index);
-	void SaveSelectedFile();
-	void Start();
-	void SetSkin(int index);
-	void SaveCurrSkin();
-	bool Update();
-	void Draw(sf::RenderTarget *target);
-	void Reset();
-	void SelectedIndexChanged();
-	void UnlockSkin(int skinIndex);
-	bool IsSkinUnlocked(int skinIndex);
-	void ChangeIndex(bool down, bool up, bool left, bool right);
-	void UpdateSelectedIndex();
-	bool HandleEvent(sf::Event ev);
-	void SetSelectedIndex(int index);
-	void UpdateButtonIconsWhenControllerIsChanged();
-
 
 	MainMenu *mainMenu;
 	sf::Vector2f menuOffset;
@@ -145,7 +129,7 @@ struct SaveMenuScreen : TilesetManager
 	sf::Vector2f a1end;
 	sf::Vector2f a2start;
 	sf::Vector2f a2end;
-	void UpdateClouds();
+
 	int cloudFrame;
 	int cloudLoopLength;
 	int cloudLoopFactor;
@@ -155,7 +139,30 @@ struct SaveMenuScreen : TilesetManager
 	int saveJumpFactor;
 	int saveJumpLength;
 
-	SaveFileDisplay *fileDisplay[6];
+	Tileset *ts_background;//ts_saveMenuBG;
+	Tileset *ts_selectSlot;//ts_saveMenuSelect;
+	Tileset *ts_kinFace;//ts_saveMenuKinFace;
+	Tileset *ts_skinButton;
+
+	SaveMenuScreen();
+	~SaveMenuScreen();
+	sf::Vector2f GetTopLeftSaveSlot(int index);
+	void SaveSelectedFile();
+	void Start();
+	void SetSkin(int index);
+	void SaveCurrSkin();
+	bool Update();
+	void Draw(sf::RenderTarget *target);
+	void Reset();
+	void SelectedIndexChanged();
+	void UnlockSkin(int skinIndex);
+	bool IsSkinUnlocked(int skinIndex);
+	void ChangeIndex(bool down, bool up, bool left, bool right);
+	void UpdateSelectedIndex();
+	bool HandleEvent(sf::Event ev);
+	void SetSelectedIndex(int index);
+	void UpdateButtonIconsWhenControllerIsChanged();
+	void UpdateClouds();
 };
 
 #endif

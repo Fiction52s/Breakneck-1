@@ -78,6 +78,7 @@
 #include "QuickplaySearchScreen.h"
 
 #include "RushManager.h"
+#include "RushSaveFile.h"
 
 using namespace std;
 using namespace sf;
@@ -292,6 +293,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	switch (fromMode)
 	{
 	case SAVEMENU:
+		rushManager->DestroySaveMenu();
 		/*assert(worldMap != NULL);
 		delete worldMap;
 		worldMap = NULL;
@@ -316,7 +318,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		break;
 	}
 	case TUTORIAL:
-	case ADVENTURETUTORIAL:
+	case RUSHTUTORIAL:
 	{
 		assert(currTutorialSession != NULL);
 		delete currTutorialSession;
@@ -437,7 +439,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	{
 	case WORLDMAP:
 	{
-		if (fromMode == ADVENTURETUTORIAL)
+		if (fromMode == RUSHTUTORIAL)
 		{
 			adventureManager->CreateWorldMap();
 			adventureManager->CreateSaveMenu();
@@ -529,6 +531,52 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			adventureManager->CreateWorldMap();
 			adventureManager->CreateSaveMenu();
 		}
+		else if (fromMode == TITLEMENU)
+		{
+
+			ControllerDualStateQueue *states = NULL;
+			states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, 0);
+
+			auto &managedProfiles = cpm->profiles[states->GetControllerType()];
+
+			int startWorld = 0;
+
+			if (states->ButtonHeld_LeftShoulder())
+			{
+				startWorld += 1;
+			}
+
+			if (states->ButtonHeld_RightShoulder())
+			{
+				startWorld += 2;
+			}
+			/*else if (states->ButtonHeld_LeftTrigger())
+			{
+			startWorld += 4;
+			}*/
+
+			//if( startWorld > )
+
+			assert(rushManager == NULL);
+			rushManager = new RushManager;
+			rushManager->controllerInput = states;
+			rushManager->currProfile = managedProfiles.front();
+			rushManager->startWorld = startWorld;
+			//rushManager->Load();
+
+			rushManager->CreateSaveMenu();
+
+
+
+
+
+			/*assert(rushManager == NULL);
+			rushManager = new RushManager;
+			rushManager->controllerInput = storedControllerStates;
+			rushManager->currProfile = storedControlProfile;
+			rushManager->Load();
+			rushManager->CreateSaveMenu();*/
+		}
 		break;
 	}
 	case TEST_RUSH:
@@ -573,6 +621,10 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			rushManager->startWorld = startWorld;
 			rushManager->Load();
 		}
+		else if (fromMode == SAVEMENU)
+		{
+			rushManager->Load();
+		}
 		break;
 	}
 	case TITLEMENU:
@@ -594,13 +646,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete adventureManager;
 			adventureManager = NULL;
 		}
-		else if (fromMode == ADVENTURETUTORIAL)
+		else if (fromMode == RUSHTUTORIAL)
 		{
-			assert(adventureManager != NULL);
+			assert(rushManager != NULL);
 
-			delete adventureManager;
+			delete rushManager;
 
-			adventureManager = NULL;
+			rushManager = NULL;
 		}
 		else if (fromMode == POST_MATCH_OPTIONS)
 		{
@@ -615,7 +667,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete workshopBrowser;
 			workshopBrowser = NULL;
 		}
-		else if (fromMode == TEST_RUSH || fromMode == RUN_RUSH_SHIP )
+		else if (fromMode == TEST_RUSH || fromMode == RUN_RUSH_SHIP || fromMode == SAVEMENU)
 		{
 			delete rushManager;
 			rushManager = NULL;
@@ -652,15 +704,16 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		GameSession::sLoad(currTutorialSession);
 		break;
 	}
-	case ADVENTURETUTORIAL:
+	case RUSHTUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
 		gameRunType = GameRunType::GRT_TUTORIAL;
 		currTutorialSession = new GameSession(menuMatchParams);
 		GameSession::sLoad(currTutorialSession);
 
-		adventureManager->DestroyWorldMap();
-		adventureManager->DestroySaveMenu();
+		//adventureManager->DestroyWorldMap();
+		//adventureManager->DestroySaveMenu();
+		rushManager->DestroySaveMenu();
 		break;
 	}
 	case RUN_WORKSHOP_MAP:
@@ -1508,19 +1561,15 @@ void MainMenu::SetMode(Mode m)
 	}
 	else if (menuMode == SAVEMENU)
 	{
-		if (oldMode != WORLDMAP)
-		{
-			adventureManager->saveMenu->Start();
-			//musicPlayer->PlayMusic(menuMusic);
-		}
+		rushManager->saveMenu->Start();
 
-		if (adventureManager->currSaveFile == NULL)
+		if (rushManager->currSaveFile == NULL)
 		{
-			adventureManager->saveMenu->SetSkin(0);
+			rushManager->saveMenu->SetSkin(0);
 		}
 		else
 		{
-			adventureManager->saveMenu->SetSkin(adventureManager->currSaveFile->visualInfo.skinIndex);
+			rushManager->saveMenu->SetSkin(rushManager->currSaveFile->skin);
 		}
 	}
 	else if (menuMode == BROWSE_WORKSHOP)
@@ -3472,7 +3521,7 @@ void MainMenu::HandleMenuMode()
 
 		break;
 	}
-	case ADVENTURETUTORIAL:
+	case RUSHTUTORIAL:
 	{
 		while (window->pollEvent(ev))
 		{
@@ -3502,7 +3551,8 @@ void MainMenu::HandleMenuMode()
 		else
 		{
 			musicPlayer->TransitionMusic(menuMusic, 60);
-			LoadMode(WORLDMAP);
+			//LoadMode(WORLDMAP);
+			LoadMode(TEST_RUSH);
 		}
 
 		window->setView(oldView);
@@ -3519,18 +3569,18 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-			adventureManager->saveMenu->HandleEvent(ev);
+			rushManager->saveMenu->HandleEvent(ev);
 		}
 
-		adventureManager->worldMap->Update();
-		if (!adventureManager->saveMenu->Update())
+		//adventureManager->worldMap->Update();
+		if (!rushManager->saveMenu->Update())
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(TITLEMENU);
 		}
 		else
 		{
-			if (adventureManager->saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
+			if (rushManager->saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
 			{
 				MatchParams mp;
 				mp.mapPath = TUTORIAL_PATH;//"Resources/Maps/EarlyAccess/tut1" + string(MAP_EXT);
@@ -3540,14 +3590,18 @@ void MainMenu::HandleMenuMode()
 				mp.numPlayers = 1;
 				mp.gameModeType = MatchParams::GAME_MODE_BASIC;
 
-				mp.controllerStateVec[0] = adventureManager->controllerInput;
-				mp.controlProfiles[0] = adventureManager->currProfile;
-				mp.playerSkins[0] = adventureManager->currSaveFile->visualInfo.skinIndex;
+				mp.controllerStateVec[0] = rushManager->controllerInput;
+				mp.controlProfiles[0] = rushManager->currProfile;
+				mp.playerSkins[0] = 0;//rushManager->currSaveFile->visualInfo.skinIndex;
 
 				*menuMatchParams = mp;
 
 				musicPlayer->FadeOutCurrentMusic(30);
-				LoadMode(ADVENTURETUTORIAL);
+				LoadMode(RUSHTUTORIAL);
+			}
+			else if (rushManager->saveMenu->action == SaveMenuScreen::TRANSITION)
+			{
+				LoadMode(TEST_RUSH);
 			}
 		}
 
@@ -4939,7 +4993,8 @@ void MainMenu::TitleMenuModeUpdate()
 			customCursor->Hide();
 
 
-			LoadMode(TEST_RUSH);
+			//LoadMode(TEST_RUSH);
+			LoadMode(SAVEMENU);
 
 			/*ISteamUtils *utils = SteamUtils();
 			if ( utils != NULL && utils->IsSteamRunningOnSteamDeck())
@@ -5133,11 +5188,11 @@ void MainMenu::DrawMode( Mode m )
 		adventureManager->DrawWorldMap(preScreenTexture);
 	}
 	break;
-	case TRANS_SAVE_TO_WORLDMAP:
+	//case TRANS_SAVE_TO_WORLDMAP:
 	case SAVEMENU:
 	{
-		adventureManager->DrawWorldMap(preScreenTexture);
-		adventureManager->saveMenu->Draw(preScreenTexture);
+		//rushManager->DrawWorldMap(preScreenTexture);
+		rushManager->saveMenu->Draw(preScreenTexture);
 		break;
 	}
 	case SETUP_PRACTICE_ADVENTURE_MAP:
@@ -5272,7 +5327,7 @@ void MainMenu::DrawMode( Mode m )
 	{
 		break;
 	}
-	case ADVENTURETUTORIAL:
+	case RUSHTUTORIAL:
 	{
 		break;
 	}

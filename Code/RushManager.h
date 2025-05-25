@@ -7,6 +7,7 @@
 #include "Tileset.h"
 #include "RushFile.h"
 #include <vector>
+#include "KinUpgrades.h"
 
 struct UpgradeLevels;
 struct WorldMap;
@@ -26,9 +27,14 @@ struct KinStore;
 struct RushScoreDisplay;
 struct RushFile;
 struct KinExperienceBar;
+struct RushSaveFile;
+
+
 
 struct RushManager : TilesetManager
 {
+	const static int NUM_SAVE_FILES = 3;
+
 	RushFile rushFile;
 	GameSession *firstMap;
 
@@ -43,8 +49,6 @@ struct RushManager : TilesetManager
 	int currWorldDependentTilesetWorldIndex;
 
 	UpgradeLevels *kinUpgradeLevels;
-
-	std::vector<int> kinUpgradesInOrder;
 
 	Tileset *ts_key;
 	Tileset *ts_keyExplode;
@@ -62,7 +66,6 @@ struct RushManager : TilesetManager
 	RushScoreDisplay *rushScoreDisplay;
 	//SaveFile *files[6];
 	//SaveFile *currSaveFile;
-	int currSaveFileIndex;
 	AdventureHUD *adventureHUD;
 
 	Background *background;
@@ -84,6 +87,10 @@ struct RushManager : TilesetManager
 	int trueLevelIndex; //for randomized build
 
 	KinExperienceBar *expBar;
+
+	std::vector<RushSaveFile*> saveFileVec;
+	int currSaveFileIndex;
+	RushSaveFile *currSaveFile;
 
 	RushManager();
 	~RushManager();

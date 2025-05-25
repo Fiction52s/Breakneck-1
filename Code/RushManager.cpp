@@ -21,9 +21,11 @@
 #include "RushFile.h"
 #include "MedalTimeForm.h"
 #include "KinStore.h"
+#include "RushSaveFile.h"
 
 using namespace std;
 using namespace sf;
+
 
 RushManager::RushManager()
 {
@@ -37,7 +39,8 @@ RushManager::RushManager()
 
 	trueLevelIndex = 0;
 
-	kinUpgradesInOrder.reserve(128);
+	currSaveFileIndex = -1;
+	currSaveFile = NULL;
 
 	worldMap = NULL;
 	background = NULL;
@@ -80,6 +83,13 @@ RushManager::RushManager()
 	worldTransferScreen = NULL;//new WorldTransferScreen;
 
 	kinBoostScreen = NULL;//new KinBoostScreen;
+
+	saveFileVec.resize(NUM_SAVE_FILES);
+	for (int i = 0; i < NUM_SAVE_FILES; ++i)
+	{
+		saveFileVec[i] = new RushSaveFile(i);
+		saveFileVec[i]->Load();
+	}
 
 	SetCurrSaveFile(0);
 }
@@ -140,6 +150,11 @@ RushManager::~RushManager()
 	if (saveMenu != NULL)
 	{
 		delete saveMenu;
+	}
+
+	for (int i = 0; i < NUM_SAVE_FILES; ++i)
+	{
+		delete saveFileVec[i];
 	}
 
 	delete medalTimeForm;
@@ -495,21 +510,25 @@ void RushManager::DestroySaveMenu()
 
 void RushManager::SaveCurrFile()
 {
-	//currSaveFile->Save();
+	assert(currSaveFile != NULL);
+
+	currSaveFile->Save();
 }
 
 void RushManager::StartDefaultSaveFile(int index)
 {
-	/*int savedSkin = files[index]->visualInfo.skinIndex;
-	files[index]->SetAsDefault();
-	files[index]->visualInfo.skinIndex = savedSkin;
-	files[index]->Save();*/
+	//int savedSkin = files[index]->visualInfo.skinIndex;
+	//saveFileVec[index]->visualInfo.skinIndex = savedSkin;
+
+	saveFileVec[index]->SetDefault();
+	saveFileVec[index]->skin = 0;
+	saveFileVec[index]->Save();
 }
 
 void RushManager::SetCurrSaveFile(int index)
 {
-	/*currSaveFileIndex = index;
-	currSaveFile = files[currSaveFileIndex];*/
+	currSaveFileIndex = index;
+	currSaveFile = saveFileVec[currSaveFileIndex];
 }
 
 void RushManager::FadeInSaveMenu()
