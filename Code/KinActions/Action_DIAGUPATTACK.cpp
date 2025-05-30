@@ -9,6 +9,7 @@ void Actor::DIAGUPATTACK_Start()
 	SetActionSuperLevel();
 	ActivateSound(PlayerSounds::S_DIAGUPATTACK);
 	ResetAttackHit();
+	SetControllerRumbleType("Attack");
 }
 
 void Actor::DIAGUPATTACK_End()

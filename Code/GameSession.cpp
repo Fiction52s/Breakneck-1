@@ -257,6 +257,7 @@ bool GameSession::UpdateRunModeBackAndStartButtons()
 		if (currInput.start && !prevInput.start)
 		{
 			gameState = PAUSE;
+			CONTROLLERS.CancelAllRumble();
 			ActivatePauseSound(GetSound("pause_on"));
 			pauseMenu->SetTab(PauseMenu::PAUSE);
 			if (soundNodeList != NULL)
@@ -2819,7 +2820,7 @@ bool GameSession::RunMainLoopOnce()
 	//	ppm->ClearUpdateFlags();
 	//}
 
-	CONTROLLERS.SetRumble(0, 0);
+	//CONTROLLERS.SetRumble(0, 0);
 
 
 	CheckSinglePlayerInputDefaultKeyboard();
@@ -4113,6 +4114,7 @@ int GameSession::Run()
 	SetView(oldPreTexView);
 	window->setView(oldWindowView);
 	
+	CONTROLLERS.CancelAllRumble();
 
 	return returnVal;
 }

@@ -348,6 +348,8 @@ struct PState
 	V2d springVel;
 	double glideTurnFactor;
 
+	ControllerRumbleInfo activeControllerRumbleInfos[Actor::MAX_SIMULTANEOUS_RUMBLE];
+
 	int currencyCounter;
 
 	bool hitGoal;

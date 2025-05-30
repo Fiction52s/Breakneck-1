@@ -96,6 +96,7 @@ void DeathSequence::UpdateState()
 	{
 	case DIE:
 	{
+		//player->UpdateControllerRumble();
 		if (seqData.frame == 0)
 		{
 			sess->cam.SetManual(true);

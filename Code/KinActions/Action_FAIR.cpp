@@ -15,6 +15,7 @@ void Actor::FAIR_Start()
 	{
 		ActivateSound(PlayerSounds::S_FAIR1);
 		ResetAttackHit();
+		SetControllerRumbleType("Attack");
 	}
 
 	if (currInput.LLeft())

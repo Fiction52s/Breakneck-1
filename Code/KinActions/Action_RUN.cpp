@@ -90,11 +90,13 @@ void Actor::RUN_UpdateSprite()
 	{
 		ActivateEffect(PLAYERFX_RUN, Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 8, 3, fr);
 		ActivateSound(PlayerSounds::S_RUN_STEP1);
+		SetControllerRumbleType("Footstep");
 	}
 	else if (frame == 8 * 4 && slowCounter == 1)
 	{
 		ActivateEffect(PLAYERFX_RUN, Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 8, 3, fr);
 		ActivateSound(PlayerSounds::S_RUN_STEP2);
+		SetControllerRumbleType("Footstep");
 	}
 
 

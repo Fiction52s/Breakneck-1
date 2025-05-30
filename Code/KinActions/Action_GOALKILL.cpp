@@ -133,18 +133,22 @@ void Actor::GOALKILL_UpdateSprite()
 		if (frame == 20)
 		{
 			ActivateSound(PlayerSounds::S_GOALKILLSLASH1);
+			SetControllerRumbleType("Goal Hit");
 		}
 		else if (frame == 36)
 		{
 			ActivateSound(PlayerSounds::S_GOALKILLSLASH2);
+			SetControllerRumbleType("Goal Hit");
 		}
 		else if (frame == 60)
 		{
 			ActivateSound(PlayerSounds::S_GOALKILLSLASH3);
+			SetControllerRumbleType("Goal Hit");
 		}
 		else if (frame == 84)
 		{
 			ActivateSound(PlayerSounds::S_GOALKILLSLASH4);
+			SetControllerRumbleType("Goal Explode");
 		}
 	}
 

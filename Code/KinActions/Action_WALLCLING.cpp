@@ -47,6 +47,8 @@ void Actor::WALLCLING_Update()
 		velocity.y = clingSpeed;
 	}
 	AirMovement();
+
+	SetControllerRumbleType("Wall Cling");
 }
 
 void Actor::WALLCLING_UpdateSprite()

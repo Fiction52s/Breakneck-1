@@ -621,7 +621,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			rushManager->startWorld = startWorld;
 			rushManager->Load();
 		}
-		else if (fromMode == SAVEMENU)
+		else if (fromMode == SAVEMENU || fromMode == RUSHTUTORIAL )
 		{
 			rushManager->Load();
 		}
@@ -713,7 +713,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		//adventureManager->DestroyWorldMap();
 		//adventureManager->DestroySaveMenu();
-		rushManager->DestroySaveMenu();
+		//rushManager->DestroySaveMenu();
 		break;
 	}
 	case RUN_WORKSHOP_MAP:

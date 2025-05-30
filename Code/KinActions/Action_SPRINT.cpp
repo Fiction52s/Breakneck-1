@@ -262,11 +262,13 @@ void Actor::SPRINT_UpdateSprite()
 	{
 		ActivateEffect(PLAYERFX_SPRINT_0 + GetSwordSpeedLevel(), Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 10, 2, r);
 		ActivateSound(PlayerSounds::S_SPRINT_STEP1);
+		SetControllerRumbleType("Footstep");
 	}
 	else if (frame == 6 * 4 && slowCounter == 1)
 	{
 		ActivateEffect(PLAYERFX_SPRINT_0 + GetSwordSpeedLevel(), Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 10, 2, r);
 		ActivateSound(PlayerSounds::S_SPRINT_STEP2);
+		SetControllerRumbleType("Footstep");
 	}
 
 	if (scorpOn)

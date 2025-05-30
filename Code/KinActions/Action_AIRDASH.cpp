@@ -403,6 +403,7 @@ void Actor::AIRDASH_UpdateSprite()
 
 	if ((frame + framesExtendingAirdash) % 4 == 0 && slowCounter == 1)
 	{
+		SetControllerRumbleType("Air Dash");
 		if (f == 0) //hover
 		{
 			ActivateEffect(PLAYERFX_AIRDASH_HOVER, Vector2f(position.x, position.y + 70), 0, 12, 1, facingRight);

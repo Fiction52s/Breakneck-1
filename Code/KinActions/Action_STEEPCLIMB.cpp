@@ -198,10 +198,12 @@ void Actor::STEEPCLIMB_UpdateSprite()
 	if (frame == 0 * 4 && slowCounter == 1)
 	{
 		ActivateSound(PlayerSounds::S_CLIMB_STEP1);
+		SetControllerRumbleType("Steep Climb");
 	}
 	else if (frame == 4 * 4 && slowCounter == 1)
 	{
 		ActivateSound(PlayerSounds::S_CLIMB_STEP1);
+		SetControllerRumbleType("Steep Climb");
 	}
 
 	if (scorpOn)

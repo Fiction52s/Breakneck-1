@@ -570,6 +570,29 @@ int GameController::GetGCCRightTrigger()
 	return trueR;
 }
 
+void GameController::SetRumble(double leftMotor, double rightMotor)
+{
+	XINPUT_VIBRATION vib;
+	ZeroMemory(&vib, sizeof(XINPUT_VIBRATION));
+
+	double maxShortValD = 65535;
+	unsigned short left = max(0, min(maxShortValD, round(maxShortValD * leftMotor)));
+	unsigned short right = max(0, min(maxShortValD, round(maxShortValD * rightMotor)));
+	vib.wLeftMotorSpeed = left;
+	vib.wRightMotorSpeed = right;
+
+	DWORD result = XInputSetState(m_index, &vib);
+	if (result != ERROR_SUCCESS)
+	{
+		cout << "failed to set rumble state: " << result << "\n";
+	}
+}
+
+void GameController::SetRumble(double bothMotors)
+{
+	SetRumble(bothMotors, bothMotors);
+}
+
 void GameController::UpdateLeftStickPad()
 {
 	m_state.leftStickPad = 0;
@@ -1559,7 +1582,8 @@ void AllControllers::Update()
 
 void AllControllers::SetRumble(int controllerIndex, double leftMotor, double rightMotor)
 {
-	XINPUT_VIBRATION vib;
+	windowsControllers[controllerIndex]->SetRumble(leftMotor, rightMotor);
+	/*XINPUT_VIBRATION vib;
 	ZeroMemory(&vib, sizeof(XINPUT_VIBRATION));
 
 	double maxShortValD = 65535;
@@ -1568,11 +1592,11 @@ void AllControllers::SetRumble(int controllerIndex, double leftMotor, double rig
 	vib.wLeftMotorSpeed = left;
 	vib.wRightMotorSpeed = right;
 
-	DWORD result = XInputSetState(0, &vib);
+	DWORD result = XInputSetState(controllerIndex, &vib);
 	if (result != ERROR_SUCCESS)
 	{
 		cout << "failed to set rumble state: " << result << "\n";
-	}
+	}*/
 }
 
 void AllControllers::SetRumble(int controllerIndex, double bothMotors )
@@ -2865,4 +2889,43 @@ void KeyboardState::Clear()
 	{
 		m_state[i] = false;
 	}
+}
+
+ControllerRumbleInfo::ControllerRumbleInfo()
+{
+	Reset();
+}
+void ControllerRumbleInfo::Reset()
+{
+	left = 0;
+	right = 0;
+	frames = 0;
+}
+
+bool ControllerRumbleInfo::Update()
+{
+	if (frames > 0)
+	{
+		--frames;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+double ControllerRumbleInfo::GetLeft()
+{
+	return left;
+}
+
+double ControllerRumbleInfo::GetRight()
+{
+	return right;
+}
+
+double ControllerRumbleInfo::GetFactor()
+{
+	return max(left, right);
 }

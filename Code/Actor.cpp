@@ -511,6 +511,12 @@ void Actor::PopulateState(PState *ps)
 	ps->springVel = springVel;
 	ps->glideTurnFactor = glideTurnFactor;
 
+
+	for (int i = 0; i < MAX_SIMULTANEOUS_RUMBLE; ++i)
+	{
+		ps->activeControllerRumbleInfos[i] = activeControllerRumbleInfos[i];
+	}
+
 	ps->currencyCounter = currencyCounter;
 
 
@@ -820,6 +826,11 @@ void Actor::PopulateFromState(PState *ps)
 	springVel = ps->springVel;
 	glideTurnFactor = ps->glideTurnFactor;
 
+	for (int i = 0; i < MAX_SIMULTANEOUS_RUMBLE; ++i)
+	{
+		activeControllerRumbleInfos[i] = ps->activeControllerRumbleInfos[i];
+	}
+
 	currencyCounter = ps->currencyCounter;
 
 	hitGoal = ps->hitGoal;
@@ -1117,7 +1128,7 @@ EffectInstance * Actor::ActivateEffect(int pfxType, EffectInstance *params)
 	return ei;
 }
 
-GameController *Actor::GetController(int index)
+GameController *Actor::GetController()
 {
 	if (owner != NULL)
 	{
@@ -3566,6 +3577,7 @@ void Actor::UpdateActionSprite()
 Actor::Actor()
 	:dead(false), actorIndex(0), exitAuraShader(PlayerSkinShader::ST_BOOST)
 {
+	//controllerRumbleFileUpdatedTime = 0;
 	shallowInit = true;
 	sess = NULL;
 	editOwner = NULL;
@@ -3592,7 +3604,6 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	:dead(false), actorIndex(p_actorIndex),
 	exitAuraShader(PlayerSkinShader::ST_BOOST)
 {
-
 	shallowInit = false;
 
 	adventureManager = MainMenu::GetInstance()->adventureManager;
@@ -3673,6 +3684,8 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	}
 
 	LoadHitboxes();
+
+	LoadAllControllerRumbleInfo();
 
 	if ( owner != NULL && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && adventureManager != NULL && adventureManager->transferPlayerPowerMode >= 0)
 	{
@@ -3812,7 +3825,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	spriteAction = FAIR;
 	currTileIndex = 0;
 
-	GameController *cont = GetController(actorIndex);
+	//GameController *cont = GetController();
 	toggleBounceInput = false;//cont->keySettings.toggleBounce;
 	toggleTimeSlowInput = false;//cont->keySettings.toggleTimeSlow;
 	toggleGrindInput = false;//cont->keySettings.toggleGrind;
@@ -4960,6 +4973,7 @@ void Actor::CreateGateExplosion( int gateCategory )
 		enemyExplodeRingGroup->Start();
 	}
 
+	SetControllerRumbleType("Gate");
 	sess->cam.SetRumble(3, 3, 20);//5
 	ActivateSound(PlayerSounds::S_OPEN_ENEMY_GATE);
 	//sess->Pause(4);//5
@@ -5150,6 +5164,11 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
+	LoadAllControllerRumbleInfo();
+	cout << "reload rumble info" << "\n";
+
+	ClearControllerRumble();
+
 	if (HasUpgradeEffect(UE_GRIND_EXTEND_LENGTH))
 	{
 		grindCooldownLength = 45;
@@ -5159,6 +5178,8 @@ void Actor::Respawn( bool setStartPos )
 		grindCooldownLength = 45;//60;
 	}
 	grindCooldownFrame = grindCooldownLength;
+
+	//controllerRumbleInfo.Reset();	
 	
 	//gravityPullLength = 40;
 	gravityPullLength = 20 + 20.0 * GetUpgradeEffectPortion(UE_GRAVITY_STRONGER_PULL);
@@ -6214,7 +6235,11 @@ void Actor::ReactToBeingHit()
 
 			if (health < 0)
 				health = 0;
+
+			
 		}
+
+		SetControllerRumbleType("Hurt");
 		
 		/*if (damage > 0)
 		{
@@ -6409,6 +6434,13 @@ void Actor::UpdateDrain()
 
 						}
 					}
+				}
+
+				if (kinMode == K_DESPERATION)
+				{
+					double f = (double)numFramesToLive;
+					f = 1.0 - f / maxDespFrames;
+					SetControllerRumbleType("Survival", f);
 				}
 			}
 			
@@ -6670,6 +6702,7 @@ void Actor::ProcessBooster()
 
 	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH && currBooster->Boost())
 	{
+		SetControllerRumbleType("Booster");
 		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
 		{
 			SetBoostVelocity();
@@ -7896,6 +7929,23 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
+
+	//if (sess->totalGameFrames % 300 == 0 )
+	//{
+	//	string rumblePath = "Resources/Kin/Info/rumble.json";
+	//	auto timeTT = boost::filesystem::last_write_time(rumblePath);
+	//	if (timeTT > timeTest)
+	//	{
+	//		cout << "reloading rumble info" << endl;
+	//		LoadAllControllerRumbleInfo();
+	//	}
+	//}
+
+	/*if (currInput.PDown() && !prevInput.PDown())
+	{
+		cout << "reloading rumble info" << endl;
+		
+	}*/
 	//if (currInput.HotkeyButtonDown())
 	//{
 	//	cout << "down" << endl;
@@ -8066,6 +8116,7 @@ void Actor::UpdatePrePhysics()
 	if (action == DEATH)
 	{
 		UpdateAction();
+		UpdateControllerRumble();
 		return;
 	}
 
@@ -8130,6 +8181,8 @@ void Actor::UpdatePrePhysics()
 		{
 			velocity = AddAerialGravity(velocity);
 		}
+
+		UpdateControllerRumble();
 		return;
 	}
 	else if( action == GOALKILLWAIT )
@@ -8203,6 +8256,8 @@ void Actor::UpdatePrePhysics()
 				
 			}
 		}
+
+		UpdateControllerRumble();
 		return;
 	}
 	
@@ -8281,6 +8336,8 @@ void Actor::UpdatePrePhysics()
 	UpdateBubbles();
 
 	UpdateGravityPull();
+
+	UpdateControllerRumble();
 
 	UpdateRegrindOffCounter();
 
@@ -17122,6 +17179,8 @@ void Actor::PhysicsResponse()
 		if( action != BOUNCEGROUND ) //added this line for testing
 		if( action == BOUNCEAIR || bounceFlameOn )
 		{
+			SetControllerRumbleType("Scorpion Bounce");
+
 			physicsOver = true;
 			//cout << "BOUNCING HERE" << endl;
 
@@ -17379,7 +17438,9 @@ void Actor::PhysicsResponse()
 						{
 							SetAction(LAND2);
 							ActivateSound(PlayerSounds::S_LAND);
+							SetControllerRumbleType("Land");
 							frame = 0;
+							
 						}
 						else
 						{
@@ -17401,6 +17462,7 @@ void Actor::PhysicsResponse()
 
 								SetAction(LAND);
 								ActivateSound(PlayerSounds::S_LAND);
+								SetControllerRumbleType("Land");
 							}
 							frame = 0;
 						}
@@ -17553,6 +17615,7 @@ void Actor::PhysicsResponse()
 							facingRight = true;
 							SetAction(WALLCLING);
 							frame = 0;
+							SetControllerRumbleType("Wall");
 						}
 					}
 					else
@@ -17561,6 +17624,7 @@ void Actor::PhysicsResponse()
 						{
 							facingRight = false;
 							SetAction(WALLCLING);
+							SetControllerRumbleType("Wall");
 							
 							frame = 0;
 						}
@@ -17643,6 +17707,7 @@ void Actor::PhysicsResponse()
 			if (!hitCeilingSoundPlayedThisFrame)
 			{
 				ActivateSound(PlayerSounds::S_HITCEILING);
+				SetControllerRumbleType("Ceiling");
 				hitCeilingSoundPlayedThisFrame = true;
 			}
 			
@@ -18888,6 +18953,45 @@ bool Actor::CareAboutSpeedAction()
 	return action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != RIDESHIP;
 }
 
+
+void Actor::LoadAllControllerRumbleInfo()
+{
+	string rumblePath = "Resources/Kin/Info/rumble.json";
+	ifstream is;
+	is.open(rumblePath);
+
+	assert(is.is_open());
+
+	json j;
+	is >> j;
+
+	//controllerRumbleFileUpdatedTime = boost::filesystem::last_write_time(rumblePath);
+
+	//controllerRumbleTypeInfoVec.resize(RUMBLE_Count);
+	//for (auto it = j.items().begin(); it != j.items().end(); ++it)
+	string name;
+	for (auto it = j.begin(); it != j.end(); ++it)
+	{
+		name = (*it)["name"];
+		auto & mapEntry = controllerRumbleTypeInfoMap[name];
+		mapEntry.frames = (*it)["frames"];
+		mapEntry.left = (*it)["factor"] * .01;
+		mapEntry.right = (*it)["factor"] * .01;
+	}
+	/*LoadControllerRumbleInfo(j, RUMBLE_LAND, "Land");
+	LoadControllerRumbleInfo(j, RUMBLE_HIT_ENEMY, "Hit Enemy");
+	LoadControllerRumbleInfo(j, RUMBLE_KILL_ENEMY, "Kill Enemy");
+	LoadControllerRumbleInfo(j, RUMBLE_GATE, "Gate");
+	LoadControllerRumbleInfo(j, RUMBLE_BOOSTER, "Booster");
+	LoadControllerRumbleInfo(j, RUMBLE_SCORPION_BOUNCE, "Scorpion Bounce");
+	LoadControllerRumbleInfo(j, RUMBLE_CURRENCY, "Currency");
+	LoadControllerRumbleInfo(j, RUMBLE_DEATH, "Death");
+	LoadControllerRumbleInfo(j, RUMBLE_GRAVITY_CLING, "Gravity Cling");*/
+
+	is.close();
+	//ControllerRumbleInfo controllerRumbleTypeInfo[RUMBLE_Count];
+}
+
 bool Actor::TryActivateGravityBlast(V2d dir)
 {
 	for (int i = 0; i < NUM_GRAVITY_BLASTS; ++i)
@@ -19898,6 +20002,34 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//owner->SetStorySeq(trigger->storySeq);
 		break;
 	}
+	}
+}
+
+void Actor::UpdateControllerRumble()
+{
+	double currTotalRumbleFactor = 0;
+	for (int i = 0; i < MAX_SIMULTANEOUS_RUMBLE; ++i )
+	{
+		if (activeControllerRumbleInfos[i].Update())
+		{
+			currTotalRumbleFactor = max(activeControllerRumbleInfos[i].GetFactor(), currTotalRumbleFactor);//+= activeControllerRumbleInfos[i].GetFactor();
+		}
+	}
+	currTotalRumbleFactor = min(currTotalRumbleFactor, 1.0);
+	
+	//if (controllerRumbleInfo.frames == 0)
+	if(currTotalRumbleFactor == 0 )
+	{
+		ClearControllerRumble();
+	}
+	else
+	{
+		GameController *gc = GetController();
+		if (gc != NULL)
+		{
+			//gc->SetRumble(controllerRumbleInfo.left, controllerRumbleInfo.right );
+			gc->SetRumble(currTotalRumbleFactor, currTotalRumbleFactor);
+		}
 	}
 }
 
@@ -22999,7 +23131,7 @@ void Actor::DefaultCeilingLanding(double &movement)
 
 	//cout << "actual landing offsetX: " << offsetX << endl;
 
-
+	SetControllerRumbleType("Gravity Cling");
 	ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
 	ActivateSound(PlayerSounds::S_GRAVREVERSE);
 }
@@ -24020,6 +24152,11 @@ void Actor::ConfirmHit( Enemy *e )
 	{
 		c = Color::Red;
 		swordState = SWORDSTATE_KILLING;
+		SetControllerRumbleType("Kill Enemy");
+	}
+	else
+	{
+		SetControllerRumbleType("Hit Enemy");
 	}
 
 	double speedBarAddition = hitParams.speedBar;
@@ -24095,6 +24232,8 @@ void Actor::ConfirmHit( Enemy *e )
 		SetSkin(SKIN_NORMAL);
 		SetKinMode(K_NORMAL);
 	}
+
+	
 	
 	
 	RestoreAirOptions();
@@ -25505,6 +25644,7 @@ void Actor::ExecuteWallJump()
 
 
 	ActivateSound(PlayerSounds::S_WALLJUMP);
+	SetControllerRumbleType("Wall Jump");
 
 	V2d fxPos = position;
 	if (facingRight)
@@ -25581,6 +25721,8 @@ bool Actor::TryDoubleJump()
 		{
 			doubleJumpBufferedAttack = DOUBLE;
 		}
+
+		SetControllerRumbleType("Double Jump");
 
 		return true;
 	}
@@ -26543,6 +26685,7 @@ void Actor::SteepClimbMovement()
 
 void Actor::StartStandAttack()
 {
+	SetControllerRumbleType("Attack");
 	standAttackLevel++;
 	if (standAttackLevel == 4)
 		standAttackLevel = 0;
@@ -26552,6 +26695,7 @@ void Actor::StartStandAttack()
 
 void Actor::StartDashAttack()
 {
+	SetControllerRumbleType("Attack");
 	dashAttackLevel++;
 	if (dashAttackLevel == 3)
 		dashAttackLevel = 0;
@@ -26696,6 +26840,8 @@ void Actor::CollectCurrency(int currencyAmount, int healAmount )
 	HealTimer(currencyAmount);
 	AddToCurrencyCounter(currencyAmount);
 	ActivateSound(PlayerSounds::S_CURRENCY_COLLECT);
+
+	SetControllerRumbleType("Currency");
 }
 
 void Actor::SetAirBlockAction()
@@ -27359,6 +27505,80 @@ int Actor::GetGlobalSlowFactor()
 	}
 
 	return slowMult;
+}
+
+void Actor::SetControllerRumble(int frames, double left, double right)
+{
+	//controllerRumbleInfo.frames = frames;
+	//controllerRumbleInfo.left = left;
+	//controllerRumbleInfo.right = right;
+}
+
+void Actor::SetControllerRumble(int frames, double both)
+{
+	SetControllerRumble(frames, both, both);
+}
+
+void Actor::SetControllerRumbleType(const std::string &rumbleType, double factor)
+{
+	if (controllerRumbleTypeInfoMap.count(rumbleType) > 0)
+	{
+		bool openingFound = false;
+		for (int i = 0; i < MAX_SIMULTANEOUS_RUMBLE; ++i) 
+		{
+			if (activeControllerRumbleInfos[i].frames == 0 )
+			{
+				activeControllerRumbleInfos[i] = controllerRumbleTypeInfoMap[rumbleType];
+				activeControllerRumbleInfos[i].left *= factor;
+				activeControllerRumbleInfos[i].right *= factor;
+
+				activeControllerRumbleInfos[i].left = min(activeControllerRumbleInfos[i].left, 1.0);
+				activeControllerRumbleInfos[i].left = max(activeControllerRumbleInfos[i].left, 0.0);
+				activeControllerRumbleInfos[i].right = min(activeControllerRumbleInfos[i].right, 1.0);
+				activeControllerRumbleInfos[i].right = max(activeControllerRumbleInfos[i].right, 0.0);
+
+				openingFound = true;
+				break;
+			}
+		}
+
+		if (!openingFound)
+		{
+			cout << "rumble queue is full" << "\n";
+		}
+
+
+		/*if (controllerRumbleInfo.frames > 0)
+		{
+			auto &entry = controllerRumbleTypeInfoMap[rumbleType];
+			controllerRumbleInfo.frames = max(controllerRumbleInfo.frames, entry.frames);
+			controllerRumbleInfo.left = max(controllerRumbleInfo.left, entry.left);
+			controllerRumbleInfo.right = controllerRumbleInfo.left;
+		}
+		else
+		{
+			controllerRumbleInfo = ;
+		}		*/
+	}
+	else
+	{
+		cout << "rumble type does not exist: " << rumbleType << "\n";
+	}
+}
+
+void Actor::ClearControllerRumble()
+{
+	SetControllerRumble(0, 0);
+	GameController *gc = GetController();
+	if (gc != NULL)
+	{
+		gc->SetRumble(0, 0);//controllerRumbleInfo.left, controllerRumbleInfo.right);
+	}
+
+	for (int i = 0; i < MAX_SIMULTANEOUS_RUMBLE; ++i)
+	{
+		activeControllerRumbleInfos[i].Reset();
+	}
 }
 
 void Actor::QueryTree(QuadTree *qt, const sf::Rect<double> &r)

@@ -360,6 +360,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool showDebugDraw;
 	bool showNetStats;
 	bool cutPlayerInput;
+	bool devToolVideoRecordingModeOn;
 	MainMenu *mainMenu;
 	std::vector<Actor*> players;
 	
@@ -392,7 +393,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::RenderWindow *window;
 	sf::Vector2i playerOrigPos[MAX_PLAYERS];
 	ControllerState filteredPrevInput[MAX_PLAYERS];
-
 	
 	std::map<std::pair<int, int>, TerrainDecorInfo*> terrainDecorInfoMap;
 	std::map<DecorType, DecorLayer*> decorLayerMap;

@@ -225,9 +225,11 @@ void Actor::DASH_UpdateSprite()
 	{
 		ActivateEffect(PLAYERFX_DASH_START, Vector2f(pp + norm * 64.0 + along * xExtraStart), RadiansToDegrees(angle), 9, 3, fr);
 		ActivateSound(PlayerSounds::S_DASH_START);
+		SetControllerRumbleType("Dash");
 	}
 	else if (frame % 5 == 0)
 	{
+		SetControllerRumbleType("Dash");
 		ActivateEffect(PLAYERFX_DASH_REPEAT, Vector2f(pp + norm * 32.0 + along * xExtraRepeat), RadiansToDegrees(angle), 12, 3, fr);
 		
 		if (reversed)

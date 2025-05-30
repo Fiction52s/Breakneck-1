@@ -9,6 +9,7 @@ using namespace std;
 void Actor::DEATH_Start()
 {
 	SetExpr(KinMask::Expr_DEATHYELL);
+	SetControllerRumbleType("Death");
 }
 
 void Actor::DEATH_End()

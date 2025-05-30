@@ -1438,6 +1438,11 @@ void Camera::UpdateBasicMode()
 //	cout << "zoomfactor: " << zoomFactor << endl;
 
 	
+	if (sess->devToolVideoRecordingModeOn)
+	{
+		currOffset = Vector2f(0, 0);
+	}
+
 	pos += currOffset * GetZoom();// *GetZoom();
 	//orig pos
 	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
@@ -1864,6 +1869,11 @@ void Camera::SetManual( bool man )
 
 float Camera::GetZoom()
 {
+	if (sess->devToolVideoRecordingModeOn)
+	{
+		return 1.0;
+	}
+
 	float z = zoomLevel + zoomFactor;
 	if (z < .1)
 		z = .1;

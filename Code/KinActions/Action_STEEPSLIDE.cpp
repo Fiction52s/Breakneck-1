@@ -193,6 +193,8 @@ void Actor::STEEPSLIDE_Change()
 
 void Actor::STEEPSLIDE_Update()
 {
+	SetControllerRumbleType("Steep Slide");
+
 	SteepSlideMovement();
 }
 

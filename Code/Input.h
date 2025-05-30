@@ -59,6 +59,20 @@ std::string GetXBoxButtonString(int button);
 std::string GetKeyboardButtonString(int key);
 bool IsKeyValidForInput(int key);
 
+struct ControllerRumbleInfo
+{
+	double left;
+	double right;
+	int frames;
+
+	ControllerRumbleInfo();
+	void Reset();
+	bool Update();
+	double GetLeft();
+	double GetRight();
+	double GetFactor();
+};
+
 struct KeyboardState
 {
 	bool m_state[sf::Keyboard::KeyCount];
@@ -225,6 +239,8 @@ public:
 	int GetGCCLeftTrigger();
 	int GetGCCRightTrigger();
 	void UpdateLeftStickPad();
+	void SetRumble(double leftMotor, double rightMotor);
+	void SetRumble(double bothMotors);
 private:
 	bool isConnected;
 	DWORD m_index;
@@ -398,7 +414,7 @@ struct AllControllers
 	void UpdateUnfilteredKeyboardState(ControllerState &state);
 	int GetMenuKeyFromControllerButton(XBoxButton button);
 
-	void SetRumble(int controllerIndex, double leftMotor, double rightMotor);
+	void SetRumble(int controllerIndex, double leftMotor, double rightMotor); //not sure if these are necessary
 	void SetRumble(int controllerIndex, double bothMotors);
 	void CancelAllRumble();
 private:

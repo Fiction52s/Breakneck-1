@@ -10,6 +10,7 @@ void Actor::DAIR_Start()
 
 	ActivateSound(PlayerSounds::S_DAIR);
 	ResetAttackHit();
+	SetControllerRumbleType("Attack");
 }
 
 void Actor::DAIR_End()

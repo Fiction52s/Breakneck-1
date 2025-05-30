@@ -15,6 +15,7 @@ void Actor::UAIR_Start()
 	{
 		ActivateSound(PlayerSounds::S_UAIR);
 		ResetAttackHit();
+		SetControllerRumbleType("Attack");
 	}
 }
 

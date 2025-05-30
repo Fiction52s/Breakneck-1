@@ -21,6 +21,7 @@ void Actor::BRAKE_Change()
 void Actor::BRAKE_Update()
 {
 	BrakeMovement();
+	SetControllerRumbleType("Brake");
 }
 
 void Actor::BRAKE_UpdateSprite()

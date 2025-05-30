@@ -56,6 +56,7 @@ void Actor::JUMPSQUAT_Change()
 		SetAction(JUMP);
 		frame = 0;
 		groundSpeed = storedGroundSpeed;
+		SetControllerRumbleType("Jump");
 	}
 }
 

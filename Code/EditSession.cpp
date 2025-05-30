@@ -12246,6 +12246,8 @@ void EditSession::CleanupTestPlayerMode()
 	MOUSE.SetControllersOn(true);
 	CONTROLLERS.SetKeyboardActiveAsController(false);
 
+	CONTROLLERS.CancelAllRumble();
+
 	if ( !(previewMusic != NULL && mainMenu->musicPlayer->currMusic == previewMusic 
 		&& !musicSelectorUI->ShouldPlayOriginal() ) )
 	{

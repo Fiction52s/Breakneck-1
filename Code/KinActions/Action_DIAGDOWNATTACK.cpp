@@ -9,6 +9,7 @@ void Actor::DIAGDOWNATTACK_Start()
 	SetActionSuperLevel();
 	ActivateSound(PlayerSounds::S_DIAGDOWNATTACK);
 	ResetAttackHit();
+	SetControllerRumbleType("Attack");
 }
 
 void Actor::DIAGDOWNATTACK_End()

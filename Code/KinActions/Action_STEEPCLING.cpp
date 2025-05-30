@@ -164,6 +164,8 @@ void Actor::STEEPCLING_Update()
 	{
 		groundSpeed = -steepClingSpeedLimit;
 	}
+
+	SetControllerRumbleType("Steep Slide");
 }
 
 void Actor::STEEPCLING_UpdateSprite()

@@ -38,6 +38,11 @@ void Actor::SLIDE_Update()
 			//cout << "accel slide: \n" << accel;
 		}
 	}
+
+	if (groundSpeed != 0)
+	{
+		SetControllerRumbleType("Slide");
+	}
 }
 
 void Actor::SLIDE_UpdateSprite()

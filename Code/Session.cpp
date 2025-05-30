@@ -1512,6 +1512,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	ts_goalCrack = NULL;
 	ts_goalExplode = NULL;
 
+	devToolVideoRecordingModeOn = false;
+
 	currShaderDrawLayer = DrawLayer::INVALID; //just needs to be invalid completely so I know to update initially
 
 	turnTimerOnCounter = -1;
@@ -4845,6 +4847,11 @@ void Session::SetupHUD()
 
 void Session::DrawHUD(sf::RenderTarget *target)
 {
+	if (devToolVideoRecordingModeOn)
+	{
+		return;
+	}
+
 	if (hud != NULL)
 	{
 		sf::View oldView = target->getView();
@@ -7039,8 +7046,6 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	DrawPracticeSessions(target, view );
 
 	DrawHUD(target);
-
-	
 
 	//DrawBossHUD(target);
 

@@ -107,6 +107,8 @@ struct NameTag;
 
 using json = nlohmann::json;
 
+
+
 struct Actor : QuadTreeCollider,
 	RayCastHandler, EnemyTracker
 {
@@ -670,10 +672,16 @@ struct Actor : QuadTreeCollider,
 		void Update();
 	};
 
+	const static int MAX_SIMULTANEOUS_RUMBLE = 16;
+	//time_t controllerRumbleFileUpdatedTime;
+	ControllerRumbleInfo activeControllerRumbleInfos[MAX_SIMULTANEOUS_RUMBLE];
+	std::map<std::string, ControllerRumbleInfo> controllerRumbleTypeInfoMap;// [RUMBLE_Count];
 	const static int MAX_HITTERS = 16;
 	Hitter recentHitters[MAX_HITTERS];
 
 	//---
+
+	//std::vector<ControllerRumbleInfo> controllerRumbleInfo;
 
 	bool hitCeilingSoundPlayedThisFrame;
 
@@ -1408,6 +1416,7 @@ struct Actor : QuadTreeCollider,
 
 	void InitSounds();
 
+	void LoadAllControllerRumbleInfo();
 	bool TryActivateGravityBlast(V2d dir);
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
 	bool TryThrowSwordProjectileBasic();
@@ -1499,6 +1508,7 @@ struct Actor : QuadTreeCollider,
 	void SetupTimeBubbles();
 	void SetGameMode();
 	void UpdateModifiedGravity();
+	void UpdateControllerRumble();
 	bool CanBufferGrind();
 	bool CanPressGrind();
 	bool TryBufferGrind();
@@ -1551,7 +1561,7 @@ struct Actor : QuadTreeCollider,
 	CollisionBody *CreateCollisionBody(const std::string &str);
 	void CreateCollisionBodies();
 	bool IsGroundAttack(int a);
-	GameController *GetController(int index);
+	GameController *GetController();
 	void HandleGroundTrigger(GroundTrigger *trigger);
 	void CheckForAirTrigger();
 	void HandleAirTrigger();
@@ -1977,6 +1987,11 @@ struct Actor : QuadTreeCollider,
 
 	int GetSwordSpeedLevel();
 	int GetGlobalSlowFactor();
+
+	void SetControllerRumble(int frames, double left, double right);
+	void SetControllerRumble(int frames, double both);
+	void SetControllerRumbleType(const std::string &rumbleType, double factor = 1.0 );
+	void ClearControllerRumble();
 	
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
