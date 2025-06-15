@@ -13,6 +13,7 @@
 #include "BossHealth.h"
 #include "TimerHUD.h"
 #include "MapHeader.h"
+#include "LevelNameDisplay.h"
 
 using namespace sf;
 using namespace std;
@@ -72,9 +73,9 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	currencyCountText.setString("x0");
 	currencyCountText.setPosition(currencyCountTextShowPos);
 
-	ts_go = tm->GetSizedTileset("Zone/gate_orb_64x64.png");
+	ts_go = tm->GetSizedTileset("HUD/go_871x386.png");
 	ts_go->SetSpriteTexture(goSpr);
-	ts_go->SetSubRect(goSpr, 2);
+	ts_go->SetSubRect(goSpr, 0);
 
 	goSpr.setOrigin(goSpr.getLocalBounds().width / 2, goSpr.getLocalBounds().height / 2);
 	
@@ -89,6 +90,9 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 
 	keyMarkerShowPos = Vector2f(960, 1080 - 45);//Vector2f(1920 - 50, 50);
 	keyMarkerHidePos = Vector2f(960, 1080 + 100);//Vector2f(1920 + 200, keyMarkerShowPos.y);
+
+	goShowPos = keyMarkerShowPos + Vector2f( 0, -200 );
+	goHidePos = keyMarkerHidePos + Vector2f(0, 300);
 
 	bossHealthShowPos = Vector2f(1920 - 100, 200);
 	bossHealthHidePos = bossHealthShowPos + Vector2f(500, 0);
@@ -312,7 +316,7 @@ void AdventureHUD::Show(int frames)
 		medalTimer->SetCenter(timerShowPos);
 		medalGoalTimer->SetCenter(timerShowPos + medalGoalOffset);
 		powerSelector->SetPosition(powerSelectorShowPos);
-		goSpr.setPosition(keyMarkerShowPos);
+		goSpr.setPosition(goShowPos);
 		if (bossHealthBar != NULL)
 		{
 			bossHealthBar->SetTopLeft(bossHealthShowPos);
@@ -380,6 +384,7 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskHidePos * (1.f - a) + a * kinMaskShowPos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f keyMarkerPos = keyMarkerHidePos * (1.f - a) + a * keyMarkerShowPos;
+			Vector2f goPos = goHidePos * (1.f - a) + a * goShowPos;
 			//for (int i = 0; i < keyMarkers.size(); ++i)
 			//{
 			//	//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
@@ -397,7 +402,7 @@ void AdventureHUD::Update()
 				keyMarkers[1]->SetTopLeft(keyMarkerPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 			
-			goSpr.setPosition(keyMarkerPos);
+			goSpr.setPosition(goPos);
 			Vector2f countPos = currencyCountTextHidePos * (1.f - a) + a * currencyCountTextShowPos;
 			currencyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorHidePos * (1.f - a) + a * powerSelectorShowPos;
@@ -441,7 +446,7 @@ void AdventureHUD::Update()
 				keyMarkers[1]->SetTopLeft(keyMarkerHidePos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 
-			goSpr.setPosition(keyMarkerHidePos);
+			goSpr.setPosition(goHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
 			currencyCountText.setPosition(currencyCountTextHidePos);
 			powerSelector->SetPosition(powerSelectorHidePos);
@@ -462,6 +467,7 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskShowPos * (1.f - a) + a * kinMaskHidePos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f keyMarkerPos = keyMarkerShowPos * (1.f - a) + a * keyMarkerHidePos;
+			Vector2f goPos = goShowPos * (1.f - a) + a * goHidePos;
 
 			if (numActiveKeyMarkers == 1)
 			{
@@ -479,7 +485,7 @@ void AdventureHUD::Update()
 			//	//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
 			//	keyMarkers[i]->SetTopRight(keyMarkerPos + Vector2f(0, i * keyMarkerYOffset));
 			//}
-			goSpr.setPosition(keyMarkerPos);
+			goSpr.setPosition(goPos);
 			Vector2f countPos = currencyCountTextShowPos * (1.f - a) + a * currencyCountTextHidePos;
 			currencyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorShowPos * (1.f - a) + a * powerSelectorHidePos;
@@ -565,12 +571,26 @@ void AdventureHUD::Update()
 	medalTimer->Update();
 	medalGoalTimer->Update();
 
+	ts_go->SetSubRect(goSpr, rand() % 2);
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		game->levelNameDisplay->Update();
+	}
+
 	++frame;
 }
 
 
 void AdventureHUD::Reset()
 {
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		game->levelNameDisplay->Reset();
+	}
+
 	show = true;
 	state = SHOWN;
 	frame = 0;
@@ -659,7 +679,12 @@ void AdventureHUD::Draw(RenderTarget *target)
 		}
 
 		target->draw(currencyCountText);
-		
+	}
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		game->levelNameDisplay->Draw(target);
 	}
 }
 
@@ -674,7 +699,8 @@ KinMask::KinMask( TilesetManager *tm )
 	healthText.setOutlineColor(Color::Black);
 	healthText.setOutlineThickness(-1);
 
-	ts_face = tm->GetSizedTileset("HUD/kin_face_320x288.png");
+	//ts_face = tm->GetSizedTileset("HUD/kin_face_320x288.png");
+	ts_face = tm->GetSizedTileset("HUD/masktest_575x188.png");
 	ts_portraitBG = tm->GetSizedTileset("HUD/kin_portrait_320x288.png");
 	face.setTexture(*ts_face->texture);
 	face.setTextureRect(ts_face->GetSubRect(0));
@@ -719,6 +745,11 @@ void KinMask::Reset()
 
 void KinMask::Draw(RenderTarget *target)
 {
+	target->draw(face);
+	target->draw(healthText);
+	return;
+
+
 	if (actor->kinMode == Actor::K_DESPERATION )
 	{
 		target->draw(faceBG, &(actor->despFaceShader));
@@ -757,58 +788,66 @@ void KinMask::Update( int speedLevel, bool desp )
 		healthText.setString(to_string(actor->health));
 	}
 
-	if (expr == Expr_DEATH )
+	//for testing
+	if (false)
 	{
-		int faceDeathAnimLength = 11;
-		int an = 4;
-		int f = frame / an;
 
-		if (f < faceDeathAnimLength)
+
+		if (expr == Expr_DEATH)
 		{
-			face.setTextureRect(ts_face->GetSubRect(5 + f));
-			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5+f));
-		}
-	}
-	else if (expr == Expr_DEATHYELL)
-	{
-		faceBG.setTextureRect(ts_portraitBG->GetSubRect(5));
-		face.setTextureRect(ts_face->GetSubRect(5));
-		playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5));
-	}
-	else
-	{ 
-		if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 )
-		{
-			switch (speedLevel)
+			int faceDeathAnimLength = 11;
+			int an = 4;
+			int f = frame / an;
+
+			if (f < faceDeathAnimLength)
 			{
-			case 0:
-				expr = Expr_NEUTRAL;
-				break;
-			case 1:
-				expr = Expr_SPEED1;
-				break;
-			case 2:
-				expr = Expr_SPEED2;
-				break;
-			case 3:
-				expr = Expr_SPEED2;
-				break;
+				face.setTextureRect(ts_face->GetSubRect(5 + f));
+				playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5 + f));
+			}
+		}
+		else if (expr == Expr_DEATHYELL)
+		{
+			faceBG.setTextureRect(ts_portraitBG->GetSubRect(5));
+			face.setTextureRect(ts_face->GetSubRect(5));
+			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5));
+		}
+		else
+		{
+			if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2)
+			{
+				switch (speedLevel)
+				{
+				case 0:
+					expr = Expr_NEUTRAL;
+					break;
+				case 1:
+					expr = Expr_SPEED1;
+					break;
+				case 2:
+					expr = Expr_SPEED2;
+					break;
+				case 3:
+					expr = Expr_SPEED2;
+					break;
+				}
+
+				/*if (desp)
+				{
+					expr = Expr_DESP;
+				}
+
+				if (actor->action == Actor::GROUNDHITSTUN || actor->action == Actor::AIRHITSTUN)
+				{
+					expr = Expr_HURT;
+				}*/
 			}
 
-			/*if (desp)
-			{
-				expr = Expr_DESP;
-			}
-
-			if (actor->action == Actor::GROUNDHITSTUN || actor->action == Actor::AIRHITSTUN)
-			{
-				expr = Expr_HURT;
-			}*/
+		
+			face.setTextureRect(ts_face->GetSubRect(expr));
+			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(expr));
+			faceBG.setTextureRect(ts_portraitBG->GetSubRect(expr));
 		}
 
-		face.setTextureRect(ts_face->GetSubRect(expr));
-		playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(expr));
-		faceBG.setTextureRect(ts_portraitBG->GetSubRect(expr));
 	}
 	/*switch (expr)
 	{

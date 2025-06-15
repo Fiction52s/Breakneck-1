@@ -24,6 +24,7 @@ void ConfigData::SetToDefault()
 	windowStyle = sf::Style::Fullscreen;
 	musicVolume = 40;
 	soundVolume = 50;
+	rumbleFactor = 50;
 	parallelPlayOn = true;
 	showRunningTimer = false;
 	showFPS = false;
@@ -149,6 +150,12 @@ bool Config::Load()
 				is >> lines;
 				data.showTerrainLines = lines;
 			}
+			else if (settingName == "rumblefactor")
+			{
+				int rf;
+				is >> rf;
+				data.rumbleFactor = rf;
+			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -214,7 +221,8 @@ void Config::Save()
 		of << "ParallelPracticeShowKinsOnMinimap " << (int)data.parallelPracticeShowKinsOnMinimap << "\n";
 		of << "ParallelPracticeShowKinsOnPauseMap " << (int)data.parallelPracticeShowKinsOnPauseMap << "\n";
 		of << "ParallelPracticeShowLobby " << (int)data.parallelPracticeShowLobby << "\n";
-		of << "TerrainLines" << (int)data.showTerrainLines << "\n";
+		of << "TerrainLines " << (int)data.showTerrainLines << "\n";
+		of << "RumbleFactor " << data.rumbleFactor << "\n";
 		of.close();
 	}
 	else

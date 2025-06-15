@@ -293,8 +293,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 		{
 			if (allEnemyRects[i]->actorType->info.world == w)
 			{
-				
-
 				libraryEnemiesVec[w][counter] = allEnemyRects[i];
 				ecRect = libraryEnemiesVec[w][counter];
 

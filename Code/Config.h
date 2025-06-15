@@ -16,6 +16,7 @@ struct ConfigData
 	int windowStyle;
 	int musicVolume;
 	int soundVolume;
+	int rumbleFactor;
 	bool parallelPlayOn;
 	bool showRunningTimer;
 	bool showFPS;

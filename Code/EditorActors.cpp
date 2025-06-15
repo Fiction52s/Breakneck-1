@@ -27,11 +27,11 @@ void ActorType::CreateDefaultEnemy()
 	if (info.pMaker == NULL)
 		return;
 	
-	defaultParamsVec.resize(info.numLevels);
+	//defaultParamsVec.resize(info.numLevels);
 	
 	for (int i = 0; i < info.numLevels; ++i)
 	{
-		defaultParamsVec[i] = info.pMaker(this, i+1);
+		//defaultParamsVec[i] = info.pMaker(this, i+1);
 	
 		defaultParamsVec[i]->CreateMyEnemy();
 	
@@ -39,6 +39,26 @@ void ActorType::CreateDefaultEnemy()
 		{
 			defaultParamsVec[i]->myEnemy->facingRight = true;
 		}
+	}
+}
+
+void ActorType::CreateDefaultParams()
+{
+	if (info.pMaker == NULL)
+		return;
+
+	defaultParamsVec.resize(info.numLevels);
+
+	for (int i = 0; i < info.numLevels; ++i)
+	{
+		defaultParamsVec[i] = info.pMaker(this, i + 1);
+
+		//defaultParamsVec[i]->CreateMyEnemy();
+
+		//if (defaultParamsVec[i]->myEnemy != NULL)
+		//{
+		//	defaultParamsVec[i]->myEnemy->facingRight = true;
+		//}
 	}
 }
 

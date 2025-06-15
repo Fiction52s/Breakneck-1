@@ -275,6 +275,8 @@ struct EnemyChooseRect : ChooseRect
 	void Draw(sf::RenderTarget *target);
 	void SetSize(sf::Vector2f & bSize);
 	void SetType(ActorType *type, int lev);
+	void SetEnemyFromType();
+	//void SetEnemyParamsFromType();
 	void UpdatePanelPos();
 	//void Unfocus();
 	ActorType *actorType;

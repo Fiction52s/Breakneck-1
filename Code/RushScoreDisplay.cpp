@@ -95,15 +95,16 @@ void RushScoreDisplay::Update()
 	{
 		if (expBar->action == KinExperienceBar::A_IDLE)
 		{
+			rushManager->storePoints += expBar->gainedLevels;
 			OpenStore();
 			return;
 		}
-		else if (expBar->action == KinExperienceBar::A_LEVEL_UP)
+		/*else if (expBar->action == KinExperienceBar::A_LEVEL_UP)
 		{
 			rushManager->storePoints += 1;
 			OpenStore();
 			return;
-		}
+		}*/
 
 		expBar->Update();
 		break;

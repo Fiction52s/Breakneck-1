@@ -135,6 +135,9 @@ struct AdventureHUD : HUD
 	sf::Vector2f keyMarkerShowPos;
 	sf::Vector2f keyMarkerHidePos;
 
+	sf::Vector2f goShowPos;
+	sf::Vector2f goHidePos;
+
 	sf::Vector2f kinMaskShowPos;
 	sf::Vector2f kinMaskHidePos;
 

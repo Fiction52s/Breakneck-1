@@ -6,6 +6,7 @@
 #include "nlohmann\json.hpp"
 #include <map>
 #include "GUI.h"
+#include "Movie.h"
 
 struct EditSession;
 struct SingleAxisSelector;
@@ -64,6 +65,10 @@ struct KinStore : GUIHandler
 	int frame;
 	sf::Text itemText;
 
+	int movieIndex;
+
+	std::vector<Movie> previewMovies;
+
 	sf::Text storePointsText;
 	TilesetManager *tm;
 	Session *sess; //doesn't always need a session
@@ -78,6 +83,7 @@ struct KinStore : GUIHandler
 
 	Tileset *ts_bg;
 	Tileset *ts_yellowSquare;
+	Tileset *ts_yellowSquareSmall;
 
 	sf::Sprite bgSpr;
 	sf::Sprite yellowSpr;

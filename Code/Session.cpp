@@ -761,8 +761,8 @@ void Session::RegisterAllEnemies()
 	RegisterW1Enemies();
 	RegisterW2Enemies();
 	RegisterW3Enemies();
-	//RegisterW4Enemies();
-	//RegisterW5Enemies();
+	RegisterW4Enemies();
+	RegisterW5Enemies();
 	//RegisterW6Enemies();
 	//RegisterW7Enemies();
 	//RegisterW8Enemies();
@@ -6864,6 +6864,11 @@ void Session::DrawRain(sf::RenderTarget *target)
 
 void Session::DrawFrameRate(sf::RenderTarget *target)
 {
+	if (devToolVideoRecordingModeOn)
+	{
+		return;
+	}
+
 	if (frameRateDisplay.showFrameRate)
 	{
 		target->draw(frameRateDisplay.frameRateText);
@@ -6872,6 +6877,11 @@ void Session::DrawFrameRate(sf::RenderTarget *target)
 
 void Session::DrawRunningTimer(sf::RenderTarget *target)
 {
+	if (devToolVideoRecordingModeOn)
+	{
+		return;
+	}
+
 	if (runningTimerDisplay.showRunningTimer && (scoreDisplay == NULL || !scoreDisplay->IsActive()) )
 	{
 		target->draw(runningTimerDisplay.runningTimerText);

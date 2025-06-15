@@ -13,6 +13,8 @@ EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector
 	:ChooseRect(ident, ChooseRectType::ENEMY, v, Vector2f( 100, 100 ), p_pos, p), level(p_level)
 {
 	actorType = NULL;
+	enemyParams = NULL;
+	enemy = NULL;
 	SetType(p_type, level);
 }
 
@@ -24,6 +26,13 @@ EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector
 //		enemy->UpdateFromEditParams(0);
 //	}
 //}
+
+void EnemyChooseRect::SetEnemyFromType()
+{
+	enemyParams->MoveTo(Vector2i(0, 0));
+	enemy = enemyParams->myEnemy;
+	UpdatePanelPos();
+}
 
 void EnemyChooseRect::SetType(ActorType *type, int lev)
 {
@@ -39,9 +48,13 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 	{
 		actorType = type;
 		level = lev;
+		//enemyParams = actorType->defaultParamsVec[level - 1];
+		//enemyParams->MoveTo(Vector2i(0, 0));
+		//enemy = enemyParams->myEnemy;
+
 		enemyParams = actorType->defaultParamsVec[level - 1];
 		enemyParams->MoveTo(Vector2i(0, 0));
-		enemy = enemyParams->myEnemy;
+		enemy = enemyParams->myEnemy; //will be NULL most of the time now
 
 		SetName(type->info.displayName);
 
@@ -85,7 +98,7 @@ void EnemyChooseRect::SetSize(sf::Vector2f &bSize)
 
 void EnemyChooseRect::UpdatePanelPos()
 {
-	if (actorType != NULL)
+	if (actorType != NULL )
 	{
 		Vector2f truePos = GetGlobalPos() + Vector2f(boxSize.x / 2.f, boxSize.y / 2.f);
 

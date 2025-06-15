@@ -13,9 +13,12 @@ using namespace std;
 BackgroundWaves::BackgroundWaves(Background *p_bg, int p_layer)
 	:BackgroundObject(p_bg, p_layer)
 {
-	ts_0 = bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_1_1920x128.png"); //16 frames
-	ts_1 = //bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_2_1920x128.png"); //3 frames
-		bg->GetTileset("Backgrounds/W4/w4_01/SpriteSheet1.png"); //3 frames
+	ts_0 = bg->GetSizedTileset("Backgrounds/w4_Coast/waves_1_1920x128.png"); //16 frames
+	ts_1 = bg->GetTileset("Backgrounds/w4_Coast/SpriteSheet1.png");
+		
+		
+		//bg->GetSizedTileset("Backgrounds/W4/w4_01/waves_2_1920x128.png"); //3 frames
+		 //3 frames
 	//compressed the spritesheet
 
 	ts = NULL; //makes it self-drawing

@@ -90,6 +90,7 @@
 #include "RushManager.h"
 
 #include "ShipTravelSequence.h"
+#include "LevelNameDisplay.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -1220,6 +1221,9 @@ void GameSession::Cleanup()
 
 	CleanupPopup();
 
+	delete levelNameDisplay;
+	levelNameDisplay = NULL;
+
 	CONTROLLERS.CancelAllRumble();
 }
 
@@ -1949,7 +1953,7 @@ bool GameSession::Load()
 
 	SetupPokeTriangleScreenGroup();
 
-
+	levelNameDisplay = new LevelNameDisplay;
 
 	const ConfigData &cd = mainMenu->config->GetData();
 
@@ -2171,6 +2175,9 @@ bool GameSession::Load()
 	SetupGameMode();
 	gameMode->Setup();
 
+	
+	levelNameDisplay->SetString(mapHeader->fullName);
+
 	SetupHUD();
 
 	/*if (gameModeType == MatchParams::GAME_MODE_FIGHT
@@ -2381,6 +2388,8 @@ bool GameSession::Load()
 			}
 		}
 	}
+
+	
 
 	/*assert(netplayManager != NULL);
 	cout << "test queue 2" << "\n";
@@ -3386,6 +3395,7 @@ bool GameSession::RunMainLoopOnce()
 			{
 				if (IsRushSession())
 				{
+					hasRespawned = true;
 					RestartLevel();
 
 					/*if (IsReplayHUDOn())
@@ -4125,6 +4135,8 @@ void GameSession::Init()
 {
 	nexus = NULL;
 
+	hasRespawned = false;
+
 	resType = GR_BONUS_RETURN; //better than being unset, just makes it 0
 
 	continueLoading = true;
@@ -4135,6 +4147,8 @@ void GameSession::Init()
 
 	activateBonus = false;
 	bonusType = BONUSTYPE_NONE;
+
+	levelNameDisplay = NULL;
 
 	currPopupType = -1;
 	gameStatePrePopup = -1;

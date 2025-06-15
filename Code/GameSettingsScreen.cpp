@@ -98,6 +98,16 @@ void SettingsSlider::CheckLeftRight()
 	}
 }
 
+void SettingsSlider::SetValue(int val)
+{
+	saSelector->SetIndex(val);
+}
+
+int SettingsSlider::GetValue()
+{
+	return saSelector->currIndex;
+}
+
 void SettingsSlider::Update()
 {
 	float f = ((float)saSelector->currIndex) / maxValue;
@@ -408,6 +418,16 @@ void VideoSettingsTab::Start()
 	}
 }
 
+void VideoSettingsTab::LoadFromConfig(const ConfigData &cd)
+{
+
+}
+
+void VideoSettingsTab::UpdateConfig(ConfigData &cd)
+{
+
+}
+
 void VideoSettingsTab::Update()
 {
 	int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
@@ -470,10 +490,12 @@ AudioSettingsTab::AudioSettingsTab()
 	modules[1]->SetTopLeft(Vector2f(325, 503));
 	modules.push_back(new SettingsSlider(mainMenu, "Sounds", 0, 100, 50));
 	modules[2]->SetTopLeft(Vector2f(325, 625));
+	modules.push_back(new SettingsSlider(mainMenu, "Rumble", 0, 100, 50));
+	modules[3]->SetTopLeft(Vector2f(325, 800));
 
 	int waitFrames[] = { 60, 30, 20 };
 	int waitModeThresh[] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 3, 0);
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, modules.size(), 0);
 }
 
 AudioSettingsTab::~AudioSettingsTab()
@@ -505,6 +527,30 @@ void AudioSettingsTab::Start()
 	}
 }
 
+void AudioSettingsTab::LoadFromConfig(const ConfigData &cd)
+{
+	modules[3]->SetValue(cd.rumbleFactor);
+
+	for (int i = 0; i < modules.size(); ++i)
+	{
+		if (i == saSelector->currIndex)
+		{
+			modules[i]->selected = true;
+		}
+		else
+		{
+			modules[i]->selected = false;
+		}
+
+		modules[i]->Update();
+	}
+}
+
+void AudioSettingsTab::UpdateConfig(ConfigData &cd)
+{
+	cd.rumbleFactor = modules[3]->GetValue();
+}
+
 void AudioSettingsTab::Update()
 {
 	int res = saSelector->UpdateIndex(CONTROLLERS.DirPressed_Up(), CONTROLLERS.DirPressed_Down());
@@ -530,6 +576,7 @@ void AudioSettingsTab::Update()
 	{
 		modules[saSelector->currIndex]->CheckLeftRight();
 	}
+
 
 	modules[saSelector->currIndex]->Press();
 }
@@ -597,6 +644,16 @@ void GameSettingsTab::Start()
 	}
 
 	UpdateSwitches();
+}
+
+void GameSettingsTab::LoadFromConfig(const ConfigData &cd)
+{
+
+}
+
+void GameSettingsTab::UpdateConfig(ConfigData &cd)
+{
+
 }
 
 void GameSettingsTab::Update()
@@ -752,6 +809,8 @@ void GameSettingsScreen::UpdateFromConfig()
 {
 	const ConfigData &cd = mainMenu->config->GetData();
 
+	tabs[2]->LoadFromConfig(cd);
+
 	resolutionDropdown->SetSelectedText(ConfigData::GetResolutionString(cd.resolutionX, cd.resolutionY));
 	windowModeDropdown->SetSelectedText(ConfigData::GetWindowModeString(cd.windowStyle));
 
@@ -779,7 +838,8 @@ void GameSettingsScreen::Start()
 
 void GameSettingsScreen::Quit()
 {
-	SetAction(A_CANCEL);
+	ConfirmCallback(panel);
+	//SetAction(A_CANCEL);
 }
 
 bool GameSettingsScreen::HandleEvent(sf::Event ev)
@@ -843,7 +903,17 @@ void GameSettingsScreen::Draw(sf::RenderTarget *target)
 
 void GameSettingsScreen::ConfirmCallback(Panel *p)
 {
-	SetAction(A_CONFIRM);
+
+	SetAction(A_CANCEL); //just for testing, was A_CONFIRM before
+	//return;
+
+	ConfigData d1;
+	d1.SetToDefault();
+	tabs[2]->UpdateConfig(d1);
+	mainMenu->config->SetData(d1);
+	mainMenu->config->Save();
+
+	return;
 
 	Vector2i res(resolutions[resolutionDropdown->selectedIndex]);
 
@@ -862,6 +932,8 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 	d.showFPS = showFPSCheckBox->checked;
 	d.showRunningTimer = showRunningTimerCheckBox->checked;
 	d.showTerrainLines = showTerrainLinesCheckBox->checked;
+
+	
 
 	bool windowNeedsReset = false;
 
@@ -908,7 +980,8 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 
 void GameSettingsScreen::CancelCallback(Panel *p)
 {
-	SetAction(A_CANCEL);
+	//SetAction(A_CANCEL);
+	ConfirmCallback(p);
 }
 
 void GameSettingsScreen::SetAction(int a)

@@ -344,7 +344,7 @@ KinStore::KinStore()
 
 	TilesetManager *tm = NULL;
 
-
+	movieIndex = -1;
 
 	edit = EditSession::GetSession();
 
@@ -360,8 +360,9 @@ KinStore::KinStore()
 		storePanel = NULL;
 	}
 
-	ts_bg = tm->GetSizedTileset("Menu/Store/new_store_1920x1080.png");//rm->GetSizedTileset( "Menu/Store/Store_1920x1080.png");
-	ts_yellowSquare = tm->GetSizedTileset( "Menu/Store/Yellow_Square_145x145.png");
+	ts_bg = tm->GetSizedTileset("Menu/Store/store_bg_1920x1080.png");//rm->GetSizedTileset( "Menu/Store/Store_1920x1080.png");
+	ts_yellowSquare = tm->GetSizedTileset( "Menu/Store/yellow_square_192x191.png");
+	ts_yellowSquareSmall = tm->GetSizedTileset("Menu/Store/yellow_square_small_153x153.png");
 	
 	bgSpr.setTexture(*ts_bg->texture);
 	yellowSpr.setTexture(*ts_yellowSquare->texture);
@@ -385,7 +386,7 @@ KinStore::KinStore()
 	
 	
 
-	upgradeDescText.setCharacterSize(27);
+	upgradeDescText.setCharacterSize(20);
 	upgradeDescText.setFont(mm->arial);
 	upgradeDescText.setFillColor(Color::White);
 
@@ -412,14 +413,35 @@ KinStore::KinStore()
 	{
 		storeRects.resize(numTotalStoreEntries);
 		storePanel->ReserveImageRects(numTotalStoreEntries);
-
+		
 		for (int i = 0; i < numTotalStoreEntries; ++i)
 		{
 			storeRects[i] = storePanel->AddImageRect(
-				ChooseRect::ChooseRectIdentity::I_STORE_UPGRADE,Vector2f( 0, 0 ),NULL, 0,100);
+				ChooseRect::ChooseRectIdentity::I_STORE_UPGRADE,Vector2f( 0, 0 ),NULL, 0, 100);
 		}
 	}
 	
+
+	previewMovies.resize(10);
+
+	previewMovies[0].Load("Stats/speed_tutorial_small", true);
+	previewMovies[1].Load("Stats/dash_tutorial_small", true);
+	previewMovies[2].Load("Stats/combat_tutorial_small", true);
+	previewMovies[3].Load("Stats/energy_tutorial_small", true);
+
+	int powerIndexStart = 4;
+	previewMovies[powerIndexStart + 0].Load("Powers/airdash_tutorial_small", true);
+	previewMovies[powerIndexStart + 1].Load("Powers/gravity_tutorial_small", true);
+	previewMovies[powerIndexStart + 2].Load("Powers/bounce_tutorial_small", true);
+	previewMovies[powerIndexStart + 3].Load("Powers/grind_tutorial_small", true);
+	previewMovies[powerIndexStart + 4].Load("Powers/homingrush_tutorial_small", true);
+	previewMovies[powerIndexStart + 5].Load("Powers/wire_tutorial_small", true);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		previewMovies[i].SetSize(Vector2f(683, 387));
+		previewMovies[i].SetPosition(Vector2f(1029, 216));
+	}
 
 	//currentStoreItems = new int[maxXSize * ySize];
 
@@ -468,7 +490,7 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 	SetRectTopLeft(containerBGQuad, testSize.x, testSize.y, pos);
 
 	int index = 0;
-	int rectSize = 192 / 2;
+	//int rectSize = 192 / 2;
 	int xSpacing = 20 * 2;
 	int ySpacing = 12 * 2;
 
@@ -478,6 +500,9 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 
 	int currIndex = 0;
 	Vector2f rectPos;
+
+	double rectSize = 0;
+	
 
 	for (int y = 0; y < SECTION_Count; ++y)
 	{
@@ -489,6 +514,15 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 			{
 				assert(0);
 			}*/
+
+			if (y == 0)
+			{
+				rectSize = 150;
+			}
+			else
+			{
+				rectSize = 190;
+			}
 
 			rectPos = Vector2f(j * rectSize + xSpacing * j, y * rectSize + ySpacing * y) + gridStart;
 
@@ -511,23 +545,32 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 
 	if (storePanel != NULL)
 	{
-		storeRects[0]->SetPosition(Vector2f(256, 262));
-		storeRects[1]->SetPosition(Vector2f(423, 262));
-		storeRects[2]->SetPosition(Vector2f(591, 263));
-		storeRects[3]->SetPosition(Vector2f(758, 263));
-
-		storeRects[4]->SetPosition(Vector2f(254, 488));
-		storeRects[5]->SetPosition(Vector2f(490, 488));
-		storeRects[6]->SetPosition(Vector2f(723, 488));
-
-		storeRects[7]->SetPosition(Vector2f(253, 697));
-		storeRects[8]->SetPosition(Vector2f(488, 697));
-		storeRects[9]->SetPosition(Vector2f(723, 697));
+		Vector2f statsBase(218, 263);
+		for (int i = 0; i < 4; ++i)
+		{
+			storeRects[i]->SetPosition(statsBase + Vector2f(169 * i, 0));
+		}
+		
+		Vector2f powersBase(221 - 4, 478 - 4);
+		int realIndex = 0;
+		for (int y = 0; y < 2; ++y)
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				realIndex = 4 + (y * 3) + i;
+				storeRects[realIndex]->SetPosition(powersBase + Vector2f( 238 * i, 200 * y));
+			}
+		}
 
 		for (int i = 0; i < numTotalStoreEntries; ++i)
 		{
 			storeRects[i]->Init();
 			storeRects[i]->SetShown(true);
+			storeRects[i]->SetIdleColor(Color::Transparent);
+			storeRects[i]->mouseOverColor = Color::Transparent;
+			storeRects[i]->selectedIdleColor = Color::Transparent;
+			storeRects[i]->selectedMouseOverColor = Color::Transparent;
+
 		}
 	}
 	
@@ -711,10 +754,11 @@ void KinStore::SetSelected(int section, int itemIndex)
 			upgradeNameText.getLocalBounds().top + upgradeNameText.getLocalBounds().height / 2);
 
 	//upgradeNameText.setPosition(1088,303);
-	upgradeNameText.setPosition(1369,240);
+	//upgradeNameText.setPosition(1369,240);
+	upgradeNameText.setPosition(1369, 142);
 
 	
-	upgradeDescText.setPosition(1051, 374);
+	upgradeDescText.setPosition(1053, 659);
 	
 
 	SetRectCenter(selectedBGQuad, 192 / 2, 192 / 2,
@@ -725,54 +769,17 @@ void KinStore::SetSelected(int section, int itemIndex)
 	switch (section)
 	{
 	case 0:
-		if (itemIndex == 0)
-		{
-			selectTopLeft = Vector2f(256, 262);
-		}
-		else if (itemIndex == 1)
-		{
-			selectTopLeft = Vector2f(423, 262);
-		}
-		else if (itemIndex == 2)
-		{
-			selectTopLeft = Vector2f(591, 263);
-		}
-		else if (itemIndex == 3)
-		{
-			selectTopLeft = Vector2f(758, 263);
-		}
+		selectTopLeft = Vector2f(218, 263) + Vector2f(169 * itemIndex, 0);
 		break;
 	case 1:
-		if (itemIndex == 0)
-		{
-			selectTopLeft = Vector2f(254, 488);
-		}
-		else if (itemIndex == 1)
-		{
-			selectTopLeft = Vector2f(490, 488);
-		}
-		else if (itemIndex == 2)
-		{
-			selectTopLeft = Vector2f(723, 488);
-		}
+		selectTopLeft = Vector2f(221 - 4, 478 - 4) + Vector2f(238 * itemIndex, 0);
 		break;
 	case 2:
-		if (itemIndex == 0)
-		{
-			selectTopLeft = Vector2f(253, 697);
-		}
-		else if (itemIndex == 1)
-		{
-			selectTopLeft = Vector2f(488, 697);
-		}
-		else if (itemIndex == 2)
-		{
-			selectTopLeft = Vector2f(723, 697);
-		}
+		selectTopLeft = Vector2f(221 - 4, 478 - 4) + Vector2f(238 * itemIndex, 200 );
 		break;
 	}
 
-	selectTopLeft += Vector2f(-10, -10);
+	//selectTopLeft += Vector2f(-10, -10);
 
 	if (edit != NULL)
 	{
@@ -788,7 +795,38 @@ void KinStore::SetSelected(int section, int itemIndex)
 		storePointsText.setFillColor(Color::Green);
 	}
 
+
+	if (section == 0)
+	{
+		yellowSpr.setTexture(*ts_yellowSquareSmall->texture);
+		yellowSpr.setTextureRect(ts_yellowSquareSmall->GetSubRect(0));
+	}
+	else
+	{
+		yellowSpr.setTexture(*ts_yellowSquare->texture);
+		yellowSpr.setTextureRect(ts_yellowSquare->GetSubRect(0));
+	}
 	yellowSpr.setPosition(selectTopLeft);
+
+	if (section == 0)
+	{
+		movieIndex = xSelector->currIndex;
+	}
+	else if (section == 1)
+	{
+		movieIndex = xSelector->currIndex + 4;
+	}
+	else
+	{
+		movieIndex = xSelector->currIndex + 3 + 4;
+	}
+
+	for (int i = 0; i < previewMovies.size(); ++i)
+	{
+		previewMovies[i].Stop();
+	}
+
+	previewMovies[movieIndex].Play();
 }
 
 void KinStore::DowngradeCurrentUpgrade()
@@ -796,7 +834,7 @@ void KinStore::DowngradeCurrentUpgrade()
 	assert(rush == NULL);
 
 	StoreEntry *se = currStoreEntries[ySelector->currIndex]->at(xSelector->currIndex);
-	int optionIndex = se->upgradeIndex;	
+	int optionIndex = se->upgradeIndex;
 
 	if (se->currentLevel > 0)
 	{
@@ -924,6 +962,8 @@ void KinStore::Update()
 		{
 			SetSelected(ySelector->currIndex, xSelector->currIndex );
 		}
+
+		previewMovies[movieIndex].Update();
 	}
 }
 
@@ -1012,11 +1052,15 @@ void KinStore::Draw(sf::RenderTarget *target)
 	//target->draw(itemSelectQuads, numTotalStoreEntries * 4, sf::Quads);
 	//target->draw(selectedBGQuad, 4, sf::Quads);
 
-	target->draw(storePointsText);
+	//target->draw(storePointsText);
 	target->draw(yellowSpr);
 
 	target->draw(upgradeNameText);
 	target->draw(upgradeDescText);
+
+	int powerIndex = -1;
+
+	previewMovies[movieIndex].Draw(target);
 	//target->draw(upgradeLevelText);
 }
 

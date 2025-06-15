@@ -85,6 +85,7 @@
 #include "KinUpgrades.h"
 #include "Enemy_TouchKey.h"
 #include "KinStore.h"
+#include "Config.h"
 
 using namespace sf;
 using namespace std;
@@ -7929,7 +7930,10 @@ void Actor::UpdatePrePhysics()
 	if (action == HIDDEN)
 		return;
 
-
+	if (currInput.PDown() && !prevInput.PDown() && !currInput.PLeft() && !currInput.PRight())
+	{
+		sess->devToolVideoRecordingModeOn = !sess->devToolVideoRecordingModeOn;
+	}
 	//if (sess->totalGameFrames % 300 == 0 )
 	//{
 	//	string rumblePath = "Resources/Kin/Info/rumble.json";
@@ -7966,6 +7970,10 @@ void Actor::UpdatePrePhysics()
 	if( currInput.respawnTest || (currInput.PRight() && !prevInput.PRight() && sess->totalGameFrames > 30))
 	{
 		//respawnTest is from online parallel play mode I think
+		if (owner != NULL)
+		{
+			owner->hasRespawned = true;
+		}
 		sess->RestartGame();
 	}
 
@@ -27523,14 +27531,16 @@ void Actor::SetControllerRumbleType(const std::string &rumbleType, double factor
 {
 	if (controllerRumbleTypeInfoMap.count(rumbleType) > 0)
 	{
+		//const ConfigData &cd = mainMenu->config->GetData();
+		double configFactor = sess->mainMenu->config->GetData().rumbleFactor / 50.0;
 		bool openingFound = false;
 		for (int i = 0; i < MAX_SIMULTANEOUS_RUMBLE; ++i) 
 		{
 			if (activeControllerRumbleInfos[i].frames == 0 )
 			{
 				activeControllerRumbleInfos[i] = controllerRumbleTypeInfoMap[rumbleType];
-				activeControllerRumbleInfos[i].left *= factor;
-				activeControllerRumbleInfos[i].right *= factor;
+				activeControllerRumbleInfos[i].left *= factor * configFactor;
+				activeControllerRumbleInfos[i].right *= factor * configFactor;
 
 				activeControllerRumbleInfos[i].left = min(activeControllerRumbleInfos[i].left, 1.0);
 				activeControllerRumbleInfos[i].left = max(activeControllerRumbleInfos[i].left, 0.0);

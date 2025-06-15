@@ -5,6 +5,7 @@
 #include "Tileset.h"
 #include "MatchParams.h"
 #include "GUI.h"
+#include "Config.h"
 
 struct MainMenu;
 struct NewTitleScreen;
@@ -26,6 +27,8 @@ struct SettingsModule
 	virtual void SetCenter(sf::Vector2f pos) = 0;
 	virtual void CheckLeftRight() {}
 	virtual void Press(){}
+	virtual void SetValue(int val) {}
+	virtual int GetValue() { return 0; }
 };
 
 struct SettingsSlider : SettingsModule
@@ -51,6 +54,8 @@ struct SettingsSlider : SettingsModule
 	void SetCenter(sf::Vector2f pos);
 	void CheckLeftRight();
 	void Update();
+	void SetValue(int val);
+	int GetValue();
 	void Draw(sf::RenderTarget *target);
 };
 
@@ -98,6 +103,9 @@ struct SettingsTab
 	virtual ~SettingsTab() {}
 	virtual void Start() = 0;
 	virtual void Update() = 0;
+	virtual void LoadFromConfig(const ConfigData &cd) = 0;
+	virtual void UpdateConfig(ConfigData &cd) = 0;
+
 	virtual void Draw(sf::RenderTarget *target) = 0;
 };
 
@@ -125,6 +133,8 @@ struct VideoSettingsTab : SettingsTab
 
 	void Start();
 	void Update();
+	void LoadFromConfig(const ConfigData &cd);
+	void UpdateConfig(ConfigData &cd);
 	void Draw(sf::RenderTarget *target);
 };
 
@@ -143,6 +153,8 @@ struct GameSettingsTab : SettingsTab
 	void Start();
 	void Update();
 	void UpdateSwitches();
+	void LoadFromConfig(const ConfigData &cd);
+	void UpdateConfig(ConfigData &cd);
 	void Draw(sf::RenderTarget *target);
 };
 
@@ -161,6 +173,8 @@ struct AudioSettingsTab : SettingsTab
 
 	void Start();
 	void Update();
+	void LoadFromConfig(const ConfigData &cd);
+	void UpdateConfig(ConfigData &cd);
 	void Draw(sf::RenderTarget *target);
 };
 

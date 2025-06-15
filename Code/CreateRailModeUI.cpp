@@ -206,7 +206,8 @@ void CreateRailModeUI::ChoosePhysicalType(ImageChooseRect *icRect)
 
 void CreateRailModeUI::ChooseEnemyType(EnemyChooseRect *ecRect)
 {
-	currEnemyTypeRect->SetType(ecRect->enemyParams->type, ecRect->enemyParams->GetLevel());
+	//currEnemyTypeRect->SetType(ecRect->enemyParams->type, ecRect->enemyParams->GetLevel());
+	currEnemyTypeRect->SetType(ecRect->actorType, ecRect->level);//ecRect->enemyParams->GetLevel());
 	//int x = ecRect->pos.x / terrainGridSize;
 	int y = ecRect->pos.y / railTypeGridSize;
 

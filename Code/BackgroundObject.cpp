@@ -701,7 +701,7 @@ void BackgroundWideSpread::UpdateQuads(float realX)
 BackgroundFoam::BackgroundFoam(Background *p_bg, int p_layer)
 	:BackgroundObject(p_bg, p_layer)
 {
-	ts = bg->GetTileset("Backgrounds/W4/w4_01/SpriteSheet3.png");
+	ts = bg->GetTileset("Backgrounds/w4_Coast/SpriteSheet3.png");
 
 	priorityLevel = 1;
 
@@ -843,7 +843,7 @@ void BackgroundFoam::UpdateQuads(float realX)
 BackgroundWaterfall::BackgroundWaterfall(Background *p_bg, int p_layer )
 	:BackgroundObject( p_bg, p_layer )
 {
-	ts = bg->GetTileset("Backgrounds/W4/w4_01/SpriteSheet3.png");
+	ts = bg->GetTileset("Backgrounds/w4_Coast/SpriteSheet3.png");
 
 	shortWaterfall = false;
 

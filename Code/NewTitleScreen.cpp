@@ -22,8 +22,6 @@ using namespace sf;
 NewTitleScreen::NewTitleScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu)
 {
-	
-
 	frame = 0;
 
 	int waitFrames[] = { 60, 30, 20 };
@@ -43,13 +41,13 @@ NewTitleScreen::NewTitleScreen(MainMenu *p_mainMenu)
 
 	colorFadeTotalFrames = 30;
 
-	movies[0] = new Movie("title_arcade", true);
-	movies[1] = new Movie("title_trials", true);
-	movies[2] = new Movie("title_local", true);
-	movies[3] = new Movie("title_online", true);
-	movies[4] = new Movie("title_exit", true);
-	movies[5] = new Movie("title_editor", true);
-	movies[6] = new Movie("title_options", true);
+	movies[0] = new Movie("Stats/combat_tutorial_small", true);
+	movies[1] = new Movie("Stats/speed_tutorial_small", true);
+	movies[2] = new Movie("Stats/combat_tutorial_small", true);
+	movies[3] = new Movie("Stats/speed_tutorial_small", true);
+	movies[4] = new Movie("Stats/combat_tutorial_small", true);
+	movies[5] = new Movie("Stats/speed_tutorial_small", true);
+	movies[6] = new Movie("Stats/energy_tutorial_small", true);
 
 	for (int i = 0; i < NUM_BUTTONS; ++i)
 	{
@@ -303,7 +301,7 @@ void NewTitleScreen::Update()
 		isMusicStarted = true;
 	}
 
-	panel->MouseUpdate();
+	//panel->MouseUpdate();
 
 	quantX += xRate;
 	quantY += yRate;
@@ -492,12 +490,13 @@ void NewTitleScreen::Update()
 	{
 		int tempIndex = 0;
 		Vector2f mfPos = MOUSE.GetFloatPos();
+
 		for (int i = 0; i < saSelector->totalItems; ++i)
 		{
 			if (QuadContainsPoint(buttonQuads + i * 4, mfPos) && MOUSE.IsMouseLeftClicked() )
 			{
 				tempIndex = i;
-				tempIndex += saSelector->currIndex; //arcade mode starts in the middle of the screen (currIndex starts the game at 4)
+				tempIndex += 4;//saSelector->currIndex; //arcade mode starts in the middle of the screen (currIndex starts the game at 4)
 				if (tempIndex >= saSelector->totalItems)
 				{
 					tempIndex -= saSelector->totalItems;
@@ -630,7 +629,7 @@ void NewTitleScreen::Draw(sf::RenderTarget *target)
 
 	currMovie->Draw(target);
 
-	panel->Draw(target);
+	//panel->Draw(target);
 	/*if (action == A_CHANGE_UP)
 	{
 		target->draw(buttonQuads + 4, 4 * 8, sf::Quads);

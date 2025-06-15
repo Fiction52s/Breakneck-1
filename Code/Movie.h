@@ -6,7 +6,9 @@
 struct Movie
 {
 	Movie( const std::string &name, bool p_loop = false );
+	Movie();
 	~Movie();
+	void Load(const std::string &name, bool p_loop = false);
 	void SetSize(sf::Vector2f size, bool preserveRatio = true );
 	void Update();
 	void Stop();

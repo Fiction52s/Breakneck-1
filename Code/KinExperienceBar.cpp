@@ -85,6 +85,8 @@ void KinExperienceBar::Setup(int p_currLevel, int p_currExp)
 
 void KinExperienceBar::AddMedal(int medal)
 {
+	gainedLevels = 0;
+
 	int toAdd = 0;
 	if (medal == 0)
 	{
@@ -117,14 +119,19 @@ void KinExperienceBar::Update()
 	{
 	case A_ADDING:
 	{
-		if (currExp >= GetExpToLevelUp())
+		int expToNextLevel = GetExpToLevelUp();
+
+		assert(currExp <= expToNextLevel);
+		if (currExp == expToNextLevel)
 		{
 			cout << "leveled up" << "\n";
-			currExp = 0;
-			currLevel += 1;
 
-			action = A_LEVEL_UP;
-			frame = 0;
+			currLevel += 1;
+			currExp = 0;
+			gainedLevels += 1;
+
+			//action = A_LEVEL_UP;
+			//frame = 0;
 		}
 		else if (expToAdd == 0)
 		{

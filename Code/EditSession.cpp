@@ -120,6 +120,12 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 	if (trackingEnemyParams == NULL)
 	{
 		//cout << "copy of level : " << level << endl;
+
+		if (type->defaultParamsVec[level - 1]->myEnemy == NULL)
+		{
+			type->defaultParamsVec[level - 1]->CreateMyEnemy();
+		}
+
 		trackingEnemyParams = type->defaultParamsVec[level-1]->Copy();
 		trackingEnemyParams->group = groups["--"];
 		//GetPolygon((0);
@@ -4134,7 +4140,8 @@ void EditSession::Init()
 
 	for (auto it = types.begin(); it != types.end(); ++it)
 	{
-		(*it).second->CreateDefaultEnemy();
+		//(*it).second->CreateDefaultEnemy();
+		(*it).second->CreateDefaultParams();
 	}
 
 	ReadDecorImagesFile();
@@ -14212,8 +14219,12 @@ void EditSession::DrawUI()
 	
 	//return;
 	
-	preScreenTex->draw(cursorLocationText);
-	preScreenTex->draw(scaleText);
+	if (!devToolVideoRecordingModeOn)
+	{
+		preScreenTex->draw(cursorLocationText);
+		preScreenTex->draw(scaleText);
+	}
+	
 
 	DrawModeUI();
 
@@ -16343,6 +16354,7 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType)
 			if (ceRect != NULL)
 			{
 				SetTrackingEnemy(ceRect->actorType, ceRect->level);
+				ceRect->SetEnemyFromType();
 			}
 			else
 			{

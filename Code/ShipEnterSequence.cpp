@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include "HUD.h"
 #include "Background.h"
+#include "LevelNameDisplay.h"
 
 using namespace sf;
 using namespace std;
@@ -32,6 +33,12 @@ void ShipEnterScene::AddFlashes()
 void ShipEnterScene::Reset()
 {
 	Sequence::Reset();
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *gs = GameSession::GetSession();
+		gs->levelNameDisplay->Reset();
+	}
 
 	shipEnterData.extraBackgroundOffset = 0;
 
@@ -210,6 +217,15 @@ void ShipEnterScene::UpdateState()
 		player->hasAirDash = false;
 		sess->SetDrainOn(true);
 	}
+
+	if (sess->IsSessTypeGame())
+	{
+		if (seqData.frame > 60)
+		{
+			GameSession *gs = GameSession::GetSession();
+			gs->levelNameDisplay->Update();
+		}
+	}
 }
 
 void ShipEnterScene::SetupStates()
@@ -230,6 +246,14 @@ void ShipEnterScene::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 		target->draw(cloudBot1, 4 * 3, sf::Quads, ts_w1ShipClouds1->texture);
 		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_w1ShipClouds0->texture);
 		target->draw(shipSprite);
+	}
+	else if (p_drawLayer == DrawLayer::UI_FRONT)
+	{
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *gs = GameSession::GetSession();
+			gs->levelNameDisplay->Draw(target);
+		}
 	}
 
 	Sequence::LayeredDraw(p_drawLayer, target);

@@ -32,6 +32,8 @@ struct KinExperienceBar
 	sf::Vertex barQuad[4];
 	sf::Text expText;
 
+	int gainedLevels;
+
 	int currLevel;
 	int expToLevelUp;
 	int currExp;

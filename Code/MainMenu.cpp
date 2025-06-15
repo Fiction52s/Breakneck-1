@@ -631,11 +631,11 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	{
 		if (fromMode == SAVEMENU)
 		{
-			assert(adventureManager != NULL);
+			//assert(adventureManager != NULL);
 
-			delete adventureManager;
+			//delete adventureManager;
 
-			adventureManager = NULL;
+			//adventureManager = NULL;
 		}
 		else if (fromMode == RUN_ADVENTURE_MAP)
 		{
@@ -1400,7 +1400,11 @@ MainMenu::~MainMenu()
 	delete levelSelector;
 	delete window;
 	
-	delete gameSettingsScreen;
+	if (gameSettingsScreen != NULL)
+	{
+		delete gameSettingsScreen;
+	}
+	
 	delete mapBrowserScreen;
 
 	if (workshopBrowser != NULL)

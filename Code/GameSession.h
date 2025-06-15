@@ -112,6 +112,8 @@ struct EnvPlant;
 
 struct Barrier;
 
+struct LevelNameDisplay;
+
 namespace mapbox
 {
 	namespace util
@@ -255,10 +257,14 @@ struct GameSession : RayCastHandler, Session
 	int currPopupType;
 	GamePopup *gamePopup;
 
+	LevelNameDisplay *levelNameDisplay;
+
 	//new
 	bool boostEntrance;
 	bool bestTimeGhostOn;
 	bool bestReplayOn;
+
+	bool hasRespawned; //true if the player respawns at all
 	
 	//from mainmenu
 

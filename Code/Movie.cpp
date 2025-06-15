@@ -8,17 +8,27 @@ using namespace sf;
 
 Movie::Movie(const std::string &name, bool p_loop )
 {
+	Load(name, p_loop);
+}
+
+Movie::Movie()
+{
+	loop = false;
+}
+
+Movie::~Movie()
+{
+
+}
+
+void Movie::Load(const std::string &name, bool p_loop)
+{
 	if (!mov.openFromFile("Resources/Movie/" + name + ".mp4"))
 	{
 		cout << "movie not loaded: " << name << "\n";
 		assert(false);
 	}
 	loop = p_loop;
-}
-
-Movie::~Movie()
-{
-
 }
 
 void Movie::SetSize(sf::Vector2f size, bool preserveRatio )
