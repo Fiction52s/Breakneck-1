@@ -33,9 +33,11 @@ void Actor::DAIR_Change()
 
 void Actor::DAIR_Update()
 {
+	int animFactor = 2;
+
 	CheckHoldJump();
 
-	SetCurrHitboxes(dairHitboxes[GetSwordSpeedLevel()], frame);
+	SetCurrHitboxes(dairHitboxes[GetSwordSpeedLevel()], frame / animFactor);
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -60,6 +62,8 @@ void Actor::DAIR_UpdateSprite()
 		swordSprite.setTexture(*curr_ts->texture);
 	}
 
+	int animFactor = 2;
+
 	Vector2i offsetArr[3];
 	offsetArr[0] = Vector2i(0, 0);
 	offsetArr[1] = Vector2i(0, 0);//Vector2i( 0, 48 );
@@ -69,17 +73,17 @@ void Actor::DAIR_UpdateSprite()
 
 	SetSpriteTexture(action);
 
-	SetSpriteTile(frame, facingRight);
+	SetSpriteTile(frame / animFactor, facingRight);
 
 	if (showSword)
 	{
 		if (facingRight)
 		{
-			swordSprite.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / animFactor - startFrame));
 		}
 		else
 		{
-			sf::IntRect irSword = curr_ts->GetSubRect(frame - startFrame);
+			sf::IntRect irSword = curr_ts->GetSubRect(frame / animFactor - startFrame);
 			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 		}
@@ -113,7 +117,7 @@ void Actor::DAIR_TimeDepFrameInc()
 
 int Actor::DAIR_GetActionLength()
 {
-	return 16;
+	return 16 * 2;
 }
 
 const char * Actor::DAIR_GetTilesetName()

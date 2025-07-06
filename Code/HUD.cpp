@@ -693,21 +693,33 @@ KinMask::KinMask( TilesetManager *tm )
 	actor = NULL;
 	sess = NULL;
 
+	scale = .75f;//1.f;
+
 	healthText.setFont(MainMenu::GetInstance()->arial);
 	healthText.setCharacterSize(30);
 	healthText.setFillColor(Color::White);
 	healthText.setOutlineColor(Color::Black);
 	healthText.setOutlineThickness(-1);
 
-	//ts_face = tm->GetSizedTileset("HUD/kin_face_320x288.png");
-	ts_face = tm->GetSizedTileset("HUD/masktest_575x188.png");
+	ts_hudBars = tm->GetSizedTileset("HUD/hud_bars_384x39.png");
+	ts_face = tm->GetSizedTileset("HUD/kin_face_320x288.png");
+	//ts_face = tm->GetSizedTileset("HUD/masktest_575x188.png");
 	ts_portraitBG = tm->GetSizedTileset("HUD/kin_portrait_320x288.png");
 	face.setTexture(*ts_face->texture);
+	face.setScale(scale, scale);
 	face.setTextureRect(ts_face->GetSubRect(0));
 	playerSkinShader.SetSubRect( ts_face, ts_face->GetSubRect(0));
 
 	faceBG.setTexture(*ts_portraitBG->texture);
 	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
+	faceBG.setScale(scale, scale);
+
+	SetRectSubRect(healthQuad, ts_hudBars->GetSubRect(0));
+	SetRectSubRect(momentumQuad, ts_hudBars->GetSubRect(1));
+
+	Vector2f hudBarsTopLeft(82, 48);
+	SetRectTopLeft(healthQuad, ts_hudBars->tileWidth, ts_hudBars->tileHeight, hudBarsTopLeft);
+	SetRectTopLeft(momentumQuad, ts_hudBars->tileWidth, ts_hudBars->tileHeight, hudBarsTopLeft + Vector2f(0, 38));
 
 	momentumBar = new MomentumBar(tm);
 
@@ -745,9 +757,12 @@ void KinMask::Reset()
 
 void KinMask::Draw(RenderTarget *target)
 {
-	target->draw(face);
-	target->draw(healthText);
-	return;
+	//target->draw(face);
+	//target->draw(healthText);
+	//return;
+
+	target->draw(healthQuad, 4, sf::Quads, ts_hudBars->texture);
+	target->draw(momentumQuad, 4, sf::Quads, ts_hudBars->texture);
 
 
 	if (actor->kinMode == Actor::K_DESPERATION )
@@ -769,9 +784,9 @@ void KinMask::Draw(RenderTarget *target)
 	}
 
 	momentumBar->SetMomentumInfo(actor->speedLevel, actor->GetSpeedBarPart());
-	momentumBar->Draw(target);
+	//momentumBar->Draw(target);
 
-	target->draw(healthText);
+	//target->draw(healthText);
 }
 
 void KinMask::SetExpr(KinMask::Expr ex)
@@ -789,7 +804,7 @@ void KinMask::Update( int speedLevel, bool desp )
 	}
 
 	//for testing
-	if (false)
+	//if (false)
 	{
 
 

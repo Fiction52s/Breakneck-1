@@ -10,8 +10,7 @@ using namespace std;
 
 ShipEnterScene::ShipEnterScene()
 {
-	ts_w1ShipClouds0 = sess->GetSizedTileset("Ship/cloud_w1_a1_960x128.png");
-	ts_w1ShipClouds1 = sess->GetSizedTileset("Ship/cloud_w1_b1_960x320.png");
+	ts_clouds = sess->GetSizedTileset("Ship/ship_clouds_1920x1810.png");
 	ts_ship = sess->GetSizedTileset("Ship/ship_open_864x410.png");
 
 	shipSprite.setTexture(*ts_ship->texture);
@@ -64,13 +63,15 @@ void ShipEnterScene::Reset()
 	middleClouds.setSize(Vector2f(960, middleHeight));
 	Vector2f botExtra(0, middleHeight);
 
-	IntRect sub0 = ts_w1ShipClouds0->GetSubRect(0);
-	IntRect sub1 = ts_w1ShipClouds1->GetSubRect(0);
+	IntRect sub0 = ts_clouds->GetCustomSubRect(Vector2i(1920, 490), Vector2i(0, 0), Vector2i( 1, 1 ), 0);
+	IntRect sub1 = ts_clouds->GetCustomSubRect(Vector2i(1920, 240), Vector2i(0, 490 + 1080), Vector2i(1, 1 ), 0);
+
+		//middle is 1920, 1080, and starts at 490
 
 	Vector2f bottomLeft = Vector2f(sess->playerOrigPos[0].x, sess->playerOrigPos[0].y) + Vector2f(-480, 270);
 	for (int i = 0; i < 3; ++i)
 	{
-		Vector2f xExtra(480 * i, 0);
+		Vector2f xExtra(960 * i, 0);
 		cloud0[i * 4 + 0].position = xExtra + bottomLeft;
 		cloud0[i * 4 + 1].position = xExtra + bottomLeft + Vector2f(0, -sub0.height / 2);
 		cloud0[i * 4 + 2].position = xExtra + bottomLeft + Vector2f(sub0.width / 2, -sub0.height / 2);
@@ -240,11 +241,11 @@ void ShipEnterScene::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
 	if (p_drawLayer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
-		target->draw(cloud1, 4 * 3, sf::Quads, ts_w1ShipClouds1->texture);
-		target->draw(cloud0, 4 * 3, sf::Quads, ts_w1ShipClouds0->texture);
+		target->draw(cloud1, 4 * 3, sf::Quads, ts_clouds->texture);
+		target->draw(cloud0, 4 * 3, sf::Quads, ts_clouds->texture);
 		target->draw(middleClouds);
-		target->draw(cloudBot1, 4 * 3, sf::Quads, ts_w1ShipClouds1->texture);
-		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_w1ShipClouds0->texture);
+		target->draw(cloudBot1, 4 * 3, sf::Quads, ts_clouds->texture);
+		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_clouds->texture);
 		target->draw(shipSprite);
 	}
 	else if (p_drawLayer == DrawLayer::UI_FRONT)

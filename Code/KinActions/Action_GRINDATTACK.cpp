@@ -19,7 +19,7 @@ void Actor::GRINDATTACK_End()
 
 void Actor::GRINDATTACK_Change()
 {
-	if (!PowerButtonHeld())//&& grindEdge->Normal().y < 0 )
+	if (!GrindButtonHeld())//!PowerButtonHeld())//&& grindEdge->Normal().y < 0 )
 	{
 		V2d op = position;
 

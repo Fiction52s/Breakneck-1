@@ -493,7 +493,6 @@ void Actor::PopulateState(PState *ps)
 	ps->numFramesToLive = numFramesToLive;
 	ps->health = health;
 	ps->numFramesHoldingRightStick = numFramesHoldingRightStick;
-	ps->currHotkeyedPowerMode = currHotkeyedPowerMode;
 
 	ps->shieldPushbackFrames = shieldPushbackFrames;
 	ps->shieldPushbackRight = shieldPushbackRight;
@@ -807,7 +806,6 @@ void Actor::PopulateFromState(PState *ps)
 	health = ps->health;
 
 	numFramesHoldingRightStick = ps->numFramesHoldingRightStick;
-	currHotkeyedPowerMode = ps->currHotkeyedPowerMode;
 
 	//these aren't even used for anything!
 	shieldPushbackFrames = ps->shieldPushbackFrames;
@@ -3636,8 +3634,6 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	preSimulationState = NULL;
 	futurePositions = NULL;
-	
-	currHotkeyedPowerMode = -1;
 
 	normalWaterMaxFallSpeed = 4.0;
 
@@ -3696,7 +3692,6 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 	else if (owner != NULL && owner->IsRushSession())
 	{
 		int rushPowerMode = owner->mainMenu->rushManager->transferPlayerPowerMode;
-		int rushHotkeyedPowerMode = owner->mainMenu->rushManager->transferPlayerHotkeyedPowerMode;
 		if (rushPowerMode != -1)
 		{
 			currPowerMode = rushPowerMode;
@@ -3705,8 +3700,6 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		{
 			currPowerMode = PMODE_SHIELD;
 		}
-
-		currHotkeyedPowerMode = rushHotkeyedPowerMode;
 	}
 	else
 	{
@@ -4606,6 +4599,11 @@ void Actor::SetupTimeBubbles()
 
 bool Actor::CanCancelAttack()
 {
+	if ((action == UAIR || action == FAIR || action == DAIR ) && frame > 15)
+	{
+		return true;
+	}
+
 	int mostRecentBlocked = MostRecentFrameCurrAttackBlocked();
 	HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
 	if (currAttackHit || 
@@ -5211,7 +5209,6 @@ void Actor::Respawn( bool setStartPos )
 	numFramesToLive = -1;
 	//health = 100;
 	numFramesHoldingRightStick = -1;
-	//currHotkeyedPowerMode = -1;
 
 	/*if (sess->mapHeader != NULL)
 	{
@@ -7359,9 +7356,9 @@ int Actor::GetNumActiveBubbles()
 
 void Actor::UpdateBubbles()
 {
-	bool homingAvailable = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK) && (currPowerMode == PMODE_TIMESLOW || currHotkeyedPowerMode == PMODE_TIMESLOW ) ;
-	bool tryingToHome = homingAvailable && ((PowerButtonHeld() && currPowerMode == PMODE_TIMESLOW)
-		|| (currHotkeyedPowerMode == PMODE_TIMESLOW && currInput.HotkeyButtonDown()));
+	bool homingAvailable = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK);// && (currPowerMode == PMODE_TIMESLOW);
+	bool tryingToHome = homingAvailable && SpecialLPressButtonHeld();//Special //((PowerButtonHeld() && currPowerMode == PMODE_TIMESLOW)
+		//|| (currHotkeyedPowerMode == PMODE_TIMESLOW && currInput.HotkeyButtonDown()));
 
 	homingTarget = NULL;
 
@@ -7581,9 +7578,9 @@ void Actor::UpdateBubbles()
 	}
 
 	bool powerSlow = CanCreateTimeBubble()
-		&& HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK)
-		&& PowerButtonHeld()
-		&& currPowerMode == PMODE_TIMESLOW;
+		&& HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK);
+		//&& PowerButtonHeld()
+		//&& currPowerMode == PMODE_TIMESLOW;
 
 
 	if (specialSlow)
@@ -7602,8 +7599,9 @@ void Actor::UpdateBubbles()
 	int tempSlowCounter = slowCounter;
 	if (antiTimeSlowFrames == 0 && ( powerSlow || specialSlow)  )
 	{
-		if (!prevInput.PowerButtonDown() && !inBubble && !specialSlow )
+		//if (!prevInput.PowerButtonDown() && !inBubble && !specialSlow )
 			//&& GetNumActiveBubbles() < GetMaxBubbles() )
+		if( false) //turned off the power thing
 		{
 			if (GetNumActiveBubbles() == GetMaxBubbles())
 			{
@@ -7696,7 +7694,7 @@ void Actor::UpdateBubbles()
 		}
 	}
 
-	if (isBeingSlowed && !isInOwnBubble)
+	/*if (isBeingSlowed && !isInOwnBubble)
 	{
 		if (currInput.PowerButtonDown())
 		{
@@ -7708,7 +7706,7 @@ void Actor::UpdateBubbles()
 			slowCounter = tempSlowCounter;
 			slowMultiple = GetBeingSlowedFactor();
 		}
-	}
+	}*/
 }
 
 void Actor::UpdateRegrindOffCounter()
@@ -8062,10 +8060,10 @@ void Actor::UpdatePrePhysics()
 	}
 	pastCompressedInputs[0] = currInput.GetCompressedState();*/
 
-	if (PowerButtonPressed() && currPowerMode == PMODE_SHIELD)
+	/*if (PowerButtonPressed() && currPowerMode == PMODE_SHIELD)
 	{
 		framesSinceBlockPress = 0;
-	}
+	}*/
 
 	//increment super level
 	/*if (currInput.Y && !prevInput.Y)
@@ -9241,17 +9239,17 @@ bool Actor::CanRailGrind()
 {
 	if (HasUpgradeEffect(UE_GRIND_BALL_UNLOCK))
 	{
-		if (!PowerButtonHeld() && prevInput.PowerButtonDown())
+		/*if (!PowerButtonHeld() && prevInput.PowerButtonDown())
 		{
 			framesSinceGrindAttempt = 0;
-		}
+		}*/
 
 		if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH)
 		{
-			if (PowerButtonHeld() || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
+			/*if (PowerButtonHeld() || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
 			{
 				return true;
-			}
+			}*/
 		}
 		else
 		{
@@ -12122,11 +12120,11 @@ bool Actor::TryScorpRailDropThrough()
 bool Actor::TryGroundBlock()
 {
 	return false;
-	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
+	/*if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
 	{
 		SetGroundBlockAction();
 		return true;
-	}
+	}*/
 
 	return false;
 }
@@ -12135,13 +12133,13 @@ bool Actor::TryAirBlock()
 {
 
 	return false;
-	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
-	{
-		//SetAction(GLIDE);
-		//frame = 0;
-		SetAirBlockAction();
-		return true;
-	}
+	//if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
+	//{
+	//	//SetAction(GLIDE);
+	//	//frame = 0;
+	//	SetAirBlockAction();
+	//	return true;
+	//}
 
 	return false;
 }
@@ -12149,8 +12147,7 @@ bool Actor::TryAirBlock()
 bool Actor::UpdateGravityPull()
 {
 	if(HasUpgradeEffect(UE_GRAVITY_PULL)
-			&& ((PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
-			|| (currHotkeyedPowerMode == PMODE_SHIELD && currInput.HotkeyButtonDown())))
+			&& SpecialYButtonHeld())
 	{
 		if (gravityPullFrame == gravityPullLength)
 		{
@@ -12211,11 +12208,6 @@ void Actor::TryChangePowerMode()
 		{
 			numFramesHoldingRightStick++;
 		}
-
-		if (numFramesHoldingRightStick >= 120)
-		{
-			currHotkeyedPowerMode = PMODE_BOUNCE;
-		}
 	}
 	else if (hasGrind && currInput.RRight())
 	{
@@ -12228,11 +12220,6 @@ void Actor::TryChangePowerMode()
 		else
 		{
 			numFramesHoldingRightStick++;
-		}
-
-		if (numFramesHoldingRightStick >= 120)
-		{
-			currHotkeyedPowerMode = PMODE_GRIND;
 		}
 	}
 	else if ( hasTimeSlow && currInput.RDown() )
@@ -12247,11 +12234,6 @@ void Actor::TryChangePowerMode()
 		{
 			numFramesHoldingRightStick++;
 		}
-
-		if (numFramesHoldingRightStick >= 120)
-		{
-			currHotkeyedPowerMode = PMODE_TIMESLOW;
-		}
 	}
 	else if (currInput.RUp())
 	{
@@ -12265,17 +12247,11 @@ void Actor::TryChangePowerMode()
 		{
 			numFramesHoldingRightStick++;
 		}
-
-		if (numFramesHoldingRightStick >= 120)
-		{
-			currHotkeyedPowerMode = PMODE_SHIELD;
-		}
 	}
 
 	if (owner != NULL && owner->IsRushSession())
 	{
 		owner->mainMenu->rushManager->transferPlayerPowerMode = currPowerMode;
-		owner->mainMenu->rushManager->transferPlayerHotkeyedPowerMode = currHotkeyedPowerMode;
 	}
 	
 
@@ -12417,7 +12393,7 @@ bool Actor::BasicAirAction()
 
 	if( AirAttack()) return true;
 
-	if (SpecialButtonPressed() && sess->HasLevelFinisher() )
+	if (currInput.PLeft() && sess->HasLevelFinisher() )
 	{
 		SetAction(WARP_CHARGE); 
 		return true;
@@ -23036,8 +23012,8 @@ bool Actor::DefaultGravReverseCheck()
 {
 	bool steepTransferCheck = ground != NULL && ground->IsSteepGround() && minContact.edge->IsSteepGround();
 
-	bool heldPower = (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
-		|| (currHotkeyedPowerMode == PMODE_SHIELD && currInput.HotkeyButtonDown());
+	bool heldPower = SpecialYButtonHeld();/*(PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
+		|| (currHotkeyedPowerMode == PMODE_SHIELD && currInput.HotkeyButtonDown());*/
 
 	return ((HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
@@ -25211,13 +25187,14 @@ bool Actor::CanBufferGrind()
 		&& !InWater(TerrainPolygon::WATER_INVERTEDINPUTS)
 		&& HasUpgradeEffect(UE_GRIND_BALL_UNLOCK)
 		&& grindCooldownFrame >= grindCooldownLength
-		&& (currPowerMode == PMODE_GRIND && currInput.PowerButtonDown()) || ( currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();//currInput.Y;
+		&& GrindButtonHeld();
+		//&& (currPowerMode == PMODE_GRIND && currInput.PowerButtonDown()) || ( currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();//currInput.Y;
 }
 
 bool Actor::CanPressGrind()
 {
 	//return CanBufferGrind() && !prevInput.PowerButtonDown();//!prevInput.RDown();//!prevInput.PowerButtonDown();
-	return CanBufferGrind() && (!prevInput.PowerButtonDown() && (currHotkeyedPowerMode != PMODE_GRIND || !prevInput.HotkeyButtonDown()) );//!prevInput.RDown();//!prevInput.PowerButtonDown();
+	return CanBufferGrind() && GrindButtonPressed();//(!prevInput.PowerButtonDown() && (currHotkeyedPowerMode != PMODE_GRIND || !prevInput.HotkeyButtonDown()) );//!prevInput.RDown();//!prevInput.PowerButtonDown();
 }
 
 bool Actor::TryBufferGrind()
@@ -25244,22 +25221,32 @@ bool Actor::TryPressGrind()
 
 bool Actor::GrindButtonPressed()
 {
-	return (currPowerMode == PMODE_GRIND && PowerButtonPressed()) || (currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown() && !prevInput.HotkeyButtonDown());
+	return SpecialBButtonPressed();//(currPowerMode == PMODE_GRIND && PowerButtonPressed()) || (currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown() && !prevInput.HotkeyButtonDown());
 }
 
 bool Actor::GrindButtonHeld()
 {
-	return (currPowerMode == PMODE_GRIND && PowerButtonHeld()) || (currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();
+	return SpecialBButtonHeld();//(currPowerMode == PMODE_GRIND && PowerButtonHeld()) || (currHotkeyedPowerMode == PMODE_GRIND && currInput.HotkeyButtonDown());//currInput.RDown();
 }
 
 bool Actor::BounceButtonPressed()
 {
-	return (currPowerMode == PMODE_BOUNCE && PowerButtonPressed()) || (currHotkeyedPowerMode == PMODE_BOUNCE && currInput.HotkeyButtonDown() && !prevInput.HotkeyButtonDown());//BounceButtonHeld() && !prevInput.RLeft();
+	return SpecialL1ButtonPressed();//(currPowerMode == PMODE_BOUNCE && PowerButtonPressed()) || (currHotkeyedPowerMode == PMODE_BOUNCE && currInput.HotkeyButtonDown() && !prevInput.HotkeyButtonDown());//BounceButtonHeld() && !prevInput.RLeft();
 }
 
 bool Actor::BounceButtonHeld()
 {
-	return (currPowerMode == PMODE_BOUNCE && PowerButtonHeld()) || (currHotkeyedPowerMode == PMODE_BOUNCE && currInput.HotkeyButtonDown());//currInput.RLeft();
+	return SpecialL1ButtonHeld();//(currPowerMode == PMODE_BOUNCE && PowerButtonHeld()) || (currHotkeyedPowerMode == PMODE_BOUNCE && currInput.HotkeyButtonDown());//currInput.RLeft();
+}
+
+bool Actor::HomingButtonPressed()
+{
+	return SpecialLPressButtonHeld();
+}
+
+bool Actor::HomingButtonHeld()
+{
+	return SpecialLPressButtonPressed();
 }
 
 bool Actor::JumpButtonPressed()
@@ -25292,19 +25279,41 @@ bool Actor::AttackButtonHeld()
 	return currInput.AttackButtonDown();
 }
 
-bool Actor::PowerButtonHeld()
+bool Actor::SpecialL1ButtonPressed()
 {
-	return currInput.PowerButtonDown();
+	return currInput.SpecialL1ButtonDown() && !prevInput.SpecialL1ButtonDown();
+}
+bool Actor::SpecialL1ButtonHeld()
+{
+	return currInput.SpecialL1ButtonDown();
+}
+	 
+bool Actor::SpecialYButtonPressed()
+{
+	return currInput.SpecialYButtonDown() && !prevInput.SpecialYButtonDown();
+}
+bool Actor::SpecialYButtonHeld()
+{
+	return currInput.SpecialYButtonDown();
+}
+bool Actor::SpecialBButtonPressed()
+{
+	return currInput.SpecialBButtonDown() && !prevInput.SpecialBButtonDown();
 }
 
-bool Actor::PowerButtonPressed()
+bool Actor::SpecialBButtonHeld()
 {
-	return currInput.PowerButtonDown() && !prevInput.PowerButtonDown();
+	return currInput.SpecialBButtonDown();
 }
 
-bool Actor::SpecialButtonPressed()
+bool Actor::SpecialLPressButtonPressed()
 {
-	return currInput.BackButtonDown() && !prevInput.BackButtonDown();
+	return currInput.SpecialLPressButtonDown() && !prevInput.SpecialLPressButtonDown();
+}
+
+bool Actor::SpecialLPressButtonHeld()
+{
+	return currInput.SpecialLPressButtonDown();
 }
 
 void Actor::BounceFloaterBoost( V2d &hitDir )
@@ -26956,7 +26965,8 @@ void Actor::AirBlockChange()
 		facingRight = true;
 	}
 
-	if (!PowerButtonHeld() && blockstunFrames == 0)
+	//if (!PowerButtonHeld() && blockstunFrames == 0)
+	if( true )
 	{
 		SetAction(JUMP);
 		frame = 1;
@@ -26984,7 +26994,8 @@ void Actor::GroundBlockChange()
 
 	if (blockstunFrames == 0)
 	{
-		if (!PowerButtonHeld())
+		//if (!PowerButtonHeld())
+		if( true )
 		{
 			SetAction(STAND);
 			frame = 0;

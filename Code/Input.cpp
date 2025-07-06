@@ -105,6 +105,10 @@ int ControllerState::CheckControllerButton(int b)
 		return start;
 	case XBOX_BACK:
 		return back;
+	case XBOX_LPRESS:
+		return leftPress;
+	case XBOX_RPRESS:
+		return rightPress;
 	}
 
 	return 0;
@@ -326,11 +330,6 @@ int ControllerState::GetLeftStickDirection()
 	}
 }
 
-bool ControllerState::PowerButtonDown() const
-{
-	return leftShoulder;
-}
-
 bool ControllerState::JumpButtonDown() const
 {
 	return A;
@@ -356,9 +355,23 @@ bool ControllerState::AttackButtonDown() const
 	return rightShoulder;
 }
 
-bool ControllerState::HotkeyButtonDown() const
+bool ControllerState::SpecialL1ButtonDown() const
+{
+	return leftShoulder;
+}
+
+bool ControllerState::SpecialYButtonDown() const
 {
 	return Y;
+}
+bool ControllerState::SpecialBButtonDown() const
+{
+	return B;
+}
+
+bool ControllerState::SpecialLPressButtonDown() const
+{
+	return leftPress;
 }
 
 bool ControllerState::PUp() const
@@ -1137,34 +1150,28 @@ int GameController::Pressed( XBoxButton b )
 	{
 	case XBOX_A:
 		return m_state.A;
-		break;
 	case XBOX_B:
 		return m_state.B;
-		break;
 	case XBOX_X:
 		return m_state.X;
-		break;
 	case XBOX_Y:
 		return m_state.Y;
-		break;
 	case XBOX_R1:
 		return m_state.rightShoulder;
-		break;
 	case XBOX_R2:
 		return m_state.rightTrigger;
-		break;
 	case XBOX_L1:
 		return m_state.leftShoulder;
-		break;
 	case XBOX_L2:
 		return m_state.leftTrigger;
-		break;
 	case XBOX_START:
 		return m_state.start;
-		break;
 	case XBOX_BACK:
 		return m_state.back;
-		break;
+	case XBOX_LPRESS:
+		return m_state.leftPress;
+	case XBOX_RPRESS:
+		return m_state.rightPress;
 	}
 
 	return 0;
@@ -1245,6 +1252,10 @@ std::string GetXBoxButtonString( int button )
 		return "R2";
 	case XBOX_L2:
 		return "L2";
+	case XBOX_LPRESS:
+		return "LPRESS";
+	case XBOX_RPRESS:
+		return "RPRESS";
 	default:
 		assert( 0 );
 		return "";
@@ -1258,9 +1269,10 @@ void ControllerSettings::InitStrings()
 	buttonTypeStrings[BUTTONTYPE_JUMP] = "JUMP";
 	buttonTypeStrings[BUTTONTYPE_DASH] = "DASH";
 	buttonTypeStrings[BUTTONTYPE_ATTACK] = "ATTACK";
-	buttonTypeStrings[BUTTONTYPE_SHIELD] = "SHIELD";
-	buttonTypeStrings[BUTTONTYPE_HOTKEY] = "HOTKEY";
-	buttonTypeStrings[BUTTONTYPE_SPECIAL] = "SPECIAL";
+	buttonTypeStrings[BUTTONTYPE_SPECIAL_L1] = "SPECIALL1";
+	buttonTypeStrings[BUTTONTYPE_SPECIAL_B] = "SPECIALB";
+	buttonTypeStrings[BUTTONTYPE_SPECIAL_LPRESS] = "SPECIALLPRESS";
+	buttonTypeStrings[BUTTONTYPE_SPECIAL_Y] = "SPECIALY";
 	buttonTypeStrings[BUTTONTYPE_LEFTWIRE] = "LEFTWIRE";
 	buttonTypeStrings[BUTTONTYPE_RIGHTWIRE] = "RIGHTWIRE";
 	buttonTypeStrings[BUTTONTYPE_PAUSE] = "PAUSE";
@@ -2489,11 +2501,11 @@ void AllControllers::UpdateFilteredKeyboardState(ControlProfile *cp, ControllerS
 	state.Clear();
 
 	state.A = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_JUMP));
-	state.B = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SPECIAL));
+	state.B = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SPECIAL_B));
 	state.X = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_DASH));
-	state.Y = false;
+	state.Y = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SPECIAL_Y));
 
-	state.leftShoulder = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SHIELD));
+	state.leftShoulder = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_SPECIAL_L1));
 	state.rightShoulder = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_ATTACK));
 
 	state.leftTrigger = KeyboardButtonHeld(cp->Filter(ControllerSettings::BUTTONTYPE_LEFTWIRE)) * 255;

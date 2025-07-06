@@ -367,8 +367,7 @@ struct ShipEnterScene : Sequence
 	ShipEnterData shipEnterData;
 
 	//ship sequence. should be in its own structure
-	Tileset *ts_w1ShipClouds0;
-	Tileset *ts_w1ShipClouds1;
+	Tileset *ts_clouds;
 	Tileset *ts_ship;
 	sf::Vertex cloud0[3 * 4];
 	sf::Vertex cloud1[3 * 4];

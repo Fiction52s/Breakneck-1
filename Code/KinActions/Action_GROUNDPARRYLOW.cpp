@@ -18,11 +18,11 @@ void Actor::GROUNDPARRYLOW_End()
 
 void Actor::GROUNDPARRYLOW_Change()
 {
-	if (!PowerButtonHeld() && blockstunFrames == 0)
+	/*if (!PowerButtonHeld() && blockstunFrames == 0)
 	{
 		SetAction(STAND);
 		frame = 0;
-	}
+	}*/
 }
 
 void Actor::GROUNDPARRYLOW_Update()

@@ -51,7 +51,6 @@ RushManager::RushManager()
 	currProfile = NULL;
 
 	transferPlayerPowerMode = -1;
-	transferPlayerHotkeyedPowerMode = -1;
 
 	startWorld = 0;
 
@@ -219,7 +218,6 @@ void RushManager::SetWorld(int w)
 	
 
 	transferPlayerPowerMode = -1;
-	transferPlayerHotkeyedPowerMode = -1;
 
 	MatchParams mp;
 	mp.mapPath = rushFile.worlds[w].maps[0].GetMapPath();
@@ -282,13 +280,6 @@ void RushManager::LoadShip()
 		|| (transferPlayerPowerMode == Actor::PMODE_GRIND && powerWorlds < 5))
 	{
 		transferPlayerPowerMode = -1;
-	}
-
-	if ((transferPlayerHotkeyedPowerMode == Actor::PMODE_BOUNCE && powerWorlds < 2)
-		|| (transferPlayerHotkeyedPowerMode == Actor::PMODE_GRIND && powerWorlds < 3)
-		|| (transferPlayerHotkeyedPowerMode == Actor::PMODE_GRIND && powerWorlds < 5))
-	{
-		transferPlayerHotkeyedPowerMode = -1;
 	}
 
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_RUSH;

@@ -57,7 +57,6 @@ struct RushManager : TilesetManager
 	Tileset *ts_goalExplode;
 
 	int transferPlayerPowerMode;
-	int transferPlayerHotkeyedPowerMode;
 	PauseMenu *pauseMenu;
 	WorldMap *worldMap;
 	KinBoostScreen *kinBoostScreen;

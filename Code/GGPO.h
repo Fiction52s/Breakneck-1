@@ -328,7 +328,6 @@ struct PState
 	int numFramesToLive;
 	int health;
 	int numFramesHoldingRightStick;
-	int currHotkeyedPowerMode;
 
 	int shieldPushbackFrames;
 	bool shieldPushbackRight;

@@ -59,8 +59,9 @@ void Actor::FAIR_Update()
 {
 	CheckHoldJump();
 
+	int animFactor = 2;
 
-	SetCurrHitboxes(fairHitboxes[GetSwordSpeedLevel()], frame);
+	SetCurrHitboxes(fairHitboxes[GetSwordSpeedLevel()], frame / animFactor );
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -86,24 +87,25 @@ void Actor::FAIR_UpdateSprite()
 		swordSprite.setTexture(*curr_ts->texture);
 	}
 
+	int animFactor = 2;
 	//Vector2i offset( 32, -16 );
 	Vector2i offset(0, 0);
 
 	SetSpriteTexture(action);
 
-	SetSpriteTile(frame, facingRight);
+	SetSpriteTile(frame / animFactor, facingRight);
 
 	if (showSword)
 	{
 		if (facingRight)
 		{
-			swordSprite.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / animFactor - startFrame));
 		}
 		else
 		{
 			offset.x = -offset.x;
 
-			sf::IntRect irSword = curr_ts->GetSubRect(frame - startFrame);
+			sf::IntRect irSword = curr_ts->GetSubRect(frame / animFactor - startFrame);
 			//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
 			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
@@ -142,7 +144,7 @@ void Actor::FAIR_TimeDepFrameInc()
 
 int Actor::FAIR_GetActionLength()
 {
-	return 8 * 2;
+	return 16 * 2;
 }
 
 const char * Actor::FAIR_GetTilesetName()

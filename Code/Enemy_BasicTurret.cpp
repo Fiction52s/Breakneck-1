@@ -31,7 +31,7 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	SetLevel(ap->GetLevel());
 
-	framesWait = 60;
+	framesWait = 90;
 	bulletSpeed = 10;
 
 	double width = 208;

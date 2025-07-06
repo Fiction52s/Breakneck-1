@@ -10,7 +10,7 @@ void Actor::AIRPARRY_Start()
 
 void Actor::AIRPARRY_End()
 {
-	if (PowerButtonHeld())
+	/*if (PowerButtonHeld())
 	{
 		SetAirBlockAction();
 		frame = 0;
@@ -19,7 +19,7 @@ void Actor::AIRPARRY_End()
 	{
 		SetAction(JUMP);
 		frame = 1;
-	}
+	}*/
 }
 
 void Actor::AIRPARRY_Change()

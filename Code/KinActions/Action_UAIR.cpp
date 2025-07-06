@@ -38,9 +38,11 @@ void Actor::UAIR_Change()
 
 void Actor::UAIR_Update()
 {
+	int animFactor = 2;
+
 	CheckHoldJump();
 
-	SetCurrHitboxes(uairHitboxes[GetSwordSpeedLevel()], frame);
+	SetCurrHitboxes(uairHitboxes[GetSwordSpeedLevel()], frame / animFactor );
 
 	if (frame == 0 && slowCounter == 1)
 	{
@@ -67,7 +69,9 @@ void Actor::UAIR_UpdateSprite()
 
 	SetSpriteTexture(action);
 
-	SetSpriteTile(frame, facingRight);
+	int animFactor = 2;
+
+	SetSpriteTile(frame / animFactor, facingRight);
 
 
 	Vector2i offset(0, 0);
@@ -77,11 +81,11 @@ void Actor::UAIR_UpdateSprite()
 	{
 		if (facingRight)
 		{
-			swordSprite.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / animFactor - startFrame));
 		}
 		else
 		{
-			sf::IntRect irSword = curr_ts->GetSubRect(frame - startFrame);
+			sf::IntRect irSword = curr_ts->GetSubRect(frame / animFactor - startFrame);
 			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
@@ -118,7 +122,7 @@ void Actor::UAIR_TimeDepFrameInc()
 
 int Actor::UAIR_GetActionLength()
 {
-	return 16;
+	return 16 * 2;
 }
 
 const char * Actor::UAIR_GetTilesetName()

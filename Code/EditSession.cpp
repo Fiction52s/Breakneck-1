@@ -687,7 +687,7 @@ void EditSession::TestPlayerMode()
 
 	}
 	
-	
+	gameCam = true;
 
 
 	nextFrameRestartGame = false; //for respawning after triggering a score display
@@ -15291,7 +15291,7 @@ void EditSession::PasteModeHandleEvent()
 		}
 		/*else if (ev.key.code == sf::Keyboard::B)
 		{
-			SaveBrush(copiedBrush);
+			brushManager->SaveBrush(copiedBrush, "", "testbrush");
 		}*/
 		break;
 	}

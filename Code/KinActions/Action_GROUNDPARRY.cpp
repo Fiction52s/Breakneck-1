@@ -9,7 +9,7 @@ void Actor::GROUNDPARRY_Start()
 
 void Actor::GROUNDPARRY_End()
 {
-	if (PowerButtonHeld())
+	/*if (PowerButtonHeld())
 	{
 		SetGroundBlockAction();
 
@@ -19,7 +19,7 @@ void Actor::GROUNDPARRY_End()
 	{
 		SetAction(STAND);
 		frame = 0;
-	}
+	}*/
 }
 
 void Actor::GROUNDPARRY_Change()

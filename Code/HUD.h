@@ -37,12 +37,16 @@ struct KinMask
 	Actor *actor;
 	Tileset *ts_face;
 	Tileset *ts_portraitBG;
+	Tileset *ts_hudBars;
 	sf::Sprite face;
 	sf::Sprite faceBG;
 	Session *sess;
 	MomentumBar *momentumBar;
 	PlayerSkinShader playerSkinShader;
 	sf::Text healthText;
+	float scale;
+	sf::Vertex healthQuad[4];
+	sf::Vertex momentumQuad[4];
 
 	KinMask( TilesetManager *tm );
 	~KinMask();

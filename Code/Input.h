@@ -53,6 +53,8 @@ enum XBoxButton
 	XBOX_RRIGHT,
 	XBOX_RUP,
 	XBOX_RDOWN,
+	XBOX_LPRESS,//stick press
+	XBOX_RPRESS,
 	XBOX_BLANK
 };
 std::string GetXBoxButtonString(int button);
@@ -150,11 +152,13 @@ struct ControllerState
 	bool PLeft() const;
 	bool PRight() const;
 
-	bool PowerButtonDown() const;
 	bool JumpButtonDown() const;
 	bool DashButtonDown() const;
 	bool AttackButtonDown() const;
-	bool HotkeyButtonDown() const;
+	bool SpecialL1ButtonDown() const;
+	bool SpecialYButtonDown() const;
+	bool SpecialBButtonDown() const;
+	bool SpecialLPressButtonDown() const;
 
 	bool ConfirmButtonDown() const;
 	bool BackButtonDown() const;
@@ -172,9 +176,10 @@ struct ControllerSettings
 		BUTTONTYPE_JUMP,
 		BUTTONTYPE_DASH,
 		BUTTONTYPE_ATTACK,
-		BUTTONTYPE_SHIELD,
-		BUTTONTYPE_HOTKEY,
-		BUTTONTYPE_SPECIAL,
+		BUTTONTYPE_SPECIAL_L1,
+		BUTTONTYPE_SPECIAL_Y,
+		BUTTONTYPE_SPECIAL_B,
+		BUTTONTYPE_SPECIAL_LPRESS,
 		BUTTONTYPE_LEFTWIRE,
 		BUTTONTYPE_RIGHTWIRE,
 		BUTTONTYPE_PAUSE,

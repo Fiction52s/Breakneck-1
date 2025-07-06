@@ -79,9 +79,12 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_A;
 		filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
 		filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_R1;
-		filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_L1;
-		filter[ControllerSettings::BUTTONTYPE_HOTKEY] = XBOX_Y;
-		filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
+
+		filter[ControllerSettings::BUTTONTYPE_SPECIAL_L1] = XBOX_L1;
+		filter[ControllerSettings::BUTTONTYPE_SPECIAL_Y] = XBOX_Y;
+		filter[ControllerSettings::BUTTONTYPE_SPECIAL_B] = XBOX_B;
+		filter[ControllerSettings::BUTTONTYPE_SPECIAL_LPRESS] = XBOX_LPRESS;
+
 		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
 
@@ -93,9 +96,9 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_JUMP] = XBOX_Y;
 		filter[ControllerSettings::BUTTONTYPE_DASH] = XBOX_X;
 		filter[ControllerSettings::BUTTONTYPE_ATTACK] = XBOX_A;
-		filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_R1;
+		//filter[ControllerSettings::BUTTONTYPE_SHIELD] = XBOX_R1;
 		//filter[ControllerSettings::BUTTONTYPE_HOTKEY] = XBOX_Y; //nothing
-		filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
+		//filter[ControllerSettings::BUTTONTYPE_SPECIAL] = XBOX_B;
 		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
 
@@ -107,9 +110,9 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_JUMP] = Keyboard::Key::Z;
 		filter[ControllerSettings::BUTTONTYPE_DASH] = Keyboard::Key::X;
 		filter[ControllerSettings::BUTTONTYPE_ATTACK] = Keyboard::Key::C;
-		filter[ControllerSettings::BUTTONTYPE_SHIELD] = Keyboard::Key::V;
+		//filter[ControllerSettings::BUTTONTYPE_SHIELD] = Keyboard::Key::V;
 		//filter[ControllerSettings::BUTTONTYPE_HOTKEY] = XBOX_Y; //nothing
-		filter[ControllerSettings::BUTTONTYPE_SPECIAL] = Keyboard::Key::B;
+		//filter[ControllerSettings::BUTTONTYPE_SPECIAL] = Keyboard::Key::B;
 		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = Keyboard::Key::LControl;
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = Keyboard::Key::Space;
 
@@ -136,11 +139,13 @@ void ControlProfile::FilterState(ControllerState &state)
 	ControllerState origState = state;
 
 	state.A = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_JUMP]);
-	state.B = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SPECIAL]);
 	state.X = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_DASH]);
-	state.Y = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_HOTKEY]);
 
-	state.leftShoulder = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SHIELD]);
+	state.leftShoulder = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SPECIAL_L1]);
+	state.B = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SPECIAL_B]);
+	state.Y = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_SPECIAL_Y]);
+	
+	
 	state.rightShoulder = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_ATTACK]);
 	
 	state.leftTrigger = origState.CheckControllerButton(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]);
@@ -171,9 +176,9 @@ void ControlProfile::Save(ofstream &of)
 		of << "JUMP:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
 		of << "DASH:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
 		of << "ATTACK:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
-		of << "SHIELD:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
-		of << "HOTKEY:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_HOTKEY]) << "\n";
-		of << "SPECIAL:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
+		//of << "SHIELD:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
+		//of << "HOTKEY:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_HOTKEY]) << "\n";
+		//of << "SPECIAL:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
 		of << "LEFTWIRE:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
 		of << "RIGHTWIRE:" << GetKeyboardButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
 
@@ -194,11 +199,15 @@ void ControlProfile::Save(ofstream &of)
 		of << "JUMP:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_JUMP]) << "\n";
 		of << "DASH:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_DASH]) << "\n";
 		of << "ATTACK:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_ATTACK]) << "\n";
-		of << "SHIELD:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
-		of << "HOTKEY:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_HOTKEY]) << "\n";
-		of << "SPECIAL:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
+		//of << "SHIELD:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SHIELD]) << "\n";
+		//of << "HOTKEY:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_HOTKEY]) << "\n";
+		//of << "SPECIAL:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL]) << "\n";
 		of << "LEFTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_LEFTWIRE]) << "\n";
-		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]);// << "\n";
+		of << "RIGHTWIRE:" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE]) << "\n";
+		of << "SPECIALB" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_B]) << "\n";
+		of << "SPECIALY" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_Y]) << "\n";
+		of << "SPECIALL1" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_L1]) << "\n";
+		of << "SPECIALLPRESS" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_LPRESS]);// << "\n";
 	}
 }
 
@@ -1226,17 +1235,21 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_ATTACK;
 	}
-	else if( inputName == "SHIELD" )
+	else if( inputName == "SPECIALL1" )
 	{
-		buttonType = ControllerSettings::BUTTONTYPE_SHIELD;
+		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL_L1;
 	}
-	else if (inputName == "HOTKEY")
+	else if (inputName == "SPECIALY")
 	{
-		buttonType = ControllerSettings::BUTTONTYPE_HOTKEY;
+		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL_Y;
 	}
-	else if (inputName == "SPECIAL")
+	else if (inputName == "SPECIALB")
 	{
-		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL;
+		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL_B;
+	}
+	else if (inputName == "SPECIALLPRESS")
+	{
+		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL_LPRESS;
 	}
 	else if (inputName == "LEFTWIRE")
 	{
@@ -1323,6 +1336,14 @@ XBoxButton ControlProfileManager::GetButton( const std::string &str )
 	else if( str == "L2" || str == "l2")
 	{
 		return XBoxButton::XBOX_L2;
+	}
+	else if (str == "LPRESS")
+	{
+		return XBoxButton::XBOX_LPRESS;
+	}
+	else if (str == "RPRESS")
+	{
+		return XBoxButton::XBOX_RPRESS;
 	}
 
 	return XBOX_BLANK;

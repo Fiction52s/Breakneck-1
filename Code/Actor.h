@@ -688,7 +688,6 @@ struct Actor : QuadTreeCollider,
 	int numFramesToLive;
 	int health;
 	int numFramesHoldingRightStick;
-	int currHotkeyedPowerMode;
 
 	TerrainRail * prevRail;
 	
@@ -1519,13 +1518,24 @@ struct Actor : QuadTreeCollider,
 	bool GrindButtonHeld();
 	bool BounceButtonPressed();
 	bool BounceButtonHeld();
+	bool HomingButtonPressed();
+	bool HomingButtonHeld();
 	bool JumpButtonHeld();
 	bool DashButtonHeld();
 	bool AttackButtonPressed();
 	bool AttackButtonHeld();
-	bool PowerButtonHeld();
-	bool PowerButtonPressed();
-	bool SpecialButtonPressed();
+
+	bool SpecialL1ButtonPressed();
+	bool SpecialL1ButtonHeld();
+
+	bool SpecialYButtonPressed();
+	bool SpecialYButtonHeld();
+
+	bool SpecialBButtonPressed();
+	bool SpecialBButtonHeld();
+
+	bool SpecialLPressButtonPressed();
+	bool SpecialLPressButtonHeld();
 	SoundNode * ActivateSound(int st, bool loop = false);
 	SoundNode *ActivateRepeatingSound(int st, bool loop = false);
 	BasicEffect * ActivateEffect(
