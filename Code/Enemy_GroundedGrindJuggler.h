@@ -45,7 +45,6 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	float moveTurnDegrees;
 
 	GroundedGrindJuggler(ActorParams *ap);
-	bool CountsForEnemyGate() { return false; }
 	~GroundedGrindJuggler();
 	void UpdateParamsSettings();
 	void SetLevel(int lev);

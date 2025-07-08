@@ -529,6 +529,8 @@ void AudioSettingsTab::Start()
 
 void AudioSettingsTab::LoadFromConfig(const ConfigData &cd)
 {
+	modules[1]->SetValue(cd.musicVolume);
+	modules[2]->SetValue(cd.soundVolume);
 	modules[3]->SetValue(cd.rumbleFactor);
 
 	for (int i = 0; i < modules.size(); ++i)
@@ -548,6 +550,8 @@ void AudioSettingsTab::LoadFromConfig(const ConfigData &cd)
 
 void AudioSettingsTab::UpdateConfig(ConfigData &cd)
 {
+	cd.musicVolume = modules[1]->GetValue();
+	cd.soundVolume = modules[2]->GetValue();
 	cd.rumbleFactor = modules[3]->GetValue();
 }
 
@@ -711,12 +715,12 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 	tabs[1] = new VideoSettingsTab;
 	tabs[2] = new AudioSettingsTab;
 
-	panel = new Panel("gamesettingsscreen", 1400, 700, this, true);
+	//panel = new Panel("gamesettingsscreen", 1400, 700, this, true);
 	//panel->SetColor(Color::Transparent);
 	//panel->SetTop
-	panel->SetCenterPos(Vector2i(960, 540));
+	//panel->SetCenterPos(Vector2i(960, 540));
 
-	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 60));
+	//panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 60));
 
 	resolutionLabel = panel->AddLabel("resolutionlabel", Vector2i(0, 0), 30, "Resolution:");
 	windowModeLabel = panel->AddLabel("windowmodelabel", Vector2i(0, 0), 30, "Window mode:");
@@ -904,7 +908,8 @@ void GameSettingsScreen::Draw(sf::RenderTarget *target)
 void GameSettingsScreen::ConfirmCallback(Panel *p)
 {
 
-	SetAction(A_CANCEL); //just for testing, was A_CONFIRM before
+	SetAction(A_CONFIRM);
+	//SetAction(A_CANCEL); //just for testing, was A_CONFIRM before
 	//return;
 
 	ConfigData d1;
@@ -912,6 +917,10 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 	tabs[2]->UpdateConfig(d1);
 	mainMenu->config->SetData(d1);
 	mainMenu->config->Save();
+
+	mainMenu->musicPlayer->Update();
+	mainMenu->musicPlayer->UpdateVolume();
+	mainMenu->soundNodeList->SetSoundVolume(mainMenu->config->GetData().soundVolume);
 
 	return;
 
@@ -980,8 +989,9 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 
 void GameSettingsScreen::CancelCallback(Panel *p)
 {
-	//SetAction(A_CANCEL);
-	ConfirmCallback(p);
+	SetAction(A_CANCEL);
+	//ConfirmCallback(p);
+	//CancelCallback(p);
 }
 
 void GameSettingsScreen::SetAction(int a)

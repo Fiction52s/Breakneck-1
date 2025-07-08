@@ -21,7 +21,6 @@ struct TutorialObject : Enemy
 	MyData data;
 	TutorialObject(ActorParams *ap);//sf::Vector2i &pos, int level);
 	~TutorialObject();
-	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);

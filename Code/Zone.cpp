@@ -637,24 +637,6 @@ void Zone::Init()
 	}
 }
 
-bool Zone::HasEnemyGate()
-{
-	Gate *g;
-	for (auto it = gates.begin(); it != gates.end(); ++it)
-	{
-		g = (Gate*)((*it)->info);
-		if (!g->IsLockedForever())
-		{
-			if (g->category == Gate::ENEMY)
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
 bool Zone::HasKeyGateOfNumber(int n)
 {
 	Gate *g;
@@ -664,10 +646,6 @@ bool Zone::HasKeyGateOfNumber(int n)
 		if (!g->IsLockedForever() )
 		{
 			if (g->category == Gate::ALLKEY && n == totalNumKeys )
-			{
-				return true;
-			}
-			else if (g->category == Gate::NUMBER_KEY && n == g->numToOpen)
 			{
 				return true;
 			}
@@ -843,23 +821,6 @@ void Zone::Update(float zoom, sf::Vector2f &topLeft, sf::Vector2f &playertest)
 		break;
 	}
 	++data.frame;
-}
-
-int Zone::GetNumRemainingKillableEnemies()
-{
-	int numLeft = 0;
-	for (auto it = allEnemies.begin(); it != allEnemies.end(); ++it)
-	{
-		if ((*it)->CountsForEnemyGate())
-		{
-			if (!(*it)->spawned || ( !(*it)->dead && (*it)->numHealth > 0 ))
-			{
-				++numLeft;
-			}
-		}
-	}
-
-	return numLeft;
 }
 
 int Zone::GetNumRemainingCollectiblePowers()

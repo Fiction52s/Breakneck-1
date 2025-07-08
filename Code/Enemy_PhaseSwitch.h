@@ -40,7 +40,6 @@ struct PhaseSwitch : Enemy
 	
 	Tileset *ts;	
 
-	bool CountsForEnemyGate() { return false; }
 	PhaseSwitch(ActorParams *ap);
 	void SetLevel(int lev);
 	void ProcessState();

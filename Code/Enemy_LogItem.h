@@ -59,7 +59,6 @@ struct LogItem : Enemy
 	LogItem(ActorParams *ap);//sf::Vector2i pos,
 							   //int w, int li);
 	~LogItem();
-	bool CountsForEnemyGate() { return false; }
 	//void UpdateParamsSettings();
 	void Setup();
 	void UpdateParamsSettings();

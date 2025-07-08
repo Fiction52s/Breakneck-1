@@ -14,7 +14,6 @@ struct KeyMarker
 	enum MarkerType
 	{
 		KEY,
-		ENEMY,
 	};
 
 	enum PositionType
@@ -80,8 +79,6 @@ struct KeyMarker
 	Tileset *ts_keyNumLight;
 	Tileset *ts_keyNumDark;
 
-	Tileset *ts_enemyNumLight;
-	Tileset *ts_enemyNumDark;
 	ImageText *keyNumberNeededHUD;
 	ImageText *keyNumberNeededHUDBack;
 

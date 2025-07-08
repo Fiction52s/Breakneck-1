@@ -54,7 +54,6 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 
 	bool clockwise;
 
-	bool CountsForEnemyGate() { return false; }
 	GrindJuggler(ActorParams *ap);
 	~GrindJuggler();
 	void SetLevel(int lev);

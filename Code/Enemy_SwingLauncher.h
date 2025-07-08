@@ -49,7 +49,6 @@ struct SwingLauncher : Enemy
 	V2d anchor;
 
 	SwingLauncher(ActorParams *ap );
-	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void AddToWorldTrees();
 	void UpdateParamsSettings();

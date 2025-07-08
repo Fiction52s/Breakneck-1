@@ -22,7 +22,6 @@ struct RegenTarget : Enemy
 
 	Tileset *ts;
 
-	bool CountsForEnemyGate() { return false; }
 	RegenTarget(ActorParams *ap);
 	bool IsInteractible();
 	bool IsValidTrackEnemy();

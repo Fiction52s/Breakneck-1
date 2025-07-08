@@ -26,7 +26,6 @@ struct FreeFlightBooster : Enemy
 	int strength;
 
 	FreeFlightBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
-	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);

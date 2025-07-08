@@ -37,7 +37,6 @@ struct RewindBooster : Enemy
 	bool Boost();
 	bool IsBoostable();
 	void AddToWorldTrees();
-	bool CountsForEnemyGate() { return false; }
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

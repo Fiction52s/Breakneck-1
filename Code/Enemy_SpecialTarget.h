@@ -39,7 +39,6 @@ struct SpecialTarget : Enemy
 	int keyIdleLength;
 	int keyAnimFactor;
 
-	bool CountsForEnemyGate() { return false; }
 	SpecialTarget(ActorParams *ap);
 	bool IsInteractible();
 	bool IsValidTrackEnemy();

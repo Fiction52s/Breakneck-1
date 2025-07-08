@@ -41,7 +41,6 @@ struct ScorpionLauncher : Enemy
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();
 	void SetLevel(int lev);
-	bool CountsForEnemyGate() { return false; }
 
 	
 	void ProcessState();

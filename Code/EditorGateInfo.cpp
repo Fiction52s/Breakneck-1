@@ -27,7 +27,7 @@ GateInfo::GateInfo()
 
 void GateInfo::SetNumToOpen(int num)
 {
-	if (category == Gate::NUMBER_KEY || category == Gate::PICKUP)
+	if (category == Gate::PICKUP)
 	{
 		numToOpen = num;
 	}
@@ -58,7 +58,7 @@ bool GateInfo::HasSameInfo(GateInfo *other)
 	if (other->variation != variation)
 		return false;
 
-	if (category == Gate::NUMBER_KEY || category == Gate::PICKUP)
+	if (category == Gate::PICKUP)
 	{
 		if (other->numToOpen != numToOpen)
 			return false;
@@ -165,7 +165,7 @@ void GateInfo::WriteFile(ofstream &of)
 	of << variation << " ";
 
 	//allkey should not export numToOpen but it needs to be like this currently to not mess up old gate maps
-	if ( category == Gate::ALLKEY || category == Gate::NUMBER_KEY || category == Gate::PICKUP)
+	if ( category == Gate::ALLKEY || category == Gate::PICKUP)
 	{
 		of << numToOpen << " ";
 	}
@@ -203,42 +203,6 @@ void GateInfo::UpdateLine()
 
 	V2d leftv1 = dv1 - other * halfWidth;
 	V2d rightv1 = dv1 + other * halfWidth;
-
-	
-
-	/*if (category == Gate::BLACK)
-	{
-		color = Color(200, 200, 200);
-	}
-	else if (category == Gate::ALLKEY || category == Gate::NUMBER_KEY)
-	{
-		color = Color(200, 200, 200);
-	}
-	else if (category == Gate::ENEMY)
-	{
-		color = Color::Magenta;
-	}
-	else if (category == Gate::TIME_GLOBAL
-		|| category == Gate::TIME_ROOM)
-	{
-		color == Color::Yellow;
-	}
-	else if (category == Gate::SECRET)
-	{
-		color = Color(255, 0, 0);
-	}
-	else if (category == Gate::SHARD)
-	{
-		color = Color(100, 255, 10);
-	}
-	else if (category == Gate::BOSS)
-	{
-		color = Color(0, 0, 255);
-	}
-	thickLine[0].color = color;
-	thickLine[1].color = color;
-	thickLine[2].color = color;
-	thickLine[3].color = color;*/
 
 	SetRectSubRect(thickLine, edit->createGatesModeUI->ts_gateCategories->GetSubRect(category));
 
@@ -329,7 +293,7 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 		color = Color::Cyan;
 		//color = Color(150, 150, 150);
 	}
-	else if (category == Gate::NUMBER_KEY || category == Gate::ALLKEY)
+	else if (category == Gate::ALLKEY)
 	{
 		color = Color::Cyan;//Color(100, 100, 100);
 	}

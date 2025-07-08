@@ -43,7 +43,6 @@ struct ComboerTarget : Enemy
 	
 	int keyAnimFactor;
 
-	bool CountsForEnemyGate() { return false; }
 	ComboerTarget(ActorParams *ap);
 	bool IsInteractible();
 	bool IsValidTrackEnemy();

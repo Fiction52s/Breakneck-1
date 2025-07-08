@@ -44,7 +44,6 @@ struct AttractJuggler : Enemy
 	
 	int maxWaitFrames;
 
-	bool CountsForEnemyGate() { return false; }
 	AttractJuggler(ActorParams *ap);
 	~AttractJuggler();
 	void UpdateParamsSettings();

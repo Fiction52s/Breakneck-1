@@ -62,7 +62,6 @@ struct Spring : Enemy
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();
 	void SetLevel(int lev);
-	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

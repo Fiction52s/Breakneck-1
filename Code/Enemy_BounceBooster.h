@@ -25,7 +25,6 @@ struct BounceBooster : Enemy
 	bool upOnly;
 	SoundInfo *boostSound;
 
-	bool CountsForEnemyGate() { return false; }
 	bool IsHomingTarget(int trackingType);
 	BounceBooster(ActorParams *ap);	
 	void ProcessState();

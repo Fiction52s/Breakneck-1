@@ -43,7 +43,6 @@ struct HungryComboer : Enemy, EnemyTracker
 
 	double homingRadius;
 
-	bool CountsForEnemyGate() { return false; }
 	HungryComboer(ActorParams *ap);
 	~HungryComboer();
 	

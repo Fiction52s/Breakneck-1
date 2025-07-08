@@ -69,7 +69,7 @@ void GateMarker::Update( Camera *cam )
 	V2d center(currGate->edgeA->v0 + currGate->edgeA->v1);
 	center = center / 2.0;
 
-	if (currGate->category == Gate::ALLKEY || currGate->category == Gate::NUMBER_KEY)
+	if (currGate->category == Gate::ALLKEY )
 	{
 		Session *sess = Session::GetSession();
 		int numKeysHeld = sess->GetPlayer(0)->numKeysHeld;
@@ -79,16 +79,6 @@ void GateMarker::Update( Camera *cam )
 		{
 			numRemaining = 0;
 		}
-		numText.setString(to_string(numRemaining));
-		auto bounds = numText.getLocalBounds();
-		numText.setOrigin(bounds.left + bounds.width / 2,
-			bounds.top + bounds.height / 2);
-	}
-	else if (currGate->category == Gate::ENEMY)
-	{
-		Session *sess = Session::GetSession();
-		int numRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
-
 		numText.setString(to_string(numRemaining));
 		auto bounds = numText.getLocalBounds();
 		numText.setOrigin(bounds.left + bounds.width / 2,
@@ -166,7 +156,7 @@ void GateMarker::Update( Camera *cam )
 	Session *sess = Session::GetSession();
 
 	int tile = 0;
-	if (currGate->category == Gate::ALLKEY || currGate->category == Gate::NUMBER_KEY)
+	if (currGate->category == Gate::ALLKEY )
 	{
 		if (sess->GetPlayer(0)->numKeysHeld >= currGate->numToOpen)
 		{
@@ -177,16 +167,9 @@ void GateMarker::Update( Camera *cam )
 			tile = 2;
 		}
 	}
-	else if (currGate->category == Gate::ENEMY)
+	else if (currGate->category == Gate::NO_KEY)
 	{
-		if (sess->currentZone->GetNumRemainingKillableEnemies() == 0)
-		{
-			tile = 1;
-		}
-		else
-		{
-			tile = 2;
-		}
+		tile = 1;
 	}
 	else if (currGate->category == Gate::POWER)
 	{

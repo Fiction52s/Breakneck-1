@@ -105,7 +105,7 @@ void Gate::Setup(GateInfoPtr gi)
 	{
 		SetShard(gi->shardWorld, gi->shardIndex);
 	}
-	else if (category == Gate::NUMBER_KEY || category == Gate::PICKUP || category == Gate::ALLKEY )
+	else if (category == Gate::PICKUP || category == Gate::ALLKEY )
 	{
 		SetNumToOpen(gi->numToOpen);
 	}
@@ -322,7 +322,7 @@ void Gate::Close()
 
 void Gate::UpdateOrb()
 {
-	if (category == NUMBER_KEY || category == ALLKEY)
+	if (category == ALLKEY)
 	{
 		if (data.gState == LOCKFOREVER || data.gState == REFORM)
 		{
@@ -387,69 +387,48 @@ void Gate::UpdateOrb()
 			SetRectColor(mapLine, mapLineColor);
 		}
 	}
-	else if (category == ENEMY )
+	else if (category == NO_KEY)
 	{
-		if (data.gState == LOCKFOREVER || data.gState == REFORM)
+		bool currZone = (sess->currentZone == zoneA ||
+			sess->currentZone == zoneB);
+		if (data.orbState != ORB_GO && currZone)
 		{
-			SetRectColor(mapLine, mapLineColor);
-			return;
+			data.orbState = ORB_GO;
+			data.orbFrame = 0;
+		}
+		else if (!currZone)
+		{
+			data.orbState = ORB_GREEN;
+			data.orbFrame = 0;
 		}
 
-		int numRemainingEnemies = sess->currentZone->GetNumRemainingKillableEnemies();
-
-		numberText.setString(to_string(numRemainingEnemies));
-		auto &bounds = numberText.getLocalBounds();
-		numberText.setOrigin(bounds.left + bounds.width / 2,
-			bounds.top + bounds.height / 2);
-		if ( sess->currentZone != NULL 
-			&& sess->currentZone->GetNumRemainingKillableEnemies() == 0 )
+		if (data.orbState == ORB_GO)
 		{
-			bool currZone = (sess->currentZone == zoneA ||
-				sess->currentZone == zoneB);
-			if (data.orbState != ORB_GO && currZone)
+			ts_orb->SetQuadSubRect(orbQuad, 2 + data.orbFrame / 2);
+
+			data.orbFrame++;
+			if (data.orbFrame == 10 * 2)
 			{
-				data.orbState = ORB_GO;
-				data.orbFrame = 0;
-			}
-			else if (!currZone)
-			{
-				data.orbState = ORB_GREEN;
 				data.orbFrame = 0;
 			}
 
-			if (data.orbState == ORB_GO)
+			int mapLineFrame = (data.orbFrame / 2) % 3;
+			switch (mapLineFrame)
 			{
-				ts_orb->SetQuadSubRect(orbQuad, 2 + data.orbFrame / 2);
-
-				data.orbFrame++;
-				if (data.orbFrame == 10 * 2)
-				{
-					data.orbFrame = 0;
-				}
-
-				int mapLineFrame = (data.orbFrame / 2) % 3;
-				switch (mapLineFrame)
-				{
-				case 0:
-					SetRectColor(mapLine, mapLineColor);
-					break;
-				case 1:
-					SetRectColor(mapLine, Color::Red);
-					break;
-				case 2:
-					SetRectColor(mapLine, Color::Yellow);
-					break;
-				}
-			}
-			else
-			{
-				ts_orb->SetQuadSubRect(orbQuad, 1);
+			case 0:
 				SetRectColor(mapLine, mapLineColor);
+				break;
+			case 1:
+				SetRectColor(mapLine, Color::Red);
+				break;
+			case 2:
+				SetRectColor(mapLine, Color::Yellow);
+				break;
 			}
 		}
 		else
 		{
-			ts_orb->SetQuadSubRect(orbQuad, 0);
+			ts_orb->SetQuadSubRect(orbQuad, 1);
 			SetRectColor(mapLine, mapLineColor);
 		}
 	}
@@ -539,6 +518,7 @@ void Gate::UpdateOrb()
 			SetRectColor(mapLine, mapLineColor);
 		}
 	}
+	
 }
 
 void Gate::Update()
@@ -713,36 +693,17 @@ bool Gate::CanSoften()
 		switch (category)
 		{
 		case ALLKEY:
-		case NUMBER_KEY:
 		{
 			if ((player->numKeysHeld >= numToOpen))
 				okayToSoften = true;
 			break;
 		}
-		case ENEMY:
-		{
-			if (currZone != NULL)
-			{
-				if (currZone->GetNumRemainingKillableEnemies() == 0)
-				{
-					okayToSoften = true;
-				}
-			}
-			else
-			{
-				okayToSoften = false;
-			}
-			
+		case NO_KEY:
+			okayToSoften = true;
 			break;
-		}
 		case SHARD:
 		{
 			okayToSoften = true;
-			/*double len = length(sess->GetPlayer(0)->position - GetCenter());
-			if (sess->IsShardCaptured(shardType) && len < 300)
-			{
-				okayToSoften = true;
-			}*/
 			break;
 		}
 		case PICKUP:
@@ -922,7 +883,7 @@ bool Gate::IsTwoWay()
 
 bool Gate::IsAlwaysUnlocked()
 {
-	return category == SECRET;
+	return category == SECRET || category == NO_KEY;
 }
 
 bool Gate::IsReformingType()
@@ -958,16 +919,9 @@ bool Gate::CanUnlock()
 		case BLACK:
 			return false;
 		case ALLKEY:
-		case NUMBER_KEY:
-		{
-			return true;
-		}
+		case NO_KEY:
 		case TIME_GLOBAL:
 		case TIME_ROOM:
-		{
-			return true;
-		}
-		case ENEMY:
 		{
 			return true;
 		}
@@ -1082,8 +1036,8 @@ void Gate::Draw(sf::RenderTarget *target)
 
 				if (data.gState != TOTALDISSOLVE)
 				{
-					if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP
-						|| category == ENEMY || (isTimeGate && !(timeGateIsSecret && data.secretTimeGateIsOpened)))
+					if (category == ALLKEY || category == NO_KEY || category == PICKUP
+						|| (isTimeGate && !(timeGateIsSecret && data.secretTimeGateIsOpened)))
 					{
 						target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
 
@@ -1141,7 +1095,7 @@ void Gate::OpenSecretTimeGate()
 
 void Gate::SetNumToOpen(int num)
 {
-	assert(category == NUMBER_KEY || category == PICKUP || category == ALLKEY );
+	assert(category == PICKUP || category == ALLKEY );
 
 	numToOpen = num;
 	numberText.setString(to_string(numToOpen));
@@ -1192,39 +1146,12 @@ void Gate::SetMapLineColor()
 	case BOSS:
 		mapLineColor = Color::Blue;
 		break;
+	case NO_KEY:
+		mapLineColor = Color::Red;
+		break;
 	case ALLKEY:
-	case NUMBER_KEY:
 	{
 		mapLineColor = Color::Cyan;
-		/*switch (sess->mapHeader->envWorldType)
-		{
-		case 0:
-			mapLineColor = COLOR_BLUE;
-			break;
-		case 1:
-			mapLineColor = COLOR_GREEN;
-			break;
-		case 2:
-			mapLineColor = COLOR_YELLOW;
-			break;
-		case 3:
-			mapLineColor = COLOR_ORANGE;
-			break;
-		case 4:
-			mapLineColor = COLOR_RED;
-			break;
-		case 5:
-			mapLineColor = COLOR_MAGENTA;
-			break;
-		case 6:
-			mapLineColor = COLOR_MAGENTA;
-			break;
-		}*/
-		break;
-	}
-	case ENEMY:
-	{
-		mapLineColor = Color::Magenta;
 		break;
 	}
 	case TIME_GLOBAL:
@@ -1275,12 +1202,12 @@ void Gate::Init()
 		ts_wiggle = sess->GetSizedTileset("Zone/gate_glitch_loop_64x64.png");
 		stateLength[SOFT] = 5 * 3;
 	}
-	else if( category == ENEMY )
+	else if (category == ALLKEY )
 	{
-		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_5_64x64.png");
+		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
 		stateLength[SOFT] = 11 * 3;
 	}
-	else if (category == ALLKEY || category == NUMBER_KEY)
+	else if (category == NO_KEY)
 	{
 		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
 		stateLength[SOFT] = 11 * 3;
@@ -1304,13 +1231,13 @@ void Gate::Init()
 	ts = sess->GetTileset("Zone/gates_32x64.png", 32, 64);
 	gateShader.setUniform("u_texture", *ts->texture);
 
-	if (category == ALLKEY || category == NUMBER_KEY)
+	if (category == ALLKEY )
 	{
 		gateShader.setUniform("tile", 7.f);
 	}
-	else if (category == ENEMY)
+	else if (category == NO_KEY)
 	{
-		gateShader.setUniform("tile", 11.f);
+		gateShader.setUniform("tile", 7.f);
 	}
 	else if (category == SHARD)
 	{
@@ -1382,7 +1309,11 @@ void Gate::Init()
 	FloatRect ir;
 	
 
-	if (category == ALLKEY || category == NUMBER_KEY)
+	if (category == ALLKEY )
+	{
+		centerShader.setUniform("tile", 0.f);
+	}
+	else if (category == NO_KEY)
 	{
 		centerShader.setUniform("tile", 0.f);
 	}
@@ -1393,10 +1324,6 @@ void Gate::Init()
 	else if (category == TIME_GLOBAL || category == TIME_ROOM)
 	{
 		centerShader.setUniform("tile", 2.f);
-	}
-	else if (category == ENEMY)
-	{
-		centerShader.setUniform("tile", 4.f);
 	}
 	else
 	{

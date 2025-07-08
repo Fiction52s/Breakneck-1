@@ -2505,7 +2505,7 @@ bool Session::ReadGates(std::ifstream &is)
 		is >> gCat;
 		is >> gVar;
 
-		if (gCat == Gate::NUMBER_KEY || gCat == Gate::ALLKEY || gCat == Gate::PICKUP)
+		if ( gCat == Gate::ALLKEY || gCat == Gate::PICKUP)
 		{
 			is >> numToOpen;
 		}
@@ -9617,7 +9617,6 @@ void Session::SetKeyMarkerToCurrentZone()
 
 	ah->numActiveKeyMarkers = 0;
 
-	bool hasEnemyGate = false;
 	bool hasKeyGate = false;
 	Gate *g;
 
@@ -9638,20 +9637,12 @@ void Session::SetKeyMarkerToCurrentZone()
 
 		if (!hasKeyGate)
 		{
-			if (g->category == Gate::ALLKEY || g->category == Gate::NUMBER_KEY)
+			if (g->category == Gate::ALLKEY )
 			{
 				hasKeyGate = true;
 				
 			}
 		}
-		if (!hasEnemyGate)
-		{
-			if (g->category == Gate::ENEMY)
-			{
-				hasEnemyGate = true;
-			}
-		}
-		
 	}
 
 	if (hasKeyGate && currentZone->totalNumKeys > 0 )
@@ -9667,23 +9658,7 @@ void Session::SetKeyMarkerToCurrentZone()
 				continue;
 			}
 
-			if (g->category == Gate::NUMBER_KEY )//&& g->numToOpen < currentZone->totalNumKeys )
-			{
-				if (keysRequired >= 0)
-				{
-					if (g->numToOpen != keysRequired)
-					{
-						showMaxKeys = false;
-						break;
-					}
-				}
-				else
-				{
-					keysRequired = g->numToOpen;
-				}
-				break;
-			}
-			else if (g->category == Gate::ALLKEY)
+			if (g->category == Gate::ALLKEY)
 			{
 				if (keysRequired >= 0)
 				{
@@ -9713,19 +9688,6 @@ void Session::SetKeyMarkerToCurrentZone()
 		}
 		
 		ah->keyMarkers[0]->SetMarkerType(KeyMarker::KEY);
-	}
-
-	if (hasEnemyGate && currentZone->allEnemies.size() > 0 )
-	{
-		ah->numActiveKeyMarkers++;
-		if (hasKeyGate)
-		{
-			ah->keyMarkers[1]->SetMarkerType(KeyMarker::ENEMY);
-		}
-		else
-		{
-			ah->keyMarkers[0]->SetMarkerType(KeyMarker::ENEMY);
-		}
 	}
 
 	for (int i = 0; i < ah->keyMarkers.size(); ++i)

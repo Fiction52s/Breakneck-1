@@ -27,7 +27,6 @@ struct AntiTimeSlowBooster : Enemy
 	int strength;
 
 	AntiTimeSlowBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
-	bool CountsForEnemyGate() { return false; }
 	bool IsHomingTarget(int trackingType);
 	void ProcessState();
 	bool IsSlowed(int index);

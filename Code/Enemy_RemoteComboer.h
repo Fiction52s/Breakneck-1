@@ -38,7 +38,6 @@ struct RemoteComboer : Enemy
 	Actor *controlPlayer;
 
 	void SetLevel(int lev);
-	bool CountsForEnemyGate() { return false; }
 	RemoteComboer(ActorParams * ap);
 	~RemoteComboer();
 

@@ -359,11 +359,6 @@ int SwarmMember::GetNumEnergyAbsorbParticles()
 	return 1;
 }
 
-bool SwarmMember::CountsForEnemyGate()
-{
-	return false;
-}
-
 Swarm::Swarm( ActorParams *ap )
 	:Enemy( EnemyType::EN_SWARM, ap)
 {
@@ -635,18 +630,6 @@ void Swarm::UpdateSprite()
 		sprite.setOrigin(sprite.getLocalBounds().width / 2,
 			sprite.getLocalBounds().height / 2 );
 		sprite.setPosition( GetPositionF() );
-	}
-}
-
-bool Swarm::CountsForEnemyGate()
-{
-	if (data.dying)
-	{
-		return false;
-	}
-	else
-	{
-		return true;
 	}
 }
 

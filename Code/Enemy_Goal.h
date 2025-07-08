@@ -47,7 +47,6 @@ struct Goal : Enemy
 	bool CanBeHitByWireTip(bool red) { return false; }
 	bool CanBeAnchoredByWire(bool red) { return false; }
 	//void SetMapGoalPos();
-	bool CountsForEnemyGate() { return false; }
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

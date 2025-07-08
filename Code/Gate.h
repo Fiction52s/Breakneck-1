@@ -13,8 +13,8 @@ struct Gate : public QuadTreeEntrant
 	enum GateCategory
 	{
 		ALLKEY,
-		NUMBER_KEY,
-		ENEMY,
+		NO_KEY,
+		EMPTY_USED_TO_BE_ENEMY,
 		TIME_GLOBAL,
 		TIME_ROOM,
 		SHARD,

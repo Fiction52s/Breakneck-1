@@ -41,7 +41,6 @@ struct Comboer : Enemy
 	Comboer(ActorParams * ap);
 	~Comboer();
 
-	bool CountsForEnemyGate() { return false; }
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();
 	void SetLevel(int lev);

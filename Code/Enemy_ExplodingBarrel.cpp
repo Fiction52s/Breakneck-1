@@ -338,14 +338,6 @@ void ExplodingBarrel::ComboHit()
 	}*/
 }
 
-bool ExplodingBarrel::CountsForEnemyGate()
-{
-	if (action == S_EXPLODE || action == S_ABOUT_TO_EXPLODE )
-		return false;
-	else
-		return true;
-}
-
 void ExplodingBarrel::UpdateSprite()
 {
 	sprite.setPosition(GetPositionF());

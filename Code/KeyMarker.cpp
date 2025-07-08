@@ -38,8 +38,6 @@ KeyMarker::KeyMarker(TilesetManager *tm )
 
 	ts_keyNumLight = tm->GetSizedTileset("HUD/keynum_light_80x80.png");
 	ts_keyNumDark = tm->GetSizedTileset("HUD/keynum_dark_80x80.png");
-	ts_enemyNumLight = tm->GetSizedTileset("HUD/keynum_red_light_80x80.png");
-	ts_enemyNumDark = tm->GetSizedTileset("HUD/keynum_red_dark_80x80.png");
 	ts_icon = tm->GetSizedTileset("HUD/keymarker_icon_96x96.png");
 
 	float textSpacingFactor = .7;
@@ -129,11 +127,6 @@ void KeyMarker::SetTopRight(sf::Vector2f &pos)
 	currRight -= xKeyText.getGlobalBounds().width + keySpacing;
 
 	float iconExtraY = 0;
-	if (markerType == ENEMY)
-	{
-		iconExtraY = 0;
-	}
-	
 
 	keyIconSpr.setPosition( Vector2f( currRight - keyIconSpr.getGlobalBounds().width / 2, anchor.y + keyNumberNeededHUD->GetHeight() / 2.f + iconExtraY));
 
@@ -159,11 +152,6 @@ void KeyMarker::SetTopLeft(sf::Vector2f &pos)
 
 	keyIconSpr.setPosition(iconPos);
 	currLeft += keyWidth + keySpacing;
-
-	if (markerType == ENEMY)
-	{
-		currLeft -= 10;
-	}
 
 	xKeyText.setPosition(Vector2f(currLeft + (xKeyText.getGlobalBounds().width / 2), anchor.y + keyNumberNeededHUD->GetHeight() / 2.f));
 
@@ -209,11 +197,6 @@ void KeyMarker::SetCenter(sf::Vector2f &pos)
 	xKeyText.setPosition(Vector2f(anchor.x, anchor.y));// +keyNumberNeededHUD->GetHeight() / 2.f));
 
 	Vector2f iconPos = Vector2f(anchor.x - (keyWidth / 2 + keySpacing + halfXWidth), anchor.y);
-
-	if (markerType == ENEMY)
-	{
-		iconPos.x += 10;
-	}
 
 	keyIconSpr.setPosition(iconPos);// +keyNumberNeededHUD->GetHeight() / 2.f));
 
@@ -273,11 +256,6 @@ void KeyMarker::SetMarkerType(int k)
 		keyNumberNeededHUD->ts = ts_keyNumDark;
 		keyNumberNeededHUDBack->ts = ts_keyNumLight;
 	}
-	else if (markerType == ENEMY)
-	{
-		keyNumberNeededHUD->ts = ts_enemyNumDark;
-		keyNumberNeededHUDBack->ts = ts_enemyNumLight;
-	}
 
 	if (sess != NULL)
 	{
@@ -286,12 +264,7 @@ void KeyMarker::SetMarkerType(int k)
 
 		keyIconSpr.setScale(scale / .75, scale / .75);
 
-		if (markerType == ENEMY)
-		{
-			keyIconSpr.setTextureRect(ts_icon->GetSubRect(8));
-			//keyIconSpr.setScale(scale * 2, scale * 2);
-		}
-		else
+		if( markerType == KEY )
 		{
 			assert(sess->currWorldDependentTilesetWorldIndex >= 0);
 			keyIconSpr.setTextureRect(ts_icon->GetSubRect(sess->currWorldDependentTilesetWorldIndex));
@@ -362,7 +335,7 @@ void KeyMarker::UpdateKeyNumbers()
 				continue;
 			}
 
-			if (g->category == Gate::ALLKEY || g->category == Gate::NUMBER_KEY)
+			if (g->category == Gate::ALLKEY )
 			{
 				if (g->numToOpen == numKeys)
 				{
@@ -375,19 +348,6 @@ void KeyMarker::UpdateKeyNumbers()
 		if (makeRing)
 		{
 			sess->GetPlayer(0)->CreateEnoughKeysRing();
-		}
-	}
-	else if (markerType == ENEMY)
-	{
-		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
-
-		keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
-		keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
-		RefreshPosition();
-
-		if (numEnemiesRemaining == 0)
-		{
-			sess->GetPlayer(0)->CreateEnemiesClearedRing();
 		}
 	}
 	
@@ -439,19 +399,6 @@ void KeyMarker::Reset()
 
 		keyNumberNeededHUD->ts = ts_keyNumDark;
 	}
-	else if (markerType == ENEMY)
-	{
-		if (sess->currentZone != NULL)
-		{
-			int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
-			keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
-			keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
-
-			RefreshPosition();
-		}
-
-		keyNumberNeededHUD->ts = ts_enemyNumDark;
-	}
 	
 
 	//keyNumberNeededHUDBack->SetCenter(neededCenter);
@@ -501,11 +448,6 @@ void KeyMarker::Update()
 			{
 				keyNumberNeededHUD->ts = ts_keyNumDark;
 			}
-			else if (markerType == ENEMY)
-			{
-				keyNumberNeededHUD->ts = ts_enemyNumDark;
-			}
-			
 		}
 		else if (frame < 20)
 		{
@@ -565,20 +507,12 @@ void KeyMarker::Update()
 			{
 				keyNumberNeededHUD->ts = ts_keyNumDark;
 			}
-			else if (markerType == ENEMY)
-			{
-				keyNumberNeededHUD->ts = ts_enemyNumDark;
-			}
 		}
 		else
 		{
 			if (markerType == KEY)
 			{
 				keyNumberNeededHUD->ts = ts_keyNumLight;
-			}
-			else if (markerType == ENEMY)
-			{
-				keyNumberNeededHUD->ts = ts_enemyNumLight;
 			}
 		}
 		//8 frames vibrate, 

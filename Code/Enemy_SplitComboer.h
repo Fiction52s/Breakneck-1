@@ -28,7 +28,6 @@ struct SplitPiece : Enemy
 	SplitPiece(SplitComboer *splitComb);
 	~SplitPiece();
 	void SetLevel(int lev);
-	bool CountsForEnemyGate() { return false; }
 	void ComboHit();
 	void ProcessState();
 	void UpdateEnemyPhysics();

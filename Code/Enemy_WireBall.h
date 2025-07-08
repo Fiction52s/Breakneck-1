@@ -45,7 +45,6 @@ struct WireBall : Enemy, SurfaceMoverHandler
 
 	int maxWaitFrames;
 
-	bool CountsForEnemyGate() { return false; }
 	WireBall(ActorParams *ap);
 	~WireBall();
 	void SetLevel(int lev);

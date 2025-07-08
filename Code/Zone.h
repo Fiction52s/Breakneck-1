@@ -100,7 +100,6 @@ struct Zone
 	bool ContainsZone( Zone *z );
 	void Close();
 	void SetShadowColor( sf::Color c );
-	bool HasEnemyGate();
 	bool HasKeyGateOfNumber(int n);
 	Zone * ContainsPointMostSpecific( 
 		V2d point );
@@ -109,7 +108,6 @@ struct Zone
 	void Update( float zoom, sf::Vector2f &topLeft,
 		sf::Vector2f &playertest );
 	void Update();
-	int GetNumRemainingKillableEnemies();
 	int GetNumRemainingCollectiblePowers();
 	float GetOpeningAlpha();
 	void SetZoneType( int zt );

@@ -44,7 +44,6 @@ struct WireJuggler : Enemy
 	
 	int maxWaitFrames;
 
-	bool CountsForEnemyGate() { return false; }
 	WireJuggler( ActorParams *ap );
 	~WireJuggler();
 	void SetLevel(int lev);

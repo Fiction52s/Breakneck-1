@@ -1022,26 +1022,7 @@ void Enemy::PlayDeathSound()
 		return;
 	}
 
-	if ( sess->currentZone != NULL && sess->currentZone->HasEnemyGate())
-	{
-		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
-		if (numEnemiesRemaining == 0)
-		{
-			//if( sess->currentZone->)
-
-			sess->ActivateSound(finalDeathSound);
-		}
-		else
-		{
-			sess->ActivateSound(genericDeathSound);
-		}
-	}
-	else
-	{
-		sess->ActivateSound(genericDeathSound);
-	}
-	
-	
+	sess->ActivateSound(genericDeathSound);
 }
 
 void Enemy::SetZoneSpritePosition()

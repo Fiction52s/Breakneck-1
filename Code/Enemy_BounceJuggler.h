@@ -38,7 +38,6 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 
 	int maxFlyFrames;
 
-	bool CountsForEnemyGate() { return false; }
 	BounceJuggler(ActorParams *ap);
 	~BounceJuggler();
 	void SetLevel(int lev);

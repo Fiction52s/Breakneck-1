@@ -96,7 +96,6 @@ struct PowerItem : Enemy
 	//void UpdateParamsSettings();
 	void Setup();
 
-	bool CountsForEnemyGate() { return false; }
 	void Launch();
 	void DirectKill();
 

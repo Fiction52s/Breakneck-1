@@ -52,7 +52,6 @@ struct TouchKey : Enemy, ChainableObject
 
 	sf::Vertex *keyFXQuad;
 
-	bool CountsForEnemyGate() { return false; }
 	TouchKey(TouchKeyChain *fc, int index,
 		V2d &pos, int level, sf::Vertex *p_quad, Tileset *p_ts, sf::Vertex *p_keyQuad, sf::Vertex *p_keyFXQuad);
 	TouchKey(TouchKey &hf);

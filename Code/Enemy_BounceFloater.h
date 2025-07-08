@@ -23,7 +23,6 @@ struct BounceFloater : Enemy
 
 	Tileset *ts;
 
-	bool CountsForEnemyGate() { return false; }
 	BounceFloater(ActorParams *ap);
 	void ProcessState();
 	void ProcessHit();

@@ -46,7 +46,6 @@ struct SwarmMember : Enemy
 	void Explode();
 	int GetNumEnergyAbsorbParticles();
 	void Die();
-	bool CountsForEnemyGate();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -101,7 +100,6 @@ struct Swarm : Enemy
 	void Launch();
 	void ResetEnemy();
 	void AddToGame();
-	bool CountsForEnemyGate();
 	void DirectKill();
 
 	int GetNumStoredBytes();

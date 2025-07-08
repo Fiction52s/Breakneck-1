@@ -133,7 +133,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	void StoreBasicEnemyData(StoredEnemyData &ed);
 	void SetBasicEnemyData(StoredEnemyData &ed);
-	virtual bool CountsForEnemyGate() { return true; }
+
 	virtual bool CountsForPowerGate() { return false; }
 
 	virtual bool IsValidTrackEnemyIndex(int ind) { return true; } //only gets checked if the whole enemy is trackable anyway

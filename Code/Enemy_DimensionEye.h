@@ -18,7 +18,6 @@ struct DimensionEye : Enemy
 	Tileset *ts;
 	void Setup();
 	GameSession *myBonus;
-	bool CountsForEnemyGate() { return false; }
 	DimensionEye(ActorParams *ap);
 	~DimensionEye();
 	void ProcessState();

@@ -169,7 +169,6 @@ struct AdventureHUD : HUD
 	void SetSession(Session *p_sess);
 	void CheckForGo();
 	void UpdateKeyNumbers();
-	void UpdateEnemyNumbers();
 	void SetBossHealthBar(BossHealth *bh);
 	void Hide(int frames = 0);
 	void Show(int frames = 0);

@@ -52,7 +52,6 @@ struct CurrencyItem : Enemy, ChainableObject
 	Actor *collectedPlayer; //might ruin rollback over network atm? might not
 
 	static int GetSpacing(int cType);
-	bool CountsForEnemyGate() { return false; }
 	CurrencyItem(CurrencyItemChain *fc, int index,
 		V2d &pos, int level, sf::Vertex *p_quad, Tileset *p_ts);
 	CurrencyItem(CurrencyItem &hf);

@@ -71,7 +71,6 @@ struct Blocker : Enemy, QuadTreeEntrant
 	int randomStartFrame;
 
 	Blocker( BlockerChain *bc, V2d &pos, int index);
-	bool CountsForEnemyGate() { return false; }
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	bool IsFastDying();

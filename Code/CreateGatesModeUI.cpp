@@ -149,30 +149,6 @@ void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 {
 	gateCategoryDropdown->SetSelectedIndex(gi->category);
 
-	//switch (gi->category)
-	//{
-	//case Gate::ALLKEY:
-	//	gateCategoryDropdown->SetSelectedIndex(0);
-	//	break;
-	//case Gate::NUMBER_KEY:
-	//	gateCategoryDropdown->SetSelectedIndex(1);
-	//	//set key num text based on gate params
-	//	break;
-	//case Gate::SHARD:
-	//	gateCategoryDropdown->SetSelectedIndex(2);
-	//	SetShard(gi->shardWorld, gi->shardIndex);
-	//	break;
-	//case Gate::BOSS:
-	//	gateCategoryDropdown->SetSelectedIndex(3);
-	//	break;
-	//case Gate::SECRET:
-	//	gateCategoryDropdown->SetSelectedIndex(4);
-	//	break;
-	//case Gate::BLACK:
-	//	gateCategoryDropdown->SetSelectedIndex(6);
-	//	break;
-	//}
-
 	UpdateCategoryDropdownType();
 
 	numToOpen = gi->numToOpen;

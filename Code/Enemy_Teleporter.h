@@ -56,7 +56,6 @@ struct Teleporter : Enemy
 	Teleporter(ActorParams *ap);
 	~Teleporter();
 
-	bool CountsForEnemyGate() { return false; }
 	void AddToWorldTrees();
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();

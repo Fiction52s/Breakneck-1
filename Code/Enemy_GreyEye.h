@@ -40,7 +40,6 @@ struct GreyEye : Enemy
 		GreySkeleton *gs );
 	~GreyEye();
 	void Setup();
-	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void HandleHitAndSurvive();
 	void ProcessHit();

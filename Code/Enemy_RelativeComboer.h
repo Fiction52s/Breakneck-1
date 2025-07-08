@@ -50,7 +50,6 @@ struct RelativeComboer : Enemy
 
 	CubicBezier flyBez;
 	
-	bool CountsForEnemyGate() { return false; }
 	RelativeComboer(
 		ActorParams *ap);/*GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos,

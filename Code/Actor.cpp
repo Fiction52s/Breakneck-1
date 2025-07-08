@@ -4959,17 +4959,11 @@ void Actor::CreateGateExplosion( int gateCategory )
 {
 	Vector2f floatPos(position);
 
-	if (gateCategory == Gate::ALLKEY || gateCategory == Gate::NUMBER_KEY)
+	if (gateCategory == Gate::ALLKEY || gateCategory == Gate::NO_KEY )
 	{
 		keyExplodeRingGroup->SetBase(floatPos);
 		keyExplodeRingGroup->Reset();
 		keyExplodeRingGroup->Start();
-	}
-	else if( gateCategory == Gate::ENEMY)
-	{
-		enemyExplodeRingGroup->SetBase(floatPos);
-		enemyExplodeRingGroup->Reset();
-		enemyExplodeRingGroup->Start();
 	}
 
 	SetControllerRumbleType("Gate");
@@ -24037,13 +24031,6 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 	enemiesKilledThisFrame++;
 
 	TryThrowEnemySwordProjectileBasic();
-
-	if ( e->CountsForEnemyGate() && sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE && !sess->IsParallelSession())
-	{
-		AdventureHUD *ah = (AdventureHUD*)sess->hud;
-		ah->UpdateEnemyNumbers();
-		//ah->keyMarker->Reset();
-	}
 
 	//new bounce physics make killing enemies and bouncing off them a little awkward since you might wanna do that normally without bouncing. I'll find a way to include this.
 	//if (HasUpgrade(UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE))

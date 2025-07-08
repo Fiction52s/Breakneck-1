@@ -28,7 +28,6 @@ struct KeyFly : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
-	bool CountsForEnemyGate() { return false; }
 	void PlayDeathSound();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

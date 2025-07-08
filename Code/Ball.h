@@ -46,7 +46,6 @@ struct Ball : Enemy, SurfaceMoverHandler
 	
 	int maxWaitFrames;
 
-	bool CountsForEnemyGate() { return false; }
 	Ball(ActorParams *ap);
 	~Ball();
 	void SetLevel(int lev);

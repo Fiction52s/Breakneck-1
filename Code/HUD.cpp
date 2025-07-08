@@ -46,7 +46,6 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	medalGoalTimer->baseScale = .5;
 
 	keyMarkers.push_back(new KeyMarker( tm ));
-	keyMarkers.push_back(new KeyMarker( tm ));
 
 	powerSelector = new PowerSelector(tm);
 
@@ -175,7 +174,6 @@ void AdventureHUD::CheckForGo()
 		bool allGatesSatisfied = true;
 
 		int numKeys = sess->GetPlayer(0)->numKeysHeld;
-		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
 		int numPowersRemaining = sess->currentZone->GetNumRemainingCollectiblePowers();
 
 		for (auto it = sess->currentZone->gates.begin(); it != sess->currentZone->gates.end(); ++it)
@@ -186,17 +184,9 @@ void AdventureHUD::CheckForGo()
 				continue;
 			}
 
-			if (g->category == Gate::ALLKEY || g->category == Gate::NUMBER_KEY)
+			if (g->category == Gate::ALLKEY )
 			{
 				if (g->numToOpen > numKeys)
-				{
-					allGatesSatisfied = false;
-					break;
-				}
-			}
-			else if (g->category == Gate::ENEMY)
-			{
-				if (numEnemiesRemaining > 0 )
 				{
 					allGatesSatisfied = false;
 					break;
@@ -216,19 +206,6 @@ void AdventureHUD::CheckForGo()
 		{
 			numActiveKeyMarkers = 0;
 		}
-	}
-}
-
-
-void AdventureHUD::UpdateEnemyNumbers()
-{
-	if (numActiveKeyMarkers > 0 && keyMarkers[0]->markerType == KeyMarker::ENEMY)
-	{
-		keyMarkers[0]->UpdateKeyNumbers();
-	}
-	else if (numActiveKeyMarkers == 2 && keyMarkers[1]->markerType == KeyMarker::ENEMY)
-	{
-		keyMarkers[1]->UpdateKeyNumbers();
 	}
 }
 
@@ -257,12 +234,6 @@ void AdventureHUD::Hide(int frames)
 		state = HIDDEN;
 		frame = 0;
 		mini->SetCenter(miniHidePos);
-		//for (int i = 0; i < keyMarkers.size(); ++i)
-		//{
-		//	//keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
-		//	keyMarkers[i]->SetTopRight(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
-		//	//keyMarkers[i]->SetTopLeft(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
-		//}
 		if (numActiveKeyMarkers == 1)
 		{
 			keyMarkers[0]->SetCenter(keyMarkerHidePos);
