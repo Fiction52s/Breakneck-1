@@ -76,6 +76,7 @@ RushManager::RushManager()
 
 	currRushMapIndex = 0;
 	currWorld = 0;
+	currWorldSection = 0;
 	
 	rushScoreDisplay = new RushScoreDisplay(this, mm->arial);
 
@@ -166,7 +167,7 @@ void RushManager::Load()
 	LoadRush("test");
 }
 
-void RushManager::SetWorld(int w)
+void RushManager::SetWorld(int w, int section)
 {
 	UpdateWorldDependentTileset(w);
 
@@ -185,6 +186,8 @@ void RushManager::SetWorld(int w)
 	}
 
 	currWorld = w;
+
+	currWorldSection = section;
 
 	currRushMapIndex = 0;
 	trueLevelIndex = 0;
@@ -216,11 +219,15 @@ void RushManager::SetWorld(int w)
 		}
 	}*/
 	
+	int numMapsInSection = 4;
+	int startSectionIndex = numMapsInSection * section;
+
+	currRushMapIndex = startSectionIndex;
 
 	transferPlayerPowerMode = -1;
 
 	MatchParams mp;
-	mp.mapPath = rushFile.worlds[w].maps[0].GetMapPath();
+	mp.mapPath = rushFile.worlds[w].maps[startSectionIndex].GetMapPath();
 	mp.randSeed = time(0);
 	mp.numPlayers = 1;
 	mp.gameModeType = MatchParams::GAME_MODE_BASIC;
@@ -236,10 +243,17 @@ void RushManager::SetWorld(int w)
 
 	//GameSession *lastMap = firstMap;
 	int numMapsInWorld = rushFile.worlds[w].maps.size();
-	bonusVec.resize(numMapsInWorld - 1);
-	for (int i = 0; i < numMapsInWorld - 1; ++i)
+	//bonusVec.resize(numMapsInWorld - 1);
+	//for (int i = 0; i < numMapsInWorld - 1; ++i)
+	//{
+	//	bonusVec[i] = firstMap->CreateBonus(rushFile.worlds[w].maps[i + 1].GetFilePath());
+	//	//lastMap = bonusVec[i];
+	//}
+
+	bonusVec.resize(numMapsInSection - 1);
+	for (int i = 0; i < numMapsInSection - 1; ++i)
 	{
-		bonusVec[i] = firstMap->CreateBonus(rushFile.worlds[w].maps[i + 1].GetFilePath());
+		bonusVec[i] = firstMap->CreateBonus(rushFile.worlds[w].maps[startSectionIndex + i + 1].GetFilePath());
 		//lastMap = bonusVec[i];
 	}
 }
@@ -247,7 +261,7 @@ void RushManager::SetWorld(int w)
 void RushManager::LoadRush(const std::string &rushName)
 {
 	rushFile.Load("Resources/Rush", rushName);
-	SetWorld(startWorld);
+	SetWorld(startWorld, 0);
 }
 
 void RushManager::LoadShip()
@@ -425,7 +439,7 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 
 		//int r = rand() % (rushFile.numMaps - 1);
 		//game->SetBonus(bonusVec[r], V2d(0, 0));
-		game->SetBonus(bonusVec[currRushMapIndex], V2d(0,0));
+		game->SetBonus(bonusVec[currRushMapIndex % 4], V2d(0,0));
 		currRushMapIndex++;
 		return true;
 	}
@@ -435,8 +449,16 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 
 bool RushManager::CanGoToNextLevel()
 {
+	/*if (currRushMapIndex < rushFile.worlds[currWorld].maps.size() - 1)
+		return true;*/
 	if (currRushMapIndex < rushFile.worlds[currWorld].maps.size() - 1)
-		return true;
+	{
+		if (currRushMapIndex < currWorldSection * 4 + 3)
+		{
+			return true;
+		}
+	}
+		//return true;
 
 	return false;
 }
@@ -458,6 +480,13 @@ bool RushManager::TryToGoToNextWorld()
 
 bool RushManager::TryToGoToNextWorldShip()
 {
+	if (currWorldSection < 2)
+	{
+		currWorldSection++;
+		MainMenu::GetInstance()->SetModeRushShip(currWorld);
+		return true;
+	}
+
 	if (currWorld < rushFile.numWorlds - 1)
 	{
 		//incrementing this here so we get the right powers when loading the ship

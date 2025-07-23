@@ -96,7 +96,7 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	bossHealthShowPos = Vector2f(1920 - 100, 200);
 	bossHealthHidePos = bossHealthShowPos + Vector2f(500, 0);
 
-	momentumBarShowPos = Vector2f(960, 45);
+	momentumBarShowPos = Vector2f(960, 1080- 45);
 	momentumBarHidePos = Vector2f(960, 1080 + 200);
 
 	keyMarkerYOffset = 80;

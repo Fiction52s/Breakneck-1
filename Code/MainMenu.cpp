@@ -279,7 +279,7 @@ void MainMenu::sRushShipLoad(MainMenu *mm)
 
 void MainMenu::sRushWorldLoad(MainMenu *mm)
 {
-	mm->rushManager->SetWorld(mm->rushManager->currWorld);
+	mm->rushManager->SetWorld(mm->rushManager->currWorld, mm->rushManager->currWorldSection);
 }
 
 
@@ -2650,10 +2650,12 @@ void MainMenu::sGoToNextLevelRush(MainMenu *m, RushMap *rm, Level *lev)
 
 void MainMenu::GoToNextLevelRush(RushMap *rm, Level *lev)
 {
+	//seems like its never used
+
 	//string levelPath = rm->GetMapPath();
 
 	//a little clumsy but clean up soon
-	rushManager->SetWorld(rushManager->currWorld);
+	//rushManager->SetWorld(rushManager->currWorld);
 
 	//GameSession::sLoad(currLevel);
 }

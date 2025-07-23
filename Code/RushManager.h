@@ -42,6 +42,7 @@ struct RushManager : TilesetManager
 
 	int storePoints;
 
+	int currWorldSection;
 	int currWorld;
 	int currRushMapIndex;
 	std::vector<GameSession*> bonusVec;
@@ -95,7 +96,7 @@ struct RushManager : TilesetManager
 	~RushManager();
 	void Load();
 	void LoadShip();
-	void SetWorld(int w);
+	void SetWorld(int w, int section);
 	void UpdateWorldDependentTileset(int worldIndex);
 	void LoadRush(const std::string &rushName);
 	//void CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze);

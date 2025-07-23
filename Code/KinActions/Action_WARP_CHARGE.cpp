@@ -23,7 +23,7 @@ void Actor::WARP_CHARGE_End()
 
 void Actor::WARP_CHARGE_Change()
 {
-	if (!currInput.BackButtonDown() )
+	if (!currInput.PLeft() )//&& sess->HasLevelFinisher())
 	{
 		SetAction(JUMP);
 		frame = 1;
