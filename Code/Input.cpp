@@ -369,11 +369,6 @@ bool ControllerState::SpecialBButtonDown() const
 	return B;
 }
 
-bool ControllerState::SpecialLPressButtonDown() const
-{
-	return leftPress;
-}
-
 bool ControllerState::PUp() const
 {
 	return pad & 1;
@@ -1271,7 +1266,6 @@ void ControllerSettings::InitStrings()
 	buttonTypeStrings[BUTTONTYPE_ATTACK] = "ATTACK";
 	buttonTypeStrings[BUTTONTYPE_SPECIAL_L1] = "SPECIALL1";
 	buttonTypeStrings[BUTTONTYPE_SPECIAL_B] = "SPECIALB";
-	buttonTypeStrings[BUTTONTYPE_SPECIAL_LPRESS] = "SPECIALLPRESS";
 	buttonTypeStrings[BUTTONTYPE_SPECIAL_Y] = "SPECIALY";
 	buttonTypeStrings[BUTTONTYPE_LEFTWIRE] = "LEFTWIRE";
 	buttonTypeStrings[BUTTONTYPE_RIGHTWIRE] = "RIGHTWIRE";

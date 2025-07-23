@@ -1534,8 +1534,6 @@ struct Actor : QuadTreeCollider,
 	bool SpecialBButtonPressed();
 	bool SpecialBButtonHeld();
 
-	bool SpecialLPressButtonPressed();
-	bool SpecialLPressButtonHeld();
 	SoundNode * ActivateSound(int st, bool loop = false);
 	SoundNode *ActivateRepeatingSound(int st, bool loop = false);
 	BasicEffect * ActivateEffect(

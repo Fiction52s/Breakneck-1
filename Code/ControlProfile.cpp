@@ -83,7 +83,6 @@ void ControlProfile::SetFilterDefault()
 		filter[ControllerSettings::BUTTONTYPE_SPECIAL_L1] = XBOX_L1;
 		filter[ControllerSettings::BUTTONTYPE_SPECIAL_Y] = XBOX_Y;
 		filter[ControllerSettings::BUTTONTYPE_SPECIAL_B] = XBOX_B;
-		filter[ControllerSettings::BUTTONTYPE_SPECIAL_LPRESS] = XBOX_LPRESS;
 
 		filter[ControllerSettings::BUTTONTYPE_LEFTWIRE] = XBOX_L2;
 		filter[ControllerSettings::BUTTONTYPE_RIGHTWIRE] = XBOX_R2;
@@ -207,7 +206,6 @@ void ControlProfile::Save(ofstream &of)
 		of << "SPECIALB" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_B]) << "\n";
 		of << "SPECIALY" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_Y]) << "\n";
 		of << "SPECIALL1" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_L1]) << "\n";
-		of << "SPECIALLPRESS" << GetXBoxButtonString(filter[ControllerSettings::BUTTONTYPE_SPECIAL_LPRESS]);// << "\n";
 	}
 }
 
@@ -1246,10 +1244,6 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	else if (inputName == "SPECIALB")
 	{
 		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL_B;
-	}
-	else if (inputName == "SPECIALLPRESS")
-	{
-		buttonType = ControllerSettings::BUTTONTYPE_SPECIAL_LPRESS;
 	}
 	else if (inputName == "LEFTWIRE")
 	{

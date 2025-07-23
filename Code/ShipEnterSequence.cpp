@@ -8,6 +8,7 @@
 using namespace sf;
 using namespace std;
 
+
 ShipEnterScene::ShipEnterScene()
 {
 	ts_clouds = sess->GetSizedTileset("Ship/ship_clouds_1920x1810.png");
@@ -17,6 +18,32 @@ ShipEnterScene::ShipEnterScene()
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
 	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2 + 34,
 		shipSprite.getLocalBounds().height / 2 - 53 );
+	
+	if (!cloudShader.loadFromFile("Resources/Shader/cloud.frag", sf::Shader::Fragment))
+	{
+		assert(0);
+	}
+
+	cloudXOffset = 0;
+
+	IntRect sub0 = ts_clouds->GetCustomSubRect(Vector2i(1920, 490), Vector2i(0, 0), Vector2i(1, 1), 0);
+	IntRect sub1 = ts_clouds->GetCustomSubRect(Vector2i(1920, 1080), Vector2i(0, 490), Vector2i(1, 1), 0);
+	IntRect sub2 = ts_clouds->GetCustomSubRect(Vector2i(1920, 240), Vector2i(0, 490 + 1080), Vector2i(1, 1), 0);
+
+	cloudShader.setUniform("u_texture", *ts_clouds->texture);//sf::Shader::CurrentTexture);
+	cloudShader.setUniform("u_quant", 0.f);
+
+	SetRectSubRectGL(topClouds, sub0, Vector2f(ts_clouds->texture->getSize()));
+	SetRectSubRectGL(middleClouds, sub1, Vector2f(ts_clouds->texture->getSize()));
+	SetRectSubRectGL(bottomClouds, sub2, Vector2f(ts_clouds->texture->getSize()));
+
+	/*sf::Vertex topClouds[4];
+	sf::Vertex middleClouds[4];
+	sf::Vertex bottomClouds[4];
+
+	sf::Shader cloudShader;
+	sf::Shader middleCloudShader;*/
+
 }
 
 void ShipEnterScene::AddFlashes()
@@ -31,6 +58,8 @@ void ShipEnterScene::AddFlashes()
 
 void ShipEnterScene::Reset()
 {
+	cloudXOffset = 0;
+
 	Sequence::Reset();
 
 	if (sess->IsSessTypeGame())
@@ -58,9 +87,9 @@ void ShipEnterScene::Reset()
 	cloudVel = Vector2f(-40, 0);
 	relShipVel = Vector2f(2, 0);
 	//#0055FF
-	middleClouds.setFillColor(Color(0x00, 0x55, 0xFF));
+	//middleClouds.setFillColor(Color(0x00, 0x55, 0xFF));
 	int middleHeight = 540 * 4;
-	middleClouds.setSize(Vector2f(960, middleHeight));
+	//middleClouds.setSize(Vector2f(960, middleHeight));
 	Vector2f botExtra(0, middleHeight);
 
 	IntRect sub0 = ts_clouds->GetCustomSubRect(Vector2i(1920, 490), Vector2i(0, 0), Vector2i( 1, 1 ), 0);
@@ -68,52 +97,64 @@ void ShipEnterScene::Reset()
 
 		//middle is 1920, 1080, and starts at 490
 
-	Vector2f bottomLeft = Vector2f(sess->playerOrigPos[0].x, sess->playerOrigPos[0].y) + Vector2f(-480, 270);
-	for (int i = 0; i < 3; ++i)
-	{
-		Vector2f xExtra(960 * i, 0);
-		cloud0[i * 4 + 0].position = xExtra + bottomLeft;
-		cloud0[i * 4 + 1].position = xExtra + bottomLeft + Vector2f(0, -sub0.height / 2);
-		cloud0[i * 4 + 2].position = xExtra + bottomLeft + Vector2f(sub0.width / 2, -sub0.height / 2);
-		cloud0[i * 4 + 3].position = xExtra + bottomLeft + Vector2f(sub0.width / 2, 0);
+	
 
-		cloud0[i * 4 + 0].texCoords = Vector2f(0, sub0.height);
-		cloud0[i * 4 + 1].texCoords = Vector2f(0, 0);
-		cloud0[i * 4 + 2].texCoords = Vector2f(sub0.width, 0);
-		cloud0[i * 4 + 3].texCoords = Vector2f(sub0.width, sub0.height);
+	Vector2f bottomLeft = Vector2f(sess->playerOrigPos[0].x, sess->playerOrigPos[0].y) + Vector2f(-480, 550);//270);
 
-		cloud1[i * 4 + 0].position = xExtra + bottomLeft;
-		cloud1[i * 4 + 1].position = xExtra + bottomLeft + Vector2f(0, -sub1.height / 2);
-		cloud1[i * 4 + 2].position = xExtra + bottomLeft + Vector2f(sub1.width / 2, -sub1.height / 2);
-		cloud1[i * 4 + 3].position = xExtra + bottomLeft + Vector2f(sub1.width / 2, 0);
+	allCloudsTopLeft = bottomLeft + Vector2f(0, -sub0.height);
 
-		cloud1[i * 4 + 0].texCoords = Vector2f(0, sub1.height);
-		cloud1[i * 4 + 1].texCoords = Vector2f(0, 0);
-		cloud1[i * 4 + 2].texCoords = Vector2f(sub1.width, 0);
-		cloud1[i * 4 + 3].texCoords = Vector2f(sub1.width, sub1.height);
+	SetRectTopLeft(topClouds, 1920, 490, allCloudsTopLeft);
 
-		cloudBot0[i * 4 + 0].position = botExtra + xExtra + bottomLeft;
-		cloudBot0[i * 4 + 1].position = botExtra + xExtra + bottomLeft + Vector2f(0, sub0.height / 2);
-		cloudBot0[i * 4 + 2].position = botExtra + xExtra + bottomLeft + Vector2f(sub0.width / 2, sub0.height / 2);
-		cloudBot0[i * 4 + 3].position = botExtra + xExtra + bottomLeft + Vector2f(sub0.width / 2, 0);
+	SetRectTopLeft(middleClouds, 1920, 1080, allCloudsTopLeft + Vector2f(0, 490));
 
-		cloudBot0[i * 4 + 0].texCoords = Vector2f(0, sub0.height);
-		cloudBot0[i * 4 + 1].texCoords = Vector2f(0, 0);
-		cloudBot0[i * 4 + 2].texCoords = Vector2f(sub0.width, 0);
-		cloudBot0[i * 4 + 3].texCoords = Vector2f(sub0.width, sub0.height);
+	SetRectTopLeft(bottomClouds, 1920, 240, allCloudsTopLeft + Vector2f(0, 490 + 1080));
 
-		cloudBot1[i * 4 + 0].position = botExtra + xExtra + bottomLeft;
-		cloudBot1[i * 4 + 1].position = botExtra + xExtra + bottomLeft + Vector2f(0, sub1.height / 2);
-		cloudBot1[i * 4 + 2].position = botExtra + xExtra + bottomLeft + Vector2f(sub1.width / 2, sub1.height / 2);
-		cloudBot1[i * 4 + 3].position = botExtra + xExtra + bottomLeft + Vector2f(sub1.width / 2, 0);
+	
+	//for (int i = 0; i < 3; ++i)
+	//{
+	//	Vector2f xExtra(1920 * i, 0);//960
+	//	cloud0[i * 4 + 0].position = xExtra + bottomLeft;
+	//	cloud0[i * 4 + 1].position = xExtra + bottomLeft + Vector2f(0, -sub0.height / 2);
+	//	cloud0[i * 4 + 2].position = xExtra + bottomLeft + Vector2f(sub0.width / 2, -sub0.height / 2);
+	//	cloud0[i * 4 + 3].position = xExtra + bottomLeft + Vector2f(sub0.width / 2, 0);
 
-		cloudBot1[i * 4 + 0].texCoords = Vector2f(0, sub1.height);
-		cloudBot1[i * 4 + 1].texCoords = Vector2f(0, 0);
-		cloudBot1[i * 4 + 2].texCoords = Vector2f(sub1.width, 0);
-		cloudBot1[i * 4 + 3].texCoords = Vector2f(sub1.width, sub1.height);
-	}
+	//	cloud0[i * 4 + 0].texCoords = Vector2f(0, sub0.height);
+	//	cloud0[i * 4 + 1].texCoords = Vector2f(0, 0);
+	//	cloud0[i * 4 + 2].texCoords = Vector2f(sub0.width, 0);
+	//	cloud0[i * 4 + 3].texCoords = Vector2f(sub0.width, sub0.height);
 
-	middleClouds.setPosition(sess->playerOrigPos[0].x - 480, sess->playerOrigPos[0].y + 270);
+	//	cloud1[i * 4 + 0].position = xExtra + bottomLeft;
+	//	cloud1[i * 4 + 1].position = xExtra + bottomLeft + Vector2f(0, -sub1.height / 2);
+	//	cloud1[i * 4 + 2].position = xExtra + bottomLeft + Vector2f(sub1.width / 2, -sub1.height / 2);
+	//	cloud1[i * 4 + 3].position = xExtra + bottomLeft + Vector2f(sub1.width / 2, 0);
+
+	//	cloud1[i * 4 + 0].texCoords = Vector2f(0, sub1.height);
+	//	cloud1[i * 4 + 1].texCoords = Vector2f(0, 0);
+	//	cloud1[i * 4 + 2].texCoords = Vector2f(sub1.width, 0);
+	//	cloud1[i * 4 + 3].texCoords = Vector2f(sub1.width, sub1.height);
+
+	//	cloudBot0[i * 4 + 0].position = botExtra + xExtra + bottomLeft;
+	//	cloudBot0[i * 4 + 1].position = botExtra + xExtra + bottomLeft + Vector2f(0, sub0.height / 2);
+	//	cloudBot0[i * 4 + 2].position = botExtra + xExtra + bottomLeft + Vector2f(sub0.width / 2, sub0.height / 2);
+	//	cloudBot0[i * 4 + 3].position = botExtra + xExtra + bottomLeft + Vector2f(sub0.width / 2, 0);
+
+	//	cloudBot0[i * 4 + 0].texCoords = Vector2f(0, sub0.height);
+	//	cloudBot0[i * 4 + 1].texCoords = Vector2f(0, 0);
+	//	cloudBot0[i * 4 + 2].texCoords = Vector2f(sub0.width, 0);
+	//	cloudBot0[i * 4 + 3].texCoords = Vector2f(sub0.width, sub0.height);
+
+	//	cloudBot1[i * 4 + 0].position = botExtra + xExtra + bottomLeft;
+	//	cloudBot1[i * 4 + 1].position = botExtra + xExtra + bottomLeft + Vector2f(0, sub1.height / 2);
+	//	cloudBot1[i * 4 + 2].position = botExtra + xExtra + bottomLeft + Vector2f(sub1.width / 2, sub1.height / 2);
+	//	cloudBot1[i * 4 + 3].position = botExtra + xExtra + bottomLeft + Vector2f(sub1.width / 2, 0);
+
+	//	cloudBot1[i * 4 + 0].texCoords = Vector2f(0, sub1.height);
+	//	cloudBot1[i * 4 + 1].texCoords = Vector2f(0, 0);
+	//	cloudBot1[i * 4 + 2].texCoords = Vector2f(sub1.width, 0);
+	//	cloudBot1[i * 4 + 3].texCoords = Vector2f(sub1.width, sub1.height);
+	//}
+
+	//middleClouds.setPosition(sess->playerOrigPos[0].x - 480, sess->playerOrigPos[0].y + 270);
 }
 
 void ShipEnterScene::ReturnToGame()
@@ -134,36 +175,48 @@ void ShipEnterScene::UpdateState()
 		//SetFlashGroup("staregroup");
 	}
 
-	float oldLeft = cloud0[0].position.x;
-	float blah = 30.f;
-	float newLeft = oldLeft - blah; //cloudVel.x;
-	float diff = (shipStartPos.x - 480) - newLeft;
-	if (diff >= 480)
-	{
-		//cout << "RESETING: " << diff << endl;
-		newLeft = shipStartPos.x - 480 - (diff - 480);
-	}
-	else
-	{
-		//cout << "diff: " << diff << endl;
-	}
+	//float oldLeft = cloud0[0].position.x;
+	//float blah = 30.f;
+	//float newLeft = oldLeft - blah; //cloudVel.x;
+	//float diff = (shipStartPos.x - 480) - newLeft;
+	//if (diff >= 480)
+	//{
+	//	//cout << "RESETING: " << diff << endl;
+	//	newLeft = shipStartPos.x - 480 - (diff - 480);
+	//}
+	//else
+	//{
+	//	//cout << "diff: " << diff << endl;
+	//}
 
-	float allDiff = newLeft - oldLeft;
+	//float allDiff = newLeft - oldLeft;
 	Vector2f cl = relShipVel;
 
-	middleClouds.move(Vector2f(0, cl.y));// + Vector2f( allDiff, 0 ) );
+	//middleClouds.move(Vector2f(0, cl.y));// + Vector2f( allDiff, 0 ) );
 
-	for (int i = 0; i < 3 * 4; ++i)
-	{
-		cloud0[i].position = cl + Vector2f(cloud0[i].position.x + allDiff, cloud0[i].position.y);
-		cloud1[i].position = cl + Vector2f(cloud1[i].position.x + allDiff, cloud1[i].position.y);
+	//for (int i = 0; i < 3 * 4; ++i)
+	//{
+	//	cloud0[i].position = cl + Vector2f(cloud0[i].position.x + allDiff, cloud0[i].position.y);
+	//	cloud1[i].position = cl + Vector2f(cloud1[i].position.x + allDiff, cloud1[i].position.y);
 
-		cloudBot0[i].position = cl + Vector2f(cloudBot0[i].position.x + allDiff, cloudBot0[i].position.y);
-		cloudBot1[i].position = cl + Vector2f(cloudBot1[i].position.x + allDiff, cloudBot1[i].position.y);
-	}
+	//	cloudBot0[i].position = cl + Vector2f(cloudBot0[i].position.x + allDiff, cloudBot0[i].position.y);
+	//	cloudBot1[i].position = cl + Vector2f(cloudBot1[i].position.x + allDiff, cloudBot1[i].position.y);
+	//}
 
-	float origClouds = sess->playerOrigPos[0].x - 480;
-	float currClouds = middleClouds.getPosition().x;
+	//IntRect sub0 = ts_clouds->GetCustomSubRect(Vector2i(1920, 490), Vector2i(0, 0), Vector2i(1, 1), 0);
+	//Vector2f bottomLeft = Vector2f(sess->playerOrigPos[0].x, sess->playerOrigPos[0].y) + Vector2f(-480, 270);
+
+	allCloudsTopLeft.y += relShipVel.y;
+	SetRectTopLeft(topClouds, 1920, 490, allCloudsTopLeft);
+
+	SetRectTopLeft(middleClouds, 1920, 1080, allCloudsTopLeft + Vector2f(0, 490));
+
+	SetRectTopLeft(bottomClouds, 1920, 1080, allCloudsTopLeft + Vector2f(0, 490 + 1080));
+
+	
+
+	//float origClouds = sess->playerOrigPos[0].x - 480;
+	//float currClouds = middleClouds.getPosition().x;
 	
 	
 	//sess->background->Update(sess->view.getCenter());
@@ -171,7 +224,10 @@ void ShipEnterScene::UpdateState()
 	{
 		sess->background->SetExtra(Vector2f(shipEnterData.extraBackgroundOffset, 0));
 	}
-	
+
+	cloudShader.setUniform("quantX", cloudXOffset);
+
+	cloudXOffset += .03;
 
 	if (seqData.frame >= 121)
 	{
@@ -241,11 +297,17 @@ void ShipEnterScene::LayeredDraw( int p_drawLayer, sf::RenderTarget *target )
 {
 	if (p_drawLayer == DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
-		target->draw(cloud1, 4 * 3, sf::Quads, ts_clouds->texture);
+		/*target->draw(cloud1, 4 * 3, sf::Quads, ts_clouds->texture);
 		target->draw(cloud0, 4 * 3, sf::Quads, ts_clouds->texture);
 		target->draw(middleClouds);
 		target->draw(cloudBot1, 4 * 3, sf::Quads, ts_clouds->texture);
-		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_clouds->texture);
+		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_clouds->texture);*/
+
+		target->draw(topClouds, 4, sf::Quads, &cloudShader);
+		target->draw(middleClouds, 4, sf::Quads, &cloudShader);
+		target->draw(bottomClouds, 4, sf::Quads, &cloudShader);
+
+
 		target->draw(shipSprite);
 	}
 	else if (p_drawLayer == DrawLayer::UI_FRONT)

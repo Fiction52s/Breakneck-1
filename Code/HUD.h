@@ -41,7 +41,6 @@ struct KinMask
 	sf::Sprite face;
 	sf::Sprite faceBG;
 	Session *sess;
-	MomentumBar *momentumBar;
 	PlayerSkinShader playerSkinShader;
 	sf::Text healthText;
 	float scale;
@@ -120,6 +119,8 @@ struct AdventureHUD : HUD
 	TimerHUD *medalTimer;
 	TimerHUD *medalGoalTimer;
 
+	MomentumBar *momentumBar;
+
 	Tileset *ts_go;
 	sf::Sprite goSpr;
 
@@ -147,6 +148,9 @@ struct AdventureHUD : HUD
 
 	sf::Vector2f bossHealthShowPos;
 	sf::Vector2f bossHealthHidePos;
+
+	sf::Vector2f momentumBarShowPos;
+	sf::Vector2f momentumBarHidePos;
 
 	CubicBezier showBez;
 	CubicBezier hideBez;

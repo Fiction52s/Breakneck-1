@@ -89,6 +89,9 @@ struct SettingsSelector : SettingsModule
 
 	SettingsSelector(TilesetManager *tm, std::vector<std::string> &p_options);
 	~SettingsSelector();
+
+	int GetValue();
+	void SetValue(int val);
 	void Reset();
 	void SetTopLeft(sf::Vector2f pos);
 	void SetCenter(sf::Vector2f p_pos);
@@ -125,6 +128,9 @@ struct VideoSettingsTab : SettingsTab
 	sf::Text displayText;
 	sf::Text resolutionText;
 	sf::Text vSyncText;
+
+	std::vector<int> windowModes;
+	std::vector<sf::Vector2i> resolutions;
 
 	std::vector<SettingsModule*> modules;
 
@@ -183,7 +189,6 @@ struct GameSettingsScreen : TilesetManager, GUIHandler
 	enum Action
 	{
 		A_ACTIVE,
-		A_CONFIRM,
 		A_CANCEL,
 	};
 
@@ -199,25 +204,10 @@ struct GameSettingsScreen : TilesetManager, GUIHandler
 	int frame;
 	MainMenu *mainMenu;
 
-	Panel *panel;	
 	NewTitleScreen *nts;
 
-	Dropdown *resolutionDropdown;
-	Dropdown *windowModeDropdown;
-	Slider *musicVolumeSlider;
-	Slider *soundVolumeSlider;
-	Button *defaultButton;
-	Button *applyButton;
-	Button *backButton;
-	Button *checkForControllerButton;
-	Label *resolutionLabel;
-	Label *windowModeLabel;
-	CheckBox *showFPSCheckBox;
-	CheckBox *showRunningTimerCheckBox;
-	CheckBox *showTerrainLinesCheckBox;
-
-	std::vector<sf::Vector2i> resolutions;
-	std::vector<int> windowModes;
+	//std::vector<sf::Vector2i> resolutions;
+	//std::vector<int> windowModes;
 
 	GameSettingsScreen(MainMenu *mm);
 	~GameSettingsScreen();
@@ -225,19 +215,11 @@ struct GameSettingsScreen : TilesetManager, GUIHandler
 	void UpdateFromConfig();
 	void Start();
 	void Quit();
-	bool HandleEvent(sf::Event ev);
 	void DrawPopupBG(sf::RenderTarget *target);
 	void Update();
 	void Draw(sf::RenderTarget *target);
-	void CancelCallback(Panel *p);
-	void ConfirmCallback(Panel *p);
 	void SetAction(int a);
-	void ButtonCallback(Button *b,
-		const std::string &e);
-
-private:
-	void CreateResolutionDropdown();
-	void CreateWindowModeDropdown();
+	void SaveSettingsAndApply();
 };
 
 #endif

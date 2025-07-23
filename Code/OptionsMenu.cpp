@@ -66,7 +66,7 @@ void OptionsMenu::HandleEvent(sf::Event ev)
 {
 	if (state == GAMEPLAY)
 	{
-		gameSettingsMenu->HandleEvent(ev);
+	//	gameSettingsMenu->HandleEvent(ev);
 	}
 }
 

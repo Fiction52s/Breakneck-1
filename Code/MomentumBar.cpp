@@ -7,27 +7,7 @@ using namespace sf;
 
 MomentumBar::MomentumBar(TilesetManager *tm)
 {
-	ts_bar = tm->GetSizedTileset("HUD/momentumbar_105x105.png");
-	ts_container = tm->GetSizedTileset("HUD/momentumbar_115x115.png");
-	ts_num = tm->GetSizedTileset("HUD/momentumnum_48x48.png");
-
-	levelNumSpr.setTexture(*ts_num->texture);
-	levelNumSpr.setTextureRect(ts_bar->GetSubRect(0));
-
-	/*teal.setTexture(*ts_bar->texture);
-	teal.setTextureRect(ts_bar->GetSubRect(0));
-
-	blue.setTexture(*ts_bar->texture);
-	blue.setTextureRect(ts_bar->GetSubRect(1));
-
-	purp.setTexture(*ts_bar->texture);
-	purp.setTextureRect(ts_bar->GetSubRect(2));*/
-
-	container.setTexture(*ts_container->texture);
-	container.setTextureRect(ts_container->GetSubRect(0));
-
-	levelNumSpr.setTexture(*ts_num->texture);
-	levelNumSpr.setTextureRect(ts_num->GetSubRect(0));
+	ts_bar = tm->GetSizedTileset("HUD/momentum_bar_710x65.png");
 
 	if (!partShader.loadFromFile("Resources/Shader/momentum.frag", sf::Shader::Fragment))
 	{
@@ -35,24 +15,18 @@ MomentumBar::MomentumBar(TilesetManager *tm)
 		assert(0);
 	}
 
-	partShader.setUniform("barTex", *ts_bar->texture);//sf::Shader::CurrentTexture);
-	//partShader.setUniform("barTex", sf::Shader::CurrentTexture);
+	partShader.setUniform("barTex", *ts_bar->texture);
 }
 
-void MomentumBar::SetTopLeft(sf::Vector2f &pos)
+void MomentumBar::SetCenter(sf::Vector2f &pos)
 {
-	Vector2f extra(5, 5);
-	SetRectTopLeft(colorQuad, ts_bar->tileWidth, ts_bar->tileHeight, pos + extra);
-	//teal.setPosition(pos + extra);
-	//blue.setPosition(pos + extra);
-	//purp.setPosition(pos + extra);
-	container.setPosition(pos);
-	levelNumSpr.setPosition(pos + Vector2f(76, -50));
+	SetRectCenter(barQuad, ts_bar->tileWidth, ts_bar->tileHeight, pos);
+	center = pos;
 }
 
-Vector2f MomentumBar::GetTopLeft()
+Vector2f MomentumBar::GetCenter()
 {
-	return container.getPosition();
+	return center;
 }
 
 void MomentumBar::SetMomentumInfo(int p_level, float p_part)
@@ -61,6 +35,21 @@ void MomentumBar::SetMomentumInfo(int p_level, float p_part)
 	part = p_part;
 	partShader.setUniform("tile", (float)level);
 	partShader.setUniform("factor", part);
+
+	Color c;
+	switch (level)
+	{
+	case 0:
+		c = Color(0x12, 0xdb, 0xff);
+		break;
+	case 1:
+		c = Color(0x2e, 0x69, 0xff);
+		break;
+	case 2:
+		c = Color(0xdd, 0x40, 0xff);
+		break;
+	}
+	partShader.setUniform("barColor", sf::Glsl::Vec4(c));
 
 	int tile;
 	if (level == 0 && part == 0)
@@ -71,37 +60,10 @@ void MomentumBar::SetMomentumInfo(int p_level, float p_part)
 	{
 		tile = level + 1;
 	}
-
-	container.setTextureRect(ts_container->GetSubRect(min(level, 2)));
-	levelNumSpr.setTextureRect(ts_num->GetSubRect(min( 3, tile)));
 }
 
 void MomentumBar::Draw(sf::RenderTarget *target)
 {
-	target->draw(container);
-
-	SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(level), Vector2f(ts_bar->texture->getSize()));
-	target->draw(colorQuad, 4, sf::Quads, &partShader);
-
-	//if (level == 0)
-	//{
-	//	
-	//	//target->draw(teal, &partShader);
-	//}
-	//else if (level == 1)
-	//{
-	//	SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(1), Vector2f(ts_bar->texture->getSize()));
-	//	//target->draw(teal);
-	//	//target->draw(blue, &partShader);
-	//	target->draw(colorQuad, 4, sf::Quads, &partShader);
-	//}
-	//else if (level == 2)
-	//{
-	//	SetRectSubRectGL(colorQuad, ts_bar->GetSubRect(2), Vector2f(ts_bar->texture->getSize()));
-	//	//target->draw(blue);
-	//	//target->draw(purp, &partShader);
-	//	target->draw(colorQuad, 4, sf::Quads, &partShader);
-	//}
-
-	target->draw(levelNumSpr);
+	SetRectSubRectGL(barQuad, ts_bar->GetSubRect(level), Vector2f(ts_bar->texture->getSize()));
+	target->draw(barQuad, 4, sf::Quads, &partShader);
 }

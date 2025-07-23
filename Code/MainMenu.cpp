@@ -3711,7 +3711,7 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-			gameSettingsScreen->HandleEvent(ev);
+			//gameSettingsScreen->HandleEvent(ev);
 		}
 
 		gameSettingsScreen->Update();

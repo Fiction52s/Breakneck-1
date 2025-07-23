@@ -7351,7 +7351,7 @@ int Actor::GetNumActiveBubbles()
 void Actor::UpdateBubbles()
 {
 	bool homingAvailable = HasUpgradeEffect(UE_HOMING_RUSH_UNLOCK);// && (currPowerMode == PMODE_TIMESLOW);
-	bool tryingToHome = homingAvailable && SpecialLPressButtonHeld();//Special //((PowerButtonHeld() && currPowerMode == PMODE_TIMESLOW)
+	bool tryingToHome = homingAvailable && SpecialYButtonHeld();//Special //((PowerButtonHeld() && currPowerMode == PMODE_TIMESLOW)
 		//|| (currHotkeyedPowerMode == PMODE_TIMESLOW && currInput.HotkeyButtonDown()));
 
 	homingTarget = NULL;
@@ -12141,7 +12141,7 @@ bool Actor::TryAirBlock()
 bool Actor::UpdateGravityPull()
 {
 	if(HasUpgradeEffect(UE_GRAVITY_PULL)
-			&& SpecialYButtonHeld())
+			&& JumpButtonHeld())
 	{
 		if (gravityPullFrame == gravityPullLength)
 		{
@@ -12149,12 +12149,12 @@ bool Actor::UpdateGravityPull()
 			return false;
 		}
 
-		if (gravityPullFrame == -1 && hasGravityPull && ground == NULL && grindEdge == NULL && bounceEdge == NULL )
+		/*if (gravityPullFrame == -1 && hasGravityPull && ground == NULL && grindEdge == NULL && bounceEdge == NULL )
 		{
 			gravityPullFrame = 0;
 			hasGravityPull = false;
 			return true;
-		}
+		}*/
 
 		if (gravityPullFrame >= 0)
 		{
@@ -23006,8 +23006,8 @@ bool Actor::DefaultGravReverseCheck()
 {
 	bool steepTransferCheck = ground != NULL && ground->IsSteepGround() && minContact.edge->IsSteepGround();
 
-	bool heldPower = SpecialYButtonHeld();/*(PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
-		|| (currHotkeyedPowerMode == PMODE_SHIELD && currInput.HotkeyButtonDown());*/
+	bool heldPower = JumpButtonHeld();//SpecialYButtonHeld();/*(PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
+		//|| (currHotkeyedPowerMode == PMODE_SHIELD && currInput.HotkeyButtonDown());*/
 
 	return ((HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))
 		//&& tempCollision
@@ -25228,12 +25228,12 @@ bool Actor::BounceButtonHeld()
 
 bool Actor::HomingButtonPressed()
 {
-	return SpecialLPressButtonHeld();
+	return SpecialYButtonPressed();
 }
 
 bool Actor::HomingButtonHeld()
 {
-	return SpecialLPressButtonPressed();
+	return SpecialYButtonHeld();
 }
 
 bool Actor::JumpButtonPressed()
@@ -25291,16 +25291,6 @@ bool Actor::SpecialBButtonPressed()
 bool Actor::SpecialBButtonHeld()
 {
 	return currInput.SpecialBButtonDown();
-}
-
-bool Actor::SpecialLPressButtonPressed()
-{
-	return currInput.SpecialLPressButtonDown() && !prevInput.SpecialLPressButtonDown();
-}
-
-bool Actor::SpecialLPressButtonHeld()
-{
-	return currInput.SpecialLPressButtonDown();
 }
 
 void Actor::BounceFloaterBoost( V2d &hitDir )
@@ -25730,11 +25720,16 @@ bool Actor::TryDoubleJump()
 
 		return true;
 	}
-	else if ( bounceFlameOn && HasUpgradeEffect(UE_BOUNCE_TRIPLE_JUMP) && JumpButtonPressed() && !IsSingleWirePulling())
+	else if(HasUpgradeEffect(UE_GRAVITY_PULL) && JumpButtonPressed() && !IsSingleWirePulling() && hasGravityPull )
+	{
+		gravityPullFrame = 0;
+		hasGravityPull = false;
+	}
+	/*else if ( bounceFlameOn && HasUpgradeEffect(UE_BOUNCE_TRIPLE_JUMP) && JumpButtonPressed() && !IsSingleWirePulling())
 	{
 		SetAction(TRIPLE_JUMP);
 		frame = 0;
-	}
+	}*/
 	
 	return false;
 }

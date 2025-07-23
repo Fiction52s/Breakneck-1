@@ -96,9 +96,14 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	bossHealthShowPos = Vector2f(1920 - 100, 200);
 	bossHealthHidePos = bossHealthShowPos + Vector2f(500, 0);
 
+	momentumBarShowPos = Vector2f(960, 45);
+	momentumBarHidePos = Vector2f(960, 1080 + 200);
+
 	keyMarkerYOffset = 80;
 
 	bossHealthBar = NULL;
+
+	momentumBar = new MomentumBar(tm);
 
 	//Reset();
 }
@@ -120,6 +125,8 @@ AdventureHUD::~AdventureHUD()
 	delete medalTimer;
 
 	delete medalGoalTimer;
+
+	delete momentumBar;
 }
 
 void AdventureHUD::SetSession(Session *p_sess)
@@ -288,6 +295,7 @@ void AdventureHUD::Show(int frames)
 		medalGoalTimer->SetCenter(timerShowPos + medalGoalOffset);
 		powerSelector->SetPosition(powerSelectorShowPos);
 		goSpr.setPosition(goShowPos);
+		momentumBar->SetCenter(momentumBarShowPos);
 		if (bossHealthBar != NULL)
 		{
 			bossHealthBar->SetTopLeft(bossHealthShowPos);
@@ -356,6 +364,7 @@ void AdventureHUD::Update()
 			kinMask->SetTopLeft(topLeft);
 			Vector2f keyMarkerPos = keyMarkerHidePos * (1.f - a) + a * keyMarkerShowPos;
 			Vector2f goPos = goHidePos * (1.f - a) + a * goShowPos;
+			Vector2f momentumBarPos = momentumBarHidePos * (1.f - a) + a * momentumBarShowPos;
 			//for (int i = 0; i < keyMarkers.size(); ++i)
 			//{
 			//	//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
@@ -373,6 +382,8 @@ void AdventureHUD::Update()
 				keyMarkers[1]->SetTopLeft(keyMarkerPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 			
+			momentumBar->SetCenter(momentumBarPos);
+
 			goSpr.setPosition(goPos);
 			Vector2f countPos = currencyCountTextHidePos * (1.f - a) + a * currencyCountTextShowPos;
 			currencyCountText.setPosition(countPos);
@@ -417,6 +428,7 @@ void AdventureHUD::Update()
 				keyMarkers[1]->SetTopLeft(keyMarkerHidePos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 
+			momentumBar->SetCenter(momentumBarHidePos);
 			goSpr.setPosition(goHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
 			currencyCountText.setPosition(currencyCountTextHidePos);
@@ -439,6 +451,7 @@ void AdventureHUD::Update()
 			kinMask->SetTopLeft(topLeft);
 			Vector2f keyMarkerPos = keyMarkerShowPos * (1.f - a) + a * keyMarkerHidePos;
 			Vector2f goPos = goShowPos * (1.f - a) + a * goHidePos;
+			Vector2f momentumBarPos = momentumBarShowPos * (1.f - a) + a * momentumBarHidePos;
 
 			if (numActiveKeyMarkers == 1)
 			{
@@ -451,6 +464,7 @@ void AdventureHUD::Update()
 				keyMarkers[1]->SetTopLeft(keyMarkerPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 
+			momentumBar->SetCenter(momentumBarPos);
 			//for (int i = 0; i < keyMarkers.size(); ++i)
 			//{
 			//	//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
@@ -650,6 +664,9 @@ void AdventureHUD::Draw(RenderTarget *target)
 		}
 
 		target->draw(currencyCountText);
+
+		momentumBar->SetMomentumInfo(kinMask->actor->speedLevel, kinMask->actor->GetSpeedBarPart());
+		momentumBar->Draw(target);
 	}
 
 	if (sess->IsSessTypeGame())
@@ -692,8 +709,6 @@ KinMask::KinMask( TilesetManager *tm )
 	SetRectTopLeft(healthQuad, ts_hudBars->tileWidth, ts_hudBars->tileHeight, hudBarsTopLeft);
 	SetRectTopLeft(momentumQuad, ts_hudBars->tileWidth, ts_hudBars->tileHeight, hudBarsTopLeft + Vector2f(0, 38));
 
-	momentumBar = new MomentumBar(tm);
-
 	SetTopLeft(Vector2f(0, 0));
 
 	Reset();
@@ -701,7 +716,7 @@ KinMask::KinMask( TilesetManager *tm )
 
 KinMask::~KinMask()
 {
-	delete momentumBar;
+	
 }
 
 void KinMask::SetSession(Session *p_sess)
@@ -754,7 +769,7 @@ void KinMask::Draw(RenderTarget *target)
 		target->draw(face, &playerSkinShader.pShader);
 	}
 
-	momentumBar->SetMomentumInfo(actor->speedLevel, actor->GetSpeedBarPart());
+	
 	//momentumBar->Draw(target);
 
 	//target->draw(healthText);
@@ -868,7 +883,6 @@ void KinMask::SetTopLeft(sf::Vector2f &pos)
 {
 	face.setPosition(pos);
 	faceBG.setPosition(pos);
-	momentumBar->SetTopLeft(pos + Vector2f(202, 117));
 	healthText.setPosition(pos + Vector2f(20, 200));
 }
 

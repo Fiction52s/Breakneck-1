@@ -158,7 +158,6 @@ struct ControllerState
 	bool SpecialL1ButtonDown() const;
 	bool SpecialYButtonDown() const;
 	bool SpecialBButtonDown() const;
-	bool SpecialLPressButtonDown() const;
 
 	bool ConfirmButtonDown() const;
 	bool BackButtonDown() const;
@@ -179,7 +178,6 @@ struct ControllerSettings
 		BUTTONTYPE_SPECIAL_L1,
 		BUTTONTYPE_SPECIAL_Y,
 		BUTTONTYPE_SPECIAL_B,
-		BUTTONTYPE_SPECIAL_LPRESS,
 		BUTTONTYPE_LEFTWIRE,
 		BUTTONTYPE_RIGHTWIRE,
 		BUTTONTYPE_PAUSE,

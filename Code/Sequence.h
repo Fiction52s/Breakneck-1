@@ -369,17 +369,29 @@ struct ShipEnterScene : Sequence
 	//ship sequence. should be in its own structure
 	Tileset *ts_clouds;
 	Tileset *ts_ship;
-	sf::Vertex cloud0[3 * 4];
-	sf::Vertex cloud1[3 * 4];
-	sf::Vertex cloudBot0[3 * 4];
-	sf::Vertex cloudBot1[3 * 4];
+
+	sf::Vertex topClouds[4];
+	sf::Vertex middleClouds[4];
+	sf::Vertex bottomClouds[4];
+
+	sf::Vector2f allCloudsTopLeft;
+
+	sf::Shader cloudShader;
+	sf::Shader middleCloudShader;
+
+	float cloudXOffset;
+
+	//sf::Vertex cloud0[3 * 4];
+	//sf::Vertex cloud1[3 * 4];
+	//sf::Vertex cloudBot0[3 * 4];
+	//sf::Vertex cloudBot1[3 * 4];
 	/*sf::VertexArray cloud0;
 	sf::VertexArray cloud1;
 	sf::VertexArray cloudBot0;
 	sf::VertexArray cloudBot1;*/
 	sf::Vector2f relShipVel;
 	sf::Sprite shipSprite;
-	sf::RectangleShape middleClouds;
+	//sf::RectangleShape middleClouds;
 	bool shipSequence;
 	//bool hasShipEntrance;
 	V2d shipEntrancePos;

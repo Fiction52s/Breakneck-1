@@ -7,20 +7,20 @@ struct GameSession;
 
 struct MomentumBar
 {
-	MomentumBar(TilesetManager *tm);
-	sf::Vertex colorQuad[4];
-	sf::Sprite container;
-	sf::Sprite levelNumSpr;
-	sf::Vector2f GetTopLeft();
-	void SetTopLeft(sf::Vector2f &pos);
+	sf::Shader partShader;
+	Tileset *ts_bar;
+	sf::Vertex barQuad[4];
 	int level;
 	float part;
+	sf::Vector2f center;
+
+	MomentumBar(TilesetManager *tm);
+	sf::Vector2f GetCenter();
+	void SetCenter(sf::Vector2f &pos);
+	
 	void SetMomentumInfo(int level, float part);
-	Tileset *ts_bar;
-	Tileset *ts_container;
-	Tileset *ts_num;
 	void Draw(sf::RenderTarget *target);
-	sf::Shader partShader;
+	
 };
 
 #endif

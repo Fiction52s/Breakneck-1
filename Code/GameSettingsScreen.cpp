@@ -154,8 +154,6 @@ SettingsSelector::SettingsSelector(TilesetManager *tm, std::vector<std::string> 
 	int waitFrames[] = { 60, 30, 20 };
 	int waitModeThresh[] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, options.size(), 0);
-
-	
 }
 
 SettingsSelector::~SettingsSelector()
@@ -202,6 +200,16 @@ void SettingsSelector::CheckLeftRight()
 	{
 		Update();
 	}
+}
+
+int SettingsSelector::GetValue()
+{
+	return saSelector->currIndex;
+}
+
+void SettingsSelector::SetValue(int val)
+{
+	saSelector->SetIndex(val);
 }
 
 void SettingsSelector::Update()
@@ -368,8 +376,37 @@ VideoSettingsTab::VideoSettingsTab()
 	vSyncText.setPosition(960, 715);
 
 
-	std::vector<std::string> resolutions = { "1920 x 1080", "1600 x 900" };
-	std::vector<std::string> windowType = { "Fullscreen", "Window", "Borderless Window" };
+	std::vector<string> resolutionOptions;
+	
+	auto &modes = sf::VideoMode::getFullscreenModes();
+	resolutions.reserve(modes.size());
+	for (auto it = modes.begin(); it != modes.end(); ++it)
+	{
+		resolutions.push_back(Vector2i((*it).width, (*it).height));
+	}
+	
+	resolutionOptions.reserve(resolutions.size());
+	for (auto it = resolutions.begin(); it != resolutions.end(); ++it)
+	{
+		resolutionOptions.push_back(ConfigData::GetResolutionString((*it).x, (*it).y));
+	}
+
+	windowModes.push_back(sf::Style::Fullscreen);
+	windowModes.push_back(sf::Style::None);
+	windowModes.push_back(sf::Style::Default);
+
+	std::vector<string> windowModeOptions;
+	windowModeOptions.reserve(windowModes.size());
+
+	for (auto it = windowModes.begin(); it != windowModes.end(); ++it)
+	{
+		windowModeOptions.push_back(ConfigData::GetWindowModeString((*it)));
+	}
+	//kinda like the space in borderless window. easy to change later
+
+	std::vector<std::string> windowStrs = { "Fullscreen", "Borderless Window", "Window" };
+	//std::vector<std::string> resolutions = { "1920 x 1080", "1600 x 900" };
+	
 
 	/*switchPos[0] = Vector2f(504, 380);
 	switchPos[1] = Vector2f(504, 503);
@@ -377,9 +414,9 @@ VideoSettingsTab::VideoSettingsTab()
 	switchPos[3] = Vector2f(504, 749);*/
 
 
-	modules.push_back(new SettingsSelector(mainMenu, windowType));
+	modules.push_back(new SettingsSelector(mainMenu, windowStrs));
 	modules[0]->SetCenter(Vector2f(960, 420));
-	modules.push_back(new SettingsSelector(mainMenu, resolutions));
+	modules.push_back(new SettingsSelector(mainMenu, resolutionOptions));
 	modules[1]->SetCenter(Vector2f(960, 617));
 	modules.push_back(new SettingsSwitch(mainMenu, "V-Sync", false));
 	modules[2]->SetCenter(Vector2f(960, 820));
@@ -420,12 +457,65 @@ void VideoSettingsTab::Start()
 
 void VideoSettingsTab::LoadFromConfig(const ConfigData &cd)
 {
+	int foundWindowStyleIndex = -1;
+	for (int i = 0; i < windowModes.size(); ++i)
+	{
+		if (cd.windowStyle == windowModes[i])
+		{
+			foundWindowStyleIndex = i;
+			break;
+		}
+	}
 
+	if (foundWindowStyleIndex >= 0)
+	{
+		modules[0]->SetValue(foundWindowStyleIndex);
+	}
+	else
+	{
+		modules[0]->SetValue(0);
+	}
+	
+
+	int foundResolutionIndex = -1;
+	for (int i = 0; i < resolutions.size(); ++i)
+	{
+		if (cd.resolutionX == resolutions[i].x && cd.resolutionY == resolutions[i].y)
+		{
+			foundResolutionIndex = i;
+			break;
+		}
+	}
+
+	if (foundResolutionIndex >= 0)
+	{
+		modules[1]->SetValue(foundResolutionIndex);
+	}
+	else
+	{
+		modules[1]->SetValue(0);
+	}
+
+	for (int i = 0; i < modules.size(); ++i)
+	{
+		if (i == saSelector->currIndex)
+		{
+			modules[i]->selected = true;
+		}
+		else
+		{
+			modules[i]->selected = false;
+		}
+
+		modules[i]->Update();
+	}
 }
 
 void VideoSettingsTab::UpdateConfig(ConfigData &cd)
 {
-
+	cd.windowStyle = windowModes[modules[0]->GetValue()];
+	cd.resolutionX = resolutions[modules[1]->GetValue()].x;
+	cd.resolutionY = resolutions[modules[1]->GetValue()].y;
 }
 
 void VideoSettingsTab::Update()
@@ -715,36 +805,6 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 	tabs[1] = new VideoSettingsTab;
 	tabs[2] = new AudioSettingsTab;
 
-	//panel = new Panel("gamesettingsscreen", 1400, 700, this, true);
-	//panel->SetColor(Color::Transparent);
-	//panel->SetTop
-	//panel->SetCenterPos(Vector2i(960, 540));
-
-	//panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 60));
-
-	resolutionLabel = panel->AddLabel("resolutionlabel", Vector2i(0, 0), 30, "Resolution:");
-	windowModeLabel = panel->AddLabel("windowmodelabel", Vector2i(0, 0), 30, "Window mode:");
-
-	musicVolumeSlider = panel->AddLabeledSlider( "musicslider", Vector2i( 0, 0 ), "Music Volume:", 400, 0, 100, 100, 30 );
-	soundVolumeSlider = panel->AddLabeledSlider("soundslider", Vector2i(0, 0), "Sound Volume:", 400, 0, 100, 100, 30);
-
-	showFPSCheckBox = panel->AddLabeledCheckBox("showfpscheckbox", Vector2i( 0, 0 ), "Show FPS:");
-	showRunningTimerCheckBox = panel->AddLabeledCheckBox("showrunningtimercheckbox", Vector2i(0, 0), "Show Running Timer:");
-	showTerrainLinesCheckBox = panel->AddLabeledCheckBox("showterrainlinescheckbox", Vector2i(0, 0), "Show Terrain Lines:");
-
-	panel->SetAutoSpacing(false, true, Vector2i(800, 350), Vector2i(0, 60));
-
-	defaultButton = panel->AddButton("defaultbutton", Vector2i(0, 0), Vector2f(400, 40), "Restore Defaults");
-	applyButton = panel->AddButton("applybutton", Vector2i(0, 0), Vector2f(400, 40), "APPLY");
-	backButton = panel->AddButton("backbutton", Vector2i(0, 0), Vector2f(400, 40), "BACK");
-	checkForControllerButton = NULL;
-	//checkForControllerButton = panel->AddButton("checkforcontrollersbutton", Vector2i(0, 0), Vector2f(400, 40), "Check for controllers");
-
-	panel->StopAutoSpacing();
-
-	CreateResolutionDropdown();
-
-	CreateWindowModeDropdown();
 
 	ts_frame = GetSizedTileset("Menu/Options/options_frame_1920x1080.png");
 	SetRectSubRect(frameQuad, ts_frame->GetSubRect(0));
@@ -755,82 +815,24 @@ GameSettingsScreen::GameSettingsScreen(MainMenu *mm)
 
 GameSettingsScreen::~GameSettingsScreen()
 {
-	delete panel;
-
 	for (int i = 0; i < NUM_TABS; ++i)
 	{
 		delete tabs[i];
 	}
 }
 
-void GameSettingsScreen::CreateResolutionDropdown()
-{
-	assert(resolutions.empty());
-
-	auto &modes = sf::VideoMode::getFullscreenModes();
-	resolutions.reserve(modes.size());
-	for (auto it = modes.begin(); it != modes.end(); ++it)
-	{
-		resolutions.push_back( Vector2i( (*it).width, (*it).height ) );
-	}
-
-	//resolutions.push_back(Vector2i(1920, 1080));
-	//resolutions.push_back(Vector2i(1600, 900));
-	//resolutions.push_back(Vector2i(1366, 768));
-	//resolutions.push_back(Vector2i(1280, 800));
-	//resolutions.push_back(Vector2i(1280, 720));
-
-	std::vector<string> resolutionOptions;
-	resolutionOptions.reserve(resolutions.size());
-	for (auto it = resolutions.begin(); it != resolutions.end(); ++it)
-	{
-		resolutionOptions.push_back(ConfigData::GetResolutionString((*it).x, (*it).y));
-	}
-
-	resolutionDropdown = panel->AddDropdown("resolutiondropdown", resolutionLabel->GetTopRight() + Vector2i( 30, 0 ), Vector2i(400, 28), resolutionOptions, 0);
-}
-
-void GameSettingsScreen::CreateWindowModeDropdown()
-{
-	assert(windowModes.empty());
-
-	windowModes.push_back(sf::Style::Fullscreen);
-	windowModes.push_back(sf::Style::None);
-	windowModes.push_back(sf::Style::Default);
-
-	std::vector<string> windowModeOptions;
-	windowModeOptions.reserve(windowModes.size());
-
-	for (auto it = windowModes.begin(); it != windowModes.end(); ++it)
-	{
-		windowModeOptions.push_back(ConfigData::GetWindowModeString((*it)));
-	}
-	
-	windowModeDropdown = panel->AddDropdown("windowmodedropdown", windowModeLabel->GetTopRight() + Vector2i(30, 0), Vector2i(400, 28), windowModeOptions, 0);
-}
-
 void GameSettingsScreen::UpdateFromConfig()
 {
 	const ConfigData &cd = mainMenu->config->GetData();
 
+	tabs[0]->LoadFromConfig(cd);
+	tabs[1]->LoadFromConfig(cd);
 	tabs[2]->LoadFromConfig(cd);
-
-	resolutionDropdown->SetSelectedText(ConfigData::GetResolutionString(cd.resolutionX, cd.resolutionY));
-	windowModeDropdown->SetSelectedText(ConfigData::GetWindowModeString(cd.windowStyle));
-
-	musicVolumeSlider->SetCurrValue(cd.musicVolume);
-	soundVolumeSlider->SetCurrValue(cd.soundVolume);
-
-	showFPSCheckBox->checked = cd.showFPS;
-	showRunningTimerCheckBox->checked = cd.showRunningTimer;
-	showTerrainLinesCheckBox->checked = cd.showTerrainLines;
 }
 
 void GameSettingsScreen::Start()
 {
 	currTab = 0;
-	//gsPanel->Start();
-	//vsPanel->Start();
 	for (int i = 0; i < NUM_TABS; ++i)
 	{
 		tabs[i]->Start();
@@ -842,13 +844,7 @@ void GameSettingsScreen::Start()
 
 void GameSettingsScreen::Quit()
 {
-	ConfirmCallback(panel);
-	//SetAction(A_CANCEL);
-}
-
-bool GameSettingsScreen::HandleEvent(sf::Event ev)
-{
-	return panel->HandleEvent(ev);
+	SetAction(A_CANCEL);
 }
 
 void GameSettingsScreen::DrawPopupBG(sf::RenderTarget *target)
@@ -862,8 +858,6 @@ void GameSettingsScreen::DrawPopupBG(sf::RenderTarget *target)
 
 void GameSettingsScreen::Update()
 {
-	panel->MouseUpdate();
-
 	nts->quantX += nts->xRate;
 	nts->quantY += nts->yRate;
 
@@ -887,9 +881,16 @@ void GameSettingsScreen::Update()
 		}
 	}
 
-	//gsPanel->Update();
-	//vsPanel->Update();
 	tabs[currTab]->Update();
+
+	if (CONTROLLERS.ButtonPressed_X())
+	{
+		SaveSettingsAndApply();
+	}
+	else if (CONTROLLERS.ButtonPressed_B())
+	{
+		Quit();
+	}
 }
 
 void GameSettingsScreen::Draw(sf::RenderTarget *target)
@@ -898,51 +899,42 @@ void GameSettingsScreen::Draw(sf::RenderTarget *target)
 
 	target->draw(frameQuad, 4, sf::Quads, ts_frame->texture);
 
-	//gsPanel->Draw(target);
-	//vsPanel->Draw(target);
 	tabs[currTab]->Draw(target);
-	//panel->Draw(target);
 }
 
 
-void GameSettingsScreen::ConfirmCallback(Panel *p)
+void GameSettingsScreen::SaveSettingsAndApply()
 {
+	ConfigData d;
+	d.SetToDefault();
 
-	SetAction(A_CONFIRM);
-	//SetAction(A_CANCEL); //just for testing, was A_CONFIRM before
-	//return;
+	for (int i = 0; i < 3; ++i)
+	{
+		tabs[i]->UpdateConfig(d);
+	}
 
-	ConfigData d1;
-	d1.SetToDefault();
-	tabs[2]->UpdateConfig(d1);
-	mainMenu->config->SetData(d1);
-	mainMenu->config->Save();
+	//tabs[2]->UpdateConfig(d);
+	
 
 	mainMenu->musicPlayer->Update();
 	mainMenu->musicPlayer->UpdateVolume();
-	mainMenu->soundNodeList->SetSoundVolume(mainMenu->config->GetData().soundVolume);
+	mainMenu->soundNodeList->SetSoundVolume(d.soundVolume);
 
-	return;
+	Session *sess = Session::GetSession();
+	if (sess != NULL)
+	{
+		if (sess->soundNodeList != NULL)
+		{
+			sess->soundNodeList->SetSoundVolume(d.soundVolume);
+		}
+		if (sess->pauseSoundNodeList != NULL)
+		{
+			sess->pauseSoundNodeList->SetSoundVolume(d.soundVolume);
+		}
 
-	Vector2i res(resolutions[resolutionDropdown->selectedIndex]);
-
-	int winMode = windowModes[windowModeDropdown->selectedIndex];
-
-	int mVol = musicVolumeSlider->GetCurrValue();
-	int sVol = soundVolumeSlider->GetCurrValue();
-
-	ConfigData d;
-	d.resolutionX = res.x;
-	d.resolutionY = res.y;
-	d.windowStyle = winMode;
-	d.musicVolume = mVol;
-	d.soundVolume = sVol;
-
-	d.showFPS = showFPSCheckBox->checked;
-	d.showRunningTimer = showRunningTimerCheckBox->checked;
-	d.showTerrainLines = showTerrainLinesCheckBox->checked;
-
-	
+		sess->runningTimerDisplay.showRunningTimer = d.showRunningTimer;
+		sess->frameRateDisplay.showFrameRate = d.showFPS;
+	}
 
 	bool windowNeedsReset = false;
 
@@ -955,65 +947,17 @@ void GameSettingsScreen::ConfirmCallback(Panel *p)
 		windowNeedsReset = true;
 	}
 
-	mainMenu->config->SetData(d);
-	mainMenu->config->Save();
-	//Config::CreateSaveThread(mainMenu->config);
-	//mainMenu->config->WaitForSave();
-
-	mainMenu->musicPlayer->Update();
-	mainMenu->musicPlayer->UpdateVolume();
-	mainMenu->soundNodeList->SetSoundVolume(sVol);
-
-	Session *sess = Session::GetSession();
-	if (sess != NULL)
-	{
-		if (sess->soundNodeList != NULL)
-		{
-			sess->soundNodeList->SetSoundVolume(sVol);
-		}
-		if (sess->pauseSoundNodeList != NULL)
-		{
-			sess->pauseSoundNodeList->SetSoundVolume(sVol);
-		}
-
-		sess->runningTimerDisplay.showRunningTimer = d.showRunningTimer;
-		sess->frameRateDisplay.showFrameRate = d.showFPS;
-	}
-
 	if (windowNeedsReset)
 	{
 		mainMenu->SetupWindow();
 	}
-	//mainMenu->ResizeWindow(res.x, res.y, winMode);
-}
 
-void GameSettingsScreen::CancelCallback(Panel *p)
-{
-	SetAction(A_CANCEL);
-	//ConfirmCallback(p);
-	//CancelCallback(p);
+	mainMenu->config->SetData(d);
+	mainMenu->config->Save();
 }
 
 void GameSettingsScreen::SetAction(int a)
 {
 	action = a;
 	frame = 0;
-}
-
-void GameSettingsScreen::ButtonCallback(Button *b,
-	const std::string &e)
-{
-	if (b == defaultButton)
-	{
-		mainMenu->config->SetToDefault();
-		UpdateFromConfig();
-	}
-	else if (b == applyButton)
-	{
-		ConfirmCallback(panel);
-	}
-	else if (b == backButton)
-	{
-		CancelCallback(panel);
-	}
 }
