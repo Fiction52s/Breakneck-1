@@ -78,7 +78,7 @@ RushManager::RushManager()
 	currWorld = 0;
 	currWorldSection = 0;
 	
-	rushScoreDisplay = NULL;//new RushScoreDisplay(this, mm->arial);
+	rushScoreDisplay = new RushScoreDisplay(this, mm->arial);
 
 	worldTransferScreen = NULL;//new WorldTransferScreen;
 

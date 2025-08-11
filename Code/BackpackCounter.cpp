@@ -46,7 +46,7 @@ BackpackCounter::BackpackCounter(TilesetManager *tm)
 	numDivisions = 6;
 	numParticlesPerDivision = 3;
 
-	Reset();
+	//Reset();
 }
 
 void BackpackCounter::Reset()

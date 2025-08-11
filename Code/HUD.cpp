@@ -744,7 +744,7 @@ void KinMask::SetSession(Session *p_sess)
 	sess = p_sess;
 	actor = sess->GetPlayer(0);
 	
-	backpackCounter->SetSession(p_sess);
+	backpackCounter->SetSession(sess);
 
 	Reset();
 }
