@@ -80,6 +80,7 @@ struct ShapeEmitter
 		PARTICLE_BOOSTER_ANTITIMESLOW,
 		PARTICLE_BOOSTER_FREEFLIGHT,
 		PARTICLE_FOREGROUND_TEST,
+		PARTICLE_MEDAL_EXPLODE,
 		PARTICLE_BOOSTER_Count,
 	};
 
@@ -142,6 +143,7 @@ struct ShapeEmitter
 
 	virtual void ActivateParticle(int index);
 	ShapeParticle * CreateParticle(int index);
+	void ManualActivateParticle();
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -184,4 +186,15 @@ struct PlayerBoosterEffectEmitter : ShapeEmitter
 	PlayerBoosterEffectEmitter( Actor *p_player, int p_particleType );
 	void ActivateParticle(int index);
 };
+
+//struct GoalMedal;
+//struct GoalMedalEmitter : ShapeEmitter
+//{
+//	Actor *player;
+//	GoalMedal *medal;
+//
+//	GoalMedalEmitter(Actor *p_player, GoalMedal *p_medal);
+//	void ActivateParticle(int index);
+//	void SpecialUpdate();
+//};
 #endif

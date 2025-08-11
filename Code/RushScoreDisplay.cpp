@@ -9,8 +9,121 @@
 #include "TutorialBox.h"
 #include "KinStore.h"
 #include "KinExperienceBar.h"
+#include "BackpackCounter.h"
+#include "GoalMedal.h"
+#include "AbsorbParticles.h"
 
 using namespace sf;
+
+
+RushScorePanel::RushScorePanel(TilesetManager *tm)
+	:showBez( 0, 0, 1, 1 ), hideBez( 0, 0, 1, 1 )
+{
+	SetRectColor(panelQuad, Color::Red);
+	Reset();
+
+	/*A_HIDE,
+		A_ENTER,
+		A_SHOW,
+		A_LEAVE,
+		A_Count*/
+
+	actionLength[A_HIDE] = 1;
+	actionLength[A_ENTER] = 30;
+	actionLength[A_SHOW] = 1;
+	actionLength[A_LEAVE] = 30;
+
+	showPos = Vector2f(1920 - 400, 100);
+	hidePos = Vector2f(1920 + 50, 100);
+}
+
+void RushScorePanel::Reset()
+{
+	action = A_HIDE;
+	frame = 0;
+	
+}
+
+void RushScorePanel::Update()
+{
+	float width = 400;
+	float height = 800;
+
+	if (frame == actionLength[action])
+	{
+		frame = 0;
+		switch (action)
+		{
+		case A_ENTER:
+			action = A_SHOW;
+
+			break;
+		case A_LEAVE:
+			action = A_HIDE;
+			break;
+		}
+	}
+
+	switch (action)
+	{
+	case A_ENTER:
+	{
+		double df = frame;
+		df = df / actionLength[action];
+		float f = showBez.GetValue(df);
+		Vector2f newPos = showPos * f + hidePos * (1.f - f);
+		SetRectTopLeft(panelQuad, width, height, newPos);
+		break;
+	}
+	case A_SHOW:
+		SetRectTopLeft(panelQuad, width, height, showPos);
+		break;
+	case A_LEAVE:
+	{
+		double df = frame;
+		df = df / actionLength[action];
+		float f = hideBez.GetValue(df);
+		Vector2f newPos = hidePos * f + showPos * (1.f - f);
+		SetRectTopLeft(panelQuad, width, height, newPos);
+		break;
+	}
+	}
+
+	++frame;
+}
+
+void RushScorePanel::Enter()
+{
+	assert(action == A_HIDE);
+	action = A_ENTER;
+	frame = 0;
+}
+
+void RushScorePanel::Leave()
+{
+	assert(action == A_SHOW);
+	action = A_LEAVE;
+	frame = 0;
+}
+
+bool RushScorePanel::IsHidden()
+{
+	return action == A_HIDE;
+}
+
+bool RushScorePanel::IsShowing()
+{
+	return action == A_SHOW;
+}
+
+void RushScorePanel::Draw(sf::RenderTarget *target)
+{
+	if (action != A_HIDE)
+	{
+		target->draw(panelQuad, 4, sf::Quads);
+	}
+}
+
 
 RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 	:ScoreDisplay(p_rushManager, f)
@@ -25,6 +138,12 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 
 	kinStore = rushManager->kinStore;
 
+	scorePanel = new RushScorePanel(rushManager);
+
+	backpackCounter = new BackpackCounter(rushManager);
+
+	medal = NULL;
+
 	Reset();
 
 	//ts_test = rushManager->GetSizedTileset("Menu/AdventureScoreDisplay/adventurescoretest_1920x1080.png");
@@ -32,12 +151,14 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 
 	testSpr.setPosition(0, 0);
 
-	
+	backpackCounter->SetCenter(Vector2f(1600, 540));
 }
 
 RushScoreDisplay::~RushScoreDisplay()
 {
 	delete upgradePop;
+	delete scorePanel;
+	delete backpackCounter;
 }
 
 void RushScoreDisplay::Reset()
@@ -46,9 +167,13 @@ void RushScoreDisplay::Reset()
 	action = A_IDLE;
 	frame = 0;
 
+	scorePanel->Reset();
+
 	upgradePop->SetCenter(Vector2f(960, 800));
 	//upgradePop->SetUpgrade(2);
 	upgradePop->Reset();
+
+	backpackCounter->Reset();
 }
 
 void RushScoreDisplay::OpenStore()
@@ -56,25 +181,42 @@ void RushScoreDisplay::OpenStore()
 	//action = A_SHOW;
 	kinStore->sess = Session::GetSession();
 	kinStore->Open();
-	action = A_STORE;//A_WAIT; //SHOW is for effects and transitions and stuff
-	frame = 0;
+	//action = A_STORE;//A_WAIT; //SHOW is for effects and transitions and stuff
+	//frame = 0;
 	//upgradePop->SetToMostRecentUpgrade();
+}
+
+void RushScoreDisplay::ParticleDestroyed()
+{
+	backpackCounter->AddParticle();
 }
 
 void RushScoreDisplay::Activate()
 {
-	action = A_EXP;
-	expBar->AddMedal(medalRank);
+	action = A_PANEL_ENTER;
 	frame = 0;
+	scorePanel->Enter();
+	
+	Session *sess = Session::GetSession();
+	if (sess->goal != NULL)
+	{
+		medal = sess->goal->medal;
+		medal->particles->reactor = this;
+	}
+	else
+	{
+		medal = NULL;
+	}
+	//action = A_EXP;
+	//expBar->AddMedal(medalRank);
+	//frame = 0;
 }
 
 void RushScoreDisplay::Confirm()
 {
-	/*if (action == A_EXPBAR)
-	{
-		action = A_SHOW;
-		frame = 0;
-	}*/
+	action = A_PANEL_HIDING;
+	frame = 0;
+	scorePanel->Leave();
 }
 
 void RushScoreDisplay::Deactivate()
@@ -88,42 +230,76 @@ void RushScoreDisplay::Update()
 	if (!IsActive())
 		return;
 
+	scorePanel->Update();
 
 	switch (action)
 	{
-	case A_EXP:
-	{
-		if (expBar->action == KinExperienceBar::A_IDLE)
+	case A_PANEL_ENTER:
+		if (scorePanel->IsShowing())
 		{
-			rushManager->storePoints += expBar->gainedLevels;
-			OpenStore();
-			return;
-		}
-		/*else if (expBar->action == KinExperienceBar::A_LEVEL_UP)
-		{
-			rushManager->storePoints += 1;
-			OpenStore();
-			return;
-		}*/
-
-		expBar->Update();
-		break;
-	}
-	case A_STORE:
-	{
-		if (kinStore->IsReadyToClose())
-		{
-			action = A_WAIT;
+			action = A_PANEL_SHOW;
 			frame = 0;
-			return;
 		}
-
-		kinStore->Update();
 		break;
-	}
+	case A_PANEL_HIDING:
+		if (scorePanel->IsHidden())
+		{
+			action = A_ENERGY_TRANSFER;
+			frame = 0;
+			medal->Disperse();
+		}
+		break;
+	case A_ENERGY_TRANSFER:
+		if (medal->IsDone())
+		{
+			action = A_WAIT_POST_ENERGY;
+			frame = 0;
+		}
+		break;
+	case A_WAIT_POST_ENERGY:
+		if (frame == 180)
+		{
+			Deactivate();
+		}
+		break;
+
+		/*A_PANEL_ENTER,
+			A_PANEL_SHOW,
+			A_PANEL_HIDING,
+			A_ENERGY_TRANSFER,*/
+	//case A_EXP:
+	//{
+	//	if (expBar->action == KinExperienceBar::A_IDLE)
+	//	{
+	//		rushManager->storePoints += expBar->gainedLevels;
+	//		OpenStore();
+	//		return;
+	//	}
+	//	/*else if (expBar->action == KinExperienceBar::A_LEVEL_UP)
+	//	{
+	//		rushManager->storePoints += 1;
+	//		OpenStore();
+	//		return;
+	//	}*/
+
+	//	expBar->Update();
+	//	break;
+	//}
+	//case A_STORE:
+	//{
+	//	if (kinStore->IsReadyToClose())
+	//	{
+	//		action = A_WAIT;
+	//		frame = 0;
+	//		return;
+	//	}
+
+	//	kinStore->Update();
+	//	break;
+	//}
 	}
 	
-
+	backpackCounter->Update();
 	
 	/*bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
 	bool xPressed = sess->controllerStates[actorIndex]->ButtonPressed_X();
@@ -147,14 +323,13 @@ bool RushScoreDisplay::IsActive()
 
 bool RushScoreDisplay::IsConfirmable()
 {
-	return false;
+	return action == A_PANEL_SHOW;
 }
 
 bool RushScoreDisplay::IsWaiting()
 {
 	return action == A_WAIT;
 }
-
 
 
 bool RushScoreDisplay::IsIncludingExtraOptions()
@@ -165,6 +340,7 @@ bool RushScoreDisplay::IsIncludingExtraOptions()
 void RushScoreDisplay::SetSession(Session *sess)
 {
 	upgradePop->tutBox->sess = sess;
+	backpackCounter->SetSession(sess);
 }
 
 void RushScoreDisplay::CreateDescriptionTable()
@@ -237,13 +413,22 @@ void RushScoreDisplay::Draw(sf::RenderTarget *target)
 {
 	if (IsActive())
 	{
-		if (action == A_EXP)
+		/*if (action == A_EXP)
 		{
 			rushManager->expBar->Draw(target);
 		}
 		else if (action == A_WAIT || action == A_STORE)
 		{
 			kinStore->Draw(target);
+		}*/
+
+		if (action == A_PANEL_HIDING || action == A_ENERGY_TRANSFER || action == A_WAIT_POST_ENERGY)
+		{
+			backpackCounter->Draw(target);
 		}
+
+		//medal->Draw(target);
+
+		scorePanel->Draw(target);
 	}
 }

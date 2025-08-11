@@ -8,12 +8,18 @@ struct Session;
 struct Actor;
 struct Tileset;
 
+struct AbsorbReactor
+{
+	virtual void ParticleDestroyed() = 0;
+};
+
 struct AbsorbParticles
 {
 	enum AbsorbType : int
 	{
 		ENERGY,
 		DARK,
+		MEDAL,
 	};
 	
 	struct SingleEnergyParticle
@@ -62,6 +68,8 @@ struct AbsorbParticles
 	};
 	MyData data;
 
+	AbsorbReactor *reactor;
+
 	SingleEnergyParticle *activeList;
 	SingleEnergyParticle *inactiveList;
 
@@ -90,6 +98,7 @@ struct AbsorbParticles
 	void Draw(sf::RenderTarget *rt);
 	SingleEnergyParticle *GetInactiveParticle();
 	void DeactivateParticle(SingleEnergyParticle *sp);
+	int GetNumActive();
 	void AllocateParticle(int tileIndex );
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

@@ -216,6 +216,7 @@ void ImageText::UpdateSprite()
 void ImageText::Draw( sf::RenderTarget *target )
 {
 	if (sh != NULL)
+	//if( false )
 	{
 		target->draw(vert, (maxDigits +1 )* 4, sf::Quads, sh);
 	}

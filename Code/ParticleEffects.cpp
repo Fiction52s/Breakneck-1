@@ -4,7 +4,7 @@
 #include "GameSession.h"
 #include "Actor.h"
 #include "MapHeader.h"
-
+#include "GoalMedal.h"
 
 using namespace std;
 using namespace sf;
@@ -295,6 +295,9 @@ ShapeEmitter::ShapeEmitter(int p_particleType, int p_drawLayer)
 
 	switch (particleType)
 	{
+	case PARTICLE_MEDAL_EXPLODE:
+		numShapesTotal = 16;
+		break;
 	case PARTICLE_BOOSTER_GRAVITY_INCREASER:
 	case PARTICLE_BOOSTER_GRAVITY_DECREASER:
 	case PARTICLE_BOOSTER_MOMENTUM:
@@ -380,6 +383,18 @@ void ShapeEmitter::CreateParticles()
 ShapeParticle * ShapeEmitter::CreateParticle(int index)
 {
 	return new ShapeParticle(pointsPerShape, points + index * pointsPerShape, this);
+}
+
+void ShapeEmitter::ManualActivateParticle()
+{
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		if (particles[i]->data.ttl < 0 )//&& data.emitting)
+		{
+			ActivateParticle(i);
+			break;
+		}
+	}
 }
 
 ShapeEmitter::~ShapeEmitter()
@@ -890,3 +905,106 @@ void ForegroundTestEmitter::ActivateParticle(int index)
 	sp->SetColorShift(bColor, aColor, 0, 60);
 
 }
+
+
+//GoalMedalEmitter::GoalMedalEmitter(Actor *p_player, GoalMedal *p_medal)
+//	:ShapeEmitter(ParticleType::PARTICLE_MEDAL_EXPLODE, DrawLayer::BETWEEN_PLAYER_AND_ENEMIES)
+//{
+//	player = p_player;
+//	medal = p_medal;
+//	SetRatePerSecond(0);
+//}
+//
+//void GoalMedalEmitter::ActivateParticle(int index)
+//{
+//	ShapeParticle *sp = particles[index];
+//	//Vector2f sPos = GetBoxSpawnPos(20, 20);
+//
+//	//int minRad = 10;
+//	//int maxRad = 32;
+//
+//
+//
+//	//int angI = 0;//sess->GetRand() % 360;
+//	//			 //int angI = rand() % 360;
+//	//float ang = angI;
+//
+//
+//	//Color aColor = Color::White;
+//	//Color bColor = Color::White;//Color( 40, 0, 0 );
+//
+//
+//	//Color sColor = GetBlendColor(aColor, bColor, data.boostPortion);
+//
+//
+//	//int ttlVariation = 40;
+//	////int ttlValue = (rand() % ttlVariation) - ttlVariation / 2;
+//	//int ttlValue = (sess->GetRand() % ttlVariation) - ttlVariation / 2;
+//	//int finalTimeToLive = 90 + ttlValue;
+//
+//	//int tile = 0;
+//
+//	//switch (particleType)
+//	//{
+//	//case PARTICLE_BOOSTER_GRAVITY_INCREASER:
+//	//{
+//	//	maxRad = 64;
+//	//	minRad = 20;
+//	//	tile = 0;
+//	//	ang = 0;
+//
+//	//	int tileR = sess->GetRand() % 3;
+//	//	if (tileR == 0)
+//	//	{
+//	//		tile += 1;
+//	//		maxRad = 32;
+//	//		minRad = 20;
+//	//	}
+//
+//	//	break;
+//	//}
+//	//case PARTICLE_BOOSTER_GRAVITY_DECREASER:
+//	//{
+//	//	maxRad = 64;
+//	//	minRad = 20;
+//	//	tile = 5;
+//	//	ang = 0;
+//
+//	//	int tileR = sess->GetRand() % 3;
+//	//	if (tileR == 0)
+//	//	{
+//	//		tile += 1;
+//	//		maxRad = 32;
+//	//		minRad = 20;
+//	//	}
+//	//	//int tileR = sess->GetRand() % 2;
+//
+//	//	break;
+//	//}
+//	//default:
+//	//	tile = 0;
+//	//	ang = 0;
+//	//	break;
+//	//}
+//
+//	////int r = rand() % ((maxRad - minRad) + 1) + minRad;
+//	//int r = sess->GetRand() % ((maxRad - minRad) + 1) + minRad;
+//	//float rad = r;
+//
+//	sp->Activate(32, medal->position, 0, 5000, Color::White, 0);
+//	sp->data.vel = Vector2f(-5, -5);//normalize(sPos - data.pos) * .1f;//10.f;
+//													//360
+//
+//	/*Color sColorTransParent = sColor;
+//	sColorTransParent.a = 70;
+//
+//	sp->SetColorShift(sColor, sColorTransParent, 20, 20);*/
+//}
+//
+//void GoalMedalEmitter::SpecialUpdate()
+//{
+//	for (int i = 0; i < numShapesTotal; ++i)
+//	{
+//		particles[i]->data.vel = normalize(Vector2f(player->position) - particles[i]->data.pos) * 1.f;
+//	}
+//}

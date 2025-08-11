@@ -78,7 +78,7 @@ RushManager::RushManager()
 	currWorld = 0;
 	currWorldSection = 0;
 	
-	rushScoreDisplay = new RushScoreDisplay(this, mm->arial);
+	rushScoreDisplay = NULL;//new RushScoreDisplay(this, mm->arial);
 
 	worldTransferScreen = NULL;//new WorldTransferScreen;
 
@@ -195,7 +195,7 @@ void RushManager::SetWorld(int w, int section)
 	storePoints = 0;//200;
 
 
-	if (currWorld == 0)
+	if (currWorld == 0 && section == 0)
 	{
 		kinUpgradeLevels->Clear();
 		expBar->Reset();

@@ -9,6 +9,7 @@
 #include "ActorParamsBase.h"
 #include "Actor.h"
 #include "MainMenu.h"
+#include "GoalMedal.h"
 
 using namespace std;
 using namespace sf;
@@ -34,6 +35,8 @@ Goal::Goal( ActorParams *ap )
 
 	explosionYOffset = 80;
 	initialYOffset = 30;
+
+
 
 	//switch (w)
 	//{
@@ -61,6 +64,8 @@ Goal::Goal( ActorParams *ap )
 	{
 		sess->goal = this;
 	}
+
+	medal = new GoalMedal;
 
 	miniSprite.setTexture(*ts_mini->texture);
 	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
@@ -99,6 +104,7 @@ Goal::Goal( ActorParams *ap )
 
 Goal::~Goal()
 {
+	delete medal;
 }
 
 //void Goal::SetMapGoalPos()
@@ -128,6 +134,8 @@ void Goal::ResetEnemy()
 	action = A_SITTING;
 	SetHurtboxes(&hurtBody, 0);
 	UpdateSprite();
+
+	medal->Reset();
 }
 
 void Goal::ConfirmKill()
@@ -153,6 +161,8 @@ void Goal::ProcessState()
 			//exploding = true;
 			//kinKilling = false;
 			frame = 0;
+			medal->Rise();
+			//medal->Hide();
 		}
 	}
 	else if (action == A_EXPLODING )
@@ -162,6 +172,8 @@ void Goal::ProcessState()
 			action = A_DESTROYED;
 		}
 	}
+
+	medal->Update();
 }
 
 void Goal::HandleNoHealth()
@@ -263,7 +275,12 @@ void Goal::EnemyDraw(sf::RenderTarget *target )
 		sprite.setTexture(*ts_explosion->texture);
 	}
 
+	medal->ts = sess->ts_key;
+	medal->sprite.setTexture(*medal->ts->texture);
+
 	DrawSprite(target, sprite);
+
+	medal->Draw(target);
 	//target->draw( sprite );
 }
 

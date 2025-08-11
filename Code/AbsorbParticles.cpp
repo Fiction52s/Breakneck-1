@@ -14,6 +14,8 @@ AbsorbParticles::AbsorbParticles(Session *p_sess, AbsorbType p_abType )
 	inactiveList = NULL;
 	data.directKilled = false;
 
+	reactor = NULL;
+
 	maxNumParticles = sess->GetNumTotalEnergyParticles(p_abType);
 
 	allParticles.reserve(maxNumParticles);
@@ -53,6 +55,13 @@ sf::Vector2f AbsorbParticles::SingleEnergyParticle::GetTargetPos(AbsorbType abTy
 		break;
 	}
 	case DARK:
+	{
+		V2d playerPos = playerTarget->position;
+		return Vector2f(playerPos);
+		//return Vector2f(1920 - 100, 100);
+		break;
+	}
+	case MEDAL:
 	{
 		V2d playerPos = playerTarget->position;
 		return Vector2f(playerPos);
@@ -99,6 +108,22 @@ void AbsorbParticles::AllocateParticle( int tileIndex )
 	}
 
 	allParticles.push_back(sp);
+}
+
+int AbsorbParticles::GetNumActive()
+{
+	SingleEnergyParticle *sp = activeList;
+	SingleEnergyParticle *tNext = NULL;
+
+	int totalActive = 0;
+	while (sp != NULL)
+	{
+		++totalActive;
+		tNext = sp->next;
+		sp = tNext;
+	}
+
+	return totalActive;
 }
 
 int AbsorbParticles::GetNumStoredBytes()
@@ -196,6 +221,7 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 
 	switch( abType )
 	{
+	case MEDAL:
 	case ENERGY:
 	{
 		startPos = Vector2f(p_pos);//Vector2f(round(p_pos.x), round(p_pos.y));
@@ -223,12 +249,21 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	}
 
 	SingleEnergyParticle *sp = NULL;
+	Vector2f transformedVel;
 	for (int i = 0; i < numProjectiles; ++i)
 	{
 		sp = GetInactiveParticle();
 		assert(sp != NULL);
 
-		sp->Activate( p_playerTarget, startPos, t.transformPoint(vel));
+		transformedVel = t.transformPoint(vel);
+		if (abType == MEDAL)
+		{
+			int r = rand() % 20;
+			transformedVel = normalize(transformedVel) * (length(transformedVel) + r * .5f );
+		}
+		
+
+		sp->Activate( p_playerTarget, startPos, transformedVel );
 
 		if (activeList == NULL)
 		{
@@ -272,6 +307,7 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	
 	switch (parent->abType)
 	{
+	case MEDAL:
 	case ENERGY:
 	{
 		sub.width = 64;//12;
@@ -412,6 +448,8 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 			//parent->sess->CollectKey();
 			break;
 		}
+		case MEDAL:
+			break;
 		}
 		return false;
 	}
@@ -517,6 +555,10 @@ void AbsorbParticles::Update()
 		{
 			sp->Clear();
 			DeactivateParticle(sp);
+			if (reactor != NULL)
+			{
+				reactor->ParticleDestroyed();
+			}
 		}
 		sp = tNext;
 	}
@@ -529,6 +571,7 @@ void AbsorbParticles::Draw(sf::RenderTarget *target)
 	//target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
 	switch (abType)
 	{
+	case MEDAL:
 	case ENERGY:
 		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
 		break;

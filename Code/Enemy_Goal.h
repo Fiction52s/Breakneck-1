@@ -4,6 +4,7 @@
 #include "Enemy.h"
 
 struct ActorParams;
+struct GoalMedal;
 
 struct Goal : Enemy
 {
@@ -38,7 +39,7 @@ struct Goal : Enemy
 	int deathFrame;
 	int animationFactor;
 	V2d gn;
-
+	GoalMedal *medal;
 
 
 	Goal(ActorParams *ap);

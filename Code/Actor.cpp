@@ -86,6 +86,7 @@
 #include "Enemy_TouchKey.h"
 #include "KinStore.h"
 #include "Config.h"
+#include "HealthHearts.h"
 
 using namespace sf;
 using namespace std;
@@ -3617,6 +3618,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 		gravityBlasts[0] = NULL;
 	}
 	
+	totalHealth = HealthHearts::BASE_MAX_HEALTH;
 
 	survivalTimer = new TimerHUD(Session::GetSession(), false, false);
 
@@ -3716,7 +3718,7 @@ Actor::Actor(GameSession *gs, EditSession *es, int p_actorIndex)
 
 	rpu = new RisingParticleUpdater( this );
 
-	totalHealth = 3600;
+	
 	steepClimbBoostStart = 5;
 	accelGrassAccel = .25;
 	jumpGrassExtra = 15;
@@ -5282,7 +5284,8 @@ void Actor::Respawn( bool setStartPos )
 
 	int increasedHealthLevel = GetUpgradeEffectCount(UE_INCREASE_STARTING_HEALTH);
 
-	health = 100;
+	health = totalHealth;
+	//adjust this soon
 	health += 100 * increasedHealthLevel;
 
 	spriteAction = HIDDEN;
@@ -6223,7 +6226,7 @@ void Actor::ReactToBeingHit()
 		{
 			double cdd = currDmg - newAmt;
 			int cddi = cdd;
-			health -= cddi;
+			health -= 1;//cddi;
 
 			if (health < 0)
 				health = 0;
@@ -9465,7 +9468,18 @@ void Actor::HandleWaitingScoreDisplay()
 		return;
 	}
 
-	if (sess->scoreDisplay != NULL && sess->scoreDisplay->IsConfirmable())
+	if (owner != NULL && owner->IsRushSession())
+	{
+		if (sess->scoreDisplay->IsConfirmable())
+		{
+			bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
+			if (aPressed)
+			{
+				sess->scoreDisplay->Confirm();
+			}
+		}
+	}
+	else if (sess->scoreDisplay != NULL && sess->scoreDisplay->IsConfirmable())
 	{
 		bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
 		if (aPressed)
@@ -9482,15 +9496,15 @@ void Actor::HandleWaitingScoreDisplay()
 		bool bPressed = sess->controllerStates[actorIndex]->ButtonPressed_B();
 		bool startPressed = sess->controllerStates[actorIndex]->ButtonPressed_Start();
 
-		if (owner != NULL && owner->IsRushSession() )
+		/*if (owner != NULL && owner->IsRushSession() )
 		{
-			//if (aPressed)
+			if (aPressed)
 			{
 				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 				sess->scoreDisplay->Deactivate();
 			}
 			return;
-		}
+		}*/
 
 		if (aPressed || bPressed)
 		{

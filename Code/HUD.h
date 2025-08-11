@@ -16,7 +16,7 @@ struct Minimap;
 struct Actor;
 struct MomentumBar;
 struct BossHealth;
-
+struct BackpackCounter;
 
 struct KinMask
 {
@@ -35,17 +35,18 @@ struct KinMask
 	int frame;
 	Expr expr;
 	Actor *actor;
-	Tileset *ts_face;
-	Tileset *ts_portraitBG;
-	Tileset *ts_hudBars;
-	sf::Sprite face;
-	sf::Sprite faceBG;
+	//Tileset *ts_face;
+	Tileset *ts_kin;
+
+	BackpackCounter *backpackCounter;
+
+	//Tileset *ts_portraitBG;
+	sf::Sprite kinSpr;
+	//sf::Sprite faceBG;
 	Session *sess;
 	PlayerSkinShader playerSkinShader;
 	sf::Text healthText;
 	float scale;
-	sf::Vertex healthQuad[4];
-	sf::Vertex momentumQuad[4];
 
 	KinMask( TilesetManager *tm );
 	~KinMask();
@@ -99,6 +100,7 @@ struct FightHUD : HUD
 };
 
 struct PowerSelector;
+struct HealthHearts;
 struct AdventureHUD : HUD
 {
 	enum State
@@ -120,6 +122,7 @@ struct AdventureHUD : HUD
 	TimerHUD *medalGoalTimer;
 
 	MomentumBar *momentumBar;
+	HealthHearts *hearts;
 
 	Tileset *ts_go;
 	sf::Sprite goSpr;
@@ -151,6 +154,9 @@ struct AdventureHUD : HUD
 
 	sf::Vector2f momentumBarShowPos;
 	sf::Vector2f momentumBarHidePos;
+
+	sf::Vector2f heartShowPos;
+	sf::Vector2f heartHidePos;
 
 	CubicBezier showBez;
 	CubicBezier hideBez;

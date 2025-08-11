@@ -13,7 +13,7 @@ TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier, bool p_showMinutes )
 	modifier = p_modifier;
 	showMinutes = p_showMinutes;
 	sess = NULL;//Session::GetSession();
-	ts_text = tm->GetSizedTileset("HUD/timer_numbers_48x64.png");
+	ts_text = tm->GetSizedTileset("HUD/timer_numbers_54x64.png");//tm->GetSizedTileset("HUD/timer_numbers_48x64.png");
 
 	timer = NULL;
 	secondOnlyTimer = NULL;
@@ -63,13 +63,13 @@ TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier, bool p_showMinutes )
 	if (timer != NULL)
 	{
 		timer->SetNumber(0);
-		timer->SetShader(&textShader->pShader);
+		//timer->SetShader(&textShader->pShader);
 	}
 	else if (secondOnlyTimer != NULL)
 	{
 		secondOnlyTimer->SetNumber(0);
 		secondOnlyTimer->SetSpacingFactor(1.f);
-		secondOnlyTimer->SetShader(&textShader->pShader);
+		//secondOnlyTimer->SetShader(&textShader->pShader);
 		secondOnlyTimer->ShowZeroes(2);
 	}
 	
@@ -78,7 +78,7 @@ TimerHUD::TimerHUD(TilesetManager *tm, bool p_modifier, bool p_showMinutes )
 	centiSecondTimer->SetSpacingFactor(1.f);
 	centiSecondTimer->SetNumber(0);
 	centiSecondTimer->ShowZeroes(2);
-	centiSecondTimer->SetShader(&textShader->pShader);
+	//centiSecondTimer->SetShader(&textShader->pShader);
 
 	currNumFrames = 0;
 	centiScale = .5;

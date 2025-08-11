@@ -14,6 +14,8 @@
 #include "TimerHUD.h"
 #include "MapHeader.h"
 #include "LevelNameDisplay.h"
+#include "HealthHearts.h"
+#include "BackpackCounter.h"
 
 using namespace sf;
 using namespace std;
@@ -44,6 +46,9 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	medalGoalTimer = new TimerHUD(tm, false, true);
 	medalGoalTimer->countingUp = true;
 	medalGoalTimer->baseScale = .5;
+
+	hearts = new HealthHearts(tm);
+	
 
 	keyMarkers.push_back(new KeyMarker( tm ));
 
@@ -96,8 +101,11 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	bossHealthShowPos = Vector2f(1920 - 100, 200);
 	bossHealthHidePos = bossHealthShowPos + Vector2f(500, 0);
 
-	momentumBarShowPos = Vector2f(960, 1080- 45);
+	momentumBarShowPos = Vector2f(960, 1037);
 	momentumBarHidePos = Vector2f(960, 1080 + 200);
+
+	heartShowPos = Vector2f(232, 15);
+	heartHidePos = Vector2f(232, -200);
 
 	keyMarkerYOffset = 80;
 
@@ -127,6 +135,8 @@ AdventureHUD::~AdventureHUD()
 	delete medalGoalTimer;
 
 	delete momentumBar;
+
+	delete hearts;
 }
 
 void AdventureHUD::SetSession(Session *p_sess)
@@ -148,6 +158,9 @@ void AdventureHUD::SetSession(Session *p_sess)
 	modifierTimer->SetSession(sess);
 	medalTimer->SetSession(sess);
 	medalGoalTimer->SetSession(sess);
+	hearts->SetSession(sess);
+
+	momentumBar->actor = sess->GetPlayer(0);
 
 	Reset();
 }
@@ -296,6 +309,7 @@ void AdventureHUD::Show(int frames)
 		powerSelector->SetPosition(powerSelectorShowPos);
 		goSpr.setPosition(goShowPos);
 		momentumBar->SetCenter(momentumBarShowPos);
+		hearts->SetTopLeft(heartShowPos);
 		if (bossHealthBar != NULL)
 		{
 			bossHealthBar->SetTopLeft(bossHealthShowPos);
@@ -365,6 +379,7 @@ void AdventureHUD::Update()
 			Vector2f keyMarkerPos = keyMarkerHidePos * (1.f - a) + a * keyMarkerShowPos;
 			Vector2f goPos = goHidePos * (1.f - a) + a * goShowPos;
 			Vector2f momentumBarPos = momentumBarHidePos * (1.f - a) + a * momentumBarShowPos;
+			Vector2f heartPos = heartHidePos * (1.f - a) + a * heartShowPos;
 			//for (int i = 0; i < keyMarkers.size(); ++i)
 			//{
 			//	//keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
@@ -382,6 +397,8 @@ void AdventureHUD::Update()
 				keyMarkers[1]->SetTopLeft(keyMarkerPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 			
+			hearts->SetTopLeft(heartPos);
+
 			momentumBar->SetCenter(momentumBarPos);
 
 			goSpr.setPosition(goPos);
@@ -428,6 +445,7 @@ void AdventureHUD::Update()
 				keyMarkers[1]->SetTopLeft(keyMarkerHidePos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
 
+			hearts->SetTopLeft(heartHidePos);
 			momentumBar->SetCenter(momentumBarHidePos);
 			goSpr.setPosition(goHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
@@ -452,6 +470,7 @@ void AdventureHUD::Update()
 			Vector2f keyMarkerPos = keyMarkerShowPos * (1.f - a) + a * keyMarkerHidePos;
 			Vector2f goPos = goShowPos * (1.f - a) + a * goHidePos;
 			Vector2f momentumBarPos = momentumBarShowPos * (1.f - a) + a * momentumBarHidePos;
+			Vector2f heartPos = heartShowPos * (1.f - a) + a * heartHidePos;
 
 			if (numActiveKeyMarkers == 1)
 			{
@@ -463,6 +482,8 @@ void AdventureHUD::Update()
 				keyMarkers[0]->SetTopRight(keyMarkerPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 				keyMarkers[1]->SetTopLeft(keyMarkerPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
+
+			hearts->SetTopLeft(heartPos);
 
 			momentumBar->SetCenter(momentumBarPos);
 			//for (int i = 0; i < keyMarkers.size(); ++i)
@@ -507,6 +528,10 @@ void AdventureHUD::Update()
 	{
 		
 	}*/
+
+	hearts->Update();
+
+	momentumBar->UpdateGems();
 
 	if (bossHealthBar != NULL)
 	{
@@ -665,8 +690,10 @@ void AdventureHUD::Draw(RenderTarget *target)
 
 		target->draw(currencyCountText);
 
-		momentumBar->SetMomentumInfo(kinMask->actor->speedLevel, kinMask->actor->GetSpeedBarPart());
+		momentumBar->UpdateMomentumInfo();
 		momentumBar->Draw(target);
+
+		hearts->Draw(target);
 	}
 
 	if (sess->IsSessTypeGame())
@@ -681,7 +708,7 @@ KinMask::KinMask( TilesetManager *tm )
 	actor = NULL;
 	sess = NULL;
 
-	scale = .75f;//1.f;
+	scale = 1.f;//.75f;//1.f;
 
 	healthText.setFont(MainMenu::GetInstance()->arial);
 	healthText.setCharacterSize(30);
@@ -689,34 +716,27 @@ KinMask::KinMask( TilesetManager *tm )
 	healthText.setOutlineColor(Color::Black);
 	healthText.setOutlineThickness(-1);
 
-	ts_hudBars = tm->GetSizedTileset("HUD/hud_bars_384x39.png");
-	ts_face = tm->GetSizedTileset("HUD/kin_face_320x288.png");
+	//kinportrait_272x272_0, 20
+
+	backpackCounter = new BackpackCounter(tm);
+	backpackCounter->SetScale(.33f);
+
+	ts_kin = tm->GetSizedTileset("HUD/kinportrait_272x272.png");
 	//ts_face = tm->GetSizedTileset("HUD/masktest_575x188.png");
-	ts_portraitBG = tm->GetSizedTileset("HUD/kin_portrait_320x288.png");
-	face.setTexture(*ts_face->texture);
-	face.setScale(scale, scale);
-	face.setTextureRect(ts_face->GetSubRect(0));
-	playerSkinShader.SetSubRect( ts_face, ts_face->GetSubRect(0));
+	//ts_portraitBG = tm->GetSizedTileset("HUD/kin_portrait_320x288.png");
+	kinSpr.setTexture(*ts_kin->texture);
+	kinSpr.setScale(scale, scale);
+	kinSpr.setTextureRect(ts_kin->GetSubRect(0));
+	playerSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
 
-	faceBG.setTexture(*ts_portraitBG->texture);
-	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
-	faceBG.setScale(scale, scale);
-
-	SetRectSubRect(healthQuad, ts_hudBars->GetSubRect(0));
-	SetRectSubRect(momentumQuad, ts_hudBars->GetSubRect(1));
-
-	Vector2f hudBarsTopLeft(82, 48);
-	SetRectTopLeft(healthQuad, ts_hudBars->tileWidth, ts_hudBars->tileHeight, hudBarsTopLeft);
-	SetRectTopLeft(momentumQuad, ts_hudBars->tileWidth, ts_hudBars->tileHeight, hudBarsTopLeft + Vector2f(0, 38));
-
-	SetTopLeft(Vector2f(0, 0));
+	SetTopLeft(Vector2f(0, 20));
 
 	Reset();
 }
 
 KinMask::~KinMask()
 {
-	
+	delete backpackCounter;
 }
 
 void KinMask::SetSession(Session *p_sess)
@@ -724,6 +744,8 @@ void KinMask::SetSession(Session *p_sess)
 	sess = p_sess;
 	actor = sess->GetPlayer(0);
 	
+	backpackCounter->SetSession(p_sess);
+
 	Reset();
 }
 
@@ -738,7 +760,7 @@ void KinMask::Reset()
 	Update(0,false);
 	frame = 0;
 
-	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
+	//kinSpr.setTextureRect(ts_portraitBG->GetSubRect(0));
 }
 
 void KinMask::Draw(RenderTarget *target)
@@ -747,18 +769,17 @@ void KinMask::Draw(RenderTarget *target)
 	//target->draw(healthText);
 	//return;
 
-	target->draw(healthQuad, 4, sf::Quads, ts_hudBars->texture);
-	target->draw(momentumQuad, 4, sf::Quads, ts_hudBars->texture);
-
-
 	if (actor->kinMode == Actor::K_DESPERATION )
 	{
-		target->draw(faceBG, &(actor->despFaceShader));
+		//target->draw(faceBG, &(actor->despFaceShader));
 	}
 	else
 	{
-		target->draw(faceBG);
+		//target->draw(faceBG);
 	}
+	target->draw(kinSpr);
+
+	backpackCounter->Draw(target);
 
 	int faceDeathAnimLength = 11;
 	int an = 4;
@@ -766,7 +787,7 @@ void KinMask::Draw(RenderTarget *target)
 
 	if (expr != Expr_DEATH || ( expr == Expr_DEATH && f < faceDeathAnimLength ) )
 	{
-		target->draw(face, &playerSkinShader.pShader);
+		//target->draw(face, &playerSkinShader.pShader);
 	}
 
 	
@@ -790,66 +811,71 @@ void KinMask::Update( int speedLevel, bool desp )
 	}
 
 	//for testing
+
 	//if (false)
-	{
+	//{
 
 
-		if (expr == Expr_DEATH)
-		{
-			int faceDeathAnimLength = 11;
-			int an = 4;
-			int f = frame / an;
+	//	if (expr == Expr_DEATH)
+	//	{
+	//		int faceDeathAnimLength = 11;
+	//		int an = 4;
+	//		int f = frame / an;
 
-			if (f < faceDeathAnimLength)
-			{
-				face.setTextureRect(ts_face->GetSubRect(5 + f));
-				playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5 + f));
-			}
-		}
-		else if (expr == Expr_DEATHYELL)
-		{
-			faceBG.setTextureRect(ts_portraitBG->GetSubRect(5));
-			face.setTextureRect(ts_face->GetSubRect(5));
-			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5));
-		}
-		else
-		{
-			if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2)
-			{
-				switch (speedLevel)
-				{
-				case 0:
-					expr = Expr_NEUTRAL;
-					break;
-				case 1:
-					expr = Expr_SPEED1;
-					break;
-				case 2:
-					expr = Expr_SPEED2;
-					break;
-				case 3:
-					expr = Expr_SPEED2;
-					break;
-				}
+	//		if (f < faceDeathAnimLength)
+	//		{
+	//			face.setTextureRect(ts_face->GetSubRect(5 + f));
+	//			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5 + f));
+	//		}
+	//	}
+	//	else if (expr == Expr_DEATHYELL)
+	//	{
+	//		faceBG.setTextureRect(ts_portraitBG->GetSubRect(5));
+	//		face.setTextureRect(ts_face->GetSubRect(5));
+	//		playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5));
+	//	}
+	//	else
+	//	{
+	//		if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2)
+	//		{
+	//			switch (speedLevel)
+	//			{
+	//			case 0:
+	//				expr = Expr_NEUTRAL;
+	//				break;
+	//			case 1:
+	//				expr = Expr_SPEED1;
+	//				break;
+	//			case 2:
+	//				expr = Expr_SPEED2;
+	//				break;
+	//			case 3:
+	//				expr = Expr_SPEED2;
+	//				break;
+	//			}
 
-				/*if (desp)
-				{
-					expr = Expr_DESP;
-				}
+	//			/*if (desp)
+	//			{
+	//				expr = Expr_DESP;
+	//			}
 
-				if (actor->action == Actor::GROUNDHITSTUN || actor->action == Actor::AIRHITSTUN)
-				{
-					expr = Expr_HURT;
-				}*/
-			}
+	//			if (actor->action == Actor::GROUNDHITSTUN || actor->action == Actor::AIRHITSTUN)
+	//			{
+	//				expr = Expr_HURT;
+	//			}*/
+	//		}
 
-		
-			face.setTextureRect(ts_face->GetSubRect(expr));
-			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(expr));
-			faceBG.setTextureRect(ts_portraitBG->GetSubRect(expr));
-		}
+	//	
+	//		face.setTextureRect(ts_face->GetSubRect(expr));
+	//		playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(expr));
+	//		faceBG.setTextureRect(ts_portraitBG->GetSubRect(expr));
+	//	}
 
-	}
+	//}
+
+
+
+
 	/*switch (expr)
 	{
 	case Expr_NEUTRAL:
@@ -881,12 +907,14 @@ void KinMask::Update( int speedLevel, bool desp )
 
 void KinMask::SetTopLeft(sf::Vector2f &pos)
 {
-	face.setPosition(pos);
-	faceBG.setPosition(pos);
+	kinSpr.setPosition(pos);
+	//faceBG.setPosition(pos);
 	healthText.setPosition(pos + Vector2f(20, 200));
+
+	backpackCounter->SetCenter(pos + Vector2f(44, 39));
 }
 
 sf::Vector2f KinMask::GetTopLeft()
 {
-	return face.getPosition();
+	return kinSpr.getPosition();
 }

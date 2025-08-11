@@ -6423,6 +6423,11 @@ int Session::GetNumTotalEnergyParticles(int absorbType)
 		}
 		break;
 	}
+	case AbsorbParticles::MEDAL:
+	{
+		total = 16;
+		break;
+	}
 	}
 
 	return total;

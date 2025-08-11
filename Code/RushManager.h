@@ -41,6 +41,7 @@ struct RushManager : TilesetManager
 	GameSession *shipGame;
 
 	int storePoints;
+	int currBackpackSectionsFilled;
 
 	int currWorldSection;
 	int currWorld;
