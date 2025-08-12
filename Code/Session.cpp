@@ -288,6 +288,8 @@ void Session::RegisterGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddExtraEnemy("Family Picture (Inspect)", "inspectfamilypicture", objectRow, CreateEnemy<InspectObject>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddExtraEnemy("Open Momenta Store (Inspect)", "inspectmomentastore", objectRow, CreateEnemy<InspectObject>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddExtraEnemy("Cockpit (Inspect)", "inspectcockpit", objectRow, CreateEnemy<InspectObject>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	//AddExtraEnemy("Ship Travel", "shiptravel", objectRow, NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,

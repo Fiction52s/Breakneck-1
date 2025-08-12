@@ -33,6 +33,8 @@ GoalMedal::GoalMedal()
 
 	riseFrames = 180;
 
+	medalRank = 0;
+
 	particles = new AbsorbParticles(sess, AbsorbParticles::MEDAL);
 	//emitter = new GoalMedalEmitter( myGoal->sess->GetPlayer(0), this );// PI / 2.0, 2 * PI, 1.0, 2.5);
 	//emitter->CreateParticles();
@@ -61,9 +63,30 @@ void GoalMedal::Disperse()
 {
 	action = A_DISPERSE;
 	frame = 0;
+
+	int numPoints = 0;
+	int numParticlesPerDivision = 3; //clean up later
+
+	switch (medalRank)
+	{
+		//bronze
+	case 0:
+		
+		break;
+		//silver
+	case 1:
+		break;
+		//gold
+	case 2:
+		break;
+	}
 	particles->Activate(sess->GetPlayer(0), 16, V2d(position), 0);
 }
 
+void GoalMedal::SetMedalRank(int r)
+{
+	medalRank = r;
+}
 
 bool GoalMedal::IsDone()
 {

@@ -32,6 +32,7 @@ struct GoalMedal
 	CubicBezier risingBez;
 	int riseFrames;
 	Session *sess;
+	int medalRank;
 	
 	AbsorbParticles *particles;
 
@@ -40,6 +41,7 @@ struct GoalMedal
 	void Reset();
 	void Update();
 	void Rise();
+	void SetMedalRank(int r);
 	void Disperse();
 	bool IsDone();
 	void SetPosition(sf::Vector2f pos);

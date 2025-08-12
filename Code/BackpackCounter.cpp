@@ -17,7 +17,7 @@ BackpackCounter::BackpackCounter(TilesetManager *tm)
 	MainMenu *mm = MainMenu::GetInstance();
 
 	levelText.setFont(mm->arial);
-	levelText.setCharacterSize(20);
+	levelText.setCharacterSize(40);
 	levelText.setFillColor(Color::White);
 
 	ts_ring = tm->GetSizedTileset("HUD/backpackcircle_245x245.png"); 

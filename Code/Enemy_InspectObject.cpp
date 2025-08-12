@@ -68,6 +68,15 @@ InspectObject::InspectObject(ActorParams *ap)
 		inspectSeq = cSeq;
 
 	}
+	else if (typeName == "inspectmomentastore")
+	{
+		sprite.setScale(.1, .1);
+		ts_inspect = GetSizedTileset("Story/kin_family_1109x1060.png");
+
+		CockpitSequence *cSeq = new CockpitSequence;
+
+		inspectSeq = cSeq;
+	}
 
 	ts = ts_inspect;
 

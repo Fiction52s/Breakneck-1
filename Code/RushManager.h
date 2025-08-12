@@ -29,6 +29,19 @@ struct RushFile;
 struct KinExperienceBar;
 struct RushSaveFile;
 
+struct ExpParams
+{
+	int maxLevel;
+	int levelUpAmtBase;
+	int maxLevelUpIncreaseLevel;
+	int levelUpIncrease;
+	int gold;
+	int silver;
+	int bronze;
+
+	ExpParams();
+	void Load();
+};
 
 
 struct RushManager : TilesetManager
@@ -42,6 +55,8 @@ struct RushManager : TilesetManager
 
 	int storePoints;
 	int currBackpackSectionsFilled;
+
+	ExpBarParams expParams;
 
 	int currWorldSection;
 	int currWorld;
@@ -86,8 +101,6 @@ struct RushManager : TilesetManager
 	KinStore *kinStore;
 
 	int trueLevelIndex; //for randomized build
-
-	KinExperienceBar *expBar;
 
 	std::vector<RushSaveFile*> saveFileVec;
 	int currSaveFileIndex;

@@ -26,6 +26,38 @@
 using namespace std;
 using namespace sf;
 
+ExpParams::ExpParams()
+{
+	maxLevel = -1;
+	levelUpAmtBase = -1;
+	maxLevelUpIncreaseLevel = -1;
+	levelUpIncrease = -1;
+	gold = -1;
+	silver = -1;
+	bronze = -1;
+}
+
+void ExpParams::Load()
+{
+	string path = "Resources/Rush/kinexp.json";
+
+	ifstream is;
+	is.open(path);
+
+	json j;
+	is >> j;
+
+	auto &info = j["Info"];
+
+	maxLevel = info["Max Level"];
+	levelUpAmtBase = info["Level-up Amount Base"];
+	maxLevelUpIncreaseLevel = info["Max Level-up Increase Level"];
+	levelUpIncrease = info["Level-up Increase"];
+	gold = info["Gold"];
+	silver = info["Silver"];
+	bronze = info["Bronze"];
+}
+
 
 RushManager::RushManager()
 {
@@ -36,6 +68,8 @@ RushManager::RushManager()
 
 	firstMap = NULL;
 	shipGame = NULL;
+
+	expParams.Load();
 
 	trueLevelIndex = 0;
 
@@ -65,8 +99,6 @@ RushManager::RushManager()
 	adventureHUD = new AdventureHUD(this);
 
 	medalTimeForm = new MedalTimeForm;
-
-	expBar = new KinExperienceBar(this);
 
 	currWorldDependentTilesetWorldIndex = -1;
 	ts_key = NULL;
@@ -101,8 +133,6 @@ RushManager::~RushManager()
 		delete bonusVec[i];
 	}
 	bonusVec.clear();
-
-	delete expBar;
 
 	delete kinUpgradeLevels;
 
@@ -192,13 +222,14 @@ void RushManager::SetWorld(int w, int section)
 	currRushMapIndex = 0;
 	trueLevelIndex = 0;
 
-	storePoints = 0;//200;
+	//storePoints = 0;//200;
 
 
 	if (currWorld == 0 && section == 0)
 	{
 		kinUpgradeLevels->Clear();
-		expBar->Reset();
+		currBackpackSectionsFilled = 0;
+		storePoints = 0;
 	}
 
 	int powerWorlds = min(currWorld, 6);
