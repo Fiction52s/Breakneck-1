@@ -42,6 +42,7 @@ struct KinStore : GUIHandler
 {
 	enum Action
 	{
+		A_NOT_OPEN,
 		A_OPEN,
 		A_READY_TO_CLOSE,
 		A_Count

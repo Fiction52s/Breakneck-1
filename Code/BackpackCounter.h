@@ -42,6 +42,7 @@ struct BackpackCounter
 	int GetTotalPotentialPoints();
 	void SetLevel(int lev);
 	void AddParticle();
+	void Set(BackpackCounter *b);
 	void Draw(sf::RenderTarget *target);
 };
 

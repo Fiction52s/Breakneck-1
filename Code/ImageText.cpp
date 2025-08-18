@@ -245,6 +245,16 @@ void ImageText::SetNumber( int num )
 	UpdateSprite();
 }
 
+void ImageText::SetColor(sf::Color c)
+{
+	myColor = c;
+
+	for (int i = 0; i < maxDigits + 1; ++i)
+	{
+		SetRectColor(vert + i * 4, myColor);
+	}
+}
+
 void ImageText::SetScale(float s)
 {
 	scale = s;

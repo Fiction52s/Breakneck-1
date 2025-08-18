@@ -9476,6 +9476,7 @@ void Actor::HandleWaitingScoreDisplay()
 			if (aPressed)
 			{
 				sess->scoreDisplay->Confirm();
+				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 			}
 		}
 	}
@@ -9485,6 +9486,8 @@ void Actor::HandleWaitingScoreDisplay()
 		if (aPressed)
 		{
 			sess->scoreDisplay->Confirm();
+
+			owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 		}
 	}
 	else if (sess->scoreDisplay != NULL && sess->scoreDisplay->IsWaiting())
@@ -12339,13 +12342,16 @@ bool Actor::BasicGroundAction()
 	}
 
 	
-	if (currInspectObject != NULL && currInspectObject->IsShowingIcon())
+	if (currInspectObject != NULL )
 	{
-		if (JumpButtonPressed())
+		if (currInspectObject->IsShowingIcon())
 		{
-			SetAction(INSPECT_START);
-			frame = 0;
-			return true;
+			if(currInspectObject->autoTrigger || JumpButtonPressed() )
+			{
+				SetAction(INSPECT_START);
+				frame = 0;
+				return true;
+			}
 		}
 	}
 	
@@ -22286,6 +22292,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				{
 					if (iobj->TryActivate())
 					{
+						cout << "setting object" << endl;
 						currInspectObject = iobj;
 					}
 				}
@@ -23020,7 +23027,7 @@ bool Actor::DefaultGravReverseCheck()
 {
 	bool steepTransferCheck = ground != NULL && ground->IsSteepGround() && minContact.edge->IsSteepGround();
 
-	bool heldPower = JumpButtonHeld();//SpecialYButtonHeld();/*(PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
+	bool heldPower = false;//JumpButtonHeld();//SpecialYButtonHeld();/*(PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
 		//|| (currHotkeyedPowerMode == PMODE_SHIELD && currInput.HotkeyButtonDown());*/
 
 	return ((HasUpgradeEffect(UE_GRAVITY_CLING_UNLOCK) || touchedGrass[Grass::GRAVREVERSE] || ( minContact.edge->rail != NULL && minContact.edge->rail->GetRailType() == TerrainRail::CEILING ))

@@ -3223,6 +3223,8 @@ void MainMenu::HandleMenuMode()
 
 		window->setView(oldView);
 
+		cout << "first map over" << endl;
+
 		//JUST FOR TESTING
 		//worldMap = new WorldMap(this);
 		//saveMenu = new SaveMenuScreen(this);

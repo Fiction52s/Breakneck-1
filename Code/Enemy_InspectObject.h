@@ -23,7 +23,7 @@ struct InspectObject : Enemy
 	};
 
 
-
+	bool hasIcon;
 	MyData data;
 
 	Tileset *ts_inspect;
@@ -31,6 +31,8 @@ struct InspectObject : Enemy
 	int currControllerType;
 	sf::Vertex buttonQuad[4];
 	bool showObject;
+	bool singleActivation;
+	bool hasActivatedOnce;
 
 	InspectObject(ActorParams *ap);//sf::Vector2i &pos, int level);
 	~InspectObject();
@@ -62,6 +64,7 @@ struct InspectObject : Enemy
 	double entranceRadius;
 	double exitRadius;
 	Tileset *ts;
+	bool autoTrigger;
 	Sequence *inspectSeq;
 };
 

@@ -16,6 +16,8 @@
 #include "LevelNameDisplay.h"
 #include "HealthHearts.h"
 #include "BackpackCounter.h"
+#include "RushManager.h"
+#include "RushScoreDisplay.h"
 
 using namespace sf;
 using namespace std;
@@ -559,16 +561,16 @@ void AdventureHUD::Update()
 
 	if (totalFrames <= sess->mapHeader->goldSeconds * 60)
 	{
-		medalTimer->SetColor(Color::Yellow);
-		medalGoalTimer->SetColor(Color::Yellow);
+		medalTimer->SetColor(Color::Green);
+		medalGoalTimer->SetColor(Color::Green);
 
 		medalGoalTimer->SetNumFrames(sess->mapHeader->goldSeconds * 60);
 	}
 	else if (totalFrames <= sess->mapHeader->silverSeconds * 60)
 	{
-		Color grey(200, 200, 200);
-		medalTimer->SetColor(grey);
-		medalGoalTimer->SetColor(grey);
+//		Color grey(200, 200, 200);
+		medalTimer->SetColor(Color::Yellow);
+		medalGoalTimer->SetColor(Color::Yellow);
 
 		medalGoalTimer->SetNumFrames(sess->mapHeader->silverSeconds * 60);
 	}
@@ -604,6 +606,12 @@ void AdventureHUD::Reset()
 	show = true;
 	state = SHOWN;
 	frame = 0;
+
+	if (sess->IsRushSession())
+	{
+		BackpackCounter *bigBackpack = MainMenu::GetInstance()->rushManager->rushScoreDisplay->backpackCounter;
+		kinMask->backpackCounter->Set(bigBackpack);
+	}
 
 	numActiveKeyMarkers = 0;
 
@@ -668,7 +676,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 			owner->despOrb->Draw(target);
 		}*/
 
-		powerSelector->Draw(target);
+		//powerSelector->Draw(target);
 
 		if (numActiveKeyMarkers == 0 && sess->currentZone != NULL )
 		{

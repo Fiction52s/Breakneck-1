@@ -189,7 +189,18 @@ void TimerHUD::SetNumFrames(int frames)
 
 void TimerHUD::SetColor(sf::Color c)
 {
-	textShader->SetColor(1, c);
+	//textShader->SetColor(1, c);
+	if (timer != NULL)
+	{
+		timer->SetColor(c);
+	}
+
+	if (secondOnlyTimer != NULL)
+	{
+		secondOnlyTimer->SetColor(c);
+	}
+
+	centiSecondTimer->SetColor(c);
 }
 
 void TimerHUD::SetModifiedPlus(int frames)

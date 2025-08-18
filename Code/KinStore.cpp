@@ -346,6 +346,8 @@ KinStore::KinStore()
 
 	movieIndex = -1;
 
+
+
 	edit = EditSession::GetSession();
 
 	if ( edit != NULL)
@@ -367,7 +369,7 @@ KinStore::KinStore()
 	bgSpr.setTexture(*ts_bg->texture);
 	yellowSpr.setTexture(*ts_yellowSquare->texture);
 
-	action = -1;
+	action = A_NOT_OPEN;
 	frame = -1;
 
 
@@ -929,7 +931,10 @@ void KinStore::TryUnlockCurrentUpgrade()
 
 void KinStore::Update()
 {
-	if (action == A_OPEN)
+	int f = frame;
+	++frame; //since I return out of options, update frame here but use f during the function
+
+	if (action == A_OPEN )
 	{
 		auto *inputStates = sess->controllerStates[0];
 		bool aPressed = inputStates->ButtonPressed_A();
@@ -947,8 +952,7 @@ void KinStore::Update()
 			TryUnlockCurrentUpgrade();
 			return;
 		}
-
-		int ychanged = ySelector->UpdateIndex(inputStates->DirHold_Up() || inputStates->PadDirHold_Up(), inputStates->DirHold_Down() || inputStates->PadDirHold_Down());
+		int ychanged = ySelector->UpdateIndex(inputStates->DirPressed_Up() || inputStates->PadDirPressed_Up(), inputStates->DirPressed_Down() || inputStates->PadDirPressed_Down());
 
 		if (ychanged != 0)
 		{
@@ -956,7 +960,7 @@ void KinStore::Update()
 			xSelector->SetTotalSize(currStoreEntries[ySelector->currIndex]->size());
 		}
 
-		int xchanged = xSelector->UpdateIndex(inputStates->DirHold_Left() || inputStates->PadDirHold_Left(), inputStates->DirHold_Right() || inputStates->PadDirHold_Right());
+		int xchanged = xSelector->UpdateIndex(inputStates->DirPressed_Left() || inputStates->PadDirPressed_Left(), inputStates->DirPressed_Right() || inputStates->PadDirPressed_Right());
 
 		if (xchanged != 0 || ychanged != 0)
 		{
@@ -965,6 +969,8 @@ void KinStore::Update()
 
 		previewMovies[movieIndex].Update();
 	}
+
+	//++frame;
 }
 
 void KinStore::LoadEntryFile(std::vector<StoreEntry*> &vec, const std::string &fileName, int startingQuadIndex )
@@ -1046,6 +1052,10 @@ void KinStore::LoadStore()
 
 void KinStore::Draw(sf::RenderTarget *target)
 {
+	if (action == A_NOT_OPEN)
+	{
+		return;
+	}
 	//target->draw(containerBGQuad, 4, sf::Quads );
 	target->draw(bgSpr);
 	

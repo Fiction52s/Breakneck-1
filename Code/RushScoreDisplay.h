@@ -68,7 +68,6 @@ struct RushScoreDisplay : ScoreDisplay, AbsorbReactor
 	RushManager *rushManager;
 	RushUpgradePopup *upgradePop;
 	KinStore *kinStore;
-	KinExperienceBar *expBar;
 	RushScorePanel *scorePanel;
 	BackpackCounter *backpackCounter;
 

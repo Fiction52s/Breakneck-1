@@ -513,6 +513,7 @@ bool RushManager::TryToGoToNextWorldShip()
 {
 	if (currWorldSection < 2)
 	{
+		cout << "setting mode to rush ship" << endl;
 		currWorldSection++;
 		MainMenu::GetInstance()->SetModeRushShip(currWorld);
 		return true;

@@ -110,11 +110,18 @@ void BackpackCounter::SetLevel(int lev)
 	}
 }
 
+void BackpackCounter::Set(BackpackCounter *b)
+{
+	SetLevel(b->currLevel);
+	currFactor = b->currFactor;
+	Update();
+}
+
 void BackpackCounter::AddParticle()
 {
 	double div = (PI * 2.0) / numDivisions;
 	currFactor += div / numParticlesPerDivision;
-	cout << "adding particle" << endl;
+	//cout << "adding particle" << endl;
 	currParticlePoints++;
 
 	if (currParticlePoints % numParticlesPerDivision == 0)

@@ -130,8 +130,6 @@ RushScoreDisplay::RushScoreDisplay(RushManager *p_rushManager, sf::Font &f)
 {
 	rushManager = p_rushManager;
 
-	expBar = rushManager->expBar;
-
 	CreateDescriptionTable();
 
 	upgradePop = new RushUpgradePopup(rushManager);
@@ -257,7 +255,7 @@ void RushScoreDisplay::Update()
 		}
 		break;
 	case A_WAIT_POST_ENERGY:
-		if (frame == 180)
+		if (frame == 30)
 		{
 			Deactivate();
 		}

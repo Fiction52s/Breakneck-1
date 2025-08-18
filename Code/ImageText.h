@@ -47,6 +47,7 @@ struct ImageText
 	
 	void ShowZeroes( int numZeroes );
 	void SetSpacingFactor(float f);
+	void SetColor(sf::Color c);
 
 	float spacingFactor;
 	float scale;
@@ -54,6 +55,7 @@ struct ImageText
 	int maxDigits;
 	int activeDigits;
 	int value;
+	sf::Color myColor;
 	sf::Vertex *vert;
 	Tileset *ts;
 	sf::Shader *sh;

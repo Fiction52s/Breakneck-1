@@ -56,7 +56,7 @@ struct RushManager : TilesetManager
 	int storePoints;
 	int currBackpackSectionsFilled;
 
-	ExpBarParams expParams;
+	ExpParams expParams;
 
 	int currWorldSection;
 	int currWorld;

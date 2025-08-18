@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "InspectSequence.h"
 #include "CockpitSequence.h"
+#include "ShipStoreSequence.h"
 #include "MainMenu.h"
 
 
@@ -28,6 +29,7 @@ InspectObject::InspectObject(ActorParams *ap)
 	SetNumActions(Count);
 	SetEditorActions(A_NEUTRAL, A_NEUTRAL, 0);
 
+	autoTrigger = false;
 
 	currControllerType = -1;
 	ClearRect(buttonQuad);
@@ -42,6 +44,9 @@ InspectObject::InspectObject(ActorParams *ap)
 	const string &typeName = ap->GetTypeName();
 
 	showObject = false;
+	hasIcon = true;
+	singleActivation = false;
+	hasActivatedOnce = false;
 
 	ts_inspect = NULL;
 
@@ -73,9 +78,15 @@ InspectObject::InspectObject(ActorParams *ap)
 		sprite.setScale(.1, .1);
 		ts_inspect = GetSizedTileset("Story/kin_family_1109x1060.png");
 
-		CockpitSequence *cSeq = new CockpitSequence;
+		ShipStoreSequence *cSeq = new ShipStoreSequence;
+		cSeq->myInspectObject = this;
+
+		autoTrigger = true;
+		singleActivation = true;
 
 		inspectSeq = cSeq;
+
+		hasIcon = false;
 	}
 
 	ts = ts_inspect;
@@ -95,11 +106,13 @@ InspectObject::InspectObject(ActorParams *ap)
 	actionLength[A_NEUTRAL] = 6;
 	actionLength[A_SHOW_ICON] = 8;
 	actionLength[A_SHOW_INSPECTABLE] = 8;
+	
 	actionLength[A_RECOVERY] = 30;
 
 	animFactor[A_NEUTRAL] = 3;
 	animFactor[A_SHOW_ICON] = 3;
 	animFactor[A_SHOW_INSPECTABLE] = 1;
+
 	animFactor[A_RECOVERY] = 1;
 
 	UpdateParamsSettings();
@@ -126,6 +139,8 @@ void InspectObject::ResetEnemy()
 {
 	action = A_NEUTRAL;
 	frame = 0;
+
+	hasActivatedOnce = false;
 
 	float buttonSize = 48;
 
@@ -173,6 +188,7 @@ void InspectObject::SetExtraIDsAndAddToVectors()
 void InspectObject::ShowInspectable()
 {
 	assert(action == A_SHOW_ICON);
+	hasActivatedOnce = true;
 
 	action = A_SHOW_INSPECTABLE;
 	frame = 0;
@@ -274,6 +290,11 @@ void InspectObject::ProcessState()
 
 bool InspectObject::TryActivate()
 {
+	if (singleActivation && hasActivatedOnce)
+	{
+		return false;
+	}
+
 	if (action == A_NEUTRAL && PlayerDist() < entranceRadius)
 	{
 		ShowIcon();
@@ -363,7 +384,7 @@ void InspectObject::EnemyDraw(sf::RenderTarget *target)
 	}
 	
 
-	if (action == A_SHOW_ICON)
+	if (action == A_SHOW_ICON && hasIcon )
 	{
 		target->draw(buttonQuad, 4, sf::Quads, sess->GetButtonIconTileset(0)->texture);
 	}

@@ -138,6 +138,7 @@ void EditModeUI::AddKinOptionSlider( int world, const std::string &text,
 
 void EditModeUI::CreateKinOptionsPanel()
 {
+	return;
 	kinOptionsPanel = new Panel("kinoptions", 1920, 1080, this, true);
 	kinOptionsPanel->SetPosition(Vector2i(960 - kinOptionsPanel->size.x / 2,
 		540 - kinOptionsPanel->size.y / 2 + 20));
