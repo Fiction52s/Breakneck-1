@@ -12,14 +12,16 @@
 #include "BackpackCounter.h"
 #include "GoalMedal.h"
 #include "AbsorbParticles.h"
+#include <string>
 
 using namespace sf;
+using namespace std;
 
 
 RushScorePanel::RushScorePanel(TilesetManager *tm)
 	:showBez( 0, 0, 1, 1 ), hideBez( 0, 0, 1, 1 )
 {
-	SetRectColor(panelQuad, Color::Red);
+	//SetRectColor(panelQuad, Color::Red);
 	Reset();
 
 	/*A_HIDE,
@@ -28,13 +30,72 @@ RushScorePanel::RushScorePanel(TilesetManager *tm)
 		A_LEAVE,
 		A_Count*/
 
+	ts_panel = tm->GetSizedTileset("HUD/SidePanel_619x882.png");
+
 	actionLength[A_HIDE] = 1;
 	actionLength[A_ENTER] = 30;
 	actionLength[A_SHOW] = 1;
 	actionLength[A_LEAVE] = 30;
 
-	showPos = Vector2f(1920 - 400, 100);
-	hidePos = Vector2f(1920 + 50, 100);
+	showPos = Vector2f(1301, 115);
+	hidePos = Vector2f(1920 + 50, 115);
+
+	MainMenu *mm = MainMenu::GetInstance();
+	levelNumberText.setFont(mm->oxanium);
+	levelNumberText.setCharacterSize(50);
+	levelNumberOffset = Vector2f(117, 118);
+
+	levelNumberText.setString("1-2");
+
+	levelNameText.setFont(mm->oxanium);
+	levelNameText.setCharacterSize(45);
+	levelNameOffset = Vector2f(196, 118);
+
+	levelNameText.setString("testing");
+
+	bestTimeText.setFont(mm->oxanium);
+	bestTimeText.setFillColor(Color::Yellow);
+	bestTimeText.setCharacterSize(90);
+	bestTimeOffset = Vector2f(204, 292);
+
+	bestTimeText.setString("10 : 45");
+
+	currentTimeText.setFont(mm->oxanium);
+	currentTimeText.setCharacterSize(90);
+	currentTimeOffset = Vector2f(204, 440);
+
+	currentTimeText.setString("11 : 45");
+
+	skillPointsText.setFont(mm->oxanium);
+	skillPointsText.setCharacterSize(75);
+	skillPointsOffset = Vector2f(138, 585);
+
+	skillPointsText.setString("x4");
+
+	currencyText.setFont(mm->oxanium);
+	currencyText.setCharacterSize(75);
+	currencyOffset = Vector2f(406, 585);
+
+	currencyText.setString("x50");
+
+	nextText.setFont(mm->oxanium);
+	nextText.setCharacterSize(40);
+	nextOffset = Vector2f(98, 720);
+	nextText.setString("NEXT");
+	nextText.setOrigin(0, nextText.getLocalBounds().top + nextText.getLocalBounds().height / 2);
+
+	retryText.setFont(mm->oxanium);
+	retryText.setCharacterSize(40);
+	retryOffset = Vector2f(356, 720);
+	retryText.setString("RETRY");
+	retryText.setOrigin(0, retryText.getLocalBounds().top + retryText.getLocalBounds().height / 2);
+	
+	buttonSize = 64;
+	
+	continueButtonOffset = Vector2f(242, 686);
+	retryButtonOffset = Vector2f(498, 686);
+
+	SetRectSubRect(panelQuad, ts_panel->GetSubRect(0));
 }
 
 void RushScorePanel::Reset()
@@ -46,8 +107,8 @@ void RushScorePanel::Reset()
 
 void RushScorePanel::Update()
 {
-	float width = 400;
-	float height = 800;
+	float width = ts_panel->tileWidth;
+	float height = ts_panel->tileHeight;
 
 	if (frame == actionLength[action])
 	{
@@ -56,7 +117,6 @@ void RushScorePanel::Update()
 		{
 		case A_ENTER:
 			action = A_SHOW;
-
 			break;
 		case A_LEAVE:
 			action = A_HIDE;
@@ -72,11 +132,11 @@ void RushScorePanel::Update()
 		df = df / actionLength[action];
 		float f = showBez.GetValue(df);
 		Vector2f newPos = showPos * f + hidePos * (1.f - f);
-		SetRectTopLeft(panelQuad, width, height, newPos);
+		SetTopLeft(newPos);
 		break;
 	}
 	case A_SHOW:
-		SetRectTopLeft(panelQuad, width, height, showPos);
+		SetTopLeft(showPos);
 		break;
 	case A_LEAVE:
 	{
@@ -84,7 +144,7 @@ void RushScorePanel::Update()
 		df = df / actionLength[action];
 		float f = hideBez.GetValue(df);
 		Vector2f newPos = hidePos * f + showPos * (1.f - f);
-		SetRectTopLeft(panelQuad, width, height, newPos);
+		SetTopLeft(newPos);
 		break;
 	}
 	}
@@ -92,11 +152,41 @@ void RushScorePanel::Update()
 	++frame;
 }
 
+void RushScorePanel::SetInfo(Session *sess)
+{
+	RushManager *rm = MainMenu::GetInstance()->rushManager;
+
+	if (rm != NULL)
+	{
+		levelNumberText.setString(to_string(rm->currWorld + 1) + "-" + to_string(rm->currRushMapIndex + 1));
+		levelNumberText.setOrigin(levelNumberText.getLocalBounds().left + levelNumberText.getLocalBounds().width / 2,
+			levelNumberText.getLocalBounds().top + levelNumberText.getLocalBounds().height / 2);
+
+		levelNameText.setString(sess->mapHeader->fullName);
+		levelNameText.setOrigin(0, levelNameText.getLocalBounds().top + levelNameText.getLocalBounds().height / 2);
+
+		bestTimeText.setString(GetTimeStr(sess->totalFramesBeforeGoal));
+		bestTimeText.setOrigin(0, bestTimeText.getLocalBounds().top + bestTimeText.getLocalBounds().height / 2);
+
+		currentTimeText.setString(GetTimeStr(sess->totalFramesBeforeGoal));
+		currentTimeText.setOrigin(0, currentTimeText.getLocalBounds().top + currentTimeText.getLocalBounds().height / 2);
+
+		skillPointsText.setString(to_string(rm->storePoints));
+		skillPointsText.setOrigin(skillPointsText.getLocalBounds().left + skillPointsText.getLocalBounds().width / 2,
+			skillPointsText.getLocalBounds().top + skillPointsText.getLocalBounds().height / 2);
+
+		currencyText.setString("50");
+		currencyText.setOrigin(currencyText.getLocalBounds().left + currencyText.getLocalBounds().width / 2,
+			currencyText.getLocalBounds().top + currencyText.getLocalBounds().height / 2);
+	}
+}
+
 void RushScorePanel::Enter()
 {
 	assert(action == A_HIDE);
 	action = A_ENTER;
 	frame = 0;
+	UpdateButtonIconsWhenControllerIsChanged();
 }
 
 void RushScorePanel::Leave()
@@ -116,11 +206,55 @@ bool RushScorePanel::IsShowing()
 	return action == A_SHOW;
 }
 
+void RushScorePanel::UpdateButtonIconsWhenControllerIsChanged()
+{
+	MainMenu *mainMenu = MainMenu::GetInstance();
+
+	int cType = Session::GetSession()->controllerStates[0]->GetControllerType();
+
+	auto button = XBoxButton::XBOX_A;
+	SetRectSubRect(buttonQuads, mainMenu->GetButtonIconTileForMenu(cType, button));
+
+	button = XBoxButton::XBOX_X;
+	SetRectSubRect(buttonQuads + 4, mainMenu->GetButtonIconTileForMenu(cType, button));
+}
+
+void RushScorePanel::SetTopLeft(Vector2f topLeft)
+{
+	float width = ts_panel->tileWidth;
+	float height = ts_panel->tileHeight;
+
+	SetRectTopLeft(panelQuad, width, height, topLeft);
+
+	levelNumberText.setPosition(topLeft + levelNumberOffset);
+	levelNameText.setPosition(topLeft + levelNameOffset);
+	bestTimeText.setPosition(topLeft + bestTimeOffset);
+	//bestTimeText.setOrigin(0, bestTimeText.getLocalBounds().top);
+	currentTimeText.setPosition(topLeft + currentTimeOffset);
+	skillPointsText.setPosition(topLeft + skillPointsOffset);
+	currencyText.setPosition(topLeft + currencyOffset);
+	nextText.setPosition(topLeft + nextOffset);
+	retryText.setPosition(topLeft + retryOffset);
+	SetRectTopLeft(buttonQuads, buttonSize, buttonSize, topLeft + continueButtonOffset);
+	SetRectTopLeft(buttonQuads + 4, buttonSize, buttonSize, topLeft + retryButtonOffset);
+}
+
 void RushScorePanel::Draw(sf::RenderTarget *target)
 {
 	if (action != A_HIDE)
 	{
-		target->draw(panelQuad, 4, sf::Quads);
+		target->draw(panelQuad, 4, sf::Quads, ts_panel->texture);
+
+		target->draw(levelNumberText);
+		target->draw(levelNameText);
+		target->draw(bestTimeText);
+		target->draw(currentTimeText);
+		target->draw(skillPointsText);
+		target->draw(currencyText);
+		target->draw(nextText);
+		target->draw(retryText);
+		
+		target->draw(buttonQuads, 4 * 2, sf::Quads, Session::GetSession()->GetButtonIconTileset(0)->texture);
 	}
 }
 
@@ -193,8 +327,7 @@ void RushScoreDisplay::Activate()
 {
 	action = A_PANEL_ENTER;
 	frame = 0;
-	scorePanel->Enter();
-	
+
 	Session *sess = Session::GetSession();
 	if (sess->goal != NULL)
 	{
@@ -205,6 +338,12 @@ void RushScoreDisplay::Activate()
 	{
 		medal = NULL;
 	}
+
+	scorePanel->SetInfo(sess);
+
+	scorePanel->Enter();
+
+
 	//action = A_EXP;
 	//expBar->AddMedal(medalRank);
 	//frame = 0;

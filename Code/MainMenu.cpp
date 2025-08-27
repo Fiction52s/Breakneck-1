@@ -939,9 +939,10 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	singlePlayerControllerJoinScreen = NULL;
 
-	arial.loadFromFile("Resources/Fonts/Welbutrin.ttf");//"Resources/Fonts/Kinetic_Font_01.ttf");
+	arial.loadFromFile("Resources/Fonts/Welbutrin.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
-	wellbutrin.loadFromFile("Resources/Fonts/Wellbutrin.ttf");
+	wellbutrin.loadFromFile("Resources/Fonts/Welbutrin.ttf");
+	oxanium.loadFromFile("Resources/Fonts/Oxanium-ExtraBold.ttf");
 
 	//player shaders
 	RegisterShader("colorswap");

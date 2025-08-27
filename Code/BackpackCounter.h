@@ -33,6 +33,8 @@ struct BackpackCounter
 	int currParticlePoints;
 	double currFactor;
 
+	bool showContainer;
+
 	BackpackCounter(TilesetManager *tm);
 	void SetCenter(sf::Vector2f pos);
 	void SetScale(float f);
@@ -42,6 +44,7 @@ struct BackpackCounter
 	int GetTotalPotentialPoints();
 	void SetLevel(int lev);
 	void AddParticle();
+	void SetContainerVisible(bool on);
 	void Set(BackpackCounter *b);
 	void Draw(sf::RenderTarget *target);
 };

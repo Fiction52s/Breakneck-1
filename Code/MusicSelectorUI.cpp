@@ -272,7 +272,7 @@ ListChooser::ListChooser( ListChooserHandler *p_handler, int rows)
 	auto &songMap = edit->mainMenu->musicManager->songMap;
 	int numSongs = songMap.size();
 
-	std::vector<string> worldOptions = { "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8" };
+	std::vector<string> worldOptions = { "W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8" };
 
 	for (auto it = worldOptions.begin(); it != worldOptions.end(); ++it)
 	{
@@ -320,6 +320,7 @@ ListChooser::ListChooser( ListChooserHandler *p_handler, int rows)
 	
 	worldDropdown = panel->AddDropdown("worlddropdown", Vector2i(10, 10), Vector2i(100, 30),
 		worldOptions, 0);
+	worldDropdown->SetSelectedIndex(1);
 	
 
 	panel->SetConfirmButton(panel->AddButton("ok", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "OK"));

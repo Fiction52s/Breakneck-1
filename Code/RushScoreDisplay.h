@@ -32,6 +32,9 @@ struct RushScorePanel
 
 	int action;
 	int frame;
+	Tileset *ts_panel;
+
+	int buttonSize;
 
 	sf::Vertex panelQuad[4];
 	sf::Vector2f hidePos;
@@ -39,13 +42,39 @@ struct RushScorePanel
 	CubicBezier showBez;
 	CubicBezier hideBez;
 
+	sf::Vertex buttonQuads[4 * 2];
+
+	sf::Text levelNumberText;
+	sf::Text levelNameText;
+	sf::Text bestTimeText;
+	sf::Text currentTimeText;
+	sf::Text skillPointsText;
+	sf::Text currencyText;
+	sf::Text nextText;
+	sf::Text retryText;
+
+	sf::Vector2f levelNumberOffset;
+	sf::Vector2f levelNameOffset;
+	sf::Vector2f bestTimeOffset;
+	sf::Vector2f currentTimeOffset;
+	sf::Vector2f skillPointsOffset;
+	sf::Vector2f currencyOffset;
+	sf::Vector2f nextOffset;
+	sf::Vector2f retryOffset;
+	sf::Vector2f retryButtonOffset;
+	sf::Vector2f continueButtonOffset;
+
+
 	RushScorePanel(TilesetManager *tm);
 	void Reset();
 	void Update();
 	void Enter();
+	void SetInfo(Session *sess);
 	void Leave();
 	bool IsHidden();
 	bool IsShowing();
+	void UpdateButtonIconsWhenControllerIsChanged();
+	void SetTopLeft(sf::Vector2f topLeft);
 	void Draw(sf::RenderTarget *target);
 };
 

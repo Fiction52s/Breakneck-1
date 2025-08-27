@@ -153,6 +153,34 @@ int main()
 	//freopen("output.txt", "w", stdout);
 	//freopen("erroroutput.txt", "w", stderr);
 #endif
+	/*int *x = new int[5];
+	for (int i = 0; i < 10; ++i)
+	{
+		x[i] = 100;
+	}*/
+
+	//void* p = HeapAlloc(GetProcessHeap(), 0, 20);       // 20 bytes
+	//volatile uint8_t* b = static_cast<uint8_t*>(p);     // volatile prevents optimization
+	//for (int i = 0; i < 100; ++i) b[i] = 1;             // should AV at i == 20 with FULL page heap
+//#if defined(_DEBUG)
+//#define _CRTDBG_MAP_ALLOC
+//#include <crtdbg.h>
+//	struct CrtHeapGuard {
+//		CrtHeapGuard() {
+//			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF |
+//				_CRTDBG_LEAK_CHECK_DF |
+//				_CRTDBG_CHECK_ALWAYS_DF);  // check heap on every alloc/free
+//										   // Make CRT errors break into the debugger immediately:
+//			_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+//			_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+//		}
+//	} _crtHeapGuard;
+//#endif
+
+
+	/*_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF |
+		_CRTDBG_LEAK_CHECK_DF |
+		_CRTDBG_CHECK_ALWAYS_DF);*/
 
 	std::cout << "starting program" << endl;
 	//return 0;

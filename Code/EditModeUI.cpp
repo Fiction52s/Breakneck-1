@@ -115,7 +115,7 @@ EditModeUI::~EditModeUI()
 	delete mainPanel;
 	delete layerPanel;
 	delete lpSlider;
-	delete kinOptionsPanel;
+	//delete kinOptionsPanel;
 
 	delete grassTypePanel;
 }

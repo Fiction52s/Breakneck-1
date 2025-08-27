@@ -98,6 +98,10 @@ RushManager::RushManager()
 
 	adventureHUD = new AdventureHUD(this);
 
+//#if defined(_DEBUG)
+//	_CrtCheckMemory();   // entry probe
+//#endif
+
 	medalTimeForm = new MedalTimeForm;
 
 	currWorldDependentTilesetWorldIndex = -1;

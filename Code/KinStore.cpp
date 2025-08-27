@@ -374,19 +374,16 @@ KinStore::KinStore()
 
 
 	upgradeNameText.setCharacterSize(60);
-	upgradeNameText.setFont(mm->arial);
+	upgradeNameText.setFont(mm->oxanium);
 	upgradeNameText.setFillColor(Color::White);
 
-	upgradeLevelText.setCharacterSize(20);
-	upgradeLevelText.setFont(mm->arial);
+	upgradeLevelText.setCharacterSize(40);
+	upgradeLevelText.setFont(mm->oxanium);
 	upgradeLevelText.setFillColor(Color::White);
 
-	storePointsText.setCharacterSize(60);
-	storePointsText.setFont(mm->arial);
+	storePointsText.setCharacterSize(70);
+	storePointsText.setFont(mm->oxanium);
 	storePointsText.setFillColor(Color::Red);
-
-	
-	
 
 	upgradeDescText.setCharacterSize(20);
 	upgradeDescText.setFont(mm->arial);
@@ -519,11 +516,11 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 
 			if (y == 0)
 			{
-				rectSize = 150;
+				rectSize = 153;
 			}
 			else
 			{
-				rectSize = 190;
+				rectSize = 192;
 			}
 
 			rectPos = Vector2f(j * rectSize + xSpacing * j, y * rectSize + ySpacing * y) + gridStart;
@@ -577,7 +574,9 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 	}
 	
 
-	storePointsText.setPosition(1152, 742);
+	storePointsText.setPosition(767, 950);
+	storePointsText.setOrigin(storePointsText.getLocalBounds().left + storePointsText.getLocalBounds().width / 2, storePointsText.getLocalBounds().top + storePointsText.getLocalBounds().height / 2);
+	upgradeLevelText.setPosition(1682, 132);
 	//upgradeNameText.setPosition(500 + pos.x, pos.y + 50);
 	//upgradeDescText.setPosition(500 + pos.x, pos.y + 200 );
 	//upgradeLevelText.setPosition(500 + pos.x, pos.y + 400);
@@ -607,7 +606,7 @@ void KinStore::Open()
 			(*it)->currentLevel = edit->defaultStartingPlayerUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
 		}
 
-		storePointsText.setString("Infinite Upgrade points");
+		storePointsText.setString("-");
 	}
 	else
 	{
@@ -631,7 +630,7 @@ void KinStore::Open()
 			(*it)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
 		}
 
-		storePointsText.setString(to_string(rush->storePoints) + " Upgrade points");
+		storePointsText.setString( "+" + to_string(rush->storePoints));
 	}
 
 	SetTopLeft(Vector2f(0, 0));
@@ -739,13 +738,24 @@ void KinStore::SetSelected(int section, int itemIndex)
 	if (upgradeLevel == si->numLevels)
 	{
 		upgradeNameText.setString("Max Leveled Already");
+		/*upgradeNameText.setOrigin(upgradeNameText.getLocalBounds().left + upgradeNameText.getLocalBounds().width / 2,
+			upgradeNameText.getLocalBounds().top + upgradeNameText.getLocalBounds().height / 2);*/
+
 		upgradeDescText.setString("N/A");
 	}
 	else
 	{
 		
 
-		upgradeNameText.setString(si->name + " Level " + to_string(upgradeLevel + 1));
+		upgradeNameText.setString(si->name);
+		/*upgradeNameText.setOrigin(upgradeNameText.getLocalBounds().left + upgradeNameText.getLocalBounds().width / 2,
+			upgradeNameText.getLocalBounds().top + upgradeNameText.getLocalBounds().height / 2);*/
+
+
+		upgradeLevelText.setString(to_string(upgradeLevel + 1));
+		upgradeLevelText.setOrigin(upgradeLevelText.getLocalBounds().left + upgradeLevelText.getLocalBounds().width / 2,
+			upgradeLevelText.getLocalBounds().top + upgradeLevelText.getLocalBounds().height / 2);
+
 		//upgradeLevelText.setString("Level: " + to_string(upgradeLevel));
 		//upgradeDescText.setString( "Cost: " + to_string(si->GetCurrentCost()) + " desc: " + si->GetCurrentDescription());
 		upgradeDescText.setString("Cost: " + to_string( cost ) + " desc: " + si->GetCurrentDescription());
@@ -757,7 +767,7 @@ void KinStore::SetSelected(int section, int itemIndex)
 
 	//upgradeNameText.setPosition(1088,303);
 	//upgradeNameText.setPosition(1369,240);
-	upgradeNameText.setPosition(1369, 142);
+	upgradeNameText.setPosition(1327, 149);
 
 	
 	upgradeDescText.setPosition(1053, 659);
@@ -771,7 +781,7 @@ void KinStore::SetSelected(int section, int itemIndex)
 	switch (section)
 	{
 	case 0:
-		selectTopLeft = Vector2f(218, 263) + Vector2f(169 * itemIndex, 0);
+		selectTopLeft = Vector2f(221, 263) + Vector2f(169 * itemIndex, 0);
 		break;
 	case 1:
 		selectTopLeft = Vector2f(221 - 4, 478 - 4) + Vector2f(238 * itemIndex, 0);
@@ -788,7 +798,7 @@ void KinStore::SetSelected(int section, int itemIndex)
 		storePointsText.setFillColor(Color::Green);
 	}
 	//else if (si->GetCurrentCost() > rush->storePoints)
-	else if (cost > rush->storePoints)
+	else if (rush->storePoints == 0 )
 	{
 		storePointsText.setFillColor(Color::Red);
 	}
@@ -907,7 +917,7 @@ void KinStore::TryUnlockCurrentUpgrade()
 		if (rush != NULL)
 		{
 			rush->storePoints -= cost;//se->GetCurrentCost();
-			storePointsText.setString(to_string(rush->storePoints) + " Upgrade points");
+			storePointsText.setString("+" + to_string(rush->storePoints));
 			sess->SetPlayerUpgradeLevel(optionIndex, se->currentLevel + 1);
 			sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, se->currentLevel + 1);
 		}
@@ -1062,16 +1072,17 @@ void KinStore::Draw(sf::RenderTarget *target)
 	//target->draw(itemSelectQuads, numTotalStoreEntries * 4, sf::Quads);
 	//target->draw(selectedBGQuad, 4, sf::Quads);
 
-	//target->draw(storePointsText);
+	target->draw(storePointsText);
 	target->draw(yellowSpr);
 
 	target->draw(upgradeNameText);
 	target->draw(upgradeDescText);
+	target->draw(upgradeLevelText);
 
 	int powerIndex = -1;
 
 	previewMovies[movieIndex].Draw(target);
-	//target->draw(upgradeLevelText);
+	
 }
 
 void KinStore::ChooseRectEvent(ChooseRect *cr, int eventType)

@@ -14,7 +14,6 @@ void HealthHearts::SetTopLeft(sf::Vector2f pos)
 {
 	//232, 15
 	//272, 56
-
 	//hearticon_63x58_232, 15_272, 56
 	float xSpacing = 80;
 	topLeft = pos;
@@ -48,6 +47,7 @@ void HealthHearts::Reset()
 void HealthHearts::Update()
 {
 	health = actor->health;
+	assert(health / 2 <= MAX_HEARTS);
 	SetTopLeft(topLeft);
 
 	for (int i = 0; i < health / 2; ++i)
@@ -73,5 +73,6 @@ void HealthHearts::Update()
 
 void HealthHearts::Draw(sf::RenderTarget *target)
 {
+	//return;
 	target->draw(heartQuads, 4 * MAX_HEARTS, sf::Quads, ts_heartIcon->texture);
 }

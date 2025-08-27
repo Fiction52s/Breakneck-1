@@ -5286,7 +5286,9 @@ void Actor::Respawn( bool setStartPos )
 
 	health = totalHealth;
 	//adjust this soon
-	health += 100 * increasedHealthLevel;
+
+	//had to remove because the hearts lock a max health
+	//health += 100 * increasedHealthLevel;
 
 	spriteAction = HIDDEN;
 
@@ -9473,10 +9475,24 @@ void Actor::HandleWaitingScoreDisplay()
 		if (sess->scoreDisplay->IsConfirmable())
 		{
 			bool aPressed = sess->controllerStates[actorIndex]->ButtonPressed_A();
+			bool xPressed = sess->controllerStates[actorIndex]->ButtonPressed_X();
+
 			if (aPressed)
 			{
 				sess->scoreDisplay->Confirm();
 				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+			}
+			else if (xPressed)
+			{
+				owner->hasRespawned = true;
+				owner->RestartGame();
+
+				//owner->Restartlevel();
+			/*	if (owner != NULL)
+				{
+					owner->RestartWithNoReplayOrGhosts();
+				}
+				return;*/
 			}
 		}
 	}
@@ -20793,8 +20809,8 @@ void Actor::AddToCurrencyCounter(int count)
 {
 	currencyCounter += count;
 	
-	AdventureHUD *ah = sess->GetAdventureHUD();
-	if( ah != NULL ) ah->currencyCountText.setString("x" + to_string(currencyCounter));
+	/*AdventureHUD *ah = sess->GetAdventureHUD();
+	if( ah != NULL ) ah->currencyCountText.setString("x" + to_string(currencyCounter));*/
 }
 
 void Actor::HandleEntrant(QuadTreeEntrant *qte)
@@ -24215,8 +24231,11 @@ void Actor::ConfirmHit( Enemy *e )
 
 	double cdd = currHeal + newAmt;
 	int cddi = cdd;
-	health += cddi;
-
+	health += 1;//cddi;
+	if (health > totalHealth)
+	{
+		health = totalHealth;
+	}
 	
 	if (kinMode == K_DESPERATION)
 	{
@@ -26847,6 +26866,7 @@ void Actor::UpdateInHitlag()
 
 void Actor::CollectCurrencyItem(CurrencyItem *ci)
 {
+	//return;
 	ci->Collect(this);
 	CollectCurrency(ci->GetCounterAmount(), ci->GetHealAmount());
 }
@@ -26857,7 +26877,11 @@ void Actor::CollectCurrency(int currencyAmount, int healAmount )
 
 	double mult = energyUpgradeLevel + 1;
 	health += currencyAmount * mult;
-	HealTimer(currencyAmount);
+	if (health > totalHealth)
+	{
+		health = totalHealth;
+	}
+	//HealTimer(currencyAmount);
 	AddToCurrencyCounter(currencyAmount);
 	ActivateSound(PlayerSounds::S_CURRENCY_COLLECT);
 

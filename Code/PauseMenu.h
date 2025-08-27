@@ -162,6 +162,7 @@ struct PauseMenu
 	void SetupMapBorderQuads(
 		bool *p_blackBorderOn, bool p_topBorderOn,
 		MapHeader *mapHeader);
+	void UpdateMapBorderQuads(MapHeader *mapHeader);
 	
 
 	PaletteShader *bgPaletteShader;

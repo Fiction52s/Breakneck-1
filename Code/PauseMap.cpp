@@ -140,14 +140,8 @@ void PauseMap::Update(ControllerState &currInput,
 	}
 }
 
-void PauseMap::SetupBorderQuads(
-	bool *p_blackBorderOn, bool p_topBorderOn,
-	MapHeader *mapHeader)
+void PauseMap::UpdateBorderQuads(MapHeader *mapHeader)
 {
-	blackBorderOn[0] = p_blackBorderOn[0];
-	blackBorderOn[1] = p_blackBorderOn[1];
-	topBorderOn = p_topBorderOn;
-
 	int miniQuadWidth = 4000;
 	int inverseTerrainBorder = 4000;
 	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
@@ -214,6 +208,17 @@ void PauseMap::SetupBorderQuads(
 	{
 		SetRectColor(topBorderQuadMini, Color::Transparent);
 	}
+}
+
+void PauseMap::SetupBorderQuads(
+	bool *p_blackBorderOn, bool p_topBorderOn,
+	MapHeader *mapHeader)
+{
+	blackBorderOn[0] = p_blackBorderOn[0];
+	blackBorderOn[1] = p_blackBorderOn[1];
+	topBorderOn = p_topBorderOn;
+
+	UpdateBorderQuads(mapHeader);
 }
 
 void PauseMap::DrawToTex()

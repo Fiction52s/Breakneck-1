@@ -30,7 +30,6 @@ struct GoalMedal
 	int animFactor[A_Count];
 	int actionLength[A_Count];
 	CubicBezier risingBez;
-	int riseFrames;
 	Session *sess;
 	int medalRank;
 	

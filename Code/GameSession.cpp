@@ -603,6 +603,15 @@ int GameSession::TryToActivateBonus()
 
 			bonusGame->Run();
 
+			if (hud != NULL && hud->mini != NULL && !IsParallelSession())
+			{
+				hud->mini->UpdateBorderQuads(mapHeader);
+			}
+			if (pauseMenu != NULL)
+			{
+				pauseMenu->UpdateMapBorderQuads(mapHeader);
+			}
+
 			mainMenu->musicPlayer->PlayMusic(originalMusic);
 			
 			pauseMenu->game = this;
@@ -3888,6 +3897,16 @@ int GameSession::Run()
 			}
 		}
 	}*/
+
+	if (hud != NULL && hud->mini != NULL && !IsParallelSession())
+	{
+		hud->mini->UpdateBorderQuads(mapHeader);
+	}
+	if (pauseMenu != NULL)
+	{
+		pauseMenu->UpdateMapBorderQuads(mapHeader);
+	}
+	
 
 	//for rush mode hopefully this works
 	if (pauseMenu != NULL)

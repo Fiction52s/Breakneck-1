@@ -30,6 +30,7 @@ struct Minimap
 	void SetupBorderQuads(
 		bool *blackBorder, bool topBorderOn,
 		MapHeader *mh);
+	void UpdateBorderQuads(MapHeader *mapHeader);
 	void Draw(sf::RenderTarget *target);
 	void SetSession(Session *p_sess);
 	void Update();

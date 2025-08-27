@@ -42,6 +42,7 @@ struct PauseMap
 	void SetupBorderQuads(
 		bool *blackBorder, bool topBorderOn,
 		MapHeader *mh);
+	void UpdateBorderQuads(MapHeader *mh);
 	void Draw(sf::RenderTarget *target);
 	void Update(ControllerState &currInput,
 		ControllerState &prevInput);

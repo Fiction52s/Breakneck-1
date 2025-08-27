@@ -490,7 +490,7 @@ void TerrainPolygon::DrawTouchGrassFront(sf::RenderTarget *target)
 		if (!(*it)->IsDrawnBehind())
 		{
 			(*it)->Draw(target);
-		}		
+		}
 	}
 }
 
@@ -8239,6 +8239,8 @@ bool TerrainPolygon::IsTouchingBox(const sf::Rect<double> &r)
 		aabb.top -= ts_grass->tileHeight / 2 + extra;
 		aabb.height += ts_grass->tileHeight + extra * 2;
 	}
+
+
 
 	return IsBoxTouchingBox(aabb, r);
 }

@@ -194,7 +194,7 @@ PauseMenu::PauseMenu( TilesetManager *p_tm )
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
-	shardMenu = new ShardMenu(tm);
+	//shardMenu = new ShardMenu(tm);
 	logMenu = new LogMenu(tm);
 	kinMenu = new KinMenu(tm);
 	//resolution
@@ -279,7 +279,7 @@ void PauseMenu::SetGame(GameSession *p_game)
 {
 	game = p_game;
 	UpdateButtonIconsWhenControllerIsChanged();
-	shardMenu->SetSession(p_game);
+	//shardMenu->SetSession(p_game);
 	logMenu->SetSession(p_game);
 	kinMenu->SetGame(p_game);
 	optionsMenu->SetGame(p_game);
@@ -305,7 +305,7 @@ PauseMenu::~PauseMenu()
 {
 	delete shardAndLogDisplay;
 
-	delete shardMenu;
+	//delete shardMenu;
 	delete logMenu;
 
 	delete pauseSelector;
@@ -430,7 +430,7 @@ void PauseMenu::SetTab( Tab t )
 		
 	case SHARDS:
 		//shardMenu->SetCurrSequence();
-		shardMenu->SetShardTab();
+		//shardMenu->SetShardTab();
 		
 		
 		break;
@@ -584,7 +584,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	}
 	else if (currentTab == SHARDS)
 	{
-		shardMenu->Draw(target);
+		//shardMenu->Draw(target);
 	}
 	else if (currentTab == LOGS)
 	{
@@ -816,7 +816,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case SHARDS:
 		{
-			shardMenu->Update( currInput, prevInput );
+			//shardMenu->Update( currInput, prevInput );
 			break;
 		}
 	case LOGS:
@@ -867,4 +867,9 @@ void PauseMenu::SetupMapBorderQuads(
 	MapHeader *mapHeader)
 {
 	pauseMap->SetupBorderQuads(p_blackBorderOn, p_topBorderOn, mapHeader);
+}
+
+void PauseMenu::UpdateMapBorderQuads(MapHeader *mapHeader)
+{
+	pauseMap->UpdateBorderQuads(mapHeader);
 }

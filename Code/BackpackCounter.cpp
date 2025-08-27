@@ -20,9 +20,11 @@ BackpackCounter::BackpackCounter(TilesetManager *tm)
 	levelText.setCharacterSize(40);
 	levelText.setFillColor(Color::White);
 
-	ts_ring = tm->GetSizedTileset("HUD/backpackcircle_245x245.png"); 
+	ts_ring = tm->GetSizedTileset("HUD/backpackcircle_245x245.png");
 	ts_cage = tm->GetSizedTileset( "HUD/backpacklens_258x258.png" );
 	ts_backpack = tm->GetSizedTileset( "HUD/backpack1_575x518.png");
+
+	showContainer = true;
 
 	//scale = .33f;//1.f;
 
@@ -36,8 +38,8 @@ BackpackCounter::BackpackCounter(TilesetManager *tm)
 	ringShader.setUniform("u_texture", *ts_ring->texture);//sf::Shader::CurrentTexture);
 	ringShader.setUniform("u_startAngle", 0.f);
 	
-	ringShader.setUniform("u_activeColor", sf::Glsl::Vec4(Color::Green));
-	ringShader.setUniform("u_emptyColor", sf::Glsl::Vec4(Color::Red));
+	ringShader.setUniform("u_activeColor", sf::Glsl::Vec4(Color::Cyan));
+	ringShader.setUniform("u_emptyColor", sf::Glsl::Vec4(Color::Black));
 
 	SetRectSubRect(backpackQuad, ts_backpack->GetSubRect(0));
 	SetRectSubRect(cageQuad, ts_cage->GetSubRect(0));
@@ -83,7 +85,7 @@ void BackpackCounter::SetSession(Session *p_sess)
 
 void BackpackCounter::SetCenter(sf::Vector2f pos)
 {
-	//SetRectCenter(backpackQuad, ts_backpack->tileWidth * scale, ts_backpack->tileHeight * scale, pos);
+	SetRectCenter(backpackQuad, ts_backpack->tileWidth * scale, ts_backpack->tileHeight * scale, pos + Vector2f( 0, -33 * scale ));
 	SetRectCenter(ringQuad, ts_ring->tileWidth * scale, ts_ring->tileHeight * scale, pos);
 	SetRectCenter(cageQuad, ts_cage->tileWidth * scale, ts_cage->tileHeight * scale, pos);
 
@@ -115,6 +117,11 @@ void BackpackCounter::Set(BackpackCounter *b)
 	SetLevel(b->currLevel);
 	currFactor = b->currFactor;
 	Update();
+}
+
+void BackpackCounter::SetContainerVisible(bool on)
+{
+	showContainer = on;
 }
 
 void BackpackCounter::AddParticle()
@@ -156,7 +163,10 @@ void BackpackCounter::Update()
 
 void BackpackCounter::Draw(sf::RenderTarget *target)
 {
-	//target->draw(backpackQuad, 4, sf::Quads, ts_backpack->texture);
+	if (showContainer)
+	{
+		target->draw(backpackQuad, 4, sf::Quads, ts_backpack->texture);
+	}
 	target->draw(ringQuad, 4, sf::Quads, &ringShader);
 	target->draw(cageQuad, 4, sf::Quads, ts_cage->texture);
 	target->draw(levelText);

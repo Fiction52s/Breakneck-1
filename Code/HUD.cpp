@@ -65,25 +65,26 @@ AdventureHUD::AdventureHUD( TilesetManager *tm)
 	powerSelectorShowPos = Vector2f(288, 140);
 	powerSelectorHidePos = Vector2f(288-500, 140);
 
-	currencyCountTextShowPos = Vector2f(1920 - 30, 10);
-	currencyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);
+	currencyIconShowPos = Vector2f(1869, 53);
+	currencyIconHidePos = currencyIconShowPos + Vector2f(300, 0);
 
 	MainMenu *mm = MainMenu::GetInstance();
 
 	currencyCountText.setCharacterSize(40);
 	currencyCountText.setFont(mm->arial);
 	currencyCountText.setFillColor(Color::White);
-	currencyCountText.setString("x100");
-	currencyCountText.setOrigin(currencyCountText.getLocalBounds().left +
-		currencyCountText.getLocalBounds().width, 0);
-	currencyCountText.setString("x0");
-	currencyCountText.setPosition(currencyCountTextShowPos);
 
 	ts_go = tm->GetSizedTileset("HUD/go_871x386.png");
 	ts_go->SetSpriteTexture(goSpr);
 	ts_go->SetSubRect(goSpr, 0);
-
 	goSpr.setOrigin(goSpr.getLocalBounds().width / 2, goSpr.getLocalBounds().height / 2);
+
+	ts_currencyIcon = tm->GetSizedTileset("HUD/currencyicon_54x85.png");
+	ts_currencyIcon->SetSpriteTexture(currencyIcon);
+	ts_currencyIcon->SetSubRect(currencyIcon, 0);
+	currencyIcon.setOrigin(currencyIcon.getLocalBounds().width / 2, currencyIcon.getLocalBounds().height / 2);
+	
+	currencyCountTextOffset = Vector2f(-60, 0);
 	
 
 	miniShowPos = mini->minimapSprite.getPosition();
@@ -268,7 +269,8 @@ void AdventureHUD::Hide(int frames)
 		}
 		kinMask->SetTopLeft(kinMaskHidePos);
 		powerSelector->SetPosition(powerSelectorHidePos);
-		currencyCountText.setPosition(currencyCountTextHidePos);
+		currencyCountText.setPosition(currencyIconHidePos + currencyCountTextOffset);
+		currencyIcon.setPosition(currencyIconHidePos);
 		timer->SetCenter(timerHidePos);
 		medalTimer->SetCenter(timerHidePos);
 		medalGoalTimer->SetCenter(timerHidePos + medalGoalOffset);
@@ -304,7 +306,8 @@ void AdventureHUD::Show(int frames)
 			keyMarkers[0]->SetTopRight(keyMarkerShowPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			keyMarkers[1]->SetTopLeft(keyMarkerShowPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 		}
-		currencyCountText.setPosition(currencyCountTextShowPos);
+		currencyCountText.setPosition(currencyIconShowPos + currencyCountTextOffset);
+		currencyIcon.setPosition(currencyIconShowPos);
 		timer->SetCenter(timerShowPos);
 		medalTimer->SetCenter(timerShowPos);
 		medalGoalTimer->SetCenter(timerShowPos + medalGoalOffset);
@@ -337,6 +340,11 @@ bool AdventureHUD::IsShown()
 
 void AdventureHUD::Update()
 {
+	
+	currencyCountText.setString("x" + to_string(kinMask->actor->currencyCounter));
+	auto lb = currencyCountText.getLocalBounds();
+	currencyCountText.setOrigin(lb.left + lb.width, lb.top + lb.height / 2);
+
 	switch (state)
 	{
 	case SHOWN:
@@ -359,7 +367,8 @@ void AdventureHUD::Update()
 				keyMarkers[0]->SetTopRight(keyMarkerShowPos + Vector2f(-move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 				keyMarkers[1]->SetTopLeft(keyMarkerShowPos + Vector2f(move, -keyMarkers[0]->keyNumberTotalHUD->GetHeight() / 2));
 			}
-			currencyCountText.setPosition(currencyCountTextShowPos);
+			currencyCountText.setPosition(currencyIconShowPos + currencyCountTextOffset);
+			currencyIcon.setPosition(currencyIconShowPos);
 			powerSelector->SetPosition(powerSelectorShowPos);
 			timer->SetCenter(timerShowPos);
 			medalTimer->SetCenter(timerShowPos);
@@ -404,8 +413,9 @@ void AdventureHUD::Update()
 			momentumBar->SetCenter(momentumBarPos);
 
 			goSpr.setPosition(goPos);
-			Vector2f countPos = currencyCountTextHidePos * (1.f - a) + a * currencyCountTextShowPos;
-			currencyCountText.setPosition(countPos);
+			Vector2f countPos = currencyIconHidePos * (1.f - a) + a * currencyIconShowPos;
+			currencyCountText.setPosition(countPos + currencyCountTextOffset);
+			currencyIcon.setPosition(countPos);
 			Vector2f powerPos = powerSelectorHidePos * (1.f - a) + a * powerSelectorShowPos;
 			powerSelector->SetPosition(powerPos);
 
@@ -451,7 +461,8 @@ void AdventureHUD::Update()
 			momentumBar->SetCenter(momentumBarHidePos);
 			goSpr.setPosition(goHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
-			currencyCountText.setPosition(currencyCountTextHidePos);
+			currencyCountText.setPosition(currencyIconHidePos + currencyCountTextOffset);
+			currencyIcon.setPosition(currencyIconHidePos);
 			powerSelector->SetPosition(powerSelectorHidePos);
 			if (bossHealthBar != NULL)
 			{
@@ -494,8 +505,9 @@ void AdventureHUD::Update()
 			//	keyMarkers[i]->SetTopRight(keyMarkerPos + Vector2f(0, i * keyMarkerYOffset));
 			//}
 			goSpr.setPosition(goPos);
-			Vector2f countPos = currencyCountTextShowPos * (1.f - a) + a * currencyCountTextHidePos;
-			currencyCountText.setPosition(countPos);
+			Vector2f countPos = currencyIconShowPos * (1.f - a) + a * currencyIconHidePos;
+			currencyCountText.setPosition(countPos + currencyCountTextOffset);
+			currencyIcon.setPosition(countPos);
 			Vector2f powerPos = powerSelectorShowPos * (1.f - a) + a * powerSelectorHidePos;
 			powerSelector->SetPosition(powerPos);
 
@@ -697,6 +709,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 		}
 
 		target->draw(currencyCountText);
+		target->draw(currencyIcon);
 
 		momentumBar->UpdateMomentumInfo();
 		momentumBar->Draw(target);
@@ -728,6 +741,7 @@ KinMask::KinMask( TilesetManager *tm )
 
 	backpackCounter = new BackpackCounter(tm);
 	backpackCounter->SetScale(.33f);
+	backpackCounter->SetContainerVisible(false);
 
 	ts_kin = tm->GetSizedTileset("HUD/kinportrait_272x272.png");
 	//ts_face = tm->GetSizedTileset("HUD/masktest_575x188.png");

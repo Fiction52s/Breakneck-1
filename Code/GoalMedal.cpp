@@ -19,8 +19,8 @@ GoalMedal::GoalMedal()
 	actionLength[A_IDLE] = 16;
 	animFactor[A_IDLE] = 3;
 
-	actionLength[A_RISE] = 16;
-	animFactor[A_RISE] = 3;
+	actionLength[A_RISE] = 90;
+	animFactor[A_RISE] = 1;
 
 	actionLength[A_HOLD] = 16;
 	animFactor[A_HOLD] = 3;
@@ -30,8 +30,6 @@ GoalMedal::GoalMedal()
 
 	actionLength[A_HIDE] = 1;
 	animFactor[A_HIDE] = 1;
-
-	riseFrames = 180;
 
 	medalRank = 0;
 
@@ -53,7 +51,7 @@ void GoalMedal::Reset()
 	frame = 0;
 	action = A_IDLE;
 
-	V2d goalPos = sess->GetLevelFinisherPos();
+	V2d goalPos = sess->goal->GetGoalNodePos();//sess->GetLevelFinisherPos();
 
 	SetPosition(Vector2f(goalPos));
 	particles->Reset();
@@ -98,31 +96,34 @@ void GoalMedal::Update()
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		frame = 0;
+		if (action == A_RISE)
+		{
+			action = A_HOLD;
+		}
 	}
 
-	if ( action == A_RISE && frame == riseFrames)
-	{
-		action = A_HOLD;
-	}
+	double risingDiff = 200;
 
-	double risingDiff = 400;
+	V2d goalPos = sess->goal->GetGoalNodePos();//sess->GetLevelFinisherPos();
+	Vector2f goalPosF(goalPos);
 
 	switch (action)
 	{
 	case A_IDLE:
-		SetPosition(myGoal->GetPositionF());
+		
+		SetPosition(goalPosF);
 		break;
 	case A_RISE:
 	{
 		double df = frame;
-		df = df / actionLength[action] * animFactor[action];
+		df = df / (actionLength[action] * animFactor[action]);
 		double f = risingBez.GetValue(df);
-		V2d newPos = myGoal->GetPosition() * f + V2d(myGoal->GetPosition() + V2d(0, -risingDiff)) * (1.0 - f);
+		V2d newPos = goalPos * (1.0 -f) + V2d(goalPos + V2d(0, -risingDiff)) * f;
 		SetPosition(Vector2f(newPos));
 		break;
 	}
 	case A_HOLD:
-		SetPosition(myGoal->GetPositionF() + Vector2f(0, -risingDiff));
+		SetPosition(goalPosF + Vector2f(0, -risingDiff));
 		break;
 	case A_DISPERSE:
 		if (particles->GetNumActive() == 0)
@@ -135,8 +136,8 @@ void GoalMedal::Update()
 
 	particles->Update();
 
-
-	sprite.setTextureRect(ts->GetSubRect(frame / animFactor[action]));
+	int f = (frame / 3) % 16;
+	sprite.setTextureRect(ts->GetSubRect(f));
 
 	++frame;
 }

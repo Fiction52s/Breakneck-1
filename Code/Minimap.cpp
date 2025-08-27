@@ -66,14 +66,9 @@ void Minimap::Update()
 
 }
 
-void Minimap::SetupBorderQuads(
-	bool *p_blackBorderOn, bool p_topBorderOn,
-	MapHeader *mapHeader)
+//useful if we use bonuses
+void Minimap::UpdateBorderQuads(MapHeader *mapHeader)
 {
-	blackBorderOn[0] = p_blackBorderOn[0];
-	blackBorderOn[1] = p_blackBorderOn[1];
-	topBorderOn = p_topBorderOn;
-
 	int miniQuadWidth = 4000;
 	int inverseTerrainBorder = 4000;
 	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
@@ -140,6 +135,17 @@ void Minimap::SetupBorderQuads(
 	{
 		SetRectColor(topBorderQuadMini, Color::Transparent);
 	}
+}
+
+void Minimap::SetupBorderQuads(
+	bool *p_blackBorderOn, bool p_topBorderOn,
+	MapHeader *mapHeader)
+{
+	blackBorderOn[0] = p_blackBorderOn[0];
+	blackBorderOn[1] = p_blackBorderOn[1];
+	topBorderOn = p_topBorderOn;
+
+	UpdateBorderQuads(mapHeader);
 }
 
 void Minimap::DrawToTex()
