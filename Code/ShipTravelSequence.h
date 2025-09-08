@@ -26,21 +26,7 @@ struct ShipTravelSequence : Sequence
 	Tileset *ts_shipTest;
 
 	sf::Sprite shipTestSprite;
-	//ship sequence. should be in its own structure
-	Tileset *ts_w1ShipClouds0;
-	Tileset *ts_w1ShipClouds1;
-	Tileset *ts_ship;
-	sf::Vertex cloud0[3 * 4];
-	sf::Vertex cloud1[3 * 4];
-	sf::Vertex cloudBot0[3 * 4];
-	sf::Vertex cloudBot1[3 * 4];
-	/*sf::VertexArray cloud0;
-	sf::VertexArray cloud1;
-	sf::VertexArray cloudBot0;
-	sf::VertexArray cloudBot1;*/
 	sf::Vector2f relShipVel;
-	sf::Sprite shipSprite;
-	sf::RectangleShape middleClouds;
 	bool shipSequence;
 	//bool hasShipEntrance;
 	V2d shipTravelPos;

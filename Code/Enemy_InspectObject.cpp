@@ -52,7 +52,7 @@ InspectObject::InspectObject(ActorParams *ap)
 
 	if (typeName == "inspectfamilypicture")
 	{
-		sprite.setScale(.1, .1);
+		sprite.setScale(.03, .03);
 		ts_inspect = GetSizedTileset("Story/kin_family_1109x1060.png");
 		showObject = true;
 
