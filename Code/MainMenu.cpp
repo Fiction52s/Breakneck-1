@@ -520,6 +520,26 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 
 	}
+	case DEMO_RUSH:
+	{
+		rushManager->Load();
+		/*if (fromMode == CLOSED_BETA)
+		{
+			ControllerDualStateQueue *states = NULL;
+			states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, 0);
+
+			auto &managedProfiles = cpm->profiles[states->GetControllerType()];
+
+			assert(rushManager == NULL);
+			rushManager = new RushManager;
+			rushManager->controllerInput = states;
+			rushManager->currProfile = managedProfiles.front();
+			rushManager->startWorld = 0;
+			rushManager->Load();
+		}*/
+
+		break;
+	}
 	case SAVEMENU:
 	{
 		if (fromMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE)
@@ -828,6 +848,8 @@ void MainMenu::sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode )
 MainMenu::MainMenu( bool p_steamOn)
 	:windowWidth(1920), windowHeight(1080)
 {
+	isDemoModeOn = true;
+
 	mousePixelPos = Vector2i(-1, -1);
 
 	assert(currInstance == NULL);
@@ -1050,7 +1072,8 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	closedBetaScreen = new ClosedBetaScreen;
 
-
+	
+	
 
 
 	//cout << "start mm constfr" << endl;
@@ -1132,6 +1155,20 @@ MainMenu::MainMenu( bool p_steamOn)
 	loadingBackpack = new LoadingBackpack( this );
 
 	CONTROLLERS.Update();
+
+	if (isDemoModeOn)
+	{
+		ControllerDualStateQueue *states = NULL;
+		states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, 0);
+
+		auto &managedProfiles = cpm->profiles[states->GetControllerType()];
+
+		assert(rushManager == NULL);
+		rushManager = new RushManager;
+		rushManager->controllerInput = states;
+		rushManager->currProfile = managedProfiles.front();
+		rushManager->startWorld = 0;
+	}
 }
 
 void MainMenu::SetupWindow()
@@ -3196,6 +3233,101 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	case DEMO_RUSH:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		View oldView = window->getView();
+		//cout << "running currLevel: " << currLevel << endl;
+		GameSession::GameResultType result =
+			(GameSession::GameResultType)rushManager->firstMap->Run();
+
+		switch (result)
+		{
+		case GameSession::GR_EXITLEVEL:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITTITLE:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITGAME:
+			//currFile->Save();
+			break;
+		}
+
+		rushManager->transferPlayerPowerMode = -1;
+
+		window->setView(oldView);
+
+		//cout << "first map over" << endl;
+
+		//JUST FOR TESTING
+		//worldMap = new WorldMap(this);
+		//saveMenu = new SaveMenuScreen(this);
+		//saveMenu->Reset();
+		//----ENDING JUST FOR TESTING
+
+		//SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
+		//int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+
+		if (result == GameSession::GR_WIN)
+		{
+			//doesnt happen atm
+
+			//currFile->Save();
+
+			//delete currLevel;
+			//currLevel = NULL;
+			//fader->Clear();
+
+			//if (adventureManager->IsLastLevel())
+			//{
+			//	LoadMode(THANKS_FOR_PLAYING);
+			//}
+			//else
+			//{
+			//	LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
+			//}
+		}
+		else if (result == GameSession::GR_WINCONTINUE)
+		{
+			if (!rushManager->TryToGoToNextWorldShip())
+			{
+				delete rushManager;
+				rushManager = NULL;
+
+				SetMode(EXITING);
+				quit = true;
+			}
+		}
+		else if (result == GameSession::GR_EXITTITLE)
+		{
+			delete rushManager;
+			rushManager = NULL;
+
+			SetMode(EXITING);
+			quit = true;
+		}
+		else if (result == GameSession::GR_EXITGAME)
+		{
+			delete rushManager;
+			rushManager = NULL;
+
+			SetMode(EXITING);
+			quit = true;
+		}
+		else
+		{
+			delete rushManager;
+			rushManager = NULL;
+
+			SetMode(EXITING);
+			quit = true;
+		}
+		break;
+	}
 	case TEST_RUSH:
 	{
 		while (window->pollEvent(ev))
@@ -3543,16 +3675,23 @@ void MainMenu::HandleMenuMode()
 
 		if (result == GameSession::GR_EXITTITLE)
 		{
-			LoadMode(TITLEMENU);
+			if (isDemoModeOn)
+			{
+				delete currTutorialSession;
+				currTutorialSession = NULL;
 
+				SetMode(EXITING);
+				quit = true;
+			}
+			else
+			{
+				LoadMode(TITLEMENU);
+			}
 		}
 		else if (result == GameSession::GR_EXITGAME)
 		{
 			delete currTutorialSession;
 			currTutorialSession = NULL;
-
-			//delete adventureManager;
-			//adventureManager = NULL;
 
 			SetMode(EXITING);
 			quit = true;
@@ -3561,7 +3700,16 @@ void MainMenu::HandleMenuMode()
 		{
 			musicPlayer->TransitionMusic(menuMusic, 60);
 			//LoadMode(WORLDMAP);
-			LoadMode(TEST_RUSH);
+			if (isDemoModeOn)
+			{
+				LoadMode(DEMO_RUSH);
+			}
+			else
+			{
+				LoadMode(TEST_RUSH);
+			}
+			
+
 		}
 
 		window->setView(oldView);
@@ -3591,8 +3739,13 @@ void MainMenu::HandleMenuMode()
 		{
 			if (rushManager->saveMenu->action == SaveMenuScreen::TRANSITIONTUTORIAL)
 			{
+
+
+
 				MatchParams mp;
-				mp.mapPath = TUTORIAL_PATH;//"Resources/Maps/EarlyAccess/tut1" + string(MAP_EXT);
+
+				mp.mapPath = TUTORIAL_PATH;
+				
 				//mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
 				//fix this soon!
 				mp.randSeed = time(0);
@@ -4838,9 +4991,36 @@ void MainMenu::HandleMenuMode()
 
 		closedBetaScreen->Update();
 
-		if (closedBetaScreen->action == ClosedBetaScreen::A_DONE)
+		if (isDemoModeOn)
 		{
-			LoadMode(TITLEMENU);
+			if (closedBetaScreen->action == ClosedBetaScreen::A_DONE)
+			{
+				//LoadMode(DEMO_RUSH);
+				MatchParams mp;
+				mp.mapPath = mp.mapPath = "Resources/Maps/EarlyAccess/Demo/demotutorial" + string(MAP_EXT);;//"Resources/Maps/EarlyAccess/tut1" + string(MAP_EXT);
+										   //mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBox->controllerStates;
+										   //fix this soon!
+				mp.randSeed = time(0);
+				mp.numPlayers = 1;
+				mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+
+
+				mp.controllerStateVec[0] = rushManager->controllerInput;
+				mp.controlProfiles[0] = rushManager->currProfile;
+				mp.playerSkins[0] = 0;//rushManager->currSaveFile->visualInfo.skinIndex;
+
+				*menuMatchParams = mp;
+
+				musicPlayer->FadeOutCurrentMusic(30);
+				LoadMode(RUSHTUTORIAL);
+			}
+		}
+		else
+		{
+			if (closedBetaScreen->action == ClosedBetaScreen::A_DONE)
+			{
+				LoadMode(TITLEMENU);
+			}
 		}
 		break;
 	}

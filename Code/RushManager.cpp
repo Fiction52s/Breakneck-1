@@ -198,7 +198,14 @@ RushManager::~RushManager()
 
 void RushManager::Load()
 {
-	LoadRush("test");
+	if (MainMenu::GetInstance()->isDemoModeOn)
+	{
+		LoadRush("demo");
+	}
+	else
+	{
+		LoadRush("test");
+	}
 }
 
 void RushManager::SetWorld(int w, int section)

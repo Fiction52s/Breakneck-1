@@ -176,6 +176,8 @@ struct MainMenu : TilesetManager
 		RUN_ADVENTURE_MAP,
 		RUN_EDITOR_MAP,
 		SAVEMENU,
+		DEMO_RUSH,
+		//DEMO_TUTORIAL,
 		TUTORIAL,
 		RUSHTUTORIAL,
 		TRANS_MAIN_TO_SAVE,
@@ -295,6 +297,7 @@ struct MainMenu : TilesetManager
 
 	std::string appDataPath;
 
+	bool isDemoModeOn;
 	bool steamOn;
 	RemoteStorageManager *remoteStorageManager;
 	//testing

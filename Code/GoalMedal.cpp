@@ -51,7 +51,12 @@ void GoalMedal::Reset()
 	frame = 0;
 	action = A_IDLE;
 
-	V2d goalPos = sess->goal->GetGoalNodePos();//sess->GetLevelFinisherPos();
+	V2d goalPos;
+	if (sess->goal != NULL)
+	{
+		V2d goalPos = sess->goal->GetGoalNodePos();//sess->GetLevelFinisherPos();
+	}
+	
 
 	SetPosition(Vector2f(goalPos));
 	particles->Reset();
