@@ -282,6 +282,11 @@ RushMap &RushFile::GetMap(int index)
 	return worlds[0].maps[index]; //not real
 }
 
+std::string RushFile::GetLeaderboardName(int world, int map)
+{
+	return worlds[world].maps[map].name;
+}
+
 bool RushFile::LoadMapHeaders()
 {
 	/*for (int i = 0; i < numMaps; ++i)

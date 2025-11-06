@@ -9,6 +9,8 @@ struct ClosedBetaScreen : TilesetManager
 	enum Action
 	{
 		A_IDLE,
+		A_SPLASH_TRANSITION,
+		A_SPLASH,
 		A_DONE,
 	};
 
@@ -16,9 +18,13 @@ struct ClosedBetaScreen : TilesetManager
 	int frame;
 
 	sf::Vertex quad[4];
-	sf::Text text;
-	Tileset *ts_bg;
-	sf::Sprite bgSpr;
+	sf::Text closedBetaText;
+	Tileset *ts_closedBeta;
+	sf::Sprite closedBetaSpr;
+
+	sf::Text splashText;
+	sf::Sprite splashSpr;
+	Tileset *ts_splash;
 
 	ClosedBetaScreen();
 	void Update();

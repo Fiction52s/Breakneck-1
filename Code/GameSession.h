@@ -50,7 +50,7 @@ struct TerrainDecorInfo;
 
 struct BasicBossScene;
 
-
+struct LeaderboardDisplay;
 struct ImageText;
 struct TimerText;
 
@@ -248,7 +248,7 @@ struct GameSession : RayCastHandler, Session
 	};
 
 	
-
+	LeaderboardDisplay *GetLeaderboardDisplay();
 	static GameSession *GetSession();
 	static GameSession *currSession;
 

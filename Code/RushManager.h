@@ -61,6 +61,7 @@ struct RushManager : TilesetManager
 	int currWorldSection;
 	int currWorld;
 	int currRushMapIndex;
+	int numMapsInSection;
 	std::vector<GameSession*> bonusVec;
 
 	int currWorldDependentTilesetWorldIndex;

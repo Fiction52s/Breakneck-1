@@ -17,7 +17,9 @@
 #include <boost/filesystem.hpp>
 #include "steam/steam_api.h"
 
+struct TrialsScreen;
 struct RushManager;
+struct TrialsManager;
 struct AdventureManager;
 struct MapHeader;
 struct ClosedBetaScreen;
@@ -159,8 +161,6 @@ struct MainMenu : TilesetManager
 
 	enum Mode
 	{
-		SPLASH,
-		SPLASH_TRANS,
 		TITLEMENU,
 		TITLEMENU_INFOPOP,
 		WORLDMAP,
@@ -220,6 +220,9 @@ struct MainMenu : TilesetManager
 		LOAD_RUSH_SHIP,
 		LOAD_RUSH_WORLD,
 		RUN_RUSH_SHIP,
+		TRIALS_MENU,
+		LOAD_TRIALS_MAP,
+		RUN_TRIAL,
 	};
 
 	enum SoundType
@@ -240,6 +243,7 @@ struct MainMenu : TilesetManager
 		GRT_FREEPLAY,
 		GRT_QUICKPLAY,
 		GRT_RUSH,
+		GRT_TRIALS,
 	};
 
 	enum PlayerTilesetOptions
@@ -331,6 +335,7 @@ struct MainMenu : TilesetManager
 	static void sRushShipLoad(MainMenu *mm);
 	static void sRushWorldLoad(MainMenu *mm);
 	static void sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode);
+	static void sTrialsMapLoad(MainMenu *mm);
 	void TransitionMode(Mode fromMode, Mode toMode);
 	void TitleMenuModeUpdate();
 	void DrawMode(Mode m);
@@ -385,6 +390,7 @@ struct MainMenu : TilesetManager
 
 	AdventureManager *adventureManager;
 	RushManager *rushManager;
+	TrialsManager *trialsManager;
 
 	Tileset *ts_water;
 	sf::Shader *waterShaders;
@@ -420,6 +426,7 @@ struct MainMenu : TilesetManager
 	void Run();
 	void CustomMapsOption();
 	void GGPOOption();
+	void SetModeTrialsLoadingMap(int index);
 	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 	void SetModeWorldTransferLoadingMap(int variation);
@@ -476,9 +483,6 @@ struct MainMenu : TilesetManager
 	IntroMovie *introMovie;
 
 	MusicInfo *menuMusic;
-
-	sf::Sprite splashSprite;
-	Tileset *ts_splashScreen;
 
 	void CustomMapOption();
 	void PlayIntroMovie();

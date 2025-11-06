@@ -14,7 +14,7 @@
 #include "UIMouse.h"
 #include "CustomCursor.h"
 #include "WorldMapShip.h"
-#include "AdventureManager.h"
+#include "TrialsManager.h"
 #include "NetplayManager.h"
 #include "Leaderboard.h"
 #include "Config.h"
@@ -28,16 +28,16 @@ WorldMap::WorldMap()
 	:font( MainMenu::GetInstance()->arial )
 {
 	mainMenu = MainMenu::GetInstance();
-	adventureManager = mainMenu->adventureManager;
+	trialsMan = mainMenu->trialsManager;
 
 	if (mainMenu->steamOn)
 	{
-		adventureManager->parallelPracticeMode = mainMenu->config->GetData().parallelPlayOn;
+		trialsMan->parallelPracticeMode = mainMenu->config->GetData().parallelPlayOn;
 		parallelPracticeSettings = new ParallelPracticeSettingsMenu(mainMenu);
 	}
 	else
 	{
-		adventureManager->parallelPracticeMode = false;
+		trialsMan->parallelPracticeMode = false;
 		parallelPracticeSettings = NULL;
 	}
 	
@@ -95,7 +95,7 @@ WorldMap::WorldMap()
 	Vector2f buttonIconOffset(320, 2);
 	SetRectTopLeft(parallelPlayButtonQuad, 64, 64, parallelPlayMarkerPos + buttonIconOffset);
 
-	if (adventureManager->parallelPracticeMode)
+	if (trialsMan->parallelPracticeMode)
 	{
 		ts_parallelPlayMarker->SetSubRect(parallelPlayMarkerSpr, 0);
 	}
@@ -226,7 +226,7 @@ WorldMap::WorldMap()
 
 	Reset(NULL);
 
-	int numWorlds = adventureManager->adventurePlanet->numWorlds;
+	int numWorlds = trialsMan->rushFile.numWorlds;
 	selectors = new MapSelector*[numWorlds];
 
 	for (int i = 0; i < numWorlds; ++i)
@@ -766,7 +766,7 @@ void WorldMap::Update()
 	
 
 		//a little messy for now until we get a menu
-		if (adventureManager->parallelPracticeMode )
+		if (adventureManager != NULL && adventureManager->parallelPracticeMode )
 		{
 			
 

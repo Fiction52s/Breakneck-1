@@ -19,7 +19,7 @@ struct MapSector;
 struct WorldMap;
 struct RecordGhostMenu;
 struct WorldMapShip;
-struct AdventureManager;
+struct TrialsManager;
 struct ParallelPracticeSettingsMenu;
 
 enum MapNodeState
@@ -287,6 +287,7 @@ struct WorldMap : TilesetManager
 	WorldSelector *worldSelector;
 	MapSelector **selectors;
 	MainMenu *mainMenu;
+	TrialsManager *trialsMan;
 
 	sf::Shader zoomShader;
 	sf::Shader asteroidShader;
@@ -355,8 +356,6 @@ struct WorldMap : TilesetManager
 	Tileset *ts_selectableRing;
 	Tileset *ts_parallelPlayMarker;
 	Tileset *ts_parallelPlaySettingsMarker;
-
-	AdventureManager *adventureManager;
 
 	sf::Text currLevelTimeText;
 	sf::Text * text;

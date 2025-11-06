@@ -79,6 +79,8 @@
 
 #include "RushManager.h"
 #include "RushSaveFile.h"
+#include "TrialsManager.h"
+#include "TrialsScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -282,6 +284,10 @@ void MainMenu::sRushWorldLoad(MainMenu *mm)
 	mm->rushManager->SetWorld(mm->rushManager->currWorld, mm->rushManager->currWorldSection);
 }
 
+void MainMenu::sTrialsMapLoad(MainMenu *mm)
+{
+	mm->trialsManager->LoadCurrentLevel();
+}
 
 void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
@@ -303,6 +309,30 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		delete saveMenu;
 		saveMenu = NULL;*/
 		break;
+	case TRIALS_MENU:
+	{
+		if (toMode != LOAD_TRIALS_MAP)
+		{
+			assert(trialsManager != NULL);
+			delete trialsManager;
+			trialsManager = NULL;
+		}
+		else
+		{
+			trialsManager->DestroyTrialsScreen();
+		}
+		break;
+	}
+	case RUN_TRIAL:
+	{
+		if (toMode == TITLEMENU )
+		{
+			assert(trialsManager != NULL);
+			delete trialsManager;
+			trialsManager = NULL;
+		}
+		break;
+	}
 	case TITLEMENU:
 	{
 		assert(newTitleScreen != NULL);
@@ -703,7 +733,31 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		newTitleScreen->Reset();
 		break;
 	}
+	case TRIALS_MENU:
+	{
+		if (fromMode == RUN_TRIAL)
+		{
+			assert(trialsManager != NULL);
+			trialsManager->CreateTrialsScreen();
+			trialsManager->trialsScreen->Reset();
+		}
+		else
+		{
+			assert(trialsManager == NULL);
+			trialsManager = new TrialsManager;
+			trialsManager->Load();
+			trialsManager->trialsScreen->Reset();
 
+			ControllerDualStateQueue *states = NULL;
+			states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, 0);
+
+			auto &managedProfiles = cpm->profiles[states->GetControllerType()];
+
+			trialsManager->controllerInput = states;
+			trialsManager->currProfile = managedProfiles.front();
+		}
+		break;
+	}
 	case RUN_EDITOR_MAP:
 	{
 		if (fromMode == BROWSE_WORKSHOP)
@@ -848,7 +902,7 @@ void MainMenu::sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode )
 MainMenu::MainMenu( bool p_steamOn)
 	:windowWidth(1920), windowHeight(1080)
 {
-	isDemoModeOn = true;
+	isDemoModeOn = false;
 
 	mousePixelPos = Vector2i(-1, -1);
 
@@ -1071,7 +1125,6 @@ MainMenu::MainMenu( bool p_steamOn)
 	newTitleScreen = NULL;
 
 	closedBetaScreen = new ClosedBetaScreen;
-
 	
 	
 
@@ -1471,8 +1524,7 @@ void MainMenu::Init()
 
 	ts_buttonIcons = GetSizedTileset("Menu/button_icon_128x128.png");
 
-	ts_splashScreen = GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
-	splashSprite.setTexture( *ts_splashScreen->texture );
+	
 
 	fader = new Fader;
 	swiper = new Swiper();
@@ -2469,6 +2521,35 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	//}
 }
 
+void MainMenu::SetModeTrialsLoadingMap(int index)
+{
+	musicPlayer->FadeOutCurrentMusic(30);
+	
+	
+	//stringstream ss;
+	//ss << "Menu/Load/load_w" << (0 + 1) << ".png";//"_1.png";
+
+	//if (ts_loadBG != NULL)
+	//{
+	//	DestroyTileset(ts_loadBG);
+	//	ts_loadBG = NULL;
+	//}
+
+	//ts_loadBG = GetTileset(ss.str(), 1920, 1080);
+
+	//loadingBackpack->SetScale(1.f);
+	//loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
+	//loadingBGSpr.setTexture(*ts_loadBG->texture);
+
+	gameRunType = GRT_TRIALS;
+	SetMode(LOAD_TRIALS_MAP);
+
+	loadThread = new boost::thread(MainMenu::sTrialsMapLoad, this);
+
+	loadingBackpack->SetScale(1.f);
+	loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
+}
+
 void MainMenu::SetModeAdventureLoadingMap( int wIndex )
 {
 	musicPlayer->FadeOutCurrentMusic(30);
@@ -2760,31 +2841,6 @@ void MainMenu::HandleMenuMode()
 	sf::Event ev;
 	switch (menuMode)
 	{
-	case SPLASH:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-		
-		if (CONTROLLERS.ButtonPressed_Any() )
-		{
-			SetMode(SPLASH_TRANS);
-			changedMode = true;
-		}
-		break;
-	}
-	case SPLASH_TRANS:
-	{
-		while (window->pollEvent(ev))
-		{
-
-		}
-
-		SetMode(TITLEMENU);
-
-		break;
-	}
 	case TITLEMENU:
 	{
 		TitleMenuModeUpdate();
@@ -3152,6 +3208,114 @@ void MainMenu::HandleMenuMode()
 
 				SetMode(TEST_RUSH);
 			}
+		}
+		break;
+	}
+	case LOAD_TRIALS_MAP:
+	{
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
+		loadingBackpack->Update();
+
+		if (loadThread != NULL)
+		{
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				//window->setVerticalSyncEnabled(true);
+				delete loadThread;
+				loadThread = NULL;
+
+				SetMode(RUN_TRIAL);
+			}
+		}
+		break;
+	}
+	case TRIALS_MENU:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		trialsManager->trialsScreen->Update();
+
+		if (trialsManager->trialsScreen->IsRunningMap())
+		{
+			SetModeTrialsLoadingMap(0);
+		}
+		else  if (trialsManager->trialsScreen->action == TrialsScreen::A_DONE)
+		{
+			LoadMode(TITLEMENU);
+		}
+
+		break;
+	}
+	case RUN_TRIAL:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		View oldView = window->getView();
+		GameSession::GameResultType result =
+			(GameSession::GameResultType)trialsManager->currLevel->Run();
+
+		switch (result)
+		{
+		case GameSession::GR_EXITLEVEL:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITTITLE:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITGAME:
+			//currFile->Save();
+			break;
+		}
+
+		window->setView(oldView);
+
+		if (result == GameSession::GR_WIN)
+		{
+			LoadMode(TRIALS_MENU);
+
+			//currFile->Save();
+
+			//delete currLevel;
+			//currLevel = NULL;
+			//fader->Clear();
+
+			//if (adventureManager->IsLastLevel())
+			//{
+			//	LoadMode(THANKS_FOR_PLAYING);
+			//}
+			//else
+			//{
+			//	LoadMode(TITLEMENU);//ReturnToWorldAfterLevel();
+			//}
+		}
+		else if (result == GameSession::GR_WINCONTINUE)
+		{
+		}
+		else if (result == GameSession::GR_EXITTITLE)
+		{
+			LoadMode(TITLEMENU);
+		}
+		else if (result == GameSession::GR_EXITGAME)
+		{
+			delete trialsManager;
+			trialsManager = NULL;
+
+
+			SetMode(EXITING);
+			quit = true;
+		}
+		else
+		{
+			LoadMode(TRIALS_MENU);
 		}
 		break;
 	}
@@ -5200,7 +5364,7 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_TRIALS:
 		{
 			MOUSE.Hide();
-			LoadMode(FREEPLAY);
+			LoadMode(TRIALS_MENU);
 			break;
 		}
 		case M_LOCAL:
@@ -5347,16 +5511,6 @@ void MainMenu::DrawMode( Mode m )
 {
 	switch (m)
 	{
-	case SPLASH:
-	{
-		preScreenTexture->draw(splashSprite);
-		break;
-	}
-	case SPLASH_TRANS:
-	{
-		preScreenTexture->draw(splashSprite);
-		break;
-	}
 	case TITLEMENU:
 	{
 		//titleScreen->Draw(preScreenTexture);
@@ -5396,6 +5550,7 @@ void MainMenu::DrawMode( Mode m )
 	}
 	case LOAD_RUSH_SHIP:
 	case LOAD_RUSH_WORLD:
+	case LOAD_TRIALS_MAP:
 	{
 		preScreenTexture->setView(v);
 //		preScreenTexture->draw(loadingBGSpr);
@@ -5658,6 +5813,16 @@ void MainMenu::DrawMode( Mode m )
 	case RUN_RUSH_SHIP:
 	{
 		//blank so we can exit to the title screen from the ship rn
+		break;
+	}
+	case TRIALS_MENU:
+	{
+		trialsManager->trialsScreen->Draw(preScreenTexture);
+		break;
+	}
+	case RUN_TRIAL:
+	{
+		//blank so we can exit to the title screen from the map
 		break;
 	}
 	default:

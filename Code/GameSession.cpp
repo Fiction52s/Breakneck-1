@@ -91,6 +91,7 @@
 
 #include "ShipTravelSequence.h"
 #include "LevelNameDisplay.h"
+#include "TrialsManager.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -2098,6 +2099,16 @@ bool GameSession::Load()
 				logMenu = pauseMenu->logMenu;
 			}
 		}
+		else if (mainMenu->gameRunType == MainMenu::GRT_TRIALS && mainMenu->trialsManager != NULL)
+		{
+			mainMenu->trialsManager->SetBoards(this);
+
+			pauseMenu = mainMenu->trialsManager->pauseMenu;
+			pauseMenu->SetGame(this);
+
+			shardMenu = pauseMenu->shardMenu;
+			logMenu = pauseMenu->logMenu;
+		}
 		else
 		{
 			if (IsRushSession())
@@ -2788,7 +2799,7 @@ bool GameSession::SetupMyBestPlayerReplayManager()
 
 
 			bool usePlayerSkins = false;
-			if (mainMenu->adventureManager != NULL && mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins())
+			if (GetLeaderboardDisplay() != NULL && GetLeaderboardDisplay()->IsUsingPlayerGhostSkins())
 			{
 				usePlayerSkins = true;
 			}
@@ -3812,9 +3823,9 @@ bool GameSession::RunMainLoopOnce()
 		sf::Event ev;
 		while (window->pollEvent(ev))
 		{
-			if (mainMenu->adventureManager != NULL)
+			if (GetLeaderboardDisplay() != NULL)
 			{
-				mainMenu->adventureManager->leaderboard->HandleEvent(ev);
+				GetLeaderboardDisplay()->HandleEvent(ev);
 			}
 		}
 
@@ -4019,11 +4030,12 @@ int GameSession::Run()
 		parentGame->bonusHandler->InitBonus();
 	}
 
-	if (mainMenu->adventureManager != NULL)
+	LeaderboardDisplay *lboard = GetLeaderboardDisplay();
+	if (lboard != NULL)
 	{
-		if (mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
+		if (lboard->IsTryingToStartReplay())
 		{
-			PlayerReplayManager *prm = mainMenu->adventureManager->leaderboard->replayChosen;
+			PlayerReplayManager *prm = lboard->replayChosen;
 			//TryStartLeaderboardReplay(mainMenu->adventureManager->leaderboard->replayChosen);
 			CleanupReplaysAndGhosts();
 
@@ -4035,7 +4047,7 @@ int GameSession::Run()
 
 			prm->SetPlayers();
 
-			prm->AddGhostsToVec(replayGhosts, mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins());
+			prm->AddGhostsToVec(replayGhosts, lboard->IsUsingPlayerGhostSkins());
 			prm->replaysActive = bestReplayOn;
 			prm->ghostsActive = bestTimeGhostOn;
 
@@ -4043,19 +4055,20 @@ int GameSession::Run()
 
 			bool res = AddGhostsForReplay(prm);
 
-			mainMenu->adventureManager->leaderboard->Hide();
+			lboard->Hide();
 
 			RestartLevel();
 		}
-		else if (mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
+		else if (lboard->IsTryingToRaceGhosts())
 		{
 			CleanupReplaysAndGhosts();
 
 			AddGhosts();
 
-			mainMenu->adventureManager->leaderboard->Hide();
+			lboard->Hide();
 		}
 	}
+		
 
 	quit = false;
 
@@ -5090,28 +5103,28 @@ bool GameSession::LeaderboardGameModeUpdate()
 		UpdateControllers();
 		UICONTROLLER.Update();
 		
-
-		if (mainMenu->adventureManager != NULL)
+		LeaderboardDisplay *lboard = GetLeaderboardDisplay();
+		if (lboard != NULL)
 		{
 			Session *sess = Session::GetSession();
 
-			mainMenu->adventureManager->leaderboard->Update(GetPrevInput(0), GetCurrInput(0));
+			lboard->Update(GetPrevInput(0), GetCurrInput(0));
 
-			if (mainMenu->adventureManager->leaderboard->IsHidden())
+			if (lboard->IsHidden())
 			{
 				gameState = RUN;
 			}
-			else if (mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
+			else if (lboard->IsTryingToStartReplay())
 			{
-				TryStartLeaderboardReplay(mainMenu->adventureManager->leaderboard->replayChosen);
+				TryStartLeaderboardReplay(lboard->replayChosen);
 				gameState = RUN;
-				mainMenu->adventureManager->leaderboard->Hide();
+				lboard->Hide();
 			}
-			else if (mainMenu->adventureManager->leaderboard->IsTryingToRaceGhosts())
+			else if (lboard->IsTryingToRaceGhosts())
 			{
 				TryStartGhosts();
 				gameState = RUN;
-				mainMenu->adventureManager->leaderboard->Hide();
+				lboard->Hide();
 			}
 		}
 
@@ -5818,35 +5831,21 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 
 void GameSession::DrawLeaderboard(sf::RenderTarget *target)
 {
-	AdventureManager *adventureManager = mainMenu->adventureManager;
-
-	if (adventureManager != NULL)
+	if (GetLeaderboardDisplay() != NULL)
 	{
-		adventureManager->leaderboard->Draw(target);
+		GetLeaderboardDisplay()->Draw(target);
 	}
 }
 
 void GameSession::StartLeaderboard()
 {
-	AdventureManager *adventureManager = mainMenu->adventureManager;
 	CleanupReplaysAndGhosts();
 
-
-	if (adventureManager != NULL)
+	if (GetLeaderboardDisplay() != NULL)
 	{
 		gameState = LEADERBOARD;
-		adventureManager->leaderboard->SetAnyPowersMode(true);
-		/*if (originalProgressionCompatible)
-		{
-			adventureManager->leaderboard->SetAnyPowersMode(false);
-		}
-		else
-		{
-			adventureManager->leaderboard->SetAnyPowersMode(true);
-		}*/
-
-		adventureManager->leaderboard->Start();//adventureManager->GetLeaderboardNameOriginalPowers(this), 
-			//adventureManager->GetLeaderboardNameAnyPowers(this));
+		GetLeaderboardDisplay()->SetAnyPowersMode(true);
+		GetLeaderboardDisplay()->Start();
 	}
 }
 
@@ -5908,7 +5907,7 @@ bool GameSession::TryStartLeaderboardReplay(PlayerReplayManager *prm)
 
 	prm->SetPlayers();
 
-	prm->AddGhostsToVec(replayGhosts, mainMenu->adventureManager->leaderboard->IsUsingPlayerGhostSkins());
+	prm->AddGhostsToVec(replayGhosts, GetLeaderboardDisplay()->IsUsingPlayerGhostSkins());
 	prm->replaysActive = bestReplayOn;
 	prm->ghostsActive = bestTimeGhostOn;
 
@@ -5926,13 +5925,13 @@ bool GameSession::TryStartLeaderboardReplay(PlayerReplayManager *prm)
 
 int GameSession::GetNumPotentialGhosts()
 {
-	if (mainMenu->adventureManager != NULL )
+	if (GetLeaderboardDisplay() != NULL)
 	{
 		int numGhosts = 0;
 
-		numGhosts += mainMenu->adventureManager->leaderboard->GetNumActiveLeaderboardGhosts();
+		numGhosts += GetLeaderboardDisplay()->GetNumActiveLeaderboardGhosts();
 
-		if (numGhosts == 0 || mainMenu->adventureManager->leaderboard->IsDefaultGhostOn())
+		if (numGhosts == 0 || GetLeaderboardDisplay()->IsDefaultGhostOn())
 		{
 			numGhosts += 1;
 		}
@@ -5947,24 +5946,20 @@ int GameSession::GetNumPotentialGhosts()
 
 bool GameSession::AddGhostsForReplay(PlayerReplayManager *prm)
 {
-	if (mainMenu->adventureManager != NULL && mainMenu->adventureManager->leaderboard->ShouldShowGhostsWithReplay())
+	LeaderboardDisplay *lboard = GetLeaderboardDisplay();
+	if (lboard != NULL && lboard->ShouldShowGhostsWithReplay())
 	{
 		bool useDefaultGhost = true;
 		bool useLeaderboardGhosts = true;
 
-		if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+		if (bestTimeGhostOn)
 		{
-			assert(mainMenu->adventureManager != NULL);
-
-			if (bestTimeGhostOn)
+			if (lboard->GetNumActiveLeaderboardGhosts() > 0)
 			{
-				if (mainMenu->adventureManager->leaderboard->GetNumActiveLeaderboardGhosts() > 0)
-				{
-					useLeaderboardGhosts = true;
-				}
-
-				useDefaultGhost = mainMenu->adventureManager->leaderboard->IsDefaultGhostOn();
+				useLeaderboardGhosts = true;
 			}
+
+			useDefaultGhost = lboard->IsDefaultGhostOn();
 		}
 
 		if (useDefaultGhost && prm != myBestReplayManager)
@@ -5986,9 +5981,9 @@ bool GameSession::AddGhostsForReplay(PlayerReplayManager *prm)
 
 		if (useLeaderboardGhosts)
 		{
-			mainMenu->adventureManager->leaderboard->AddGhostsToVec(replayGhosts, prm);
-			mainMenu->adventureManager->leaderboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers, prm);
-			mainMenu->adventureManager->leaderboard->SetActive(false, bestTimeGhostOn, prm);
+			lboard->AddGhostsToVec(replayGhosts, prm);
+			lboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers, prm);
+			lboard->SetActive(false, bestTimeGhostOn, prm);
 		}
 	}
 
@@ -6006,18 +6001,17 @@ bool GameSession::AddGhosts()
 	bool useDefaultGhost = true;
 	bool useLeaderboardGhosts = true;
 
-	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+	LeaderboardDisplay *lboard = GetLeaderboardDisplay();
+	if (lboard != NULL )
 	{
-		assert(mainMenu->adventureManager != NULL);
-
 		if (bestTimeGhostOn)
 		{
-			if (mainMenu->adventureManager->leaderboard->GetNumActiveLeaderboardGhosts() > 0)
+			if (lboard->GetNumActiveLeaderboardGhosts() > 0)
 			{
 				useLeaderboardGhosts = true;
 			}
 
-			useDefaultGhost = mainMenu->adventureManager->leaderboard->IsDefaultGhostOn();
+			useDefaultGhost = lboard->IsDefaultGhostOn();
 		}
 	}
 
@@ -6047,9 +6041,9 @@ bool GameSession::AddGhosts()
 			(*it)->SetPlayers();
 		}*/
 
-		mainMenu->adventureManager->leaderboard->AddGhostsToVec(replayGhosts);
-		mainMenu->adventureManager->leaderboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers);
-		mainMenu->adventureManager->leaderboard->SetActive(false, bestTimeGhostOn);
+		lboard->AddGhostsToVec(replayGhosts);
+		lboard->AddPlayerReplayManagersToVec(activePlayerReplayManagers);
+		lboard->SetActive(false, bestTimeGhostOn);
 	}
 
 	return true;
@@ -6149,4 +6143,18 @@ void GameSession::StartRaceFromPractice()
 	//netplayManager->TestNewRaceSystem();
 	quit = true;
 	returnVal = GameSession::GR_EXIT_PRACTICE_TO_RACE;
+}
+
+LeaderboardDisplay *GameSession::GetLeaderboardDisplay()
+{
+	if (mainMenu->adventureManager != NULL)
+	{
+		return mainMenu->adventureManager->leaderboard;
+	}
+	else if (mainMenu->trialsManager != NULL)
+	{
+		return mainMenu->trialsManager->leaderboard;
+	}
+
+	return NULL;
 }

@@ -68,6 +68,7 @@ struct RushFile
 	void Save(const std::string &p_path,
 		const std::string &adventureName);
 	RushMap &GetMap(int index);
+	std::string GetLeaderboardName( int world, int map);
 	bool LoadMapHeaders();
 };
 

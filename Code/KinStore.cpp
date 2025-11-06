@@ -5,6 +5,7 @@
 #include "KinUpgrades.h"
 #include "nlohmann\json.hpp"
 #include "RushManager.h"
+#include "TrialsManager.h"
 #include "EditSession.h"
 
 using namespace sf;
@@ -356,9 +357,14 @@ KinStore::KinStore()
 		storePanel = new Panel("store", 1920, 1080, this, true);
 		storePanel->SetColor(Color::Transparent);
 	}
-	else
+	else if( mm->rushManager != NULL )
 	{
 		tm = mm->rushManager;
+		storePanel = NULL;
+	}
+	else if (mm->trialsManager != NULL)
+	{
+		tm = mm->trialsManager;
 		storePanel = NULL;
 	}
 

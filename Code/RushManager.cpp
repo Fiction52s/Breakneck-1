@@ -86,6 +86,8 @@ RushManager::RushManager()
 
 	transferPlayerPowerMode = -1;
 
+	numMapsInSection = 3;
+
 	startWorld = 0;
 
 	MainMenu * mm = MainMenu::GetInstance();
@@ -261,7 +263,7 @@ void RushManager::SetWorld(int w, int section)
 		}
 	}*/
 	
-	int numMapsInSection = 4;
+	
 	int startSectionIndex = numMapsInSection * section;
 
 	currRushMapIndex = startSectionIndex;
@@ -481,7 +483,7 @@ bool RushManager::TryToGoToNextLevel(GameSession *game)
 
 		//int r = rand() % (rushFile.numMaps - 1);
 		//game->SetBonus(bonusVec[r], V2d(0, 0));
-		game->SetBonus(bonusVec[currRushMapIndex % 4], V2d(0,0));
+		game->SetBonus(bonusVec[currRushMapIndex % numMapsInSection], V2d(0,0));
 		currRushMapIndex++;
 		return true;
 	}
@@ -495,7 +497,7 @@ bool RushManager::CanGoToNextLevel()
 		return true;*/
 	if (currRushMapIndex < rushFile.worlds[currWorld].maps.size() - 1)
 	{
-		if (currRushMapIndex < currWorldSection * 4 + 3)
+		if (currRushMapIndex < currWorldSection * numMapsInSection + (numMapsInSection - 1))
 		{
 			return true;
 		}

@@ -87,6 +87,7 @@
 #include "KinStore.h"
 #include "Config.h"
 #include "HealthHearts.h"
+#include "TrialsManager.h"
 
 using namespace sf;
 using namespace std;
@@ -9308,10 +9309,16 @@ int Actor::GetUpgradeEffectTotalCount(int ue)
 	{
 		kStore = editOwner->kinStore;
 	}
-	else
+	else if( sess->mainMenu->rushManager != NULL )
 	{
 		kStore = sess->mainMenu->rushManager->kinStore;
 	}
+	else if (sess->mainMenu->trialsManager != NULL)
+	{
+		kStore = sess->mainMenu->trialsManager->kinStore;
+	}
+
+	assert(kStore != NULL);
 	 
 	return kStore->upgradeEffectMap[ue].size();
 }
@@ -9341,9 +9348,13 @@ int Actor::GetUpgradeEffectCount(int ue)
 	{
 		kStore = editOwner->kinStore;
 	}
-	else
+	else if( sess->mainMenu->rushManager != NULL )
 	{
 		kStore = sess->mainMenu->rushManager->kinStore;
+	}
+	else if (sess->mainMenu->trialsManager != NULL)
+	{
+		kStore = sess->mainMenu->trialsManager->kinStore;
 	}
 
 	int numAppearances = GetUpgradeEffectTotalCount(ue);
