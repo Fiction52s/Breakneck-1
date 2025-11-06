@@ -4,6 +4,8 @@
 #include "Fader.h"
 #include "TrialsManager.h"
 #include "WorldMap.h"
+#include "Fader.h"
+#include "DrawLayer.h"
 
 using namespace std;
 using namespace sf;
@@ -64,39 +66,50 @@ void TrialsScreen::Update()
 	if (action == A_WORLD_MAP)
 	{
 		worldMap->Update();
+
+		if( worldMap->state == WorldMap::TRIAL_COLONY )
+		{
+			action = A_LEVEL_SELECT;
+			frame = 0;
+
+			MainMenu *mm = MainMenu::GetInstance();
+			//mm->fader->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT);
+		}
 	}
-	return;
+	else if (action == A_LEVEL_SELECT)
+	{
+			/*if (frame == 60 * 5)
+			{
+				action = A_DONE;
+				frame = 0;
+			}
+			else*/
+			{
+				
+				//if (CONTROLLERS.ButtonPressed_B() && frame > 60)
+				if (CONTROLLERS.ButtonPressed_A())
+				{
+					action = A_RUN_LEVEL;
+					frame = 0;
+				}
+				else if (CONTROLLERS.ButtonPressed_B())
+				{
+					action = A_DONE;
+					frame = 0;
+					//MainMenu *mm = MainMenu::GetInstance();
+					//mm->fader->CrossFade(30, 0, 30, Color::Black);
+				}
+				else if (CONTROLLERS.DirPressed_Down())
+				{
+
+				}
+				
+			}
+	}
 
 	//if (action == A_IDLE)
 	//{
-	//	if (frame == 60 * 5)
-	//	{
-	//		action = A_DONE;
-	//		frame = 0;
-	//	}
-	//	else
-	//	{
-	//		
-	//		//if (CONTROLLERS.ButtonPressed_B() && frame > 60)
-	//		if (CONTROLLERS.ButtonPressed_A())
-	//		{
-	//			action = A_RUN_MAP;
-	//			frame = 0;
-	//		}
-	//		else if (CONTROLLERS.ButtonPressed_B())
-	//		{
-	//			action = A_DONE;
-	//			frame = 0;
-	//			//MainMenu *mm = MainMenu::GetInstance();
-	//			//mm->fader->CrossFade(30, 0, 30, Color::Black);
-	//		}
-	//		else if (CONTROLLERS.DirPressed_Down())
-	//		{
-
-	//		}
-	//		
-	//	}
-	//}
+	
 
 	++frame;
 }
@@ -110,10 +123,13 @@ void TrialsScreen::Draw(sf::RenderTarget *target)
 {
 	target->draw(quad, 4, sf::Quads);
 
-	/*if (action == A_IDLE || action == A_DONE || action == A_RUN_MAP )
+	if (action == A_LEVEL_SELECT || action == A_DONE || action == A_RUN_LEVEL )
 	{
 		target->draw(closedBetaSpr);
 		target->draw(closedBetaText);
-	}*/
-	worldMap->Draw(target);
+	}
+	else if (action == A_WORLD_MAP)
+	{
+		worldMap->Draw(target);
+	}
 }

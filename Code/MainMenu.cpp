@@ -286,6 +286,7 @@ void MainMenu::sRushWorldLoad(MainMenu *mm)
 
 void MainMenu::sTrialsMapLoad(MainMenu *mm)
 {
+	mm->trialsManager->DestroyTrialsScreen();
 	mm->trialsManager->LoadCurrentLevel();
 }
 
@@ -319,7 +320,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		else
 		{
-			trialsManager->DestroyTrialsScreen();
+			//trialsManager->DestroyTrialsScreen();
+			//this doesn't get called, since I use SetMode
 		}
 		break;
 	}
@@ -745,6 +747,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		{
 			assert(trialsManager == NULL);
 			trialsManager = new TrialsManager;
+			cout << "create trials manager" << endl;
 			trialsManager->Load();
 			trialsManager->trialsScreen->Reset();
 
@@ -755,6 +758,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 			trialsManager->controllerInput = states;
 			trialsManager->currProfile = managedProfiles.front();
+
+			trialsManager->UpdateButtonIconsWhenControllerIsChanged();
 		}
 		break;
 	}
@@ -980,6 +985,8 @@ MainMenu::MainMenu( bool p_steamOn)
 
 	customCursor = NULL;
 	window = NULL;
+
+	trialsManager = NULL;
 
 	ControllerSettings::InitStrings();
 	

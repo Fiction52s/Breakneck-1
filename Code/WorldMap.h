@@ -272,6 +272,8 @@ struct WorldMap : TilesetManager
 		PLANET_PARALLEL_OPTIONS,
 		PLANET,
 		PlANET_TO_COLONY,
+		FADE_TO_COLONY,
+		TRIAL_COLONY,
 		COLONY,
 		COLONY_TO_PLANET,
 		PLANET_TO_SPACE,
@@ -378,8 +380,8 @@ struct WorldMap : TilesetManager
 	~WorldMap();
 	void Update();
 	void Draw(sf::RenderTarget *target);
-	Sector &GetCurrSector();
-	int GetCurrSectorNumLevels();
+	//Sector &GetCurrSector();
+	//int GetCurrSectorNumLevels();
 	const std::string & GetSelected();
 	void ClearEntries();
 	void UpdateColonySelect();

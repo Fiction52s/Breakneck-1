@@ -86,8 +86,6 @@ TrialsManager::~TrialsManager()
 
 	delete kinStore;
 
-	delete trialsScreen;
-
 	delete leaderboard;
 
 	if (trialsScreen != NULL)
@@ -352,6 +350,7 @@ void TrialsManager::CreateTrialsScreen()
 	assert(trialsScreen == NULL);
 	trialsScreen = new TrialsScreen;
 	trialsScreen->trialsMan = this;
+	cout << "create trialsscreen" << endl;
 }
 
 void TrialsManager::DestroyTrialsScreen()
@@ -359,4 +358,11 @@ void TrialsManager::DestroyTrialsScreen()
 	assert(trialsScreen != NULL);
 	delete trialsScreen;
 	trialsScreen = NULL;
+	cout << "destroy trialsscreen" << endl;
+}
+
+void TrialsManager::UpdateButtonIconsWhenControllerIsChanged()
+{
+	assert(trialsScreen != NULL);
+	trialsScreen->worldMap->UpdateButtonIconsWhenControllerIsChanged();
 }

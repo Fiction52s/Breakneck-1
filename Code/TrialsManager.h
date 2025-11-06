@@ -90,6 +90,8 @@ struct TrialsManager : TilesetManager
 	std::string GetLeaderboardDisplayName(int levelIndex);
 	void CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze);
 
+	void UpdateButtonIconsWhenControllerIsChanged();
+
 	void SetBoards(GameSession *game);
 	void SetBoards(int levelIndex, const std::string &myHash);
 };
