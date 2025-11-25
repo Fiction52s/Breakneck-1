@@ -908,7 +908,7 @@ bool MapSector::Update(ControllerDualStateQueue *controllerInput)
 		}
 		else
 		{
-			ms->mainMenu->adventureManager->leaderboard->Update( controllerInput->GetPrevState(), controllerInput->GetCurrState() );
+			//ms->mainMenu->adventureManager->leaderboard->Update( controllerInput->GetPrevState(), controllerInput->GetCurrState() );
 
 			if (ms->mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
 			{

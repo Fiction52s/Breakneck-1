@@ -178,18 +178,27 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 		A_RACING_GHOSTS,
 	};
 
+	//going to ignore this for now and re-add it afterwards
 	enum UploadType
 	{
+		//UPLOAD_TYPE_MINIMAL_POWERS,
+		//UPLOAD_TYPE_SOME_POWERS,
+		//UPLOAD_TYPE_MAX_POWERS,
 		UPLOAD_TYPE_ANY_POWERS,
-		UPLOAD_TYPE_BOTH_BOARDS,
 	};
 
+	//ignoring until I re-add the additional board types later
 	enum UploadState
 	{
 		UPLOAD_STATE_NONE,
 		UPLOAD_STATE_ANY_POWERS,
-		UPLOAD_STATE_ORIG_POWERS,
+		//UPLOAD_STATE_ORIG_POWERS,
 	};
+
+	//std::string minimalPowersBoardName;
+	//std::string somePowersBoardName;
+	//std::string maxPowersBoardName;
+	std::string anyPowersBoardName;
 
 	int uploadType;
 
@@ -223,8 +232,6 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 	Label *ghostsUseOriginalSkinsLabel;
 
 	int tabWhenDownloadingBoard;
-	std::string origPowersBoardName;
-	std::string anyPowersBoardName;
 
 	int leaderboardBGBorder;
 
@@ -269,14 +276,14 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 
 	void Clear();
 	bool IsFriendsOnlyMode();
-	void SetBoards(const std::string &leaderboardDisplayName, const std::string &origPowers, const std::string &anyPowers);
+	void SetBoards(const std::string &leaderboardDisplayName);
 	bool IsAnyPowersMode();
 	void SetAnyPowersMode(bool on);
 	void Reset();
 	void Start();
 	void SetTopLeft(const sf::Vector2f &p_pos);
 	void HandleEvent(sf::Event ev);
-	void Update( ControllerState prevInput, ControllerState currInput );
+	void Update(); //ControllerState prevInput, ControllerState currInput );
 	void UploadScore(int score, const std::string &replayPath );
 	void Show();
 	void Hide();

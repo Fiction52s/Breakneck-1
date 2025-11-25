@@ -13,6 +13,7 @@ struct TrialsScreen : TilesetManager
 	{
 		A_WORLD_MAP,
 		A_LEVEL_SELECT,
+		A_LEADERBOARD,
 		A_RUN_LEVEL,
 		A_DONE,
 	};

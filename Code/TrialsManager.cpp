@@ -254,16 +254,15 @@ void TrialsManager::SetBoards(GameSession *game)
 {
 	assert(leaderboard != NULL);
 
-	leaderboard->SetBoards(GetLeaderboardDisplayName(game), GetLeaderboardNameOriginalPowers(game),
-		GetLeaderboardNameAnyPowers(game));
+	/*leaderboard->SetBoards(GetLeaderboardDisplayName(game), GetLeaderboardNameOriginalPowers(game),
+		GetLeaderboardNameAnyPowers(game));*/
 }
 
 void TrialsManager::SetBoards(int levelIndex, const std::string &myHash)
 {
 	assert(leaderboard != NULL);
 
-	leaderboard->SetBoards(GetLeaderboardDisplayName(levelIndex), GetLeaderboardNameOriginalPowers(levelIndex, myHash),
-		GetLeaderboardNameAnyPowers(levelIndex, myHash));
+	leaderboard->SetBoards(GetLeaderboardDisplayName(levelIndex));
 }
 
 void TrialsManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze)

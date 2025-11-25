@@ -194,7 +194,7 @@ LeaderboardDisplay::LeaderboardDisplay()
 
 	scrollBar = panel->AddScrollBar("scroll", Vector2i(), Vector2i(30, NUM_ROWS * ROW_HEIGHT ), 1, 1);
 
-	std::vector<string> tabStrings = { "Original Powers", "Any Powers" };
+	std::vector<string> tabStrings = { "Any Powers" };//"Original Powers", "Any Powers" };
 
 	int tabWidth = ROW_WIDTH / 2 - 40;
 	int tabHeight = 45;
@@ -287,7 +287,6 @@ void LeaderboardDisplay::Reset()
 	//ghostsUseOriginalSkinsCheckBox->checked = false;
 	scrollBar->SetIndex(0);
 	storedCheckedGhosts.clear();
-	origPowersBoardName = "";
 	anyPowersBoardName = "";
 	tabs->SelectTab(0);
 
@@ -306,21 +305,20 @@ void LeaderboardDisplay::Clear()
 
 bool LeaderboardDisplay::IsAnyPowersMode()
 {
-	return tabs->currTabIndex == 1;
+	return tabs->currTabIndex == 0;
 }
 
-void LeaderboardDisplay::SetBoards( const std::string &leaderboardDisplayName, const std::string &origPowers, const std::string &anyPowers)
+void LeaderboardDisplay::SetBoards( const std::string &leaderboardDisplayName )
 {
 	titleLabel->text.setString(leaderboardDisplayName);
 	titleLabel->SetCenterPosition(Vector2i(titleLabel->text.getPosition()));
 
-	origPowersBoardName = origPowers;
-	anyPowersBoardName = anyPowers;
+	anyPowersBoardName = "Accelerate_b1caba65a248b5abab818659b728f49e";
 }
 
 void LeaderboardDisplay::SetAnyPowersMode(bool on)
 {
-	if (on)
+	/*if (on)
 	{
 		tabs->SelectTab(1);
 
@@ -328,7 +326,7 @@ void LeaderboardDisplay::SetAnyPowersMode(bool on)
 	else
 	{
 		tabs->SelectTab(0);
-	}
+	}*/
 }
 
 void LeaderboardDisplay::DownloadCurrBoard()
@@ -338,11 +336,11 @@ void LeaderboardDisplay::DownloadCurrBoard()
 	action = A_LOADING;
 	frame = 0;
 
-	if (tabs->currTabIndex == 0)
+	/*if (tabs->currTabIndex == 0)
 	{
 		manager.DownloadBoard(origPowersBoardName);
 	}
-	else
+	else*/
 	{
 		manager.DownloadBoard(anyPowersBoardName);
 	}
@@ -548,7 +546,7 @@ void LeaderboardDisplay::PopulateRows()
 	}
 }
 
-void LeaderboardDisplay::Update( ControllerState prevInput, ControllerState currInput )
+void LeaderboardDisplay::Update()// ControllerState prevInput, ControllerState currInput )
 {
 	if (action == A_HIDDEN)
 		return;
@@ -621,10 +619,15 @@ void LeaderboardDisplay::Update( ControllerState prevInput, ControllerState curr
 		}
 	}
 
-	if (currInput.start && !prevInput.start)
+	//if (currInput.start && !prevInput.start)
+	//{
+	//	Hide();
+	//}
+
+	/*if (CONTROLLERS.ButtonPressed_Start())
 	{
 		Hide();
-	}
+	}*/
 
 	if (action == A_UPLOAD_FAILED_POPUP)
 	{
@@ -661,14 +664,14 @@ void LeaderboardDisplay::OnManagerUploadingScoreFailed()
 
 void LeaderboardDisplay::OnManagerUploadingScoreSucceeded()
 {
-	if (uploadState == UPLOAD_STATE_ANY_POWERS && uploadType == UPLOAD_TYPE_BOTH_BOARDS)
+	/*if (uploadState == UPLOAD_STATE_ANY_POWERS && uploadType == UPLOAD_TYPE_BOTH_BOARDS)
 	{
 		successfulScoreChange = true;
 		uploadState = UPLOAD_STATE_ORIG_POWERS;
 		manager.UploadScore(origPowersBoardName, manager.scoreToUpload, manager.localReplayPath);
 		cout << "completed the upload to the any powers board. Still need to upload to the orig power board\n";
 	}
-	else
+	else*/
 	{	
 		Session *sess = Session::GetSession();
 		if (sess != NULL)
@@ -683,15 +686,15 @@ void LeaderboardDisplay::OnManagerUploadingScoreSucceeded()
 
 void LeaderboardDisplay::OnManagerScoreWasNotGoodEnoughToUpload()
 {
-	if (uploadState == UPLOAD_STATE_ANY_POWERS && uploadType == UPLOAD_TYPE_BOTH_BOARDS)
+	/*if (uploadState == UPLOAD_STATE_ANY_POWERS && uploadType == UPLOAD_TYPE_BOTH_BOARDS)
 	{
 		uploadState = UPLOAD_STATE_ORIG_POWERS;
 		manager.UploadScore(origPowersBoardName, manager.scoreToUpload, manager.localReplayPath);
 		cout << "upload to the any powers board was unncessary due to score. Still need to try upload to the orig power board\n";
 	}
-	else
+	else*/
 	{
-		if (uploadType == UPLOAD_TYPE_BOTH_BOARDS && uploadState == UPLOAD_STATE_ORIG_POWERS && successfulScoreChange)
+		/*if (uploadType == UPLOAD_TYPE_BOTH_BOARDS && uploadState == UPLOAD_STATE_ORIG_POWERS && successfulScoreChange)
 		{
 			Session *sess = Session::GetSession();
 			if (sess != NULL)
@@ -700,7 +703,7 @@ void LeaderboardDisplay::OnManagerScoreWasNotGoodEnoughToUpload()
 			}
 
 			cout << "full leaderboard submission complete and successful\n";
-		}
+		}*/
 
 		uploadState = UPLOAD_STATE_NONE;
 	}

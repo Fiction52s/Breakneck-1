@@ -5108,7 +5108,14 @@ bool GameSession::LeaderboardGameModeUpdate()
 		{
 			Session *sess = Session::GetSession();
 
-			lboard->Update(GetPrevInput(0), GetCurrInput(0));
+			if (GetCurrInput(0).start && !GetPrevInput(0).start)
+			{
+				lboard->Hide();
+			}
+			else
+			{
+				lboard->Update();//GetPrevInput(0), );
+			}
 
 			if (lboard->IsHidden())
 			{
