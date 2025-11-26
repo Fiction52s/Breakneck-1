@@ -50,6 +50,19 @@ TrialsScreen::TrialsScreen()
 	splashText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
 	splashText.setPosition(Vector2f(960, 640));
 	splashText.setFillColor(Color::White);
+
+	Vector2f textStart(100, 100);
+	Vector2f textSpace(0, 70);
+	for (int i = 0; i < MAX_LEVELS_PER_WORLD; ++i)
+	{
+		levelNameText[i].setFont(mm->arial);
+		levelNameText[i].setCharacterSize(20);
+		levelNameText[i].setString("");
+		//auto lb = closedBetaText.getLocalBounds();
+		//closedBetaText.setOrigin(lb.left + lb.width / 2, lb.top + lb.height / 2);
+		levelNameText[i].setPosition(textStart + Vector2f( 0, textSpace.y * i ));
+		levelNameText[i].setFillColor(Color::White);
+	}
 }
 
 TrialsScreen::~TrialsScreen()
@@ -61,6 +74,8 @@ void TrialsScreen::Reset()
 {
 	action = A_WORLD_MAP;
 	frame = 0;
+	selectedMapIndex = 0;
+	trialsMan->currLevelIndex = selectedMapIndex;
 }
 
 void TrialsScreen::Update()
@@ -74,55 +89,87 @@ void TrialsScreen::Update()
 			action = A_LEVEL_SELECT;
 			frame = 0;
 
+			trialsMan->currWorld = worldMap->selectedColony;
+
 			MainMenu *mm = MainMenu::GetInstance();
+
+			for (int i = 0; i < MAX_LEVELS_PER_WORLD; ++i)
+			{
+				levelNameText[i].setString(trialsMan->GetLeaderboardDisplayName( i ));
+			}
 			//mm->fader->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT);
 		}
 	}
 	else if (action == A_LEVEL_SELECT)
 	{
-			/*if (frame == 60 * 5)
+		if (CONTROLLERS.DirPressed_Down())
+		{
+			selectedMapIndex++;
+			if (selectedMapIndex == MAX_LEVELS_PER_WORLD)
+			{
+				selectedMapIndex = 0;
+			}
+			trialsMan->currLevelIndex = selectedMapIndex;
+		}
+		else if (CONTROLLERS.DirPressed_Up())
+		{
+			selectedMapIndex--;
+			if (selectedMapIndex < 0)
+			{
+				selectedMapIndex = MAX_LEVELS_PER_WORLD - 1;
+			}
+			trialsMan->currLevelIndex = selectedMapIndex;
+		}
+
+		for (int i = 0; i < MAX_LEVELS_PER_WORLD; ++i)
+		{
+			levelNameText[i].setFillColor(Color::White);
+		}
+		levelNameText[selectedMapIndex].setFillColor(Color::Red);
+		
+
+		/*if (frame == 60 * 5)
+		{
+			action = A_DONE;
+			frame = 0;
+		}
+		else*/
+		{
+				
+			//if (CONTROLLERS.ButtonPressed_B() && frame > 60)
+			if (CONTROLLERS.ButtonPressed_A())
+			{
+				action = A_RUN_LEVEL;
+				frame = 0;
+				
+			}
+			else if (CONTROLLERS.ButtonPressed_B())
 			{
 				action = A_DONE;
 				frame = 0;
+				//MainMenu *mm = MainMenu::GetInstance();
+				//mm->fader->CrossFade(30, 0, 30, Color::Black);
 			}
-			else*/
+			else if (CONTROLLERS.DirPressed_Down())
 			{
-				
-				//if (CONTROLLERS.ButtonPressed_B() && frame > 60)
-				if (CONTROLLERS.ButtonPressed_A())
-				{
-					action = A_RUN_LEVEL;
-					frame = 0;
-				}
-				else if (CONTROLLERS.ButtonPressed_B())
-				{
-					action = A_DONE;
-					frame = 0;
-					//MainMenu *mm = MainMenu::GetInstance();
-					//mm->fader->CrossFade(30, 0, 30, Color::Black);
-				}
-				else if (CONTROLLERS.DirPressed_Down())
-				{
 
-				}
-				else if (CONTROLLERS.ButtonPressed_RightShoulder())
-				{
-					action = A_LEADERBOARD;
-
-					int mapIndex = 0;
-
-					string filePathStr = trialsMan->rushFile.worlds[trialsMan->currWorld].maps[0].GetMapPath();//string("Resources\\Maps\\") + saveFile->adventureFile->GetMap(level->index).GetFilePath() + string(MAP_EXT);
-
-					string myHash = md5file(filePathStr);
-
-					trialsMan->SetBoards(mapIndex, myHash);
-
-					//trialsMan->leaderboard->SetAnyPowersMode(true);
-
-					trialsMan->leaderboard->Start();
-				}
-				
 			}
+			else if (CONTROLLERS.ButtonPressed_RightShoulder())
+			{
+				action = A_LEADERBOARD;
+
+				string filePathStr = trialsMan->rushFile.worlds[trialsMan->currWorld].maps[trialsMan->currLevelIndex].GetMapPath();//string("Resources\\Maps\\") + saveFile->adventureFile->GetMap(level->index).GetFilePath() + string(MAP_EXT);
+
+				string myHash = md5file(filePathStr);
+
+				trialsMan->SetBoards(trialsMan->currLevelIndex, myHash);
+
+				//trialsMan->leaderboard->SetAnyPowersMode(true);
+
+				trialsMan->leaderboard->Start();
+			}
+				
+		}
 	}
 	else if (action == A_LEADERBOARD)
 	{
@@ -178,6 +225,11 @@ void TrialsScreen::Draw(sf::RenderTarget *target)
 	{
 		target->draw(closedBetaSpr);
 		target->draw(closedBetaText);
+
+		for (int i = 0; i < MAX_LEVELS_PER_WORLD; ++i)
+		{
+			target->draw(levelNameText[i]);
+		}
 
 		if (action == A_LEADERBOARD)
 		{

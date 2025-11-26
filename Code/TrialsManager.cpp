@@ -113,7 +113,7 @@ void TrialsManager::SetToLevel(int w, int mapIndex )
 	MainMenu::GetInstance()->gameRunType = MainMenu::GRT_TRIALS;
 
 	currWorld = w;
-
+	currLevelIndex = mapIndex;
 	//int powerWorlds = min(currWorld, 6);
 	//for (int i = 0; i < powerWorlds; ++i)
 	//{
@@ -124,7 +124,7 @@ void TrialsManager::SetToLevel(int w, int mapIndex )
 	//}
 
 	MatchParams mp;
-	mp.mapPath = rushFile.worlds[w].maps[0].GetMapPath();
+	mp.mapPath = rushFile.worlds[w].maps[currLevelIndex].GetMapPath();
 	mp.randSeed = time(0);
 	mp.numPlayers = 1;
 	mp.gameModeType = MatchParams::GAME_MODE_BASIC;
@@ -140,7 +140,7 @@ void TrialsManager::SetToLevel(int w, int mapIndex )
 
 void TrialsManager::LoadCurrentLevel()
 {
-	SetToLevel(0, 0);
+	SetToLevel(currWorld, currLevelIndex);
 }
 
 void TrialsManager::LoadRushFile(const std::string &rushName)
@@ -237,17 +237,17 @@ std::string TrialsManager::GetLeaderboardDisplayName(GameSession *game)
 
 std::string TrialsManager::GetLeaderboardNameAnyPowers(int levelIndex, const std::string &myHash)
 {
-	return rushFile.GetLeaderboardName(0, levelIndex) + "_" + myHash;
+	return rushFile.GetLeaderboardName(currWorld, levelIndex) + "_" + myHash;
 }
 
 std::string TrialsManager::GetLeaderboardNameOriginalPowers(int levelIndex, const std::string &myHash)
 {
-	return rushFile.GetLeaderboardName(0, levelIndex) + "_orig_" + myHash;
+	return rushFile.GetLeaderboardName(currWorld, levelIndex) + "_orig_" + myHash;
 }
 
 std::string TrialsManager::GetLeaderboardDisplayName(int levelIndex)
 {
-	return rushFile.GetLeaderboardName(0, levelIndex);
+	return rushFile.GetLeaderboardName(currWorld, levelIndex);
 }
 
 void TrialsManager::SetBoards(GameSession *game)
@@ -262,7 +262,9 @@ void TrialsManager::SetBoards(int levelIndex, const std::string &myHash)
 {
 	assert(leaderboard != NULL);
 
-	leaderboard->SetBoards(GetLeaderboardDisplayName(levelIndex));
+	//string boardName = 
+
+	leaderboard->SetBoards(GetLeaderboardDisplayName(levelIndex), GetLeaderboardNameAnyPowers(levelIndex, myHash));
 }
 
 void TrialsManager::CompleteCurrentMap(GameSession *game, bool &setRecord, bool &gotGold, bool &gotSilver, bool &gotBronze)

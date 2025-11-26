@@ -33,7 +33,11 @@ struct TrialsScreen : TilesetManager
 
 	WorldMap *worldMap;
 
-	int currMapIndex; //the issue is that we need to integrate the world map.
+	const static int MAX_LEVELS_PER_WORLD = 12;
+
+	sf::Text levelNameText[MAX_LEVELS_PER_WORLD];
+
+	int selectedMapIndex; //the issue is that we need to integrate the world map.
 	//when you select trials, you should go to the world map screen. 
 	//world map can be its own thing within the trialsmanager
 

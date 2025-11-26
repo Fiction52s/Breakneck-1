@@ -67,6 +67,7 @@ struct TrialsManager : TilesetManager
 	KinStore *kinStore;
 
 	int currWorld;
+	int currLevelIndex;
 
 	bool parallelPracticeMode;
 	

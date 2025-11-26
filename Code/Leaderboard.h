@@ -276,7 +276,7 @@ struct LeaderboardDisplay : GUIHandler, PanelUpdater
 
 	void Clear();
 	bool IsFriendsOnlyMode();
-	void SetBoards(const std::string &leaderboardDisplayName);
+	void SetBoards(const std::string &leaderboardDisplayName, const std::string &anyPowersLeaderboardName);
 	bool IsAnyPowersMode();
 	void SetAnyPowersMode(bool on);
 	void Reset();

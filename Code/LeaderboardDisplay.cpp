@@ -172,7 +172,7 @@ LeaderboardDisplay::LeaderboardDisplay()
 	titleLabel = panel->AddLabel("titlelabel", Vector2i(), 40, "");
 	titleLabel->text.setFillColor(Color::White);
 
-	friendsOnlyCheckBox = panel->AddCheckBox("friendsonlycheckbox", Vector2i(), true);
+	friendsOnlyCheckBox = panel->AddCheckBox("friendsonlycheckbox", Vector2i(), false);
 	friendsOnlyLabel = panel->AddLabel("friendsonlylabel", Vector2i(), LeaderboardDisplay::CHAR_HEIGHT, "Friends Only: ");
 
 	refreshBoardButton = panel->AddButton("refreshbutton", Vector2i(), Vector2f(100, buttonHeight), "Refresh");
@@ -308,12 +308,13 @@ bool LeaderboardDisplay::IsAnyPowersMode()
 	return tabs->currTabIndex == 0;
 }
 
-void LeaderboardDisplay::SetBoards( const std::string &leaderboardDisplayName )
+void LeaderboardDisplay::SetBoards( const std::string &leaderboardDisplayName, const std::string &anyPowersLeaderboardName )
 {
 	titleLabel->text.setString(leaderboardDisplayName);
 	titleLabel->SetCenterPosition(Vector2i(titleLabel->text.getPosition()));
 
-	anyPowersBoardName = "Accelerate_b1caba65a248b5abab818659b728f49e";
+	cout << "any namne: " << anyPowersLeaderboardName << "\n";
+	anyPowersBoardName = "Forward_b178869311f6430d5a33e23a34e04ab3";//anyPowersLeaderboardName;//"Accelerate_b1caba65a248b5abab818659b728f49e";
 }
 
 void LeaderboardDisplay::SetAnyPowersMode(bool on)
