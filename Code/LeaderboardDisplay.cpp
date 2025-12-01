@@ -314,7 +314,7 @@ void LeaderboardDisplay::SetBoards( const std::string &leaderboardDisplayName, c
 	titleLabel->SetCenterPosition(Vector2i(titleLabel->text.getPosition()));
 
 	cout << "any namne: " << anyPowersLeaderboardName << "\n";
-	anyPowersBoardName = "Forward_b178869311f6430d5a33e23a34e04ab3";//anyPowersLeaderboardName;//"Accelerate_b1caba65a248b5abab818659b728f49e";
+	anyPowersBoardName = anyPowersLeaderboardName;//"Forward_b178869311f6430d5a33e23a34e04ab3";////"Accelerate_b1caba65a248b5abab818659b728f49e";
 }
 
 void LeaderboardDisplay::SetAnyPowersMode(bool on)

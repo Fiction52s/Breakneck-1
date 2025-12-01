@@ -9427,6 +9427,16 @@ void Actor::CompleteCurrentMap()
 
 			owner->scoreDisplay->madeRecord = setRecord;
 		}
+		else if (owner->mainMenu->gameRunType == MainMenu::GRT_TRIALS)
+		{
+			if (!owner->IsReplayOn() && !owner->IsParallelSession())
+			{
+				bool gotGold, gotSilver, gotBronze;
+				owner->mainMenu->trialsManager->CompleteCurrentMap(owner, setRecord, gotGold, gotSilver, gotBronze);
+			}
+
+			owner->scoreDisplay->madeRecord = setRecord;
+		}
 		else if (owner->IsRushSession())
 		{
 			int totalFrames = owner->totalFramesBeforeGoal;

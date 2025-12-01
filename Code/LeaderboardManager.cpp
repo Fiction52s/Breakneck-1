@@ -150,6 +150,8 @@ void SteamLeaderboardManager::FindLeaderboard(const std::string &name, int p_act
 	boardBeingProcessed->Clear();
 
 	searchBoardName = name;
+	
+	cout << "attempt to find leaderboard: " << name << "\n";
 
 	SteamAPICall_t call = SteamUserStats()->FindOrCreateLeaderboard(name.c_str(), ELeaderboardSortMethod::k_ELeaderboardSortMethodAscending, ELeaderboardDisplayType::k_ELeaderboardDisplayTypeNumeric);
 
