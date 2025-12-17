@@ -347,6 +347,8 @@ KinStore::KinStore()
 
 	movieIndex = -1;
 
+	rush = NULL;
+	trials = NULL;
 
 
 	edit = EditSession::GetSession();
@@ -592,9 +594,11 @@ void KinStore::SetTopLeft(sf::Vector2f pos)
 //assuming I'm in rush manager
 void KinStore::Open()
 {
+	MainMenu *mm = MainMenu::GetInstance();
 	if (edit != NULL)
 	{
 		rush = NULL;
+		trials = NULL;
 		SetWorld(0);
 
 		for (auto it = basicEntries.begin(); it != basicEntries.end(); ++it)
@@ -614,7 +618,7 @@ void KinStore::Open()
 
 		storePointsText.setString("-");
 	}
-	else
+	else if (mm->rushManager != NULL)
 	{
 		rush = sess->mainMenu->rushManager;
 
@@ -636,7 +640,33 @@ void KinStore::Open()
 			(*it)->currentLevel = rush->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
 		}
 
-		storePointsText.setString( "+" + to_string(rush->storePoints));
+		storePointsText.setString("+" + to_string(rush->storePoints));
+	}
+	else if (mm->trialsManager != NULL)
+	{
+		trials = mm->trialsManager;
+		SetWorld(trials->currWorld); //0 - 7
+
+		for (auto it = basicEntries.begin(); it != basicEntries.end(); ++it)
+		{
+			(*it)->currentLevel = trials->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
+		}
+
+		for (auto it = power1Entries.begin(); it != power1Entries.end(); ++it)
+		{
+			(*it)->currentLevel = trials->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
+		}
+
+		for (auto it = power2Entries.begin(); it != power2Entries.end(); ++it)
+		{
+			(*it)->currentLevel = trials->kinUpgradeLevels->GetUpgradeLevel((*it)->upgradeIndex);
+		}
+
+		storePointsText.setString("+" + to_string(0));
+	}
+	else
+	{
+		assert(0);
 	}
 
 	SetTopLeft(Vector2f(0, 0));
@@ -699,9 +729,17 @@ void KinStore::SetSelected(int section, int itemIndex)
 	{
 		upgradeLevel = edit->defaultStartingPlayerUpgradeLevels->GetUpgradeLevel(si->upgradeIndex);
 	}
-	else
+	else if( rush != NULL )
 	{
 		upgradeLevel = rush->kinUpgradeLevels->GetUpgradeLevel(si->upgradeIndex);
+	}
+	else if (trials != NULL)
+	{
+		upgradeLevel = trials->kinUpgradeLevels->GetUpgradeLevel(si->upgradeIndex);
+	}
+	else
+	{
+		assert(0);
 	}
 
 	int op = si->upgradeIndex;
@@ -803,15 +841,26 @@ void KinStore::SetSelected(int section, int itemIndex)
 	{
 		storePointsText.setFillColor(Color::Green);
 	}
-	//else if (si->GetCurrentCost() > rush->storePoints)
-	else if (rush->storePoints == 0 )
+	else if (rush != NULL)
 	{
-		storePointsText.setFillColor(Color::Red);
+		if (rush->storePoints == 0)
+		{
+			storePointsText.setFillColor(Color::Red);
+		}
+		else
+		{
+			storePointsText.setFillColor(Color::Green);
+		}
 	}
-	else
+	else if (trials != NULL)
 	{
 		storePointsText.setFillColor(Color::Green);
 	}
+	else
+	{
+		assert(0);
+	}
+	
 
 
 	if (section == 0)
@@ -866,6 +915,7 @@ void KinStore::TryUnlockCurrentUpgrade()
 {
 	//int optionIndex = (rand() % (UPGRADE_W1_BASE_DASH_1 - UPGRADE_W1_DASH_BOOST) + UPGRADE_W1_DASH_BOOST);
 
+	MainMenu *mm = MainMenu::GetInstance();
 	//sess->SetPlayerOption(optionIndex, true);
 	//sess->mainMenu->rushManager->UnlockUpgrade(optionIndex);
 
@@ -925,9 +975,16 @@ void KinStore::TryUnlockCurrentUpgrade()
 			rush->storePoints -= cost;//se->GetCurrentCost();
 			storePointsText.setString("+" + to_string(rush->storePoints));
 			sess->SetPlayerUpgradeLevel(optionIndex, se->currentLevel + 1);
-			sess->mainMenu->rushManager->UnlockUpgrade(optionIndex, se->currentLevel + 1);
+			mm->rushManager->UnlockUpgrade(optionIndex, se->currentLevel + 1);
 		}
-		else
+		else if (trials != NULL)
+		{
+			//rush->storePoints -= cost;//se->GetCurrentCost();
+			storePointsText.setString("+" + to_string(0));
+			//sess->SetPlayerUpgradeLevel(optionIndex, se->currentLevel + 1);
+			trials->UnlockUpgrade(optionIndex, se->currentLevel + 1);
+		}
+		else 
 		{
 			edit->defaultStartingPlayerUpgradeLevels->SetUpgradeLevel(optionIndex, se->currentLevel + 1);
 		}
@@ -952,7 +1009,16 @@ void KinStore::Update()
 
 	if (action == A_OPEN )
 	{
-		auto *inputStates = sess->controllerStates[0];
+		ControllerDualStateQueue *inputStates;
+		if (sess != NULL)
+		{
+			inputStates = sess->controllerStates[0];
+		}
+		else
+		{
+			assert(trials != NULL);
+			inputStates = trials->controllerInput;
+		}
 		bool aPressed = inputStates->ButtonPressed_A();
 		bool startPressed = inputStates->ButtonPressed_Start();
 

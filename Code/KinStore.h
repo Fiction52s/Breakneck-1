@@ -12,6 +12,7 @@ struct EditSession;
 struct SingleAxisSelector;
 struct Session;
 struct RushManager;
+struct TrialsManager;
 
 struct StoreEntry
 {
@@ -62,6 +63,7 @@ struct KinStore : GUIHandler
 
 	EditSession *edit;
 	RushManager *rush;
+	TrialsManager *trials;
 	int action;
 	int frame;
 	sf::Text itemText;

@@ -8,6 +8,7 @@
 #include "DrawLayer.h"
 #include "md5.h"
 #include "Leaderboard.h"
+#include "KinStore.h"
 
 using namespace std;
 using namespace sf;
@@ -16,15 +17,19 @@ TrialsScreen::TrialsScreen()
 {
 	MainMenu *mm = MainMenu::GetInstance();
 
-	SetRectColor(quad, Color::Black);
-	SetRectTopLeft(quad, 1920, 1080, Vector2f(0, 0));
+	//SetRectColor(quad, Color::White);
+	SetRectTopLeft(bgQuad, 1920, 1080, Vector2f(0, 0));
 
 	trialsMan = NULL;
+	ts_mapPreview = NULL;
 
 	worldMap = new WorldMap;
 
 	action = A_WORLD_MAP;
 	frame = 0;
+
+	SetRectCenter(confirmQuad, 500, 500, Vector2f(960, 540));
+	SetRectColor(confirmQuad, Color::Red);
 
 	ts_closedBeta = GetSizedTileset("Menu/EarlyAccess/early_access_screen_1920x1080.png");
 	ts_closedBeta->SetSpriteTexture(closedBetaSpr);
@@ -63,6 +68,27 @@ TrialsScreen::TrialsScreen()
 		levelNameText[i].setPosition(textStart + Vector2f( 0, textSpace.y * i ));
 		levelNameText[i].setFillColor(Color::White);
 	}
+
+	ts_bg = GetSizedTileset("Menu/Title/title_screen_bg_410x327.png");
+
+	if (!scrollShader.loadFromFile("Resources/Shader/slider.frag", sf::Shader::Fragment))
+	{
+		assert(0);
+	}
+	scrollShader.setUniform("u_texture", *ts_bg->texture);
+
+	xRate = -.005;
+	yRate = -.002;
+
+	SetRectSubRect(bgQuad, sf::FloatRect(0, 0, 1920.f / ts_bg->tileWidth, 1080.f / ts_bg->tileHeight));
+
+	tintColors[0] = Color(0x4d, 0x89, 0xc2);
+	tintColors[1] = Color(0x4b, 0xa2, 0x33);
+	tintColors[2] = Color(0xb4, 0xa5, 0x3e);
+	tintColors[3] = Color(0xc5, 0x99, 0x5b);
+	tintColors[4] = Color(0xc6, 0x6f, 0x6f);
+	tintColors[5] = Color(0xaf, 0x6d, 0xb0);
+	tintColors[6] = Color(0x83, 0x44, 0xc4);
 }
 
 TrialsScreen::~TrialsScreen()
@@ -76,10 +102,21 @@ void TrialsScreen::Reset()
 	frame = 0;
 	selectedMapIndex = 0;
 	trialsMan->currLevelIndex = selectedMapIndex;
+	UpdateMapPreview();
+
+	quantX = 0;
+	quantY = 0;
+
 }
 
 void TrialsScreen::Update()
 {
+	quantX += xRate;
+	quantY += yRate;
+
+	scrollShader.setUniform("quantX", quantX);
+	scrollShader.setUniform("quantY", quantY);
+
 	if (action == A_WORLD_MAP)
 	{
 		worldMap->Update();
@@ -97,7 +134,8 @@ void TrialsScreen::Update()
 			{
 				levelNameText[i].setString(trialsMan->GetLeaderboardDisplayName( i ));
 			}
-			//mm->fader->Fade(true, 30, Color::Black, false, DrawLayer::IN_FRONT);
+
+			scrollShader.setUniform("tintColor", ColorGL(tintColors[trialsMan->currWorld]));
 		}
 	}
 	else if (action == A_LEVEL_SELECT)
@@ -110,6 +148,7 @@ void TrialsScreen::Update()
 				selectedMapIndex = 0;
 			}
 			trialsMan->currLevelIndex = selectedMapIndex;
+			UpdateMapPreview();
 		}
 		else if (CONTROLLERS.DirPressed_Up())
 		{
@@ -119,6 +158,7 @@ void TrialsScreen::Update()
 				selectedMapIndex = MAX_LEVELS_PER_WORLD - 1;
 			}
 			trialsMan->currLevelIndex = selectedMapIndex;
+			UpdateMapPreview();
 		}
 
 		for (int i = 0; i < MAX_LEVELS_PER_WORLD; ++i)
@@ -139,7 +179,7 @@ void TrialsScreen::Update()
 			//if (CONTROLLERS.ButtonPressed_B() && frame > 60)
 			if (CONTROLLERS.ButtonPressed_A())
 			{
-				action = A_RUN_LEVEL;
+				action = A_CONFIRM_POWERS;
 				frame = 0;
 				
 			}
@@ -154,7 +194,7 @@ void TrialsScreen::Update()
 			{
 
 			}
-			else if (CONTROLLERS.ButtonPressed_RightShoulder())
+			else if (CONTROLLERS.ButtonPressed_Y())
 			{
 				action = A_LEADERBOARD;
 
@@ -167,6 +207,12 @@ void TrialsScreen::Update()
 				//trialsMan->leaderboard->SetAnyPowersMode(true);
 
 				trialsMan->leaderboard->Start();
+			}
+			else if (CONTROLLERS.ButtonPressed_X())
+			{
+				action = A_STORE;
+
+				trialsMan->kinStore->Open();
 			}
 				
 		}
@@ -184,6 +230,14 @@ void TrialsScreen::Update()
 		else
 		{
 			trialsMan->leaderboard->Update();//controllerInput->GetPrevState(), controllerInput->GetCurrState());
+
+			if (trialsMan->leaderboard->IsTryingToStartReplay())
+			{
+				action = A_CONFIRM_POWERS;
+				frame = 0;
+
+				//currLevel->TryStartLeaderboardReplay(adventureManager->leaderboard->replayChosen);
+			}
 
 			//if (ms->mainMenu->adventureManager->leaderboard->IsTryingToStartReplay())
 			//{
@@ -205,6 +259,37 @@ void TrialsScreen::Update()
 			//}
 		}
 	}
+	else if (action == A_STORE)
+	{
+		if (CONTROLLERS.ButtonPressed_B())
+		{
+			action = A_LEVEL_SELECT;
+			frame = 0;
+			//trialsMan->kinStore->Hide();
+			//MainMenu *mm = MainMenu::GetInstance();
+			//mm->fader->CrossFade(30, 0, 30, Color::Black);
+		}
+		else
+		{
+			trialsMan->kinStore->Update();
+		}
+	}
+	else if (action == A_CONFIRM_POWERS)
+	{
+		if (CONTROLLERS.ButtonPressed_A())
+		{
+			action = A_RUN_LEVEL;
+			frame = 0;
+
+		}
+		else if (CONTROLLERS.ButtonPressed_B())
+		{
+			action = A_LEVEL_SELECT;
+			frame = 0;
+			//MainMenu *mm = MainMenu::GetInstance();
+			//mm->fader->CrossFade(30, 0, 30, Color::Black);
+		}
+	}
 	//if (action == A_IDLE)
 	//{
 	
@@ -217,19 +302,78 @@ bool TrialsScreen::IsRunningMap()
 	return action == A_RUN_LEVEL;
 }
 
+void TrialsScreen::DestroyMapPreview()
+{
+	//cout << "destroyed preview" << endl;
+	if (ts_mapPreview != NULL)
+	{
+		DestroyTileset(ts_mapPreview);
+		ts_mapPreview = NULL;
+	}
+}
+
+void TrialsScreen::UpdateMapPreview()
+{
+	DestroyMapPreview();
+
+
+	bool allSecretsCollected = false;
+
+	/*Level *level = GetSelectedLevel();
+	AdventureMapHeaderInfo &headerInfo =
+		saveFile->adventureFile->GetMapHeaderInfo(level->index);*/
+
+	int totalNumShards = 0;//headerInfo.shardInfoVec.size();
+
+	int numCollected = 0;
+	/*for (auto it = headerInfo.shardInfoVec.begin(); it !=
+	headerInfo.shardInfoVec.end(); ++it)
+	{
+	if (saveFile->IsShardCaptured((*it).GetTrueIndex()))
+	{
+	numCollected++;
+	}
+	}*/
+
+	if (numCollected == totalNumShards)
+	{
+		allSecretsCollected = true;
+	}
+
+	string fPath = trialsMan->rushFile.GetMap(trialsMan->currWorld, trialsMan->currLevelIndex).GetFilePath();//adventureFile.GetAdventureSector(sec).maps[GetSelectedIndex()].GetFilePath();
+	string previewPath;
+	if (allSecretsCollected)
+	{
+		previewPath = "Maps\\" + fPath + ".png";
+	}
+	else
+	{
+		previewPath = "Maps\\" + fPath + "_basic.png";
+	}
+
+
+	ts_mapPreview = GetTileset(previewPath, 912, 492);
+	mapPreviewSpr.setTexture(*ts_mapPreview->texture);
+	mapPreviewSpr.setOrigin(mapPreviewSpr.getLocalBounds().width / 2, mapPreviewSpr.getLocalBounds().height / 2);
+	mapPreviewSpr.setPosition(1300, 500);
+}
+
 void TrialsScreen::Draw(sf::RenderTarget *target)
 {
-	target->draw(quad, 4, sf::Quads);
+	//target->draw(quad, 4, sf::Quads);
+	target->draw(bgQuad, 4, sf::Quads, &scrollShader);
 
-	if (action == A_LEVEL_SELECT || action == A_DONE || action == A_RUN_LEVEL || action == A_LEADERBOARD )
+	if (action == A_LEVEL_SELECT || action == A_DONE || action == A_RUN_LEVEL || action == A_LEADERBOARD || action == A_STORE || action == A_CONFIRM_POWERS)
 	{
-		target->draw(closedBetaSpr);
-		target->draw(closedBetaText);
+		//target->draw(closedBetaSpr);
+		//target->draw(closedBetaText);
 
 		for (int i = 0; i < MAX_LEVELS_PER_WORLD; ++i)
 		{
 			target->draw(levelNameText[i]);
 		}
+
+		target->draw(mapPreviewSpr);
 
 		if (action == A_LEADERBOARD)
 		{
@@ -244,6 +388,14 @@ void TrialsScreen::Draw(sf::RenderTarget *target)
 			pauseMenuSprite.setPosition(0, 0);//960 / 2, 540 / 2);//(1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2)
 			target->draw(pauseMenuSprite);
 
+		}
+		else if (action == A_STORE)
+		{
+			trialsMan->kinStore->Draw(target);
+		}
+		else if (action == A_CONFIRM_POWERS)
+		{
+			target->draw(confirmQuad, 4, sf::Quads);
 		}
 
 	}

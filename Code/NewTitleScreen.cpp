@@ -529,6 +529,13 @@ void NewTitleScreen::Update()
 	frame++;
 }
 
+void NewTitleScreen::SetBGColor(sf::Color c)
+{
+	colorFadeFrame = -1;
+	currTint = c;
+	scrollShader.setUniform("tintColor", ColorGL(c));
+}
+
 void NewTitleScreen::UpdateBGColor()
 {
 	Color col;

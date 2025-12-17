@@ -86,6 +86,7 @@ struct SinglePlayerControllerJoinScreen : TilesetManager, GUIHandler
 	void SetFromMatchParams(MatchParams &mp);
 
 	void Update();
+	void ClosedBetaUpdate();
 	void Draw(sf::RenderTarget *target);
 
 	void CancelCallback(Panel *p);

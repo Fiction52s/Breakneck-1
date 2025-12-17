@@ -122,6 +122,7 @@ struct PlayerBoxGroup
 	int GetFirstAvailableSkinIndex();
 	bool IsBoxChangingControls(int ind);
 	bool CheckControllerJoins();
+	bool CheckControllerJoinsAnyButton();
 	ControllerDualStateQueue * GetControllerStates(int ind);
 	ControlProfile *GetControlProfile(int ind);
 	int GetSkinIndex(int ind);

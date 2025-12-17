@@ -1365,6 +1365,10 @@ void GameSession::SetPlayerUpgrade(int up, int lvl, int playerIndex)
 		mainMenu->rushManager->UnlockUpgrade(up, lvl);
 		//mainMenu->rushManager->kinOptionField.SetBit(optionType, true);
 	}
+	else if (mainMenu->trialsManager != NULL)
+	{
+		//don't actually unlock upgrades in trials mode
+	}
 }
 
 bool GameSession::TrySaveCurrentSaveFile()
@@ -4000,6 +4004,10 @@ int GameSession::Run()
 	{
 		currPlayerUpgradeLevels->Set(mainMenu->rushManager->kinUpgradeLevels);
 	}
+	else if (mainMenu->trialsManager != NULL)
+	{
+		currPlayerUpgradeLevels->Set(mainMenu->trialsManager->kinUpgradeLevels);
+	}
 
 
 	RestartLevel();
@@ -4762,7 +4770,11 @@ void GameSession::RestartLevel()
 		//mainMenu->rushManager->currRushMapIndex = 0;
 	}
 
-	if ( !IsRushSession() && saveFile == NULL && !IsParallelSession())
+	if (mainMenu->trialsManager != NULL)
+	{
+		currPlayerUpgradeLevels->Set(mainMenu->trialsManager->kinUpgradeLevels);
+	}
+	else if ( !IsRushSession() && saveFile == NULL && !IsParallelSession())
 	{
 		//currUpgradeField.Reset();
 		currPlayerUpgradeLevels->Set(defaultStartingPlayerUpgradeLevels);
@@ -4772,6 +4784,10 @@ void GameSession::RestartLevel()
 	{
 		currPlayerUpgradeLevels->Set(mainMenu->rushManager->kinUpgradeLevels);
 		//currPlayerOptionsField.Set(mainMenu->rushManager->kinOptionField);
+	}
+	else
+	{
+		assert(0);
 	}
 
 

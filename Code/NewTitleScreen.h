@@ -98,6 +98,7 @@ struct NewTitleScreen : TilesetManager, GUIHandler
 	int GetSelectedIndex();
 	int GetPressedIndex();
 	void UpdateBGColor();
+	void SetBGColor(sf::Color c);
 	void Reset();
 	void Update();
 };

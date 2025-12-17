@@ -423,6 +423,41 @@ void PlayerBoxGroup::SetControlProfile(int index, ControlProfile *cp)
 	playerBoxes[index]->SetCurrProfile(cp);
 }
 
+bool PlayerBoxGroup::CheckControllerJoinsAnyButton()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, i);
+		if (states->ButtonPressed_Any())
+		{
+			if (TryControllerJoin(states))
+				return true;
+		}
+
+		states = CONTROLLERS.GetStateQueue(CTYPE_GAMECUBE, i);
+		if (states->ButtonPressed_Any())
+		{
+			if (TryControllerJoin(states))
+			{
+				return true;
+			}
+
+		}
+	}
+
+	states = CONTROLLERS.GetStateQueue(CTYPE_KEYBOARD, 0);
+	if (states->ButtonPressed_Any())
+	{
+		if (TryControllerJoin(states))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool PlayerBoxGroup::CheckControllerJoins()
 {
 	ControllerDualStateQueue *states = NULL;

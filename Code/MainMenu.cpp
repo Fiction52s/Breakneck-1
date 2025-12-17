@@ -424,6 +424,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_GLOBAL:
 	{
 		if (singlePlayerControllerJoinScreen != NULL)
 		{
@@ -434,6 +435,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 				storedSkin = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
 			}
 			else if (toMode == TEST_RUSH)
+			{
+				storedControllerStates = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
+				storedControlProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+				storedSkin = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
+			}
+			else if (toMode == TITLEMENU)
 			{
 				storedControllerStates = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
 				storedControlProfile = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
@@ -456,6 +463,9 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	{
 		delete closedBetaScreen;
 		closedBetaScreen = NULL;
+
+		delete singlePlayerControllerJoinScreen;
+		singlePlayerControllerJoinScreen = NULL;
 		break;
 	}
 	case THANKS_FOR_PLAYING:
@@ -641,21 +651,21 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			rushManager->currProfile = storedControlProfile;
 			rushManager->Load();
 		}
-		else if (fromMode == TITLEMENU)
+		else if (fromMode == TITLEMENU) //assume you'll get the global join now
 		{
-			ControllerDualStateQueue *states = NULL;
+			/*ControllerDualStateQueue *states = NULL;
 			states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, 0);
 
-			auto &managedProfiles = cpm->profiles[states->GetControllerType()];
+			auto &managedProfiles = cpm->profiles[states->GetControllerType()];*/
 
 			int startWorld = 0;
 
-			if (states->ButtonHeld_LeftShoulder())
+			if (storedControllerStates->ButtonHeld_LeftShoulder())
 			{
 				startWorld += 1;
 			}
 			
-			if (states->ButtonHeld_RightShoulder())
+			if (storedControllerStates->ButtonHeld_RightShoulder())
 			{
 				startWorld += 2;
 			}
@@ -668,8 +678,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 			assert(rushManager == NULL);
 			rushManager = new RushManager;
-			rushManager->controllerInput = states;
-			rushManager->currProfile = managedProfiles.front();
+
+			rushManager->controllerInput = storedControllerStates;
+			rushManager->currProfile = storedControlProfile;
+
+			//rushManager->controllerInput = states;
+			//rushManager->currProfile = managedProfiles.front();
 			rushManager->startWorld = startWorld;
 			rushManager->Load();
 		}
@@ -857,6 +871,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
+	case SINGLE_PLAYER_CONTROLLER_JOIN_GLOBAL:
 	{
 		assert(singlePlayerControllerJoinScreen == NULL);
 		singlePlayerControllerJoinScreen = new SinglePlayerControllerJoinScreen(this);
@@ -1132,7 +1147,15 @@ MainMenu::MainMenu( bool p_steamOn)
 	newTitleScreen = NULL;
 
 	closedBetaScreen = new ClosedBetaScreen;
-	
+
+	//assert(singlePlayerControllerJoinScreen == NULL);
+	singlePlayerControllerJoinScreen = new SinglePlayerControllerJoinScreen(this);
+	singlePlayerControllerJoinScreen->Start();
+
+	/*if (toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ADVENTURE || toMode == SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE)
+	{
+		singlePlayerControllerJoinScreen->SetMode(PlayerBox::MODE_CONTROLLER_ONLY);
+	}*/
 	
 
 
@@ -4553,6 +4576,38 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_GLOBAL:
+	{
+		while (window->pollEvent(ev))
+		{
+			singlePlayerControllerJoinScreen->HandleEvent(ev);
+		}
+
+		singlePlayerControllerJoinScreen->Update();
+
+		if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_START)
+		{
+			LoadMode(TITLEMENU);
+
+			/*MatchParams mp;
+			mp.mapPath = TUTORIAL_PATH;
+			mp.controllerStateVec[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControllerStates(0);
+			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
+			mp.controlProfiles[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetControlProfile(0);
+			mp.playerSkins[0] = singlePlayerControllerJoinScreen->playerBoxGroup->GetSkinIndex(0);
+			mp.randSeed = time(0);
+			mp.numPlayers = 1;
+			mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+			*menuMatchParams = mp;
+
+			LoadMode(TUTORIAL);*/
+		}
+		/*else if (singlePlayerControllerJoinScreen->action == SinglePlayerControllerJoinScreen::A_BACK)
+		{
+			LoadMode(TITLEMENU);
+		}*/
+		break;
+	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_TUTORIAL:
 	{
 		while (window->pollEvent(ev))
@@ -5190,7 +5245,8 @@ void MainMenu::HandleMenuMode()
 		{
 			if (closedBetaScreen->action == ClosedBetaScreen::A_DONE)
 			{
-				LoadMode(TITLEMENU);
+				//LoadMode(TITLEMENU);
+				SetMode(SINGLE_PLAYER_CONTROLLER_JOIN_GLOBAL);
 			}
 		}
 		break;
@@ -5751,6 +5807,11 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 	case SINGLE_PLAYER_CONTROLLER_JOIN_ONLINE:
+	{
+		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
+		break;
+	}
+	case SINGLE_PLAYER_CONTROLLER_JOIN_GLOBAL:
 	{
 		singlePlayerControllerJoinScreen->Draw(preScreenTexture);
 		break;

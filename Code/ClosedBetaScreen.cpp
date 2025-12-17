@@ -2,6 +2,7 @@
 #include "MainMenu.h"
 #include "Input.h"
 #include "Fader.h"
+#include "SinglePlayerControllerJoinScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -45,6 +46,9 @@ ClosedBetaScreen::ClosedBetaScreen()
 
 void ClosedBetaScreen::Update()
 {
+	SinglePlayerControllerJoinScreen *js = MainMenu::GetInstance()->singlePlayerControllerJoinScreen;
+	assert(js != NULL);
+
 	if (action == A_IDLE )
 	{
 		if (frame == 60 * 5)
@@ -73,11 +77,24 @@ void ClosedBetaScreen::Update()
 	}
 	else if (action == A_SPLASH)
 	{
-		if (CONTROLLERS.ButtonPressed_Any() && frame > 60)
+
+		//Update()
+
+		//if (frame > 10)
+		{
+			js->ClosedBetaUpdate();
+			if (js->action == SinglePlayerControllerJoinScreen::A_READY)
+			{
+				action = A_DONE;
+				frame = 0;
+			}
+		}
+
+		/*if (CONTROLLERS.ButtonPressed_Any() && frame > 60)
 		{
 			action = A_DONE;
 			frame = 0;
-		}
+		}*/
 
 		int fadeCycle = 120;
 		int fadeFrame = frame % fadeCycle;

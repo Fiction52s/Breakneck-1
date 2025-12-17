@@ -154,6 +154,95 @@ void SinglePlayerControllerJoinScreen::SetFromMatchParams(MatchParams &mp)
 	playerBoxGroup->SetControllerStates( 0, mp.controllerStateVec[0], mp.playerSkins[0]);
 }
 
+void SinglePlayerControllerJoinScreen::ClosedBetaUpdate()
+{
+	switch (action)
+	{
+	case A_WAITING_FOR_PLAYER:
+	{
+		/*if (CONTROLLERS.ButtonPressed_B())
+		{
+			Quit();
+			return;
+		}*/
+
+		if (playerBoxGroup->CheckControllerJoinsAnyButton())
+		{
+			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundInfos[MainMenu::S_PLAYER_JOIN]);
+			SetAction(A_READY);
+			startBox.SetControllerType(playerBoxGroup->GetControllerStates(0)->GetControllerType());
+			//SetRectColor(bgQuad, Color(83, 102, 188));
+		}
+
+		break;
+	}
+	case A_READY:
+	{
+		/*if (CONTROLLERS.ButtonPressed_B())
+		{
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundInfos[MainMenu::S_PLAYER_UNJOIN]);
+			Start();
+			break;
+		}*/
+
+		ControllerDualStateQueue *states = playerBoxGroup->GetControllerStates(0);
+
+		if (states != NULL)
+		{
+			if (states->ButtonPressed_Start())
+			{
+				SetAction(A_START);
+				return;
+			}
+		}
+		break;
+	}
+	case A_CONTROL_PROFILE:
+	{
+		if (!playerBoxGroup->IsBoxChangingControls(0))
+		{
+			SetAction(A_READY);
+			return;
+		}
+		break;
+	}
+	case A_START:
+		break;
+	case A_BACK:
+		break;
+	}
+
+	switch (action)
+	{
+	case A_WAITING_FOR_PLAYER:
+	{
+		playerBoxGroup->Update();
+		panel->MouseUpdate();
+		break;
+	}
+	case A_READY:
+	{
+		playerBoxGroup->Update();
+		if (!playerBoxGroup->IsBoxChangingControls(0))
+		{
+			panel->MouseUpdate();
+		}
+		else
+		{
+			SetAction(A_CONTROL_PROFILE);
+		}
+		break;
+	}
+	case A_CONTROL_PROFILE:
+		playerBoxGroup->Update();
+		break;
+	case A_START:
+		break;
+	case A_BACK:
+		break;
+	}
+}
+
 void SinglePlayerControllerJoinScreen::Update()
 {
 	switch (action)
